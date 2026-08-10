@@ -45,7 +45,13 @@ struct CoverArtArchiveClient {
         guard let front = decoded.images.first(where: { $0.front }) ?? decoded.images.first else {
             return nil
         }
-        let imageURLString = front.thumbnails?.large ?? front.image
+        // La API a veces devuelve URLs "http://" (nunca "https://") para
+        // los thumbnails -- App Transport Security las bloquea por
+        // default en la app real (a diferencia de `swift test`/`curl`,
+        // que no aplican ATS), asi que se fuerza https antes de pedirla.
+        // El propio servidor sirve el mismo contenido por ambos, asi que
+        // no hace falta ningun cambio de configuracion en Info.plist.
+        let imageURLString = (front.thumbnails?.large ?? front.image).replacingOccurrences(of: "http://", with: "https://")
         guard let imageURL = URL(string: imageURLString) else { return nil }
 
         var imageRequest = URLRequest(url: imageURL)

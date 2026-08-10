@@ -37,14 +37,16 @@ final class LiveEnrichmentIntegrationTests: XCTestCase {
         }
 
         let coverClient = CoverArtArchiveClient()
-        let coverData = try? await coverClient.fetchFrontCover(releaseID: releaseID)
+        let coverData = try await coverClient.fetchFrontCover(releaseID: releaseID)
 
-        // Puede ser nil legitimamente si ese release en particular no
-        // tiene tapa subida -- lo que se verifica es que la llamada no
-        // explota y que, si trae algo, es una imagen real.
-        if let coverData {
-            XCTAssertGreaterThan(coverData.count, 100)
-        }
+        // Bohemian Rhapsody / Queen tiene tapa conocida en Cover Art
+        // Archive, asi que acá sí se espera un resultado real, no nil
+        // -- esto es lo que detecto que la API a veces devuelve
+        // thumbnails "http://" que ATS bloquea en la app real (no bajo
+        // `swift test`/curl, que no aplican ATS). Ver el fix en
+        // CoverArtArchiveClient (fuerza https).
+        XCTAssertNotNil(coverData)
+        XCTAssertGreaterThan(coverData?.count ?? 0, 100)
     }
 
     func testLRCLIBFindsSyncedLyricsForWellKnownSong() async throws {

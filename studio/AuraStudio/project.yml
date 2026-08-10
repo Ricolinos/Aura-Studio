@@ -71,6 +71,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ricolinos.aurastudio.tests
+        GENERATE_INFOPLIST_FILE: YES
 
 schemes:
   AuraStudio:
