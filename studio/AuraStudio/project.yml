@@ -1,0 +1,85 @@
+name: AuraStudio
+options:
+  bundleIdPrefix: com.ricolinos.aurastudio
+  deploymentTarget:
+    macOS: "13.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MACOSX_DEPLOYMENT_TARGET: "13.0"
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ""
+    ENABLE_HARDENED_RUNTIME: NO
+    # Aura Studio necesita hablar directo con IOKit/DiskArbitration para
+    # detectar el iPod y desmontarlo programaticamente, y ejecutar el
+    # binario mks5lboot embebido -- el sandbox de la App Store restringe
+    # justamente eso, asi que la app se distribuye fuera de la App Store,
+    # sin sandbox (ver D-033 en DECISIONS.md y AuraInstallerView para la
+    # explicacion que se le muestra al usuario sobre por que).
+    ENABLE_APP_SANDBOX: NO
+
+targets:
+  AuraStudio:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/AuraStudio
+      # NOTA: el top-level "resources:" de XcodeGen no genero ninguna
+      # entrada de Copy Bundle Resources en este entorno (XcodeGen
+      # 2.46.0 / Xcode 26.6, objectVersion 77) -- ni para carpetas ni
+      # para archivos sueltos, confirmado con un proyecto minimo de
+      # prueba. La forma que si funciona es listarlos aca, bajo
+      # "sources", con "buildPhase: resources" explicito (ver D-036 en
+      # DECISIONS.md).
+      - path: ../../firmware/dist/rockbox.ipod
+        buildPhase: resources
+      - path: ../../firmware/dist/bootloader-ipod6g.ipod
+        buildPhase: resources
+      - path: ../../firmware/dist/mks5lboot
+        buildPhase: resources
+      - path: ../../firmware/dist/checksums.txt
+        buildPhase: resources
+    info:
+      path: Resources/Info.plist
+      properties:
+        CFBundleDisplayName: Aura Studio
+        NSHumanReadableCopyright: "Aura Studio"
+        NSRemovableVolumesUsageDescription: >
+          Aura Studio necesita acceder a volumenes removibles para
+          detectar tu iPod, verificar su formato y sincronizar tu
+          biblioteca con el firmware Aura.
+        LSApplicationCategoryType: public.app-category.music
+        LSMinimumSystemVersion: "13.0"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ricolinos.aurastudio
+        INFOPLIST_KEY_NSHumanReadableCopyright: "Aura Studio"
+        GENERATE_INFOPLIST_FILE: NO
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+
+  AuraStudioTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: Tests/AuraStudioTests
+    dependencies:
+      - target: AuraStudio
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ricolinos.aurastudio.tests
+
+schemes:
+  AuraStudio:
+    build:
+      targets:
+        AuraStudio: all
+        AuraStudioTests: [test]
+    test:
+      targets:
+        - AuraStudioTests
+    run:
+      config: Debug

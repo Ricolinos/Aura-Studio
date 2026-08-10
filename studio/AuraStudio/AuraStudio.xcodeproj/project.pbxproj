@@ -1,0 +1,567 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		11CC4D739B622CDD58E486D8 /* EnterDFUView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3754C9E29F0BC93B660592 /* EnterDFUView.swift */; };
+		1F8C7964D7763A72A86F1CF1 /* IPodMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117BF63B29CADB076B19CA27 /* IPodMonitor.swift */; };
+		203D6E1800BE63DFE89AB1C8 /* AuraStudioApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849AFADBA825BCE5775C3217 /* AuraStudioApp.swift */; };
+		229BC6502A44F54DA47121F9 /* DetectDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EBCF1EF29547CD3B01B5C98 /* DetectDeviceView.swift */; };
+		2F898C1996F39319211E9496 /* DoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0116DC50EA8DBAE3B02AE0FB /* DoneView.swift */; };
+		35AD525641C3EEBF3F3D49BE /* rockbox.ipod in Resources */ = {isa = PBXBuildFile; fileRef = 84780DEDBB3409D2FFE454A0 /* rockbox.ipod */; };
+		3D68D3D80AE46A56B0BF89EE /* mks5lboot in Resources */ = {isa = PBXBuildFile; fileRef = BE004499B3409D8B9E5D14ED /* mks5lboot */; };
+		401404E1D0A6D6FFBB155F2C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14D5A27F7EA14F700832333A /* ContentView.swift */; };
+		51B2A64027ACA8FC73EB923A /* MKS5LBootRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C70AA3068E3596A674879EA8 /* MKS5LBootRunnerTests.swift */; };
+		5EDA0D1DF2BC765B8F8D473B /* BundledArtifacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8464D5E55C66D32740C7289 /* BundledArtifacts.swift */; };
+		998B6DF4B6AC0FEE21284A8E /* bootloader-ipod6g.ipod in Resources */ = {isa = PBXBuildFile; fileRef = 233A4D4A9FEE1391D6CAAE63 /* bootloader-ipod6g.ipod */; };
+		9C53C3873A4C5F484CCC3858 /* InstallerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EBEB24F597D3C9B609AC775 /* InstallerViewModel.swift */; };
+		9CEBAACAA11BE3313233D7ED /* InstallerWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4862DCA99696DCB66D2012 /* InstallerWizardView.swift */; };
+		9FDD21617909191BB7E9B9CE /* MKS5LBootRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 722702AD0F209BDEA893FA8D /* MKS5LBootRunner.swift */; };
+		A70B8FE54D8521EEBAB23BBB /* InstallerStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43B9358C341DF6C281F2636B /* InstallerStep.swift */; };
+		B1845030E08621FDF34358FA /* DiskArbitrationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 638FD209E9AF6417EE51ABC7 /* DiskArbitrationMonitor.swift */; };
+		BD5FCF9DC5CB88162B2673C0 /* InstallingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1782D4EBAA2C3FC3EBC49F5 /* InstallingView.swift */; };
+		C3AD25FC7C3C2CE8C2F3AD6F /* BundledArtifactsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */; };
+		C76F4EF9962D5866CA044718 /* checksums.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2F9BF12646626E5E5CFC2BFD /* checksums.txt */; };
+		D99E5C4BE2135ED2B2CDDFEE /* DeviceState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FA85A3E42CB4E67E9DAC4E5 /* DeviceState.swift */; };
+		ECBCFCC6104EA5F8E3F445BF /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF1D56D4FC12419217F8960 /* WelcomeView.swift */; };
+		F745EA7E70AE91DF77279194 /* PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777383A161FBD9C32BFA6D82 /* PermissionsView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A9AB83E7359F54A87BF49D74 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AC16FD332100051C2317B27E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A458A7ACC2A617A8909ADE93;
+			remoteInfo = AuraStudio;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0116DC50EA8DBAE3B02AE0FB /* DoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneView.swift; sourceTree = "<group>"; };
+		117BF63B29CADB076B19CA27 /* IPodMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPodMonitor.swift; sourceTree = "<group>"; };
+		14D5A27F7EA14F700832333A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		1AF1D56D4FC12419217F8960 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		1D4862DCA99696DCB66D2012 /* InstallerWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerWizardView.swift; sourceTree = "<group>"; };
+		233A4D4A9FEE1391D6CAAE63 /* bootloader-ipod6g.ipod */ = {isa = PBXFileReference; path = "bootloader-ipod6g.ipod"; sourceTree = "<group>"; };
+		2F9BF12646626E5E5CFC2BFD /* checksums.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = checksums.txt; sourceTree = "<group>"; };
+		3EBEB24F597D3C9B609AC775 /* InstallerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerViewModel.swift; sourceTree = "<group>"; };
+		43B9358C341DF6C281F2636B /* InstallerStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerStep.swift; sourceTree = "<group>"; };
+		5FA85A3E42CB4E67E9DAC4E5 /* DeviceState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceState.swift; sourceTree = "<group>"; };
+		638FD209E9AF6417EE51ABC7 /* DiskArbitrationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskArbitrationMonitor.swift; sourceTree = "<group>"; };
+		722702AD0F209BDEA893FA8D /* MKS5LBootRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKS5LBootRunner.swift; sourceTree = "<group>"; };
+		777383A161FBD9C32BFA6D82 /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
+		7D3754C9E29F0BC93B660592 /* EnterDFUView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterDFUView.swift; sourceTree = "<group>"; };
+		84780DEDBB3409D2FFE454A0 /* rockbox.ipod */ = {isa = PBXFileReference; path = rockbox.ipod; sourceTree = "<group>"; };
+		849AFADBA825BCE5775C3217 /* AuraStudioApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraStudioApp.swift; sourceTree = "<group>"; };
+		942969FD7DB3DE501DDCA57C /* AuraStudio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AuraStudio.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9EBCF1EF29547CD3B01B5C98 /* DetectDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectDeviceView.swift; sourceTree = "<group>"; };
+		B1782D4EBAA2C3FC3EBC49F5 /* InstallingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallingView.swift; sourceTree = "<group>"; };
+		B8464D5E55C66D32740C7289 /* BundledArtifacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledArtifacts.swift; sourceTree = "<group>"; };
+		B9DF8DDA314F0AC41C9B3ECE /* AuraStudioTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AuraStudioTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BE004499B3409D8B9E5D14ED /* mks5lboot */ = {isa = PBXFileReference; path = mks5lboot; sourceTree = "<group>"; };
+		C70AA3068E3596A674879EA8 /* MKS5LBootRunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKS5LBootRunnerTests.swift; sourceTree = "<group>"; };
+		D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledArtifactsTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		05B2324DA2DF820F4758883E /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				14D5A27F7EA14F700832333A /* ContentView.swift */,
+				9EBCF1EF29547CD3B01B5C98 /* DetectDeviceView.swift */,
+				0116DC50EA8DBAE3B02AE0FB /* DoneView.swift */,
+				7D3754C9E29F0BC93B660592 /* EnterDFUView.swift */,
+				1D4862DCA99696DCB66D2012 /* InstallerWizardView.swift */,
+				B1782D4EBAA2C3FC3EBC49F5 /* InstallingView.swift */,
+				777383A161FBD9C32BFA6D82 /* PermissionsView.swift */,
+				1AF1D56D4FC12419217F8960 /* WelcomeView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		07D7B3164BE30742B9678DEC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				942969FD7DB3DE501DDCA57C /* AuraStudio.app */,
+				B9DF8DDA314F0AC41C9B3ECE /* AuraStudioTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0CBE9D4998D5B702EF397078 = {
+			isa = PBXGroup;
+			children = (
+				51E31BF617A5BF599CCA3A75 /* Aura-Proyect */,
+				4B0AB40ABB80B48429B4E34D /* Sources */,
+				D8FEC30057F4FE03805035FB /* Tests */,
+				07D7B3164BE30742B9678DEC /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2C87057B5024F943370F7AE2 /* AuraStudio */ = {
+			isa = PBXGroup;
+			children = (
+				849AFADBA825BCE5775C3217 /* AuraStudioApp.swift */,
+				7948EDFB2DF2F57011A12D0B /* Models */,
+				E662BD5C24C1D975800686C0 /* Services */,
+				30515D945A5BA12E4E5B2F05 /* ViewModels */,
+				05B2324DA2DF820F4758883E /* Views */,
+			);
+			path = AuraStudio;
+			sourceTree = "<group>";
+		};
+		30515D945A5BA12E4E5B2F05 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				3EBEB24F597D3C9B609AC775 /* InstallerViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		4B0AB40ABB80B48429B4E34D /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				2C87057B5024F943370F7AE2 /* AuraStudio */,
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+		51E31BF617A5BF599CCA3A75 /* Aura-Proyect */ = {
+			isa = PBXGroup;
+			children = (
+				73DFD6B424F0816C381A2CEC /* firmware */,
+			);
+			name = "Aura-Proyect";
+			path = ../..;
+			sourceTree = "<group>";
+		};
+		58C374D9709EECCD9F0246D6 /* dist */ = {
+			isa = PBXGroup;
+			children = (
+				233A4D4A9FEE1391D6CAAE63 /* bootloader-ipod6g.ipod */,
+				2F9BF12646626E5E5CFC2BFD /* checksums.txt */,
+				BE004499B3409D8B9E5D14ED /* mks5lboot */,
+				84780DEDBB3409D2FFE454A0 /* rockbox.ipod */,
+			);
+			path = dist;
+			sourceTree = "<group>";
+		};
+		73DFD6B424F0816C381A2CEC /* firmware */ = {
+			isa = PBXGroup;
+			children = (
+				58C374D9709EECCD9F0246D6 /* dist */,
+			);
+			path = firmware;
+			sourceTree = "<group>";
+		};
+		7948EDFB2DF2F57011A12D0B /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				5FA85A3E42CB4E67E9DAC4E5 /* DeviceState.swift */,
+				43B9358C341DF6C281F2636B /* InstallerStep.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		A5ECE9688B377042A1F744C1 /* AuraStudioTests */ = {
+			isa = PBXGroup;
+			children = (
+				D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */,
+				C70AA3068E3596A674879EA8 /* MKS5LBootRunnerTests.swift */,
+			);
+			path = AuraStudioTests;
+			sourceTree = "<group>";
+		};
+		D8FEC30057F4FE03805035FB /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				A5ECE9688B377042A1F744C1 /* AuraStudioTests */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		E662BD5C24C1D975800686C0 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B8464D5E55C66D32740C7289 /* BundledArtifacts.swift */,
+				638FD209E9AF6417EE51ABC7 /* DiskArbitrationMonitor.swift */,
+				117BF63B29CADB076B19CA27 /* IPodMonitor.swift */,
+				722702AD0F209BDEA893FA8D /* MKS5LBootRunner.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		90960830425E3F5C7DCA1DC5 /* AuraStudioTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BD221602A2FB5C970DA144B1 /* Build configuration list for PBXNativeTarget "AuraStudioTests" */;
+			buildPhases = (
+				5DF41385AD83BA8E5C2BD9BE /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B6EF60A9622C10CD9E698F9F /* PBXTargetDependency */,
+			);
+			name = AuraStudioTests;
+			packageProductDependencies = (
+			);
+			productName = AuraStudioTests;
+			productReference = B9DF8DDA314F0AC41C9B3ECE /* AuraStudioTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		A458A7ACC2A617A8909ADE93 /* AuraStudio */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 16A919360ED16A945EFBE313 /* Build configuration list for PBXNativeTarget "AuraStudio" */;
+			buildPhases = (
+				C8A58921C82B2359E68F4B94 /* Sources */,
+				850321AE0C8813709FD46688 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = AuraStudio;
+			packageProductDependencies = (
+			);
+			productName = AuraStudio;
+			productReference = 942969FD7DB3DE501DDCA57C /* AuraStudio.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AC16FD332100051C2317B27E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					90960830425E3F5C7DCA1DC5 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+					A458A7ACC2A617A8909ADE93 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = C82133420D30486632A2E34F /* Build configuration list for PBXProject "AuraStudio" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 0CBE9D4998D5B702EF397078;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 07D7B3164BE30742B9678DEC /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A458A7ACC2A617A8909ADE93 /* AuraStudio */,
+				90960830425E3F5C7DCA1DC5 /* AuraStudioTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		850321AE0C8813709FD46688 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				998B6DF4B6AC0FEE21284A8E /* bootloader-ipod6g.ipod in Resources */,
+				C76F4EF9962D5866CA044718 /* checksums.txt in Resources */,
+				3D68D3D80AE46A56B0BF89EE /* mks5lboot in Resources */,
+				35AD525641C3EEBF3F3D49BE /* rockbox.ipod in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5DF41385AD83BA8E5C2BD9BE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C3AD25FC7C3C2CE8C2F3AD6F /* BundledArtifactsTests.swift in Sources */,
+				51B2A64027ACA8FC73EB923A /* MKS5LBootRunnerTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C8A58921C82B2359E68F4B94 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				203D6E1800BE63DFE89AB1C8 /* AuraStudioApp.swift in Sources */,
+				5EDA0D1DF2BC765B8F8D473B /* BundledArtifacts.swift in Sources */,
+				401404E1D0A6D6FFBB155F2C /* ContentView.swift in Sources */,
+				229BC6502A44F54DA47121F9 /* DetectDeviceView.swift in Sources */,
+				D99E5C4BE2135ED2B2CDDFEE /* DeviceState.swift in Sources */,
+				B1845030E08621FDF34358FA /* DiskArbitrationMonitor.swift in Sources */,
+				2F898C1996F39319211E9496 /* DoneView.swift in Sources */,
+				11CC4D739B622CDD58E486D8 /* EnterDFUView.swift in Sources */,
+				1F8C7964D7763A72A86F1CF1 /* IPodMonitor.swift in Sources */,
+				A70B8FE54D8521EEBAB23BBB /* InstallerStep.swift in Sources */,
+				9C53C3873A4C5F484CCC3858 /* InstallerViewModel.swift in Sources */,
+				9CEBAACAA11BE3313233D7ED /* InstallerWizardView.swift in Sources */,
+				BD5FCF9DC5CB88162B2673C0 /* InstallingView.swift in Sources */,
+				9FDD21617909191BB7E9B9CE /* MKS5LBootRunner.swift in Sources */,
+				F745EA7E70AE91DF77279194 /* PermissionsView.swift in Sources */,
+				ECBCFCC6104EA5F8E3F445BF /* WelcomeView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		B6EF60A9622C10CD9E698F9F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A458A7ACC2A617A8909ADE93 /* AuraStudio */;
+			targetProxy = A9AB83E7359F54A87BF49D74 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		153BF5586433A997E0B4A6DA /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Aura Studio";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ricolinos.aurastudio;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		33504DEBE3943BC4153AAE90 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		4923EB412C60304B2A5BF2EE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		49A0257D58CD9A31C925B2A6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ricolinos.aurastudio.tests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AuraStudio.app/Contents/MacOS/AuraStudio";
+			};
+			name = Release;
+		};
+		6D88DA6CDBDBB062F4C4EA5D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ricolinos.aurastudio.tests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AuraStudio.app/Contents/MacOS/AuraStudio";
+			};
+			name = Debug;
+		};
+		EA569CBC3AD0F1D5133E0FB0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Resources/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Aura Studio";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.ricolinos.aurastudio;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		16A919360ED16A945EFBE313 /* Build configuration list for PBXNativeTarget "AuraStudio" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EA569CBC3AD0F1D5133E0FB0 /* Debug */,
+				153BF5586433A997E0B4A6DA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BD221602A2FB5C970DA144B1 /* Build configuration list for PBXNativeTarget "AuraStudioTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6D88DA6CDBDBB062F4C4EA5D /* Debug */,
+				49A0257D58CD9A31C925B2A6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C82133420D30486632A2E34F /* Build configuration list for PBXProject "AuraStudio" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				33504DEBE3943BC4153AAE90 /* Debug */,
+				4923EB412C60304B2A5BF2EE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AC16FD332100051C2317B27E /* Project object */;
+}
