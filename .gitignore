@@ -1,0 +1,35 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Builds del firmware (simulador y target)
+firmware/build*/
+firmware/rockbox/build*/
+
+# Toolchain ARM y artefactos de rockboxdev.sh
+firmware/toolchain/
+/tmp-rbdev*/
+
+# Artefactos intermedios del design system
+design-system/out/.cache/
+design-system/.venv/
+__pycache__/
+*.pyc
+
+# Xcode
+studio/**/DerivedData/
+studio/**/xcuserdata/
+studio/**/*.xcuserstate
+studio/**/build/
+*.xcworkspace/xcuserdata/
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Archivos temporales
+*.log
+*.tmp
+*.swp
