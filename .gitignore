@@ -17,6 +17,8 @@ design-system/out/
 design-system/.venv/
 __pycache__/
 *.pyc
+# Copiado desde design-system/out/ por firmware/tools/build_sim.sh
+firmware/rockbox/apps/aura/aura_tokens.h
 
 # Xcode
 studio/**/DerivedData/
