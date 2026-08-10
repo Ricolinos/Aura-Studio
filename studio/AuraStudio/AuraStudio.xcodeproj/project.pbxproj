@@ -33,6 +33,7 @@
 		52A43D8ECC2CBF2433EA1B31 /* LibrarySync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CC2E3940E0EC5127461CB5 /* LibrarySync.swift */; };
 		5EDA0D1DF2BC765B8F8D473B /* BundledArtifacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8464D5E55C66D32740C7289 /* BundledArtifacts.swift */; };
 		62666A4A9BF729B61C851F76 /* ID3WriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF3580937C6126B24998BB6 /* ID3WriterTests.swift */; };
+		87EB236DAA29660FD987218F /* BackContinueRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5C06E65D1A04EAD003DE49 /* BackContinueRow.swift */; };
 		9472ADB211D2B605BBDBE863 /* APIKeySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED8C9552FB5D5FE39651293 /* APIKeySettingsView.swift */; };
 		94C6E0F1AA6F37EF6B4CB32A /* ImageResizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DC865282F8B113716D7C3AF /* ImageResizer.swift */; };
 		976B60A602EE27AC6F7D3BD1 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8433ACEEAB00396412A1A019 /* LibraryView.swift */; };
@@ -89,6 +90,7 @@
 		5FA85A3E42CB4E67E9DAC4E5 /* DeviceState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceState.swift; sourceTree = "<group>"; };
 		62E6C2892E84F33B9EF97D15 /* LibraryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryItem.swift; sourceTree = "<group>"; };
 		638FD209E9AF6417EE51ABC7 /* DiskArbitrationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskArbitrationMonitor.swift; sourceTree = "<group>"; };
+		6E5C06E65D1A04EAD003DE49 /* BackContinueRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackContinueRow.swift; sourceTree = "<group>"; };
 		722702AD0F209BDEA893FA8D /* MKS5LBootRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKS5LBootRunner.swift; sourceTree = "<group>"; };
 		777383A161FBD9C32BFA6D82 /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
 		7D3754C9E29F0BC93B660592 /* EnterDFUView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterDFUView.swift; sourceTree = "<group>"; };
@@ -123,6 +125,7 @@
 			isa = PBXGroup;
 			children = (
 				1ED8C9552FB5D5FE39651293 /* APIKeySettingsView.swift */,
+				6E5C06E65D1A04EAD003DE49 /* BackContinueRow.swift */,
 				14D5A27F7EA14F700832333A /* ContentView.swift */,
 				9EBCF1EF29547CD3B01B5C98 /* DetectDeviceView.swift */,
 				0116DC50EA8DBAE3B02AE0FB /* DoneView.swift */,
@@ -387,6 +390,7 @@
 				9472ADB211D2B605BBDBE863 /* APIKeySettingsView.swift in Sources */,
 				B8D3EBD1DEF28ABBA1E1A670 /* APIKeyStore.swift in Sources */,
 				203D6E1800BE63DFE89AB1C8 /* AuraStudioApp.swift in Sources */,
+				87EB236DAA29660FD987218F /* BackContinueRow.swift in Sources */,
 				5EDA0D1DF2BC765B8F8D473B /* BundledArtifacts.swift in Sources */,
 				401404E1D0A6D6FFBB155F2C /* ContentView.swift in Sources */,
 				135A255167C64B601EFF2854 /* CoverArtArchiveClient.swift in Sources */,
@@ -445,7 +449,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ricolinos.aurastudio;
 				SDKROOT = macosx;
 			};
@@ -627,7 +631,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ricolinos.aurastudio;
 				SDKROOT = macosx;
 			};

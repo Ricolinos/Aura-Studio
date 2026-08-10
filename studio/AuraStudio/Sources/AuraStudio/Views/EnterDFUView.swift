@@ -7,6 +7,7 @@ import SwiftUI
 /// de mks5lboot (SELECT+MENU ~12s).
 struct EnterDFUView: View {
     @ObservedObject var monitor: IPodMonitor
+    let onBack: () -> Void
 
     var body: some View {
         VStack(spacing: 24) {
@@ -24,6 +25,13 @@ struct EnterDFUView: View {
             statusBadge
 
             Spacer()
+
+            HStack {
+                Button("Atrás", action: onBack)
+                    .buttonStyle(.bordered)
+                Spacer()
+            }
+            .frame(maxWidth: 460)
         }
     }
 

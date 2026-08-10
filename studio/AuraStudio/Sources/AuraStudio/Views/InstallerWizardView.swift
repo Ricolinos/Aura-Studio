@@ -23,13 +23,13 @@ struct InstallerWizardView: View {
             Group {
                 switch viewModel.step {
                 case .welcome:
-                    WelcomeView(mode: viewModel.mode, onContinue: viewModel.advanceFromWelcome)
+                    WelcomeView(mode: viewModel.mode, onBack: viewModel.backFromWelcome, onContinue: viewModel.advanceFromWelcome)
                 case .permissions:
-                    PermissionsView(onContinue: viewModel.advanceFromPermissions)
+                    PermissionsView(onBack: viewModel.backFromPermissions, onContinue: viewModel.advanceFromPermissions)
                 case .detectDevice:
-                    DetectDeviceView(monitor: viewModel.monitor, onReadyForDFU: viewModel.acknowledgeEnteringDFU)
+                    DetectDeviceView(monitor: viewModel.monitor, onBack: viewModel.backFromDetectDevice, onReadyForDFU: viewModel.acknowledgeEnteringDFU)
                 case .enterDFU:
-                    EnterDFUView(monitor: viewModel.monitor)
+                    EnterDFUView(monitor: viewModel.monitor, onBack: viewModel.backFromEnterDFU)
                 case .installing:
                     InstallingView(mode: viewModel.mode, message: viewModel.progressMessage)
                 case .bootloaderUSBMode:

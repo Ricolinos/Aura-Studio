@@ -5,6 +5,7 @@ import SwiftUI
 /// error real (formato incorrecto) en vez de quedarse tildado.
 struct DetectDeviceView: View {
     @ObservedObject var monitor: IPodMonitor
+    let onBack: () -> Void
     let onReadyForDFU: () -> Void
 
     var body: some View {
@@ -22,10 +23,16 @@ struct DetectDeviceView: View {
 
             Spacer()
 
-            Button("Ya lo conecte, continuar igual") {
-                onReadyForDFU()
+            HStack {
+                Button("Atrás", action: onBack)
+                    .buttonStyle(.bordered)
+                Spacer()
+                Button("Ya lo conecte, continuar igual") {
+                    onReadyForDFU()
+                }
+                .buttonStyle(.bordered)
             }
-            .buttonStyle(.bordered)
+            .frame(maxWidth: 460)
         }
         .onChange(of: monitor.state) { newValue in
             if case .diskMode(let info) = newValue, info.isFAT32 {

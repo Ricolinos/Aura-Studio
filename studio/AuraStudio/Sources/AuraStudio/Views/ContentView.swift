@@ -27,7 +27,10 @@ struct InstallerHomeView: View {
         Group {
             if let chosenMode {
                 InstallerWizardView(viewModel: viewModel)
-                    .onAppear { viewModel.start(mode: chosenMode) }
+                    .onAppear {
+                        viewModel.onExitToModePicker = { self.chosenMode = nil }
+                        viewModel.start(mode: chosenMode)
+                    }
             } else {
                 ModePickerView { mode in
                     chosenMode = mode

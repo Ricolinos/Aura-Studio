@@ -7,6 +7,7 @@ import AppKit
 /// directamente a discos removibles/dispositivos USB sin autorizacion
 /// explicita del usuario en Ajustes del Sistema.
 struct PermissionsView: View {
+    let onBack: () -> Void
     let onContinue: () -> Void
 
     var body: some View {
@@ -41,12 +42,7 @@ struct PermissionsView: View {
 
             Spacer()
 
-            HStack {
-                Spacer()
-                Button("Continuar", action: onContinue)
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-            }
+            BackContinueRow(onBack: onBack, continueTitle: "Continuar", onContinue: onContinue)
         }
     }
 }

@@ -46,6 +46,8 @@ targets:
       path: Resources/Info.plist
       properties:
         CFBundleDisplayName: Aura Studio
+        CFBundleShortVersionString: "0.1.2"
+        CFBundleVersion: "1"
         NSHumanReadableCopyright: "Aura Studio"
         NSRemovableVolumesUsageDescription: >
           Aura Studio necesita acceder a volumenes removibles para
@@ -58,7 +60,7 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.ricolinos.aurastudio
         INFOPLIST_KEY_NSHumanReadableCopyright: "Aura Studio"
         GENERATE_INFOPLIST_FILE: NO
-        MARKETING_VERSION: "0.1.0"
+        MARKETING_VERSION: "0.1.2"
         CURRENT_PROJECT_VERSION: "1"
 
   AuraStudioTests:

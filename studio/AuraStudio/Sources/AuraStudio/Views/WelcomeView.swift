@@ -2,6 +2,7 @@ import SwiftUI
 
 struct WelcomeView: View {
     let mode: InstallerMode
+    let onBack: () -> Void
     let onContinue: () -> Void
 
     var body: some View {
@@ -22,9 +23,8 @@ struct WelcomeView: View {
 
             Spacer()
 
-            Button("Continuar", action: onContinue)
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
+            BackContinueRow(onBack: onBack, continueTitle: "Continuar", onContinue: onContinue)
+                .frame(maxWidth: 460)
         }
     }
 }

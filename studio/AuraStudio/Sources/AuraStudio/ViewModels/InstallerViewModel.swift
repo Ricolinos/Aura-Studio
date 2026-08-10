@@ -19,6 +19,11 @@ final class InstallerViewModel: ObservableObject {
     @Published var destroyOriginalFirmware: Bool = false
     @Published var pendingAuthorization: PendingAuthorization?
 
+    /// Vuelve al selector de Instalar/Restaurar -- lo fija `InstallerHomeView`.
+    /// Vive como closure (no como parte de la maquina de estados) porque
+    /// esa eleccion pasa por fuera del asistente en si.
+    var onExitToModePicker: (() -> Void)?
+
     let monitor: IPodMonitor
     private var cancellables: Set<AnyCancellable> = []
     private var runner: MKS5LBootRunner?
@@ -59,6 +64,37 @@ final class InstallerViewModel: ObservableObject {
     }
 
     func advanceFromPermissions() {
+        step = .detectDevice
+    }
+
+    // MARK: - Volver atras
+    //
+    // Solo se ofrece antes de que arranque cualquier escritura real
+    // (instalar/formatear/copiar) -- una vez que el bootloader ya se
+    // esta flasheando, "volver" no tiene forma segura de deshacer nada,
+    // asi que esos pasos no tienen boton de atras.
+
+    func backFromWelcome() {
+        monitor.stop()
+        onExitToModePicker?()
+    }
+
+    func backFromPermissions() {
+        step = .welcome
+    }
+
+    func backFromDetectDevice() {
+        step = .permissions
+    }
+
+    /// Si ya se habian pausado los agentes AMP al entrar a este paso,
+    /// los reactiva de una -- no tiene sentido dejarlos pausados si el
+    /// usuario decide no seguir con la instalacion todavia.
+    func backFromEnterDFU() {
+        if ampAgentsPaused {
+            Task { try? await executor.resumeAMPAgents() }
+            ampAgentsPaused = false
+        }
         step = .detectDevice
     }
 
