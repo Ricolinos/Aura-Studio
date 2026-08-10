@@ -1,10 +1,25 @@
 import SwiftUI
 
-/// Raiz de la app: elegir entre Instalar y Restaurar lanza el mismo
-/// asistente (`InstallerViewModel`) en el modo correspondiente -- ambos
-/// flujos comparten deteccion, guia DFU y verificacion, solo cambia el
-/// comando final que se le manda a mks5lboot.
+/// Raiz de la app: dos pestañas independientes, instalador (Fase 9) y
+/// biblioteca (Fase 10) -- comparten la misma app pero no dependen una
+/// de la otra (podes sincronizar tu biblioteca sin reinstalar nada, y
+/// viceversa).
 struct ContentView: View {
+    var body: some View {
+        TabView {
+            InstallerHomeView()
+                .tabItem { Label("Instalador", systemImage: "square.and.arrow.down") }
+            LibraryView()
+                .tabItem { Label("Biblioteca", systemImage: "music.note.list") }
+        }
+    }
+}
+
+/// Elegir entre Instalar y Restaurar lanza el mismo asistente
+/// (`InstallerViewModel`) en el modo correspondiente -- ambos flujos
+/// comparten deteccion, guia DFU y verificacion, solo cambia el
+/// comando final que se le manda a mks5lboot.
+struct InstallerHomeView: View {
     @StateObject private var viewModel = InstallerViewModel()
     @State private var chosenMode: InstallerMode?
 
