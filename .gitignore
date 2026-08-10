@@ -12,6 +12,9 @@ firmware/rockbox/build*/
 firmware/toolchain/
 /tmp-rbdev*/
 
+# Fixtures de audio de prueba (regenerar con firmware/tools/gen_test_media.sh)
+firmware/test-media/
+
 # Salida generada del design system (regenerar con design-system/generate.py)
 design-system/out/
 design-system/.venv/
