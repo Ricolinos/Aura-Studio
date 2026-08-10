@@ -12,8 +12,8 @@ firmware/rockbox/build*/
 firmware/toolchain/
 /tmp-rbdev*/
 
-# Artefactos intermedios del design system
-design-system/out/.cache/
+# Salida generada del design system (regenerar con design-system/generate.py)
+design-system/out/
 design-system/.venv/
 __pycache__/
 *.pyc
