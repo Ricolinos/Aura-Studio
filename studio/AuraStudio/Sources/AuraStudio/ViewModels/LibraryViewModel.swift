@@ -14,6 +14,7 @@ final class LibraryViewModel: ObservableObject {
     @Published private(set) var isProcessing = false
     @Published private(set) var lastSyncSummary: String?
     @Published var lastError: String?
+    @Published private(set) var playlists: [Playlist] = []
 
     private let enricher: LibraryEnricher
     private let stagingDirectory: URL
@@ -72,6 +73,15 @@ final class LibraryViewModel: ObservableObject {
                     }
                 }
                 items[index].preparedURL = output
+
+                // Fase 24: poster (`<video>.jpg` junto al .mpg, D-066)
+                // para el panel derecho del navegador de video -- si
+                // ffmpeg no puede generarlo (formato raro, sin frames
+                // legibles) no se aborta el item entero por esto, el
+                // video ya quedo listo para sincronizar sin poster.
+                let poster = output.deletingPathExtension().appendingPathExtension("jpg")
+                try? transcoder.generatePoster(input: output, output: poster)
+
                 items[index].status = .ready
 
             case .photo:
@@ -140,12 +150,42 @@ final class LibraryViewModel: ObservableObject {
         let readyItems = items.filter { $0.status == .ready }
         do {
             let sync = LibrarySync(volumeRoot: volumeRoot)
-            let copied = try sync.sync(items: readyItems)
-            lastSyncSummary = copied == 0
-                ? "Ya estaba todo sincronizado, no habia nada nuevo."
-                : "Se copiaron \(copied) de \(readyItems.count) archivo(s). El indice de la biblioteca se va a reconstruir la proxima vez que arranque Aura."
+            let result = try sync.sync(items: readyItems, playlists: playlists)
+            let playlistsNote = result.playlistsWritten > 0 ? " \(result.playlistsWritten) playlist(s) actualizada(s)." : ""
+            lastSyncSummary = result.filesCopied == 0
+                ? "Ya estaba todo sincronizado, no habia nada nuevo.\(playlistsNote)"
+                : "Se copiaron \(result.filesCopied) de \(readyItems.count) archivo(s). El indice de la biblioteca se va a reconstruir la proxima vez que arranque Aura.\(playlistsNote)"
         } catch {
             lastError = error.localizedDescription
         }
+    }
+
+    // MARK: - Playlists (Fase 24)
+
+    @discardableResult
+    func addPlaylist(name: String) -> UUID {
+        let playlist = Playlist(name: name)
+        playlists.append(playlist)
+        return playlist.id
+    }
+
+    func removePlaylist(id: UUID) {
+        playlists.removeAll { $0.id == id }
+    }
+
+    func addTrack(_ itemID: UUID, toPlaylist playlistID: UUID) {
+        guard let index = playlists.firstIndex(where: { $0.id == playlistID }),
+              !playlists[index].trackItemIDs.contains(itemID) else { return }
+        playlists[index].trackItemIDs.append(itemID)
+    }
+
+    func removeTrack(_ itemID: UUID, fromPlaylist playlistID: UUID) {
+        guard let index = playlists.firstIndex(where: { $0.id == playlistID }) else { return }
+        playlists[index].trackItemIDs.removeAll { $0 == itemID }
+    }
+
+    func moveTracks(inPlaylist playlistID: UUID, from offsets: IndexSet, to destination: Int) {
+        guard let index = playlists.firstIndex(where: { $0.id == playlistID }) else { return }
+        playlists[index].trackItemIDs.move(fromOffsets: offsets, toOffset: destination)
     }
 }

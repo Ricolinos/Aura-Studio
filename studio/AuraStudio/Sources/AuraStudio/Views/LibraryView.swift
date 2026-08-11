@@ -6,6 +6,7 @@ struct LibraryView: View {
     @StateObject private var deviceMonitor = IPodMonitor()
     @State private var isTargeted = false
     @State private var showingAPIKeySettings = false
+    @State private var showingPlaylists = false
     @State private var reviewingItem: LibraryItem?
 
     var body: some View {
@@ -33,6 +34,9 @@ struct LibraryView: View {
         .sheet(isPresented: $showingAPIKeySettings) {
             APIKeySettingsView()
         }
+        .sheet(isPresented: $showingPlaylists) {
+            PlaylistsView(viewModel: viewModel) { showingPlaylists = false }
+        }
         .sheet(item: $reviewingItem) { item in
             MetadataReviewView(item: item) { metadata in
                 viewModel.applyReview(id: item.id, metadata: metadata)
@@ -50,6 +54,12 @@ struct LibraryView: View {
             Text("Biblioteca")
                 .font(.title2.bold())
             Spacer()
+            Button {
+                showingPlaylists = true
+            } label: {
+                Label("Playlists", systemImage: "music.note.list")
+            }
+            .buttonStyle(.link)
             Button {
                 showingAPIKeySettings = true
             } label: {

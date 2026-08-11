@@ -1,0 +1,111 @@
+import XCTest
+@testable import AuraStudio
+
+/// Fase 24: LibrarySync.sync() contra una carpeta temporal en vez de un
+/// iPod de verdad (mismo patron que LibraryPipelineIntegrationTests,
+/// pero sin ffmpeg de por medio -- solo musica, asi que corre rapido y
+/// sin fixtures externos).
+final class LibrarySyncTests: XCTestCase {
+    private var fakeIPod: URL!
+    private var stagingFile: URL!
+
+    override func setUpWithError() throws {
+        fakeIPod = FileManager.default.temporaryDirectory.appendingPathComponent("FakeIPod-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: fakeIPod, withIntermediateDirectories: true)
+        stagingFile = FileManager.default.temporaryDirectory.appendingPathComponent("staged-\(UUID().uuidString).mp3")
+        try Data("fake mp3 bytes".utf8).write(to: stagingFile)
+    }
+
+    override func tearDownWithError() throws {
+        try? FileManager.default.removeItem(at: fakeIPod)
+        try? FileManager.default.removeItem(at: stagingFile)
+    }
+
+    private func musicItem() -> AuraStudio.LibraryItem {
+        var item = AuraStudio.LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/source-\(UUID().uuidString).mp3"))
+        item.metadata = TrackMetadata(title: "Bohemian Rhapsody", artist: "Queen", album: "A Night at the Opera", trackNumber: 11)
+        item.preparedURL = stagingFile
+        item.status = .ready
+        return item
+    }
+
+    func testSyncWritesMusicAtHierarchicalPath() throws {
+        let item = musicItem()
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+
+        let result = try sync.sync(items: [item])
+
+        XCTAssertEqual(result.filesCopied, 1)
+        let expected = fakeIPod.appendingPathComponent("Music/Queen/A Night at the Opera/11 Bohemian Rhapsody.mp3")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: expected.path))
+    }
+
+    func testMigrationDeletesStaleFlatFile() throws {
+        let item = musicItem()
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+
+        // Simula un dispositivo sincronizado antes de esta fase: el
+        // manifiesto apunta a la ruta plana vieja y el archivo ya esta
+        // ahi.
+        let staleRelative = "Music/\(item.sourceURL.lastPathComponent)"
+        let staleURL = fakeIPod.appendingPathComponent(staleRelative)
+        try FileManager.default.createDirectory(at: staleURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try Data("old flat copy".utf8).write(to: staleURL)
+
+        let attrs = try FileManager.default.attributesOfItem(atPath: stagingFile.path)
+        let manifest = SyncManifest(records: [
+            item.sourceURL.path: SyncRecord(
+                sourcePath: item.sourceURL.path,
+                sourceSize: (attrs[.size] as? Int64) ?? 0,
+                sourceModifiedAt: (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0,
+                destinationRelativePath: staleRelative
+            ),
+        ])
+        try sync.saveManifest(manifest)
+
+        let result = try sync.sync(items: [item])
+
+        XCTAssertEqual(result.filesCopied, 1, "el destino cambio, debe recopiarse aunque tamano/fecha sean iguales")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: staleURL.path), "el archivo en la ruta plana vieja debe borrarse")
+        let newURL = fakeIPod.appendingPathComponent("Music/Queen/A Night at the Opera/11 Bohemian Rhapsody.mp3")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: newURL.path))
+    }
+
+    func testPlaylistIsWrittenAsM3U8WithResolvedPaths() throws {
+        let item = musicItem()
+        let playlist = Playlist(name: "Roadtrip", trackItemIDs: [item.id])
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+
+        let result = try sync.sync(items: [item], playlists: [playlist])
+
+        XCTAssertEqual(result.playlistsWritten, 1)
+        let playlistURL = fakeIPod.appendingPathComponent("Playlists/Roadtrip.m3u8")
+        let contents = try String(contentsOf: playlistURL, encoding: .utf8)
+        XCTAssertTrue(contents.contains("#EXTM3U"))
+        XCTAssertTrue(contents.contains("/Music/Queen/A Night at the Opera/11 Bohemian Rhapsody.mp3"))
+    }
+
+    func testPlaylistWithNoResolvableTracksIsNotWritten() throws {
+        let playlist = Playlist(name: "Vacio", trackItemIDs: [UUID()])
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+
+        let result = try sync.sync(items: [], playlists: [playlist])
+
+        XCTAssertEqual(result.playlistsWritten, 0)
+        let playlistURL = fakeIPod.appendingPathComponent("Playlists/Vacio.m3u8")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: playlistURL.path))
+    }
+
+    func testSummaryFileReflectsSyncedCounts() throws {
+        let item = musicItem()
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+
+        _ = try sync.sync(items: [item])
+
+        let summaryURL = fakeIPod.appendingPathComponent(LibrarySync.summaryRelativePath)
+        let contents = try String(contentsOf: summaryURL, encoding: .utf8)
+        XCTAssertTrue(contents.contains("music_count: 1"))
+        XCTAssertTrue(contents.contains("video_count: 0"))
+        XCTAssertTrue(contents.contains("playlist_count: 0"))
+    }
+}

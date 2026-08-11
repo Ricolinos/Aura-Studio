@@ -77,6 +77,15 @@ final class LibraryPipelineIntegrationTests: XCTestCase {
         if let preparedVideoURL = videoItem?.preparedURL {
             let attrs = try FileManager.default.attributesOfItem(atPath: preparedVideoURL.path)
             XCTAssertGreaterThan((attrs[.size] as? Int) ?? 0, 0)
+
+            // Fase 24: LibraryViewModel genera el poster junto al .mpg
+            // transcodificado (D-066) -- se verifica ahi, no con un
+            // fixture aparte, para probar el wiring real de punta a
+            // punta en vez de solo la funcion de ffmpeg en aislamiento.
+            let posterURL = preparedVideoURL.deletingPathExtension().appendingPathExtension("jpg")
+            XCTAssertTrue(FileManager.default.fileExists(atPath: posterURL.path), "deberia generarse un poster junto al video transcodificado")
+            let posterData = try Data(contentsOf: posterURL)
+            XCTAssertEqual(posterData.prefix(2), Data([0xFF, 0xD8]), "el poster deberia ser un JPEG valido")
         }
 
         // Primer sync: todo es nuevo, se copian los 2 archivos y se
@@ -88,8 +97,10 @@ final class LibraryPipelineIntegrationTests: XCTestCase {
 
         let syncedPhoto = fakeIPod.appendingPathComponent("Photos/photo1.jpg")
         let syncedVideo = fakeIPod.appendingPathComponent("Videos/smoke_input.mpg")
+        let syncedPoster = fakeIPod.appendingPathComponent("Videos/smoke_input.jpg")
         XCTAssertTrue(FileManager.default.fileExists(atPath: syncedPhoto.path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: syncedVideo.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: syncedPoster.path), "el poster deberia sincronizarse junto con su video")
 
         // Segundo sync sin cambios: el plan diferencial no debe volver
         // a copiar nada.

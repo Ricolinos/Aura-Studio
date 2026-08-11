@@ -130,6 +130,62 @@ struct FFmpegTranscoder {
         }
     }
 
+    /// Fase 24 (PLAN-UX.md): un frame al ~10% de la duracion del video
+    /// (portada mas representativa que el primer frame, casi siempre
+    /// negro/logo de intro) para el panel derecho del navegador de
+    /// video del firmware (D-066: la lectura del lado del dispositivo
+    /// queda para una fase futura, esto solo genera y sincroniza el
+    /// archivo). `-pix_fmt yuvj420p` fuerza el submuestreo de croma
+    /// 4:2:0 estandar que el decoder JPEG de Rockbox necesita -- mismo
+    /// hallazgo que D-031 para las caratulas de musica.
+    func generatePoster(input: URL, output: URL, atFraction fraction: Double = 0.1) throws {
+        let probedDuration = (try? Self.probeDurationSeconds(of: input, ffmpegURL: ffmpegURL)) ?? nil
+        let seekSeconds = max((probedDuration ?? 10) * fraction, 0)
+
+        let process = Process()
+        process.executableURL = ffmpegURL
+        process.arguments = [
+            "-y", "-loglevel", "error",
+            "-ss", String(format: "%.2f", seekSeconds),
+            "-i", input.path,
+            "-frames:v", "1",
+            "-pix_fmt", "yuvj420p",
+            output.path,
+        ]
+        let errPipe = Pipe()
+        process.standardError = errPipe
+
+        try process.run()
+        let errData = errPipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+
+        guard process.terminationStatus == 0 else {
+            let text = String(data: errData, encoding: .utf8) ?? "codigo \(process.terminationStatus)"
+            throw TranscodeError.processFailed(text)
+        }
+    }
+
+    /// Probe minimo: le pide a ffmpeg que abra el archivo sin ningun
+    /// output. ffmpeg termina con error ("At least one output file must
+    /// be specified") pero ya imprimio la linea "Duration: ..." por
+    /// stderr antes de fallar -- alcanza para reusar `parseDuration` sin
+    /// invocar `ffprobe` por separado (mismo criterio que Fase 23).
+    static func probeDurationSeconds(of input: URL, ffmpegURL: URL) throws -> Double? {
+        let process = Process()
+        process.executableURL = ffmpegURL
+        process.arguments = ["-i", input.path]
+        let errPipe = Pipe()
+        process.standardError = errPipe
+        process.standardOutput = Pipe()
+
+        try process.run()
+        let data = errPipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+
+        let text = String(data: data, encoding: .utf8) ?? ""
+        return parseDuration(from: text)
+    }
+
     /// Acumula stdout/stderr de ffmpeg detras de un `NSLock` para que
     /// `transcode(...)` pueda mutarlo desde los `readabilityHandler`
     /// (hilos concurrentes de Foundation) sin violar Swift 6 strict

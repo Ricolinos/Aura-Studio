@@ -60,6 +60,40 @@ final class SyncPlannerTests: XCTestCase {
         XCTAssertEqual(actionsByPath["/new.mp3"], .copy)
     }
 
+    func testDestinationPathChangeMarksStaleAndTriggersRecopy() {
+        // Fase 24: migracion de rutas planas a Music/<Artista>/<Album>/...
+        // -- el archivo debe recopiarse Y marcar la ruta vieja para que
+        // LibrarySync la borre, no dejarla huerfana en el iPod.
+        let record = SyncRecord(sourcePath: "/a.mp3", sourceSize: 100, sourceModifiedAt: 1000.0, destinationRelativePath: "Music/a.mp3")
+        let manifest = SyncManifest(records: ["/a.mp3": record])
+        let current = [(sourcePath: "/a.mp3", size: Int64(100), modifiedAt: 1000.0, destinationRelativePath: "Music/Queen/A Night at the Opera/11 a.mp3")]
+
+        let plan = SyncPlanner.plan(current: current, previousManifest: manifest)
+
+        XCTAssertEqual(plan[0].action, .copy)
+        XCTAssertEqual(plan[0].staleDestinationRelativePath, "Music/a.mp3")
+    }
+
+    func testUnchangedDestinationPathHasNoStaleMarker() {
+        let record = SyncRecord(sourcePath: "/a.mp3", sourceSize: 100, sourceModifiedAt: 1000.0, destinationRelativePath: "Music/a.mp3")
+        let manifest = SyncManifest(records: ["/a.mp3": record])
+        let current = [(sourcePath: "/a.mp3", size: Int64(100), modifiedAt: 1000.0, destinationRelativePath: "Music/a.mp3")]
+
+        let plan = SyncPlanner.plan(current: current, previousManifest: manifest)
+
+        XCTAssertEqual(plan[0].action, .skip)
+        XCTAssertNil(plan[0].staleDestinationRelativePath)
+    }
+
+    func testNewFileHasNoStaleMarker() {
+        let current = [(sourcePath: "/new.mp3", size: Int64(10), modifiedAt: 10.0, destinationRelativePath: "Music/Artist/Album/01 new.mp3")]
+
+        let plan = SyncPlanner.plan(current: current, previousManifest: .empty)
+
+        XCTAssertEqual(plan[0].action, .copy)
+        XCTAssertNil(plan[0].staleDestinationRelativePath)
+    }
+
     func testManifestRoundTripsThroughJSON() throws {
         let record = SyncRecord(sourcePath: "/a.mp3", sourceSize: 100, sourceModifiedAt: 1000.0, destinationRelativePath: "Music/a.mp3")
         let manifest = SyncManifest(records: ["/a.mp3": record])
