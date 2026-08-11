@@ -83,17 +83,23 @@ enum SidebarSection: Hashable, CaseIterable {
         }
     }
 
-    /// SF Symbols, los mismos que usa el firmware para cada seccion
-    /// (ver design-system/tokens.json).
+    /// SF Symbols en variante lineal (docs/design/Reglas de diseno
+    /// Apple2026 (v2).md SS4: "siempre la variante lineal, nunca
+    /// .fill" -- una barra de navegacion es exactamente el caso de uso
+    /// que esa regla describe, sea en el firmware o en Studio). `video`
+    /// y `settings` usan los simbolos canonicos del propio documento
+    /// (`play.rectangle` = Videos, `gear` = Configuracion); `extras`
+    /// toma `square.grid.2x2`, tambien canonico ahi, en vez del
+    /// generico `puzzlepiece.extension.fill` que tenia antes.
     var symbol: String {
         switch self {
         case .general:   return "info.circle"
         case .music:     return "music.note"
-        case .video:     return "film.fill"
-        case .photos:    return "photo.fill"
-        case .extras:    return "puzzlepiece.extension.fill"
+        case .video:     return "play.rectangle"
+        case .photos:    return "photo"
+        case .extras:    return "square.grid.2x2"
         case .installer: return "square.and.arrow.down"
-        case .settings:  return "gearshape.fill"
+        case .settings:  return "gear"
         }
     }
 
@@ -123,7 +129,10 @@ private struct SidebarView: View {
 
     private var deviceHeader: some View {
         HStack(spacing: 6) {
-            Image(systemName: device == nil ? "ipod.slash" : "ipod")
+            /* "ipod.slash" no existe en SF Symbols (verificado contra el
+             * catalogo real, no supuesto) -- mismo simbolo que ya usa
+             * DeviceGeneralView para "sin dispositivo". */
+            Image(systemName: device == nil ? "cable.connector.slash" : "ipod")
             Text(device?.volumeName ?? S.noDevice.text)
                 .lineLimit(1)
         }

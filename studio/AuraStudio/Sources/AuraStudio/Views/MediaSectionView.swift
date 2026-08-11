@@ -69,10 +69,10 @@ struct MediaSectionView: View {
 
     private var prompt: String {
         switch kind {
-        case .music: return "Solta canciones aca"
-        case .video: return "Solta videos aca"
-        case .photo: return "Solta fotos aca"
-        case .unsupported: return "Solta archivos aca"
+        case .music: return "Suelta canciones aqui"
+        case .video: return "Suelta videos aqui"
+        case .photo: return "Suelta fotos aqui"
+        case .unsupported: return "Suelta archivos aqui"
         }
     }
 
@@ -86,8 +86,8 @@ struct MediaSectionView: View {
     private var symbolName: String {
         switch kind {
         case .music: return "music.note"
-        case .video: return "film.fill"
-        case .photo: return "photo.fill"
+        case .video: return "play.rectangle"
+        case .photo: return "photo"
         case .unsupported: return "questionmark"
         }
     }

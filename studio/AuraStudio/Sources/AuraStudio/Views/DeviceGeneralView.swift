@@ -98,8 +98,8 @@ struct DeviceGeneralView: View {
             Text("En el iPod").font(.headline)
             if let summary = device.librarySummary {
                 contentRow("Musica", "music.note", summary.music)
-                contentRow("Video", "film.fill", summary.video)
-                contentRow("Fotos", "photo.fill", summary.photo)
+                contentRow("Video", "play.rectangle", summary.video)
+                contentRow("Fotos", "photo", summary.photo)
                 HStack {
                     Label("Playlists", systemImage: "music.note.list")
                     Spacer()
@@ -143,7 +143,10 @@ struct DeviceGeneralView: View {
 
     private var disconnected: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Image(systemName: "ipod.slash")
+            /* "ipod.slash" no existe en SF Symbols (verificado contra
+             * el catalogo real, Fase 26) -- mismo simbolo que la
+             * barra lateral (ContentView.swift) para "sin dispositivo". */
+            Image(systemName: "cable.connector.slash")
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
             Text("Conecta tu iPod").font(.title2.bold())
@@ -164,7 +167,7 @@ struct DeviceGeneralView: View {
         case .detecting:
             return "Buscando dispositivos..."
         case .notConnected, .diskMode:
-            return "Conectalo por USB y esperá a que aparezca como disco."
+            return "Conéctalo por USB y espera a que aparezca como disco."
         }
     }
 
