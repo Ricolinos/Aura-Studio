@@ -60,7 +60,17 @@ final class LibraryViewModel: ObservableObject {
                 items[index].status = .transcoding(progress: 0)
                 let output = stagingDirectory.appendingPathComponent(item.sourceURL.deletingPathExtension().lastPathComponent + ".mpg")
                 let transcoder = try FFmpegTranscoder()
-                try transcoder.transcode(input: item.sourceURL, output: output)
+                /// El callback de ffmpeg corre en el hilo de lectura del
+                /// pipe (readabilityHandler), no en el MainActor -- hay
+                /// que saltar de vuelta explicitamente para tocar
+                /// `items`, que ObservableObject espera mutar solo desde
+                /// el actor principal.
+                try transcoder.transcode(input: item.sourceURL, output: output) { fraction in
+                    Task { @MainActor [weak self] in
+                        guard let self, index < self.items.count else { return }
+                        self.items[index].status = .transcoding(progress: fraction)
+                    }
+                }
                 items[index].preparedURL = output
                 items[index].status = .ready
 
@@ -109,10 +119,21 @@ final class LibraryViewModel: ObservableObject {
         return destination
     }
 
+    /// Aplica la metadata corregida a mano en la pantalla de revision
+    /// (Fase 23, PLAN-UX.md -- este metodo ya existia pero ninguna vista
+    /// lo llamaba). Vuelve a correr `prepareMusic` para que el archivo
+    /// en staging (y su tag ID3/sidecars) reflejen la correccion -- sin
+    /// esto, el archivo que se sincroniza al iPod seguiria teniendo la
+    /// metadata vieja/incompleta que el usuario acaba de corregir.
     func applyReview(id: UUID, metadata: TrackMetadata) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
         items[index].metadata = metadata
-        items[index].status = metadata.isComplete ? .ready : .needsReview
+        do {
+            items[index].preparedURL = try prepareMusic(item: items[index], metadata: metadata)
+            items[index].status = metadata.isComplete ? .ready : .needsReview
+        } catch {
+            items[index].status = .failed(error.localizedDescription)
+        }
     }
 
     func sync(toVolumeAt volumeRoot: URL) async {

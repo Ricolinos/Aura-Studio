@@ -71,20 +71,134 @@ struct FFmpegTranscoder {
     }
 
     func transcode(input: URL, output: URL, videoBitrateKbps: Int = 768) throws {
+        try transcode(input: input, output: output, videoBitrateKbps: videoBitrateKbps, onProgress: nil)
+    }
+
+    /// Fase 23 (PLAN-UX.md): `onProgress` recibe una fraccion real en
+    /// [0, 1], no un valor fijo en 0 -- antes la UI mostraba una barra
+    /// congelada durante toda la transcodificacion (LibraryViewModel
+    /// nunca actualizaba `.transcoding(progress:)` despues del valor
+    /// inicial). Se agrega "-progress pipe:1" para que ffmpeg reporte
+    /// `out_time_ms=...` por stdout a medida que avanza, y se lee la
+    /// duracion total del video de la primera linea "Duration: HH:MM:SS.cc"
+    /// que ffmpeg ya imprime por stderr antes de arrancar a codificar --
+    /// no hace falta invocar ffprobe por separado.
+    ///
+    /// `readabilityHandler` corre en un hilo interno de Foundation, no en
+    /// el que llamo a `transcode`: bajo Swift 6 strict concurrency (que
+    /// solo `xcodebuild` chequea de verdad, ver D-034) mutar `var`
+    /// capturadas ahi es un error de compilacion, no solo un warning --
+    /// son closures `@Sendable` de verdad. `TranscodeProgressTracker`
+    /// mueve ese estado mutable a una clase con lock propio en vez de
+    /// capturar locals.
+    func transcode(input: URL, output: URL, videoBitrateKbps: Int = 768,
+                    onProgress: (@Sendable (Double) -> Void)?) throws {
         let process = Process()
         process.executableURL = ffmpegURL
         process.arguments = Self.arguments(input: input, output: output, videoBitrateKbps: videoBitrateKbps)
+            + ["-progress", "pipe:1"]
 
         let errPipe = Pipe()
+        let outPipe = Pipe()
         process.standardError = errPipe
-        process.standardOutput = FileHandle.nullDevice
+        process.standardOutput = outPipe
+
+        let tracker = TranscodeProgressTracker()
+
+        errPipe.fileHandleForReading.readabilityHandler = { handle in
+            let chunk = handle.availableData
+            guard !chunk.isEmpty else { return }
+            tracker.appendStderr(chunk)
+        }
+
+        outPipe.fileHandleForReading.readabilityHandler = { handle in
+            let chunk = handle.availableData
+            guard !chunk.isEmpty else { return }
+            if let fraction = tracker.appendStdout(chunk) {
+                onProgress?(fraction)
+            }
+        }
 
         try process.run()
         process.waitUntilExit()
+        errPipe.fileHandleForReading.readabilityHandler = nil
+        outPipe.fileHandleForReading.readabilityHandler = nil
 
         guard process.terminationStatus == 0 else {
-            let errData = errPipe.fileHandleForReading.readDataToEndOfFile()
-            throw TranscodeError.processFailed(String(data: errData, encoding: .utf8) ?? "codigo \(process.terminationStatus)")
+            throw TranscodeError.processFailed(tracker.stderrText.isEmpty
+                ? "codigo \(process.terminationStatus)" : tracker.stderrText)
         }
+    }
+
+    /// Acumula stdout/stderr de ffmpeg detras de un `NSLock` para que
+    /// `transcode(...)` pueda mutarlo desde los `readabilityHandler`
+    /// (hilos concurrentes de Foundation) sin violar Swift 6 strict
+    /// concurrency -- ver el comentario en `transcode(...onProgress:)`.
+    private final class TranscodeProgressTracker: @unchecked Sendable {
+        private let lock = NSLock()
+        private var stderrBuffer = Data()
+        private var outBuffer = Data()
+        private var durationSeconds: Double?
+
+        func appendStderr(_ chunk: Data) {
+            lock.lock(); defer { lock.unlock() }
+            stderrBuffer.append(chunk)
+            if durationSeconds == nil, let text = String(data: stderrBuffer, encoding: .utf8) {
+                durationSeconds = FFmpegTranscoder.parseDuration(from: text)
+            }
+        }
+
+        /// Devuelve la fraccion [0, 1] de avance si ya se puede calcular
+        /// (duracion total conocida y al menos un `out_time_ms` leido).
+        func appendStdout(_ chunk: Data) -> Double? {
+            lock.lock(); defer { lock.unlock() }
+            outBuffer.append(chunk)
+            guard let duration = durationSeconds, duration > 0,
+                  let text = String(data: outBuffer, encoding: .utf8),
+                  let outTimeMs = FFmpegTranscoder.parseOutTimeMs(from: text) else { return nil }
+            return min(max((outTimeMs / 1_000_000) / duration, 0), 1)
+        }
+
+        var stderrText: String {
+            lock.lock(); defer { lock.unlock() }
+            return String(data: stderrBuffer, encoding: .utf8) ?? ""
+        }
+    }
+
+    /// Busca "Duration: HH:MM:SS.cc" en la salida de ffmpeg y devuelve
+    /// segundos totales. Devuelve nil si todavia no aparecio esa linea
+    /// (llega al principio, antes de que arranque la codificacion).
+    static func parseDuration(from ffmpegOutput: String) -> Double? {
+        guard let range = ffmpegOutput.range(of: "Duration: ") else { return nil }
+        let rest = ffmpegOutput[range.upperBound...]
+        guard let comma = rest.firstIndex(of: ",") else { return nil }
+        let timeString = rest[rest.startIndex..<comma]
+        return parseTimecode(String(timeString))
+    }
+
+    private static func parseTimecode(_ s: String) -> Double? {
+        let parts = s.split(separator: ":")
+        guard parts.count == 3,
+              let hours = Double(parts[0]), let minutes = Double(parts[1]),
+              let seconds = Double(parts[2]) else { return nil }
+        return hours * 3600 + minutes * 60 + seconds
+    }
+
+    /// `-progress pipe:1` emite bloques "key=value" separados por
+    /// saltos de linea, uno de ellos "out_time_ms=<microsegundos>"
+    /// (pese al nombre, ffmpeg reporta microsegundos, no milisegundos --
+    /// comportamiento documentado y estable de la propia herramienta).
+    /// Se toma el ultimo valor completo del buffer acumulado.
+    static func parseOutTimeMs(from progressOutput: String) -> Double? {
+        var lastValue: Double?
+        for line in progressOutput.split(separator: "\n") {
+            if line.hasPrefix("out_time_ms=") {
+                let value = line.dropFirst("out_time_ms=".count)
+                if let parsed = Double(value) {
+                    lastValue = parsed
+                }
+            }
+        }
+        return lastValue
     }
 }

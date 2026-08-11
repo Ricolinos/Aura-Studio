@@ -10,6 +10,7 @@
 		00B2C34B8394853F21116615 /* IPodDiskIdentifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A077ACC4534A70565AC6B622 /* IPodDiskIdentifierTests.swift */; };
 		0183BFA3AF5209C411B41F36 /* LibraryPipelineIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17FA97DC7618F234BE711AED /* LibraryPipelineIntegrationTests.swift */; };
 		04F788FCD4F07563E5750ED9 /* TrackMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = D96F62F5D0767305583513FF /* TrackMetadata.swift */; };
+		07B5993B76FBF1735ADA8AF2 /* FFmpegTranscoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE684D9789506522C7BF0228 /* FFmpegTranscoderTests.swift */; };
 		09F680A84694ED166E42E622 /* PrivilegedActionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC2C915803E2ECA9BD01B52 /* PrivilegedActionSheet.swift */; };
 		0D024EF762350292ACCC5474 /* MusicBrainzClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F23689620B3C26365C6A2E5D /* MusicBrainzClient.swift */; };
 		10EF0307FD5A491426F20395 /* PrivilegedOperationLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8F6F2E2EDB8723F37503FF /* PrivilegedOperationLog.swift */; };
@@ -19,6 +20,7 @@
 		203D6E1800BE63DFE89AB1C8 /* AuraStudioApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849AFADBA825BCE5775C3217 /* AuraStudioApp.swift */; };
 		206225C0AE68BC4EF3EA9CBF /* LibraryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9934433E994EDDAAFB584100 /* LibraryViewModel.swift */; };
 		229BC6502A44F54DA47121F9 /* DetectDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EBCF1EF29547CD3B01B5C98 /* DetectDeviceView.swift */; };
+		2714D8A1BC0FF1725A03CF14 /* MetadataReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F6B6DECD238B8538970C711 /* MetadataReviewView.swift */; };
 		2F898C1996F39319211E9496 /* DoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0116DC50EA8DBAE3B02AE0FB /* DoneView.swift */; };
 		31C1B49208706DAD1BB8E579 /* FFmpegTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAE64AFF0609F93FC361C6DE /* FFmpegTranscoder.swift */; };
 		35AD525641C3EEBF3F3D49BE /* rockbox.ipod in Resources */ = {isa = PBXBuildFile; fileRef = 84780DEDBB3409D2FFE454A0 /* rockbox.ipod */; };
@@ -85,6 +87,7 @@
 		37BA124E3419E12A08D4AADC /* FilenameGuesserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilenameGuesserTests.swift; sourceTree = "<group>"; };
 		3DC865282F8B113716D7C3AF /* ImageResizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageResizer.swift; sourceTree = "<group>"; };
 		3EBEB24F597D3C9B609AC775 /* InstallerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerViewModel.swift; sourceTree = "<group>"; };
+		3F6B6DECD238B8538970C711 /* MetadataReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataReviewView.swift; sourceTree = "<group>"; };
 		43B9358C341DF6C281F2636B /* InstallerStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerStep.swift; sourceTree = "<group>"; };
 		48CC2E3940E0EC5127461CB5 /* LibrarySync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySync.swift; sourceTree = "<group>"; };
 		5FA85A3E42CB4E67E9DAC4E5 /* DeviceState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceState.swift; sourceTree = "<group>"; };
@@ -102,6 +105,7 @@
 		9934433E994EDDAAFB584100 /* LibraryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModel.swift; sourceTree = "<group>"; };
 		9EBCF1EF29547CD3B01B5C98 /* DetectDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectDeviceView.swift; sourceTree = "<group>"; };
 		A077ACC4534A70565AC6B622 /* IPodDiskIdentifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPodDiskIdentifierTests.swift; sourceTree = "<group>"; };
+		AE684D9789506522C7BF0228 /* FFmpegTranscoderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FFmpegTranscoderTests.swift; sourceTree = "<group>"; };
 		AE8F6F2E2EDB8723F37503FF /* PrivilegedOperationLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivilegedOperationLog.swift; sourceTree = "<group>"; };
 		B1782D4EBAA2C3FC3EBC49F5 /* InstallingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallingView.swift; sourceTree = "<group>"; };
 		B6A56207E06BF883E789308E /* SyncPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncPlannerTests.swift; sourceTree = "<group>"; };
@@ -133,6 +137,7 @@
 				1D4862DCA99696DCB66D2012 /* InstallerWizardView.swift */,
 				B1782D4EBAA2C3FC3EBC49F5 /* InstallingView.swift */,
 				8433ACEEAB00396412A1A019 /* LibraryView.swift */,
+				3F6B6DECD238B8538970C711 /* MetadataReviewView.swift */,
 				777383A161FBD9C32BFA6D82 /* PermissionsView.swift */,
 				DAC2C915803E2ECA9BD01B52 /* PrivilegedActionSheet.swift */,
 				1AF1D56D4FC12419217F8960 /* WelcomeView.swift */,
@@ -231,6 +236,7 @@
 			isa = PBXGroup;
 			children = (
 				D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */,
+				AE684D9789506522C7BF0228 /* FFmpegTranscoderTests.swift */,
 				37BA124E3419E12A08D4AADC /* FilenameGuesserTests.swift */,
 				FEF3580937C6126B24998BB6 /* ID3WriterTests.swift */,
 				A077ACC4534A70565AC6B622 /* IPodDiskIdentifierTests.swift */,
@@ -372,6 +378,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C3AD25FC7C3C2CE8C2F3AD6F /* BundledArtifactsTests.swift in Sources */,
+				07B5993B76FBF1735ADA8AF2 /* FFmpegTranscoderTests.swift in Sources */,
 				BD809465DDDA7B9453FDAB86 /* FilenameGuesserTests.swift in Sources */,
 				62666A4A9BF729B61C851F76 /* ID3WriterTests.swift in Sources */,
 				00B2C34B8394853F21116615 /* IPodDiskIdentifierTests.swift in Sources */,
@@ -415,6 +422,7 @@
 				976B60A602EE27AC6F7D3BD1 /* LibraryView.swift in Sources */,
 				206225C0AE68BC4EF3EA9CBF /* LibraryViewModel.swift in Sources */,
 				9FDD21617909191BB7E9B9CE /* MKS5LBootRunner.swift in Sources */,
+				2714D8A1BC0FF1725A03CF14 /* MetadataReviewView.swift in Sources */,
 				0D024EF762350292ACCC5474 /* MusicBrainzClient.swift in Sources */,
 				F745EA7E70AE91DF77279194 /* PermissionsView.swift in Sources */,
 				09F680A84694ED166E42E622 /* PrivilegedActionSheet.swift in Sources */,

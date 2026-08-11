@@ -3,9 +3,10 @@ import UniformTypeIdentifiers
 
 struct LibraryView: View {
     @StateObject private var viewModel = LibraryViewModel()
+    @StateObject private var deviceMonitor = IPodMonitor()
     @State private var isTargeted = false
     @State private var showingAPIKeySettings = false
-    @State private var mountedVolumePath: String = ""
+    @State private var reviewingItem: LibraryItem?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -20,7 +21,9 @@ struct LibraryView: View {
 
             if !viewModel.items.isEmpty {
                 List(viewModel.items) { item in
-                    LibraryItemRow(item: item)
+                    LibraryItemRow(item: item) {
+                        reviewingItem = item
+                    }
                 }
                 .listStyle(.inset)
             }
@@ -30,6 +33,16 @@ struct LibraryView: View {
         .sheet(isPresented: $showingAPIKeySettings) {
             APIKeySettingsView()
         }
+        .sheet(item: $reviewingItem) { item in
+            MetadataReviewView(item: item) { metadata in
+                viewModel.applyReview(id: item.id, metadata: metadata)
+                reviewingItem = nil
+            } onCancel: {
+                reviewingItem = nil
+            }
+        }
+        .onAppear { deviceMonitor.start() }
+        .onDisappear { deviceMonitor.stop() }
     }
 
     private var header: some View {
@@ -47,6 +60,10 @@ struct LibraryView: View {
         .padding([.horizontal, .top])
     }
 
+    /// Fase 23 (PLAN-UX.md): antes el usuario escribia la ruta del
+    /// volumen a mano pese a que IPodMonitor (Fase 9) ya sabe detectarlo
+    /// solo -- se reusa el mismo monitor que usa el instalador en vez de
+    /// duplicar logica de deteccion de disco.
     private var footer: some View {
         VStack(spacing: 8) {
             if let summary = viewModel.lastSyncSummary {
@@ -60,17 +77,39 @@ struct LibraryView: View {
                     .foregroundStyle(.red)
             }
             HStack {
-                TextField("Ruta del iPod montado (p.ej. /Volumes/IPOD_AURA)", text: $mountedVolumePath)
-                    .textFieldStyle(.roundedBorder)
+                deviceStatusLabel
+                Spacer()
                 Button("Sincronizar al iPod") {
-                    let url = URL(fileURLWithPath: mountedVolumePath)
+                    guard case .diskMode(let info) = deviceMonitor.state else { return }
+                    let url = URL(fileURLWithPath: info.mountPath)
                     Task { await viewModel.sync(toVolumeAt: url) }
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(mountedVolumePath.isEmpty || viewModel.isProcessing)
+                .disabled(!deviceMonitor.state.isReadyForInstall || viewModel.isProcessing)
             }
         }
         .padding()
+    }
+
+    @ViewBuilder
+    private var deviceStatusLabel: some View {
+        switch deviceMonitor.state {
+        case .notConnected, .detecting:
+            Label("Conecta tu iPod para sincronizar", systemImage: "cable.connector.slash")
+                .foregroundStyle(.secondary)
+        case .diskMode(let info) where info.isFAT32:
+            Label("\(info.volumeName) listo", systemImage: "checkmark.circle.fill")
+                .foregroundStyle(.green)
+        case .diskMode:
+            Label("iPod detectado, pero no esta en FAT32", systemImage: "exclamationmark.triangle")
+                .foregroundStyle(.orange)
+        case .dfuMode:
+            Label("iPod en modo DFU -- usa la pestana Instalador", systemImage: "exclamationmark.triangle")
+                .foregroundStyle(.orange)
+        case .unknown:
+            Label("Dispositivo Apple sin clasificar", systemImage: "questionmark.circle")
+                .foregroundStyle(.secondary)
+        }
     }
 }
 
@@ -114,6 +153,7 @@ private struct DropZone: View {
 
 private struct LibraryItemRow: View {
     let item: LibraryItem
+    var onReviewTapped: () -> Void = {}
 
     var body: some View {
         HStack {
@@ -152,7 +192,11 @@ private struct LibraryItemRow: View {
         case .ready:
             Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
         case .needsReview:
-            Label("Revisar", systemImage: "exclamationmark.circle").foregroundStyle(.orange)
+            Button(action: onReviewTapped) {
+                Label("Revisar", systemImage: "exclamationmark.circle")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.orange)
         case .failed(let message):
             Label(message, systemImage: "xmark.circle").foregroundStyle(.red)
         }
