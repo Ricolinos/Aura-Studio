@@ -34,7 +34,10 @@ struct LibraryEnricher {
         self.lrclib = lrclib
     }
 
-    func enrich(item: LibraryItem) async -> TrackMetadata {
+    /// `online` y `lyrics` salen de las preferencias del usuario
+    /// (AppPreferences): con `online` en false no se toca la red y solo
+    /// se usa lo que ya trae el archivo mas lo que se adivine del nombre.
+    func enrich(item: LibraryItem, online: Bool = true, lyrics: Bool = true) async -> TrackMetadata {
         var existing = ID3Writer.Tag()
         if item.sourceURL.pathExtension.lowercased() == "mp3",
            let data = try? Data(contentsOf: item.sourceURL) {
@@ -56,6 +59,8 @@ struct LibraryEnricher {
             coverArtData: existing.coverArtData
         )
 
+        guard online else { return metadata }
+
         guard let recording = try? await musicBrainz.searchRecording(title: seedTitle, artist: seedArtist) else {
             return metadata
         }
@@ -74,7 +79,7 @@ struct LibraryEnricher {
             }
         }
 
-        if let title = metadata.title, let artist = metadata.artist {
+        if lyrics, let title = metadata.title, let artist = metadata.artist {
             metadata.syncedLyrics = try? await lrclib.fetchSyncedLyrics(title: title, artist: artist, album: metadata.album)
         }
 

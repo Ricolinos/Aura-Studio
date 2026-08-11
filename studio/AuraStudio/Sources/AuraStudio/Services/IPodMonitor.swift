@@ -11,6 +11,9 @@ import Combine
 @MainActor
 final class IPodMonitor: ObservableObject {
     @Published private(set) var state: DeviceState = .detecting
+    /// El volumen ya inspeccionado (que firmware tiene, cuanto espacio,
+    /// que hay sincronizado). nil mientras no haya un disco montado.
+    @Published private(set) var device: AuraDevice?
 
     private let diskMonitor = DiskArbitrationMonitor()
     private var dfuPollTask: Task<Void, Never>?
@@ -48,9 +51,19 @@ final class IPodMonitor: ObservableObject {
         lastDiskInfo = info
         if let info {
             state = .diskMode(info)
+            device = AuraDeviceProbe.probe(diskInfo: info)
         } else if case .diskMode = state {
             state = .notConnected
+            device = nil
         }
+    }
+
+    /// Vuelve a inspeccionar el volumen montado. Hace falta despues de
+    /// un sync: el resumen de la biblioteca en el disco cambio, pero el
+    /// disco sigue montado, asi que DiskArbitration no notifica nada.
+    func refreshDevice() {
+        guard let info = lastDiskInfo else { return }
+        device = AuraDeviceProbe.probe(diskInfo: info)
     }
 
     /// El escaneo DFU es costoso relativo (lanza un proceso y hace I/O

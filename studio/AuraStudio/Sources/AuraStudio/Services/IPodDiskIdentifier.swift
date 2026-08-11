@@ -17,20 +17,32 @@ struct DiskCandidateInfo: Equatable, Sendable {
     let sizeBytes: Int64
     let volumeName: String?
 
-    /// Los 4 criterios que pide la Fase de seguridad de discos: vendor
-    /// Apple, removible, externo (no interno), y tamaño dentro de lo
-    /// esperado para un iPod Classic 6G de 120GB. Deliberadamente NO
-    /// exige que `model`/`vendor` contenga literalmente "iPod": en
-    /// pruebas reales contra hardware fisico, `diskutil info` devolvio
-    /// como nombre de media el modelo del disco duro interno del iPod
-    /// (p.ej. "HS12YHA"), no un string de marca Apple -- exigir eso
-    /// hubiera rechazado el dispositivo real. El vendor si se exige
-    /// (viene de DiskArbitration, que en las pruebas de esta sesion
-    /// consistentemente reportaba "Apple" para este dispositivo), y el
-    /// combo removible+externo+tamaño da la señal de seguridad real.
+    /// Criterios de seguridad para decidir si un disco es "el iPod".
+    ///
+    /// Obligatorios los tres: vendor Apple, removible y externo. Ninguno
+    /// solo alcanza -- el SSD interno del propio Mac reporta "APPLE SSD"
+    /// en su modelo, asi que sin removible+externo se confundiria con el
+    /// disco de arranque (paso de verdad, ver D-070).
+    ///
+    /// Ademas hace falta UNA de dos señales de dispositivo:
+    ///
+    ///  - que el modelo diga "iPod" (lo que reporta un 6G con el disco
+    ///    original o con un mod de flash), o
+    ///  - que el tamaño caiga en el rango del 120GB de fabrica, para el
+    ///    caso ya visto en hardware (D-046) donde el nombre de media era
+    ///    el del disco duro interno ("HS12YHA") y no decia "iPod".
+    ///
+    /// El tamaño NO puede ser el unico criterio duro: los iPod Classic
+    /// con el disco cambiado por flash (iFlash + SD, lo mas comun para
+    /// mantenerlos vivos hoy) van de 32GB a 2TB, y exigir 120GB±5GB
+    /// rechazaria justamente a los que mas se usan.
     var matchesIPodCriteria: Bool {
         guard vendor.localizedCaseInsensitiveContains("Apple") else { return false }
         guard isRemovable, !isInternal else { return false }
+        guard IPodDiskIdentifier.plausibleSizeRange.contains(sizeBytes) else { return false }
+
+        if model.localizedCaseInsensitiveContains("iPod") { return true }
+
         let diff = abs(sizeBytes - IPodDiskIdentifier.nominalSizeBytes)
         return diff <= IPodDiskIdentifier.sizeToleranceBytes
     }
@@ -53,6 +65,12 @@ enum IPodDiskIdentifier {
     /// del propio disco.
     static let nominalSizeBytes: Int64 = 120_000_000_000
     static let sizeToleranceBytes: Int64 = 5_000_000_000
+
+    /// Rango de tamaños que puede tener un iPod Classic 6G real, de
+    /// fabrica o con el disco cambiado por flash: desde una tarjeta
+    /// chica hasta el maximo practico de un iFlash con 4 SD. Sirve de
+    /// cota de cordura, no de identificacion por si sola.
+    static let plausibleSizeRange: ClosedRange<Int64> = 8_000_000_000...2_100_000_000_000
 
     /// Logica pura: dado el snapshot actual de discos externos, decide
     /// si hay exactamente un candidato valido, ninguno, o mas de uno

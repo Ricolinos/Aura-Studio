@@ -126,7 +126,8 @@ struct LibrarySync {
     /// como `.m3u8` en `/Playlists`. Devuelve cuantos archivos se
     /// copiaron de verdad y cuantas playlists se escribieron.
     @discardableResult
-    func sync(items: [LibraryItem], playlists: [Playlist] = []) throws -> SyncResult {
+    func sync(items: [LibraryItem], playlists: [Playlist] = [],
+              coverArtPolicy: AppPreferences.CoverArtPolicy = .albumOnly) throws -> SyncResult {
         var manifest = loadManifest()
         var copied = 0
         var destinationByItemID: [UUID: String] = [:]
@@ -195,6 +196,10 @@ struct LibrarySync {
 
         try saveManifest(manifest)
 
+        if coverArtPolicy == .albumOnly {
+            writeAlbumCovers(items: items, destinationByItemID: destinationByItemID)
+        }
+
         let playlistsWritten = try writePlaylists(playlists, destinationByItemID: destinationByItemID)
         summary.playlistCount = playlistsWritten
         try writeSummary(summary)
@@ -203,6 +208,38 @@ struct LibrarySync {
             triggerFirmwareDBRebuild()
         }
         return SyncResult(filesCopied: copied, playlistsWritten: playlistsWritten)
+    }
+
+    /// Con la politica "una caratula por album", la imagen no va embebida
+    /// en cada archivo sino una sola vez como `cover.jpg` en la carpeta
+    /// del album -- exactamente donde la busca `find_albumart` del
+    /// firmware (`apps/recorder/albumart.c`, que prueba `cover.*` y
+    /// `folder.jpg` en el directorio de la pista). Un album de 15 pistas
+    /// pasa de 15 copias de la portada a una sola.
+    ///
+    /// Se escribe siempre que haya una imagen disponible, aunque las
+    /// pistas se hayan salteado por el diferencial: el `cover.jpg` no
+    /// tiene entrada propia en el manifiesto, asi que esta es la unica
+    /// oportunidad de crearlo si falta.
+    private func writeAlbumCovers(items: [LibraryItem],
+                                   destinationByItemID: [UUID: String]) {
+        var written = Set<String>()
+
+        for item in items where item.kind == .music {
+            guard let cover = item.metadata?.coverArtData,
+                  let relative = destinationByItemID[item.id] else { continue }
+
+            let albumFolder = URL(fileURLWithPath: relative).deletingLastPathComponent().path
+            guard !written.contains(albumFolder) else { continue }
+            written.insert(albumFolder)
+
+            let coverURL = volumeRoot
+                .appendingPathComponent(albumFolder)
+                .appendingPathComponent("cover.jpg")
+            try? fileManager.createDirectory(at: coverURL.deletingLastPathComponent(),
+                                              withIntermediateDirectories: true)
+            try? cover.write(to: coverURL)
+        }
     }
 
     /// Escribe siempre las playlists (son archivos de texto de unos

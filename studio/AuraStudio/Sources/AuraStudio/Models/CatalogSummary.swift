@@ -21,6 +21,34 @@ struct CatalogSummary: Equatable {
     var playlistCount = 0
 }
 
+/// Lee de vuelta el mismo archivo que escribe `CatalogSummaryWriter`.
+/// Studio lo usa para contar lo que YA hay en el iPod sin recorrer el
+/// disco entero: el resumen lo dejo el ultimo sync, y el firmware lo lee
+/// igual para su pantalla "Acerca de".
+enum CatalogSummaryReader {
+    static func parse(_ text: String) -> CatalogSummary {
+        var values: [String: Int64] = [:]
+        for line in text.split(separator: "\n") {
+            let parts = line.split(separator: ":", maxSplits: 1)
+            guard parts.count == 2 else { continue }
+            let key = parts[0].trimmingCharacters(in: .whitespaces)
+            let raw = parts[1].trimmingCharacters(in: .whitespaces)
+            guard let value = Int64(raw) else { continue }
+            values[key] = value
+        }
+
+        var summary = CatalogSummary()
+        summary.music = CatalogTypeSummary(count: Int(values["music_count"] ?? 0),
+                                            bytes: values["music_bytes"] ?? 0)
+        summary.video = CatalogTypeSummary(count: Int(values["video_count"] ?? 0),
+                                            bytes: values["video_bytes"] ?? 0)
+        summary.photo = CatalogTypeSummary(count: Int(values["photo_count"] ?? 0),
+                                            bytes: values["photo_bytes"] ?? 0)
+        summary.playlistCount = Int(values["playlist_count"] ?? 0)
+        return summary
+    }
+}
+
 enum CatalogSummaryWriter {
     static func serialize(_ summary: CatalogSummary) -> String {
         """

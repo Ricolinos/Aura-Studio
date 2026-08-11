@@ -18,9 +18,18 @@ final class LibraryViewModel: ObservableObject {
 
     private let enricher: LibraryEnricher
     private let stagingDirectory: URL
+    private let preferences: AppPreferences
 
-    init(enricher: LibraryEnricher = LibraryEnricher(), stagingDirectory: URL? = nil) {
+    /// `preferences` es opcional y no `= .shared` como default: un valor
+    /// por defecto se evalua en contexto nonisolated, y `.shared` esta
+    /// aislado al MainActor -- error bajo Swift 6 (que es lo que compila
+    /// xcodebuild, D-034). Resolverlo dentro del init, que si es
+    /// MainActor, evita el problema sin cambiar la ergonomia.
+    init(enricher: LibraryEnricher = LibraryEnricher(),
+         stagingDirectory: URL? = nil,
+         preferences: AppPreferences? = nil) {
         self.enricher = enricher
+        self.preferences = preferences ?? .shared
         self.stagingDirectory = stagingDirectory ?? FileManager.default.temporaryDirectory.appendingPathComponent("AuraStudioStaging", isDirectory: true)
         try? FileManager.default.createDirectory(at: self.stagingDirectory, withIntermediateDirectories: true)
     }
@@ -52,7 +61,9 @@ final class LibraryViewModel: ObservableObject {
             switch item.kind {
             case .music:
                 items[index].status = .enriching
-                let metadata = await enricher.enrich(item: item)
+                let metadata = await enricher.enrich(item: item,
+                                                      online: preferences.enrichOnline,
+                                                      lyrics: preferences.fetchSyncedLyrics)
                 items[index].metadata = metadata
                 items[index].preparedURL = try prepareMusic(item: item, metadata: metadata)
                 items[index].status = metadata.isComplete ? .ready : .needsReview
@@ -99,9 +110,19 @@ final class LibraryViewModel: ObservableObject {
     }
 
     /// Copia el archivo original a staging, le escribe la tag ID3 (solo
-    /// para MP3, ver D-037) y deja caratula/letra como sidecars junto a
-    /// el -- el mismo formato que Aura ya sabe leer en el dispositivo
+    /// para MP3, ver D-037) y deja la letra como sidecar junto a el -- el
+    /// mismo formato que Aura ya sabe leer en el dispositivo
     /// (find_albumart/aura_lrc, Fases 4-6 del firmware).
+    ///
+    /// La caratula depende de la preferencia del usuario:
+    ///   - "Una por cancion": se embebe en la tag del archivo.
+    ///   - "Una por album": NO se embebe aca; la escribe LibrarySync una
+    ///     sola vez en la carpeta del album, que es donde el firmware la
+    ///     busca primero. Escribirla en staging no serviria: staging es
+    ///     un unico directorio plano compartido por TODOS los albumes, asi
+    ///     que un `cover.jpg` ahi lo pisaria el album siguiente (y encima
+    ///     LibrarySync solo copia `preparedURL`, nunca lo habria subido al
+    ///     iPod).
     private func prepareMusic(item: LibraryItem, metadata: TrackMetadata) throws -> URL {
         let destination = stagingDirectory.appendingPathComponent(item.sourceURL.lastPathComponent)
         if FileManager.default.fileExists(atPath: destination.path) {
@@ -110,15 +131,14 @@ final class LibraryViewModel: ObservableObject {
         try FileManager.default.copyItem(at: item.sourceURL, to: destination)
 
         if destination.pathExtension.lowercased() == "mp3" {
+            let embedCover = preferences.coverArtPolicy == .perTrack
             let tag = ID3Writer.Tag(
                 title: metadata.title, artist: metadata.artist, album: metadata.album,
                 albumArtist: metadata.albumArtist, year: metadata.year, genre: metadata.genre,
-                trackNumber: metadata.trackNumber, coverArtData: metadata.coverArtData
+                trackNumber: metadata.trackNumber,
+                coverArtData: embedCover ? metadata.coverArtData : nil
             )
             try ID3Writer.write(tag, toFileAt: destination)
-        } else if let cover = metadata.coverArtData {
-            let coverURL = destination.deletingLastPathComponent().appendingPathComponent("cover.jpg")
-            try cover.write(to: coverURL)
         }
 
         if let lyrics = metadata.syncedLyrics {
@@ -150,13 +170,19 @@ final class LibraryViewModel: ObservableObject {
         let readyItems = items.filter { $0.status == .ready }
         do {
             let sync = LibrarySync(volumeRoot: volumeRoot)
-            let result = try sync.sync(items: readyItems, playlists: playlists)
+            let result = try sync.sync(items: readyItems, playlists: playlists,
+                                        coverArtPolicy: preferences.coverArtPolicy)
             let playlistsNote = result.playlistsWritten > 0 ? " \(result.playlistsWritten) playlist(s) actualizada(s)." : ""
             lastSyncSummary = result.filesCopied == 0
                 ? "Ya estaba todo sincronizado, no habia nada nuevo.\(playlistsNote)"
                 : "Se copiaron \(result.filesCopied) de \(readyItems.count) archivo(s). El indice de la biblioteca se va a reconstruir la proxima vez que arranque Aura.\(playlistsNote)"
         } catch {
-            lastError = error.localizedDescription
+            // El mensaje de Cocoa viene en ingles y sin contexto ("You
+            // can't save the file X because the volume is read only"):
+            // se conserva porque dice el motivo real, pero se antepone
+            // a donde se estaba escribiendo, que es la informacion que
+            // permite darse cuenta de que se apunto al disco equivocado.
+            lastError = "No se pudo sincronizar en \(volumeRoot.path): \(error.localizedDescription)"
         }
     }
 

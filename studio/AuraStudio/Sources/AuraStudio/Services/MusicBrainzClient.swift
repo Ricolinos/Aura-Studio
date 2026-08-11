@@ -38,10 +38,14 @@ struct MusicBrainzClient {
     static let userAgent = "AuraStudio/0.1.0 (https://github.com/Ricolinos/Aura-Proyect)"
     private let session: URLSession
     private let baseURL: URL
+    private let rateLimiter: MusicBrainzRateLimiter
 
-    init(session: URLSession = .shared, baseURL: URL = URL(string: "https://musicbrainz.org/ws/2")!) {
+    init(session: URLSession = .shared,
+         baseURL: URL = URL(string: "https://musicbrainz.org/ws/2")!,
+         rateLimiter: MusicBrainzRateLimiter = .shared) {
         self.session = session
         self.baseURL = baseURL
+        self.rateLimiter = rateLimiter
     }
 
     /// Busca la grabacion mas parecida a `title`/`artist` (si se conoce
@@ -68,11 +72,40 @@ struct MusicBrainzClient {
         var request = URLRequest(url: components.url!)
         request.setValue(Self.userAgent, forHTTPHeaderField: "User-Agent")
 
-        let (data, response) = try await session.data(for: request)
-        try Self.validate(response)
-
+        let data = try await performThrottled(request)
         let decoded = try JSONDecoder().decode(SearchResponse.self, from: data)
         return decoded.recordings.max { ($0.score ?? 0) < ($1.score ?? 0) }
+    }
+
+    /// MusicBrainz aplica 1 request/segundo por IP y, ademas, devuelve
+    /// 503 transitorios incluso cuando estas dentro del limite (su propia
+    /// documentacion lo describe como esperable, y se reprodujo al
+    /// verificar la API). Sin esto, una biblioteca grande se enriquece a
+    /// toda velocidad, se come throttling y pierde metadata en silencio:
+    /// `enrich()` traga el error con `try?` y devuelve la cancion sin
+    /// completar, que parece "no se encontro" y no "me frenaron".
+    private func performThrottled(_ request: URLRequest,
+                                   maxAttempts: Int = 3) async throws -> Data {
+        var lastStatus = 0
+
+        for attempt in 1...maxAttempts {
+            await rateLimiter.waitForTurn()
+
+            let (data, response) = try await session.data(for: request)
+            let status = (response as? HTTPURLResponse)?.statusCode ?? 200
+
+            if (200..<300).contains(status) {
+                return data
+            }
+            lastStatus = status
+
+            // Solo se reintenta lo transitorio: un 404 o un 400 no
+            // mejoran esperando.
+            guard status == 503 || status == 429, attempt < maxAttempts else { break }
+            try? await Task.sleep(nanoseconds: UInt64(attempt) * 2_000_000_000)
+        }
+
+        throw EnrichmentError.httpError(statusCode: lastStatus)
     }
 
     static func validate(_ response: URLResponse) throws {

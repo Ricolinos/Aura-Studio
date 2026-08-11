@@ -11,6 +11,8 @@ struct LRCLIBClient {
         let duration: Double?
     }
 
+    static let clientIdentifier = "AuraStudio v0.1.0 (https://github.com/Ricolinos/Aura-Proyect)"
+
     private let session: URLSession
     private let baseURL: URL
 
@@ -38,6 +40,11 @@ struct LRCLIBClient {
 
         var request = URLRequest(url: components.url!)
         request.setValue(MusicBrainzClient.userAgent, forHTTPHeaderField: "User-Agent")
+        // LRCLIB hoy no aplica ningun limite de tasa, pero su propio
+        // cliente web se identifica con esta cabecera y su documentacion
+        // la pide por cortesia: si algun dia tienen que limitar, quieren
+        // poder distinguir clientes en vez de cortar por IP a ciegas.
+        request.setValue(Self.clientIdentifier, forHTTPHeaderField: "Lrclib-Client")
 
         let (data, response) = try await session.data(for: request)
         if let http = response as? HTTPURLResponse, http.statusCode == 404 {

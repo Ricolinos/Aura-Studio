@@ -17,14 +17,6 @@ final class DiskArbitrationMonitor {
     private var onChange: DiskChangeHandler?
     private var currentDisk: DADisk?
 
-    /// Nombres de volumen/proveedor que identifican un iPod frente a
-    /// cualquier otro disco removible conectado (pendrives, etc.). Se
-    /// contrasta contra kDADiskDescriptionDeviceVendorKey /
-    /// kDADiskDescriptionDeviceModelKey, que expone el string USB real
-    /// del dispositivo (p.ej. "Apple" / "iPod").
-    private static let vendorMatch = "Apple"
-    private static let modelMatch = "iPod"
-
     func start(onChange: @escaping DiskChangeHandler) {
         self.onChange = onChange
         guard let session = DASessionCreate(kCFAllocatorDefault) else { return }
@@ -68,28 +60,52 @@ final class DiskArbitrationMonitor {
         onChange?(nil)
     }
 
-    /// Extrae del diccionario de descripcion de DiskArbitration los
-    /// datos que Aura Studio necesita mostrar/decidir: si es
-    /// especificamente un iPod (por vendor/model USB), su punto de
-    /// montaje, y si el filesystem es FAT32 (msdos) -- Rockbox necesita
-    /// FAT32, no HFS+/APFS.
+    /// Traduce la descripcion de DiskArbitration a un `DiskModeInfo`, o
+    /// nil si ese disco no es un volumen de iPod donde se pueda trabajar.
+    ///
+    /// Las dos condiciones son igual de importantes, y las dos fallaron
+    /// en la version anterior (D-070):
+    ///
+    /// 1. TIENE que estar montado. DiskArbitration avisa por cada disco
+    ///    Y cada particion: para un iPod llegan tres eventos (el disco
+    ///    entero, la particion de firmware y el volumen de datos), y solo
+    ///    el ultimo tiene punto de montaje. Aceptar los otros dejaba
+    ///    `mountPath` vacio, y `URL(fileURLWithPath: "")` no falla: se
+    ///    resuelve contra el directorio de trabajo, o sea "/". La app
+    ///    terminaba leyendo la capacidad del disco de arranque del Mac e
+    ///    intentando escribirle encima.
+    ///
+    /// 2. Tiene que pasar los MISMOS criterios estrictos que usa el
+    ///    instalador (`DiskCandidateInfo.matchesIPodCriteria`). Antes
+    ///    aca habia un criterio propio y mucho mas laxo -- un OR entre
+    ///    vendor y modelo, sin exigir removible ni externo -- que
+    ///    duplicaba mal una decision de seguridad que ya estaba resuelta
+    ///    y testeada en otro archivo.
     static func diskModeInfo(for disk: DADisk) -> DiskModeInfo? {
         guard let descCF = DADiskCopyDescription(disk) else { return nil }
         let desc = descCF as NSDictionary
 
-        let vendor = (desc[kDADiskDescriptionDeviceVendorKey as String] as? String) ?? ""
-        let model = (desc[kDADiskDescriptionDeviceModelKey as String] as? String) ?? ""
-        guard vendor.contains(vendorMatch) || model.contains(modelMatch) else { return nil }
+        guard let mountURL = desc[kDADiskDescriptionVolumePathKey as String] as? URL,
+              !mountURL.path.isEmpty else { return nil }
 
-        let volumeName = (desc[kDADiskDescriptionVolumeNameKey as String] as? String) ?? "iPod"
+        let bsdName = DADiskGetBSDName(disk).map { String(cString: $0) } ?? ""
+        let candidate = DiskCandidateInfo(
+            bsdName: bsdName,
+            vendor: (desc[kDADiskDescriptionDeviceVendorKey as String] as? String) ?? "",
+            model: (desc[kDADiskDescriptionDeviceModelKey as String] as? String)
+                ?? (desc[kDADiskDescriptionMediaNameKey as String] as? String) ?? "",
+            isRemovable: (desc[kDADiskDescriptionMediaRemovableKey as String] as? Bool) ?? false,
+            isInternal: (desc[kDADiskDescriptionDeviceInternalKey as String] as? Bool) ?? true,
+            sizeBytes: (desc[kDADiskDescriptionMediaSizeKey as String] as? Int64) ?? 0,
+            volumeName: desc[kDADiskDescriptionVolumeNameKey as String] as? String
+        )
+        guard candidate.matchesIPodCriteria else { return nil }
+
         let volumeKind = (desc[kDADiskDescriptionVolumeKindKey as String] as? String) ?? ""
-        let mountURL = desc[kDADiskDescriptionVolumePathKey as String] as? URL
-        let bsdNamePtr = DADiskGetBSDName(disk)
-        let bsdName = bsdNamePtr.map { String(cString: $0) } ?? ""
 
         return DiskModeInfo(
-            volumeName: volumeName,
-            mountPath: mountURL?.path ?? "",
+            volumeName: candidate.volumeName ?? mountURL.lastPathComponent,
+            mountPath: mountURL.path,
             bsdName: bsdName,
             isFAT32: volumeKind.lowercased() == "msdos"
         )
