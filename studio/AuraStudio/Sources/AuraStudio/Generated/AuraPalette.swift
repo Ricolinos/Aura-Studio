@@ -18,6 +18,7 @@ struct AuraColors {
     let progressFill: Color
     let progressTrack: Color
     let selectionFill: Color
+    let whiteConstant: Color
 }
 
 extension AuraColors {
@@ -30,7 +31,8 @@ extension AuraColors {
         shellRail: Color(red: 0.7765, green: 0.7765, blue: 0.7843),
         progressFill: Color(red: 0.2353, green: 0.2353, blue: 0.2627),
         progressTrack: Color(red: 0.8980, green: 0.8980, blue: 0.9176),
-        selectionFill: Color(red: 0.8980, green: 0.8980, blue: 0.9176)
+        selectionFill: Color(red: 0.8980, green: 0.8980, blue: 0.9176),
+        whiteConstant: Color(red: 1.0000, green: 1.0000, blue: 1.0000)
     )
     static let dark = AuraColors(
         shellBg: Color(red: 0.1098, green: 0.1098, blue: 0.1176),
@@ -41,6 +43,7 @@ extension AuraColors {
         shellRail: Color(red: 0.2275, green: 0.2275, blue: 0.2353),
         progressFill: Color(red: 0.8980, green: 0.8980, blue: 0.9176),
         progressTrack: Color(red: 0.2824, green: 0.2824, blue: 0.2902),
-        selectionFill: Color(red: 0.1725, green: 0.1725, blue: 0.1804)
+        selectionFill: Color(red: 0.1725, green: 0.1725, blue: 0.1804),
+        whiteConstant: Color(red: 1.0000, green: 1.0000, blue: 1.0000)
     )
 }
