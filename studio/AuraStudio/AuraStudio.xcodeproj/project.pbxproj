@@ -66,6 +66,7 @@
 		B1845030E08621FDF34358FA /* DiskArbitrationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 638FD209E9AF6417EE51ABC7 /* DiskArbitrationMonitor.swift */; };
 		B3674CA82A35D45F26989B93 /* LibraryEnricher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 206063864F8205232A3581AE /* LibraryEnricher.swift */; };
 		B87A6A38601D65019D333833 /* AutoInstallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7511C6C29CDB446CED312147 /* AutoInstallView.swift */; };
+		B8DE9892192CAACED7ECC3BD /* RestoreHandoffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F527FF44025F6464CEC83FD6 /* RestoreHandoffView.swift */; };
 		B9F991F96D02DF1AD4B32042 /* ID3Writer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D282E9DFA0D773AF988E69E5 /* ID3Writer.swift */; };
 		BB4E4B852CE6983C0E856BBA /* InstallerHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC5F915258EC049BFC791B90 /* InstallerHomeView.swift */; };
 		BC30BF47ADCC5F66B79045A1 /* LiveEnrichmentIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7EDF2D22E970198CC8A5C1B /* LiveEnrichmentIntegrationTests.swift */; };
@@ -179,6 +180,7 @@
 		EAC95668C5FEF76FAC67EE52 /* CoverArtArchiveClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverArtArchiveClient.swift; sourceTree = "<group>"; };
 		F23689620B3C26365C6A2E5D /* MusicBrainzClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicBrainzClient.swift; sourceTree = "<group>"; };
 		F462D2B7F9707F077FC4D782 /* BootModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootModeView.swift; sourceTree = "<group>"; };
+		F527FF44025F6464CEC83FD6 /* RestoreHandoffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreHandoffView.swift; sourceTree = "<group>"; };
 		F52FF3A536F1C7FAFB6822B6 /* SettingsSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSectionView.swift; sourceTree = "<group>"; };
 		FC202F1A3D9164B1E6014A84 /* CatalogSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogSummary.swift; sourceTree = "<group>"; };
 		FEF3580937C6126B24998BB6 /* ID3WriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ID3WriterTests.swift; sourceTree = "<group>"; };
@@ -205,6 +207,7 @@
 				777383A161FBD9C32BFA6D82 /* PermissionsView.swift */,
 				B210703E5EF249635DE046AE /* PlaylistsView.swift */,
 				DAC2C915803E2ECA9BD01B52 /* PrivilegedActionSheet.swift */,
+				F527FF44025F6464CEC83FD6 /* RestoreHandoffView.swift */,
 				F52FF3A536F1C7FAFB6822B6 /* SettingsSectionView.swift */,
 				81FFE23337526451A7CC91E9 /* SourcesSettingsView.swift */,
 				1AF1D56D4FC12419217F8960 /* WelcomeView.swift */,
@@ -562,6 +565,7 @@
 				09F680A84694ED166E42E622 /* PrivilegedActionSheet.swift in Sources */,
 				D4AD421F984F0CACB047168D /* PrivilegedExecutor.swift in Sources */,
 				10EF0307FD5A491426F20395 /* PrivilegedOperationLog.swift in Sources */,
+				B8DE9892192CAACED7ECC3BD /* RestoreHandoffView.swift in Sources */,
 				A801BD6910D0A5909C8AF4C1 /* SettingsSectionView.swift in Sources */,
 				8AD67D72A40880D5F0293335 /* SourcesSettingsView.swift in Sources */,
 				04F788FCD4F07563E5750ED9 /* TrackMetadata.swift in Sources */,

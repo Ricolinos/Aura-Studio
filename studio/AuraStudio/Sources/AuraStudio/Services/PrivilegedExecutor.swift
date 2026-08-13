@@ -230,6 +230,46 @@ struct PrivilegedExecutor: Sendable {
         try await runElevated(script, operationName: "formatear disco \(candidate.bsdName)")
     }
 
+    /// Prepara el disco para que FINDER pueda restaurar el firmware
+    /// original de Apple (D-184, procedimiento verificado a mano por el
+    /// dueño en hardware real): dos formateos en secuencia -- primero
+    /// un formato "puente" FAT/MBR, despues Mac OS Plus con registro
+    /// (JHFS+) con mapa de particiones GUID (GPT). Ambos los ejecuta el
+    /// daemon del sistema via diskutil: sin escritura cruda, sin
+    /// Acceso total al disco (D-181). Las mismas verificaciones de
+    /// identidad dentro del script que eraseAndFormatDisk.
+    func formatDiskForAppleRestore(candidate: DiskCandidateInfo) async throws {
+        guard candidate.matchesIPodCriteria else {
+            throw ExecutorError.safetyAbort(reason: "el candidato no cumple los criterios de identificacion del iPod")
+        }
+
+        let disk = shellSafe(candidate.bsdName)
+        let minSize = candidate.sizeBytes - IPodDiskIdentifier.sizeToleranceBytes
+        let maxSize = candidate.sizeBytes + IPodDiskIdentifier.sizeToleranceBytes
+
+        let script = """
+        set -e
+        DISK="\(disk)"
+        PLIST=$(diskutil info -plist "$DISK")
+        SIZE=$(echo "$PLIST" | plutil -extract TotalSize raw -o - - 2>/dev/null || echo "0")
+        REMOVABLE=$(echo "$PLIST" | plutil -extract Removable raw -o - - 2>/dev/null || echo "false")
+        INTERNAL=$(echo "$PLIST" | plutil -extract Internal raw -o - - 2>/dev/null || echo "true")
+        if [ "$REMOVABLE" != "true" ] && [ "$REMOVABLE" != "1" ]; then
+          echo "AURA_SAFETY_ABORT: el disco ya no aparece como removible" 1>&2; exit 90
+        fi
+        if [ "$INTERNAL" = "true" ] || [ "$INTERNAL" = "1" ]; then
+          echo "AURA_SAFETY_ABORT: el disco aparece como interno" 1>&2; exit 91
+        fi
+        if [ "$SIZE" -lt \(minSize) ] || [ "$SIZE" -gt \(maxSize) ]; then
+          echo "AURA_SAFETY_ABORT: el tamaño del disco ya no coincide ($SIZE bytes)" 1>&2; exit 92
+        fi
+        diskutil eraseDisk FAT32 IPOD MBR "$DISK"
+        diskutil eraseDisk JHFS+ iPod GPT "$DISK"
+        exit 0
+        """
+        try await runElevated(script, operationName: "preparar disco \(candidate.bsdName) para restauracion de Apple")
+    }
+
     /// Nunca se debe interpolar texto no confiable directo en un
     /// script de shell -- esto rechaza cualquier caracter fuera de un
     /// alfabeto seguro conocido (identificadores de disco tipo "disk7"

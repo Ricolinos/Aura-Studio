@@ -47,6 +47,10 @@ final class InstallerViewModel: ObservableObject {
     /// que ya esta grabado es friccion pura (encargo del dueño,
     /// 2026-08-13, probando la recuperacion D-175/D-176 en vivo).
     @Published private(set) var bootloaderAlreadyInstalled = false
+    /// El doble formateo de restauracion (D-184) ya se disparo -- evita
+    /// que cada evento de disco durante el proceso (el puente FAT
+    /// monta, se borra, monta el HFS+...) vuelva a pedir autorizacion.
+    private var restoreFormatStarted = false
     /// Progreso de la extraccion del arbol .rockbox (0...1), o nil
     /// mientras no haya una medicion util (la UI muestra spinner
     /// indeterminado). Se mide comparando el tamaño real escrito en el
@@ -70,6 +74,7 @@ final class InstallerViewModel: ObservableObject {
         self.lastError = nil
         isCopyingFirmware = false
         bootloaderAlreadyInstalled = false
+        restoreFormatStarted = false
         copyProgress = nil
         step = .welcome
         observeDeviceState()
@@ -252,6 +257,8 @@ final class InstallerViewModel: ObservableObject {
             Task { await runPauseAMPAgents() }
         case .formatDisk(let volumeName, let diskIdentifier):
             Task { await runFormatDisk(volumeName: volumeName, diskIdentifier: diskIdentifier) }
+        case .restoreFormatDisk(let diskIdentifier):
+            Task { await runRestoreFormat(diskIdentifier: diskIdentifier) }
         }
     }
 
@@ -260,8 +267,9 @@ final class InstallerViewModel: ObservableObject {
         // Pausar agentes AMP es una optimizacion, no un requisito: si
         // el usuario cancela, se sigue igual a esperar DFU. Formatear
         // el disco SI es un paso obligatorio de su etapa -- cancelarlo
-        // aborta la instalacion, dejando el iPod sin ningun cambio.
-        if step == .preparingDisk {
+        // aborta la instalacion/restauracion, dejando el iPod como
+        // estaba en ese momento.
+        if step == .preparingDisk || step == .restoreFormatting {
             lastError = .authorizationCancelled
             step = .failed
         } else {
@@ -300,8 +308,54 @@ final class InstallerViewModel: ObservableObject {
             Task { await copyFirmwareFiles(mountPath: info.mountPath) }
         case (.enterDFU, .dfuMode):
             Task { await runInstallOrRestore() }
+        case (.restoreFormatting, .diskMode) where !restoreFormatStarted,
+             (.restoreFormatting, .diskModeNoFilesystem) where !restoreFormatStarted:
+            beginRestoreFormat()
         default:
             break
+        }
+    }
+
+    /// El iPod reaparecio como disco tras quitar el bootloader:
+    /// reidentificarlo y pedir autorizacion para el doble formateo de
+    /// restauracion (D-184).
+    private func beginRestoreFormat() {
+        restoreFormatStarted = true
+        let candidates = IPodDiskIdentifier.currentCandidates()
+        switch IPodDiskIdentifier.identify(from: candidates) {
+        case .found(let candidate):
+            pendingAuthorization = .restoreFormatDisk(diskIdentifier: candidate.bsdName)
+        case .notFound:
+            lastError = .deviceNotFound
+            step = .failed
+        case .ambiguous(let matches):
+            lastError = .diskAmbiguous(count: matches.count)
+            step = .failed
+        }
+    }
+
+    private func runRestoreFormat(diskIdentifier: String) async {
+        do {
+            let candidates = IPodDiskIdentifier.currentCandidates()
+            guard case .found(let candidate) = IPodDiskIdentifier.identify(from: candidates),
+                  candidate.bsdName == diskIdentifier else {
+                throw InstallerError.deviceNotFound
+            }
+            progressMessage = "Formateando el disco (puente FAT y despues Mac OS Plus)..."
+            try await executor.formatDiskForAppleRestore(candidate: candidate)
+            step = .restoreHandoff
+        } catch PrivilegedExecutor.ExecutorError.userCancelled {
+            lastError = .authorizationCancelled
+            step = .failed
+        } catch let error as PrivilegedExecutor.ExecutorError {
+            lastError = .privilegedOperationFailed(error.localizedDescription)
+            step = .failed
+        } catch let error as InstallerError {
+            lastError = error
+            step = .failed
+        } catch {
+            lastError = .privilegedOperationFailed(error.localizedDescription)
+            step = .failed
         }
     }
 
@@ -332,8 +386,12 @@ final class InstallerViewModel: ObservableObject {
                 guard result.exitCode == 0 else {
                     throw InstallerError.processFailed(exitCode: result.exitCode, output: result.stdout + result.stderr)
                 }
-                progressMessage = "Listo."
-                step = .done
+                // El bootloader de Apple quedo restaurado en la NOR,
+                // pero la restauracion COMPLETA la termina Finder
+                // (D-184): falta preparar el disco (doble formateo) y
+                // entregarle el aparato.
+                progressMessage = "Bootloader eliminado. Esperando a que el iPod reaparezca como disco... Si no aparece solo, mantén SELECT + PLAY al encenderlo para entrar a modo disco."
+                step = .restoreFormatting
             }
         } catch let error as InstallerError {
             lastError = error

@@ -8,13 +8,20 @@ struct InstallerWizardView: View {
     @ObservedObject var viewModel: InstallerViewModel
 
     private var visibleSteps: [InstallerStep] {
-        var steps: [InstallerStep] = [.welcome]
-        if viewModel.mode == .install { steps.append(.chooseBootMode) }
-        steps += [
-            .permissions, .detectDevice, .preparingDisk, .copyingFiles,
-            .enterDFU, .installing, .done,
-        ]
-        return steps
+        switch viewModel.mode {
+        case .install:
+            return [
+                .welcome, .chooseBootMode, .permissions, .detectDevice,
+                .preparingDisk, .copyingFiles, .enterDFU, .installing, .done,
+            ]
+        case .restore:
+            // La restauracion no termina en "done" dentro de la app: el
+            // ultimo paso es la entrega a Finder (D-184).
+            return [
+                .welcome, .permissions, .detectDevice, .enterDFU,
+                .installing, .restoreFormatting, .restoreHandoff,
+            ]
+        }
     }
 
     var body: some View {
@@ -43,6 +50,10 @@ struct InstallerWizardView: View {
                     SimpleProgressView(title: "Preparando el disco", message: viewModel.progressMessage, progress: nil)
                 case .copyingFiles:
                     SimpleProgressView(title: "Instalando Aura", message: viewModel.progressMessage, progress: viewModel.copyProgress)
+                case .restoreFormatting:
+                    SimpleProgressView(title: "Preparando para Finder", message: viewModel.progressMessage, progress: nil)
+                case .restoreHandoff:
+                    RestoreHandoffView()
                 case .done:
                     // Si esta corrida no flasheo nada (recuperacion con
                     // el bootloader ya grabado), el modo de arranque lo

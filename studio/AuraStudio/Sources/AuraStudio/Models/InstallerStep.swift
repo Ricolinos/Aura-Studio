@@ -27,6 +27,15 @@ enum InstallerStep: Int, CaseIterable, Comparable {
     case copyingFiles
     case enterDFU
     case installing
+    /// Solo en modo restaurar (D-184): tras quitar el bootloader por
+    /// DFU, esperar a que el iPod reaparezca como disco y prepararlo
+    /// para Finder con el doble formateo (puente FAT/MBR y despues
+    /// Mac OS Plus con registro / mapa GUID).
+    case restoreFormatting
+    /// Solo en modo restaurar: el disco quedo listo -- la restauracion
+    /// del firmware de Apple la termina Finder, con Aura Studio CERRADO
+    /// para no interferir con la deteccion USB.
+    case restoreHandoff
     case done
     case failed
 
@@ -49,6 +58,7 @@ struct PendingAuthorization: Identifiable {
     enum Kind: Equatable {
         case pauseAMPAgents
         case formatDisk(volumeName: String, diskIdentifier: String)
+        case restoreFormatDisk(diskIdentifier: String)
     }
 
     let id = UUID()
@@ -63,6 +73,15 @@ struct PendingAuthorization: Identifiable {
             explanationTitle: "Pausar servicios de macOS",
             explanationBody: "Aura Studio necesita pausar temporalmente dos servicios de macOS que a veces interfieren con la conexión del iPod (AMPDevicesAgent y AMPDeviceDiscoveryAgent). Se reactivan automáticamente al terminar, o solos después de unos minutos si algo falla.",
             cancelConsequence: "Si cancelas, Aura Studio va a seguir intentando detectar el iPod igual -- en la mayoría de las Mac esto no hace falta, pero si la detección falla repetidamente, puede ser la causa."
+        )
+    }
+
+    static func restoreFormatDisk(diskIdentifier: String) -> PendingAuthorization {
+        PendingAuthorization(
+            kind: .restoreFormatDisk(diskIdentifier: diskIdentifier),
+            explanationTitle: "Preparar el disco para Finder",
+            explanationBody: "Para que Finder pueda restaurar el firmware original de Apple, el disco del iPod (\(diskIdentifier)) se va a formatear dos veces: primero un formato puente (FAT con esquema MBR) y despues Mac OS Plus con registro con mapa de particiones GUID -- el estado que Finder espera. Esto borra todo el contenido del iPod.",
+            cancelConsequence: "Si cancelas, el iPod queda sin el bootloader de Aura pero con el disco sin preparar -- Finder podria no reconocerlo para restaurar. Puedes reintentar cuando quieras."
         )
     }
 
