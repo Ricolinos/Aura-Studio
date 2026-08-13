@@ -190,14 +190,21 @@ final class InstallerViewModel: ObservableObject {
             case .dfuMode:
                 proceedToDFU()
             case .diskMode(let info) where info.isFAT32:
-                // Si el disco ya tiene Aura o un Rockbox comun, el
-                // bootloader de la familia Rockbox ya esta grabado en la
-                // NOR (asi llego ese arbol al disco) y arranca
-                // /.rockbox/rockbox.ipod sin importar cual de los dos
-                // arboles haya: instalar Aura es solo reemplazar la
-                // carpeta, sin DFU (encargo del dueño: "no nos obligaria
-                // a flashear el dispositivo").
-                if monitor.device?.isRockboxFamily == true {
+                // Saltar el DFU solo con EVIDENCIA de que un bootloader
+                // de la familia Rockbox ya esta grabado en la NOR --
+                // que no es lo mismo que "hay archivos de Rockbox en el
+                // disco" (D-186, visto en hardware real: una extraccion
+                // interrumpida dejo un .rockbox parcial en un iPod cuya
+                // NOR era 100% de Apple; saltarse el DFU ahi produce
+                // una instalacion que jamas arranca). Evidencia
+                // aceptada: aura.cfg presente (el firmware Aura BOOTO
+                // en este aparato -- solo pudo hacerlo con el
+                // bootloader grabado) o un arbol de Rockbox comun
+                // (encargo D-179: instalar sobre Rockbox no obliga a
+                // flashear). Un arbol de Aura que nunca arranco NO es
+                // evidencia: puede ser basura de una copia a medias.
+                if let firmware = monitor.device?.firmware,
+                   firmware == .rockbox || firmware == .aura(hasBooted: true) {
                     bootloaderAlreadyInstalled = true
                 }
                 isCopyingFirmware = true
@@ -219,10 +226,16 @@ final class InstallerViewModel: ObservableObject {
                     step = .failed
                     return
                 }
+                // Sin volumen legible NO hay forma de saber que hay en
+                // la NOR: ya no se asume bootloader presente (el viejo
+                // supuesto de D-177 resulto falso en hardware -- un
+                // disco ilegible tambien ocurre en el modo disco de
+                // Apple). Tras formatear y copiar, el flujo pasa por
+                // DFU; si el bootloader ya estaba grabado, reflashear
+                // los mismos bytes es inofensivo.
                 if case .diskMode(let info) = monitor.state {
                     beginFormat(volumeName: info.volumeName)
                 } else {
-                    bootloaderAlreadyInstalled = true
                     beginFormat(volumeName: "iPod")
                 }
             default:

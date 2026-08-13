@@ -119,7 +119,7 @@ struct ModePickerView: View {
 
     private var detectionText: String {
         if case .diskModeNoFilesystem = state {
-            return "Tu iPod esta conectado en modo de arranque de Aura, listo para recibir los archivos del firmware."
+            return "Tu iPod esta conectado, pero su disco no tiene un sistema de archivos legible -- instalar Aura lo prepara desde cero."
         }
         if case .dfuMode = state {
             return "Tu iPod esta conectado en modo DFU, listo para flashear."

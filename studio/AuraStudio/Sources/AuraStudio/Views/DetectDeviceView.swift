@@ -63,7 +63,7 @@ struct DetectDeviceView: View {
         case .diskMode(let info) where !info.isFAT32:
             Text("Encontramos \"\(info.volumeName)\", con el firmware original de Apple (no esta en FAT32 todavia). No hace falta que lo conviertas: haz clic en \"Ya lo conecte, continuar igual\" y Aura Studio lo formatea automaticamente en el paso de preparar el disco, mas adelante.")
         case .diskModeNoFilesystem:
-            Text("Tu iPod esta en modo de arranque de Aura, listo para recibir los archivos del firmware. Haz clic en \"Ya lo conecte, continuar igual\" para instalarlos.")
+            Text("Encontramos tu iPod, pero su disco no tiene un sistema de archivos legible (asi se ve en el modo bootloader, o si una instalacion quedo a medias). Haz clic en \"Ya lo conecte, continuar igual\" para prepararlo e instalar Aura.")
         case .diskMode(let info):
             Text("Encontramos \"\(info.volumeName)\". Preparando el siguiente paso...")
         case .dfuMode:

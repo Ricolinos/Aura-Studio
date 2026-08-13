@@ -120,6 +120,17 @@ final class DiskArbitrationMonitor {
     ///    vendor y modelo, sin exigir removible ni externo -- que
     ///    duplicaba mal una decision de seguridad que ya estaba resuelta
     ///    y testeada en otro archivo.
+    /// La IDENTIDAD ("¿es un iPod?") se evalua sobre el DISCO COMPLETO
+    /// y la operatividad (montaje, nombre, formato) sobre el volumen
+    /// (D-186, medido en hardware real): la particion montada de un
+    /// iPod en modo disco de Apple llega SIN MediaName y SIN
+    /// DeviceVendor en su propia descripcion -- juzgarla por sus campos
+    /// propios la rechazaba, y la app caia al falso "modo bootloader"
+    /// con el volumen perfectamente montado en /Volumes. El disco
+    /// completo padre si trae la identidad ("iPod", "Apple iPod
+    /// Media"). Las protecciones de D-070 no cambian: el disco de
+    /// arranque del Mac sigue siendo interno/no-removible tambien a
+    /// nivel de disco completo.
     static func diskModeInfo(for disk: DADisk) -> DiskModeInfo? {
         guard let descCF = DADiskCopyDescription(disk) else { return nil }
         let desc = descCF as NSDictionary
@@ -127,15 +138,23 @@ final class DiskArbitrationMonitor {
         guard let mountURL = desc[kDADiskDescriptionVolumePathKey as String] as? URL,
               !mountURL.path.isEmpty else { return nil }
 
+        let wholeDesc: NSDictionary
+        if let wholeDisk = DADiskCopyWholeDisk(disk),
+           let wholeCF = DADiskCopyDescription(wholeDisk) {
+            wholeDesc = wholeCF as NSDictionary
+        } else {
+            wholeDesc = desc
+        }
+
         let bsdName = DADiskGetBSDName(disk).map { String(cString: $0) } ?? ""
         let candidate = DiskCandidateInfo(
             bsdName: bsdName,
-            vendor: (desc[kDADiskDescriptionDeviceVendorKey as String] as? String) ?? "",
-            model: (desc[kDADiskDescriptionDeviceModelKey as String] as? String)
-                ?? (desc[kDADiskDescriptionMediaNameKey as String] as? String) ?? "",
-            isRemovable: (desc[kDADiskDescriptionMediaRemovableKey as String] as? Bool) ?? false,
-            isInternal: (desc[kDADiskDescriptionDeviceInternalKey as String] as? Bool) ?? true,
-            sizeBytes: (desc[kDADiskDescriptionMediaSizeKey as String] as? Int64) ?? 0,
+            vendor: (wholeDesc[kDADiskDescriptionDeviceVendorKey as String] as? String) ?? "",
+            model: (wholeDesc[kDADiskDescriptionDeviceModelKey as String] as? String)
+                ?? (wholeDesc[kDADiskDescriptionMediaNameKey as String] as? String) ?? "",
+            isRemovable: (wholeDesc[kDADiskDescriptionMediaRemovableKey as String] as? Bool) ?? false,
+            isInternal: (wholeDesc[kDADiskDescriptionDeviceInternalKey as String] as? Bool) ?? true,
+            sizeBytes: (wholeDesc[kDADiskDescriptionMediaSizeKey as String] as? Int64) ?? 0,
             volumeName: desc[kDADiskDescriptionVolumeNameKey as String] as? String
         )
         guard candidate.matchesIPodCriteria else { return nil }
