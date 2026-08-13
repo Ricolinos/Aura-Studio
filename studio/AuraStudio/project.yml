@@ -43,6 +43,8 @@ targets:
       # DECISIONS.md).
       - path: ../../firmware/dist/rockbox.ipod
         buildPhase: resources
+      - path: ../../firmware/dist/rockbox.zip
+        buildPhase: resources
       - path: ../../firmware/dist/bootloader-ipod6g.ipod
         buildPhase: resources
       - path: ../../firmware/dist/mks5lboot

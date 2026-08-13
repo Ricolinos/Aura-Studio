@@ -342,17 +342,27 @@ final class InstallerViewModel: ObservableObject {
     }
 
     /// Copia lo que la app trae embebido (ver `BundledArtifacts`) al
-    /// volumen del iPod. NOTA de alcance (ver D-045 en DECISIONS.md):
-    /// hoy Aura Studio solo embebe `rockbox.ipod` suelto, no el arbol
-    /// `.rockbox/` completo (fuentes, codecs, temas, plugins) que un
-    /// `make install` real genera -- eso es un gap conocido, pendiente
-    /// de una fase futura, no algo que este cambio resuelve.
+    /// volumen del iPod: `rockbox.ipod` suelto en la raiz (lo que el
+    /// bootloader arranca) y el arbol `.rockbox/` completo extraido del
+    /// zip embebido (fuentes a26, iconos/mascaras, codecs, plugins --
+    /// D-045 cerrado en D-178: sin ese arbol el firmware arrancaba pero
+    /// sin tipografias SF ni iconos, confirmado en hardware real). La
+    /// extraccion es un merge (ditto no borra lo que ya este): un
+    /// reinstalar encima NO pierde `aura.cfg` ni el cache de caratulas.
     private func copyFirmwareFiles(mountPath: String) async {
         do {
             guard let firmwareURL = BundledArtifacts.shared.url(for: .firmware) else {
                 throw InstallerError.missingBundledArtifact(BundledArtifacts.Name.firmware.rawValue)
             }
+            guard let treeURL = BundledArtifacts.shared.url(for: .rockboxTree) else {
+                throw InstallerError.missingBundledArtifact(BundledArtifacts.Name.rockboxTree.rawValue)
+            }
             step = .copyingFiles
+            // En el camino de recuperacion (sin DFU) este es el unico
+            // punto que escribe en el iPod -- la verificacion de
+            // integridad no puede quedar solo en runInstallOrRestore().
+            progressMessage = "Verificando integridad de los archivos..."
+            try BundledArtifacts.shared.verifyAll()
             progressMessage = "Copiando el firmware al iPod..."
 
             let destination = URL(fileURLWithPath: mountPath).appendingPathComponent("rockbox.ipod")
@@ -364,6 +374,17 @@ final class InstallerViewModel: ObservableObject {
 
             guard fm.fileExists(atPath: destination.path) else {
                 throw InstallerError.processFailed(exitCode: -1, output: "no se pudo verificar rockbox.ipod tras copiarlo")
+            }
+
+            progressMessage = "Instalando Aura en el iPod (tipografías, iconos, códecs)... Esto toma unos minutos. No desconectes el iPod."
+            try await Self.extractZip(at: treeURL, to: mountPath)
+
+            // Centinela: una fuente del design system que el firmware
+            // carga al arrancar -- si esta, el arbol se extrajo bien.
+            let sentinel = URL(fileURLWithPath: mountPath)
+                .appendingPathComponent(".rockbox/fonts/a26-title-20.fnt")
+            guard fm.fileExists(atPath: sentinel.path) else {
+                throw InstallerError.processFailed(exitCode: -1, output: "el árbol .rockbox no quedó completo tras extraerlo (falta \(sentinel.lastPathComponent))")
             }
 
             if bootloaderAlreadyInstalled {
@@ -387,6 +408,40 @@ final class InstallerViewModel: ObservableObject {
         } catch {
             lastError = .processFailed(exitCode: -1, output: error.localizedDescription)
             step = .failed
+        }
+    }
+
+    /// Extrae el zip del arbol `.rockbox` sobre el volumen del iPod con
+    /// `/usr/bin/ditto -xk` (herramienta del sistema, presente en todo
+    /// macOS: maneja el zip de 7800+ archivos sin cargarlo entero en
+    /// memoria y hace merge sobre lo existente en vez de borrar).
+    /// `nonisolated` + subproceso: la extraccion tarda (decenas de MB a
+    /// un disco USB 2.0) y no debe congelar la UI, que mientras tanto
+    /// muestra el mensaje de progreso.
+    private nonisolated static func extractZip(at zipURL: URL, to destinationPath: String) async throws {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
+        process.arguments = ["-xk", zipURL.path, destinationPath]
+        let errPipe = Pipe()
+        process.standardError = errPipe
+
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            process.terminationHandler = { finished in
+                if finished.terminationStatus == 0 {
+                    continuation.resume(returning: ())
+                } else {
+                    let errData = errPipe.fileHandleForReading.readDataToEndOfFile()
+                    let message = String(data: errData, encoding: .utf8) ?? ""
+                    continuation.resume(throwing: InstallerError.processFailed(
+                        exitCode: finished.terminationStatus,
+                        output: "ditto: \(message)"))
+                }
+            }
+            do {
+                try process.run()
+            } catch {
+                continuation.resume(throwing: error)
+            }
         }
     }
 

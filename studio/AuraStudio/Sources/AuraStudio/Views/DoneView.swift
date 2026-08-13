@@ -15,8 +15,8 @@ struct DoneView: View {
             Text(mode == .install ? "Aura instalado" : "iPod restaurado")
                 .font(.title.bold())
             Text(mode == .install
-                 ? "Tu iPod va a reiniciar y arrancar con Aura. Ahora puedes usar la pestana Biblioteca de Aura Studio para sincronizar tu musica, fotos y videos."
-                 : "Tu iPod va a reiniciar y arrancar con el firmware original de Apple.")
+                 ? "Todos los archivos quedaron instalados: ya puedes desconectar el cable con seguridad. El iPod va a arrancar con Aura -- si no reinicia solo, mantén SELECT + MENU unos segundos. Despues puedes usar la pestana Biblioteca de Aura Studio para sincronizar tu musica, fotos y videos."
+                 : "Tu iPod va a reiniciar y arrancar con el firmware original de Apple. Ya puedes desconectar el cable.")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: 420)

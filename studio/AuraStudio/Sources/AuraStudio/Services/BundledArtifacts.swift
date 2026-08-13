@@ -12,6 +12,13 @@ struct BundledArtifacts {
 
     enum Name: String, CaseIterable {
         case firmware = "rockbox.ipod"
+        /// Arbol `.rockbox/` completo para el disco del iPod (ARM real,
+        /// generado con `make zip` en build-ipod6g + fuentes e iconos
+        /// del design system encima) -- fuentes a26-*, iconos/mascaras,
+        /// codecs, plugins (solitaire incluido), codepages. Sin esto el
+        /// firmware arranca pero sin tipografias SF ni iconos (D-045,
+        /// cerrado en D-178).
+        case rockboxTree = "rockbox.zip"
         case bootloader = "bootloader-ipod6g.ipod"
         case mks5lboot = "mks5lboot"
         case checksums = "checksums.txt"
@@ -55,7 +62,7 @@ struct BundledArtifacts {
         let text = try String(contentsOf: checksumsURL, encoding: .utf8)
         let expected = Self.parseChecksums(text)
 
-        for name in [Name.firmware, .bootloader, .mks5lboot] {
+        for name in [Name.firmware, .rockboxTree, .bootloader, .mks5lboot] {
             guard let fileURL = url(for: name) else {
                 throw InstallerError.missingBundledArtifact(name.rawValue)
             }
