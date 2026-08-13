@@ -86,6 +86,10 @@ enum InstallerError: Error, LocalizedError, Equatable {
     case diskAmbiguous(count: Int)
     case authorizationCancelled
     case privilegedOperationFailed(String)
+    /// TCC bloqueo la escritura directa al disco (newfs_msdos crudo).
+    /// `FailedView` muestra para este caso el boton que abre el panel
+    /// de Acceso total al disco, con la explicacion de que hacer.
+    case fullDiskAccessDenied
 
     var errorDescription: String? {
         switch self {
@@ -107,6 +111,8 @@ enum InstallerError: Error, LocalizedError, Equatable {
             return "Cancelaste la autorización de administrador. Este paso no puede continuar sin ese permiso."
         case .privilegedOperationFailed(let message):
             return message
+        case .fullDiskAccessDenied:
+            return "macOS bloqueó el acceso directo al disco del iPod. Concede \"Acceso total al disco\" a Aura Studio en Ajustes del Sistema (Privacidad y seguridad), cierra la app por completo, vuelve a abrirla y reintenta. Si Aura Studio ya aparece en la lista, quítala con el botón \"−\" y agrégala de nuevo -- el permiso puede quedar atado a una versión anterior de la app."
         }
     }
 }

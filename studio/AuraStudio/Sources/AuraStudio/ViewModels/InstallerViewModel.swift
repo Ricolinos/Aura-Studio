@@ -348,6 +348,9 @@ final class InstallerViewModel: ObservableObject {
         } catch PrivilegedExecutor.ExecutorError.userCancelled {
             lastError = .authorizationCancelled
             step = .failed
+        } catch PrivilegedExecutor.ExecutorError.fullDiskAccessRequired {
+            lastError = .fullDiskAccessDenied
+            step = .failed
         } catch let error as PrivilegedExecutor.ExecutorError {
             lastError = .privilegedOperationFailed(error.localizedDescription)
             step = .failed

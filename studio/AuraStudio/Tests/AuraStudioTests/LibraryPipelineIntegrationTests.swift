@@ -49,7 +49,10 @@ final class LibraryPipelineIntegrationTests: XCTestCase {
         try await generateTestVideo(at: videoSource)
         defer { try? FileManager.default.removeItem(at: videoSource) }
 
-        let viewModel = await LibraryViewModel()
+        let libraryRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("AuraLibTest-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: libraryRoot) }
+        let viewModel = await LibraryViewModel(libraryRoot: libraryRoot)
         await MainActor.run {
             viewModel.addDroppedFiles([photoURL, videoSource])
         }
@@ -123,7 +126,10 @@ final class LibraryPipelineIntegrationTests: XCTestCase {
         let fakeIndex = rockboxDir.appendingPathComponent("database_idx.tcd")
         try Data("fake preexisting index".utf8).write(to: fakeIndex)
 
-        let viewModel = await LibraryViewModel()
+        let libraryRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("AuraLibTest-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: libraryRoot) }
+        let viewModel = await LibraryViewModel(libraryRoot: libraryRoot)
         await MainActor.run { viewModel.addDroppedFiles([photoURL]) }
         await viewModel.processAll()
         await viewModel.sync(toVolumeAt: fakeIPod)

@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 struct DoneView: View {
     let mode: InstallerMode
@@ -51,7 +52,15 @@ struct FailedView: View {
             Text(error?.localizedDescription ?? "Error desconocido.")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
-                .frame(maxWidth: 420)
+                .frame(maxWidth: 440)
+            if error == .fullDiskAccessDenied {
+                Button("Abrir Acceso total al disco") {
+                    if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles") {
+                        NSWorkspace.shared.open(url)
+                    }
+                }
+                .buttonStyle(.bordered)
+            }
             Button("Reintentar", action: onRetry)
                 .buttonStyle(.borderedProminent)
         }

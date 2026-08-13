@@ -21,6 +21,12 @@ struct PrivilegedExecutor: Sendable {
         case userCancelled
         case scriptFailed(message: String)
         case safetyAbort(reason: String)
+        /// macOS (TCC) bloqueo la escritura directa a un dispositivo
+        /// /dev/rdiskN incluso corriendo como root -- hace falta Acceso
+        /// total al disco para Aura Studio. Con firma ad-hoc (desarrollo)
+        /// el permiso se invalida en CADA recompilacion; con firma real
+        /// de distribucion se concede una sola vez.
+        case fullDiskAccessRequired
 
         var errorDescription: String? {
             switch self {
@@ -30,6 +36,8 @@ struct PrivilegedExecutor: Sendable {
                 return message
             case .safetyAbort(let reason):
                 return "Aura Studio se detuvo por seguridad antes de tocar el disco: \(reason)"
+            case .fullDiskAccessRequired:
+                return "macOS bloqueó el acceso directo al disco del iPod."
             }
         }
     }
@@ -73,10 +81,19 @@ struct PrivilegedExecutor: Sendable {
                     let number = (errorDict[NSAppleScript.errorNumber] as? Int) ?? 0
                     let message = (errorDict[NSAppleScript.errorMessage] as? String) ?? "Error desconocido"
 
+                    // Los marcadores AURA_* los emiten los scripts a
+                    // stderr como ULTIMA linea antes de salir: el
+                    // mensaje de error de `do shell script` es el
+                    // stderr del comando, asi que `contains` (no
+                    // hasPrefix: puede venir precedido por el stderr de
+                    // los comandos anteriores) es la deteccion robusta.
                     if number == -128 {
                         log?.append(operation: operationName, result: "cancelado por el usuario")
                         continuation.resume(throwing: ExecutorError.userCancelled)
-                    } else if message.hasPrefix("AURA_SAFETY_ABORT") {
+                    } else if message.contains("AURA_FDA_REQUIRED") {
+                        log?.append(operation: operationName, result: "bloqueado por TCC (falta Acceso total al disco)")
+                        continuation.resume(throwing: ExecutorError.fullDiskAccessRequired)
+                    } else if message.contains("AURA_SAFETY_ABORT") {
                         log?.append(operation: operationName, result: "abortado por seguridad: \(message)")
                         continuation.resume(throwing: ExecutorError.safetyAbort(reason: message))
                     } else {
@@ -136,34 +153,41 @@ struct PrivilegedExecutor: Sendable {
 
     // MARK: - Formateo del disco del iPod
 
-    /// Reformatea la particion de datos a FAT32 con sectores de 4096
-    /// bytes (la capa USB del iPod expone el disco con bloques de
-    /// 4096 bytes; un FAT32 escrito con el tamaño de sector por
-    /// defecto de macOS, 512, queda en el disco pero macOS no logra
-    /// montarlo de vuelta). `diskutil eraseDisk` deja el volumen recien
-    /// creado montado -- `newfs_msdos` necesita el disco desmontado
-    /// para poder escribir el dispositivo crudo (`/dev/r...`), asi que
-    /// hay un `diskutil unmountDisk force` entre los dos comandos
-    /// (confirmado en hardware real: sin esto, `newfs_msdos` falla con
-    /// "Operation not permitted" incluso corriendo como root). Si
-    /// `newfs_msdos` sigue fallando con ese mismo error con el disco ya
-    /// desmontado, la causa mas probable es que a Aura Studio le falte
-    /// el permiso de Acceso total al disco en Ajustes del Sistema
-    /// (`PermissionsView` ya tiene el boton para concederlo) -- en
-    /// macOS moderno, escribir un dispositivo `/dev/rdiskN` crudo esta
-    /// sujeto a TCC incluso para un proceso con privilegios de
-    /// administrador.
+    /// Reformatea la particion de datos a FAT32, en dos etapas:
+    ///
+    /// 1. `diskutil eraseDisk` -- lo ejecuta el daemon del sistema
+    ///    (diskmanagementd), que tiene sus propios permisos: NO
+    ///    requiere Acceso total al disco para Aura Studio. Si el
+    ///    volumen resultante MONTA (se verifica esperando hasta 10s),
+    ///    ya esta: camino feliz sin ningun permiso especial. Es el caso
+    ///    de los iPod con mod de flash (iFlash/SD, sectores de 512),
+    ///    hoy los mas comunes.
+    ///
+    /// 2. Solo si ese volumen NO monta (el caso historico D-044: disco
+    ///    original que expone bloques de 4096 -- un FAT32 de sectores
+    ///    512 queda escrito pero macOS no lo puede montar), se cae al
+    ///    `newfs_msdos -S 4096` sobre el dispositivo crudo. ESO si esta
+    ///    sujeto a TCC incluso corriendo como root: si macOS lo bloquea
+    ///    ("Operation not permitted"), el script emite AURA_FDA_REQUIRED
+    ///    y la UI explica como conceder Acceso total al disco, en vez
+    ///    del error criptico de newfs_msdos (visto en vivo 2026-08-13:
+    ///    con firma ad-hoc el permiso se invalida en cada recompilacion
+    ///    y el usuario quedaba ante un mensaje inentendible).
+    ///
+    /// Los marcadores AURA_* van a stderr (`1>&2`): el mensaje de error
+    /// que reporta `do shell script` es el stderr del comando -- a
+    /// stdout jamas se habrian clasificado (bug latente de los abortos
+    /// de seguridad, corregido aqui).
     ///
     /// Reverifica identidad DENTRO del script, en el mismo contexto
     /// privilegiado que va a ejecutar el borrado -- nunca confia en
     /// que el identificador que le paso el codigo Swift siga siendo
     /// valido/correcto en el momento de la ejecucion real, porque
     /// `diskN` puede cambiar entre una consulta y la siguiente si hubo
-    /// reconexiones (confirmado en esta sesion: el mismo iPod aparecio
-    /// como disk9 y como disk7 en reconexiones distintas). Si algo no
-    /// coincide, el script sale con un mensaje `AURA_SAFETY_ABORT` que
-    /// `runElevated` reconoce y traduce a `.safetyAbort`, sin ejecutar
-    /// ningun comando destructivo.
+    /// reconexiones (confirmado: el mismo iPod aparecio como disk9 y
+    /// como disk7 en reconexiones distintas). Si algo no coincide, el
+    /// script sale con `AURA_SAFETY_ABORT` sin ejecutar nada
+    /// destructivo.
     func eraseAndFormatDisk(candidate: DiskCandidateInfo, volumeName: String) async throws {
         guard candidate.matchesIPodCriteria else {
             throw ExecutorError.safetyAbort(reason: "el candidato no cumple los criterios de identificacion del iPod")
@@ -178,22 +202,29 @@ struct PrivilegedExecutor: Sendable {
         set -e
         DISK="\(disk)"
         PLIST=$(diskutil info -plist "$DISK")
-        VENDOR=$(echo "$PLIST" | plutil -extract MediaName raw -o - - 2>/dev/null || echo "")
         SIZE=$(echo "$PLIST" | plutil -extract TotalSize raw -o - - 2>/dev/null || echo "0")
         REMOVABLE=$(echo "$PLIST" | plutil -extract Removable raw -o - - 2>/dev/null || echo "false")
         INTERNAL=$(echo "$PLIST" | plutil -extract Internal raw -o - - 2>/dev/null || echo "true")
         if [ "$REMOVABLE" != "true" ] && [ "$REMOVABLE" != "1" ]; then
-          echo "AURA_SAFETY_ABORT: el disco ya no aparece como removible"; exit 90
+          echo "AURA_SAFETY_ABORT: el disco ya no aparece como removible" 1>&2; exit 90
         fi
         if [ "$INTERNAL" = "true" ] || [ "$INTERNAL" = "1" ]; then
-          echo "AURA_SAFETY_ABORT: el disco aparece como interno"; exit 91
+          echo "AURA_SAFETY_ABORT: el disco aparece como interno" 1>&2; exit 91
         fi
         if [ "$SIZE" -lt \(minSize) ] || [ "$SIZE" -gt \(maxSize) ]; then
-          echo "AURA_SAFETY_ABORT: el tamaño del disco ya no coincide ($SIZE bytes)"; exit 92
+          echo "AURA_SAFETY_ABORT: el tamaño del disco ya no coincide ($SIZE bytes)" 1>&2; exit 92
         fi
         diskutil eraseDisk FAT32 "\(name)" MBR "$DISK"
+        for i in 1 2 3 4 5 6 7 8 9 10; do
+          MP=$(diskutil info -plist "${DISK}s1" 2>/dev/null | plutil -extract MountPoint raw -o - - 2>/dev/null || echo "")
+          if [ -n "$MP" ]; then exit 0; fi
+          sleep 1
+        done
         diskutil unmountDisk force "$DISK"
-        newfs_msdos -F 32 -S 4096 -v "\(name)" "/dev/r${DISK}s1"
+        if ! newfs_msdos -F 32 -S 4096 -v "\(name)" "/dev/r${DISK}s1"; then
+          echo "AURA_FDA_REQUIRED: macOS bloqueo la escritura directa al disco" 1>&2; exit 93
+        fi
+        diskutil mountDisk "$DISK" || true
         exit 0
         """
         try await runElevated(script, operationName: "formatear disco \(candidate.bsdName)")
