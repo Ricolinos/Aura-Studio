@@ -140,7 +140,19 @@ struct PrivilegedExecutor: Sendable {
     /// bytes (la capa USB del iPod expone el disco con bloques de
     /// 4096 bytes; un FAT32 escrito con el tamaño de sector por
     /// defecto de macOS, 512, queda en el disco pero macOS no logra
-    /// montarlo de vuelta).
+    /// montarlo de vuelta). `diskutil eraseDisk` deja el volumen recien
+    /// creado montado -- `newfs_msdos` necesita el disco desmontado
+    /// para poder escribir el dispositivo crudo (`/dev/r...`), asi que
+    /// hay un `diskutil unmountDisk force` entre los dos comandos
+    /// (confirmado en hardware real: sin esto, `newfs_msdos` falla con
+    /// "Operation not permitted" incluso corriendo como root). Si
+    /// `newfs_msdos` sigue fallando con ese mismo error con el disco ya
+    /// desmontado, la causa mas probable es que a Aura Studio le falte
+    /// el permiso de Acceso total al disco en Ajustes del Sistema
+    /// (`PermissionsView` ya tiene el boton para concederlo) -- en
+    /// macOS moderno, escribir un dispositivo `/dev/rdiskN` crudo esta
+    /// sujeto a TCC incluso para un proceso con privilegios de
+    /// administrador.
     ///
     /// Reverifica identidad DENTRO del script, en el mismo contexto
     /// privilegiado que va a ejecutar el borrado -- nunca confia en
@@ -180,6 +192,7 @@ struct PrivilegedExecutor: Sendable {
           echo "AURA_SAFETY_ABORT: el tamaño del disco ya no coincide ($SIZE bytes)"; exit 92
         fi
         diskutil eraseDisk FAT32 "\(name)" MBR "$DISK"
+        diskutil unmountDisk force "$DISK"
         newfs_msdos -F 32 -S 4096 -v "\(name)" "/dev/r${DISK}s1"
         exit 0
         """

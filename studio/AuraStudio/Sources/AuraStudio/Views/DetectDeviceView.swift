@@ -6,7 +6,7 @@ import SwiftUI
 struct DetectDeviceView: View {
     @ObservedObject var monitor: IPodMonitor
     let onBack: () -> Void
-    let onReadyForDFU: () -> Void
+    let onDeviceReady: () -> Void
 
     var body: some View {
         VStack(spacing: 20) {
@@ -28,7 +28,7 @@ struct DetectDeviceView: View {
                     .buttonStyle(.bordered)
                 Spacer()
                 Button("Ya lo conecte, continuar igual") {
-                    onReadyForDFU()
+                    onDeviceReady()
                 }
                 .buttonStyle(.bordered)
             }
@@ -36,7 +36,7 @@ struct DetectDeviceView: View {
         }
         .onChange(of: monitor.state) { newValue in
             if case .diskMode(let info) = newValue, info.isFAT32 {
-                onReadyForDFU()
+                onDeviceReady()
             }
         }
     }
@@ -59,7 +59,7 @@ struct DetectDeviceView: View {
         case .notConnected, .detecting:
             Text("Conecta tu iPod Classic 6G a este Mac por USB. Si iTunes/Music se abre solo, podes cerrarlo -- no interfiere con Aura Studio.")
         case .diskMode(let info) where !info.isFAT32:
-            Text("Encontramos \"\(info.volumeName)\", pero no esta formateado en FAT32. Convertilo a FAT32 antes de continuar (busca \"iPod FAT32\" en la guia de Aura para los pasos exactos).")
+            Text("Encontramos \"\(info.volumeName)\", con el firmware original de Apple (no esta en FAT32 todavia). No hace falta que lo convirtas vos: hace clic en \"Ya lo conecte, continuar igual\" y Aura Studio lo formatea automaticamente en el paso de preparar el disco, mas adelante.")
         case .diskMode(let info):
             Text("Encontramos \"\(info.volumeName)\". Preparando el siguiente paso...")
         case .dfuMode:

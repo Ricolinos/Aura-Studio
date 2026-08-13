@@ -2,6 +2,10 @@ import SwiftUI
 
 struct DoneView: View {
     let mode: InstallerMode
+    /// Solo relevante en modo instalar -- si se eligio dual boot en
+    /// `BootModeView`, el usuario necesita saber la combinacion de
+    /// botones para volver a Apple alguna vez.
+    let dualBoot: Bool
 
     var body: some View {
         VStack(spacing: 20) {
@@ -16,6 +20,19 @@ struct DoneView: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: 420)
+
+            if mode == .install && dualBoot {
+                VStack(alignment: .leading, spacing: 6) {
+                    Label("Instalaste en modo dual boot", systemImage: "arrow.triangle.branch")
+                        .font(.headline)
+                    Text("Para volver a Apple en cualquier momento, mantene SELECT + MENU presionados unos 5 segundos al encender el iPod. Cualquier otra combinacion (o nada) arranca Aura.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                .padding(14)
+                .frame(maxWidth: 420, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.08)))
+            }
         }
     }
 }

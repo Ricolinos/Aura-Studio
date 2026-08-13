@@ -5,21 +5,28 @@ import Foundation
 /// resultado de una operacion privilegiada) confirma el estado
 /// esperado -- ver `InstallerViewModel`.
 ///
-/// `bootloaderUSBMode`/`preparingDisk`/`copyingFiles` se agregaron
-/// despues de flashear un iPod real por primera vez en esta sesion: el
-/// flujo original terminaba en `installing`, pero en la practica hace
-/// falta reconectar en modo Bootloader USB, (a veces) reformatear la
-/// particion de datos, y recien despues copiar los archivos del
-/// firmware -- ninguno de esos pasos existia en el diseño original.
+/// Orden real verificado a mano por el usuario en hardware real: primero
+/// se prepara el disco de datos (formatear a FAT32 si hace falta, copiar
+/// los archivos del firmware) mientras el iPod todavia esta corriendo su
+/// firmware original y montado en modo disco normal -- eso NO requiere
+/// DFU, porque en el iPod 6G el bootloader vive en NOR flash interna,
+/// completamente separada del disco. Recien al final se entra a DFU para
+/// flashear el bootloader. El diseño anterior lo hacia al reves
+/// (DFU/bootloader primero, disco despues via un reconecte especial a
+/// "modo Bootloader USB") -- funcionaba en teoria pero dependia de un
+/// paso extra fragil (detectar el reconecte en ese modo especifico) que
+/// nunca hizo falta.
 enum InstallerStep: Int, CaseIterable, Comparable {
     case welcome
+    /// Solo en modo instalar -- elegir dual boot (default) o reemplazar
+    /// por completo el firmware de Apple. Restaurar la salta siempre.
+    case chooseBootMode
     case permissions
     case detectDevice
-    case enterDFU
-    case installing
-    case bootloaderUSBMode
     case preparingDisk
     case copyingFiles
+    case enterDFU
+    case installing
     case done
     case failed
 

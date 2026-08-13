@@ -7,10 +7,15 @@ import SwiftUI
 struct InstallerWizardView: View {
     @ObservedObject var viewModel: InstallerViewModel
 
-    private let visibleSteps: [InstallerStep] = [
-        .welcome, .permissions, .detectDevice, .enterDFU, .installing,
-        .bootloaderUSBMode, .preparingDisk, .copyingFiles, .done,
-    ]
+    private var visibleSteps: [InstallerStep] {
+        var steps: [InstallerStep] = [.welcome]
+        if viewModel.mode == .install { steps.append(.chooseBootMode) }
+        steps += [
+            .permissions, .detectDevice, .preparingDisk, .copyingFiles,
+            .enterDFU, .installing, .done,
+        ]
+        return steps
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -24,22 +29,22 @@ struct InstallerWizardView: View {
                 switch viewModel.step {
                 case .welcome:
                     WelcomeView(mode: viewModel.mode, onBack: viewModel.backFromWelcome, onContinue: viewModel.advanceFromWelcome)
+                case .chooseBootMode:
+                    BootModeView(onBack: viewModel.backFromBootMode, onContinue: viewModel.advanceFromBootMode)
                 case .permissions:
                     PermissionsView(onBack: viewModel.backFromPermissions, onContinue: viewModel.advanceFromPermissions)
                 case .detectDevice:
-                    DetectDeviceView(monitor: viewModel.monitor, onBack: viewModel.backFromDetectDevice, onReadyForDFU: viewModel.acknowledgeEnteringDFU)
+                    DetectDeviceView(monitor: viewModel.monitor, onBack: viewModel.backFromDetectDevice, onDeviceReady: viewModel.acknowledgeDeviceReady)
                 case .enterDFU:
                     EnterDFUView(monitor: viewModel.monitor, onBack: viewModel.backFromEnterDFU)
                 case .installing:
                     InstallingView(mode: viewModel.mode, message: viewModel.progressMessage)
-                case .bootloaderUSBMode:
-                    BootloaderUSBModeView()
                 case .preparingDisk:
                     SimpleProgressView(title: "Preparando el disco", message: viewModel.progressMessage)
                 case .copyingFiles:
                     SimpleProgressView(title: "Copiando archivos", message: viewModel.progressMessage)
                 case .done:
-                    DoneView(mode: viewModel.mode)
+                    DoneView(mode: viewModel.mode, dualBoot: !viewModel.destroyOriginalFirmware)
                 case .failed:
                     FailedView(error: viewModel.lastError, onRetry: viewModel.retry)
                 }
@@ -54,26 +59,6 @@ struct InstallerWizardView: View {
                 onConfirm: viewModel.confirmPendingAuthorization,
                 onCancel: viewModel.cancelPendingAuthorization
             )
-        }
-    }
-}
-
-private struct BootloaderUSBModeView: View {
-    var body: some View {
-        VStack(spacing: 20) {
-            Image(systemName: "cable.connector")
-                .font(.system(size: 48))
-                .foregroundStyle(.tint)
-            Text("Reconectá el iPod")
-                .font(.title.bold())
-            VStack(alignment: .leading, spacing: 10) {
-                Text("1. Desconectá el cable USB del iPod.")
-                Text("2. Con el iPod apagado, mantené presionados SELECT + RIGHT.")
-                Text("3. Conectá el cable mientras mantenés esos botones.")
-                Text("4. Aura Studio detecta el modo Bootloader USB automáticamente.")
-            }
-            .frame(maxWidth: 420, alignment: .leading)
-            ProgressView().controlSize(.small)
         }
     }
 }

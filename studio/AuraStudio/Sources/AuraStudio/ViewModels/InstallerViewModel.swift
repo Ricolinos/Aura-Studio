@@ -1,14 +1,19 @@
 import Foundation
 import Combine
 
-/// Orquesta el asistente completo: detectar el iPod, guiarlo a modo
-/// DFU, instalar (o desinstalar, en modo restore) el bootloader Aura,
-/// reconectar en modo Bootloader USB, preparar el disco si hace falta,
-/// copiar los archivos del firmware, y verificar el resultado -- todo
-/// dentro de la app, sin que el usuario toque una Terminal. Las
-/// operaciones que necesitan privilegios de administrador (pausar
-/// agentes de macOS, formatear el disco) pasan por `PendingAuthorization`
-/// + `PrivilegedActionSheet`, que siempre explica antes de pedir la
+/// Orquesta el asistente completo: detectar el iPod (modo disco normal,
+/// corriendo su firmware original -- todavia no hace falta DFU),
+/// preparar el disco si hace falta (formatear a FAT32) y copiar los
+/// archivos del firmware, y recien al final guiarlo a modo DFU para
+/// flashear (o quitar, en modo restore) el bootloader de Aura -- todo
+/// dentro de la app, sin que el usuario toque una Terminal. El disco de
+/// datos y el bootloader del iPod 6G viven en soportes fisicos
+/// distintos (particion FAT32 vs. NOR flash interna), asi que no hace
+/// falta esperar a DFU/bootloader para tocar el disco -- ese orden es
+/// el que se verifico a mano en hardware real. Las operaciones que
+/// necesitan privilegios de administrador (pausar agentes de macOS,
+/// formatear el disco) pasan por `PendingAuthorization` +
+/// `PrivilegedActionSheet`, que siempre explica antes de pedir la
 /// contraseña.
 @MainActor
 final class InstallerViewModel: ObservableObject {
@@ -29,6 +34,11 @@ final class InstallerViewModel: ObservableObject {
     private var runner: MKS5LBootRunner?
     private let executor: PrivilegedExecutor
     private var ampAgentsPaused = false
+    /// Evita que un segundo evento de `DiskArbitrationMonitor` (p.ej. el
+    /// disco remontando dos veces seguidas tras `newfs_msdos`) dispare
+    /// `copyFirmwareFiles` por duplicado mientras la primera copia
+    /// todavia esta en curso.
+    private var isCopyingFirmware = false
 
     init(monitor: IPodMonitor? = nil, executor: PrivilegedExecutor = PrivilegedExecutor()) {
         self.monitor = monitor ?? IPodMonitor()
@@ -39,6 +49,7 @@ final class InstallerViewModel: ObservableObject {
     func start(mode: InstallerMode) {
         self.mode = mode
         self.lastError = nil
+        isCopyingFirmware = false
         step = .welcome
         monitor.start()
         observeDeviceState()
@@ -60,7 +71,25 @@ final class InstallerViewModel: ObservableObject {
     }
 
     func advanceFromWelcome() {
+        switch mode {
+        case .install:
+            step = .chooseBootMode
+        case .restore:
+            step = .permissions
+        }
+    }
+
+    /// El usuario ya eligio si conservar el firmware de Apple (dual
+    /// boot, default seguro) o reemplazarlo por completo -- se guarda
+    /// en `destroyOriginalFirmware`, que `runInstallOrRestore()` le pasa
+    /// tal cual a `mks5lboot --bl-inst` (con o sin `--single`).
+    func advanceFromBootMode(dualBoot: Bool) {
+        destroyOriginalFirmware = !dualBoot
         step = .permissions
+    }
+
+    func backFromBootMode() {
+        step = .welcome
     }
 
     func advanceFromPermissions() {
@@ -80,7 +109,7 @@ final class InstallerViewModel: ObservableObject {
     }
 
     func backFromPermissions() {
-        step = .welcome
+        step = mode == .install ? .chooseBootMode : .welcome
     }
 
     func backFromDetectDevice() {
@@ -98,14 +127,59 @@ final class InstallerViewModel: ObservableObject {
         step = .detectDevice
     }
 
-    /// El usuario confirma que ya combino los botones para entrar a
-    /// modo DFU; a partir de aca `observeDeviceState()` hace avanzar
-    /// la pantalla sola apenas `IPodMonitor` confirma el estado DFU
-    /// real. Antes de eso, ofrece pausar los agentes AMP (D-041/D-044):
-    /// no probado como necesario en el hardware de esta sesion, pero
-    /// es una interferencia real documentada en otras Mac, y es
-    /// barata/reversible.
-    func acknowledgeEnteringDFU() {
+    /// El usuario confirma que el iPod ya esta conectado y montado en
+    /// modo disco normal (todavia con su firmware original, sin tocar
+    /// DFU). En modo restore no hay nada que tocar del disco -- se va
+    /// directo a preparar la entrada a DFU. En modo install, si el
+    /// disco no esta en FAT32 pide formatearlo primero; si ya lo esta,
+    /// copia los archivos del firmware directo.
+    ///
+    /// Caso de borde real (alcanzable volviendo "Atras" desde la guia
+    /// de DFU si el iPod ya habia entrado a ese modo): si el estado ya
+    /// es `.dfuMode` en vez de `.diskMode`, no hay disco que tocar --
+    /// se salta directo a la autorizacion de DFU en vez de quedar en
+    /// un boton que no hace nada (el guard anterior solo contemplaba
+    /// `.diskMode` y silenciosamente no hacia nada con cualquier otro
+    /// estado).
+    func acknowledgeDeviceReady() {
+        switch mode {
+        case .restore:
+            proceedToDFU()
+        case .install:
+            if case .dfuMode = monitor.state {
+                proceedToDFU()
+                return
+            }
+            guard case .diskMode(let info) = monitor.state else { return }
+            if info.isFAT32 {
+                isCopyingFirmware = true
+                Task { await copyFirmwareFiles(mountPath: info.mountPath) }
+            } else {
+                let candidates = IPodDiskIdentifier.currentCandidates()
+                switch IPodDiskIdentifier.identify(from: candidates) {
+                case .found(let candidate):
+                    step = .preparingDisk
+                    pendingAuthorization = .formatDisk(volumeName: info.volumeName, diskIdentifier: candidate.bsdName)
+                case .notFound:
+                    lastError = .deviceNotFound
+                    step = .failed
+                case .ambiguous(let matches):
+                    lastError = .diskAmbiguous(count: matches.count)
+                    step = .failed
+                }
+            }
+        }
+    }
+
+    /// Disco (en modo install) ya preparado con los archivos del
+    /// firmware copiados, o modo restore que nunca tocaba el disco:
+    /// ofrece pausar los agentes AMP (D-041/D-044, no probado como
+    /// necesario en el hardware de esta sesion, pero es una
+    /// interferencia real documentada en otras Mac, y es
+    /// barata/reversible) antes de mostrar la guia de DFU.
+    /// `observeDeviceState()` hace avanzar la pantalla sola apenas
+    /// `IPodMonitor` confirma el estado DFU real.
+    private func proceedToDFU() {
         pendingAuthorization = .pauseAMPAgents()
     }
 
@@ -163,12 +237,11 @@ final class InstallerViewModel: ObservableObject {
 
     private func reactToDeviceState(_ state: DeviceState) {
         switch (step, state) {
-        case (.detectDevice, .diskMode(let info)) where info.isFAT32:
-            step = .enterDFU
+        case (.copyingFiles, .diskMode(let info)) where !isCopyingFirmware:
+            isCopyingFirmware = true
+            Task { await copyFirmwareFiles(mountPath: info.mountPath) }
         case (.enterDFU, .dfuMode):
             Task { await runInstallOrRestore() }
-        case (.bootloaderUSBMode, .diskMode(let info)):
-            Task { await proceedAfterBootloaderUSBMode(info) }
         default:
             break
         }
@@ -192,8 +265,8 @@ final class InstallerViewModel: ObservableObject {
                 guard result.exitCode == 0 else {
                     throw InstallerError.processFailed(exitCode: result.exitCode, output: result.stdout + result.stderr)
                 }
-                progressMessage = "Bootloader instalado. Reconectá el iPod en modo Bootloader USB."
-                step = .bootloaderUSBMode
+                progressMessage = "Listo."
+                step = .done
 
             case .restore:
                 progressMessage = "Quitando el bootloader de Aura..."
@@ -209,30 +282,6 @@ final class InstallerViewModel: ObservableObject {
             step = .failed
         } catch {
             lastError = .processFailed(exitCode: -1, output: error.localizedDescription)
-            step = .failed
-        }
-    }
-
-    /// Con el disco ya montado en modo Bootloader USB: si ya esta en
-    /// FAT32 (el caso mas comun -- cualquier iPod que ya tuvo Rockbox,
-    /// o que ya venia en FAT32 de fabrica), salta directo a copiar los
-    /// archivos. Si no, pide autorizacion para formatearlo primero.
-    private func proceedAfterBootloaderUSBMode(_ info: DiskModeInfo) async {
-        if info.isFAT32 {
-            await copyFirmwareFiles(mountPath: info.mountPath)
-            return
-        }
-
-        let candidates = IPodDiskIdentifier.currentCandidates()
-        switch IPodDiskIdentifier.identify(from: candidates) {
-        case .found(let candidate):
-            step = .preparingDisk
-            pendingAuthorization = .formatDisk(volumeName: info.volumeName, diskIdentifier: candidate.bsdName)
-        case .notFound:
-            lastError = .deviceNotFound
-            step = .failed
-        case .ambiguous(let matches):
-            lastError = .diskAmbiguous(count: matches.count)
             step = .failed
         }
     }
@@ -292,8 +341,8 @@ final class InstallerViewModel: ObservableObject {
                 throw InstallerError.processFailed(exitCode: -1, output: "no se pudo verificar rockbox.ipod tras copiarlo")
             }
 
-            progressMessage = "Listo."
-            step = .done
+            progressMessage = "Archivos copiados. Ahora hace falta flashear el arranque por DFU."
+            proceedToDFU()
         } catch let error as InstallerError {
             lastError = error
             step = .failed
@@ -305,6 +354,7 @@ final class InstallerViewModel: ObservableObject {
 
     func retry() {
         lastError = nil
+        isCopyingFirmware = false
         step = .detectDevice
     }
 }
