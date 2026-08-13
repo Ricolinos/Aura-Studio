@@ -15,7 +15,7 @@ struct DoneView: View {
             Text(mode == .install ? "Aura instalado" : "iPod restaurado")
                 .font(.title.bold())
             Text(mode == .install
-                 ? "Tu iPod va a reiniciar y arrancar con Aura. Ahora podes usar la pestana Biblioteca de Aura Studio para sincronizar tu musica, fotos y videos."
+                 ? "Tu iPod va a reiniciar y arrancar con Aura. Ahora puedes usar la pestana Biblioteca de Aura Studio para sincronizar tu musica, fotos y videos."
                  : "Tu iPod va a reiniciar y arrancar con el firmware original de Apple.")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
@@ -25,7 +25,7 @@ struct DoneView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Label("Instalaste en modo dual boot", systemImage: "arrow.triangle.branch")
                         .font(.headline)
-                    Text("Para volver a Apple en cualquier momento, mantene SELECT + MENU presionados unos 5 segundos al encender el iPod. Cualquier otra combinacion (o nada) arranca Aura.")
+                    Text("Para volver a Apple en cualquier momento, mantén SELECT + MENU presionados unos 5 segundos al encender el iPod. Cualquier otra combinacion (o nada) arranca Aura.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }

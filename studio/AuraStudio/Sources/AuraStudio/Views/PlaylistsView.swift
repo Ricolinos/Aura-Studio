@@ -36,7 +36,7 @@ struct PlaylistsView: View {
                 } else {
                     VStack {
                         Spacer()
-                        Text("Elegi o crea una playlist")
+                        Text("Elige o crea una playlist")
                             .foregroundStyle(.secondary)
                         Spacer()
                     }

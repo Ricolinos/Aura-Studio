@@ -36,7 +36,7 @@ struct FFmpegTranscoder {
         var errorDescription: String? {
             switch self {
             case .ffmpegNotFound:
-                return "No se encontro ffmpeg instalado. Instalalo con \"brew install ffmpeg\" y volve a intentar."
+                return "No se encontro ffmpeg instalado. Instálalo con \"brew install ffmpeg\" y vuelve a intentar."
             case .processFailed(let output):
                 return "ffmpeg fallo: \(output)"
             }

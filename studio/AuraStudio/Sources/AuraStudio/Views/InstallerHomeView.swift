@@ -36,7 +36,7 @@ struct ModePickerView: View {
                 .foregroundStyle(.tint)
             Text("Aura Studio")
                 .font(.largeTitle.bold())
-            Text("Instala el firmware Aura en tu iPod Classic 6G, o restaura el firmware original si queres volver atras.")
+            Text("Instala el firmware Aura en tu iPod Classic 6G, o restaura el firmware original si quieres volver atras.")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: 420)

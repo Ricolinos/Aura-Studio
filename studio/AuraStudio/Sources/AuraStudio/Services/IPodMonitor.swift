@@ -68,7 +68,13 @@ final class IPodMonitor: ObservableObject {
 
     /// El escaneo DFU es costoso relativo (lanza un proceso y hace I/O
     /// USB), asi que se salta mientras ya sabemos que el disco esta
-    /// montado -- no puede estar en las dos formas a la vez.
+    /// montado -- no puede estar en las dos formas a la vez. De paso,
+    /// en el mismo ciclo (mismo costo de un `Task.sleep`, sin sondeo
+    /// adicional) tambien busca el iPod por disco completo via IOKit
+    /// (`IPodDiskIdentifier`, que no necesita ningun volumen montado)
+    /// cuando ni DiskArbitration ni el escaneo DFU encontraron nada --
+    /// cubre el disco sin sistema de archivos valido (ver
+    /// `DeviceState.diskModeNoFilesystem`).
     private func startDFUPolling() {
         dfuPollTask?.cancel()
         dfuPollTask = Task { [weak self] in
@@ -80,7 +86,11 @@ final class IPodMonitor: ObservableObject {
                 }
                 if let runner = self.runner, let dfu = try? runner.scanDFU() {
                     self.state = .dfuMode(dfu)
+                } else if case .found(let candidate) = IPodDiskIdentifier.identify(from: IPodDiskIdentifier.currentCandidates()) {
+                    self.state = .diskModeNoFilesystem(candidate)
                 } else if case .dfuMode = self.state {
+                    self.state = .notConnected
+                } else if case .diskModeNoFilesystem = self.state {
                     self.state = .notConnected
                 } else if self.state == .detecting {
                     self.state = .notConnected

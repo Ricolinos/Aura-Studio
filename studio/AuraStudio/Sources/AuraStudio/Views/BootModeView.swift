@@ -18,7 +18,7 @@ struct BootModeView: View {
         VStack(spacing: 20) {
             Text("Modo de arranque")
                 .font(.title.bold())
-            Text("Elegi que pasa con el firmware original de Apple al instalar Aura.")
+            Text("Elige que pasa con el firmware original de Apple al instalar Aura.")
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 480)
@@ -28,7 +28,7 @@ struct BootModeView: View {
                     icon: "arrow.triangle.branch",
                     title: "Dual boot",
                     badge: "Recomendado",
-                    explanation: "Conserva el firmware original de Apple junto con Aura. Al encender el iPod, mantene SELECT + MENU presionados unos 5 segundos para arrancar Apple -- cualquier otra combinacion (o nada) arranca Aura. No hace falta configurar nada mas: el propio bootloader elige solo, cada vez que prendes el iPod.",
+                    explanation: "Conserva el firmware original de Apple junto con Aura. Al encender el iPod, mantén SELECT + MENU presionados unos 5 segundos para arrancar Apple -- cualquier otra combinacion (o nada) arranca Aura. No hace falta configurar nada mas: el propio bootloader elige solo, cada vez que prendes el iPod.",
                     isSelected: dualBoot,
                     accent: false
                 ) { dualBoot = true }
@@ -37,7 +37,7 @@ struct BootModeView: View {
                     icon: "exclamationmark.triangle.fill",
                     title: "Solo Aura",
                     badge: nil,
-                    explanation: "Borra el firmware original de Apple del NOR interno del iPod. Una vez instalado, el iPod solo puede arrancar Aura -- no hay forma de volver a Apple sin restaurarlo con iTunes/Finder desde cero. Elegi esto solo si estas seguro de que no vas a querer volver.",
+                    explanation: "Borra el firmware original de Apple del NOR interno del iPod. Una vez instalado, el iPod solo puede arrancar Aura -- no hay forma de volver a Apple sin restaurarlo con iTunes/Finder desde cero. Elige esto solo si estás seguro de que no vas a querer volver.",
                     isSelected: !dualBoot,
                     accent: true
                 ) { dualBoot = false }

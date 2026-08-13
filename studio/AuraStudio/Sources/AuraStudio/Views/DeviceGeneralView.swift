@@ -152,7 +152,7 @@ struct DeviceGeneralView: View {
             Text("Conecta tu iPod").font(.title2.bold())
             Text(stateHint)
                 .foregroundStyle(.secondary)
-            Text("Mientras tanto podes ir armando la biblioteca en Musica, Video y Fotos: se sincroniza cuando conectes el dispositivo.")
+            Text("Mientras tanto puedes ir armando la biblioteca en Musica, Video y Fotos: se sincroniza cuando conectes el dispositivo.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }
@@ -162,6 +162,8 @@ struct DeviceGeneralView: View {
         switch state {
         case .dfuMode:
             return "El iPod esta en modo DFU. Usa la seccion Instalador para instalar o restaurar el firmware."
+        case .diskModeNoFilesystem:
+            return "El disco del iPod no tiene un sistema de archivos valido. Usa la seccion Instalador para prepararlo de nuevo."
         case .unknown:
             return "Hay un dispositivo Apple conectado, pero no se pudo identificar como un iPod Classic."
         case .detecting:

@@ -33,7 +33,6 @@ final class InstallerViewModel: ObservableObject {
     private var cancellables: Set<AnyCancellable> = []
     private var runner: MKS5LBootRunner?
     private let executor: PrivilegedExecutor
-    private var ampAgentsPaused = false
     /// Evita que un segundo evento de `DiskArbitrationMonitor` (p.ej. el
     /// disco remontando dos veces seguidas tras `newfs_msdos`) dispare
     /// `copyFirmwareFiles` por duplicado mientras la primera copia
@@ -58,16 +57,17 @@ final class InstallerViewModel: ObservableObject {
     /// Se llama SIEMPRE al salir del asistente, haya terminado bien o
     /// mal -- la garantia de "los agentes AMP se reactivan pase lo que
     /// pase" no depende solo de esto (el watchdog en el propio script
-    /// privilegiado es la red de seguridad real ante un crash), pero
-    /// en el camino normal esto los reactiva de inmediato en vez de
-    /// esperar el timeout del watchdog.
+    /// privilegiado es la red de seguridad real ante un crash, y
+    /// `AppDelegate.applicationShouldTerminate` bloquea el cierre de la
+    /// app entera hasta que `AMPAgentsGuard` confirma la reactivacion
+    /// si el usuario cierra con Cmd+Q en vez de navegar dentro del
+    /// asistente), pero en el camino normal esto los reactiva de
+    /// inmediato en vez de esperar cualquiera de esas dos redes de
+    /// seguridad.
     func stop() {
         monitor.stop()
         cancellables.removeAll()
-        if ampAgentsPaused {
-            Task { try? await executor.resumeAMPAgents() }
-            ampAgentsPaused = false
-        }
+        Task { await AMPAgentsGuard.shared.resumeIfNeeded() }
     }
 
     func advanceFromWelcome() {
@@ -120,10 +120,7 @@ final class InstallerViewModel: ObservableObject {
     /// los reactiva de una -- no tiene sentido dejarlos pausados si el
     /// usuario decide no seguir con la instalacion todavia.
     func backFromEnterDFU() {
-        if ampAgentsPaused {
-            Task { try? await executor.resumeAMPAgents() }
-            ampAgentsPaused = false
-        }
+        Task { await AMPAgentsGuard.shared.resumeIfNeeded() }
         step = .detectDevice
     }
 
@@ -134,40 +131,57 @@ final class InstallerViewModel: ObservableObject {
     /// disco no esta en FAT32 pide formatearlo primero; si ya lo esta,
     /// copia los archivos del firmware directo.
     ///
-    /// Caso de borde real (alcanzable volviendo "Atras" desde la guia
-    /// de DFU si el iPod ya habia entrado a ese modo): si el estado ya
-    /// es `.dfuMode` en vez de `.diskMode`, no hay disco que tocar --
-    /// se salta directo a la autorizacion de DFU en vez de quedar en
-    /// un boton que no hace nada (el guard anterior solo contemplaba
-    /// `.diskMode` y silenciosamente no hacia nada con cualquier otro
-    /// estado).
+    /// Casos de borde reales:
+    /// - Volviendo "Atras" desde la guia de DFU si el iPod ya habia
+    ///   entrado a ese modo: si el estado ya es `.dfuMode` en vez de
+    ///   `.diskMode`, no hay disco que tocar -- se salta directo a la
+    ///   autorizacion de DFU en vez de quedar en un boton que no hace
+    ///   nada.
+    /// - `.diskModeNoFilesystem`: el disco no tiene NINGUN volumen
+    ///   montable (bootloader ya instalado pero la particion de datos
+    ///   quedo invalida por una instalacion interrumpida, o un disco en
+    ///   blanco de fabrica) -- mismo flujo de formateo que "no esta en
+    ///   FAT32", solo que partiendo de un `DiskCandidateInfo` en vez de
+    ///   un `DiskModeInfo` porque no hay volumen del que sacar uno.
     func acknowledgeDeviceReady() {
         switch mode {
         case .restore:
             proceedToDFU()
         case .install:
-            if case .dfuMode = monitor.state {
+            switch monitor.state {
+            case .dfuMode:
                 proceedToDFU()
-                return
-            }
-            guard case .diskMode(let info) = monitor.state else { return }
-            if info.isFAT32 {
+            case .diskMode(let info) where info.isFAT32:
                 isCopyingFirmware = true
                 Task { await copyFirmwareFiles(mountPath: info.mountPath) }
-            } else {
-                let candidates = IPodDiskIdentifier.currentCandidates()
-                switch IPodDiskIdentifier.identify(from: candidates) {
-                case .found(let candidate):
-                    step = .preparingDisk
-                    pendingAuthorization = .formatDisk(volumeName: info.volumeName, diskIdentifier: candidate.bsdName)
-                case .notFound:
-                    lastError = .deviceNotFound
-                    step = .failed
-                case .ambiguous(let matches):
-                    lastError = .diskAmbiguous(count: matches.count)
-                    step = .failed
-                }
+            case .diskMode(let info):
+                beginFormat(volumeName: info.volumeName)
+            case .diskModeNoFilesystem:
+                beginFormat(volumeName: "iPod")
+            default:
+                break
             }
+        }
+    }
+
+    /// Reidentifica el disco en el momento mismo de pedir autorizacion
+    /// (nunca confia en un `bsdName` que pudo haber quedado desactualizado
+    /// mientras el usuario miraba la pantalla) y arma el pedido de
+    /// formateo. `volumeName` es el nombre a mostrarle al usuario en la
+    /// hoja de autorizacion -- "iPod" generico cuando no hay un volumen
+    /// montado del que sacar uno real.
+    private func beginFormat(volumeName: String) {
+        let candidates = IPodDiskIdentifier.currentCandidates()
+        switch IPodDiskIdentifier.identify(from: candidates) {
+        case .found(let candidate):
+            step = .preparingDisk
+            pendingAuthorization = .formatDisk(volumeName: volumeName, diskIdentifier: candidate.bsdName)
+        case .notFound:
+            lastError = .deviceNotFound
+            step = .failed
+        case .ambiguous(let matches):
+            lastError = .diskAmbiguous(count: matches.count)
+            step = .failed
         }
     }
 
@@ -214,7 +228,7 @@ final class InstallerViewModel: ObservableObject {
     private func runPauseAMPAgents() async {
         do {
             try await executor.pauseAMPAgents()
-            ampAgentsPaused = true
+            AMPAgentsGuard.shared.markPaused()
         } catch PrivilegedExecutor.ExecutorError.userCancelled {
             // No bloqueante: seguimos a esperar DFU igual.
         } catch {

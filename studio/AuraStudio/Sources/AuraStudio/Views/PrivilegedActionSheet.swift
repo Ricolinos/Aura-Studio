@@ -21,7 +21,7 @@ struct PrivilegedActionSheet: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Si cancelás:").font(.callout.bold())
+                Text("Si cancelas:").font(.callout.bold())
                 Text(authorization.cancelConsequence)
                     .font(.callout)
                     .foregroundStyle(.secondary)

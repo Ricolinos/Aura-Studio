@@ -62,7 +62,7 @@ struct PendingAuthorization: Identifiable {
             kind: .pauseAMPAgents,
             explanationTitle: "Pausar servicios de macOS",
             explanationBody: "Aura Studio necesita pausar temporalmente dos servicios de macOS que a veces interfieren con la conexión del iPod (AMPDevicesAgent y AMPDeviceDiscoveryAgent). Se reactivan automáticamente al terminar, o solos después de unos minutos si algo falla.",
-            cancelConsequence: "Si cancelás, Aura Studio va a seguir intentando detectar el iPod igual -- en la mayoría de las Mac esto no hace falta, pero si la detección falla repetidamente, puede ser la causa."
+            cancelConsequence: "Si cancelas, Aura Studio va a seguir intentando detectar el iPod igual -- en la mayoría de las Mac esto no hace falta, pero si la detección falla repetidamente, puede ser la causa."
         )
     }
 
@@ -71,7 +71,7 @@ struct PendingAuthorization: Identifiable {
             kind: .formatDisk(volumeName: volumeName, diskIdentifier: diskIdentifier),
             explanationTitle: "Preparar el disco del iPod",
             explanationBody: "Vamos a formatear la partición de datos de tu iPod (identificada como \"\(volumeName)\", disco \(diskIdentifier)) para que pueda arrancar Aura. Esto borra TODO el contenido actual del iPod -- solo del iPod, Aura Studio ya verificó su identidad por tamaño, fabricante y tipo de disco antes de llegar a este paso.",
-            cancelConsequence: "Si cancelás, la instalación se detiene acá. El iPod queda como estaba, sin ningún cambio -- podés reintentar cuando quieras."
+            cancelConsequence: "Si cancelas, la instalación se detiene acá. El iPod queda como estaba, sin ningún cambio -- puedes reintentar cuando quieras."
         )
     }
 }
@@ -92,9 +92,9 @@ enum InstallerError: Error, LocalizedError, Equatable {
         case .deviceNotFound:
             return "No se detecto ningun iPod conectado."
         case .wrongDiskFormat:
-            return "El iPod no esta formateado en FAT32. Convertilo antes de continuar."
+            return "El iPod no esta formateado en FAT32. Conviértelo antes de continuar."
         case .dfuTimeout:
-            return "No se detecto el iPod en modo DFU a tiempo. Volve a intentar la combinacion de botones."
+            return "No se detecto el iPod en modo DFU a tiempo. Vuelve a intentar la combinacion de botones."
         case .checksumMismatch(let file):
             return "El archivo \(file) no supero la verificacion de integridad."
         case .processFailed(let exitCode, let output):
@@ -102,7 +102,7 @@ enum InstallerError: Error, LocalizedError, Equatable {
         case .missingBundledArtifact(let name):
             return "Falta el artefacto \(name) dentro de la app. Reinstala Aura Studio."
         case .diskAmbiguous(let count):
-            return "Se encontraron \(count) discos que podrian ser tu iPod. Por seguridad, Aura Studio no elige uno solo -- desconecta los demas discos externos y volve a intentar."
+            return "Se encontraron \(count) discos que podrian ser tu iPod. Por seguridad, Aura Studio no elige uno solo -- desconecta los demas discos externos y vuelve a intentar."
         case .authorizationCancelled:
             return "Cancelaste la autorización de administrador. Este paso no puede continuar sin ese permiso."
         case .privilegedOperationFailed(let message):
