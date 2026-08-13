@@ -41,13 +41,28 @@ struct DoneView: View {
 struct FailedView: View {
     let error: InstallerError?
     let onRetry: () -> Void
+    /// Solo se usa cuando `error == .dualBootRequiresWinpod` (D-190):
+    /// atajo directo a Solo Aura sin pasar por Modo de arranque a mano.
+    var onSwitchToSingleBoot: (() -> Void)? = nil
+
+    /// El disco no tiene una estructura compatible con dual boot NO es
+    /// una falla de la app -- es una decision que depende de como esta
+    /// preparado el iPod, y no hay nada seguro que formatear ahi (D-190:
+    /// formatear a ciegas destruiria la particion de firmware de Apple
+    /// en un winpod real, o produciria un dual boot que aparenta
+    /// funcionar pero nunca arranca Apple, porque esa particion la
+    /// puede escribir de verdad unicamente iTunes). Por eso, a
+    /// diferencia de una instalacion normal, este caso NO pide la misma
+    /// autorizacion de administrador que "Solo Aura" -- no es una falla
+    /// del boton, es que no hay nada que autorizar todavia.
+    private var isCalmDecision: Bool { error == .dualBootRequiresWinpod }
 
     var body: some View {
         VStack(spacing: 20) {
-            Image(systemName: "xmark.circle.fill")
+            Image(systemName: isCalmDecision ? "arrow.triangle.branch" : "xmark.circle.fill")
                 .font(.system(size: 56))
-                .foregroundStyle(.red)
-            Text("Algo salio mal")
+                .foregroundStyle(isCalmDecision ? Color.accentColor : Color.red)
+            Text(isCalmDecision ? "Este iPod no está listo para dual boot" : "Algo salio mal")
                 .font(.title.bold())
             Text(error?.localizedDescription ?? "Error desconocido.")
                 .multilineTextAlignment(.center)
@@ -61,8 +76,15 @@ struct FailedView: View {
                 }
                 .buttonStyle(.bordered)
             }
-            Button("Reintentar", action: onRetry)
-                .buttonStyle(.borderedProminent)
+            if isCalmDecision, let onSwitchToSingleBoot {
+                Button("Instalar solo Aura en este iPod", action: onSwitchToSingleBoot)
+                    .buttonStyle(.borderedProminent)
+                Button("Reintentar (ya preparé el iPod con iTunes)", action: onRetry)
+                    .buttonStyle(.bordered)
+            } else {
+                Button("Reintentar", action: onRetry)
+                    .buttonStyle(.borderedProminent)
+            }
         }
     }
 }

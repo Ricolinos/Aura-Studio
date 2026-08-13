@@ -71,7 +71,8 @@ struct InstallerWizardView: View {
                     // dual boot que esta corrida no eligio.
                     DoneView(mode: viewModel.mode, dualBoot: !viewModel.destroyOriginalFirmware && !viewModel.bootloaderAlreadyInstalled)
                 case .failed:
-                    FailedView(error: viewModel.lastError, onRetry: viewModel.retry)
+                    FailedView(error: viewModel.lastError, onRetry: viewModel.retry,
+                               onSwitchToSingleBoot: viewModel.switchToSingleBootAndRetry)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

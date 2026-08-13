@@ -214,6 +214,25 @@ struct PrivilegedExecutor: Sendable {
         if [ "$SIZE" -lt \(minSize) ] || [ "$SIZE" -gt \(maxSize) ]; then
           echo "AURA_SAFETY_ABORT: el tamaño del disco ya no coincide ($SIZE bytes)" 1>&2; exit 92
         fi
+        # Tamaño de sector NATIVO del disco tal cual esta conectado
+        # ahora mismo, en vez de un 4096 fijo (D-190, investigacion en
+        # firmware/target/arm/s5l8702/ipod6g/storage_ata-6g.c +
+        # reporte real de dual boot fallando): el controlador ATA del
+        # propio firmware detecta en cada arranque, por hardware, si el
+        # adaptador de almacenamiento es CE-ATA (necesita la tabla de
+        # particiones en sectores de 4096) o ATA comun (512) -- un
+        # numero fijo desde la Mac puede no coincidir con el adaptador
+        # real (iFlash u otro), y produce una tabla de particiones que
+        # macOS escribe sin error pero que el bootloader interpreta mal
+        # al leerla con su driver nativo (offset de particion
+        # equivocado, "No partition found"). `DeviceBlockSize` refleja
+        # el tamaño de bloque que el disco reporta en la sesion USB
+        # ACTUAL -- la variable, no un valor adivinado.
+        SECTOR_SIZE=$(echo "$PLIST" | plutil -extract DeviceBlockSize raw -o - - 2>/dev/null || echo "0")
+        case "$SECTOR_SIZE" in
+          512|1024|2048|4096) ;;
+          *) SECTOR_SIZE=512 ;;
+        esac
         diskutil eraseDisk FAT32 "\(name)" MBR "$DISK"
         for i in 1 2 3 4 5 6 7 8 9 10; do
           MP=$(diskutil info -plist "${DISK}s1" 2>/dev/null | plutil -extract MountPoint raw -o - - 2>/dev/null || echo "")
@@ -221,7 +240,7 @@ struct PrivilegedExecutor: Sendable {
           sleep 1
         done
         diskutil unmountDisk force "$DISK"
-        if ! newfs_msdos -F 32 -S 4096 -v "\(name)" "/dev/r${DISK}s1"; then
+        if ! newfs_msdos -F 32 -S "$SECTOR_SIZE" -v "\(name)" "/dev/r${DISK}s1"; then
           echo "AURA_FDA_REQUIRED: macOS bloqueo la escritura directa al disco" 1>&2; exit 93
         fi
         diskutil mountDisk "$DISK" || true

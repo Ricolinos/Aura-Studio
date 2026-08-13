@@ -793,4 +793,14 @@ final class InstallerViewModel: ObservableObject {
         bootloaderAlreadyInstalled = false
         step = .detectDevice
     }
+
+    /// Atajo desde la pantalla de "necesita winpod" (D-190): cambia a
+    /// Solo Aura y reintenta de una, sin que el usuario tenga que
+    /// volver atras manualmente por Modo de arranque. Solo tiene
+    /// sentido llegando desde ese error especifico -- en cualquier otra
+    /// falla, `retry()` normal es lo correcto.
+    func switchToSingleBootAndRetry() {
+        destroyOriginalFirmware = true
+        retry()
+    }
 }
