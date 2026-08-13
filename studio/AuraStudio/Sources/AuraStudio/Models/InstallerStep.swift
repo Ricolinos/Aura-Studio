@@ -113,6 +113,13 @@ enum InstallerError: Error, LocalizedError, Equatable {
     /// cero -- lo que destruiria justamente el firmware de Apple que
     /// dual boot promete conservar (D-185).
     case dualBootRequiresWinpod
+    /// El volumen del iPod dejo de responder a mitad de la copia del
+    /// firmware -- reproducido a mano (D-189): copiar el arbol
+    /// completo (miles de archivos chicos) por USB puede tardar varios
+    /// minutos, y el aparato se desconecto antes de terminar. No es un
+    /// error de la app ni del disco: nada que la app haya escrito se
+    /// pierde (la extraccion hace merge, retomar desde cero es seguro).
+    case deviceDisconnectedDuringCopy
 
     var errorDescription: String? {
         switch self {
@@ -142,6 +149,8 @@ enum InstallerError: Error, LocalizedError, Equatable {
             return "macOS bloqueó el acceso directo al disco del iPod. Concede \"Acceso total al disco\" a Aura Studio en Ajustes del Sistema (Privacidad y seguridad), cierra la app por completo, vuelve a abrirla y reintenta. Si Aura Studio ya aparece en la lista, quítala con el botón \"−\" y agrégala de nuevo -- el permiso puede quedar atado a una versión anterior de la app."
         case .dualBootRequiresWinpod:
             return "Para dual boot, el iPod debe conservar el firmware original de Apple en formato \"winpod\": tabla de particiones MBR con la partición de firmware de Apple intacta más una partición FAT32 -- el formato que crea iTunes al restaurar en una PC con WINDOWS. Este iPod está en formato de Mac (particiones Apple/HFS, que Rockbox no puede leer) o su disco no es legible, y prepararlo desde aquí borraría el disco completo, incluido el firmware original -- exactamente lo que dual boot promete conservar. Opciones: restaura el iPod con iTunes en Windows y vuelve a intentar dual boot, o elige \"Solo Aura\" si no necesitas conservar el firmware de Apple."
+        case .deviceDisconnectedDuringCopy:
+            return "Tu iPod se desconectó durante la copia de archivos. Copiar el firmware completo son miles de archivos chicos y puede tardar varios minutos por USB -- revisa el cable (evita hubs USB si usas uno) y vuelve a intentar: lo que ya se copió no se pierde, la copia sigue desde donde quedó."
         }
     }
 }

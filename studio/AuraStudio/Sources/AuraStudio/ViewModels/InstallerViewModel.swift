@@ -606,40 +606,66 @@ final class InstallerViewModel: ObservableObject {
                 throw InstallerError.processFailed(exitCode: -1, output: "no se pudo verificar rockbox.ipod tras copiarlo")
             }
 
-            progressMessage = "Instalando Aura en el iPod (tipografías, iconos, códecs)... Esto toma unos minutos. No desconectes el iPod."
+            progressMessage = "Instalando Aura en el iPod (tipografías, iconos, códecs)... Puede tardar varios minutos por USB -- no desconectes el iPod."
 
             // Barra de progreso real: ditto no reporta avance, asi que
-            // se mide cuanto ya quedo escrito en el iPod contra el
-            // tamaño total descomprimido del zip, cada ~1s.
+            // se mide cuanto se libero del espacio disponible del
+            // volumen (una sola llamada, D-189 -- la version anterior
+            // recorria miles de archivos por segundo COMPITIENDO con la
+            // escritura de ditto en el mismo disco USB lento).
             let expectedBytes = (try? await Self.zipUncompressedByteCount(of: treeURL)) ?? 0
-            let treeDestPath = URL(fileURLWithPath: mountPath)
-                .appendingPathComponent(".rockbox").path
-            let poller: Task<Void, Never>? = expectedBytes > 0 ? Task { [weak self] in
+            let startingFreeBytes = await Self.availableBytes(atPath: mountPath)
+            let poller: Task<Void, Never>? = (expectedBytes > 0 && startingFreeBytes != nil) ? Task { [weak self] in
                 while !Task.isCancelled {
-                    let written = await Self.directorySize(atPath: treeDestPath)
+                    guard let free = await Self.availableBytes(atPath: mountPath) else {
+                        // El volumen dejo de responder -- no hay nada
+                        // util que medir; se deja que extractZip
+                        // reporte el error real.
+                        return
+                    }
+                    let written = max(0, startingFreeBytes! - free)
                     let fraction = min(0.99, Double(written) / Double(expectedBytes))
                     self?.copyProgress = fraction
                     try? await Task.sleep(nanoseconds: 1_000_000_000)
                 }
             } : nil
 
-            do {
-                try await extractZip(at: treeURL, to: mountPath)
-            } catch {
+            // Un solo reintento automatico (D-189): ditto hace merge,
+            // asi que repetirlo tras una falla transitoria es seguro y
+            // retoma justo donde quedo. Si el volumen ya no responde en
+            // absoluto, reintentar es inutil -- eso se reporta como
+            // desconexion real, no como error generico.
+            var lastExtractError: Error?
+            for attempt in 1...2 {
+                do {
+                    try await extractZip(at: treeURL, to: mountPath)
+                    lastExtractError = nil
+                    break
+                } catch {
+                    if cancelRequested { break }
+                    lastExtractError = error
+                    let stillReachable = FileManager.default.fileExists(atPath: mountPath)
+                    if !stillReachable || attempt == 2 { break }
+                    progressMessage = "La copia se interrumpió -- reintentando..."
+                }
+            }
+
+            if cancelRequested {
                 poller?.cancel()
                 copyProgress = nil
-                if cancelRequested {
-                    // El usuario cancelo: la falla del proceso es la
-                    // terminacion que nosotros mismos pedimos, no un
-                    // error que mostrar.
-                    finishCancel()
-                    return
+                finishCancel()
+                return
+            }
+            if let lastExtractError {
+                poller?.cancel()
+                copyProgress = nil
+                if !FileManager.default.fileExists(atPath: mountPath) {
+                    throw InstallerError.deviceDisconnectedDuringCopy
                 }
-                throw error
+                throw lastExtractError
             }
             poller?.cancel()
             copyProgress = 1
-            if cancelRequested { finishCancel(); return }
 
             // Centinela: una fuente del design system que el firmware
             // carga al arrancar -- si esta, el arbol se extrajo bien.
@@ -739,15 +765,21 @@ final class InstallerViewModel: ObservableObject {
     /// Suma el tamaño de todos los archivos bajo `path`. `nonisolated`:
     /// recorre 7800+ archivos en un volumen USB, jamas en el hilo de la
     /// UI.
-    private nonisolated static func directorySize(atPath path: String) async -> Int64 {
-        let fm = FileManager.default
-        guard let enumerator = fm.enumerator(atPath: path) else { return 0 }
-        var total: Int64 = 0
-        while let relative = enumerator.nextObject() as? String {
-            let attrs = try? fm.attributesOfItem(atPath: (path as NSString).appendingPathComponent(relative))
-            total += (attrs?[.size] as? Int64) ?? 0
-        }
-        return total
+    /// Espacio libre restante en el volumen -- UNA llamada al sistema
+    /// de archivos, no recorre nada (D-189: la version anterior hacia
+    /// un `FileManager.enumerator` + `attributesOfItem` de miles de
+    /// archivos CADA SEGUNDO mientras `ditto` escribia al mismo disco
+    /// USB lento -- trafico de lectura compitiendo con la escritura,
+    /// justo en el aparato mas fragil bajo carga sostenida: el del
+    /// dueño usa un adaptador iFlash, y una extraccion real se
+    /// desconecto a la mitad con "Permission denied" en cascada,
+    /// reproducido a mano). nil si el volumen ya no responde --
+    /// exactamente la señal de que se desconecto, que el poller usa
+    /// para no seguir insistiendo sobre un disco que ya no esta.
+    private nonisolated static func availableBytes(atPath path: String) async -> Int64? {
+        guard let values = try? URL(fileURLWithPath: path)
+            .resourceValues(forKeys: [.volumeAvailableCapacityKey]) else { return nil }
+        return values.volumeAvailableCapacity.map(Int64.init)
     }
 
     func retry() {
