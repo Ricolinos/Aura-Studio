@@ -13,12 +13,34 @@ struct DeviceGeneralView: View {
     let state: DeviceState
     @ObservedObject var library: LibraryViewModel
     let onSync: () async -> Void
+    /// Expulsa el volumen del iPod (desmonta el disco completo) --
+    /// disponible con CUALQUIER firmware: desconectar sin expulsar es
+    /// el clasico camino a un FAT32 corrupto, asi que el boton no
+    /// depende de que el iPod tenga Aura.
+    let onEject: () async -> Bool
+    /// Lanza la reinstalacion/actualizacion de Aura (va a la seccion
+    /// Instalador, que ya sabe hacerlo sin flashear cuando Aura esta
+    /// en el disco -- D-179).
+    let onUpdateAura: () -> Void
+    /// true cuando el firmware que trae la app embebido difiere del
+    /// instalado en el iPod (comparacion por hash, no por fecha).
+    let updateAvailable: Bool
+
+    @State private var ejectResult: String?
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 if let device {
                     header(device)
+                    if let ejectResult {
+                        Label(ejectResult, systemImage: "eject")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    }
+                    if device.isAura {
+                        updateSection
+                    }
                     Divider()
                     capacity(device)
                     Divider()
@@ -44,6 +66,19 @@ struct DeviceGeneralView: View {
                 // haria nada util.
                 .disabled(device == nil || !(device?.isAura ?? false) || library.isProcessing)
             }
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    Task {
+                        let ok = await onEject()
+                        ejectResult = ok
+                            ? "Disco expulsado. Ya puedes desconectar el cable."
+                            : "No se pudo expulsar -- cierra cualquier app que este usando el iPod y reintenta."
+                    }
+                } label: {
+                    Label("Expulsar", systemImage: "eject")
+                }
+                .disabled(device == nil)
+            }
         }
     }
 
@@ -64,6 +99,38 @@ struct DeviceGeneralView: View {
                 }
             }
             Spacer()
+        }
+    }
+
+    /// Solo visible con Aura instalado. "Actualizar" compara el
+    /// firmware embebido en ESTA version de la app contra el instalado
+    /// (hash de rockbox.ipod, no fechas ni numeros de version que
+    /// pueden mentir); cuando el repositorio publique releases de
+    /// GitHub, este mismo punto es donde se consultaria la ultima --
+    /// hoy el repo es privado y sin releases, asi que la fuente de
+    /// verdad es lo que la app trae.
+    @ViewBuilder
+    private var updateSection: some View {
+        if updateAvailable {
+            HStack(spacing: 12) {
+                Image(systemName: "arrow.down.circle.fill")
+                    .foregroundStyle(.tint)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Actualizacion de Aura disponible").font(.headline)
+                    Text("Esta version de Aura Studio trae un firmware mas nuevo que el instalado en tu iPod. Actualizar no borra tu musica ni tus ajustes.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Button("Actualizar Aura", action: onUpdateAura)
+                    .buttonStyle(.borderedProminent)
+            }
+            .padding(12)
+            .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor.opacity(0.08)))
+        } else {
+            Label("Aura esta al dia con esta version de Aura Studio.", systemImage: "checkmark.seal")
+                .font(.callout)
+                .foregroundStyle(.secondary)
         }
     }
 

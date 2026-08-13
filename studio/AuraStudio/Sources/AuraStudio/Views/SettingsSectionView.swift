@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// Ajustes de la APLICACION. Ojo con la distincion: los ajustes del
 /// firmware (tema, animaciones, graficos, EQ...) viven en el iPod y se
@@ -62,6 +63,33 @@ struct SettingsSectionView: View {
     private var libraryTab: some View {
         VStack(alignment: .leading, spacing: 24) {
             VStack(alignment: .leading, spacing: 10) {
+                Text("Carpeta de la biblioteca Aura").font(.headline)
+                Text("Todo lo que sueltas en Aura Studio se copia aqui -- tus archivos originales no se tocan. La biblioteca funciona aunque el iPod no este conectado, y se sincroniza al conectarlo.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: 10) {
+                    Image(systemName: "folder")
+                        .foregroundStyle(.tint)
+                    Text(preferences.libraryFolderPath)
+                        .font(.callout.monospaced())
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                    Spacer()
+                    Button("Mostrar en Finder") {
+                        NSWorkspace.shared.open(URL(fileURLWithPath: preferences.libraryFolderPath, isDirectory: true))
+                    }
+                    Button("Cambiar...") {
+                        chooseLibraryFolder()
+                    }
+                }
+                .padding(10)
+                .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.08)))
+            }
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 10) {
                 Text(S.coverArt.text).font(.headline)
                 Picker(S.coverArt.text, selection: $preferences.coverArtPolicy) {
                     Text(S.coverArtAlbumOnly.text).tag(AppPreferences.CoverArtPolicy.albumOnly)
@@ -94,6 +122,20 @@ struct SettingsSectionView: View {
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+
+    private func chooseLibraryFolder() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.canCreateDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.prompt = "Usar esta carpeta"
+        panel.message = "Elige (o crea) la carpeta donde vivira tu biblioteca Aura."
+        panel.directoryURL = URL(fileURLWithPath: preferences.libraryFolderPath, isDirectory: true)
+        if panel.runModal() == .OK, let url = panel.url {
+            preferences.libraryFolderPath = url.path
         }
     }
 }

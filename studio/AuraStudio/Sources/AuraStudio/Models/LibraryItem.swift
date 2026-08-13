@@ -51,4 +51,18 @@ struct LibraryItem: Identifiable, Equatable {
         self.metadata = nil
         self.preparedURL = nil
     }
+
+    /// Restauracion desde el catalogo persistido de la biblioteca
+    /// (`biblioteca.json`, D-180) -- conserva el id original para que
+    /// las playlists (que referencian por id) sigan validas entre
+    /// sesiones.
+    init(id: UUID, sourceURL: URL, kind: LibraryItemKind,
+         status: LibraryItemStatus, metadata: TrackMetadata?, preparedURL: URL?) {
+        self.id = id
+        self.sourceURL = sourceURL
+        self.kind = kind
+        self.status = status
+        self.metadata = metadata
+        self.preparedURL = preparedURL
+    }
 }

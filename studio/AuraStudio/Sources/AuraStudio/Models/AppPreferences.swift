@@ -49,6 +49,23 @@ final class AppPreferences: ObservableObject {
         }
     }
 
+    /// Carpeta de la biblioteca Aura (encargo del dueño, 2026-08-13):
+    /// TODO lo que el usuario suelta en la app se COPIA aqui -- los
+    /// archivos originales jamas se tocan -- y aqui viven tambien los
+    /// preparados (transcodificados, con tags corregidas) y el catalogo
+    /// persistido, para que la biblioteca funcione como tal aunque el
+    /// iPod no este conectado y sobreviva reinicios de la app.
+    @Published var libraryFolderPath: String {
+        didSet { defaults.set(libraryFolderPath, forKey: Keys.libraryFolderPath) }
+    }
+
+    static var defaultLibraryFolderPath: String {
+        FileManager.default
+            .urls(for: .musicDirectory, in: .userDomainMask).first?
+            .appendingPathComponent("Aura", isDirectory: true).path
+            ?? NSHomeDirectory() + "/Music/Aura"
+    }
+
     private let defaults: UserDefaults
 
     private enum Keys {
@@ -56,6 +73,7 @@ final class AppPreferences: ObservableObject {
         static let fetchSyncedLyrics = "aura.fetchSyncedLyrics"
         static let enrichOnline = "aura.enrichOnline"
         static let language = "aura.language"
+        static let libraryFolderPath = "aura.libraryFolderPath"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -66,6 +84,8 @@ final class AppPreferences: ObservableObject {
         self.enrichOnline = defaults.object(forKey: Keys.enrichOnline) as? Bool ?? true
         self.language = (defaults.string(forKey: Keys.language)
             .flatMap(AppLanguage.init(rawValue:))) ?? .system
+        self.libraryFolderPath = defaults.string(forKey: Keys.libraryFolderPath)
+            ?? Self.defaultLibraryFolderPath
         AppLanguageResolver.current = self.language.resolved
     }
 }

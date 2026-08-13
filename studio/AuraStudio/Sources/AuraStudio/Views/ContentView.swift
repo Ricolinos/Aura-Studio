@@ -16,6 +16,10 @@ struct ContentView: View {
     @StateObject private var library = LibraryViewModel()
     @StateObject private var preferences = AppPreferences.shared
     @State private var selection: SidebarSection? = .general
+    /// El firmware embebido en la app difiere del instalado en el iPod
+    /// conectado (hash) -- alimenta el aviso de "Actualizar Aura" en
+    /// General. Se recalcula al conectar/desconectar.
+    @State private var updateAvailable = false
 
     /// La biblioteca (Musica/Video/Fotos/Extras) se bloquea cuando hay
     /// un iPod conectado cuyo firmware NO es Aura: sincronizar contra el
@@ -50,6 +54,19 @@ struct ContentView: View {
                 selection = .general
             }
         }
+        .onChange(of: deviceMonitor.device) { newDevice in
+            refreshUpdateAvailability(for: newDevice)
+        }
+    }
+
+    private func refreshUpdateAvailability(for device: AuraDevice?) {
+        guard let device, device.isAura else {
+            updateAvailable = false
+            return
+        }
+        Task {
+            updateAvailable = await AuraUpdateChecker.isUpdateAvailable(deviceMountPath: device.mountPath)
+        }
     }
 
     @ViewBuilder
@@ -58,9 +75,11 @@ struct ContentView: View {
         case .general:
             DeviceGeneralView(device: deviceMonitor.device,
                               state: deviceMonitor.state,
-                              library: library) {
-                await syncNow()
-            }
+                              library: library,
+                              onSync: { await syncNow() },
+                              onEject: { await deviceMonitor.unmountCurrentDisk() },
+                              onUpdateAura: { selection = .installer },
+                              updateAvailable: updateAvailable)
         case .music:
             MediaSectionView(kind: .music, viewModel: library)
         case .video:

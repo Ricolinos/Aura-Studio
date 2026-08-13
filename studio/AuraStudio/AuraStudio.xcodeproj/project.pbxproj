@@ -47,6 +47,7 @@
 		5EDA0D1DF2BC765B8F8D473B /* BundledArtifacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8464D5E55C66D32740C7289 /* BundledArtifacts.swift */; };
 		62666A4A9BF729B61C851F76 /* ID3WriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF3580937C6126B24998BB6 /* ID3WriterTests.swift */; };
 		666C116F404FC775C15FFEAD /* AppStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AFC6DCF7F164C535175071 /* AppStrings.swift */; };
+		7128F973A9D8E656F326EB9F /* AuraUpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9961D8C11B7031D474CB9BE /* AuraUpdateChecker.swift */; };
 		7F80040C49B6F9BAEC7C4EB4 /* PlaylistExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F307EFCD3106FEFB532DF8E /* PlaylistExporterTests.swift */; };
 		87EB236DAA29660FD987218F /* BackContinueRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5C06E65D1A04EAD003DE49 /* BackContinueRow.swift */; };
 		8AD67D72A40880D5F0293335 /* SourcesSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81FFE23337526451A7CC91E9 /* SourcesSettingsView.swift */; };
@@ -70,6 +71,7 @@
 		BD5FCF9DC5CB88162B2673C0 /* InstallingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1782D4EBAA2C3FC3EBC49F5 /* InstallingView.swift */; };
 		BD809465DDDA7B9453FDAB86 /* FilenameGuesserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BA124E3419E12A08D4AADC /* FilenameGuesserTests.swift */; };
 		C3AD25FC7C3C2CE8C2F3AD6F /* BundledArtifactsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */; };
+		C3ED448AEE28EACD02E4E2CC /* LibraryPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093B5EA51C45529C66A3640F /* LibraryPersistence.swift */; };
 		C6CF154C89DCC0132D58E648 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AD4FC67C48B4550BD7554E /* AppDelegate.swift */; };
 		C76F4EF9962D5866CA044718 /* checksums.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2F9BF12646626E5E5CFC2BFD /* checksums.txt */; };
 		CD9B6AC91C5AECCDB4A6DC44 /* AuraDeviceProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F0CDAA153138813C9AF84E /* AuraDeviceProbe.swift */; };
@@ -98,6 +100,7 @@
 
 /* Begin PBXFileReference section */
 		0116DC50EA8DBAE3B02AE0FB /* DoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneView.swift; sourceTree = "<group>"; };
+		093B5EA51C45529C66A3640F /* LibraryPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryPersistence.swift; sourceTree = "<group>"; };
 		0E68A879A0F3418A7220030C /* PlaylistExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistExporter.swift; sourceTree = "<group>"; };
 		117BF63B29CADB076B19CA27 /* IPodMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPodMonitor.swift; sourceTree = "<group>"; };
 		1290E12A3C253DAFF9B79163 /* MusicBrainzRateLimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicBrainzRateLimiter.swift; sourceTree = "<group>"; };
@@ -156,6 +159,7 @@
 		B210703E5EF249635DE046AE /* PlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistsView.swift; sourceTree = "<group>"; };
 		B6A56207E06BF883E789308E /* SyncPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncPlannerTests.swift; sourceTree = "<group>"; };
 		B8464D5E55C66D32740C7289 /* BundledArtifacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledArtifacts.swift; sourceTree = "<group>"; };
+		B9961D8C11B7031D474CB9BE /* AuraUpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraUpdateChecker.swift; sourceTree = "<group>"; };
 		B9DF8DDA314F0AC41C9B3ECE /* AuraStudioTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AuraStudioTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE004499B3409D8B9E5D14ED /* mks5lboot */ = {isa = PBXFileReference; path = mks5lboot; sourceTree = "<group>"; };
 		BE8C778BC2609D4718EBBC45 /* AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
@@ -303,6 +307,7 @@
 				5FA85A3E42CB4E67E9DAC4E5 /* DeviceState.swift */,
 				43B9358C341DF6C281F2636B /* InstallerStep.swift */,
 				62E6C2892E84F33B9EF97D15 /* LibraryItem.swift */,
+				093B5EA51C45529C66A3640F /* LibraryPersistence.swift */,
 				A92C5F3EC062AD8FA6D8B4FA /* Playlist.swift */,
 				D96F62F5D0767305583513FF /* TrackMetadata.swift */,
 			);
@@ -355,6 +360,7 @@
 			children = (
 				E61823B2E8AA5E3069393A0E /* AMPAgentsGuard.swift */,
 				D3F0CDAA153138813C9AF84E /* AuraDeviceProbe.swift */,
+				B9961D8C11B7031D474CB9BE /* AuraUpdateChecker.swift */,
 				B8464D5E55C66D32740C7289 /* BundledArtifacts.swift */,
 				EAC95668C5FEF76FAC67EE52 /* CoverArtArchiveClient.swift */,
 				638FD209E9AF6417EE51ABC7 /* DiskArbitrationMonitor.swift */,
@@ -509,6 +515,7 @@
 				CD9B6AC91C5AECCDB4A6DC44 /* AuraDeviceProbe.swift in Sources */,
 				14B0C14393E1FF6AC7FACCFF /* AuraPalette.swift in Sources */,
 				203D6E1800BE63DFE89AB1C8 /* AuraStudioApp.swift in Sources */,
+				7128F973A9D8E656F326EB9F /* AuraUpdateChecker.swift in Sources */,
 				87EB236DAA29660FD987218F /* BackContinueRow.swift in Sources */,
 				D0949902B40FBA74F1D9D0D6 /* BootModeView.swift in Sources */,
 				5EDA0D1DF2BC765B8F8D473B /* BundledArtifacts.swift in Sources */,
@@ -535,6 +542,7 @@
 				39A338816342C5D315399C77 /* LRCLIBClient.swift in Sources */,
 				B3674CA82A35D45F26989B93 /* LibraryEnricher.swift in Sources */,
 				4CE07ED3A6AF6A3EA04D9A2C /* LibraryItem.swift in Sources */,
+				C3ED448AEE28EACD02E4E2CC /* LibraryPersistence.swift in Sources */,
 				52A43D8ECC2CBF2433EA1B31 /* LibrarySync.swift in Sources */,
 				206225C0AE68BC4EF3EA9CBF /* LibraryViewModel.swift in Sources */,
 				9FDD21617909191BB7E9B9CE /* MKS5LBootRunner.swift in Sources */,
