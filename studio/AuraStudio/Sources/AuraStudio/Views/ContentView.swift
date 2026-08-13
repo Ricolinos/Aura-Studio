@@ -12,10 +12,25 @@ import SwiftUI
 /// sin iPod es lo que muestra General y que el boton de sincronizar
 /// quede deshabilitado.
 struct ContentView: View {
-    @StateObject private var deviceMonitor = IPodMonitor()
+    @StateObject private var deviceMonitor: IPodMonitor
+    /// El ViewModel del instalador vive AQUI y no dentro de
+    /// `InstallerHomeView` (D-187): la vista del instalador se destruye
+    /// cada vez que el usuario navega a otra seccion de la barra
+    /// lateral, y con ella moria todo el estado del asistente -- al
+    /// volver, la instalacion en curso "desaparecia" de la pantalla
+    /// (aunque sus tareas seguian corriendo por detras, sin UI). Con el
+    /// estado en el contenedor raiz, navegar y volver retoma la
+    /// pantalla exacta donde iba.
+    @StateObject private var installer: InstallerViewModel
     @StateObject private var library = LibraryViewModel()
     @StateObject private var preferences = AppPreferences.shared
     @State private var selection: SidebarSection? = .general
+
+    init() {
+        let monitor = IPodMonitor()
+        _deviceMonitor = StateObject(wrappedValue: monitor)
+        _installer = StateObject(wrappedValue: InstallerViewModel(monitor: monitor))
+    }
     /// El firmware embebido en la app difiere del instalado en el iPod
     /// conectado (hash) -- alimenta el aviso de "Actualizar Aura" en
     /// General. Se recalcula al conectar/desconectar.
@@ -134,7 +149,7 @@ struct ContentView: View {
         case .extras:
             ExtrasView(device: deviceMonitor.device)
         case .installer:
-            InstallerHomeView(monitor: deviceMonitor)
+            InstallerHomeView(monitor: deviceMonitor, viewModel: installer)
         case .settings:
             SettingsSectionView(preferences: preferences)
         }

@@ -67,7 +67,12 @@ struct InstallerWizardView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(32)
         }
-        .onDisappear { viewModel.stop() }
+        // OJO: aqui NO va .onDisappear { viewModel.stop() } -- esta
+        // vista desaparece con solo navegar a otra seccion de la barra
+        // lateral, y detener el flujo ahi mataba la instalacion en
+        // curso (D-187). El fin de flujo real lo maneja el propio
+        // ViewModel (didSet de `step` para los agentes AMP;
+        // backFromWelcome para volver al selector).
         .sheet(item: $viewModel.pendingAuthorization) { authorization in
             PrivilegedActionSheet(
                 authorization: authorization,

@@ -14,40 +14,25 @@ import SwiftUI
 /// genericas de siempre.
 struct InstallerHomeView: View {
     @ObservedObject var monitor: IPodMonitor
-    @StateObject private var viewModel: InstallerViewModel
-    @State private var chosenMode: InstallerMode?
-
-    init(monitor: IPodMonitor) {
-        self.monitor = monitor
-        _viewModel = StateObject(wrappedValue: InstallerViewModel(monitor: monitor))
-    }
+    /// Compartido y propiedad de `ContentView` (D-187): esta vista se
+    /// destruye al navegar a otra seccion, pero el asistente en curso
+    /// (paso actual, progreso de copia, espera de DFU) NO debe morir
+    /// con ella -- al volver, se retoma exactamente donde iba. El
+    /// estado del selector (`chosenMode`) y el registro global de flujo
+    /// activo tambien viven en el ViewModel por lo mismo.
+    @ObservedObject var viewModel: InstallerViewModel
 
     var body: some View {
         Group {
-            if let chosenMode {
+            if viewModel.chosenMode != nil {
                 InstallerWizardView(viewModel: viewModel)
-                    .onAppear {
-                        viewModel.onExitToModePicker = { self.chosenMode = nil }
-                        viewModel.start(mode: chosenMode)
-                    }
             } else {
                 ModePickerView(device: monitor.device, state: monitor.state) { mode in
-                    chosenMode = mode
+                    viewModel.beginFlow(mode: mode)
                 }
             }
         }
-        .animation(.default, value: chosenMode)
-        // El registro global es lo que impide que el recorrido
-        // automatico de pantalla completa se dispare ENCIMA de un
-        // asistente ya en curso (D-185).
-        .onChange(of: chosenMode) { mode in
-            InstallerFlowRegistry.shared.flowActive = (mode != nil)
-        }
-        .onDisappear {
-            if chosenMode == nil {
-                InstallerFlowRegistry.shared.flowActive = false
-            }
-        }
+        .animation(.default, value: viewModel.chosenMode)
     }
 }
 

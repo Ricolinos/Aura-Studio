@@ -17,17 +17,30 @@ import Combine
 /// contraseña.
 @MainActor
 final class InstallerViewModel: ObservableObject {
-    @Published private(set) var step: InstallerStep = .welcome
+    @Published private(set) var step: InstallerStep = .welcome {
+        didSet {
+            // Fin de flujo (exito, falla, o entrega a Finder): los
+            // agentes AMP pausados se reactivan aqui, en el punto unico
+            // por el que pasan todos los caminos -- ya NO al
+            // desaparecer la vista (D-187: la vista desaparece con
+            // solo navegar a otra seccion, y eso reactivaba los
+            // agentes a mitad de una instalacion en curso).
+            if step == .done || step == .failed || step == .restoreHandoff {
+                Task { await AMPAgentsGuard.shared.resumeIfNeeded() }
+            }
+        }
+    }
     @Published private(set) var mode: InstallerMode = .install
+    /// Modo elegido en el selector (nil = selector visible). Vive en el
+    /// ViewModel y no como @State de la vista para que navegar a otra
+    /// seccion y volver retome el asistente donde iba (D-187).
+    @Published var chosenMode: InstallerMode? {
+        didSet { InstallerFlowRegistry.shared.flowActive = (chosenMode != nil) }
+    }
     @Published private(set) var progressMessage: String = ""
     @Published private(set) var lastError: InstallerError?
     @Published var destroyOriginalFirmware: Bool = false
     @Published var pendingAuthorization: PendingAuthorization?
-
-    /// Vuelve al selector de Instalar/Restaurar -- lo fija `InstallerHomeView`.
-    /// Vive como closure (no como parte de la maquina de estados) porque
-    /// esa eleccion pasa por fuera del asistente en si.
-    var onExitToModePicker: (() -> Void)?
 
     let monitor: IPodMonitor
     private var cancellables: Set<AnyCancellable> = []
@@ -129,7 +142,17 @@ final class InstallerViewModel: ObservableObject {
     // asi que esos pasos no tienen boton de atras.
 
     func backFromWelcome() {
-        onExitToModePicker?()
+        chosenMode = nil
+    }
+
+    /// Punto de entrada del selector: fija el modo Y arranca el flujo
+    /// en una sola operacion -- la vista ya no llama a start() desde
+    /// onAppear, porque onAppear vuelve a dispararse cada vez que el
+    /// usuario navega de regreso a la seccion y reiniciaria un
+    /// asistente en curso (D-187).
+    func beginFlow(mode: InstallerMode) {
+        chosenMode = mode
+        start(mode: mode)
     }
 
     /// Arranque directo para la instalacion automatica desde el modo
@@ -324,6 +347,10 @@ final class InstallerViewModel: ObservableObject {
     }
 
     private func observeDeviceState() {
+        // El ViewModel ahora vive toda la sesion (D-187) y start() se
+        // llama una vez por flujo: sin esta limpieza, cada flujo
+        // agregaria OTRA suscripcion y las reacciones se duplicarian.
+        cancellables.removeAll()
         monitor.$state
             .receive(on: DispatchQueue.main)
             .sink { [weak self] state in
