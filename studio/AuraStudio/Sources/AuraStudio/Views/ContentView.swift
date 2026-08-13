@@ -35,14 +35,11 @@ struct ContentView: View {
     /// conectado (hash) -- alimenta el aviso de "Actualizar Aura" en
     /// General. Se recalcula al conectar/desconectar.
     @State private var updateAvailable = false
-    /// Recorrido de instalacion automatica a pantalla completa (D-183),
-    /// disparado al detectar el iPod en modo bootloader. Mientras esta
-    /// activo reemplaza la ventana entera (barra lateral incluida).
-    @State private var autoInstallActive = false
-    /// El usuario cancelo (o termino) el recorrido con el iPod todavia
-    /// en modo bootloader: no volver a dispararlo hasta que el aparato
-    /// cambie de estado (se desconecte o monte como disco).
-    @State private var autoInstallSuppressed = false
+    /// Ya se navego automaticamente al Instalador por esta deteccion de
+    /// disco ilegible -- no volver a saltar hasta que el estado cambie
+    /// (el usuario debe poder irse a otra seccion sin que la app lo
+    /// regrese a la fuerza).
+    @State private var autoNavigatedToInstaller = false
 
     /// La biblioteca (Musica/Video/Fotos/Extras) se bloquea cuando hay
     /// un iPod conectado cuyo firmware NO es Aura: sincronizar contra el
@@ -56,29 +53,13 @@ struct ContentView: View {
     }
 
     var body: some View {
-        Group {
-            if autoInstallActive {
-                AutoInstallView(monitor: deviceMonitor) {
-                    autoInstallActive = false
-                    InstallerFlowRegistry.shared.flowActive = false
-                    // Suprimir el re-disparo SOLO si el iPod sigue en
-                    // modo bootloader (recorrido cancelado): si ya se
-                    // desconecto o monto, una futura deteccion es un
-                    // evento nuevo y debe guiar de nuevo.
-                    if case .diskModeNoFilesystem = deviceMonitor.state {
-                        autoInstallSuppressed = true
-                    }
-                }
-            } else {
-                NavigationSplitView {
-                    SidebarView(selection: $selection,
-                                device: deviceMonitor.device,
-                                libraryLocked: libraryLocked)
-                        .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
-                } detail: {
-                    detail
-                }
-            }
+        NavigationSplitView {
+            SidebarView(selection: $selection,
+                        device: deviceMonitor.device,
+                        libraryLocked: libraryLocked)
+                .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
+        } detail: {
+            detail
         }
         .tint(AuraColors.light.accent)
         .onAppear { deviceMonitor.start() }
@@ -86,20 +67,20 @@ struct ContentView: View {
         .onChange(of: deviceMonitor.state) { newState in
             switch newState {
             case .diskModeNoFilesystem:
-                // JAMAS tomar la pantalla mientras un flujo de
-                // instalacion/restauracion ya corre (D-185): la ventana
-                // transitoria sin volumen durante NUESTRO PROPIO
-                // formateo pasa por este estado, y disparar un segundo
-                // instalador encima fue lo que produjo dos extracciones
-                // en carrera sobre el mismo disco.
-                if !autoInstallActive && !autoInstallSuppressed
+                // Disco ilegible detectado: navegar a la seccion
+                // Instalador -- SIN tomar la pantalla ni ocultar la
+                // barra lateral (encargo del dueño, D-188: la toma de
+                // pantalla completa de D-183 queda retirada mientras la
+                // deteccion no sea 100% confiable) y sin arrancar nada
+                // solo: el usuario decide. Una sola vez por deteccion,
+                // y nunca encima de un flujo ya activo (D-185).
+                if !autoNavigatedToInstaller
                     && !InstallerFlowRegistry.shared.flowActive {
-                    autoInstallActive = true
+                    autoNavigatedToInstaller = true
+                    selection = .installer
                 }
             case .diskMode, .notConnected:
-                // El aparato salio del modo bootloader: la proxima
-                // deteccion vuelve a disparar el recorrido.
-                autoInstallSuppressed = false
+                autoNavigatedToInstaller = false
             default:
                 break
             }

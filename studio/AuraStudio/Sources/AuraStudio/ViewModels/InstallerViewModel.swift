@@ -64,6 +64,19 @@ final class InstallerViewModel: ObservableObject {
     /// que cada evento de disco durante el proceso (el puente FAT
     /// monta, se borra, monta el HFS+...) vuelva a pedir autorizacion.
     private var restoreFormatStarted = false
+    /// Cancelacion pedida por el usuario (D-188). Los trabajos en vuelo
+    /// la observan en sus puntos seguros: la extraccion se termina de
+    /// inmediato (se mata el proceso ditto), pero un comando de disco
+    /// privilegiado en curso se deja TERMINAR y la cancelacion aplica
+    /// justo despues -- matar un formateo a la mitad es exactamente el
+    /// daño del que advierte el dialogo de confirmar.
+    private var cancelRequested = false
+    /// Proceso de extraccion en curso (ditto), para poder terminarlo si
+    /// el usuario cancela.
+    private var extractProcess: Process?
+    /// Un comando de disco privilegiado (formateo) esta corriendo ahora
+    /// mismo -- la cancelacion espera a que termine.
+    private var formatInFlight = false
     /// Progreso de la extraccion del arbol .rockbox (0...1), o nil
     /// mientras no haya una medicion util (la UI muestra spinner
     /// indeterminado). Se mide comparando el tamaño real escrito en el
@@ -88,6 +101,7 @@ final class InstallerViewModel: ObservableObject {
         isCopyingFirmware = false
         bootloaderAlreadyInstalled = false
         restoreFormatStarted = false
+        cancelRequested = false
         copyProgress = nil
         step = .welcome
         observeDeviceState()
@@ -143,6 +157,46 @@ final class InstallerViewModel: ObservableObject {
 
     func backFromWelcome() {
         chosenMode = nil
+    }
+
+    /// Cancela el flujo en curso (boton "Cancelar" de los pasos largos,
+    /// D-188). La UI ya advirtio que detener a la mitad puede dejar el
+    /// disco con errores; aqui se hace de la forma menos dañina: la
+    /// copia se corta de inmediato (ditto es re-ejecutable sin drama),
+    /// pero un comando de disco privilegiado en curso se deja terminar
+    /// y la cancelacion aplica al regresar. Si no hay trabajo en vuelo
+    /// (esperando autorizacion, esperando DFU, esperando el montaje),
+    /// se cierra de una vez.
+    func cancelFlow() {
+        cancelRequested = true
+        pendingAuthorization = nil
+        if let process = extractProcess {
+            // La extraccion se corta de inmediato; el catch de
+            // copyFirmwareFiles observa la bandera y cierra limpio.
+            process.terminate()
+            return
+        }
+        if formatInFlight {
+            // Un comando de disco privilegiado NO se mata a la mitad
+            // (ese si es el daño real del que advierte el dialogo):
+            // runFormatDisk / runRestoreFormat revisan la bandera al
+            // terminar y cierran ahi.
+            return
+        }
+        // Nada en vuelo (esperando autorizacion, DFU o montaje):
+        // cerrar de una vez.
+        finishCancel()
+    }
+
+    private func finishCancel() {
+        cancelRequested = false
+        isCopyingFirmware = false
+        restoreFormatStarted = false
+        bootloaderAlreadyInstalled = false
+        copyProgress = nil
+        lastError = nil
+        chosenMode = nil
+        step = .welcome
     }
 
     /// Punto de entrada del selector: fija el modo Y arranca el flujo
@@ -361,7 +415,7 @@ final class InstallerViewModel: ObservableObject {
 
     private func reactToDeviceState(_ state: DeviceState) {
         switch (step, state) {
-        case (.copyingFiles, .diskMode(let info)) where !isCopyingFirmware:
+        case (.copyingFiles, .diskMode(let info)) where !isCopyingFirmware && !cancelRequested:
             isCopyingFirmware = true
             Task { await copyFirmwareFiles(mountPath: info.mountPath) }
         case (.enterDFU, .dfuMode):
@@ -400,7 +454,10 @@ final class InstallerViewModel: ObservableObject {
                 throw InstallerError.deviceNotFound
             }
             progressMessage = "Formateando el disco (puente FAT y despues Mac OS Plus)..."
+            formatInFlight = true
+            defer { formatInFlight = false }
             try await executor.formatDiskForAppleRestore(candidate: candidate)
+            if cancelRequested { finishCancel(); return }
             step = .restoreHandoff
         } catch PrivilegedExecutor.ExecutorError.userCancelled {
             lastError = .authorizationCancelled
@@ -468,7 +525,10 @@ final class InstallerViewModel: ObservableObject {
                 throw InstallerError.deviceNotFound
             }
             progressMessage = "Formateando el disco..."
+            formatInFlight = true
+            defer { formatInFlight = false }
             try await executor.eraseAndFormatDisk(candidate: candidate, volumeName: volumeName)
+            if cancelRequested { finishCancel(); return }
             progressMessage = "Disco listo. Copiando archivos..."
 
             // Tras formatear, el volumen se vuelve a montar con el
@@ -564,14 +624,22 @@ final class InstallerViewModel: ObservableObject {
             } : nil
 
             do {
-                try await Self.extractZip(at: treeURL, to: mountPath)
+                try await extractZip(at: treeURL, to: mountPath)
             } catch {
                 poller?.cancel()
                 copyProgress = nil
+                if cancelRequested {
+                    // El usuario cancelo: la falla del proceso es la
+                    // terminacion que nosotros mismos pedimos, no un
+                    // error que mostrar.
+                    finishCancel()
+                    return
+                }
                 throw error
             }
             poller?.cancel()
             copyProgress = 1
+            if cancelRequested { finishCancel(); return }
 
             // Centinela: una fuente del design system que el firmware
             // carga al arrancar -- si esta, el arbol se extrajo bien.
@@ -608,16 +676,21 @@ final class InstallerViewModel: ObservableObject {
     /// Extrae el zip del arbol `.rockbox` sobre el volumen del iPod con
     /// `/usr/bin/ditto -xk` (herramienta del sistema, presente en todo
     /// macOS: maneja el zip de 7800+ archivos sin cargarlo entero en
-    /// memoria y hace merge sobre lo existente en vez de borrar).
-    /// `nonisolated` + subproceso: la extraccion tarda (decenas de MB a
-    /// un disco USB 2.0) y no debe congelar la UI, que mientras tanto
-    /// muestra el mensaje de progreso.
-    private nonisolated static func extractZip(at zipURL: URL, to destinationPath: String) async throws {
+    /// memoria y hace merge sobre lo existente en vez de borrar). El
+    /// subproceso corre solo (run() no bloquea) y se espera su
+    /// terminacion -- la UI sigue viva mostrando el progreso. Metodo de
+    /// instancia (no static) para exponer el proceso en
+    /// `extractProcess`: es lo que permite que Cancelar lo termine de
+    /// inmediato (D-188).
+    private func extractZip(at zipURL: URL, to destinationPath: String) async throws {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
         process.arguments = ["-xk", zipURL.path, destinationPath]
         let errPipe = Pipe()
         process.standardError = errPipe
+
+        extractProcess = process
+        defer { extractProcess = nil }
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             process.terminationHandler = { finished in

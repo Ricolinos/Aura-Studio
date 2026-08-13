@@ -28,6 +28,14 @@ final class IPodMonitor: ObservableObject {
     /// `diskModeNoFilesystem`. Se limpia al desconectar, para que un
     /// replug reintente.
     private var mountAttempted: Set<String> = []
+    /// Ticks consecutivos viendo el disco sin ningun volumen montado.
+    /// Declarar "sin sistema de archivos" exige varios segundos de
+    /// evidencia sostenida (D-188): al conectar el iPod, macOS tarda
+    /// varios segundos en verificar (fsck) y montar un FAT32 de 125GB
+    /// -- con solo 1s de gracia, esa ventana transitoria producia el
+    /// falso "modo bootloader" que el dueño reporto dos veces.
+    private var noFilesystemStreak = 0
+    private static let noFilesystemStreakRequired = 5
     /// El usuario (o el instalador) EXPULSO el disco a proposito: no
     /// volver a intentarle un montaje ni declararlo "sin sistema de
     /// archivos" mientras siga fisicamente conectado -- acaba de
@@ -71,10 +79,12 @@ final class IPodMonitor: ObservableObject {
             state = .diskMode(info)
             device = AuraDeviceProbe.probe(diskInfo: info)
             ejectRequested = false
+            noFilesystemStreak = 0
         } else if case .diskMode = state {
             state = .notConnected
             device = nil
             mountAttempted.removeAll()
+            noFilesystemStreak = 0
         }
     }
 
@@ -117,15 +127,25 @@ final class IPodMonitor: ObservableObject {
                         // DiskArbitration y el estado pasa a .diskMode
                         // solo -- sin formatear nada (D-182).
                         self.mountAttempted.insert(candidate.bsdName)
+                        self.noFilesystemStreak = 0
                         Self.attemptMount(bsdName: candidate.bsdName)
                     } else {
-                        self.state = .diskModeNoFilesystem(candidate)
+                        // Evidencia sostenida antes de declarar el disco
+                        // ilegible (D-188): el fsck + montaje de un
+                        // FAT32 grande tarda varios segundos al
+                        // conectar, y un solo tick sin volumen NO
+                        // significa que no haya sistema de archivos.
+                        self.noFilesystemStreak += 1
+                        if self.noFilesystemStreak >= Self.noFilesystemStreakRequired {
+                            self.state = .diskModeNoFilesystem(candidate)
+                        }
                     }
                 } else {
                     // Ni DFU ni disco: si habia una expulsion pedida,
                     // el aparato ya se desconecto de verdad -- limpiar
                     // para que una reconexion futura se procese normal.
                     self.ejectRequested = false
+                    self.noFilesystemStreak = 0
                     switch self.state {
                     case .dfuMode, .diskModeNoFilesystem, .detecting:
                         self.state = .notConnected

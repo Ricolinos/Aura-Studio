@@ -6,6 +6,16 @@ import SwiftUI
 /// restauracion (el flujo visible es identico, ver InstallerViewModel).
 struct InstallerWizardView: View {
     @ObservedObject var viewModel: InstallerViewModel
+    @State private var showCancelConfirm = false
+
+    /// Pasos con trabajo largo en curso donde se ofrece cancelar
+    /// (D-188). `installing` queda EXCLUIDO a proposito: ahi mks5lboot
+    /// puede estar escribiendo la NOR por DFU, y matar eso a la mitad
+    /// si puede inutilizar el arranque -- no se ofrece una accion que
+    /// no se puede hacer de forma segura.
+    private var cancelableSteps: [InstallerStep] {
+        [.preparingDisk, .copyingFiles, .restoreFormatting, .enterDFU]
+    }
 
     private var visibleSteps: [InstallerStep] {
         switch viewModel.mode {
@@ -66,6 +76,20 @@ struct InstallerWizardView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(32)
+
+            if cancelableSteps.contains(viewModel.step) {
+                Button("Cancelar instalación", role: .destructive) {
+                    showCancelConfirm = true
+                }
+                .buttonStyle(.bordered)
+                .padding(.bottom, 20)
+            }
+        }
+        .alert("¿Detener el proceso?", isPresented: $showCancelConfirm) {
+            Button("Detener", role: .destructive) { viewModel.cancelFlow() }
+            Button("Continuar", role: .cancel) {}
+        } message: {
+            Text("Detener el proceso a la mitad puede dejar el disco del iPod con errores. Si eso pasa, vuelve a correr el instalador para repararlo.")
         }
         // OJO: aqui NO va .onDisappear { viewModel.stop() } -- esta
         // vista desaparece con solo navegar a otra seccion de la barra
