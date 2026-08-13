@@ -47,6 +47,12 @@ final class InstallerViewModel: ObservableObject {
     /// que ya esta grabado es friccion pura (encargo del dueño,
     /// 2026-08-13, probando la recuperacion D-175/D-176 en vivo).
     @Published private(set) var bootloaderAlreadyInstalled = false
+    /// Progreso de la extraccion del arbol .rockbox (0...1), o nil
+    /// mientras no haya una medicion util (la UI muestra spinner
+    /// indeterminado). Se mide comparando el tamaño real escrito en el
+    /// iPod contra el tamaño descomprimido del zip -- `ditto` no
+    /// reporta progreso propio.
+    @Published private(set) var copyProgress: Double?
 
     init(monitor: IPodMonitor? = nil, executor: PrivilegedExecutor = PrivilegedExecutor()) {
         self.monitor = monitor ?? IPodMonitor()
@@ -54,13 +60,18 @@ final class InstallerViewModel: ObservableObject {
         self.runner = try? MKS5LBootRunner()
     }
 
+    /// NO arranca ni detiene el monitor: desde que el `IPodMonitor` es
+    /// compartido con toda la app (barra lateral, General, biblioteca),
+    /// su ciclo de vida lo maneja `ContentView` -- el asistente solo lo
+    /// observa. Antes cada `InstallerHomeView` creaba el suyo propio y
+    /// habia dos sondeos DFU corriendo en paralelo.
     func start(mode: InstallerMode) {
         self.mode = mode
         self.lastError = nil
         isCopyingFirmware = false
         bootloaderAlreadyInstalled = false
+        copyProgress = nil
         step = .welcome
-        monitor.start()
         observeDeviceState()
     }
 
@@ -75,7 +86,6 @@ final class InstallerViewModel: ObservableObject {
     /// inmediato en vez de esperar cualquiera de esas dos redes de
     /// seguridad.
     func stop() {
-        monitor.stop()
         cancellables.removeAll()
         Task { await AMPAgentsGuard.shared.resumeIfNeeded() }
     }
@@ -114,7 +124,6 @@ final class InstallerViewModel: ObservableObject {
     // asi que esos pasos no tienen boton de atras.
 
     func backFromWelcome() {
-        monitor.stop()
         onExitToModePicker?()
     }
 
@@ -162,6 +171,16 @@ final class InstallerViewModel: ObservableObject {
             case .dfuMode:
                 proceedToDFU()
             case .diskMode(let info) where info.isFAT32:
+                // Si el disco ya tiene Aura o un Rockbox comun, el
+                // bootloader de la familia Rockbox ya esta grabado en la
+                // NOR (asi llego ese arbol al disco) y arranca
+                // /.rockbox/rockbox.ipod sin importar cual de los dos
+                // arboles haya: instalar Aura es solo reemplazar la
+                // carpeta, sin DFU (encargo del dueño: "no nos obligaria
+                // a flashear el dispositivo").
+                if monitor.device?.isRockboxFamily == true {
+                    bootloaderAlreadyInstalled = true
+                }
                 isCopyingFirmware = true
                 Task { await copyFirmwareFiles(mountPath: info.mountPath) }
             case .diskMode(let info):
@@ -377,7 +396,31 @@ final class InstallerViewModel: ObservableObject {
             }
 
             progressMessage = "Instalando Aura en el iPod (tipografías, iconos, códecs)... Esto toma unos minutos. No desconectes el iPod."
-            try await Self.extractZip(at: treeURL, to: mountPath)
+
+            // Barra de progreso real: ditto no reporta avance, asi que
+            // se mide cuanto ya quedo escrito en el iPod contra el
+            // tamaño total descomprimido del zip, cada ~1s.
+            let expectedBytes = (try? await Self.zipUncompressedByteCount(of: treeURL)) ?? 0
+            let treeDestPath = URL(fileURLWithPath: mountPath)
+                .appendingPathComponent(".rockbox").path
+            let poller: Task<Void, Never>? = expectedBytes > 0 ? Task { [weak self] in
+                while !Task.isCancelled {
+                    let written = await Self.directorySize(atPath: treeDestPath)
+                    let fraction = min(0.99, Double(written) / Double(expectedBytes))
+                    self?.copyProgress = fraction
+                    try? await Task.sleep(nanoseconds: 1_000_000_000)
+                }
+            } : nil
+
+            do {
+                try await Self.extractZip(at: treeURL, to: mountPath)
+            } catch {
+                poller?.cancel()
+                copyProgress = nil
+                throw error
+            }
+            poller?.cancel()
+            copyProgress = 1
 
             // Centinela: una fuente del design system que el firmware
             // carga al arrancar -- si esta, el arbol se extrajo bien.
@@ -445,9 +488,48 @@ final class InstallerViewModel: ObservableObject {
         }
     }
 
+    /// Tamaño total descomprimido de un zip, leyendo la linea de
+    /// resumen de `unzip -l` ("48485954   7831 files"). 0 si no se pudo
+    /// medir -- la UI cae al spinner indeterminado, nunca a una barra
+    /// inventada.
+    private nonisolated static func zipUncompressedByteCount(of zipURL: URL) async throws -> Int64 {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/unzip")
+        process.arguments = ["-l", zipURL.path]
+        let outPipe = Pipe()
+        process.standardOutput = outPipe
+        try process.run()
+        let data = outPipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+
+        guard let text = String(data: data, encoding: .utf8) else { return 0 }
+        for line in text.split(separator: "\n").reversed() {
+            let fields = line.split(separator: " ", omittingEmptySubsequences: true)
+            if fields.count >= 2, fields.last == "files", let total = Int64(fields[0]) {
+                return total
+            }
+        }
+        return 0
+    }
+
+    /// Suma el tamaño de todos los archivos bajo `path`. `nonisolated`:
+    /// recorre 7800+ archivos en un volumen USB, jamas en el hilo de la
+    /// UI.
+    private nonisolated static func directorySize(atPath path: String) async -> Int64 {
+        let fm = FileManager.default
+        guard let enumerator = fm.enumerator(atPath: path) else { return 0 }
+        var total: Int64 = 0
+        while let relative = enumerator.nextObject() as? String {
+            let attrs = try? fm.attributesOfItem(atPath: (path as NSString).appendingPathComponent(relative))
+            total += (attrs?[.size] as? Int64) ?? 0
+        }
+        return total
+    }
+
     func retry() {
         lastError = nil
         isCopyingFirmware = false
+        copyProgress = nil
         // Se reevalua al volver a confirmar el dispositivo: si el iPod
         // ya no esta en "Bootloader USB mode" (p.ej. se reconecto otro
         // aparato), no debe quedar un salto de DFU heredado del intento

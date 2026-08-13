@@ -40,9 +40,9 @@ struct InstallerWizardView: View {
                 case .installing:
                     InstallingView(mode: viewModel.mode, message: viewModel.progressMessage)
                 case .preparingDisk:
-                    SimpleProgressView(title: "Preparando el disco", message: viewModel.progressMessage)
+                    SimpleProgressView(title: "Preparando el disco", message: viewModel.progressMessage, progress: nil)
                 case .copyingFiles:
-                    SimpleProgressView(title: "Copiando archivos", message: viewModel.progressMessage)
+                    SimpleProgressView(title: "Instalando Aura", message: viewModel.progressMessage, progress: viewModel.copyProgress)
                 case .done:
                     // Si esta corrida no flasheo nada (recuperacion con
                     // el bootloader ya grabado), el modo de arranque lo
@@ -70,13 +70,24 @@ struct InstallerWizardView: View {
 private struct SimpleProgressView: View {
     let title: String
     let message: String
+    /// 0...1 para barra determinada (extraccion del arbol .rockbox,
+    /// medida contra el tamaño real escrito); nil = spinner.
+    let progress: Double?
 
     var body: some View {
         VStack(spacing: 16) {
-            ProgressView().controlSize(.large)
+            if let progress {
+                ProgressView(value: progress)
+                    .frame(maxWidth: 320)
+            } else {
+                ProgressView().controlSize(.large)
+            }
             Text(title).font(.title.bold())
             if !message.isEmpty {
-                Text(message).foregroundStyle(.secondary)
+                Text(message)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 420)
             }
         }
     }

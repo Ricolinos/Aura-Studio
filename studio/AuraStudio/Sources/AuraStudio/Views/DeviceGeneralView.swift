@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// Seccion General: la identidad del dispositivo y que hay adentro.
 /// Equivalente a la pestaña General del Finder cuando detecta un iPod.
@@ -38,7 +39,10 @@ struct DeviceGeneralView: View {
                 } label: {
                     Label("Sincronizar", systemImage: "arrow.triangle.2.circlepath")
                 }
-                .disabled(device == nil || library.isProcessing)
+                // Sincronizar escribe el arbol de contenido de Aura --
+                // contra el firmware original o un Rockbox ajeno no
+                // haria nada util.
+                .disabled(device == nil || !(device?.isAura ?? false) || library.isProcessing)
             }
         }
     }
@@ -50,7 +54,7 @@ struct DeviceGeneralView: View {
                 .foregroundStyle(.tint)
             VStack(alignment: .leading, spacing: 4) {
                 Text(device.volumeName).font(.title2.bold())
-                Text(firmwareLabel(device.firmware))
+                Text(firmwareLabel(device))
                     .font(.callout)
                     .foregroundStyle(.secondary)
                 if !device.isFAT32 {
@@ -63,15 +67,20 @@ struct DeviceGeneralView: View {
         }
     }
 
-    private func firmwareLabel(_ firmware: AuraDevice.Firmware) -> String {
-        switch firmware {
+    private func firmwareLabel(_ device: AuraDevice) -> String {
+        switch device.firmware {
         case .aura(let hasBooted):
-            return hasBooted ? "Firmware Aura instalado"
-                             : "Firmware Aura instalado -- todavia sin arrancar"
+            let base = hasBooted ? "Firmware Aura instalado"
+                                 : "Firmware Aura instalado -- todavia sin arrancar"
+            return device.isDualBoot ? base + " (dual boot con Apple)" : base
         case .rockbox:
-            return "Rockbox instalado (no es Aura)"
+            return device.isDualBoot
+                ? "Rockbox instalado (no es Aura), en dual boot con Apple"
+                : "Rockbox instalado (no es Aura)"
         case .stock:
             return "Firmware original de Apple"
+        case .empty:
+            return "Disco vacio, sin firmware"
         }
     }
 
@@ -94,6 +103,41 @@ struct DeviceGeneralView: View {
 
     @ViewBuilder
     private func contents(_ device: AuraDevice) -> some View {
+        switch device.firmware {
+        case .aura:
+            auraContents(device)
+        case .stock:
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Contenido").font(.headline)
+                Text("La musica de este iPod la administra el firmware original de Apple -- se sincroniza con Finder (o la app Musica), no con Aura Studio. Si instalas Aura desde la seccion Instalador, la biblioteca de Aura Studio se activa.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                Button {
+                    NSWorkspace.shared.open(URL(fileURLWithPath: device.mountPath))
+                } label: {
+                    Label("Administrar contenido", systemImage: "arrow.up.forward.app")
+                }
+                .buttonStyle(.bordered)
+            }
+        case .rockbox:
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Contenido").font(.headline)
+                Text("Este iPod tiene un Rockbox que no es Aura: la biblioteca de Aura Studio no aplica a esta instalacion. En la seccion Instalador puedes instalar Aura (sin flashear -- solo se reemplaza la carpeta .rockbox) o restaurar el firmware original.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+        case .empty:
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Contenido").font(.headline)
+                Text("El disco esta vacio. Instala Aura desde la seccion Instalador para empezar a usarlo.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func auraContents(_ device: AuraDevice) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("En el iPod").font(.headline)
             if let summary = device.librarySummary {

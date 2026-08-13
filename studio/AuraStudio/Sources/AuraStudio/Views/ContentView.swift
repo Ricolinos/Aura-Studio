@@ -17,9 +17,22 @@ struct ContentView: View {
     @StateObject private var preferences = AppPreferences.shared
     @State private var selection: SidebarSection? = .general
 
+    /// La biblioteca (Musica/Video/Fotos/Extras) se bloquea cuando hay
+    /// un iPod conectado cuyo firmware NO es Aura: sincronizar contra el
+    /// firmware original de Apple o un Rockbox ajeno no haria nada util
+    /// y confunde (encargo del dueño, 2026-08-13). SIN dispositivo la
+    /// biblioteca sigue abierta a proposito -- armarla offline es un
+    /// caso de uso real, se sincroniza al conectar.
+    private var libraryLocked: Bool {
+        guard let device = deviceMonitor.device else { return false }
+        return !device.isAura
+    }
+
     var body: some View {
         NavigationSplitView {
-            SidebarView(selection: $selection, device: deviceMonitor.device)
+            SidebarView(selection: $selection,
+                        device: deviceMonitor.device,
+                        libraryLocked: libraryLocked)
                 .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
         } detail: {
             detail
@@ -27,6 +40,16 @@ struct ContentView: View {
         .tint(AuraColors.light.accent)
         .onAppear { deviceMonitor.start() }
         .onDisappear { deviceMonitor.stop() }
+        .onChange(of: libraryLocked) { locked in
+            // Si la seccion activa quedo bloqueada (p.ej. se conecto un
+            // iPod con firmware original mientras se miraba Musica), la
+            // seleccion salta a General en vez de quedarse en una vista
+            // que ya no aplica.
+            if locked, let current = selection,
+               current != .general, SidebarSection.deviceSections.contains(current) {
+                selection = .general
+            }
+        }
     }
 
     @ViewBuilder
@@ -47,7 +70,7 @@ struct ContentView: View {
         case .extras:
             ExtrasView(device: deviceMonitor.device)
         case .installer:
-            InstallerHomeView()
+            InstallerHomeView(monitor: deviceMonitor)
         case .settings:
             SettingsSectionView(preferences: preferences)
         }
@@ -110,12 +133,17 @@ enum SidebarSection: Hashable, CaseIterable {
 private struct SidebarView: View {
     @Binding var selection: SidebarSection?
     let device: AuraDevice?
+    let libraryLocked: Bool
 
     var body: some View {
         List(selection: $selection) {
             Section(header: deviceHeader) {
                 ForEach(SidebarSection.deviceSections, id: \.self) { section in
-                    Label(section.title, systemImage: section.symbol).tag(section)
+                    Label(section.title, systemImage: section.symbol)
+                        .tag(section)
+                        // General queda siempre accesible: es donde se
+                        // explica QUE firmware hay y que hacer con el.
+                        .disabled(libraryLocked && section != .general)
                 }
             }
             Section("Aura Studio") {

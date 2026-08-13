@@ -17,6 +17,17 @@ enum AuraDeviceProbe {
     static let rockboxDirName = ".rockbox"
     static let auraDirRelativePath = ".rockbox/aura"
     static let auraConfigRelativePath = ".rockbox/aura/aura.cfg"
+    /// Marcador de instalacion de Aura que Studio SIEMPRE deja (los
+    /// iconos del design system viajan en el arbol .rockbox desde
+    /// D-178) -- a diferencia de `.rockbox/aura/`, que lo crea el
+    /// firmware al arrancar por primera vez, este existe desde el
+    /// momento de la instalacion.
+    static let auraIconsRelativePath = ".rockbox/icons/aura"
+    /// Carpeta del firmware original de Apple (ahi viven su base de
+    /// datos y su musica). Su presencia es lo que distingue "firmware
+    /// original" de "disco recien formateado", y la mitad en disco de
+    /// la deteccion de dual boot.
+    static let iPodControlDirName = "iPod_Control"
 
     /// Devuelve nil si `mountPath` no es una ruta utilizable. No es
     /// paranoia: `URL(fileURLWithPath: "")` NO falla, se resuelve contra
@@ -38,8 +49,10 @@ enum AuraDeviceProbe {
             fileManager.fileExists(atPath: root.appendingPathComponent(relative).path)
         }
 
+        let originalPresent = exists(iPodControlDirName)
+
         let firmware: AuraDevice.Firmware
-        if exists(auraDirRelativePath) {
+        if exists(auraDirRelativePath) || exists(auraIconsRelativePath) {
             firmware = .aura(hasBooted: exists(auraConfigRelativePath))
         } else if exists(firmwareBinaryName) {
             // Binario copiado pero el firmware nunca escribio nada suyo:
@@ -47,8 +60,10 @@ enum AuraDeviceProbe {
             firmware = .aura(hasBooted: false)
         } else if exists(rockboxDirName) {
             firmware = .rockbox
-        } else {
+        } else if originalPresent {
             firmware = .stock
+        } else {
+            firmware = .empty
         }
 
         let (capacity, free) = capacityAndFree(at: root)
@@ -58,6 +73,7 @@ enum AuraDeviceProbe {
             mountPath: diskInfo.mountPath,
             isFAT32: diskInfo.isFAT32,
             firmware: firmware,
+            originalFirmwarePresent: originalPresent,
             capacityBytes: capacity,
             freeBytes: free,
             librarySummary: readSummary(root: root, fileManager: fileManager)

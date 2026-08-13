@@ -35,10 +35,49 @@ final class AuraDeviceProbeTests: XCTestCase {
                                                  withIntermediateDirectories: true)
     }
 
-    func testEmptyVolumeIsStockFirmware() throws {
+    /// D-179: un volumen sin `iPod_Control/` ni rastro de Rockbox ya no
+    /// se reporta como "firmware original" -- es un disco vacio, y la
+    /// UI le dice al usuario algo distinto en cada caso.
+    func testEmptyVolumeIsEmptyNotStock() throws {
+        let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
+        XCTAssertEqual(device.firmware, .empty)
+        XCTAssertFalse(device.isAura)
+        XCTAssertFalse(device.originalFirmwarePresent)
+    }
+
+    func testIPodControlAloneMeansOriginalAppleFirmware() throws {
+        try mkdir("iPod_Control/Music")
         let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
         XCTAssertEqual(device.firmware, .stock)
-        XCTAssertFalse(device.isAura)
+        XCTAssertTrue(device.originalFirmwarePresent)
+        XCTAssertFalse(device.isDualBoot)
+        XCTAssertFalse(device.isRockboxFamily)
+    }
+
+    func testAuraPlusIPodControlIsDualBoot() throws {
+        try touch(".rockbox/aura/aura.cfg")
+        try mkdir("iPod_Control/Music")
+        let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
+        XCTAssertEqual(device.firmware, .aura(hasBooted: true))
+        XCTAssertTrue(device.isDualBoot)
+    }
+
+    func testRockboxPlusIPodControlIsDualBoot() throws {
+        try mkdir(".rockbox")
+        try mkdir("iPod_Control")
+        let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
+        XCTAssertEqual(device.firmware, .rockbox)
+        XCTAssertTrue(device.isDualBoot)
+        XCTAssertTrue(device.isRockboxFamily)
+    }
+
+    /// D-179: los iconos del design system viajan en el arbol .rockbox
+    /// desde D-178 -- son un marcador de Aura que existe desde el
+    /// momento de la instalacion, sin esperar el primer arranque.
+    func testAuraIconsDirAloneIsDetectedAsAura() throws {
+        try mkdir(".rockbox/icons/aura/masks")
+        let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
+        XCTAssertEqual(device.firmware, .aura(hasBooted: false))
     }
 
     func testRockboxWithoutAuraIsNotDetectedAsAura() throws {
