@@ -42,6 +42,7 @@
 		4CE07ED3A6AF6A3EA04D9A2C /* LibraryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62E6C2892E84F33B9EF97D15 /* LibraryItem.swift */; };
 		51B2A64027ACA8FC73EB923A /* MKS5LBootRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C70AA3068E3596A674879EA8 /* MKS5LBootRunnerTests.swift */; };
 		52A43D8ECC2CBF2433EA1B31 /* LibrarySync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CC2E3940E0EC5127461CB5 /* LibrarySync.swift */; };
+		57300DFC7BAED2805920E29F /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 7C461CE371AB2C341CE751F2 /* AppIcon.icon */; };
 		5EDA0D1DF2BC765B8F8D473B /* BundledArtifacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8464D5E55C66D32740C7289 /* BundledArtifacts.swift */; };
 		62666A4A9BF729B61C851F76 /* ID3WriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF3580937C6126B24998BB6 /* ID3WriterTests.swift */; };
 		666C116F404FC775C15FFEAD /* AppStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AFC6DCF7F164C535175071 /* AppStrings.swift */; };
@@ -70,6 +71,7 @@
 		C3AD25FC7C3C2CE8C2F3AD6F /* BundledArtifactsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */; };
 		C76F4EF9962D5866CA044718 /* checksums.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2F9BF12646626E5E5CFC2BFD /* checksums.txt */; };
 		CD9B6AC91C5AECCDB4A6DC44 /* AuraDeviceProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F0CDAA153138813C9AF84E /* AuraDeviceProbe.swift */; };
+		D0949902B40FBA74F1D9D0D6 /* BootModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F462D2B7F9707F077FC4D782 /* BootModeView.swift */; };
 		D4AD421F984F0CACB047168D /* PrivilegedExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A9408836FAEA82165D554C /* PrivilegedExecutor.swift */; };
 		D8363DAB3183238539D733A5 /* AuraDeviceProbeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72773374D5D4C62732AA92F3 /* AuraDeviceProbeTests.swift */; };
 		D97EFA41FAC51A50DC04A8F4 /* Playlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92C5F3EC062AD8FA6D8B4FA /* Playlist.swift */; };
@@ -125,6 +127,7 @@
 		72773374D5D4C62732AA92F3 /* AuraDeviceProbeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraDeviceProbeTests.swift; sourceTree = "<group>"; };
 		777383A161FBD9C32BFA6D82 /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
 		78C8C5A2B4594B410D4C51A4 /* ExtrasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtrasView.swift; sourceTree = "<group>"; };
+		7C461CE371AB2C341CE751F2 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		7D3754C9E29F0BC93B660592 /* EnterDFUView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterDFUView.swift; sourceTree = "<group>"; };
 		7E7628837584B290697CA067 /* DeviceGeneralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceGeneralView.swift; sourceTree = "<group>"; };
 		7F307EFCD3106FEFB532DF8E /* PlaylistExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistExporterTests.swift; sourceTree = "<group>"; };
@@ -163,6 +166,7 @@
 		E7EDF2D22E970198CC8A5C1B /* LiveEnrichmentIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveEnrichmentIntegrationTests.swift; sourceTree = "<group>"; };
 		EAC95668C5FEF76FAC67EE52 /* CoverArtArchiveClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverArtArchiveClient.swift; sourceTree = "<group>"; };
 		F23689620B3C26365C6A2E5D /* MusicBrainzClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicBrainzClient.swift; sourceTree = "<group>"; };
+		F462D2B7F9707F077FC4D782 /* BootModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootModeView.swift; sourceTree = "<group>"; };
 		F52FF3A536F1C7FAFB6822B6 /* SettingsSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSectionView.swift; sourceTree = "<group>"; };
 		FC202F1A3D9164B1E6014A84 /* CatalogSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogSummary.swift; sourceTree = "<group>"; };
 		FEF3580937C6126B24998BB6 /* ID3WriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ID3WriterTests.swift; sourceTree = "<group>"; };
@@ -173,6 +177,7 @@
 			isa = PBXGroup;
 			children = (
 				6E5C06E65D1A04EAD003DE49 /* BackContinueRow.swift */,
+				F462D2B7F9707F077FC4D782 /* BootModeView.swift */,
 				14D5A27F7EA14F700832333A /* ContentView.swift */,
 				9EBCF1EF29547CD3B01B5C98 /* DetectDeviceView.swift */,
 				7E7628837584B290697CA067 /* DeviceGeneralView.swift */,
@@ -207,6 +212,7 @@
 			isa = PBXGroup;
 			children = (
 				51E31BF617A5BF599CCA3A75 /* Aura-Proyect */,
+				D8D2047E51A8F78EB8B3B023 /* Resources */,
 				4B0AB40ABB80B48429B4E34D /* Sources */,
 				D8FEC30057F4FE03805035FB /* Tests */,
 				07D7B3164BE30742B9678DEC /* Products */,
@@ -318,6 +324,14 @@
 				6311C9925925969ED5716A25 /* WrongVolumeRegressionTests.swift */,
 			);
 			path = AuraStudioTests;
+			sourceTree = "<group>";
+		};
+		D8D2047E51A8F78EB8B3B023 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				7C461CE371AB2C341CE751F2 /* AppIcon.icon */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 		D8FEC30057F4FE03805035FB /* Tests */ = {
@@ -437,6 +451,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				57300DFC7BAED2805920E29F /* AppIcon.icon in Resources */,
 				998B6DF4B6AC0FEE21284A8E /* bootloader-ipod6g.ipod in Resources */,
 				C76F4EF9962D5866CA044718 /* checksums.txt in Resources */,
 				3D68D3D80AE46A56B0BF89EE /* mks5lboot in Resources */,
@@ -483,6 +498,7 @@
 				14B0C14393E1FF6AC7FACCFF /* AuraPalette.swift in Sources */,
 				203D6E1800BE63DFE89AB1C8 /* AuraStudioApp.swift in Sources */,
 				87EB236DAA29660FD987218F /* BackContinueRow.swift in Sources */,
+				D0949902B40FBA74F1D9D0D6 /* BootModeView.swift in Sources */,
 				5EDA0D1DF2BC765B8F8D473B /* BundledArtifacts.swift in Sources */,
 				ABAA0A8B49C9C4BA781A5A09 /* CatalogSummary.swift in Sources */,
 				401404E1D0A6D6FFBB155F2C /* ContentView.swift in Sources */,
@@ -544,6 +560,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -726,6 +743,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;

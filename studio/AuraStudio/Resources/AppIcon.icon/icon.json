@@ -1,0 +1,81 @@
+{
+  "fill" : {
+    "automatic-gradient" : "extended-srgb:0.00000,0.53333,1.00000,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "blend-mode" : "normal",
+          "fill" : {
+            "solid" : "srgb:1.00000,1.00000,1.00000,1.00000"
+          },
+          "glass" : false,
+          "image-name" : "Image 8.svg",
+          "name" : "ELEMENTS"
+        },
+        {
+          "fill" : {
+            "linear-gradient" : [
+              "srgb:0.66422,0.66424,0.66423,1.00000",
+              "srgb:0.57046,0.57047,0.57046,1.00000"
+            ],
+            "orientation" : {
+              "start" : {
+                "x" : 0.5819999999999999,
+                "y" : 1
+              },
+              "stop" : {
+                "x" : 0.5,
+                "y" : 0
+              }
+            }
+          },
+          "glass" : true,
+          "hidden" : false,
+          "image-name" : "Image 6.svg",
+          "name" : "CIRCLE CENTER",
+          "opacity" : 0.9
+        },
+        {
+          "fill" : {
+            "linear-gradient" : [
+              "srgb:1.00000,1.00000,1.00000,1.00000",
+              "srgb:0.92143,0.92145,0.92144,1.00000"
+            ],
+            "orientation" : {
+              "start" : {
+                "x" : 0,
+                "y" : -0.06645051194539259
+              },
+              "stop" : {
+                "x" : 0.8106825938566552,
+                "y" : 1.2441296928327643
+              }
+            }
+          },
+          "glass" : true,
+          "hidden" : false,
+          "image-name" : "Image 5.svg",
+          "name" : "CIRCLE BACK",
+          "opacity" : 0.5
+        }
+      ],
+      "name" : "ICON AURA",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "circles" : [
+      "watchOS"
+    ],
+    "squares" : "shared"
+  }
+}
