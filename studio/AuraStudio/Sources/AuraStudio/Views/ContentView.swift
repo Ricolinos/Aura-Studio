@@ -20,6 +20,14 @@ struct ContentView: View {
     /// conectado (hash) -- alimenta el aviso de "Actualizar Aura" en
     /// General. Se recalcula al conectar/desconectar.
     @State private var updateAvailable = false
+    /// Recorrido de instalacion automatica a pantalla completa (D-183),
+    /// disparado al detectar el iPod en modo bootloader. Mientras esta
+    /// activo reemplaza la ventana entera (barra lateral incluida).
+    @State private var autoInstallActive = false
+    /// El usuario cancelo (o termino) el recorrido con el iPod todavia
+    /// en modo bootloader: no volver a dispararlo hasta que el aparato
+    /// cambie de estado (se desconecte o monte como disco).
+    @State private var autoInstallSuppressed = false
 
     /// La biblioteca (Musica/Video/Fotos/Extras) se bloquea cuando hay
     /// un iPod conectado cuyo firmware NO es Aura: sincronizar contra el
@@ -33,17 +41,46 @@ struct ContentView: View {
     }
 
     var body: some View {
-        NavigationSplitView {
-            SidebarView(selection: $selection,
-                        device: deviceMonitor.device,
-                        libraryLocked: libraryLocked)
-                .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
-        } detail: {
-            detail
+        Group {
+            if autoInstallActive {
+                AutoInstallView(monitor: deviceMonitor) {
+                    autoInstallActive = false
+                    // Suprimir el re-disparo SOLO si el iPod sigue en
+                    // modo bootloader (recorrido cancelado): si ya se
+                    // desconecto o monto, una futura deteccion es un
+                    // evento nuevo y debe guiar de nuevo.
+                    if case .diskModeNoFilesystem = deviceMonitor.state {
+                        autoInstallSuppressed = true
+                    }
+                }
+            } else {
+                NavigationSplitView {
+                    SidebarView(selection: $selection,
+                                device: deviceMonitor.device,
+                                libraryLocked: libraryLocked)
+                        .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
+                } detail: {
+                    detail
+                }
+            }
         }
         .tint(AuraColors.light.accent)
         .onAppear { deviceMonitor.start() }
         .onDisappear { deviceMonitor.stop() }
+        .onChange(of: deviceMonitor.state) { newState in
+            switch newState {
+            case .diskModeNoFilesystem:
+                if !autoInstallActive && !autoInstallSuppressed {
+                    autoInstallActive = true
+                }
+            case .diskMode, .notConnected:
+                // El aparato salio del modo bootloader: la proxima
+                // deteccion vuelve a disparar el recorrido.
+                autoInstallSuppressed = false
+            default:
+                break
+            }
+        }
         .onChange(of: libraryLocked) { locked in
             // Si la seccion activa quedo bloqueada (p.ej. se conecto un
             // iPod con firmware original mientras se miraba Musica), la

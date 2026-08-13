@@ -28,6 +28,14 @@ final class IPodMonitor: ObservableObject {
     /// `diskModeNoFilesystem`. Se limpia al desconectar, para que un
     /// replug reintente.
     private var mountAttempted: Set<String> = []
+    /// El usuario (o el instalador) EXPULSO el disco a proposito: no
+    /// volver a intentarle un montaje ni declararlo "sin sistema de
+    /// archivos" mientras siga fisicamente conectado -- acaba de
+    /// decirsele que ya puede desconectar el cable, y remontarlo por
+    /// detras convertiria ese aviso en mentira. Se limpia cuando el
+    /// disco desaparece de verdad (se desconecto) o cuando un volumen
+    /// vuelve a montar por otra via.
+    private var ejectRequested = false
 
     init() {
         runner = try? MKS5LBootRunner()
@@ -49,7 +57,8 @@ final class IPodMonitor: ObservableObject {
     }
 
     func unmountCurrentDisk() async -> Bool {
-        await withCheckedContinuation { continuation in
+        ejectRequested = true
+        return await withCheckedContinuation { continuation in
             diskMonitor.unmount { ok in
                 continuation.resume(returning: ok)
             }
@@ -61,6 +70,7 @@ final class IPodMonitor: ObservableObject {
         if let info {
             state = .diskMode(info)
             device = AuraDeviceProbe.probe(diskInfo: info)
+            ejectRequested = false
         } else if case .diskMode = state {
             state = .notConnected
             device = nil
@@ -97,7 +107,10 @@ final class IPodMonitor: ObservableObject {
                 if let runner = self.runner, let dfu = try? runner.scanDFU() {
                     self.state = .dfuMode(dfu)
                 } else if case .found(let candidate) = IPodDiskIdentifier.identify(from: IPodDiskIdentifier.currentCandidates()) {
-                    if !self.mountAttempted.contains(candidate.bsdName) {
+                    if self.ejectRequested {
+                        // Expulsado a proposito: dejarlo en paz hasta
+                        // que se desconecte fisicamente.
+                    } else if !self.mountAttempted.contains(candidate.bsdName) {
                         // Primero intentar montar: si el disco tiene un
                         // sistema de archivos valido pero quedo
                         // desmontado, el montaje dispara el evento de
@@ -108,12 +121,17 @@ final class IPodMonitor: ObservableObject {
                     } else {
                         self.state = .diskModeNoFilesystem(candidate)
                     }
-                } else if case .dfuMode = self.state {
-                    self.state = .notConnected
-                } else if case .diskModeNoFilesystem = self.state {
-                    self.state = .notConnected
-                } else if self.state == .detecting {
-                    self.state = .notConnected
+                } else {
+                    // Ni DFU ni disco: si habia una expulsion pedida,
+                    // el aparato ya se desconecto de verdad -- limpiar
+                    // para que una reconexion futura se procese normal.
+                    self.ejectRequested = false
+                    switch self.state {
+                    case .dfuMode, .diskModeNoFilesystem, .detecting:
+                        self.state = .notConnected
+                    default:
+                        break
+                    }
                 }
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
             }

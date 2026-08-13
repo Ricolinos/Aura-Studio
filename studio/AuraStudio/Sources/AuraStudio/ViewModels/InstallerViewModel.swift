@@ -127,6 +127,20 @@ final class InstallerViewModel: ObservableObject {
         onExitToModePicker?()
     }
 
+    /// Arranque directo para la instalacion automatica desde el modo
+    /// bootloader (D-183): salta Bienvenida/Modo de arranque/Permisos y
+    /// va directo a confirmar el dispositivo con el estado que el
+    /// monitor ya conoce. La unica interaccion que queda es la hoja de
+    /// autorizacion + contraseña del formateo -- esa es la puerta de
+    /// consentimiento real y no se salta nunca. Si mientras tanto el
+    /// disco monto (el intento de montaje de D-182 lo logro), el mismo
+    /// camino resuelve copiar sin formatear.
+    func startAutoInstall() {
+        start(mode: .install)
+        step = .detectDevice
+        acknowledgeDeviceReady()
+    }
+
     func backFromPermissions() {
         step = mode == .install ? .chooseBootMode : .welcome
     }

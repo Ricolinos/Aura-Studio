@@ -65,6 +65,7 @@
 		ABAA0A8B49C9C4BA781A5A09 /* CatalogSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC202F1A3D9164B1E6014A84 /* CatalogSummary.swift */; };
 		B1845030E08621FDF34358FA /* DiskArbitrationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 638FD209E9AF6417EE51ABC7 /* DiskArbitrationMonitor.swift */; };
 		B3674CA82A35D45F26989B93 /* LibraryEnricher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 206063864F8205232A3581AE /* LibraryEnricher.swift */; };
+		B87A6A38601D65019D333833 /* AutoInstallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7511C6C29CDB446CED312147 /* AutoInstallView.swift */; };
 		B9F991F96D02DF1AD4B32042 /* ID3Writer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D282E9DFA0D773AF988E69E5 /* ID3Writer.swift */; };
 		BB4E4B852CE6983C0E856BBA /* InstallerHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC5F915258EC049BFC791B90 /* InstallerHomeView.swift */; };
 		BC30BF47ADCC5F66B79045A1 /* LiveEnrichmentIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7EDF2D22E970198CC8A5C1B /* LiveEnrichmentIntegrationTests.swift */; };
@@ -132,6 +133,7 @@
 		6E5C06E65D1A04EAD003DE49 /* BackContinueRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackContinueRow.swift; sourceTree = "<group>"; };
 		722702AD0F209BDEA893FA8D /* MKS5LBootRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKS5LBootRunner.swift; sourceTree = "<group>"; };
 		72773374D5D4C62732AA92F3 /* AuraDeviceProbeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraDeviceProbeTests.swift; sourceTree = "<group>"; };
+		7511C6C29CDB446CED312147 /* AutoInstallView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoInstallView.swift; sourceTree = "<group>"; };
 		777383A161FBD9C32BFA6D82 /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
 		78C8C5A2B4594B410D4C51A4 /* ExtrasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtrasView.swift; sourceTree = "<group>"; };
 		7C461CE371AB2C341CE751F2 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
@@ -186,6 +188,7 @@
 		05B2324DA2DF820F4758883E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				7511C6C29CDB446CED312147 /* AutoInstallView.swift */,
 				6E5C06E65D1A04EAD003DE49 /* BackContinueRow.swift */,
 				F462D2B7F9707F077FC4D782 /* BootModeView.swift */,
 				14D5A27F7EA14F700832333A /* ContentView.swift */,
@@ -516,6 +519,7 @@
 				14B0C14393E1FF6AC7FACCFF /* AuraPalette.swift in Sources */,
 				203D6E1800BE63DFE89AB1C8 /* AuraStudioApp.swift in Sources */,
 				7128F973A9D8E656F326EB9F /* AuraUpdateChecker.swift in Sources */,
+				B87A6A38601D65019D333833 /* AutoInstallView.swift in Sources */,
 				87EB236DAA29660FD987218F /* BackContinueRow.swift in Sources */,
 				D0949902B40FBA74F1D9D0D6 /* BootModeView.swift in Sources */,
 				5EDA0D1DF2BC765B8F8D473B /* BundledArtifacts.swift in Sources */,
