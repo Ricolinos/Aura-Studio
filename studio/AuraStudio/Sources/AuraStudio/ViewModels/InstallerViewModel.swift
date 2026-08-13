@@ -342,9 +342,18 @@ final class InstallerViewModel: ObservableObject {
             progressMessage = "Disco listo. Copiando archivos..."
 
             // Tras formatear, el volumen se vuelve a montar con el
-            // mismo nombre -- se espera a que IPodMonitor lo confirme
-            // en vez de asumir la ruta de montaje.
+            // mismo nombre. Dos caminos cubren la carrera (D-182): si
+            // el montaje ya ocurrio MIENTRAS el paso seguia en
+            // "preparando disco" (el evento llego y no habia nada
+            // esperandolo), monitor.state ya es .diskMode y la copia
+            // arranca aqui mismo; si todavia no monta, el paso queda en
+            // .copyingFiles y reactToDeviceState() la arranca cuando
+            // DiskArbitration confirme el montaje.
             step = .copyingFiles
+            if case .diskMode(let info) = monitor.state, !isCopyingFirmware {
+                isCopyingFirmware = true
+                Task { await copyFirmwareFiles(mountPath: info.mountPath) }
+            }
         } catch PrivilegedExecutor.ExecutorError.userCancelled {
             lastError = .authorizationCancelled
             step = .failed

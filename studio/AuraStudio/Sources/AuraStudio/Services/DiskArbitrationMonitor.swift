@@ -36,6 +36,25 @@ final class DiskArbitrationMonitor {
             let monitor = Unmanaged<DiskArbitrationMonitor>.fromOpaque(ctx).takeUnretainedValue()
             monitor.handleDiskDisappeared(disk)
         }, context)
+
+        // CRITICO (D-182): "aparecer" y "montarse" son eventos DISTINTOS
+        // en DiskArbitration. DiskAppeared dispara cuando existe el
+        // dispositivo BSD -- normalmente ANTES de que el volumen tenga
+        // punto de montaje, asi que diskModeInfo() lo rechaza (regla
+        // dura de D-070: sin montaje no hay nada donde trabajar). El
+        // montaje real llega como cambio de descripcion. Sin este
+        // callback, un volumen recien formateado por el instalador
+        // montaba y nadie se enteraba: la pantalla "Copiando
+        // archivos..." esperaba para siempre un evento que no existia
+        // (visto en hardware real, 2026-08-13).
+        DARegisterDiskDescriptionChangedCallback(
+            session, nil,
+            [kDADiskDescriptionVolumePathKey] as CFArray,
+            { disk, _, ctx in
+                guard let ctx else { return }
+                let monitor = Unmanaged<DiskArbitrationMonitor>.fromOpaque(ctx).takeUnretainedValue()
+                monitor.handleDiskDescriptionChanged(disk)
+            }, context)
     }
 
     func stop() {
@@ -58,6 +77,26 @@ final class DiskArbitrationMonitor {
               String(cString: bsd) == String(cString: currentBSD) else { return }
         currentDisk = nil
         onChange?(nil)
+    }
+
+    /// Cambio el punto de montaje de un volumen: si ahora tiene uno y
+    /// pasa los criterios, es el mismo camino que una aparicion; si el
+    /// volumen que estabamos siguiendo se DESMONTO (sin desaparecer el
+    /// dispositivo -- p.ej. el instalador lo desmonto para formatear),
+    /// se notifica como perdido, porque un disco sin montaje no sirve
+    /// para leer ni escribir.
+    private func handleDiskDescriptionChanged(_ disk: DADisk) {
+        if let info = Self.diskModeInfo(for: disk) {
+            currentDisk = disk
+            onChange?(info)
+            return
+        }
+        if let bsd = DADiskGetBSDName(disk), let current = currentDisk,
+           let currentBSD = DADiskGetBSDName(current),
+           String(cString: bsd) == String(cString: currentBSD) {
+            currentDisk = nil
+            onChange?(nil)
+        }
     }
 
     /// Traduce la descripcion de DiskArbitration a un `DiskModeInfo`, o
