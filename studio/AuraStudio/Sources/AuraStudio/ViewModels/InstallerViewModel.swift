@@ -202,11 +202,29 @@ final class InstallerViewModel: ObservableObject {
                 }
                 isCopyingFirmware = true
                 Task { await copyFirmwareFiles(mountPath: info.mountPath) }
-            case .diskMode(let info):
-                beginFormat(volumeName: info.volumeName)
-            case .diskModeNoFilesystem:
-                bootloaderAlreadyInstalled = true
-                beginFormat(volumeName: "iPod")
+            case .diskMode, .diskModeNoFilesystem:
+                // El disco necesita formatearse (no esta en FAT32, o no
+                // tiene nada legible). Con DUAL BOOT elegido esto es un
+                // callejon sin salida y hay que decirlo ANTES de borrar
+                // nada (D-185, incidente real): nuestro formateo
+                // reescribe el disco ENTERO con MBR/FAT32, destruyendo
+                // la particion de firmware donde vive el sistema de
+                // Apple -- exactamente lo que dual boot promete
+                // conservar. Y un iPod restaurado desde Mac (macpod,
+                // particiones Apple/HFS+) tampoco sirve tal cual:
+                // Rockbox solo lee tablas MBR/GPT (disk.c exige la
+                // firma 0xaa55), asi que "No partition found".
+                if !destroyOriginalFirmware {
+                    lastError = .dualBootRequiresWinpod
+                    step = .failed
+                    return
+                }
+                if case .diskMode(let info) = monitor.state {
+                    beginFormat(volumeName: info.volumeName)
+                } else {
+                    bootloaderAlreadyInstalled = true
+                    beginFormat(volumeName: "iPod")
+                }
             default:
                 break
             }
@@ -453,6 +471,15 @@ final class InstallerViewModel: ObservableObject {
     /// extraccion es un merge (ditto no borra lo que ya este): un
     /// reinstalar encima NO pierde `aura.cfg` ni el cache de caratulas.
     private func copyFirmwareFiles(mountPath: String) async {
+        // Candado GLOBAL entre instancias (D-185): dos ViewModels
+        // extrayendo el arbol a la vez sobre el mismo volumen producen
+        // los "File exists" de ditto en carrera. Si otro flujo ya esta
+        // escribiendo, este se retira sin tocar nada.
+        guard InstallerFlowRegistry.shared.beginWriting() else {
+            isCopyingFirmware = false
+            return
+        }
+        defer { InstallerFlowRegistry.shared.endWriting() }
         do {
             guard let firmwareURL = BundledArtifacts.shared.url(for: .firmware) else {
                 throw InstallerError.missingBundledArtifact(BundledArtifacts.Name.firmware.rawValue)

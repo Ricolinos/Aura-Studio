@@ -45,6 +45,7 @@ struct ContentView: View {
             if autoInstallActive {
                 AutoInstallView(monitor: deviceMonitor) {
                     autoInstallActive = false
+                    InstallerFlowRegistry.shared.flowActive = false
                     // Suprimir el re-disparo SOLO si el iPod sigue en
                     // modo bootloader (recorrido cancelado): si ya se
                     // desconecto o monto, una futura deteccion es un
@@ -70,7 +71,14 @@ struct ContentView: View {
         .onChange(of: deviceMonitor.state) { newState in
             switch newState {
             case .diskModeNoFilesystem:
-                if !autoInstallActive && !autoInstallSuppressed {
+                // JAMAS tomar la pantalla mientras un flujo de
+                // instalacion/restauracion ya corre (D-185): la ventana
+                // transitoria sin volumen durante NUESTRO PROPIO
+                // formateo pasa por este estado, y disparar un segundo
+                // instalador encima fue lo que produjo dos extracciones
+                // en carrera sobre el mismo disco.
+                if !autoInstallActive && !autoInstallSuppressed
+                    && !InstallerFlowRegistry.shared.flowActive {
                     autoInstallActive = true
                 }
             case .diskMode, .notConnected:

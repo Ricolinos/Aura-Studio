@@ -61,7 +61,7 @@ struct AutoInstallView: View {
                 .foregroundStyle(.tint)
             Text("Encontramos tu iPod en modo bootloader")
                 .font(.largeTitle.bold())
-            Text("A continuacion instalaremos Aura automaticamente. Cuando terminemos te avisaremos para que desconectes tu iPod y lo reinicies (manteniendo SELECT + MENU unos segundos).")
+            Text("A continuacion instalaremos Aura automaticamente. Si el disco necesita prepararse se te pedira tu contraseña -- ese paso borra el contenido del iPod. Cuando terminemos te avisaremos para que desconectes tu iPod y lo reinicies (manteniendo SELECT + MENU unos segundos).")
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: 520)
@@ -103,6 +103,7 @@ struct AutoInstallView: View {
         guard !began else { return }
         countdownTask?.cancel()
         began = true
+        InstallerFlowRegistry.shared.flowActive = true
         viewModel.startAutoInstall()
     }
 }

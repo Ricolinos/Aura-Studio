@@ -88,6 +88,7 @@
 		ECBCFCC6104EA5F8E3F445BF /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF1D56D4FC12419217F8960 /* WelcomeView.swift */; };
 		EEF0D749E12D2A5E082CCC60 /* ExtrasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78C8C5A2B4594B410D4C51A4 /* ExtrasView.swift */; };
 		F745EA7E70AE91DF77279194 /* PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777383A161FBD9C32BFA6D82 /* PermissionsView.swift */; };
+		F826489C2A3E807E5630E15D /* InstallerFlowRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34640ACD3AC36633502AE41 /* InstallerFlowRegistry.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -160,6 +161,7 @@
 		B0E14855D7F760E14EB547DE /* MusicBrainzRateLimiterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicBrainzRateLimiterTests.swift; sourceTree = "<group>"; };
 		B1782D4EBAA2C3FC3EBC49F5 /* InstallingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallingView.swift; sourceTree = "<group>"; };
 		B210703E5EF249635DE046AE /* PlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistsView.swift; sourceTree = "<group>"; };
+		B34640ACD3AC36633502AE41 /* InstallerFlowRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerFlowRegistry.swift; sourceTree = "<group>"; };
 		B6A56207E06BF883E789308E /* SyncPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncPlannerTests.swift; sourceTree = "<group>"; };
 		B8464D5E55C66D32740C7289 /* BundledArtifacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledArtifacts.swift; sourceTree = "<group>"; };
 		B9961D8C11B7031D474CB9BE /* AuraUpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraUpdateChecker.swift; sourceTree = "<group>"; };
@@ -373,6 +375,7 @@
 				DAE64AFF0609F93FC361C6DE /* FFmpegTranscoder.swift */,
 				D282E9DFA0D773AF988E69E5 /* ID3Writer.swift */,
 				3DC865282F8B113716D7C3AF /* ImageResizer.swift */,
+				B34640ACD3AC36633502AE41 /* InstallerFlowRegistry.swift */,
 				2B7808E74C42090DED30DCD9 /* IPodDiskIdentifier.swift */,
 				117BF63B29CADB076B19CA27 /* IPodMonitor.swift */,
 				206063864F8205232A3581AE /* LibraryEnricher.swift */,
@@ -541,6 +544,7 @@
 				37963AC2396257E4C78DB6B8 /* IPodDiskIdentifier.swift in Sources */,
 				1F8C7964D7763A72A86F1CF1 /* IPodMonitor.swift in Sources */,
 				94C6E0F1AA6F37EF6B4CB32A /* ImageResizer.swift in Sources */,
+				F826489C2A3E807E5630E15D /* InstallerFlowRegistry.swift in Sources */,
 				BB4E4B852CE6983C0E856BBA /* InstallerHomeView.swift in Sources */,
 				A70B8FE54D8521EEBAB23BBB /* InstallerStep.swift in Sources */,
 				9C53C3873A4C5F484CCC3858 /* InstallerViewModel.swift in Sources */,

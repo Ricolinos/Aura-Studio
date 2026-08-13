@@ -109,6 +109,10 @@ enum InstallerError: Error, LocalizedError, Equatable {
     /// `FailedView` muestra para este caso el boton que abre el panel
     /// de Acceso total al disco, con la explicacion de que hacer.
     case fullDiskAccessDenied
+    /// Dual boot elegido pero el disco necesitaria formatearse desde
+    /// cero -- lo que destruiria justamente el firmware de Apple que
+    /// dual boot promete conservar (D-185).
+    case dualBootRequiresWinpod
 
     var errorDescription: String? {
         switch self {
@@ -121,7 +125,11 @@ enum InstallerError: Error, LocalizedError, Equatable {
         case .checksumMismatch(let file):
             return "El archivo \(file) no supero la verificacion de integridad."
         case .processFailed(let exitCode, let output):
-            return "mks5lboot termino con codigo \(exitCode): \(output)"
+            // Sin nombrar herramienta: este error lo producen tanto
+            // mks5lboot como la extraccion de archivos (ditto) -- el
+            // texto viejo culpaba a mks5lboot de fallas que no eran
+            // suyas (visto en vivo, D-185).
+            return "La operación terminó con código \(exitCode): \(output)"
         case .missingBundledArtifact(let name):
             return "Falta el artefacto \(name) dentro de la app. Reinstala Aura Studio."
         case .diskAmbiguous(let count):
@@ -132,6 +140,8 @@ enum InstallerError: Error, LocalizedError, Equatable {
             return message
         case .fullDiskAccessDenied:
             return "macOS bloqueó el acceso directo al disco del iPod. Concede \"Acceso total al disco\" a Aura Studio en Ajustes del Sistema (Privacidad y seguridad), cierra la app por completo, vuelve a abrirla y reintenta. Si Aura Studio ya aparece en la lista, quítala con el botón \"−\" y agrégala de nuevo -- el permiso puede quedar atado a una versión anterior de la app."
+        case .dualBootRequiresWinpod:
+            return "Para dual boot, el iPod debe conservar el firmware original de Apple en formato \"winpod\": tabla de particiones MBR con la partición de firmware de Apple intacta más una partición FAT32 -- el formato que crea iTunes al restaurar en una PC con WINDOWS. Este iPod está en formato de Mac (particiones Apple/HFS, que Rockbox no puede leer) o su disco no es legible, y prepararlo desde aquí borraría el disco completo, incluido el firmware original -- exactamente lo que dual boot promete conservar. Opciones: restaura el iPod con iTunes en Windows y vuelve a intentar dual boot, o elige \"Solo Aura\" si no necesitas conservar el firmware de Apple."
         }
     }
 }

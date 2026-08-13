@@ -37,6 +37,17 @@ struct InstallerHomeView: View {
             }
         }
         .animation(.default, value: chosenMode)
+        // El registro global es lo que impide que el recorrido
+        // automatico de pantalla completa se dispare ENCIMA de un
+        // asistente ya en curso (D-185).
+        .onChange(of: chosenMode) { mode in
+            InstallerFlowRegistry.shared.flowActive = (mode != nil)
+        }
+        .onDisappear {
+            if chosenMode == nil {
+                InstallerFlowRegistry.shared.flowActive = false
+            }
+        }
     }
 }
 

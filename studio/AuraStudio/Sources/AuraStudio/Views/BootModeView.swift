@@ -28,7 +28,7 @@ struct BootModeView: View {
                     icon: "arrow.triangle.branch",
                     title: "Dual boot",
                     badge: "Recomendado",
-                    explanation: "Conserva el firmware original de Apple junto con Aura. Al encender el iPod, mantén SELECT + MENU presionados unos 5 segundos para arrancar Apple -- cualquier otra combinacion (o nada) arranca Aura. No hace falta configurar nada mas: el propio bootloader elige solo, cada vez que prendes el iPod.",
+                    explanation: "Conserva el firmware original de Apple junto con Aura. Al encender el iPod, mantén SELECT + MENU presionados unos 5 segundos para arrancar Apple -- cualquier otra combinacion (o nada) arranca Aura. Requiere que el iPod este en formato \"winpod\" (restaurado con iTunes en una PC con Windows): un iPod restaurado desde Mac usa particiones que Rockbox no puede leer, y el asistente se detendra antes de borrar nada si no es compatible.",
                     isSelected: dualBoot,
                     accent: false
                 ) { dualBoot = true }
