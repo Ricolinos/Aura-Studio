@@ -163,7 +163,7 @@ struct DeviceGeneralView: View {
         case .dfuMode:
             return "El iPod esta en modo DFU. Usa la seccion Instalador para instalar o restaurar el firmware."
         case .diskModeNoFilesystem:
-            return "El disco del iPod no tiene un sistema de archivos valido. Usa la seccion Instalador para prepararlo de nuevo."
+            return "El iPod esta en modo de arranque de Aura. Usa la seccion Instalador para instalar los archivos del firmware."
         case .unknown:
             return "Hay un dispositivo Apple conectado, pero no se pudo identificar como un iPod Classic."
         case .detecting:

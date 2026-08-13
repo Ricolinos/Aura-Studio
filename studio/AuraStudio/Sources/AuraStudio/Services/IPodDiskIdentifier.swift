@@ -19,30 +19,40 @@ struct DiskCandidateInfo: Equatable, Sendable {
 
     /// Criterios de seguridad para decidir si un disco es "el iPod".
     ///
-    /// Obligatorios los tres: vendor Apple, removible y externo. Ninguno
-    /// solo alcanza -- el SSD interno del propio Mac reporta "APPLE SSD"
-    /// en su modelo, asi que sin removible+externo se confundiria con el
-    /// disco de arranque (paso de verdad, ver D-070).
+    /// Obligatorios siempre: removible y externo -- el SSD interno del
+    /// propio Mac reporta "APPLE SSD" en su modelo, asi que sin esto se
+    /// confundiria con el disco de arranque (paso de verdad, ver D-070).
     ///
-    /// Ademas hace falta UNA de dos señales de dispositivo:
+    /// Ademas hace falta UNA de estas señales de dispositivo:
     ///
-    ///  - que el modelo diga "iPod" (lo que reporta un 6G con el disco
-    ///    original o con un mod de flash), o
-    ///  - que el tamaño caiga en el rango del 120GB de fabrica, para el
-    ///    caso ya visto en hardware (D-046) donde el nombre de media era
-    ///    el del disco duro interno ("HS12YHA") y no decia "iPod".
+    ///  - que el modelo diga "iPod" -- alcanza por si sola, sin exigir
+    ///    vendor "Apple", porque el propio bootloader de mks5lboot en
+    ///    "Bootloader USB mode" (D-175: disco con la particion de datos
+    ///    invalida, cayendo a modo de recuperacion) NO reporta ningun
+    ///    vendor -- confirmado en hardware real, `DeviceVendor` esta
+    ///    ausente del todo en la descripcion de DiskArbitration -- pero
+    ///    SI reporta "iPod" en el nombre de media (visto en hardware:
+    ///    "latform iPod Ada", recortado). Exigir vendor ahi dejaba a
+    ///    Aura Studio ciego justo en el escenario que mas necesita
+    ///    reconocer el disco: recuperar una instalacion interrumpida.
+    ///  - que el vendor sea Apple Y el tamaño caiga en el rango del
+    ///    120GB de fabrica, para el caso ya visto en hardware (D-046)
+    ///    donde el nombre de media era el del disco duro interno
+    ///    ("HS12YHA") y no decia "iPod" -- aca si hace falta el vendor
+    ///    como señal extra, porque el tamaño solo es una coincidencia
+    ///    mucho mas debil que un modelo que dice "iPod" textualmente.
     ///
-    /// El tamaño NO puede ser el unico criterio duro: los iPod Classic
-    /// con el disco cambiado por flash (iFlash + SD, lo mas comun para
-    /// mantenerlos vivos hoy) van de 32GB a 2TB, y exigir 120GB±5GB
-    /// rechazaria justamente a los que mas se usan.
+    /// El tamaño NO puede ser el unico criterio duro en ningun caso: los
+    /// iPod Classic con el disco cambiado por flash (iFlash + SD, lo mas
+    /// comun para mantenerlos vivos hoy) van de 32GB a 2TB, y exigir
+    /// 120GB±5GB rechazaria justamente a los que mas se usan.
     var matchesIPodCriteria: Bool {
-        guard vendor.localizedCaseInsensitiveContains("Apple") else { return false }
         guard isRemovable, !isInternal else { return false }
         guard IPodDiskIdentifier.plausibleSizeRange.contains(sizeBytes) else { return false }
 
         if model.localizedCaseInsensitiveContains("iPod") { return true }
 
+        guard vendor.localizedCaseInsensitiveContains("Apple") else { return false }
         let diff = abs(sizeBytes - IPodDiskIdentifier.nominalSizeBytes)
         return diff <= IPodDiskIdentifier.sizeToleranceBytes
     }

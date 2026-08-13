@@ -106,6 +106,25 @@ final class WrongVolumeRegressionTests: XCTestCase {
                      "...pero no tiene volumen montado, asi que no sirve para leer ni escribir")
     }
 
+    /// D-175: iPod en "Bootloader USB mode" (mks5lboot, disco con la
+    /// particion de datos invalida, cayendo a modo de recuperacion) --
+    /// datos reales de esta sesion (`diskutil info -plist disk9`). A
+    /// diferencia de Apple OF, el bootloader NO reporta ningun
+    /// `DeviceVendor` -- se traduce a vendor vacio aca, igual que el SSD
+    /// interno del Mac, pero a diferencia de ese caso SI dice "iPod" en
+    /// el nombre de media. Antes de este fix, el guard de vendor="Apple"
+    /// obligatorio dejaba a Aura Studio sin poder ver el dispositivo en
+    /// este estado -- unica salida era reformatear a mano desde
+    /// Terminal, exactamente lo que la app existe para evitar.
+    func testBootloaderUSBModeWithNoVendorStringStillMatchesByModel() {
+        let bootloaderUSBMode = DiskCandidateInfo(
+            bsdName: "disk9", vendor: "", model: "latform iPod Ada",
+            isRemovable: true, isInternal: false,
+            sizeBytes: 125_069_950_976, volumeName: nil
+        )
+        XCTAssertTrue(bootloaderUSBMode.matchesIPodCriteria)
+    }
+
     func testProbeRefusesEmptyMountPath() {
         let info = DiskModeInfo(volumeName: "iPod", mountPath: "",
                                 bsdName: "disk9", isFAT32: false)
