@@ -38,6 +38,15 @@ final class InstallerViewModel: ObservableObject {
     /// `copyFirmwareFiles` por duplicado mientras la primera copia
     /// todavia esta en curso.
     private var isCopyingFirmware = false
+    /// El flujo arranco desde `.diskModeNoFilesystem`, es decir el iPod
+    /// ya esta corriendo el bootloader de Aura (su "Bootloader USB
+    /// mode"): la NOR ya tiene lo que el paso de DFU iria a escribir.
+    /// En ese caso, despues de formatear y copiar los archivos NO se
+    /// pide DFU de nuevo -- se termina ahi. Pedirle al usuario repetir
+    /// la combinacion de botones para reflashear byte a byte lo mismo
+    /// que ya esta grabado es friccion pura (encargo del dueño,
+    /// 2026-08-13, probando la recuperacion D-175/D-176 en vivo).
+    @Published private(set) var bootloaderAlreadyInstalled = false
 
     init(monitor: IPodMonitor? = nil, executor: PrivilegedExecutor = PrivilegedExecutor()) {
         self.monitor = monitor ?? IPodMonitor()
@@ -49,6 +58,7 @@ final class InstallerViewModel: ObservableObject {
         self.mode = mode
         self.lastError = nil
         isCopyingFirmware = false
+        bootloaderAlreadyInstalled = false
         step = .welcome
         monitor.start()
         observeDeviceState()
@@ -157,6 +167,7 @@ final class InstallerViewModel: ObservableObject {
             case .diskMode(let info):
                 beginFormat(volumeName: info.volumeName)
             case .diskModeNoFilesystem:
+                bootloaderAlreadyInstalled = true
                 beginFormat(volumeName: "iPod")
             default:
                 break
@@ -355,8 +366,21 @@ final class InstallerViewModel: ObservableObject {
                 throw InstallerError.processFailed(exitCode: -1, output: "no se pudo verificar rockbox.ipod tras copiarlo")
             }
 
-            progressMessage = "Archivos copiados. Ahora hace falta flashear el arranque por DFU."
-            proceedToDFU()
+            if bootloaderAlreadyInstalled {
+                // El iPod llego aca desde el "Bootloader USB mode" de
+                // Aura: la NOR ya tiene el bootloader grabado, y el DFU
+                // solo reescribiria byte a byte lo mismo. Con los
+                // archivos copiados no queda nada por hacer -- expulsar
+                // el disco para que el bootloader (que sigue esperando
+                // en su modo USB) suelte el volumen y pueda reiniciar a
+                // Aura.
+                progressMessage = "Listo."
+                _ = await monitor.unmountCurrentDisk()
+                step = .done
+            } else {
+                progressMessage = "Archivos copiados. Ahora hace falta flashear el arranque por DFU."
+                proceedToDFU()
+            }
         } catch let error as InstallerError {
             lastError = error
             step = .failed
@@ -369,6 +393,11 @@ final class InstallerViewModel: ObservableObject {
     func retry() {
         lastError = nil
         isCopyingFirmware = false
+        // Se reevalua al volver a confirmar el dispositivo: si el iPod
+        // ya no esta en "Bootloader USB mode" (p.ej. se reconecto otro
+        // aparato), no debe quedar un salto de DFU heredado del intento
+        // anterior.
+        bootloaderAlreadyInstalled = false
         step = .detectDevice
     }
 }

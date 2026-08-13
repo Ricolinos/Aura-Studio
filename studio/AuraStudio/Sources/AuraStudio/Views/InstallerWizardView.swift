@@ -44,7 +44,11 @@ struct InstallerWizardView: View {
                 case .copyingFiles:
                     SimpleProgressView(title: "Copiando archivos", message: viewModel.progressMessage)
                 case .done:
-                    DoneView(mode: viewModel.mode, dualBoot: !viewModel.destroyOriginalFirmware)
+                    // Si esta corrida no flasheo nada (recuperacion con
+                    // el bootloader ya grabado), el modo de arranque lo
+                    // decidio la instalacion anterior -- no se afirma
+                    // dual boot que esta corrida no eligio.
+                    DoneView(mode: viewModel.mode, dualBoot: !viewModel.destroyOriginalFirmware && !viewModel.bootloaderAlreadyInstalled)
                 case .failed:
                     FailedView(error: viewModel.lastError, onRetry: viewModel.retry)
                 }
