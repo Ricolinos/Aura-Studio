@@ -274,6 +274,52 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(deezerEnabled, forKey: Keys.deezerEnabled) }
     }
 
+    /// Carpetas externas que el usuario arrastro a Aura Studio con
+    /// "Crear copias de los medios en la Biblioteca de Aura" apagado
+    /// (encargo del dueño, 2026-08-14, ver
+    /// `LibraryViewModel.addDroppedFiles`). Aura no copia nada de ahi
+    /// -- esta lista solo existe para que Ajustes → Biblioteca muestre
+    /// que carpetas quedaron vinculadas. No hay watcher: un archivo que
+    /// se agregue despues a esa carpeta no se importa solo, hay que
+    /// volver a arrastrarlo (o la carpeta entera).
+    ///
+    /// Guardado como ruta plana (sin bookmark de seguridad): el proyecto
+    /// corre con `ENABLE_APP_SANDBOX: NO` (D-033) -- sin sandbox de App
+    /// Store no hace falta re-pedir acceso a una ruta ya concedida, la
+    /// misma razon por la que `libraryFolderPath` de arriba tampoco usa
+    /// uno. A diferencia de `photoCollections`/`coverArtProviderOrder`
+    /// (listas separadas por comas), esta usa el arreglo nativo de
+    /// `UserDefaults` (`set([String], forKey:)`/`stringArray(forKey:)`):
+    /// ahi SÍ tiene sentido unir por comas porque son nombres cortos
+    /// elegidos por el usuario o identificadores de un enum, nunca con
+    /// coma real adentro (y `photoCollections` además la filtra al
+    /// agregar). Una RUTA de carpeta real puede perfectamente traer una
+    /// coma en el nombre ("Música, respaldo 2024") -- ahí sí uniría mal
+    /// al separar, y a diferencia del nombre de una colección no se le
+    /// puede quitar la coma sin romper la ruta real. El arreglo nativo
+    /// evita el problema por completo, sin inventar un formato nuevo.
+    @Published var linkedLibraryFolders: [String] {
+        didSet {
+            defaults.set(linkedLibraryFolders, forKey: Keys.linkedLibraryFolders)
+        }
+    }
+
+    /// Dedup por ruta estandarizada -- soltar la misma carpeta dos veces
+    /// no debe dejar dos filas identicas en Ajustes.
+    func addLinkedLibraryFolder(_ url: URL) {
+        let path = url.standardizedFileURL.path
+        guard !linkedLibraryFolders.contains(path) else { return }
+        linkedLibraryFolders.append(path)
+    }
+
+    /// "Quitar" de Ajustes: solo deja de listar la carpeta como
+    /// vinculada. NO borra ni desvincula los `LibraryItem` que ya se
+    /// importaron desde ahi -- esos siguen en la biblioteca igual que
+    /// cualquier otro item, esto es pura higiene de la lista.
+    func removeLinkedLibraryFolder(_ path: String) {
+        linkedLibraryFolders.removeAll { $0 == path }
+    }
+
     static var defaultLibraryFolderPath: String {
         FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask).first?
@@ -299,6 +345,7 @@ final class AppPreferences: ObservableObject {
         static let photoCollections = "aura.photoCollections"
         static let coverArtProviderOrder = "aura.coverArtProviderOrder"
         static let deezerEnabled = "aura.deezerEnabled"
+        static let linkedLibraryFolders = "aura.linkedLibraryFolders"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -332,6 +379,7 @@ final class AppPreferences: ObservableObject {
             .compactMap { CoverArtProvider(rawValue: String($0)) } ?? []
         self.coverArtProviderOrder = storedOrder.isEmpty ? CoverArtProvider.defaultOrder : storedOrder
         self.deezerEnabled = defaults.object(forKey: Keys.deezerEnabled) as? Bool ?? true
+        self.linkedLibraryFolders = defaults.stringArray(forKey: Keys.linkedLibraryFolders) ?? []
         AppLanguageResolver.current = self.language.resolved
     }
 }

@@ -89,12 +89,33 @@ final class LibraryViewModel: ObservableObject {
     /// sabe guardar una ruta absoluta en el catalogo cuando el archivo
     /// no vive dentro de la biblioteca (ver `loadCatalog`, que la
     /// reconoce de vuelta).
+    ///
+    /// Encargo del dueño (2026-08-14): soltar una CARPETA (no un archivo
+    /// suelto) tambien funciona -- `DroppedURLExpander` la reemplaza por
+    /// la lista plana de archivos que contiene (cualquier profundidad)
+    /// ANTES de que corra el filtro de siempre por extension, asi que el
+    /// resto de esta funcion (y de `process(itemAt:)`) no se entera de
+    /// que el origen fue una carpeta, cada archivo adentro sigue
+    /// exactamente el mismo camino que si se hubiera soltado solo. Con
+    /// `copyMediaIntoLibrary` apagado, ademas se registra la carpeta
+    /// soltada como "biblioteca vinculada" (ver
+    /// `AppPreferences.linkedLibraryFolders`) -- con el ajuste prendido
+    /// no hace falta, porque los archivos ya terminan copiados DENTRO de
+    /// la biblioteca de Aura, no hay una carpeta externa que recordar.
     func addDroppedFiles(_ urls: [URL]) {
         ensureLibraryStructure()
-        let new = urls
+        let expandedURLs = DroppedURLExpander.expand(urls)
+        let new = expandedURLs
             .filter { LibraryItemKind.classify(url: $0) != .unsupported }
             .map { LibraryItem(sourceURL: $0) }
         items.append(contentsOf: new)
+
+        if !preferences.copyMediaIntoLibrary {
+            for url in urls where DroppedURLExpander.isDirectory(url) {
+                preferences.addLinkedLibraryFolder(url)
+            }
+        }
+
         persistCatalog()
     }
 

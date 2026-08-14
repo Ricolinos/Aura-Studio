@@ -34,6 +34,68 @@ final class AppPreferencesTests: XCTestCase {
         XCTAssertEqual(AppPreferences.PhotoQuality.hd.maxDimension, 640)
     }
 
+    func testLinkedLibraryFoldersDefaultsToEmpty() {
+        let prefs = AppPreferences(defaults: freshDefaults())
+        XCTAssertTrue(prefs.linkedLibraryFolders.isEmpty)
+    }
+
+    func testAddLinkedLibraryFolderDedupsByPath() {
+        let prefs = AppPreferences(defaults: freshDefaults())
+        let url = URL(fileURLWithPath: "/Users/test/Music External")
+
+        prefs.addLinkedLibraryFolder(url)
+        prefs.addLinkedLibraryFolder(url)
+
+        XCTAssertEqual(prefs.linkedLibraryFolders, [url.standardizedFileURL.path])
+    }
+
+    func testAddLinkedLibraryFolderKeepsInsertionOrderForDistinctPaths() {
+        let prefs = AppPreferences(defaults: freshDefaults())
+        let first = URL(fileURLWithPath: "/Volumes/External/A")
+        let second = URL(fileURLWithPath: "/Volumes/External/B")
+
+        prefs.addLinkedLibraryFolder(first)
+        prefs.addLinkedLibraryFolder(second)
+
+        XCTAssertEqual(prefs.linkedLibraryFolders, [first.standardizedFileURL.path, second.standardizedFileURL.path])
+    }
+
+    func testRemoveLinkedLibraryFolderRemovesOnlyThatPath() {
+        let prefs = AppPreferences(defaults: freshDefaults())
+        let first = URL(fileURLWithPath: "/Volumes/External/A")
+        let second = URL(fileURLWithPath: "/Volumes/External/B")
+        prefs.addLinkedLibraryFolder(first)
+        prefs.addLinkedLibraryFolder(second)
+
+        prefs.removeLinkedLibraryFolder(first.standardizedFileURL.path)
+
+        XCTAssertEqual(prefs.linkedLibraryFolders, [second.standardizedFileURL.path])
+    }
+
+    func testLinkedLibraryFoldersPersistAcrossInstancesWithSameDefaults() {
+        let defaults = freshDefaults()
+        let first = AppPreferences(defaults: defaults)
+        first.addLinkedLibraryFolder(URL(fileURLWithPath: "/Volumes/External/Musica"))
+
+        let second = AppPreferences(defaults: defaults)
+        XCTAssertEqual(second.linkedLibraryFolders, [URL(fileURLWithPath: "/Volumes/External/Musica").standardizedFileURL.path])
+    }
+
+    /// A diferencia de `photoCollections` (nombres cortos, sin coma
+    /// real nunca), una ruta de carpeta SÍ puede traer una coma en el
+    /// nombre -- persistir esta lista como arreglo nativo de
+    /// `UserDefaults` (no una lista separada por comas) evita que ese
+    /// caso real corrompa la lista al releerla.
+    func testLinkedLibraryFolderWithCommaInPathSurvivesRoundTrip() {
+        let defaults = freshDefaults()
+        let path = "/Volumes/External/Música, respaldo 2024"
+        let first = AppPreferences(defaults: defaults)
+        first.addLinkedLibraryFolder(URL(fileURLWithPath: path))
+
+        let second = AppPreferences(defaults: defaults)
+        XCTAssertEqual(second.linkedLibraryFolders, [URL(fileURLWithPath: path).standardizedFileURL.path])
+    }
+
     func testChangedValuesPersistAcrossInstancesWithSameDefaults() {
         let defaults = freshDefaults()
         let first = AppPreferences(defaults: defaults)
