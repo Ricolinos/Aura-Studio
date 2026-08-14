@@ -54,6 +54,12 @@ struct MediaSectionView: View {
     /// pedido que tardaba unos segundos se veia igual que uno que no
     /// hacia nada.
     @State private var isEnriching = false
+    /// D-218: IDs pendientes de mostrar el aviso "¿Quieres editar
+    /// varios elementos?" antes de abrir la edicion en lote -- se salta
+    /// directo a `batchEditingIDs` si el usuario ya marco "No volver a
+    /// mostrar" (persistido en UserDefaults, ver `batchWarningSuppressedKey`).
+    @State private var pendingBatchEditIDs: Set<UUID>?
+    @State private var batchEditingIDs: Set<UUID>?
 
     private var allItemsOfKind: [LibraryItem] {
         viewModel.items.filter { $0.kind == kind }
@@ -165,6 +171,35 @@ struct MediaSectionView: View {
                 renamingItem = nil
             }
         }
+        .sheet(isPresented: Binding(
+            get: { pendingBatchEditIDs != nil },
+            set: { if !$0 { pendingBatchEditIDs = nil } }
+        )) {
+            if let ids = pendingBatchEditIDs {
+                BatchEditWarningSheet(count: ids.count) {
+                    pendingBatchEditIDs = nil
+                } onConfirm: { suppress in
+                    if suppress {
+                        UserDefaults.standard.set(true, forKey: Self.batchWarningSuppressedKey)
+                    }
+                    pendingBatchEditIDs = nil
+                    batchEditingIDs = ids
+                }
+            }
+        }
+        .sheet(isPresented: Binding(
+            get: { batchEditingIDs != nil },
+            set: { if !$0 { batchEditingIDs = nil } }
+        )) {
+            if let ids = batchEditingIDs {
+                BatchMediaInfoView(items: items.filter { ids.contains($0.id) }) { changes in
+                    viewModel.applyBatchEdit(ids: ids, changes: changes)
+                    batchEditingIDs = nil
+                } onCancel: {
+                    batchEditingIDs = nil
+                }
+            }
+        }
     }
 
     // MARK: - Columnas extra (D-199)
@@ -219,6 +254,18 @@ struct MediaSectionView: View {
         .padding(.horizontal, 12)
         .padding(.top, 8)
         .padding(.bottom, 2)
+    }
+
+    // MARK: - Edicion en lote (D-218)
+
+    private static let batchWarningSuppressedKey = "aura.batchEditWarningSuppressed"
+
+    private func startBatchEdit(ids: Set<UUID>) {
+        if UserDefaults.standard.bool(forKey: Self.batchWarningSuppressedKey) {
+            batchEditingIDs = ids
+        } else {
+            pendingBatchEditIDs = ids
+        }
     }
 
     // MARK: - Busqueda de informacion en linea (D-203)
@@ -326,7 +373,9 @@ struct MediaSectionView: View {
                     .width(min: 44, ideal: 56)
             }
             TableColumn("Estado") { row in statusCell(row.item) }
-                .width(min: 70, ideal: 90)
+                // D-215: "Sincronizado" no entraba comodo en el ancho
+                // viejo (pensado solo para el icono + un check).
+                .width(min: 90, ideal: 120)
         }
         .contextMenu(forSelectionType: UUID.self) { ids in contextMenuContent(for: ids) }
     }
@@ -356,7 +405,9 @@ struct MediaSectionView: View {
                     .width(min: 60, ideal: 70)
             }
             TableColumn("Estado") { row in statusCell(row.item) }
-                .width(min: 70, ideal: 90)
+                // D-215: "Sincronizado" no entraba comodo en el ancho
+                // viejo (pensado solo para el icono + un check).
+                .width(min: 90, ideal: 120)
         }
         .contextMenu(forSelectionType: UUID.self) { ids in contextMenuContent(for: ids) }
     }
@@ -384,13 +435,17 @@ struct MediaSectionView: View {
             HStack(spacing: 4) {
                 Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
                 if syncedSourcePaths.contains(item.sourceURL.path) {
-                    // D-202: distingue "listo para copiar" de "ya esta
-                    // en el iPod conectado" -- sin esto ambos casos se
-                    // veian identicos (el mismo check verde) y no habia
-                    // forma de saber que ya se sincronizo.
+                    // D-202/D-215: distingue "listo para copiar" de "ya
+                    // esta en el iPod conectado" -- antes solo el icono
+                    // lo mostraba (facil de pasar por alto en una lista
+                    // larga), ahora tambien el texto.
                     Image(systemName: "ipod")
                         .foregroundStyle(.secondary)
-                        .help("Ya sincronizado con el iPod conectado")
+                    Text("Sincronizado")
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("Listo")
+                        .foregroundStyle(.secondary)
                 }
             }
         case .needsReview:
@@ -462,6 +517,14 @@ struct MediaSectionView: View {
             }
             Button("Más información...") {
                 reviewingItem = single
+            }
+            Divider()
+        } else if kind == .music, targetItems.count > 1 {
+            // D-218: mismo lugar del menu que "Más información...",
+            // pero para varias canciones -- dispara el aviso previo (o
+            // se lo salta si el usuario ya dijo "No volver a mostrar").
+            Button("Obtener información...") {
+                startBatchEdit(ids: targetIDs)
             }
             Divider()
         }

@@ -147,8 +147,7 @@ struct DeviceGeneralView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Capacidad").font(.headline)
             if device.capacityBytes > 0 {
-                ProgressView(value: Double(device.usedBytes),
-                             total: Double(device.capacityBytes))
+                StorageBarView(device: device)
                 Text("\(byteString(device.usedBytes)) usados de \(byteString(device.capacityBytes)) -- \(byteString(device.freeBytes)) libres")
                     .font(.callout)
                     .foregroundStyle(.secondary)
@@ -218,6 +217,10 @@ struct DeviceGeneralView: View {
                 Divider().padding(.vertical, 4)
                 Text(pending).font(.callout).foregroundStyle(.secondary)
             }
+            if let progress = library.syncProgress {
+                Divider().padding(.vertical, 4)
+                syncProgressSection(progress)
+            }
             if let summary = library.lastSyncSummary {
                 Text(summary).font(.callout).foregroundStyle(.secondary)
             }
@@ -225,6 +228,33 @@ struct DeviceGeneralView: View {
                 Text(error).font(.callout).foregroundStyle(.red)
             }
         }
+    }
+
+    /// D-217 (encargo del dueño): "una barra de progreso al
+    /// sincronizar... para que sepamos cuantas canciones se estan
+    /// sincronizando, y cuanto tiempo faltaria".
+    private func syncProgressSection(_ progress: SyncProgress) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ProgressView(value: Double(progress.copied), total: Double(max(progress.total, 1)))
+            HStack {
+                Text("Sincronizando \(progress.copied) de \(progress.total) archivo(s)...")
+                Spacer()
+                if let remaining = progress.estimatedSecondsRemaining, remaining > 1 {
+                    Text(timeRemainingText(remaining))
+                }
+            }
+            .font(.callout)
+            .foregroundStyle(.secondary)
+        }
+    }
+
+    private func timeRemainingText(_ seconds: Double) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .abbreviated
+        formatter.allowedUnits = seconds >= 60 ? [.minute, .second] : [.second]
+        formatter.maximumUnitCount = 2
+        let text = formatter.string(from: seconds) ?? "\(Int(seconds))s"
+        return "\(text) restante(s)"
     }
 
     private var pendingLabel: String? {
@@ -278,5 +308,73 @@ struct DeviceGeneralView: View {
 
     private func byteString(_ bytes: Int64) -> String {
         ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+    }
+}
+
+/// D-216 (encargo del dueño): la barra de capacidad, dividida por color
+/// segun el tipo de contenido -- rosa musica, azul video, verde fotos,
+/// naranja "Otro" (el resto de lo ocupado: `.rockbox/`, playlists,
+/// archivos no reconocidos -- cualquier byte usado que `librarySummary`
+/// no le atribuye a musica/video/fotos). Sin sistema de diseño propio
+/// para esto en Aura Studio (la paleta compartida con el firmware,
+/// `AuraColors`, no tiene tokens para "por tipo de medio" -- es
+/// especifico de esta pantalla de macOS) se usan los colores de sistema
+/// de SwiftUI mas cercanos a lo que pidio el dueño.
+private struct StorageBarView: View {
+    let device: AuraDevice
+
+    private struct Segment {
+        let bytes: Int64
+        let color: Color
+        let label: String
+    }
+
+    private var segments: [Segment] {
+        let summary = device.librarySummary
+        let music = summary?.music.bytes ?? 0
+        let video = summary?.video.bytes ?? 0
+        let photo = summary?.photo.bytes ?? 0
+        // "Otro" sale de lo que el disco realmente reporta como usado
+        // menos lo que la biblioteca de Aura le atribuye a cada tipo --
+        // asi cubre .rockbox/, playlists, y cualquier archivo que el
+        // usuario haya copiado por fuera de Aura Studio, sin inventar un
+        // numero que no salga de una medicion real.
+        let other = max(device.usedBytes - music - video - photo, 0)
+        return [
+            Segment(bytes: music, color: .pink, label: "Música"),
+            Segment(bytes: video, color: .blue, label: "Video"),
+            Segment(bytes: photo, color: .green, label: "Fotos"),
+            Segment(bytes: other, color: .orange, label: "Otro"),
+        ]
+    }
+
+    private var total: Int64 { max(device.capacityBytes, 1) }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            GeometryReader { geometry in
+                HStack(spacing: 1) {
+                    ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
+                        if segment.bytes > 0 {
+                            segment.color
+                                .frame(width: geometry.size.width * CGFloat(segment.bytes) / CGFloat(total))
+                        }
+                    }
+                    Spacer(minLength: 0)
+                }
+            }
+            .frame(height: 8)
+            .clipShape(Capsule())
+            .background(Capsule().fill(Color.secondary.opacity(0.15)))
+
+            HStack(spacing: 14) {
+                ForEach(segments.filter { $0.bytes > 0 }, id: \.label) { segment in
+                    HStack(spacing: 5) {
+                        Circle().fill(segment.color).frame(width: 7, height: 7)
+                        Text(segment.label).font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
     }
 }

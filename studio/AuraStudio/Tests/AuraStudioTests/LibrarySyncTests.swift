@@ -96,6 +96,33 @@ final class LibrarySyncTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: playlistURL.path))
     }
 
+    // MARK: - Progreso (D-217)
+
+    func testOnProgressReportsEachCopiedFileAgainstFilesActuallyCopied() throws {
+        let item = musicItem()
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+        var calls: [(copied: Int, total: Int)] = []
+
+        _ = try sync.sync(items: [item]) { copied, total in
+            calls.append((copied, total))
+        }
+
+        XCTAssertEqual(calls.count, 1, "un solo archivo por copiar -- un solo tick de progreso")
+        XCTAssertEqual(calls.first?.copied, 1)
+        XCTAssertEqual(calls.first?.total, 1)
+    }
+
+    func testOnProgressNotCalledWhenNothingNeedsCopying() throws {
+        let item = musicItem()
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+        _ = try sync.sync(items: [item])
+
+        var calls = 0
+        _ = try sync.sync(items: [item]) { _, _ in calls += 1 }
+
+        XCTAssertEqual(calls, 0, "el segundo sync no copia nada (mismo tamaño/fecha) -- sin tick de progreso")
+    }
+
     // MARK: - Calificaciones (D-200)
 
     func testRatedItemWritesNativeScaleRatingToSidecar() throws {

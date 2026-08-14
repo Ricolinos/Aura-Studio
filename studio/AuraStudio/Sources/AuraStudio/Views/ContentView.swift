@@ -72,9 +72,17 @@ struct ContentView: View {
                 Button {
                     Task { await syncNow() }
                 } label: {
-                    Label("Sincronizar", systemImage: "arrow.triangle.2.circlepath")
+                    if let progress = library.syncProgress {
+                        // D-217: mientras sincroniza, el boton en si ya
+                        // muestra cuenta -- no hace falta ir a General
+                        // para saber que esta pasando.
+                        Label("\(progress.copied)/\(progress.total)", systemImage: "arrow.triangle.2.circlepath")
+                    } else {
+                        Label("Sincronizar", systemImage: "arrow.triangle.2.circlepath")
+                    }
                 }
-                .disabled(deviceMonitor.device == nil || !(deviceMonitor.device?.isAura ?? false) || library.isProcessing)
+                .disabled(deviceMonitor.device == nil || !(deviceMonitor.device?.isAura ?? false)
+                          || library.isProcessing || library.syncProgress != nil)
             }
         }
         .onAppear { deviceMonitor.start() }
