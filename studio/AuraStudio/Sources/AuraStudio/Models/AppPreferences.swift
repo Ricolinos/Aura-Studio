@@ -2,11 +2,37 @@ import Foundation
 import Combine
 import CoreGraphics
 
+/// D-203: de donde sale la caratula cuando el archivo no trae una
+/// propia. Cover Art Archive es la unica fuente activa desde el
+/// principio (D-069); fanart.tv y Deezer son opcionales -- fanart.tv
+/// necesita una API key propia (Keychain, ver `APIKeyStore`), Deezer no
+/// necesita nada pero el usuario puede apagarla igual. El orden importa:
+/// se prueban en la secuencia de `AppPreferences.coverArtProviderOrder`
+/// y se usa la primera que devuelva un resultado.
+enum CoverArtProvider: String, Codable, CaseIterable, Identifiable {
+    case coverArtArchive, fanartTV, deezer
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .coverArtArchive: return "Cover Art Archive"
+        case .fanartTV: return "fanart.tv"
+        case .deezer: return "Deezer"
+        }
+    }
+
+    /// Vive aca (no en `AppPreferences`, aislada a `@MainActor`) para que
+    /// `LibraryEnricher` -- que corre fuera del main actor -- la pueda
+    /// usar como valor default de parametro sin arrastrar aislamiento.
+    static let defaultOrder: [CoverArtProvider] = [.coverArtArchive, .fanartTV, .deezer]
+}
+
 /// Preferencias de la app (no del dispositivo: los ajustes del firmware
 /// viven en el iPod, en su propio aura.cfg). Se guardan en UserDefaults
-/// -- son preferencias, no credenciales. Hoy ninguna fuente de datos
-/// necesita API key (ver SourcesSettingsView); cuando alguna lo pida, la
-/// credencial va al Keychain, no aca.
+/// -- son preferencias, no credenciales. La unica fuente que hoy pide
+/// API key es fanart.tv (ver ServicesSettingsView); esa credencial vive
+/// en el Keychain, no aca.
 @MainActor
 final class AppPreferences: ObservableObject {
     static let shared = AppPreferences()
@@ -184,6 +210,27 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(organizeVideosByCategory, forKey: Keys.organizeVideosByCategory) }
     }
 
+    /// D-203: orden de intento para resolver caratula cuando falta.
+    /// Persistido como lista separada por comas (mismo criterio que las
+    /// columnas visibles de `MediaSectionView`) porque es un array chico
+    /// de un enum simple -- no justifica el costo de un blob JSON.
+    /// Entradas invalidas o repetidas de una version vieja se filtran al
+    /// leer; si el resultado queda vacio, se vuelve al default.
+    @Published var coverArtProviderOrder: [CoverArtProvider] {
+        didSet {
+            defaults.set(coverArtProviderOrder.map(\.rawValue).joined(separator: ","), forKey: Keys.coverArtProviderOrder)
+        }
+    }
+
+    /// Deezer no pide key, pero el usuario puede apagarla igual (a
+    /// diferencia de fanart.tv, cuyo "habilitado" real es tener una key
+    /// guardada). Default true: sus terminos permiten explicitamente
+    /// este uso (ver ServicesSettingsView) y no hay ninguna credencial
+    /// que pedirle primero al usuario.
+    @Published var deezerEnabled: Bool {
+        didSet { defaults.set(deezerEnabled, forKey: Keys.deezerEnabled) }
+    }
+
     static var defaultLibraryFolderPath: String {
         FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask).first?
@@ -206,6 +253,8 @@ final class AppPreferences: ObservableObject {
         static let photoQuality = "aura.photoQuality"
         static let organizePhotosByCategory = "aura.organizePhotosByCategory"
         static let organizeVideosByCategory = "aura.organizeVideosByCategory"
+        static let coverArtProviderOrder = "aura.coverArtProviderOrder"
+        static let deezerEnabled = "aura.deezerEnabled"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -229,6 +278,11 @@ final class AppPreferences: ObservableObject {
             .flatMap(PhotoQuality.init(rawValue:))) ?? .optimized
         self.organizePhotosByCategory = defaults.object(forKey: Keys.organizePhotosByCategory) as? Bool ?? true
         self.organizeVideosByCategory = defaults.object(forKey: Keys.organizeVideosByCategory) as? Bool ?? true
+        let storedOrder = defaults.string(forKey: Keys.coverArtProviderOrder)?
+            .split(separator: ",")
+            .compactMap { CoverArtProvider(rawValue: String($0)) } ?? []
+        self.coverArtProviderOrder = storedOrder.isEmpty ? CoverArtProvider.defaultOrder : storedOrder
+        self.deezerEnabled = defaults.object(forKey: Keys.deezerEnabled) as? Bool ?? true
         AppLanguageResolver.current = self.language.resolved
     }
 }

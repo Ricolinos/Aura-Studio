@@ -25,19 +25,52 @@ struct LibraryEnricher {
     let musicBrainz: MusicBrainzClient
     let coverArt: CoverArtArchiveClient
     let lrclib: LRCLIBClient
+    let fanartTV: FanartTVClient
+    let deezer: DeezerClient
 
     init(musicBrainz: MusicBrainzClient = MusicBrainzClient(),
          coverArt: CoverArtArchiveClient = CoverArtArchiveClient(),
-         lrclib: LRCLIBClient = LRCLIBClient()) {
+         lrclib: LRCLIBClient = LRCLIBClient(),
+         fanartTV: FanartTVClient = FanartTVClient(),
+         deezer: DeezerClient = DeezerClient()) {
         self.musicBrainz = musicBrainz
         self.coverArt = coverArt
         self.lrclib = lrclib
+        self.fanartTV = fanartTV
+        self.deezer = deezer
+    }
+
+    /// D-203: prueba los proveedores de portada en el orden que eligio
+    /// el usuario (Ajustes > Servicios) y devuelve la primera imagen que
+    /// aparezca. `fanartTV`/`deezer` ya devuelven nil solos cuando no
+    /// corresponde intentarlos (sin key, o busqueda sin resultado) --
+    /// aca solo hace falta saltear Deezer si el usuario lo apago, y
+    /// tragar cualquier error de red con `try?` para que un proveedor
+    /// que falla no tumbe a los demas.
+    private func resolveCoverArt(releaseID: String, releaseGroupID: String?,
+                                  title: String?, artist: String?,
+                                  order: [CoverArtProvider], deezerEnabled: Bool) async -> Data? {
+        for provider in order {
+            switch provider {
+            case .coverArtArchive:
+                if let data = try? await coverArt.fetchFrontCover(releaseID: releaseID) { return data }
+            case .fanartTV:
+                guard let releaseGroupID else { continue }
+                if let data = try? await fanartTV.fetchAlbumCover(releaseGroupID: releaseGroupID) { return data }
+            case .deezer:
+                guard deezerEnabled, let title, let artist else { continue }
+                if let data = try? await deezer.fetchAlbumCover(title: title, artist: artist) { return data }
+            }
+        }
+        return nil
     }
 
     /// `online` y `lyrics` salen de las preferencias del usuario
     /// (AppPreferences): con `online` en false no se toca la red y solo
     /// se usa lo que ya trae el archivo mas lo que se adivine del nombre.
-    func enrich(item: LibraryItem, online: Bool = true, lyrics: Bool = true) async -> TrackMetadata {
+    func enrich(item: LibraryItem, online: Bool = true, lyrics: Bool = true,
+                coverArtOrder: [CoverArtProvider] = CoverArtProvider.defaultOrder,
+                deezerEnabled: Bool = true) async -> TrackMetadata {
         var existing = ID3Writer.Tag()
         if item.sourceURL.pathExtension.lowercased() == "mp3",
            let data = try? Data(contentsOf: item.sourceURL) {
@@ -75,7 +108,10 @@ struct LibraryEnricher {
             metadata.musicBrainzReleaseID = release.id
 
             if metadata.coverArtData == nil {
-                metadata.coverArtData = try? await coverArt.fetchFrontCover(releaseID: release.id)
+                metadata.coverArtData = await resolveCoverArt(
+                    releaseID: release.id, releaseGroupID: release.releaseGroup?.id,
+                    title: metadata.title, artist: metadata.artist,
+                    order: coverArtOrder, deezerEnabled: deezerEnabled)
             }
         }
 
@@ -93,33 +129,69 @@ struct LibraryEnricher {
     /// corrección manual que el usuario ya hizo en la pantalla de
     /// revisión. Solo llena huecos (nunca reemplaza un campo que ya
     /// tiene valor) -- mismo criterio que `enrich()`.
+    ///
+    /// D-203: a diferencia de la version anterior, esto YA NO traga los
+    /// errores de red en silencio -- devuelve un `EnrichmentOutcome`
+    /// junto con la metadata para que quien llama (`LibraryViewModel`)
+    /// le pueda mostrar al usuario "no se encontro nada" vs "fallo la
+    /// conexion" en vez de que ambos casos se vean identicos (la causa
+    /// mas probable de que el dueño reportara que esto "no sirve para
+    /// nada": un error de red silencioso es indistinguible de que de
+    /// verdad no habia informacion que agregar).
     func reenrich(item: LibraryItem, currentMetadata: TrackMetadata,
-                  fetchAlbumInfo: Bool, fetchLyrics: Bool) async -> TrackMetadata {
+                  fetchAlbumInfo: Bool, fetchLyrics: Bool,
+                  coverArtOrder: [CoverArtProvider] = CoverArtProvider.defaultOrder,
+                  deezerEnabled: Bool = true) async -> (metadata: TrackMetadata, outcome: EnrichmentOutcome) {
         var metadata = currentMetadata
+        var outcome = EnrichmentOutcome()
         let guess = FilenameGuesser.guess(from: item.sourceURL)
         let seedTitle = metadata.title ?? guess.title
         let seedArtist = metadata.artist ?? guess.artist
 
-        if fetchAlbumInfo, let recording = try? await musicBrainz.searchRecording(title: seedTitle, artist: seedArtist) {
-            metadata.title = metadata.title ?? recording.title
-            metadata.artist = metadata.artist ?? recording.artistCredit?.first?.name
-            metadata.musicBrainzRecordingID = metadata.musicBrainzRecordingID ?? recording.id
+        if fetchAlbumInfo {
+            do {
+                if let recording = try await musicBrainz.searchRecording(title: seedTitle, artist: seedArtist) {
+                    outcome.albumInfoFound = true
+                    metadata.title = metadata.title ?? recording.title
+                    metadata.artist = metadata.artist ?? recording.artistCredit?.first?.name
+                    metadata.musicBrainzRecordingID = metadata.musicBrainzRecordingID ?? recording.id
 
-            if let release = recording.releases?.first {
-                metadata.album = metadata.album ?? release.title
-                metadata.year = metadata.year ?? release.date.map { String($0.prefix(4)) }
-                metadata.musicBrainzReleaseID = metadata.musicBrainzReleaseID ?? release.id
+                    if let release = recording.releases?.first {
+                        metadata.album = metadata.album ?? release.title
+                        metadata.year = metadata.year ?? release.date.map { String($0.prefix(4)) }
+                        metadata.musicBrainzReleaseID = metadata.musicBrainzReleaseID ?? release.id
 
-                if metadata.coverArtData == nil {
-                    metadata.coverArtData = try? await coverArt.fetchFrontCover(releaseID: release.id)
+                        if metadata.coverArtData == nil {
+                            metadata.coverArtData = await resolveCoverArt(
+                                releaseID: release.id, releaseGroupID: release.releaseGroup?.id,
+                                title: metadata.title, artist: metadata.artist,
+                                order: coverArtOrder, deezerEnabled: deezerEnabled)
+                        }
+                    }
                 }
+            } catch {
+                outcome.networkErrorMessage = error.localizedDescription
             }
         }
 
         if fetchLyrics, let title = metadata.title, let artist = metadata.artist {
-            metadata.syncedLyrics = try? await lrclib.fetchSyncedLyrics(title: title, artist: artist, album: metadata.album)
+            do {
+                metadata.syncedLyrics = try await lrclib.fetchSyncedLyrics(title: title, artist: artist, album: metadata.album)
+                outcome.lyricsFound = metadata.syncedLyrics != nil
+            } catch {
+                outcome.networkErrorMessage = outcome.networkErrorMessage ?? error.localizedDescription
+            }
         }
 
-        return metadata
+        return (metadata, outcome)
     }
+}
+
+/// Resultado de `reenrich()` para un item -- que tanto encontro, y si
+/// algo salio mal a nivel de red (vs. simplemente "no habia nada que
+/// encontrar", que no es un error).
+struct EnrichmentOutcome: Equatable {
+    var albumInfoFound = false
+    var lyricsFound = false
+    var networkErrorMessage: String?
 }

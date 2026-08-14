@@ -13,6 +13,10 @@ final class LibraryViewModel: ObservableObject {
     @Published private(set) var items: [LibraryItem] = []
     @Published private(set) var isProcessing = false
     @Published private(set) var lastSyncSummary: String?
+    /// D-203: resultado de "Buscar información en línea"/"Buscar letra"
+    /// (ver `reenrichOnline`) -- antes esta accion no dejaba ningun
+    /// rastro visible en la interfaz.
+    @Published private(set) var lastEnrichmentSummary: String?
     @Published var lastError: String?
     @Published private(set) var playlists: [Playlist] = []
 
@@ -127,7 +131,9 @@ final class LibraryViewModel: ObservableObject {
                 items[index].status = .enriching
                 var metadata = await enricher.enrich(item: item,
                                                       online: preferences.enrichOnline,
-                                                      lyrics: preferences.fetchSyncedLyrics)
+                                                      lyrics: preferences.fetchSyncedLyrics,
+                                                      coverArtOrder: preferences.coverArtProviderOrder,
+                                                      deezerEnabled: preferences.deezerEnabled)
                 // Duracion real (D-198, columna "Duración" de la tabla de
                 // biblioteca) -- best-effort con ffmpeg, nunca bloquea el
                 // pipeline si no esta instalado (a diferencia de video, la
@@ -351,23 +357,54 @@ final class LibraryViewModel: ObservableObject {
     }
 
     /// "Buscar información en línea"/"Buscar letra" del menu contextual
-    /// -- reintenta contra MusicBrainz/Cover Art Archive/LRCLIB partiendo
-    /// de la metadata YA resuelta (`LibraryEnricher.reenrich`, no
-    /// `enrich`), asi que no pisa una correccion manual ya hecha. Solo
-    /// aplica a musica.
+    /// -- reintenta contra MusicBrainz/Cover Art Archive/fanart.tv/
+    /// Deezer/LRCLIB partiendo de la metadata YA resuelta
+    /// (`LibraryEnricher.reenrich`, no `enrich`), asi que no pisa una
+    /// correccion manual ya hecha. Solo aplica a musica.
+    ///
+    /// D-203: publica `lastEnrichmentSummary`/`lastError` con lo que de
+    /// verdad paso -- antes esto no daba ningun resultado visible en
+    /// pantalla, asi que un fallo silencioso (o un exito que no
+    /// encontraba nada porque el archivo ya tenia titulo/artista) se
+    /// veian exactamente igual: nada.
     func reenrichOnline(ids: Set<UUID>, fetchAlbumInfo: Bool, fetchLyrics: Bool) async {
+        var found = 0
+        var withoutResult = 0
+        var networkErrors: [String] = []
+        var attempted = 0
+
         for id in ids {
             guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .music else { continue }
+            attempted += 1
             let item = items[index]
             let current = item.metadata ?? TrackMetadata()
-            let updated = await enricher.reenrich(item: item, currentMetadata: current,
-                                                    fetchAlbumInfo: fetchAlbumInfo, fetchLyrics: fetchLyrics)
+            let (updated, outcome) = await enricher.reenrich(
+                item: item, currentMetadata: current,
+                fetchAlbumInfo: fetchAlbumInfo, fetchLyrics: fetchLyrics,
+                coverArtOrder: preferences.coverArtProviderOrder,
+                deezerEnabled: preferences.deezerEnabled)
             guard index < items.count else { continue }
             items[index].metadata = updated
             items[index].preparedURL = try? prepareMusic(item: items[index], metadata: updated)
             items[index].status = updated.isComplete ? .ready : .needsReview
+
+            if let message = outcome.networkErrorMessage {
+                networkErrors.append(message)
+            } else if outcome.albumInfoFound || outcome.lyricsFound {
+                found += 1
+            } else {
+                withoutResult += 1
+            }
         }
         persistCatalog()
+
+        if attempted == 0 { return }
+        if !networkErrors.isEmpty {
+            lastError = "No se pudo completar la busqueda para \(networkErrors.count) de \(attempted) cancion(es): \(networkErrors[0])"
+        }
+        lastEnrichmentSummary = found == 0
+            ? "No se encontro informacion nueva para ninguna de las \(attempted) cancion(es) seleccionadas."
+            : "Se encontro informacion nueva para \(found) de \(attempted) cancion(es)."
     }
 
     func sync(toVolumeAt volumeRoot: URL) async {

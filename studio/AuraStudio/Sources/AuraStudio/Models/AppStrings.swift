@@ -11,7 +11,7 @@ import Foundation
 /// demas pantallas se van pasando a esta tabla de a poco. No se agrego
 /// un selector que no hiciera nada.
 enum S {
-    case settings, settingsGeneral, settingsLibrary, settingsSources, settingsAPIKeys
+    case settings, settingsGeneral, settingsLibrary, settingsServices
     case language, languageSystem, languageSpanish, languageEnglish
     case languageNote
     case coverArt, coverArtAlbumOnly, coverArtPerTrack
@@ -29,8 +29,7 @@ enum S {
         case .settings:            return "Ajustes"
         case .settingsGeneral:     return "General"
         case .settingsLibrary:     return "Biblioteca"
-        case .settingsSources:     return "Fuentes"
-        case .settingsAPIKeys:     return "Claves API"
+        case .settingsServices:    return "Servicios"
         case .language:            return "Idioma"
         case .languageSystem:      return "Igual que el sistema"
         case .languageSpanish:     return "Espanol"
@@ -63,8 +62,7 @@ enum S {
         case .settings:            return "Settings"
         case .settingsGeneral:     return "General"
         case .settingsLibrary:     return "Library"
-        case .settingsSources:     return "Sources"
-        case .settingsAPIKeys:     return "API Keys"
+        case .settingsServices:    return "Services"
         case .language:            return "Language"
         case .languageSystem:      return "Match system"
         case .languageSpanish:     return "Spanish"

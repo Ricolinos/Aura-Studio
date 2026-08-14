@@ -9,7 +9,7 @@ struct SettingsSectionView: View {
     @State private var tab: Tab = .general
 
     enum Tab: Hashable {
-        case general, library, music, photos, video, sources, apiKeys
+        case general, library, music, photos, video, services
     }
 
     var body: some View {
@@ -20,8 +20,7 @@ struct SettingsSectionView: View {
                 Text(S.music.text).tag(Tab.music)
                 Text(S.photos.text).tag(Tab.photos)
                 Text(S.video.text).tag(Tab.video)
-                Text(S.settingsSources.text).tag(Tab.sources)
-                Text(S.settingsAPIKeys.text).tag(Tab.apiKeys)
+                Text(S.settingsServices.text).tag(Tab.services)
             }
             .pickerStyle(.segmented)
             .labelsHidden()
@@ -38,8 +37,7 @@ struct SettingsSectionView: View {
                     case .music: MusicSettingsView(preferences: preferences)
                     case .photos: PhotoSettingsView(preferences: preferences)
                     case .video: VideoSettingsView(preferences: preferences)
-                    case .sources: SourcesSettingsView()
-                    case .apiKeys: APIKeysSettingsView()
+                    case .services: ServicesSettingsView(preferences: preferences)
                     }
                 }
                 .padding(24)

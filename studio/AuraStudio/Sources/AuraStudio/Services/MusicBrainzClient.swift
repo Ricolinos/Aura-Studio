@@ -29,6 +29,21 @@ struct MusicBrainzClient {
         let id: String
         let title: String
         let date: String?
+        /// D-203: el "album" para fanart.tv (y para casi cualquier otra
+        /// fuente que indexe por album, no por edicion especifica) es el
+        /// RELEASE GROUP, no el release -- confirmado contra la API real
+        /// que la busqueda de `recording` ya lo trae anidado sin pedir
+        /// ningun `inc=` extra.
+        let releaseGroup: ReleaseGroup?
+
+        enum CodingKeys: String, CodingKey {
+            case id, title, date
+            case releaseGroup = "release-group"
+        }
+    }
+
+    struct ReleaseGroup: Decodable, Equatable {
+        let id: String
     }
 
     private struct SearchResponse: Decodable {
@@ -55,12 +70,7 @@ struct MusicBrainzClient {
     func searchRecording(title: String?, artist: String?) async throws -> Recording? {
         guard title != nil || artist != nil else { return nil }
 
-        var query = ""
-        if let title { query += "recording:\"\(title)\"" }
-        if let artist {
-            if !query.isEmpty { query += " AND " }
-            query += "artist:\"\(artist)\""
-        }
+        let query = Self.buildQuery(title: title, artist: artist)
 
         var components = URLComponents(url: baseURL.appendingPathComponent("recording"), resolvingAgainstBaseURL: false)!
         components.queryItems = [
@@ -75,6 +85,32 @@ struct MusicBrainzClient {
         let data = try await performThrottled(request)
         let decoded = try JSONDecoder().decode(SearchResponse.self, from: data)
         return decoded.recordings.max { ($0.score ?? 0) < ($1.score ?? 0) }
+    }
+
+    /// D-203: arma la query de busqueda Lucene. `title`/`artist` van
+    /// entre comillas para buscar la frase exacta -- si traen una
+    /// comilla o una barra invertida sin escapar (titulos reales como
+    /// `Rock "N" Roll` o `Y\N`), rompen la sintaxis y MusicBrainz
+    /// devuelve 400, que `enrich()`/`reenrich()` tragan con `try?` y se
+    /// ve identico a "no se encontro nada" -- causa real detras del
+    /// reporte de que la busqueda "no sirve para nada" con canciones
+    /// comunes. No hace falta escapar el resto de los caracteres
+    /// especiales de Lucene (`+ - && || ! ( ) [ ] ^ ~ * ? :`): dentro de
+    /// una frase entre comillas se toman literales, solo la comilla y la
+    /// barra invertida rompen la frase en si.
+    static func buildQuery(title: String?, artist: String?) -> String {
+        var query = ""
+        if let title { query += "recording:\"\(escapeLuceneQuoted(title))\"" }
+        if let artist {
+            if !query.isEmpty { query += " AND " }
+            query += "artist:\"\(escapeLuceneQuoted(artist))\""
+        }
+        return query
+    }
+
+    private static func escapeLuceneQuoted(_ value: String) -> String {
+        value.replacingOccurrences(of: "\\", with: "\\\\")
+             .replacingOccurrences(of: "\"", with: "\\\"")
     }
 
     /// MusicBrainz aplica 1 request/segundo por IP y, ademas, devuelve

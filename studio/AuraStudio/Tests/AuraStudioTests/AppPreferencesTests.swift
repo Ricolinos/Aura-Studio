@@ -25,6 +25,8 @@ final class AppPreferencesTests: XCTestCase {
         XCTAssertEqual(prefs.photoQuality, .optimized)
         XCTAssertTrue(prefs.organizePhotosByCategory)
         XCTAssertTrue(prefs.organizeVideosByCategory)
+        XCTAssertEqual(prefs.coverArtProviderOrder, [.coverArtArchive, .fanartTV, .deezer])
+        XCTAssertTrue(prefs.deezerEnabled)
     }
 
     func testPhotoQualityMaxDimensions() {
@@ -42,6 +44,8 @@ final class AppPreferencesTests: XCTestCase {
         first.photoQuality = .hd
         first.organizePhotosByCategory = false
         first.organizeVideosByCategory = false
+        first.coverArtProviderOrder = [.deezer, .coverArtArchive, .fanartTV]
+        first.deezerEnabled = false
 
         let second = AppPreferences(defaults: defaults)
         XCTAssertFalse(second.copyMediaIntoLibrary)
@@ -51,5 +55,7 @@ final class AppPreferencesTests: XCTestCase {
         XCTAssertEqual(second.photoQuality, .hd)
         XCTAssertFalse(second.organizePhotosByCategory)
         XCTAssertFalse(second.organizeVideosByCategory)
+        XCTAssertEqual(second.coverArtProviderOrder, [.deezer, .coverArtArchive, .fanartTV])
+        XCTAssertFalse(second.deezerEnabled)
     }
 }

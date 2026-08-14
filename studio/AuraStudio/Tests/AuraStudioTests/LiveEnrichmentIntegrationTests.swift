@@ -25,6 +25,9 @@ final class LiveEnrichmentIntegrationTests: XCTestCase {
         XCTAssertNotNil(recording)
         XCTAssertTrue(recording?.title.lowercased().contains("bohemian rhapsody") ?? false)
         XCTAssertFalse(recording?.releases?.isEmpty ?? true)
+        // D-203: fanart.tv indexa por release-group, no por release --
+        // sin este campo no hay forma de consultarlo.
+        XCTAssertNotNil(recording?.releases?.first?.releaseGroup?.id)
     }
 
     func testCoverArtArchiveFetchesRealCover() async throws {
@@ -58,6 +61,31 @@ final class LiveEnrichmentIntegrationTests: XCTestCase {
         if let lyrics {
             XCTAssertTrue(lyrics.contains("["), "letra sincronizada deberia tener timestamps [mm:ss.xx]")
         }
+    }
+
+    func testDeezerFindsRealAlbumCover() async throws {
+        try await skipIfOffline()
+
+        let client = DeezerClient()
+        let cover = try await client.fetchAlbumCover(title: "Bohemian Rhapsody", artist: "Queen")
+
+        XCTAssertNotNil(cover)
+        XCTAssertGreaterThan(cover?.count ?? 0, 100)
+    }
+
+    /// Sin key guardada, `FanartTVClient` no debe llamar a la red (siempre
+    /// devolveria 401) ni lanzar -- guarda/restaura cualquier key real del
+    /// Keychain del que corre el test para no depender de, ni ensuciar,
+    /// su configuracion.
+    func testFanartTVWithoutKeyReturnsNilWithoutThrowing() async throws {
+        let existingKey = APIKeyStore.load(for: .fanartTV)
+        APIKeyStore.delete(for: .fanartTV)
+        defer { if let existingKey { APIKeyStore.save(existingKey, for: .fanartTV) } }
+
+        let client = FanartTVClient()
+        let cover = try await client.fetchAlbumCover(releaseGroupID: "3052cbf8-69b5-36ae-82dd-812a5b549195")
+
+        XCTAssertNil(cover)
     }
 
     func testFullEnrichmentPipelineOnRealFilename() async throws {

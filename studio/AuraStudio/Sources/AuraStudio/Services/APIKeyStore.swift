@@ -3,15 +3,13 @@ import Security
 
 /// Fuentes opcionales que SI necesitan una API key propia (a diferencia
 /// de MusicBrainz/Cover Art Archive/LRCLIB, que no la piden -- ver
-/// `SourcesSettingsView`). Extensible: agregar una fuente nueva que
+/// `ServicesSettingsView`). Extensible: agregar una fuente nueva que
 /// necesite key es agregar un caso aca, nada mas -- la vista de
 /// Ajustes y el almacenamiento en Keychain ya funcionan para
 /// cualquier caso de este enum.
 ///
-/// Hoy solo fanart.tv esta conectada de verdad (`FanartTVClient`); las
-/// demas guardan la key para cuando se conecten (mismo criterio
-/// honesto que "Opcionales, con key propia" en Fuentes: la guia y el
-/// campo ya existen, la integracion de red llega despues).
+/// D-203: fanart.tv esta conectada de verdad (`FanartTVClient`, usada
+/// desde `LibraryEnricher.resolveCoverArt`).
 enum APIKeyService: String, CaseIterable, Identifiable {
     case fanartTV
 

@@ -48,6 +48,12 @@ struct MediaSectionView: View {
     /// no se persiste: es un reflejo del disco, no un dato propio de la
     /// biblioteca.
     @State private var syncedSourcePaths: Set<String> = []
+    /// D-203: MusicBrainz limita a 1 pedido/segundo, asi que "Buscar
+    /// información en línea" sobre varias canciones tarda -- sin esto no
+    /// habia NINGUN indicio de que algo estaba pasando, asi que un
+    /// pedido que tardaba unos segundos se veia igual que uno que no
+    /// hacia nada.
+    @State private var isEnriching = false
 
     private var allItemsOfKind: [LibraryItem] {
         viewModel.items.filter { $0.kind == kind }
@@ -98,6 +104,7 @@ struct MediaSectionView: View {
                 // titulos de columna solo aceptan texto), asi que esta
                 // franja angosta encima de la tabla, alineada a la
                 // derecha, es lo mas cerca que se puede quedar.
+                if kind == .music { enrichmentBanner }
                 columnsBar
                 table
                     .onKeyPress(.space) {
@@ -212,6 +219,37 @@ struct MediaSectionView: View {
         .padding(.horizontal, 12)
         .padding(.top, 8)
         .padding(.bottom, 2)
+    }
+
+    // MARK: - Busqueda de informacion en linea (D-203)
+
+    private func runEnrichment(_ action: @escaping () async -> Void) {
+        guard !isEnriching else { return }
+        isEnriching = true
+        Task {
+            await action()
+            isEnriching = false
+        }
+    }
+
+    @ViewBuilder
+    private var enrichmentBanner: some View {
+        if isEnriching {
+            HStack(spacing: 8) {
+                ProgressView().controlSize(.small)
+                Text("Buscando información en línea...")
+            }
+            .font(.callout)
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+        } else if let summary = viewModel.lastEnrichmentSummary {
+            Text(summary)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+        }
     }
 
     // MARK: - Sincronizacion (D-202)
@@ -379,10 +417,10 @@ struct MediaSectionView: View {
 
         if kind == .music, !targetItems.isEmpty {
             Button("Buscar información en línea") {
-                Task { await viewModel.reenrichOnline(ids: targetIDs, fetchAlbumInfo: true, fetchLyrics: false) }
+                runEnrichment { await viewModel.reenrichOnline(ids: targetIDs, fetchAlbumInfo: true, fetchLyrics: false) }
             }
             Button("Buscar letra") {
-                Task { await viewModel.reenrichOnline(ids: targetIDs, fetchAlbumInfo: false, fetchLyrics: true) }
+                runEnrichment { await viewModel.reenrichOnline(ids: targetIDs, fetchAlbumInfo: false, fetchLyrics: true) }
             }
             Button("Eliminar carátula") {
                 for item in targetItems { viewModel.clearCoverArt(id: item.id) }
