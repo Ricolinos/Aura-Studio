@@ -103,6 +103,10 @@ struct SettingsSectionView: View {
 
             Divider()
 
+            linkedFoldersSection
+
+            Divider()
+
             VStack(alignment: .leading, spacing: 10) {
                 Text(S.coverArt.text).font(.headline)
                 Picker(S.coverArt.text, selection: $preferences.coverArtPolicy) {
@@ -135,6 +139,52 @@ struct SettingsSectionView: View {
                 Text(S.fetchLyricsDetail.text)
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    /// Encargo del dueño (2026-08-14): carpetas externas que se
+    /// arrastraron a Aura con "Crear copias..." apagado -- solo lectura
+    /// mas un boton de quitar, nada de rescanear ni vigilar cambios (ver
+    /// `AppPreferences.linkedLibraryFolders`). Se muestra siempre, no
+    /// solo con el ajuste apagado: apagarlo despues de haber vinculado
+    /// carpetas no debería hacerlas desaparecer de esta lista.
+    private var linkedFoldersSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Bibliotecas vinculadas").font(.headline)
+            Text("Carpetas externas que arrastraste a Aura con \"Crear copias de los medios...\" apagado -- Aura no copia nada de ahí, solo las recuerda acá. Quitar una carpeta de esta lista no borra ni desvincula lo que ya importaste desde ella, solo deja de mostrarla.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if preferences.linkedLibraryFolders.isEmpty {
+                Text("Todavía no arrastraste ninguna carpeta con ese ajuste apagado.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(preferences.linkedLibraryFolders, id: \.self) { path in
+                        HStack(spacing: 10) {
+                            Image(systemName: "folder")
+                                .foregroundStyle(.tint)
+                            Text((path as NSString).abbreviatingWithTildeInPath)
+                                .font(.callout.monospaced())
+                                .lineLimit(1)
+                                .truncationMode(.middle)
+                            Spacer()
+                            Button {
+                                preferences.removeLinkedLibraryFolder(path)
+                            } label: {
+                                Image(systemName: "xmark.circle")
+                            }
+                            .buttonStyle(.plain)
+                            .foregroundStyle(.secondary)
+                            .help("Dejar de mostrar esta carpeta acá")
+                        }
+                        .padding(8)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.08)))
+                    }
+                }
             }
         }
     }
