@@ -18,11 +18,18 @@ struct TrackMetadata: Equatable {
     var syncedLyrics: String?
     var musicBrainzRecordingID: String?
     var musicBrainzReleaseID: String?
+    /// Duracion real del archivo (D-198, columna "Duración" de la tabla
+    /// de biblioteca) -- medida best-effort con ffmpeg al procesar
+    /// (`FFmpegTranscoder.probeDurationSeconds`), nunca bloquea el
+    /// pipeline si ffmpeg no esta instalado (queda nil, la tabla
+    /// muestra "--").
+    var durationSeconds: Double?
 
     init(title: String? = nil, artist: String? = nil, album: String? = nil,
          albumArtist: String? = nil, year: String? = nil, genre: String? = nil,
          trackNumber: Int? = nil, coverArtData: Data? = nil, syncedLyrics: String? = nil,
-         musicBrainzRecordingID: String? = nil, musicBrainzReleaseID: String? = nil) {
+         musicBrainzRecordingID: String? = nil, musicBrainzReleaseID: String? = nil,
+         durationSeconds: Double? = nil) {
         self.title = title
         self.artist = artist
         self.album = album
@@ -34,6 +41,7 @@ struct TrackMetadata: Equatable {
         self.syncedLyrics = syncedLyrics
         self.musicBrainzRecordingID = musicBrainzRecordingID
         self.musicBrainzReleaseID = musicBrainzReleaseID
+        self.durationSeconds = durationSeconds
     }
 
     var isComplete: Bool {

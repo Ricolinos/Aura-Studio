@@ -10,14 +10,27 @@ import UniformTypeIdentifiers
 /// para escuchar/ver algo, se selecciona y se aprieta espacio, exacto
 /// el gesto de Vista Previa de Finder (`QuickLookCoordinator`), nunca
 /// hay play/pause propio de la app.
+///
+/// D-198 (encargo del dueno, referencia visual de una tabla tipo
+/// Finder/Musica.app): tabla con columnas de verdad (anchos ajustables
+/// nativos de `Table`, encabezados que ordenan), casillas de
+/// verificacion para editar en conjunto, y menu contextual con las
+/// acciones de biblioteca (buscar info/letra, quitar caratula, elegir
+/// canciones relacionadas, renombrar, borrar). Se dejaron afuera a
+/// proposito "Reproducciones" y una calificacion con estrella del
+/// mockup de referencia -- Aura Studio no reproduce nada (no hay
+/// conteo de reproducciones que llevar) y una calificacion nueva
+/// hubiera sido un campo decorativo sin ningun dato real detras.
 struct MediaSectionView: View {
     let kind: LibraryItemKind
     @ObservedObject var viewModel: LibraryViewModel
 
     @State private var isTargeted = false
     @State private var reviewingItem: LibraryItem?
+    @State private var renamingItem: LibraryItem?
     @State private var showingPlaylists = false
     @State private var selection: Set<UUID> = []
+    @State private var sortOrder: [KeyPathComparator<MediaTableRow>] = [.init(\.title, order: .forward)]
     @State private var quickLook = QuickLookCoordinator()
     @State private var categoryFilter: MediaCategory?
 
@@ -28,6 +41,10 @@ struct MediaSectionView: View {
     private var items: [LibraryItem] {
         guard let categoryFilter else { return allItemsOfKind }
         return allItemsOfKind.filter { $0.category == categoryFilter }
+    }
+
+    private var rows: [MediaTableRow] {
+        items.map(MediaTableRow.init).sorted(using: sortOrder)
     }
 
     /// Solo fotos y video se organizan por categoria (D-192) -- musica
@@ -59,20 +76,12 @@ struct MediaSectionView: View {
                 dropZone
                     .frame(height: 96)
                     .padding([.horizontal, .top], 16)
-                List(selection: $selection) {
-                    ForEach(items) { item in
-                        MediaItemRow(item: item, availableCategories: availableCategories,
-                                     onReviewTapped: { reviewingItem = item },
-                                     onCategoryChanged: { viewModel.setCategory($0, forItem: item.id) })
-                            .tag(item.id)
+                table
+                    .onKeyPress(.space) {
+                        guard let selectedItem else { return .ignored }
+                        quickLook.toggle(for: selectedItem.sourceURL)
+                        return .handled
                     }
-                }
-                .listStyle(.inset)
-                .onKeyPress(.space) {
-                    guard let selectedItem else { return .ignored }
-                    quickLook.toggle(for: selectedItem.sourceURL)
-                    return .handled
-                }
             }
         }
         .navigationTitle(title)
@@ -108,6 +117,163 @@ struct MediaSectionView: View {
                 reviewingItem = nil
             }
         }
+        .sheet(item: $renamingItem) { item in
+            RenameSheet(currentTitle: item.metadata?.title ?? item.sourceURL.deletingPathExtension().lastPathComponent) { newTitle in
+                viewModel.renameItem(id: item.id, title: newTitle)
+                renamingItem = nil
+            } onCancel: {
+                renamingItem = nil
+            }
+        }
+    }
+
+    // MARK: - Tabla
+
+    @ViewBuilder
+    private var table: some View {
+        switch kind {
+        case .music: musicTable
+        case .video: mediaTable(showsArtistAlbumGenre: false)
+        case .photo, .unsupported: mediaTable(showsArtistAlbumGenre: false)
+        }
+    }
+
+    private var musicTable: some View {
+        Table(rows, selection: $selection, sortOrder: $sortOrder) {
+            TableColumn("") { row in checkboxCell(row) }
+                .width(22)
+            TableColumn("Título", value: \.title) { row in Text(row.title) }
+                .width(min: 140, ideal: 220)
+            TableColumn("Artista", value: \.artist) { row in Text(row.artist) }
+                .width(min: 90, ideal: 140)
+            TableColumn("Álbum", value: \.album) { row in Text(row.album) }
+                .width(min: 90, ideal: 160)
+            TableColumn("Género", value: \.genre) { row in Text(row.genre) }
+                .width(min: 60, ideal: 100)
+            TableColumn("Duración", value: \.durationSeconds) { row in Text(row.durationText) }
+                .width(min: 50, ideal: 64)
+            TableColumn("Estado") { row in statusCell(row.item) }
+                .width(min: 70, ideal: 90)
+        }
+        .contextMenu(forSelectionType: UUID.self) { ids in contextMenuContent(for: ids) }
+    }
+
+    /// Video y fotos comparten forma (Categoría en vez de Artista/Álbum/
+    /// Género) -- `showsArtistAlbumGenre` queda como parametro por si
+    /// alguno de los dos necesita divergir despues, aunque hoy ambos lo
+    /// pasan en `false`.
+    private func mediaTable(showsArtistAlbumGenre: Bool) -> some View {
+        Table(rows, selection: $selection, sortOrder: $sortOrder) {
+            TableColumn("") { row in checkboxCell(row) }
+                .width(22)
+            TableColumn("Título", value: \.title) { row in Text(row.title) }
+                .width(min: 160, ideal: 280)
+            TableColumn("Categoría", value: \.category) { row in Text(row.category.isEmpty ? "Sin categoría" : row.category) }
+                .width(min: 90, ideal: 130)
+            TableColumn("Duración", value: \.durationSeconds) { row in Text(row.durationText) }
+                .width(min: 50, ideal: 64)
+            TableColumn("Estado") { row in statusCell(row.item) }
+                .width(min: 70, ideal: 90)
+        }
+        .contextMenu(forSelectionType: UUID.self) { ids in contextMenuContent(for: ids) }
+    }
+
+    private func checkboxCell(_ row: MediaTableRow) -> some View {
+        Toggle("", isOn: Binding(
+            get: { selection.contains(row.id) },
+            set: { checked in
+                if checked { selection.insert(row.id) } else { selection.remove(row.id) }
+            }
+        ))
+        .labelsHidden()
+    }
+
+    @ViewBuilder
+    private func statusCell(_ item: LibraryItem) -> some View {
+        switch item.status {
+        case .queued:
+            Text("En cola").foregroundStyle(.secondary)
+        case .enriching:
+            ProgressView().controlSize(.small)
+        case .transcoding(let progress):
+            ProgressView(value: progress).frame(width: 60)
+        case .ready:
+            Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+        case .needsReview:
+            Button {
+                reviewingItem = item
+            } label: {
+                Label("Revisar", systemImage: "exclamationmark.circle")
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.orange)
+        case .failed(let message):
+            Label(message, systemImage: "xmark.circle")
+                .foregroundStyle(.red)
+                .help(message)
+        }
+    }
+
+    // MARK: - Menu contextual (D-198)
+
+    @ViewBuilder
+    private func contextMenuContent(for ids: Set<UUID>) -> some View {
+        let targetIDs = ids.isEmpty ? selection : ids
+        let targetItems = items.filter { targetIDs.contains($0.id) }
+
+        if kind == .music, !targetItems.isEmpty {
+            Button("Buscar información en línea") {
+                Task { await viewModel.reenrichOnline(ids: targetIDs, fetchAlbumInfo: true, fetchLyrics: false) }
+            }
+            Button("Buscar letra") {
+                Task { await viewModel.reenrichOnline(ids: targetIDs, fetchAlbumInfo: false, fetchLyrics: true) }
+            }
+            Button("Eliminar carátula") {
+                for item in targetItems { viewModel.clearCoverArt(id: item.id) }
+            }
+            .disabled(!targetItems.contains { $0.metadata?.coverArtData != nil })
+
+            Divider()
+
+            if let reference = targetItems.first {
+                if let album = reference.metadata?.album {
+                    Button("Seleccionar canciones del mismo álbum") {
+                        selection = Set(allItemsOfKind.filter { $0.metadata?.album == album }.map(\.id))
+                    }
+                }
+                if let artist = reference.metadata?.artist {
+                    Button("Seleccionar canciones del mismo artista") {
+                        selection = Set(allItemsOfKind.filter { $0.metadata?.artist == artist }.map(\.id))
+                    }
+                }
+            }
+
+            Divider()
+        }
+
+        if let availableCategories, !targetItems.isEmpty {
+            Menu("Cambiar categoría") {
+                ForEach(availableCategories) { category in
+                    Button(category.displayName) {
+                        for item in targetItems { viewModel.setCategory(category, forItem: item.id) }
+                    }
+                }
+            }
+            Divider()
+        }
+
+        if targetItems.count == 1, let single = targetItems.first {
+            Button("Cambiar nombre...") {
+                renamingItem = single
+            }
+            Divider()
+        }
+
+        Button("Eliminar", role: .destructive) {
+            viewModel.deleteItems(ids: targetIDs)
+            selection.subtract(targetIDs)
+        }
+        .disabled(targetItems.isEmpty)
     }
 
     private func categoryFilterBar(_ categories: [MediaCategory]) -> some View {
@@ -167,6 +333,63 @@ struct MediaSectionView: View {
         case .photo: return "photo"
         case .unsupported: return "questionmark"
         }
+    }
+}
+
+/// Fila plana para `Table` (D-198): campos NO opcionales (vacio/0 en
+/// vez de nil) porque `KeyPathComparator` necesita `Comparable` real
+/// para ordenar por encabezado -- Optional no lo es. Envuelve el
+/// `LibraryItem` original para las acciones que si necesitan el modelo
+/// completo (`row.item`).
+struct MediaTableRow: Identifiable {
+    let item: LibraryItem
+    var id: UUID { item.id }
+    var title: String { item.metadata?.title ?? item.sourceURL.deletingPathExtension().lastPathComponent }
+    var artist: String { item.metadata?.artist ?? "" }
+    var album: String { item.metadata?.album ?? "" }
+    var genre: String { item.metadata?.genre ?? "" }
+    var category: String { item.category?.displayName ?? "" }
+    var durationSeconds: Double { item.metadata?.durationSeconds ?? 0 }
+
+    var durationText: String {
+        guard let seconds = item.metadata?.durationSeconds, seconds > 0 else { return "--" }
+        let total = Int(seconds.rounded())
+        return String(format: "%d:%02d", total / 60, total % 60)
+    }
+}
+
+private struct RenameSheet: View {
+    let currentTitle: String
+    let onSave: (String) -> Void
+    let onCancel: () -> Void
+
+    @State private var text: String
+
+    init(currentTitle: String, onSave: @escaping (String) -> Void, onCancel: @escaping () -> Void) {
+        self.currentTitle = currentTitle
+        self.onSave = onSave
+        self.onCancel = onCancel
+        _text = State(initialValue: currentTitle)
+    }
+
+    private var trimmed: String { text.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Cambiar nombre").font(.title3.bold())
+            TextField("Nombre", text: $text)
+                .textFieldStyle(.roundedBorder)
+                .onSubmit { if !trimmed.isEmpty { onSave(trimmed) } }
+            HStack {
+                Spacer()
+                Button("Cancelar", action: onCancel)
+                Button("Guardar") { onSave(trimmed) }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(trimmed.isEmpty)
+            }
+        }
+        .padding(24)
+        .frame(width: 360)
     }
 }
 
@@ -237,64 +460,5 @@ private final class DropCollector: @unchecked Sendable {
     func ordered() -> [URL] {
         lock.lock(); defer { lock.unlock() }
         return slots.compactMap { $0 }
-    }
-}
-
-private struct MediaItemRow: View {
-    let item: LibraryItem
-    /// Solo no-nil para fotos/video (D-192/D-193): permite corregir a
-    /// mano la categoria que se sugirio sola al procesar el item.
-    var availableCategories: [MediaCategory]?
-    var onReviewTapped: () -> Void = {}
-    var onCategoryChanged: (MediaCategory) -> Void = { _ in }
-
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading) {
-                Text(item.metadata?.title ?? item.sourceURL.lastPathComponent)
-                    .font(.body)
-                if let artist = item.metadata?.artist {
-                    Text(artist).font(.caption).foregroundStyle(.secondary)
-                }
-            }
-            Spacer()
-            if let availableCategories {
-                categoryMenu(availableCategories)
-            }
-            statusView
-        }
-    }
-
-    private func categoryMenu(_ categories: [MediaCategory]) -> some View {
-        Menu(item.category?.displayName ?? "Sin categoría") {
-            ForEach(categories) { category in
-                Button(category.displayName) { onCategoryChanged(category) }
-            }
-        }
-        .menuStyle(.borderlessButton)
-        .fixedSize()
-        .font(.caption)
-    }
-
-    @ViewBuilder
-    private var statusView: some View {
-        switch item.status {
-        case .queued:
-            Text("En cola").foregroundStyle(.secondary)
-        case .enriching:
-            ProgressView().controlSize(.small)
-        case .transcoding(let progress):
-            ProgressView(value: progress).frame(width: 80)
-        case .ready:
-            Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
-        case .needsReview:
-            Button(action: onReviewTapped) {
-                Label("Revisar", systemImage: "exclamationmark.circle")
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.orange)
-        case .failed(let message):
-            Label(message, systemImage: "xmark.circle").foregroundStyle(.red)
-        }
     }
 }

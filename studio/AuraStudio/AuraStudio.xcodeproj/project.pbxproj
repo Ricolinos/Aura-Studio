@@ -61,6 +61,7 @@
 		91FE918C092C1349381F3D67 /* PlaylistExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E68A879A0F3418A7220030C /* PlaylistExporter.swift */; };
 		944B27A4A60F4C5BF6A1AF1F /* MediaCategoryHeuristicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63EEB772091BC184C410A194 /* MediaCategoryHeuristicsTests.swift */; };
 		94C6E0F1AA6F37EF6B4CB32A /* ImageResizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DC865282F8B113716D7C3AF /* ImageResizer.swift */; };
+		98294989CBE015BFE717F68F /* MediaTableRowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D789632A0A38C211E33DFCBF /* MediaTableRowTests.swift */; };
 		982F00F48C834DC4C0F57A3A /* MusicBrainzRateLimiterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E14855D7F760E14EB547DE /* MusicBrainzRateLimiterTests.swift */; };
 		983F3D503FD3C67F03884D83 /* MediaCategoryClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFA40682BAFE0828DAA2B507 /* MediaCategoryClassifier.swift */; };
 		998B6DF4B6AC0FEE21284A8E /* bootloader-ipod6g.ipod in Resources */ = {isa = PBXBuildFile; fileRef = 233A4D4A9FEE1391D6CAAE63 /* bootloader-ipod6g.ipod */; };
@@ -196,6 +197,7 @@
 		D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledArtifactsTests.swift; sourceTree = "<group>"; };
 		D282E9DFA0D773AF988E69E5 /* ID3Writer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ID3Writer.swift; sourceTree = "<group>"; };
 		D3F0CDAA153138813C9AF84E /* AuraDeviceProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraDeviceProbe.swift; sourceTree = "<group>"; };
+		D789632A0A38C211E33DFCBF /* MediaTableRowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTableRowTests.swift; sourceTree = "<group>"; };
 		D96F62F5D0767305583513FF /* TrackMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackMetadata.swift; sourceTree = "<group>"; };
 		DAC2C915803E2ECA9BD01B52 /* PrivilegedActionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivilegedActionSheet.swift; sourceTree = "<group>"; };
 		DAE64AFF0609F93FC361C6DE /* FFmpegTranscoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FFmpegTranscoder.swift; sourceTree = "<group>"; };
@@ -369,6 +371,7 @@
 				1695E842D41B0B6B13805A1E /* LibrarySyncTests.swift */,
 				E7EDF2D22E970198CC8A5C1B /* LiveEnrichmentIntegrationTests.swift */,
 				63EEB772091BC184C410A194 /* MediaCategoryHeuristicsTests.swift */,
+				D789632A0A38C211E33DFCBF /* MediaTableRowTests.swift */,
 				C70AA3068E3596A674879EA8 /* MKS5LBootRunnerTests.swift */,
 				B0E14855D7F760E14EB547DE /* MusicBrainzRateLimiterTests.swift */,
 				A0CF9C66B5F702F5086AFE98 /* PathSanitizerTests.swift */,
@@ -545,6 +548,7 @@
 				BC30BF47ADCC5F66B79045A1 /* LiveEnrichmentIntegrationTests.swift in Sources */,
 				51B2A64027ACA8FC73EB923A /* MKS5LBootRunnerTests.swift in Sources */,
 				944B27A4A60F4C5BF6A1AF1F /* MediaCategoryHeuristicsTests.swift in Sources */,
+				98294989CBE015BFE717F68F /* MediaTableRowTests.swift in Sources */,
 				982F00F48C834DC4C0F57A3A /* MusicBrainzRateLimiterTests.swift in Sources */,
 				DEAC726F9577D617DFFC7D68 /* PathSanitizerTests.swift in Sources */,
 				7F80040C49B6F9BAEC7C4EB4 /* PlaylistExporterTests.swift in Sources */,

@@ -125,20 +125,31 @@ final class LibraryViewModel: ObservableObject {
             switch item.kind {
             case .music:
                 items[index].status = .enriching
-                let metadata = await enricher.enrich(item: item,
+                var metadata = await enricher.enrich(item: item,
                                                       online: preferences.enrichOnline,
                                                       lyrics: preferences.fetchSyncedLyrics)
+                // Duracion real (D-198, columna "Duración" de la tabla de
+                // biblioteca) -- best-effort con ffmpeg, nunca bloquea el
+                // pipeline si no esta instalado (a diferencia de video, la
+                // musica en formato original nunca necesito ffmpeg antes
+                // de esto).
+                if let probe = try? FFmpegTranscoder(),
+                   let duration = try? FFmpegTranscoder.probeDurationSeconds(of: item.sourceURL, ffmpegURL: probe.ffmpegURL) {
+                    metadata.durationSeconds = duration
+                }
                 items[index].metadata = metadata
                 items[index].preparedURL = try prepareMusic(item: item, metadata: metadata)
                 items[index].status = metadata.isComplete ? .ready : .needsReview
 
             case .video:
                 items[index].status = .transcoding(progress: 0)
-                if items[index].category == nil {
-                    items[index].category = MediaCategoryClassifier.classifyVideo(at: item.sourceURL)
-                }
-                let output = stagingDirectory.appendingPathComponent(item.sourceURL.deletingPathExtension().lastPathComponent + ".mpg")
                 let transcoder = try FFmpegTranscoder()
+                let duration = try? FFmpegTranscoder.probeDurationSeconds(of: item.sourceURL, ffmpegURL: transcoder.ffmpegURL)
+                if items[index].category == nil {
+                    items[index].category = MediaCategoryHeuristics.classifyVideo(durationSeconds: duration ?? nil)
+                }
+                items[index].metadata = TrackMetadata(durationSeconds: duration ?? nil)
+                let output = stagingDirectory.appendingPathComponent(item.sourceURL.deletingPathExtension().lastPathComponent + ".mpg")
                 /// El callback de ffmpeg corre en el hilo de lectura del
                 /// pipe (readabilityHandler), no en el MainActor -- hay
                 /// que saltar de vuelta explicitamente para tocar
@@ -262,6 +273,89 @@ final class LibraryViewModel: ObservableObject {
     func setCategory(_ category: MediaCategory, forItem id: UUID) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
         items[index].category = category
+        persistCatalog()
+    }
+
+    // MARK: - Menu contextual de la tabla de biblioteca (D-198)
+
+    /// Quita items de la biblioteca -- borra tambien lo que Aura Studio
+    /// escribio para ellos (`Preparados/`/`Portadas/`, y `Originales/`
+    /// si `copyMediaIntoLibrary` copio el archivo) para no dejar huerfanos.
+    /// El original del usuario NUNCA se toca si esta fuera de la
+    /// biblioteca (modo "sin copiar medios", D-192). Tambien los saca de
+    /// cualquier playlist que los referenciara.
+    func deleteItems(ids: Set<UUID>) {
+        guard !ids.isEmpty else { return }
+        let fm = FileManager.default
+        let rootPath = libraryRoot.standardizedFileURL.path
+
+        for id in ids {
+            guard let item = items.first(where: { $0.id == id }) else { continue }
+            if let prepared = item.preparedURL { try? fm.removeItem(at: prepared) }
+            let coverURL = coversDirectory.appendingPathComponent("\(item.id.uuidString).jpg")
+            try? fm.removeItem(at: coverURL)
+            let sourcePath = item.sourceURL.standardizedFileURL.path
+            if sourcePath.hasPrefix(rootPath + "/") {
+                try? fm.removeItem(at: item.sourceURL)
+            }
+        }
+
+        items.removeAll { ids.contains($0.id) }
+        for index in playlists.indices {
+            playlists[index].trackItemIDs.removeAll { ids.contains($0) }
+        }
+        persistCatalog()
+    }
+
+    /// "Cambiar nombre" del menu contextual -- solo el TITULO mostrado/
+    /// usado al armar la ruta de sincronizacion (`LibrarySync`), nunca
+    /// el nombre del archivo original en disco.
+    func renameItem(id: UUID, title: String) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        var metadata = items[index].metadata ?? TrackMetadata()
+        metadata.title = trimmed
+        items[index].metadata = metadata
+        if items[index].kind == .music {
+            items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
+            if items[index].status == .ready || items[index].status == .needsReview {
+                items[index].status = metadata.isComplete ? .ready : .needsReview
+            }
+        }
+        persistCatalog()
+    }
+
+    /// "Eliminar carátula" del menu contextual -- solo tiene sentido
+    /// para musica (fotos/video no tienen caratula embebida propia).
+    func clearCoverArt(id: UUID) {
+        guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .music else { return }
+        var metadata = items[index].metadata ?? TrackMetadata()
+        metadata.coverArtData = nil
+        items[index].metadata = metadata
+        items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
+        let coverURL = coversDirectory.appendingPathComponent("\(items[index].id.uuidString).jpg")
+        try? FileManager.default.removeItem(at: coverURL)
+        persistCatalog()
+    }
+
+    /// "Buscar información en línea"/"Buscar letra" del menu contextual
+    /// -- reintenta contra MusicBrainz/Cover Art Archive/LRCLIB partiendo
+    /// de la metadata YA resuelta (`LibraryEnricher.reenrich`, no
+    /// `enrich`), asi que no pisa una correccion manual ya hecha. Solo
+    /// aplica a musica.
+    func reenrichOnline(ids: Set<UUID>, fetchAlbumInfo: Bool, fetchLyrics: Bool) async {
+        for id in ids {
+            guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .music else { continue }
+            let item = items[index]
+            let current = item.metadata ?? TrackMetadata()
+            let updated = await enricher.reenrich(item: item, currentMetadata: current,
+                                                    fetchAlbumInfo: fetchAlbumInfo, fetchLyrics: fetchLyrics)
+            guard index < items.count else { continue }
+            items[index].metadata = updated
+            items[index].preparedURL = try? prepareMusic(item: items[index], metadata: updated)
+            items[index].status = updated.isComplete ? .ready : .needsReview
+        }
         persistCatalog()
     }
 

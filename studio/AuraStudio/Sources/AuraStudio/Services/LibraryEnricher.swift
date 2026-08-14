@@ -85,4 +85,41 @@ struct LibraryEnricher {
 
         return metadata
     }
+
+    /// D-198: "Buscar información"/"Buscar letra" del menú contextual de
+    /// la biblioteca -- a diferencia de `enrich()` (que parte de las
+    /// tags CRUDAS del archivo original), esto parte de la metadata YA
+    /// resuelta del item (`currentMetadata`), para no pisar una
+    /// corrección manual que el usuario ya hizo en la pantalla de
+    /// revisión. Solo llena huecos (nunca reemplaza un campo que ya
+    /// tiene valor) -- mismo criterio que `enrich()`.
+    func reenrich(item: LibraryItem, currentMetadata: TrackMetadata,
+                  fetchAlbumInfo: Bool, fetchLyrics: Bool) async -> TrackMetadata {
+        var metadata = currentMetadata
+        let guess = FilenameGuesser.guess(from: item.sourceURL)
+        let seedTitle = metadata.title ?? guess.title
+        let seedArtist = metadata.artist ?? guess.artist
+
+        if fetchAlbumInfo, let recording = try? await musicBrainz.searchRecording(title: seedTitle, artist: seedArtist) {
+            metadata.title = metadata.title ?? recording.title
+            metadata.artist = metadata.artist ?? recording.artistCredit?.first?.name
+            metadata.musicBrainzRecordingID = metadata.musicBrainzRecordingID ?? recording.id
+
+            if let release = recording.releases?.first {
+                metadata.album = metadata.album ?? release.title
+                metadata.year = metadata.year ?? release.date.map { String($0.prefix(4)) }
+                metadata.musicBrainzReleaseID = metadata.musicBrainzReleaseID ?? release.id
+
+                if metadata.coverArtData == nil {
+                    metadata.coverArtData = try? await coverArt.fetchFrontCover(releaseID: release.id)
+                }
+            }
+        }
+
+        if fetchLyrics, let title = metadata.title, let artist = metadata.artist {
+            metadata.syncedLyrics = try? await lrclib.fetchSyncedLyrics(title: title, artist: artist, album: metadata.album)
+        }
+
+        return metadata
+    }
 }
