@@ -19,6 +19,13 @@ final class LibraryViewModel: ObservableObject {
     @Published private(set) var lastEnrichmentSummary: String?
     @Published var lastError: String?
     @Published private(set) var playlists: [Playlist] = []
+    /// D-217: progreso de un `sync(toVolumeAt:)` en curso -- `nil`
+    /// cuando no se esta sincronizando. `estimatedSecondsRemaining` sale
+    /// del ritmo REAL de esta misma sesion de sync (bytes/segundo no
+    /// hace falta, con archivos copiados/segundo alcanza) -- con pocos
+    /// archivos el numero es poco preciso, pero es honesto (viene de una
+    /// medicion real) en vez de un estimado inventado.
+    @Published private(set) var syncProgress: SyncProgress?
 
     private let enricher: LibraryEnricher
     private let preferences: AppPreferences
@@ -356,6 +363,28 @@ final class LibraryViewModel: ObservableObject {
         persistCatalog()
     }
 
+    /// D-218: aplica `BatchMediaInfoView` sobre varias canciones a la
+    /// vez -- solo toca los campos que `changes` trae con valor real
+    /// (`nil` = no tocar), nunca el título ni el numero de pista (esos
+    /// ni siquiera son parte de `BatchMetadataChanges`, ver ese tipo).
+    func applyBatchEdit(ids: Set<UUID>, changes: BatchMetadataChanges) {
+        guard !changes.isEmpty else { return }
+        for id in ids {
+            guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .music else { continue }
+            var metadata = items[index].metadata ?? TrackMetadata()
+            if let artist = changes.artist { metadata.artist = artist }
+            if let album = changes.album { metadata.album = album }
+            if let albumArtist = changes.albumArtist { metadata.albumArtist = albumArtist }
+            if let year = changes.year { metadata.year = year }
+            if let genre = changes.genre { metadata.genre = genre }
+            if let rating = changes.rating { metadata.rating = rating }
+            items[index].metadata = metadata
+            items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
+            items[index].status = metadata.isComplete ? .ready : .needsReview
+        }
+        persistCatalog()
+    }
+
     /// "Buscar información en línea"/"Buscar letra" del menu contextual
     /// -- reintenta contra MusicBrainz/Cover Art Archive/fanart.tv/
     /// Deezer/LRCLIB partiendo de la metadata YA resuelta
@@ -407,14 +436,41 @@ final class LibraryViewModel: ObservableObject {
             : "Se encontro informacion nueva para \(found) de \(attempted) cancion(es)."
     }
 
+    /// D-217: `LibrarySync.sync()` es sincrona (copia archivos con
+    /// `FileManager` uno por uno) -- si corriera directo en este metodo
+    /// `@MainActor`, bloquearia el hilo principal de punta a punta y la
+    /// barra de progreso nunca tendria oportunidad de repintarse hasta
+    /// que todo terminara (el mismo problema, en el fondo, que D-034 ya
+    /// encontro con otro callback de progreso). Se corre en un
+    /// `Task.detached` -- `LibrarySync`/`LibraryItem`/`Playlist` son
+    /// structs Sendable de por si -- y cada tick de `onProgress` salta
+    /// de vuelta al MainActor para actualizar `syncProgress`.
     func sync(toVolumeAt volumeRoot: URL) async {
         let readyItems = items.filter { $0.status == .ready }
+        let playlistsSnapshot = playlists
+        let coverArtPolicy = preferences.coverArtPolicy
+        let musicOrganization = preferences.musicOrganization
+        let musicFilenameFormat = preferences.musicFilenameFormat
+        let startedAt = Date()
+        syncProgress = nil
+
         do {
             let sync = LibrarySync(volumeRoot: volumeRoot)
-            let result = try sync.sync(items: readyItems, playlists: playlists,
-                                        coverArtPolicy: preferences.coverArtPolicy,
-                                        musicOrganization: preferences.musicOrganization,
-                                        musicFilenameFormat: preferences.musicFilenameFormat)
+            let result = try await Task.detached(priority: .userInitiated) { [weak self] in
+                try sync.sync(items: readyItems, playlists: playlistsSnapshot,
+                              coverArtPolicy: coverArtPolicy,
+                              musicOrganization: musicOrganization,
+                              musicFilenameFormat: musicFilenameFormat) { copied, total in
+                    guard let self else { return }
+                    let elapsed = Date().timeIntervalSince(startedAt)
+                    let remaining: Double? = (copied > 0 && copied < total)
+                        ? (elapsed / Double(copied)) * Double(total - copied)
+                        : nil
+                    Task { @MainActor in
+                        self.syncProgress = SyncProgress(copied: copied, total: total, estimatedSecondsRemaining: remaining)
+                    }
+                }
+            }.value
             let playlistsNote = result.playlistsWritten > 0 ? " \(result.playlistsWritten) playlist(s) actualizada(s)." : ""
             lastSyncSummary = result.filesCopied == 0
                 ? "Ya estaba todo sincronizado, no habia nada nuevo.\(playlistsNote)"
@@ -427,6 +483,7 @@ final class LibraryViewModel: ObservableObject {
             // permite darse cuenta de que se apunto al disco equivocado.
             lastError = "No se pudo sincronizar en \(volumeRoot.path): \(error.localizedDescription)"
         }
+        syncProgress = nil
     }
 
     // MARK: - Playlists (Fase 24)

@@ -85,6 +85,14 @@ struct SyncResult: Equatable {
     let playlistsWritten: Int
 }
 
+/// D-217: progreso incremental de un sync en curso, publicado por
+/// `LibraryViewModel.syncProgress` para la barra de progreso de la UI.
+struct SyncProgress: Equatable {
+    var copied: Int
+    var total: Int
+    var estimatedSecondsRemaining: Double?
+}
+
 struct LibrarySync {
     static let manifestRelativePath = ".rockbox/aura/sync_manifest.json"
     static let summaryRelativePath = ".rockbox/aura/sync_summary.cfg"
@@ -130,7 +138,8 @@ struct LibrarySync {
     func sync(items: [LibraryItem], playlists: [Playlist] = [],
               coverArtPolicy: AppPreferences.CoverArtPolicy = .albumOnly,
               musicOrganization: AppPreferences.MusicOrganization = .artistAlbum,
-              musicFilenameFormat: AppPreferences.MusicFilenameFormat = .titleOnly) throws -> SyncResult {
+              musicFilenameFormat: AppPreferences.MusicFilenameFormat = .titleOnly,
+              onProgress: (_ copied: Int, _ toCopy: Int) -> Void = { _, _ in }) throws -> SyncResult {
         var manifest = loadManifest()
         var copied = 0
         var destinationByItemID: [UUID: String] = [:]
@@ -156,6 +165,11 @@ struct LibrarySync {
         }
 
         let plan = SyncPlanner.plan(current: currentFiles, previousManifest: manifest)
+        // D-217: total real de archivos que este sync va a copiar de
+        // verdad (los que SyncPlanner ya decidio saltear no cuentan) --
+        // asi la barra de progreso mide contra lo que efectivamente va a
+        // pasar, no contra el total de la biblioteca completa.
+        let toCopy = plan.filter { $0.action == .copy }.count
 
         for planItem in plan {
             guard planItem.action == .copy else { continue }
@@ -173,6 +187,7 @@ struct LibrarySync {
             }
             try fileManager.copyItem(at: prepared, to: destination)
             copied += 1
+            onProgress(copied, toCopy)
 
             // Fase 24: el poster de un video (`<video>.jpg`, generado
             // por FFmpegTranscoder.generatePoster) viaja pegado a su
