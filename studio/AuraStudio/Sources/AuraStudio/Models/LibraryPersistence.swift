@@ -47,6 +47,7 @@ struct PersistedTrackMetadata: Codable {
     var musicBrainzRecordingID: String?
     var musicBrainzReleaseID: String?
     var durationSeconds: Double?
+    var rating: Int?
 }
 
 struct PersistedPlaylist: Codable {
@@ -100,7 +101,7 @@ enum LibraryPersistenceMapper {
             trackNumber: m.trackNumber, syncedLyrics: m.syncedLyrics,
             musicBrainzRecordingID: m.musicBrainzRecordingID,
             musicBrainzReleaseID: m.musicBrainzReleaseID,
-            durationSeconds: m.durationSeconds)
+            durationSeconds: m.durationSeconds, rating: m.rating)
     }
 
     static func liveMetadata(_ persisted: PersistedTrackMetadata?, coverArtData: Data?) -> TrackMetadata? {
@@ -112,6 +113,6 @@ enum LibraryPersistenceMapper {
             syncedLyrics: p.syncedLyrics,
             musicBrainzRecordingID: p.musicBrainzRecordingID,
             musicBrainzReleaseID: p.musicBrainzReleaseID,
-            durationSeconds: p.durationSeconds)
+            durationSeconds: p.durationSeconds, rating: p.rating)
     }
 }

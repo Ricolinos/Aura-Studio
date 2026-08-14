@@ -326,6 +326,17 @@ final class LibraryViewModel: ObservableObject {
         persistCatalog()
     }
 
+    /// Calificacion de 0 a 5 estrellas (D-199), editable desde "Más
+    /// información..." -- `nil` la borra (distinto de 0 estrellas).
+    func setRating(_ rating: Int?, forItem id: UUID) {
+        guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .music else { return }
+        var metadata = items[index].metadata ?? TrackMetadata()
+        metadata.rating = rating.map { max(0, min(5, $0)) }
+        items[index].metadata = metadata
+        items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
+        persistCatalog()
+    }
+
     /// "Eliminar carátula" del menu contextual -- solo tiene sentido
     /// para musica (fotos/video no tienen caratula embebida propia).
     func clearCoverArt(id: UUID) {

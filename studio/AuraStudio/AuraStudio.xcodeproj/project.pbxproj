@@ -26,7 +26,7 @@
 		203D6E1800BE63DFE89AB1C8 /* AuraStudioApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849AFADBA825BCE5775C3217 /* AuraStudioApp.swift */; };
 		206225C0AE68BC4EF3EA9CBF /* LibraryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9934433E994EDDAAFB584100 /* LibraryViewModel.swift */; };
 		229BC6502A44F54DA47121F9 /* DetectDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EBCF1EF29547CD3B01B5C98 /* DetectDeviceView.swift */; };
-		2714D8A1BC0FF1725A03CF14 /* MetadataReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F6B6DECD238B8538970C711 /* MetadataReviewView.swift */; };
+		2DD7F3B12503BC15F1AD8FB1 /* MediaInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D2320B965F851A493392022 /* MediaInfoView.swift */; };
 		2E42011A249AF7A131CF660B /* AuraDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16512FA37AC623A52F006219 /* AuraDevice.swift */; };
 		2F898C1996F39319211E9496 /* DoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0116DC50EA8DBAE3B02AE0FB /* DoneView.swift */; };
 		31C1B49208706DAD1BB8E579 /* FFmpegTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAE64AFF0609F93FC361C6DE /* FFmpegTranscoder.swift */; };
@@ -142,12 +142,12 @@
 		3D93C4B54F192923EAF481E9 /* VideoSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoSettingsView.swift; sourceTree = "<group>"; };
 		3DC865282F8B113716D7C3AF /* ImageResizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageResizer.swift; sourceTree = "<group>"; };
 		3EBEB24F597D3C9B609AC775 /* InstallerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerViewModel.swift; sourceTree = "<group>"; };
-		3F6B6DECD238B8538970C711 /* MetadataReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataReviewView.swift; sourceTree = "<group>"; };
 		43B9358C341DF6C281F2636B /* InstallerStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerStep.swift; sourceTree = "<group>"; };
 		48CC2E3940E0EC5127461CB5 /* LibrarySync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySync.swift; sourceTree = "<group>"; };
 		4F4082F8F8734C49730074C2 /* AuraPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraPalette.swift; sourceTree = "<group>"; };
 		528818777E4EF0B5EF8F9306 /* PlaylistImporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistImporterTests.swift; sourceTree = "<group>"; };
 		5788BF566829EC16317154CE /* AppPreferencesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferencesTests.swift; sourceTree = "<group>"; };
+		5D2320B965F851A493392022 /* MediaInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaInfoView.swift; sourceTree = "<group>"; };
 		5FA85A3E42CB4E67E9DAC4E5 /* DeviceState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceState.swift; sourceTree = "<group>"; };
 		62E6C2892E84F33B9EF97D15 /* LibraryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryItem.swift; sourceTree = "<group>"; };
 		6311C9925925969ED5716A25 /* WrongVolumeRegressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WrongVolumeRegressionTests.swift; sourceTree = "<group>"; };
@@ -232,8 +232,8 @@
 				AC5F915258EC049BFC791B90 /* InstallerHomeView.swift */,
 				1D4862DCA99696DCB66D2012 /* InstallerWizardView.swift */,
 				B1782D4EBAA2C3FC3EBC49F5 /* InstallingView.swift */,
+				5D2320B965F851A493392022 /* MediaInfoView.swift */,
 				E01FD2ED5703F8753781BE89 /* MediaSectionView.swift */,
-				3F6B6DECD238B8538970C711 /* MetadataReviewView.swift */,
 				F53DF863212996F0BD415EA7 /* MusicSettingsView.swift */,
 				777383A161FBD9C32BFA6D82 /* PermissionsView.swift */,
 				C455F59CE087518F3E7DE7C6 /* PhotoSettingsView.swift */,
@@ -608,8 +608,8 @@
 				9FDD21617909191BB7E9B9CE /* MKS5LBootRunner.swift in Sources */,
 				346B3FB9BA174BB6659D8885 /* MediaCategory.swift in Sources */,
 				983F3D503FD3C67F03884D83 /* MediaCategoryClassifier.swift in Sources */,
+				2DD7F3B12503BC15F1AD8FB1 /* MediaInfoView.swift in Sources */,
 				027D6C9BFF2A5C75BFBA2FE7 /* MediaSectionView.swift in Sources */,
-				2714D8A1BC0FF1725A03CF14 /* MetadataReviewView.swift in Sources */,
 				0D024EF762350292ACCC5474 /* MusicBrainzClient.swift in Sources */,
 				3C783558D1453D0413B42079 /* MusicBrainzRateLimiter.swift in Sources */,
 				CE010DE3070AC26AAE0DCA89 /* MusicSettingsView.swift in Sources */,
@@ -720,7 +720,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -782,7 +782,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";

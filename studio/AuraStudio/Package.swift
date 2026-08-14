@@ -15,7 +15,7 @@ import PackageDescription
 // Mac con Xcode completo.
 let package = Package(
     name: "AuraStudio",
-    platforms: [.macOS(.v14)],
+    platforms: [.macOS("14.4")],
     targets: [
         .executableTarget(
             name: "AuraStudio",

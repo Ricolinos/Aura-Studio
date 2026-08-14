@@ -24,12 +24,18 @@ struct TrackMetadata: Equatable {
     /// pipeline si ffmpeg no esta instalado (queda nil, la tabla
     /// muestra "--").
     var durationSeconds: Double?
+    /// Calificacion 0-5 estrellas (D-199, encargo del dueno: "se
+    /// sincronizaria con el iPod... en el reproductor tenemos
+    /// oportunidad de elegir cuantas estrellas le damos a la cancion").
+    /// nil = sin calificar (distinto de 0, que seria "0 estrellas"
+    /// puesto a proposito).
+    var rating: Int?
 
     init(title: String? = nil, artist: String? = nil, album: String? = nil,
          albumArtist: String? = nil, year: String? = nil, genre: String? = nil,
          trackNumber: Int? = nil, coverArtData: Data? = nil, syncedLyrics: String? = nil,
          musicBrainzRecordingID: String? = nil, musicBrainzReleaseID: String? = nil,
-         durationSeconds: Double? = nil) {
+         durationSeconds: Double? = nil, rating: Int? = nil) {
         self.title = title
         self.artist = artist
         self.album = album
@@ -42,6 +48,7 @@ struct TrackMetadata: Equatable {
         self.musicBrainzRecordingID = musicBrainzRecordingID
         self.musicBrainzReleaseID = musicBrainzReleaseID
         self.durationSeconds = durationSeconds
+        self.rating = rating
     }
 
     var isComplete: Bool {

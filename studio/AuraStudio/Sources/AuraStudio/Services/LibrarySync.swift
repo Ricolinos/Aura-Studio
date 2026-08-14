@@ -88,6 +88,7 @@ struct SyncResult: Equatable {
 struct LibrarySync {
     static let manifestRelativePath = ".rockbox/aura/sync_manifest.json"
     static let summaryRelativePath = ".rockbox/aura/sync_summary.cfg"
+    static let ratingsRelativePath = ".rockbox/aura/ratings.cfg"
     static let playlistsRelativePath = "Playlists"
     static let tagcacheFilesToClear = [
         ".rockbox/database_idx.tcd",
@@ -206,6 +207,7 @@ struct LibrarySync {
         let playlistsWritten = try writePlaylists(playlists, destinationByItemID: destinationByItemID)
         summary.playlistCount = playlistsWritten
         try writeSummary(summary)
+        try writeRatings(items: items, destinationByItemID: destinationByItemID)
 
         if copied > 0 {
             triggerFirmwareDBRebuild()
@@ -275,6 +277,44 @@ struct LibrarySync {
         let url = volumeRoot.appendingPathComponent(Self.summaryRelativePath)
         try fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try CatalogSummaryWriter.serialize(summary).write(to: url, atomically: true, encoding: .utf8)
+    }
+
+    /// D-199/D-200: la calificacion NO vive en ningún tag del archivo
+    /// de audio (no hay POPM en este arbol) -- es un dato de runtime
+    /// de tagcache (`tag_rating`), y `triggerFirmwareDBRebuild()` de
+    /// aquí abajo BORRA ese índice en cada sync para forzar una
+    /// reconstrucción. Sin este sidecar, cualquier calificación (la
+    /// puesta en Aura Studio o la puesta en el propio iPod) se
+    /// perdería en el siguiente sync. `import_ratings_from_studio()`
+    /// (`apps/aura/aura_music.c`) lo lee cada arranque y aplica cada
+    /// línea contra tagcache -- mismo formato `key: value` que
+    /// `sync_summary.cfg`, la clave es la ruta ABSOLUTA en el
+    /// dispositivo (para que calce con `tag_filename`) y el valor es
+    /// la calificación en la escala nativa de Rockbox (0-10, la
+    /// estrella 1-5 de Aura Studio se multiplica x2 -- mismo mapeo que
+    /// ya usa `aura_nowplaying.c` en el propio aparato).
+    ///
+    /// Es sincronización de UNA VÍA (Aura Studio -> iPod): leer de
+    /// vuelta una calificación puesta en el aparato requeriría parsear
+    /// el formato binario de tagcache desde macOS, que D-199 descartó
+    /// por riesgo de corromper la base de datos completa. Si las dos
+    /// calificaciones difieren, la de Aura Studio gana en el próximo
+    /// arranque -- una limitación conocida, no un bug.
+    private func writeRatings(items: [LibraryItem], destinationByItemID: [UUID: String]) throws {
+        let lines = items.compactMap { item -> String? in
+            guard item.kind == .music, let rating = item.metadata?.rating, rating > 0,
+                  let relative = destinationByItemID[item.id] else { return nil }
+            let nativeRating = min(10, max(0, rating * 2))
+            return "/\(relative): \(nativeRating)"
+        }
+
+        let url = volumeRoot.appendingPathComponent(Self.ratingsRelativePath)
+        guard !lines.isEmpty else {
+            try? fileManager.removeItem(at: url)
+            return
+        }
+        try fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try (lines.joined(separator: "\n") + "\n").write(to: url, atomically: true, encoding: .utf8)
     }
 
     /// Fase 24: la musica pasa a vivir en `Music/<Artista>/<Album>/NN

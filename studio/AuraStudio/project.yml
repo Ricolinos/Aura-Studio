@@ -2,7 +2,7 @@ name: AuraStudio
 options:
   bundleIdPrefix: com.ricolinos.aurastudio
   deploymentTarget:
-    macOS: "14.0"
+    macOS: "14.4"
   createIntermediateGroups: true
   # Sin esto XcodeGen desempaqueta el .icon de Icon Composer (Xcode 26)
   # como si fuera una carpeta comun -- copia su icon.json y los SVG
@@ -15,7 +15,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    MACOSX_DEPLOYMENT_TARGET: "14.4"
     CODE_SIGN_IDENTITY: "-"
     CODE_SIGN_STYLE: Manual
     DEVELOPMENT_TEAM: ""

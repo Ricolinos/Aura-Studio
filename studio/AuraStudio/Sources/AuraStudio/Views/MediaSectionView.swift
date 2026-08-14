@@ -33,6 +33,10 @@ struct MediaSectionView: View {
     @State private var sortOrder: [KeyPathComparator<MediaTableRow>] = [.init(\.title, order: .forward)]
     @State private var quickLook = QuickLookCoordinator()
     @State private var categoryFilter: MediaCategory?
+    /// Columnas extra visibles (D-199, boton "+" de la barra de
+    /// herramientas) -- persiste por tipo de medio en UserDefaults, asi
+    /// que Musica/Video/Fotos recuerdan su propia eleccion.
+    @State private var visibleColumns: Set<ExtraColumn> = []
 
     private var allItemsOfKind: [LibraryItem] {
         viewModel.items.filter { $0.kind == kind }
@@ -105,12 +109,35 @@ struct MediaSectionView: View {
                     }
                 }
             }
+            ToolbarItem {
+                Menu {
+                    ForEach(ExtraColumn.allCases.filter { $0.isApplicable(to: kind) }) { column in
+                        Button {
+                            toggleColumn(column)
+                        } label: {
+                            if visibleColumns.contains(column) {
+                                Label(column.displayName, systemImage: "checkmark")
+                            } else {
+                                Text(column.displayName)
+                            }
+                        }
+                    }
+                } label: {
+                    Label("Columnas", systemImage: "plus")
+                }
+                .help("Elegir qué columnas mostrar")
+            }
         }
+        .onAppear { loadVisibleColumns() }
         .sheet(isPresented: $showingPlaylists) {
             PlaylistsView(viewModel: viewModel) { showingPlaylists = false }
         }
         .sheet(item: $reviewingItem) { item in
-            MetadataReviewView(item: item) { metadata in
+            MediaInfoView(item: item, availableCategories: availableCategories) { category in
+                viewModel.setCategory(category, forItem: item.id)
+            } onRatingChanged: { rating in
+                viewModel.setRating(rating, forItem: item.id)
+            } onSave: { metadata in
                 viewModel.applyReview(id: item.id, metadata: metadata)
                 reviewingItem = nil
             } onCancel: {
@@ -127,6 +154,33 @@ struct MediaSectionView: View {
         }
     }
 
+    // MARK: - Columnas extra (D-199)
+
+    private var columnsStorageKey: String { "aura.visibleColumns.\(kindKey)" }
+
+    private var kindKey: String {
+        switch kind {
+        case .music: return "music"
+        case .video: return "video"
+        case .photo: return "photo"
+        case .unsupported: return "unsupported"
+        }
+    }
+
+    private func loadVisibleColumns() {
+        guard let raw = UserDefaults.standard.string(forKey: columnsStorageKey) else { return }
+        visibleColumns = Set(raw.split(separator: ",").compactMap { ExtraColumn(rawValue: String($0)) })
+    }
+
+    private func toggleColumn(_ column: ExtraColumn) {
+        if visibleColumns.contains(column) {
+            visibleColumns.remove(column)
+        } else {
+            visibleColumns.insert(column)
+        }
+        UserDefaults.standard.set(visibleColumns.map(\.rawValue).joined(separator: ","), forKey: columnsStorageKey)
+    }
+
     // MARK: - Tabla
 
     @ViewBuilder
@@ -138,6 +192,16 @@ struct MediaSectionView: View {
         }
     }
 
+    /// D-199: `Table`/`TableColumnBuilder` solo admite hasta 10 columnas
+    /// declaradas EN EL CODIGO por tabla (`buildBlock` no tiene overload
+    /// mas alla de eso, y ni `if` ni `ForEach` dentro del builder
+    /// esquivan el limite -- cada uno cuenta como un slot fijo,
+    /// visible o no). Musica ya usa 7 slots fijos (checkbox/titulo/
+    /// artista/album/genero/duracion/estado), asi que solo quedan 3
+    /// para el menu "+" -- se priorizaron Calificación (D-199, motivo
+    /// del pedido), N.º de pista y Año. "Artista del álbum" y "Letra"
+    /// quedaron afuera del menu por falta de espacio, no por falta de
+    /// dato (`MediaTableRow` los expone igual, ver `Más información`).
     private var musicTable: some View {
         Table(rows, selection: $selection, sortOrder: $sortOrder) {
             TableColumn("") { row in checkboxCell(row) }
@@ -152,6 +216,18 @@ struct MediaSectionView: View {
                 .width(min: 60, ideal: 100)
             TableColumn("Duración", value: \.durationSeconds) { row in Text(row.durationText) }
                 .width(min: 50, ideal: 64)
+            if visibleColumns.contains(.rating) {
+                TableColumn("Calificación", value: \.ratingValue) { row in Text(row.ratingText) }
+                    .width(min: 70, ideal: 90)
+            }
+            if visibleColumns.contains(.trackNumber) {
+                TableColumn("N.º", value: \.trackNumberSort) { row in Text(row.trackNumberText) }
+                    .width(min: 32, ideal: 40)
+            }
+            if visibleColumns.contains(.year) {
+                TableColumn("Año", value: \.year) { row in Text(row.year) }
+                    .width(min: 44, ideal: 56)
+            }
             TableColumn("Estado") { row in statusCell(row.item) }
                 .width(min: 70, ideal: 90)
         }
@@ -161,7 +237,9 @@ struct MediaSectionView: View {
     /// Video y fotos comparten forma (Categoría en vez de Artista/Álbum/
     /// Género) -- `showsArtistAlbumGenre` queda como parametro por si
     /// alguno de los dos necesita divergir despues, aunque hoy ambos lo
-    /// pasan en `false`.
+    /// pasan en `false`. Con 5 columnas fijas quedan 5 slots libres
+    /// (mismo limite de 10 explicado arriba) -- hoy solo se ofrecen
+    /// Formato/Tamaño, con espacio de sobra para agregar mas despues.
     private func mediaTable(showsArtistAlbumGenre: Bool) -> some View {
         Table(rows, selection: $selection, sortOrder: $sortOrder) {
             TableColumn("") { row in checkboxCell(row) }
@@ -172,6 +250,14 @@ struct MediaSectionView: View {
                 .width(min: 90, ideal: 130)
             TableColumn("Duración", value: \.durationSeconds) { row in Text(row.durationText) }
                 .width(min: 50, ideal: 64)
+            if visibleColumns.contains(.fileFormat) {
+                TableColumn("Formato", value: \.fileFormat) { row in Text(row.fileFormat) }
+                    .width(min: 50, ideal: 60)
+            }
+            if visibleColumns.contains(.fileSize) {
+                TableColumn("Tamaño", value: \.fileSizeBytes) { row in Text(row.fileSizeText) }
+                    .width(min: 60, ideal: 70)
+            }
             TableColumn("Estado") { row in statusCell(row.item) }
                 .width(min: 70, ideal: 90)
         }
@@ -266,6 +352,9 @@ struct MediaSectionView: View {
             Button("Cambiar nombre...") {
                 renamingItem = single
             }
+            Button("Más información...") {
+                reviewingItem = single
+            }
             Divider()
         }
 
@@ -355,6 +444,54 @@ struct MediaTableRow: Identifiable {
         guard let seconds = item.metadata?.durationSeconds, seconds > 0 else { return "--" }
         let total = Int(seconds.rounded())
         return String(format: "%d:%02d", total / 60, total % 60)
+    }
+
+    // MARK: - Columnas extra (D-199)
+
+    var trackNumberSort: Int { item.metadata?.trackNumber ?? 0 }
+    var trackNumberText: String { item.metadata?.trackNumber.map(String.init) ?? "" }
+    var year: String { item.metadata?.year ?? "" }
+    var ratingValue: Int { item.metadata?.rating ?? 0 }
+    var ratingText: String {
+        guard let rating = item.metadata?.rating, rating > 0 else { return "" }
+        return String(repeating: "★", count: rating)
+    }
+    var fileFormat: String { item.sourceURL.pathExtension.uppercased() }
+    var fileSizeBytes: Int64 {
+        (try? FileManager.default.attributesOfItem(atPath: item.sourceURL.path)[.size] as? Int64) ?? 0
+    }
+    var fileSizeText: String {
+        let bytes = fileSizeBytes
+        guard bytes > 0 else { return "--" }
+        return ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
+    }
+}
+
+/// Columnas opcionales que el boton "+" de la barra de herramientas
+/// deja agregar/quitar (D-199) -- persisten por tipo de medio en
+/// UserDefaults (`MediaSectionView.columnsStorageKey`).
+enum ExtraColumn: String, CaseIterable, Identifiable {
+    case trackNumber, year, rating, fileFormat, fileSize
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .trackNumber: return "N.º de pista"
+        case .year: return "Año"
+        case .rating: return "Calificación"
+        case .fileFormat: return "Formato"
+        case .fileSize: return "Tamaño"
+        }
+    }
+
+    func isApplicable(to kind: LibraryItemKind) -> Bool {
+        switch self {
+        case .trackNumber, .year, .rating:
+            return kind == .music
+        case .fileFormat, .fileSize:
+            return kind != .music
+        }
     }
 }
 

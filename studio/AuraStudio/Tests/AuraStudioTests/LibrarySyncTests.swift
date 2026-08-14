@@ -96,6 +96,44 @@ final class LibrarySyncTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: playlistURL.path))
     }
 
+    // MARK: - Calificaciones (D-200)
+
+    func testRatedItemWritesNativeScaleRatingToSidecar() throws {
+        var item = musicItem()
+        item.metadata?.rating = 4
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+
+        _ = try sync.sync(items: [item])
+
+        let url = fakeIPod.appendingPathComponent(LibrarySync.ratingsRelativePath)
+        let contents = try String(contentsOf: url, encoding: .utf8)
+        XCTAssertTrue(contents.contains("/Music/Queen/A Night at the Opera/Bohemian Rhapsody.mp3: 8"),
+                      "4 estrellas de Aura Studio deben llegar como 8 en la escala nativa 0-10 de Rockbox")
+    }
+
+    func testUnratedItemsProduceNoSidecar() throws {
+        let item = musicItem()
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+
+        _ = try sync.sync(items: [item])
+
+        let url = fakeIPod.appendingPathComponent(LibrarySync.ratingsRelativePath)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: url.path))
+    }
+
+    func testClearingRatingRemovesAnExistingSidecar() throws {
+        var item = musicItem()
+        item.metadata?.rating = 5
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+        _ = try sync.sync(items: [item])
+        let url = fakeIPod.appendingPathComponent(LibrarySync.ratingsRelativePath)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: url.path))
+
+        item.metadata?.rating = nil
+        _ = try sync.sync(items: [item])
+        XCTAssertFalse(FileManager.default.fileExists(atPath: url.path))
+    }
+
     func testSummaryFileReflectsSyncedCounts() throws {
         let item = musicItem()
         let sync = LibrarySync(volumeRoot: fakeIPod)
