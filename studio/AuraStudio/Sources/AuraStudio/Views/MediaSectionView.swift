@@ -1,5 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import AppKit
 
 /// Una seccion de contenido del dispositivo (Musica, Video o Fotos).
 /// Las tres comparten exactamente el mismo flujo -- soltar archivos, que
@@ -525,6 +526,13 @@ struct MediaSectionView: View {
             // se lo salta si el usuario ya dijo "No volver a mostrar").
             Button("Obtener información...") {
                 startBatchEdit(ids: targetIDs)
+            }
+            Divider()
+        }
+
+        if !targetItems.isEmpty {
+            Button("Mostrar en Finder") {
+                NSWorkspace.shared.activateFileViewerSelecting(targetItems.map(\.sourceURL))
             }
             Divider()
         }
