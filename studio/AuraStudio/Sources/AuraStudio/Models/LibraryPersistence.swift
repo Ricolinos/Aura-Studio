@@ -32,6 +32,7 @@ struct PersistedLibraryItem: Codable {
     var metadata: PersistedTrackMetadata?
     var preparedRelativePath: String?
     var coverRelativePath: String?
+    var category: String?
 }
 
 struct PersistedTrackMetadata: Codable {

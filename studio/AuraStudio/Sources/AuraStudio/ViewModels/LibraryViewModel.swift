@@ -62,20 +62,31 @@ final class LibraryViewModel: ObservableObject {
         items.filter { $0.status == .needsReview }
     }
 
-    /// Copia cada archivo a `Originales/` y la biblioteca referencia LA
-    /// COPIA -- el archivo original del usuario queda intacto donde
-    /// estaba (encargo del dueño: "para no modificar nuestros archivos
-    /// originales"). Colisiones de nombre se resuelven con sufijo
-    /// numerico, nunca pisando lo que ya estaba.
+    /// Con `copyMediaIntoLibrary` activo (default): copia cada archivo a
+    /// `Originales/` y la biblioteca referencia LA COPIA -- el archivo
+    /// original del usuario queda intacto donde estaba (encargo del
+    /// dueño: "para no modificar nuestros archivos originales").
+    /// Colisiones de nombre se resuelven con sufijo numerico, nunca
+    /// pisando lo que ya estaba.
+    ///
+    /// Con el ajuste apagado (encargo del dueño, 2026-08-13): el item
+    /// referencia el archivo original DIRECTO, sin copiarlo -- nada se
+    /// duplica en disco. `relativePath(of:)` ya sabe guardar una ruta
+    /// absoluta en el catalogo cuando el archivo no vive dentro de la
+    /// biblioteca (ver `loadCatalog`, que la reconoce de vuelta).
     func addDroppedFiles(_ urls: [URL]) {
         ensureLibraryStructure()
         var new: [LibraryItem] = []
         for url in urls where LibraryItemKind.classify(url: url) != .unsupported {
-            do {
-                let copy = try copyToOriginals(url)
-                new.append(LibraryItem(sourceURL: copy))
-            } catch {
-                lastError = "No se pudo copiar \(url.lastPathComponent) a la biblioteca: \(error.localizedDescription)"
+            if preferences.copyMediaIntoLibrary {
+                do {
+                    let copy = try copyToOriginals(url)
+                    new.append(LibraryItem(sourceURL: copy))
+                } catch {
+                    lastError = "No se pudo copiar \(url.lastPathComponent) a la biblioteca: \(error.localizedDescription)"
+                }
+            } else {
+                new.append(LibraryItem(sourceURL: url))
             }
         }
         items.append(contentsOf: new)
@@ -123,6 +134,9 @@ final class LibraryViewModel: ObservableObject {
 
             case .video:
                 items[index].status = .transcoding(progress: 0)
+                if items[index].category == nil {
+                    items[index].category = MediaCategoryClassifier.classifyVideo(at: item.sourceURL)
+                }
                 let output = stagingDirectory.appendingPathComponent(item.sourceURL.deletingPathExtension().lastPathComponent + ".mpg")
                 let transcoder = try FFmpegTranscoder()
                 /// El callback de ffmpeg corre en el hilo de lectura del
@@ -149,8 +163,12 @@ final class LibraryViewModel: ObservableObject {
                 items[index].status = .ready
 
             case .photo:
+                if items[index].category == nil {
+                    items[index].category = MediaCategoryClassifier.classifyPhoto(at: item.sourceURL)
+                }
                 let output = stagingDirectory.appendingPathComponent(item.sourceURL.deletingPathExtension().lastPathComponent + ".jpg")
-                try ImageResizer.resizeToLCDOptimal(sourceURL: item.sourceURL, destinationURL: output)
+                try ImageResizer.resizeToLCDOptimal(sourceURL: item.sourceURL, destinationURL: output,
+                                                     maxDimension: preferences.photoQuality.maxDimension)
                 items[index].preparedURL = output
                 items[index].status = .ready
 
@@ -177,11 +195,28 @@ final class LibraryViewModel: ObservableObject {
     ///     LibrarySync solo copia `preparedURL`, nunca lo habria subido al
     ///     iPod).
     private func prepareMusic(item: LibraryItem, metadata: TrackMetadata) throws -> URL {
-        let destination = stagingDirectory.appendingPathComponent(item.sourceURL.lastPathComponent)
-        if FileManager.default.fileExists(atPath: destination.path) {
-            try FileManager.default.removeItem(at: destination)
+        // "Comprimir a buena calidad" (D-192): siempre se transcodifica
+        // a MP3 256kbps, sin importar el formato de origen -- incluso un
+        // MP3 de origen se re-encodifica, para que el bitrate resultante
+        // sea predecible. "Mantener original" (default) sigue copiando
+        // el archivo tal cual, como siempre hizo esta funcion.
+        let destination: URL
+        if preferences.audioQuality == .compressed {
+            destination = stagingDirectory
+                .appendingPathComponent(item.sourceURL.deletingPathExtension().lastPathComponent)
+                .appendingPathExtension("mp3")
+            if FileManager.default.fileExists(atPath: destination.path) {
+                try FileManager.default.removeItem(at: destination)
+            }
+            let transcoder = try AudioTranscoder()
+            try transcoder.transcodeToMP3(input: item.sourceURL, output: destination)
+        } else {
+            destination = stagingDirectory.appendingPathComponent(item.sourceURL.lastPathComponent)
+            if FileManager.default.fileExists(atPath: destination.path) {
+                try FileManager.default.removeItem(at: destination)
+            }
+            try FileManager.default.copyItem(at: item.sourceURL, to: destination)
         }
-        try FileManager.default.copyItem(at: item.sourceURL, to: destination)
 
         if destination.pathExtension.lowercased() == "mp3" {
             let embedCover = preferences.coverArtPolicy == .perTrack
@@ -220,12 +255,24 @@ final class LibraryViewModel: ObservableObject {
         persistCatalog()
     }
 
+    /// Correccion manual de la categoria sugerida (Imagenes/Fotos/
+    /// Hechas con IA, Caseros/Videos/Peliculas) desde la vista de
+    /// biblioteca (Fase 1B) -- la heuristica automatica de
+    /// `MediaCategoryClassifier` es solo un punto de partida.
+    func setCategory(_ category: MediaCategory, forItem id: UUID) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        items[index].category = category
+        persistCatalog()
+    }
+
     func sync(toVolumeAt volumeRoot: URL) async {
         let readyItems = items.filter { $0.status == .ready }
         do {
             let sync = LibrarySync(volumeRoot: volumeRoot)
             let result = try sync.sync(items: readyItems, playlists: playlists,
-                                        coverArtPolicy: preferences.coverArtPolicy)
+                                        coverArtPolicy: preferences.coverArtPolicy,
+                                        musicOrganization: preferences.musicOrganization,
+                                        musicFilenameFormat: preferences.musicFilenameFormat)
             let playlistsNote = result.playlistsWritten > 0 ? " \(result.playlistsWritten) playlist(s) actualizada(s)." : ""
             lastSyncSummary = result.filesCopied == 0
                 ? "Ya estaba todo sincronizado, no habia nada nuevo.\(playlistsNote)"
@@ -274,6 +321,44 @@ final class LibraryViewModel: ObservableObject {
         persistCatalog()
     }
 
+    /// Resultado de importar una playlist M3U/M3U8 de otro programa
+    /// (D-193): cuantas pistas se pudieron ligar a algo que ya esta en
+    /// ESTA biblioteca de Aura -- una playlist puede referenciar
+    /// musica que el usuario todavia no soltó en la app, y eso no
+    /// deberia fallar la importacion entera, solo esas pistas puntuales.
+    struct PlaylistImportResult {
+        let playlistID: UUID
+        let matchedCount: Int
+        let unmatchedPaths: [String]
+    }
+
+    /// Empareja cada ruta primero por ruta absoluta exacta y, si no
+    /// hay match, por nombre de archivo (una playlist exportada desde
+    /// otra maquina/servicio casi nunca tiene la misma ruta absoluta,
+    /// pero el nombre de archivo suele sobrevivir).
+    @discardableResult
+    func importPlaylist(name: String, trackPaths: [String]) -> PlaylistImportResult {
+        var matchedIDs: [UUID] = []
+        var unmatched: [String] = []
+        for path in trackPaths {
+            let standardized = URL(fileURLWithPath: path).standardizedFileURL.path
+            if let match = items.first(where: { $0.kind == .music && $0.sourceURL.standardizedFileURL.path == standardized }) {
+                matchedIDs.append(match.id)
+                continue
+            }
+            let filename = URL(fileURLWithPath: path).lastPathComponent
+            if let match = items.first(where: { $0.kind == .music && $0.sourceURL.lastPathComponent == filename }) {
+                matchedIDs.append(match.id)
+            } else {
+                unmatched.append(path)
+            }
+        }
+        let playlist = Playlist(name: name, trackItemIDs: matchedIDs)
+        playlists.append(playlist)
+        persistCatalog()
+        return PlaylistImportResult(playlistID: playlist.id, matchedCount: matchedIDs.count, unmatchedPaths: unmatched)
+    }
+
     // MARK: - Persistencia de la biblioteca (D-180)
 
     private func ensureLibraryStructure() {
@@ -310,7 +395,8 @@ final class LibraryViewModel: ObservableObject {
                 status: LibraryPersistenceMapper.persistedStatus(item.status),
                 metadata: LibraryPersistenceMapper.persistedMetadata(item.metadata),
                 preparedRelativePath: item.preparedURL.map { relativePath(of: $0) },
-                coverRelativePath: coverRelative
+                coverRelativePath: coverRelative,
+                category: item.category?.rawValue
             ))
         }
         persisted.playlists = playlists.map {
@@ -333,10 +419,18 @@ final class LibraryViewModel: ObservableObject {
         let fm = FileManager.default
         var restored: [LibraryItem] = []
         for p in persisted.items {
-            let sourceURL = libraryRoot.appendingPathComponent(p.sourceRelativePath)
-            // Si la copia en Originales/ ya no existe (el usuario la
-            // borro a mano), el item se omite en silencio: no hay nada
-            // que preparar ni sincronizar desde un archivo ausente.
+            // `relativePath(of:)` guarda una ruta ABSOLUTA cuando el
+            // archivo no vive dentro de la biblioteca (modo "sin copiar
+            // medios", D-192) -- reconstruirla con `appendingPathComponent`
+            // la trataria como un componente literal en vez de una ruta
+            // absoluta real, rompiendo la referencia.
+            let sourceURL = p.sourceRelativePath.hasPrefix("/")
+                ? URL(fileURLWithPath: p.sourceRelativePath)
+                : libraryRoot.appendingPathComponent(p.sourceRelativePath)
+            // Si el archivo (la copia en Originales/, o el original
+            // referenciado sin copiar) ya no existe, el item se omite en
+            // silencio: no hay nada que preparar ni sincronizar desde un
+            // archivo ausente.
             guard fm.fileExists(atPath: sourceURL.path) else { continue }
 
             let coverData = p.coverRelativePath
@@ -360,7 +454,8 @@ final class LibraryViewModel: ObservableObject {
                 kind: LibraryPersistenceMapper.liveKind(p.kind),
                 status: status,
                 metadata: LibraryPersistenceMapper.liveMetadata(p.metadata, coverArtData: coverData),
-                preparedURL: preparedExists ? preparedURL : nil
+                preparedURL: preparedExists ? preparedURL : nil,
+                category: p.category.flatMap(MediaCategory.init(rawValue:))
             ))
         }
         items = restored

@@ -127,7 +127,9 @@ struct LibrarySync {
     /// copiaron de verdad y cuantas playlists se escribieron.
     @discardableResult
     func sync(items: [LibraryItem], playlists: [Playlist] = [],
-              coverArtPolicy: AppPreferences.CoverArtPolicy = .albumOnly) throws -> SyncResult {
+              coverArtPolicy: AppPreferences.CoverArtPolicy = .albumOnly,
+              musicOrganization: AppPreferences.MusicOrganization = .artistAlbum,
+              musicFilenameFormat: AppPreferences.MusicFilenameFormat = .titleOnly) throws -> SyncResult {
         var manifest = loadManifest()
         var copied = 0
         var destinationByItemID: [UUID: String] = [:]
@@ -138,7 +140,8 @@ struct LibrarySync {
             let attrs = try fileManager.attributesOfItem(atPath: prepared.path)
             let size = (attrs[.size] as? Int64) ?? 0
             let modified = (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
-            let destRelative = destinationRelativePath(for: item)
+            let destRelative = destinationRelativePath(for: item, musicOrganization: musicOrganization,
+                                                         musicFilenameFormat: musicFilenameFormat)
             destinationByItemID[item.id] = destRelative
 
             switch item.kind {
@@ -281,7 +284,18 @@ struct LibrarySync {
     /// navegador de fotos del firmware recorra subcarpetas, algo que
     /// D-062 ya identifico como su propia feature, no una migracion de
     /// rutas). `PathSanitizer` cubre los caracteres que FAT32 no acepta.
-    static func musicDestinationRelativePath(for item: LibraryItem) -> String {
+    ///
+    /// `organization`/`filenameFormat` (D-192) son ajustes del usuario:
+    /// el tagcache de Rockbox escanea el volumen entero sin importar la
+    /// profundidad de carpetas, asi que a diferencia de foto/video no
+    /// hay ninguna limitacion del firmware que respetar aca. Los
+    /// parametros tienen default para no romper los llamados existentes
+    /// (tests, y `sync()` cuando no se pasa nada).
+    static func musicDestinationRelativePath(
+        for item: LibraryItem,
+        organization: AppPreferences.MusicOrganization = .artistAlbum,
+        filenameFormat: AppPreferences.MusicFilenameFormat = .titleOnly
+    ) -> String {
         let ext = (item.preparedURL ?? item.sourceURL).pathExtension
         let meta = item.metadata
         let artist = PathSanitizer.sanitize(meta?.albumArtist ?? meta?.artist ?? "Desconocido")
@@ -289,20 +303,41 @@ struct LibrarySync {
         let rawTitle = meta?.title ?? item.sourceURL.deletingPathExtension().lastPathComponent
         let title = PathSanitizer.sanitize(rawTitle)
 
-        let prefix: String
-        if let track = meta?.trackNumber, track > 0 {
-            prefix = String(format: "%02d ", track)
-        } else {
-            prefix = ""
+        let folder: String
+        switch organization {
+        case .artistAlbum: folder = "\(artist)/\(album)"
+        case .album: folder = album
+        case .artist: folder = artist
         }
 
-        return "Music/\(artist)/\(album)/\(prefix)\(title).\(ext)"
+        let filename: String
+        switch filenameFormat {
+        case .titleOnly:
+            filename = title
+        case .trackNumberTitle:
+            if let track = meta?.trackNumber, track > 0 {
+                filename = String(format: "%02d %@", track, title)
+            } else {
+                filename = title
+            }
+        case .titleArtist:
+            filename = "\(title) - \(artist)"
+        case .titleAlbum:
+            filename = "\(title) - \(album)"
+        }
+
+        return "Music/\(folder)/\(filename).\(ext)"
     }
 
-    private func destinationRelativePath(for item: LibraryItem) -> String {
+    private func destinationRelativePath(
+        for item: LibraryItem,
+        musicOrganization: AppPreferences.MusicOrganization,
+        musicFilenameFormat: AppPreferences.MusicFilenameFormat
+    ) -> String {
         let filename = item.preparedURL?.lastPathComponent ?? item.sourceURL.lastPathComponent
         switch item.kind {
-        case .music: return Self.musicDestinationRelativePath(for: item)
+        case .music: return Self.musicDestinationRelativePath(for: item, organization: musicOrganization,
+                                                                filenameFormat: musicFilenameFormat)
         case .video: return "Videos/\(filename)"
         case .photo: return "Photos/\(filename)"
         case .unsupported: return "Unsupported/\(filename)"

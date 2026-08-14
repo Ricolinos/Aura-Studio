@@ -1,16 +1,24 @@
 import SwiftUI
+import AppKit
+import UniformTypeIdentifiers
 
 /// Fase 24 (PLAN-UX.md): editor de playlists. Arma listas ordenadas a
 /// partir de la musica ya agregada en esta sesion (`viewModel.items`) --
 /// se resuelven a `.m3u8` recien al sincronizar (`LibrarySync`), asi que
 /// esta vista solo maneja el modelo en memoria (`Playlist`), no toca
 /// disco.
+///
+/// Fase 1B/D-193: tambien se puede IMPORTAR una playlist M3U/M3U8 de
+/// otro programa (iTunes, Music.app, VLC, exportadores de servicios de
+/// streaming) -- las pistas que ya esten en esta biblioteca se ligan
+/// solas; las que no, quedan listadas para agregarlas a mano.
 struct PlaylistsView: View {
     @ObservedObject var viewModel: LibraryViewModel
     let onDismiss: () -> Void
 
     @State private var newPlaylistName = ""
     @State private var selectedPlaylistID: UUID?
+    @State private var importSummary: String?
 
     private var musicItems: [LibraryItem] {
         viewModel.items.filter { $0.kind == .music }
@@ -22,9 +30,18 @@ struct PlaylistsView: View {
                 Text("Playlists")
                     .font(.title2.bold())
                 Spacer()
+                Button("Importar...", action: importPlaylist)
                 Button("Listo", action: onDismiss)
             }
             .padding()
+
+            if let importSummary {
+                Text(importSummary)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal)
+                    .padding(.bottom, 8)
+            }
 
             HStack(spacing: 0) {
                 playlistList
@@ -50,6 +67,33 @@ struct PlaylistsView: View {
                 self.selectedPlaylistID = nil
             }
         }
+    }
+
+    private func importPlaylist() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [.init(filenameExtension: "m3u")!, .init(filenameExtension: "m3u8")!]
+        panel.prompt = "Importar"
+        panel.message = "Elige una playlist M3U/M3U8 exportada de otro programa o servicio."
+        guard panel.runModal() == .OK, let fileURL = panel.url else { return }
+
+        guard let contents = try? String(contentsOf: fileURL, encoding: .utf8) else {
+            importSummary = "No se pudo leer \(fileURL.lastPathComponent)."
+            return
+        }
+        let paths = PlaylistImporter.parseTrackPaths(contents: contents, playlistDirectory: fileURL.deletingLastPathComponent())
+        guard !paths.isEmpty else {
+            importSummary = "\(fileURL.lastPathComponent) no tiene pistas."
+            return
+        }
+        let name = PlaylistImporter.suggestedName(for: fileURL)
+        let result = viewModel.importPlaylist(name: name, trackPaths: paths)
+        selectedPlaylistID = result.playlistID
+        importSummary = result.unmatchedPaths.isEmpty
+            ? "\"\(name)\" importada: \(result.matchedCount) de \(paths.count) pista(s) ligadas."
+            : "\"\(name)\" importada: \(result.matchedCount) de \(paths.count) pista(s) ligadas. \(result.unmatchedPaths.count) no están en tu biblioteca Aura todavía -- suéltalas en Música y vuelve a importar para completarlas."
     }
 
     private var playlistList: some View {

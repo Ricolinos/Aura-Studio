@@ -16,6 +16,12 @@ struct MetadataReviewView: View {
     @State private var albumArtist: String
     @State private var year: String
     @State private var genre: String
+    /// Letra sin sincronizar (D-193): el usuario la puede pegar/editar
+    /// a mano, sin depender de que LRCLIB tenga una version para esta
+    /// cancion. Se guarda como el mismo `syncedLyrics` que ya escribe
+    /// `LibraryViewModel.prepareMusic` como sidecar `.lrc` -- el
+    /// firmware no distingue si vino de la red o la escribio el usuario.
+    @State private var lyrics: String
 
     init(item: LibraryItem, onSave: @escaping (TrackMetadata) -> Void, onCancel: @escaping () -> Void) {
         self.item = item
@@ -28,6 +34,7 @@ struct MetadataReviewView: View {
         _albumArtist = State(initialValue: metadata.albumArtist ?? "")
         _year = State(initialValue: metadata.year ?? "")
         _genre = State(initialValue: metadata.genre ?? "")
+        _lyrics = State(initialValue: metadata.syncedLyrics ?? "")
     }
 
     private var isComplete: Bool {
@@ -53,6 +60,17 @@ struct MetadataReviewView: View {
                 TextField("Genero (opcional)", text: $genre)
             }
 
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Letra (opcional)").font(.callout)
+                TextEditor(text: $lyrics)
+                    .font(.callout.monospaced())
+                    .frame(height: 120)
+                    .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.3)))
+                Text("Se guarda junto a la canción y se muestra en pantalla mientras suena en el iPod. Puedes pegar una letra con tiempos LRC o texto simple.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             if !isComplete {
                 Label("Titulo, artista y album son obligatorios para sincronizar.", systemImage: "exclamationmark.circle")
                     .font(.caption)
@@ -70,6 +88,8 @@ struct MetadataReviewView: View {
                     metadata.albumArtist = albumArtist.isEmpty ? nil : albumArtist
                     metadata.year = year.isEmpty ? nil : year
                     metadata.genre = genre.isEmpty ? nil : genre
+                    let trimmedLyrics = lyrics.trimmingCharacters(in: .whitespacesAndNewlines)
+                    metadata.syncedLyrics = trimmedLyrics.isEmpty ? nil : lyrics
                     onSave(metadata)
                 }
                 .buttonStyle(.borderedProminent)

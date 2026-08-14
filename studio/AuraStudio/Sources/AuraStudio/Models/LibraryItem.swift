@@ -42,6 +42,11 @@ struct LibraryItem: Identifiable, Equatable {
     var status: LibraryItemStatus
     var metadata: TrackMetadata?
     var preparedURL: URL?
+    /// Solo para `.photo`/`.video`: categoria dentro de la biblioteca de
+    /// Aura Studio (Imagenes/Fotos/Hechas con IA, Caseros/Videos/
+    /// Peliculas -- ver `MediaCategory`). Se sugiere sola al procesar el
+    /// item y el usuario la puede corregir a mano.
+    var category: MediaCategory?
 
     init(sourceURL: URL) {
         self.id = UUID()
@@ -50,6 +55,7 @@ struct LibraryItem: Identifiable, Equatable {
         self.status = .queued
         self.metadata = nil
         self.preparedURL = nil
+        self.category = nil
     }
 
     /// Restauracion desde el catalogo persistido de la biblioteca
@@ -57,12 +63,14 @@ struct LibraryItem: Identifiable, Equatable {
     /// las playlists (que referencian por id) sigan validas entre
     /// sesiones.
     init(id: UUID, sourceURL: URL, kind: LibraryItemKind,
-         status: LibraryItemStatus, metadata: TrackMetadata?, preparedURL: URL?) {
+         status: LibraryItemStatus, metadata: TrackMetadata?, preparedURL: URL?,
+         category: MediaCategory? = nil) {
         self.id = id
         self.sourceURL = sourceURL
         self.kind = kind
         self.status = status
         self.metadata = metadata
         self.preparedURL = preparedURL
+        self.category = category
     }
 }

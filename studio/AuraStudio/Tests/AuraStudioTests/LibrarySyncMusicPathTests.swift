@@ -14,22 +14,57 @@ final class LibrarySyncMusicPathTests: XCTestCase {
         return libraryItem
     }
 
-    func testFullMetadataProducesHierarchicalPathWithTrackNumber() {
+    // D-192: el default de nombre de archivo cambio a "solo el titulo"
+    // (encargo del dueño, 2026-08-13) -- estos tests cubren el default
+    // nuevo; los que necesitan el numero de pista lo piden explicito
+    // con `filenameFormat: .trackNumberTitle`.
+
+    func testDefaultUsesArtistAlbumFoldersAndTitleOnlyFilename() {
         let libraryItem = item(title: "Bohemian Rhapsody", artist: "Queen", album: "A Night at the Opera", trackNumber: 11)
         XCTAssertEqual(LibrarySync.musicDestinationRelativePath(for: libraryItem),
+                        "Music/Queen/A Night at the Opera/Bohemian Rhapsody.mp3")
+    }
+
+    func testTrackNumberTitleFormatPrefixesTrackNumber() {
+        let libraryItem = item(title: "Bohemian Rhapsody", artist: "Queen", album: "A Night at the Opera", trackNumber: 11)
+        XCTAssertEqual(LibrarySync.musicDestinationRelativePath(for: libraryItem, filenameFormat: .trackNumberTitle),
                         "Music/Queen/A Night at the Opera/11 Bohemian Rhapsody.mp3")
+    }
+
+    func testTrackNumberTitleFormatOmitsPrefixWhenTrackNumberMissing() {
+        let libraryItem = item(title: "Intro", artist: "Artist", album: "Album")
+        XCTAssertEqual(LibrarySync.musicDestinationRelativePath(for: libraryItem, filenameFormat: .trackNumberTitle),
+                        "Music/Artist/Album/Intro.mp3")
+    }
+
+    func testTitleArtistFormat() {
+        let libraryItem = item(title: "Bohemian Rhapsody", artist: "Queen", album: "A Night at the Opera")
+        XCTAssertEqual(LibrarySync.musicDestinationRelativePath(for: libraryItem, filenameFormat: .titleArtist),
+                        "Music/Queen/A Night at the Opera/Bohemian Rhapsody - Queen.mp3")
+    }
+
+    func testTitleAlbumFormat() {
+        let libraryItem = item(title: "Bohemian Rhapsody", artist: "Queen", album: "A Night at the Opera")
+        XCTAssertEqual(LibrarySync.musicDestinationRelativePath(for: libraryItem, filenameFormat: .titleAlbum),
+                        "Music/Queen/A Night at the Opera/Bohemian Rhapsody - A Night at the Opera.mp3")
+    }
+
+    func testAlbumOnlyOrganizationDropsArtistFolder() {
+        let libraryItem = item(title: "Bohemian Rhapsody", artist: "Queen", album: "A Night at the Opera")
+        XCTAssertEqual(LibrarySync.musicDestinationRelativePath(for: libraryItem, organization: .album),
+                        "Music/A Night at the Opera/Bohemian Rhapsody.mp3")
+    }
+
+    func testArtistOnlyOrganizationDropsAlbumFolder() {
+        let libraryItem = item(title: "Bohemian Rhapsody", artist: "Queen", album: "A Night at the Opera")
+        XCTAssertEqual(LibrarySync.musicDestinationRelativePath(for: libraryItem, organization: .artist),
+                        "Music/Queen/Bohemian Rhapsody.mp3")
     }
 
     func testAlbumArtistTakesPrecedenceOverTrackArtist() {
         let libraryItem = item(title: "Track", artist: "Featured Guest", album: "Compilation", albumArtist: "Various Artists")
         XCTAssertEqual(LibrarySync.musicDestinationRelativePath(for: libraryItem),
                         "Music/Various Artists/Compilation/Track.mp3")
-    }
-
-    func testMissingTrackNumberOmitsPrefix() {
-        let libraryItem = item(title: "Intro", artist: "Artist", album: "Album")
-        XCTAssertEqual(LibrarySync.musicDestinationRelativePath(for: libraryItem),
-                        "Music/Artist/Album/Intro.mp3")
     }
 
     func testMissingMetadataFallsBackToFilenameAndDesconocido() {

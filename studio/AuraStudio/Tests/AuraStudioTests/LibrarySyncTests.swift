@@ -36,7 +36,7 @@ final class LibrarySyncTests: XCTestCase {
         let result = try sync.sync(items: [item])
 
         XCTAssertEqual(result.filesCopied, 1)
-        let expected = fakeIPod.appendingPathComponent("Music/Queen/A Night at the Opera/11 Bohemian Rhapsody.mp3")
+        let expected = fakeIPod.appendingPathComponent("Music/Queen/A Night at the Opera/Bohemian Rhapsody.mp3")
         XCTAssertTrue(FileManager.default.fileExists(atPath: expected.path))
     }
 
@@ -67,7 +67,7 @@ final class LibrarySyncTests: XCTestCase {
 
         XCTAssertEqual(result.filesCopied, 1, "el destino cambio, debe recopiarse aunque tamano/fecha sean iguales")
         XCTAssertFalse(FileManager.default.fileExists(atPath: staleURL.path), "el archivo en la ruta plana vieja debe borrarse")
-        let newURL = fakeIPod.appendingPathComponent("Music/Queen/A Night at the Opera/11 Bohemian Rhapsody.mp3")
+        let newURL = fakeIPod.appendingPathComponent("Music/Queen/A Night at the Opera/Bohemian Rhapsody.mp3")
         XCTAssertTrue(FileManager.default.fileExists(atPath: newURL.path))
     }
 
@@ -82,7 +82,7 @@ final class LibrarySyncTests: XCTestCase {
         let playlistURL = fakeIPod.appendingPathComponent("Playlists/Roadtrip.m3u8")
         let contents = try String(contentsOf: playlistURL, encoding: .utf8)
         XCTAssertTrue(contents.contains("#EXTM3U"))
-        XCTAssertTrue(contents.contains("/Music/Queen/A Night at the Opera/11 Bohemian Rhapsody.mp3"))
+        XCTAssertTrue(contents.contains("/Music/Queen/A Night at the Opera/Bohemian Rhapsody.mp3"))
     }
 
     func testPlaylistWithNoResolvableTracksIsNotWritten() throws {

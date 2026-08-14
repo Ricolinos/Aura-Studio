@@ -9,7 +9,7 @@ struct SettingsSectionView: View {
     @State private var tab: Tab = .general
 
     enum Tab: Hashable {
-        case general, library, sources
+        case general, library, music, photos, video, sources, apiKeys
     }
 
     var body: some View {
@@ -17,12 +17,16 @@ struct SettingsSectionView: View {
             Picker("", selection: $tab) {
                 Text(S.settingsGeneral.text).tag(Tab.general)
                 Text(S.settingsLibrary.text).tag(Tab.library)
+                Text(S.music.text).tag(Tab.music)
+                Text(S.photos.text).tag(Tab.photos)
+                Text(S.video.text).tag(Tab.video)
                 Text(S.settingsSources.text).tag(Tab.sources)
+                Text(S.settingsAPIKeys.text).tag(Tab.apiKeys)
             }
             .pickerStyle(.segmented)
             .labelsHidden()
             .padding(16)
-            .frame(maxWidth: 420)
+            .frame(maxWidth: 760)
 
             Divider()
 
@@ -31,7 +35,11 @@ struct SettingsSectionView: View {
                     switch tab {
                     case .general: generalTab
                     case .library: libraryTab
+                    case .music: MusicSettingsView(preferences: preferences)
+                    case .photos: PhotoSettingsView(preferences: preferences)
+                    case .video: VideoSettingsView(preferences: preferences)
                     case .sources: SourcesSettingsView()
+                    case .apiKeys: APIKeysSettingsView()
                     }
                 }
                 .padding(24)
@@ -64,7 +72,7 @@ struct SettingsSectionView: View {
         VStack(alignment: .leading, spacing: 24) {
             VStack(alignment: .leading, spacing: 10) {
                 Text("Carpeta de la biblioteca Aura").font(.headline)
-                Text("Todo lo que sueltas en Aura Studio se copia aqui -- tus archivos originales no se tocan. La biblioteca funciona aunque el iPod no este conectado, y se sincroniza al conectarlo.")
+                Text("Aquí vive el catálogo de tu biblioteca -- funciona aunque el iPod no esté conectado, y se sincroniza al conectarlo. Que además copie tus archivos aquí depende del ajuste de abajo.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -85,6 +93,14 @@ struct SettingsSectionView: View {
                 }
                 .padding(10)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.08)))
+
+                Toggle("Crear copias de los medios en la Biblioteca de Aura", isOn: $preferences.copyMediaIntoLibrary)
+                Text(preferences.copyMediaIntoLibrary
+                     ? "Cada canción, foto o video que sueltas en Aura Studio se copia dentro de la carpeta de arriba -- el original queda intacto donde estaba. Usa más espacio en disco, pero la biblioteca queda autocontenida en un solo lugar."
+                     : "Nada se copia: la biblioteca referencia tus archivos donde ya están. Aquí solo se guarda la configuración que los liga a Aura (metadata, letras, portadas). Al sincronizar con el iPod, Aura Studio arma el archivo final leyendo el original en ese momento -- un poco más lento la primera vez, pero tu disco nunca termina con una copia duplicada de tu biblioteca completa.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             Divider()

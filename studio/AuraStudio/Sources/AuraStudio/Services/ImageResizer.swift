@@ -22,12 +22,16 @@ struct ImageResizer {
         }
     }
 
-    /// 320x240 es la resolucion nativa del LCD; se limita a eso el
-    /// lado mas largo para que ninguna foto ocupe mas que lo que se
-    /// puede ver, sin escalar hacia arriba fotos que ya sean chicas.
+    /// 320x240 es la resolucion nativa del LCD -- default cuando no se
+    /// pasa `maxDimension` explicito (p.ej. desde tests). Con la
+    /// preferencia de calidad de foto (D-191/D-192), el llamador real
+    /// (`LibraryViewModel.process`) pasa 320 o 640 segun lo que haya
+    /// elegido el usuario; en ambos casos se preserva aspecto sin
+    /// escalar hacia arriba fotos que ya sean chicas.
     static let maxDimension: CGFloat = 320
 
-    static func resizeToLCDOptimal(sourceURL: URL, destinationURL: URL, quality: CGFloat = 0.85) throws {
+    static func resizeToLCDOptimal(sourceURL: URL, destinationURL: URL,
+                                    maxDimension: CGFloat = maxDimension, quality: CGFloat = 0.85) throws {
         guard let source = CGImageSourceCreateWithURL(sourceURL as CFURL, nil) else {
             throw ResizeError.cannotReadImage
         }
