@@ -10,6 +10,7 @@ final class ID3WriterTests: XCTestCase {
             albumArtist: "Aura QA",
             year: "2026",
             genre: "Electronic",
+            composer: "Aura Composer",
             trackNumber: 1
         )
         let built = ID3Writer.buildTag(tag)
@@ -21,6 +22,7 @@ final class ID3WriterTests: XCTestCase {
         XCTAssertEqual(readBack?.albumArtist, "Aura QA")
         XCTAssertEqual(readBack?.year, "2026")
         XCTAssertEqual(readBack?.genre, "Electronic")
+        XCTAssertEqual(readBack?.composer, "Aura Composer")
         XCTAssertEqual(readBack?.trackNumber, 1)
     }
 

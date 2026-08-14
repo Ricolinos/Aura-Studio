@@ -88,6 +88,7 @@ struct LibraryEnricher {
             albumArtist: existing.albumArtist,
             year: existing.year,
             genre: existing.genre,
+            composer: existing.composer,
             trackNumber: existing.trackNumber,
             coverArtData: existing.coverArtData
         )

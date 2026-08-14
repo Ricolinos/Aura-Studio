@@ -28,11 +28,12 @@ struct BatchMetadataChanges: Equatable {
     var albumArtist: String?
     var year: String?
     var genre: String?
+    var composer: String?
     var rating: Int?
 
     var isEmpty: Bool {
         artist == nil && album == nil && albumArtist == nil
-            && year == nil && genre == nil && rating == nil
+            && year == nil && genre == nil && composer == nil && rating == nil
     }
 }
 
@@ -107,6 +108,7 @@ struct BatchMediaInfoView: View {
     @State private var albumArtist: BatchField
     @State private var year: BatchField
     @State private var genre: BatchField
+    @State private var composer: BatchField
     /// `nil` = "Mixto"/sin tocar; 0 no es un valor valido para
     /// calificacion aca (a diferencia de `TrackMetadata.rating`, en
     /// lote no hay gesto para "borrar la calificacion de N canciones a
@@ -123,6 +125,7 @@ struct BatchMediaInfoView: View {
         _albumArtist = State(initialValue: BatchField.compute(items, \.albumArtist))
         _year = State(initialValue: BatchField.compute(items, \.year))
         _genre = State(initialValue: BatchField.compute(items, \.genre))
+        _composer = State(initialValue: BatchField.compute(items, \.composer))
         let ratings = Set(items.map { $0.metadata?.rating ?? 0 })
         _rating = State(initialValue: ratings.count == 1 ? ratings.first : nil)
         _ratingIsMixed = State(initialValue: ratings.count != 1)
@@ -232,6 +235,7 @@ struct BatchMediaInfoView: View {
                 batchTextField("Artista del álbum", field: $albumArtist)
                 batchTextField("Año", field: $year)
                 batchTextField("Género", field: $genre)
+                batchTextField("Autor", field: $composer)
             }
         }
     }
@@ -255,6 +259,7 @@ struct BatchMediaInfoView: View {
                 changes.albumArtist = albumArtist.valueToApply
                 changes.year = year.valueToApply
                 changes.genre = genre.valueToApply
+                changes.composer = composer.valueToApply
                 changes.rating = ratingIsMixed ? nil : rating
                 onApply(changes)
             }

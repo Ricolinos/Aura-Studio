@@ -59,6 +59,7 @@ struct PersistedTrackMetadata: Codable {
     var albumArtist: String?
     var year: String?
     var genre: String?
+    var composer: String?
     var trackNumber: Int?
     var syncedLyrics: String?
     var musicBrainzRecordingID: String?
@@ -115,6 +116,7 @@ enum LibraryPersistenceMapper {
         return PersistedTrackMetadata(
             title: m.title, artist: m.artist, album: m.album,
             albumArtist: m.albumArtist, year: m.year, genre: m.genre,
+            composer: m.composer,
             trackNumber: m.trackNumber, syncedLyrics: m.syncedLyrics,
             musicBrainzRecordingID: m.musicBrainzRecordingID,
             musicBrainzReleaseID: m.musicBrainzReleaseID,
@@ -126,6 +128,7 @@ enum LibraryPersistenceMapper {
         return TrackMetadata(
             title: p.title, artist: p.artist, album: p.album,
             albumArtist: p.albumArtist, year: p.year, genre: p.genre,
+            composer: p.composer,
             trackNumber: p.trackNumber, coverArtData: coverArtData,
             syncedLyrics: p.syncedLyrics,
             musicBrainzRecordingID: p.musicBrainzRecordingID,
