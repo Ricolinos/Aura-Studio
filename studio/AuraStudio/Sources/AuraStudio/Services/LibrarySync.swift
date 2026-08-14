@@ -132,10 +132,20 @@ struct LibrarySync {
     /// video transcodificado, foto redimensionada) con `preparedURL`
     /// listo para copiar; `playlists` (Fase 24) se resuelven a rutas
     /// reales del dispositivo usando esos mismos items y se escriben
-    /// como `.m3u8` en `/Playlists`. Devuelve cuantos archivos se
-    /// copiaron de verdad y cuantas playlists se escribieron.
+    /// como `.m3u8` en `/Playlists`, cada uno con su sidecar `.jpg` de
+    /// portada (encargo del dueno, 2026-08-14: imagen custom si
+    /// `Playlist.imageRelativePath` apunta a algo real, si no un colage/
+    /// tile generado, ver `writePlaylistArt`). `libraryRoot` es la
+    /// carpeta LOCAL de Aura Studio (no `volumeRoot`, el iPod) -- solo
+    /// hace falta para resolver esa imagen custom, que se cachea ahi
+    /// (`.portadas/playlist-<id>.jpg`); `nil` (tests que no la pasan)
+    /// simplemente se comporta como si ninguna playlist tuviera imagen
+    /// propia, siempre cae al default generado. Devuelve cuantos
+    /// archivos se copiaron de verdad y cuantas playlists se
+    /// escribieron.
     @discardableResult
     func sync(items: [LibraryItem], playlists: [Playlist] = [],
+              libraryRoot: URL? = nil,
               coverArtPolicy: AppPreferences.CoverArtPolicy = .albumOnly,
               musicOrganization: AppPreferences.MusicOrganization = .artistAlbum,
               musicFilenameFormat: AppPreferences.MusicFilenameFormat = .titleOnly,
@@ -219,7 +229,8 @@ struct LibrarySync {
             writeAlbumCovers(items: items, destinationByItemID: destinationByItemID)
         }
 
-        let playlistsWritten = try writePlaylists(playlists, destinationByItemID: destinationByItemID)
+        let playlistsWritten = try writePlaylists(playlists, destinationByItemID: destinationByItemID,
+                                                   items: items, libraryRoot: libraryRoot)
         summary.playlistCount = playlistsWritten
         try writeSummary(summary)
         try writeRatings(items: items, destinationByItemID: destinationByItemID)
@@ -267,11 +278,13 @@ struct LibrarySync {
     /// solo para esto, ver D-066). Pistas que todavia no tienen destino
     /// resuelto (no vinieron en `items`, p. ej. se borraron de la
     /// sesion) se omiten en silencio en vez de fallar todo el sync.
-    private func writePlaylists(_ playlists: [Playlist], destinationByItemID: [UUID: String]) throws -> Int {
+    private func writePlaylists(_ playlists: [Playlist], destinationByItemID: [UUID: String],
+                                 items: [LibraryItem], libraryRoot: URL?) throws -> Int {
         guard !playlists.isEmpty else { return 0 }
         let dir = volumeRoot.appendingPathComponent(Self.playlistsRelativePath)
         try fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
 
+        let itemsByID = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
         var written = 0
         for playlist in playlists {
             let paths = playlist.trackItemIDs.compactMap { destinationByItemID[$0] }
@@ -280,8 +293,42 @@ struct LibrarySync {
             let contents = PlaylistExporter.m3u8Contents(trackDestinationPaths: paths)
             try contents.write(to: url, atomically: true, encoding: .utf8)
             written += 1
+
+            writePlaylistArt(playlist, itemsByID: itemsByID, libraryRoot: libraryRoot, destinationDir: dir)
         }
         return written
+    }
+
+    /// Portada de playlist (encargo del dueno, 2026-08-14): mismo nombre
+    /// base que el `.m3u8` recien escrito, con ".jpg" en vez de la
+    /// extension (`PlaylistExporter.imageFileName`) -- ahi es donde
+    /// `aura_playlist_art_load()` del firmware ya sabe buscarla. Si el
+    /// usuario eligio una imagen propia se copia esa (cache local
+    /// `.portadas/playlist-<id>.jpg`); si no, se genera un colage/tile
+    /// default (`PlaylistArtGenerator`) con las caratulas que ya tengan
+    /// las pistas de la playlist. Best-effort de punta a punta: un fallo
+    /// aca (imagen corrupta, disco lleno) no debe tirar abajo el sync de
+    /// la playlist entera, que ya escribio su .m3u8 con exito -- el
+    /// firmware igual tiene su propio tile generico de respaldo si el
+    /// sidecar termina faltando.
+    private func writePlaylistArt(_ playlist: Playlist, itemsByID: [UUID: LibraryItem],
+                                   libraryRoot: URL?, destinationDir: URL) {
+        let imageURL = destinationDir.appendingPathComponent(PlaylistExporter.imageFileName(for: playlist.name))
+
+        if let relative = playlist.imageRelativePath, let libraryRoot {
+            let sourceURL = libraryRoot.appendingPathComponent(relative)
+            if fileManager.fileExists(atPath: sourceURL.path) {
+                if fileManager.fileExists(atPath: imageURL.path) {
+                    try? fileManager.removeItem(at: imageURL)
+                }
+                if (try? fileManager.copyItem(at: sourceURL, to: imageURL)) != nil {
+                    return
+                }
+            }
+        }
+
+        let covers = playlist.trackItemIDs.compactMap { itemsByID[$0]?.metadata?.coverArtData }
+        try? PlaylistArtGenerator.generateDefault(coverArtCandidates: covers, destinationURL: imageURL)
     }
 
     /// Formato plano `key: value` (no JSON) a proposito -- el firmware

@@ -10,10 +10,18 @@ struct Playlist: Identifiable, Equatable {
     let id: UUID
     var name: String
     var trackItemIDs: [UUID]
+    /// Imagen elegida a mano por el usuario (encargo del dueno,
+    /// 2026-08-14), relativa a la carpeta de biblioteca -- mismo criterio
+    /// que `coverRelativePath` de un `LibraryItem` (LibraryPersistence.swift):
+    /// un archivo cacheado en `.portadas/`, no Data embebida aca, para
+    /// que el catalogo siga siendo liviano. `nil` = sin imagen propia;
+    /// LibrarySync genera un default (colage/tile) al sincronizar.
+    var imageRelativePath: String?
 
-    init(id: UUID = UUID(), name: String, trackItemIDs: [UUID] = []) {
+    init(id: UUID = UUID(), name: String, trackItemIDs: [UUID] = [], imageRelativePath: String? = nil) {
         self.id = id
         self.name = name
         self.trackItemIDs = trackItemIDs
+        self.imageRelativePath = imageRelativePath
     }
 }

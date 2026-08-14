@@ -524,6 +524,7 @@ final class LibraryViewModel: ObservableObject {
         let coverArtPolicy = preferences.coverArtPolicy
         let musicOrganization = preferences.musicOrganization
         let musicFilenameFormat = preferences.musicFilenameFormat
+        let libraryRootSnapshot = libraryRoot
         let startedAt = Date()
         syncProgress = nil
 
@@ -531,6 +532,7 @@ final class LibraryViewModel: ObservableObject {
             let sync = LibrarySync(volumeRoot: volumeRoot)
             let result = try await Task.detached(priority: .userInitiated) { [weak self] in
                 try sync.sync(items: readyItems, playlists: playlistsSnapshot,
+                              libraryRoot: libraryRootSnapshot,
                               coverArtPolicy: coverArtPolicy,
                               musicOrganization: musicOrganization,
                               musicFilenameFormat: musicFilenameFormat) { copied, total in
@@ -570,7 +572,44 @@ final class LibraryViewModel: ObservableObject {
     }
 
     func removePlaylist(id: UUID) {
+        if let playlist = playlists.first(where: { $0.id == id }), let relative = playlist.imageRelativePath {
+            try? FileManager.default.removeItem(at: libraryRoot.appendingPathComponent(relative))
+        }
         playlists.removeAll { $0.id == id }
+        persistCatalog()
+    }
+
+    /// Imagen elegida a mano por el usuario para una playlist (encargo
+    /// del dueno, 2026-08-14) -- se cachea igual que la caratula de una
+    /// pista (`.portadas/`, ver `coversDirectory`), con el prefijo
+    /// "playlist-" para no chocar con los ids de `LibraryItem` que
+    /// conviven en la misma carpeta. Redimensionada chica (128px): el
+    /// unico lugar donde se ve es el cuadrado de una fila de lista, no
+    /// una portada grande (mismo criterio de tamano que
+    /// `PlaylistArtGenerator.dimension`, del lado del default generado).
+    func setPlaylistImage(id: UUID, sourceURL: URL) {
+        guard let index = playlists.firstIndex(where: { $0.id == id }) else { return }
+        let relative = "\(PersistedLibrary.coversDirName)/playlist-\(id.uuidString).jpg"
+        let destination = libraryRoot.appendingPathComponent(relative)
+        do {
+            try ImageResizer.resizeToLCDOptimal(sourceURL: sourceURL, destinationURL: destination,
+                                                 maxDimension: PlaylistArtGenerator.dimension)
+            playlists[index].imageRelativePath = relative
+            persistCatalog()
+        } catch {
+            lastError = "No se pudo usar esa imagen para la playlist: \(error.localizedDescription)"
+        }
+    }
+
+    /// "Quitar imagen" -- vuelve la playlist al default generado por
+    /// LibrarySync en el proximo sync (colage de sus propias caratulas,
+    /// o el tile generico si no tiene ninguna).
+    func clearPlaylistImage(id: UUID) {
+        guard let index = playlists.firstIndex(where: { $0.id == id }) else { return }
+        if let relative = playlists[index].imageRelativePath {
+            try? FileManager.default.removeItem(at: libraryRoot.appendingPathComponent(relative))
+        }
+        playlists[index].imageRelativePath = nil
         persistCatalog()
     }
 
@@ -799,7 +838,8 @@ final class LibraryViewModel: ObservableObject {
             ))
         }
         persisted.playlists = playlists.map {
-            PersistedPlaylist(id: $0.id, name: $0.name, trackItemIDs: $0.trackItemIDs)
+            PersistedPlaylist(id: $0.id, name: $0.name, trackItemIDs: $0.trackItemIDs,
+                               imageRelativePath: $0.imageRelativePath)
         }
 
         do {
@@ -863,7 +903,14 @@ final class LibraryViewModel: ObservableObject {
         }
         items = restored
         playlists = persisted.playlists.map {
-            Playlist(id: $0.id, name: $0.name, trackItemIDs: $0.trackItemIDs)
+            // Igual que `preparedExists` arriba: una imagen que ya no
+            // esta en disco (borrada a mano, biblioteca movida a medias)
+            // no debe seguir referenciandose -- se trata como si nunca
+            // hubiera existido, LibrarySync cae al default generado.
+            let imageExists = $0.imageRelativePath
+                .map { fm.fileExists(atPath: libraryRoot.appendingPathComponent($0).path) } ?? false
+            return Playlist(id: $0.id, name: $0.name, trackItemIDs: $0.trackItemIDs,
+                             imageRelativePath: imageExists ? $0.imageRelativePath : nil)
         }
     }
 

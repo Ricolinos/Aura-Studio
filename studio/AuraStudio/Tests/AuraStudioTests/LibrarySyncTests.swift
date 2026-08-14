@@ -1,4 +1,5 @@
 import XCTest
+import AppKit
 @testable import AuraStudio
 
 /// Fase 24: LibrarySync.sync() contra una carpeta temporal en vez de un
@@ -94,6 +95,48 @@ final class LibrarySyncTests: XCTestCase {
         XCTAssertEqual(result.playlistsWritten, 0)
         let playlistURL = fakeIPod.appendingPathComponent("Playlists/Vacio.m3u8")
         XCTAssertFalse(FileManager.default.fileExists(atPath: playlistURL.path))
+    }
+
+    // MARK: - Portada de playlist (encargo del dueno, 2026-08-14)
+
+    /// Sin caratula de album conocida en ninguna pista, LibrarySync igual
+    /// deja un sidecar valido (tile placeholder de PlaylistArtGenerator)
+    /// -- el firmware siempre encuentra ALGO junto al .m3u8.
+    func testPlaylistWithoutCoverArtOrCustomImageStillGetsASidecar() throws {
+        let item = musicItem() // sin coverArtData
+        let playlist = Playlist(name: "Roadtrip", trackItemIDs: [item.id])
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+
+        _ = try sync.sync(items: [item], playlists: [playlist])
+
+        let imageURL = fakeIPod.appendingPathComponent("Playlists/Roadtrip.jpg")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: imageURL.path))
+        XCTAssertNotNil(NSImage(contentsOf: imageURL), "el sidecar generado debe ser un JPEG valido")
+    }
+
+    /// Con una imagen elegida a mano (`Playlist.imageRelativePath`,
+    /// resuelta contra `libraryRoot`), esa es la que se copia -- no el
+    /// colage/placeholder generado.
+    func testPlaylistWithCustomImageCopiesItInsteadOfGeneratingADefault() throws {
+        let libraryRoot = FileManager.default.temporaryDirectory.appendingPathComponent("FakeLibrary-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: libraryRoot.appendingPathComponent(".portadas"), withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: libraryRoot) }
+
+        let playlistID = UUID()
+        let customImageRelative = ".portadas/playlist-\(playlistID.uuidString).jpg"
+        let customImageData = Data("caratula custom".utf8)
+        try customImageData.write(to: libraryRoot.appendingPathComponent(customImageRelative))
+
+        let item = musicItem()
+        let playlist = Playlist(id: playlistID, name: "Roadtrip", trackItemIDs: [item.id],
+                                 imageRelativePath: customImageRelative)
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+
+        _ = try sync.sync(items: [item], playlists: [playlist], libraryRoot: libraryRoot)
+
+        let imageURL = fakeIPod.appendingPathComponent("Playlists/Roadtrip.jpg")
+        let written = try Data(contentsOf: imageURL)
+        XCTAssertEqual(written, customImageData, "debe copiar la imagen custom tal cual, no generar un default")
     }
 
     // MARK: - Progreso (D-217)

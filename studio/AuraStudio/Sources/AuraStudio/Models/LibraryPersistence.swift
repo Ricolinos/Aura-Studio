@@ -72,6 +72,10 @@ struct PersistedPlaylist: Codable {
     var id: UUID
     var name: String
     var trackItemIDs: [UUID]
+    /// Ver `Playlist.imageRelativePath` -- archivo en `.portadas/`, no
+    /// Data embebida. Opcional en la decodificacion (catalogos viejos,
+    /// anteriores a este campo, no lo tienen) via el default `nil`.
+    var imageRelativePath: String?
 }
 
 /// Mapeo entre el modelo vivo y el persistido, como funciones puras
