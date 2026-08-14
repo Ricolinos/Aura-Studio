@@ -316,6 +316,7 @@ final class LibraryViewModel: ObservableObject {
             let tag = ID3Writer.Tag(
                 title: metadata.title, artist: metadata.artist, album: metadata.album,
                 albumArtist: metadata.albumArtist, year: metadata.year, genre: metadata.genre,
+                composer: metadata.composer,
                 trackNumber: metadata.trackNumber,
                 coverArtData: embedCover ? metadata.coverArtData : nil
             )
@@ -448,6 +449,7 @@ final class LibraryViewModel: ObservableObject {
             if let albumArtist = changes.albumArtist { metadata.albumArtist = albumArtist }
             if let year = changes.year { metadata.year = year }
             if let genre = changes.genre { metadata.genre = genre }
+            if let composer = changes.composer { metadata.composer = composer }
             if let rating = changes.rating { metadata.rating = rating }
             items[index].metadata = metadata
             items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)

@@ -13,6 +13,11 @@ struct TrackMetadata: Equatable {
     var albumArtist: String?
     var year: String?
     var genre: String?
+    /// Autor/compositor (TCOM en ID3, `tag_composer` en el tagcache de
+    /// Rockbox) -- el firmware ya sabe organizar musica por "Autores"
+    /// (AURA_SCREEN_MUSIC_COMPOSERS), este campo es lo que faltaba en
+    /// Aura Studio para poblarlo.
+    var composer: String?
     var trackNumber: Int?
     var coverArtData: Data?
     var syncedLyrics: String?
@@ -33,6 +38,7 @@ struct TrackMetadata: Equatable {
 
     init(title: String? = nil, artist: String? = nil, album: String? = nil,
          albumArtist: String? = nil, year: String? = nil, genre: String? = nil,
+         composer: String? = nil,
          trackNumber: Int? = nil, coverArtData: Data? = nil, syncedLyrics: String? = nil,
          musicBrainzRecordingID: String? = nil, musicBrainzReleaseID: String? = nil,
          durationSeconds: Double? = nil, rating: Int? = nil) {
@@ -42,6 +48,7 @@ struct TrackMetadata: Equatable {
         self.albumArtist = albumArtist
         self.year = year
         self.genre = genre
+        self.composer = composer
         self.trackNumber = trackNumber
         self.coverArtData = coverArtData
         self.syncedLyrics = syncedLyrics

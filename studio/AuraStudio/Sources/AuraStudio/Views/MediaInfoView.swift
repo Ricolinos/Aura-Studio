@@ -23,6 +23,7 @@ struct MediaInfoView: View {
     @State private var albumArtist: String
     @State private var year: String
     @State private var genre: String
+    @State private var composer: String
     @State private var trackNumber: String
     /// Letra sin sincronizar (D-193): el usuario la puede pegar/editar a
     /// mano. Se guarda como el mismo `syncedLyrics` que ya escribe
@@ -47,6 +48,7 @@ struct MediaInfoView: View {
         _albumArtist = State(initialValue: metadata.albumArtist ?? "")
         _year = State(initialValue: metadata.year ?? "")
         _genre = State(initialValue: metadata.genre ?? "")
+        _composer = State(initialValue: metadata.composer ?? "")
         _trackNumber = State(initialValue: metadata.trackNumber.map(String.init) ?? "")
         _lyrics = State(initialValue: metadata.syncedLyrics ?? "")
         _rating = State(initialValue: metadata.rating ?? 0)
@@ -147,6 +149,7 @@ struct MediaInfoView: View {
                     }
                 TextField("Año (opcional)", text: $year)
                 TextField("Género (opcional)", text: $genre)
+                TextField("Autor (opcional)", text: $composer)
             }
             if !isComplete {
                 Label("Título, artista y álbum son obligatorios para sincronizar.", systemImage: "exclamationmark.circle")
@@ -243,6 +246,7 @@ struct MediaInfoView: View {
                     metadata.trackNumber = Int(trackNumber)
                     metadata.year = year.isEmpty ? nil : year
                     metadata.genre = genre.isEmpty ? nil : genre
+                    metadata.composer = composer.isEmpty ? nil : composer
                     let trimmedLyrics = lyrics.trimmingCharacters(in: .whitespacesAndNewlines)
                     metadata.syncedLyrics = trimmedLyrics.isEmpty ? nil : lyrics
                     let newRating = rating == 0 ? nil : rating

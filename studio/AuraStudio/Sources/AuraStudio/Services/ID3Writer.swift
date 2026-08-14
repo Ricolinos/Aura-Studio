@@ -26,6 +26,9 @@ enum ID3Writer {
         var albumArtist: String?
         var year: String?
         var genre: String?
+        /// Autor/compositor -- frame TCOM, lo que lee `tag_composer` del
+        /// tagcache de Rockbox (AURA_SCREEN_MUSIC_COMPOSERS).
+        var composer: String?
         var trackNumber: Int?
         var coverArtData: Data?
         var coverArtMIMEType: String = "image/jpeg"
@@ -62,6 +65,7 @@ enum ID3Writer {
         if let albumArtist = tag.albumArtist { frames += textFrame("TPE2", albumArtist) }
         if let year = tag.year { frames += textFrame("TYER", year) }
         if let genre = tag.genre { frames += textFrame("TCON", genre) }
+        if let composer = tag.composer { frames += textFrame("TCOM", composer) }
         if let track = tag.trackNumber { frames += textFrame("TRCK", String(track)) }
         if let cover = tag.coverArtData { frames += pictureFrame(cover, mimeType: tag.coverArtMIMEType) }
 
@@ -146,6 +150,7 @@ enum ID3Writer {
             case "TPE2": tag.albumArtist = decodeText(payload)
             case "TYER": tag.year = decodeText(payload)
             case "TCON": tag.genre = decodeText(payload)
+            case "TCOM": tag.composer = decodeText(payload)
             case "TRCK": tag.trackNumber = Int(decodeText(payload) ?? "")
             case "APIC": tag.coverArtData = decodePicture(payload)
             default: break
