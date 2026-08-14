@@ -111,7 +111,17 @@ struct PrivilegedExecutor: Sendable {
 
     // MARK: - Agentes AMP (pausa/reanuda)
 
-    static let ampAgentNames = ["AMPDevicesAgent", "AMPDeviceDiscoveryAgent"]
+    /// `deviceinterfaced` agregado en D-191 -- ya estaba MENCIONADO en
+    /// el comentario de `pauseAMPAgents()` desde D-041 como referencia,
+    /// pero nunca se habia agregado a la lista real. Confirmado en
+    /// hardware real (2026-08-13): es el daemon que se queda con el
+    /// acceso EXCLUSIVO al USB en cuanto el iPod entra a DFU -- Finder
+    /// se abrio solo mostrando "Modo DFU del iPod" a mitad del envio de
+    /// mks5lboot, y el envio "tuvo exito" (dijo mks5lboot) pero el
+    /// aparato nunca aplico el flasheo ni reinicio. AMPDevicesAgent/
+    /// AMPDeviceDiscoveryAgent son del stack viejo de iTunes -- no
+    /// alcanzaban para esto.
+    static let ampAgentNames = ["AMPDevicesAgent", "AMPDeviceDiscoveryAgent", "deviceinterfaced"]
     /// Red de seguridad si la app crashea con los agentes pausados: se
     /// reactivan solos despues de este tiempo aunque nadie mas lo pida.
     /// Independiente de la reactivacion explicita normal (que

@@ -120,6 +120,16 @@ enum InstallerError: Error, LocalizedError, Equatable {
     /// error de la app ni del disco: nada que la app haya escrito se
     /// pierde (la extraccion hace merge, retomar desde cero es seguro).
     case deviceDisconnectedDuringCopy
+    /// mks5lboot confirmo el ENVIO por USB (D-191) pero el iPod nunca
+    /// salio de modo DFU -- no hay evidencia de que aplico el flasheo.
+    /// Visto en hardware real: Aura Studio decia "Aura instalado" con
+    /// el iPod en pantalla negra y Finder mostrando "Modo DFU del
+    /// iPod". Causa mas probable: el demonio deviceinterfaced de
+    /// macOS reclama el USB apenas el aparato entra a DFU y abre
+    /// Finder a mitad del envio -- desde D-191 Aura Studio lo pausa
+    /// junto con los agentes AMP, pero puede seguir pasando si algo
+    /// mas interfiere con el cable.
+    case deviceStuckInDFU
 
     var errorDescription: String? {
         switch self {
@@ -151,6 +161,8 @@ enum InstallerError: Error, LocalizedError, Equatable {
             return "Para dual boot, el iPod debe conservar el firmware original de Apple en formato \"winpod\": tabla de particiones MBR con la partición de firmware de Apple intacta más una partición FAT32 -- el formato que crea iTunes al restaurar en una PC con WINDOWS. Este iPod está en formato de Mac (particiones Apple/HFS, que Rockbox no puede leer) o su disco no es legible, y prepararlo desde aquí borraría el disco completo, incluido el firmware original -- exactamente lo que dual boot promete conservar. Por eso no se te pidió la contraseña de administrador como en una instalación normal: no hay nada seguro que formatear todavía. Opciones: restaura el iPod con iTunes en Windows y vuelve a intentar dual boot, o instala solo Aura si no necesitas conservar el firmware de Apple."
         case .deviceDisconnectedDuringCopy:
             return "Tu iPod se desconectó durante la copia de archivos. Copiar el firmware completo son miles de archivos chicos y puede tardar varios minutos por USB -- revisa el cable (evita hubs USB si usas uno) y vuelve a intentar: lo que ya se copió no se pierde, la copia sigue desde donde quedó."
+        case .deviceStuckInDFU:
+            return "El iPod recibió el envío del firmware, pero nunca confirmó haberlo aplicado -- sigue en modo DFU. Si se abrió Finder mostrando \"Modo DFU del iPod\", ciérralo SIN tocar el botón Restaurar (eso reinstalaría el firmware original de Apple). Después vuelve a intentar: el iPod ya está en modo DFU, así que el reintento debería llegar rápido a este mismo paso."
         }
     }
 }

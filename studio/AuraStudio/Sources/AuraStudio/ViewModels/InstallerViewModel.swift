@@ -74,6 +74,11 @@ final class InstallerViewModel: ObservableObject {
     /// Proceso de extraccion en curso (ditto), para poder terminarlo si
     /// el usuario cancela.
     private var extractProcess: Process?
+    /// Contador de archivos que `ditto -V` va confirmando por stderr
+    /// durante la extraccion en curso -- fuente de la barra de progreso
+    /// real (D-191). Vive fuera de `extractZip` para que el poller de
+    /// `copyFirmwareFiles` lo lea mientras el proceso sigue corriendo.
+    private var extractionProgressCounter: DittoProgressCounter?
     /// Un comando de disco privilegiado (formateo) esta corriendo ahora
     /// mismo -- la cancelacion espera a que termine.
     private var formatInFlight = false
@@ -492,6 +497,21 @@ final class InstallerViewModel: ObservableObject {
                 guard result.exitCode == 0 else {
                     throw InstallerError.processFailed(exitCode: result.exitCode, output: result.stdout + result.stderr)
                 }
+                // mks5lboot solo confirma que TERMINO DE ENVIAR los
+                // datos por USB (`ipoddfu_send` en main.c devuelve
+                // exito en cuanto el envio se completa) -- no espera a
+                // que el aparato aplique el flasheo ni reinicie. Eso lo
+                // confirma un tono de sonido en el propio iPod que la
+                // app nunca escucha. Visto en hardware real (D-191):
+                // "envio exitoso" con el aparato atascado en DFU, sin
+                // aplicar nada -- Aura Studio decia "instalado" con el
+                // iPod en pantalla negra. Se espera aca a que el
+                // aparato realmente ABANDONE el modo DFU antes de
+                // declarar exito.
+                progressMessage = "Firmware enviado. Esperando a que el iPod confirme y reinicie..."
+                guard await waitForDeviceToLeaveDFU(timeoutSeconds: 45) else {
+                    throw InstallerError.deviceStuckInDFU
+                }
                 progressMessage = "Listo."
                 step = .done
 
@@ -500,6 +520,13 @@ final class InstallerViewModel: ObservableObject {
                 let result = try runner.uninstallBootloader()
                 guard result.exitCode == 0 else {
                     throw InstallerError.processFailed(exitCode: result.exitCode, output: result.stdout + result.stderr)
+                }
+                // Misma verificacion que en install (arriba): el exito
+                // de mks5lboot solo confirma el envio por USB, no que
+                // el aparato aplico el cambio y reinicio.
+                progressMessage = "Firmware enviado. Esperando a que el iPod confirme y reinicie..."
+                guard await waitForDeviceToLeaveDFU(timeoutSeconds: 45) else {
+                    throw InstallerError.deviceStuckInDFU
                 }
                 // El bootloader de Apple quedo restaurado en la NOR,
                 // pero la restauracion COMPLETA la termina Finder
@@ -515,6 +542,24 @@ final class InstallerViewModel: ObservableObject {
             lastError = .processFailed(exitCode: -1, output: error.localizedDescription)
             step = .failed
         }
+    }
+
+    /// `true` en cuanto `mks5lboot --dfuscan` deja de ver el aparato en
+    /// DFU (senal de que empezo a aplicar el flasheo y reiniciar);
+    /// `false` si sigue detectandose DFU tras `timeoutSeconds` (D-191).
+    /// Un respiro inicial antes del primer chequeo: el aparato tarda un
+    /// instante en empezar a procesar apenas termina el envio USB.
+    private func waitForDeviceToLeaveDFU(timeoutSeconds: Int) async -> Bool {
+        guard let runner else { return false }
+        try? await Task.sleep(nanoseconds: 2_000_000_000)
+        let deadline = Date().addingTimeInterval(TimeInterval(timeoutSeconds))
+        while Date() < deadline {
+            if (try? runner.scanDFU()) == nil {
+                return true
+            }
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+        }
+        return false
     }
 
     private func runFormatDisk(volumeName: String, diskIdentifier: String) async {
@@ -608,25 +653,26 @@ final class InstallerViewModel: ObservableObject {
 
             progressMessage = "Instalando Aura en el iPod (tipografías, iconos, códecs)... Puede tardar varios minutos por USB -- no desconectes el iPod."
 
-            // Barra de progreso real: ditto no reporta avance, asi que
-            // se mide cuanto se libero del espacio disponible del
-            // volumen (una sola llamada, D-189 -- la version anterior
-            // recorria miles de archivos por segundo COMPITIENDO con la
-            // escritura de ditto en el mismo disco USB lento).
-            let expectedBytes = (try? await Self.zipUncompressedByteCount(of: treeURL)) ?? 0
-            let startingFreeBytes = await Self.availableBytes(atPath: mountPath)
-            let poller: Task<Void, Never>? = (expectedBytes > 0 && startingFreeBytes != nil) ? Task { [weak self] in
+            // Barra de progreso real (D-191): se cuentan los archivos
+            // que `ditto -V` va confirmando por stderr A MEDIDA que
+            // ocurren, no los bytes escritos. Con 7800+ archivos
+            // chicos, cada uno cuesta casi lo mismo en tiempo (una ida
+            // y vuelta USB) sin importar su tamaño -- medir bytes hacia
+            // que la barra llegara a 99% en los primeros segundos (los
+            // archivos grandes se copian rapido) y despues se quedara
+            // quieta varios minutos mientras ditto seguia escribiendo
+            // miles de archivos chicos uno por uno, dando la impresion
+            // de que el programa se colgo (reportado por el dueño en
+            // hardware real). Contar archivos copiados sigue el ritmo
+            // real del trabajo restante.
+            let expectedFiles = (try? await Self.zipEntryCount(of: treeURL)) ?? 0
+            let poller: Task<Void, Never>? = expectedFiles > 0 ? Task { [weak self] in
                 while !Task.isCancelled {
-                    guard let free = await Self.availableBytes(atPath: mountPath) else {
-                        // El volumen dejo de responder -- no hay nada
-                        // util que medir; se deja que extractZip
-                        // reporte el error real.
-                        return
+                    if let copied = self?.extractionProgressCounter?.snapshotFilesCopied() {
+                        let fraction = min(0.99, Double(copied) / Double(expectedFiles))
+                        self?.copyProgress = fraction
                     }
-                    let written = max(0, startingFreeBytes! - free)
-                    let fraction = min(0.99, Double(written) / Double(expectedBytes))
-                    self?.copyProgress = fraction
-                    try? await Task.sleep(nanoseconds: 1_000_000_000)
+                    try? await Task.sleep(nanoseconds: 300_000_000)
                 }
             } : nil
 
@@ -711,23 +757,36 @@ final class InstallerViewModel: ObservableObject {
     private func extractZip(at zipURL: URL, to destinationPath: String) async throws {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")
-        process.arguments = ["-xk", zipURL.path, destinationPath]
+        // -V (no solo -v): una linea por archivo copiado a stderr, en
+        // vivo -- es lo que alimenta la barra de progreso real (D-191,
+        // ver `extractionProgressCounter`).
+        process.arguments = ["-xkV", zipURL.path, destinationPath]
         let errPipe = Pipe()
         process.standardError = errPipe
 
+        let counter = DittoProgressCounter()
+        extractionProgressCounter = counter
         extractProcess = process
-        defer { extractProcess = nil }
+        defer {
+            extractProcess = nil
+            extractionProgressCounter = nil
+        }
+
+        errPipe.fileHandleForReading.readabilityHandler = { handle in
+            let data = handle.availableData
+            guard !data.isEmpty else { return }
+            counter.consume(data)
+        }
 
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
             process.terminationHandler = { finished in
+                errPipe.fileHandleForReading.readabilityHandler = nil
                 if finished.terminationStatus == 0 {
                     continuation.resume(returning: ())
                 } else {
-                    let errData = errPipe.fileHandleForReading.readDataToEndOfFile()
-                    let message = String(data: errData, encoding: .utf8) ?? ""
                     continuation.resume(throwing: InstallerError.processFailed(
                         exitCode: finished.terminationStatus,
-                        output: "ditto: \(message)"))
+                        output: "ditto: \(counter.recentOutput())"))
                 }
             }
             do {
@@ -738,11 +797,11 @@ final class InstallerViewModel: ObservableObject {
         }
     }
 
-    /// Tamaño total descomprimido de un zip, leyendo la linea de
-    /// resumen de `unzip -l` ("48485954   7831 files"). 0 si no se pudo
-    /// medir -- la UI cae al spinner indeterminado, nunca a una barra
+    /// Cantidad de archivos dentro del zip, leyendo la linea de resumen
+    /// de `unzip -l` ("48485954   7831 files"). 0 si no se pudo medir
+    /// -- la UI cae al spinner indeterminado, nunca a una barra
     /// inventada.
-    private nonisolated static func zipUncompressedByteCount(of zipURL: URL) async throws -> Int64 {
+    private nonisolated static func zipEntryCount(of zipURL: URL) async throws -> Int64 {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/unzip")
         process.arguments = ["-l", zipURL.path]
@@ -755,31 +814,11 @@ final class InstallerViewModel: ObservableObject {
         guard let text = String(data: data, encoding: .utf8) else { return 0 }
         for line in text.split(separator: "\n").reversed() {
             let fields = line.split(separator: " ", omittingEmptySubsequences: true)
-            if fields.count >= 2, fields.last == "files", let total = Int64(fields[0]) {
-                return total
+            if fields.count >= 2, fields.last == "files", let count = Int64(fields[fields.count - 2]) {
+                return count
             }
         }
         return 0
-    }
-
-    /// Suma el tamaño de todos los archivos bajo `path`. `nonisolated`:
-    /// recorre 7800+ archivos en un volumen USB, jamas en el hilo de la
-    /// UI.
-    /// Espacio libre restante en el volumen -- UNA llamada al sistema
-    /// de archivos, no recorre nada (D-189: la version anterior hacia
-    /// un `FileManager.enumerator` + `attributesOfItem` de miles de
-    /// archivos CADA SEGUNDO mientras `ditto` escribia al mismo disco
-    /// USB lento -- trafico de lectura compitiendo con la escritura,
-    /// justo en el aparato mas fragil bajo carga sostenida: el del
-    /// dueño usa un adaptador iFlash, y una extraccion real se
-    /// desconecto a la mitad con "Permission denied" en cascada,
-    /// reproducido a mano). nil si el volumen ya no responde --
-    /// exactamente la señal de que se desconecto, que el poller usa
-    /// para no seguir insistiendo sobre un disco que ya no esta.
-    private nonisolated static func availableBytes(atPath path: String) async -> Int64? {
-        guard let values = try? URL(fileURLWithPath: path)
-            .resourceValues(forKeys: [.volumeAvailableCapacityKey]) else { return nil }
-        return values.volumeAvailableCapacity.map(Int64.init)
     }
 
     func retry() {
@@ -802,5 +841,50 @@ final class InstallerViewModel: ObservableObject {
     func switchToSingleBootAndRetry() {
         destroyOriginalFirmware = true
         retry()
+    }
+}
+
+/// Cuenta en vivo las lineas "copying file ..." que `ditto -V` escribe
+/// a stderr, una por archivo copiado (D-191) -- es la fuente de la
+/// barra de progreso real durante la extraccion. `readabilityHandler`
+/// de `FileHandle` llama desde una cola en segundo plano, y el poller
+/// de `copyFirmwareFiles` lee desde el actor principal; el candado
+/// evita la carrera entre ambos. Los datos pueden llegar en cualquier
+/// tamaño de trozo (no una linea completa por callback), asi que se
+/// bufferean hasta encontrar cada salto de linea.
+private final class DittoProgressCounter: @unchecked Sendable {
+    private let lock = NSLock()
+    private var buffer = Data()
+    private var filesCopied = 0
+    private var recentLines: [String] = []
+
+    func consume(_ data: Data) {
+        lock.lock()
+        defer { lock.unlock() }
+        buffer.append(data)
+        while let newlineIndex = buffer.firstIndex(of: 0x0A) {
+            let lineData = buffer[..<newlineIndex]
+            buffer.removeSubrange(buffer.startIndex...newlineIndex)
+            guard let line = String(data: lineData, encoding: .utf8), !line.isEmpty else { continue }
+            if line.hasPrefix("copying file ") {
+                filesCopied += 1
+            }
+            recentLines.append(line)
+            if recentLines.count > 15 { recentLines.removeFirst() }
+        }
+    }
+
+    func snapshotFilesCopied() -> Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return filesCopied
+    }
+
+    /// Ultimas lineas vistas -- contexto para el mensaje de error si
+    /// ditto termina con un codigo distinto de cero.
+    func recentOutput() -> String {
+        lock.lock()
+        defer { lock.unlock() }
+        return recentLines.joined(separator: "\n")
     }
 }
