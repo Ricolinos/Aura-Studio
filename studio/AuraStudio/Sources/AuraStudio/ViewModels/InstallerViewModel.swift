@@ -721,6 +721,22 @@ final class InstallerViewModel: ObservableObject {
                 throw InstallerError.processFailed(exitCode: -1, output: "el árbol .rockbox no quedó completo tras extraerlo (falta \(sentinel.lastPathComponent))")
             }
 
+            // D-194: crear de una vez las carpetas de medios -- reporte
+            // del dueño en hardware real: podia copiar musica/fotos/
+            // video al iPod en modo disco (Finder los ve bien), pero el
+            // firmware no los reconocia. La carpeta correcta ya existia
+            // como convencion (PHOTOS_DIR "/Photos"/VIDEOS_DIR "/Videos"
+            // en aura_photos.c/aura_video.c, y LibrarySync ya escribe
+            // exactamente estos cuatro nombres) pero nunca se creaba de
+            // antemano -- si el usuario arrastraba archivos sueltos a la
+            // raiz del disco en vez de adivinar el nombre exacto de una
+            // carpeta que ni existia, el firmware nunca los encontraba.
+            // Crearlas ahora, vacias, hace el destino obvio en Finder.
+            for folder in ["Music", "Photos", "Videos", "Playlists"] {
+                try? fm.createDirectory(at: URL(fileURLWithPath: mountPath).appendingPathComponent(folder, isDirectory: true),
+                                         withIntermediateDirectories: true)
+            }
+
             if bootloaderAlreadyInstalled {
                 // El iPod llego aca desde el "Bootloader USB mode" de
                 // Aura: la NOR ya tiene el bootloader grabado, y el DFU
