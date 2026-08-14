@@ -88,6 +88,14 @@ final class InstallerViewModel: ObservableObject {
     /// iPod contra el tamaño descomprimido del zip -- `ditto` no
     /// reporta progreso propio.
     @Published private(set) var copyProgress: Double?
+    /// D-222 (encargo del dueño, 2026-08-14): "Actualizar" en General ya
+    /// no debe mandar al selector Instalar/Restaurar -- con Aura YA
+    /// instalado, reinstalar es sin DFU (ver `acknowledgeDeviceReady()`,
+    /// caso `firmware == .aura(hasBooted: true)`), así que alcanza con
+    /// mostrar una barra de progreso automática, sin ningún paso manual.
+    /// `InstallerHomeView` consulta esto para decidir si dibuja el
+    /// selector/asistente normal o `AutomaticUpdateView`.
+    @Published private(set) var isAutomaticUpdate = false
 
     init(monitor: IPodMonitor? = nil, executor: PrivilegedExecutor = PrivilegedExecutor()) {
         self.monitor = monitor ?? IPodMonitor()
@@ -201,6 +209,7 @@ final class InstallerViewModel: ObservableObject {
         copyProgress = nil
         lastError = nil
         chosenMode = nil
+        isAutomaticUpdate = false
         step = .welcome
     }
 
@@ -210,8 +219,21 @@ final class InstallerViewModel: ObservableObject {
     /// usuario navega de regreso a la seccion y reiniciaria un
     /// asistente en curso (D-187).
     func beginFlow(mode: InstallerMode) {
+        isAutomaticUpdate = false
         chosenMode = mode
         start(mode: mode)
+    }
+
+    /// D-222: cierra una actualización automática ya terminada (éxito o
+    /// error) y deja el ViewModel listo para que, si el usuario vuelve
+    /// a entrar a Instalador manualmente, encuentre el selector normal
+    /// -- no la barra de progreso ni un error viejo.
+    func dismissAutomaticUpdate() {
+        isAutomaticUpdate = false
+        chosenMode = nil
+        lastError = nil
+        copyProgress = nil
+        step = .welcome
     }
 
     /// Arranque directo para la instalacion automatica desde el modo
@@ -223,6 +245,28 @@ final class InstallerViewModel: ObservableObject {
     /// disco monto (el intento de montaje de D-182 lo logro), el mismo
     /// camino resuelve copiar sin formatear.
     func startAutoInstall() {
+        start(mode: .install)
+        step = .detectDevice
+        acknowledgeDeviceReady()
+    }
+
+    /// D-222 (encargo del dueño): "al darle al botón de 'actualizar',
+    /// en lugar de mandarnos a la sección de instalación... solo
+    /// deberá aparecer una barra de progreso... deberá ser automática
+    /// la instalación". Solo tiene sentido con Aura YA instalado (si no
+    /// hay Aura, no hay "actualizar" -- `updateSection` de
+    /// `DeviceGeneralView` ya solo se muestra en ese caso). Preserva el
+    /// modo dual/solo que el dispositivo YA tiene (`device.isDualBoot`)
+    /// en vez de volver a preguntarlo -- reutiliza exactamente el mismo
+    /// camino sin-DFU que `acknowledgeDeviceReady()` ya tomaba para
+    /// "Reinstalar Aura" manual (`bootloaderAlreadyInstalled`), solo
+    /// que saltando el selector/asistente por completo, mismo patrón
+    /// que `startAutoInstall()` (D-183) usa para el salto desde modo
+    /// bootloader.
+    func startAutomaticUpdate() {
+        isAutomaticUpdate = true
+        destroyOriginalFirmware = !(monitor.device?.isDualBoot ?? false)
+        chosenMode = .install
         start(mode: .install)
         step = .detectDevice
         acknowledgeDeviceReady()

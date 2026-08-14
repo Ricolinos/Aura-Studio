@@ -108,7 +108,9 @@ struct InstallerWizardView: View {
     }
 }
 
-private struct SimpleProgressView: View {
+/// D-222: ya no es `private` -- `AutomaticUpdateView` (sin wizard,
+/// solo barra de progreso) la reutiliza tal cual.
+struct SimpleProgressView: View {
     let title: String
     let message: String
     /// 0...1 para barra determinada (extraccion del arbol .rockbox,

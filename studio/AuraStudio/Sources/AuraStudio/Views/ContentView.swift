@@ -141,7 +141,16 @@ struct ContentView: View {
                               state: deviceMonitor.state,
                               library: library,
                               onEject: { await deviceMonitor.unmountCurrentDisk() },
-                              onUpdateAura: { selection = .installer },
+                              onUpdateAura: {
+                                  // D-222: "Actualizar" ya no manda al
+                                  // selector Instalar/Restaurar --
+                                  // dispara la actualizacion automatica
+                                  // (sin DFU, sin preguntar el modo de
+                                  // nuevo) y navega directo a la barra
+                                  // de progreso.
+                                  installer.startAutomaticUpdate()
+                                  selection = .installer
+                              },
                               updateAvailable: updateAvailable)
         case .music:
             MediaSectionView(kind: .music, viewModel: library, device: deviceMonitor.device)

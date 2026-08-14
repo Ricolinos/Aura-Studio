@@ -46,6 +46,7 @@
 		401404E1D0A6D6FFBB155F2C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14D5A27F7EA14F700832333A /* ContentView.swift */; };
 		4B759AD84EC1F5D6DD7ACD26 /* PathSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D5B4EBBD054DC5C0C28307 /* PathSanitizer.swift */; };
 		4CE07ED3A6AF6A3EA04D9A2C /* LibraryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62E6C2892E84F33B9EF97D15 /* LibraryItem.swift */; };
+		4D12212E13DA9BA4C48DC6C3 /* AutomaticUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 662698C2304CE8EC077B7FA6 /* AutomaticUpdateView.swift */; };
 		51B2A64027ACA8FC73EB923A /* MKS5LBootRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C70AA3068E3596A674879EA8 /* MKS5LBootRunnerTests.swift */; };
 		52A43D8ECC2CBF2433EA1B31 /* LibrarySync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CC2E3940E0EC5127461CB5 /* LibrarySync.swift */; };
 		57300DFC7BAED2805920E29F /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 7C461CE371AB2C341CE751F2 /* AppIcon.icon */; };
@@ -156,6 +157,7 @@
 		6311C9925925969ED5716A25 /* WrongVolumeRegressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WrongVolumeRegressionTests.swift; sourceTree = "<group>"; };
 		638FD209E9AF6417EE51ABC7 /* DiskArbitrationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskArbitrationMonitor.swift; sourceTree = "<group>"; };
 		63EEB772091BC184C410A194 /* MediaCategoryHeuristicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCategoryHeuristicsTests.swift; sourceTree = "<group>"; };
+		662698C2304CE8EC077B7FA6 /* AutomaticUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticUpdateView.swift; sourceTree = "<group>"; };
 		6C13F9E244B9751271DC8255 /* AudioTranscoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTranscoder.swift; sourceTree = "<group>"; };
 		6E5C06E65D1A04EAD003DE49 /* BackContinueRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackContinueRow.swift; sourceTree = "<group>"; };
 		722702AD0F209BDEA893FA8D /* MKS5LBootRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKS5LBootRunner.swift; sourceTree = "<group>"; };
@@ -226,6 +228,7 @@
 		05B2324DA2DF820F4758883E /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				662698C2304CE8EC077B7FA6 /* AutomaticUpdateView.swift */,
 				6E5C06E65D1A04EAD003DE49 /* BackContinueRow.swift */,
 				7E40BAA81737B8BE228F0A3F /* BatchMediaInfoView.swift */,
 				F462D2B7F9707F077FC4D782 /* BootModeView.swift */,
@@ -584,6 +587,7 @@
 				14B0C14393E1FF6AC7FACCFF /* AuraPalette.swift in Sources */,
 				203D6E1800BE63DFE89AB1C8 /* AuraStudioApp.swift in Sources */,
 				7128F973A9D8E656F326EB9F /* AuraUpdateChecker.swift in Sources */,
+				4D12212E13DA9BA4C48DC6C3 /* AutomaticUpdateView.swift in Sources */,
 				87EB236DAA29660FD987218F /* BackContinueRow.swift in Sources */,
 				B16222D07788E9A40141A546 /* BatchMediaInfoView.swift in Sources */,
 				D0949902B40FBA74F1D9D0D6 /* BootModeView.swift in Sources */,

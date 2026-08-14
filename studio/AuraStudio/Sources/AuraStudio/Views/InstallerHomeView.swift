@@ -24,7 +24,14 @@ struct InstallerHomeView: View {
 
     var body: some View {
         Group {
-            if viewModel.chosenMode != nil {
+            if viewModel.isAutomaticUpdate {
+                // D-222: "Actualizar" en General dispara esto en vez de
+                // navegar aca con el selector -- pero el usuario SI
+                // puede terminar viendo esta pantalla (navego a
+                // Instalador mientras la actualizacion seguia en
+                // curso), asi que tiene que verse bien por si sola.
+                AutomaticUpdateView(viewModel: viewModel)
+            } else if viewModel.chosenMode != nil {
                 InstallerWizardView(viewModel: viewModel)
             } else {
                 ModePickerView(device: monitor.device, state: monitor.state) { mode in
@@ -33,6 +40,7 @@ struct InstallerHomeView: View {
             }
         }
         .animation(.default, value: viewModel.chosenMode)
+        .animation(.default, value: viewModel.isAutomaticUpdate)
     }
 }
 
