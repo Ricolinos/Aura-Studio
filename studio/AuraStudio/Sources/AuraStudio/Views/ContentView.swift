@@ -112,9 +112,13 @@ struct ContentView: View {
             // Si la seccion activa quedo bloqueada (p.ej. se conecto un
             // iPod con firmware original mientras se miraba Musica), la
             // seleccion salta a General en vez de quedarse en una vista
-            // que ya no aplica.
+            // que ya no aplica. `.musicPlaylists` no esta en
+            // `deviceSections` (se renderiza anidada, no como fila de
+            // primer nivel -- ver SidebarView), pero debe bloquearse
+            // igual que el resto de Música.
             if locked, let current = selection,
-               current != .general, SidebarSection.deviceSections.contains(current) {
+               current != .general,
+               SidebarSection.deviceSections.contains(current) || current == .musicPlaylists {
                 selection = .general
             }
         }
@@ -153,11 +157,17 @@ struct ContentView: View {
                               },
                               updateAvailable: updateAvailable)
         case .music:
-            MediaSectionView(kind: .music, viewModel: library, device: deviceMonitor.device)
+            MediaSectionView(kind: .music, viewModel: library, device: deviceMonitor.device, preferences: preferences)
+        case .musicPlaylists:
+            // D-228: "Listas" ahora se llega directo desde la barra
+            // lateral, anidada bajo "Música" -- "onDismiss" vuelve a
+            // Música (mismo destino al que apuntaba el boton "Listo" de
+            // adentro de PlaylistsView cuando vivia como hoja/toggle).
+            PlaylistsView(viewModel: library) { selection = .music }
         case .video:
-            MediaSectionView(kind: .video, viewModel: library, device: deviceMonitor.device)
+            MediaSectionView(kind: .video, viewModel: library, device: deviceMonitor.device, preferences: preferences)
         case .photos:
-            MediaSectionView(kind: .photo, viewModel: library, device: deviceMonitor.device)
+            MediaSectionView(kind: .photo, viewModel: library, device: deviceMonitor.device, preferences: preferences)
         case .extras:
             ExtrasView(device: deviceMonitor.device)
         case .installer:
@@ -179,6 +189,14 @@ struct ContentView: View {
 enum SidebarSection: Hashable, CaseIterable {
     case general
     case music
+    /// D-228: "Listas" (playlists), anidada bajo "Música" en la barra
+    /// lateral -- antes solo se llegaba con un boton dentro de
+    /// `MediaSectionView`. NO forma parte de `deviceSections` (ese
+    /// array arma las filas de PRIMER NIVEL de la lista; esta se
+    /// renderiza aparte, anidada, ver `SidebarView.body`), pero SI debe
+    /// bloquearse junto con el resto cuando `libraryLocked` -- ver el
+    /// chequeo explicito en `ContentView.body`.
+    case musicPlaylists
     case video
     case photos
     case extras
@@ -187,13 +205,14 @@ enum SidebarSection: Hashable, CaseIterable {
 
     var title: String {
         switch self {
-        case .general:   return S.general.text
-        case .music:     return S.music.text
-        case .video:     return S.video.text
-        case .photos:    return S.photos.text
-        case .extras:    return S.extras.text
-        case .installer: return S.installer.text
-        case .settings:  return S.settings.text
+        case .general:        return S.general.text
+        case .music:          return S.music.text
+        case .musicPlaylists: return S.playlists.text
+        case .video:          return S.video.text
+        case .photos:         return S.photos.text
+        case .extras:         return S.extras.text
+        case .installer:      return S.installer.text
+        case .settings:       return S.settings.text
         }
     }
 
@@ -205,15 +224,18 @@ enum SidebarSection: Hashable, CaseIterable {
     /// (`play.rectangle` = Videos, `gear` = Configuracion); `extras`
     /// toma `square.grid.2x2`, tambien canonico ahi, en vez del
     /// generico `puzzlepiece.extension.fill` que tenia antes.
+    /// `musicPlaylists` toma `music.note.list`, mismo simbolo que ya
+    /// usaba el boton "Playlists" que reemplaza (`MediaSectionView`).
     var symbol: String {
         switch self {
-        case .general:   return "info.circle"
-        case .music:     return "music.note"
-        case .video:     return "play.rectangle"
-        case .photos:    return "photo"
-        case .extras:    return "square.grid.2x2"
-        case .installer: return "square.and.arrow.down"
-        case .settings:  return "gear"
+        case .general:        return "info.circle"
+        case .music:          return "music.note"
+        case .musicPlaylists: return "music.note.list"
+        case .video:          return "play.rectangle"
+        case .photos:         return "photo"
+        case .extras:         return "square.grid.2x2"
+        case .installer:      return "square.and.arrow.down"
+        case .settings:       return "gear"
         }
     }
 
@@ -225,16 +247,37 @@ private struct SidebarView: View {
     @Binding var selection: SidebarSection?
     let device: AuraDevice?
     let libraryLocked: Bool
+    /// D-228: "Listas" nace expandida -- tiene que ser facil de
+    /// encontrar, no un submenu escondido por default.
+    @State private var musicExpanded = true
 
     var body: some View {
         List(selection: $selection) {
             Section(header: deviceHeader) {
                 ForEach(SidebarSection.deviceSections, id: \.self) { section in
-                    Label(section.title, systemImage: section.symbol)
-                        .tag(section)
-                        // General queda siempre accesible: es donde se
-                        // explica QUE firmware hay y que hacer con el.
-                        .disabled(libraryLocked && section != .general)
+                    if section == .music {
+                        // "Música" se puede abrir/cerrar SIN cambiar la
+                        // seleccion (el `DisclosureGroup` solo expande),
+                        // pero tocar el label de "Música" en si sigue
+                        // seleccionando `.music` directo -- son dos
+                        // gestos independientes gracias al `.tag()`
+                        // propio en el label Y en la fila anidada.
+                        DisclosureGroup(isExpanded: $musicExpanded) {
+                            Label(SidebarSection.musicPlaylists.title, systemImage: SidebarSection.musicPlaylists.symbol)
+                                .tag(SidebarSection.musicPlaylists)
+                                .disabled(libraryLocked)
+                        } label: {
+                            Label(section.title, systemImage: section.symbol)
+                                .tag(section)
+                                .disabled(libraryLocked && section != .general)
+                        }
+                    } else {
+                        Label(section.title, systemImage: section.symbol)
+                            .tag(section)
+                            // General queda siempre accesible: es donde se
+                            // explica QUE firmware hay y que hacer con el.
+                            .disabled(libraryLocked && section != .general)
+                    }
                 }
             }
             Section("Aura Studio") {

@@ -5,10 +5,10 @@ import ImageIO
 /// delega la decision a `MediaCategoryHeuristics` (logica pura,
 /// testeable sin tocar disco).
 enum MediaCategoryClassifier {
-    static func classifyPhoto(at url: URL) -> MediaCategory {
+    static func classifyPhoto(at url: URL) -> String {
         guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
               let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any] else {
-            return .images
+            return "Imágenes"
         }
         let exif = properties[kCGImagePropertyExifDictionary] as? [CFString: Any]
         let tiff = properties[kCGImagePropertyTIFFDictionary] as? [CFString: Any]

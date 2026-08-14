@@ -192,10 +192,11 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(photoQuality.rawValue, forKey: Keys.photoQuality) }
     }
 
-    /// Agrupar fotos/videos por categoria (Imagenes/Fotos/Hechas con IA;
-    /// Caseros/Videos/Peliculas) SOLO dentro de la biblioteca de Aura
-    /// Studio -- es una ayuda para que el usuario encuentre las cosas en
-    /// la app. NO cambia la carpeta donde se sincronizan en el iPod
+    /// Agrupar fotos/videos por categoria (fotos: colecciones editables,
+    /// ver `photoCollections` abajo; videos: Videos/Series/Películas)
+    /// SOLO dentro de la biblioteca de Aura Studio -- es una ayuda para
+    /// que el usuario encuentre las cosas en la app. NO cambia la
+    /// carpeta donde se sincronizan en el iPod
     /// (`Photos/`/`Videos/`, siempre planas): el navegador de fotos/
     /// video del firmware todavia no recorre subcarpetas (ver
     /// aura_photos.c/aura_video.c, D-062 sigue pendiente como su propia
@@ -208,6 +209,48 @@ final class AppPreferences: ObservableObject {
 
     @Published var organizeVideosByCategory: Bool {
         didSet { defaults.set(organizeVideosByCategory, forKey: Keys.organizeVideosByCategory) }
+    }
+
+    /// Colecciones de fotos DENTRO de la biblioteca de Aura Studio
+    /// (D-228): a diferencia de las categorias de video (fijas, ver
+    /// `MediaCategory`), el dueño pidio que estas fueran editables sin
+    /// tocar codigo -- se agregan/quitan desde Ajustes → Fotos. Cada
+    /// nombre es ademas una subcarpeta real dentro de `Imágenes/` en la
+    /// biblioteca local (ver `LibrarySync.localLibraryRelativePath`).
+    /// Persistida como lista separada por comas, mismo criterio que
+    /// `coverArtProviderOrder`. Quitar una coleccion de esta lista NO le
+    /// cambia el valor a los items ya etiquetados con ella -- mismo
+    /// comportamiento que borrar un tag no des-etiqueta lo existente.
+    @Published var photoCollections: [String] {
+        didSet {
+            defaults.set(photoCollections.joined(separator: ","), forKey: Keys.photoCollections)
+        }
+    }
+
+    /// Mismos tres nombres que sugiere `MediaCategoryHeuristics.
+    /// classifyPhoto` -- asi "recien instalado, sin tocar nada" clasifica
+    /// igual que antes de que esto fuera editable.
+    static let defaultPhotoCollections = ["Imágenes", "Fotos", "IA"]
+
+    /// Ignora nombres vacios/duplicados -- una coleccion repetida no
+    /// tendria sentido en el picker (dos filas identicas para elegir).
+    /// Tambien quita comas: `photoCollections` se persiste como lista
+    /// separada por comas (mismo criterio que `coverArtProviderOrder`),
+    /// y a diferencia de esa lista (valores fijos de un enum, nunca
+    /// llevan coma) esta es texto libre del usuario -- una coma en el
+    /// nombre partiria la entrada en dos al releer.
+    func addPhotoCollection(_ name: String) {
+        let trimmed = name
+            .replacingOccurrences(of: ",", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, !photoCollections.contains(trimmed) else { return }
+        photoCollections.append(trimmed)
+    }
+
+    /// No toca los items ya etiquetados con `name` -- ver doc-comment de
+    /// `photoCollections`.
+    func removePhotoCollection(_ name: String) {
+        photoCollections.removeAll { $0 == name }
     }
 
     /// D-203: orden de intento para resolver caratula cuando falta.
@@ -253,6 +296,7 @@ final class AppPreferences: ObservableObject {
         static let photoQuality = "aura.photoQuality"
         static let organizePhotosByCategory = "aura.organizePhotosByCategory"
         static let organizeVideosByCategory = "aura.organizeVideosByCategory"
+        static let photoCollections = "aura.photoCollections"
         static let coverArtProviderOrder = "aura.coverArtProviderOrder"
         static let deezerEnabled = "aura.deezerEnabled"
     }
@@ -278,6 +322,11 @@ final class AppPreferences: ObservableObject {
             .flatMap(PhotoQuality.init(rawValue:))) ?? .optimized
         self.organizePhotosByCategory = defaults.object(forKey: Keys.organizePhotosByCategory) as? Bool ?? true
         self.organizeVideosByCategory = defaults.object(forKey: Keys.organizeVideosByCategory) as? Bool ?? true
+        let storedCollections = defaults.string(forKey: Keys.photoCollections)?
+            .split(separator: ",")
+            .map { String($0) }
+            .filter { !$0.isEmpty } ?? []
+        self.photoCollections = storedCollections.isEmpty ? Self.defaultPhotoCollections : storedCollections
         let storedOrder = defaults.string(forKey: Keys.coverArtProviderOrder)?
             .split(separator: ",")
             .compactMap { CoverArtProvider(rawValue: String($0)) } ?? []

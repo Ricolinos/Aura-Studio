@@ -30,15 +30,18 @@ struct MediaSectionView: View {
     /// para saber que elementos ya llegaron al dispositivo. `nil` sin
     /// iPod conectado, y entonces nada se marca como sincronizado.
     let device: AuraDevice?
+    /// D-228: de aca salen las colecciones de fotos editables
+    /// (`photoCollections`) que arma el picker/filtro para `.photo` --
+    /// video sigue usando el conjunto fijo de `MediaCategory`.
+    @ObservedObject var preferences: AppPreferences
 
     @State private var isTargeted = false
     @State private var reviewingItem: LibraryItem?
     @State private var renamingItem: LibraryItem?
-    @State private var showingPlaylists = false
     @State private var selection: Set<UUID> = []
     @State private var sortOrder: [KeyPathComparator<MediaTableRow>] = [.init(\.title, order: .forward)]
     @State private var quickLook = QuickLookCoordinator()
-    @State private var categoryFilter: MediaCategory?
+    @State private var categoryFilter: String?
     /// Columnas extra visibles (D-199, boton "+" de la barra de
     /// herramientas) -- persiste por tipo de medio en UserDefaults, asi
     /// que Musica/Video/Fotos recuerdan su propia eleccion.
@@ -77,11 +80,15 @@ struct MediaSectionView: View {
 
     /// Solo fotos y video se organizan por categoria (D-192) -- musica
     /// usa carpetas de artista/album, y eso ya se elige en Ajustes, no
-    /// aca por elemento.
-    private var availableCategories: [MediaCategory]? {
+    /// aca por elemento. Foto usa la lista libre de `preferences.
+    /// photoCollections` (D-228: editable por el usuario); video sigue
+    /// el conjunto fijo de `MediaCategory` (nunca cambia, asi que se
+    /// convierte a `displayName` aca mismo para que ambos casos
+    /// devuelvan `[String]`).
+    private var availableCategories: [String]? {
         switch kind {
-        case .photo: return MediaCategory.photoCategories
-        case .video: return MediaCategory.videoCategories
+        case .photo: return preferences.photoCollections
+        case .video: return MediaCategory.videoCategories.map(\.displayName)
         default: return nil
         }
     }
@@ -134,13 +141,6 @@ struct MediaSectionView: View {
                     .disabled(selectedItem == nil)
                     .help("Editar metadata y letra de la canción seleccionada")
                 }
-                ToolbarItem {
-                    Button {
-                        showingPlaylists = true
-                    } label: {
-                        Label("Playlists", systemImage: "music.note.list")
-                    }
-                }
             }
         }
         .onAppear {
@@ -149,9 +149,6 @@ struct MediaSectionView: View {
         }
         .onChange(of: device) { _ in refreshSyncedItems() }
         .onChange(of: viewModel.lastSyncSummary) { _ in refreshSyncedItems() }
-        .sheet(isPresented: $showingPlaylists) {
-            PlaylistsView(viewModel: viewModel) { showingPlaylists = false }
-        }
         .sheet(item: $reviewingItem) { item in
             MediaInfoView(item: item, availableCategories: availableCategories) { category in
                 viewModel.setCategory(category, forItem: item.id)
@@ -503,8 +500,8 @@ struct MediaSectionView: View {
 
         if let availableCategories, !targetItems.isEmpty {
             Menu("Cambiar categoría") {
-                ForEach(availableCategories) { category in
-                    Button(category.displayName) {
+                ForEach(availableCategories, id: \.self) { category in
+                    Button(category) {
                         for item in targetItems { viewModel.setCategory(category, forItem: item.id) }
                     }
                 }
@@ -544,11 +541,11 @@ struct MediaSectionView: View {
         .disabled(targetItems.isEmpty)
     }
 
-    private func categoryFilterBar(_ categories: [MediaCategory]) -> some View {
+    private func categoryFilterBar(_ categories: [String]) -> some View {
         HStack(spacing: 8) {
             filterChip(label: "Todas", isSelected: categoryFilter == nil) { categoryFilter = nil }
-            ForEach(categories) { category in
-                filterChip(label: category.displayName, isSelected: categoryFilter == category) {
+            ForEach(categories, id: \.self) { category in
+                filterChip(label: category, isSelected: categoryFilter == category) {
                     categoryFilter = category
                 }
             }
@@ -616,7 +613,7 @@ struct MediaTableRow: Identifiable {
     var artist: String { item.metadata?.artist ?? "" }
     var album: String { item.metadata?.album ?? "" }
     var genre: String { item.metadata?.genre ?? "" }
-    var category: String { item.category?.displayName ?? "" }
+    var category: String { item.category ?? "" }
     var durationSeconds: Double { item.metadata?.durationSeconds ?? 0 }
 
     var durationText: String {

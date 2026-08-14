@@ -8,9 +8,11 @@ import SwiftUI
 /// a `MetadataReviewView` como superconjunto de lo mismo.
 struct MediaInfoView: View {
     let item: LibraryItem
-    /// Solo no-nil para fotos/video (D-192).
-    var availableCategories: [MediaCategory]?
-    var onCategoryChanged: (MediaCategory) -> Void = { _ in }
+    /// Solo no-nil para fotos/video (D-192). Foto: colecciones libres de
+    /// `AppPreferences.photoCollections` (D-228); video: los 3 nombres
+    /// fijos de `MediaCategory`.
+    var availableCategories: [String]?
+    var onCategoryChanged: (String) -> Void = { _ in }
     var onRatingChanged: (Int?) -> Void = { _ in }
     let onSave: (TrackMetadata) -> Void
     let onCancel: () -> Void
@@ -28,8 +30,8 @@ struct MediaInfoView: View {
     @State private var lyrics: String
     @State private var rating: Int
 
-    init(item: LibraryItem, availableCategories: [MediaCategory]? = nil,
-         onCategoryChanged: @escaping (MediaCategory) -> Void = { _ in },
+    init(item: LibraryItem, availableCategories: [String]? = nil,
+         onCategoryChanged: @escaping (String) -> Void = { _ in },
          onRatingChanged: @escaping (Int?) -> Void = { _ in },
          onSave: @escaping (TrackMetadata) -> Void, onCancel: @escaping () -> Void) {
         self.item = item
@@ -167,15 +169,15 @@ struct MediaInfoView: View {
         }
     }
 
-    private func categorySection(_ categories: [MediaCategory]) -> some View {
+    private func categorySection(_ categories: [String]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Categoría").font(.callout)
             Picker("Categoría", selection: Binding(
-                get: { item.category ?? categories[0] },
+                get: { item.category ?? categories.first ?? "" },
                 set: { onCategoryChanged($0) }
             )) {
-                ForEach(categories) { category in
-                    Text(category.displayName).tag(category)
+                ForEach(categories, id: \.self) { category in
+                    Text(category).tag(category)
                 }
             }
             .labelsHidden()

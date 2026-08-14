@@ -32,15 +32,19 @@ final class LibraryViewModel: ObservableObject {
     private var cancellables: Set<AnyCancellable> = []
 
     /// Carpeta de la biblioteca Aura (D-180): raiz elegida en Ajustes.
-    /// Todo lo que entra a la biblioteca se COPIA a `Originales/` (los
-    /// archivos del usuario jamas se tocan), lo preparado vive en
-    /// `Preparados/` (antes era un directorio temporal que macOS podia
-    /// purgar), y el catalogo (`biblioteca.json`) hace que la
-    /// biblioteca sobreviva reinicios de la app -- con o sin iPod.
+    /// Todo lo que entra a la biblioteca se COPIA, organizada por tipo
+    /// (D-228: `Música/<Artista>/<Álbum>/`, `Imágenes/<Colección>/`,
+    /// `Videos/<Categoría>/` -- los archivos del usuario jamas se
+    /// tocan), lo preparado vive en `.preparados/` (antes era un
+    /// directorio temporal que macOS podia purgar), y el catalogo
+    /// (`biblioteca.json`) hace que la biblioteca sobreviva reinicios de
+    /// la app -- con o sin iPod.
     private(set) var libraryRoot: URL
     private var stagingDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.preparedDirName, isDirectory: true) }
-    private var originalsDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.originalsDirName, isDirectory: true) }
     private var coversDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.coversDirName, isDirectory: true) }
+    private var musicDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.musicDirName, isDirectory: true) }
+    private var imagesDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.imagesDirName, isDirectory: true) }
+    private var videosDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.videosDirName, isDirectory: true) }
     private var catalogURL: URL { libraryRoot.appendingPathComponent(PersistedLibrary.catalogFileName) }
 
     /// `preferences` es opcional y no `= .shared` como default: un valor
@@ -56,6 +60,7 @@ final class LibraryViewModel: ObservableObject {
         self.preferences = prefs
         self.libraryRoot = libraryRoot ?? URL(fileURLWithPath: prefs.libraryFolderPath, isDirectory: true)
         ensureLibraryStructure()
+        migrateLegacyLibraryLayoutIfNeeded()
         loadCatalog()
 
         // Cambiar la carpeta en Ajustes recarga la biblioteca desde el
@@ -73,50 +78,100 @@ final class LibraryViewModel: ObservableObject {
         items.filter { $0.status == .needsReview }
     }
 
-    /// Con `copyMediaIntoLibrary` activo (default): copia cada archivo a
-    /// `Originales/` y la biblioteca referencia LA COPIA -- el archivo
-    /// original del usuario queda intacto donde estaba (encargo del
-    /// dueño: "para no modificar nuestros archivos originales").
-    /// Colisiones de nombre se resuelven con sufijo numerico, nunca
-    /// pisando lo que ya estaba.
-    ///
-    /// Con el ajuste apagado (encargo del dueño, 2026-08-13): el item
-    /// referencia el archivo original DIRECTO, sin copiarlo -- nada se
-    /// duplica en disco. `relativePath(of:)` ya sabe guardar una ruta
-    /// absoluta en el catalogo cuando el archivo no vive dentro de la
-    /// biblioteca (ver `loadCatalog`, que la reconoce de vuelta).
+    /// D-228: el item SIEMPRE arranca apuntando al archivo original de
+    /// donde vino -- ya no se copia aca. Con `copyMediaIntoLibrary`
+    /// activo, la copia a la biblioteca (organizada por artista/album o
+    /// categoria) pasa a `process(itemAt:)`, DESPUES de resolver esa
+    /// metadata/categoria (ver comentario ahi): antes de eso todavia no
+    /// se sabe en que carpeta va a terminar. Con el ajuste apagado
+    /// (encargo del dueño, 2026-08-13), el item sigue referenciando el
+    /// original para siempre, sin copiarlo -- `relativePath(of:)` ya
+    /// sabe guardar una ruta absoluta en el catalogo cuando el archivo
+    /// no vive dentro de la biblioteca (ver `loadCatalog`, que la
+    /// reconoce de vuelta).
     func addDroppedFiles(_ urls: [URL]) {
         ensureLibraryStructure()
-        var new: [LibraryItem] = []
-        for url in urls where LibraryItemKind.classify(url: url) != .unsupported {
-            if preferences.copyMediaIntoLibrary {
-                do {
-                    let copy = try copyToOriginals(url)
-                    new.append(LibraryItem(sourceURL: copy))
-                } catch {
-                    lastError = "No se pudo copiar \(url.lastPathComponent) a la biblioteca: \(error.localizedDescription)"
-                }
-            } else {
-                new.append(LibraryItem(sourceURL: url))
-            }
-        }
+        let new = urls
+            .filter { LibraryItemKind.classify(url: $0) != .unsupported }
+            .map { LibraryItem(sourceURL: $0) }
         items.append(contentsOf: new)
         persistCatalog()
     }
 
-    private func copyToOriginals(_ url: URL) throws -> URL {
+    /// Resuelve un destino sin colisiones para `relativePath` (creando
+    /// las carpetas intermedias que hagan falta) -- compartido por
+    /// `copyIntoLibrary`/`moveIntoLibrary` de abajo, que solo difieren
+    /// en si copian o mueven. Mismo esquema de sufijo numerico de
+    /// siempre ("nombre 2.ext", "nombre 3.ext"...), ahora dentro de la
+    /// carpeta final del item en vez de una unica carpeta plana
+    /// compartida por toda la biblioteca.
+    private func resolveNonCollidingDestination(relativePath: String) throws -> URL {
         let fm = FileManager.default
-        let base = url.deletingPathExtension().lastPathComponent
-        let ext = url.pathExtension
-        var candidate = originalsDirectory.appendingPathComponent(url.lastPathComponent)
+        let destinationURL = libraryRoot.appendingPathComponent(relativePath)
+        let destinationDir = destinationURL.deletingLastPathComponent()
+        try fm.createDirectory(at: destinationDir, withIntermediateDirectories: true)
+
+        let base = destinationURL.deletingPathExtension().lastPathComponent
+        let ext = destinationURL.pathExtension
+        var candidate = destinationURL
         var counter = 2
         while fm.fileExists(atPath: candidate.path) {
             let name = ext.isEmpty ? "\(base) \(counter)" : "\(base) \(counter).\(ext)"
-            candidate = originalsDirectory.appendingPathComponent(name)
+            candidate = destinationDir.appendingPathComponent(name)
             counter += 1
         }
-        try fm.copyItem(at: url, to: candidate)
         return candidate
+    }
+
+    /// Copia `url` a su carpeta final en la biblioteca (D-228) --
+    /// reemplaza el viejo `copyToOriginals`, que copiaba TODO a una
+    /// unica carpeta plana ANTES de saber tipo/artista/album/categoria.
+    private func copyIntoLibrary(_ url: URL, relativePath: String) throws -> URL {
+        let destination = try resolveNonCollidingDestination(relativePath: relativePath)
+        try FileManager.default.copyItem(at: url, to: destination)
+        return destination
+    }
+
+    /// Variante que MUEVE en vez de copiar -- solo para la migracion del
+    /// esquema viejo (D-228, ver `migrateLegacyLibraryLayoutIfNeeded`),
+    /// que reubica archivos que YA estaban en la biblioteca (copiarlos
+    /// dejaria un duplicado huerfano atras).
+    private func moveIntoLibrary(_ url: URL, relativePath: String) throws -> URL {
+        let destination = try resolveNonCollidingDestination(relativePath: relativePath)
+        try FileManager.default.moveItem(at: url, to: destination)
+        return destination
+    }
+
+    /// Copia el original a su carpeta final (Música/Imágenes/Videos,
+    /// D-228) la PRIMERA vez que el item se procesa -- nunca en
+    /// `addDroppedFiles`, porque recien aca existe la metadata/
+    /// categoria que decide esa carpeta. El guard de "ya esta adentro"
+    /// evita que reprocesar un item ya copiado (`applyReview`/
+    /// `reenrichOnline`, que vuelven a llamar a `prepareMusic` por
+    /// `process`) lo copie de nuevo o lo duplique. Un fallo de copia
+    /// (disco lleno, permisos) no aborta el procesamiento: el item
+    /// sigue preparandose/sincronizandose desde el original externo,
+    /// solo se queda sin copia local (mismo estilo de mensaje que el
+    /// `catch` que tenia `addDroppedFiles` antes de este cambio).
+    private func copyIntoLibraryIfNeeded(itemAt index: Int) {
+        guard preferences.copyMediaIntoLibrary, !isInsideLibrary(items[index].sourceURL) else { return }
+        let item = items[index]
+        let fileName = item.sourceURL.lastPathComponent
+        let relativePath = LibrarySync.localLibraryRelativePath(
+            for: item, kind: item.kind, fileName: fileName,
+            organizePhotosByCategory: preferences.organizePhotosByCategory,
+            organizeVideosByCategory: preferences.organizeVideosByCategory)
+        do {
+            items[index].sourceURL = try copyIntoLibrary(item.sourceURL, relativePath: relativePath)
+        } catch {
+            lastError = "No se pudo copiar \(fileName) a la biblioteca: \(error.localizedDescription)"
+        }
+    }
+
+    private func isInsideLibrary(_ url: URL) -> Bool {
+        let rootPath = libraryRoot.standardizedFileURL.path
+        let path = url.standardizedFileURL.path
+        return path.hasPrefix(rootPath + "/")
     }
 
     func processAll() async {
@@ -151,7 +206,11 @@ final class LibraryViewModel: ObservableObject {
                     metadata.durationSeconds = duration
                 }
                 items[index].metadata = metadata
-                items[index].preparedURL = try prepareMusic(item: item, metadata: metadata)
+                // D-228: recien aca existe la metadata que decide la
+                // carpeta (Música/<Artista>/<Álbum>/) -- por eso la copia
+                // a la biblioteca pasa por aca y no por `addDroppedFiles`.
+                copyIntoLibraryIfNeeded(itemAt: index)
+                items[index].preparedURL = try prepareMusic(item: items[index], metadata: metadata)
                 items[index].status = metadata.isComplete ? .ready : .needsReview
 
             case .video:
@@ -159,16 +218,21 @@ final class LibraryViewModel: ObservableObject {
                 let transcoder = try FFmpegTranscoder()
                 let duration = try? FFmpegTranscoder.probeDurationSeconds(of: item.sourceURL, ffmpegURL: transcoder.ffmpegURL)
                 if items[index].category == nil {
-                    items[index].category = MediaCategoryHeuristics.classifyVideo(durationSeconds: duration ?? nil)
+                    items[index].category = MediaCategoryHeuristics.classifyVideo(durationSeconds: duration ?? nil).displayName
                 }
                 items[index].metadata = TrackMetadata(durationSeconds: duration ?? nil)
-                let output = stagingDirectory.appendingPathComponent(item.sourceURL.deletingPathExtension().lastPathComponent + ".mpg")
+                // D-228: la categoria ya esta resuelta -- copia a
+                // Videos/<Categoría>/ (o Videos/ plano si el ajuste esta
+                // apagado) antes de transcodificar.
+                copyIntoLibraryIfNeeded(itemAt: index)
+                let sourceURL = items[index].sourceURL
+                let output = stagingDirectory.appendingPathComponent(sourceURL.deletingPathExtension().lastPathComponent + ".mpg")
                 /// El callback de ffmpeg corre en el hilo de lectura del
                 /// pipe (readabilityHandler), no en el MainActor -- hay
                 /// que saltar de vuelta explicitamente para tocar
                 /// `items`, que ObservableObject espera mutar solo desde
                 /// el actor principal.
-                try transcoder.transcode(input: item.sourceURL, output: output) { fraction in
+                try transcoder.transcode(input: sourceURL, output: output) { fraction in
                     Task { @MainActor [weak self] in
                         guard let self, index < self.items.count else { return }
                         self.items[index].status = .transcoding(progress: fraction)
@@ -190,8 +254,13 @@ final class LibraryViewModel: ObservableObject {
                 if items[index].category == nil {
                     items[index].category = MediaCategoryClassifier.classifyPhoto(at: item.sourceURL)
                 }
-                let output = stagingDirectory.appendingPathComponent(item.sourceURL.deletingPathExtension().lastPathComponent + ".jpg")
-                try ImageResizer.resizeToLCDOptimal(sourceURL: item.sourceURL, destinationURL: output,
+                // D-228: la coleccion ya esta resuelta -- copia a
+                // Imágenes/<Colección>/ (o Imágenes/ plano si el ajuste
+                // esta apagado) antes de redimensionar.
+                copyIntoLibraryIfNeeded(itemAt: index)
+                let sourceURL = items[index].sourceURL
+                let output = stagingDirectory.appendingPathComponent(sourceURL.deletingPathExtension().lastPathComponent + ".jpg")
+                try ImageResizer.resizeToLCDOptimal(sourceURL: sourceURL, destinationURL: output,
                                                      maxDimension: preferences.photoQuality.maxDimension)
                 items[index].preparedURL = output
                 items[index].status = .ready
@@ -279,11 +348,12 @@ final class LibraryViewModel: ObservableObject {
         persistCatalog()
     }
 
-    /// Correccion manual de la categoria sugerida (Imagenes/Fotos/
-    /// Hechas con IA, Caseros/Videos/Peliculas) desde la vista de
-    /// biblioteca (Fase 1B) -- la heuristica automatica de
-    /// `MediaCategoryClassifier` es solo un punto de partida.
-    func setCategory(_ category: MediaCategory, forItem id: UUID) {
+    /// Correccion manual de la categoria/coleccion sugerida (foto: una
+    /// de `AppPreferences.photoCollections`; video: uno de los 3
+    /// nombres fijos de `MediaCategory`) desde la vista de biblioteca
+    /// (Fase 1B) -- la heuristica automatica de `MediaCategoryClassifier`/
+    /// `MediaCategoryHeuristics` es solo un punto de partida.
+    func setCategory(_ category: String, forItem id: UUID) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
         items[index].category = category
         persistCatalog()
@@ -292,8 +362,9 @@ final class LibraryViewModel: ObservableObject {
     // MARK: - Menu contextual de la tabla de biblioteca (D-198)
 
     /// Quita items de la biblioteca -- borra tambien lo que Aura Studio
-    /// escribio para ellos (`Preparados/`/`Portadas/`, y `Originales/`
-    /// si `copyMediaIntoLibrary` copio el archivo) para no dejar huerfanos.
+    /// escribio para ellos (`.preparados/`/`.portadas/`, y la copia
+    /// dentro de `Música`/`Imágenes`/`Videos` si `copyMediaIntoLibrary`
+    /// copio el archivo) para no dejar huerfanos.
     /// El original del usuario NUNCA se toca si esta fuera de la
     /// biblioteca (modo "sin copiar medios", D-192). Tambien los saca de
     /// cualquier playlist que los referenciara.
@@ -562,7 +633,7 @@ final class LibraryViewModel: ObservableObject {
 
     private func ensureLibraryStructure() {
         let fm = FileManager.default
-        for dir in [libraryRoot, originalsDirectory, stagingDirectory, coversDirectory] {
+        for dir in [libraryRoot, musicDirectory, imagesDirectory, videosDirectory, stagingDirectory, coversDirectory] {
             try? fm.createDirectory(at: dir, withIntermediateDirectories: true)
         }
     }
@@ -570,9 +641,136 @@ final class LibraryViewModel: ObservableObject {
     private func switchLibraryFolder(to newPath: String) {
         libraryRoot = URL(fileURLWithPath: newPath, isDirectory: true)
         ensureLibraryStructure()
+        migrateLegacyLibraryLayoutIfNeeded()
         items = []
         playlists = []
         loadCatalog()
+    }
+
+    // MARK: - Migracion del esquema viejo (D-228)
+
+    /// Bibliotecas armadas ANTES de D-228 tienen todo plano en
+    /// `Originales/`/`Preparados/`/`Portadas/`. Se corre UNA SOLA VEZ,
+    /// antes de que el resto de la app empiece a leer el catalogo
+    /// (`ensureLibraryStructure` ya creo las carpetas nuevas para
+    /// cuando esto corre), para que nunca convivan las dos estructuras.
+    /// Idempotente (si ninguna de las tres carpetas viejas existe, no
+    /// hace nada -- seguro de llamar en cada arranque) y best-effort de
+    /// punta a punta: nada de esto deberia poder tirar la app abajo por
+    /// una biblioteca vieja con algun archivo raro.
+    private func migrateLegacyLibraryLayoutIfNeeded() {
+        let fm = FileManager.default
+        let legacyOriginals = libraryRoot.appendingPathComponent(PersistedLibrary.legacyOriginalsDirName, isDirectory: true)
+        let legacyPrepared = libraryRoot.appendingPathComponent(PersistedLibrary.legacyPreparedDirName, isDirectory: true)
+        let legacyCovers = libraryRoot.appendingPathComponent(PersistedLibrary.legacyCoversDirName, isDirectory: true)
+        guard fm.fileExists(atPath: legacyOriginals.path)
+            || fm.fileExists(atPath: legacyPrepared.path)
+            || fm.fileExists(atPath: legacyCovers.path) else { return }
+
+        // Se lee/escribe el `PersistedLibrary` crudo directo del disco
+        // (no `self.items`, que todavia esta vacio a esta altura --
+        // `loadCatalog()` corre DESPUES de esto) para no duplicar la
+        // logica de lectura/escritura del catalogo.
+        guard let data = try? Data(contentsOf: catalogURL),
+              var persisted = try? JSONDecoder().decode(PersistedLibrary.self, from: data) else { return }
+
+        var changed = false
+        let originalsPrefix = "\(PersistedLibrary.legacyOriginalsDirName)/"
+        let preparedPrefix = "\(PersistedLibrary.legacyPreparedDirName)/"
+        let coversPrefix = "\(PersistedLibrary.legacyCoversDirName)/"
+
+        for index in persisted.items.indices {
+            let item = persisted.items[index]
+
+            if item.sourceRelativePath.hasPrefix(originalsPrefix),
+               let newPath = migrateLegacySourceFile(item) {
+                persisted.items[index].sourceRelativePath = newPath
+                changed = true
+            }
+
+            if let prepared = item.preparedRelativePath, prepared.hasPrefix(preparedPrefix) {
+                let suffix = String(prepared.dropFirst(preparedPrefix.count))
+                let newRelative = "\(PersistedLibrary.preparedDirName)/\(suffix)"
+                if moveLegacyFlatFile(fromRelative: prepared, toRelative: newRelative) {
+                    persisted.items[index].preparedRelativePath = newRelative
+                    changed = true
+                }
+            }
+
+            if let cover = item.coverRelativePath, cover.hasPrefix(coversPrefix) {
+                let suffix = String(cover.dropFirst(coversPrefix.count))
+                let newRelative = "\(PersistedLibrary.coversDirName)/\(suffix)"
+                if moveLegacyFlatFile(fromRelative: cover, toRelative: newRelative) {
+                    persisted.items[index].coverRelativePath = newRelative
+                    changed = true
+                }
+            }
+        }
+
+        // Best-effort: si quedo algo adentro (p.ej. un `.DS_Store` que
+        // Finder dejo caer), se deja la carpeta en paz -- no es un
+        // `rm -rf`, es "borrar solo si ya esta vacia".
+        removeLegacyDirectoryIfEmpty(legacyOriginals)
+        removeLegacyDirectoryIfEmpty(legacyPrepared)
+        removeLegacyDirectoryIfEmpty(legacyCovers)
+
+        guard changed else { return }
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        if let data = try? encoder.encode(persisted) {
+            try? data.write(to: catalogURL, options: .atomic)
+        }
+    }
+
+    /// Mueve el original de un item (`Originales/...` viejo) a su
+    /// carpeta nueva por tipo/artista/album/categoria -- misma logica
+    /// de ruta que la copia en vivo (`LibrarySync.
+    /// localLibraryRelativePath`), pero con la metadata/categoria YA
+    /// resuelta que trae el catalogo persistido, sin re-clasificar
+    /// nada. `nil` si el archivo de origen ya no esta ahi o algo falla
+    /// al moverlo -- el item se deja tal cual esta (se reintenta en el
+    /// proximo arranque, mientras `Originales/` siga existiendo).
+    private func migrateLegacySourceFile(_ persistedItem: PersistedLibraryItem) -> String? {
+        let fm = FileManager.default
+        let oldURL = libraryRoot.appendingPathComponent(persistedItem.sourceRelativePath)
+        guard fm.fileExists(atPath: oldURL.path) else { return nil }
+
+        let kind = LibraryPersistenceMapper.liveKind(persistedItem.kind)
+        let category = persistedItem.category.map(LibraryPersistenceMapper.liveCategory)
+        let tempItem = LibraryItem(
+            id: persistedItem.id, sourceURL: oldURL, kind: kind, status: .queued,
+            metadata: LibraryPersistenceMapper.liveMetadata(persistedItem.metadata, coverArtData: nil),
+            preparedURL: nil, category: category)
+
+        let relative = LibrarySync.localLibraryRelativePath(
+            for: tempItem, kind: kind, fileName: oldURL.lastPathComponent,
+            organizePhotosByCategory: preferences.organizePhotosByCategory,
+            organizeVideosByCategory: preferences.organizeVideosByCategory)
+
+        guard let newURL = try? moveIntoLibrary(oldURL, relativePath: relative) else { return nil }
+        return relativePath(of: newURL)
+    }
+
+    /// `.preparados/`/`.portadas/` son renombres planos de `Preparados/`/
+    /// `Portadas/` -- sin reorganizar nada adentro, a diferencia de
+    /// `Originales/` -- asi que no hace falta resolver colisiones, es
+    /// un mkdir + move directo. `false` si el origen no existe o el
+    /// move falla (p.ej. ya habia algo con ese nombre en el destino).
+    private func moveLegacyFlatFile(fromRelative old: String, toRelative new: String) -> Bool {
+        let fm = FileManager.default
+        let oldURL = libraryRoot.appendingPathComponent(old)
+        guard fm.fileExists(atPath: oldURL.path) else { return false }
+        let newURL = libraryRoot.appendingPathComponent(new)
+        guard (try? fm.createDirectory(at: newURL.deletingLastPathComponent(), withIntermediateDirectories: true)) != nil else { return false }
+        return (try? fm.moveItem(at: oldURL, to: newURL)) != nil
+    }
+
+    private func removeLegacyDirectoryIfEmpty(_ url: URL) {
+        let fm = FileManager.default
+        guard fm.fileExists(atPath: url.path),
+              let contents = try? fm.contentsOfDirectory(atPath: url.path),
+              contents.isEmpty else { return }
+        try? fm.removeItem(at: url)
     }
 
     /// Serializa el catalogo completo. Las portadas se escriben como
@@ -595,7 +793,7 @@ final class LibraryViewModel: ObservableObject {
                 metadata: LibraryPersistenceMapper.persistedMetadata(item.metadata),
                 preparedRelativePath: item.preparedURL.map { relativePath(of: $0) },
                 coverRelativePath: coverRelative,
-                category: item.category?.rawValue
+                category: item.category
             ))
         }
         persisted.playlists = playlists.map {
@@ -626,10 +824,10 @@ final class LibraryViewModel: ObservableObject {
             let sourceURL = p.sourceRelativePath.hasPrefix("/")
                 ? URL(fileURLWithPath: p.sourceRelativePath)
                 : libraryRoot.appendingPathComponent(p.sourceRelativePath)
-            // Si el archivo (la copia en Originales/, o el original
-            // referenciado sin copiar) ya no existe, el item se omite en
-            // silencio: no hay nada que preparar ni sincronizar desde un
-            // archivo ausente.
+            // Si el archivo (la copia en Música/Imágenes/Videos, o el
+            // original referenciado sin copiar) ya no existe, el item se
+            // omite en silencio: no hay nada que preparar ni sincronizar
+            // desde un archivo ausente.
             guard fm.fileExists(atPath: sourceURL.path) else { continue }
 
             let coverData = p.coverRelativePath
@@ -654,7 +852,11 @@ final class LibraryViewModel: ObservableObject {
                 status: status,
                 metadata: LibraryPersistenceMapper.liveMetadata(p.metadata, coverArtData: coverData),
                 preparedURL: preparedExists ? preparedURL : nil,
-                category: p.category.flatMap(MediaCategory.init(rawValue:))
+                // D-228: catalogos viejos guardaban `MediaCategory.
+                // rawValue` -- `liveCategory` traduce esos valores
+                // conocidos al string de display nuevo y deja pasar
+                // cualquier otro tal cual (ver su doc-comment).
+                category: p.category.map(LibraryPersistenceMapper.liveCategory)
             ))
         }
         items = restored

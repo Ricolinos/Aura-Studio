@@ -19,6 +19,7 @@ enum S {
     case importing, fetchLyrics, fetchLyricsDetail
     case enrichOnline, enrichOnlineDetail
     case general, music, video, photos, extras, installer, noDevice
+    case playlists
 
     var text: String {
         AppLanguageResolver.current == .english ? english : spanish
@@ -54,6 +55,7 @@ enum S {
         case .extras:              return "Extras"
         case .installer:           return "Instalador"
         case .noDevice:            return "Sin dispositivo"
+        case .playlists:           return "Listas"
         }
     }
 
@@ -87,6 +89,7 @@ enum S {
         case .extras:              return "Extras"
         case .installer:           return "Installer"
         case .noDevice:            return "No device"
+        case .playlists:           return "Playlists"
         }
     }
 }

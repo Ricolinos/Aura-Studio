@@ -2,6 +2,10 @@ import SwiftUI
 
 struct PhotoSettingsView: View {
     @ObservedObject var preferences: AppPreferences
+    /// D-228: nombre en edicion en el campo "Agregar" de abajo -- vive
+    /// aca (no en `AppPreferences`) porque es estado de la UI, no de la
+    /// biblioteca.
+    @State private var newCollectionName = ""
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -22,12 +26,48 @@ struct PhotoSettingsView: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 10) {
-                Toggle("Organizar por categoría en la biblioteca", isOn: $preferences.organizePhotosByCategory)
-                Text("Separa tus fotos en Imágenes, Fotos y Hechas con IA para encontrarlas más fácil DENTRO de Aura Studio (la categoría se sugiere sola al importar, y se puede corregir a mano en Biblioteca → Fotos). No cambia dónde quedan en el iPod: ahí siempre se copian juntas en \"Photos\", porque el visor del iPod todavía no navega por subcarpetas.")
+                Toggle("Organizar por colección en la biblioteca", isOn: $preferences.organizePhotosByCategory)
+                Text("Separa tus fotos en colecciones (Imágenes, Fotos e IA por defecto, editables abajo) para encontrarlas más fácil DENTRO de Aura Studio -- la colección se sugiere sola al importar, y se puede corregir a mano en Biblioteca → Fotos. Con este ajuste activo, cada colección es ademas una carpeta dentro de \"Imágenes\" en la carpeta local de la biblioteca (Finder). No cambia dónde quedan en el iPod: ahí siempre se copian juntas en \"Photos\", porque el visor del iPod todavía no navega por subcarpetas.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+
+                collectionsList
             }
         }
+    }
+
+    /// Lista editable de colecciones (D-228, encargo del dueño: a
+    /// diferencia de las categorías de video, estas se pueden agregar/
+    /// quitar sin tocar código). Quitar una no des-etiqueta las fotos
+    /// que ya la tenían asignada -- ver `AppPreferences.
+    /// removePhotoCollection`.
+    private var collectionsList: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ForEach(preferences.photoCollections, id: \.self) { name in
+                HStack {
+                    Text(name)
+                    Spacer()
+                    Button {
+                        preferences.removePhotoCollection(name)
+                    } label: {
+                        Image(systemName: "xmark.circle")
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+                }
+            }
+
+            HStack {
+                TextField("Nueva colección", text: $newCollectionName)
+                    .textFieldStyle(.roundedBorder)
+                Button("Agregar") {
+                    preferences.addPhotoCollection(newCollectionName)
+                    newCollectionName = ""
+                }
+                .disabled(newCollectionName.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+        }
+        .padding(.top, 4)
     }
 }

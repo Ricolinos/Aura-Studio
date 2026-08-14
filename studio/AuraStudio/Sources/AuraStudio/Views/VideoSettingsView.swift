@@ -7,7 +7,7 @@ struct VideoSettingsView: View {
         VStack(alignment: .leading, spacing: 24) {
             VStack(alignment: .leading, spacing: 10) {
                 Toggle("Organizar por categoría en la biblioteca", isOn: $preferences.organizeVideosByCategory)
-                Text("Separa tus videos en Caseros, Videos y Películas para encontrarlos más fácil DENTRO de Aura Studio (la categoría se sugiere sola por duración al importar, y se puede corregir a mano en Biblioteca → Video). No cambia dónde quedan en el iPod: ahí siempre se copian juntos en \"Videos\", porque el reproductor del iPod todavía no navega por subcarpetas.")
+                Text("Separa tus videos en Videos, Series y Películas para encontrarlos más fácil DENTRO de Aura Studio (la categoría se sugiere sola por duración al importar -- salvo \"Series\", que no tiene una heurística confiable y siempre se asigna a mano -- y se puede corregir en Biblioteca → Video). No cambia dónde quedan en el iPod: ahí siempre se copian juntos en \"Videos\", porque el reproductor del iPod todavía no navega por subcarpetas.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

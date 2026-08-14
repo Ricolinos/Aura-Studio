@@ -384,6 +384,50 @@ struct LibrarySync {
         return "Music/\(folder)/\(filename).\(ext)"
     }
 
+    /// D-228: ruta dentro de la carpeta LOCAL de la biblioteca (Finder),
+    /// distinta de `musicDestinationRelativePath` de arriba -- esa es
+    /// la ruta de SYNC al iPod (usa `musicFilenameFormat` para renombrar
+    /// el archivo y parte de `item.preparedURL`). Aca la copia local
+    /// conserva el nombre ORIGINAL (`fileName`, resuelto por el llamador
+    /// -- ya con el sufijo de colision si hacia falta, ver
+    /// `LibraryViewModel.copyIntoLibrary`), porque es "el mismo archivo
+    /// que soltaste, solo que organizado", no una preparacion para el
+    /// dispositivo.
+    ///
+    /// Musica va por artista/album (mismo criterio que el sync, sin el
+    /// ajuste de organizacion -- adentro de la biblioteca siempre es
+    /// jerarquico, D-228). Foto/video van por categoria SOLO si el
+    /// ajuste correspondiente esta activo (`organizePhotosByCategory`/
+    /// `organizeVideosByCategory`) y el item ya tiene una asignada;
+    /// si no, quedan planos en la raiz de su tipo.
+    static func localLibraryRelativePath(
+        for item: LibraryItem,
+        kind: LibraryItemKind,
+        fileName: String,
+        organizePhotosByCategory: Bool = true,
+        organizeVideosByCategory: Bool = true
+    ) -> String {
+        switch kind {
+        case .music:
+            let meta = item.metadata
+            let artist = PathSanitizer.sanitize(meta?.albumArtist ?? meta?.artist ?? "Desconocido")
+            let album = PathSanitizer.sanitize(meta?.album ?? "Desconocido")
+            return "\(PersistedLibrary.musicDirName)/\(artist)/\(album)/\(fileName)"
+        case .photo:
+            if organizePhotosByCategory, let category = item.category, !category.isEmpty {
+                return "\(PersistedLibrary.imagesDirName)/\(PathSanitizer.sanitize(category))/\(fileName)"
+            }
+            return "\(PersistedLibrary.imagesDirName)/\(fileName)"
+        case .video:
+            if organizeVideosByCategory, let category = item.category, !category.isEmpty {
+                return "\(PersistedLibrary.videosDirName)/\(PathSanitizer.sanitize(category))/\(fileName)"
+            }
+            return "\(PersistedLibrary.videosDirName)/\(fileName)"
+        case .unsupported:
+            return fileName
+        }
+    }
+
     private func destinationRelativePath(
         for item: LibraryItem,
         musicOrganization: AppPreferences.MusicOrganization,

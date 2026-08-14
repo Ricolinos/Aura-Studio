@@ -37,16 +37,25 @@ enum LibraryItemStatus: Equatable {
 /// (el mismo archivo para musica nativa, o la salida de ffmpeg/resize).
 struct LibraryItem: Identifiable, Equatable {
     let id: UUID
-    let sourceURL: URL
+    /// D-228: ya no es `let`. Con "copiar medios a la biblioteca"
+    /// activo, el archivo se copia recien en
+    /// `LibraryViewModel.process(itemAt:)` -- cuando ya se conoce
+    /// artista/album/categoria, no al soltarlo (`addDroppedFiles`) --
+    /// y esta propiedad se actualiza para apuntar a esa copia.
+    var sourceURL: URL
     let kind: LibraryItemKind
     var status: LibraryItemStatus
     var metadata: TrackMetadata?
     var preparedURL: URL?
-    /// Solo para `.photo`/`.video`: categoria dentro de la biblioteca de
-    /// Aura Studio (Imagenes/Fotos/Hechas con IA, Caseros/Videos/
-    /// Peliculas -- ver `MediaCategory`). Se sugiere sola al procesar el
-    /// item y el usuario la puede corregir a mano.
-    var category: MediaCategory?
+    /// Solo para `.photo`/`.video`: categoria/coleccion dentro de la
+    /// biblioteca de Aura Studio. Para video es uno de los 3 nombres
+    /// fijos de `MediaCategory` (Videos/Series/Películas, guardado como
+    /// su `displayName`); para foto es un nombre libre de
+    /// `AppPreferences.photoCollections` (D-228: antes ambos tipos
+    /// compartian el enum `MediaCategory`, ahora solo video lo sigue
+    /// usando puertas adentro). Se sugiere sola al procesar el item y
+    /// el usuario la puede corregir a mano.
+    var category: String?
 
     init(sourceURL: URL) {
         self.id = UUID()
@@ -64,7 +73,7 @@ struct LibraryItem: Identifiable, Equatable {
     /// sesiones.
     init(id: UUID, sourceURL: URL, kind: LibraryItemKind,
          status: LibraryItemStatus, metadata: TrackMetadata?, preparedURL: URL?,
-         category: MediaCategory? = nil) {
+         category: String? = nil) {
         self.id = id
         self.sourceURL = sourceURL
         self.kind = kind
