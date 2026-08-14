@@ -147,9 +147,39 @@ private struct PlaylistTrackEditor: View {
         musicItems.filter { !playlist.trackItemIDs.contains($0.id) }
     }
 
+    /// Preview de la portada elegida a mano (encargo del dueno,
+    /// 2026-08-14) -- se relee del disco cada vez que `playlist` cambia,
+    /// no se cachea en memoria: es una imagen chica (128px) y esta vista
+    /// no se redibuja seguido.
+    private var customImage: NSImage? {
+        guard let relative = playlist.imageRelativePath else { return nil }
+        return NSImage(contentsOf: viewModel.libraryRoot.appendingPathComponent(relative))
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(playlist.name).font(.headline).padding([.top, .horizontal])
+            HStack(spacing: 8) {
+                Group {
+                    if let customImage {
+                        Image(nsImage: customImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } else {
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(Color.secondary.opacity(0.15))
+                    }
+                }
+                .frame(width: 40, height: 40)
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+
+                Text(playlist.name).font(.headline)
+                Spacer()
+                Button("Elegir imagen...", action: chooseImage)
+                if playlist.imageRelativePath != nil {
+                    Button("Quitar imagen") { viewModel.clearPlaylistImage(id: playlist.id) }
+                }
+            }
+            .padding([.top, .horizontal])
 
             Text("En la playlist (\(includedItems.count))")
                 .font(.caption).foregroundStyle(.secondary).padding(.horizontal)
@@ -191,5 +221,20 @@ private struct PlaylistTrackEditor: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    /// "Elegir imagen..." (encargo del dueno, 2026-08-14) -- mismo patron
+    /// de NSOpenPanel que `PlaylistsView.importPlaylist()`, filtrado a
+    /// imagenes en vez de M3U/M3U8.
+    private func chooseImage() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = false
+        panel.allowsMultipleSelection = false
+        panel.allowedContentTypes = [.image]
+        panel.prompt = "Elegir"
+        panel.message = "Elige una imagen para esta playlist."
+        guard panel.runModal() == .OK, let fileURL = panel.url else { return }
+        viewModel.setPlaylistImage(id: playlist.id, sourceURL: fileURL)
     }
 }

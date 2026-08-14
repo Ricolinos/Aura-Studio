@@ -23,4 +23,18 @@ final class PlaylistExporterTests: XCTestCase {
         let contents = PlaylistExporter.m3u8Contents(trackDestinationPaths: [])
         XCTAssertEqual(contents, "#EXTM3U\n")
     }
+
+    // Encargo del dueno, 2026-08-14: sidecar de portada -- mismo nombre base que el .m3u8, el
+    // firmware lo encuentra pelando su propia extension y probando ese
+    // nombre con ".jpg" (aura_playlist_art_load, aura_albumart.c).
+    func testImageFileNameSanitizesAndAddsExtension() {
+        XCTAssertEqual(PlaylistExporter.imageFileName(for: "Roadtrip 2026"), "Roadtrip 2026.jpg")
+        XCTAssertEqual(PlaylistExporter.imageFileName(for: "AC/DC only"), "AC_DC only.jpg")
+    }
+
+    func testImageFileNameSharesBaseNameWithPlaylistFile() {
+        let name = "Live: 1996"
+        let base = PlaylistExporter.fileName(for: name).replacingOccurrences(of: ".m3u8", with: "")
+        XCTAssertEqual(PlaylistExporter.imageFileName(for: name), base + ".jpg")
+    }
 }

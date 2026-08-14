@@ -13,6 +13,15 @@ enum PlaylistExporter {
         PathSanitizer.sanitize(playlistName) + ".m3u8"
     }
 
+    /// Portada de playlist (encargo del dueno, 2026-08-14): mismo nombre
+    /// base que `fileName(for:)` -- el firmware la encuentra pelando la
+    /// extension del .m3u8 y probando ese mismo nombre con ".jpg"
+    /// (aura_playlist_art_load(), aura_albumart.c), asi que ambos deben
+    /// sanitizar exactamente igual.
+    static func imageFileName(for playlistName: String) -> String {
+        PathSanitizer.sanitize(playlistName) + ".jpg"
+    }
+
     /// `trackDestinationPaths` son las mismas `destinationRelativePath`
     /// que `LibrarySync` usa para copiar cada pista (sin el "/" inicial);
     /// esta funcion es la unica responsable de agregarselo.
