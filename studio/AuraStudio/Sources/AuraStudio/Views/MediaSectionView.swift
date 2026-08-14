@@ -24,6 +24,11 @@ import UniformTypeIdentifiers
 struct MediaSectionView: View {
     let kind: LibraryItemKind
     @ObservedObject var viewModel: LibraryViewModel
+    /// El iPod conectado (D-202, encargo del dueño) -- de aca sale el
+    /// volumen contra el que se compara `LibrarySync.loadManifest()`
+    /// para saber que elementos ya llegaron al dispositivo. `nil` sin
+    /// iPod conectado, y entonces nada se marca como sincronizado.
+    let device: AuraDevice?
 
     @State private var isTargeted = false
     @State private var reviewingItem: LibraryItem?
@@ -37,6 +42,12 @@ struct MediaSectionView: View {
     /// herramientas) -- persiste por tipo de medio en UserDefaults, asi
     /// que Musica/Video/Fotos recuerdan su propia eleccion.
     @State private var visibleColumns: Set<ExtraColumn> = []
+    /// Rutas de origen (`LibraryItem.sourceURL.path`) ya confirmadas en
+    /// el iPod conectado -- record en el manifiesto de sync Y el archivo
+    /// de destino todavia presente en el volumen (D-202). Se recalcula,
+    /// no se persiste: es un reflejo del disco, no un dato propio de la
+    /// biblioteca.
+    @State private var syncedSourcePaths: Set<String> = []
 
     private var allItemsOfKind: [LibraryItem] {
         viewModel.items.filter { $0.kind == kind }
@@ -80,6 +91,14 @@ struct MediaSectionView: View {
                 dropZone
                     .frame(height: 96)
                     .padding([.horizontal, .top], 16)
+                // D-202 (encargo del dueño): el "+" de columnas va PEGADO
+                // a los encabezados de la tabla, no en la barra de
+                // herramientas de la ventana -- `Table` no deja insertar
+                // contenido propio dentro de su fila de encabezados (los
+                // titulos de columna solo aceptan texto), asi que esta
+                // franja angosta encima de la tabla, alineada a la
+                // derecha, es lo mas cerca que se puede quedar.
+                columnsBar
                 table
                     .onKeyPress(.space) {
                         guard let selectedItem else { return .ignored }
@@ -109,26 +128,13 @@ struct MediaSectionView: View {
                     }
                 }
             }
-            ToolbarItem {
-                Menu {
-                    ForEach(ExtraColumn.allCases.filter { $0.isApplicable(to: kind) }) { column in
-                        Button {
-                            toggleColumn(column)
-                        } label: {
-                            if visibleColumns.contains(column) {
-                                Label(column.displayName, systemImage: "checkmark")
-                            } else {
-                                Text(column.displayName)
-                            }
-                        }
-                    }
-                } label: {
-                    Label("Columnas", systemImage: "plus")
-                }
-                .help("Elegir qué columnas mostrar")
-            }
         }
-        .onAppear { loadVisibleColumns() }
+        .onAppear {
+            loadVisibleColumns()
+            refreshSyncedItems()
+        }
+        .onChange(of: device) { _ in refreshSyncedItems() }
+        .onChange(of: viewModel.lastSyncSummary) { _ in refreshSyncedItems() }
         .sheet(isPresented: $showingPlaylists) {
             PlaylistsView(viewModel: viewModel) { showingPlaylists = false }
         }
@@ -181,6 +187,53 @@ struct MediaSectionView: View {
         UserDefaults.standard.set(visibleColumns.map(\.rawValue).joined(separator: ","), forKey: columnsStorageKey)
     }
 
+    private var columnsBar: some View {
+        HStack {
+            Spacer()
+            Menu {
+                ForEach(ExtraColumn.allCases.filter { $0.isApplicable(to: kind) }) { column in
+                    Button {
+                        toggleColumn(column)
+                    } label: {
+                        if visibleColumns.contains(column) {
+                            Label(column.displayName, systemImage: "checkmark")
+                        } else {
+                            Text(column.displayName)
+                        }
+                    }
+                }
+            } label: {
+                Image(systemName: "plus")
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .help("Elegir qué columnas mostrar")
+        }
+        .padding(.horizontal, 12)
+        .padding(.top, 8)
+        .padding(.bottom, 2)
+    }
+
+    // MARK: - Sincronizacion (D-202)
+
+    /// Vuelve a leer el manifiesto de sync del volumen conectado y marca
+    /// como sincronizada cualquier ruta de origen que tenga un registro
+    /// Y cuyo destino todavia exista en el disco -- si el archivo se
+    /// borro a mano del iPod, el manifiesto podria seguir mencionandolo,
+    /// asi que la existencia real manda.
+    private func refreshSyncedItems() {
+        guard let device else {
+            syncedSourcePaths = []
+            return
+        }
+        let volumeRoot = URL(fileURLWithPath: device.mountPath)
+        let manifest = LibrarySync(volumeRoot: volumeRoot).loadManifest()
+        syncedSourcePaths = Set(manifest.records.values.compactMap { record in
+            let destination = volumeRoot.appendingPathComponent(record.destinationRelativePath)
+            return FileManager.default.fileExists(atPath: destination.path) ? record.sourcePath : nil
+        })
+    }
+
     // MARK: - Tabla
 
     @ViewBuilder
@@ -207,7 +260,13 @@ struct MediaSectionView: View {
             TableColumn("") { row in checkboxCell(row) }
                 .width(22)
             TableColumn("Título", value: \.title) { row in Text(row.title) }
-                .width(min: 140, ideal: 220)
+                // D-202 (encargo del dueño): `Table` nativo no soporta
+                // columnas "congeladas" al hacer scroll horizontal --
+                // en vez de una reescritura grande y riesgosa, se le da
+                // un minimo generoso para que casi nunca haga falta
+                // encogerla, y la barra de scroll horizontal (ya
+                // automatica en NSScrollView) se encarga del resto.
+                .width(min: 180, ideal: 220)
             TableColumn("Artista", value: \.artist) { row in Text(row.artist) }
                 .width(min: 90, ideal: 140)
             TableColumn("Álbum", value: \.album) { row in Text(row.album) }
@@ -245,7 +304,7 @@ struct MediaSectionView: View {
             TableColumn("") { row in checkboxCell(row) }
                 .width(22)
             TableColumn("Título", value: \.title) { row in Text(row.title) }
-                .width(min: 160, ideal: 280)
+                .width(min: 180, ideal: 280)
             TableColumn("Categoría", value: \.category) { row in Text(row.category.isEmpty ? "Sin categoría" : row.category) }
                 .width(min: 90, ideal: 130)
             TableColumn("Duración", value: \.durationSeconds) { row in Text(row.durationText) }
@@ -284,7 +343,18 @@ struct MediaSectionView: View {
         case .transcoding(let progress):
             ProgressView(value: progress).frame(width: 60)
         case .ready:
-            Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+            HStack(spacing: 4) {
+                Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                if syncedSourcePaths.contains(item.sourceURL.path) {
+                    // D-202: distingue "listo para copiar" de "ya esta
+                    // en el iPod conectado" -- sin esto ambos casos se
+                    // veian identicos (el mismo check verde) y no habia
+                    // forma de saber que ya se sincronizo.
+                    Image(systemName: "ipod")
+                        .foregroundStyle(.secondary)
+                        .help("Ya sincronizado con el iPod conectado")
+                }
+            }
         case .needsReview:
             Button {
                 reviewingItem = item

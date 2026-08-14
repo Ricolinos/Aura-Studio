@@ -62,6 +62,21 @@ struct ContentView: View {
             detail
         }
         .tint(AuraColors.light.accent)
+        .toolbar {
+            // Encargo del dueño (2026-08-13): el sync tiene que poder
+            // dispararse tambien desde Musica/Video/Fotos, no solo desde
+            // General -- vive aqui (raiz de la app) en vez de en
+            // DeviceGeneralView para que aparezca sin importar la
+            // seccion activa.
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    Task { await syncNow() }
+                } label: {
+                    Label("Sincronizar", systemImage: "arrow.triangle.2.circlepath")
+                }
+                .disabled(deviceMonitor.device == nil || !(deviceMonitor.device?.isAura ?? false) || library.isProcessing)
+            }
+        }
         .onAppear { deviceMonitor.start() }
         .onDisappear { deviceMonitor.stop() }
         .onChange(of: deviceMonitor.state) { newState in
@@ -117,16 +132,15 @@ struct ContentView: View {
             DeviceGeneralView(device: deviceMonitor.device,
                               state: deviceMonitor.state,
                               library: library,
-                              onSync: { await syncNow() },
                               onEject: { await deviceMonitor.unmountCurrentDisk() },
                               onUpdateAura: { selection = .installer },
                               updateAvailable: updateAvailable)
         case .music:
-            MediaSectionView(kind: .music, viewModel: library)
+            MediaSectionView(kind: .music, viewModel: library, device: deviceMonitor.device)
         case .video:
-            MediaSectionView(kind: .video, viewModel: library)
+            MediaSectionView(kind: .video, viewModel: library, device: deviceMonitor.device)
         case .photos:
-            MediaSectionView(kind: .photo, viewModel: library)
+            MediaSectionView(kind: .photo, viewModel: library, device: deviceMonitor.device)
         case .extras:
             ExtrasView(device: deviceMonitor.device)
         case .installer:

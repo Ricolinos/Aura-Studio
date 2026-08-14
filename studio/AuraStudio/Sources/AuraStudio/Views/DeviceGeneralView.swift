@@ -12,7 +12,6 @@ struct DeviceGeneralView: View {
     let device: AuraDevice?
     let state: DeviceState
     @ObservedObject var library: LibraryViewModel
-    let onSync: () async -> Void
     /// Expulsa el volumen del iPod (desmonta el disco completo) --
     /// disponible con CUALQUIER firmware: desconectar sin expulsar es
     /// el clasico camino a un FAT32 corrupto, asi que el boton no
@@ -55,17 +54,10 @@ struct DeviceGeneralView: View {
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .navigationTitle("General")
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    Task { await onSync() }
-                } label: {
-                    Label("Sincronizar", systemImage: "arrow.triangle.2.circlepath")
-                }
-                // Sincronizar escribe el arbol de contenido de Aura --
-                // contra el firmware original o un Rockbox ajeno no
-                // haria nada util.
-                .disabled(device == nil || !(device?.isAura ?? false) || library.isProcessing)
-            }
+            // El boton "Sincronizar" vive ahora en ContentView (barra de
+            // herramientas de toda la app, no solo de esta seccion) para
+            // que este disponible tambien desde Musica/Video/Fotos, no
+            // solo desde General.
             ToolbarItem(placement: .primaryAction) {
                 Button {
                     Task {
