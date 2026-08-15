@@ -55,6 +55,7 @@
 		5FD738F18BBCA9163DDAA684 /* ServicesSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47BB629D898027E7C891D1B /* ServicesSettingsView.swift */; };
 		62666A4A9BF729B61C851F76 /* ID3WriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF3580937C6126B24998BB6 /* ID3WriterTests.swift */; };
 		666C116F404FC775C15FFEAD /* AppStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AFC6DCF7F164C535175071 /* AppStrings.swift */; };
+		6CEA99B326B7A9C0BC06BFBD /* DroppedURLExpander.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE112760998756CFF24E4267 /* DroppedURLExpander.swift */; };
 		7128F973A9D8E656F326EB9F /* AuraUpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9961D8C11B7031D474CB9BE /* AuraUpdateChecker.swift */; };
 		7BF0D6AD4C6C82D7E9602088 /* AudioTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C13F9E244B9751271DC8255 /* AudioTranscoder.swift */; };
 		7F80040C49B6F9BAEC7C4EB4 /* PlaylistExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F307EFCD3106FEFB532DF8E /* PlaylistExporterTests.swift */; };
@@ -70,6 +71,7 @@
 		9C53C3873A4C5F484CCC3858 /* InstallerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EBEB24F597D3C9B609AC775 /* InstallerViewModel.swift */; };
 		9CEBAACAA11BE3313233D7ED /* InstallerWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4862DCA99696DCB66D2012 /* InstallerWizardView.swift */; };
 		9FDD21617909191BB7E9B9CE /* MKS5LBootRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 722702AD0F209BDEA893FA8D /* MKS5LBootRunner.swift */; };
+		A0BDFCBDE136A9D22AC2FA61 /* LibraryFolderDropTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4B1B446620BF0826DE1BEF2 /* LibraryFolderDropTests.swift */; };
 		A272BCA595633440A1F595A9 /* LibraryLegacyMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3854E1521F1D1535773CA89D /* LibraryLegacyMigrationTests.swift */; };
 		A70B8FE54D8521EEBAB23BBB /* InstallerStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43B9358C341DF6C281F2636B /* InstallerStep.swift */; };
 		A77A37B6CF7FECABA28DD45C /* VideoSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D93C4B54F192923EAF481E9 /* VideoSettingsView.swift */; };
@@ -90,6 +92,7 @@
 		C29E1A48C58E8CBCAFC485EA /* PlaylistImporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 528818777E4EF0B5EF8F9306 /* PlaylistImporterTests.swift */; };
 		C3AD25FC7C3C2CE8C2F3AD6F /* BundledArtifactsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */; };
 		C3ED448AEE28EACD02E4E2CC /* LibraryPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093B5EA51C45529C66A3640F /* LibraryPersistence.swift */; };
+		C4E16B0230B926F38F44808C /* DroppedURLExpanderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB78E19CE6152C4A34DF642B /* DroppedURLExpanderTests.swift */; };
 		C6CF154C89DCC0132D58E648 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AD4FC67C48B4550BD7554E /* AppDelegate.swift */; };
 		C76F4EF9962D5866CA044718 /* checksums.txt in Resources */ = {isa = PBXBuildFile; fileRef = 2F9BF12646626E5E5CFC2BFD /* checksums.txt */; };
 		C90101F74FA7DE7769EE2135 /* PlaylistArtGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 379EA3270923CF30079FF9EA /* PlaylistArtGenerator.swift */; };
@@ -202,6 +205,7 @@
 		B210703E5EF249635DE046AE /* PlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistsView.swift; sourceTree = "<group>"; };
 		B34640ACD3AC36633502AE41 /* InstallerFlowRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerFlowRegistry.swift; sourceTree = "<group>"; };
 		B47BB629D898027E7C891D1B /* ServicesSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicesSettingsView.swift; sourceTree = "<group>"; };
+		B4B1B446620BF0826DE1BEF2 /* LibraryFolderDropTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryFolderDropTests.swift; sourceTree = "<group>"; };
 		B6A56207E06BF883E789308E /* SyncPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncPlannerTests.swift; sourceTree = "<group>"; };
 		B8464D5E55C66D32740C7289 /* BundledArtifacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledArtifacts.swift; sourceTree = "<group>"; };
 		B9961D8C11B7031D474CB9BE /* AuraUpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraUpdateChecker.swift; sourceTree = "<group>"; };
@@ -228,7 +232,9 @@
 		F527FF44025F6464CEC83FD6 /* RestoreHandoffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreHandoffView.swift; sourceTree = "<group>"; };
 		F52FF3A536F1C7FAFB6822B6 /* SettingsSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSectionView.swift; sourceTree = "<group>"; };
 		F53DF863212996F0BD415EA7 /* MusicSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicSettingsView.swift; sourceTree = "<group>"; };
+		FB78E19CE6152C4A34DF642B /* DroppedURLExpanderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroppedURLExpanderTests.swift; sourceTree = "<group>"; };
 		FC202F1A3D9164B1E6014A84 /* CatalogSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogSummary.swift; sourceTree = "<group>"; };
+		FE112760998756CFF24E4267 /* DroppedURLExpander.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroppedURLExpander.swift; sourceTree = "<group>"; };
 		FEF3580937C6126B24998BB6 /* ID3WriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ID3WriterTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -361,6 +367,7 @@
 				16512FA37AC623A52F006219 /* AuraDevice.swift */,
 				FC202F1A3D9164B1E6014A84 /* CatalogSummary.swift */,
 				5FA85A3E42CB4E67E9DAC4E5 /* DeviceState.swift */,
+				FE112760998756CFF24E4267 /* DroppedURLExpander.swift */,
 				43B9358C341DF6C281F2636B /* InstallerStep.swift */,
 				62E6C2892E84F33B9EF97D15 /* LibraryItem.swift */,
 				093B5EA51C45529C66A3640F /* LibraryPersistence.swift */,
@@ -379,10 +386,12 @@
 				72773374D5D4C62732AA92F3 /* AuraDeviceProbeTests.swift */,
 				D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */,
 				AC0636DEF76695EC784AFCE2 /* CatalogSummaryWriterTests.swift */,
+				FB78E19CE6152C4A34DF642B /* DroppedURLExpanderTests.swift */,
 				AE684D9789506522C7BF0228 /* FFmpegTranscoderTests.swift */,
 				37BA124E3419E12A08D4AADC /* FilenameGuesserTests.swift */,
 				FEF3580937C6126B24998BB6 /* ID3WriterTests.swift */,
 				A077ACC4534A70565AC6B622 /* IPodDiskIdentifierTests.swift */,
+				B4B1B446620BF0826DE1BEF2 /* LibraryFolderDropTests.swift */,
 				3854E1521F1D1535773CA89D /* LibraryLegacyMigrationTests.swift */,
 				17FA97DC7618F234BE711AED /* LibraryPipelineIntegrationTests.swift */,
 				8885EF5A65AE8ED08914314A /* LibrarySyncLocalLibraryPathTests.swift */,
@@ -562,10 +571,12 @@
 				D8363DAB3183238539D733A5 /* AuraDeviceProbeTests.swift in Sources */,
 				C3AD25FC7C3C2CE8C2F3AD6F /* BundledArtifactsTests.swift in Sources */,
 				A97401AE31F2CC10AB44DDCD /* CatalogSummaryWriterTests.swift in Sources */,
+				C4E16B0230B926F38F44808C /* DroppedURLExpanderTests.swift in Sources */,
 				07B5993B76FBF1735ADA8AF2 /* FFmpegTranscoderTests.swift in Sources */,
 				BD809465DDDA7B9453FDAB86 /* FilenameGuesserTests.swift in Sources */,
 				62666A4A9BF729B61C851F76 /* ID3WriterTests.swift in Sources */,
 				00B2C34B8394853F21116615 /* IPodDiskIdentifierTests.swift in Sources */,
+				A0BDFCBDE136A9D22AC2FA61 /* LibraryFolderDropTests.swift in Sources */,
 				A272BCA595633440A1F595A9 /* LibraryLegacyMigrationTests.swift in Sources */,
 				0183BFA3AF5209C411B41F36 /* LibraryPipelineIntegrationTests.swift in Sources */,
 				EF1E083FA6047FB931707719 /* LibrarySyncLocalLibraryPathTests.swift in Sources */,
@@ -616,6 +627,7 @@
 				D99E5C4BE2135ED2B2CDDFEE /* DeviceState.swift in Sources */,
 				B1845030E08621FDF34358FA /* DiskArbitrationMonitor.swift in Sources */,
 				2F898C1996F39319211E9496 /* DoneView.swift in Sources */,
+				6CEA99B326B7A9C0BC06BFBD /* DroppedURLExpander.swift in Sources */,
 				11CC4D739B622CDD58E486D8 /* EnterDFUView.swift in Sources */,
 				EEF0D749E12D2A5E082CCC60 /* ExtrasView.swift in Sources */,
 				31C1B49208706DAD1BB8E579 /* FFmpegTranscoder.swift in Sources */,
