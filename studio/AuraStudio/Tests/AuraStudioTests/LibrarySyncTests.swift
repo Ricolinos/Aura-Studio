@@ -41,6 +41,34 @@ final class LibrarySyncTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: expected.path))
     }
 
+    /// Regresión (encontrado 2026-08-14 comparando simulador vs.
+    /// hardware real): `writeAlbumCovers()` envolvía la ruta relativa
+    /// del destino ("Music/Artista/Álbum/Canción.mp3") sola en
+    /// `URL(fileURLWithPath:)` -- eso la resuelve contra el directorio
+    /// de trabajo del PROCESO, no contra `volumeRoot`, así que la
+    /// portada terminaba en una carpeta anidada sin sentido en vez de
+    /// la carpeta real del álbum. Sin ninguna prueba que tocara esto
+    /// antes, pasó desapercibido en cada sync, incluidos los reales.
+    func testSyncWritesAlbumCoverInsideAlbumFolder() throws {
+        var item = musicItem()
+        item.metadata?.coverArtData = Data("fake cover bytes".utf8)
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+
+        _ = try sync.sync(items: [item], coverArtPolicy: .albumOnly)
+
+        let expectedCover = fakeIPod.appendingPathComponent("Music/Queen/A Night at the Opera/cover.jpg")
+        XCTAssertEqual(try? Data(contentsOf: expectedCover), Data("fake cover bytes".utf8),
+                       "la portada debe quedar junto a la pista, dentro de la carpeta real del álbum")
+
+        // La regresión real: NADA fuera de `fakeIPod` (el volumeRoot de
+        // esta prueba) debería haberse tocado -- el bug viejo escribía
+        // en una ruta anidada bajo el cwd del proceso.
+        let bogusNested = fakeIPod.appendingPathComponent("Music").appendingPathComponent(
+            FileManager.default.currentDirectoryPath.hasPrefix("/") ? String(FileManager.default.currentDirectoryPath.dropFirst()) : FileManager.default.currentDirectoryPath)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: bogusNested.path),
+                        "no debe existir ninguna ruta anidada con el cwd del proceso adentro de volumeRoot")
+    }
+
     func testMigrationDeletesStaleFlatFile() throws {
         let item = musicItem()
         let sync = LibrarySync(volumeRoot: fakeIPod)

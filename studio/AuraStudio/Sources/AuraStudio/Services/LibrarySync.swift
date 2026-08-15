@@ -260,15 +260,26 @@ struct LibrarySync {
             guard let cover = item.metadata?.coverArtData,
                   let relative = destinationByItemID[item.id] else { continue }
 
-            let albumFolder = URL(fileURLWithPath: relative).deletingLastPathComponent().path
+            // Bug real (encontrado 2026-08-14 comparando simulador vs.
+            // hardware): `relative` es una ruta RELATIVA ("Music/Artista/
+            // Álbum/Cancion.mp3") -- envolverla sola en
+            // `URL(fileURLWithPath:)` la resuelve contra el directorio de
+            // trabajo del PROCESO (no contra `volumeRoot`), así que el
+            // "álbum" resultante terminaba siendo una ruta absoluta
+            // ajena (el cwd de quien corriera el sync), y al pegarla
+            // sobre `volumeRoot` con `appendingPathComponent` quedaba un
+            // path anidado sin sentido -- las portadas de álbum NUNCA
+            // llegaban a la carpeta real, en ningún sync, tampoco al
+            // dispositivo real (mismo código). Resolver `relative` contra
+            // `volumeRoot` PRIMERO, después quitar el nombre de archivo,
+            // da la carpeta de álbum real.
+            let albumDestination = volumeRoot.appendingPathComponent(relative).deletingLastPathComponent()
+            let albumFolder = albumDestination.path
             guard !written.contains(albumFolder) else { continue }
             written.insert(albumFolder)
 
-            let coverURL = volumeRoot
-                .appendingPathComponent(albumFolder)
-                .appendingPathComponent("cover.jpg")
-            try? fileManager.createDirectory(at: coverURL.deletingLastPathComponent(),
-                                              withIntermediateDirectories: true)
+            let coverURL = albumDestination.appendingPathComponent("cover.jpg")
+            try? fileManager.createDirectory(at: albumDestination, withIntermediateDirectories: true)
             try? cover.write(to: coverURL)
         }
     }
