@@ -7,6 +7,18 @@ struct DoneView: View {
     /// `BootModeView`, el usuario necesita saber la combinacion de
     /// botones para volver a Apple alguna vez.
     let dualBoot: Bool
+    /// D-273: true cuando este "Listo" viene de la ruta rapida sin DFU
+    /// (`InstallerViewModel.bootloaderAlreadyInstalled`) -- ahi solo
+    /// hay EVIDENCIA de que el bootloader se grabo alguna vez (archivos
+    /// en el disco), no confirmacion de que sigue en la NOR ahora mismo
+    /// (eso no se puede leer desde modo disco). Caso real en hardware:
+    /// esa evidencia quedo obsoleta -- el bootloader se perdio despues
+    /// de la instalacion original -- y el iPod siguio arrancando con
+    /// Apple aunque los archivos SI se copiaron bien. `onBootloaderMissing`
+    /// deja al usuario terminar el trabajo por DFU sin reiniciar todo
+    /// el asistente.
+    var assumedBootloaderWithoutVerifying: Bool = false
+    var onBootloaderMissing: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 20) {
@@ -33,6 +45,22 @@ struct DoneView: View {
                 .padding(14)
                 .frame(maxWidth: 420, alignment: .leading)
                 .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.08)))
+            }
+
+            if mode == .install, assumedBootloaderWithoutVerifying, let onBootloaderMissing {
+                VStack(alignment: .leading, spacing: 8) {
+                    Label("¿Tu iPod sigue mostrando el firmware original?", systemImage: "exclamationmark.triangle.fill")
+                        .font(.headline)
+                        .foregroundStyle(.orange)
+                    Text("Detectamos que Aura ya había estado instalada antes, así que solo actualizamos los archivos sin volver a grabar el arranque. Si al desconectar el cable tu iPod NO arranca con Aura, el arranque se perdió desde la instalación anterior y hace falta grabarlo de nuevo por DFU.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                    Button("No arrancó con Aura -- terminar por DFU", action: onBootloaderMissing)
+                        .buttonStyle(.bordered)
+                }
+                .padding(14)
+                .frame(maxWidth: 420, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color.orange.opacity(0.1)))
             }
         }
     }

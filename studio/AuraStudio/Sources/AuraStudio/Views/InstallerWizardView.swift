@@ -69,7 +69,10 @@ struct InstallerWizardView: View {
                     // el bootloader ya grabado), el modo de arranque lo
                     // decidio la instalacion anterior -- no se afirma
                     // dual boot que esta corrida no eligio.
-                    DoneView(mode: viewModel.mode, dualBoot: !viewModel.destroyOriginalFirmware && !viewModel.bootloaderAlreadyInstalled)
+                    DoneView(mode: viewModel.mode,
+                             dualBoot: !viewModel.destroyOriginalFirmware && !viewModel.bootloaderAlreadyInstalled,
+                             assumedBootloaderWithoutVerifying: viewModel.bootloaderAlreadyInstalled,
+                             onBootloaderMissing: viewModel.retryWithBootloaderFlash)
                 case .failed:
                     FailedView(error: viewModel.lastError, onRetry: viewModel.retry,
                                onSwitchToSingleBoot: viewModel.switchToSingleBootAndRetry)

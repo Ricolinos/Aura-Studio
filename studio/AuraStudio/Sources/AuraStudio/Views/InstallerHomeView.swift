@@ -140,7 +140,7 @@ struct ModePickerView: View {
         guard let device else { return nil }
         switch device.firmware {
         case .aura:
-            return "Reinstalar no requiere flashear ni entrar a modo DFU: solo se reemplazan los archivos del firmware en el disco. Tus ajustes de Aura se conservan."
+            return "Reinstalar solo reemplaza los archivos del firmware en el disco -- normalmente no hace falta flashear por DFU. Tus ajustes de Aura se conservan. Si al terminar tu iPod no arranca con Aura, la pantalla final ofrece completar el flasheo."
         case .rockbox:
             return "Instalar Aura no requiere flashear ni entrar a modo DFU: solo se reemplaza la carpeta .rockbox del disco por la de Aura."
         case .stock:

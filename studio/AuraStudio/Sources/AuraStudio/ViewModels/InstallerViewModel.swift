@@ -403,6 +403,31 @@ final class InstallerViewModel: ObservableObject {
         pendingAuthorization = .pauseAMPAgents()
     }
 
+    /// Boton de rescate en `DoneView` (D-273): la ruta rapida sin DFU
+    /// (`bootloaderAlreadyInstalled`, ver `acknowledgeDeviceReady()`)
+    /// solo tiene EVIDENCIA de que el bootloader de la familia Rockbox
+    /// se grabo alguna vez en este iPod (aura.cfg/.rockbox en el disco)
+    /// -- no puede confirmar que sigue ahi AHORA, porque la NOR no se
+    /// puede leer desde modo disco. Caso real (dueño, hardware real):
+    /// una instalacion previa de Aura dejo esa evidencia en el disco,
+    /// pero el bootloader se perdio despues (ej. una restauracion desde
+    /// iTunes que solo toca la particion de firmware) y el iPod volvio
+    /// a arrancar con Apple por defecto -- la ruta rapida copio los
+    /// archivos y reporto "Listo" sin haber arreglado lo que de verdad
+    /// hacia falta. Este metodo le da al usuario una salida de un clic
+    /// desde DoneView si nota que su iPod NO arranco con Aura: fuerza
+    /// la misma ruta de DFU que se hubiera tomado si la evidencia nunca
+    /// hubiera existido.
+    func retryWithBootloaderFlash() {
+        bootloaderAlreadyInstalled = false
+        // `AutomaticUpdateView` no tiene el `.sheet(item:)` que muestra
+        // la autorizacion de DFU (solo `InstallerWizardView` lo trae) --
+        // pasar a la ruta manual para que la hoja de permiso y la guia
+        // de DFU si aparezcan cuando este boton se toca desde ahi.
+        isAutomaticUpdate = false
+        proceedToDFU()
+    }
+
     /// El usuario confirma la explicacion del sheet -> ahora si se
     /// dispara el dialogo nativo de contraseña de macOS.
     func confirmPendingAuthorization() {

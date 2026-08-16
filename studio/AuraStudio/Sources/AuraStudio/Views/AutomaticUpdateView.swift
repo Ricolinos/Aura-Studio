@@ -19,7 +19,10 @@ struct AutomaticUpdateView: View {
             switch viewModel.step {
             case .done:
                 VStack(spacing: 20) {
-                    DoneView(mode: .install, dualBoot: !viewModel.destroyOriginalFirmware)
+                    DoneView(mode: .install,
+                             dualBoot: !viewModel.destroyOriginalFirmware,
+                             assumedBootloaderWithoutVerifying: viewModel.bootloaderAlreadyInstalled,
+                             onBootloaderMissing: viewModel.retryWithBootloaderFlash)
                     Button("Listo") {
                         viewModel.dismissAutomaticUpdate()
                     }
