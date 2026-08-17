@@ -17,6 +17,12 @@ final class LibraryViewModel: ObservableObject {
     /// (ver `reenrichOnline`) -- antes esta accion no dejaba ningun
     /// rastro visible en la interfaz.
     @Published private(set) var lastEnrichmentSummary: String?
+    /// Cuantas canciones de la biblioteca YA CARGADA podrian beneficiarse
+    /// de `rereadLocalTags` -- `nil` si no corresponde ofrecerlo (ya se
+    /// ofrecio antes, o no hay musica). PLAN-studio-ux.md §2/P1: se
+    /// ofrece UNA sola vez por instalacion de Aura Studio, la primera
+    /// vez que se carga un catalogo con musica despues de este cambio.
+    @Published private(set) var legacyMetadataRereadOfferCount: Int?
     @Published var lastError: String?
     @Published private(set) var playlists: [Playlist] = []
     /// D-217: progreso de un `sync(toVolumeAt:)` en curso -- `nil`
@@ -361,6 +367,7 @@ final class LibraryViewModel: ObservableObject {
     func applyReview(id: UUID, metadata: TrackMetadata) {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
         items[index].metadata = metadata
+        items[index].metadataEditedByUser = true
         do {
             items[index].preparedURL = try prepareMusic(item: items[index], metadata: metadata)
             items[index].status = metadata.isComplete ? .ready : .needsReview
@@ -423,6 +430,7 @@ final class LibraryViewModel: ObservableObject {
         var metadata = items[index].metadata ?? TrackMetadata()
         metadata.title = trimmed
         items[index].metadata = metadata
+        items[index].metadataEditedByUser = true
         if items[index].kind == .music {
             items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
             if items[index].status == .ready || items[index].status == .needsReview {
@@ -450,6 +458,7 @@ final class LibraryViewModel: ObservableObject {
         var metadata = items[index].metadata ?? TrackMetadata()
         metadata.coverArtData = nil
         items[index].metadata = metadata
+        items[index].metadataEditedByUser = true
         items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
         let coverURL = coversDirectory.appendingPathComponent("\(items[index].id.uuidString).jpg")
         try? FileManager.default.removeItem(at: coverURL)
@@ -473,6 +482,7 @@ final class LibraryViewModel: ObservableObject {
             if let composer = changes.composer { metadata.composer = composer }
             if let rating = changes.rating { metadata.rating = rating }
             items[index].metadata = metadata
+            items[index].metadataEditedByUser = true
             items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
             items[index].status = metadata.isComplete ? .ready : .needsReview
         }
@@ -528,6 +538,92 @@ final class LibraryViewModel: ObservableObject {
         lastEnrichmentSummary = found == 0
             ? "No se encontro informacion nueva para ninguna de las \(attempted) cancion(es) seleccionadas."
             : "Se encontro informacion nueva para \(found) de \(attempted) cancion(es)."
+    }
+
+    /// "Volver a leer etiquetas del archivo" del menu contextual, y lo
+    /// que corre el banner de biblioteca existente (PLAN-studio-ux.md
+    /// §2/P1) -- relee `sourceURL` (nunca `.preparados/`, que ya tiene
+    /// la tag reescrita con lo que se leyo antes) con `LocalTagReader` y
+    /// reemplaza los 9 campos que vienen del archivo (titulo/artista/
+    /// album/album-artista/año/genero/compositor/pista/caratula) SOLO
+    /// donde el archivo trae un valor -- un campo ausente en el archivo
+    /// no borra lo que ya se habia completado por otra via
+    /// (enriquecimiento remoto, correccion a mano). Calificacion y letra
+    /// sincronizada nunca se tocan: no son tags del archivo.
+    ///
+    /// `respectUserEdits` (P2) -- con `true` (el banner), se saltea
+    /// cualquier item que el usuario ya haya corregido a mano
+    /// (`metadataEditedByUser`); con `false` (la accion explicita del
+    /// menu contextual), siempre relee, sea cual sea ese valor.
+    func rereadLocalTags(ids: Set<UUID>, respectUserEdits: Bool = false) async {
+        var updated = 0
+        var attempted = 0
+
+        for id in ids {
+            guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .music else { continue }
+            if respectUserEdits && items[index].metadataEditedByUser { continue }
+            attempted += 1
+
+            let item = items[index]
+            let fresh = await LocalTagReader.readTag(from: item.sourceURL)
+            let current = item.metadata ?? TrackMetadata()
+            let merged = mergingLocalTags(fresh, into: current)
+            guard index < items.count else { continue }
+            if merged != current { updated += 1 }
+            items[index].metadata = merged
+            items[index].preparedURL = try? prepareMusic(item: items[index], metadata: merged)
+            items[index].status = merged.isComplete ? .ready : .needsReview
+        }
+        persistCatalog()
+
+        guard attempted > 0 else { return }
+        lastEnrichmentSummary = updated == 0
+            ? "No habia nada que actualizar en \(attempted) cancion(es): ya tenian lo que traen sus archivos."
+            : "Se actualizaron \(updated) de \(attempted) cancion(es) con lo que traen sus archivos."
+    }
+
+    private func mergingLocalTags(_ fresh: TrackMetadata, into current: TrackMetadata) -> TrackMetadata {
+        var merged = current
+        merged.title = fresh.title ?? current.title
+        merged.artist = fresh.artist ?? current.artist
+        merged.album = fresh.album ?? current.album
+        merged.albumArtist = fresh.albumArtist ?? current.albumArtist
+        merged.year = fresh.year ?? current.year
+        merged.genre = fresh.genre ?? current.genre
+        merged.composer = fresh.composer ?? current.composer
+        merged.trackNumber = fresh.trackNumber ?? current.trackNumber
+        merged.coverArtData = fresh.coverArtData ?? current.coverArtData
+        return merged
+    }
+
+    /// Se evalua cada vez que se carga un catalogo (arranque, o cambio
+    /// de carpeta de biblioteca) -- pero `legacyMetadataBannerShown`
+    /// persiste en UserDefaults, asi que en la practica se ofrece una
+    /// sola vez por instalacion, nunca de nuevo aunque haya varias
+    /// bibliotecas o se reinicie la app.
+    private func evaluateLegacyMetadataRereadOffer() {
+        guard !preferences.legacyMetadataBannerShown else {
+            legacyMetadataRereadOfferCount = nil
+            return
+        }
+        let musicCount = items.filter { $0.kind == .music }.count
+        legacyMetadataRereadOfferCount = musicCount > 0 ? musicCount : nil
+    }
+
+    /// "Ahora no" del banner -- no vuelve a preguntar (la accion sigue
+    /// disponible a mano en el menu contextual, para siempre).
+    func dismissLegacyMetadataRereadOffer() {
+        preferences.legacyMetadataBannerShown = true
+        legacyMetadataRereadOfferCount = nil
+    }
+
+    /// Aceptar el banner: relee TODA la musica de la biblioteca actual,
+    /// respetando ediciones manuales previas (P2), y no vuelve a
+    /// preguntar.
+    func acceptLegacyMetadataRereadOffer() async {
+        let musicIDs = Set(items.filter { $0.kind == .music }.map(\.id))
+        await rereadLocalTags(ids: musicIDs, respectUserEdits: true)
+        dismissLegacyMetadataRereadOffer()
     }
 
     /// D-217: `LibrarySync.sync()` es sincrona (copia archivos con
@@ -855,7 +951,8 @@ final class LibraryViewModel: ObservableObject {
                 metadata: LibraryPersistenceMapper.persistedMetadata(item.metadata),
                 preparedRelativePath: item.preparedURL.map { relativePath(of: $0) },
                 coverRelativePath: coverRelative,
-                category: item.category
+                category: item.category,
+                metadataEditedByUser: item.metadataEditedByUser
             ))
         }
         persisted.playlists = playlists.map {
@@ -919,7 +1016,8 @@ final class LibraryViewModel: ObservableObject {
                 // rawValue` -- `liveCategory` traduce esos valores
                 // conocidos al string de display nuevo y deja pasar
                 // cualquier otro tal cual (ver su doc-comment).
-                category: p.category.map(LibraryPersistenceMapper.liveCategory)
+                category: p.category.map(LibraryPersistenceMapper.liveCategory),
+                metadataEditedByUser: p.metadataEditedByUser ?? false
             ))
         }
         items = restored
@@ -933,6 +1031,7 @@ final class LibraryViewModel: ObservableObject {
             return Playlist(id: $0.id, name: $0.name, trackItemIDs: $0.trackItemIDs,
                              imageRelativePath: imageExists ? $0.imageRelativePath : nil)
         }
+        evaluateLegacyMetadataRereadOffer()
     }
 
     private func relativePath(of url: URL) -> String {

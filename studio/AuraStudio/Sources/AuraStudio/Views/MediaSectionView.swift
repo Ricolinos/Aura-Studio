@@ -58,6 +58,7 @@ struct MediaSectionView: View {
     /// pedido que tardaba unos segundos se veia igual que uno que no
     /// hacia nada.
     @State private var isEnriching = false
+    @State private var enrichmentBusyText = "Buscando información en línea..."
     /// D-218: IDs pendientes de mostrar el aviso "¿Quieres editar
     /// varios elementos?" antes de abrir la edicion en lote -- se salta
     /// directo a `batchEditingIDs` si el usuario ya marco "No volver a
@@ -111,6 +112,7 @@ struct MediaSectionView: View {
                 dropZone
                     .frame(height: 96)
                     .padding([.horizontal, .top], 16)
+                if kind == .music { legacyMetadataRereadBanner }
                 // D-202 (encargo del dueño): el "+" de columnas va PEGADO
                 // a los encabezados de la tabla, no en la barra de
                 // herramientas de la ventana -- `Table` no deja insertar
@@ -266,10 +268,40 @@ struct MediaSectionView: View {
         }
     }
 
+    // MARK: - Oferta de relectura de etiquetas (PLAN-studio-ux.md §2/P1)
+
+    /// Se ofrece UNA sola vez (`AppPreferences.legacyMetadataBannerShown`)
+    /// la primera vez que se carga una biblioteca con musica despues de
+    /// este cambio -- "Ahora no" no vuelve a preguntar, la accion sigue
+    /// disponible a mano en el menu contextual ("Volver a leer etiquetas
+    /// del archivo").
+    @ViewBuilder
+    private var legacyMetadataRereadBanner: some View {
+        if let count = viewModel.legacyMetadataRereadOfferCount, !isEnriching {
+            HStack(spacing: 12) {
+                Text("Aura Studio ahora lee mejor las etiquetas de tus archivos. ¿Quieres volver a leer las \(count) canción(es) de tu biblioteca?")
+                    .font(.callout)
+                Spacer()
+                Button("Ahora no") {
+                    viewModel.dismissLegacyMetadataRereadOffer()
+                }
+                Button("Volver a leer") {
+                    runEnrichment(busyText: "Leyendo etiquetas del archivo...") {
+                        await viewModel.acceptLegacyMetadataRereadOffer()
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+        }
+    }
+
     // MARK: - Busqueda de informacion en linea (D-203)
 
-    private func runEnrichment(_ action: @escaping () async -> Void) {
+    private func runEnrichment(busyText: String = "Buscando información en línea...", _ action: @escaping () async -> Void) {
         guard !isEnriching else { return }
+        enrichmentBusyText = busyText
         isEnriching = true
         Task {
             await action()
@@ -282,7 +314,7 @@ struct MediaSectionView: View {
         if isEnriching {
             HStack(spacing: 8) {
                 ProgressView().controlSize(.small)
-                Text("Buscando información en línea...")
+                Text(enrichmentBusyText)
             }
             .font(.callout)
             .foregroundStyle(.secondary)
@@ -475,6 +507,12 @@ struct MediaSectionView: View {
             Button("Buscar letra") {
                 runEnrichment { await viewModel.reenrichOnline(ids: targetIDs, fetchAlbumInfo: false, fetchLyrics: true) }
             }
+            Button("Volver a leer etiquetas del archivo") {
+                runEnrichment(busyText: "Leyendo etiquetas del archivo...") {
+                    await viewModel.rereadLocalTags(ids: targetIDs)
+                }
+            }
+            .help("Vuelve a leer título, artista, álbum, año, género, autor, N.º de pista y carátula directamente del archivo original")
             Button("Eliminar carátula") {
                 for item in targetItems { viewModel.clearCoverArt(id: item.id) }
             }

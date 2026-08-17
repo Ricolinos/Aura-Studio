@@ -65,37 +65,33 @@ struct LibraryEnricher {
         return nil
     }
 
+    /// Umbral minimo de `score` de MusicBrainz (0-100) para aceptar una
+    /// `Recording` como fuente de album/año -- `MusicBrainzClient.
+    /// searchRecording` siempre devuelve el resultado de mayor score
+    /// aunque sea bajo (o `nil`), y `enrich()`/`reenrich()` lo usaban
+    /// sin piso: dos canciones del mismo album real podian terminar con
+    /// albumes distintos si MusicBrainz devolvia un release equivocado
+    /// con score bajo. Sin tags locales, es mejor dejar "Sin album"
+    /// (revisable) que inventar uno. Un `score` ausente (`nil`) se trata
+    /// como 0 -- por debajo del umbral, se rechaza.
+    static let minimumMusicBrainzScore = 70
+
     /// `online` y `lyrics` salen de las preferencias del usuario
     /// (AppPreferences): con `online` en false no se toca la red y solo
     /// se usa lo que ya trae el archivo mas lo que se adivine del nombre.
     func enrich(item: LibraryItem, online: Bool = true, lyrics: Bool = true,
                 coverArtOrder: [CoverArtProvider] = CoverArtProvider.defaultOrder,
                 deezerEnabled: Bool = true) async -> TrackMetadata {
-        var existing = ID3Writer.Tag()
-        if item.sourceURL.pathExtension.lowercased() == "mp3",
-           let data = try? Data(contentsOf: item.sourceURL) {
-            existing = ID3Writer.readTag(from: data) ?? ID3Writer.Tag()
-        }
+        var metadata = await LocalTagReader.readTag(from: item.sourceURL)
 
         let guess = FilenameGuesser.guess(from: item.sourceURL)
-        let seedTitle = existing.title ?? guess.title
-        let seedArtist = existing.artist ?? guess.artist
-
-        var metadata = TrackMetadata(
-            title: existing.title ?? guess.title,
-            artist: existing.artist ?? guess.artist,
-            album: existing.album,
-            albumArtist: existing.albumArtist,
-            year: existing.year,
-            genre: existing.genre,
-            composer: existing.composer,
-            trackNumber: existing.trackNumber,
-            coverArtData: existing.coverArtData
-        )
+        metadata.title = metadata.title ?? guess.title
+        metadata.artist = metadata.artist ?? guess.artist
 
         guard online else { return metadata }
 
-        guard let recording = try? await musicBrainz.searchRecording(title: seedTitle, artist: seedArtist) else {
+        guard let recording = try? await musicBrainz.searchRecording(title: metadata.title, artist: metadata.artist),
+              (recording.score ?? 0) >= Self.minimumMusicBrainzScore else {
             return metadata
         }
 
@@ -151,7 +147,8 @@ struct LibraryEnricher {
 
         if fetchAlbumInfo {
             do {
-                if let recording = try await musicBrainz.searchRecording(title: seedTitle, artist: seedArtist) {
+                if let recording = try await musicBrainz.searchRecording(title: seedTitle, artist: seedArtist),
+                   (recording.score ?? 0) >= Self.minimumMusicBrainzScore {
                     outcome.albumInfoFound = true
                     metadata.title = metadata.title ?? recording.title
                     metadata.artist = metadata.artist ?? recording.artistCredit?.first?.name

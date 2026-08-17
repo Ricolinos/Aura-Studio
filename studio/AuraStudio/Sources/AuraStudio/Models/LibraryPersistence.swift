@@ -50,6 +50,12 @@ struct PersistedLibraryItem: Codable {
     var preparedRelativePath: String?
     var coverRelativePath: String?
     var category: String?
+    /// Opcional (no `Bool` a secas): catalogos guardados antes de este
+    /// campo no lo tienen, y un `Bool` no-opcional en un `Codable`
+    /// sintetizado exige la clave -- ausente, `try? decode(...)` en
+    /// `loadCatalog()` tiraria el catalogo ENTERO, no solo este campo.
+    /// Mismo criterio que `imageRelativePath` de `PersistedPlaylist`.
+    var metadataEditedByUser: Bool?
 }
 
 struct PersistedTrackMetadata: Codable {

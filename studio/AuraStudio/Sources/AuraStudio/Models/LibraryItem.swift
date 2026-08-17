@@ -56,6 +56,15 @@ struct LibraryItem: Identifiable, Equatable {
     /// usando puertas adentro). Se sugiere sola al procesar el item y
     /// el usuario la puede corregir a mano.
     var category: String?
+    /// Se pone en `true` la primera vez que el usuario corrige metadata
+    /// a mano (revision, renombrar, edicion en lote, quitar caratula) --
+    /// nunca por `LibraryEnricher`/`LocalTagReader`, que solo llenan
+    /// huecos. Protege esas correcciones de la relectura masiva que
+    /// ofrece el banner de "Aura Studio ahora lee mejor las etiquetas"
+    /// (ver `LibraryViewModel.rereadLocalTags`, PLAN-studio-ux.md §2/P2)
+    /// -- la accion explicita del menu contextual, en cambio, siempre
+    /// pisa, sea cual sea este valor.
+    var metadataEditedByUser: Bool
 
     init(sourceURL: URL) {
         self.id = UUID()
@@ -65,6 +74,7 @@ struct LibraryItem: Identifiable, Equatable {
         self.metadata = nil
         self.preparedURL = nil
         self.category = nil
+        self.metadataEditedByUser = false
     }
 
     /// Restauracion desde el catalogo persistido de la biblioteca
@@ -73,7 +83,7 @@ struct LibraryItem: Identifiable, Equatable {
     /// sesiones.
     init(id: UUID, sourceURL: URL, kind: LibraryItemKind,
          status: LibraryItemStatus, metadata: TrackMetadata?, preparedURL: URL?,
-         category: String? = nil) {
+         category: String? = nil, metadataEditedByUser: Bool = false) {
         self.id = id
         self.sourceURL = sourceURL
         self.kind = kind
@@ -81,5 +91,6 @@ struct LibraryItem: Identifiable, Equatable {
         self.metadata = metadata
         self.preparedURL = preparedURL
         self.category = category
+        self.metadataEditedByUser = metadataEditedByUser
     }
 }

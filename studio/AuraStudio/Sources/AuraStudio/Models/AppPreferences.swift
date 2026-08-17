@@ -69,6 +69,14 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(enrichOnline, forKey: Keys.enrichOnline) }
     }
 
+    /// Si ya se le ofreció al usuario volver a leer las etiquetas de su
+    /// biblioteca con `LocalTagReader` (PLAN-studio-ux.md §2/P1) -- se
+    /// pregunta una sola vez, nunca de nuevo aunque la respuesta haya
+    /// sido "ahora no": la accion sigue disponible en el menu contextual.
+    @Published var legacyMetadataBannerShown: Bool {
+        didSet { defaults.set(legacyMetadataBannerShown, forKey: Keys.legacyMetadataBannerShown) }
+    }
+
     @Published var language: AppLanguage {
         didSet {
             defaults.set(language.rawValue, forKey: Keys.language)
@@ -334,6 +342,7 @@ final class AppPreferences: ObservableObject {
         static let fetchSyncedLyrics = "aura.fetchSyncedLyrics"
         static let enrichOnline = "aura.enrichOnline"
         static let language = "aura.language"
+        static let legacyMetadataBannerShown = "aura.legacyMetadataBannerShown"
         static let libraryFolderPath = "aura.libraryFolderPath"
         static let copyMediaIntoLibrary = "aura.copyMediaIntoLibrary"
         static let musicOrganization = "aura.musicOrganization"
@@ -356,6 +365,7 @@ final class AppPreferences: ObservableObject {
         self.enrichOnline = defaults.object(forKey: Keys.enrichOnline) as? Bool ?? true
         self.language = (defaults.string(forKey: Keys.language)
             .flatMap(AppLanguage.init(rawValue:))) ?? .system
+        self.legacyMetadataBannerShown = defaults.object(forKey: Keys.legacyMetadataBannerShown) as? Bool ?? false
         self.libraryFolderPath = defaults.string(forKey: Keys.libraryFolderPath)
             ?? Self.defaultLibraryFolderPath
         self.copyMediaIntoLibrary = defaults.object(forKey: Keys.copyMediaIntoLibrary) as? Bool ?? true

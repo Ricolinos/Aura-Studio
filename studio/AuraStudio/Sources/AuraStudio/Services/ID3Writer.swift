@@ -6,6 +6,16 @@ import Foundation
 /// formato binario simple (cabecera + frames TLV) y evita traer una
 /// libreria de terceros para algo tan acotado.
 ///
+/// `readTag(from:)` NO es el lector de produccion -- solo entiende el
+/// subconjunto de ID3v2.3 que `buildTag`/`write` escriben (encoding
+/// 0x01 UTF-16 con BOM, `TYER`, tamaño de frame no-synchsafe, numero de
+/// pista entero sin "/total"), asi que con un archivo ajeno real
+/// (ID3v2.4 UTF-8, el default de ffmpeg/MusicBrainz Picard/yt-dlp)
+/// corrompe acentos y pierde año/pista/portada -- ver PLAN-studio-ux.md
+/// §2, donde esto fue exactamente el bug reportado. El lector que lee
+/// archivos de verdad (todos los formatos, no solo mp3) es
+/// `LocalTagReader`, via AVFoundation.
+///
 /// Alcance deliberado (ver D-037 en DECISIONS.md): esta es la unica
 /// escritura de tags "nativa en el archivo" que Aura Studio implementa
 /// en esta fase. Para FLAC/MP4/ALAC/WAV/AIFF, el enriquecimiento
