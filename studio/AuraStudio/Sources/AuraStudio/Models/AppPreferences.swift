@@ -77,6 +77,15 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(legacyMetadataBannerShown, forKey: Keys.legacyMetadataBannerShown) }
     }
 
+    /// Identificador estable de ESTA instalacion de Aura Studio (no del
+    /// usuario ni de la Mac -- se regenera si se reinstala). PLAN-general-sync.md
+    /// §9/P7: se escribe como `SyncRecord.writtenBy` para que dos Macs
+    /// sincronizando el mismo iPod no se pisen registros -- cada una
+    /// solo trata como "propios" los que ella misma escribio. Generado
+    /// una sola vez y reusado para siempre (`UUID().uuidString`, no hay
+    /// nada sensible en el valor, no hace falta Keychain).
+    let installationID: String
+
     @Published var language: AppLanguage {
         didSet {
             defaults.set(language.rawValue, forKey: Keys.language)
@@ -343,6 +352,7 @@ final class AppPreferences: ObservableObject {
         static let enrichOnline = "aura.enrichOnline"
         static let language = "aura.language"
         static let legacyMetadataBannerShown = "aura.legacyMetadataBannerShown"
+        static let installationID = "aura.installationID"
         static let libraryFolderPath = "aura.libraryFolderPath"
         static let copyMediaIntoLibrary = "aura.copyMediaIntoLibrary"
         static let musicOrganization = "aura.musicOrganization"
@@ -366,6 +376,13 @@ final class AppPreferences: ObservableObject {
         self.language = (defaults.string(forKey: Keys.language)
             .flatMap(AppLanguage.init(rawValue:))) ?? .system
         self.legacyMetadataBannerShown = defaults.object(forKey: Keys.legacyMetadataBannerShown) as? Bool ?? false
+        if let existingID = defaults.string(forKey: Keys.installationID) {
+            self.installationID = existingID
+        } else {
+            let newID = UUID().uuidString
+            defaults.set(newID, forKey: Keys.installationID)
+            self.installationID = newID
+        }
         self.libraryFolderPath = defaults.string(forKey: Keys.libraryFolderPath)
             ?? Self.defaultLibraryFolderPath
         self.copyMediaIntoLibrary = defaults.object(forKey: Keys.copyMediaIntoLibrary) as? Bool ?? true

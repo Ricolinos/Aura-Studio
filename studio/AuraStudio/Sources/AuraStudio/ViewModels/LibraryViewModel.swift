@@ -635,24 +635,91 @@ final class LibraryViewModel: ObservableObject {
     /// `Task.detached` -- `LibrarySync`/`LibraryItem`/`Playlist` son
     /// structs Sendable de por si -- y cada tick de `onProgress` salta
     /// de vuelta al MainActor para actualizar `syncProgress`.
-    func sync(toVolumeAt volumeRoot: URL) async {
-        let readyItems = items.filter { $0.status == .ready }
+    /// PLAN-general-sync.md §6: "Toda la biblioteca" (por defecto) o
+    /// "Solo la selección" -- con una selección vacía, `sync(scope:)`
+    /// no llega a tocar el dispositivo (ver el guard al principio).
+    enum SyncScope: Equatable {
+        case all
+        case selection(Set<UUID>)
+    }
+
+    /// No-nil mientras hay un sync en curso -- `cancelSync()` lo usa
+    /// para pedirle a `LibrarySync.sync()` (que corre en un
+    /// `Task.detached`, no puede cancelarse con `Task.cancel()` porque
+    /// no es asincrono) que pare en la proxima frontera segura
+    /// (§8.1/§8.3 de PLAN-general-sync.md).
+    private var currentSyncCancellationFlag: SyncCancellationFlag?
+
+    var isSyncing: Bool { syncProgress != nil }
+
+    /// Pide que el sync en curso se detenga en la proxima frontera seg
+    /// ura (entre bloques de 4 MB, o entre archivos) -- no hace nada si
+    /// no hay ningun sync corriendo. `LibrarySync.sync()` sigue
+    /// corriendo `finalize` (portadas, playlists, resumen, indice) para
+    /// lo que ya se alcanzo a copiar, asi que el iPod queda consistente.
+    func cancelSync() {
+        currentSyncCancellationFlag?.cancel()
+    }
+
+    func sync(toVolumeAt volumeRoot: URL, scope: SyncScope = .all) async {
+        let allReady = items.filter { $0.status == .ready }
+        let restrictedSourcePaths: Set<String>?
+
+        switch scope {
+        case .all:
+            restrictedSourcePaths = nil
+        case .selection(let ids):
+            // El boton/menu que llama con `.selection` ya deberia venir
+            // deshabilitado sin nada elegido (§6: "nunca falla, no hay
+            // camino a sincronizar nada") -- este guard es la ultima
+            // linea de defensa si de todas formas se invoca vacio.
+            guard !ids.isEmpty else {
+                lastSyncSummary = "No hay ningún elemento seleccionado para sincronizar."
+                return
+            }
+            let selectedReady = allReady.filter { ids.contains($0.id) }
+            guard !selectedReady.isEmpty else {
+                lastSyncSummary = "Los elementos seleccionados todavía no están listos para sincronizar."
+                return
+            }
+            restrictedSourcePaths = Set(selectedReady.map { $0.sourceURL.path })
+        }
+
+        guard !allReady.isEmpty else {
+            lastSyncSummary = "No hay nada listo para sincronizar."
+            return
+        }
+
+        guard InstallerFlowRegistry.shared.beginWriting() else {
+            lastError = "Hay otra operación en curso con el iPod -- espera a que termine antes de sincronizar."
+            return
+        }
+        defer { InstallerFlowRegistry.shared.endWriting() }
+
+        let cancellationFlag = SyncCancellationFlag()
+        currentSyncCancellationFlag = cancellationFlag
+        defer { currentSyncCancellationFlag = nil }
+
         let playlistsSnapshot = playlists
         let coverArtPolicy = preferences.coverArtPolicy
         let musicOrganization = preferences.musicOrganization
         let musicFilenameFormat = preferences.musicFilenameFormat
         let libraryRootSnapshot = libraryRoot
+        let installationIDSnapshot = preferences.installationID
         let startedAt = Date()
         syncProgress = nil
 
         do {
             let sync = LibrarySync(volumeRoot: volumeRoot)
             let result = try await Task.detached(priority: .userInitiated) { [weak self] in
-                try sync.sync(items: readyItems, playlists: playlistsSnapshot,
+                try sync.sync(items: allReady, playlists: playlistsSnapshot,
                               libraryRoot: libraryRootSnapshot,
                               coverArtPolicy: coverArtPolicy,
                               musicOrganization: musicOrganization,
-                              musicFilenameFormat: musicFilenameFormat) { copied, total in
+                              musicFilenameFormat: musicFilenameFormat,
+                              restrictCopyToSourcePaths: restrictedSourcePaths,
+                              installationID: installationIDSnapshot,
+                              isCancelled: { cancellationFlag.isCancelled }) { copied, total in
                     guard let self else { return }
                     let elapsed = Date().timeIntervalSince(startedAt)
                     let remaining: Double? = (copied > 0 && copied < total)
@@ -664,15 +731,26 @@ final class LibraryViewModel: ObservableObject {
                 }
             }.value
             let playlistsNote = result.playlistsWritten > 0 ? " \(result.playlistsWritten) playlist(s) actualizada(s)." : ""
-            lastSyncSummary = result.filesCopied == 0
-                ? "Ya estaba todo sincronizado, no habia nada nuevo.\(playlistsNote)"
-                : "Se copiaron \(result.filesCopied) de \(readyItems.count) archivo(s). El indice de la biblioteca se va a reconstruir la proxima vez que arranque Aura.\(playlistsNote)"
+            if result.wasCancelled {
+                lastSyncSummary = "Sincronización cancelada. Se copiaron \(result.filesCopied) archivo(s); \(result.filesRemaining) quedaron pendientes.\(playlistsNote)"
+            } else {
+                lastSyncSummary = result.filesCopied == 0
+                    ? "Ya estaba todo sincronizado, no habia nada nuevo.\(playlistsNote)"
+                    : "Se copiaron \(result.filesCopied) de \(allReady.count) archivo(s). El indice de la biblioteca se va a reconstruir la proxima vez que arranque Aura.\(playlistsNote)"
+            }
         } catch {
             // El mensaje de Cocoa viene en ingles y sin contexto ("You
             // can't save the file X because the volume is read only"):
             // se conserva porque dice el motivo real, pero se antepone
             // a donde se estaba escribiendo, que es la informacion que
             // permite darse cuenta de que se apunto al disco equivocado.
+            // Nota (§8.4): una desconexion fisica a media copia llega
+            // aca tambien (EIO/ENOENT real de `copyFileTransactionally`)
+            // -- el marcador `sync_in_progress` queda en el dispositivo
+            // porque `finalize` nunca corrio, y el proximo sync lo
+            // encuentra y continua desde donde quedo (el manifiesto ya
+            // tiene registrado cada archivo que si se alcanzo a copiar,
+            // guardado uno por uno).
             lastError = "No se pudo sincronizar en \(volumeRoot.path): \(error.localizedDescription)"
         }
         syncProgress = nil

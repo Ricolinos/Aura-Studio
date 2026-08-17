@@ -1,5 +1,30 @@
 import Foundation
 
+/// Bandera de cancelacion thread-safe: `LibrarySync.sync()` corre
+/// sincrono dentro de un `Task.detached` (D-217) y consulta
+/// `isCancelled` desde ese hilo de fondo; `cancel()` se llama desde el
+/// MainActor cuando el usuario pulsa "Cancelar". `NSLock` en vez de un
+/// `actor` a proposito: `sync()` no es `async`, no puede `await` en
+/// medio de cada bloque de 4 MB sin reescribir todo el metodo como
+/// asincrono -- una lectura/escritura protegida por lock es instantanea
+/// y alcanza para esto.
+final class SyncCancellationFlag: @unchecked Sendable {
+    private let lock = NSLock()
+    private var flagged = false
+
+    func cancel() {
+        lock.lock()
+        flagged = true
+        lock.unlock()
+    }
+
+    var isCancelled: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return flagged
+    }
+}
+
 /// Registro de un archivo ya sincronizado, para decidir en la proxima
 /// pasada si hace falta copiarlo de nuevo. Se compara por tamaño +
 /// fecha de modificacion (igual que rsync por defecto) en vez de
@@ -11,12 +36,54 @@ struct SyncRecord: Codable, Equatable {
     let sourceSize: Int64
     let sourceModifiedAt: TimeInterval
     let destinationRelativePath: String
+    /// PLAN-general-sync.md §4.2/§9 (v2 del manifiesto, opcionales para
+    /// que un manifiesto v1 -- sin estas claves -- siga decodificando:
+    /// un `Codable` sintetizado con un campo no-opcional exigiria la
+    /// clave, y `try? JSONDecoder().decode` tiraria el manifiesto
+    /// ENTERO si faltara una sola). `destinationSize`/
+    /// `destinationModifiedAt` son la huella del archivo TAL COMO QUEDO
+    /// en el iPod justo despues de copiarlo -- comparada contra un
+    /// `stat()` real del destino, es lo que distingue "sincronizado" de
+    /// "modificado en el iPod fuera de Aura Studio". Un registro v1 sin
+    /// estos campos se trata como no verificable (ver
+    /// PLAN-general-sync.md §4.2: "se rellenan en el primer sync").
+    var destinationSize: Int64?
+    var destinationModifiedAt: TimeInterval?
+    /// `AppPreferences.installationID` de la Mac que escribio este
+    /// registro -- dos Macs sincronizando el mismo iPod no se pisan:
+    /// cada una solo trata como "propios" los registros con su propio
+    /// id (P7).
+    var writtenBy: String?
+    var syncedAt: TimeInterval?
+
+    init(sourcePath: String, sourceSize: Int64, sourceModifiedAt: TimeInterval,
+         destinationRelativePath: String, destinationSize: Int64? = nil,
+         destinationModifiedAt: TimeInterval? = nil, writtenBy: String? = nil,
+         syncedAt: TimeInterval? = nil) {
+        self.sourcePath = sourcePath
+        self.sourceSize = sourceSize
+        self.sourceModifiedAt = sourceModifiedAt
+        self.destinationRelativePath = destinationRelativePath
+        self.destinationSize = destinationSize
+        self.destinationModifiedAt = destinationModifiedAt
+        self.writtenBy = writtenBy
+        self.syncedAt = syncedAt
+    }
 }
 
 struct SyncManifest: Codable, Equatable {
     var records: [String: SyncRecord] // key = sourcePath
+    /// `nil` = manifiesto v1 (de antes de este campo). PLAN-general-sync.md §9.
+    var contractVersion: Int?
 
-    static let empty = SyncManifest(records: [:])
+    static let currentContractVersion = 2
+
+    static let empty = SyncManifest(records: [:], contractVersion: currentContractVersion)
+
+    init(records: [String: SyncRecord], contractVersion: Int? = currentContractVersion) {
+        self.records = records
+        self.contractVersion = contractVersion
+    }
 }
 
 enum SyncPlanAction: Equatable {
@@ -83,6 +150,12 @@ enum SyncPlanner {
 struct SyncResult: Equatable {
     let filesCopied: Int
     let playlistsWritten: Int
+    /// PLAN-general-sync.md §8.3: `true` cuando `isCancelled` corto la
+    /// copia antes de terminar el plan -- `finalize` (portadas,
+    /// playlists, resumen, indice) igual corrio para lo que SI se
+    /// alcanzo a copiar, asi que el iPod queda consistente.
+    var wasCancelled: Bool = false
+    var filesRemaining: Int = 0
 }
 
 /// D-217: progreso incremental de un sync en curso, publicado por
@@ -98,6 +171,27 @@ struct LibrarySync {
     static let summaryRelativePath = ".rockbox/aura/sync_summary.cfg"
     static let ratingsRelativePath = ".rockbox/aura/ratings.cfg"
     static let playlistsRelativePath = "Playlists"
+    /// PLAN-general-sync.md §8.2: presente mientras un sync esta en
+    /// curso; ausente = ultimo sync cerro limpio (termino o se cancelo
+    /// de forma deliberada, que igual corre `finalize`). Si sigue
+    /// presente al conectar, el sync anterior se interrumpio de golpe
+    /// (desconexion, cierre de la app, cuelgue) -- ver
+    /// `sweepOrphanedTempFiles()`.
+    static let inProgressMarkerRelativePath = ".rockbox/aura/sync_in_progress"
+    /// Sufijo de los archivos temporales de la copia transaccional
+    /// (§8.1): extension DESCONOCIDA para el firmware
+    /// (`probe_file_format()` por extension, `tagcache.c`) -- un
+    /// `.aura-tmp` a medio escribir nunca se indexa, a diferencia de un
+    /// `.mp3` truncado (que si se indexaria con metadata basura).
+    static let temporaryFileExtension = "aura-tmp"
+    /// Tamaño de bloque de la copia interrumpible (§8.1) -- lo bastante
+    /// chico para que cancelar/pausar responda rapido, lo bastante
+    /// grande para no ahogar la copia en overhead de syscalls sobre
+    /// USB 2.0.
+    static let copyBlockSize = 4 * 1024 * 1024
+    /// Carpetas del dispositivo que Aura Studio escribe -- donde puede
+    /// haber quedado un `.aura-tmp` huerfano de un sync interrumpido.
+    static let deviceContentDirectories = ["Music", "Videos", "Photos", "Playlists"]
     static let tagcacheFilesToClear = [
         ".rockbox/database_idx.tcd",
         ".rockbox/database_0.tcd",
@@ -128,6 +222,103 @@ struct LibrarySync {
         try data.write(to: url, options: .atomic)
     }
 
+    // MARK: - Marcador de sync en curso y barrido (§8.2)
+
+    func hasInProgressMarker() -> Bool {
+        fileManager.fileExists(atPath: volumeRoot.appendingPathComponent(Self.inProgressMarkerRelativePath).path)
+    }
+
+    private func writeInProgressMarker(startedAt: Date) throws {
+        let url = volumeRoot.appendingPathComponent(Self.inProgressMarkerRelativePath)
+        try fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let content = "started_at: \(startedAt.timeIntervalSince1970)\n"
+        try content.write(to: url, atomically: true, encoding: .utf8)
+    }
+
+    private func removeInProgressMarker() {
+        try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(Self.inProgressMarkerRelativePath))
+    }
+
+    /// Borra cualquier `.aura-tmp` que haya quedado de un sync
+    /// interrumpido de golpe (desconexion, cierre de la app) antes de
+    /// empezar uno nuevo -- nunca deja basura acumulandose, y nunca
+    /// toca nada que no sea un temporal propio.
+    func sweepOrphanedTempFiles() {
+        for directoryName in Self.deviceContentDirectories {
+            let root = volumeRoot.appendingPathComponent(directoryName, isDirectory: true)
+            guard let enumerator = fileManager.enumerator(at: root, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles]) else { continue }
+            for case let url as URL in enumerator where url.pathExtension == Self.temporaryFileExtension {
+                try? fileManager.removeItem(at: url)
+            }
+        }
+    }
+
+    // MARK: - Copia transaccional (§8.1)
+
+    enum CopyOutcome {
+        case completed
+        case cancelled
+    }
+
+    enum LibrarySyncError: Error, LocalizedError {
+        case cannotCreateTempFile(String)
+
+        var errorDescription: String? {
+            switch self {
+            case .cannotCreateTempFile(let path):
+                return "No se pudo crear el archivo temporal en \(path)"
+            }
+        }
+    }
+
+    /// Copia `source` a `destination` por bloques, escribiendo primero
+    /// a `<destino>.aura-tmp` y renombrando al final -- el firmware
+    /// nunca ve un archivo final a medio escribir (ni siquiera durante
+    /// una copia larga), y una cancelacion o una desconexion a mitad de
+    /// bloque deja como mucho un `.aura-tmp` huerfano, nunca un
+    /// `.mp3`/`.mpg`/`.jpg` final truncado. `isCancelled` se consulta
+    /// antes de cada bloque -- responde en como mucho `copyBlockSize`
+    /// bytes (4 MB), rapido incluso sobre USB 2.0.
+    func copyFileTransactionally(from source: URL, to destination: URL,
+                                  isCancelled: () -> Bool = { false },
+                                  onBytesCopied: (Int64) -> Void = { _ in }) throws -> CopyOutcome {
+        let tempURL = destination.appendingPathExtension(Self.temporaryFileExtension)
+        if fileManager.fileExists(atPath: tempURL.path) {
+            try fileManager.removeItem(at: tempURL)
+        }
+        guard fileManager.createFile(atPath: tempURL.path, contents: nil) else {
+            throw LibrarySyncError.cannotCreateTempFile(tempURL.path)
+        }
+
+        do {
+            let inHandle = try FileHandle(forReadingFrom: source)
+            let outHandle = try FileHandle(forWritingTo: tempURL)
+            defer { try? inHandle.close(); try? outHandle.close() }
+
+            while true {
+                if isCancelled() {
+                    try? outHandle.close()
+                    try? fileManager.removeItem(at: tempURL)
+                    return .cancelled
+                }
+                guard let chunk = try inHandle.read(upToCount: Self.copyBlockSize), !chunk.isEmpty else {
+                    break
+                }
+                try outHandle.write(contentsOf: chunk)
+                onBytesCopied(Int64(chunk.count))
+            }
+        } catch {
+            try? fileManager.removeItem(at: tempURL)
+            throw error
+        }
+
+        if fileManager.fileExists(atPath: destination.path) {
+            try fileManager.removeItem(at: destination)
+        }
+        try fileManager.moveItem(at: tempURL, to: destination)
+        return .completed
+    }
+
     /// `items` son los LibraryItem ya procesados (metadata escrita,
     /// video transcodificado, foto redimensionada) con `preparedURL`
     /// listo para copiar; `playlists` (Fase 24) se resuelven a rutas
@@ -149,9 +340,26 @@ struct LibrarySync {
               coverArtPolicy: AppPreferences.CoverArtPolicy = .albumOnly,
               musicOrganization: AppPreferences.MusicOrganization = .artistAlbum,
               musicFilenameFormat: AppPreferences.MusicFilenameFormat = .titleOnly,
+              /// PLAN-general-sync.md §6: `nil` = copiar todo lo que
+              /// `SyncPlanner` marque `.copy` (comportamiento de
+              /// siempre). No-nil = "sincronizar solo la selección" --
+              /// `items`/`playlists` siguen siendo la biblioteca
+              /// COMPLETA (asi el resumen/las listas/el indice del
+              /// firmware reflejan lo que de verdad hay en el
+              /// dispositivo), pero solo se copian los `sourcePath` de
+              /// este conjunto; el resto queda pendiente para el
+              /// proximo sync sin perderse.
+              restrictCopyToSourcePaths: Set<String>? = nil,
+              installationID: String? = nil,
+              isCancelled: () -> Bool = { false },
               onProgress: (_ copied: Int, _ toCopy: Int) -> Void = { _, _ in }) throws -> SyncResult {
+        sweepOrphanedTempFiles()
+        try writeInProgressMarker(startedAt: Date())
+
         var manifest = loadManifest()
+        manifest.contractVersion = SyncManifest.currentContractVersion
         var copied = 0
+        var wasCancelled = false
         var destinationByItemID: [UUID: String] = [:]
         var summary = CatalogSummary()
 
@@ -198,17 +406,34 @@ struct LibrarySync {
             return (item.sourceURL.path, size, modified, destRelative)
         }
 
-        let plan = SyncPlanner.plan(current: currentFiles, previousManifest: manifest)
+        let fullPlan = SyncPlanner.plan(current: currentFiles, previousManifest: manifest)
+        // "Sincronizar solo la selección": los archivos fuera de la
+        // restriccion se tratan como si SyncPlanner los hubiera
+        // marcado `.skip` en ESTA pasada -- siguen `.copy` en el plan
+        // real (para que el proximo sync sin restriccion los copie),
+        // simplemente esta pasada no los toca.
+        let plan = restrictCopyToSourcePaths.map { allowed in
+            fullPlan.filter { $0.action == .skip || allowed.contains($0.sourcePath) }
+        } ?? fullPlan
         // D-217: total real de archivos que este sync va a copiar de
         // verdad (los que SyncPlanner ya decidio saltear no cuentan) --
         // asi la barra de progreso mide contra lo que efectivamente va a
         // pasar, no contra el total de la biblioteca completa.
         let toCopy = plan.filter { $0.action == .copy }.count
 
-        for planItem in plan {
+        planLoop: for planItem in plan {
             guard planItem.action == .copy else { continue }
             guard let item = items.first(where: { $0.sourceURL.path == planItem.sourcePath }),
                   let prepared = item.preparedURL else { continue }
+
+            // §8.3: la cancelacion se revisa en la frontera de archivo
+            // (ademas de dentro de cada copia, por bloque) -- si ya se
+            // pidio antes de empezar este archivo, ni siquiera se toca
+            // el disco para el.
+            if isCancelled() {
+                wasCancelled = true
+                break planLoop
+            }
 
             if let stale = planItem.staleDestinationRelativePath {
                 try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(stale))
@@ -216,10 +441,12 @@ struct LibrarySync {
 
             let destination = volumeRoot.appendingPathComponent(planItem.destinationRelativePath)
             try fileManager.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
-            if fileManager.fileExists(atPath: destination.path) {
-                try fileManager.removeItem(at: destination)
+
+            let outcome = try copyFileTransactionally(from: prepared, to: destination, isCancelled: isCancelled)
+            guard case .completed = outcome else {
+                wasCancelled = true
+                break planLoop
             }
-            try fileManager.copyItem(at: prepared, to: destination)
             copied += 1
             onProgress(copied, toCopy)
 
@@ -227,6 +454,8 @@ struct LibrarySync {
             // por FFmpegTranscoder.generatePoster) viaja pegado a su
             // video -- no tiene entrada propia en el manifiesto, sigue
             // el mismo diferencial que el archivo principal (D-066).
+            // Best-effort (no transaccional): es contenido derivado y
+            // regenerable, no dato del usuario -- ver PLAN-general-sync.md §8.1.
             if item.kind == .video {
                 let posterSource = prepared.deletingPathExtension().appendingPathExtension("jpg")
                 if fileManager.fileExists(atPath: posterSource.path) {
@@ -239,15 +468,23 @@ struct LibrarySync {
             }
 
             let attrs = try fileManager.attributesOfItem(atPath: prepared.path)
+            let destAttrs = try fileManager.attributesOfItem(atPath: destination.path)
             manifest.records[planItem.sourcePath] = SyncRecord(
                 sourcePath: planItem.sourcePath,
                 sourceSize: (attrs[.size] as? Int64) ?? 0,
                 sourceModifiedAt: (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0,
-                destinationRelativePath: planItem.destinationRelativePath
+                destinationRelativePath: planItem.destinationRelativePath,
+                destinationSize: (destAttrs[.size] as? Int64) ?? 0,
+                destinationModifiedAt: (destAttrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0,
+                writtenBy: installationID,
+                syncedAt: Date().timeIntervalSince1970
             )
+            // §8.1: el manifiesto se guarda tras CADA archivo (antes
+            // solo al final) -- es lo que hace que pausar, cancelar, o
+            // una desconexion fisica conserven el progreso ya copiado
+            // en vez de perderlo si el resto del sync no llega a correr.
+            try saveManifest(manifest)
         }
-
-        try saveManifest(manifest)
 
         if coverArtPolicy == .albumOnly {
             writeAlbumCovers(items: items, destinationByItemID: destinationByItemID)
@@ -262,7 +499,16 @@ struct LibrarySync {
         if copied > 0 {
             triggerFirmwareDBRebuild()
         }
-        return SyncResult(filesCopied: copied, playlistsWritten: playlistsWritten)
+
+        // §8.2: `finalize` (arriba) corrio igual aunque se haya
+        // cancelado -- el marcador solo sobrevive cuando el sync se
+        // interrumpe DE GOLPE (una excepcion real, p. ej. desconexion,
+        // que no pasa por aca) y nunca llega a este punto.
+        removeInProgressMarker()
+
+        let remaining = wasCancelled ? max(toCopy - copied, 0) : 0
+        return SyncResult(filesCopied: copied, playlistsWritten: playlistsWritten,
+                           wasCancelled: wasCancelled, filesRemaining: remaining)
     }
 
     /// Con la politica "una caratula por album", la imagen no va embebida
