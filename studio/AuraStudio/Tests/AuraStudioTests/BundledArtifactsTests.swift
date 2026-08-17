@@ -4,7 +4,7 @@ import XCTest
 final class BundledArtifactsTests: XCTestCase {
     func testParseChecksumsRealFormat() {
         // Mismo formato exacto que produce `shasum -a 256` (usado por
-        // firmware/tools/... al generar firmware/dist/checksums.txt).
+        // tools/... al generar checksums.txt, mismo formato que produce el firmware).
         let text = """
         e30b3c3d2a0eca694637a5753a554f525a869f07462d7c8354d7f6ed9a79871f  rockbox.ipod
         9768fb8052ea3f253fe10cde8908aeebde7c3ebb27c32efda0c2dde4467eac39  bootloader-ipod6g.ipod

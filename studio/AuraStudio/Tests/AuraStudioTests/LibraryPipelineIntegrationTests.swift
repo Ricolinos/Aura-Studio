@@ -3,8 +3,8 @@ import XCTest
 
 /// Prueba el pipeline completo (ingesta -> enriquecimiento/transcode/
 /// resize -> sync diferencial) contra archivos reales, no solo cada
-/// pieza en aislamiento. Usa los fixtures de firmware/test-media/
-/// generados por gen_test_media.sh (Fase 4/6) y un iPod "de mentira"
+/// pieza en aislamiento. Usa los fixtures de test-media/ (raiz de este
+/// repo), generados por tools/gen_test_media.sh, y un iPod "de mentira"
 /// (una carpeta temporal en vez de un volumen montado de verdad) para
 /// que el sync se pueda verificar sin hardware.
 final class LibraryPipelineIntegrationTests: XCTestCase {
@@ -20,11 +20,13 @@ final class LibraryPipelineIntegrationTests: XCTestCase {
     }
 
     private func repoTestMediaURL() -> URL? {
-        // Sube desde .build/.../ hasta encontrar firmware/test-media/,
-        // sin asumir un layout fijo de directorio de trabajo.
+        // Sube desde la ruta fuente de este archivo (#filePath, estable
+        // sin importar el build system) hasta encontrar test-media/ en
+        // la raiz del repo, sin asumir un layout fijo de directorio de
+        // trabajo.
         var dir = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
         for _ in 0..<8 {
-            let candidate = dir.appendingPathComponent("firmware/test-media")
+            let candidate = dir.appendingPathComponent("test-media")
             if FileManager.default.fileExists(atPath: candidate.path) {
                 return candidate
             }
@@ -35,7 +37,7 @@ final class LibraryPipelineIntegrationTests: XCTestCase {
 
     func testPhotoAndVideoPipelineEndToEnd() async throws {
         guard let testMedia = repoTestMediaURL() else {
-            throw XCTSkip("firmware/test-media no esta generado (correr firmware/tools/gen_test_media.sh)")
+            throw XCTSkip("test-media/ no esta generado (correr tools/gen_test_media.sh)")
         }
         let photoURL = testMedia.appendingPathComponent("Photos/photo1.jpg")
         guard FileManager.default.fileExists(atPath: photoURL.path) else {
@@ -114,7 +116,7 @@ final class LibraryPipelineIntegrationTests: XCTestCase {
 
     func testTagcacheIndexIsRemovedAfterSyncForcingRebuild() async throws {
         guard let testMedia = repoTestMediaURL() else {
-            throw XCTSkip("firmware/test-media no esta generado")
+            throw XCTSkip("test-media/ no esta generado")
         }
         let photoURL = testMedia.appendingPathComponent("Photos/photo1.jpg")
         guard FileManager.default.fileExists(atPath: photoURL.path) else {
