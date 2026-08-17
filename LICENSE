@@ -1,0 +1,21 @@
+Copyright (c) 2026 Ricardo. Todos los derechos reservados.
+
+Este repositorio (Aura Studio) es software propietario. No se otorga
+ninguna licencia de uso, copia, modificación o redistribución del
+código fuente aquí contenido salvo autorización explícita del autor.
+
+Excepción — componentes de terceros embebidos en la aplicación
+compilada, con su propia licencia:
+
+- `rockbox.ipod`, `rockbox.zip`, `bootloader-ipod6g.ipod`, `mks5lboot`
+  (descargados en tiempo de build desde un Release del repositorio
+  `Aura-Firmware`, no versionados en este repo): GNU General Public
+  License v2, como derivados de Rockbox. Ver
+  `CONTRATO-firmware-studio.md` §B para el detalle de cumplimiento y
+  dónde obtener la fuente correspondiente.
+- Dependencias de terceros listadas en la pantalla "Licencias" de la
+  propia aplicación (ver `ServicesSettingsView.swift`,
+  `FFmpegTranscoder.swift`).
+
+Ninguna de esas licencias de terceros se extiende al código propio de
+este repositorio.
