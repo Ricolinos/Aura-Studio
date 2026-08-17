@@ -86,6 +86,15 @@ final class AppPreferences: ObservableObject {
     /// nada sensible en el valor, no hace falta Keychain).
     let installationID: String
 
+    /// Último nombre visto por dispositivo (`deviceID` → `deviceName`,
+    /// PLAN-general-sync.md §1.5/§9) -- el nombre real vive EN el iPod
+    /// (`device.cfg`); esto es solo el reflejo local para poder mostrar
+    /// algo razonable en la barra lateral mientras está desconectado. El
+    /// iPod manda siempre que está conectado.
+    @Published var knownDeviceNames: [String: String] {
+        didSet { defaults.set(knownDeviceNames, forKey: Keys.knownDeviceNames) }
+    }
+
     @Published var language: AppLanguage {
         didSet {
             defaults.set(language.rawValue, forKey: Keys.language)
@@ -353,6 +362,7 @@ final class AppPreferences: ObservableObject {
         static let language = "aura.language"
         static let legacyMetadataBannerShown = "aura.legacyMetadataBannerShown"
         static let installationID = "aura.installationID"
+        static let knownDeviceNames = "aura.knownDeviceNames"
         static let libraryFolderPath = "aura.libraryFolderPath"
         static let copyMediaIntoLibrary = "aura.copyMediaIntoLibrary"
         static let musicOrganization = "aura.musicOrganization"
@@ -383,6 +393,7 @@ final class AppPreferences: ObservableObject {
             defaults.set(newID, forKey: Keys.installationID)
             self.installationID = newID
         }
+        self.knownDeviceNames = defaults.dictionary(forKey: Keys.knownDeviceNames) as? [String: String] ?? [:]
         self.libraryFolderPath = defaults.string(forKey: Keys.libraryFolderPath)
             ?? Self.defaultLibraryFolderPath
         self.copyMediaIntoLibrary = defaults.object(forKey: Keys.copyMediaIntoLibrary) as? Bool ?? true

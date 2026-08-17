@@ -76,7 +76,8 @@ enum AuraDeviceProbe {
             originalFirmwarePresent: originalPresent,
             capacityBytes: capacity,
             freeBytes: free,
-            librarySummary: readSummary(root: root, fileManager: fileManager)
+            librarySummary: readSummary(root: root, fileManager: fileManager),
+            deviceIdentity: DeviceNameStore.load(volumeRoot: root, fileManager: fileManager)
         )
     }
 

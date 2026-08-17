@@ -31,8 +31,13 @@ struct DeviceGeneralView: View {
     /// el disco no se desmonta, asi que DiskArbitration no dispara
     /// ningun evento por si solo (D-217).
     let onRefreshDevice: () -> Void
+    /// Edición in-place del nombre del iPod (§1.5) -- ya llega saneado
+    /// (`DeviceNameStore.sanitize`, corrido aquí mismo para poder avisar
+    /// de un emoji recortado sin esperar el guardado async).
+    let onRenameDevice: (String) -> Void
 
     @State private var ejectResult: String?
+    @State private var deviceNameNotice: String?
     /// No-nil cuando el usuario pulsó Sincronizar y `deviceSyncIndex`
     /// tiene conflictos (§0.1/§1.2) -- dispara la hoja "Antes de
     /// sincronizar" en vez de sincronizar directo.
@@ -153,7 +158,20 @@ struct DeviceGeneralView: View {
                 .font(.system(size: 48))
                 .foregroundStyle(.tint)
             VStack(alignment: .leading, spacing: 4) {
-                Text(device.volumeName).font(.title2.bold())
+                // §1.5: editable solo con Aura instalada -- device.cfg
+                // vive bajo .rockbox/aura/, que recien existe ahi. Sin
+                // Aura, sigue mostrando la etiqueta de volumen de
+                // siempre, sin edición.
+                if device.isAura {
+                    DeviceNameField(name: device.displayName, onRename: handleRename)
+                } else {
+                    Text(device.volumeName).font(.title2.bold())
+                }
+                if let deviceNameNotice {
+                    Text(deviceNameNotice)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
                 Text(firmwareLabel(device))
                     .font(.callout)
                     .foregroundStyle(.secondary)
@@ -165,6 +183,13 @@ struct DeviceGeneralView: View {
             }
             Spacer()
         }
+    }
+
+    private func handleRename(_ raw: String) {
+        let (sanitized, strippedEmoji) = DeviceNameStore.sanitize(raw)
+        guard !sanitized.isEmpty else { return }
+        deviceNameNotice = strippedEmoji ? "El iPod no puede mostrar emoji; se guardó sin ellos." : nil
+        onRenameDevice(sanitized)
     }
 
     /// Solo visible con Aura instalado. "Actualizar" dispara

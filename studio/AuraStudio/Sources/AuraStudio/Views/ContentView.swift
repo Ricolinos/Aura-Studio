@@ -134,11 +134,49 @@ struct ContentView: View {
             // no-Aura) no hay nada que verificar -- se limpia en vez de
             // dejar mostrando el estado de un iPod que ya no es este.
             if let newDevice, newDevice.isAura {
-                Task { await library.verifyDevice(at: URL(fileURLWithPath: newDevice.mountPath)) }
+                Task {
+                    await ensureDeviceNameAssigned(for: newDevice)
+                    await library.verifyDevice(at: URL(fileURLWithPath: newDevice.mountPath))
+                }
             } else {
                 library.clearDeviceSyncIndex()
             }
         }
+    }
+
+    /// §1.5/§9: la primera vez que Studio ve un iPod con Aura SIN
+    /// nombre, le asigna el default y lo guarda de inmediato en el
+    /// dispositivo -- así otra Mac que lo conecte después lo ve igual.
+    /// Si ya tiene nombre, solo actualiza el reflejo local
+    /// (`knownDeviceNames`) para la próxima vez que este iPod aparezca
+    /// desconectado en otro contexto.
+    private func ensureDeviceNameAssigned(for device: AuraDevice) async {
+        if let identity = device.deviceIdentity {
+            preferences.knownDeviceNames[identity.deviceID] = identity.deviceName
+            return
+        }
+        let identity = DeviceIdentity(deviceID: UUID().uuidString, deviceName: DeviceNameStore.defaultName(), updatedAt: Date())
+        guard (try? DeviceNameStore.save(identity, volumeRoot: URL(fileURLWithPath: device.mountPath))) != nil else { return }
+        preferences.knownDeviceNames[identity.deviceID] = identity.deviceName
+        deviceMonitor.refreshDevice()
+    }
+
+    /// Edición in-place del nombre desde `DeviceGeneralView.header` --
+    /// `newName` ya viene saneado (`DeviceNameStore.sanitize`, corrido
+    /// en la propia vista para poder avisar de inmediato si se recortó
+    /// algún emoji, sin esperar a este método asíncrono).
+    private func renameDevice(_ device: AuraDevice, to newName: String) async {
+        let identity = DeviceIdentity(
+            deviceID: device.deviceIdentity?.deviceID ?? UUID().uuidString,
+            deviceName: newName,
+            updatedAt: Date()
+        )
+        guard (try? DeviceNameStore.save(identity, volumeRoot: URL(fileURLWithPath: device.mountPath))) != nil else {
+            library.lastError = "No se pudo guardar el nombre en el iPod."
+            return
+        }
+        preferences.knownDeviceNames[identity.deviceID] = identity.deviceName
+        deviceMonitor.refreshDevice()
     }
 
     private func refreshUpdateAvailability(for device: AuraDevice?) {
@@ -171,7 +209,11 @@ struct ContentView: View {
                               },
                               updateAvailable: updateAvailable,
                               onCheckForUpdates: { refreshUpdateAvailability(for: deviceMonitor.device) },
-                              onRefreshDevice: { deviceMonitor.refreshDevice() })
+                              onRefreshDevice: { deviceMonitor.refreshDevice() },
+                              onRenameDevice: { newName in
+                                  guard let device = deviceMonitor.device else { return }
+                                  Task { await renameDevice(device, to: newName) }
+                              })
         case .music:
             MediaSectionView(kind: .music, viewModel: library, device: deviceMonitor.device, preferences: preferences)
         case .musicPlaylists:
@@ -379,7 +421,9 @@ private struct SidebarView: View {
              * catalogo real, no supuesto) -- mismo simbolo que ya usa
              * DeviceGeneralView para "sin dispositivo". */
             Image(systemName: device == nil ? "cable.connector.slash" : "ipod")
-            Text(device?.volumeName ?? S.noDevice.text)
+            // §1.5: el nombre editable (`device.cfg`) manda sobre la
+            // etiqueta de volumen en cuanto existe.
+            Text(device?.displayName ?? S.noDevice.text)
                 .lineLimit(1)
         }
     }

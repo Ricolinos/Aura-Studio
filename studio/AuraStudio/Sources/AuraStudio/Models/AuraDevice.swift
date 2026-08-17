@@ -41,6 +41,16 @@ struct AuraDevice: Equatable {
     /// Resumen del ultimo sync (`sync_summary.cfg`). nil si Studio nunca
     /// sincronizo este dispositivo.
     let librarySummary: CatalogSummary?
+    /// Nombre editable del iPod (`.rockbox/aura/device.cfg`,
+    /// PLAN-general-sync.md §1.5/§9) -- `nil` hasta que Studio le asigne
+    /// uno (la primera vez que ve este dispositivo con Aura instalada).
+    let deviceIdentity: DeviceIdentity?
+
+    /// Lo que se muestra en pantalla: el nombre asignado si ya existe,
+    /// si no la etiqueta del volumen (como antes de esta funcionalidad).
+    var displayName: String {
+        deviceIdentity?.deviceName ?? volumeName
+    }
 
     var isAura: Bool {
         if case .aura = firmware { return true }

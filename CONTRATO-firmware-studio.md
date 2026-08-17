@@ -1,6 +1,8 @@
 # Contrato entre `Aura-Firmware` y Aura Studio
 
-**Versión 2 — 2026-08-17.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+**Versión 3 — 2026-08-17.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+
+**v3 (ST-011, nombre del dispositivo)** agrega `.rockbox/aura/device.cfg` a la tabla de §D — ver `CONTRATO-dispositivo.md` (contrato hermano, misma convención de copia idéntica) para el formato exacto.
 
 **v2 (D-289, sistema de temas)** agrega el formato de tema como interfaz entre ambos repos — ver `CONTRATO-formato-tema.md` (contrato hermano, misma convención de copia idéntica) para el formato exacto; este documento solo agrega los dos assets nuevos del Release (§A) y las dos claves nuevas de `aura.cfg` (§D).
 
@@ -53,6 +55,7 @@ Esto **sí** es un acoplamiento permanente por diseño: ambos lados leen/escribe
 | `.rockbox/aura/aura.cfg` → clave `theme_id` | Firmware (`aura_style.c`); Studio también puede escribirla al instalar/activar un tema | Firmware, al arrancar (`aura_style_boot()`) | D-289. Vacío o `default` = el tema compilado. Studio escribe editando la línea, nunca reescribe el archivo entero (lo owns el firmware, que lo regenera completo en cada `aura_settings_save()`) |
 | `.rockbox/aura/aura.cfg` → clave `theme_format_supported` | Firmware (siempre, en cada `aura_settings_save()`) | Studio (antes de instalar un tema, para saber si el firmware instalado lo soporta) | D-289. Solo escritura del lado firmware — nunca la relee |
 | `.rockbox/aura/themes/<id>/` | Studio (instala/reempaqueta), o el propio usuario a mano | Firmware (`aura_style.c`, `aura_style_scan()`/`aura_style_activate()`) | D-289. Formato completo en `CONTRATO-formato-tema.md`. `<id>` nunca `default` (reservado) |
+| `.rockbox/aura/device.cfg` | Studio | Studio (nombre editable del iPod, barra lateral/General); firmware, opcional, no implementado | ST-011. Formato completo en `CONTRATO-dispositivo.md`. El firmware **nunca** lo escribe — a diferencia de `theme_id`, no hay una clave que ambos lados toquen |
 | `.rockbox/aura/sync_manifest.json` | Studio (`LibrarySync`) | Studio (estado del último sync) | JSON |
 | `.rockbox/aura/sync_summary.cfg` | Studio | Firmware (pantalla "Acerca de") | Contrato inverso — el firmware depende de un archivo que solo Studio escribe |
 | `.rockbox/aura/ratings.cfg` | Studio | Studio | — |
@@ -89,4 +92,5 @@ Regla: un cambio a la sección D (contrato de datos) exige MINOR nuevo en ambos;
 - Reemplazo del sentinela `.rockbox/fonts/a26-title-20.fnt` por un `.rockbox/aura/VERSION` explícito.
 - Primer Release público de `Aura-Firmware` con los 5+2+2 assets — hoy Studio se desarrolla contra un `firmware/dist/` local vía `fetch-firmware.sh --from-dir`.
 - `accent_default`/`accent_presets` del formato de tema: aceptados y validables, pero el firmware no los lee todavía (ver `CONTRATO-formato-tema.md` §H y `sistema/05-temas.md`).
+- `device.cfg` (nombre del iPod, ST-011): Studio ya lo escribe y lo lee; el firmware no lo lee todavía (mostrarlo en el slot "Mi iPod" de "Acerca de" es el consumo natural, ver `CONTRATO-dispositivo.md` §E).
 - El lado "constructor pleno" de Aura Studio (rasterizar fuentes/íconos del sistema del usuario) es Fase 2B, posterior — Fase 2 (2A) entrega reempaquetar desde una carpeta de assets ya generados + instalar/listar/activar/eliminar.
