@@ -16,3 +16,21 @@ Reglas que aplican siempre, sin excepción:
 - **Temas** (ST-003, ver `CONTRATO-formato-tema.md`): un tema se valida (`ThemeValidator`) **antes** de instalarlo, nunca después. Nunca se exporta ni se ofrece compartir un tema con `theme_redistributable: no` — la opción se deshabilita con una explicación, no se oculta. Studio es un CONSTRUCTOR de temas, no un DISTRIBUIDOR: ningún tema con assets de licencia restringida (SF Pro, SF Symbols) se commitea ni se sube a ningún lado — se construye localmente desde lo que ya está en la Mac del usuario. `<id>` de un tema siempre pasa por `AuraThemeID.isValid()` antes de tocar cualquier ruta que lo contenga (instalar, eliminar).
 
 Si encuentras algo que no respeta estas reglas, ajústalo sin preguntar — salvo que involucre tocar el contrato con el firmware (sección D de `CONTRATO-firmware-studio.md`, o `CONTRATO-formato-tema.md`), en cuyo caso se documenta como decisión abierta antes de implementar.
+
+## Planes de trabajo
+
+- `docs/plans/` — planes **activos**. Trabajo pendiente o en curso.
+- `docs/plans/archivo/` — planes **históricos, ya ejecutados**.
+
+**Nunca trates el contenido de `docs/plans/archivo/` como trabajo
+pendiente.** Son registro de lo ya hecho. No retomes tareas desde ahí, ni
+siquiera si el plan describe pasos que parecen sin completar: lo que quedó
+deliberadamente fuera está anotado en su encabezado de estado y su
+seguimiento vive en otro lado.
+
+Todo plan archivado lleva un encabezado `ESTADO:` en su primera línea.
+Si un plan en `docs/plans/` no tiene encabezado de estado, es activo.
+
+La fuente de verdad de las decisiones es `DECISIONS.md`, no los planes.
+Ante una discrepancia entre un plan archivado y `DECISIONS.md`, manda
+`DECISIONS.md`.

@@ -1,6 +1,15 @@
 # PLAN-studio-ux.md — Biblioteca, categorías y temas de Aura Studio
 
-**Fase 1 — investigación y plan (solo lectura). 2026-08-17.** Nada de lo que sigue está implementado; este documento es el entregable de la Fase 1 y se detiene en la BARRERA del final hasta la aprobación del dueño. Todas las rutas de código son relativas a `studio/AuraStudio/Sources/AuraStudio/` salvo que se indique otra cosa; las del firmware, a `/Volumes/Ricolinos/Codigo/GitHub/Aura/Aura-Firmware/`.
+> **ESTADO: ACTIVO — en ejecución.** Aprobado con las 11 recomendaciones
+> (P1–P11); la Fase 2 avanza en cuatro tandas (P11), en orden. **Tanda 1
+> (§2, metadatos) hecha — ver `ST-007` en `DECISIONS.md`.** Pendientes:
+> tanda 2 (§1 — Por álbum/Por artista, `StudioStyle`, Listas plana),
+> tanda 3 (§3/§4 — confianza + `CONTRATO-indice-medios.md` +
+> `media_index.cfg`), tanda 4 (§4b — cola de temas sin iPod, §5 —
+> constructor con tipografías). La fuente de verdad de lo ya decidido es
+> `DECISIONS.md`, no este documento.
+
+**Fase 1 — investigación y plan (solo lectura). 2026-08-17.** El texto original de este documento (abajo) describe el estado ANTES de aprobarse — se conserva sin editar como el entregable real de la Fase 1; el encabezado de arriba es lo que refleja el progreso actual. Todas las rutas de código son relativas a `studio/AuraStudio/Sources/AuraStudio/` salvo que se indique otra cosa; las del firmware, a `/Volumes/Ricolinos/Codigo/GitHub/Aura/Aura-Firmware/`.
 
 Orden de trabajo respetado: **§2 primero** (la carga de metadatos condiciona a §1: no se puede agrupar por álbum si el campo álbum no se lee bien), luego §1, §3/§4, §4b y §5.
 
