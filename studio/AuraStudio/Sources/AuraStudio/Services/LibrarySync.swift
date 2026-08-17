@@ -166,8 +166,32 @@ struct LibrarySync {
 
             switch item.kind {
             case .music: summary.music.count += 1; summary.music.bytes += size
-            case .video: summary.video.count += 1; summary.video.bytes += size
-            case .photo: summary.photo.count += 1; summary.photo.bytes += size
+            case .video:
+                summary.video.count += 1; summary.video.bytes += size
+                // D-283: item.category para video se guarda como el
+                // displayName LOCALIZADO (LibraryViewModel.swift:242) --
+                // compara contra los dos idiomas para que un item
+                // clasificado con la app en ingles siga contando bien
+                // aunque el usuario luego cambie a español (o viceversa).
+                switch item.category {
+                case MediaCategory.movies.displayNameSpanish, MediaCategory.movies.displayNameEnglish:
+                    summary.videoMovies += 1
+                case MediaCategory.series.displayNameSpanish, MediaCategory.series.displayNameEnglish:
+                    summary.videoSeries += 1
+                default:
+                    summary.videoClips += 1
+                }
+            case .photo:
+                summary.photo.count += 1; summary.photo.bytes += size
+                // MediaCategoryHeuristics.classifyPhoto() siempre devuelve
+                // uno de estos 3 nombres fijos en español (no depende del
+                // idioma de la app, a diferencia de video) -- coincide con
+                // AppPreferences.defaultPhotoCollections a proposito.
+                switch item.category {
+                case "IA": summary.photoAI += 1
+                case "Fotos": summary.photoPhotos += 1
+                default: summary.photoImages += 1
+                }
             case .unsupported: break
             }
 

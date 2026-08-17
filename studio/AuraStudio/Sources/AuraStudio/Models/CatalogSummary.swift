@@ -19,6 +19,24 @@ struct CatalogSummary: Equatable {
     var video = CatalogTypeSummary()
     var photo = CatalogTypeSummary()
     var playlistCount = 0
+
+    /// D-283 (PLAN-about-fixes.md E2/Q6): conteos por categoria dentro de
+    /// video/foto -- Studio ya clasifica cada item al importar
+    /// (MediaCategory para video, MediaCategoryHeuristics.classifyPhoto
+    /// para foto); el firmware no tiene base de datos de video ni parser
+    /// EXIF, asi que no puede clasificar nada por si solo (Rockbox no
+    /// tiene esa fuente). Este es el mismo canal `sync_summary.cfg` que
+    /// ya existia para bytes/conteos totales, solo con mas lineas -- el
+    /// firmware SOLO lee, nunca re-clasifica. "videoClips" = la
+    /// categoria `.videos` de MediaCategory (video sin clasificar a
+    /// mano por el usuario, que el Estado 2 del firmware llama
+    /// "videoclips" siguiendo el encargo original del dueño).
+    var videoMovies = 0
+    var videoSeries = 0
+    var videoClips = 0
+    var photoImages = 0
+    var photoPhotos = 0
+    var photoAI = 0
 }
 
 /// Lee de vuelta el mismo archivo que escribe `CatalogSummaryWriter`.
@@ -45,6 +63,12 @@ enum CatalogSummaryReader {
         summary.photo = CatalogTypeSummary(count: Int(values["photo_count"] ?? 0),
                                             bytes: values["photo_bytes"] ?? 0)
         summary.playlistCount = Int(values["playlist_count"] ?? 0)
+        summary.videoMovies = Int(values["video_movies_count"] ?? 0)
+        summary.videoSeries = Int(values["video_series_count"] ?? 0)
+        summary.videoClips = Int(values["video_clips_count"] ?? 0)
+        summary.photoImages = Int(values["photo_images_count"] ?? 0)
+        summary.photoPhotos = Int(values["photo_photos_count"] ?? 0)
+        summary.photoAI = Int(values["photo_ai_count"] ?? 0)
         return summary
     }
 }
@@ -59,6 +83,12 @@ enum CatalogSummaryWriter {
         photo_count: \(summary.photo.count)
         photo_bytes: \(summary.photo.bytes)
         playlist_count: \(summary.playlistCount)
+        video_movies_count: \(summary.videoMovies)
+        video_series_count: \(summary.videoSeries)
+        video_clips_count: \(summary.videoClips)
+        photo_images_count: \(summary.photoImages)
+        photo_photos_count: \(summary.photoPhotos)
+        photo_ai_count: \(summary.photoAI)
 
         """
     }
