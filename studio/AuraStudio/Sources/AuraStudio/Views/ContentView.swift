@@ -40,6 +40,8 @@ struct ContentView: View {
     /// (el usuario debe poder irse a otra seccion sin que la app lo
     /// regrese a la fuerza).
     @State private var autoNavigatedToInstaller = false
+    /// Spinner del boton "Actualizar" mientras `refreshNow()` corre.
+    @State private var isRefreshing = false
 
     /// La biblioteca (Musica/Video/Fotos/Extras) se bloquea cuando hay
     /// un iPod conectado cuyo firmware NO es Aura: sincronizar contra el
@@ -63,28 +65,31 @@ struct ContentView: View {
         }
         .tint(AuraColors.light.accent)
         .toolbar {
-            // Encargo del dueño (2026-08-13): el sync tiene que poder
-            // dispararse tambien desde Musica/Video/Fotos, no solo desde
-            // General -- vive aqui (raiz de la app) en vez de en
-            // DeviceGeneralView para que aparezca sin importar la
-            // seccion activa.
+            // PLAN-general-sync.md §1.1: "Actualizar" (refresco
+            // inofensivo, NUNCA escribe en el iPod) reemplaza al viejo
+            // boton "Sincronizar" de la barra de herramientas -- la
+            // sincronizacion real ahora vive en General, junto a la
+            // barra de actividad (D-202 pedia poder dispararla tambien
+            // desde Musica/Video/Fotos; eso lo cubre el comando de menu
+            // ⇧⌘S y "Sincronizar la selección" del menu contextual).
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    Task { await syncNow() }
+                    Task { await refreshNow() }
                 } label: {
-                    if let progress = library.syncProgress {
-                        // D-217: mientras sincroniza, el boton en si ya
-                        // muestra cuenta -- no hace falta ir a General
-                        // para saber que esta pasando.
-                        Label("\(progress.copied)/\(progress.total)", systemImage: "arrow.triangle.2.circlepath")
+                    if isRefreshing {
+                        ProgressView().controlSize(.small)
                     } else {
-                        Label("Sincronizar", systemImage: "arrow.triangle.2.circlepath")
+                        Label("Actualizar", systemImage: "arrow.clockwise")
                     }
                 }
-                .disabled(deviceMonitor.device == nil || !(deviceMonitor.device?.isAura ?? false)
-                          || library.isProcessing || library.syncProgress != nil)
+                .help("Vuelve a leer el estado del iPod y de tu biblioteca. No copia ni borra nada.")
+                .disabled(isRefreshing)
             }
         }
+        .focusedSceneValue(\.auraSyncCommand, SyncCommandContext(
+            canSync: (deviceMonitor.device?.isAura ?? false) && !library.isProcessing && library.syncProgress == nil,
+            action: { Task { await syncNow() } }
+        ))
         .onAppear { deviceMonitor.start() }
         .onDisappear { deviceMonitor.stop() }
         .onChange(of: deviceMonitor.state) { newState in
@@ -155,7 +160,9 @@ struct ContentView: View {
                                   installer.startAutomaticUpdate()
                                   selection = .installer
                               },
-                              updateAvailable: updateAvailable)
+                              updateAvailable: updateAvailable,
+                              onCheckForUpdates: { refreshUpdateAvailability(for: deviceMonitor.device) },
+                              onRefreshDevice: { deviceMonitor.refreshDevice() })
         case .music:
             MediaSectionView(kind: .music, viewModel: library, device: deviceMonitor.device, preferences: preferences)
         case .musicPlaylists:
@@ -177,12 +184,77 @@ struct ContentView: View {
         }
     }
 
+    /// El disparador REAL de sincronizacion (PLAN-general-sync.md §1.1)
+    /// -- lo usa el comando de menu `Archivo → Sincronizar con el iPod`
+    /// (⇧⌘S, via `auraSyncCommand`); el boton visible del dia a dia
+    /// vive en General, junto a `DeviceActivityBar`, con la misma
+    /// logica (ver `DeviceGeneralView.onSync`). Siempre alcance
+    /// completo -- el menu no tiene forma de saber que hay seleccionado
+    /// en Musica/Video/Fotos en este instante.
     private func syncNow() async {
         guard let device = deviceMonitor.device else { return }
-        await library.sync(toVolumeAt: URL(fileURLWithPath: device.mountPath))
+        await library.sync(toVolumeAt: URL(fileURLWithPath: device.mountPath), scope: .all)
         // El disco no se desmonto, asi que DiskArbitration no va a
         // notificar nada -- hay que releer el resumen a mano.
         deviceMonitor.refreshDevice()
+    }
+
+    /// "Actualizar" (PLAN-general-sync.md §1.1): refresco inofensivo,
+    /// nunca escribe en el iPod -- vuelve a sondear el dispositivo
+    /// montado y consulta si hay firmware nuevo. Separado a proposito
+    /// de `refreshUpdateAvailability` (que es fire-and-forget, pensado
+    /// para el `.onChange(of: device)` automatico): aca se espera el
+    /// resultado para que el spinner del boton dure lo que dura de
+    /// verdad la consulta.
+    private func refreshNow() async {
+        isRefreshing = true
+        defer { isRefreshing = false }
+        guard let device = deviceMonitor.device else { return }
+        deviceMonitor.refreshDevice()
+        updateAvailable = await AuraUpdateChecker.checkForUpdate(deviceMountPath: device.mountPath)
+    }
+}
+
+// MARK: - Comando de menu "Sincronizar con el iPod" (⇧⌘S)
+
+/// PLAN-general-sync.md §1.1: D-202 puso el boton de sync en la barra
+/// de herramientas para que se pudiera disparar desde Musica/Video/
+/// Fotos sin ir a General -- ahora que esa barra es "Actualizar" (nunca
+/// escribe), ese acceso rapido se cubre con un comando de menu real en
+/// vez de duplicar el boton. `FocusedValue` porque el estado
+/// (`deviceMonitor`/`library`) vive dentro de `ContentView`, no en
+/// `AuraStudioApp` (D-187: el estado del instalador tambien vive en la
+/// raiz por la misma razon -- una sola fuente de verdad que sobrevive a
+/// la navegacion).
+struct SyncCommandContext {
+    let canSync: Bool
+    let action: () -> Void
+}
+
+private struct AuraSyncCommandKey: FocusedValueKey {
+    typealias Value = SyncCommandContext
+}
+
+extension FocusedValues {
+    var auraSyncCommand: SyncCommandContext? {
+        get { self[AuraSyncCommandKey.self] }
+        set { self[AuraSyncCommandKey.self] = newValue }
+    }
+}
+
+/// Vive en el menu Archivo (`AuraStudioApp.commands`). Deshabilitado
+/// sin un iPod Aura conectado, o mientras ya hay un sync/proceso de
+/// biblioteca en curso -- nunca dispara una segunda sincronizacion
+/// encima de otra.
+struct SyncMenuCommand: View {
+    @FocusedValue(\.auraSyncCommand) private var context
+
+    var body: some View {
+        Button("Sincronizar con el iPod") {
+            context?.action()
+        }
+        .keyboardShortcut("s", modifiers: [.command, .shift])
+        .disabled(context?.canSync != true)
     }
 }
 

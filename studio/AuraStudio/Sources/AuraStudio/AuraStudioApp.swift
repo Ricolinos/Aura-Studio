@@ -10,5 +10,13 @@ struct AuraStudioApp: App {
                 .frame(minWidth: 720, minHeight: 520)
         }
         .windowResizability(.contentSize)
+        .commands {
+            // PLAN-general-sync.md §1.1: acceso rapido a sincronizar
+            // sin tener que ir a General -- ver SyncMenuCommand.
+            CommandGroup(after: .newItem) {
+                Divider()
+                SyncMenuCommand()
+            }
+        }
     }
 }

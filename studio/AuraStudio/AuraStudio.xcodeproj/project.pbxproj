@@ -130,6 +130,7 @@
 		EF1E083FA6047FB931707719 /* LibrarySyncLocalLibraryPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8885EF5A65AE8ED08914314A /* LibrarySyncLocalLibraryPathTests.swift */; };
 		F58C68FA6A580D5B5790F9C0 /* DeezerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB9F8D5D85A96032603EE86 /* DeezerClient.swift */; };
 		F745EA7E70AE91DF77279194 /* PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777383A161FBD9C32BFA6D82 /* PermissionsView.swift */; };
+		F7AF5D705D74FC1CC9B3F9FF /* DeviceActivityBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCF37D4D32EF9A352A74CC8 /* DeviceActivityBar.swift */; };
 		F826489C2A3E807E5630E15D /* InstallerFlowRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34640ACD3AC36633502AE41 /* InstallerFlowRegistry.swift */; };
 		FC22BD2147F662779790B182 /* rockbox.zip in Resources */ = {isa = PBXBuildFile; fileRef = 8494A971EFDAA70220A174E1 /* rockbox.zip */; };
 		FCFF8A19A007CA05DCD12311 /* ThemeInstallerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA6932017115B388ED81777 /* ThemeInstallerTests.swift */; };
@@ -166,6 +167,7 @@
 		23AD4FC67C48B4550BD7554E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2A3A899326AAAF78FF4F60C7 /* LRCLIBClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LRCLIBClient.swift; sourceTree = "<group>"; };
 		2B7808E74C42090DED30DCD9 /* IPodDiskIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPodDiskIdentifier.swift; sourceTree = "<group>"; };
+		2DCF37D4D32EF9A352A74CC8 /* DeviceActivityBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceActivityBar.swift; sourceTree = "<group>"; };
 		2E8C3583DE937B8FBBECABFA /* rockbox.ipod */ = {isa = PBXFileReference; path = rockbox.ipod; sourceTree = "<group>"; };
 		35D5B4EBBD054DC5C0C28307 /* PathSanitizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathSanitizer.swift; sourceTree = "<group>"; };
 		37832F50724ABA2EA149F4CF /* QuickLookCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookCoordinator.swift; sourceTree = "<group>"; };
@@ -286,6 +288,7 @@
 				F462D2B7F9707F077FC4D782 /* BootModeView.swift */,
 				14D5A27F7EA14F700832333A /* ContentView.swift */,
 				9EBCF1EF29547CD3B01B5C98 /* DetectDeviceView.swift */,
+				2DCF37D4D32EF9A352A74CC8 /* DeviceActivityBar.swift */,
 				7E7628837584B290697CA067 /* DeviceGeneralView.swift */,
 				0116DC50EA8DBAE3B02AE0FB /* DoneView.swift */,
 				7D3754C9E29F0BC93B660592 /* EnterDFUView.swift */,
@@ -684,6 +687,7 @@
 				135A255167C64B601EFF2854 /* CoverArtArchiveClient.swift in Sources */,
 				F58C68FA6A580D5B5790F9C0 /* DeezerClient.swift in Sources */,
 				229BC6502A44F54DA47121F9 /* DetectDeviceView.swift in Sources */,
+				F7AF5D705D74FC1CC9B3F9FF /* DeviceActivityBar.swift in Sources */,
 				3F24271B399390E28A24C5A2 /* DeviceGeneralView.swift in Sources */,
 				D99E5C4BE2135ED2B2CDDFEE /* DeviceState.swift in Sources */,
 				B1845030E08621FDF34358FA /* DiskArbitrationMonitor.swift in Sources */,

@@ -148,7 +148,14 @@ struct MediaSectionView: View {
         .onAppear {
             loadVisibleColumns()
             refreshSyncedItems()
+            viewModel.selectionForSync = selection
         }
+        // PLAN-general-sync.md §6: "Solo la selección" en
+        // `DeviceActivityBar` -- la vista de biblioteca activa publica
+        // su seleccion; se limpia al salir para que otra sección no
+        // herede una selección que ya no es la que el usuario ve.
+        .onChange(of: selection) { viewModel.selectionForSync = $0 }
+        .onDisappear { viewModel.selectionForSync = [] }
         .onChange(of: device) { _ in refreshSyncedItems() }
         .onChange(of: viewModel.lastSyncSummary) { _ in refreshSyncedItems() }
         .sheet(item: $reviewingItem) { item in
@@ -562,6 +569,23 @@ struct MediaSectionView: View {
             Button("Obtener información...") {
                 startBatchEdit(ids: targetIDs)
             }
+            Divider()
+        }
+
+        // PLAN-general-sync.md §6: atajo directo desde la tabla, sin ir
+        // a General -- mismo camino que el boton de ahi (alcance
+        // ".selection"), solo con los elementos LISTOS de esta seleccion
+        // puntual (no toda `viewModel.selectionForSync`, que puede
+        // arrastrar seleccion vieja de otra vista si el usuario no volvio
+        // a tocar nada aca desde que cambio de sección).
+        if let device, device.isAura, !targetItems.isEmpty {
+            Button("Sincronizar la selección") {
+                Task {
+                    await viewModel.sync(toVolumeAt: URL(fileURLWithPath: device.mountPath),
+                                         scope: .selection(targetIDs))
+                }
+            }
+            .disabled(!targetItems.contains { $0.status == .ready })
             Divider()
         }
 

@@ -24,6 +24,13 @@ struct DeviceGeneralView: View {
     /// true cuando el firmware que trae la app embebido difiere del
     /// instalado en el iPod (comparacion por hash, no por fecha).
     let updateAvailable: Bool
+    /// "Buscar actualizaciones de Aura" manual (PLAN-general-sync.md
+    /// §1.1) -- antes solo corria solo al conectar el dispositivo.
+    let onCheckForUpdates: () -> Void
+    /// Despues de sincronizar hay que releer `sync_summary.cfg` a mano:
+    /// el disco no se desmonta, asi que DiskArbitration no dispara
+    /// ningun evento por si solo (D-217).
+    let onRefreshDevice: () -> Void
 
     @State private var ejectResult: String?
 
@@ -41,12 +48,36 @@ struct DeviceGeneralView: View {
                         updateSection
                     }
                     Divider()
-                    capacity(device)
-                    Divider()
                     contents(device)
+                    Divider()
                 } else {
                     disconnected
+                    Divider()
                 }
+                // PLAN-general-sync.md §1.2/§7: siempre visible, con o
+                // sin dispositivo -- "Sincronizar" (el disparador real,
+                // spec §2) vive aqui junto a la barra, no en la barra de
+                // herramientas de la ventana (esa ahora es "Actualizar",
+                // un refresco inofensivo -- ver ContentView).
+                DeviceActivityBar(
+                    device: device,
+                    syncProgress: library.syncProgress,
+                    lastSyncSummary: library.lastSyncSummary,
+                    lastError: library.lastError,
+                    pendingCount: pendingCount,
+                    selectionCount: library.selectionForSync.count,
+                    onSync: { selectionOnly in
+                        guard let device else { return }
+                        let scope: LibraryViewModel.SyncScope = selectionOnly
+                            ? .selection(library.selectionForSync)
+                            : .all
+                        Task {
+                            await library.sync(toVolumeAt: URL(fileURLWithPath: device.mountPath), scope: scope)
+                            onRefreshDevice()
+                        }
+                    },
+                    onCancel: { library.cancelSync() }
+                )
             }
             .padding(24)
             .frame(maxWidth: 560, alignment: .leading)
@@ -109,21 +140,33 @@ struct DeviceGeneralView: View {
                 Image(systemName: "arrow.down.circle.fill")
                     .foregroundStyle(.tint)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Actualizacion de Aura disponible").font(.headline)
-                    Text("Esta version de Aura Studio trae un firmware mas nuevo que el instalado en tu iPod. Actualizar no borra tu musica ni tus ajustes.")
+                    Text("Actualización de Aura disponible").font(.headline)
+                    Text("Esta versión de Aura Studio trae un firmware más nuevo que el instalado en tu iPod. Actualizar no borra tu música ni tus ajustes.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button("Actualizar Aura", action: onUpdateAura)
+                // PLAN-general-sync.md §1.1: nombre distinto de
+                // "Actualizar" a proposito -- instalar firmware tiene
+                // consecuencias serias (un firmware mal instalado puede
+                // inutilizar el iPod) y sigue siendo el UNICO disparador
+                // de instalacion (ST-006), nunca el mismo verbo/boton
+                // que el refresco inofensivo de la barra de herramientas.
+                Button("Instalar actualización de Aura", action: onUpdateAura)
                     .buttonStyle(.borderedProminent)
             }
             .padding(12)
             .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor.opacity(0.08)))
         } else {
-            Label("Aura esta al dia con esta version de Aura Studio.", systemImage: "checkmark.seal")
-                .font(.callout)
-                .foregroundStyle(.secondary)
+            HStack {
+                Label("Aura está al día con esta versión de Aura Studio.", systemImage: "checkmark.seal")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Button("Buscar actualizaciones de Aura", action: onCheckForUpdates)
+                    .buttonStyle(.borderless)
+                    .font(.callout)
+            }
         }
     }
 
@@ -141,22 +184,6 @@ struct DeviceGeneralView: View {
             return "Firmware original de Apple"
         case .empty:
             return "Disco vacio, sin firmware"
-        }
-    }
-
-    private func capacity(_ device: AuraDevice) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Capacidad").font(.headline)
-            if device.capacityBytes > 0 {
-                StorageBarView(device: device)
-                Text("\(byteString(device.usedBytes)) usados de \(byteString(device.capacityBytes)) -- \(byteString(device.freeBytes)) libres")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-            } else {
-                Text("No se pudo leer la capacidad del volumen.")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-            }
         }
     }
 
@@ -213,55 +240,16 @@ struct DeviceGeneralView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
-
-            if let pending = pendingLabel {
-                Divider().padding(.vertical, 4)
-                Text(pending).font(.callout).foregroundStyle(.secondary)
-            }
-            if let progress = library.syncProgress {
-                Divider().padding(.vertical, 4)
-                syncProgressSection(progress)
-            }
-            if let summary = library.lastSyncSummary {
-                Text(summary).font(.callout).foregroundStyle(.secondary)
-            }
-            if let error = library.lastError {
-                Text(error).font(.callout).foregroundStyle(.red)
-            }
         }
     }
 
-    /// D-217 (encargo del dueño): "una barra de progreso al
-    /// sincronizar... para que sepamos cuantas canciones se estan
-    /// sincronizando, y cuanto tiempo faltaria".
-    private func syncProgressSection(_ progress: SyncProgress) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            ProgressView(value: Double(progress.copied), total: Double(max(progress.total, 1)))
-            HStack {
-                Text("Sincronizando \(progress.copied) de \(progress.total) archivo(s)...")
-                Spacer()
-                if let remaining = progress.estimatedSecondsRemaining, remaining > 1 {
-                    Text(timeRemainingText(remaining))
-                }
-            }
-            .font(.callout)
-            .foregroundStyle(.secondary)
-        }
-    }
-
-    private func timeRemainingText(_ seconds: Double) -> String {
-        let formatter = DateComponentsFormatter()
-        formatter.unitsStyle = .abbreviated
-        formatter.allowedUnits = seconds >= 60 ? [.minute, .second] : [.second]
-        formatter.maximumUnitCount = 2
-        let text = formatter.string(from: seconds) ?? "\(Int(seconds))s"
-        return "\(text) restante(s)"
-    }
-
-    private var pendingLabel: String? {
-        let ready = library.items.filter { $0.status == .ready }.count
-        guard ready > 0 else { return nil }
-        return "\(ready) archivo(s) preparado(s) esperando sincronizacion."
+    /// "N archivo(s) listo(s) para sincronizar" de `DeviceActivityBar`
+    /// -- misma aproximacion que el `pendingLabel` viejo (D-217): un
+    /// item `.ready` puede ya estar sincronizado con ESTE dispositivo,
+    /// no hay forma barata de distinguirlo sin `DeviceSyncIndex`
+    /// (PLAN-general-sync.md §4, tanda futura).
+    private var pendingCount: Int {
+        library.items.filter { $0.status == .ready }.count
     }
 
     private func contentRow(_ title: String, _ symbol: String, _ summary: CatalogTypeSummary) -> some View {
@@ -312,70 +300,7 @@ struct DeviceGeneralView: View {
     }
 }
 
-/// D-216 (encargo del dueño): la barra de capacidad, dividida por color
-/// segun el tipo de contenido -- rosa musica, azul video, verde fotos,
-/// naranja "Otro" (el resto de lo ocupado: `.rockbox/`, playlists,
-/// archivos no reconocidos -- cualquier byte usado que `librarySummary`
-/// no le atribuye a musica/video/fotos). Sin sistema de diseño propio
-/// para esto en Aura Studio (la paleta compartida con el firmware,
-/// `AuraColors`, no tiene tokens para "por tipo de medio" -- es
-/// especifico de esta pantalla de macOS) se usan los colores de sistema
-/// de SwiftUI mas cercanos a lo que pidio el dueño.
-private struct StorageBarView: View {
-    let device: AuraDevice
-
-    private struct Segment {
-        let bytes: Int64
-        let color: Color
-        let label: String
-    }
-
-    private var segments: [Segment] {
-        let summary = device.librarySummary
-        let music = summary?.music.bytes ?? 0
-        let video = summary?.video.bytes ?? 0
-        let photo = summary?.photo.bytes ?? 0
-        // "Otro" sale de lo que el disco realmente reporta como usado
-        // menos lo que la biblioteca de Aura le atribuye a cada tipo --
-        // asi cubre .rockbox/, playlists, y cualquier archivo que el
-        // usuario haya copiado por fuera de Aura Studio, sin inventar un
-        // numero que no salga de una medicion real.
-        let other = max(device.usedBytes - music - video - photo, 0)
-        return [
-            Segment(bytes: music, color: .pink, label: "Música"),
-            Segment(bytes: video, color: .blue, label: "Video"),
-            Segment(bytes: photo, color: .green, label: "Fotos"),
-            Segment(bytes: other, color: .orange, label: "Otro"),
-        ]
-    }
-
-    private var total: Int64 { max(device.capacityBytes, 1) }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            GeometryReader { geometry in
-                HStack(spacing: 1) {
-                    ForEach(Array(segments.enumerated()), id: \.offset) { _, segment in
-                        if segment.bytes > 0 {
-                            segment.color
-                                .frame(width: geometry.size.width * CGFloat(segment.bytes) / CGFloat(total))
-                        }
-                    }
-                    Spacer(minLength: 0)
-                }
-            }
-            .frame(height: 8)
-            .clipShape(Capsule())
-            .background(Capsule().fill(Color.secondary.opacity(0.15)))
-
-            HStack(spacing: 14) {
-                ForEach(segments.filter { $0.bytes > 0 }, id: \.label) { segment in
-                    HStack(spacing: 5) {
-                        Circle().fill(segment.color).frame(width: 7, height: 7)
-                        Text(segment.label).font(.caption).foregroundStyle(.secondary)
-                    }
-                }
-            }
-        }
-    }
-}
+// D-216 (barra de capacidad por color) se retiro -- reemplazada por
+// `DeviceActivityBar` (PLAN-general-sync.md §7), que en reposo cumple
+// exactamente el mismo rol con los colores del firmware (§1.6/P6) en
+// vez de los colores de sistema de SwiftUI.

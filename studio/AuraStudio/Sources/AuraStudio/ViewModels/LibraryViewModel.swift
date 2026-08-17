@@ -23,6 +23,12 @@ final class LibraryViewModel: ObservableObject {
     /// ofrece UNA sola vez por instalacion de Aura Studio, la primera
     /// vez que se carga un catalogo con musica despues de este cambio.
     @Published private(set) var legacyMetadataRereadOfferCount: Int?
+    /// La seleccion de la vista de biblioteca ACTIVA (Musica/Video/
+    /// Fotos) en este instante -- alimenta "Solo la selección" en
+    /// `DeviceActivityBar` (PLAN-general-sync.md §6). `MediaSectionView`
+    /// la publica aca en `onAppear`/`onChange`/`onDisappear`; la de la
+    /// vista activa manda, se limpia al cambiar de sección.
+    @Published var selectionForSync: Set<UUID> = []
     @Published var lastError: String?
     @Published private(set) var playlists: [Playlist] = []
     /// D-217: progreso de un `sync(toVolumeAt:)` en curso -- `nil`
