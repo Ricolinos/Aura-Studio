@@ -11,6 +11,16 @@ import SwiftUI
 /// dispositivo no tenga de verdad.
 struct ExtrasView: View {
     let device: AuraDevice?
+    @State private var showingThemes = false
+
+    /// D-289 / ST-003: "Temas" ahora abre la gestión real (instalar,
+    /// activar, eliminar, construir) -- necesita un iPod con Aura
+    /// montado, mismo criterio que el resto de las acciones que
+    /// escriben en el dispositivo.
+    private var canManageThemes: Bool {
+        guard let device else { return false }
+        return device.isAura
+    }
 
     var body: some View {
         ScrollView {
@@ -24,13 +34,26 @@ struct ExtrasView: View {
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .navigationTitle("Extras")
+        .sheet(isPresented: $showingThemes) {
+            if let device, device.isAura {
+                ThemesView(mountPath: device.mountPath)
+            }
+        }
     }
 
     private var available: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Disponible en el dispositivo").font(.headline)
-            row("Temas", "circle.lefthalf.filled",
-                "Claro y Oscuro, integrados en el firmware. Se eligen en Ajustes > Tema, en el iPod.")
+            Button {
+                showingThemes = true
+            } label: {
+                row("Temas", "circle.lefthalf.filled",
+                    canManageThemes
+                        ? "Tema integrado (Claro/Oscuro) más los que instales -- Ajustes > Estilo, en el iPod."
+                        : "Conecta tu iPod con Aura instalado para instalar, activar o construir temas.")
+            }
+            .buttonStyle(.plain)
+            .disabled(!canManageThemes)
             row("Animaciones y graficos", "wand.and.rays",
                 "Tres niveles cada uno. Se eligen en Ajustes, en el iPod.")
         }
