@@ -23,7 +23,7 @@ VENDOR_DIR="$ROOT_DIR/studio/AuraStudio/Vendor/firmware-dist"
 VERSION_FILE="$ROOT_DIR/FIRMWARE_VERSION"
 
 ASSETS=(rockbox.ipod rockbox.zip mks5lboot checksums.txt)
-OPTIONAL_ASSETS=(bootloader-ipod6g.ipod AuraPalette.swift MODIFICATIONS.md)
+OPTIONAL_ASSETS=(bootloader-ipod6g.ipod AuraPalette.swift MODIFICATIONS.md theme-format-v1.json aura-theme-default.zip)
 
 verify_checksums() {
   local dir="$1"
