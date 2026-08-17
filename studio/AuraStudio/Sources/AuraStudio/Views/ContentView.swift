@@ -133,7 +133,7 @@ struct ContentView: View {
             return
         }
         Task {
-            updateAvailable = await AuraUpdateChecker.isUpdateAvailable(deviceMountPath: device.mountPath)
+            updateAvailable = await AuraUpdateChecker.checkForUpdate(deviceMountPath: device.mountPath)
         }
     }
 

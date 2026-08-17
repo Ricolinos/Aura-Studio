@@ -94,13 +94,14 @@ struct DeviceGeneralView: View {
         }
     }
 
-    /// Solo visible con Aura instalado. "Actualizar" compara el
-    /// firmware embebido en ESTA version de la app contra el instalado
-    /// (hash de rockbox.ipod, no fechas ni numeros de version que
-    /// pueden mentir); cuando el repositorio publique releases de
-    /// GitHub, este mismo punto es donde se consultaria la ultima --
-    /// hoy el repo es privado y sin releases, asi que la fuente de
-    /// verdad es lo que la app trae.
+    /// Solo visible con Aura instalado. "Actualizar" dispara
+    /// `AuraUpdateChecker.checkForUpdate` (ST-006): compara el ultimo
+    /// tag publicado en GitHub contra `.rockbox/aura/version.txt` del
+    /// dispositivo cuando ambos estan disponibles; si el dispositivo
+    /// no tiene ese marcador (instalado antes de esta funcionalidad) o
+    /// no hay red, cae al hash de `rockbox.ipod` contra el firmware
+    /// embebido en esta version de la app -- nunca se queda sin poder
+    /// decidir.
     @ViewBuilder
     private var updateSection: some View {
         if updateAvailable {
