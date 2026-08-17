@@ -12,6 +12,21 @@ El iPod Classic no expone un modo de transferencia de archivos estándar utiliza
 
 Aura Studio necesita hablar directo con IOKit/DiskArbitration para detectar el iPod y desmontarlo programáticamente, y ejecutar el binario `mks5lboot` embebido para el flasheo DFU — el sandbox de la App Store restringe justamente eso. La app se distribuye fuera de la App Store, firmada localmente (ver `DECISIONS-ARCHIVE.md`, D-033).
 
+## Temas
+
+Extras → Temas: instala, activa, elimina y construye paquetes de tema
+(fuentes + íconos + paleta) para el iPod, además del tema integrado
+("Aura") y de Claro/Oscuro. Studio es un **constructor**, no un
+distribuidor — un tema construido con assets de licencia restringida
+(SF Pro, SF Symbols) se marca `theme_license: personal` y la opción de
+exportar/compartir queda deshabilitada, con la explicación en pantalla.
+Fase 2A (actual): reempaqueta assets ya generados (por ejemplo, la
+salida de `design-system/generate.py` del firmware, o
+`~/Aura-local/theme-apple-source/design-system-out/`) — construir un
+tema rasterizando fuentes/íconos del sistema directamente es trabajo de
+seguimiento (Fase 2B). Formato exacto, compartido con el firmware, en
+[`CONTRATO-formato-tema.md`](CONTRATO-formato-tema.md).
+
 ## Seguridad
 
 Todas las operaciones que tocan el disco del usuario o piden privilegios elevados pasan por rutas nativas de macOS (nunca se le pide al usuario usar Terminal), con una pantalla propia que explica qué va a pasar *antes* del diálogo nativo de autorización, y con identificación del disco del iPod por múltiples criterios (nunca un identificador hardcodeado), re-verificada inmediatamente antes de cualquier operación destructiva — ver `CLAUDE.md` para el detalle de estas reglas y `IPodDiskIdentifier`/`PrivilegedExecutor` en el código.
@@ -37,6 +52,7 @@ open AuraStudio.xcodeproj
 - [`docs/guia-instalacion.md`](docs/guia-instalacion.md) — guía para el usuario final: instalar Aura y sincronizar tu biblioteca.
 - [`docs/guia-desarrollo.md`](docs/guia-desarrollo.md) — cómo compilar y probar este repositorio.
 - [`CONTRATO-firmware-studio.md`](CONTRATO-firmware-studio.md) — contrato con el repositorio del firmware.
+- [`CONTRATO-formato-tema.md`](CONTRATO-formato-tema.md) — formato del paquete de tema instalable, compartido con el firmware.
 - [`DECISIONS.md`](DECISIONS.md) — bitácora de decisiones desde la separación de repositorios (ST-001+), con el índice de las entradas relevantes de Aura Studio en el archivo histórico.
 - [`DECISIONS-ARCHIVE.md`](DECISIONS-ARCHIVE.md) — bitácora congelada del monorepo original (D-001…D-285), de solo lectura, compartida con `Aura-Firmware`.
 
