@@ -1,6 +1,8 @@
 # PLAN-general-sync.md — "Actualizar" vs. "Sincronizar", barra persistente, cancelación segura, nombre del iPod
 
-> **ESTADO: ACTIVO — en ejecución.** Aprobado por el dueño (2026-08-17) con las recomendaciones P1–P13. La Fase 2 avanza en cuatro tandas (§12): **tanda 1 (motor: sync transaccional, cancelación, manifiesto v2) hecha — `ST-008`. Tanda 2 (UI: `DeviceActivityBar`, separación Actualizar/Sincronizar, alcance segmentado) hecha — `ST-009`. Tanda 3 (`DeviceSyncIndex`, columna de estado real, hoja de conflictos, hoja "Solo en el iPod") hecha — `ST-010`.** Pendiente: tanda 4, la última — nombre del dispositivo (`CONTRATO-dispositivo.md`, `device.cfg`, edición in-place). La fuente de verdad de lo ya decidido es `DECISIONS.md`, no este documento.
+> **ESTADO: EJECUTADO** — 2026-08-17. Histórico. No es trabajo pendiente. Decisiones en DECISIONS.md.
+>
+> Aprobado por el dueño (2026-08-17) con las recomendaciones P1–P13. Las cuatro tandas de la Fase 2 (§12) están completas: **tanda 1 (motor: sync transaccional, cancelación, manifiesto v2) — `ST-008`. Tanda 2 (UI: `DeviceActivityBar`, separación Actualizar/Sincronizar, alcance segmentado) — `ST-009`. Tanda 3 (`DeviceSyncIndex`, columna de estado real, hoja de conflictos, hoja "Solo en el iPod") — `ST-010`. Tanda 4 (nombre del dispositivo, `CONTRATO-dispositivo.md`, `device.cfg`, edición in-place) — `ST-011`.** Pendiente fuera del alcance de este plan: verificación contra hardware físico (nunca hubo un iPod conectado en la sesión que ejecutó esto) y el consumo del lado firmware de `device.cfg` (documentado como no bloqueante en `CONTRATO-dispositivo.md` §E). La fuente de verdad de lo decidido es `DECISIONS.md`, no este documento.
 
 Rutas de código relativas a `studio/AuraStudio/Sources/AuraStudio/` salvo indicación; las del firmware, a `/Volumes/Ricolinos/Codigo/GitHub/Aura/Aura-Firmware/`.
 
