@@ -4,27 +4,13 @@
 .LSOverride
 ._*
 
-# Builds del firmware (simulador y target)
-firmware/build*/
-firmware/rockbox/build*/
+# Artefactos del firmware, descargados por scripts/fetch-firmware.sh
+# desde un Release de Aura-Firmware (o copiados con --from-dir en
+# desarrollo) -- ver CONTRATO-firmware-studio.md. Nunca versionados.
+studio/AuraStudio/Vendor/firmware-dist/
 
-# Toolchain ARM y artefactos de rockboxdev.sh
-firmware/toolchain/
-/tmp-rbdev*/
-
-# Fixtures de audio/foto/video de prueba (regenerar con firmware/tools/gen_test_media.sh)
-firmware/test-media/
-
-# Binarios de los tests host-side (make -C firmware/rockbox/apps/aura/test test)
-firmware/rockbox/apps/aura/test/build/
-
-# Salida generada del design system (regenerar con design-system/generate.py)
-design-system/out/
-design-system/.venv/
-__pycache__/
-*.pyc
-# Copiado desde design-system/out/ por firmware/tools/build_sim.sh
-firmware/rockbox/apps/aura/apple2026_tokens.h
+# Fixtures de prueba generadas por tools/gen_test_media.sh
+test-media/
 
 # Xcode
 studio/**/DerivedData/

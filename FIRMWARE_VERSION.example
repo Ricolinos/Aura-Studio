@@ -1,0 +1,11 @@
+# Plantilla de FIRMWARE_VERSION -- copia este archivo a FIRMWARE_VERSION
+# y complétalo cuando exista un primer Release público de Aura-Firmware
+# (ver CONTRATO-firmware-studio.md §E). Hasta entonces, el desarrollo
+# usa `scripts/fetch-firmware.sh --from-dir <ruta local a firmware/dist>`
+# y este archivo no hace falta.
+
+tag=v0.1.0
+rockbox.ipod=<sha256>
+rockbox.zip=<sha256>
+mks5lboot=<sha256>
+bootloader-ipod6g.ipod=<sha256>

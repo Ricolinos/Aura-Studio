@@ -2,9 +2,10 @@ import Foundation
 import CryptoKit
 
 /// Ubica y verifica los artefactos del firmware Aura que la app trae
-/// embebidos (copiados desde firmware/dist/ en tiempo de build, ver
-/// project.yml -- el mismo rockbox.ipod/bootloader-ipod6g.ipod/mks5lboot
-/// que Fase 8 compilo y verifico con checksums, sin duplicar el build).
+/// embebidos (copiados desde Vendor/firmware-dist/ en tiempo de build,
+/// ver project.yml -- poblado por scripts/fetch-firmware.sh desde un
+/// Release del repositorio Aura-Firmware, nunca desde un checkout de
+/// sus fuentes. Ver CONTRATO-firmware-studio.md).
 struct BundledArtifacts {
     let bundle: Bundle
 

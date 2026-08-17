@@ -41,15 +41,21 @@ targets:
       # prueba. La forma que si funciona es listarlos aca, bajo
       # "sources", con "buildPhase: resources" explicito (ver D-036 en
       # DECISIONS.md).
-      - path: ../../firmware/dist/rockbox.ipod
+      #
+      # Estos 5 archivos NO viven en este repo -- los trae
+      # scripts/fetch-firmware.sh desde el Release de Aura-Firmware
+      # fijado en FIRMWARE_VERSION (o desde --from-dir en desarrollo,
+      # ver CONTRATO-firmware-studio.md). Corre ese script antes de
+      # `xcodegen generate` o el build falla por recursos faltantes.
+      - path: Vendor/firmware-dist/rockbox.ipod
         buildPhase: resources
-      - path: ../../firmware/dist/rockbox.zip
+      - path: Vendor/firmware-dist/rockbox.zip
         buildPhase: resources
-      - path: ../../firmware/dist/bootloader-ipod6g.ipod
+      - path: Vendor/firmware-dist/bootloader-ipod6g.ipod
         buildPhase: resources
-      - path: ../../firmware/dist/mks5lboot
+      - path: Vendor/firmware-dist/mks5lboot
         buildPhase: resources
-      - path: ../../firmware/dist/checksums.txt
+      - path: Vendor/firmware-dist/checksums.txt
         buildPhase: resources
       # App icon (Icon Composer, con soporte de modo oscuro y "glass"
       # nativo -- ver Resources/AppIcon.icon/icon.json). El nombre del
