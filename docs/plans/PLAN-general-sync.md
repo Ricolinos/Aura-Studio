@@ -1,6 +1,6 @@
 # PLAN-general-sync.md — "Actualizar" vs. "Sincronizar", barra persistente, cancelación segura, nombre del iPod
 
-> **ESTADO: ACTIVO — pendiente de aprobación.** Entregable de la Fase 1 (2026-08-17). Fase 0 y Fase 1 son de solo lectura: nada de lo que sigue está implementado. Se detiene en la BARRERA del final hasta aprobación explícita del dueño. La fuente de verdad de lo ya decidido es `DECISIONS.md`, no este documento.
+> **ESTADO: ACTIVO — en ejecución.** Aprobado por el dueño (2026-08-17) con las recomendaciones P1–P13. La Fase 2 avanza en cuatro tandas (§12): **tanda 1 (motor: sync transaccional, cancelación, manifiesto v2) hecha — ver `ST-008` en `DECISIONS.md`.** Pendientes: tanda 2 (UI — `DeviceActivityBar`, separación de "Actualizar"/"Sincronizar", alcance segmentado, hoja de conflictos), tanda 3 (`DeviceSyncIndex` — los 5 estados por elemento, columna de estado, hoja "Solo en el iPod"), tanda 4 (nombre del dispositivo — `CONTRATO-dispositivo.md`, `device.cfg`, edición in-place). La fuente de verdad de lo ya decidido es `DECISIONS.md`, no este documento.
 
 Rutas de código relativas a `studio/AuraStudio/Sources/AuraStudio/` salvo indicación; las del firmware, a `/Volumes/Ricolinos/Codigo/GitHub/Aura/Aura-Firmware/`.
 
