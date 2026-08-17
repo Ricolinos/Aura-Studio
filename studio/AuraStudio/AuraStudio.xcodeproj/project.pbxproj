@@ -22,6 +22,7 @@
 		0EE55204A4DD509A38A4D088 /* PhotoSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C455F59CE087518F3E7DE7C6 /* PhotoSettingsView.swift */; };
 		1031FC473EBDA945D4D42AB6 /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE8C778BC2609D4718EBBC45 /* AppPreferences.swift */; };
 		10EF0307FD5A491426F20395 /* PrivilegedOperationLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8F6F2E2EDB8723F37503FF /* PrivilegedOperationLog.swift */; };
+		1164C298C628221EA214AC09 /* SyncSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31CBD5016C6CD0867DB6CBA /* SyncSheets.swift */; };
 		11CC4D739B622CDD58E486D8 /* EnterDFUView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3754C9E29F0BC93B660592 /* EnterDFUView.swift */; };
 		135A255167C64B601EFF2854 /* CoverArtArchiveClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAC95668C5FEF76FAC67EE52 /* CoverArtArchiveClient.swift */; };
 		14B0C14393E1FF6AC7FACCFF /* AuraPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F4082F8F8734C49730074C2 /* AuraPalette.swift */; };
@@ -68,6 +69,7 @@
 		7128F973A9D8E656F326EB9F /* AuraUpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9961D8C11B7031D474CB9BE /* AuraUpdateChecker.swift */; };
 		75D17708FBCBD04298B781AE /* bootloader-ipod6g.ipod in Resources */ = {isa = PBXBuildFile; fileRef = F42FE4EC16A2A0B63AA1E342 /* bootloader-ipod6g.ipod */; };
 		761724FFD96613E057D2C5EA /* ThemeInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A6B081BB0FE52BB27390C52 /* ThemeInstaller.swift */; };
+		79AD7B957943AB5C36B2BECF /* DeviceSyncIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3ABCD2D0D6F8611364F950C /* DeviceSyncIndex.swift */; };
 		7BF0D6AD4C6C82D7E9602088 /* AudioTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C13F9E244B9751271DC8255 /* AudioTranscoder.swift */; };
 		7DE4A653C7B6086644BF8095 /* AuraUpdateCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A29F57327CE27D98C05565C /* AuraUpdateCheckerTests.swift */; };
 		7F80040C49B6F9BAEC7C4EB4 /* PlaylistExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F307EFCD3106FEFB532DF8E /* PlaylistExporterTests.swift */; };
@@ -85,6 +87,7 @@
 		9FDD21617909191BB7E9B9CE /* MKS5LBootRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 722702AD0F209BDEA893FA8D /* MKS5LBootRunner.swift */; };
 		A0BDFCBDE136A9D22AC2FA61 /* LibraryFolderDropTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4B1B446620BF0826DE1BEF2 /* LibraryFolderDropTests.swift */; };
 		A1FC2A8749E4D919F5EFED7F /* MockURLProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABE04542E61E2B38DBE31A4F /* MockURLProtocol.swift */; };
+		A259EC600BB8C6311C09975E /* LibrarySyncConflictResolutionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20952B2B1ED460054B80EC39 /* LibrarySyncConflictResolutionTests.swift */; };
 		A272BCA595633440A1F595A9 /* LibraryLegacyMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3854E1521F1D1535773CA89D /* LibraryLegacyMigrationTests.swift */; };
 		A70B8FE54D8521EEBAB23BBB /* InstallerStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43B9358C341DF6C281F2636B /* InstallerStep.swift */; };
 		A77A37B6CF7FECABA28DD45C /* VideoSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D93C4B54F192923EAF481E9 /* VideoSettingsView.swift */; };
@@ -128,6 +131,7 @@
 		ECBCFCC6104EA5F8E3F445BF /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1AF1D56D4FC12419217F8960 /* WelcomeView.swift */; };
 		EEF0D749E12D2A5E082CCC60 /* ExtrasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78C8C5A2B4594B410D4C51A4 /* ExtrasView.swift */; };
 		EF1E083FA6047FB931707719 /* LibrarySyncLocalLibraryPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8885EF5A65AE8ED08914314A /* LibrarySyncLocalLibraryPathTests.swift */; };
+		F42EA5AD49A256AC55366672 /* DeviceSyncIndexTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 444381A58BB7B201C06A6866 /* DeviceSyncIndexTests.swift */; };
 		F58C68FA6A580D5B5790F9C0 /* DeezerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB9F8D5D85A96032603EE86 /* DeezerClient.swift */; };
 		F745EA7E70AE91DF77279194 /* PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777383A161FBD9C32BFA6D82 /* PermissionsView.swift */; };
 		F7AF5D705D74FC1CC9B3F9FF /* DeviceActivityBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCF37D4D32EF9A352A74CC8 /* DeviceActivityBar.swift */; };
@@ -163,6 +167,7 @@
 		1AF1D56D4FC12419217F8960 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		1D4862DCA99696DCB66D2012 /* InstallerWizardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerWizardView.swift; sourceTree = "<group>"; };
 		206063864F8205232A3581AE /* LibraryEnricher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryEnricher.swift; sourceTree = "<group>"; };
+		20952B2B1ED460054B80EC39 /* LibrarySyncConflictResolutionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySyncConflictResolutionTests.swift; sourceTree = "<group>"; };
 		22A9408836FAEA82165D554C /* PrivilegedExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivilegedExecutor.swift; sourceTree = "<group>"; };
 		23AD4FC67C48B4550BD7554E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2A3A899326AAAF78FF4F60C7 /* LRCLIBClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LRCLIBClient.swift; sourceTree = "<group>"; };
@@ -181,6 +186,7 @@
 		3EBEB24F597D3C9B609AC775 /* InstallerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerViewModel.swift; sourceTree = "<group>"; };
 		414CDC551592AE3B57A31C32 /* ThemesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemesView.swift; sourceTree = "<group>"; };
 		43B9358C341DF6C281F2636B /* InstallerStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerStep.swift; sourceTree = "<group>"; };
+		444381A58BB7B201C06A6866 /* DeviceSyncIndexTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSyncIndexTests.swift; sourceTree = "<group>"; };
 		48CC2E3940E0EC5127461CB5 /* LibrarySync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySync.swift; sourceTree = "<group>"; };
 		4F4082F8F8734C49730074C2 /* AuraPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraPalette.swift; sourceTree = "<group>"; };
 		528818777E4EF0B5EF8F9306 /* PlaylistImporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistImporterTests.swift; sourceTree = "<group>"; };
@@ -237,6 +243,7 @@
 		B1782D4EBAA2C3FC3EBC49F5 /* InstallingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallingView.swift; sourceTree = "<group>"; };
 		B1ACD0BCFD11F335D4C428F6 /* GitHubReleaseChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubReleaseChecker.swift; sourceTree = "<group>"; };
 		B210703E5EF249635DE046AE /* PlaylistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistsView.swift; sourceTree = "<group>"; };
+		B31CBD5016C6CD0867DB6CBA /* SyncSheets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncSheets.swift; sourceTree = "<group>"; };
 		B34640ACD3AC36633502AE41 /* InstallerFlowRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerFlowRegistry.swift; sourceTree = "<group>"; };
 		B47BB629D898027E7C891D1B /* ServicesSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServicesSettingsView.swift; sourceTree = "<group>"; };
 		B4B1B446620BF0826DE1BEF2 /* LibraryFolderDropTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryFolderDropTests.swift; sourceTree = "<group>"; };
@@ -251,6 +258,7 @@
 		D00683CD00E28700EF1DC416 /* LibraryViewModelSyncScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModelSyncScopeTests.swift; sourceTree = "<group>"; };
 		D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledArtifactsTests.swift; sourceTree = "<group>"; };
 		D282E9DFA0D773AF988E69E5 /* ID3Writer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ID3Writer.swift; sourceTree = "<group>"; };
+		D3ABCD2D0D6F8611364F950C /* DeviceSyncIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSyncIndex.swift; sourceTree = "<group>"; };
 		D3F0CDAA153138813C9AF84E /* AuraDeviceProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraDeviceProbe.swift; sourceTree = "<group>"; };
 		D789632A0A38C211E33DFCBF /* MediaTableRowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTableRowTests.swift; sourceTree = "<group>"; };
 		D96F62F5D0767305583513FF /* TrackMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackMetadata.swift; sourceTree = "<group>"; };
@@ -306,6 +314,7 @@
 				F527FF44025F6464CEC83FD6 /* RestoreHandoffView.swift */,
 				B47BB629D898027E7C891D1B /* ServicesSettingsView.swift */,
 				F52FF3A536F1C7FAFB6822B6 /* SettingsSectionView.swift */,
+				B31CBD5016C6CD0867DB6CBA /* SyncSheets.swift */,
 				414CDC551592AE3B57A31C32 /* ThemesView.swift */,
 				3D93C4B54F192923EAF481E9 /* VideoSettingsView.swift */,
 				1AF1D56D4FC12419217F8960 /* WelcomeView.swift */,
@@ -402,6 +411,7 @@
 				1A29F57327CE27D98C05565C /* AuraUpdateCheckerTests.swift */,
 				D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */,
 				AC0636DEF76695EC784AFCE2 /* CatalogSummaryWriterTests.swift */,
+				444381A58BB7B201C06A6866 /* DeviceSyncIndexTests.swift */,
 				FB78E19CE6152C4A34DF642B /* DroppedURLExpanderTests.swift */,
 				AE684D9789506522C7BF0228 /* FFmpegTranscoderTests.swift */,
 				37BA124E3419E12A08D4AADC /* FilenameGuesserTests.swift */,
@@ -413,6 +423,7 @@
 				3854E1521F1D1535773CA89D /* LibraryLegacyMigrationTests.swift */,
 				17FA97DC7618F234BE711AED /* LibraryPipelineIntegrationTests.swift */,
 				5F7FD7689D1AF6C4178F68DD /* LibrarySyncCancellationTests.swift */,
+				20952B2B1ED460054B80EC39 /* LibrarySyncConflictResolutionTests.swift */,
 				8885EF5A65AE8ED08914314A /* LibrarySyncLocalLibraryPathTests.swift */,
 				8F2CDF7B36135811140A2B3E /* LibrarySyncMusicPathTests.swift */,
 				1695E842D41B0B6B13805A1E /* LibrarySyncTests.swift */,
@@ -487,6 +498,7 @@
 				B8464D5E55C66D32740C7289 /* BundledArtifacts.swift */,
 				EAC95668C5FEF76FAC67EE52 /* CoverArtArchiveClient.swift */,
 				ABB9F8D5D85A96032603EE86 /* DeezerClient.swift */,
+				D3ABCD2D0D6F8611364F950C /* DeviceSyncIndex.swift */,
 				638FD209E9AF6417EE51ABC7 /* DiskArbitrationMonitor.swift */,
 				AF3BE096E51004D4621ABB60 /* FanartTVClient.swift */,
 				DAE64AFF0609F93FC361C6DE /* FFmpegTranscoder.swift */,
@@ -624,6 +636,7 @@
 				7DE4A653C7B6086644BF8095 /* AuraUpdateCheckerTests.swift in Sources */,
 				C3AD25FC7C3C2CE8C2F3AD6F /* BundledArtifactsTests.swift in Sources */,
 				A97401AE31F2CC10AB44DDCD /* CatalogSummaryWriterTests.swift in Sources */,
+				F42EA5AD49A256AC55366672 /* DeviceSyncIndexTests.swift in Sources */,
 				C4E16B0230B926F38F44808C /* DroppedURLExpanderTests.swift in Sources */,
 				07B5993B76FBF1735ADA8AF2 /* FFmpegTranscoderTests.swift in Sources */,
 				BD809465DDDA7B9453FDAB86 /* FilenameGuesserTests.swift in Sources */,
@@ -635,6 +648,7 @@
 				A272BCA595633440A1F595A9 /* LibraryLegacyMigrationTests.swift in Sources */,
 				0183BFA3AF5209C411B41F36 /* LibraryPipelineIntegrationTests.swift in Sources */,
 				AB3F8769FB758AFE883C8714 /* LibrarySyncCancellationTests.swift in Sources */,
+				A259EC600BB8C6311C09975E /* LibrarySyncConflictResolutionTests.swift in Sources */,
 				EF1E083FA6047FB931707719 /* LibrarySyncLocalLibraryPathTests.swift in Sources */,
 				8C2ED0BC3B41CA56C08D20E8 /* LibrarySyncMusicPathTests.swift in Sources */,
 				397F1385C6FF0BA8618B7956 /* LibrarySyncTests.swift in Sources */,
@@ -690,6 +704,7 @@
 				F7AF5D705D74FC1CC9B3F9FF /* DeviceActivityBar.swift in Sources */,
 				3F24271B399390E28A24C5A2 /* DeviceGeneralView.swift in Sources */,
 				D99E5C4BE2135ED2B2CDDFEE /* DeviceState.swift in Sources */,
+				79AD7B957943AB5C36B2BECF /* DeviceSyncIndex.swift in Sources */,
 				B1845030E08621FDF34358FA /* DiskArbitrationMonitor.swift in Sources */,
 				2F898C1996F39319211E9496 /* DoneView.swift in Sources */,
 				6CEA99B326B7A9C0BC06BFBD /* DroppedURLExpander.swift in Sources */,
@@ -738,6 +753,7 @@
 				B8DE9892192CAACED7ECC3BD /* RestoreHandoffView.swift in Sources */,
 				5FD738F18BBCA9163DDAA684 /* ServicesSettingsView.swift in Sources */,
 				A801BD6910D0A5909C8AF4C1 /* SettingsSectionView.swift in Sources */,
+				1164C298C628221EA214AC09 /* SyncSheets.swift in Sources */,
 				761724FFD96613E057D2C5EA /* ThemeInstaller.swift in Sources */,
 				0B317286F490CD4A15980B2E /* ThemePackager.swift in Sources */,
 				1A5862E9CB13506C27D87CAC /* ThemeValidator.swift in Sources */,
