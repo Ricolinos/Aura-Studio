@@ -129,6 +129,15 @@ struct ContentView: View {
         }
         .onChange(of: deviceMonitor.device) { newDevice in
             refreshUpdateAvailability(for: newDevice)
+            // PLAN-general-sync.md §4.2: "conexión" invalida el índice
+            // de sincronización viejo. Sin dispositivo (o con firmware
+            // no-Aura) no hay nada que verificar -- se limpia en vez de
+            // dejar mostrando el estado de un iPod que ya no es este.
+            if let newDevice, newDevice.isAura {
+                Task { await library.verifyDevice(at: URL(fileURLWithPath: newDevice.mountPath)) }
+            } else {
+                library.clearDeviceSyncIndex()
+            }
         }
     }
 
@@ -212,6 +221,9 @@ struct ContentView: View {
         guard let device = deviceMonitor.device else { return }
         deviceMonitor.refreshDevice()
         updateAvailable = await AuraUpdateChecker.checkForUpdate(deviceMountPath: device.mountPath)
+        if device.isAura {
+            await library.verifyDevice(at: URL(fileURLWithPath: device.mountPath))
+        }
     }
 }
 

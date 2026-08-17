@@ -38,6 +38,18 @@ final class LibraryViewModel: ObservableObject {
     /// archivos el numero es poco preciso, pero es honesto (viene de una
     /// medicion real) en vez de un estimado inventado.
     @Published private(set) var syncProgress: SyncProgress?
+    /// Comparación de la biblioteca contra el iPod conectado
+    /// (PLAN-general-sync.md §4) -- `nil` sin dispositivo o antes de la
+    /// primera verificación. Se recalcula al conectar, al pulsar
+    /// "Actualizar", y al terminar (o cancelar) un sync -- nunca decide
+    /// sobre un índice viejo (§4.2: "se recalcula justo antes, siempre").
+    @Published private(set) var deviceSyncIndex: DeviceSyncIndex?
+    /// `true` mientras `verifyDevice` recorre `Music/`/`Videos/`/
+    /// `Photos/`/`Playlists/` del dispositivo -- es la única operación
+    /// de esta pantalla que hace I/O real de verificación, así que
+    /// tiene su propio indicador ("Verificando el iPod…" en
+    /// `DeviceActivityBar`).
+    @Published private(set) var isVerifyingDevice = false
 
     private let enricher: LibraryEnricher
     private let preferences: AppPreferences
@@ -667,7 +679,17 @@ final class LibraryViewModel: ObservableObject {
         currentSyncCancellationFlag?.cancel()
     }
 
-    func sync(toVolumeAt volumeRoot: URL, scope: SyncScope = .all) async {
+    /// `resolvedConflicts` (PLAN-general-sync.md §0.1/§1.2): las
+    /// elecciones explícitas del usuario en la hoja de conflictos
+    /// previa -- vacío por defecto, que es "conservar todo en el iPod,
+    /// no borrar ningún huérfano" (los defaults seguros de la spec).
+    struct ConflictResolution {
+        var forceRecopySourcePaths: Set<String> = []
+        var removeOrphanedSourcePaths: Set<String> = []
+        static let none = ConflictResolution()
+    }
+
+    func sync(toVolumeAt volumeRoot: URL, scope: SyncScope = .all, resolvedConflicts: ConflictResolution = .none) async {
         let allReady = items.filter { $0.status == .ready }
         let restrictedSourcePaths: Set<String>?
 
@@ -724,6 +746,8 @@ final class LibraryViewModel: ObservableObject {
                               musicOrganization: musicOrganization,
                               musicFilenameFormat: musicFilenameFormat,
                               restrictCopyToSourcePaths: restrictedSourcePaths,
+                              forceRecopySourcePaths: resolvedConflicts.forceRecopySourcePaths,
+                              removeOrphanedSourcePaths: resolvedConflicts.removeOrphanedSourcePaths,
                               installationID: installationIDSnapshot,
                               isCancelled: { cancellationFlag.isCancelled }) { copied, total in
                     guard let self else { return }
@@ -760,6 +784,46 @@ final class LibraryViewModel: ObservableObject {
             lastError = "No se pudo sincronizar en \(volumeRoot.path): \(error.localizedDescription)"
         }
         syncProgress = nil
+        // §4.2: "fin de sync/cancelación" es uno de los momentos que
+        // invalida el índice viejo -- si el dispositivo ya no responde
+        // (desconexión real), `verifyDevice` simplemente no encuentra
+        // nada que escanear y no falla.
+        await verifyDevice(at: volumeRoot)
+    }
+
+    /// Compara la biblioteca contra lo que de verdad hay en el iPod
+    /// conectado -- PLAN-general-sync.md §4. Hace I/O real (una
+    /// enumeración de `Music/`/`Videos/`/`Photos/`/`Playlists/`), por
+    /// eso corre en un `Task.detached` fuera del hilo principal, igual
+    /// que `sync()`.
+    func verifyDevice(at volumeRoot: URL) async {
+        guard !isVerifyingDevice else { return }
+        isVerifyingDevice = true
+        defer { isVerifyingDevice = false }
+
+        let currentFiles: [DeviceSyncIndexBuilder.CurrentFile] = items.compactMap { item in
+            guard let prepared = item.preparedURL,
+                  let attrs = try? FileManager.default.attributesOfItem(atPath: prepared.path) else { return nil }
+            let size = (attrs[.size] as? Int64) ?? 0
+            let modified = (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
+            return DeviceSyncIndexBuilder.CurrentFile(sourcePath: item.sourceURL.path, size: size, modifiedAt: modified)
+        }
+
+        let index = await Task.detached(priority: .utility) {
+            let sync = LibrarySync(volumeRoot: volumeRoot)
+            let manifest = sync.loadManifest()
+            return DeviceSyncIndexBuilder.scan(volumeRoot: volumeRoot, currentFiles: currentFiles, manifest: manifest)
+        }.value
+
+        deviceSyncIndex = index
+    }
+
+    /// Al desconectar el iPod (o cuando resulta no ser Aura) el índice
+    /// viejo ya no significa nada -- mostrarlo seguiría diciendo
+    /// "Sincronizado" de un dispositivo que ya no es el que está
+    /// conectado.
+    func clearDeviceSyncIndex() {
+        deviceSyncIndex = nil
     }
 
     // MARK: - Playlists (Fase 24)

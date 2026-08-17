@@ -19,17 +19,22 @@ import SwiftUI
 /// sume a `sync_summary.cfg` -- queda como mejora de una tanda futura,
 /// no un cambio a medias: hoy "Otro" es exactamente lo que dice ser.
 ///
-/// Estados cubiertos en esta pasada (tanda 2): sin dispositivo, en
-/// reposo, sincronizando, cancelando, error. "Verificando" (depende de
-/// `DeviceSyncIndex`, todavía no existe) y "Pausado" (no hay mecanismo
-/// de pausa todavía, solo cancelar) quedan documentados para tandas
-/// siguientes -- ver PLAN-general-sync.md §12.
+/// Estados cubiertos: sin dispositivo, en reposo, verificando,
+/// sincronizando, cancelando, error (tanda 2 + tanda 3, `DeviceSyncIndex`).
+/// "Pausado" queda documentado para una tanda futura -- todavía no hay
+/// mecanismo de pausa, solo cancelar (ver PLAN-general-sync.md §12).
 struct DeviceActivityBar: View {
     let device: AuraDevice?
     let syncProgress: SyncProgress?
+    /// `true` mientras `LibraryViewModel.verifyDevice` recorre el
+    /// dispositivo (PLAN-general-sync.md §4) -- estado "Verificando".
+    let isVerifying: Bool
     let lastSyncSummary: String?
     let lastError: String?
     let pendingCount: Int
+    /// Comparación contra el iPod (§4) -- `nil` antes de la primera
+    /// verificación, cuando solo queda `pendingCount` como aproximación.
+    let deviceSyncIndex: DeviceSyncIndex?
     let selectionCount: Int
     /// `true` = "Solo la selección" estaba elegido cuando se pulso
     /// Sincronizar.
@@ -86,6 +91,7 @@ struct DeviceActivityBar: View {
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
+                .disabled(isVerifying)
 
                 Spacer()
 
@@ -93,24 +99,47 @@ struct DeviceActivityBar: View {
                     onSync(scopeChoice == .selection)
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(scopeChoice == .selection && selectionCount == 0)
+                .disabled(isVerifying || (scopeChoice == .selection && selectionCount == 0))
             }
         }
     }
 
     @ViewBuilder
     private var statusText: some View {
-        if let lastError {
+        if isVerifying {
+            HStack(spacing: 6) {
+                ProgressView().controlSize(.small)
+                Text("Verificando el iPod...")
+            }
+            .font(.callout)
+            .foregroundStyle(.secondary)
+        } else if let lastError {
             Text(lastError).font(.callout).foregroundStyle(.red)
         } else if let lastSyncSummary {
             Text(lastSyncSummary).font(.callout).foregroundStyle(.secondary)
         } else if device == nil {
             Text("Conecta tu iPod para sincronizar.").font(.callout).foregroundStyle(.secondary)
+        } else if let index = deviceSyncIndex {
+            Text(summaryText(for: index)).font(.callout).foregroundStyle(.secondary)
         } else if pendingCount > 0 {
             Text("\(pendingCount) archivo(s) listo(s) para sincronizar.").font(.callout).foregroundStyle(.secondary)
         } else {
             Text("Todo sincronizado.").font(.callout).foregroundStyle(.secondary)
         }
+    }
+
+    /// Resume los estados de `deviceSyncIndex` (§4.1) -- solo lo que no
+    /// es cero, para no decir "0 modificados" en el caso normal.
+    private func summaryText(for index: DeviceSyncIndex) -> String {
+        let counts = index.states.values.reduce(into: [SyncItemState: Int]()) { counts, state in
+            counts[state, default: 0] += 1
+        }
+        var parts: [String] = []
+        if let pending = counts[.pending], pending > 0 { parts.append("\(pending) pendiente(s)") }
+        if let changed = counts[.changedLocally], changed > 0 { parts.append("\(changed) con cambios") }
+        if let modified = counts[.modifiedOnDevice], modified > 0 { parts.append("\(modified) modificado(s) en el iPod") }
+        if let removed = counts[.removedFromDevice], removed > 0 { parts.append("\(removed) quitado(s) del iPod") }
+        return parts.isEmpty ? "Todo sincronizado." : parts.joined(separator: " · ")
     }
 
     // MARK: - Sincronizando / Cancelando

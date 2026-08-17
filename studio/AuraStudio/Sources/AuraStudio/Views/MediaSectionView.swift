@@ -46,12 +46,6 @@ struct MediaSectionView: View {
     /// herramientas) -- persiste por tipo de medio en UserDefaults, asi
     /// que Musica/Video/Fotos recuerdan su propia eleccion.
     @State private var visibleColumns: Set<ExtraColumn> = []
-    /// Rutas de origen (`LibraryItem.sourceURL.path`) ya confirmadas en
-    /// el iPod conectado -- record en el manifiesto de sync Y el archivo
-    /// de destino todavia presente en el volumen (D-202). Se recalcula,
-    /// no se persiste: es un reflejo del disco, no un dato propio de la
-    /// biblioteca.
-    @State private var syncedSourcePaths: Set<String> = []
     /// D-203: MusicBrainz limita a 1 pedido/segundo, asi que "Buscar
     /// información en línea" sobre varias canciones tarda -- sin esto no
     /// habia NINGUN indicio de que algo estaba pasando, asi que un
@@ -147,7 +141,6 @@ struct MediaSectionView: View {
         }
         .onAppear {
             loadVisibleColumns()
-            refreshSyncedItems()
             viewModel.selectionForSync = selection
         }
         // PLAN-general-sync.md §6: "Solo la selección" en
@@ -156,8 +149,6 @@ struct MediaSectionView: View {
         // herede una selección que ya no es la que el usuario ve.
         .onChange(of: selection) { viewModel.selectionForSync = $0 }
         .onDisappear { viewModel.selectionForSync = [] }
-        .onChange(of: device) { _ in refreshSyncedItems() }
-        .onChange(of: viewModel.lastSyncSummary) { _ in refreshSyncedItems() }
         .sheet(item: $reviewingItem) { item in
             MediaInfoView(item: item, availableCategories: availableCategories) { category in
                 viewModel.setCategory(category, forItem: item.id)
@@ -336,26 +327,6 @@ struct MediaSectionView: View {
         }
     }
 
-    // MARK: - Sincronizacion (D-202)
-
-    /// Vuelve a leer el manifiesto de sync del volumen conectado y marca
-    /// como sincronizada cualquier ruta de origen que tenga un registro
-    /// Y cuyo destino todavia exista en el disco -- si el archivo se
-    /// borro a mano del iPod, el manifiesto podria seguir mencionandolo,
-    /// asi que la existencia real manda.
-    private func refreshSyncedItems() {
-        guard let device else {
-            syncedSourcePaths = []
-            return
-        }
-        let volumeRoot = URL(fileURLWithPath: device.mountPath)
-        let manifest = LibrarySync(volumeRoot: volumeRoot).loadManifest()
-        syncedSourcePaths = Set(manifest.records.values.compactMap { record in
-            let destination = volumeRoot.appendingPathComponent(record.destinationRelativePath)
-            return FileManager.default.fileExists(atPath: destination.path) ? record.sourcePath : nil
-        })
-    }
-
     // MARK: - Tabla
 
     @ViewBuilder
@@ -469,20 +440,19 @@ struct MediaSectionView: View {
         case .transcoding(let progress):
             ProgressView(value: progress).frame(width: 60)
         case .ready:
-            HStack(spacing: 4) {
-                Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
-                if syncedSourcePaths.contains(item.sourceURL.path) {
-                    // D-202/D-215: distingue "listo para copiar" de "ya
-                    // esta en el iPod conectado" -- antes solo el icono
-                    // lo mostraba (facil de pasar por alto en una lista
-                    // larga), ahora tambien el texto.
-                    Image(systemName: "ipod")
-                        .foregroundStyle(.secondary)
-                    Text("Sincronizado")
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text("Listo")
-                        .foregroundStyle(.secondary)
+            // PLAN-general-sync.md §1.6: con `deviceSyncIndex` listo
+            // (iPod conectado y ya verificado), la columna muestra los
+            // 5 estados reales en vez del "Listo"/"Sincronizado" viejo
+            // (D-202/D-215, que solo miraba el manifiesto -- no
+            // distinguía "con cambios" de "modificado en el iPod").
+            // Sin dispositivo, o mientras `verifyDevice` todavía corre
+            // (`deviceSyncIndex == nil`), se queda en "Listo".
+            if let index = viewModel.deviceSyncIndex {
+                syncStateCell(index.state(forSourcePath: item.sourceURL.path))
+            } else {
+                HStack(spacing: 4) {
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                    Text("Listo").foregroundStyle(.secondary)
                 }
             }
         case .needsReview:
@@ -497,6 +467,32 @@ struct MediaSectionView: View {
             Label(message, systemImage: "xmark.circle")
                 .foregroundStyle(.red)
                 .help(message)
+        }
+    }
+
+    /// Los 5 estados de `SyncItemState` (PLAN-general-sync.md §4.1) --
+    /// plano, símbolo + texto, sin fondo ni translucidez (§1.6, mismo
+    /// criterio que el resto de la tabla).
+    @ViewBuilder
+    private func syncStateCell(_ state: SyncItemState) -> some View {
+        switch state {
+        case .synced:
+            Label("Sincronizado", systemImage: "checkmark.circle")
+                .foregroundStyle(.secondary)
+        case .pending:
+            Label("Pendiente", systemImage: "arrow.up.circle")
+                .foregroundStyle(AuraColors.light.accent)
+        case .changedLocally:
+            Label("Con cambios", systemImage: "arrow.triangle.2.circlepath")
+                .foregroundStyle(AuraColors.light.accent)
+        case .modifiedOnDevice:
+            Label("Modificado en el iPod", systemImage: "exclamationmark.triangle")
+                .foregroundStyle(.orange)
+                .help("Este archivo cambió en el iPod fuera de Aura Studio. La próxima vez que sincronices podrás elegir si lo conservas o lo reemplazas con la versión de tu biblioteca.")
+        case .removedFromDevice:
+            Label("Quitado del iPod", systemImage: "minus.circle")
+                .foregroundStyle(.secondary)
+                .help("Se quitó del iPod fuera de Aura Studio -- no se vuelve a copiar solo. Usa \"Sincronizar la selección\" en el menú contextual para volver a copiarlo.")
         }
     }
 

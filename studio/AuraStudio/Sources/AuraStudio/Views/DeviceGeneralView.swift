@@ -33,6 +33,16 @@ struct DeviceGeneralView: View {
     let onRefreshDevice: () -> Void
 
     @State private var ejectResult: String?
+    /// No-nil cuando el usuario pulsó Sincronizar y `deviceSyncIndex`
+    /// tiene conflictos (§0.1/§1.2) -- dispara la hoja "Antes de
+    /// sincronizar" en vez de sincronizar directo.
+    @State private var pendingSyncRequest: PendingSyncRequest?
+    @State private var showForeignContentSheet = false
+
+    private struct PendingSyncRequest: Identifiable {
+        let id = UUID()
+        let selectionOnly: Bool
+    }
 
     var body: some View {
         ScrollView {
@@ -62,28 +72,60 @@ struct DeviceGeneralView: View {
                 DeviceActivityBar(
                     device: device,
                     syncProgress: library.syncProgress,
+                    isVerifying: library.isVerifyingDevice,
                     lastSyncSummary: library.lastSyncSummary,
                     lastError: library.lastError,
                     pendingCount: pendingCount,
+                    deviceSyncIndex: library.deviceSyncIndex,
                     selectionCount: library.selectionForSync.count,
                     onSync: { selectionOnly in
-                        guard let device else { return }
-                        let scope: LibraryViewModel.SyncScope = selectionOnly
-                            ? .selection(library.selectionForSync)
-                            : .all
-                        Task {
-                            await library.sync(toVolumeAt: URL(fileURLWithPath: device.mountPath), scope: scope)
-                            onRefreshDevice()
+                        // §0.1/§1.2: si hay conflictos (algo modificado
+                        // en el iPod, o huérfanos), se pregunta ANTES de
+                        // tocar el dispositivo -- sin conflictos, sigue
+                        // siendo un solo clic.
+                        if library.deviceSyncIndex?.hasConflicts == true {
+                            pendingSyncRequest = PendingSyncRequest(selectionOnly: selectionOnly)
+                        } else {
+                            performSync(selectionOnly: selectionOnly, resolvedConflicts: .none)
                         }
                     },
                     onCancel: { library.cancelSync() }
                 )
+
+                if let index = library.deviceSyncIndex, !index.foreignFiles.isEmpty {
+                    Button("Contenido solo en el iPod (\(index.foreignFiles.count))…") {
+                        showForeignContentSheet = true
+                    }
+                    .buttonStyle(.link)
+                    .font(.callout)
+                }
             }
             .padding(24)
             .frame(maxWidth: 560, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .navigationTitle("General")
+        .sheet(item: $pendingSyncRequest) { request in
+            if let index = library.deviceSyncIndex {
+                SyncConflictSheet(index: index, onCancel: {
+                    pendingSyncRequest = nil
+                }, onConfirm: { resolution in
+                    pendingSyncRequest = nil
+                    performSync(selectionOnly: request.selectionOnly, resolvedConflicts: resolution)
+                })
+            }
+        }
+        .sheet(isPresented: $showForeignContentSheet) {
+            if let device, let index = library.deviceSyncIndex {
+                ForeignContentSheet(
+                    volumeRoot: URL(fileURLWithPath: device.mountPath),
+                    files: index.foreignFiles,
+                    library: library,
+                    onDismiss: { showForeignContentSheet = false },
+                    onDeleted: { Task { await library.verifyDevice(at: URL(fileURLWithPath: device.mountPath)) } }
+                )
+            }
+        }
         .toolbar {
             // El boton "Sincronizar" vive ahora en ContentView (barra de
             // herramientas de toda la app, no solo de esta seccion) para
@@ -243,13 +285,23 @@ struct DeviceGeneralView: View {
         }
     }
 
-    /// "N archivo(s) listo(s) para sincronizar" de `DeviceActivityBar`
-    /// -- misma aproximacion que el `pendingLabel` viejo (D-217): un
-    /// item `.ready` puede ya estar sincronizado con ESTE dispositivo,
-    /// no hay forma barata de distinguirlo sin `DeviceSyncIndex`
-    /// (PLAN-general-sync.md §4, tanda futura).
+    /// Respaldo de `DeviceActivityBar` para antes de la primera
+    /// verificación (`deviceSyncIndex == nil`, p. ej. justo al conectar,
+    /// mientras `verifyDevice` todavía corre) -- misma aproximación que
+    /// el `pendingLabel` viejo (D-217): un item `.ready` puede ya estar
+    /// sincronizado con ESTE dispositivo, `deviceSyncIndex` (una vez
+    /// listo) es la fuente exacta.
     private var pendingCount: Int {
         library.items.filter { $0.status == .ready }.count
+    }
+
+    private func performSync(selectionOnly: Bool, resolvedConflicts: LibraryViewModel.ConflictResolution) {
+        guard let device else { return }
+        let scope: LibraryViewModel.SyncScope = selectionOnly ? .selection(library.selectionForSync) : .all
+        Task {
+            await library.sync(toVolumeAt: URL(fileURLWithPath: device.mountPath), scope: scope, resolvedConflicts: resolvedConflicts)
+            onRefreshDevice()
+        }
     }
 
     private func contentRow(_ title: String, _ symbol: String, _ summary: CatalogTypeSummary) -> some View {

@@ -350,6 +350,21 @@ struct LibrarySync {
               /// este conjunto; el resto queda pendiente para el
               /// proximo sync sin perderse.
               restrictCopyToSourcePaths: Set<String>? = nil,
+              /// PLAN-general-sync.md §0.1/§1.2, la hoja de conflictos:
+              /// archivos que `DeviceSyncIndex` marco `.modifiedOnDevice`
+              /// y que el usuario eligio "Reemplazar con la biblioteca"
+              /// -- por defecto SyncPlanner los saltea (nunca mira el
+              /// lado del dispositivo, solo si el preparado local
+              /// cambio), asi que "conservar en el iPod" no necesita
+              /// ningun codigo especial: YA es lo que pasa sin hacer
+              /// nada. Esto es la unica forma de forzar la recopia.
+              forceRecopySourcePaths: Set<String> = [],
+              /// Registros huerfanos (`DeviceSyncIndex.orphanedRecords`)
+              /// que el usuario eligio explicitamente borrar del iPod
+              /// -- nunca automatico (§0.1: "nunca borra sin
+              /// confirmacion"). Borra el archivo del dispositivo y su
+              /// entrada del manifiesto.
+              removeOrphanedSourcePaths: Set<String> = [],
               installationID: String? = nil,
               isCancelled: () -> Bool = { false },
               onProgress: (_ copied: Int, _ toCopy: Int) -> Void = { _, _ in }) throws -> SyncResult {
@@ -368,8 +383,8 @@ struct LibrarySync {
             let attrs = try fileManager.attributesOfItem(atPath: prepared.path)
             let size = (attrs[.size] as? Int64) ?? 0
             let modified = (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
-            let destRelative = destinationRelativePath(for: item, musicOrganization: musicOrganization,
-                                                         musicFilenameFormat: musicFilenameFormat)
+            let destRelative = Self.destinationRelativePath(for: item, musicOrganization: musicOrganization,
+                                                              musicFilenameFormat: musicFilenameFormat)
             destinationByItemID[item.id] = destRelative
 
             switch item.kind {
@@ -406,7 +421,18 @@ struct LibrarySync {
             return (item.sourceURL.path, size, modified, destRelative)
         }
 
-        let fullPlan = SyncPlanner.plan(current: currentFiles, previousManifest: manifest)
+        var fullPlan = SyncPlanner.plan(current: currentFiles, previousManifest: manifest)
+        // Hoja de conflictos, "Reemplazar con la biblioteca": fuerza a
+        // `.copy` lo que SyncPlanner habia decidido `.skip` (el
+        // preparado local no cambio, asi que sin esto nunca se
+        // recopiaria) para los `sourcePath` que el usuario eligio
+        // explicitamente.
+        if !forceRecopySourcePaths.isEmpty {
+            fullPlan = fullPlan.map { item in
+                guard item.action == .skip, forceRecopySourcePaths.contains(item.sourcePath) else { return item }
+                return SyncPlanItem(sourcePath: item.sourcePath, destinationRelativePath: item.destinationRelativePath, action: .copy)
+            }
+        }
         // "Sincronizar solo la selección": los archivos fuera de la
         // restriccion se tratan como si SyncPlanner los hubiera
         // marcado `.skip` en ESTA pasada -- siguen `.copy` en el plan
@@ -483,6 +509,21 @@ struct LibrarySync {
             // solo al final) -- es lo que hace que pausar, cancelar, o
             // una desconexion fisica conserven el progreso ya copiado
             // en vez de perderlo si el resto del sync no llega a correr.
+            try saveManifest(manifest)
+        }
+
+        // Hoja de conflictos, "Quitar del iPod los N elementos que ya
+        // no están en tu biblioteca" (§0.1/§1.2) -- SOLO estos
+        // `sourcePath`, elegidos explicitamente por el usuario. Nunca
+        // automatico: un registro huerfano que nadie marco para borrar
+        // se queda en el iPod y en el manifiesto para siempre, como
+        // hoy.
+        if !removeOrphanedSourcePaths.isEmpty {
+            for orphanSourcePath in removeOrphanedSourcePaths {
+                guard let record = manifest.records[orphanSourcePath] else { continue }
+                try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(record.destinationRelativePath))
+                manifest.records.removeValue(forKey: orphanSourcePath)
+            }
             try saveManifest(manifest)
         }
 
@@ -756,7 +797,12 @@ struct LibrarySync {
         }
     }
 
-    private func destinationRelativePath(
+    /// No-privado y `static` (sin estado de `self`) a proposito: lo
+    /// reusa `DeviceSyncIndexBuilder` (PLAN-general-sync.md §4) para
+    /// saber a que ruta del dispositivo corresponde cada item de la
+    /// biblioteca sin reimplementar este switch -- la unica fuente de
+    /// verdad de "donde va cada tipo de archivo" sigue siendo esta.
+    static func destinationRelativePath(
         for item: LibraryItem,
         musicOrganization: AppPreferences.MusicOrganization,
         musicFilenameFormat: AppPreferences.MusicFilenameFormat
