@@ -135,6 +135,24 @@ final class AuraDeviceProbeTests: XCTestCase {
                                 bsdName: "disk9s1", isFAT32: false)
         XCTAssertFalse(try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: info)).isFAT32)
     }
+
+    // MARK: - Nombre del dispositivo (PLAN-general-sync.md §1.5/§9)
+
+    func testDisplayNameFallsBackToVolumeNameWithoutDeviceCfg() throws {
+        let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
+        XCTAssertNil(device.deviceIdentity)
+        XCTAssertEqual(device.displayName, "AURA")
+    }
+
+    func testDisplayNameUsesTheSavedDeviceNameWhenPresent() throws {
+        try touch(".rockbox/aura/aura.cfg")
+        let identity = DeviceIdentity(deviceID: "abc-123", deviceName: "iPod de Ricardo", updatedAt: Date())
+        try DeviceNameStore.save(identity, volumeRoot: root)
+
+        let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
+        XCTAssertEqual(device.deviceIdentity?.deviceID, "abc-123")
+        XCTAssertEqual(device.displayName, "iPod de Ricardo")
+    }
 }
 
 final class CatalogSummaryReaderTests: XCTestCase {
