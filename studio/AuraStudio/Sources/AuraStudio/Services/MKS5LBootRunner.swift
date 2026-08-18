@@ -12,20 +12,47 @@ struct MKS5LBootRunner {
         let stderr: String
     }
 
-    enum RunError: Error {
+    enum RunError: Error, LocalizedError, Equatable {
         case binaryNotFound
+        /// El binario esta en el bundle pero sin bit de ejecucion
+        /// (ST-029): los assets de un Release de GitHub llegan sin
+        /// permisos y Xcode copia el recurso tal cual. Sin esto,
+        /// `Process.run()` fallaba con "permission denied", el
+        /// sondeo DFU lo tragaba y el instalador se quedaba en
+        /// "Esperando modo DFU..." para siempre con el iPod ya en DFU.
+        case binaryNotExecutable(path: String)
+
+        var errorDescription: String? {
+            switch self {
+            case .binaryNotFound:
+                return "No se encontró la herramienta mks5lboot dentro de Aura Studio."
+            case .binaryNotExecutable(let path):
+                return "La herramienta mks5lboot que trae Aura Studio no tiene permiso de ejecución (\(path)). Vuelve a instalar Aura Studio o, si compilas desde el código, corre scripts/fetch-firmware.sh de nuevo."
+            }
+        }
     }
 
     let executableURL: URL
 
-    init(executableURL: URL? = nil) throws {
+    /// Falla si el binario no existe o no se puede ejecutar -- mejor
+    /// enterarse al crear el runner que descubrirlo por un `Process`
+    /// que nunca arranca.
+    init(executableURL: URL? = nil, fileManager: FileManager = .default) throws {
+        let url: URL
         if let executableURL {
-            self.executableURL = executableURL
+            url = executableURL
         } else if let bundled = BundledArtifacts.shared.url(for: .mks5lboot) {
-            self.executableURL = bundled
+            url = bundled
         } else {
             throw RunError.binaryNotFound
         }
+        guard fileManager.fileExists(atPath: url.path) else {
+            throw RunError.binaryNotFound
+        }
+        guard fileManager.isExecutableFile(atPath: url.path) else {
+            throw RunError.binaryNotExecutable(path: url.path)
+        }
+        self.executableURL = url
     }
 
     @discardableResult

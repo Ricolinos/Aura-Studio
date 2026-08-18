@@ -316,6 +316,43 @@ final class AppPreferences: ObservableObject {
         photoCollections.removeAll { $0 == name }
     }
 
+    // MARK: - Tabla de Canciones (ST-030)
+
+    /// Columnas visibles de la tabla de Canciones, EN ORDEN (Título es
+    /// fija y va aparte). Se editan desde "Opciones de visualización".
+    /// Lista separada por comas, mismo criterio que
+    /// `coverArtProviderOrder`.
+    @Published var musicVisibleColumns: [MusicTableColumn] {
+        didSet {
+            defaults.set(musicVisibleColumns.map(\.rawValue).joined(separator: ","), forKey: Keys.musicVisibleColumns)
+        }
+    }
+
+    /// Criterio y sentido de orden de la tabla de Canciones -- persiste
+    /// para que la tabla vuelva como se dejo (antes el orden se perdia
+    /// al cambiar de seccion).
+    @Published var musicSortField: MusicSortField {
+        didSet { defaults.set(musicSortField.rawValue, forKey: Keys.musicSortField) }
+    }
+
+    @Published var musicSortAscending: Bool {
+        didSet { defaults.set(musicSortAscending, forKey: Keys.musicSortAscending) }
+    }
+
+    /// "Solo favoritos" del menu de encabezado. `false` = "Todas las
+    /// canciones".
+    @Published var musicShowOnlyFavorites: Bool {
+        didSet { defaults.set(musicShowOnlyFavorites, forKey: Keys.musicShowOnlyFavorites) }
+    }
+
+    func toggleMusicColumn(_ column: MusicTableColumn) {
+        if let index = musicVisibleColumns.firstIndex(of: column) {
+            musicVisibleColumns.remove(at: index)
+        } else {
+            musicVisibleColumns.append(column)
+        }
+    }
+
     /// D-203: orden de intento para resolver caratula cuando falta.
     /// Persistido como lista separada por comas (mismo criterio que las
     /// columnas visibles de `MediaSectionView`) porque es un array chico
@@ -414,6 +451,12 @@ final class AppPreferences: ObservableObject {
         static let coverArtProviderOrder = "aura.coverArtProviderOrder"
         static let deezerEnabled = "aura.deezerEnabled"
         static let linkedLibraryFolders = "aura.linkedLibraryFolders"
+        static let musicVisibleColumns = "aura.musicVisibleColumns"
+        static let musicSortField = "aura.musicSortField"
+        static let musicSortAscending = "aura.musicSortAscending"
+        static let musicShowOnlyFavorites = "aura.musicShowOnlyFavorites"
+        /// Clave vieja del menu "+" (D-199) -- solo se lee para migrar.
+        static let legacyMusicExtraColumns = "aura.visibleColumns.music"
     }
 
     init(defaults: UserDefaults = .standard) {
@@ -459,6 +502,21 @@ final class AppPreferences: ObservableObject {
         self.coverArtProviderOrder = storedOrder.isEmpty ? CoverArtProvider.defaultOrder : storedOrder
         self.deezerEnabled = defaults.object(forKey: Keys.deezerEnabled) as? Bool ?? true
         self.linkedLibraryFolders = defaults.stringArray(forKey: Keys.linkedLibraryFolders) ?? []
+        if let storedColumns = defaults.string(forKey: Keys.musicVisibleColumns) {
+            // Lista vacia guardada a proposito = el usuario quito todas
+            // las columnas opcionales (solo queda Título): se respeta.
+            var seen = Set<MusicTableColumn>()
+            self.musicVisibleColumns = storedColumns.split(separator: ",")
+                .compactMap { MusicTableColumn(rawValue: String($0)) }
+                .filter { seen.insert($0).inserted }
+        } else {
+            self.musicVisibleColumns = MusicTableColumn.migratingLegacyExtraColumns(
+                defaults.string(forKey: Keys.legacyMusicExtraColumns))
+        }
+        self.musicSortField = defaults.string(forKey: Keys.musicSortField)
+            .flatMap(MusicSortField.init(rawValue:)) ?? .title
+        self.musicSortAscending = defaults.object(forKey: Keys.musicSortAscending) as? Bool ?? true
+        self.musicShowOnlyFavorites = defaults.object(forKey: Keys.musicShowOnlyFavorites) as? Bool ?? false
         AppLanguageResolver.current = self.language.resolved
     }
 }

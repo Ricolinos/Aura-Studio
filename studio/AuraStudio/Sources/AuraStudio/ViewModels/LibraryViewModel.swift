@@ -17,6 +17,9 @@ final class LibraryViewModel: ObservableObject {
     /// (ver `reenrichOnline`) -- antes esta accion no dejaba ningun
     /// rastro visible en la interfaz.
     @Published private(set) var lastEnrichmentSummary: String?
+    /// ST-032: "Buscar fotos de artistas" en curso (deshabilita el
+    /// boton, muestra el spinner en ArtistsView).
+    @Published private(set) var isFetchingArtistImages = false
     /// Cuantas canciones de la biblioteca YA CARGADA podrian beneficiarse
     /// de `rereadLocalTags` -- `nil` si no corresponde ofrecerlo (ya se
     /// ofrecio antes, o no hay musica). PLAN-studio-ux.md §2/P1: se
@@ -66,7 +69,12 @@ final class LibraryViewModel: ObservableObject {
     /// directorio temporal que macOS podia purgar), y el catalogo
     /// (`biblioteca.json`) hace que la biblioteca sobreviva reinicios de
     /// la app -- con o sin iPod.
-    private(set) var libraryRoot: URL
+    private(set) var libraryRoot: URL {
+        didSet { artistImages = ArtistImageStore(libraryRoot: libraryRoot) }
+    }
+    /// ST-031: fotos de artista de la biblioteca actual (`.portadas/
+    /// artistas/`). Se recrea al cambiar de carpeta.
+    private(set) var artistImages: ArtistImageStore
     private var stagingDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.preparedDirName, isDirectory: true) }
     private var coversDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.coversDirName, isDirectory: true) }
     private var musicDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.musicDirName, isDirectory: true) }
@@ -85,7 +93,9 @@ final class LibraryViewModel: ObservableObject {
         self.enricher = enricher
         let prefs = preferences ?? .shared
         self.preferences = prefs
-        self.libraryRoot = libraryRoot ?? URL(fileURLWithPath: prefs.libraryFolderPath, isDirectory: true)
+        let root = libraryRoot ?? URL(fileURLWithPath: prefs.libraryFolderPath, isDirectory: true)
+        self.libraryRoot = root
+        self.artistImages = ArtistImageStore(libraryRoot: root)
         ensureLibraryStructure()
         migrateLegacyLibraryLayoutIfNeeded()
         loadCatalog()
@@ -335,7 +345,14 @@ final class LibraryViewModel: ObservableObject {
                 // legibles) no se aborta el item entero por esto, el
                 // video ya quedo listo para sincronizar sin poster.
                 let poster = output.deletingPathExtension().appendingPathExtension("jpg")
-                try? transcoder.generatePoster(input: output, output: poster)
+                if let downloaded = items[index].metadata?.coverArtData,
+                   (try? ImageResizer.resizeToLCDOptimal(data: downloaded, destinationURL: poster,
+                                                         maxDimension: Self.videoPosterMaxDimension)) != nil {
+                    // ST-033: el poster descargado (TMDB / fanart.tv)
+                    // manda sobre el fotograma.
+                } else {
+                    try? transcoder.generatePoster(input: output, output: poster)
+                }
 
                 items[index].status = .ready
 
@@ -637,6 +654,166 @@ final class LibraryViewModel: ObservableObject {
         items[index].metadata = metadata
         items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
         persistCatalog()
+    }
+
+    // MARK: - Posters de video (ST-033)
+
+    /// Lado mayor del poster que viaja al iPod (`<video>.jpg` hermano):
+    /// 640 px es el maximo que admite el firmware para imagenes (ver
+    /// CONTRATO-firmware-studio.md, seccion de imagenes).
+    static let videoPosterMaxDimension: CGFloat = 640
+
+    @Published private(set) var isFetchingVideoPosters = false
+
+    /// "Buscar póster en línea" sobre videos: TMDB resuelve el titulo (por
+    /// la categoria del video: Películas → pelicula, Series → serie,
+    /// Videos → ambas), fanart.tv aporta el poster curado si lo tiene,
+    /// TMDB el suyo si no (`VideoArtworkResolver`). El poster queda como
+    /// `coverArtData` del item (se persiste en `.portadas/` como las
+    /// caratulas) y se escribe ya reducido junto al `.mpg` preparado, que
+    /// es exactamente lo que `LibrarySync` copia al iPod. Sin key de
+    /// TMDB no se puede buscar: se dice claro en `lastError`.
+    func fetchVideoPosters(ids: Set<UUID>, resolver: VideoArtworkResolver? = nil) async {
+        guard !isFetchingVideoPosters else { return }
+        isFetchingVideoPosters = true
+        defer { isFetchingVideoPosters = false }
+        lastError = nil
+        let resolver = resolver ?? VideoArtworkResolver()
+        var found = 0
+        var missing: [String] = []
+        var missingKey = false
+        for id in ids {
+            guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .video else { continue }
+            let item = items[index]
+            let rawTitle = item.metadata?.title ?? item.sourceURL.deletingPathExtension().lastPathComponent
+            let kind: VideoArtworkResolver.Kind
+            switch item.category {
+            case MediaCategory.movies.displayName: kind = .movie
+            case MediaCategory.series.displayName: kind = .series
+            default: kind = .unknown
+            }
+            switch await resolver.resolve(rawTitle: rawTitle, kind: kind) {
+            case .success(let result):
+                var metadata = items[index].metadata ?? TrackMetadata()
+                metadata.coverArtData = result.data
+                if metadata.title == nil || metadata.title == rawTitle {
+                    // Un titulo limpio de TMDB en vez del nombre de archivo
+                    // crudo -- solo si el usuario no lo habia editado.
+                    if !items[index].metadataEditedByUser { metadata.title = result.matchedTitle }
+                }
+                if metadata.year == nil { metadata.year = result.year }
+                items[index].metadata = metadata
+                writeVideoPoster(forItemAt: index)
+                found += 1
+            case .failure(.missingTMDBKey):
+                missingKey = true
+            case .failure:
+                missing.append(rawTitle)
+            }
+            if missingKey { break }
+        }
+        if missingKey {
+            lastError = "Para buscar pósters hace falta una API key de TMDB (gratuita). Agrégala en Ajustes › Servicios; con fanart.tv configurado además se usará su póster curado cuando exista."
+        } else {
+            var parts = ["Pósters: \(found) \(found == 1 ? "encontrado" : "encontrados")"]
+            if !missing.isEmpty { parts.append("\(missing.count) sin resultado (\(missing.prefix(3).joined(separator: ", "))\(missing.count > 3 ? "…" : ""))") }
+            lastEnrichmentSummary = parts.joined(separator: ", ") + "."
+        }
+        if found > 0 { persistCatalog() }
+    }
+
+    /// Escribe `<preparado>.jpg` desde `coverArtData` (JPEG baseline,
+    /// lado mayor <= 640) si el video ya esta preparado; si no, se
+    /// escribira al procesarlo (`process(itemAt:)`).
+    private func writeVideoPoster(forItemAt index: Int) {
+        guard let prepared = items[index].preparedURL, let data = items[index].metadata?.coverArtData else { return }
+        let poster = prepared.deletingPathExtension().appendingPathExtension("jpg")
+        do {
+            try ImageResizer.resizeToLCDOptimal(data: data, destinationURL: poster, maxDimension: Self.videoPosterMaxDimension)
+        } catch {
+            lastError = "No se pudo guardar el póster de \(items[index].sourceURL.lastPathComponent): \(error.localizedDescription)"
+        }
+    }
+
+    /// "Quitar póster" de un video: vuelve al fotograma de ffmpeg si se
+    /// puede generar; si no, el video queda sin poster.
+    func clearVideoPoster(id: UUID) {
+        guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .video else { return }
+        var metadata = items[index].metadata ?? TrackMetadata()
+        metadata.coverArtData = nil
+        items[index].metadata = metadata
+        try? FileManager.default.removeItem(at: coversDirectory.appendingPathComponent("\(items[index].id.uuidString).jpg"))
+        if let prepared = items[index].preparedURL {
+            let poster = prepared.deletingPathExtension().appendingPathExtension("jpg")
+            try? FileManager.default.removeItem(at: poster)
+            if let transcoder = try? FFmpegTranscoder() {
+                try? transcoder.generatePoster(input: prepared, output: poster)
+            }
+        }
+        persistCatalog()
+    }
+
+    /// ST-032: descarga fotos de artista para los grupos que aun no la
+    /// tienen (fanart.tv via MusicBrainz, Deezer de respaldo -- ver
+    /// `ArtistImageResolver`). Secuencial a proposito: MusicBrainz limita
+    /// a 1 pedido/s. Publica el resultado en `lastEnrichmentSummary`,
+    /// igual que las demas busquedas en linea.
+    func fetchArtistImages(for artists: [ArtistGroup], resolver: ArtistImageResolver? = nil) async {
+        guard !isFetchingArtistImages else { return }
+        isFetchingArtistImages = true
+        defer { isFetchingArtistImages = false }
+        let resolver = resolver ?? ArtistImageResolver(deezerEnabled: preferences.deezerEnabled)
+        var found = 0
+        var missing = 0
+        var skipped = 0
+        for artist in artists {
+            if artist.isUnknown || artistImages.hasImage(forArtistKey: artist.id) {
+                skipped += 1
+                continue
+            }
+            if let result = await resolver.resolve(artistName: artist.name) {
+                do {
+                    try artistImages.save(result.data, forArtistKey: artist.id)
+                    found += 1
+                } catch {
+                    lastError = "No se pudo guardar la foto de \(artist.name): \(error.localizedDescription)"
+                }
+            } else {
+                missing += 1
+            }
+            objectWillChange.send()
+        }
+        if found == 0 && missing == 0 {
+            lastEnrichmentSummary = skipped > 0
+                ? "Todos los artistas seleccionados ya tienen foto."
+                : "No hay artistas para buscar."
+        } else {
+            var parts = ["Fotos de artista: \(found) \(found == 1 ? "encontrada" : "encontradas")"]
+            if missing > 0 { parts.append("\(missing) sin resultado") }
+            if skipped > 0 { parts.append("\(skipped) ya \(skipped == 1 ? "tenía" : "tenían") foto") }
+            lastEnrichmentSummary = parts.joined(separator: ", ") + "."
+        }
+    }
+
+    /// Favorito (ST-030): marca/desmarca varias canciones de una vez
+    /// (menu contextual, columna "Favorito"). No toca el archivo
+    /// preparado -- vive solo en el catalogo -- asi que no hay que
+    /// re-preparar nada; se persiste y listo.
+    func setFavorite(_ favorite: Bool, forItems ids: Set<UUID>) {
+        var changed = false
+        for index in items.indices where ids.contains(items[index].id) && items[index].kind == .music {
+            var metadata = items[index].metadata ?? TrackMetadata()
+            guard metadata.isFavorite != favorite else { continue }
+            metadata.isFavorite = favorite
+            items[index].metadata = metadata
+            changed = true
+        }
+        if changed { persistCatalog() }
+    }
+
+    func toggleFavorite(id: UUID) {
+        guard let item = items.first(where: { $0.id == id }) else { return }
+        setFavorite(!(item.metadata?.isFavorite ?? false), forItems: [id])
     }
 
     /// "Eliminar carátula" del menu contextual -- solo tiene sentido
@@ -1315,7 +1492,8 @@ final class LibraryViewModel: ObservableObject {
                 preparedRelativePath: item.preparedURL.map { relativePath(of: $0) },
                 coverRelativePath: coverRelative,
                 category: item.category,
-                metadataEditedByUser: item.metadataEditedByUser
+                metadataEditedByUser: item.metadataEditedByUser,
+                addedAt: item.addedAt
             ))
         }
         persisted.playlists = playlists.map {
@@ -1380,7 +1558,8 @@ final class LibraryViewModel: ObservableObject {
                 // conocidos al string de display nuevo y deja pasar
                 // cualquier otro tal cual (ver su doc-comment).
                 category: p.category.map(LibraryPersistenceMapper.liveCategory),
-                metadataEditedByUser: p.metadataEditedByUser ?? false
+                metadataEditedByUser: p.metadataEditedByUser ?? false,
+                addedAt: p.addedAt
             ))
         }
         items = restored

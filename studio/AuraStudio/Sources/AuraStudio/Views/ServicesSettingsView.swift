@@ -134,6 +134,8 @@ struct ServicesSettingsView: View {
             Divider()
             APIKeyServiceRow(service: .fanartTV)
             Divider()
+            APIKeyServiceRow(service: .tmdb)
+            Divider()
             SourceRow(
                 state: .planned,
                 name: "Internet Archive",

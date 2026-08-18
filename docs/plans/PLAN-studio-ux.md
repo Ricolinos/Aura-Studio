@@ -2,12 +2,14 @@
 
 > **ESTADO: ACTIVO — en ejecución.** Aprobado con las 11 recomendaciones
 > (P1–P11); la Fase 2 avanza en cuatro tandas (P11), en orden. **Tanda 1
-> (§2, metadatos) hecha — ver `ST-007` en `DECISIONS.md`.** Pendientes:
-> tanda 2 (§1 — Por álbum/Por artista, `StudioStyle`, Listas plana),
-> tanda 3 (§3/§4 — confianza + `CONTRATO-indice-medios.md` +
-> `media_index.cfg`), tanda 4 (§4b — cola de temas sin iPod, §5 —
-> constructor con tipografías). La fuente de verdad de lo ya decidido es
-> `DECISIONS.md`, no este documento.
+> (§2, metadatos) hecha — ver `ST-007` en `DECISIONS.md`. Tanda 2, parte
+> de vistas (§2.1–2.3: `LibraryGrouping`, Álbumes en cuadrícula, Artistas
+> maestro-detalle, `MusicScope`, búsqueda) hecha como Artistas / Álbumes /
+> Canciones — ver `ST-031` (y `ST-030`/`ST-032` relacionados).** Pendientes:
+> tanda 2 §2.4 (`StudioStyle`, Listas plana), tanda 3 (§3/§4 — confianza +
+> `CONTRATO-indice-medios.md` + `media_index.cfg`), tanda 4 (§4b — cola de
+> temas sin iPod, §5 — constructor con tipografías). La fuente de verdad de
+> lo ya decidido es `DECISIONS.md`, no este documento.
 
 **Fase 1 — investigación y plan (solo lectura). 2026-08-17.** El texto original de este documento (abajo) describe el estado ANTES de aprobarse — se conserva sin editar como el entregable real de la Fase 1; el encabezado de arriba es lo que refleja el progreso actual. Todas las rutas de código son relativas a `studio/AuraStudio/Sources/AuraStudio/` salvo que se indique otra cosa; las del firmware, a `/Volumes/Ricolinos/Codigo/GitHub/Aura/Aura-Firmware/`.
 

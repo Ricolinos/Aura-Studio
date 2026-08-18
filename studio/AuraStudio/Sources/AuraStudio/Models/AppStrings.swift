@@ -20,6 +20,8 @@ enum S {
     case enrichOnline, enrichOnlineDetail
     case general, music, video, photos, extras, installer, noDevice
     case playlists
+    /// ST-031: subsecciones de Música en la barra lateral.
+    case songs, albums, artists
 
     var text: String {
         AppLanguageResolver.current == .english ? english : spanish
@@ -56,6 +58,9 @@ enum S {
         case .installer:           return "Instalador"
         case .noDevice:            return "Sin dispositivo"
         case .playlists:           return "Listas"
+        case .songs:               return "Canciones"
+        case .albums:              return "Álbumes"
+        case .artists:             return "Artistas"
         }
     }
 
@@ -90,6 +95,9 @@ enum S {
         case .installer:           return "Installer"
         case .noDevice:            return "No device"
         case .playlists:           return "Playlists"
+        case .songs:               return "Songs"
+        case .albums:              return "Albums"
+        case .artists:             return "Artists"
         }
     }
 }

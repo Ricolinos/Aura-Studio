@@ -43,8 +43,24 @@ struct EnterDFUView: View {
                 .foregroundStyle(.green)
                 .font(.headline)
         default:
-            Label("Esperando modo DFU...", systemImage: "antenna.radiowaves.left.and.right")
-                .foregroundStyle(.secondary)
+            if let problem = monitor.dfuScannerProblem {
+                // ST-029: si la herramienta de deteccion no puede
+                // correr, decirlo -- "Esperando modo DFU..." con el
+                // iPod ya en DFU era una espera sin salida.
+                VStack(spacing: 8) {
+                    Label("Aura Studio no puede detectar el modo DFU", systemImage: "exclamationmark.triangle.fill")
+                        .foregroundStyle(.orange)
+                        .font(.headline)
+                    Text(problem)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 460)
+                }
+            } else {
+                Label("Esperando modo DFU...", systemImage: "antenna.radiowaves.left.and.right")
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 }

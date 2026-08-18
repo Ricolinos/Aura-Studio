@@ -56,6 +56,10 @@ struct PersistedLibraryItem: Codable {
     /// `loadCatalog()` tiraria el catalogo ENTERO, no solo este campo.
     /// Mismo criterio que `imageRelativePath` de `PersistedPlaylist`.
     var metadataEditedByUser: Bool?
+    /// Fecha en que se agrego a la biblioteca (ST-030, columna/orden
+    /// "Fecha en que se agregó"). Opcional por la misma razon que
+    /// `metadataEditedByUser`: catalogos anteriores no la tienen.
+    var addedAt: Date?
 }
 
 struct PersistedTrackMetadata: Codable {
@@ -72,6 +76,9 @@ struct PersistedTrackMetadata: Codable {
     var musicBrainzReleaseID: String?
     var durationSeconds: Double?
     var rating: Int?
+    /// Opcionales (ST-030): catalogos viejos no los traen.
+    var isFavorite: Bool?
+    var discNumber: Int?
 }
 
 struct PersistedPlaylist: Codable {
@@ -130,7 +137,8 @@ enum LibraryPersistenceMapper {
             trackNumber: m.trackNumber, syncedLyrics: m.syncedLyrics,
             musicBrainzRecordingID: m.musicBrainzRecordingID,
             musicBrainzReleaseID: m.musicBrainzReleaseID,
-            durationSeconds: m.durationSeconds, rating: m.rating)
+            durationSeconds: m.durationSeconds, rating: m.rating,
+            isFavorite: m.isFavorite ? true : nil, discNumber: m.discNumber)
     }
 
     static func liveMetadata(_ persisted: PersistedTrackMetadata?, coverArtData: Data?) -> TrackMetadata? {
@@ -143,7 +151,8 @@ enum LibraryPersistenceMapper {
             syncedLyrics: p.syncedLyrics,
             musicBrainzRecordingID: p.musicBrainzRecordingID,
             musicBrainzReleaseID: p.musicBrainzReleaseID,
-            durationSeconds: p.durationSeconds, rating: p.rating)
+            durationSeconds: p.durationSeconds, rating: p.rating,
+            isFavorite: p.isFavorite ?? false, discNumber: p.discNumber)
     }
 
     /// D-228: catalogos guardados ANTES de este cambio persistian

@@ -52,6 +52,20 @@ verify_checksums() {
   )
 }
 
+# Los assets de un Release de GitHub (y `cp` desde un dist con permisos
+# raros) llegan sin bit de ejecucion. Xcode copia el recurso al bundle
+# tal cual, y un mks5lboot sin +x hace que `Process.run()` falle con
+# "permission denied": el sondeo DFU nunca ve el iPod y el instalador
+# se queda en "Esperando modo DFU..." (ST-018). Restaurarlo aqui es
+# la primera linea; project.yml lo vuelve a asegurar dentro del bundle.
+restore_exec_bit() {
+  local dir="$1"
+  if [[ -f "$dir/mks5lboot" ]]; then
+    chmod 755 "$dir/mks5lboot"
+    echo "==> mks5lboot: bit de ejecucion restaurado"
+  fi
+}
+
 from_dir() {
   local src="$1"
   if [[ ! -d "$src" ]]; then
@@ -71,6 +85,7 @@ from_dir() {
     fi
   done
   verify_checksums "$VENDOR_DIR"
+  restore_exec_bit "$VENDOR_DIR"
   echo "==> Listo: $VENDOR_DIR (modo desarrollo -- sin bootloader-ipod6g.ipod si package_dist.sh no lo produjo)"
 }
 
@@ -90,6 +105,7 @@ from_release() {
   rm -f "$VENDOR_DIR"/*
   gh release download "$tag" --repo Ricolinos/Aura-Firmware --dir "$VENDOR_DIR" --clobber
   verify_checksums "$VENDOR_DIR"
+  restore_exec_bit "$VENDOR_DIR"
   echo "==> Listo: $VENDOR_DIR ($tag)"
 }
 

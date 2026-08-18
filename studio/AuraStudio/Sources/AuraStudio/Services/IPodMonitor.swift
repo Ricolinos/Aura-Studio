@@ -15,6 +15,14 @@ final class IPodMonitor: ObservableObject {
     /// que hay sincronizado). nil mientras no haya un disco montado.
     @Published private(set) var device: AuraDevice?
 
+    /// Por que el sondeo DFU no puede funcionar, cuando no puede
+    /// (ST-029): `mks5lboot` ausente, sin bit de ejecucion, o un
+    /// `Process` que no arranca. nil mientras el escaneo corre bien
+    /// (encuentre o no un iPod). Las pantallas que esperan DFU lo
+    /// muestran en vez de "Esperando modo DFU..." -- esperar algo que
+    /// nunca va a llegar, sin decirlo, era el sintoma exacto reportado.
+    @Published private(set) var dfuScannerProblem: String?
+
     private let diskMonitor = DiskArbitrationMonitor()
     private var dfuPollTask: Task<Void, Never>?
     private var runner: MKS5LBootRunner?
@@ -46,7 +54,12 @@ final class IPodMonitor: ObservableObject {
     private var ejectRequested = false
 
     init() {
-        runner = try? MKS5LBootRunner()
+        do {
+            runner = try MKS5LBootRunner()
+        } catch {
+            runner = nil
+            dfuScannerProblem = error.localizedDescription
+        }
     }
 
     func start() {
@@ -122,7 +135,7 @@ final class IPodMonitor: ObservableObject {
                     try? await Task.sleep(nanoseconds: 1_000_000_000)
                     continue
                 }
-                if let runner = self.runner, let dfu = try? runner.scanDFU() {
+                if let dfu = self.scanDFUReportingProblems() {
                     self.state = .dfuMode(dfu)
                 } else if case .found(let candidate) = IPodDiskIdentifier.identify(from: IPodDiskIdentifier.currentCandidates()) {
                     if self.ejectRequested {
@@ -163,6 +176,24 @@ final class IPodMonitor: ObservableObject {
                 }
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
             }
+        }
+    }
+
+    /// Un escaneo que termina (con o sin iPod) es un escaneo sano.
+    /// Un escaneo que ni siquiera puede correr -- `Process.run()`
+    /// tira, p. ej. "permission denied" por un binario sin bit de
+    /// ejecucion (ST-029) -- se reporta en `dfuScannerProblem` en vez
+    /// de confundirse con "no hay iPod en DFU".
+    private func scanDFUReportingProblems() -> DFUModeInfo? {
+        guard let runner else { return nil }
+        do {
+            let dfu = try runner.scanDFU()
+            if dfuScannerProblem != nil { dfuScannerProblem = nil }
+            return dfu
+        } catch {
+            let message = "No se pudo ejecutar la herramienta de detección DFU (mks5lboot): \(error.localizedDescription)"
+            if dfuScannerProblem != message { dfuScannerProblem = message }
+            return nil
         }
     }
 

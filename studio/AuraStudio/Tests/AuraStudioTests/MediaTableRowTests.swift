@@ -39,4 +39,36 @@ final class MediaTableRowTests: XCTestCase {
         item.metadata = nil
         XCTAssertEqual(MediaTableRow(item: item).title, "Some Track")
     }
+
+    // MARK: - Estado ordenable (ST-030)
+
+    private func statusRow(_ status: LibraryItemStatus, sync: SyncItemState? = nil) -> MediaTableRow {
+        var item = LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/song.mp3"))
+        item.status = status
+        return MediaTableRow(item: item, syncState: sync)
+    }
+
+    func testStatusRankPutsSyncedFirstAndFailedLast() {
+        let ranks = [
+            statusRow(.ready, sync: .synced),
+            statusRow(.ready),
+            statusRow(.ready, sync: .pending),
+            statusRow(.ready, sync: .changedLocally),
+            statusRow(.ready, sync: .modifiedOnDevice),
+            statusRow(.ready, sync: .removedFromDevice),
+            statusRow(.queued),
+            statusRow(.enriching),
+            statusRow(.transcoding(progress: 0.5)),
+            statusRow(.needsReview),
+            statusRow(.failed("x")),
+        ].map(\.statusRank)
+        XCTAssertEqual(ranks, ranks.sorted(), "el rango debe crecer de sincronizado a fallido")
+        XCTAssertEqual(Set(ranks).count, ranks.count, "cada estado tiene su propio rango")
+    }
+
+    func testSortingByStatusRankGroupsPendingBeforeFailed() {
+        let rows = [statusRow(.failed("x")), statusRow(.ready, sync: .pending), statusRow(.ready, sync: .synced)]
+        let sorted = rows.sorted(using: [KeyPathComparator(\.statusRank)])
+        XCTAssertEqual(sorted.map(\.statusRank), [0, 2, 10])
+    }
 }

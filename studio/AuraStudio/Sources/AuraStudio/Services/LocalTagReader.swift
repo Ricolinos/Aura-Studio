@@ -86,6 +86,8 @@ enum LocalTagReader {
                 metadata.year = metadata.year ?? yearPrefix(stringValue(value))
             case "TRCK":
                 metadata.trackNumber = metadata.trackNumber ?? trackNumber(fromSlashed: stringValue(value))
+            case "TPOS":
+                metadata.discNumber = metadata.discNumber ?? trackNumber(fromSlashed: stringValue(value))
             case "TCOM":
                 metadata.composer = metadata.composer ?? stringValue(value)
             case "TCON":
@@ -101,6 +103,8 @@ enum LocalTagReader {
                 metadata.year = metadata.year ?? yearPrefix(stringValue(value))
             case "TRACKNUMBER":
                 metadata.trackNumber = metadata.trackNumber ?? trackNumber(fromSlashed: stringValue(value))
+            case "DISCNUMBER":
+                metadata.discNumber = metadata.discNumber ?? trackNumber(fromSlashed: stringValue(value))
             case "COMPOSER":
                 metadata.composer = metadata.composer ?? stringValue(value)
             case "GENRE":
@@ -125,6 +129,9 @@ enum LocalTagReader {
                 metadata.genre = metadata.genre ?? stringValue(value)
             case "trkn":
                 metadata.trackNumber = metadata.trackNumber ?? trackNumber(fromiTunesData: value as? Data)
+            case "disk":
+                // Mismo layout binario que `trkn` (16 bits: numero en 2-3).
+                metadata.discNumber = metadata.discNumber ?? trackNumber(fromiTunesData: value as? Data)
             default:
                 break
             }
