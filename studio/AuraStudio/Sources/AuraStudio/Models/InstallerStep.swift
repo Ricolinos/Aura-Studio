@@ -111,6 +111,11 @@ enum InstallerError: Error, LocalizedError, Equatable {
     case wrongDiskFormat
     case dfuTimeout
     case checksumMismatch(file: String)
+    /// D-297/D-298 (Aura-Firmware), ST-018: rockbox.zip paso su checksum
+    /// pero le faltan entradas reales (codecs/plugins) -- un Release mal
+    /// empaquetado en el firmware, no un problema de transferencia. Ver
+    /// BundledArtifacts.verifyRockboxTreeContents.
+    case incompleteRockboxTree(missing: [String])
     case processFailed(exitCode: Int32, output: String)
     case missingBundledArtifact(String)
     case diskAmbiguous(count: Int)
@@ -157,6 +162,8 @@ enum InstallerError: Error, LocalizedError, Equatable {
             return "No se detecto el iPod en modo DFU a tiempo. Vuelve a intentar la combinacion de botones."
         case .checksumMismatch(let file):
             return "El archivo \(file) no supero la verificacion de integridad."
+        case .incompleteRockboxTree(let missing):
+            return "El firmware de este Release está incompleto: a rockbox.zip le faltan \(missing.joined(separator: ", ")) -- el iPod quedaría sin video o sin audio. No es un problema de tu conexión; vuelve a intentar más tarde o avisa que este Release salió mal."
         case .processFailed(let exitCode, let output):
             // Sin nombrar herramienta: este error lo producen tanto
             // mks5lboot como la extraccion de archivos (ditto) -- el

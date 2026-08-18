@@ -56,4 +56,49 @@ final class BundledArtifactsTests: XCTestCase {
             }
         }
     }
+
+    /// Arma un rockbox.zip real (con /usr/bin/zip, misma herramienta que
+    /// package_dist.sh) conteniendo exactamente las rutas dadas, para
+    /// probar verifyRockboxTreeContents() sin depender de un Release real.
+    private func makeZipFixture(entries: [String]) throws -> URL {
+        let workDir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: workDir, withIntermediateDirectories: true)
+        for entry in entries {
+            let fileURL = workDir.appendingPathComponent(entry)
+            try FileManager.default.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try "x".write(to: fileURL, atomically: true, encoding: .utf8)
+        }
+        let zipURL = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".zip")
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/zip")
+        process.currentDirectoryURL = workDir
+        process.arguments = ["-rq", zipURL.path, "."]
+        process.standardOutput = Pipe()
+        process.standardError = Pipe()
+        try process.run()
+        process.waitUntilExit()
+        try FileManager.default.removeItem(at: workDir)
+        return zipURL
+    }
+
+    // D-297/D-298 (Aura-Firmware), ST-018: rockbox.zip con checksum
+    // correcto pero sin codecs/rocks reales -- verifyAll() no lo hubiera
+    // detectado antes de este pase (el bug real ocurrido en producción:
+    // el Release publicado tenía el checksum consistente consigo mismo).
+    func testVerifyRockboxTreeContentsPassesWithRequiredEntries() throws {
+        let zipURL = try makeZipFixture(entries: BundledArtifacts.requiredRockboxTreeEntries)
+        defer { try? FileManager.default.removeItem(at: zipURL) }
+        XCTAssertNoThrow(try BundledArtifacts.verifyRockboxTreeContents(at: zipURL))
+    }
+
+    func testVerifyRockboxTreeContentsFailsWithoutRequiredEntries() throws {
+        let zipURL = try makeZipFixture(entries: [".rockbox/fonts/a26-title-20.fnt"])
+        defer { try? FileManager.default.removeItem(at: zipURL) }
+        XCTAssertThrowsError(try BundledArtifacts.verifyRockboxTreeContents(at: zipURL)) { error in
+            guard case InstallerError.incompleteRockboxTree(let missing) = error else {
+                return XCTFail("expected incompleteRockboxTree, got \(error)")
+            }
+            XCTAssertEqual(Set(missing), Set(BundledArtifacts.requiredRockboxTreeEntries))
+        }
+    }
 }
