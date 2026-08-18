@@ -95,7 +95,8 @@ Aura Studio fija **una** versión exacta de firmware por build propio, en `FIRMW
 
 | Aura Studio | Firmware requerido | Versión de este contrato |
 |---|---|---|
-| 0.1.x | (sin Release público todavía — desarrollo con `--from-dir` sobre un checkout local de `Aura-Firmware` @ `main`) | v1 |
+| ≤ 0.1.1 (histórico) | (sin Release público todavía — desarrollo con `--from-dir` sobre un checkout local de `Aura-Firmware` @ `main`) | v1 |
+| 0.1.2 | `v0.2.0-beta` (`FIRMWARE_VERSION`, primer pin real contra un Release público) | v4 |
 
 Regla: un cambio a la sección D (contrato de datos) exige MINOR nuevo en ambos; un cambio de artefactos sin cambio de contrato es PATCH en el firmware y Studio solo actualiza el pin. `AuraUpdateChecker` (Studio) compara por hash SHA-256 del `rockbox.ipod` embebido vs. el instalado — sigue siendo la fuente de verdad para "hay actualización"; la UI puede mostrar además el tag de `FIRMWARE_VERSION` como referencia legible.
 

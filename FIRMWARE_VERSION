@@ -1,0 +1,11 @@
+# Versión de Aura-Firmware que consume esta build de Aura Studio.
+# Ver CONTRATO-firmware-studio.md §E -- se actualiza en cada release
+# de cualquiera de los dos lados. No se edita a mano salvo el `tag=`;
+# los hashes los produce `scripts/fetch-firmware.sh` verificando contra
+# el `checksums.txt` del propio Release.
+
+tag=v0.2.0-beta
+rockbox.ipod=c9123062cac5a9d36530154f4b63800a67c5454a71e38a50dd382bdd56f428a1
+rockbox.zip=61156e16674906be939a2ecce27f744df6f106e7f88dcbf1b265bc11f7b2edb8
+mks5lboot=e846731057348a72bdda101e63929ae530c4b3224959e02a2634dbcffd9102b0
+bootloader-ipod6g.ipod=d263780452fda352a5afa229078b39da5b1a78f3b1930e3dee15cf60d123e348

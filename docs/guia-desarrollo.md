@@ -18,7 +18,7 @@ Este repositorio no compila el firmware ni lee su árbol de fuentes — consume 
 scripts/fetch-firmware.sh
 ```
 
-Descarga el Release fijado en `FIRMWARE_VERSION` y verifica sus checksums. **Mientras no exista un Release público** (estado actual), usa el modo de desarrollo apuntando a un checkout local de `Aura-Firmware` donde ya hayas corrido `firmware/tools/package_dist.sh`:
+Descarga el Release fijado en `FIRMWARE_VERSION` y verifica sus checksums. Para probar contra un checkout local sin publicar un Release nuevo (desarrollo del propio firmware, sin tocar el pin), usa el modo `--from-dir` apuntando a un checkout local de `Aura-Firmware` donde ya hayas corrido `firmware/tools/package_dist.sh`:
 
 ```bash
 scripts/fetch-firmware.sh --from-dir /ruta/a/Aura-Firmware/firmware/dist
