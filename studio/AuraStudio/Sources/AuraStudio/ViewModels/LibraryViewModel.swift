@@ -860,6 +860,20 @@ final class LibraryViewModel: ObservableObject {
                     ? "Ya estaba todo sincronizado, no habia nada nuevo.\(playlistsNote)"
                     : "Se copiaron \(result.filesCopied) de \(allReady.count) archivo(s). El indice de la biblioteca se va a reconstruir la proxima vez que arranque Aura.\(playlistsNote)"
             }
+            // PARTE 1A (PLAN-sync-media-hardening.md): antes, un solo
+            // archivo con nombre invalido para FAT32 abortaba sync()
+            // entero -- ahora esos archivos quedan en
+            // `result.failures` y el resto de la biblioteca se
+            // sincroniza igual. Se avisan aparte (sin tapar
+            // `lastSyncSummary`, que sigue reportando lo que SI se
+            // copio) para que el usuario sepa que hay algo pendiente de
+            // revisar, no que "no pasó nada".
+            if !result.failures.isEmpty {
+                let shown = result.failures.prefix(5)
+                let list = shown.map { "• \($0.destinationRelativePath): \($0.message)" }.joined(separator: "\n")
+                let more = result.failures.count > shown.count ? "\n… y \(result.failures.count - shown.count) más." : ""
+                lastError = "\(result.failures.count) archivo(s) no se pudieron copiar (el resto de la biblioteca sí se sincronizó):\n\(list)\(more)"
+            }
         } catch {
             // El mensaje de Cocoa viene en ingles y sin contexto ("You
             // can't save the file X because the volume is read only"):

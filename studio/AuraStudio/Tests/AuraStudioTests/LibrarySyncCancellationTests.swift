@@ -107,14 +107,26 @@ final class LibrarySyncCancellationTests: XCTestCase {
 
     // MARK: - Desconexion / fallo real a mitad de sync
 
-    func testUnexpectedFailureMidSyncPreservesAlreadyCopiedFilesAndMarker() throws {
+    // PLAN-sync-media-hardening.md PARTE 1A: visto en produccion, un
+    // solo archivo con nombre invalido para FAT32/msdosfs abortaba
+    // sync() entero (`throw` sin capturar en el loop) -- lo copiado
+    // ANTES del archivo problematico ya estaba en el disco, pero
+    // `finalize` (portadas, resumen, marcador del firmware) nunca
+    // corria, asi que Studio seguia mostrando "Todavia no
+    // sincronizaste" y el firmware "Aun no te has sincronizado". Este
+    // test documentaba ese comportamiento como el esperado; ahora
+    // documenta el arreglo: la falla de UN archivo se registra en
+    // `result.failures` y el resto del plan (y el cierre del batch)
+    // sigue de largo.
+    func testUnexpectedFailureMidSyncIsRecordedAsFailureAndRestOfSyncContinues() throws {
         let itemA = try musicItem(title: "Song A", artist: "Queen", album: "A Night at the Opera")
         // Bloqueo deliberado: un archivo REGULAR (no carpeta) en la
         // ruta donde el segundo item necesitaria crear un directorio --
         // `createDirectory` falla con un error real, exactamente el
-        // tipo de fallo de I/O que produce una desconexion fisica a
-        // mitad de copia (mismo camino de codigo: una excepcion real,
-        // no una cancelacion deliberada).
+        // tipo de fallo de I/O que produce un archivo corrupto o un
+        // nombre invalido (mismo camino de codigo que una desconexion
+        // fisica a mitad de copia: una excepcion real, no una
+        // cancelacion deliberada).
         let itemB = try musicItem(title: "Song B", artist: "Beatles", album: "Abbey Road")
         let blockingPath = fakeIPod.appendingPathComponent("Music/Beatles")
         try FileManager.default.createDirectory(at: fakeIPod.appendingPathComponent("Music"), withIntermediateDirectories: true)
@@ -122,9 +134,13 @@ final class LibrarySyncCancellationTests: XCTestCase {
 
         let sync = LibrarySync(volumeRoot: fakeIPod)
 
-        XCTAssertThrowsError(try sync.sync(items: [itemA, itemB])) { _ in }
+        let result = try sync.sync(items: [itemA, itemB])
 
-        XCTAssertTrue(sync.hasInProgressMarker(), "una falla real (no una cancelacion) nunca llega a finalize -- el marcador queda")
+        XCTAssertEqual(result.filesCopied, 1, "Song A se copio bien pese a que Song B fallo")
+        XCTAssertEqual(result.failures.count, 1)
+        XCTAssertEqual(result.failures.first?.sourcePath, itemB.sourceURL.path)
+        XCTAssertFalse(result.wasCancelled, "una falla real de un solo archivo no es una cancelacion")
+        XCTAssertFalse(sync.hasInProgressMarker(), "el sync SI llego a finalize -- el resto del plan se proceso pese a la falla de Song B")
 
         let songADestination = fakeIPod.appendingPathComponent("Music/Queen/A Night at the Opera/Song A.mp3")
         XCTAssertTrue(FileManager.default.fileExists(atPath: songADestination.path), "lo copiado ANTES de la falla sobrevive")
@@ -132,15 +148,15 @@ final class LibrarySyncCancellationTests: XCTestCase {
         XCTAssertEqual(manifest.records.count, 1, "el manifiesto se guarda por archivo -- el primero quedo registrado aunque el segundo haya fallado")
         XCTAssertFalse(hasAnyTempFile(under: fakeIPod), "el intento fallido de crear el directorio nunca llego a abrir un temporal")
 
-        // "Reconectar": el obstaculo desaparece y se vuelve a sincronizar
-        // -- el sync siguiente barre temporales huerfanos (no hay
-        // ninguno en este caso) y retoma desde donde quedo sin
-        // recopiar lo que ya estaba.
+        // "Reconectar": el obstaculo desaparece y se vuelve a
+        // sincronizar -- Song B nunca quedo en el manifiesto, asi que
+        // este segundo intento lo recoge sin recopiar Song A.
         try FileManager.default.removeItem(at: blockingPath)
-        let result = try sync.sync(items: [itemA, itemB])
+        let retryResult = try sync.sync(items: [itemA, itemB])
 
-        XCTAssertEqual(result.filesCopied, 1, "Song A ya estaba sincronizada, solo Song B hacia falta")
-        XCTAssertFalse(result.wasCancelled)
+        XCTAssertEqual(retryResult.filesCopied, 1, "Song A ya estaba sincronizada, solo Song B hacia falta")
+        XCTAssertTrue(retryResult.failures.isEmpty)
+        XCTAssertFalse(retryResult.wasCancelled)
         XCTAssertFalse(sync.hasInProgressMarker())
         let songBDestination = fakeIPod.appendingPathComponent("Music/Beatles/Abbey Road/Song B.mp3")
         XCTAssertTrue(FileManager.default.fileExists(atPath: songBDestination.path))

@@ -8,10 +8,32 @@ enum FilenameGuesser {
     static func guess(from url: URL) -> (artist: String?, title: String?) {
         let base = url.deletingPathExtension().lastPathComponent
         let parts = base.components(separatedBy: " - ")
-        if parts.count >= 2 {
+        if parts.count >= 2, !looksLikeTrackNumberPrefix(parts[0]) {
             return (parts[0].trimmingCharacters(in: .whitespaces), parts.dropFirst().joined(separator: " - ").trimmingCharacters(in: .whitespaces))
         }
         return (nil, base.trimmingCharacters(in: .whitespaces))
+    }
+
+    /// PLAN-sync-media-hardening.md PARTE 1A: el primer segmento antes de
+    /// " - " a veces es en realidad el NUMERO DE PISTA pegado al nombre
+    /// del archivo ("1 - Titulo.m4a", "01 Lil Dub Chefin - Version...
+    /// m4a"), no el artista -- visto en produccion: decenas de canciones
+    /// sin tags de artista terminaron en carpetas del iPod literalmente
+    /// llamadas "1".."20" (una por numero de pista, mezclando canciones
+    /// de artistas distintos), en vez de "Desconocido". Un segmento que
+    /// arranca con 1-3 digitos seguidos de un espacio (o que es
+    /// puramente numerico) no es un nombre de artista plausible --
+    /// heuristica imperfecta a proposito (un artista real como "21
+    /// Savage" cae a "Desconocido" en vez de a su nombre), pero muchisimo
+    /// mejor que agrupar decenas de artistas bajo una carpeta "1".
+    static func looksLikeTrackNumberPrefix(_ segment: String) -> Bool {
+        let trimmed = segment.trimmingCharacters(in: .whitespaces)
+        guard let firstNonDigitIndex = trimmed.firstIndex(where: { !$0.isNumber }) else {
+            return !trimmed.isEmpty
+        }
+        let digitCount = trimmed.distance(from: trimmed.startIndex, to: firstNonDigitIndex)
+        guard digitCount >= 1 && digitCount <= 3 else { return false }
+        return trimmed[firstNonDigitIndex] == " "
     }
 }
 

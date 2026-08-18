@@ -161,6 +161,25 @@ struct SyncResult: Equatable {
     /// `docs/contracts/library-layout-v1.md` SS4). `false` si no se toco
     /// ningun archivo de contenido (nada que reconstruir).
     var syncMarkerWritten: Bool = false
+    /// PLAN-sync-media-hardening.md PARTE 1A: archivos que no se
+    /// pudieron copiar (nombre invalido para FAT32, corrupto, etc.) --
+    /// el resto del plan sigue de largo, y `finalize` (portadas,
+    /// playlists, resumen, marcador) corre igual con lo que SI se
+    /// copio. Antes, el primer error de un solo archivo abortaba
+    /// `sync()` entero via `throw` -- lo copiado hasta ahi quedaba en el
+    /// disco (por eso el uso real subia) pero `writeSummary`/
+    /// `writeAlbumCovers`/`writeSyncMarkerIfNeeded` nunca corrian, asi
+    /// que Studio seguia mostrando "Todavia no sincronizaste" y "Otro"
+    /// en vez de "Musica", y el firmware seguia sin ver la sincronizacion.
+    var failures: [SyncFailure] = []
+}
+
+/// Un item que `SyncPlanner` marco `.copy` pero que no se pudo escribir
+/// en el disco del iPod -- ver nota en `SyncResult.failures`.
+struct SyncFailure: Equatable {
+    let sourcePath: String
+    let destinationRelativePath: String
+    let message: String
 }
 
 /// D-217: progreso incremental de un sync en curso, publicado por
@@ -386,6 +405,7 @@ struct LibrarySync {
         manifest.contractVersion = SyncManifest.currentContractVersion
         var copied = 0
         var wasCancelled = false
+        var failures: [SyncFailure] = []
         var destinationByItemID: [UUID: String] = [:]
         var summary = CatalogSummary()
         // ST-012: que secciones del iPod toco ESTE sync (copias,
@@ -489,58 +509,77 @@ struct LibrarySync {
                 break planLoop
             }
 
-            if let stale = planItem.staleDestinationRelativePath {
-                try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(stale))
-                removeLyricsSidecar(forDeviceRelativePath: stale)
-                markTouched(deviceRelativePath: stale)
-            }
-
-            let destination = volumeRoot.appendingPathComponent(planItem.destinationRelativePath)
-            try fileManager.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
-
-            let outcome = try copyFileTransactionally(from: prepared, to: destination, isCancelled: isCancelled)
-            guard case .completed = outcome else {
-                wasCancelled = true
-                break planLoop
-            }
-            copied += 1
-            markTouched(kind: item.kind)
-            onProgress(copied, toCopy)
-
-            // Fase 24: el poster de un video (`<video>.jpg`, generado
-            // por FFmpegTranscoder.generatePoster) viaja pegado a su
-            // video -- no tiene entrada propia en el manifiesto, sigue
-            // el mismo diferencial que el archivo principal (D-066).
-            // Best-effort (no transaccional): es contenido derivado y
-            // regenerable, no dato del usuario -- ver PLAN-general-sync.md §8.1.
-            if item.kind == .video {
-                let posterSource = prepared.deletingPathExtension().appendingPathExtension("jpg")
-                if fileManager.fileExists(atPath: posterSource.path) {
-                    let posterDestination = destination.deletingPathExtension().appendingPathExtension("jpg")
-                    if fileManager.fileExists(atPath: posterDestination.path) {
-                        try? fileManager.removeItem(at: posterDestination)
-                    }
-                    try? fileManager.copyItem(at: posterSource, to: posterDestination)
+            // PARTE 1A (PLAN-sync-media-hardening.md): un archivo con
+            // nombre invalido para FAT32/msdosfs (visto en produccion:
+            // ruta con un componente de artista de ~90 caracteres --
+            // el credito de composicion completo metido en el tag,
+            // sin ningun limite de largo aplicado -- ver
+            // PathSanitizer.sanitize) u otra falla de un solo archivo
+            // (corrupto, permisos, desconexion parcial) YA NO aborta el
+            // resto del plan: se registra en `failures` y el loop sigue
+            // con el siguiente item. `finalize` (portadas, playlists,
+            // resumen, marcador del firmware) corre siempre despues del
+            // loop, con o sin fallos parciales -- antes, un `throw` aca
+            // saltaba TODO eso, aunque el 99% de los archivos ya
+            // estuvieran copiados en el disco (ver SyncResult.failures).
+            do {
+                if let stale = planItem.staleDestinationRelativePath {
+                    try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(stale))
+                    removeLyricsSidecar(forDeviceRelativePath: stale)
+                    markTouched(deviceRelativePath: stale)
                 }
-            }
 
-            let attrs = try fileManager.attributesOfItem(atPath: prepared.path)
-            let destAttrs = try fileManager.attributesOfItem(atPath: destination.path)
-            manifest.records[planItem.sourcePath] = SyncRecord(
-                sourcePath: planItem.sourcePath,
-                sourceSize: (attrs[.size] as? Int64) ?? 0,
-                sourceModifiedAt: (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0,
-                destinationRelativePath: planItem.destinationRelativePath,
-                destinationSize: (destAttrs[.size] as? Int64) ?? 0,
-                destinationModifiedAt: (destAttrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0,
-                writtenBy: installationID,
-                syncedAt: Date().timeIntervalSince1970
-            )
-            // §8.1: el manifiesto se guarda tras CADA archivo (antes
-            // solo al final) -- es lo que hace que pausar, cancelar, o
-            // una desconexion fisica conserven el progreso ya copiado
-            // en vez de perderlo si el resto del sync no llega a correr.
-            try saveManifest(manifest)
+                let destination = volumeRoot.appendingPathComponent(planItem.destinationRelativePath)
+                try fileManager.createDirectory(at: destination.deletingLastPathComponent(), withIntermediateDirectories: true)
+
+                let outcome = try copyFileTransactionally(from: prepared, to: destination, isCancelled: isCancelled)
+                guard case .completed = outcome else {
+                    wasCancelled = true
+                    break planLoop
+                }
+                copied += 1
+                markTouched(kind: item.kind)
+                onProgress(copied, toCopy)
+
+                // Fase 24: el poster de un video (`<video>.jpg`, generado
+                // por FFmpegTranscoder.generatePoster) viaja pegado a su
+                // video -- no tiene entrada propia en el manifiesto, sigue
+                // el mismo diferencial que el archivo principal (D-066).
+                // Best-effort (no transaccional): es contenido derivado y
+                // regenerable, no dato del usuario -- ver PLAN-general-sync.md §8.1.
+                if item.kind == .video {
+                    let posterSource = prepared.deletingPathExtension().appendingPathExtension("jpg")
+                    if fileManager.fileExists(atPath: posterSource.path) {
+                        let posterDestination = destination.deletingPathExtension().appendingPathExtension("jpg")
+                        if fileManager.fileExists(atPath: posterDestination.path) {
+                            try? fileManager.removeItem(at: posterDestination)
+                        }
+                        try? fileManager.copyItem(at: posterSource, to: posterDestination)
+                    }
+                }
+
+                let attrs = try fileManager.attributesOfItem(atPath: prepared.path)
+                let destAttrs = try fileManager.attributesOfItem(atPath: destination.path)
+                manifest.records[planItem.sourcePath] = SyncRecord(
+                    sourcePath: planItem.sourcePath,
+                    sourceSize: (attrs[.size] as? Int64) ?? 0,
+                    sourceModifiedAt: (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0,
+                    destinationRelativePath: planItem.destinationRelativePath,
+                    destinationSize: (destAttrs[.size] as? Int64) ?? 0,
+                    destinationModifiedAt: (destAttrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0,
+                    writtenBy: installationID,
+                    syncedAt: Date().timeIntervalSince1970
+                )
+                // §8.1: el manifiesto se guarda tras CADA archivo (antes
+                // solo al final) -- es lo que hace que pausar, cancelar, o
+                // una desconexion fisica conserven el progreso ya copiado
+                // en vez de perderlo si el resto del sync no llega a correr.
+                try saveManifest(manifest)
+            } catch {
+                failures.append(SyncFailure(sourcePath: planItem.sourcePath,
+                                             destinationRelativePath: planItem.destinationRelativePath,
+                                             message: error.localizedDescription))
+            }
         }
 
         // Hoja de conflictos, "Quitar del iPod los N elementos que ya
@@ -605,7 +644,7 @@ struct LibrarySync {
         let remaining = wasCancelled ? max(toCopy - copied, 0) : 0
         return SyncResult(filesCopied: copied, playlistsWritten: playlistsWritten,
                            wasCancelled: wasCancelled, filesRemaining: remaining,
-                           syncMarkerWritten: markerWritten)
+                           syncMarkerWritten: markerWritten, failures: failures)
     }
 
     /// Ver contrato SS4. Si ya habia un marcador (el firmware no alcanzo
