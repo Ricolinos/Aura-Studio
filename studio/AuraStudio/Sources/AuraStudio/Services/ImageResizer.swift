@@ -35,6 +35,22 @@ struct ImageResizer {
         guard let source = CGImageSourceCreateWithURL(sourceURL as CFURL, nil) else {
             throw ResizeError.cannotReadImage
         }
+        try write(source: source, destinationURL: destinationURL, maxDimension: maxDimension, quality: quality)
+    }
+
+    /// ST-022: misma conversion, desde bytes en memoria (poster de video
+    /// descargado). Salida JPEG baseline con el lado mayor <= `maxDimension`
+    /// (640 = maximo que admite el firmware, CONTRATO-firmware-studio.md).
+    static func resizeToLCDOptimal(data: Data, destinationURL: URL,
+                                    maxDimension: CGFloat = maxDimension, quality: CGFloat = 0.85) throws {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
+            throw ResizeError.cannotReadImage
+        }
+        try write(source: source, destinationURL: destinationURL, maxDimension: maxDimension, quality: quality)
+    }
+
+    private static func write(source: CGImageSource, destinationURL: URL,
+                              maxDimension: CGFloat, quality: CGFloat) throws {
 
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,

@@ -314,7 +314,14 @@ final class LibraryViewModel: ObservableObject {
                 // legibles) no se aborta el item entero por esto, el
                 // video ya quedo listo para sincronizar sin poster.
                 let poster = output.deletingPathExtension().appendingPathExtension("jpg")
-                try? transcoder.generatePoster(input: output, output: poster)
+                if let downloaded = items[index].metadata?.coverArtData,
+                   (try? ImageResizer.resizeToLCDOptimal(data: downloaded, destinationURL: poster,
+                                                         maxDimension: Self.videoPosterMaxDimension)) != nil {
+                    // ST-022: el poster descargado (TMDB / fanart.tv)
+                    // manda sobre el fotograma.
+                } else {
+                    try? transcoder.generatePoster(input: output, output: poster)
+                }
 
                 items[index].status = .ready
 
@@ -568,6 +575,103 @@ final class LibraryViewModel: ObservableObject {
         metadata.rating = rating.map { max(0, min(5, $0)) }
         items[index].metadata = metadata
         items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
+        persistCatalog()
+    }
+
+    // MARK: - Posters de video (ST-022)
+
+    /// Lado mayor del poster que viaja al iPod (`<video>.jpg` hermano):
+    /// 640 px es el maximo que admite el firmware para imagenes (ver
+    /// CONTRATO-firmware-studio.md, seccion de imagenes).
+    static let videoPosterMaxDimension: CGFloat = 640
+
+    @Published private(set) var isFetchingVideoPosters = false
+
+    /// "Buscar póster en línea" sobre videos: TMDB resuelve el titulo (por
+    /// la categoria del video: Películas → pelicula, Series → serie,
+    /// Videos → ambas), fanart.tv aporta el poster curado si lo tiene,
+    /// TMDB el suyo si no (`VideoArtworkResolver`). El poster queda como
+    /// `coverArtData` del item (se persiste en `.portadas/` como las
+    /// caratulas) y se escribe ya reducido junto al `.mpg` preparado, que
+    /// es exactamente lo que `LibrarySync` copia al iPod. Sin key de
+    /// TMDB no se puede buscar: se dice claro en `lastError`.
+    func fetchVideoPosters(ids: Set<UUID>, resolver: VideoArtworkResolver? = nil) async {
+        guard !isFetchingVideoPosters else { return }
+        isFetchingVideoPosters = true
+        defer { isFetchingVideoPosters = false }
+        lastError = nil
+        let resolver = resolver ?? VideoArtworkResolver()
+        var found = 0
+        var missing: [String] = []
+        var missingKey = false
+        for id in ids {
+            guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .video else { continue }
+            let item = items[index]
+            let rawTitle = item.metadata?.title ?? item.sourceURL.deletingPathExtension().lastPathComponent
+            let kind: VideoArtworkResolver.Kind
+            switch item.category {
+            case MediaCategory.movies.displayName: kind = .movie
+            case MediaCategory.series.displayName: kind = .series
+            default: kind = .unknown
+            }
+            switch await resolver.resolve(rawTitle: rawTitle, kind: kind) {
+            case .success(let result):
+                var metadata = items[index].metadata ?? TrackMetadata()
+                metadata.coverArtData = result.data
+                if metadata.title == nil || metadata.title == rawTitle {
+                    // Un titulo limpio de TMDB en vez del nombre de archivo
+                    // crudo -- solo si el usuario no lo habia editado.
+                    if !items[index].metadataEditedByUser { metadata.title = result.matchedTitle }
+                }
+                if metadata.year == nil { metadata.year = result.year }
+                items[index].metadata = metadata
+                writeVideoPoster(forItemAt: index)
+                found += 1
+            case .failure(.missingTMDBKey):
+                missingKey = true
+            case .failure:
+                missing.append(rawTitle)
+            }
+            if missingKey { break }
+        }
+        if missingKey {
+            lastError = "Para buscar pósters hace falta una API key de TMDB (gratuita). Agrégala en Ajustes › Servicios; con fanart.tv configurado además se usará su póster curado cuando exista."
+        } else {
+            var parts = ["Pósters: \(found) \(found == 1 ? "encontrado" : "encontrados")"]
+            if !missing.isEmpty { parts.append("\(missing.count) sin resultado (\(missing.prefix(3).joined(separator: ", "))\(missing.count > 3 ? "…" : ""))") }
+            lastEnrichmentSummary = parts.joined(separator: ", ") + "."
+        }
+        if found > 0 { persistCatalog() }
+    }
+
+    /// Escribe `<preparado>.jpg` desde `coverArtData` (JPEG baseline,
+    /// lado mayor <= 640) si el video ya esta preparado; si no, se
+    /// escribira al procesarlo (`process(itemAt:)`).
+    private func writeVideoPoster(forItemAt index: Int) {
+        guard let prepared = items[index].preparedURL, let data = items[index].metadata?.coverArtData else { return }
+        let poster = prepared.deletingPathExtension().appendingPathExtension("jpg")
+        do {
+            try ImageResizer.resizeToLCDOptimal(data: data, destinationURL: poster, maxDimension: Self.videoPosterMaxDimension)
+        } catch {
+            lastError = "No se pudo guardar el póster de \(items[index].sourceURL.lastPathComponent): \(error.localizedDescription)"
+        }
+    }
+
+    /// "Quitar póster" de un video: vuelve al fotograma de ffmpeg si se
+    /// puede generar; si no, el video queda sin poster.
+    func clearVideoPoster(id: UUID) {
+        guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .video else { return }
+        var metadata = items[index].metadata ?? TrackMetadata()
+        metadata.coverArtData = nil
+        items[index].metadata = metadata
+        try? FileManager.default.removeItem(at: coversDirectory.appendingPathComponent("\(items[index].id.uuidString).jpg"))
+        if let prepared = items[index].preparedURL {
+            let poster = prepared.deletingPathExtension().appendingPathExtension("jpg")
+            try? FileManager.default.removeItem(at: poster)
+            if let transcoder = try? FFmpegTranscoder() {
+                try? transcoder.generatePoster(input: prepared, output: poster)
+            }
+        }
         persistCatalog()
     }
 

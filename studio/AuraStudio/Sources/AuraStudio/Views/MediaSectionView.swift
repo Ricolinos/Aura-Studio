@@ -157,7 +157,7 @@ struct MediaSectionView: View {
                 // titulos de columna solo aceptan texto), asi que esta
                 // franja angosta encima de la tabla, alineada a la
                 // derecha, es lo mas cerca que se puede quedar.
-                if kind == .music { enrichmentBanner }
+                if kind == .music || kind == .video { enrichmentBanner }
                 if kind == .music { musicHeaderMenuBar } else { columnsBar }
                 if items.isEmpty {
                     emptyFilteredState
@@ -743,6 +743,21 @@ struct MediaSectionView: View {
                 }
             }
 
+            Divider()
+        }
+
+        if kind == .video, !targetItems.isEmpty {
+            // ST-022: posters de peliculas/series (TMDB + fanart.tv).
+            Button("Buscar póster en línea") {
+                runEnrichment(busyText: "Buscando pósters en línea...") {
+                    await viewModel.fetchVideoPosters(ids: Set(targetItems.map(\.id)))
+                }
+            }
+            .help("Busca el póster en TMDB y fanart.tv (necesita la API key de TMDB en Ajustes › Servicios) y lo copia junto al video en el iPod")
+            Button("Quitar póster") {
+                for item in targetItems { viewModel.clearVideoPoster(id: item.id) }
+            }
+            .disabled(!targetItems.contains { $0.metadata?.coverArtData != nil })
             Divider()
         }
 

@@ -12,18 +12,24 @@ import Security
 /// desde `LibraryEnricher.resolveCoverArt`).
 enum APIKeyService: String, CaseIterable, Identifiable {
     case fanartTV
+    /// ST-022: The Movie Database. Resuelve título → ID de película /
+    /// serie (lo que fanart.tv necesita para buscar pósters) y trae su
+    /// propio póster de respaldo.
+    case tmdb
 
     var id: String { rawValue }
 
     var displayName: String {
         switch self {
         case .fanartTV: return "fanart.tv"
+        case .tmdb: return "TMDB (The Movie Database)"
         }
     }
 
     var summary: String {
         switch self {
-        case .fanartTV: return "Caratulas y arte de disco en alta resolucion (~1000px), varias imagenes por album."
+        case .fanartTV: return "Caratulas y arte de disco en alta resolucion (~1000px), fotos de artista, y posters curados de peliculas y series (estos ultimos necesitan tambien la key de TMDB para encontrar el titulo)."
+        case .tmdb: return "Posters de peliculas y series (biblioteca de Video). Encuentra el titulo y su identificador; con fanart.tv configurado se prefiere el poster curado de alli, si no, el de TMDB."
         }
     }
 
@@ -34,12 +40,15 @@ enum APIKeyService: String, CaseIterable, Identifiable {
         switch self {
         case .fanartTV:
             return "Crea una cuenta gratuita en fanart.tv, entra a tu perfil y copia la \"Personal API Key\" (no la de proyecto)."
+        case .tmdb:
+            return "Crea una cuenta gratuita en themoviedb.org, ve a Ajustes › API y copia la \"Clave de la API\" (la corta, v3), no el token de lectura."
         }
     }
 
     var guideURL: URL {
         switch self {
         case .fanartTV: return URL(string: "https://fanart.tv/get-an-api-key/")!
+        case .tmdb: return URL(string: "https://www.themoviedb.org/settings/api")!
         }
     }
 }
