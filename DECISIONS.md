@@ -401,3 +401,11 @@ De ahí en cascada, **sin bugs adicionales**: `DeviceGeneralView.swift` muestra 
 **Hecho**: `FIRMWARE_VERSION` → `tag=v0.2.3-beta` + los 4 hashes, verificados dos veces por separado (checksums.txt del Release público + `fetch-firmware.sh` en modo Release real, los 4 `shasum -c` dieron `OK`). `Generated/AuraPalette.swift` sin cambios. `CONTRATO-firmware-studio.md` §E: fila nueva, sincronizada con `Aura-Firmware` (`cmp` limpio).
 
 **Verificación**: `swift build` limpio. `swift test` **399/399**.
+
+## ST-025 — Pin a `v0.2.4-beta`
+
+**Encargo**: cross-repo con `Aura-Firmware` D-303 (corrección: el modo "cubrir" ahora sí agranda más allá del tamaño de origen) — PATCH, sin cambio de contrato.
+
+**Hecho**: `FIRMWARE_VERSION` → `tag=v0.2.4-beta` + los 4 hashes, verificados dos veces por separado. `Generated/AuraPalette.swift` sin cambios. `CONTRATO-firmware-studio.md` §E: fila nueva, sincronizada con `Aura-Firmware` (`cmp` limpio).
+
+**Verificación**: `swift build` limpio. `swift test` **399/399**.
