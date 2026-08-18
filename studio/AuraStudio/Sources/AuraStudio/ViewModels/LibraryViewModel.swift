@@ -17,7 +17,7 @@ final class LibraryViewModel: ObservableObject {
     /// (ver `reenrichOnline`) -- antes esta accion no dejaba ningun
     /// rastro visible en la interfaz.
     @Published private(set) var lastEnrichmentSummary: String?
-    /// ST-021: "Buscar fotos de artistas" en curso (deshabilita el
+    /// ST-032: "Buscar fotos de artistas" en curso (deshabilita el
     /// boton, muestra el spinner en ArtistsView).
     @Published private(set) var isFetchingArtistImages = false
     /// Cuantas canciones de la biblioteca YA CARGADA podrian beneficiarse
@@ -72,7 +72,7 @@ final class LibraryViewModel: ObservableObject {
     private(set) var libraryRoot: URL {
         didSet { artistImages = ArtistImageStore(libraryRoot: libraryRoot) }
     }
-    /// ST-020: fotos de artista de la biblioteca actual (`.portadas/
+    /// ST-031: fotos de artista de la biblioteca actual (`.portadas/
     /// artistas/`). Se recrea al cambiar de carpeta.
     private(set) var artistImages: ArtistImageStore
     private var stagingDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.preparedDirName, isDirectory: true) }
@@ -317,7 +317,7 @@ final class LibraryViewModel: ObservableObject {
                 if let downloaded = items[index].metadata?.coverArtData,
                    (try? ImageResizer.resizeToLCDOptimal(data: downloaded, destinationURL: poster,
                                                          maxDimension: Self.videoPosterMaxDimension)) != nil {
-                    // ST-022: el poster descargado (TMDB / fanart.tv)
+                    // ST-033: el poster descargado (TMDB / fanart.tv)
                     // manda sobre el fotograma.
                 } else {
                     try? transcoder.generatePoster(input: output, output: poster)
@@ -578,7 +578,7 @@ final class LibraryViewModel: ObservableObject {
         persistCatalog()
     }
 
-    // MARK: - Posters de video (ST-022)
+    // MARK: - Posters de video (ST-033)
 
     /// Lado mayor del poster que viaja al iPod (`<video>.jpg` hermano):
     /// 640 px es el maximo que admite el firmware para imagenes (ver
@@ -675,7 +675,7 @@ final class LibraryViewModel: ObservableObject {
         persistCatalog()
     }
 
-    /// ST-021: descarga fotos de artista para los grupos que aun no la
+    /// ST-032: descarga fotos de artista para los grupos que aun no la
     /// tienen (fanart.tv via MusicBrainz, Deezer de respaldo -- ver
     /// `ArtistImageResolver`). Secuencial a proposito: MusicBrainz limita
     /// a 1 pedido/s. Publica el resultado en `lastEnrichmentSummary`,
@@ -717,7 +717,7 @@ final class LibraryViewModel: ObservableObject {
         }
     }
 
-    /// Favorito (ST-019): marca/desmarca varias canciones de una vez
+    /// Favorito (ST-030): marca/desmarca varias canciones de una vez
     /// (menu contextual, columna "Favorito"). No toca el archivo
     /// preparado -- vive solo en el catalogo -- asi que no hay que
     /// re-preparar nada; se persiste y listo.

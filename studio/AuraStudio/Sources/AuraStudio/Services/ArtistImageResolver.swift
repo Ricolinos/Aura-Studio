@@ -1,6 +1,6 @@
 import Foundation
 
-/// Resuelve la foto de un artista a partir de su nombre (ST-021):
+/// Resuelve la foto de un artista a partir de su nombre (ST-032):
 /// 1. fanart.tv (`artistthumb`, curada, cuadrada) -- necesita el
 ///    MusicBrainz artist ID, que se busca en MusicBrainz por nombre con
 ///    umbral de score (nunca por "el primero que salga"); solo si el

@@ -1,7 +1,7 @@
 import XCTest
 @testable import AuraStudio
 
-/// ST-021: fotos de artista -- almacenamiento en la biblioteca, cliente
+/// ST-032: fotos de artista -- almacenamiento en la biblioteca, cliente
 /// de artistas de MusicBrainz, endpoints nuevos de fanart.tv y el
 /// resolvedor con respaldo de Deezer. Red simulada con `MockURLProtocol`.
 final class ArtistImageTests: XCTestCase {

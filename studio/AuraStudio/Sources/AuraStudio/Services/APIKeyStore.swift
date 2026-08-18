@@ -12,7 +12,7 @@ import Security
 /// desde `LibraryEnricher.resolveCoverArt`).
 enum APIKeyService: String, CaseIterable, Identifiable {
     case fanartTV
-    /// ST-022: The Movie Database. Resuelve título → ID de película /
+    /// ST-033: The Movie Database. Resuelve título → ID de película /
     /// serie (lo que fanart.tv necesita para buscar pósters) y trae su
     /// propio póster de respaldo.
     case tmdb

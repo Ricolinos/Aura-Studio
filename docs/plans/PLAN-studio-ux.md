@@ -5,7 +5,7 @@
 > (§2, metadatos) hecha — ver `ST-007` en `DECISIONS.md`. Tanda 2, parte
 > de vistas (§2.1–2.3: `LibraryGrouping`, Álbumes en cuadrícula, Artistas
 > maestro-detalle, `MusicScope`, búsqueda) hecha como Artistas / Álbumes /
-> Canciones — ver `ST-020` (y `ST-019`/`ST-021` relacionados).** Pendientes:
+> Canciones — ver `ST-031` (y `ST-030`/`ST-032` relacionados).** Pendientes:
 > tanda 2 §2.4 (`StudioStyle`, Listas plana), tanda 3 (§3/§4 — confianza +
 > `CONTRATO-indice-medios.md` + `media_index.cfg`), tanda 4 (§4b — cola de
 > temas sin iPod, §5 — constructor con tipografías). La fuente de verdad de

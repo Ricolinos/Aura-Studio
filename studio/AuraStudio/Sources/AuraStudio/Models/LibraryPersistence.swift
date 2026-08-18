@@ -56,7 +56,7 @@ struct PersistedLibraryItem: Codable {
     /// `loadCatalog()` tiraria el catalogo ENTERO, no solo este campo.
     /// Mismo criterio que `imageRelativePath` de `PersistedPlaylist`.
     var metadataEditedByUser: Bool?
-    /// Fecha en que se agrego a la biblioteca (ST-019, columna/orden
+    /// Fecha en que se agrego a la biblioteca (ST-030, columna/orden
     /// "Fecha en que se agregó"). Opcional por la misma razon que
     /// `metadataEditedByUser`: catalogos anteriores no la tienen.
     var addedAt: Date?
@@ -76,7 +76,7 @@ struct PersistedTrackMetadata: Codable {
     var musicBrainzReleaseID: String?
     var durationSeconds: Double?
     var rating: Int?
-    /// Opcionales (ST-019): catalogos viejos no los traen.
+    /// Opcionales (ST-030): catalogos viejos no los traen.
     var isFavorite: Bool?
     var discNumber: Int?
 }

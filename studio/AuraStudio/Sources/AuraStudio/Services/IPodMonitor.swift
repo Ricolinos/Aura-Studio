@@ -16,7 +16,7 @@ final class IPodMonitor: ObservableObject {
     @Published private(set) var device: AuraDevice?
 
     /// Por que el sondeo DFU no puede funcionar, cuando no puede
-    /// (ST-018): `mks5lboot` ausente, sin bit de ejecucion, o un
+    /// (ST-029): `mks5lboot` ausente, sin bit de ejecucion, o un
     /// `Process` que no arranca. nil mientras el escaneo corre bien
     /// (encuentre o no un iPod). Las pantallas que esperan DFU lo
     /// muestran en vez de "Esperando modo DFU..." -- esperar algo que
@@ -182,7 +182,7 @@ final class IPodMonitor: ObservableObject {
     /// Un escaneo que termina (con o sin iPod) es un escaneo sano.
     /// Un escaneo que ni siquiera puede correr -- `Process.run()`
     /// tira, p. ej. "permission denied" por un binario sin bit de
-    /// ejecucion (ST-018) -- se reporta en `dfuScannerProblem` en vez
+    /// ejecucion (ST-029) -- se reporta en `dfuScannerProblem` en vez
     /// de confundirse con "no hay iPod en DFU".
     private func scanDFUReportingProblems() -> DFUModeInfo? {
         guard let runner else { return nil }

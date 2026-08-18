@@ -1,7 +1,7 @@
 import SwiftUI
 import AppKit
 
-/// Entrada de un menu contextual de encabezado de tabla (ST-019),
+/// Entrada de un menu contextual de encabezado de tabla (ST-030),
 /// declarada como dato para poder construir el mismo menu tanto en
 /// AppKit (clic derecho sobre los encabezados, ver
 /// `TableHeaderMenuInstaller`) como en SwiftUI (el boton de la barra

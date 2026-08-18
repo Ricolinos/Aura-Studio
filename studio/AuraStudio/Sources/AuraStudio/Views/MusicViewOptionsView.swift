@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// "Opciones de visualización" de la tabla de Canciones (ST-019): la
+/// "Opciones de visualización" de la tabla de Canciones (ST-030): la
 /// ventana que Music.app abre desde el menu de encabezado. Todo lo que
 /// se toca aca se aplica en vivo (las propiedades de `AppPreferences`
 /// publican y persisten solas) -- no hay "Guardar", solo "Listo".

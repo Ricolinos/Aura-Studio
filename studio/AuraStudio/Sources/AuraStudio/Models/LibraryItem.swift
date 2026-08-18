@@ -65,7 +65,7 @@ struct LibraryItem: Identifiable, Equatable {
     /// -- la accion explicita del menu contextual, en cambio, siempre
     /// pisa, sea cual sea este valor.
     var metadataEditedByUser: Bool
-    /// Cuando se agrego a la biblioteca (ST-019). nil solo para items
+    /// Cuando se agrego a la biblioteca (ST-030). nil solo para items
     /// restaurados de un catalogo anterior a este campo.
     var addedAt: Date?
 

@@ -1,7 +1,7 @@
 import XCTest
 @testable import AuraStudio
 
-/// ST-019: columnas personalizables de la tabla de Canciones, criterio de
+/// ST-030: columnas personalizables de la tabla de Canciones, criterio de
 /// orden persistible y su ida y vuelta con los comparadores de `Table`.
 @MainActor
 final class MusicTableColumnTests: XCTestCase {

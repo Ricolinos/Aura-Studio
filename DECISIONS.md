@@ -314,7 +314,7 @@ Además de estas 41, hay 53 entradas mixtas (firmware + Studio) y varias puramen
 
 **Verificación**: `swift build`; `xcodegen generate` + `xcodebuild` → **BUILD SUCCEEDED**; `swift test` **376/376** (8 nuevos en `InstallPlannerTests`, incluido el caso exacto del encargo). Visual: la app compilada con el iPod del dueño conectado (firmware de Apple + carpeta `.rockbox` copiada a mano) mostró la descripción de ST-016 en General. **El flujo completo Solo Aura no se ejecutó en esta sesión** (es destructivo: formatea y borra el arranque de Apple del iPod del dueño) — la prueba real queda a cargo del dueño, que además debe reportar el texto exacto del error que veía en el paso de flasheo si vuelve a aparecer: el reorden no cambia lo que hace `mks5lboot`, así que un error de DFU (D-191, `deviceStuckInDFU`, agentes AMP/`deviceinterfaced`) puede seguir necesitando su propia causa.
 
-## ST-018 — `mks5lboot` sin bit de ejecución: el instalador se quedaba en "Esperando modo DFU..." con el iPod ya en DFU
+## ST-029 — `mks5lboot` sin bit de ejecución: el instalador se quedaba en "Esperando modo DFU..." con el iPod ya en DFU
 
 **Síntoma** (2026-08-17, reportado por el dueño con captura): iPod en DFU real (pantalla negra, sin sonido), la app en "Entra a modo DFU" con "Esperando modo DFU..." sin avanzar nunca — no trabada, solo sin ver nada. macOS sí lo veía: `ioreg` mostraba `USB DFU Device` de Apple, `0x05AC:0x1223`.
 
@@ -329,7 +329,7 @@ Además de estas 41, hay 53 entradas mixtas (firmware + Studio) y varias puramen
 
 **Verificación**: `swift build`; `xcodegen generate` + `xcodebuild` → **BUILD SUCCEEDED**; `swift test` — 4 tests nuevos en `MKS5LBootRunnerExecutableBitTests` (sin `+x` → `binaryNotExecutable`; con `+x` → OK y `scanDFU` con exit 1 = `nil` sin error; inexistente → `binaryNotFound`; el mensaje explica qué hacer). El caso de vista (`dfuScannerProblem` en pantalla) no tiene test de UI; se ejercitó el camino en hardware con el binario roto y luego reparado.
 
-## ST-019 — Tabla de Canciones: "Estado" ordena, favoritos, columnas personalizables sin el tope de 10, menú de encabezado y "Opciones de visualización"
+## ST-030 — Tabla de Canciones: "Estado" ordena, favoritos, columnas personalizables sin el tope de 10, menú de encabezado y "Opciones de visualización"
 
 **Encargo** (2026-08-18, con capturas de Music.app como referencia): columnas más personalizables; el encabezado "Estado" no ordenaba al hacer clic; clic derecho sobre cualquier encabezado con "Todas las canciones / Solo favoritos / Opciones para ordenar ▸ (criterios + Ascendente/Descendente) / Mostrar opciones de visualización", y esa ventana para configurar todo.
 
@@ -343,7 +343,7 @@ Además de estas 41, hay 53 entradas mixtas (firmware + Studio) y varias puramen
 
 **Verificación**: `swift build`; `xcodegen generate` + `xcodebuild` → BUILD SUCCEEDED (Swift 6 estricto atrapó dos cosas que `swift build` no: `static let shared` sin `Sendable`, y closures nuevos que volvían no-`Sendable` a los clientes — resueltos con `@unchecked Sendable` justificado y `@Sendable`); `swift test` **438/438** en la última corrida (nuevos: `MediaTableRowTests` +2, `MusicTableColumnTests` 12, `LibraryPersistenceFavoriteTests` 4). Visual con la biblioteca real del dueño: la tabla de Canciones con Título · Artista · Álbum · Género · Duración · Favorito (estrellas) · Estado y el botón del menú. **No verificado por automatización**: el clic derecho sobre el encabezado (no se puede simular desde AppleScript) y la hoja de opciones — a cargo del dueño; el botón de la barra es el respaldo garantizado.
 
-## ST-020 — Música → Artistas / Álbumes / Canciones / Listas; agrupación en memoria, cuadrícula de álbumes, ficha de artista, búsqueda contextual (tanda 2 de `PLAN-studio-ux.md` §1, parcial)
+## ST-031 — Música → Artistas / Álbumes / Canciones / Listas; agrupación en memoria, cuadrícula de álbumes, ficha de artista, búsqueda contextual (tanda 2 de `PLAN-studio-ux.md` §1, parcial)
 
 **Encargo** (2026-08-18, capturas de Music.app): organizar Música como Artistas / Álbumes / Canciones; álbumes en cuadrícula de portadas; artistas como lista con avatar a la izquierda y ficha a la derecha con sus álbumes y canciones; barra de búsqueda contextual (en Canciones busca canciones, en Álbumes álbumes, en Artistas artistas…).
 
@@ -353,15 +353,15 @@ Además de estas 41, hay 53 entradas mixtas (firmware + Studio) y varias puramen
 - `Models/LibraryGrouping.swift` (puro, testeable): `AlbumGroup`/`ArtistGroup`. Clave de álbum = (`album`, `albumArtist ?? artist`) normalizados (sin mayúsculas/acentos/espacios sobrantes) — la misma precedencia que la ruta de sync (`LibrarySync`), para que lo que se ve coincida con las carpetas del iPod (P4). "Sin álbum" (uno por artista) y "Artista desconocido" siempre al final; dentro del álbum por disco (sin número = disco 1), pista y título; álbumes/artistas por nombre ignorando artículo inicial (El/La/Los/Las/The/Un/Una/A/An) y puntuación inicial ("…Little", "'Plastic"). La grafía mostrada es la de la primera pista que entró al grupo. **Nada crea carpetas.** `MusicScope` (`.all/.album/.artist`) acota la tabla de Canciones.
 - Barra lateral: el grupo "Música" (`.musicGroup`, con identidad propia porque dentro de un `ForEach` la fila del grupo hereda la etiqueta implícita `.music` y resaltaba junto con "Canciones") con Artistas (`.musicArtists`, `music.mic`), Álbumes (`.musicAlbums`, `square.stack`), Canciones (`.music`), Listas. `S.songs/albums/artists` ES/EN. Bloqueo con `libraryLocked` para todo el grupo (`isMusicSection`).
 - `Views/AlbumsView.swift`: `LazyVGrid` adaptativa (160–200 pt) de `AlbumCardView` (portada, título 2 líneas, artista, estrella si algún tema es favorito); orden Título / Artista / Año / Agregado recientemente (`@AppStorage`); búsqueda "Buscar en Álbumes"; clic → detalle con portada 180, título, artista, género · año, "N canciones, M min", acciones (favorito, buscar información) y **la misma `MediaSectionView`** acotada (`scope: .album`) — conserva columnas, menú contextual, arrastre y QuickLook sin reimplementar nada.
-- `Views/ArtistsView.swift`: maestro (280 pt) con `ArtistAvatarView` (foto de artista → portada de un álbum → micrófono) y búsqueda "Buscar en Artistas"; detalle: cabecera (nombre, "N álbumes, M canciones", acciones) y una sección por álbum (portada 128, título, género · año, filas de pistas con número, título, artista si difiere del artista del álbum, duración, estrella; menú contextual). Fotos de artista: ST-021.
+- `Views/ArtistsView.swift`: maestro (280 pt) con `ArtistAvatarView` (foto de artista → portada de un álbum → micrófono) y búsqueda "Buscar en Artistas"; detalle: cabecera (nombre, "N álbumes, M canciones", acciones) y una sección por álbum (portada 128, título, género · año, filas de pistas con número, título, artista si difiere del artista del álbum, duración, estrella; menú contextual). Fotos de artista: ST-032.
 - `MediaSectionView`: `scope`, campo "Buscar en Canciones/Video/Fotos" (`LibrarySearch`: título, artista, álbum, artista del álbum, género, compositor, categoría; sin mayúsculas/acentos), estado vacío explicado cuando un filtro no deja nada; embebida no muestra zona de arrastre ni banners.
 - `Services/CoverThumbnailCache.swift`: miniaturas por `CGImageSourceCreateThumbnailAtIndex` + `NSCache` (las carátulas se guardan a ~1000 px; decodificarlas enteras por celda hacía lentas las cuadrículas).
 
-**Verificación**: `LibraryGroupingTests` 13 (vacíos, homónimos, normalización, "Sin álbum"/"Artista desconocido" al final, disco/pista/título, artículos y puntuación, portada, resumen); build/xcodebuild/suite como ST-019. Visual con la biblioteca real: cuadrícula de Álbumes con las portadas del dueño; Artistas con avatares desde portadas y "The 1975"/"Los Aguas Aguas" ordenados por la palabra significativa; Canciones con búsqueda.
+**Verificación**: `LibraryGroupingTests` 13 (vacíos, homónimos, normalización, "Sin álbum"/"Artista desconocido" al final, disco/pista/título, artículos y puntuación, portada, resumen); build/xcodebuild/suite como ST-030. Visual con la biblioteca real: cuadrícula de Álbumes con las portadas del dueño; Artistas con avatares desde portadas y "The 1975"/"Los Aguas Aguas" ordenados por la palabra significativa; Canciones con búsqueda.
 
 **Encabezado del plan** actualizado: tanda 2 §2.1–2.3 hecha aquí; §2.4 pendiente.
 
-## ST-021 — Fotos de artista: MusicBrainz → fanart.tv `artistthumb`, Deezer de respaldo; se guardan en la biblioteca, nunca en el iPod
+## ST-032 — Fotos de artista: MusicBrainz → fanart.tv `artistthumb`, Deezer de respaldo; se guardan en la biblioteca, nunca en el iPod
 
 **Pregunta del dueño**: "¿hay bases de datos donde podamos descargar la imagen del artista?" Sí, y la mejor ya estaba conectada: **fanart.tv** tiene `/v3/music/{MBID}` con `artistthumb` (cuadrada, ~1000 px), `artistbackground` y logos — pero **no busca por texto**, indexa por MusicBrainz artist ID. Alternativas sin clave: **Deezer** (`/search/artist`, `picture_xl`), TheAudioDB; Spotify exige OAuth; Last.fm ya no entrega fotos reales.
 
@@ -369,7 +369,7 @@ Además de estas 41, hay 53 entradas mixtas (firmware + Studio) y varias puramen
 
 **Verificación**: `ArtistImageTests` 12 (almacén, nombre seguro, MusicBrainz con/sin umbral, fanart.tv artista/404/sin key, Deezer coincidencia exacta, resolvedor con respaldo y con fuentes apagadas). Sin descarga real en esta sesión (sin tocar el llavero del dueño); a verificar con su key.
 
-## ST-022 — Pósters de películas y series: TMDB (clave nueva, opcional) resuelve el título; fanart.tv aporta el póster curado; el póster viaja al iPod como `<video>.jpg`
+## ST-033 — Pósters de películas y series: TMDB (clave nueva, opcional) resuelve el título; fanart.tv aporta el póster curado; el póster viaja al iPod como `<video>.jpg`
 
 **Encargo** (2026-08-18): "acabo de configurar mi API key de fanart.tv, ayúdame a conectar la herramienta para la búsqueda de carátulas en la biblioteca de películas y series." fanart.tv ya estaba conectada para álbumes (D-203). Para video el obstáculo es el mismo que para artistas: **fanart.tv no busca por título** — películas por ID de TMDB/IMDb, series por ID de TheTVDB. No había nada de TMDB en el repo.
 

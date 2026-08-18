@@ -1,6 +1,6 @@
 import Foundation
 
-/// Cliente de The Movie Database (ST-022) -- API v3, key propia
+/// Cliente de The Movie Database (ST-033) -- API v3, key propia
 /// (gratuita, `APIKeyService.tmdb`, en el Keychain). Cumple dos papeles
 /// para los pósters de video:
 /// 1. **Resolvedor de identificadores**: fanart.tv no busca por título;
@@ -129,7 +129,7 @@ struct TMDBClient {
 }
 
 /// Saca título, año y (si es serie) nombre de la serie del nombre de
-/// archivo o del título que ya tenga el video (ST-022). Los nombres
+/// archivo o del título que ya tenga el video (ST-033). Los nombres
 /// reales vienen como `The.Matrix.1999.1080p.BluRay.x264.mkv` o
 /// `Breaking Bad - S01E02 - Cat's in the Bag.mp4`; sin limpiar eso, la
 /// búsqueda en TMDB no encuentra nada.
@@ -217,7 +217,7 @@ enum VideoTitleParser {
     }
 }
 
-/// Orquesta la búsqueda de póster para un video (ST-022): TMDB resuelve
+/// Orquesta la búsqueda de póster para un video (ST-033): TMDB resuelve
 /// el título; fanart.tv aporta el póster curado si tiene el título;
 /// si no, se usa el póster de TMDB. Mejor esfuerzo, sin tirar.
 struct VideoArtworkResolver {

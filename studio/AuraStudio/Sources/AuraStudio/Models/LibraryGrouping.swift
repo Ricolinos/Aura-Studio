@@ -1,7 +1,7 @@
 import Foundation
 
 /// Un álbum tal como lo ve la vista "Álbumes" (PLAN-studio-ux.md §2.3,
-/// ST-020): un grupo de canciones de la biblioteca, no un directorio.
+/// ST-031): un grupo de canciones de la biblioteca, no un directorio.
 /// Nada de esto crea carpetas -- la organización en disco la sigue
 /// decidiendo `AppPreferences.musicOrganization`.
 struct AlbumGroup: Identifiable, Equatable {
@@ -198,7 +198,7 @@ extension ArtistGroup {
 }
 
 /// Ámbito de la tabla de Canciones cuando se embebe en Álbumes/Artistas
-/// (ST-020). Las claves son las de `LibraryGrouping.albumKey(of:)` /
+/// (ST-031). Las claves son las de `LibraryGrouping.albumKey(of:)` /
 /// `artistKey(of:)`.
 enum MusicScope: Equatable {
     case all

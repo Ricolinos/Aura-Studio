@@ -38,7 +38,7 @@ struct TrackMetadata: Equatable {
     /// nil = sin calificar (distinto de 0, que seria "0 estrellas"
     /// puesto a proposito).
     var rating: Int?
-    /// Favorito (ST-019): marca binaria independiente de `rating`, la
+    /// Favorito (ST-030): marca binaria independiente de `rating`, la
     /// misma idea que el corazon/estrella de Music.app -- alimenta el
     /// filtro "Solo favoritos" y la columna/orden "Favorito". Vive solo
     /// en el catalogo de Studio (no hay frame ID3 estandar para esto).

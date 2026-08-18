@@ -34,13 +34,13 @@ struct MediaSectionView: View {
     /// (`photoCollections`) que arma el picker/filtro para `.photo` --
     /// video sigue usando el conjunto fijo de `MediaCategory`.
     @ObservedObject var preferences: AppPreferences
-    /// ST-020: la misma tabla, acotada a un álbum o a un artista, cuando
+    /// ST-031: la misma tabla, acotada a un álbum o a un artista, cuando
     /// se embebe en Álbumes/Artistas. Con `.all` es la sección Canciones
     /// completa (zona de arrastre, banners, título de navegación).
     var scope: MusicScope = .all
 
     @State private var isTargeted = false
-    /// ST-020: búsqueda contextual ("Buscar en Canciones/Video/Fotos").
+    /// ST-031: búsqueda contextual ("Buscar en Canciones/Video/Fotos").
     @State private var searchText = ""
     @State private var reviewingItem: LibraryItem?
     @State private var renamingItem: LibraryItem?
@@ -67,7 +67,7 @@ struct MediaSectionView: View {
     /// ST-012: hoja de revision de caratulas que cayeron a Imagenes.
     @State private var reviewingCoverContamination = false
     @State private var batchEditingIDs: Set<UUID>?
-    /// ST-019: hoja "Opciones de visualización" (solo musica).
+    /// ST-030: hoja "Opciones de visualización" (solo musica).
     @State private var showingViewOptions = false
 
     private var allItemsOfKind: [LibraryItem] {
@@ -420,7 +420,7 @@ struct MediaSectionView: View {
         }
     }
 
-    /// ST-019: columnas de musica dinamicas. `TableColumnForEach`
+    /// ST-030: columnas de musica dinamicas. `TableColumnForEach`
     /// (macOS 14.4) declara una columna por cada entrada de
     /// `preferences.musicVisibleColumns`, en ese orden -- ya no rige el
     /// limite de 10 slots de `TableColumnBuilder` (D-199), que era lo
@@ -491,7 +491,7 @@ struct MediaSectionView: View {
         .help(row.isFavorite ? "Quitar de favoritos" : "Marcar como favorito")
     }
 
-    // MARK: - Menu de encabezado (ST-019)
+    // MARK: - Menu de encabezado (ST-030)
 
     /// Las entradas del menu de clic derecho sobre los encabezados y del
     /// boton de la barra: filtro (Todas / Solo favoritos), submenu de
@@ -716,7 +716,7 @@ struct MediaSectionView: View {
 
             Divider()
 
-            // ST-019: favorito. Si en la seleccion hay alguna que no lo
+            // ST-030: favorito. Si en la seleccion hay alguna que no lo
             // es, la accion marca todas; si todas lo son, las quita.
             if targetItems.contains(where: { $0.metadata?.isFavorite != true }) {
                 Button("Marcar como favorito") {
@@ -747,7 +747,7 @@ struct MediaSectionView: View {
         }
 
         if kind == .video, !targetItems.isEmpty {
-            // ST-022: posters de peliculas/series (TMDB + fanart.tv).
+            // ST-033: posters de peliculas/series (TMDB + fanart.tv).
             Button("Buscar póster en línea") {
                 runEnrichment(busyText: "Buscando pósters en línea...") {
                     await viewModel.fetchVideoPosters(ids: Set(targetItems.map(\.id)))
@@ -892,11 +892,11 @@ struct MediaTableRow: Identifiable {
     let item: LibraryItem
     /// Estado contra el iPod conectado (nil sin dispositivo o mientras
     /// se verifica) -- se resuelve al armar la fila para que la columna
-    /// "Estado" tenga una clave ordenable (ST-019).
+    /// "Estado" tenga una clave ordenable (ST-030).
     var syncState: SyncItemState? = nil
     var id: UUID { item.id }
 
-    /// Clave de orden de la columna "Estado" (ST-019): lo que ya esta
+    /// Clave de orden de la columna "Estado" (ST-030): lo que ya esta
     /// en el iPod primero, despues lo que falta por hacer, y al final
     /// lo que necesita atencion -- asi "ordenar por Estado" agrupa lo
     /// pendiente y lo problematico en vez de mezclarlo. El texto que
@@ -932,7 +932,7 @@ struct MediaTableRow: Identifiable {
         return String(format: "%d:%02d", total / 60, total % 60)
     }
 
-    // MARK: - Columnas de musica (ST-019)
+    // MARK: - Columnas de musica (ST-030)
 
     var albumArtist: String { item.metadata?.albumArtist ?? "" }
     var composer: String { item.metadata?.composer ?? "" }
@@ -977,7 +977,7 @@ struct MediaTableRow: Identifiable {
 /// Columnas opcionales que el boton "+" de la barra de herramientas
 /// deja agregar/quitar en Video y Fotos (D-199) -- persisten por tipo de
 /// medio en UserDefaults (`MediaSectionView.columnsStorageKey`). Musica
-/// ya no pasa por aca: sus columnas son `MusicTableColumn` (ST-019).
+/// ya no pasa por aca: sus columnas son `MusicTableColumn` (ST-030).
 enum ExtraColumn: String, CaseIterable, Identifiable {
     case fileFormat, fileSize
 
@@ -1100,7 +1100,7 @@ private final class DropCollector: @unchecked Sendable {
     }
 }
 
-// MARK: - Comparadores por columna (ST-019)
+// MARK: - Comparadores por columna (ST-030)
 
 extension MusicTableColumn {
     /// Clave con la que ordena esta columna. `Table` compara comparadores

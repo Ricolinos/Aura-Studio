@@ -1,6 +1,6 @@
 import Foundation
 
-/// Columnas de la tabla de Canciones (ST-019). Antes la tabla tenia 7
+/// Columnas de la tabla de Canciones (ST-030). Antes la tabla tenia 7
 /// columnas fijas + 3 opcionales por el limite de 10 slots de
 /// `TableColumnBuilder` (D-199); con `TableColumnForEach` (macOS 14.4,
 /// el deployment target del proyecto) las columnas se declaran a partir

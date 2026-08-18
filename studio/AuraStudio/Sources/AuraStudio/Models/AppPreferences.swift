@@ -316,7 +316,7 @@ final class AppPreferences: ObservableObject {
         photoCollections.removeAll { $0 == name }
     }
 
-    // MARK: - Tabla de Canciones (ST-019)
+    // MARK: - Tabla de Canciones (ST-030)
 
     /// Columnas visibles de la tabla de Canciones, EN ORDEN (Título es
     /// fija y va aparte). Se editan desde "Opciones de visualización".

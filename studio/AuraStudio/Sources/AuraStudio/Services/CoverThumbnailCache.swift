@@ -2,7 +2,7 @@ import AppKit
 import ImageIO
 
 /// Miniaturas de portadas para las cuadrículas de Álbumes/Artistas
-/// (ST-020). Las carátulas se guardan a tamaño completo
+/// (ST-031). Las carátulas se guardan a tamaño completo
 /// (`TrackMetadata.coverArtData`, ~1000 px con fanart.tv); decodificar
 /// eso por cada celda visible en cada scroll es lo que hace lentas
 /// estas vistas. `CGImageSourceCreateThumbnailAtIndex` decodifica ya

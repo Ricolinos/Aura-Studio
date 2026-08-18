@@ -1,7 +1,7 @@
 import XCTest
 @testable import AuraStudio
 
-/// ST-020 (PLAN-studio-ux.md §2.3): agrupación por álbum y por artista
+/// ST-031 (PLAN-studio-ux.md §2.3): agrupación por álbum y por artista
 /// -- casos obligatorios del plan: vacíos, homónimos, normalización,
 /// "Sin álbum"/"Artista desconocido" al final.
 final class LibraryGroupingTests: XCTestCase {

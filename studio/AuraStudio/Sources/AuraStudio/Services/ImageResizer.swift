@@ -38,7 +38,7 @@ struct ImageResizer {
         try write(source: source, destinationURL: destinationURL, maxDimension: maxDimension, quality: quality)
     }
 
-    /// ST-022: misma conversion, desde bytes en memoria (poster de video
+    /// ST-033: misma conversion, desde bytes en memoria (poster de video
     /// descargado). Salida JPEG baseline con el lado mayor <= `maxDimension`
     /// (640 = maximo que admite el firmware, CONTRATO-firmware-studio.md).
     static func resizeToLCDOptimal(data: Data, destinationURL: URL,

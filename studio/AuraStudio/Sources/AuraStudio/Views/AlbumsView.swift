@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Sección "Álbumes" (ST-020, PLAN-studio-ux.md §2.3): cuadrícula de
+/// Sección "Álbumes" (ST-031, PLAN-studio-ux.md §2.3): cuadrícula de
 /// tarjetas de álbum como la de Music.app; clic en una → la misma tabla
 /// de Canciones acotada a ese álbum (`MediaSectionView(scope: .album)`),
 /// con cabecera de portada grande y botón para volver. Los álbumes son

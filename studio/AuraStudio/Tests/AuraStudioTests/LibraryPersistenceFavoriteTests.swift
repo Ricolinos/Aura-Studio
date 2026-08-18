@@ -1,7 +1,7 @@
 import XCTest
 @testable import AuraStudio
 
-/// ST-019: `isFavorite`, `discNumber` y `addedAt` viajan al catalogo y
+/// ST-030: `isFavorite`, `discNumber` y `addedAt` viajan al catalogo y
 /// vuelven; un catalogo anterior a esos campos sigue decodificando.
 final class LibraryPersistenceFavoriteTests: XCTestCase {
     func testFavoriteAndDiscNumberRoundTripThroughMapper() {

@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// Sección "Artistas" (ST-020, PLAN-studio-ux.md §2.3, captura de
+/// Sección "Artistas" (ST-031, PLAN-studio-ux.md §2.3, captura de
 /// referencia del dueño): maestro-detalle. Izquierda, la lista de
-/// artistas con avatar (foto de artista si hay -- ST-021 --, si no la
+/// artistas con avatar (foto de artista si hay -- ST-032 --, si no la
 /// portada de un álbum, si no un micrófono); derecha, la ficha del
 /// artista con sus álbumes uno debajo del otro, cada uno con portada,
 /// título, género · año y sus canciones. Agrupa por
@@ -11,7 +11,7 @@ struct ArtistsView: View {
     @ObservedObject var viewModel: LibraryViewModel
     let device: AuraDevice?
     @ObservedObject var preferences: AppPreferences
-    /// ST-021: acción "Buscar fotos de artistas" (nil = sin proveedor).
+    /// ST-032: acción "Buscar fotos de artistas" (nil = sin proveedor).
     var onFetchArtistImages: (([ArtistGroup]) -> Void)?
     var isFetchingArtistImages = false
 

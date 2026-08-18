@@ -1,6 +1,6 @@
 import Foundation
 
-/// Fotos de artista para la vista Artistas (ST-020/ST-021). Viven en la
+/// Fotos de artista para la vista Artistas (ST-031/ST-032). Viven en la
 /// biblioteca, junto a las carátulas: `<biblioteca>/.portadas/artistas/
 /// <clave>.jpg`, donde la clave es la misma con la que agrupa
 /// `LibraryGrouping.artistKey(of:)` (nombre normalizado) codificada como

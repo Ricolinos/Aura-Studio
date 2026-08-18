@@ -50,7 +50,7 @@ struct MusicBrainzClient {
         let recordings: [Recording]
     }
 
-    /// ST-021: artista de MusicBrainz -- su `id` (MBID) es la llave que
+    /// ST-032: artista de MusicBrainz -- su `id` (MBID) es la llave que
     /// fanart.tv usa para las fotos de artista.
     struct Artist: Decodable, Equatable {
         let id: String
@@ -99,7 +99,7 @@ struct MusicBrainzClient {
         return decoded.recordings.max { ($0.score ?? 0) < ($1.score ?? 0) }
     }
 
-    /// ST-021: busca el artista por nombre. Devuelve el de mayor `score`
+    /// ST-032: busca el artista por nombre. Devuelve el de mayor `score`
     /// si supera `minimumScore` (MusicBrainz puntua 100 la coincidencia
     /// exacta; por debajo de ~85 suelen ser homonimos parciales -- mejor
     /// sin foto que con la de otro).

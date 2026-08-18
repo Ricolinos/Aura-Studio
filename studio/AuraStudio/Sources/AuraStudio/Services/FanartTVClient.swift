@@ -39,7 +39,7 @@ struct FanartTVClient {
 
     private let session: URLSession
     private let baseURL: URL
-    /// Raiz `/v3` (ST-021): `baseURL` sigue apuntando a `/music/albums`
+    /// Raiz `/v3` (ST-032): `baseURL` sigue apuntando a `/music/albums`
     /// por compatibilidad con D-203; artistas, peliculas y series
     /// cuelgan de esta.
     private let rootURL: URL
@@ -79,21 +79,21 @@ struct FanartTVClient {
         return data
     }
 
-    /// ST-021: foto de artista (`artistthumb`, cuadrada, ~1000 px) por
+    /// ST-032: foto de artista (`artistthumb`, cuadrada, ~1000 px) por
     /// MusicBrainz artist ID.
     func fetchArtistThumb(musicBrainzArtistID: String) async throws -> Data? {
         let decoded = try await fetchJSON(ArtistResponse.self, path: "music/\(musicBrainzArtistID)")
         return try await download(decoded?.artistthumb?.first?.url)
     }
 
-    /// ST-022: poster de pelicula. fanart.tv acepta el ID de TMDB o el de
+    /// ST-033: poster de pelicula. fanart.tv acepta el ID de TMDB o el de
     /// IMDb (`tt...`) en la misma ruta.
     func fetchMoviePoster(tmdbOrIMDbID: String) async throws -> Data? {
         let decoded = try await fetchJSON(MovieResponse.self, path: "movies/\(tmdbOrIMDbID)")
         return try await download(decoded?.movieposter?.first?.url)
     }
 
-    /// ST-022: poster de serie, por ID de TheTVDB (el unico que fanart.tv
+    /// ST-033: poster de serie, por ID de TheTVDB (el unico que fanart.tv
     /// indexa para TV -- se obtiene via TMDB `external_ids`).
     func fetchTVPoster(tvdbID: String) async throws -> Data? {
         let decoded = try await fetchJSON(TVResponse.self, path: "tv/\(tvdbID)")

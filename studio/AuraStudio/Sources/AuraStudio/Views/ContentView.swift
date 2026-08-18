@@ -229,7 +229,7 @@ struct ContentView: View {
         case .music, .musicGroup:
             MediaSectionView(kind: .music, viewModel: library, device: deviceMonitor.device, preferences: preferences)
         case .musicArtists:
-            // ST-020 / ST-021: Artistas con fotos de artista opcionales.
+            // ST-031 / ST-032: Artistas con fotos de artista opcionales.
             ArtistsView(viewModel: library, device: deviceMonitor.device, preferences: preferences,
                         onFetchArtistImages: { artists in
                             Task { await library.fetchArtistImages(for: artists) }
@@ -344,7 +344,7 @@ enum SidebarSection: Hashable, CaseIterable {
     /// bloquearse junto con el resto cuando `libraryLocked` -- ver el
     /// chequeo explicito en `ContentView.body`.
     case musicPlaylists
-    /// ST-020: "Artistas" y "Álbumes", anidadas bajo Música junto a
+    /// ST-031: "Artistas" y "Álbumes", anidadas bajo Música junto a
     /// Canciones (`.music`) y Listas -- mismo tratamiento que
     /// `.musicPlaylists` (no van en `deviceSections`, sí se bloquean con
     /// `libraryLocked`).
@@ -432,7 +432,7 @@ private struct SidebarView: View {
             Section(header: deviceHeader) {
                 ForEach(SidebarSection.deviceSections, id: \.self) { section in
                     if section == .music {
-                        // ST-020: "Música" es un grupo (Artistas, Álbumes,
+                        // ST-031: "Música" es un grupo (Artistas, Álbumes,
                         // Canciones, Listas). El rotulo abre/cierra y, si
                         // se toca, lleva a Canciones -- con su propia
                         // identidad (`.musicGroup`), porque dentro de un

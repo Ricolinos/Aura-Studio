@@ -40,7 +40,7 @@ final class MediaTableRowTests: XCTestCase {
         XCTAssertEqual(MediaTableRow(item: item).title, "Some Track")
     }
 
-    // MARK: - Estado ordenable (ST-019)
+    // MARK: - Estado ordenable (ST-030)
 
     private func statusRow(_ status: LibraryItemStatus, sync: SyncItemState? = nil) -> MediaTableRow {
         var item = LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/song.mp3"))

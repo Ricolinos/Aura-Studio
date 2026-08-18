@@ -67,7 +67,7 @@ struct DeezerClient {
         }
     }
 
-    /// ST-021: foto de artista (`picture_xl`, 1000x1000) del primer
+    /// ST-032: foto de artista (`picture_xl`, 1000x1000) del primer
     /// resultado cuyo nombre coincida (sin mayusculas/acentos) -- Deezer
     /// devuelve tambien parecidos, y "Gorillaz" no debe llevarse la foto
     /// de "Gorillaz Sound System". `baseURL` es `/search`; el buscador

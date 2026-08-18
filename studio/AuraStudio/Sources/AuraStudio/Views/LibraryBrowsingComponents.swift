@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Piezas compartidas por Álbumes, Artistas y Canciones (ST-020):
+/// Piezas compartidas por Álbumes, Artistas y Canciones (ST-031):
 /// portada con placeholder, tarjeta de álbum y campo de búsqueda
 /// contextual. Estilo plano (PLAN-studio-ux.md §2.4): relleno sólido
 /// `selectionFill`, radio 8, sin bordes ni sombras.

@@ -44,7 +44,7 @@ struct EnterDFUView: View {
                 .font(.headline)
         default:
             if let problem = monitor.dfuScannerProblem {
-                // ST-018: si la herramienta de deteccion no puede
+                // ST-029: si la herramienta de deteccion no puede
                 // correr, decirlo -- "Esperando modo DFU..." con el
                 // iPod ya en DFU era una espera sin salida.
                 VStack(spacing: 8) {

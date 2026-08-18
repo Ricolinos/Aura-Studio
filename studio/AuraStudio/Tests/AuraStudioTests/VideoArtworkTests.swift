@@ -1,7 +1,7 @@
 import XCTest
 @testable import AuraStudio
 
-/// ST-022: pósters de películas/series -- parser de títulos, cliente de
+/// ST-033: pósters de películas/series -- parser de títulos, cliente de
 /// TMDB y resolvedor TMDB → fanart.tv → TMDB. Red simulada.
 final class VideoArtworkTests: XCTestCase {
     override func tearDown() {

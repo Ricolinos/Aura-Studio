@@ -20,7 +20,7 @@ enum S {
     case enrichOnline, enrichOnlineDetail
     case general, music, video, photos, extras, installer, noDevice
     case playlists
-    /// ST-020: subsecciones de Música en la barra lateral.
+    /// ST-031: subsecciones de Música en la barra lateral.
     case songs, albums, artists
 
     var text: String {

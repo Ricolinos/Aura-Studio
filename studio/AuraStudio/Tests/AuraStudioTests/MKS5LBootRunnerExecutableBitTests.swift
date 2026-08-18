@@ -1,7 +1,7 @@
 import XCTest
 @testable import AuraStudio
 
-/// ST-018: el runner rechaza al crearse un binario que no se puede
+/// ST-029: el runner rechaza al crearse un binario que no se puede
 /// ejecutar -- un mks5lboot sin bit de ejecucion (asi llega desde un
 /// Release de GitHub) dejaba al instalador en "Esperando modo DFU..."
 /// para siempre, con el iPod ya en DFU.

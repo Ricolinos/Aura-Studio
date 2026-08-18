@@ -15,7 +15,7 @@ struct MKS5LBootRunner {
     enum RunError: Error, LocalizedError, Equatable {
         case binaryNotFound
         /// El binario esta en el bundle pero sin bit de ejecucion
-        /// (ST-018): los assets de un Release de GitHub llegan sin
+        /// (ST-029): los assets de un Release de GitHub llegan sin
         /// permisos y Xcode copia el recurso tal cual. Sin esto,
         /// `Process.run()` fallaba con "permission denied", el
         /// sondeo DFU lo tragaba y el instalador se quedaba en
