@@ -117,4 +117,61 @@ final class FFmpegTranscoderTests: XCTestCase {
         }
         XCTAssertEqual(args[arIndex + 1], "44100")
     }
+
+    // MARK: - cropFilter / detectCropFilter -- PARTE 3 (franjas horneadas)
+
+    func testArgumentsOmitsCropWhenNotProvided() {
+        let args = FFmpegTranscoder.arguments(input: URL(fileURLWithPath: "/in.mov"),
+                                               output: URL(fileURLWithPath: "/out.mpg"))
+        guard let vfIndex = args.firstIndex(of: "-vf") else {
+            return XCTFail("deberia tener -vf")
+        }
+        XCTAssertFalse(args[vfIndex + 1].contains("crop="))
+    }
+
+    func testArgumentsPrependsCropFilterBeforeScale() {
+        let args = FFmpegTranscoder.arguments(input: URL(fileURLWithPath: "/in.mov"),
+                                               output: URL(fileURLWithPath: "/out.mpg"),
+                                               cropFilter: "crop=320:132:0:54")
+        guard let vfIndex = args.firstIndex(of: "-vf") else {
+            return XCTFail("deberia tener -vf")
+        }
+        let vf = args[vfIndex + 1]
+        XCTAssertTrue(vf.hasPrefix("crop=320:132:0:54,scale="),
+                      "el crop tiene que ir ANTES del scale: \(vf)")
+    }
+
+    func testParseCropFilterReadsLastLine() {
+        let output = """
+        [Parsed_cropdetect_0 @ 0x1] crop=320:180:0:30
+        [Parsed_cropdetect_0 @ 0x1] crop=320:132:0:54
+        """
+        XCTAssertEqual(FFmpegTranscoder.parseCropFilter(from: output), "crop=320:132:0:54")
+    }
+
+    func testParseCropFilterNilWithoutAnyCropLine() {
+        XCTAssertNil(FFmpegTranscoder.parseCropFilter(from: "frame=1\nprogress=continue\n"))
+    }
+
+    func testParseCropFilterNilForZeroDimensions() {
+        // No deberia pasar en la practica, pero si cropdetect reporta
+        // basura (fuente extrana) mejor no recortar nada a arriesgar un
+        // filtro invalido que tire el transcode entero.
+        XCTAssertNil(FFmpegTranscoder.parseCropFilter(from: "crop=0:0:0:0"))
+    }
+
+    func testParseResolutionFromStandardVideoStreamLine() throws {
+        let output = """
+        Input #0, mov,mp4,m4a,3gp,3g2,mj2, from 'in.mp4':
+          Duration: 00:00:02.50, start: 0.000000, bitrate: 15668 kb/s
+            Stream #0:0(eng): Video: h264 (Main), yuv420p(tv, bt709, progressive), 1920x1080, 15631 kb/s, 30 fps, 30 tbr, 30k tbn (default)
+        """
+        let res = try XCTUnwrap(FFmpegTranscoder.parseResolution(from: output))
+        XCTAssertEqual(res.width, 1920)
+        XCTAssertEqual(res.height, 1080)
+    }
+
+    func testParseResolutionNilWithoutVideoStream() {
+        XCTAssertNil(FFmpegTranscoder.parseResolution(from: "Stream #0:0: Audio: aac, 44100 Hz, stereo"))
+    }
 }

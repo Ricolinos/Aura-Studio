@@ -87,12 +87,29 @@ struct FFmpegTranscoder {
     /// entiende MPEG audio Layer I/II/III en las frecuencias estándar
     /// -- sin esto, el audio queda al sample rate de origen (48kHz es
     /// común en video de teléfono), que antes no se forzaba a nada.
+    ///
+    /// `cropFilter` (PLAN-sync-media-hardening.md PARTE 3, encargo del
+    /// dueño tras confirmar en un rip de película que "cubrir" no
+    /// recortaba nada): algunas fuentes (rips de DVD/BluRay sobre todo)
+    /// declaran un aspecto de contenedor (p. ej. 4:3) que NO es el
+    /// aspecto real del contenido -- traen franjas negras HORNEADAS
+    /// como píxeles reales dentro de ese contenedor, invisibles para
+    /// `scale=...` (que solo mira metadata del stream, nunca el
+    /// contenido de los píxeles). Sin detectarlas, Studio escala el
+    /// contenedor completo (con sus franjas incluidas) y el firmware no
+    /// tiene forma de distinguir "video angosto real" de "franjas
+    /// horneadas": la lógica de ajustar/cubrir simplemente no encuentra
+    /// nada que recortar. `cropFilter` (si viene) se antepone al
+    /// `scale` -- un token `"crop=W:H:X:Y"` ya armado por
+    /// `detectCropFilter(of:ffmpegURL:durationSeconds:)`.
     static func arguments(input: URL, output: URL, videoBitrateKbps: Int = 768,
-                           sourceFrameRate: Double? = nil) -> [String] {
+                           sourceFrameRate: Double? = nil, cropFilter: String? = nil) -> [String] {
+        let scaleFilter = "scale=320:240:force_original_aspect_ratio=decrease:force_divisible_by=2"
+        let vf = cropFilter.map { "\($0),\(scaleFilter)" } ?? scaleFilter
         var args = [
             "-y", "-loglevel", "error",
             "-i", input.path,
-            "-vf", "scale=320:240:force_original_aspect_ratio=decrease:force_divisible_by=2",
+            "-vf", vf,
             "-c:v", "mpeg2video", "-b:v", "\(videoBitrateKbps)k",
         ]
         if let sourceFrameRate, sourceFrameRate > 24 {
@@ -130,10 +147,19 @@ struct FFmpegTranscoder {
     /// capturar locals.
     func transcode(input: URL, output: URL, videoBitrateKbps: Int = 768, sourceFrameRate: Double? = nil,
                     onProgress: (@Sendable (Double) -> Void)?) throws {
+        /// Fallo abierto a proposito: si la deteccion de franjas
+        /// horneadas falla por cualquier razon (fuente rara, ffmpeg mas
+        /// viejo sin cropdetect, timeout), se transcodifica igual sin
+        /// recorte -- el comportamiento de antes, nunca bloquear el
+        /// pipeline completo por esto.
+        let duration = try? Self.probeDurationSeconds(of: input, ffmpegURL: ffmpegURL)
+        let cropFilter = try? Self.detectCropFilter(of: input, ffmpegURL: ffmpegURL,
+                                                     durationSeconds: duration)
+
         let process = Process()
         process.executableURL = ffmpegURL
         process.arguments = Self.arguments(input: input, output: output, videoBitrateKbps: videoBitrateKbps,
-                                            sourceFrameRate: sourceFrameRate)
+                                            sourceFrameRate: sourceFrameRate, cropFilter: cropFilter)
             + ["-progress", "pipe:1"]
 
         let errPipe = Pipe()
@@ -222,6 +248,122 @@ struct FFmpegTranscoder {
 
         let text = String(data: data, encoding: .utf8) ?? ""
         return parseDuration(from: text)
+    }
+
+    /// PARTE 3 (PLAN-sync-media-hardening.md, encargo del dueño):
+    /// corre el filtro `cropdetect` de ffmpeg sobre una muestra del
+    /// video (100 frames, arrancando al 20% de la duración -- salta
+    /// intros/logos que suelen ser negros de verdad, no franja) y
+    /// devuelve el último `crop=W:H:X:Y` que reportó (cropdetect afina
+    /// su estimación cuadro a cuadro, ampliándola lo justo para cubrir
+    /// TODO lo visto hasta ahora -- el último valor de la muestra es el
+    /// más seguro). `-an` (sin audio) porque no hace falta decodificarlo
+    /// para esto. Devuelve `nil` si no se pudo parsear ningún `crop=`
+    /// (fuente rara, ffmpeg sin soporte) -- el llamador ya trata esto
+    /// como "sin recorte", el mismo comportamiento que había antes de
+    /// esta función existir.
+    static func detectCropFilter(of input: URL, ffmpegURL: URL,
+                                  durationSeconds: Double?) throws -> String? {
+        let seek = min(max((durationSeconds ?? 0) * 0.2, 0), max((durationSeconds ?? 0) - 1, 0))
+
+        let process = Process()
+        process.executableURL = ffmpegURL
+        process.arguments = [
+            "-ss", String(format: "%.2f", seek),
+            "-i", input.path,
+            "-an",
+            "-vf", "cropdetect=24:2:0",
+            "-frames:v", "100",
+            "-f", "null", "-",
+        ]
+        let errPipe = Pipe()
+        process.standardError = errPipe
+        process.standardOutput = Pipe()
+
+        try process.run()
+        let data = errPipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+
+        let text = String(data: data, encoding: .utf8) ?? ""
+        guard let crop = parseCropComponents(from: text) else { return nil }
+
+        /// Umbral de "vale la pena recortar": cropdetect encuentra un
+        /// recorte MINUSCULO (2-3%) hasta en fuentes sin ninguna franja
+        /// real -- ruido de compresion/vineteado en el borde, no franjas
+        /// horneadas. Aplicarlo igual "respetaria el AR" al pie de la
+        /// letra pero recortaria un poco de TODOS los videos sin
+        /// necesidad, contrario al espiritu del pedido. Si el recorte
+        /// detectado deja menos del 95% del ancho o alto original,
+        /// recien ahi se considera una franja real que vale la pena
+        /// quitar. Sin dato de resolucion de origen (parseo fallo),
+        /// se confia en cropdetect igual antes que no aplicar nada.
+        guard let source = parseResolution(from: text) else {
+            return "crop=\(crop.w):\(crop.h):\(crop.x):\(crop.y)"
+        }
+        let widthRatio = Double(crop.w) / Double(source.width)
+        let heightRatio = Double(crop.h) / Double(source.height)
+        guard widthRatio < 0.95 || heightRatio < 0.95 else { return nil }
+
+        return "crop=\(crop.w):\(crop.h):\(crop.x):\(crop.y)"
+    }
+
+    /// Busca la última ocurrencia de "crop=W:H:X:Y" en la salida de
+    /// `cropdetect` (siempre es el último token de cada línea que
+    /// reporta, ver `detectCropFilter`) y devuelve el filtro ya armado,
+    /// SIN el umbral de "vale la pena" que sí aplica `detectCropFilter`
+    /// (ese umbral necesita la resolución de origen, que esta función
+    /// no recibe -- pensada para tests unitarios sobre texto suelto).
+    /// `nil` si no hay ninguna línea parseable, o si el ancho/alto
+    /// detectado es 0 o negativo (fuente extraña, mejor no recortar
+    /// nada a arriesgar un filtro inválido).
+    static func parseCropFilter(from ffmpegOutput: String) -> String? {
+        guard let c = parseCropComponents(from: ffmpegOutput) else { return nil }
+        return "crop=\(c.w):\(c.h):\(c.x):\(c.y)"
+    }
+
+    private static func parseCropComponents(from ffmpegOutput: String) -> (w: Int, h: Int, x: Int, y: Int)? {
+        var last: Substring?
+        for line in ffmpegOutput.split(separator: "\n") {
+            if let range = line.range(of: "crop=") {
+                last = line[range.lowerBound...]
+            }
+        }
+        guard let token = last else { return nil }
+        let parts = token.dropFirst("crop=".count).split(separator: ":")
+        guard parts.count == 4,
+              let w = Int(parts[0]), let h = Int(parts[1]),
+              let x = Int(parts[2]), let y = Int(parts[3]),
+              w > 0, h > 0 else { return nil }
+        return (w, h, x, y)
+    }
+
+    /// Busca el primer patron "NNNxNNN" en la linea "Stream #0:0...:
+    /// Video: ..." -- la resolucion real del video de origen (mismo
+    /// volcado de cabecera que ya usan `parseFrameRate`/`parseDuration`).
+    /// Escaneo caracter por caracter en vez de partir por comas: el
+    /// nombre del pixel format puede traer comas propias adentro de
+    /// parentesis (p. ej. "yuv420p(tv, bt709, progressive)"), que
+    /// partirian el resto de la linea en pedazos equivocados.
+    static func parseResolution(from ffmpegOutput: String) -> (width: Int, height: Int)? {
+        for line in ffmpegOutput.split(separator: "\n") where line.contains(" Video: ") {
+            let chars = Array(line)
+            var i = 0
+            while i < chars.count {
+                guard chars[i].isNumber else { i += 1; continue }
+                var j = i
+                while j < chars.count && chars[j].isNumber { j += 1 }
+                if j < chars.count, chars[j] == "x" {
+                    var k = j + 1
+                    while k < chars.count && chars[k].isNumber { k += 1 }
+                    if k > j + 1, let w = Int(String(chars[i..<j])), let h = Int(String(chars[(j + 1)..<k])),
+                       w > 0, h > 0 {
+                        return (w, h)
+                    }
+                }
+                i = j
+            }
+        }
+        return nil
     }
 
     /// PLAN-sync-media-hardening.md PARTE 3A: mismo probe que
