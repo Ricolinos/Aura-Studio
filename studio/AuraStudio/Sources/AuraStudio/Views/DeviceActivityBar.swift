@@ -95,11 +95,16 @@ struct DeviceActivityBar: View {
 
                 Spacer()
 
+                // ST-012: sin Aura instalado no hay `Music/`/`Videos/`/
+                // `Photos/` que llenar de la forma que espera esta app --
+                // sincronizar ahi solo desgastaria el disco escribiendo
+                // archivos que el firmware que SI tiene el iPod (stock,
+                // Rockbox, o ninguno) nunca va a leer.
                 Button("Sincronizar") {
                     onSync(scopeChoice == .selection)
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(isVerifying || (scopeChoice == .selection && selectionCount == 0))
+                .disabled(device?.isAura != true || isVerifying || (scopeChoice == .selection && selectionCount == 0))
             }
         }
     }
@@ -119,6 +124,8 @@ struct DeviceActivityBar: View {
             Text(lastSyncSummary).font(.callout).foregroundStyle(.secondary)
         } else if device == nil {
             Text("Conecta tu iPod para sincronizar.").font(.callout).foregroundStyle(.secondary)
+        } else if device?.isAura != true {
+            Text("Instala Aura en este iPod para poder sincronizar.").font(.callout).foregroundStyle(.secondary)
         } else if let index = deviceSyncIndex {
             Text(summaryText(for: index)).font(.callout).foregroundStyle(.secondary)
         } else if pendingCount > 0 {

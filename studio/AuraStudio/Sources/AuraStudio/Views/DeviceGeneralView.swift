@@ -330,7 +330,10 @@ struct DeviceGeneralView: View {
     }
 
     private func performSync(selectionOnly: Bool, resolvedConflicts: LibraryViewModel.ConflictResolution) {
-        guard let device else { return }
+        // ST-012: segunda barrera ademas del boton deshabilitado en
+        // DeviceActivityBar -- nunca se toca el disco de un iPod sin
+        // Aura, sin importar por donde llegue la llamada.
+        guard let device, device.isAura else { return }
         let scope: LibraryViewModel.SyncScope = selectionOnly ? .selection(library.selectionForSync) : .all
         Task {
             await library.sync(toVolumeAt: URL(fileURLWithPath: device.mountPath), scope: scope, resolvedConflicts: resolvedConflicts)
