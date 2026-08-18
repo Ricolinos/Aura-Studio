@@ -100,7 +100,8 @@ Aura Studio fija **una** versión exacta de firmware por build propio, en `FIRMW
 | 0.1.2 (histórico) | `v0.2.1-beta` (`FIRMWARE_VERSION`, PATCH: corrige el `rockbox.zip` de v0.2.0-beta, sin cambio de contrato — D-297/D-298/D-299 en `Aura-Firmware`, ST-018 aquí) | v4 |
 | 0.1.2 (histórico) | `v0.2.2-beta` (`FIRMWARE_VERSION`, PATCH: morph de Letras optimizado + versión visible sin scroll en Acerca de, sin cambio de contrato — D-300/D-301 en `Aura-Firmware`) | v4 |
 | 0.1.2 (histórico) | `v0.2.3-beta` (`FIRMWARE_VERSION`, PATCH: filtra sidecars AppleDouble de macOS + modo "cubrir" en el visor de fotos, sin cambio de contrato — D-302/D-303 en `Aura-Firmware`) | v4 |
-| 0.1.2 | `v0.2.4-beta` (`FIRMWARE_VERSION`, PATCH: corrige el modo "cubrir" para que sí agrande más allá del tamaño de origen, sin cambio de contrato — D-303 en `Aura-Firmware`) | v4 |
+| 0.1.2 (histórico) | `v0.2.4-beta` (`FIRMWARE_VERSION`, PATCH: corrige el modo "cubrir" para que sí agrande más allá del tamaño de origen, sin cambio de contrato — D-303 en `Aura-Firmware`) | v4 |
+| 0.1.2 | `v0.2.5-beta` (`FIRMWARE_VERSION`, PATCH: reproductor de video en español + modo "cubrir pantalla" con Select, sin cambio de contrato — D-304 en `Aura-Firmware`, ST-027 aquí) | v4 |
 
 Regla: un cambio a la sección D (contrato de datos) exige MINOR nuevo en ambos; un cambio de artefactos sin cambio de contrato es PATCH en el firmware y Studio solo actualiza el pin. `AuraUpdateChecker` (Studio) compara por hash SHA-256 del `rockbox.ipod` embebido vs. el instalado — sigue siendo la fuente de verdad para "hay actualización"; la UI puede mostrar además el tag de `FIRMWARE_VERSION` como referencia legible.
 
