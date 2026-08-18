@@ -144,6 +144,33 @@ final class AuraUpdateCheckerCheckForUpdateTests: XCTestCase {
         XCTAssertTrue(result)
     }
 
+    // D-300 en Aura-Firmware / cross-repo: reportado en vivo -- se
+    // publico un Release nuevo y ni siquiera el boton manual "Buscar
+    // actualizaciones de Aura" lo detectaba, porque ninguna ruta
+    // saltaba la cache de 24h. `forceRefresh: true` (usado por los
+    // chequeos manuales, ver ContentView.swift) tiene que ignorar una
+    // cache vigente pero YA DESACTUALIZADA y consultar la red de
+    // verdad.
+    func testForceRefreshBypassesStaleCacheAndFetchesLive() async throws {
+        try writeVersionMarker("v0.1.0-beta")
+        // La cache "vigente" (TTL sin vencer) dice que ya esta al dia
+        // -- desactualizada, un Release mas nuevo se publico despues de
+        // que se guardo este cache.
+        ReleaseCache.store([GitHubRelease(tagName: "v0.1.0-beta", draft: false, prerelease: true)], defaults: defaults)
+        try stubReleases([GitHubRelease(tagName: "v0.2.0-beta", draft: false, prerelease: true)])
+
+        let cachedResult = await AuraUpdateChecker.checkForUpdate(deviceMountPath: fakeIPod.path,
+                                                                    session: mockSession(),
+                                                                    defaults: defaults)
+        XCTAssertFalse(cachedResult, "sin forceRefresh, la cache vigente (aunque desactualizada) manda")
+
+        let forcedResult = await AuraUpdateChecker.checkForUpdate(deviceMountPath: fakeIPod.path,
+                                                                    session: mockSession(),
+                                                                    defaults: defaults,
+                                                                    forceRefresh: true)
+        XCTAssertTrue(forcedResult, "forceRefresh ignora la cache y consulta la red -- SI hay un Release mas nuevo")
+    }
+
     func testFallsBackToHashCheckWhenNoVersionMarker() async {
         // Sin version.txt no hay nada que comparar contra GitHub -- cae
         // a isUpdateAvailable(deviceMountPath:), que en este entorno de

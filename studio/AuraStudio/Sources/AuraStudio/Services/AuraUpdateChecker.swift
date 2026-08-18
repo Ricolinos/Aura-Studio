@@ -49,15 +49,31 @@ enum AuraUpdateChecker {
     /// `isUpdateAvailable(deviceMountPath:)` (hash local, sin red).
     /// `includePrereleases` en `true` por defecto: mientras el unico
     /// canal publicado sea beta, no tiene sentido pedir opt-in (Q6).
+    ///
+    /// `forceRefresh` (D-300 en Aura-Firmware / cross-repo, encargo del
+    /// dueño: "aura studio [no] pudo acceder a el para que me
+    /// apareciera"): reportado en vivo -- se publico v0.2.1-beta y ni
+    /// reabrir Aura Studio con el pin nuevo lo detecto. Causa real: el
+    /// TTL de 24h de `ReleaseCache` es correcto para el chequeo
+    /// AUTOMATICO al conectar (evita pegarle a la API de GitHub en cada
+    /// conexion), pero **ninguna** ruta -- ni siquiera el boton manual
+    /// "Buscar actualizaciones de Aura" -- tenia forma de saltarselo: si
+    /// la cache se lleno un rato ANTES de que el Release nuevo se
+    /// publicara, el usuario podia apretar ese boton, reabrir la app,
+    /// lo que fuera, y seguir viendo "al dia" hasta que el TTL venciera
+    /// solo. `false` por defecto (mismo comportamiento de siempre para
+    /// el chequeo automatico); una revision manual explicita del
+    /// usuario SI debe ser una consulta en vivo de verdad.
     static func checkForUpdate(deviceMountPath: String,
                                 session: URLSession = .shared,
                                 defaults: UserDefaults = .standard,
-                                includePrereleases: Bool = true) async -> Bool {
+                                includePrereleases: Bool = true,
+                                forceRefresh: Bool = false) async -> Bool {
         guard !deviceMountPath.isEmpty, deviceMountPath.hasPrefix("/") else { return false }
 
         if let installedTag = installedVersionTag(deviceMountPath: deviceMountPath),
            let installed = SemVer.parse(installedTag) {
-            var releases = ReleaseCache.load(defaults: defaults)
+            var releases = forceRefresh ? nil : ReleaseCache.load(defaults: defaults)
             if releases == nil {
                 releases = try? await fetchAndCache(session: session, defaults: defaults)
             }

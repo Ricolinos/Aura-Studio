@@ -190,13 +190,21 @@ struct ContentView: View {
         deviceMonitor.refreshDevice()
     }
 
-    private func refreshUpdateAvailability(for device: AuraDevice?) {
+    /// `forceRefresh`: `false` en el chequeo automatico (`.onChange(of:
+    /// deviceMonitor.device)`, respeta la cache de 24h de
+    /// `AuraUpdateChecker` a proposito -- evita pegarle a la API de
+    /// GitHub en cada conexion del iPod); `true` cuando el usuario pide
+    /// el chequeo EL MISMO explicitamente (boton "Buscar
+    /// actualizaciones de Aura") -- ver nota de `forceRefresh` en
+    /// `AuraUpdateChecker.checkForUpdate`.
+    private func refreshUpdateAvailability(for device: AuraDevice?, forceRefresh: Bool = false) {
         guard let device, device.isAura else {
             updateAvailable = false
             return
         }
         Task {
-            updateAvailable = await AuraUpdateChecker.checkForUpdate(deviceMountPath: device.mountPath)
+            updateAvailable = await AuraUpdateChecker.checkForUpdate(deviceMountPath: device.mountPath,
+                                                                       forceRefresh: forceRefresh)
         }
     }
 
@@ -219,7 +227,7 @@ struct ContentView: View {
                                   selection = .installer
                               },
                               updateAvailable: updateAvailable,
-                              onCheckForUpdates: { refreshUpdateAvailability(for: deviceMonitor.device) },
+                              onCheckForUpdates: { refreshUpdateAvailability(for: deviceMonitor.device, forceRefresh: true) },
                               onRefreshDevice: { deviceMonitor.refreshDevice() },
                               onRenameDevice: { newName in
                                   guard let device = deviceMonitor.device else { return }
@@ -274,7 +282,7 @@ struct ContentView: View {
         defer { isRefreshing = false }
         guard let device = deviceMonitor.device else { return }
         deviceMonitor.refreshDevice()
-        updateAvailable = await AuraUpdateChecker.checkForUpdate(deviceMountPath: device.mountPath)
+        updateAvailable = await AuraUpdateChecker.checkForUpdate(deviceMountPath: device.mountPath, forceRefresh: true)
         if device.isAura {
             await library.verifyDevice(at: URL(fileURLWithPath: device.mountPath))
         }
