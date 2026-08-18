@@ -38,13 +38,22 @@ struct TrackMetadata: Equatable {
     /// nil = sin calificar (distinto de 0, que seria "0 estrellas"
     /// puesto a proposito).
     var rating: Int?
+    /// Favorito (ST-019): marca binaria independiente de `rating`, la
+    /// misma idea que el corazon/estrella de Music.app -- alimenta el
+    /// filtro "Solo favoritos" y la columna/orden "Favorito". Vive solo
+    /// en el catalogo de Studio (no hay frame ID3 estandar para esto).
+    var isFavorite: Bool
+    /// Numero de disco (TPOS / `disk` en MP4), para ordenar cajas de
+    /// varios discos antes que por numero de pista.
+    var discNumber: Int?
 
     init(title: String? = nil, artist: String? = nil, album: String? = nil,
          albumArtist: String? = nil, year: String? = nil, genre: String? = nil,
          composer: String? = nil,
          trackNumber: Int? = nil, coverArtData: Data? = nil, syncedLyrics: String? = nil,
          musicBrainzRecordingID: String? = nil, musicBrainzReleaseID: String? = nil,
-         durationSeconds: Double? = nil, rating: Int? = nil) {
+         durationSeconds: Double? = nil, rating: Int? = nil,
+         isFavorite: Bool = false, discNumber: Int? = nil) {
         self.title = title
         self.artist = artist
         self.album = album
@@ -59,6 +68,8 @@ struct TrackMetadata: Equatable {
         self.musicBrainzReleaseID = musicBrainzReleaseID
         self.durationSeconds = durationSeconds
         self.rating = rating
+        self.isFavorite = isFavorite
+        self.discNumber = discNumber
     }
 
     var isComplete: Bool {

@@ -65,8 +65,11 @@ struct LibraryItem: Identifiable, Equatable {
     /// -- la accion explicita del menu contextual, en cambio, siempre
     /// pisa, sea cual sea este valor.
     var metadataEditedByUser: Bool
+    /// Cuando se agrego a la biblioteca (ST-019). nil solo para items
+    /// restaurados de un catalogo anterior a este campo.
+    var addedAt: Date?
 
-    init(sourceURL: URL) {
+    init(sourceURL: URL, addedAt: Date? = Date()) {
         self.id = UUID()
         self.sourceURL = sourceURL
         self.kind = LibraryItemKind.classify(url: sourceURL)
@@ -75,6 +78,7 @@ struct LibraryItem: Identifiable, Equatable {
         self.preparedURL = nil
         self.category = nil
         self.metadataEditedByUser = false
+        self.addedAt = addedAt
     }
 
     /// Restauracion desde el catalogo persistido de la biblioteca
@@ -83,7 +87,8 @@ struct LibraryItem: Identifiable, Equatable {
     /// sesiones.
     init(id: UUID, sourceURL: URL, kind: LibraryItemKind,
          status: LibraryItemStatus, metadata: TrackMetadata?, preparedURL: URL?,
-         category: String? = nil, metadataEditedByUser: Bool = false) {
+         category: String? = nil, metadataEditedByUser: Bool = false,
+         addedAt: Date? = nil) {
         self.id = id
         self.sourceURL = sourceURL
         self.kind = kind
@@ -92,5 +97,6 @@ struct LibraryItem: Identifiable, Equatable {
         self.preparedURL = preparedURL
         self.category = category
         self.metadataEditedByUser = metadataEditedByUser
+        self.addedAt = addedAt
     }
 }

@@ -561,6 +561,27 @@ final class LibraryViewModel: ObservableObject {
         persistCatalog()
     }
 
+    /// Favorito (ST-019): marca/desmarca varias canciones de una vez
+    /// (menu contextual, columna "Favorito"). No toca el archivo
+    /// preparado -- vive solo en el catalogo -- asi que no hay que
+    /// re-preparar nada; se persiste y listo.
+    func setFavorite(_ favorite: Bool, forItems ids: Set<UUID>) {
+        var changed = false
+        for index in items.indices where ids.contains(items[index].id) && items[index].kind == .music {
+            var metadata = items[index].metadata ?? TrackMetadata()
+            guard metadata.isFavorite != favorite else { continue }
+            metadata.isFavorite = favorite
+            items[index].metadata = metadata
+            changed = true
+        }
+        if changed { persistCatalog() }
+    }
+
+    func toggleFavorite(id: UUID) {
+        guard let item = items.first(where: { $0.id == id }) else { return }
+        setFavorite(!(item.metadata?.isFavorite ?? false), forItems: [id])
+    }
+
     /// "Eliminar carátula" del menu contextual -- solo tiene sentido
     /// para musica (fotos/video no tienen caratula embebida propia).
     func clearCoverArt(id: UUID) {
@@ -1192,7 +1213,8 @@ final class LibraryViewModel: ObservableObject {
                 preparedRelativePath: item.preparedURL.map { relativePath(of: $0) },
                 coverRelativePath: coverRelative,
                 category: item.category,
-                metadataEditedByUser: item.metadataEditedByUser
+                metadataEditedByUser: item.metadataEditedByUser,
+                addedAt: item.addedAt
             ))
         }
         persisted.playlists = playlists.map {
@@ -1257,7 +1279,8 @@ final class LibraryViewModel: ObservableObject {
                 // conocidos al string de display nuevo y deja pasar
                 // cualquier otro tal cual (ver su doc-comment).
                 category: p.category.map(LibraryPersistenceMapper.liveCategory),
-                metadataEditedByUser: p.metadataEditedByUser ?? false
+                metadataEditedByUser: p.metadataEditedByUser ?? false,
+                addedAt: p.addedAt
             ))
         }
         items = restored

@@ -61,14 +61,22 @@ struct MediaSectionView: View {
     /// ST-012: hoja de revision de caratulas que cayeron a Imagenes.
     @State private var reviewingCoverContamination = false
     @State private var batchEditingIDs: Set<UUID>?
+    /// ST-019: hoja "Opciones de visualización" (solo musica).
+    @State private var showingViewOptions = false
 
     private var allItemsOfKind: [LibraryItem] {
         viewModel.items.filter { $0.kind == kind }
     }
 
     private var items: [LibraryItem] {
-        guard let categoryFilter else { return allItemsOfKind }
-        return allItemsOfKind.filter { $0.category == categoryFilter }
+        var result = allItemsOfKind
+        if let categoryFilter {
+            result = result.filter { $0.category == categoryFilter }
+        }
+        if kind == .music && preferences.musicShowOnlyFavorites {
+            result = result.filter { $0.metadata?.isFavorite == true }
+        }
+        return result
     }
 
     private var rows: [MediaTableRow] {
@@ -121,7 +129,7 @@ struct MediaSectionView: View {
                 // franja angosta encima de la tabla, alineada a la
                 // derecha, es lo mas cerca que se puede quedar.
                 if kind == .music { enrichmentBanner }
-                columnsBar
+                if kind == .music { musicHeaderMenuBar } else { columnsBar }
                 table
                     .onKeyPress(.space) {
                         guard let selectedItem else { return .ignored }
@@ -131,6 +139,12 @@ struct MediaSectionView: View {
             }
         }
         .navigationTitle(title)
+        .sheet(isPresented: $showingViewOptions) {
+            MusicViewOptionsView(preferences: preferences) { showingViewOptions = false }
+        }
+        .onChange(of: sortOrder) { storeSortOrderInPreferences() }
+        .onChange(of: preferences.musicSortField) { applySortOrderFromPreferences() }
+        .onChange(of: preferences.musicSortAscending) { applySortOrderFromPreferences() }
         .toolbar {
             if kind == .music {
                 ToolbarItem {
@@ -147,6 +161,7 @@ struct MediaSectionView: View {
         }
         .onAppear {
             loadVisibleColumns()
+            applySortOrderFromPreferences()
             viewModel.selectionForSync = selection
         }
         // PLAN-general-sync.md §6: "Solo la selección" en
@@ -372,16 +387,14 @@ struct MediaSectionView: View {
         }
     }
 
-    /// D-199: `Table`/`TableColumnBuilder` solo admite hasta 10 columnas
-    /// declaradas EN EL CODIGO por tabla (`buildBlock` no tiene overload
-    /// mas alla de eso, y ni `if` ni `ForEach` dentro del builder
-    /// esquivan el limite -- cada uno cuenta como un slot fijo,
-    /// visible o no). Musica ya usa 7 slots fijos (checkbox/titulo/
-    /// artista/album/genero/duracion/estado), asi que solo quedan 3
-    /// para el menu "+" -- se priorizaron Calificación (D-199, motivo
-    /// del pedido), N.º de pista y Año. "Artista del álbum" y "Letra"
-    /// quedaron afuera del menu por falta de espacio, no por falta de
-    /// dato (`MediaTableRow` los expone igual, ver `Más información`).
+    /// ST-019: columnas de musica dinamicas. `TableColumnForEach`
+    /// (macOS 14.4) declara una columna por cada entrada de
+    /// `preferences.musicVisibleColumns`, en ese orden -- ya no rige el
+    /// limite de 10 slots de `TableColumnBuilder` (D-199), que era lo
+    /// que dejaba "Artista del álbum" y compañia fuera del menu "+".
+    /// Título sigue fija y primera; el resto lo decide el usuario en
+    /// "Opciones de visualización". Cada columna ordena con el
+    /// comparador que define `MusicTableColumn.comparator(order:)`.
     private var musicTable: some View {
         Table(rows, selection: $selection, sortOrder: $sortOrder) {
             TableColumn("") { row in checkboxCell(row) }
@@ -394,34 +407,130 @@ struct MediaSectionView: View {
                 // encogerla, y la barra de scroll horizontal (ya
                 // automatica en NSScrollView) se encarga del resto.
                 .width(min: 180, ideal: 220)
-            TableColumn("Artista", value: \.artist) { row in Text(row.artist) }
-                .width(min: 90, ideal: 140)
-            TableColumn("Álbum", value: \.album) { row in Text(row.album) }
-                .width(min: 90, ideal: 160)
-            TableColumn("Género", value: \.genre) { row in Text(row.genre) }
-                .width(min: 60, ideal: 100)
-            TableColumn("Duración", value: \.durationSeconds) { row in Text(row.durationText) }
-                .width(min: 50, ideal: 64)
-            if visibleColumns.contains(.rating) {
-                TableColumn("Calificación", value: \.ratingValue) { row in Text(row.ratingText) }
-                    .width(min: 70, ideal: 90)
+            TableColumnForEach(preferences.musicVisibleColumns) { column in
+                TableColumn(column.headerTitle, sortUsing: column.comparator(order: .forward)) { row in
+                    musicCell(column, row)
+                }
+                .width(min: column.minWidth, ideal: column.idealWidth)
             }
-            if visibleColumns.contains(.trackNumber) {
-                TableColumn("N.º", value: \.trackNumberSort) { row in Text(row.trackNumberText) }
-                    .width(min: 32, ideal: 40)
-            }
-            if visibleColumns.contains(.year) {
-                TableColumn("Año", value: \.year) { row in Text(row.year) }
-                    .width(min: 44, ideal: 56)
-            }
-            // ST-019: con `value:` el encabezado ordena de verdad (antes
-            // se declaraba sin clave y el clic no hacia nada).
-            TableColumn("Estado", value: \.statusRank) { row in statusCell(row.item) }
-                // D-215: "Sincronizado" no entraba comodo en el ancho
-                // viejo (pensado solo para el icono + un check).
-                .width(min: 90, ideal: 120)
         }
         .contextMenu(forSelectionType: UUID.self) { ids in contextMenuContent(for: ids) }
+        // Clic derecho sobre los encabezados: mismo menu que el boton
+        // de la barra (`musicHeaderMenuBar`).
+        .overlay(alignment: .topLeading) {
+            TableHeaderMenuInstaller(entries: { headerMenuEntries })
+                .frame(width: 1, height: 1)
+                .allowsHitTesting(false)
+        }
+    }
+
+    @ViewBuilder
+    private func musicCell(_ column: MusicTableColumn, _ row: MediaTableRow) -> some View {
+        switch column {
+        case .album: Text(row.album)
+        case .albumArtist: Text(row.albumArtist)
+        case .artist: Text(row.artist)
+        case .composer: Text(row.composer)
+        case .discNumber: Text(row.discNumberText)
+        case .duration: Text(row.durationText)
+        case .genre: Text(row.genre)
+        case .trackNumber: Text(row.trackNumberText)
+        case .year: Text(row.year)
+        case .favorite: favoriteCell(row)
+        case .rating: Text(row.ratingText)
+        case .dateAdded: Text(row.addedAtText)
+        case .fileFormat: Text(row.fileFormat)
+        case .fileSize: Text(row.fileSizeText)
+        case .status: statusCell(row.item)
+        }
+    }
+
+    /// Estrella como en Music.app: llena si es favorito, vacia y tenue
+    /// si no; un clic alterna sin abrir nada.
+    private func favoriteCell(_ row: MediaTableRow) -> some View {
+        Button {
+            viewModel.toggleFavorite(id: row.id)
+        } label: {
+            Image(systemName: row.isFavorite ? "star.fill" : "star")
+                .foregroundStyle(row.isFavorite ? AuraColors.light.accent : Color.secondary.opacity(0.35))
+        }
+        .buttonStyle(.plain)
+        .help(row.isFavorite ? "Quitar de favoritos" : "Marcar como favorito")
+    }
+
+    // MARK: - Menu de encabezado (ST-019)
+
+    /// Las entradas del menu de clic derecho sobre los encabezados y del
+    /// boton de la barra: filtro (Todas / Solo favoritos), submenu de
+    /// orden con el sentido, y la ventana de opciones.
+    private var headerMenuEntries: [TableHeaderMenuEntry] {
+        let onlyFavorites = preferences.musicShowOnlyFavorites
+        var sortEntries: [TableHeaderMenuEntry] = MusicSortField.menuFields.map { field in
+            .item(title: field.title, checked: preferences.musicSortField == field) {
+                preferences.musicSortField = field
+            }
+        }
+        sortEntries.append(.separator)
+        sortEntries.append(.item(title: "Ascendente", checked: preferences.musicSortAscending) {
+            preferences.musicSortAscending = true
+        })
+        sortEntries.append(.item(title: "Descendente", checked: !preferences.musicSortAscending) {
+            preferences.musicSortAscending = false
+        })
+        return [
+            .item(title: "Todas las canciones", checked: !onlyFavorites) {
+                preferences.musicShowOnlyFavorites = false
+            },
+            .item(title: "Solo favoritos", checked: onlyFavorites) {
+                preferences.musicShowOnlyFavorites = true
+            },
+            .separator,
+            .submenu(title: "Opciones para ordenar", symbol: "arrow.up.arrow.down", entries: sortEntries),
+            .separator,
+            .item(title: "Mostrar opciones de visualización", symbol: "gearshape") {
+                showingViewOptions = true
+            },
+        ]
+    }
+
+    private var musicHeaderMenuBar: some View {
+        HStack(spacing: 8) {
+            if preferences.musicShowOnlyFavorites {
+                Label("Solo favoritos", systemImage: "star.fill")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Menu {
+                TableHeaderMenuContent(entries: headerMenuEntries)
+            } label: {
+                Image(systemName: "line.3.horizontal.decrease")
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .help("Filtrar, ordenar y elegir columnas (también con clic derecho sobre los encabezados)")
+        }
+        .padding(.horizontal, 12)
+        .padding(.top, 8)
+        .padding(.bottom, 2)
+    }
+
+    /// El orden que se muestra vive en `sortOrder` (lo que `Table`
+    /// entiende); el que se persiste vive en `AppPreferences`. Los dos
+    /// se mantienen iguales sin ciclos: solo se escribe cuando difieren.
+    private func applySortOrderFromPreferences() {
+        guard kind == .music else { return }
+        let wanted = preferences.musicSortField.comparator(order: preferences.musicSortAscending ? .forward : .reverse)
+        if let current = sortOrder.first, current.keyPath == wanted.keyPath, current.order == wanted.order { return }
+        sortOrder = [wanted]
+    }
+
+    private func storeSortOrderInPreferences() {
+        guard kind == .music, let first = sortOrder.first,
+              let field = MusicSortField(keyPath: first.keyPath) else { return }
+        if preferences.musicSortField != field { preferences.musicSortField = field }
+        let ascending = first.order == .forward
+        if preferences.musicSortAscending != ascending { preferences.musicSortAscending = ascending }
     }
 
     /// Video y fotos comparten forma (Categoría en vez de Artista/Álbum/
@@ -556,6 +665,20 @@ struct MediaSectionView: View {
                 for item in targetItems { viewModel.clearCoverArt(id: item.id) }
             }
             .disabled(!targetItems.contains { $0.metadata?.coverArtData != nil })
+
+            Divider()
+
+            // ST-019: favorito. Si en la seleccion hay alguna que no lo
+            // es, la accion marca todas; si todas lo son, las quita.
+            if targetItems.contains(where: { $0.metadata?.isFavorite != true }) {
+                Button("Marcar como favorito") {
+                    viewModel.setFavorite(true, forItems: Set(targetItems.map(\.id)))
+                }
+            } else {
+                Button("Quitar de favoritos") {
+                    viewModel.setFavorite(false, forItems: Set(targetItems.map(\.id)))
+                }
+            }
 
             Divider()
 
@@ -746,6 +869,27 @@ struct MediaTableRow: Identifiable {
         return String(format: "%d:%02d", total / 60, total % 60)
     }
 
+    // MARK: - Columnas de musica (ST-019)
+
+    var albumArtist: String { item.metadata?.albumArtist ?? "" }
+    var composer: String { item.metadata?.composer ?? "" }
+    var discNumberSort: Int { item.metadata?.discNumber ?? 0 }
+    var discNumberText: String { item.metadata?.discNumber.map(String.init) ?? "" }
+    var isFavorite: Bool { item.metadata?.isFavorite ?? false }
+    /// Ascendente = favoritos primero (0 antes que 1).
+    var favoriteRank: Int { isFavorite ? 0 : 1 }
+    var addedAtSort: Date { item.addedAt ?? .distantPast }
+    var addedAtText: String {
+        guard let date = item.addedAt else { return "" }
+        return Self.addedAtFormatter.string(from: date)
+    }
+    private static let addedAtFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter
+    }()
+
     // MARK: - Columnas extra (D-199)
 
     var trackNumberSort: Int { item.metadata?.trackNumber ?? 0 }
@@ -768,30 +912,23 @@ struct MediaTableRow: Identifiable {
 }
 
 /// Columnas opcionales que el boton "+" de la barra de herramientas
-/// deja agregar/quitar (D-199) -- persisten por tipo de medio en
-/// UserDefaults (`MediaSectionView.columnsStorageKey`).
+/// deja agregar/quitar en Video y Fotos (D-199) -- persisten por tipo de
+/// medio en UserDefaults (`MediaSectionView.columnsStorageKey`). Musica
+/// ya no pasa por aca: sus columnas son `MusicTableColumn` (ST-019).
 enum ExtraColumn: String, CaseIterable, Identifiable {
-    case trackNumber, year, rating, fileFormat, fileSize
+    case fileFormat, fileSize
 
     var id: String { rawValue }
 
     var displayName: String {
         switch self {
-        case .trackNumber: return "N.º de pista"
-        case .year: return "Año"
-        case .rating: return "Calificación"
         case .fileFormat: return "Formato"
         case .fileSize: return "Tamaño"
         }
     }
 
     func isApplicable(to kind: LibraryItemKind) -> Bool {
-        switch self {
-        case .trackNumber, .year, .rating:
-            return kind == .music
-        case .fileFormat, .fileSize:
-            return kind != .music
-        }
+        kind != .music
     }
 }
 
@@ -897,5 +1034,81 @@ private final class DropCollector: @unchecked Sendable {
     func ordered() -> [URL] {
         lock.lock(); defer { lock.unlock() }
         return slots.compactMap { $0 }
+    }
+}
+
+// MARK: - Comparadores por columna (ST-019)
+
+extension MusicTableColumn {
+    /// Clave con la que ordena esta columna. `Table` compara comparadores
+    /// por `keyPath`, asi que sirve tanto para construir el comparador
+    /// como para reconocer, cuando el usuario hace clic en un
+    /// encabezado, que columna eligio (`MusicSortField(keyPath:)`).
+    var sortKeyPath: PartialKeyPath<MediaTableRow> {
+        switch self {
+        case .album: return \MediaTableRow.album
+        case .albumArtist: return \MediaTableRow.albumArtist
+        case .artist: return \MediaTableRow.artist
+        case .composer: return \MediaTableRow.composer
+        case .discNumber: return \MediaTableRow.discNumberSort
+        case .duration: return \MediaTableRow.durationSeconds
+        case .genre: return \MediaTableRow.genre
+        case .trackNumber: return \MediaTableRow.trackNumberSort
+        case .year: return \MediaTableRow.year
+        case .favorite: return \MediaTableRow.favoriteRank
+        case .rating: return \MediaTableRow.ratingValue
+        case .dateAdded: return \MediaTableRow.addedAtSort
+        case .fileFormat: return \MediaTableRow.fileFormat
+        case .fileSize: return \MediaTableRow.fileSizeBytes
+        case .status: return \MediaTableRow.statusRank
+        }
+    }
+
+    func comparator(order: SortOrder) -> KeyPathComparator<MediaTableRow> {
+        switch self {
+        case .album: return KeyPathComparator(\.album, comparator: .localizedStandard, order: order)
+        case .albumArtist: return KeyPathComparator(\.albumArtist, comparator: .localizedStandard, order: order)
+        case .artist: return KeyPathComparator(\.artist, comparator: .localizedStandard, order: order)
+        case .composer: return KeyPathComparator(\.composer, comparator: .localizedStandard, order: order)
+        case .discNumber: return KeyPathComparator(\.discNumberSort, order: order)
+        case .duration: return KeyPathComparator(\.durationSeconds, order: order)
+        case .genre: return KeyPathComparator(\.genre, comparator: .localizedStandard, order: order)
+        case .trackNumber: return KeyPathComparator(\.trackNumberSort, order: order)
+        case .year: return KeyPathComparator(\.year, order: order)
+        case .favorite: return KeyPathComparator(\.favoriteRank, order: order)
+        case .rating: return KeyPathComparator(\.ratingValue, order: order)
+        case .dateAdded: return KeyPathComparator(\.addedAtSort, order: order)
+        case .fileFormat: return KeyPathComparator(\.fileFormat, order: order)
+        case .fileSize: return KeyPathComparator(\.fileSizeBytes, order: order)
+        case .status: return KeyPathComparator(\.statusRank, order: order)
+        }
+    }
+}
+
+extension MusicSortField {
+    var sortKeyPath: PartialKeyPath<MediaTableRow> {
+        switch self {
+        case .title: return \MediaTableRow.title
+        case .column(let column): return column.sortKeyPath
+        }
+    }
+
+    func comparator(order: SortOrder) -> KeyPathComparator<MediaTableRow> {
+        switch self {
+        case .title: return KeyPathComparator(\.title, comparator: .localizedStandard, order: order)
+        case .column(let column): return column.comparator(order: order)
+        }
+    }
+
+    /// Reconoce el criterio a partir del comparador que `Table` deja en
+    /// `sortOrder` tras un clic en un encabezado. nil para columnas que
+    /// no son criterio persistible (no deberia pasar: todas lo son).
+    init?(keyPath: PartialKeyPath<MediaTableRow>) {
+        if keyPath == \MediaTableRow.title { self = .title; return }
+        if let column = MusicTableColumn.allCases.first(where: { $0.sortKeyPath == keyPath }) {
+            self = .column(column)
+            return
+        }
+        return nil
     }
 }
