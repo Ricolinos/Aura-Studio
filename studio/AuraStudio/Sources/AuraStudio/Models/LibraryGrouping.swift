@@ -163,12 +163,16 @@ enum LibraryGrouping {
     /// Ignora el artículo inicial (El/La/Los/Las/The/Un/Una/A/An) para
     /// ordenar, como hace Music.app.
     static func sortName(_ name: String) -> String {
-        let lower = name.lowercased()
+        // Puntuacion inicial ("…Little Broken Hearts", "'Plastic Beach'",
+        // "(What's the Story)") no cuenta para ordenar, como en Music.app.
+        var trimmed = String(name.drop { !$0.isLetter && !$0.isNumber })
+        if trimmed.isEmpty { trimmed = name }
+        let lower = trimmed.lowercased()
         for article in ["the ", "los ", "las ", "el ", "la ", "una ", "un ", "an ", "a "] where lower.hasPrefix(article) {
-            let rest = name.dropFirst(article.count).trimmingCharacters(in: .whitespaces)
-            return rest.isEmpty ? name : rest
+            let rest = trimmed.dropFirst(article.count).trimmingCharacters(in: .whitespaces)
+            return rest.isEmpty ? trimmed : rest
         }
-        return name
+        return trimmed
     }
 }
 

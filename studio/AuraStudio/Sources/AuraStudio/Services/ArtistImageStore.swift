@@ -7,10 +7,15 @@ import Foundation
 /// nombre de archivo seguro. No van a `biblioteca.json`: el archivo es
 /// la fuente de verdad, igual que las carátulas (`.portadas/<id>.jpg`).
 /// Nunca van al iPod (el firmware no muestra artistas con foto).
-final class ArtistImageStore {
+/// Se lee desde las vistas (MainActor) y se escribe desde la descarga
+/// (`LibraryViewModel.fetchArtistImages`, tambien MainActor) -- pero
+/// para que el tipo sea `Sendable` de verdad (Swift 6 estricto), el
+/// cache en memoria va bajo un `NSLock` en vez de confiar en quien llama.
+final class ArtistImageStore: @unchecked Sendable {
     let directory: URL
     private var cache: [String: Data] = [:]
     private var misses: Set<String> = []
+    private let lock = NSLock()
     private let fileManager: FileManager
 
     init(libraryRoot: URL, fileManager: FileManager = .default) {
@@ -44,6 +49,7 @@ final class ArtistImageStore {
     }
 
     func image(forArtistKey key: String) -> Data? {
+        lock.lock(); defer { lock.unlock() }
         if let cached = cache[key] { return cached }
         if misses.contains(key) { return nil }
         guard let data = try? Data(contentsOf: url(forArtistKey: key)), !data.isEmpty else {
@@ -61,12 +67,14 @@ final class ArtistImageStore {
     func save(_ data: Data, forArtistKey key: String) throws {
         try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
         try data.write(to: url(forArtistKey: key), options: .atomic)
+        lock.lock(); defer { lock.unlock() }
         cache[key] = data
         misses.remove(key)
     }
 
     func remove(forArtistKey key: String) {
         try? fileManager.removeItem(at: url(forArtistKey: key))
+        lock.lock(); defer { lock.unlock() }
         cache[key] = nil
         misses.remove(key)
     }
@@ -74,6 +82,7 @@ final class ArtistImageStore {
     /// Al cambiar de biblioteca (o tras descargar en lote) se olvida lo
     /// leido para releer del disco.
     func invalidate() {
+        lock.lock(); defer { lock.unlock() }
         cache.removeAll()
         misses.removeAll()
     }

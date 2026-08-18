@@ -64,10 +64,9 @@ struct ArtistsView: View {
 
     private var master: some View {
         VStack(spacing: 0) {
-            HStack {
-                Text("Artistas")
-                    .font(.title2.bold())
-                Spacer()
+            HStack(spacing: 8) {
+                LibrarySearchField(scopeTitle: "Artistas", text: $searchText)
+                    .frame(maxWidth: .infinity)
                 if let onFetchArtistImages {
                     Button {
                         onFetchArtistImages(artists)
@@ -83,14 +82,9 @@ struct ArtistsView: View {
                     .help("Buscar fotos de los artistas en línea (fanart.tv / Deezer)")
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
+            .padding(.horizontal, 12)
+            .padding(.top, 10)
             .padding(.bottom, 8)
-
-            LibrarySearchField(scopeTitle: "Artistas", text: $searchText)
-                .frame(maxWidth: .infinity)
-                .padding(.horizontal, 12)
-                .padding(.bottom, 8)
 
             if artists.isEmpty {
                 VStack(spacing: 8) {

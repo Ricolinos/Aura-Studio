@@ -10,7 +10,10 @@ import ImageIO
 /// encarga de soltar bajo presión de memoria. Clave = hash de los
 /// bytes + tamaño, así que dos canciones con la misma carátula
 /// comparten miniatura.
-final class CoverThumbnailCache {
+/// `NSCache` es seguro entre hilos y no hay mas estado: por eso
+/// `@unchecked Sendable` es honesto (Swift 6 exige declararlo para el
+/// `shared`).
+final class CoverThumbnailCache: @unchecked Sendable {
     static let shared = CoverThumbnailCache()
 
     private let cache = NSCache<NSString, NSImage>()

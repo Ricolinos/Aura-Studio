@@ -87,9 +87,9 @@ struct AlbumsView: View {
 
     private var grid: some View {
         VStack(spacing: 0) {
+            // Orden y busqueda como en Music.app: arriba a la derecha,
+            // en la misma fila que el titulo de la ventana.
             HStack(spacing: 10) {
-                Text("Álbumes")
-                    .font(.title2.bold())
                 Spacer()
                 Menu {
                     Picker("Ordenar por", selection: $sortRaw) {
@@ -106,7 +106,8 @@ struct AlbumsView: View {
                 LibrarySearchField(scopeTitle: "Álbumes", text: $searchText)
             }
             .padding(.horizontal, 20)
-            .padding(.vertical, 12)
+            .padding(.top, 10)
+            .padding(.bottom, 6)
 
             if albums.isEmpty {
                 emptyState("Todavía no hay música en la biblioteca.",

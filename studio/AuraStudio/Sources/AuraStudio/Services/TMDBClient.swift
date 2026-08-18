@@ -59,7 +59,7 @@ struct TMDBClient {
     private let session: URLSession
     private let baseURL: URL
     private let imageBaseURL: URL
-    private let apiKeyProvider: () -> String?
+    private let apiKeyProvider: @Sendable () -> String?
     /// Idioma de títulos/pósters: los pósters "es-MX" existen para casi
     /// todo lo popular y caen a los originales cuando no.
     private let language: String
@@ -68,7 +68,7 @@ struct TMDBClient {
          baseURL: URL = URL(string: "https://api.themoviedb.org/3")!,
          imageBaseURL: URL = URL(string: "https://image.tmdb.org/t/p/w780")!,
          language: String = "es-MX",
-         apiKeyProvider: @escaping () -> String? = { APIKeyStore.load(for: .tmdb) }) {
+         apiKeyProvider: @escaping @Sendable () -> String? = { APIKeyStore.load(for: .tmdb) }) {
         self.session = session
         self.baseURL = baseURL
         self.imageBaseURL = imageBaseURL
@@ -223,7 +223,7 @@ enum VideoTitleParser {
 struct VideoArtworkResolver {
     var tmdb: TMDBClient = TMDBClient()
     var fanart: FanartTVClient = FanartTVClient()
-    var hasFanartKey: () -> Bool = { APIKeyStore.hasKey(for: .fanartTV) }
+    var hasFanartKey: @Sendable () -> Bool = { APIKeyStore.hasKey(for: .fanartTV) }
 
     enum Kind { case movie, series, unknown }
     enum Source: Equatable { case fanartTV, tmdb }

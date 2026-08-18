@@ -123,7 +123,7 @@ struct ContentView: View {
             // igual que el resto de Música.
             if locked, let current = selection,
                current != .general,
-               SidebarSection.deviceSections.contains(current) || SidebarSection.musicSubsections.contains(current) {
+               SidebarSection.deviceSections.contains(current) || current.isMusicSection {
                 selection = .general
             }
         }
@@ -226,7 +226,7 @@ struct ContentView: View {
                                   Task { await renameDevice(device, to: newName) }
                               },
                               canRenameDevice: deviceMonitor.device?.deviceIdentity?.canRename(from: preferences.installationID) ?? true)
-        case .music:
+        case .music, .musicGroup:
             MediaSectionView(kind: .music, viewModel: library, device: deviceMonitor.device, preferences: preferences)
         case .musicArtists:
             // ST-020 / ST-021: Artistas con fotos de artista opcionales.
@@ -350,6 +350,11 @@ enum SidebarSection: Hashable, CaseIterable {
     /// `libraryLocked`).
     case musicArtists
     case musicAlbums
+    /// Rotulo del grupo "Música" en la barra lateral. Abre Canciones (la
+    /// misma vista que `.music`) pero con identidad propia: si el rotulo
+    /// y la fila "Canciones" compartieran `.music`, la lista resaltaria
+    /// los dos a la vez.
+    case musicGroup
     case video
     case photos
     case extras
@@ -362,6 +367,7 @@ enum SidebarSection: Hashable, CaseIterable {
         // `.music` es la tabla de Canciones; el rotulo del grupo
         // "Música" lo pone SidebarView (`S.music`).
         case .music:          return S.songs.text
+        case .musicGroup:     return S.music.text
         case .musicArtists:   return S.artists.text
         case .musicAlbums:    return S.albums.text
         case .musicPlaylists: return S.playlists.text
@@ -387,6 +393,7 @@ enum SidebarSection: Hashable, CaseIterable {
         switch self {
         case .general:        return "info.circle"
         case .music:          return "music.note"
+        case .musicGroup:     return "music.note.house"
         case .musicArtists:   return "music.mic"
         case .musicAlbums:    return "square.stack"
         case .musicPlaylists: return "music.note.list"
@@ -404,6 +411,12 @@ enum SidebarSection: Hashable, CaseIterable {
     /// referencia del dueño: Artistas, Álbumes, Canciones; Listas al
     /// final).
     static let musicSubsections: [SidebarSection] = [.musicArtists, .musicAlbums, .music, .musicPlaylists]
+
+    /// Todo lo que vive bajo el grupo Música (incluido el rotulo) -- se
+    /// bloquea junto cuando `libraryLocked`.
+    var isMusicSection: Bool {
+        self == .musicGroup || Self.musicSubsections.contains(self)
+    }
 }
 
 private struct SidebarView: View {
@@ -420,9 +433,12 @@ private struct SidebarView: View {
                 ForEach(SidebarSection.deviceSections, id: \.self) { section in
                     if section == .music {
                         // ST-020: "Música" es un grupo (Artistas, Álbumes,
-                        // Canciones, Listas). El rotulo del grupo solo
-                        // abre/cierra; "Canciones" (`.music`) es la tabla
-                        // de siempre.
+                        // Canciones, Listas). El rotulo abre/cierra y, si
+                        // se toca, lleva a Canciones -- con su propia
+                        // identidad (`.musicGroup`), porque dentro de un
+                        // `ForEach` la fila del grupo hereda la etiqueta
+                        // implicita `.music` y resaltaria junto con la
+                        // fila "Canciones".
                         DisclosureGroup(isExpanded: $musicExpanded) {
                             ForEach(SidebarSection.musicSubsections, id: \.self) { sub in
                                 Label(sub.title, systemImage: sub.symbol)
@@ -430,12 +446,11 @@ private struct SidebarView: View {
                                     .disabled(libraryLocked)
                             }
                         } label: {
-                            // Sin `.tag`: si el rotulo del grupo y la fila
-                            // "Canciones" compartieran `.music`, la lista
-                            // resaltaria los dos a la vez.
-                            Label(S.music.text, systemImage: "music.note.house")
-                                .disabled(libraryLocked && section != .general)
+                            Label(SidebarSection.musicGroup.title, systemImage: SidebarSection.musicGroup.symbol)
+                                .tag(SidebarSection.musicGroup)
+                                .disabled(libraryLocked)
                         }
+                        .tag(SidebarSection.musicGroup)
                     } else {
                         Label(section.title, systemImage: section.symbol)
                             .tag(section)

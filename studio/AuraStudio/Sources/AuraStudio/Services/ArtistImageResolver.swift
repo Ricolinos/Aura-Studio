@@ -14,7 +14,7 @@ struct ArtistImageResolver {
     var fanart: FanartTVClient = FanartTVClient()
     var deezer: DeezerClient = DeezerClient()
     /// Inyectable para tests (el Keychain real no se toca en la suite).
-    var hasFanartKey: () -> Bool = { APIKeyStore.hasKey(for: .fanartTV) }
+    var hasFanartKey: @Sendable () -> Bool = { APIKeyStore.hasKey(for: .fanartTV) }
     var deezerEnabled: Bool = true
 
     enum Source: Equatable { case fanartTV, deezer }

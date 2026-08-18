@@ -46,12 +46,12 @@ struct FanartTVClient {
 
     /// De donde sale la key: el Keychain (`APIKeyStore`) en la app;
     /// inyectable en tests para no tocar el llavero real.
-    private let apiKeyProvider: () -> String?
+    private let apiKeyProvider: @Sendable () -> String?
 
     init(session: URLSession = .shared,
          baseURL: URL = URL(string: "https://webservice.fanart.tv/v3/music/albums")!,
          rootURL: URL = URL(string: "https://webservice.fanart.tv/v3")!,
-         apiKeyProvider: @escaping () -> String? = { APIKeyStore.load(for: .fanartTV) }) {
+         apiKeyProvider: @escaping @Sendable () -> String? = { APIKeyStore.load(for: .fanartTV) }) {
         self.session = session
         self.baseURL = baseURL
         self.rootURL = rootURL

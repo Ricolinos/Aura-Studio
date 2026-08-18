@@ -109,5 +109,9 @@ final class LibraryGroupingTests: XCTestCase {
         XCTAssertEqual(LibraryGrouping.sortName("Los Fabulosos Cadillacs"), "Fabulosos Cadillacs")
         XCTAssertEqual(LibraryGrouping.sortName("Alaska"), "Alaska", "no confunde 'A' con artículo dentro de la palabra")
         XCTAssertEqual(LibraryGrouping.sortName("The"), "The")
+        XCTAssertEqual(LibraryGrouping.sortName("…Little Broken Hearts"), "Little Broken Hearts")
+        XCTAssertEqual(LibraryGrouping.sortName("'Plastic Beach' Instrumentals"), "Plastic Beach' Instrumentals")
+        XCTAssertEqual(LibraryGrouping.sortName("(What's the Story) Morning Glory?"), "What's the Story) Morning Glory?")
+        XCTAssertEqual(LibraryGrouping.sortName("..."), "...")
     }
 }
