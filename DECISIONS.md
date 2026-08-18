@@ -358,3 +358,11 @@ De ahí en cascada, **sin bugs adicionales**: `DeviceGeneralView.swift` muestra 
 **Hecho**: `checkForUpdate(...)` gana el parámetro `forceRefresh: Bool = false` -- en `true`, ignora `ReleaseCache.load()` y va directo a la red (`fetchAndCache`, que de todas formas vuelve a poblar la cache para el próximo chequeo automático). `false` por defecto: el chequeo automático (`.onChange(of: deviceMonitor.device)`) sigue respetando la cache, sin cambio de comportamiento ahí. Las dos rutas de chequeo EXPLÍCITO del usuario (`onCheckForUpdates` del botón, y `refreshNow()`) ahora pasan `forceRefresh: true` -- un chequeo que el usuario pide a propósito tiene que ser una consulta en vivo de verdad, no una que puede tener hasta 24h de retraso.
 
 **Verificación**: test nuevo `testForceRefreshBypassesStaleCacheAndFetchesLive` (cache vigente pero desactualizada -- sin forzar, gana la cache; forzando, se consulta la red y aparece la actualización real). `swift build` limpio. `swift test` **385/385** salvo la falla conocida de red (`LiveEnrichmentIntegrationTests`, ST-002, sin relación).
+
+## ST-021 — Pin a `v0.2.2-beta`
+
+**Encargo**: cross-repo con `Aura-Firmware` D-300 (morph de Letras optimizado) y D-301 (versión visible sin scroll en Acerca de) — PATCH, sin cambio de contrato.
+
+**Hecho**: `FIRMWARE_VERSION` → `tag=v0.2.2-beta` + los 4 hashes, verificados dos veces por separado (mismo criterio que ST-014/ST-018): `checksums.txt` descargado directo del Release público, y de nuevo por `scripts/fetch-firmware.sh` en modo Release real — los 4 `shasum -c` dieron `OK`. `Generated/AuraPalette.swift` comparado byte a byte: sin cambios. `CONTRATO-firmware-studio.md` §E: fila nueva, sincronizada con `Aura-Firmware` (`cmp` limpio).
+
+**Verificación**: `swift build` limpio. `swift test` **385/385** salvo la falla conocida de red.
