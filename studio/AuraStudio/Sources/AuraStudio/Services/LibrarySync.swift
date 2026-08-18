@@ -156,6 +156,11 @@ struct SyncResult: Equatable {
     /// alcanzo a copiar, asi que el iPod queda consistente.
     var wasCancelled: Bool = false
     var filesRemaining: Int = 0
+    /// ST-012: `true` si este sync dejo `/.aura/sync-pending.json` para
+    /// que el firmware reconstruya sus indices al arrancar (contrato
+    /// `docs/contracts/library-layout-v1.md` SS4). `false` si no se toco
+    /// ningun archivo de contenido (nada que reconstruir).
+    var syncMarkerWritten: Bool = false
 }
 
 /// D-217: progreso incremental de un sync en curso, publicado por
@@ -192,6 +197,12 @@ struct LibrarySync {
     /// Carpetas del dispositivo que Aura Studio escribe -- donde puede
     /// haber quedado un `.aura-tmp` huerfano de un sync interrumpido.
     static let deviceContentDirectories = ["Music", "Videos", "Photos", "Playlists"]
+    /// Mecanismo PREVIO a ST-012 para forzar la reconstruccion del
+    /// indice de musica: borrar la base de tagcache y dejar que el
+    /// firmware la levante de cero al arrancar. Desde ST-012 solo se usa
+    /// con firmwares que no anuncian `sync_marker_supported` en aura.cfg
+    /// (anteriores a D-293); con los nuevos basta el marcador de
+    /// `SyncPendingMarker` y la base vieja sigue usable mientras tanto.
     static let tagcacheFilesToClear = [
         ".rockbox/database_idx.tcd",
         ".rockbox/database_0.tcd",
@@ -377,6 +388,23 @@ struct LibrarySync {
         var wasCancelled = false
         var destinationByItemID: [UUID: String] = [:]
         var summary = CatalogSummary()
+        // ST-012: que secciones del iPod toco ESTE sync (copias,
+        // reemplazos, reubicaciones y borrados) -- va al marcador de
+        // reconstruccion del firmware, por seccion (contrato SS4).
+        var touched = SyncPendingMarker.Changes(music: false, video: false, images: false)
+        func markTouched(kind: LibraryItemKind) {
+            switch kind {
+            case .music: touched.music = true
+            case .video: touched.video = true
+            case .photo: touched.images = true
+            case .unsupported: break
+            }
+        }
+        func markTouched(deviceRelativePath: String) {
+            if deviceRelativePath.hasPrefix("Music/") { touched.music = true }
+            else if deviceRelativePath.hasPrefix("Videos/") { touched.video = true }
+            else if deviceRelativePath.hasPrefix("Photos/") { touched.images = true }
+        }
 
         let currentFiles = try items.compactMap { item -> (sourcePath: String, size: Int64, modifiedAt: TimeInterval, destinationRelativePath: String)? in
             guard let prepared = item.preparedURL else { return nil }
@@ -463,6 +491,7 @@ struct LibrarySync {
 
             if let stale = planItem.staleDestinationRelativePath {
                 try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(stale))
+                markTouched(deviceRelativePath: stale)
             }
 
             let destination = volumeRoot.appendingPathComponent(planItem.destinationRelativePath)
@@ -474,6 +503,7 @@ struct LibrarySync {
                 break planLoop
             }
             copied += 1
+            markTouched(kind: item.kind)
             onProgress(copied, toCopy)
 
             // Fase 24: el poster de un video (`<video>.jpg`, generado
@@ -522,6 +552,7 @@ struct LibrarySync {
             for orphanSourcePath in removeOrphanedSourcePaths {
                 guard let record = manifest.records[orphanSourcePath] else { continue }
                 try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(record.destinationRelativePath))
+                markTouched(deviceRelativePath: record.destinationRelativePath)
                 manifest.records.removeValue(forKey: orphanSourcePath)
             }
             try saveManifest(manifest)
@@ -537,7 +568,18 @@ struct LibrarySync {
         try writeSummary(summary)
         try writeRatings(items: items, destinationByItemID: destinationByItemID)
 
-        if copied > 0 {
+        // ST-012 / contrato SS4: si este sync toco algo (tambien si se
+        // cancelo a medias -- lo copiado ya esta en el disco y el
+        // firmware tiene que verlo), se deja el marcador para que el
+        // firmware reconstruya SOLO las secciones tocadas al arrancar.
+        // Con un firmware anterior a D-293 (sin `sync_marker_supported`
+        // en aura.cfg) se conserva ademas el mecanismo previo -- borrar
+        // la base de tagcache para forzar la reconstruccion al arrancar
+        // (SS4.4: ninguna combinacion de versiones rompe). El marcador
+        // se escribe igual: un firmware viejo lo ignora, y uno nuevo
+        // instalado despues lo aplica en su primer arranque.
+        let markerWritten = writeSyncMarkerIfNeeded(touched)
+        if copied > 0 && FirmwareCapabilities.supportedSyncMarkerVersion(volumeRoot: volumeRoot) == nil {
             triggerFirmwareDBRebuild()
         }
 
@@ -549,7 +591,28 @@ struct LibrarySync {
 
         let remaining = wasCancelled ? max(toCopy - copied, 0) : 0
         return SyncResult(filesCopied: copied, playlistsWritten: playlistsWritten,
-                           wasCancelled: wasCancelled, filesRemaining: remaining)
+                           wasCancelled: wasCancelled, filesRemaining: remaining,
+                           syncMarkerWritten: markerWritten)
+    }
+
+    /// Ver contrato SS4. Si ya habia un marcador (el firmware no alcanzo
+    /// a procesar el sync anterior), las secciones se ACUMULAN: el
+    /// firmware tiene que reconstruir la union de lo que cambio en
+    /// ambos syncs. `attempts` vuelve a 0: es un marcador nuevo.
+    private func writeSyncMarkerIfNeeded(_ touched: SyncPendingMarker.Changes) -> Bool {
+        var changes = touched
+        if let previous = SyncPendingMarker.read(from: volumeRoot, fileManager: fileManager) {
+            changes.music = changes.music || previous.changes.music
+            changes.video = changes.video || previous.changes.video
+            changes.images = changes.images || previous.changes.images
+        }
+        guard !changes.isEmpty else { return false }
+        do {
+            try SyncPendingMarker(changes: changes).write(to: volumeRoot, fileManager: fileManager)
+            return true
+        } catch {
+            return false
+        }
     }
 
     /// Con la politica "una caratula por album", la imagen no va embebida
