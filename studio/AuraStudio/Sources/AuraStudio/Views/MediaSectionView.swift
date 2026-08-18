@@ -72,7 +72,10 @@ struct MediaSectionView: View {
     }
 
     private var rows: [MediaTableRow] {
-        items.map(MediaTableRow.init).sorted(using: sortOrder)
+        let index = viewModel.deviceSyncIndex
+        return items
+            .map { MediaTableRow(item: $0, syncState: index?.state(forSourcePath: $0.sourceURL.path)) }
+            .sorted(using: sortOrder)
     }
 
     /// Solo fotos y video se organizan por categoria (D-192) -- musica
@@ -411,7 +414,9 @@ struct MediaSectionView: View {
                 TableColumn("Año", value: \.year) { row in Text(row.year) }
                     .width(min: 44, ideal: 56)
             }
-            TableColumn("Estado") { row in statusCell(row.item) }
+            // ST-019: con `value:` el encabezado ordena de verdad (antes
+            // se declaraba sin clave y el clic no hacia nada).
+            TableColumn("Estado", value: \.statusRank) { row in statusCell(row.item) }
                 // D-215: "Sincronizado" no entraba comodo en el ancho
                 // viejo (pensado solo para el icono + un check).
                 .width(min: 90, ideal: 120)
@@ -443,7 +448,7 @@ struct MediaSectionView: View {
                 TableColumn("Tamaño", value: \.fileSizeBytes) { row in Text(row.fileSizeText) }
                     .width(min: 60, ideal: 70)
             }
-            TableColumn("Estado") { row in statusCell(row.item) }
+            TableColumn("Estado", value: \.statusRank) { row in statusCell(row.item) }
                 // D-215: "Sincronizado" no entraba comodo en el ancho
                 // viejo (pensado solo para el icono + un check).
                 .width(min: 90, ideal: 120)
@@ -699,7 +704,35 @@ struct MediaSectionView: View {
 /// completo (`row.item`).
 struct MediaTableRow: Identifiable {
     let item: LibraryItem
+    /// Estado contra el iPod conectado (nil sin dispositivo o mientras
+    /// se verifica) -- se resuelve al armar la fila para que la columna
+    /// "Estado" tenga una clave ordenable (ST-019).
+    var syncState: SyncItemState? = nil
     var id: UUID { item.id }
+
+    /// Clave de orden de la columna "Estado" (ST-019): lo que ya esta
+    /// en el iPod primero, despues lo que falta por hacer, y al final
+    /// lo que necesita atencion -- asi "ordenar por Estado" agrupa lo
+    /// pendiente y lo problematico en vez de mezclarlo. El texto que
+    /// se muestra sigue saliendo de `statusCell`; esto es solo el rango.
+    var statusRank: Int {
+        switch item.status {
+        case .ready:
+            switch syncState {
+            case .synced: return 0
+            case .none: return 1              // "Listo" (sin iPod)
+            case .pending: return 2
+            case .changedLocally: return 3
+            case .modifiedOnDevice: return 4
+            case .removedFromDevice: return 5
+            }
+        case .queued: return 6
+        case .enriching: return 7
+        case .transcoding: return 8
+        case .needsReview: return 9
+        case .failed: return 10
+        }
+    }
     var title: String { item.metadata?.title ?? item.sourceURL.deletingPathExtension().lastPathComponent }
     var artist: String { item.metadata?.artist ?? "" }
     var album: String { item.metadata?.album ?? "" }
