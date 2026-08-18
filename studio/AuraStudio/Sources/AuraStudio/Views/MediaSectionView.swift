@@ -110,6 +110,7 @@ struct MediaSectionView: View {
                     .padding([.horizontal, .top], 16)
                 if kind == .music { legacyMetadataRereadBanner }
                 if kind == .photo { coverContaminationBanner }
+                if kind == .video { ffmpegMissingBanner }
                 // D-202 (encargo del dueño): el "+" de columnas va PEGADO
                 // a los encabezados de la tabla, no en la barra de
                 // herramientas de la ventana -- `Table` no deja insertar
@@ -290,6 +291,29 @@ struct MediaSectionView: View {
                     runEnrichment(busyText: "Leyendo etiquetas del archivo...") {
                         await viewModel.acceptLegacyMetadataRereadOffer()
                     }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+        }
+    }
+
+    /// PLAN-sync-media-hardening.md PARTE 3A: un solo banner persistente
+    /// en vez del mismo párrafo largo repetido por cada fila de video en
+    /// cola sin ffmpeg instalado -- ver `hasVideosWaitingOnFFmpeg`/
+    /// `retryVideosWaitingOnFFmpeg` en `LibraryViewModel`.
+    @ViewBuilder
+    private var ffmpegMissingBanner: some View {
+        if viewModel.hasVideosWaitingOnFFmpeg {
+            HStack(spacing: 12) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(.orange)
+                Text("Para convertir videos al formato del iPod hace falta ffmpeg. Instálalo con Homebrew (\"brew install ffmpeg\") y vuelve a intentar.")
+                    .font(.callout)
+                Spacer()
+                Button("Volver a intentar") {
+                    Task { await viewModel.retryVideosWaitingOnFFmpeg() }
                 }
                 .buttonStyle(.borderedProminent)
             }

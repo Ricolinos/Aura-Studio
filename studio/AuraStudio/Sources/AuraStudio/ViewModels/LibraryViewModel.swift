@@ -302,7 +302,8 @@ final class LibraryViewModel: ObservableObject {
             case .video:
                 items[index].status = .transcoding(progress: 0)
                 let transcoder = try FFmpegTranscoder()
-                let duration = try? FFmpegTranscoder.probeDurationSeconds(of: item.sourceURL, ffmpegURL: transcoder.ffmpegURL)
+                let info = try? FFmpegTranscoder.probeVideoInfo(of: item.sourceURL, ffmpegURL: transcoder.ffmpegURL)
+                let duration = info?.duration
                 if items[index].category == nil {
                     items[index].category = MediaCategoryHeuristics.classifyVideo(durationSeconds: duration ?? nil).displayName
                 }
@@ -320,7 +321,7 @@ final class LibraryViewModel: ObservableObject {
                 /// que saltar de vuelta explicitamente para tocar
                 /// `items`, que ObservableObject espera mutar solo desde
                 /// el actor principal.
-                try transcoder.transcode(input: sourceURL, output: output) { fraction in
+                try transcoder.transcode(input: sourceURL, output: output, sourceFrameRate: info?.frameRate) { fraction in
                     Task { @MainActor [weak self] in
                         guard let self, index < self.items.count else { return }
                         self.items[index].status = .transcoding(progress: fraction)
@@ -358,9 +359,39 @@ final class LibraryViewModel: ObservableObject {
             case .unsupported:
                 items[index].status = .failed("Formato no soportado")
             }
+        } catch FFmpegTranscoder.TranscodeError.ffmpegNotFound {
+            // PLAN-sync-media-hardening.md PARTE 3A: mensaje CORTO por
+            // fila -- el párrafo largo con instrucciones vive en el
+            // banner persistente de la sección Video (`videoFFmpegBanner`
+            // en `MediaSectionView`, condicionado por
+            // `hasVideosWaitingOnFFmpeg`). Antes, cada video en cola
+            // repetía el mismo párrafo largo, uno por fila.
+            items[index].status = .failed(Self.ffmpegMissingRowMessage)
         } catch {
             items[index].status = .failed(error.localizedDescription)
         }
+    }
+
+    /// Mensaje corto para la celda de estado de una fila -- ver nota en
+    /// el `catch` de `process(itemAt:)`.
+    static let ffmpegMissingRowMessage = "Falta ffmpeg"
+
+    /// `true` cuando hay al menos un video en cola que no se pudo
+    /// procesar por falta de ffmpeg -- condiciona el banner persistente
+    /// de la sección Video (en vez de un mensaje repetido por fila).
+    var hasVideosWaitingOnFFmpeg: Bool {
+        items.contains { $0.kind == .video && $0.status == .failed(Self.ffmpegMissingRowMessage) }
+    }
+
+    /// "Volver a intentar" del banner: reencola solo los videos que
+    /// fallaron por falta de ffmpeg (nunca otros `.failed`, que pueden
+    /// tener una causa real distinta) y vuelve a procesar.
+    func retryVideosWaitingOnFFmpeg() async {
+        for index in items.indices
+        where items[index].kind == .video && items[index].status == .failed(Self.ffmpegMissingRowMessage) {
+            items[index].status = .queued
+        }
+        await processAll()
     }
 
     /// Copia el archivo original a staging, le escribe la tag ID3 (solo

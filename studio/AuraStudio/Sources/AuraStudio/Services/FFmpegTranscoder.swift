@@ -58,20 +58,43 @@ struct FFmpegTranscoder {
     /// deformar la imagen), MPEG-2 video + MP2 audio dentro de un
     /// contenedor MPEG-PS, bitrate moderado para no saturar la lectura
     /// de disco del iPod.
-    static func arguments(input: URL, output: URL, videoBitrateKbps: Int = 768) -> [String] {
-        [
+    ///
+    /// `sourceFrameRate` (PLAN-sync-media-hardening.md PARTE 3A):
+    /// mpegplayer en el S5L8702 del iPod Classic decodifica bien video
+    /// de hasta ~24-25 fps -- 60 fps de un iPhone lo ahoga (el síntoma
+    /// real reportado: "tampoco se han podido visualizar"). Solo se
+    /// fuerza `-r 24` cuando la fuente EXCEDE 24 fps -- forzarlo
+    /// siempre duplicaría frames sin necesidad en una fuente ya lenta
+    /// (un timelapse a 10 fps, por ejemplo), agrandando el archivo sin
+    /// ganar nada. `-g 15` (un keyframe cada ~0.6s a 24fps) acorta el
+    /// salto a nitidez tras el primer frame -- sin GPU para decodificar
+    /// P/B-frames rápido, un GOP largo se siente "sucio" al arrancar.
+    /// `-ar 44100`: libmad (el decoder de audio de mpegplayer) solo
+    /// entiende MPEG audio Layer I/II/III en las frecuencias estándar
+    /// -- sin esto, el audio queda al sample rate de origen (48kHz es
+    /// común en video de teléfono), que antes no se forzaba a nada.
+    static func arguments(input: URL, output: URL, videoBitrateKbps: Int = 768,
+                           sourceFrameRate: Double? = nil) -> [String] {
+        var args = [
             "-y", "-loglevel", "error",
             "-i", input.path,
             "-vf", "scale=320:240:force_original_aspect_ratio=decrease,pad=320:240:(ow-iw)/2:(oh-ih)/2",
             "-c:v", "mpeg2video", "-b:v", "\(videoBitrateKbps)k",
-            "-c:a", "mp2", "-b:a", "128k",
+        ]
+        if let sourceFrameRate, sourceFrameRate > 24 {
+            args += ["-r", "24", "-g", "15"]
+        }
+        args += [
+            "-c:a", "mp2", "-b:a", "128k", "-ar", "44100",
             "-f", "mpeg",
             output.path,
         ]
+        return args
     }
 
-    func transcode(input: URL, output: URL, videoBitrateKbps: Int = 768) throws {
-        try transcode(input: input, output: output, videoBitrateKbps: videoBitrateKbps, onProgress: nil)
+    func transcode(input: URL, output: URL, videoBitrateKbps: Int = 768, sourceFrameRate: Double? = nil) throws {
+        try transcode(input: input, output: output, videoBitrateKbps: videoBitrateKbps,
+                      sourceFrameRate: sourceFrameRate, onProgress: nil)
     }
 
     /// Fase 23 (PLAN-UX.md): `onProgress` recibe una fraccion real en
@@ -91,11 +114,12 @@ struct FFmpegTranscoder {
     /// son closures `@Sendable` de verdad. `TranscodeProgressTracker`
     /// mueve ese estado mutable a una clase con lock propio en vez de
     /// capturar locals.
-    func transcode(input: URL, output: URL, videoBitrateKbps: Int = 768,
+    func transcode(input: URL, output: URL, videoBitrateKbps: Int = 768, sourceFrameRate: Double? = nil,
                     onProgress: (@Sendable (Double) -> Void)?) throws {
         let process = Process()
         process.executableURL = ffmpegURL
-        process.arguments = Self.arguments(input: input, output: output, videoBitrateKbps: videoBitrateKbps)
+        process.arguments = Self.arguments(input: input, output: output, videoBitrateKbps: videoBitrateKbps,
+                                            sourceFrameRate: sourceFrameRate)
             + ["-progress", "pipe:1"]
 
         let errPipe = Pipe()
@@ -186,6 +210,29 @@ struct FFmpegTranscoder {
         return parseDuration(from: text)
     }
 
+    /// PLAN-sync-media-hardening.md PARTE 3A: mismo probe que
+    /// `probeDurationSeconds`, pero en una sola pasada de ffmpeg
+    /// devuelve también el frame rate de origen (hace falta para
+    /// decidir si `arguments(sourceFrameRate:)` debe forzar `-r 24`).
+    /// Un solo proceso de ffmpeg para video -- ambos valores salen del
+    /// mismo volcado de cabecera por stderr, no hace falta invocarlo
+    /// dos veces.
+    static func probeVideoInfo(of input: URL, ffmpegURL: URL) throws -> (duration: Double?, frameRate: Double?) {
+        let process = Process()
+        process.executableURL = ffmpegURL
+        process.arguments = ["-i", input.path]
+        let errPipe = Pipe()
+        process.standardError = errPipe
+        process.standardOutput = Pipe()
+
+        try process.run()
+        let data = errPipe.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
+
+        let text = String(data: data, encoding: .utf8) ?? ""
+        return (parseDuration(from: text), parseFrameRate(from: text))
+    }
+
     /// Acumula stdout/stderr de ffmpeg detras de un `NSLock` para que
     /// `transcode(...)` pueda mutarlo desde los `readabilityHandler`
     /// (hilos concurrentes de Foundation) sin violar Swift 6 strict
@@ -230,6 +277,26 @@ struct FFmpegTranscoder {
         guard let comma = rest.firstIndex(of: ",") else { return nil }
         let timeString = rest[rest.startIndex..<comma]
         return parseTimecode(String(timeString))
+    }
+
+    /// PLAN-sync-media-hardening.md PARTE 3A: busca "NN fps" (o
+    /// "NN.NN fps") en la línea "Stream #0:0(...): Video: ..." que
+    /// ffmpeg imprime al abrir el archivo -- mismo volcado de cabecera
+    /// que ya usa `parseDuration`. `nil` si no hay pista de video (solo
+    /// audio) o el formato de origen no trae ese campo (poco común,
+    /// pero no todos los contenedores lo declaran).
+    static func parseFrameRate(from ffmpegOutput: String) -> Double? {
+        for line in ffmpegOutput.split(separator: "\n") where line.contains(" Video: ") {
+            guard let fpsRange = line.range(of: " fps") else { continue }
+            let before = line[line.startIndex..<fpsRange.lowerBound]
+            guard let comma = before.range(of: ",", options: .backwards) else { continue }
+            let numberPart = before[before.index(after: comma.lowerBound)...]
+                .trimmingCharacters(in: .whitespaces)
+            if let value = Double(numberPart) {
+                return value
+            }
+        }
+        return nil
     }
 
     private static func parseTimecode(_ s: String) -> Double? {
