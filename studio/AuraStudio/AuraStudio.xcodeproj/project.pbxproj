@@ -55,6 +55,7 @@
 		4CE07ED3A6AF6A3EA04D9A2C /* LibraryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62E6C2892E84F33B9EF97D15 /* LibraryItem.swift */; };
 		4D12212E13DA9BA4C48DC6C3 /* AutomaticUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 662698C2304CE8EC077B7FA6 /* AutomaticUpdateView.swift */; };
 		4F290B06AD636CCE2D057C53 /* AuraThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89E70DA8C0602B1EB4521D53 /* AuraThemeTests.swift */; };
+		504431053F83E4A629E97E0C /* USBDeviceIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A48F2167CBB9544313E6A26 /* USBDeviceIdentity.swift */; };
 		51B2A64027ACA8FC73EB923A /* MKS5LBootRunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C70AA3068E3596A674879EA8 /* MKS5LBootRunnerTests.swift */; };
 		52A43D8ECC2CBF2433EA1B31 /* LibrarySync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CC2E3940E0EC5127461CB5 /* LibrarySync.swift */; };
 		57300DFC7BAED2805920E29F /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 7C461CE371AB2C341CE751F2 /* AppIcon.icon */; };
@@ -69,6 +70,7 @@
 		7128F973A9D8E656F326EB9F /* AuraUpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9961D8C11B7031D474CB9BE /* AuraUpdateChecker.swift */; };
 		75D17708FBCBD04298B781AE /* bootloader-ipod6g.ipod in Resources */ = {isa = PBXBuildFile; fileRef = F42FE4EC16A2A0B63AA1E342 /* bootloader-ipod6g.ipod */; };
 		761724FFD96613E057D2C5EA /* ThemeInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A6B081BB0FE52BB27390C52 /* ThemeInstaller.swift */; };
+		7723B2E0BF669AA642A666D6 /* BootloaderVerifiedDisksTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 476586878B17D64E6EB2F3BC /* BootloaderVerifiedDisksTests.swift */; };
 		79AD7B957943AB5C36B2BECF /* DeviceSyncIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3ABCD2D0D6F8611364F950C /* DeviceSyncIndex.swift */; };
 		7A8AD070A233B194127A7783 /* CoverArtAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212C4900E1BBB8F89EEF159F /* CoverArtAssets.swift */; };
 		7BF0D6AD4C6C82D7E9602088 /* AudioTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C13F9E244B9751271DC8255 /* AudioTranscoder.swift */; };
@@ -145,6 +147,7 @@
 		F7AF5D705D74FC1CC9B3F9FF /* DeviceActivityBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCF37D4D32EF9A352A74CC8 /* DeviceActivityBar.swift */; };
 		F826489C2A3E807E5630E15D /* InstallerFlowRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34640ACD3AC36633502AE41 /* InstallerFlowRegistry.swift */; };
 		FB85BBAE15E355B9E622BA3A /* SyncMarkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6973A46003D114CD07FC2DB0 /* SyncMarkerTests.swift */; };
+		FC07E37B2CB459E125C2347C /* USBDeviceIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 707F23CF5EB3B1F0A4363370 /* USBDeviceIdentityTests.swift */; };
 		FC22BD2147F662779790B182 /* rockbox.zip in Resources */ = {isa = PBXBuildFile; fileRef = 8494A971EFDAA70220A174E1 /* rockbox.zip */; };
 		FCFF8A19A007CA05DCD12311 /* ThemeInstallerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA6932017115B388ED81777 /* ThemeInstallerTests.swift */; };
 /* End PBXBuildFile section */
@@ -200,6 +203,7 @@
 		41E05507BDCB6ED7C42C9B6A /* LyricsSidecarSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsSidecarSyncTests.swift; sourceTree = "<group>"; };
 		43B9358C341DF6C281F2636B /* InstallerStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerStep.swift; sourceTree = "<group>"; };
 		444381A58BB7B201C06A6866 /* DeviceSyncIndexTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSyncIndexTests.swift; sourceTree = "<group>"; };
+		476586878B17D64E6EB2F3BC /* BootloaderVerifiedDisksTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootloaderVerifiedDisksTests.swift; sourceTree = "<group>"; };
 		48CC2E3940E0EC5127461CB5 /* LibrarySync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySync.swift; sourceTree = "<group>"; };
 		4F4082F8F8734C49730074C2 /* AuraPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraPalette.swift; sourceTree = "<group>"; };
 		528818777E4EF0B5EF8F9306 /* PlaylistImporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistImporterTests.swift; sourceTree = "<group>"; };
@@ -218,6 +222,7 @@
 		6C13F9E244B9751271DC8255 /* AudioTranscoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTranscoder.swift; sourceTree = "<group>"; };
 		6CB9F09AC96C1409CC7C453C /* GitHubReleaseCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubReleaseCheckerTests.swift; sourceTree = "<group>"; };
 		6E5C06E65D1A04EAD003DE49 /* BackContinueRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackContinueRow.swift; sourceTree = "<group>"; };
+		707F23CF5EB3B1F0A4363370 /* USBDeviceIdentityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USBDeviceIdentityTests.swift; sourceTree = "<group>"; };
 		70ACE1220F0178A35F3CE798 /* DeviceNameStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceNameStoreTests.swift; sourceTree = "<group>"; };
 		722702AD0F209BDEA893FA8D /* MKS5LBootRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKS5LBootRunner.swift; sourceTree = "<group>"; };
 		72773374D5D4C62732AA92F3 /* AuraDeviceProbeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraDeviceProbeTests.swift; sourceTree = "<group>"; };
@@ -234,6 +239,7 @@
 		849AFADBA825BCE5775C3217 /* AuraStudioApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraStudioApp.swift; sourceTree = "<group>"; };
 		8885EF5A65AE8ED08914314A /* LibrarySyncLocalLibraryPathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySyncLocalLibraryPathTests.swift; sourceTree = "<group>"; };
 		89E70DA8C0602B1EB4521D53 /* AuraThemeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraThemeTests.swift; sourceTree = "<group>"; };
+		8A48F2167CBB9544313E6A26 /* USBDeviceIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USBDeviceIdentity.swift; sourceTree = "<group>"; };
 		8F0A3F90A397101E33636987 /* PrivilegedExecutorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivilegedExecutorTests.swift; sourceTree = "<group>"; };
 		8F2CDF7B36135811140A2B3E /* LibrarySyncMusicPathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySyncMusicPathTests.swift; sourceTree = "<group>"; };
 		925A40A7F39FBE6F9552F0D0 /* DeviceNameField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceNameField.swift; sourceTree = "<group>"; };
@@ -430,6 +436,7 @@
 				72773374D5D4C62732AA92F3 /* AuraDeviceProbeTests.swift */,
 				89E70DA8C0602B1EB4521D53 /* AuraThemeTests.swift */,
 				1A29F57327CE27D98C05565C /* AuraUpdateCheckerTests.swift */,
+				476586878B17D64E6EB2F3BC /* BootloaderVerifiedDisksTests.swift */,
 				D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */,
 				AC0636DEF76695EC784AFCE2 /* CatalogSummaryWriterTests.swift */,
 				C7A75E4AA4334B6A18D04537 /* CoverArtAssetsTests.swift */,
@@ -471,6 +478,7 @@
 				FAA6932017115B388ED81777 /* ThemeInstallerTests.swift */,
 				B8F2C5305438A32C3A01C767 /* ThemePackagerTests.swift */,
 				672B82A09A8641D47F326E8D /* ThemeValidatorTests.swift */,
+				707F23CF5EB3B1F0A4363370 /* USBDeviceIdentityTests.swift */,
 				6311C9925925969ED5716A25 /* WrongVolumeRegressionTests.swift */,
 			);
 			path = AuraStudioTests;
@@ -553,6 +561,7 @@
 				7A6B081BB0FE52BB27390C52 /* ThemeInstaller.swift */,
 				37E3CA57FACEA209F6484781 /* ThemePackager.swift */,
 				A5E9AF411CC0AC72D66C9F63 /* ThemeValidator.swift */,
+				8A48F2167CBB9544313E6A26 /* USBDeviceIdentity.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -661,6 +670,7 @@
 				D8363DAB3183238539D733A5 /* AuraDeviceProbeTests.swift in Sources */,
 				4F290B06AD636CCE2D057C53 /* AuraThemeTests.swift in Sources */,
 				7DE4A653C7B6086644BF8095 /* AuraUpdateCheckerTests.swift in Sources */,
+				7723B2E0BF669AA642A666D6 /* BootloaderVerifiedDisksTests.swift in Sources */,
 				C3AD25FC7C3C2CE8C2F3AD6F /* BundledArtifactsTests.swift in Sources */,
 				A97401AE31F2CC10AB44DDCD /* CatalogSummaryWriterTests.swift in Sources */,
 				D14BAA69CD8F0052BDDAEB70 /* CoverArtAssetsTests.swift in Sources */,
@@ -702,6 +712,7 @@
 				FCFF8A19A007CA05DCD12311 /* ThemeInstallerTests.swift in Sources */,
 				B7B3A4130C1D78013C59DB4B /* ThemePackagerTests.swift in Sources */,
 				07E18583E0FD105B393DEFC1 /* ThemeValidatorTests.swift in Sources */,
+				FC07E37B2CB459E125C2347C /* USBDeviceIdentityTests.swift in Sources */,
 				E617862594C959DC59CE1C8E /* WrongVolumeRegressionTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -795,6 +806,7 @@
 				1A5862E9CB13506C27D87CAC /* ThemeValidator.swift in Sources */,
 				40C77AF1FDE67E4379751F22 /* ThemesView.swift in Sources */,
 				04F788FCD4F07563E5750ED9 /* TrackMetadata.swift in Sources */,
+				504431053F83E4A629E97E0C /* USBDeviceIdentity.swift in Sources */,
 				A77A37B6CF7FECABA28DD45C /* VideoSettingsView.swift in Sources */,
 				ECBCFCC6104EA5F8E3F445BF /* WelcomeView.swift in Sources */,
 			);

@@ -18,10 +18,22 @@ final class AuraDeviceProbeTests: XCTestCase {
         try? FileManager.default.removeItem(at: root)
     }
 
-    private func diskInfo() -> DiskModeInfo {
+    private func diskInfo(usb: USBDeviceIdentity? = nil) -> DiskModeInfo {
         DiskModeInfo(volumeName: "AURA", mountPath: root.path,
-                     bsdName: "disk9s1", isFAT32: true)
+                     bsdName: "disk9s1", isFAT32: true, usb: usb, volumeUUID: "VOL-1")
     }
+
+    /// Descriptores reales leidos con `ioreg` del iPod del dueño en modo
+    /// disco de Apple (ST-016).
+    private static let appleDiskModeUSB = USBDeviceIdentity(
+        vendorName: "Apple Inc.", productName: "iPod", serialNumber: "000A270013923F13",
+        vendorID: 0x05AC, productID: 0x1261)
+    /// Descriptores que anuncia Rockbox/Aura (`usb_core.c:141-145` del
+    /// firmware, mismo VID/PID que Apple).
+    private static let rockboxUSB = USBDeviceIdentity(
+        vendorName: "Rockbox.org", productName: "Rockbox media player",
+        serialNumber: "0123456789ABCDEF0123456789ABCDEF01234567",
+        vendorID: 0x05AC, productID: 0x1261)
 
     private func touch(_ relative: String) throws {
         let url = root.appendingPathComponent(relative)
@@ -59,16 +71,95 @@ final class AuraDeviceProbeTests: XCTestCase {
         try mkdir("iPod_Control/Music")
         let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
         XCTAssertEqual(device.firmware, .aura(hasBooted: true))
+        XCTAssertTrue(device.isAura)
         XCTAssertTrue(device.isDualBoot)
     }
 
-    func testRockboxPlusIPodControlIsDualBoot() throws {
+    // MARK: - ST-016: lectura real por USB + evidencia de arranque
+
+    /// El caso exacto del dueño (2026-08-17): iPod con firmware original de
+    /// Apple, al que se le copio a mano la carpeta `.rockbox` de Aura para
+    /// probar. Antes: "Aura instalado (dual boot)". Ahora: archivos sin
+    /// evidencia, firmware de Apple corriendo, nada habilitado.
+    func testCopiedAuraFolderOnStockIPodIsNotAuraNorDualBoot() throws {
+        try mkdir(".rockbox/icons/aura/masks")
+        try mkdir("iPod_Control/Music")
+        let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo(usb: Self.appleDiskModeUSB)))
+        XCTAssertEqual(device.firmware, .aura(hasBooted: false))
+        XCTAssertEqual(device.runningFirmware, .apple)
+        XCTAssertTrue(device.hasAuraFiles)
+        XCTAssertFalse(device.isAura)
+        XCTAssertFalse(device.isDualBoot)
+        XCTAssertFalse(device.rockboxFamilyVerified)
+        XCTAssertFalse(device.canSkipBootloaderFlash(diskRecordedAsVerified: false))
+        XCTAssertFalse(device.canSkipBootloaderFlash(diskRecordedAsVerified: true),
+                       "sin rastro de arranque, ni el registro local alcanza")
+    }
+
+    /// Conectado mientras Aura atiende el USB: la lectura real manda,
+    /// aunque `aura.cfg` todavia no exista (primer arranque en curso).
+    func testAuraFilesWithRockboxUSBIsAuraEvenBeforeFirstConfigWrite() throws {
+        try mkdir(".rockbox/icons/aura/masks")
+        let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo(usb: Self.rockboxUSB)))
+        XCTAssertEqual(device.runningFirmware, .rockboxFamily)
+        XCTAssertTrue(device.isAura)
+        XCTAssertTrue(device.rockboxFamilyVerified)
+        XCTAssertTrue(device.canSkipBootloaderFlash(diskRecordedAsVerified: false))
+    }
+
+    /// Aura que ya arranco (aura.cfg), conectada desde el modo disco de
+    /// Apple: es Aura (la biblioteca aplica), pero el instalador solo se
+    /// salta el DFU si ademas Studio tiene el registro local del disco.
+    func testBootedAuraInAppleDiskModeNeedsLocalRecordToSkipDFU() throws {
+        try touch(".rockbox/aura/aura.cfg")
+        let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo(usb: Self.appleDiskModeUSB)))
+        XCTAssertEqual(device.runningFirmware, .apple)
+        XCTAssertTrue(device.isAura)
+        XCTAssertFalse(device.canSkipBootloaderFlash(diskRecordedAsVerified: false))
+        XCTAssertTrue(device.canSkipBootloaderFlash(diskRecordedAsVerified: true))
+    }
+
+    /// Modo USB del bootloader sobre un disco vacio (D-175/D-183): el USB
+    /// lo atiende Rockbox, asi que hay bootloader -- aunque no haya
+    /// archivos. `isAura` no (no hay Aura en el disco), pero el flasheo
+    /// se puede saltar.
+    func testEmptyDiskWithRockboxUSBHasBootloaderButNoAura() throws {
+        let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo(usb: Self.rockboxUSB)))
+        XCTAssertEqual(device.firmware, .empty)
+        XCTAssertFalse(device.isAura)
+        XCTAssertTrue(device.rockboxFamilyVerified)
+        XCTAssertTrue(device.canSkipBootloaderFlash(diskRecordedAsVerified: false))
+    }
+
+    func testProbeCarriesUSBSerialAndVolumeUUID() throws {
+        let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo(usb: Self.appleDiskModeUSB)))
+        XCTAssertEqual(device.usbSerial, "000A270013923F13")
+        XCTAssertEqual(device.volumeUUID, "VOL-1")
+        XCTAssertEqual(device.diskRecordKey, "VOL-1", "el UUID del volumen manda sobre el serial USB")
+    }
+
+    func testWithoutUSBIdentityRunningFirmwareIsUnknown() throws {
+        try touch(".rockbox/aura/aura.cfg")
+        let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
+        XCTAssertEqual(device.runningFirmware, .unknown)
+        XCTAssertTrue(device.isAura, "el rastro de arranque sigue valiendo sin lectura USB")
+    }
+
+    /// ST-016: un `.rockbox` sin rastro de arranque junto a `iPod_Control/`
+    /// ya NO es "dual boot" -- solo archivos. Con `.resume.cfg` (que solo
+    /// escribe un Rockbox corriendo) si.
+    func testRockboxPlusIPodControlIsDualBootOnlyWithBootEvidence() throws {
         try mkdir(".rockbox")
         try mkdir("iPod_Control")
-        let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
-        XCTAssertEqual(device.firmware, .rockbox)
-        XCTAssertTrue(device.isDualBoot)
+        var device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
+        XCTAssertEqual(device.firmware, .rockbox(hasBooted: false))
         XCTAssertTrue(device.isRockboxFamily)
+        XCTAssertFalse(device.isDualBoot)
+
+        try touch(".rockbox/.resume.cfg")
+        device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
+        XCTAssertEqual(device.firmware, .rockbox(hasBooted: true))
+        XCTAssertTrue(device.isDualBoot)
     }
 
     /// D-179: los iconos del design system viajan en el arbol .rockbox
@@ -83,15 +174,24 @@ final class AuraDeviceProbeTests: XCTestCase {
     func testRockboxWithoutAuraIsNotDetectedAsAura() throws {
         try mkdir(".rockbox")
         let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
-        XCTAssertEqual(device.firmware, .rockbox)
+        XCTAssertEqual(device.firmware, .rockbox(hasBooted: false))
         XCTAssertFalse(device.isAura)
     }
 
-    func testFirmwareBinaryAloneMeansAuraNotBootedYet() throws {
+    func testRockboxConfigCfgAlsoCountsAsBootEvidence() throws {
+        try touch(".rockbox/config.cfg")
+        let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
+        XCTAssertEqual(device.firmware, .rockbox(hasBooted: true))
+    }
+
+    /// ST-016: archivos de Aura sin evidencia de arranque son eso --
+    /// `hasAuraFiles`, pero NO `isAura` (lo que habilita biblioteca/sync).
+    func testFirmwareBinaryAloneMeansAuraFilesWithoutEvidence() throws {
         try touch("rockbox.ipod")
         let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
         XCTAssertEqual(device.firmware, .aura(hasBooted: false))
-        XCTAssertTrue(device.isAura)
+        XCTAssertTrue(device.hasAuraFiles)
+        XCTAssertFalse(device.isAura)
     }
 
     func testAuraDirWithoutConfigMeansNotBootedYet() throws {

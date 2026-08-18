@@ -127,4 +127,48 @@ final class IPodDiskIdentifierTests: XCTestCase {
         )
         XCTAssertFalse(candidate.matchesIPodCriteria)
     }
+
+    // MARK: - ST-016: VID/PID USB como señal de identidad
+
+    private static let iPodClassicUSB = USBDeviceIdentity(
+        vendorName: "Rockbox.org", productName: "Rockbox media player", serialNumber: nil,
+        vendorID: 0x05AC, productID: 0x1261)
+
+    /// iPod corriendo Aura/Rockbox con un disco Toshiba de fabrica: el
+    /// INQUIRY SCSI (de donde DiskArbitration saca vendor/modelo) dice lo
+    /// que dice el disco -- ni "Apple" ni "iPod". Sin el VID/PID USB, este
+    /// aparato era invisible para Studio.
+    func testRockboxUSBWithPlainDriveStringsMatchesByVIDPID() {
+        let candidate = DiskCandidateInfo(
+            bsdName: "disk7", vendor: "TOSHIBA", model: "MK1231GAL",
+            isRemovable: true, isInternal: false,
+            sizeBytes: 120_034_123_776, volumeName: "IPOD",
+            usb: Self.iPodClassicUSB)
+        XCTAssertTrue(candidate.matchesIPodCriteria)
+    }
+
+    /// El VID/PID no salta las reglas duras: interno/no removible o un
+    /// tamaño imposible siguen descartando.
+    func testVIDPIDDoesNotBypassHardRules() {
+        let internalDisk = DiskCandidateInfo(
+            bsdName: "disk0", vendor: "", model: "", isRemovable: false, isInternal: true,
+            sizeBytes: 120_034_123_776, volumeName: nil, usb: Self.iPodClassicUSB)
+        XCTAssertFalse(internalDisk.matchesIPodCriteria)
+
+        let absurdSize = DiskCandidateInfo(
+            bsdName: "disk8", vendor: "", model: "", isRemovable: true, isInternal: false,
+            sizeBytes: 1_000_000, volumeName: nil, usb: Self.iPodClassicUSB)
+        XCTAssertFalse(absurdSize.matchesIPodCriteria)
+    }
+
+    /// Un iPad (0x05AC, otro PID) con las cadenas de un disco cualquiera
+    /// no pasa: el PID es lo que identifica al iPod Classic.
+    func testOtherApplePIDDoesNotMatch() {
+        let ipad = DiskCandidateInfo(
+            bsdName: "disk9", vendor: "", model: "", isRemovable: true, isInternal: false,
+            sizeBytes: 64_000_000_000, volumeName: nil,
+            usb: USBDeviceIdentity(vendorName: "Apple Inc.", productName: "iPad", serialNumber: nil,
+                                   vendorID: 0x05AC, productID: 0x12AB))
+        XCTAssertFalse(ipad.matchesIPodCriteria)
+    }
 }
