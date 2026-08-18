@@ -3,15 +3,23 @@ import Foundation
 /// Inspecciona un volumen ya montado para saber que firmware tiene y
 /// cuanto hay sincronizado.
 ///
-/// La deteccion es por archivos, no por USB: cuando el iPod esta en modo
-/// almacenamiento el firmware NO se esta ejecutando -- es un disco y
-/// nada mas. Asi que "tiene Aura instalada" solo se puede responder
-/// mirando lo que quedo escrito en el disco:
+/// Dos fuentes, guardadas por separado en `AuraDevice` (ST-016):
 ///
-///   - `rockbox.ipod` en la raiz -> lo copia el instalador de Studio.
-///   - `.rockbox/aura/` -> lo crea el propio firmware Aura al guardar sus
-///     ajustes o al recibir un sync.
-///   - `.rockbox/` sin `aura/` -> una instalacion de Rockbox comun.
+///   1. Archivos en el disco (`AuraDevice.firmware`):
+///      - `rockbox.ipod` en la raiz -> lo copia el instalador de Studio.
+///      - `.rockbox/aura/` o `.rockbox/icons/aura/` -> arbol de Aura.
+///      - `.rockbox/` sin `aura/` -> una instalacion de Rockbox comun.
+///      - `.rockbox/aura/aura.cfg` -> Aura ARRANCO aqui (lo escribe el
+///        firmware en el primer arranque). `.rockbox/.resume.cfg` /
+///        `.rockbox/config.cfg` -> un Rockbox arranco aqui (solo los
+///        escribe un Rockbox corriendo; ningun paquete los trae).
+///   2. Descriptores USB (`AuraDevice.runningFirmware`, via
+///      `DiskModeInfo.usb`): que firmware esta atendiendo el USB ahora.
+///      Es la unica lectura real -- los archivos se pueden copiar a mano,
+///      los descriptores los emite el firmware que corre.
+///
+/// El bootloader en la NOR no se puede leer desde una Mac; ver
+/// `AuraDevice.canSkipBootloaderFlash`.
 enum AuraDeviceProbe {
     static let firmwareBinaryName = "rockbox.ipod"
     static let rockboxDirName = ".rockbox"
@@ -23,6 +31,12 @@ enum AuraDeviceProbe {
     /// firmware al arrancar por primera vez, este existe desde el
     /// momento de la instalacion.
     static let auraIconsRelativePath = ".rockbox/icons/aura"
+    /// Rastro de un Rockbox (Aura incluida) que ya corrio: `.resume.cfg`
+    /// lo escribe `flush_global_status_callback` en cada rato de disco
+    /// inactivo (con el contador de tiempo de uso), `config.cfg` cada vez
+    /// que cambia un ajuste y al apagar. Ninguno viene en `rockbox.zip`.
+    static let rockboxResumeRelativePath = ".rockbox/.resume.cfg"
+    static let rockboxConfigRelativePath = ".rockbox/config.cfg"
     /// Carpeta del firmware original de Apple (ahi viven su base de
     /// datos y su musica). Su presencia es lo que distingue "firmware
     /// original" de "disco recien formateado", y la mitad en disco de
@@ -50,6 +64,7 @@ enum AuraDeviceProbe {
         }
 
         let originalPresent = exists(iPodControlDirName)
+        let rockboxBooted = exists(rockboxResumeRelativePath) || exists(rockboxConfigRelativePath)
 
         let firmware: AuraDevice.Firmware
         if exists(auraDirRelativePath) || exists(auraIconsRelativePath) {
@@ -59,7 +74,7 @@ enum AuraDeviceProbe {
             // instalacion recien hecha, todavia sin arrancar.
             firmware = .aura(hasBooted: false)
         } else if exists(rockboxDirName) {
-            firmware = .rockbox
+            firmware = .rockbox(hasBooted: rockboxBooted)
         } else if originalPresent {
             firmware = .stock
         } else {
@@ -74,6 +89,9 @@ enum AuraDeviceProbe {
             isFAT32: diskInfo.isFAT32,
             firmware: firmware,
             originalFirmwarePresent: originalPresent,
+            runningFirmware: diskInfo.usb?.runningFirmware ?? .unknown,
+            usbSerial: diskInfo.usb?.serialNumber,
+            volumeUUID: diskInfo.volumeUUID,
             capacityBytes: capacity,
             freeBytes: free,
             librarySummary: readSummary(root: root, fileManager: fileManager),

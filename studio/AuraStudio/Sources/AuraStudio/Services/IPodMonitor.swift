@@ -77,7 +77,15 @@ final class IPodMonitor: ObservableObject {
         lastDiskInfo = info
         if let info {
             state = .diskMode(info)
-            device = AuraDeviceProbe.probe(diskInfo: info)
+            let probed = AuraDeviceProbe.probe(diskInfo: info)
+            device = probed
+            // ST-016: ver este disco con Aura/Rockbox atendiendo el USB
+            // es prueba de bootloader grabado -- se anota para que la
+            // proxima reinstalacion (aunque llegue en modo disco de
+            // Apple) pueda saltarse el DFU con fundamento.
+            if let probed, probed.runningFirmware == .rockboxFamily {
+                AppPreferences.shared.recordBootloaderVerified(diskKey: probed.diskRecordKey)
+            }
             ejectRequested = false
             noFilesystemStreak = 0
         } else if case .diskMode = state {

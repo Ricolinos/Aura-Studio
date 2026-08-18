@@ -31,6 +31,19 @@ struct DiskModeInfo: Equatable {
     let mountPath: String
     let bsdName: String
     let isFAT32: Bool
+    /// ST-016: descriptores USB del aparato detras del disco (que
+    /// firmware atiende el USB ahora). nil si no se pudo leer.
+    var usb: USBDeviceIdentity? = nil
+    /// UUID del volumen segun DiskArbitration -- vive en el disco (para
+    /// FAT32 sale del serial del sector de arranque), asi que es el
+    /// mismo se conecte el iPod desde el modo disco de Apple o desde
+    /// Aura/Rockbox. Es la clave del registro local "a este disco ya le
+    /// verificamos el bootloader" (`AppPreferences.bootloaderVerifiedDisks`).
+    var volumeUUID: String? = nil
+
+    /// Clave para el registro local de bootloader verificado: el UUID
+    /// del volumen (estable entre modos) o, sin el, el serial USB.
+    var diskRecordKey: String? { volumeUUID ?? usb?.serialNumber }
 }
 
 struct DFUModeInfo: Equatable {

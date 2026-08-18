@@ -246,28 +246,65 @@ struct DeviceGeneralView: View {
         }
     }
 
+    /// ST-016: dice exactamente lo que se sabe y lo que no. Dos fuentes:
+    /// que archivos hay en el disco (`firmware`) y que firmware esta
+    /// atendiendo el USB ahora (`runningFirmware`, lectura real). Solo
+    /// se afirma "instalado"/"dual boot" con evidencia de arranque; unos
+    /// archivos copiados a mano se describen como eso.
     private func firmwareLabel(_ device: AuraDevice) -> String {
+        let dual = device.isDualBoot ? " (dual boot con Apple)" : ""
         switch device.firmware {
         case .aura(let hasBooted):
-            let base = hasBooted ? "Firmware Aura instalado"
-                                 : "Firmware Aura instalado -- todavia sin arrancar"
-            return device.isDualBoot ? base + " (dual boot con Apple)" : base
-        case .rockbox:
-            return device.isDualBoot
-                ? "Rockbox instalado (no es Aura), en dual boot con Apple"
-                : "Rockbox instalado (no es Aura)"
+            switch (device.runningFirmware, hasBooted) {
+            case (.rockboxFamily, _):
+                return "Firmware Aura instalado -- conectado desde Aura" + dual
+            case (.apple, true):
+                return "Firmware Aura instalado -- conectado desde el modo disco de Apple" + dual
+            case (.unknown, true):
+                return "Firmware Aura instalado" + dual
+            case (.apple, false):
+                return "Archivos de Aura en el disco, pero el iPod está corriendo el firmware de Apple y Aura nunca ha arrancado aquí -- no hay evidencia de que esté instalado"
+            case (.unknown, false):
+                return "Archivos de Aura en el disco -- todavía sin arrancar (sin evidencia de que el bootloader esté instalado)"
+            }
+        case .rockbox(let hasBooted):
+            switch (device.runningFirmware, hasBooted) {
+            case (.rockboxFamily, _):
+                return "Rockbox instalado (no es Aura) -- conectado desde Rockbox" + dual
+            case (_, true):
+                return "Rockbox instalado (no es Aura)" + dual
+            case (.apple, false):
+                return "Archivos de Rockbox en el disco (no es Aura), pero el iPod está corriendo el firmware de Apple y Rockbox nunca ha arrancado aquí"
+            case (.unknown, false):
+                return "Archivos de Rockbox en el disco (no es Aura) -- sin evidencia de arranque"
+            }
         case .stock:
-            return "Firmware original de Apple"
+            return device.runningFirmware == .rockboxFamily
+                ? "Firmware original de Apple en el disco -- pero el USB lo atiende el bootloader de Aura/Rockbox (modo USB del bootloader)"
+                : "Firmware original de Apple"
         case .empty:
-            return "Disco vacio, sin firmware"
+            return device.runningFirmware == .rockboxFamily
+                ? "Disco vacío -- el USB lo atiende el bootloader de Aura/Rockbox (modo USB del bootloader)"
+                : "Disco vacio, sin firmware"
         }
     }
 
     @ViewBuilder
     private func contents(_ device: AuraDevice) -> some View {
         switch device.firmware {
-        case .aura:
+        case .aura where device.isAura:
             auraContents(device)
+        case .aura:
+            // ST-016: archivos sin evidencia de arranque -- la biblioteca
+            // esta bloqueada (ContentView.libraryLocked) y aca se explica
+            // por que, en vez de mostrar contadores de un Aura que no
+            // corre.
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Contenido").font(.headline)
+                Text("Hay archivos de Aura en el disco, pero no hay evidencia de que Aura arranque en este iPod: está corriendo el firmware de Apple y Aura nunca escribió su configuración aquí. Instala Aura desde la sección Instalador (flashea el arranque por DFU y vuelve a copiar los archivos) para activar la biblioteca. Si ya lo instalaste, enciende el iPod con Aura una vez y vuelve a conectarlo.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
         case .stock:
             VStack(alignment: .leading, spacing: 10) {
                 Text("Contenido").font(.headline)

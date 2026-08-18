@@ -16,6 +16,11 @@ struct DiskCandidateInfo: Equatable, Sendable {
     let isInternal: Bool
     let sizeBytes: Int64
     let volumeName: String?
+    /// ST-016: descriptores USB del aparato detras del disco, si se
+    /// pudieron leer (`USBDeviceIdentityReader`). Aporta la señal mas
+    /// exacta de identidad que existe (VID/PID) y, ademas, que firmware
+    /// esta atendiendo el USB ahora.
+    var usb: USBDeviceIdentity? = nil
 
     /// Criterios de seguridad para decidir si un disco es "el iPod".
     ///
@@ -25,6 +30,14 @@ struct DiskCandidateInfo: Equatable, Sendable {
     ///
     /// Ademas hace falta UNA de estas señales de dispositivo:
     ///
+    ///  - ST-016: que el par VID/PID USB sea el del iPod Classic
+    ///    (`0x05AC`/`0x1261`) -- es la señal exacta: la unica que sigue
+    ///    valiendo cuando el USB lo atiende Aura/Rockbox, porque ahi el
+    ///    INQUIRY SCSI (de donde DiskArbitration saca vendor/modelo) ya
+    ///    no dice "Apple"/"iPod" sino lo que diga el disco fisico
+    ///    (Toshiba, iFlash...) -- Rockbox lo copia del IDENTIFY ATA
+    ///    (`usb_storage.c:1460-1473`). Sin esta señal, un iPod corriendo
+    ///    Aura con un disco Toshiba de fabrica seria invisible.
     ///  - que el modelo diga "iPod" -- alcanza por si sola, sin exigir
     ///    vendor "Apple", porque el propio bootloader de mks5lboot en
     ///    "Bootloader USB mode" (D-175: disco con la particion de datos
@@ -50,6 +63,7 @@ struct DiskCandidateInfo: Equatable, Sendable {
         guard isRemovable, !isInternal else { return false }
         guard IPodDiskIdentifier.plausibleSizeRange.contains(sizeBytes) else { return false }
 
+        if usb?.isIPodClassicUSB == true { return true }
         if model.localizedCaseInsensitiveContains("iPod") { return true }
 
         guard vendor.localizedCaseInsensitiveContains("Apple") else { return false }
@@ -137,7 +151,8 @@ enum IPodDiskIdentifier {
                 isRemovable: removable,
                 isInternal: internalDisk,
                 sizeBytes: size,
-                volumeName: volumeName
+                volumeName: volumeName,
+                usb: USBDeviceIdentityReader.identity(forIOMedia: service)
             ))
         }
 

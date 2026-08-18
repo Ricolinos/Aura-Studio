@@ -102,6 +102,36 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(knownDeviceNames, forKey: Keys.knownDeviceNames) }
     }
 
+    /// ST-016: discos del iPod (clave `AuraDevice.diskRecordKey`: UUID del
+    /// volumen, o serial USB si no hay) a los que ESTA instalacion de
+    /// Studio ya les verifico el bootloader de la familia Rockbox en la
+    /// NOR -- porque lo flasheo ella misma (`--bl-inst` con exito y el
+    /// aparato salio de DFU), o porque vio ese disco conectado con
+    /// Aura/Rockbox atendiendo el USB (solo un bootloader grabado pudo
+    /// arrancar eso). Valor: fecha de la ultima verificacion. Es la
+    /// segunda mitad de la evidencia que el instalador exige para
+    /// saltarse el DFU (`AuraDevice.canSkipBootloaderFlash`) -- la NOR no
+    /// se puede leer, asi que esto sustituye a "confiar en un archivo que
+    /// pudo copiarse de otro iPod". Se borra al restaurar (`--bl-uninst`).
+    @Published private(set) var bootloaderVerifiedDisks: [String: Date] {
+        didSet { defaults.set(bootloaderVerifiedDisks, forKey: Keys.bootloaderVerifiedDisks) }
+    }
+
+    func isBootloaderVerified(diskKey: String?) -> Bool {
+        guard let diskKey else { return false }
+        return bootloaderVerifiedDisks[diskKey] != nil
+    }
+
+    func recordBootloaderVerified(diskKey: String?, at date: Date = Date()) {
+        guard let diskKey, !diskKey.isEmpty else { return }
+        bootloaderVerifiedDisks[diskKey] = date
+    }
+
+    func forgetBootloaderVerified(diskKey: String?) {
+        guard let diskKey else { return }
+        bootloaderVerifiedDisks.removeValue(forKey: diskKey)
+    }
+
     @Published var language: AppLanguage {
         didSet {
             defaults.set(language.rawValue, forKey: Keys.language)
@@ -371,6 +401,7 @@ final class AppPreferences: ObservableObject {
         static let coverContaminationReviewShown = "aura.coverContaminationReviewShown"
         static let installationID = "aura.installationID"
         static let knownDeviceNames = "aura.knownDeviceNames"
+        static let bootloaderVerifiedDisks = "aura.bootloaderVerifiedDisks"
         static let libraryFolderPath = "aura.libraryFolderPath"
         static let copyMediaIntoLibrary = "aura.copyMediaIntoLibrary"
         static let musicOrganization = "aura.musicOrganization"
@@ -403,6 +434,7 @@ final class AppPreferences: ObservableObject {
             self.installationID = newID
         }
         self.knownDeviceNames = defaults.dictionary(forKey: Keys.knownDeviceNames) as? [String: String] ?? [:]
+        self.bootloaderVerifiedDisks = defaults.dictionary(forKey: Keys.bootloaderVerifiedDisks) as? [String: Date] ?? [:]
         self.libraryFolderPath = defaults.string(forKey: Keys.libraryFolderPath)
             ?? Self.defaultLibraryFolderPath
         self.copyMediaIntoLibrary = defaults.object(forKey: Keys.copyMediaIntoLibrary) as? Bool ?? true

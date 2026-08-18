@@ -138,13 +138,18 @@ final class DiskArbitrationMonitor {
         guard let mountURL = desc[kDADiskDescriptionVolumePathKey as String] as? URL,
               !mountURL.path.isEmpty else { return nil }
 
+        let wholeDisk = DADiskCopyWholeDisk(disk)
         let wholeDesc: NSDictionary
-        if let wholeDisk = DADiskCopyWholeDisk(disk),
-           let wholeCF = DADiskCopyDescription(wholeDisk) {
+        if let wholeDisk, let wholeCF = DADiskCopyDescription(wholeDisk) {
             wholeDesc = wholeCF as NSDictionary
         } else {
             wholeDesc = desc
         }
+
+        // ST-016: la identidad USB (que firmware atiende el USB, VID/PID)
+        // se lee del arbol IOKit del disco COMPLETO -- el mismo nivel
+        // donde D-186 ya juzga la identidad.
+        let usb = USBDeviceIdentityReader.identity(forDisk: wholeDisk ?? disk)
 
         let bsdName = DADiskGetBSDName(disk).map { String(cString: $0) } ?? ""
         let candidate = DiskCandidateInfo(
@@ -155,7 +160,8 @@ final class DiskArbitrationMonitor {
             isRemovable: (wholeDesc[kDADiskDescriptionMediaRemovableKey as String] as? Bool) ?? false,
             isInternal: (wholeDesc[kDADiskDescriptionDeviceInternalKey as String] as? Bool) ?? true,
             sizeBytes: (wholeDesc[kDADiskDescriptionMediaSizeKey as String] as? Int64) ?? 0,
-            volumeName: desc[kDADiskDescriptionVolumeNameKey as String] as? String
+            volumeName: desc[kDADiskDescriptionVolumeNameKey as String] as? String,
+            usb: usb
         )
         guard candidate.matchesIPodCriteria else { return nil }
 
@@ -165,8 +171,20 @@ final class DiskArbitrationMonitor {
             volumeName: candidate.volumeName ?? mountURL.lastPathComponent,
             mountPath: mountURL.path,
             bsdName: bsdName,
-            isFAT32: volumeKind.lowercased() == "msdos"
+            isFAT32: volumeKind.lowercased() == "msdos",
+            usb: usb,
+            volumeUUID: volumeUUIDString(desc[kDADiskDescriptionVolumeUUIDKey as String])
         )
+    }
+
+    /// `kDADiskDescriptionVolumeUUIDKey` llega como `CFUUID`, no como
+    /// String -- se convierte a texto para poder usarlo como clave.
+    private static func volumeUUIDString(_ raw: Any?) -> String? {
+        guard let raw else { return nil }
+        let ref = raw as CFTypeRef
+        guard CFGetTypeID(ref) == CFUUIDGetTypeID() else { return nil }
+        let uuid = unsafeBitCast(ref, to: CFUUID.self)
+        return CFUUIDCreateString(kCFAllocatorDefault, uuid) as String
     }
 
     /// Desmonta (y expulsa) el disco detectado. Necesario antes de

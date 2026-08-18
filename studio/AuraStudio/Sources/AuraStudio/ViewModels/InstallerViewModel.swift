@@ -91,11 +91,17 @@ final class InstallerViewModel: ObservableObject {
     /// D-222 (encargo del dueño, 2026-08-14): "Actualizar" en General ya
     /// no debe mandar al selector Instalar/Restaurar -- con Aura YA
     /// instalado, reinstalar es sin DFU (ver `acknowledgeDeviceReady()`,
-    /// caso `firmware == .aura(hasBooted: true)`), así que alcanza con
+    /// `AuraDevice.canSkipBootloaderFlash`), así que alcanza con
     /// mostrar una barra de progreso automática, sin ningún paso manual.
     /// `InstallerHomeView` consulta esto para decidir si dibuja el
     /// selector/asistente normal o `AutomaticUpdateView`.
     @Published private(set) var isAutomaticUpdate = false
+    /// ST-016: clave del ultimo disco visto montado (`DiskModeInfo.diskRecordKey`)
+    /// -- se anota en `AppPreferences.bootloaderVerifiedDisks` cuando el
+    /// flasheo por DFU termina bien (el aparato salio de DFU), y se borra
+    /// al restaurar. Se captura en cada cambio de estado porque en el
+    /// momento del flasheo el disco ya no esta montado.
+    private var lastSeenDiskKey: String?
 
     init(monitor: IPodMonitor? = nil, executor: PrivilegedExecutor = PrivilegedExecutor()) {
         self.monitor = monitor ?? IPodMonitor()
@@ -322,15 +328,19 @@ final class InstallerViewModel: ObservableObject {
                 // disco" (D-186, visto en hardware real: una extraccion
                 // interrumpida dejo un .rockbox parcial en un iPod cuya
                 // NOR era 100% de Apple; saltarse el DFU ahi produce
-                // una instalacion que jamas arranca). Evidencia
-                // aceptada: aura.cfg presente (el firmware Aura BOOTO
-                // en este aparato -- solo pudo hacerlo con el
-                // bootloader grabado) o un arbol de Rockbox comun
-                // (encargo D-179: instalar sobre Rockbox no obliga a
-                // flashear). Un arbol de Aura que nunca arranco NO es
-                // evidencia: puede ser basura de una copia a medias.
-                if let firmware = monitor.device?.firmware,
-                   firmware == .rockbox || firmware == .aura(hasBooted: true) {
+                // una instalacion que jamas arranca). ST-016 endurece
+                // la regla (`AuraDevice.canSkipBootloaderFlash`): o el
+                // USB lo esta atendiendo Aura/Rockbox ahora mismo
+                // (lectura real de los descriptores), o hay rastro de
+                // arranque en el disco Y ADEMAS Studio tiene registro
+                // local de haber verificado el bootloader en este mismo
+                // disco. Un archivo solo (aura.cfg, .resume.cfg) ya no
+                // basta: pudo copiarse de otro iPod (caso real del
+                // dueño). D-179 ("instalar sobre Rockbox no obliga a
+                // flashear") queda supeditado a esa misma evidencia.
+                if let device = monitor.device,
+                   device.canSkipBootloaderFlash(
+                       diskRecordedAsVerified: AppPreferences.shared.isBootloaderVerified(diskKey: device.diskRecordKey)) {
                     bootloaderAlreadyInstalled = true
                 }
                 isCopyingFirmware = true
@@ -488,6 +498,9 @@ final class InstallerViewModel: ObservableObject {
     }
 
     private func reactToDeviceState(_ state: DeviceState) {
+        if case .diskMode(let info) = state, let key = info.diskRecordKey {
+            lastSeenDiskKey = key
+        }
         switch (step, state) {
         case (.copyingFiles, .diskMode(let info)) where !isCopyingFirmware && !cancelRequested:
             isCopyingFirmware = true
@@ -581,6 +594,11 @@ final class InstallerViewModel: ObservableObject {
                 guard await waitForDeviceToLeaveDFU(timeoutSeconds: 45) else {
                     throw InstallerError.deviceStuckInDFU
                 }
+                // ST-016: el bootloader quedo grabado en este iPod --
+                // anotar el disco para que la proxima reinstalacion
+                // pueda saltarse el DFU con fundamento (la NOR no se
+                // puede releer; este registro es lo que lo sustituye).
+                AppPreferences.shared.recordBootloaderVerified(diskKey: lastSeenDiskKey)
                 progressMessage = "Listo."
                 step = .done
 
@@ -597,6 +615,9 @@ final class InstallerViewModel: ObservableObject {
                 guard await waitForDeviceToLeaveDFU(timeoutSeconds: 45) else {
                     throw InstallerError.deviceStuckInDFU
                 }
+                // ST-016: ya no hay bootloader de Aura en la NOR -- el
+                // registro local deja de ser cierto.
+                AppPreferences.shared.forgetBootloaderVerified(diskKey: lastSeenDiskKey)
                 // El bootloader de Apple quedo restaurado en la NOR,
                 // pero la restauracion COMPLETA la termina Finder
                 // (D-184): falta preparar el disco (doble formateo) y
