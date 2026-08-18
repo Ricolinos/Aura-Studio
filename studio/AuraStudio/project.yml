@@ -85,6 +85,22 @@ targets:
         CURRENT_PROJECT_VERSION: "1"
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
+    # ST-018: mks5lboot es un ejecutable que viaja como recurso. Copy
+    # Bundle Resources conserva los permisos del origen, y el origen
+    # (un asset bajado del Release, ver scripts/fetch-firmware.sh)
+    # puede llegar sin bit de ejecucion -- entonces `Process.run()`
+    # falla con "permission denied", el sondeo DFU nunca encuentra al
+    # iPod y el instalador se queda en "Esperando modo DFU...". Esta
+    # fase corre despues de copiar recursos y antes de firmar.
+    postBuildScripts:
+      - name: "mks5lboot: asegurar bit de ejecucion"
+        basedOnDependencyAnalysis: false
+        script: |
+          BIN="${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/mks5lboot"
+          if [ -f "$BIN" ] && [ ! -x "$BIN" ]; then
+            chmod 755 "$BIN"
+            echo "mks5lboot: bit de ejecucion restaurado en el bundle"
+          fi
 
   AuraStudioTests:
     type: bundle.unit-test
