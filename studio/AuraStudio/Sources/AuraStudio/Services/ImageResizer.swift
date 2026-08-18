@@ -46,15 +46,54 @@ struct ImageResizer {
             throw ResizeError.cannotReadImage
         }
 
+        // PLAN-sync-media-hardening.md PARTE 2A: una fuente PNG/GIF con
+        // canal alfa (transparencia) llegaba tal cual al codificador de
+        // JPEG -- que no tiene canal alfa, asi que el RGB debajo de los
+        // pixeles transparentes queda a su criterio (con frecuencia
+        // negro/indefinido en vez del fondo blanco esperado). Se aplana
+        // sobre blanco ANTES de codificar, sin excepcion (para una
+        // imagen ya opaca esto no cambia nada visible).
+        let flattened = flattenOntoWhite(thumbnail) ?? thumbnail
+
         guard let destination = CGImageDestinationCreateWithURL(destinationURL as CFURL, UTType.jpeg.identifier as CFString, 1, nil) else {
             throw ResizeError.cannotEncodeOutput
         }
 
-        let properties: [CFString: Any] = [kCGImageDestinationLossyCompressionQuality: quality]
-        CGImageDestinationAddImage(destination, thumbnail, properties as CFDictionary)
+        // D-291 en Aura-Firmware (aura_photos.c:171-259): el visor solo
+        // decodifica JPEG BASELINE -- un progresivo (marcador SOF2) sale
+        // como "Formato no soportado". El codificador de ImageIO no
+        // garantiza baseline por defecto para toda entrada; forzarlo
+        // explicito (en vez de dejarlo a su criterio) es la unica forma
+        // de asegurarlo siempre.
+        let jfifProperties: [CFString: Any] = [kCGImagePropertyJFIFIsProgressive: false]
+        let properties: [CFString: Any] = [
+            kCGImageDestinationLossyCompressionQuality: quality,
+            kCGImagePropertyJFIFDictionary: jfifProperties,
+        ]
+        CGImageDestinationAddImage(destination, flattened, properties as CFDictionary)
 
         guard CGImageDestinationFinalize(destination) else {
             throw ResizeError.cannotEncodeOutput
         }
+    }
+
+    /// Compone `image` sobre un fondo blanco opaco, del mismo tamaño,
+    /// descartando cualquier canal alfa. `nil` si CoreGraphics no pudo
+    /// armar el contexto (fuente exotica) -- el llamador sigue de largo
+    /// con la imagen original en vez de fallar el sync entero por esto.
+    private static func flattenOntoWhite(_ image: CGImage) -> CGImage? {
+        let width = image.width, height = image.height
+        guard width > 0, height > 0,
+              let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(data: nil, width: width, height: height,
+                                       bitsPerComponent: 8, bytesPerRow: 0, space: colorSpace,
+                                       bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue) else {
+            return nil
+        }
+        let rect = CGRect(x: 0, y: 0, width: width, height: height)
+        context.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 1))
+        context.fill(rect)
+        context.draw(image, in: rect)
+        return context.makeImage()
     }
 }

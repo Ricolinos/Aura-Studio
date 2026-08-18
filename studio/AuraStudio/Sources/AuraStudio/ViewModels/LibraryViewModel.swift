@@ -181,6 +181,34 @@ final class LibraryViewModel: ObservableObject {
         return candidate
     }
 
+    /// PLAN-sync-media-hardening.md PARTE 2A: `stagingDirectory`
+    /// (`.preparados/`) es una unica carpeta PLANA compartida por toda
+    /// la biblioteca -- dos fotos con el mismo nombre base de carpetas
+    /// distintas (dos `IMG_1.jpg`, camaras distintas) se pisaban en
+    /// silencio, y lo mismo un poster de video vs. una foto homonima.
+    /// Mismo esquema de sufijo que `resolveNonCollidingDestination`
+    /// ("nombre 2.ext", "nombre 3.ext"...), pero con una diferencia
+    /// clave: si `existingPreparedURL` (el `preparedURL` que este MISMO
+    /// item ya tenia de una pasada anterior) sigue existiendo en disco,
+    /// se reutiliza tal cual -- reprocesar un item (p.ej. cambiar la
+    /// calidad de foto y volver a soltar) tiene que sobrescribir su
+    /// propio preparado en el mismo lugar, no acumular " 2", " 3" cada
+    /// vez que se reprocesa.
+    private func resolveNonCollidingStagingDestination(existingPreparedURL: URL?, baseName: String, ext: String) -> URL {
+        let fm = FileManager.default
+        if let existingPreparedURL, fm.fileExists(atPath: existingPreparedURL.path) {
+            return existingPreparedURL
+        }
+        var candidate = stagingDirectory.appendingPathComponent(ext.isEmpty ? baseName : "\(baseName).\(ext)")
+        var counter = 2
+        while fm.fileExists(atPath: candidate.path) {
+            let name = ext.isEmpty ? "\(baseName) \(counter)" : "\(baseName) \(counter).\(ext)"
+            candidate = stagingDirectory.appendingPathComponent(name)
+            counter += 1
+        }
+        return candidate
+    }
+
     /// Copia `url` a su carpeta final en la biblioteca (D-228) --
     /// reemplaza el viejo `copyToOriginals`, que copiaba TODO a una
     /// unica carpeta plana ANTES de saber tipo/artista/album/categoria.
@@ -284,7 +312,9 @@ final class LibraryViewModel: ObservableObject {
                 // apagado) antes de transcodificar.
                 copyIntoLibraryIfNeeded(itemAt: index)
                 let sourceURL = items[index].sourceURL
-                let output = stagingDirectory.appendingPathComponent(sourceURL.deletingPathExtension().lastPathComponent + ".mpg")
+                let output = resolveNonCollidingStagingDestination(
+                    existingPreparedURL: items[index].preparedURL,
+                    baseName: sourceURL.deletingPathExtension().lastPathComponent, ext: "mpg")
                 /// El callback de ffmpeg corre en el hilo de lectura del
                 /// pipe (readabilityHandler), no en el MainActor -- hay
                 /// que saltar de vuelta explicitamente para tocar
@@ -317,7 +347,9 @@ final class LibraryViewModel: ObservableObject {
                 // esta apagado) antes de redimensionar.
                 copyIntoLibraryIfNeeded(itemAt: index)
                 let sourceURL = items[index].sourceURL
-                let output = stagingDirectory.appendingPathComponent(sourceURL.deletingPathExtension().lastPathComponent + ".jpg")
+                let output = resolveNonCollidingStagingDestination(
+                    existingPreparedURL: items[index].preparedURL,
+                    baseName: sourceURL.deletingPathExtension().lastPathComponent, ext: "jpg")
                 try ImageResizer.resizeToLCDOptimal(sourceURL: sourceURL, destinationURL: output,
                                                      maxDimension: preferences.photoQuality.maxDimension)
                 items[index].preparedURL = output

@@ -39,4 +39,32 @@ enum PathSanitizer {
 
         return result.isEmpty ? "_" : result
     }
+
+    /// PLAN-sync-media-hardening.md PARTE 2A: `/Photos/` y `/Videos/`
+    /// son planos en el iPod -- el nombre de archivo final (con
+    /// extensión) es lo único que el firmware ve, y su límite real es
+    /// un buffer C de tamaño fijo (`PHOTO_NAME_LEN`/`VIDEO_NAME_LEN`,
+    /// 96 con el NUL — docs/contracts/library-layout-v1.md §1: "≤ 95
+    /// bytes UTF-8 incluyendo la extensión"). Un nombre con acentos/ñ
+    /// puede tener MENOS caracteres que bytes -- capar por caracteres
+    /// (como `sanitize(_:maxLength:)`, pensado para componentes de ruta
+    /// de música, donde el firmware no tiene ese límite exacto) seguía
+    /// pudiendo exceder el límite real en bytes para un nombre muy
+    /// acentuado. Recorta un `Character` (nunca a mitad de una
+    /// secuencia UTF-8 multibyte) a la vez desde el final de la base,
+    /// conservando la extensión completa.
+    static func sanitizeFilename(_ raw: String, maxBytes: Int) -> String {
+        let ext = (raw as NSString).pathExtension
+        var base = sanitize((raw as NSString).deletingPathExtension, maxLength: Int.max)
+        let suffix = ext.isEmpty ? "" : ".\(ext)"
+
+        while (base + suffix).utf8.count > maxBytes, !base.isEmpty {
+            base.removeLast()
+        }
+        while let last = base.last, last == "." || last == " " {
+            base.removeLast()
+        }
+        let result = base + suffix
+        return result.isEmpty ? "_" + suffix : result
+    }
 }

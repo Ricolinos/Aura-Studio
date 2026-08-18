@@ -22,11 +22,13 @@
 		0D024EF762350292ACCC5474 /* MusicBrainzClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F23689620B3C26365C6A2E5D /* MusicBrainzClient.swift */; };
 		0EE55204A4DD509A38A4D088 /* PhotoSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C455F59CE087518F3E7DE7C6 /* PhotoSettingsView.swift */; };
 		1031FC473EBDA945D4D42AB6 /* AppPreferences.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE8C778BC2609D4718EBBC45 /* AppPreferences.swift */; };
+		10C0A1742B2493ECB6919698 /* ImageResizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6661622F6714D86BC85E6E20 /* ImageResizerTests.swift */; };
 		10EF0307FD5A491426F20395 /* PrivilegedOperationLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE8F6F2E2EDB8723F37503FF /* PrivilegedOperationLog.swift */; };
 		1164C298C628221EA214AC09 /* SyncSheets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31CBD5016C6CD0867DB6CBA /* SyncSheets.swift */; };
 		11CC4D739B622CDD58E486D8 /* EnterDFUView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D3754C9E29F0BC93B660592 /* EnterDFUView.swift */; };
 		135A255167C64B601EFF2854 /* CoverArtArchiveClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAC95668C5FEF76FAC67EE52 /* CoverArtArchiveClient.swift */; };
 		14B0C14393E1FF6AC7FACCFF /* AuraPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F4082F8F8734C49730074C2 /* AuraPalette.swift */; };
+		17A2510DAAA29D7069BF1480 /* PhotoStagingCollisionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346BA2D222B8F4C8F5CE1C58 /* PhotoStagingCollisionTests.swift */; };
 		1A5862E9CB13506C27D87CAC /* ThemeValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E9AF411CC0AC72D66C9F63 /* ThemeValidator.swift */; };
 		1F8C7964D7763A72A86F1CF1 /* IPodMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117BF63B29CADB076B19CA27 /* IPodMonitor.swift */; };
 		203D6E1800BE63DFE89AB1C8 /* AuraStudioApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849AFADBA825BCE5775C3217 /* AuraStudioApp.swift */; };
@@ -193,6 +195,7 @@
 		2B7808E74C42090DED30DCD9 /* IPodDiskIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPodDiskIdentifier.swift; sourceTree = "<group>"; };
 		2DCF37D4D32EF9A352A74CC8 /* DeviceActivityBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceActivityBar.swift; sourceTree = "<group>"; };
 		2E8C3583DE937B8FBBECABFA /* rockbox.ipod */ = {isa = PBXFileReference; path = rockbox.ipod; sourceTree = "<group>"; };
+		346BA2D222B8F4C8F5CE1C58 /* PhotoStagingCollisionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStagingCollisionTests.swift; sourceTree = "<group>"; };
 		35D5B4EBBD054DC5C0C28307 /* PathSanitizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathSanitizer.swift; sourceTree = "<group>"; };
 		37832F50724ABA2EA149F4CF /* QuickLookCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLookCoordinator.swift; sourceTree = "<group>"; };
 		379EA3270923CF30079FF9EA /* PlaylistArtGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistArtGenerator.swift; sourceTree = "<group>"; };
@@ -220,6 +223,7 @@
 		638FD209E9AF6417EE51ABC7 /* DiskArbitrationMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskArbitrationMonitor.swift; sourceTree = "<group>"; };
 		63EEB772091BC184C410A194 /* MediaCategoryHeuristicsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCategoryHeuristicsTests.swift; sourceTree = "<group>"; };
 		662698C2304CE8EC077B7FA6 /* AutomaticUpdateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticUpdateView.swift; sourceTree = "<group>"; };
+		6661622F6714D86BC85E6E20 /* ImageResizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageResizerTests.swift; sourceTree = "<group>"; };
 		672B82A09A8641D47F326E8D /* ThemeValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeValidatorTests.swift; sourceTree = "<group>"; };
 		6799D48484C7BF9CBF98C612 /* mks5lboot */ = {isa = PBXFileReference; path = mks5lboot; sourceTree = "<group>"; };
 		6973A46003D114CD07FC2DB0 /* SyncMarkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncMarkerTests.swift; sourceTree = "<group>"; };
@@ -454,6 +458,7 @@
 				37BA124E3419E12A08D4AADC /* FilenameGuesserTests.swift */,
 				6CB9F09AC96C1409CC7C453C /* GitHubReleaseCheckerTests.swift */,
 				FEF3580937C6126B24998BB6 /* ID3WriterTests.swift */,
+				6661622F6714D86BC85E6E20 /* ImageResizerTests.swift */,
 				2656D012F16CBEADE3FF9A6D /* InstallPlannerTests.swift */,
 				A077ACC4534A70565AC6B622 /* IPodDiskIdentifierTests.swift */,
 				DA27EA46AF63E39DC0E94748 /* LibraryEnricherTests.swift */,
@@ -477,6 +482,7 @@
 				95D1717F5BE6E99586CBAF44 /* MusicBrainzClientTests.swift */,
 				B0E14855D7F760E14EB547DE /* MusicBrainzRateLimiterTests.swift */,
 				A0CF9C66B5F702F5086AFE98 /* PathSanitizerTests.swift */,
+				346BA2D222B8F4C8F5CE1C58 /* PhotoStagingCollisionTests.swift */,
 				82824C77F83C1F92AD2BA3F9 /* PlaylistArtGeneratorTests.swift */,
 				7F307EFCD3106FEFB532DF8E /* PlaylistExporterTests.swift */,
 				528818777E4EF0B5EF8F9306 /* PlaylistImporterTests.swift */,
@@ -691,6 +697,7 @@
 				6118105A223ED412EA7476B6 /* GitHubReleaseCheckerTests.swift in Sources */,
 				62666A4A9BF729B61C851F76 /* ID3WriterTests.swift in Sources */,
 				00B2C34B8394853F21116615 /* IPodDiskIdentifierTests.swift in Sources */,
+				10C0A1742B2493ECB6919698 /* ImageResizerTests.swift in Sources */,
 				D2B29783F7FA00EA316CA587 /* InstallPlannerTests.swift in Sources */,
 				0183EFC24D46256D94033FED /* LibraryEnricherTests.swift in Sources */,
 				A0BDFCBDE136A9D22AC2FA61 /* LibraryFolderDropTests.swift in Sources */,
@@ -713,6 +720,7 @@
 				21D3647B50D1CDE2C088EC6C /* MusicBrainzClientTests.swift in Sources */,
 				982F00F48C834DC4C0F57A3A /* MusicBrainzRateLimiterTests.swift in Sources */,
 				DEAC726F9577D617DFFC7D68 /* PathSanitizerTests.swift in Sources */,
+				17A2510DAAA29D7069BF1480 /* PhotoStagingCollisionTests.swift in Sources */,
 				ECA27E6FDA3E73193C6FDEC0 /* PlaylistArtGeneratorTests.swift in Sources */,
 				7F80040C49B6F9BAEC7C4EB4 /* PlaylistExporterTests.swift in Sources */,
 				C29E1A48C58E8CBCAFC485EA /* PlaylistImporterTests.swift in Sources */,

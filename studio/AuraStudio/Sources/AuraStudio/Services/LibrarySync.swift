@@ -970,11 +970,21 @@ struct LibrarySync {
         switch item.kind {
         case .music: return Self.musicDestinationRelativePath(for: item, organization: musicOrganization,
                                                                 filenameFormat: musicFilenameFormat)
-        case .video: return "Videos/\(filename)"
-        case .photo: return "Photos/\(filename)"
+        // PLAN-sync-media-hardening.md PARTE 2A: /Videos/ y /Photos/ son
+        // planos -- el nombre del archivo preparado viajaba tal cual,
+        // sin sanear ni acotar (a diferencia de musica, que ya pasaba
+        // por PathSanitizer). deviceFilenameMaxBytes coincide con
+        // VIDEO_NAME_LEN/PHOTO_NAME_LEN del firmware (96 con el NUL).
+        case .video: return "Videos/\(PathSanitizer.sanitizeFilename(filename, maxBytes: Self.deviceFilenameMaxBytes))"
+        case .photo: return "Photos/\(PathSanitizer.sanitizeFilename(filename, maxBytes: Self.deviceFilenameMaxBytes))"
         case .unsupported: return "Unsupported/\(filename)"
         }
     }
+
+    /// docs/contracts/library-layout-v1.md §1: "nombre ≤ 95 bytes UTF-8
+    /// incluyendo la extensión" para `/Videos/` y `/Photos/` --
+    /// `VIDEO_NAME_LEN`/`PHOTO_NAME_LEN` del firmware son 96 con el NUL.
+    static let deviceFilenameMaxBytes = 95
 
     /// Borra el indice de tagcache del dispositivo. No es destructivo
     /// para la musica en si (solo el indice de busqueda, que Aura
