@@ -151,6 +151,10 @@ enum DeviceSyncIndexBuilder {
             if relative.hasPrefix("Music/") {
                 let albumCover = (relative as NSString).deletingLastPathComponent + "/cover.jpg"
                 owned.insert(albumCover)
+                // ST-012: el `.lrc` hermano (letras) tambien lo escribe
+                // LibrarySync sin registro propio -- sin esto cada letra
+                // apareceria como "Solo en el iPod".
+                owned.insert(LibrarySync.lyricsSidecarRelativePath(forDeviceRelativePath: relative))
             }
             if relative.hasPrefix("Videos/") {
                 let poster = (relative as NSString).deletingPathExtension + ".jpg"

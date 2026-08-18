@@ -20,6 +20,9 @@ struct TrackMetadata: Equatable {
     var composer: String?
     var trackNumber: Int?
     var coverArtData: Data?
+    /// Letra en formato LRC. Normalmente con marcas `[mm:ss.xx]` (LRCLIB
+    /// `syncedLyrics`); puede ser letra plana si solo habia esa (ST-012)
+    /// -- el nombre se conserva por compatibilidad con `biblioteca.json`.
     var syncedLyrics: String?
     var musicBrainzRecordingID: String?
     var musicBrainzReleaseID: String?

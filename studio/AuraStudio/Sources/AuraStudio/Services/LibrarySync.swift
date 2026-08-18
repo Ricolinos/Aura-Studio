@@ -491,6 +491,7 @@ struct LibrarySync {
 
             if let stale = planItem.staleDestinationRelativePath {
                 try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(stale))
+                removeLyricsSidecar(forDeviceRelativePath: stale)
                 markTouched(deviceRelativePath: stale)
             }
 
@@ -552,11 +553,23 @@ struct LibrarySync {
             for orphanSourcePath in removeOrphanedSourcePaths {
                 guard let record = manifest.records[orphanSourcePath] else { continue }
                 try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(record.destinationRelativePath))
+                removeLyricsSidecar(forDeviceRelativePath: record.destinationRelativePath)
                 markTouched(deviceRelativePath: record.destinationRelativePath)
                 manifest.records.removeValue(forKey: orphanSourcePath)
             }
             try saveManifest(manifest)
         }
+
+        // ST-012 / contrato SS3: letras como sidecar `.lrc` junto al
+        // audio, mismo nombre base -- la UNICA ruta que el firmware
+        // intenta (aura_nowplaying.c, derive_sibling_path()). Se
+        // sincroniza el ESTADO en cada pasada (no solo con lo recien
+        // copiado): una letra que llego por enriquecimiento despues de
+        // que la cancion ya estaba en el iPod tiene que llegar igual, y
+        // una letra borrada en Studio se va del iPod. Solo se escribe
+        // si el contenido cambio (no rehace el archivo en cada sync).
+        writeLyricsSidecars(items: items, destinationByItemID: destinationByItemID,
+                            onlyForSourcePaths: restrictCopyToSourcePaths)
 
         if coverArtPolicy == .albumOnly {
             writeAlbumCovers(items: items, destinationByItemID: destinationByItemID)
@@ -626,6 +639,50 @@ struct LibrarySync {
     /// pistas se hayan salteado por el diferencial: el `cover.jpg` no
     /// tiene entrada propia en el manifiesto, asi que esta es la unica
     /// oportunidad de crearlo si falta.
+    /// Ruta del `.lrc` hermano de un archivo de audio del iPod: mismo
+    /// directorio, mismo nombre base, extension `.lrc` -- exactamente lo
+    /// que hace `derive_sibling_path()` en el firmware.
+    static func lyricsSidecarRelativePath(forDeviceRelativePath relative: String) -> String {
+        (relative as NSString).deletingPathExtension + ".lrc"
+    }
+
+    private func removeLyricsSidecar(forDeviceRelativePath relative: String) {
+        guard relative.hasPrefix("Music/") else { return }
+        let url = volumeRoot.appendingPathComponent(Self.lyricsSidecarRelativePath(forDeviceRelativePath: relative))
+        try? fileManager.removeItem(at: url)
+    }
+
+    /// Ver llamada en `sync()`. Sincronizada (`[mm:ss.xx]`) si LRCLIB la
+    /// dio asi; plana si solo hay plana (el firmware define que hacer sin
+    /// marcas de tiempo -- hoy la ignora, contrato SS3). Sin letra en
+    /// Studio: sin archivo -- y si habia uno de una pasada anterior, se
+    /// borra (nunca huerfanos). Best-effort, como las caratulas: es
+    /// contenido derivado, no el dato del usuario.
+    private func writeLyricsSidecars(items: [LibraryItem],
+                                     destinationByItemID: [UUID: String],
+                                     onlyForSourcePaths: Set<String>?) {
+        for item in items where item.kind == .music {
+            guard let relative = destinationByItemID[item.id] else { continue }
+            if let onlyForSourcePaths, !onlyForSourcePaths.contains(item.sourceURL.path) { continue }
+            let audioURL = volumeRoot.appendingPathComponent(relative)
+            // Sin la cancion en el iPod (todavia no copiada, o pendiente
+            // por "solo la seleccion") no se deja un .lrc suelto.
+            guard fileManager.fileExists(atPath: audioURL.path) else { continue }
+
+            let lrcURL = volumeRoot.appendingPathComponent(Self.lyricsSidecarRelativePath(forDeviceRelativePath: relative))
+            let lyrics = item.metadata?.syncedLyrics?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            if lyrics.isEmpty {
+                try? fileManager.removeItem(at: lrcURL)
+                continue
+            }
+            let content = lyrics + "\n"
+            if let existing = try? String(contentsOf: lrcURL, encoding: .utf8), existing == content {
+                continue
+            }
+            try? content.write(to: lrcURL, atomically: true, encoding: .utf8)
+        }
+    }
+
     private func writeAlbumCovers(items: [LibraryItem],
                                    destinationByItemID: [UUID: String]) {
         var written = Set<String>()

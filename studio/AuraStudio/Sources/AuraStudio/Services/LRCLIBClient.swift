@@ -8,6 +8,11 @@ import Foundation
 struct LRCLIBClient {
     private struct SearchResult: Decodable {
         let syncedLyrics: String?
+        /// ST-012 / contrato SS3: si LRCLIB solo tiene la letra sin
+        /// marcas de tiempo, se usa igual -- Studio la escribe como .lrc
+        /// y el firmware decide que hacer sin timestamps (hoy la ignora;
+        /// el dia que muestre letra estatica, ya esta en el iPod).
+        let plainLyrics: String?
         let duration: Double?
     }
 
@@ -53,6 +58,12 @@ struct LRCLIBClient {
         try MusicBrainzClient.validate(response)
 
         let decoded = try JSONDecoder().decode(SearchResult.self, from: data)
-        return decoded.syncedLyrics
+        if let synced = decoded.syncedLyrics, !synced.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return synced
+        }
+        if let plain = decoded.plainLyrics, !plain.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return plain
+        }
+        return nil
     }
 }
