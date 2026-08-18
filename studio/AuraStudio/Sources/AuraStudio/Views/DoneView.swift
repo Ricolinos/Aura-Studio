@@ -19,6 +19,21 @@ struct DoneView: View {
     /// el asistente.
     var assumedBootloaderWithoutVerifying: Bool = false
     var onBootloaderMissing: (() -> Void)? = nil
+    /// ST-017 (Solo Aura): los archivos se copiaron via el "Bootloader
+    /// USB mode"; al expulsar el disco el bootloader queda mostrando
+    /// "Hold MENU+SELECT to reboot" -- NO reinicia solo, hay que decirlo.
+    var needsManualReboot: Bool = false
+
+    private var doneMessage: String {
+        switch (mode, needsManualReboot) {
+        case (.restore, _):
+            return "Tu iPod va a reiniciar y arrancar con el firmware original de Apple. Ya puedes desconectar el cable."
+        case (.install, true):
+            return "Aura quedó instalada. Ya puedes desconectar el cable con seguridad. El iPod se quedó esperando en \"Bootloader USB mode\": mantén SELECT + MENU unos 5 segundos para reiniciarlo y arranca con Aura. Después puedes usar la biblioteca de Aura Studio para sincronizar tu música, fotos y videos."
+        case (.install, false):
+            return "Todos los archivos quedaron instalados: ya puedes desconectar el cable con seguridad. El iPod va a arrancar con Aura -- si no reinicia solo, mantén SELECT + MENU unos segundos. Despues puedes usar la pestana Biblioteca de Aura Studio para sincronizar tu musica, fotos y videos."
+        }
+    }
 
     var body: some View {
         VStack(spacing: 20) {
@@ -27,9 +42,7 @@ struct DoneView: View {
                 .foregroundStyle(.green)
             Text(mode == .install ? "Aura instalado" : "iPod restaurado")
                 .font(.title.bold())
-            Text(mode == .install
-                 ? "Todos los archivos quedaron instalados: ya puedes desconectar el cable con seguridad. El iPod va a arrancar con Aura -- si no reinicia solo, mantén SELECT + MENU unos segundos. Despues puedes usar la pestana Biblioteca de Aura Studio para sincronizar tu musica, fotos y videos."
-                 : "Tu iPod va a reiniciar y arrancar con el firmware original de Apple. Ya puedes desconectar el cable.")
+            Text(doneMessage)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: 420)

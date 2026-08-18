@@ -5,17 +5,24 @@ import Foundation
 /// resultado de una operacion privilegiada) confirma el estado
 /// esperado -- ver `InstallerViewModel`.
 ///
-/// Orden real verificado a mano por el usuario en hardware real: primero
-/// se prepara el disco de datos (formatear a FAT32 si hace falta, copiar
-/// los archivos del firmware) mientras el iPod todavia esta corriendo su
-/// firmware original y montado en modo disco normal -- eso NO requiere
-/// DFU, porque en el iPod 6G el bootloader vive en NOR flash interna,
-/// completamente separada del disco. Recien al final se entra a DFU para
-/// flashear el bootloader. El diseño anterior lo hacia al reves
-/// (DFU/bootloader primero, disco despues via un reconecte especial a
-/// "modo Bootloader USB") -- funcionaba en teoria pero dependia de un
-/// paso extra fragil (detectar el reconecte en ese modo especifico) que
-/// nunca hizo falta.
+/// Dos ordenes segun el modo de arranque elegido (ST-017):
+///
+///  - **Dual boot**: primero se prepara el disco de datos (copiar los
+///    archivos del firmware) mientras el iPod todavia corre su firmware
+///    original y esta montado en modo disco normal -- no requiere DFU,
+///    porque en el iPod 6G el bootloader vive en NOR flash interna,
+///    separada del disco. Recien al final se entra a DFU para flashear.
+///    Tras el flasheo el bootloader encuentra `rockbox.ipod` y arranca.
+///  - **Solo Aura** (`--single`, destruye el arranque de Apple): el
+///    flasheo va PRIMERO. Se formatea el disco (todavia con Apple
+///    corriendo), se flashea por DFU, el iPod se reinicia solo y -- como
+///    aun no tiene `rockbox.ipod` -- su bootloader cae en `fatal_error
+///    (ERR_RB)` y entra automaticamente a "Bootloader USB mode"
+///    (`bootloader/ipod-s5l87xx.c`): aparece como disco, y RECIEN AHI se
+///    copia Aura. Copiar antes de flashear era trabajo perdido si el
+///    flasheo fallaba, y en este modo el que atiende el USB despues ya no
+///    es Apple: es el bootloader de Rockbox, que Studio reconoce por sus
+///    descriptores USB (`Rockbox.org`, ST-016).
 enum InstallerStep: Int, CaseIterable, Comparable {
     case welcome
     /// Solo en modo instalar -- elegir dual boot (default) o reemplazar
@@ -27,6 +34,10 @@ enum InstallerStep: Int, CaseIterable, Comparable {
     case copyingFiles
     case enterDFU
     case installing
+    /// Solo en Solo Aura (ST-017): el bootloader ya quedo grabado y se
+    /// espera a que el iPod reaparezca como disco en "Bootloader USB
+    /// mode" (o corriendo Aura) para copiar los archivos.
+    case awaitingBootloaderUSB
     /// Solo en modo restaurar (D-184): tras quitar el bootloader por
     /// DFU, esperar a que el iPod reaparezca como disco y prepararlo
     /// para Finder con el doble formateo (puente FAT/MBR y despues
@@ -130,6 +141,11 @@ enum InstallerError: Error, LocalizedError, Equatable {
     /// junto con los agentes AMP, pero puede seguir pasando si algo
     /// mas interfiere con el cable.
     case deviceStuckInDFU
+    /// ST-017 (Solo Aura): tras el flasheo `--single`, el iPod reaparecio
+    /// atendiendo el USB con el firmware original de Apple -- el
+    /// bootloader de Aura no quedo grabado (con `--single` el arranque de
+    /// Apple ya no deberia existir).
+    case bootloaderNotApplied
 
     var errorDescription: String? {
         switch self {
@@ -161,6 +177,8 @@ enum InstallerError: Error, LocalizedError, Equatable {
             return "Para dual boot, el iPod debe conservar el firmware original de Apple en formato \"winpod\": tabla de particiones MBR con la partición de firmware de Apple intacta más una partición FAT32 -- el formato que crea iTunes al restaurar en una PC con WINDOWS. Este iPod está en formato de Mac (particiones Apple/HFS, que Rockbox no puede leer) o su disco no es legible, y prepararlo desde aquí borraría el disco completo, incluido el firmware original -- exactamente lo que dual boot promete conservar. Por eso no se te pidió la contraseña de administrador como en una instalación normal: no hay nada seguro que formatear todavía. Opciones: restaura el iPod con iTunes en Windows y vuelve a intentar dual boot, o instala solo Aura si no necesitas conservar el firmware de Apple."
         case .deviceDisconnectedDuringCopy:
             return "Tu iPod se desconectó durante la copia de archivos. Copiar el firmware completo son miles de archivos chicos y puede tardar varios minutos por USB -- revisa el cable (evita hubs USB si usas uno) y vuelve a intentar: lo que ya se copió no se pierde, la copia sigue desde donde quedó."
+        case .bootloaderNotApplied:
+            return "El iPod volvió a aparecer con el firmware original de Apple atendiendo el USB: el bootloader de Aura no quedó grabado. Vuelve a intentar el paso de DFU (el disco ya está preparado, no hace falta formatearlo otra vez)."
         case .deviceStuckInDFU:
             return "El iPod recibió el envío del firmware, pero nunca confirmó haberlo aplicado -- sigue en modo DFU. Si se abrió Finder mostrando \"Modo DFU del iPod\", ciérralo SIN tocar el botón Restaurar (eso reinstalaría el firmware original de Apple). Después vuelve a intentar: el iPod ya está en modo DFU, así que el reintento debería llegar rápido a este mismo paso."
         }

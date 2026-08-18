@@ -102,6 +102,20 @@ final class InstallerViewModel: ObservableObject {
     /// al restaurar. Se captura en cada cambio de estado porque en el
     /// momento del flasheo el disco ya no esta montado.
     private var lastSeenDiskKey: String?
+    /// ST-017 (Solo Aura): el flasheo va antes que la copia. `true` desde
+    /// que se decide ese orden hasta que los archivos quedan copiados via
+    /// "Bootloader USB mode".
+    @Published private(set) var flashFirst = false
+    /// ST-017: el bootloader se grabo EN ESTA CORRIDA (`--bl-inst` con
+    /// exito y el aparato salio de DFU). Distinto de
+    /// `bootloaderAlreadyInstalled` (evidencia previa, no verificada
+    /// ahora): con esto `DoneView` no muestra la advertencia de "solo
+    /// asumimos que el bootloader estaba".
+    @Published private(set) var bootloaderFlashedThisFlow = false
+    /// ST-017: el disco ya se formateo en esta corrida -- un reintento
+    /// (p. ej. el DFU no aplico) no vuelve a pedir contraseña para
+    /// formatear lo que ya esta listo.
+    private var diskPreparedThisFlow = false
 
     init(monitor: IPodMonitor? = nil, executor: PrivilegedExecutor = PrivilegedExecutor()) {
         self.monitor = monitor ?? IPodMonitor()
@@ -119,6 +133,9 @@ final class InstallerViewModel: ObservableObject {
         self.lastError = nil
         isCopyingFirmware = false
         bootloaderAlreadyInstalled = false
+        flashFirst = false
+        bootloaderFlashedThisFlow = false
+        diskPreparedThisFlow = false
         restoreFormatStarted = false
         cancelRequested = false
         copyProgress = nil
@@ -212,6 +229,9 @@ final class InstallerViewModel: ObservableObject {
         isCopyingFirmware = false
         restoreFormatStarted = false
         bootloaderAlreadyInstalled = false
+        flashFirst = false
+        bootloaderFlashedThisFlow = false
+        diskPreparedThisFlow = false
         copyProgress = nil
         lastError = nil
         chosenMode = nil
@@ -320,63 +340,84 @@ final class InstallerViewModel: ObservableObject {
         case .install:
             switch monitor.state {
             case .dfuMode:
+                // Ya en DFU al confirmar: se flashea primero y los
+                // archivos se copian despues, cuando el bootloader
+                // exponga el disco (ST-017) -- antes esto terminaba en
+                // "Listo" sin haber copiado nada.
+                flashFirst = !bootloaderFlashedThisFlow
                 proceedToDFU()
-            case .diskMode(let info) where info.isFAT32:
-                // Saltar el DFU solo con EVIDENCIA de que un bootloader
-                // de la familia Rockbox ya esta grabado en la NOR --
-                // que no es lo mismo que "hay archivos de Rockbox en el
-                // disco" (D-186, visto en hardware real: una extraccion
-                // interrumpida dejo un .rockbox parcial en un iPod cuya
-                // NOR era 100% de Apple; saltarse el DFU ahi produce
-                // una instalacion que jamas arranca). ST-016 endurece
-                // la regla (`AuraDevice.canSkipBootloaderFlash`): o el
-                // USB lo esta atendiendo Aura/Rockbox ahora mismo
-                // (lectura real de los descriptores), o hay rastro de
-                // arranque en el disco Y ADEMAS Studio tiene registro
-                // local de haber verificado el bootloader en este mismo
-                // disco. Un archivo solo (aura.cfg, .resume.cfg) ya no
-                // basta: pudo copiarse de otro iPod (caso real del
-                // dueño). D-179 ("instalar sobre Rockbox no obliga a
-                // flashear") queda supeditado a esa misma evidencia.
-                if let device = monitor.device,
-                   device.canSkipBootloaderFlash(
-                       diskRecordedAsVerified: AppPreferences.shared.isBootloaderVerified(diskKey: device.diskRecordKey)) {
-                    bootloaderAlreadyInstalled = true
-                }
-                isCopyingFirmware = true
-                Task { await copyFirmwareFiles(mountPath: info.mountPath) }
             case .diskMode, .diskModeNoFilesystem:
-                // El disco necesita formatearse (no esta en FAT32, o no
-                // tiene nada legible). Con DUAL BOOT elegido esto es un
-                // callejon sin salida y hay que decirlo ANTES de borrar
-                // nada (D-185, incidente real): nuestro formateo
-                // reescribe el disco ENTERO con MBR/FAT32, destruyendo
-                // la particion de firmware donde vive el sistema de
-                // Apple -- exactamente lo que dual boot promete
-                // conservar. Y un iPod restaurado desde Mac (macpod,
-                // particiones Apple/HFS+) tampoco sirve tal cual:
-                // Rockbox solo lee tablas MBR/GPT (disk.c exige la
-                // firma 0xaa55), asi que "No partition found".
-                if !destroyOriginalFirmware {
-                    lastError = .dualBootRequiresWinpod
-                    step = .failed
-                    return
-                }
-                // Sin volumen legible NO hay forma de saber que hay en
-                // la NOR: ya no se asume bootloader presente (el viejo
-                // supuesto de D-177 resulto falso en hardware -- un
-                // disco ilegible tambien ocurre en el modo disco de
-                // Apple). Tras formatear y copiar, el flujo pasa por
-                // DFU; si el bootloader ya estaba grabado, reflashear
-                // los mismos bytes es inofensivo.
-                if case .diskMode(let info) = monitor.state {
-                    beginFormat(volumeName: info.volumeName)
-                } else {
-                    beginFormat(volumeName: "iPod")
-                }
+                applyInstallPlan()
             default:
                 break
             }
+        }
+    }
+
+    /// Traduce el estado del monitor a la primera accion del instalador
+    /// (`InstallPlanner`, puro y testeado) y la ejecuta.
+    ///
+    /// Saltar el DFU solo con EVIDENCIA de que un bootloader de la
+    /// familia Rockbox ya esta grabado en la NOR -- que no es lo mismo
+    /// que "hay archivos de Rockbox en el disco" (D-186, visto en
+    /// hardware real: una extraccion interrumpida dejo un .rockbox
+    /// parcial en un iPod cuya NOR era 100% de Apple; saltarse el DFU
+    /// ahi produce una instalacion que jamas arranca). ST-016 endurece
+    /// la regla (`AuraDevice.canSkipBootloaderFlash`): o el USB lo esta
+    /// atendiendo Aura/Rockbox ahora mismo, o hay rastro de arranque en
+    /// el disco Y ADEMAS registro local de haber verificado el bootloader
+    /// en ese mismo disco. D-179 ("instalar sobre Rockbox no obliga a
+    /// flashear") queda supeditado a esa evidencia.
+    ///
+    /// Sin volumen legible NO hay forma de saber que hay en la NOR: no se
+    /// asume bootloader presente (el viejo supuesto de D-177 resulto
+    /// falso en hardware). Con dual boot elegido, formatear es un
+    /// callejon sin salida y hay que decirlo ANTES de borrar nada
+    /// (D-185): el formateo reescribe el disco ENTERO con MBR/FAT32,
+    /// destruyendo la particion de firmware donde vive el sistema de
+    /// Apple -- exactamente lo que dual boot promete conservar; y un
+    /// iPod restaurado desde Mac (particiones Apple/HFS+) tampoco sirve
+    /// tal cual (Rockbox solo lee tablas MBR/GPT).
+    private func applyInstallPlan() {
+        let volumeIsFAT32: Bool?
+        let volumeName: String
+        switch monitor.state {
+        case .diskMode(let info):
+            volumeIsFAT32 = info.isFAT32
+            volumeName = info.volumeName
+        case .diskModeNoFilesystem:
+            volumeIsFAT32 = nil
+            volumeName = "iPod"
+        default:
+            return
+        }
+
+        let device = monitor.device
+        let canSkip = device.map {
+            $0.canSkipBootloaderFlash(diskRecordedAsVerified: AppPreferences.shared.isBootloaderVerified(diskKey: $0.diskRecordKey))
+        } ?? false
+        if canSkip { bootloaderAlreadyInstalled = true }
+
+        let plan = InstallPlanner.plan(volumeIsFAT32: volumeIsFAT32,
+                                       singleBoot: destroyOriginalFirmware,
+                                       canSkipFlash: canSkip,
+                                       deviceIsAura: device?.isAura == true,
+                                       bootloaderFlashedThisFlow: bootloaderFlashedThisFlow,
+                                       diskPreparedThisFlow: diskPreparedThisFlow)
+        if plan.flashFirst { flashFirst = true }
+
+        switch plan.action {
+        case .copyFiles:
+            guard case .diskMode(let info) = monitor.state else { return }
+            isCopyingFirmware = true
+            Task { await copyFirmwareFiles(mountPath: info.mountPath) }
+        case .enterDFU:
+            proceedToDFU()
+        case .formatThenFlash, .formatThenCopy:
+            beginFormat(volumeName: volumeName)
+        case .refuseDualBootRequiresWinpod:
+            lastError = .dualBootRequiresWinpod
+            step = .failed
         }
     }
 
@@ -505,6 +546,29 @@ final class InstallerViewModel: ObservableObject {
         case (.copyingFiles, .diskMode(let info)) where !isCopyingFirmware && !cancelRequested:
             isCopyingFirmware = true
             Task { await copyFirmwareFiles(mountPath: info.mountPath) }
+        case (.awaitingBootloaderUSB, .diskMode(let info)) where !isCopyingFirmware && !cancelRequested:
+            // ST-017: el iPod reaparecio como disco tras el flasheo
+            // `--single`. Si lo atiende el firmware de Apple, el
+            // bootloader NO quedo grabado (con --single, Apple ya no
+            // deberia arrancar) -- se dice, no se copia a ciegas.
+            if info.usb?.runningFirmware == .apple {
+                bootloaderFlashedThisFlow = false
+                lastError = .bootloaderNotApplied
+                step = .failed
+                return
+            }
+            if info.isFAT32 {
+                isCopyingFirmware = true
+                step = .copyingFiles
+                Task { await copyFirmwareFiles(mountPath: info.mountPath) }
+            } else {
+                // Llego a DFU sin pasar por el disco (p. ej. el usuario
+                // ya estaba en DFU al empezar): preparar el disco ahora
+                // que el bootloader lo expone; despues, la copia.
+                beginFormat(volumeName: info.volumeName)
+            }
+        case (.awaitingBootloaderUSB, .diskModeNoFilesystem):
+            beginFormat(volumeName: "iPod")
         case (.enterDFU, .dfuMode):
             Task { await runInstallOrRestore() }
         case (.restoreFormatting, .diskMode) where !restoreFormatStarted,
@@ -599,8 +663,21 @@ final class InstallerViewModel: ObservableObject {
                 // pueda saltarse el DFU con fundamento (la NOR no se
                 // puede releer; este registro es lo que lo sustituye).
                 AppPreferences.shared.recordBootloaderVerified(diskKey: lastSeenDiskKey)
-                progressMessage = "Listo."
-                step = .done
+                bootloaderFlashedThisFlow = true
+                if flashFirst {
+                    // ST-017 (Solo Aura): el arranque ya esta grabado;
+                    // faltan los archivos. El iPod se reinicia solo,
+                    // no encuentra rockbox.ipod y su bootloader entra a
+                    // "Bootloader USB mode" -- se espera ese disco.
+                    progressMessage = "Arranque grabado. Esperando a que el iPod reaparezca como disco..."
+                    step = .awaitingBootloaderUSB
+                    // Si el disco ya monto mientras se salia de DFU, el
+                    // evento ya paso -- reaccionar ahora.
+                    reactToDeviceState(monitor.state)
+                } else {
+                    progressMessage = "Listo."
+                    step = .done
+                }
 
             case .restore:
                 progressMessage = "Quitando el bootloader de Aura..."
@@ -664,6 +741,15 @@ final class InstallerViewModel: ObservableObject {
             defer { formatInFlight = false }
             try await executor.eraseAndFormatDisk(candidate: candidate, volumeName: volumeName)
             if cancelRequested { finishCancel(); return }
+            diskPreparedThisFlow = true
+            if flashFirst && !bootloaderFlashedThisFlow {
+                // ST-017 (Solo Aura): disco listo -- ahora el flasheo.
+                // La copia va despues, cuando el iPod reaparezca en
+                // "Bootloader USB mode".
+                progressMessage = "Disco listo. Ahora hace falta grabar el arranque por DFU."
+                proceedToDFU()
+                return
+            }
             progressMessage = "Disco listo. Copiando archivos..."
 
             // Tras formatear, el volumen se vuelve a montar con el
@@ -827,16 +913,18 @@ final class InstallerViewModel: ObservableObject {
                                          withIntermediateDirectories: true)
             }
 
-            if bootloaderAlreadyInstalled {
+            if bootloaderAlreadyInstalled || bootloaderFlashedThisFlow {
                 // El iPod llego aca desde el "Bootloader USB mode" de
-                // Aura: la NOR ya tiene el bootloader grabado, y el DFU
-                // solo reescribiria byte a byte lo mismo. Con los
+                // Aura (o el flasheo ya se hizo en esta misma corrida,
+                // ST-017): la NOR ya tiene el bootloader grabado, y el
+                // DFU solo reescribiria byte a byte lo mismo. Con los
                 // archivos copiados no queda nada por hacer -- expulsar
                 // el disco para que el bootloader (que sigue esperando
                 // en su modo USB) suelte el volumen y pueda reiniciar a
                 // Aura.
                 progressMessage = "Listo."
                 _ = await monitor.unmountCurrentDisk()
+                flashFirst = false
                 step = .done
             } else {
                 progressMessage = "Archivos copiados. Ahora hace falta flashear el arranque por DFU."
@@ -936,6 +1024,11 @@ final class InstallerViewModel: ObservableObject {
         // aparato), no debe quedar un salto de DFU heredado del intento
         // anterior.
         bootloaderAlreadyInstalled = false
+        // ST-017: `flashFirst`, `diskPreparedThisFlow` y
+        // `bootloaderFlashedThisFlow` describen lo que YA paso en esta
+        // corrida y se conservan a proposito -- un reintento retoma
+        // desde donde quedo (no vuelve a formatear ni a flashear lo que
+        // ya esta hecho).
         step = .detectDevice
     }
 

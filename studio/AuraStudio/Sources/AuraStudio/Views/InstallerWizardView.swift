@@ -14,12 +14,20 @@ struct InstallerWizardView: View {
     /// si puede inutilizar el arranque -- no se ofrece una accion que
     /// no se puede hacer de forma segura.
     private var cancelableSteps: [InstallerStep] {
-        [.preparingDisk, .copyingFiles, .restoreFormatting, .enterDFU]
+        [.preparingDisk, .copyingFiles, .restoreFormatting, .enterDFU, .awaitingBootloaderUSB]
     }
 
     private var visibleSteps: [InstallerStep] {
         switch viewModel.mode {
         case .install:
+            // ST-017: Solo Aura flashea primero y copia despues (via el
+            // modo USB del bootloader); dual boot copia primero.
+            if viewModel.flashFirst {
+                return [
+                    .welcome, .chooseBootMode, .permissions, .detectDevice,
+                    .preparingDisk, .enterDFU, .installing, .awaitingBootloaderUSB, .copyingFiles, .done,
+                ]
+            }
             return [
                 .welcome, .chooseBootMode, .permissions, .detectDevice,
                 .preparingDisk, .copyingFiles, .enterDFU, .installing, .done,
@@ -56,6 +64,8 @@ struct InstallerWizardView: View {
                     EnterDFUView(monitor: viewModel.monitor, onBack: viewModel.backFromEnterDFU)
                 case .installing:
                     InstallingView(mode: viewModel.mode, message: viewModel.progressMessage)
+                case .awaitingBootloaderUSB:
+                    AwaitBootloaderUSBView(monitor: viewModel.monitor)
                 case .preparingDisk:
                     SimpleProgressView(title: "Preparando el disco", message: viewModel.progressMessage, progress: nil)
                 case .copyingFiles:
@@ -71,8 +81,9 @@ struct InstallerWizardView: View {
                     // dual boot que esta corrida no eligio.
                     DoneView(mode: viewModel.mode,
                              dualBoot: !viewModel.destroyOriginalFirmware && !viewModel.bootloaderAlreadyInstalled,
-                             assumedBootloaderWithoutVerifying: viewModel.bootloaderAlreadyInstalled,
-                             onBootloaderMissing: viewModel.retryWithBootloaderFlash)
+                             assumedBootloaderWithoutVerifying: viewModel.bootloaderAlreadyInstalled && !viewModel.bootloaderFlashedThisFlow,
+                             onBootloaderMissing: viewModel.retryWithBootloaderFlash,
+                             needsManualReboot: viewModel.bootloaderFlashedThisFlow)
                 case .failed:
                     FailedView(error: viewModel.lastError, onRetry: viewModel.retry,
                                onSwitchToSingleBoot: viewModel.switchToSingleBootAndRetry)
@@ -154,9 +165,19 @@ private struct StepProgressBar: View {
         }
     }
 
+    /// Por posicion en la lista visible, no por `rawValue` (ST-017): los
+    /// dos ordenes de instalacion comparten el enum, y en Solo Aura
+    /// `.copyingFiles` va DESPUES de `.installing`.
     private func color(for step: InstallerStep) -> Color {
-        if step.rawValue < current.rawValue { return .accentColor }
-        if step == current { return .accentColor }
-        return Color.secondary.opacity(0.25)
+        guard let index = steps.firstIndex(of: step),
+              let currentIndex = steps.firstIndex(of: current) ?? Self.fallbackIndex(for: current, in: steps)
+        else { return Color.secondary.opacity(0.25) }
+        return index <= currentIndex ? .accentColor : Color.secondary.opacity(0.25)
+    }
+
+    /// `.failed` (y cualquier paso fuera de la lista) no tiene posicion:
+    /// se colorea segun el ultimo paso visible que ya quedo atras.
+    private static func fallbackIndex(for step: InstallerStep, in steps: [InstallerStep]) -> Int? {
+        steps.lastIndex(where: { $0.rawValue < step.rawValue })
     }
 }

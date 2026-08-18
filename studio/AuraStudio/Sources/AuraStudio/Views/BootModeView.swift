@@ -37,7 +37,7 @@ struct BootModeView: View {
                     icon: "exclamationmark.triangle.fill",
                     title: "Solo Aura",
                     badge: nil,
-                    explanation: "Borra el firmware original de Apple del NOR interno del iPod. Una vez instalado, el iPod solo puede arrancar Aura -- no hay forma de volver a Apple sin restaurarlo con iTunes/Finder desde cero. Elige esto solo si estás seguro de que no vas a querer volver.",
+                    explanation: "Borra el firmware original de Apple del NOR interno del iPod. Una vez instalado, el iPod solo puede arrancar Aura -- no hay forma de volver a Apple sin restaurarlo con iTunes/Finder desde cero. Elige esto solo si estás seguro de que no vas a querer volver. Orden del asistente: se formatea el disco, se graba el arranque por DFU y recién entonces se copia Aura.",
                     isSelected: !dualBoot,
                     accent: true
                 ) { dualBoot = false }
