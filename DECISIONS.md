@@ -393,3 +393,11 @@ De ahí en cascada, **sin bugs adicionales**: `DeviceGeneralView.swift` muestra 
 - `DeviceGeneralView`: sección nueva "Eliminar contenido" dentro de "En el iPod" (solo visible con `librarySummary` ya cargado -- no tiene sentido ofrecer borrar antes del primer sync), con un botón por tipo (Música/Videos/Fotos) más "Eliminar todo" destacado. Mismo patrón de confirmación en dos pasos que `ForeignContentSheet` (ya establecido en el repo): el botón solo arma una `PendingDelete`, una `.alert(...)` con el conteo/etiqueta exacto y "esta acción no se puede deshacer" es la que de verdad ejecuta -- aclarando explícitamente que la biblioteca en la Mac no se toca (el borrado es solo del iPod).
 
 **Verificación**: tests nuevos en `LibrarySyncDeleteAllContentTests` -- borrar un tipo deja los demás intactos (archivo Y registro de manifiesto); borrar todo limpia manifiesto entero; el sync SIGUIENTE a un borrado recopia en vez de saltear (la prueba directa de por qué había que limpiar el manifiesto); el marcador para el firmware queda escrito con la sección correcta en `true`; kinds vacío no hace nada. `swift test` **399/399**. `xcodegen generate` + `xcodebuild -scheme AuraStudio build` → **BUILD SUCCEEDED**.
+
+## ST-024 — Pin a `v0.2.3-beta`
+
+**Encargo**: cross-repo con `Aura-Firmware` D-302 (filtra sidecars AppleDouble de macOS) y D-303 (modo "cubrir" en el visor de fotos) — PATCH, sin cambio de contrato.
+
+**Hecho**: `FIRMWARE_VERSION` → `tag=v0.2.3-beta` + los 4 hashes, verificados dos veces por separado (checksums.txt del Release público + `fetch-firmware.sh` en modo Release real, los 4 `shasum -c` dieron `OK`). `Generated/AuraPalette.swift` sin cambios. `CONTRATO-firmware-studio.md` §E: fila nueva, sincronizada con `Aura-Firmware` (`cmp` limpio).
+
+**Verificación**: `swift build` limpio. `swift test` **399/399**.
