@@ -87,7 +87,7 @@ Plano (sin subcarpetas — el firmware no recorre subdirectorios de `/Photos/`),
 | Miniaturas | Las genera y cachea el firmware (`.rockbox/aura/photocache/`) — Studio no genera ni escribe nada ahí |
 | `sync_summary.cfg` | Sin cambio de formato por esto — `photo_count`/`photo_bytes` se siguen escribiendo igual (los lee "Acerca de"); el estado vacío de la lista de Fotos ya no depende de este archivo, lee `/Photos/` directo |
 
-Detalle completo, hallazgos y justificación en `PLAN-image-viewer.md` (raíz de este repo).
+Detalle completo, hallazgos y justificación en `docs/plans/archivo/PLAN-image-viewer.md` (plan ya ejecutado, en `Aura-Firmware`).
 
 ## E — Compatibilidad de versiones
 
