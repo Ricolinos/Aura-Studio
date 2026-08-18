@@ -34,8 +34,14 @@ struct MediaSectionView: View {
     /// (`photoCollections`) que arma el picker/filtro para `.photo` --
     /// video sigue usando el conjunto fijo de `MediaCategory`.
     @ObservedObject var preferences: AppPreferences
+    /// ST-020: la misma tabla, acotada a un álbum o a un artista, cuando
+    /// se embebe en Álbumes/Artistas. Con `.all` es la sección Canciones
+    /// completa (zona de arrastre, banners, título de navegación).
+    var scope: MusicScope = .all
 
     @State private var isTargeted = false
+    /// ST-020: búsqueda contextual ("Buscar en Canciones/Video/Fotos").
+    @State private var searchText = ""
     @State private var reviewingItem: LibraryItem?
     @State private var renamingItem: LibraryItem?
     @State private var selection: Set<UUID> = []
@@ -70,13 +76,34 @@ struct MediaSectionView: View {
 
     private var items: [LibraryItem] {
         var result = allItemsOfKind
+        switch scope {
+        case .all: break
+        case .album(let key): result = result.filter { LibraryGrouping.albumKey(of: $0) == key }
+        case .artist(let key): result = result.filter { LibraryGrouping.artistKey(of: $0) == key }
+        }
         if let categoryFilter {
             result = result.filter { $0.category == categoryFilter }
         }
         if kind == .music && preferences.musicShowOnlyFavorites {
             result = result.filter { $0.metadata?.isFavorite == true }
         }
+        let query = searchText.trimmingCharacters(in: .whitespaces)
+        if !query.isEmpty {
+            result = result.filter { LibrarySearch.item($0, matches: query) }
+        }
         return result
+    }
+
+    private var isEmbedded: Bool { scope != .all }
+
+    /// Nombre del ámbito para el campo de búsqueda.
+    private var searchScopeTitle: String {
+        switch kind {
+        case .music: return "Canciones"
+        case .video: return "Video"
+        case .photo: return "Fotos"
+        case .unsupported: return "Biblioteca"
+        }
     }
 
     private var rows: [MediaTableRow] {
@@ -111,15 +138,17 @@ struct MediaSectionView: View {
             if let availableCategories {
                 categoryFilterBar(availableCategories)
             }
-            if items.isEmpty {
+            if items.isEmpty && !isEmbedded && searchText.isEmpty && !preferences.musicShowOnlyFavorites {
                 dropZone
                     .padding(24)
                     .frame(maxHeight: .infinity)
             } else {
-                dropZone
-                    .frame(height: 96)
-                    .padding([.horizontal, .top], 16)
-                if kind == .music { legacyMetadataRereadBanner }
+                if !isEmbedded {
+                    dropZone
+                        .frame(height: 96)
+                        .padding([.horizontal, .top], 16)
+                }
+                if kind == .music && !isEmbedded { legacyMetadataRereadBanner }
                 if kind == .photo { coverContaminationBanner }
                 // D-202 (encargo del dueño): el "+" de columnas va PEGADO
                 // a los encabezados de la tabla, no en la barra de
@@ -130,6 +159,9 @@ struct MediaSectionView: View {
                 // derecha, es lo mas cerca que se puede quedar.
                 if kind == .music { enrichmentBanner }
                 if kind == .music { musicHeaderMenuBar } else { columnsBar }
+                if items.isEmpty {
+                    emptyFilteredState
+                }
                 table
                     .onKeyPress(.space) {
                         guard let selectedItem else { return .ignored }
@@ -138,7 +170,7 @@ struct MediaSectionView: View {
                     }
             }
         }
-        .navigationTitle(title)
+        .navigationTitle(isEmbedded ? "" : title)
         .sheet(isPresented: $showingViewOptions) {
             MusicViewOptionsView(preferences: preferences) { showingViewOptions = false }
         }
@@ -250,6 +282,7 @@ struct MediaSectionView: View {
 
     private var columnsBar: some View {
         HStack {
+            LibrarySearchField(scopeTitle: searchScopeTitle, text: $searchText)
             Spacer()
             Menu {
                 ForEach(ExtraColumn.allCases.filter { $0.isApplicable(to: kind) }) { column in
@@ -493,8 +526,23 @@ struct MediaSectionView: View {
         ]
     }
 
+    /// Cuando un filtro (búsqueda, "Solo favoritos") no deja nada, se
+    /// dice -- una tabla vacía sin explicación parece un bug.
+    private var emptyFilteredState: some View {
+        VStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+                .font(.title2)
+                .foregroundStyle(.secondary)
+            Text(searchText.isEmpty ? "No hay favoritos todavía." : "Sin resultados para \"\(searchText)\".")
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 24)
+    }
+
     private var musicHeaderMenuBar: some View {
         HStack(spacing: 8) {
+            LibrarySearchField(scopeTitle: searchScopeTitle, text: $searchText)
             if preferences.musicShowOnlyFavorites {
                 Label("Solo favoritos", systemImage: "star.fill")
                     .font(.caption)

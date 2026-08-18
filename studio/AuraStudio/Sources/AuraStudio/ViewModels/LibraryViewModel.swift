@@ -17,6 +17,9 @@ final class LibraryViewModel: ObservableObject {
     /// (ver `reenrichOnline`) -- antes esta accion no dejaba ningun
     /// rastro visible en la interfaz.
     @Published private(set) var lastEnrichmentSummary: String?
+    /// ST-021: "Buscar fotos de artistas" en curso (deshabilita el
+    /// boton, muestra el spinner en ArtistsView).
+    @Published private(set) var isFetchingArtistImages = false
     /// Cuantas canciones de la biblioteca YA CARGADA podrian beneficiarse
     /// de `rereadLocalTags` -- `nil` si no corresponde ofrecerlo (ya se
     /// ofrecio antes, o no hay musica). PLAN-studio-ux.md §2/P1: se
@@ -66,7 +69,12 @@ final class LibraryViewModel: ObservableObject {
     /// directorio temporal que macOS podia purgar), y el catalogo
     /// (`biblioteca.json`) hace que la biblioteca sobreviva reinicios de
     /// la app -- con o sin iPod.
-    private(set) var libraryRoot: URL
+    private(set) var libraryRoot: URL {
+        didSet { artistImages = ArtistImageStore(libraryRoot: libraryRoot) }
+    }
+    /// ST-020: fotos de artista de la biblioteca actual (`.portadas/
+    /// artistas/`). Se recrea al cambiar de carpeta.
+    private(set) var artistImages: ArtistImageStore
     private var stagingDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.preparedDirName, isDirectory: true) }
     private var coversDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.coversDirName, isDirectory: true) }
     private var musicDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.musicDirName, isDirectory: true) }
@@ -85,7 +93,9 @@ final class LibraryViewModel: ObservableObject {
         self.enricher = enricher
         let prefs = preferences ?? .shared
         self.preferences = prefs
-        self.libraryRoot = libraryRoot ?? URL(fileURLWithPath: prefs.libraryFolderPath, isDirectory: true)
+        let root = libraryRoot ?? URL(fileURLWithPath: prefs.libraryFolderPath, isDirectory: true)
+        self.libraryRoot = root
+        self.artistImages = ArtistImageStore(libraryRoot: root)
         ensureLibraryStructure()
         migrateLegacyLibraryLayoutIfNeeded()
         loadCatalog()
@@ -559,6 +569,48 @@ final class LibraryViewModel: ObservableObject {
         items[index].metadata = metadata
         items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
         persistCatalog()
+    }
+
+    /// ST-021: descarga fotos de artista para los grupos que aun no la
+    /// tienen (fanart.tv via MusicBrainz, Deezer de respaldo -- ver
+    /// `ArtistImageResolver`). Secuencial a proposito: MusicBrainz limita
+    /// a 1 pedido/s. Publica el resultado en `lastEnrichmentSummary`,
+    /// igual que las demas busquedas en linea.
+    func fetchArtistImages(for artists: [ArtistGroup], resolver: ArtistImageResolver? = nil) async {
+        guard !isFetchingArtistImages else { return }
+        isFetchingArtistImages = true
+        defer { isFetchingArtistImages = false }
+        let resolver = resolver ?? ArtistImageResolver(deezerEnabled: preferences.deezerEnabled)
+        var found = 0
+        var missing = 0
+        var skipped = 0
+        for artist in artists {
+            if artist.isUnknown || artistImages.hasImage(forArtistKey: artist.id) {
+                skipped += 1
+                continue
+            }
+            if let result = await resolver.resolve(artistName: artist.name) {
+                do {
+                    try artistImages.save(result.data, forArtistKey: artist.id)
+                    found += 1
+                } catch {
+                    lastError = "No se pudo guardar la foto de \(artist.name): \(error.localizedDescription)"
+                }
+            } else {
+                missing += 1
+            }
+            objectWillChange.send()
+        }
+        if found == 0 && missing == 0 {
+            lastEnrichmentSummary = skipped > 0
+                ? "Todos los artistas seleccionados ya tienen foto."
+                : "No hay artistas para buscar."
+        } else {
+            var parts = ["Fotos de artista: \(found) \(found == 1 ? "encontrada" : "encontradas")"]
+            if missing > 0 { parts.append("\(missing) sin resultado") }
+            if skipped > 0 { parts.append("\(skipped) ya \(skipped == 1 ? "tenía" : "tenían") foto") }
+            lastEnrichmentSummary = parts.joined(separator: ", ") + "."
+        }
     }
 
     /// Favorito (ST-019): marca/desmarca varias canciones de una vez

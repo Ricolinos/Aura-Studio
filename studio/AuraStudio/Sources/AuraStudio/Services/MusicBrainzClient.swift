@@ -50,6 +50,18 @@ struct MusicBrainzClient {
         let recordings: [Recording]
     }
 
+    /// ST-021: artista de MusicBrainz -- su `id` (MBID) es la llave que
+    /// fanart.tv usa para las fotos de artista.
+    struct Artist: Decodable, Equatable {
+        let id: String
+        let name: String
+        let score: Int?
+    }
+
+    private struct ArtistSearchResponse: Decodable {
+        let artists: [Artist]
+    }
+
     static let userAgent = "AuraStudio/0.1.0 (https://github.com/Ricolinos/Aura-Proyect)"
     private let session: URLSession
     private let baseURL: URL
@@ -85,6 +97,28 @@ struct MusicBrainzClient {
         let data = try await performThrottled(request)
         let decoded = try JSONDecoder().decode(SearchResponse.self, from: data)
         return decoded.recordings.max { ($0.score ?? 0) < ($1.score ?? 0) }
+    }
+
+    /// ST-021: busca el artista por nombre. Devuelve el de mayor `score`
+    /// si supera `minimumScore` (MusicBrainz puntua 100 la coincidencia
+    /// exacta; por debajo de ~85 suelen ser homonimos parciales -- mejor
+    /// sin foto que con la de otro).
+    func searchArtist(name: String, minimumScore: Int = 85) async throws -> Artist? {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        var components = URLComponents(url: baseURL.appendingPathComponent("artist"), resolvingAgainstBaseURL: false)!
+        components.queryItems = [
+            URLQueryItem(name: "query", value: "artist:\"\(Self.escapeLuceneQuoted(trimmed))\""),
+            URLQueryItem(name: "fmt", value: "json"),
+            URLQueryItem(name: "limit", value: "5"),
+        ]
+        var request = URLRequest(url: components.url!)
+        request.setValue(Self.userAgent, forHTTPHeaderField: "User-Agent")
+        let data = try await performThrottled(request)
+        let decoded = try JSONDecoder().decode(ArtistSearchResponse.self, from: data)
+        guard let best = decoded.artists.max(by: { ($0.score ?? 0) < ($1.score ?? 0) }),
+              (best.score ?? 0) >= minimumScore else { return nil }
+        return best
     }
 
     /// D-203: arma la query de busqueda Lucene. `title`/`artist` van
