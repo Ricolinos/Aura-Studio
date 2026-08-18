@@ -4,8 +4,8 @@
 # los hashes los produce `scripts/fetch-firmware.sh` verificando contra
 # el `checksums.txt` del propio Release.
 
-tag=v0.2.5-beta
-rockbox.ipod=fa589cf4cef478287e599f9fb73d9fd50c13859bd9b1fb7dd8d7750229fe9d2c
-rockbox.zip=5e6b2cd464df97f5323bf1aa2b0c8d7ab89823a4d5dc9ed427cae90b2c0e67bd
+tag=v0.2.6-beta
+rockbox.ipod=f551381ece6351b1428f0efb898dde60bf39937013165895bd3e87cce92c22d6
+rockbox.zip=c5f80b44a19469c71fdcad5dd8e7dd9118407af81607723c87ca986654a79e91
 mks5lboot=e846731057348a72bdda101e63929ae530c4b3224959e02a2634dbcffd9102b0
 bootloader-ipod6g.ipod=d263780452fda352a5afa229078b39da5b1a78f3b1930e3dee15cf60d123e348
