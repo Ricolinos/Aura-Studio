@@ -1,6 +1,8 @@
 # Contrato entre `Aura-Firmware` y Aura Studio
 
-**Versión 3 — 2026-08-17.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+**Versión 4 — 2026-08-17.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+
+**v4 (D-293 / ST-012, estructura de biblioteca)** agrega el contrato de estructura de biblioteca como documento hermano — **`docs/contracts/library-layout-v1.md`** (misma convención de copia idéntica): estructura de directorios, colocación de carátulas y letras `.lrc`, y el **marcador de sincronización pendiente** `/.aura/sync-pending.json` con el que Studio le pide al firmware reconstruir los índices; este documento solo agrega esas filas a §D y la clave `sync_marker_supported` de `aura.cfg`. **v4 también reconcilia las dos copias**, que habían divergido: la de `Aura-Firmware` tenía §D.1 (`Photos/`, D-291) y la de Studio la fila `device.cfg` (v3, ST-011) — desde v4 las dos traen ambas cosas.
 
 **v3 (ST-011, nombre del dispositivo)** agrega `.rockbox/aura/device.cfg` a la tabla de §D — ver `CONTRATO-dispositivo.md` (contrato hermano, misma convención de copia idéntica) para el formato exacto.
 
@@ -54,17 +56,38 @@ Esto **sí** es un acoplamiento permanente por diseño: ambos lados leen/escribe
 | `.rockbox/aura/aura.cfg` | Firmware | Studio (`AuraDeviceProbe`, decide si "ya arrancó") | — |
 | `.rockbox/aura/aura.cfg` → clave `theme_id` | Firmware (`aura_style.c`); Studio también puede escribirla al instalar/activar un tema | Firmware, al arrancar (`aura_style_boot()`) | D-289. Vacío o `default` = el tema compilado. Studio escribe editando la línea, nunca reescribe el archivo entero (lo owns el firmware, que lo regenera completo en cada `aura_settings_save()`) |
 | `.rockbox/aura/aura.cfg` → clave `theme_format_supported` | Firmware (siempre, en cada `aura_settings_save()`) | Studio (antes de instalar un tema, para saber si el firmware instalado lo soporta) | D-289. Solo escritura del lado firmware — nunca la relee |
+| `.rockbox/aura/aura.cfg` → clave `sync_marker_supported` | Firmware (siempre, en cada `aura_settings_save()`) | Studio (al terminar un sync: si está, escribe el marcador y **no** borra la base de datos; si falta, conserva su mecanismo previo de borrar `database_*.tcd`) | D-293. Solo escritura del lado firmware — nunca la relee. Valor = versión de esquema del marcador que entiende (`1`) |
 | `.rockbox/aura/themes/<id>/` | Studio (instala/reempaqueta), o el propio usuario a mano | Firmware (`aura_style.c`, `aura_style_scan()`/`aura_style_activate()`) | D-289. Formato completo en `CONTRATO-formato-tema.md`. `<id>` nunca `default` (reservado) |
 | `.rockbox/aura/device.cfg` | Studio | Studio (nombre editable del iPod, barra lateral/General); firmware, opcional, no implementado | ST-011. Formato completo en `CONTRATO-dispositivo.md`. El firmware **nunca** lo escribe — a diferencia de `theme_id`, no hay una clave que ambos lados toquen |
+| `/.aura/sync-pending.json` | Studio (al terminar cada sync que tocó archivos); Firmware (sube `attempts`, y lo **borra** al terminar bien) | Firmware (al arrancar y al volver de la pantalla USB) | D-293 / ST-012. Esquema y comportamiento completos en **`docs/contracts/library-layout-v1.md` §4**. Directorio propio en la raíz, separado de `.rockbox/aura/` a propósito |
+| `.rockbox/database_*.tcd` | Firmware (tagcache); Studio **solo los borra**, y solo con un firmware sin `sync_marker_supported` | Firmware | Índice de música. Comportamiento previo a D-293 de Studio (`triggerFirmwareDBRebuild`) — se conserva únicamente como compatibilidad con firmwares viejos |
 | `.rockbox/aura/sync_manifest.json` | Studio (`LibrarySync`) | Studio (estado del último sync) | JSON |
 | `.rockbox/aura/sync_summary.cfg` | Studio | Firmware (pantalla "Acerca de") | Contrato inverso — el firmware depende de un archivo que solo Studio escribe |
 | `.rockbox/aura/ratings.cfg` | Studio | Studio | — |
 | `.rockbox/icons/aura/` | Instalador (parte de `rockbox.zip`) | Firmware | — |
 | `.rockbox/fonts/a26-title-20.fnt` | Instalador (parte de `rockbox.zip`) | Studio (`InstallerViewModel`, sentinela frágil de "árbol instalado") | Candidato a reemplazo por `.rockbox/aura/VERSION` explícito — no implementado en esta pasada |
 | `Playlists/` | Studio (`PlaylistExporter`) | Firmware | — |
-| `Music/`, `Photos/`, `Videos/` | Studio (sync) | Firmware | 3 layouts posibles para `Music/` (Artista/Álbum, Álbum, Artista) — configurable en Studio |
+| `Music/`, `Videos/` | Studio (sync) | Firmware | 3 layouts posibles para `Music/` (Artista/Álbum, Álbum, Artista) — configurable en Studio. Estructura exacta, carátulas (`cover.jpg` en la carpeta del álbum o embebida) y letras `.lrc` (junto al audio, mismo nombre base) en `docs/contracts/library-layout-v1.md` §1–§3 |
+| `Photos/` | Studio (sync) | Firmware (`aura_photos.c`) | D-291. Contrato detallado en **D.1** abajo — formato, resolución, nombres |
 
 Cualquier cambio de ruta o de formato en esta tabla sube un `contract_version` (clave nueva a introducir en `sync_summary.cfg` y `aura.cfg` — no implementada todavía) y se registra en el diario de ambos repos (`D-NNN` en el firmware, `ST-NNN` en Studio), citándose cruzado.
+
+### D.1 — `Photos/` en detalle (D-291)
+
+Plano (sin subcarpetas — el firmware no recorre subdirectorios de `/Photos/`), un archivo por foto, nombre único dentro del directorio.
+
+| Campo | Regla |
+|---|---|
+| Formato | JPEG baseline (SOF0/SOF1), Huffman, 8 bits, 3 componentes YCbCr (4:2:0 o 4:4:4) o 1 componente gris. Extensión `.jpg` (`.jpeg` también se acepta). **Nunca**: progresivo/aritmético, PNG, GIF, HEIC/HEIF, WebP, TIFF, BMP — Studio convierte todo a JPEG antes de copiar (`ImageResizer`, ya lo hace hoy) |
+| Resolución | Lado mayor ≤ 640px ("Versión HD") o ≤ 320px ("Optimizar espacio"). Nunca escalar hacia arriba una fuente más chica. 640px es el valor recomendado: decodifica a 320×240 sin remuestreo posterior (IDCT a 1/2 exacto) |
+| Orientación | Horneada en los píxeles al exportar (EXIF Orientation no se lee) |
+| Espacio de color | sRGB; sin perfil ICC (el dispositivo muestra RGB565, 16 bits) |
+| Nombre de archivo | UTF-8, ≤ 95 bytes incluyendo `.jpg` (recomendado ≤ 60 caracteres). **Único dentro de `/Photos/`** — dos fuentes homónimas de carpetas distintas no pueden colisionar en el mismo nombre de destino (ver hallazgo lateral en `PLAN-image-viewer.md` §9, pendiente del lado Studio) |
+| Cantidad | El firmware lista hasta 500, ordenadas por nombre (natural, insensible a mayúsculas); con más, la fila final dice "…y N más". Studio no necesita limitar la copia |
+| Miniaturas | Las genera y cachea el firmware (`.rockbox/aura/photocache/`) — Studio no genera ni escribe nada ahí |
+| `sync_summary.cfg` | Sin cambio de formato por esto — `photo_count`/`photo_bytes` se siguen escribiendo igual (los lee "Acerca de"); el estado vacío de la lista de Fotos ya no depende de este archivo, lee `/Photos/` directo |
+
+Detalle completo, hallazgos y justificación en `PLAN-image-viewer.md` (raíz de este repo).
 
 ## E — Compatibilidad de versiones
 
@@ -85,6 +108,7 @@ Regla: un cambio a la sección D (contrato de datos) exige MINOR nuevo en ambos;
 - `docs/guia-instalacion.md` (guía de usuario final: instalar Aura Studio y sincronizar) vive **solo** en Aura Studio.
 - `docs/guia-flasheo-restauracion.md` (protocolo del dispositivo: bootloader dual, DFU, checksums) vive **solo** en `Aura-Firmware`, como referencia técnica; Aura Studio la enlaza por URL, no la copia.
 - `docs/guia-desarrollo.md` — cada repo tiene la suya, sin sección del otro proyecto.
+- Contratos hermanos, **copia idéntica en ambos repos**, canónicos en `Aura-Firmware`: `CONTRATO-formato-tema.md`, `CONTRATO-dispositivo.md`, `docs/contracts/library-layout-v1.md`.
 
 ## Qué queda pendiente de implementar (documentado aquí, no bloqueante)
 
@@ -92,5 +116,6 @@ Regla: un cambio a la sección D (contrato de datos) exige MINOR nuevo en ambos;
 - Reemplazo del sentinela `.rockbox/fonts/a26-title-20.fnt` por un `.rockbox/aura/VERSION` explícito.
 - Primer Release público de `Aura-Firmware` con los 5+2+2 assets — hoy Studio se desarrolla contra un `firmware/dist/` local vía `fetch-firmware.sh --from-dir`.
 - `accent_default`/`accent_presets` del formato de tema: aceptados y validables, pero el firmware no los lee todavía (ver `CONTRATO-formato-tema.md` §H y `sistema/05-temas.md`).
-- `device.cfg` (nombre del iPod, ST-011): Studio ya lo escribe y lo lee; el firmware no lo lee todavía (mostrarlo en el slot "Mi iPod" de "Acerca de" es el consumo natural, ver `CONTRATO-dispositivo.md` §E).
 - El lado "constructor pleno" de Aura Studio (rasterizar fuentes/íconos del sistema del usuario) es Fase 2B, posterior — Fase 2 (2A) entrega reempaquetar desde una carpeta de assets ya generados + instalar/listar/activar/eliminar.
+- `device.cfg` (nombre del iPod, ST-011): Studio ya lo escribe y lo lee; el firmware no lo lee todavía (mostrarlo en el slot "Mi iPod" de "Acerca de" es el consumo natural, ver `CONTRATO-dispositivo.md` §E).
+- Letras sin marcas de tiempo (D-293 / ST-012): Studio ya escribe el `.lrc` aunque solo tenga letra plana; el firmware la descarta (Modo 4 solo muestra líneas con `[mm:ss]`). Mostrar letra plana estática es trabajo del firmware, sin cambio de contrato.

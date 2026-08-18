@@ -59,10 +59,15 @@ final class LibraryFolderDropTests: XCTestCase {
 
         viewModel.addDroppedFiles([album])
 
-        XCTAssertEqual(viewModel.items.count, 3, "mp3 + flac + jpg -- notas.txt no tiene extension reconocida")
+        // ST-012: el cover.jpg que viene DENTRO del album es la caratula
+        // del album (asset asociado, ver LocalTagReader), no una foto --
+        // ya no entra a Imagenes. Antes de ST-012 este test afirmaba
+        // "mp3 + flac + jpg = 3", el bug de contaminacion de Imagenes.
+        XCTAssertEqual(viewModel.items.count, 2, "mp3 + flac -- cover.jpg es caratula, notas.txt no tiene extension reconocida")
         XCTAssertEqual(viewModel.items.filter { $0.kind == .music }.count, 2)
-        XCTAssertEqual(viewModel.items.filter { $0.kind == .photo }.count, 1)
+        XCTAssertEqual(viewModel.items.filter { $0.kind == .photo }.count, 0)
         XCTAssertFalse(viewModel.items.contains { $0.sourceURL.lastPathComponent == "notas.txt" })
+        XCTAssertFalse(viewModel.items.contains { $0.sourceURL.lastPathComponent == "cover.jpg" })
     }
 
     func testCopyOnFolderDropDoesNotRegisterLinkedFolder() throws {
@@ -83,7 +88,7 @@ final class LibraryFolderDropTests: XCTestCase {
 
         viewModel.addDroppedFiles([album])
 
-        XCTAssertEqual(viewModel.items.count, 3)
+        XCTAssertEqual(viewModel.items.count, 2, "mp3 + flac (ST-012: cover.jpg es caratula del album, no foto)")
         // Sin copiar: cada item sigue apuntando al archivo original,
         // fuera de la biblioteca. `resolvingSymlinksInPath()` porque
         // `FileManager.enumerator` devuelve rutas ya resueltas
@@ -106,7 +111,7 @@ final class LibraryFolderDropTests: XCTestCase {
         viewModel.addDroppedFiles([album])
 
         XCTAssertEqual(prefs.linkedLibraryFolders, [album.standardizedFileURL.path])
-        XCTAssertEqual(viewModel.items.count, 6, "los items SI se vuelven a agregar -- el dedup es solo de la carpeta vinculada")
+        XCTAssertEqual(viewModel.items.count, 4, "los items SI se vuelven a agregar (2 + 2; ST-012: cover.jpg ya no cuenta) -- el dedup es solo de la carpeta vinculada")
     }
 
     func testDroppingAPlainFileWithCopyOffDoesNotRegisterAnyLinkedFolder() throws {

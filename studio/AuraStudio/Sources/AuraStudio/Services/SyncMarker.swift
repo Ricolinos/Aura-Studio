@@ -31,16 +31,20 @@ struct SyncPendingMarker: Codable, Equatable {
 
     init(changes: Changes, date: Date = Date()) {
         self.version = Self.currentVersion
-        self.timestamp = Self.iso8601.string(from: date)
+        self.timestamp = Self.iso8601String(from: date)
         self.changes = changes
         self.attempts = 0
     }
 
-    private static let iso8601: ISO8601DateFormatter = {
+    /// Un formateador por llamada: `ISO8601DateFormatter` no es `Sendable`
+    /// y un `static let` compartido no pasa el chequeo de concurrencia de
+    /// Swift 6 en el proyecto real (D-041: lo que solo `xcodebuild` ve).
+    /// Se escribe un marcador por sync -- el costo es irrelevante.
+    private static func iso8601String(from date: Date) -> String {
         let f = ISO8601DateFormatter()
         f.formatOptions = [.withInternetDateTime]
-        return f
-    }()
+        return f.string(from: date)
+    }
 
     /// Escritura atomica en el volumen montado. Crea `/.aura/` si falta.
     func write(to volumeRoot: URL, fileManager: FileManager = .default) throws {

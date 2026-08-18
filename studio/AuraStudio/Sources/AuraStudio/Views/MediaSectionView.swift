@@ -58,6 +58,8 @@ struct MediaSectionView: View {
     /// directo a `batchEditingIDs` si el usuario ya marco "No volver a
     /// mostrar" (persistido en UserDefaults, ver `batchWarningSuppressedKey`).
     @State private var pendingBatchEditIDs: Set<UUID>?
+    /// ST-012: hoja de revision de caratulas que cayeron a Imagenes.
+    @State private var reviewingCoverContamination = false
     @State private var batchEditingIDs: Set<UUID>?
 
     private var allItemsOfKind: [LibraryItem] {
@@ -107,6 +109,7 @@ struct MediaSectionView: View {
                     .frame(height: 96)
                     .padding([.horizontal, .top], 16)
                 if kind == .music { legacyMetadataRereadBanner }
+                if kind == .photo { coverContaminationBanner }
                 // D-202 (encargo del dueño): el "+" de columnas va PEGADO
                 // a los encabezados de la tabla, no en la barra de
                 // herramientas de la ventana -- `Table` no deja insertar
@@ -292,6 +295,34 @@ struct MediaSectionView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
+        }
+    }
+
+    /// ST-012: una vez por instalacion, si hay entradas de Imagenes que
+    /// parecen caratulas (`coverContaminationCandidates`), se ofrece
+    /// revisarlas -- nunca se quita nada sin pasar por la hoja.
+    @ViewBuilder
+    private var coverContaminationBanner: some View {
+        if let count = viewModel.coverContaminationOfferCount {
+            HStack(spacing: 12) {
+                Text("\(count) imagen(es) de tu biblioteca parecen carátulas de álbum, no fotos. ¿Quieres revisarlas?")
+                    .font(.callout)
+                Spacer()
+                Button("Ahora no") {
+                    viewModel.dismissCoverContaminationOffer()
+                }
+                Button("Revisar") {
+                    reviewingCoverContamination = true
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .sheet(isPresented: $reviewingCoverContamination) {
+                CoverContaminationSheet(library: viewModel) {
+                    reviewingCoverContamination = false
+                }
+            }
         }
     }
 
@@ -644,7 +675,9 @@ struct MediaSectionView: View {
 
     private var dropZone: some View {
         DropZone(isTargeted: $isTargeted, prompt: prompt, symbol: symbolName) { urls in
-            viewModel.addDroppedFiles(urls)
+            // ST-012: cada seccion ingiere solo su tipo -- un cover.jpg
+            // dentro de un album soltado en Musica es caratula, no foto.
+            viewModel.addDroppedFiles(urls, into: kind)
             Task { await viewModel.processAll() }
         }
     }

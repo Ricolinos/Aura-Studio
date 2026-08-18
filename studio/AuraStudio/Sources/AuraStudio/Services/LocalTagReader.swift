@@ -36,6 +36,16 @@ enum LocalTagReader {
             metadata.coverArtData = readFLACPicture(from: url)
         }
 
+        // ST-012 (contrato SS2): la caratula de CARPETA (`cover.jpg`,
+        // `folder.jpg`... -- mismos nombres que busca el firmware) es un
+        // asset asociado a la cancion, no una entrada de Imagenes: si la
+        // pista no trae portada embebida, se toma de ahi. Es lo que hace
+        // que un album arrastrado con su cover.jpg conserve la portada
+        // aunque el importador ya no lo cuente como foto.
+        if metadata.coverArtData == nil, let cover = CoverArtAssets.folderCover(near: url) {
+            metadata.coverArtData = try? Data(contentsOf: cover)
+        }
+
         return metadata
     }
 

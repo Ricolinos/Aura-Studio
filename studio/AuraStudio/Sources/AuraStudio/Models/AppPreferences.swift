@@ -77,6 +77,13 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(legacyMetadataBannerShown, forKey: Keys.legacyMetadataBannerShown) }
     }
 
+    /// ST-012: la revision "estas imagenes parecen caratulas" se ofrece
+    /// una vez por instalacion (mismo criterio que
+    /// `legacyMetadataBannerShown`).
+    @Published var coverContaminationReviewShown: Bool {
+        didSet { defaults.set(coverContaminationReviewShown, forKey: Keys.coverContaminationReviewShown) }
+    }
+
     /// Identificador estable de ESTA instalacion de Aura Studio (no del
     /// usuario ni de la Mac -- se regenera si se reinstala). PLAN-general-sync.md
     /// §9/P7: se escribe como `SyncRecord.writtenBy` para que dos Macs
@@ -361,6 +368,7 @@ final class AppPreferences: ObservableObject {
         static let enrichOnline = "aura.enrichOnline"
         static let language = "aura.language"
         static let legacyMetadataBannerShown = "aura.legacyMetadataBannerShown"
+        static let coverContaminationReviewShown = "aura.coverContaminationReviewShown"
         static let installationID = "aura.installationID"
         static let knownDeviceNames = "aura.knownDeviceNames"
         static let libraryFolderPath = "aura.libraryFolderPath"
@@ -386,6 +394,7 @@ final class AppPreferences: ObservableObject {
         self.language = (defaults.string(forKey: Keys.language)
             .flatMap(AppLanguage.init(rawValue:))) ?? .system
         self.legacyMetadataBannerShown = defaults.object(forKey: Keys.legacyMetadataBannerShown) as? Bool ?? false
+        self.coverContaminationReviewShown = defaults.object(forKey: Keys.coverContaminationReviewShown) as? Bool ?? false
         if let existingID = defaults.string(forKey: Keys.installationID) {
             self.installationID = existingID
         } else {

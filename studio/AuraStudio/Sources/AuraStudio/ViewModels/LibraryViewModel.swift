@@ -23,6 +23,9 @@ final class LibraryViewModel: ObservableObject {
     /// ofrece UNA sola vez por instalacion de Aura Studio, la primera
     /// vez que se carga un catalogo con musica despues de este cambio.
     @Published private(set) var legacyMetadataRereadOfferCount: Int?
+    /// ST-012: cuantas entradas de Imagenes parecen caratulas de album
+    /// (ver `coverContaminationCandidates()`); nil = nada que ofrecer.
+    @Published private(set) var coverContaminationOfferCount: Int?
     /// La seleccion de la vista de biblioteca ACTIVA (Musica/Video/
     /// Fotos) en este instante -- alimenta "Solo la selección" en
     /// `DeviceActivityBar` (PLAN-general-sync.md §6). `MediaSectionView`
@@ -126,11 +129,21 @@ final class LibraryViewModel: ObservableObject {
     /// `AppPreferences.linkedLibraryFolders`) -- con el ajuste prendido
     /// no hace falta, porque los archivos ya terminan copiados DENTRO de
     /// la biblioteca de Aura, no hay una carpeta externa que recordar.
-    func addDroppedFiles(_ urls: [URL]) {
+    ///
+    /// ST-012 (contrato `docs/contracts/library-layout-v1.md` SS2):
+    /// ingesta por MODULO, no por extension. `into` es la seccion que
+    /// recibio el drop (Musica/Video/Fotos): solo se importan archivos
+    /// de ESE tipo -- un `cover.jpg` que venia dentro del album no es una
+    /// foto, es la caratula del album (asset asociado, ver
+    /// `LocalTagReader.readTag`), y un video soltado en Musica no se
+    /// cuela en Videos por la puerta de atras. Con `into: nil` (p. ej. la
+    /// reimportacion desde el iPod, `ForeignContentSheet`) se importa de
+    /// todo, pero las imagenes que son caratulas (`CoverArtAssets`) igual
+    /// se quedan afuera de Imagenes.
+    func addDroppedFiles(_ urls: [URL], into target: LibraryItemKind? = nil) {
         ensureLibraryStructure()
         let expandedURLs = DroppedURLExpander.expand(urls)
-        let new = expandedURLs
-            .filter { LibraryItemKind.classify(url: $0) != .unsupported }
+        let new = Self.importableURLs(from: expandedURLs, into: target)
             .map { LibraryItem(sourceURL: $0) }
         items.append(contentsOf: new)
 
@@ -415,6 +428,85 @@ final class LibraryViewModel: ObservableObject {
     /// El original del usuario NUNCA se toca si esta fuera de la
     /// biblioteca (modo "sin copiar medios", D-192). Tambien los saca de
     /// cualquier playlist que los referenciara.
+    /// Filtro de importacion (puro, testeable sin ViewModel): quita lo no
+    /// soportado, aplica el modulo destino y descarta las caratulas.
+    nonisolated static func importableURLs(from expandedURLs: [URL], into target: LibraryItemKind?) -> [URL] {
+        let context = CoverArtAssets.DropContext(urls: expandedURLs)
+        return expandedURLs.filter { url in
+            let kind = LibraryItemKind.classify(url: url)
+            guard kind != .unsupported else { return false }
+            if let target, kind != target { return false }
+            if kind == .photo,
+               CoverArtAssets.isCoverAsset(url, context: context, droppedIntoPhotos: target == .photo) {
+                return false
+            }
+            return true
+        }
+    }
+
+    // MARK: - Migracion: caratulas que cayeron a Imagenes (ST-012)
+
+    /// Una entrada de Imagenes que en realidad es una caratula de album
+    /// importada por el filtro viejo (por extension). Evidencia, de mas a
+    /// menos fuerte -- se muestra al usuario, que decide; nunca se quita
+    /// nada solo (el costo de equivocarse es perder una foto personal).
+    struct CoverContaminationCandidate: Identifiable, Equatable {
+        enum Evidence: Equatable {
+            /// Convive con una cancion/video de la biblioteca en el mismo
+            /// directorio de origen, o ese directorio tiene audio/video.
+            case sharesFolderWithMedia
+            /// Solo el nombre (`cover.jpg`, `folder.jpg`...).
+            case coverLikeNameOnly
+        }
+        let item: LibraryItem
+        let evidence: Evidence
+        var id: UUID { item.id }
+        var strong: Bool { evidence == .sharesFolderWithMedia }
+    }
+
+    /// Candidatas ordenadas: primero las de evidencia fuerte. Criterio
+    /// conservador: una imagen con EXIF de camara (categoria
+    /// "Fotografias", `MediaCategoryClassifier`) nunca es candidata,
+    /// aunque se llame `cover.jpg`.
+    func coverContaminationCandidates() -> [CoverContaminationCandidate] {
+        let context = CoverArtAssets.DropContext(urls: items.filter { $0.kind != .photo }.map(\.sourceURL))
+        var out: [CoverContaminationCandidate] = []
+        for item in items where item.kind == .photo {
+            if item.category == "Fotografías" { continue }
+            guard CoverArtAssets.hasCoverLikeName(item.sourceURL) else { continue }
+            let dir = item.sourceURL.deletingLastPathComponent().standardizedFileURL.path
+            let strong = context.audioDirectories.contains(dir)
+                || CoverArtAssets.directoryContainsAudio(item.sourceURL.deletingLastPathComponent())
+            out.append(CoverContaminationCandidate(item: item, evidence: strong ? .sharesFolderWithMedia : .coverLikeNameOnly))
+        }
+        return out.sorted { $0.strong && !$1.strong }
+    }
+
+    /// Se ofrece UNA vez por instalacion (mismo patron que el banner de
+    /// relectura de metadatos): al arrancar la version corregida, si hay
+    /// candidatas, `coverContaminationOfferCount` las anuncia en Fotos.
+    private func evaluateCoverContaminationOffer() {
+        guard !preferences.coverContaminationReviewShown else {
+            coverContaminationOfferCount = nil
+            return
+        }
+        let count = coverContaminationCandidates().count
+        coverContaminationOfferCount = count > 0 ? count : nil
+    }
+
+    func dismissCoverContaminationOffer() {
+        preferences.coverContaminationReviewShown = true
+        coverContaminationOfferCount = nil
+    }
+
+    /// "Quitar de Imagenes": quita la ENTRADA de la biblioteca (y la copia
+    /// interna de la biblioteca si la hubiera), nunca el archivo original
+    /// del usuario -- `deleteItems` ya distingue eso.
+    func removeFromImages(ids: Set<UUID>) {
+        deleteItems(ids: ids)
+        dismissCoverContaminationOffer()
+    }
+
     func deleteItems(ids: Set<UUID>) {
         guard !ids.isEmpty else { return }
         let fm = FileManager.default
@@ -1180,6 +1272,7 @@ final class LibraryViewModel: ObservableObject {
                              imageRelativePath: imageExists ? $0.imageRelativePath : nil)
         }
         evaluateLegacyMetadataRereadOffer()
+        evaluateCoverContaminationOffer()
     }
 
     private func relativePath(of url: URL) -> String {
