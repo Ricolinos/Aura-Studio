@@ -155,7 +155,10 @@ struct ContentView: View {
             preferences.knownDeviceNames[identity.deviceID] = identity.deviceName
             return
         }
-        let identity = DeviceIdentity(deviceID: UUID().uuidString, deviceName: DeviceNameStore.defaultName(), updatedAt: Date())
+        // ST-013 (contrato v2 SS C bis): quien nombra primero es el
+        // propietario del nombre -- solo esta instalacion podra cambiarlo.
+        let identity = DeviceIdentity(deviceID: UUID().uuidString, deviceName: DeviceNameStore.defaultName(),
+                                      updatedAt: Date(), ownerInstallationID: preferences.installationID)
         guard (try? DeviceNameStore.save(identity, volumeRoot: URL(fileURLWithPath: device.mountPath))) != nil else { return }
         preferences.knownDeviceNames[identity.deviceID] = identity.deviceName
         deviceMonitor.refreshDevice()
@@ -166,10 +169,18 @@ struct ContentView: View {
     /// en la propia vista para poder avisar de inmediato si se recortó
     /// algún emoji, sin esperar a este método asíncrono).
     private func renameDevice(_ device: AuraDevice, to newName: String) async {
+        // ST-013: la UI ya no ofrece el campo si otra instalacion es la
+        // propietaria; esta guarda es la red de seguridad. Un archivo v1
+        // (sin propietario) se reclama en este guardado.
+        if let current = device.deviceIdentity, !current.canRename(from: preferences.installationID) {
+            library.lastError = "El nombre de este iPod se puso desde otra Mac; solo desde ahí se puede cambiar."
+            return
+        }
         let identity = DeviceIdentity(
             deviceID: device.deviceIdentity?.deviceID ?? UUID().uuidString,
             deviceName: newName,
-            updatedAt: Date()
+            updatedAt: Date(),
+            ownerInstallationID: device.deviceIdentity?.ownerInstallationID ?? preferences.installationID
         )
         guard (try? DeviceNameStore.save(identity, volumeRoot: URL(fileURLWithPath: device.mountPath))) != nil else {
             library.lastError = "No se pudo guardar el nombre en el iPod."
@@ -213,7 +224,8 @@ struct ContentView: View {
                               onRenameDevice: { newName in
                                   guard let device = deviceMonitor.device else { return }
                                   Task { await renameDevice(device, to: newName) }
-                              })
+                              },
+                              canRenameDevice: deviceMonitor.device?.deviceIdentity?.canRename(from: preferences.installationID) ?? true)
         case .music:
             MediaSectionView(kind: .music, viewModel: library, device: deviceMonitor.device, preferences: preferences)
         case .musicPlaylists:

@@ -9,6 +9,25 @@ struct DeviceIdentity: Equatable {
     let deviceID: String
     let deviceName: String
     let updatedAt: Date
+    /// ST-013 (`CONTRATO-dispositivo.md` v2, SS C bis): `installationID` de
+    /// la instalacion de Aura Studio que le puso nombre al iPod la
+    /// primera vez -- la UNICA que puede cambiarlo despues. `nil` en un
+    /// `device.cfg` v1 (anterior a este campo): reclamable por la primera
+    /// instalacion que lo guarde.
+    var ownerInstallationID: String? = nil
+
+    init(deviceID: String, deviceName: String, updatedAt: Date, ownerInstallationID: String? = nil) {
+        self.deviceID = deviceID
+        self.deviceName = deviceName
+        self.updatedAt = updatedAt
+        self.ownerInstallationID = ownerInstallationID
+    }
+
+    /// Regla de propiedad del nombre. Sin propietario (archivo v1) todos
+    /// pueden -- y el que guarde primero, reclama.
+    func canRename(from installationID: String) -> Bool {
+        ownerInstallationID == nil || ownerInstallationID == installationID
+    }
 }
 
 /// Lee/escribe `.rockbox/aura/device.cfg` -- mismo formato `clave: valor`
@@ -18,7 +37,9 @@ struct DeviceIdentity: Equatable {
 /// `CONTRATO-dispositivo.md`).
 enum DeviceNameStore {
     static let relativePath = ".rockbox/aura/device.cfg"
-    static let currentContractVersion = 1
+    /// v2 (ST-013): `device_owner`. Un archivo v1 se lee igual (sin
+    /// propietario) y se reescribe como v2 en el proximo guardado.
+    static let currentContractVersion = 2
 
     /// El firmware lee líneas de `.rockbox/aura/*.cfg` con un buffer de
     /// 64 bytes (`read_line`, ver `aura_manifest.c`/`aura_settings.c`) --
@@ -55,18 +76,23 @@ enum DeviceNameStore {
         guard let deviceID = values["device_id"], !deviceID.isEmpty,
               let deviceName = values["device_name"], !deviceName.isEmpty else { return nil }
         let updatedAt = values["device_name_updated_at"].flatMap { ISO8601DateFormatter().date(from: $0) } ?? Date()
-        return DeviceIdentity(deviceID: deviceID, deviceName: deviceName, updatedAt: updatedAt)
+        let owner = values["device_owner"].flatMap { $0.isEmpty ? nil : $0 }
+        return DeviceIdentity(deviceID: deviceID, deviceName: deviceName, updatedAt: updatedAt,
+                              ownerInstallationID: owner)
     }
 
     static func serialize(_ identity: DeviceIdentity) -> String {
         let timestamp = ISO8601DateFormatter().string(from: identity.updatedAt)
-        return """
-        contract_version: \(currentContractVersion)
-        device_id: \(identity.deviceID)
-        device_name: \(identity.deviceName)
-        device_name_updated_at: \(timestamp)
-
-        """
+        var lines = [
+            "contract_version: \(currentContractVersion)",
+            "device_id: \(identity.deviceID)",
+            "device_name: \(identity.deviceName)",
+        ]
+        if let owner = identity.ownerInstallationID, !owner.isEmpty {
+            lines.append("device_owner: \(owner)")
+        }
+        lines.append("device_name_updated_at: \(timestamp)")
+        return lines.joined(separator: "\n") + "\n"
     }
 
     // MARK: - Default y validación (§1.5/§9.3)

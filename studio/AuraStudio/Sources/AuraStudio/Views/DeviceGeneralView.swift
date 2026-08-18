@@ -35,6 +35,10 @@ struct DeviceGeneralView: View {
     /// (`DeviceNameStore.sanitize`, corrido aquí mismo para poder avisar
     /// de un emoji recortado sin esperar el guardado async).
     let onRenameDevice: (String) -> Void
+    /// ST-013 (`CONTRATO-dispositivo.md` v2 SS C bis): false cuando otra
+    /// instalacion de Aura Studio nombro este iPod -- el nombre se ve
+    /// pero no se edita, con la explicacion en pantalla.
+    var canRenameDevice: Bool = true
 
     @State private var ejectResult: String?
     @State private var deviceNameNotice: String?
@@ -162,8 +166,13 @@ struct DeviceGeneralView: View {
                 // vive bajo .rockbox/aura/, que recien existe ahi. Sin
                 // Aura, sigue mostrando la etiqueta de volumen de
                 // siempre, sin edición.
-                if device.isAura {
+                if device.isAura, canRenameDevice {
                     DeviceNameField(name: device.displayName, onRename: handleRename)
+                } else if device.isAura {
+                    Text(device.displayName).font(.title2.bold())
+                    Text("El nombre de este iPod se puso desde otra Mac; solo desde ahí se puede cambiar.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 } else {
                     Text(device.volumeName).font(.title2.bold())
                 }
