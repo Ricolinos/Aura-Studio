@@ -53,11 +53,25 @@ struct FFmpegTranscoder {
     }
 
     /// Arma los argumentos de ffmpeg para producir el .mpg que
-    /// mpegplayer necesita: 320x240 (escalado preservando aspecto y
-    /// rellenando con barras negras si el video no es 4:3, para no
-    /// deformar la imagen), MPEG-2 video + MP2 audio dentro de un
-    /// contenedor MPEG-PS, bitrate moderado para no saturar la lectura
-    /// de disco del iPod.
+    /// mpegplayer necesita: escalado para caber dentro de 320x240
+    /// preservando la relacion de aspecto real (sin recortar ni
+    /// deformar), MPEG-2 video + MP2 audio dentro de un contenedor
+    /// MPEG-PS, bitrate moderado para no saturar la lectura de disco
+    /// del iPod.
+    ///
+    /// PARTE 3 (PLAN-sync-media-hardening.md, D-304 en el firmware): ya
+    /// NO se rellena con barras negras horneadas en el video (el `pad`
+    /// que existia antes) -- eso dejaba SIEMPRE una imagen de exactamente
+    /// 320x240 sin importar el aspecto real del contenido, y el firmware
+    /// nunca podia distinguir "video angosto" de "barras", volviendo
+    /// inutil su propia logica de centrado/recorte (`vo_setup()`) y
+    /// haciendo imposible un modo "cubrir pantalla" real. Ahora el .mpg
+    /// conserva su ancho o alto real (el que sea menor que 320/240) en
+    /// la cabecera de secuencia MPEG, y es el firmware el que decide en
+    /// tiempo de reproduccion si deja franjas (ajustar) o recorta y
+    /// escala para llenar la pantalla (cubrir, alternable con SELECT).
+    /// `force_divisible_by=2` asegura dimensiones pares, requisito del
+    /// submuestreo de crominancia 4:2:0 que espera MPEG-2.
     ///
     /// `sourceFrameRate` (PLAN-sync-media-hardening.md PARTE 3A):
     /// mpegplayer en el S5L8702 del iPod Classic decodifica bien video
@@ -78,7 +92,7 @@ struct FFmpegTranscoder {
         var args = [
             "-y", "-loglevel", "error",
             "-i", input.path,
-            "-vf", "scale=320:240:force_original_aspect_ratio=decrease,pad=320:240:(ow-iw)/2:(oh-ih)/2",
+            "-vf", "scale=320:240:force_original_aspect_ratio=decrease:force_divisible_by=2",
             "-c:v", "mpeg2video", "-b:v", "\(videoBitrateKbps)k",
         ]
         if let sourceFrameRate, sourceFrameRate > 24 {
