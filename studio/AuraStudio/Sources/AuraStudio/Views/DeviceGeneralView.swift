@@ -47,10 +47,21 @@ struct DeviceGeneralView: View {
     /// sincronizar" en vez de sincronizar directo.
     @State private var pendingSyncRequest: PendingSyncRequest?
     @State private var showForeignContentSheet = false
+    /// Encargo del dueño: "Eliminar todos los archivos, o por tipos de
+    /// medios" -- no-nil mientras se confirma un borrado (mismo
+    /// criterio de dos pasos que `ForeignContentSheet`: el botón solo
+    /// arma la solicitud, la alerta es la que de verdad borra).
+    @State private var pendingDelete: PendingDelete?
 
     private struct PendingSyncRequest: Identifiable {
         let id = UUID()
         let selectionOnly: Bool
+    }
+
+    private struct PendingDelete: Identifiable {
+        let id = UUID()
+        let kinds: Set<LibraryItemKind>
+        let label: String
     }
 
     var body: some View {
@@ -134,6 +145,15 @@ struct DeviceGeneralView: View {
                     onDeleted: { Task { await library.verifyDevice(at: URL(fileURLWithPath: device.mountPath)) } }
                 )
             }
+        }
+        .alert(
+            pendingDelete.map { "¿Eliminar \($0.label) del iPod?" } ?? "",
+            isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } })
+        ) {
+            Button("Cancelar", role: .cancel) { pendingDelete = nil }
+            Button("Eliminar", role: .destructive) { confirmDelete() }
+        } message: {
+            Text("Esta acción no se puede deshacer -- los archivos borrados del iPod no se pueden recuperar. Tu biblioteca en esta Mac no se toca; puedes volver a sincronizar cuando quieras.")
         }
         .toolbar {
             // El boton "Sincronizar" vive ahora en ContentView (barra de
@@ -348,11 +368,65 @@ struct DeviceGeneralView: View {
                     Spacer()
                     Text("\(summary.playlistCount)").foregroundStyle(.secondary)
                 }
+                deleteContentSection
             } else {
                 Text("Todavia no sincronizaste este iPod con Aura Studio.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
+        }
+    }
+
+    /// Encargo del dueño: "una opción en General para eliminar todos
+    /// los archivos, o por tipos de medios". Cada botón solo ARMA la
+    /// solicitud (`pendingDelete`) -- la alerta de `.alert(...)` en
+    /// `body` es la que de verdad confirma y ejecuta, mismo criterio de
+    /// dos pasos que `ForeignContentSheet`. Deshabilitados si esa
+    /// sección ya está en 0 (nada que borrar).
+    private var deleteContentSection: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Eliminar contenido").font(.subheadline.bold())
+                .foregroundStyle(.secondary)
+                .padding(.top, 6)
+            HStack(spacing: 8) {
+                deleteButton("Música", kinds: [.music])
+                deleteButton("Videos", kinds: [.video])
+                deleteButton("Fotos", kinds: [.photo])
+                Spacer()
+                deleteButton("Eliminar todo", kinds: [.music, .video, .photo], prominent: true)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func deleteButton(_ title: String, kinds: Set<LibraryItemKind>, prominent: Bool = false) -> some View {
+        if prominent {
+            Button(title, role: .destructive) { requestDelete(kinds: kinds, label: deleteLabel(for: kinds)) }
+                .buttonStyle(.borderedProminent)
+        } else {
+            Button(title, role: .destructive) { requestDelete(kinds: kinds, label: deleteLabel(for: kinds)) }
+                .buttonStyle(.bordered)
+        }
+    }
+
+    private func deleteLabel(for kinds: Set<LibraryItemKind>) -> String {
+        if kinds == [.music, .video, .photo] { return "todo el contenido (música, videos y fotos)" }
+        if kinds == [.music] { return "toda la música" }
+        if kinds == [.video] { return "todos los videos" }
+        if kinds == [.photo] { return "todas las fotos" }
+        return "el contenido seleccionado"
+    }
+
+    private func requestDelete(kinds: Set<LibraryItemKind>, label: String) {
+        pendingDelete = PendingDelete(kinds: kinds, label: label)
+    }
+
+    private func confirmDelete() {
+        guard let request = pendingDelete, let device else { pendingDelete = nil; return }
+        pendingDelete = nil
+        Task {
+            await library.deleteAllDeviceContent(toVolumeAt: URL(fileURLWithPath: device.mountPath), kinds: request.kinds)
+            onRefreshDevice()
         }
     }
 

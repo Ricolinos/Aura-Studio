@@ -647,6 +647,52 @@ struct LibrarySync {
                            syncMarkerWritten: markerWritten, failures: failures)
     }
 
+    /// Encargo del dueño (General → "Eliminar todos los archivos, o por
+    /// tipos de medios"): borra TODO el contenido de las secciones
+    /// elegidas directo del disco -- fuera del flujo normal de
+    /// `sync()`, para cuando el usuario quiere vaciar el iPod sin
+    /// tocar su biblioteca local. Limpia también el manifiesto (sin
+    /// esto, el próximo `sync()` vería el mismo `sourcePath`/tamaño/
+    /// fecha de siempre en el registro viejo y decidiría `.skip` --
+    /// "ya está copiado" -- aunque el archivo real ya no exista) y deja
+    /// el marcador para que el firmware reconstruya sus índices, igual
+    /// que un sync real. Devuelve cuántos archivos se borraron.
+    @discardableResult
+    func deleteAllDeviceContent(kinds: Set<LibraryItemKind>) throws -> Int {
+        let directoryByKind: [LibraryItemKind: String] = [.music: "Music", .video: "Videos", .photo: "Photos"]
+        var manifest = loadManifest()
+        var touched = SyncPendingMarker.Changes(music: false, video: false, images: false)
+        var deletedCount = 0
+
+        for kind in kinds {
+            guard let dirName = directoryByKind[kind] else { continue }
+            let dir = volumeRoot.appendingPathComponent(dirName, isDirectory: true)
+            if let contents = try? fileManager.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) {
+                for item in contents {
+                    try? fileManager.removeItem(at: item)
+                    deletedCount += 1
+                }
+            }
+
+            let prefix = "\(dirName)/"
+            manifest.records = manifest.records.filter { !$0.value.destinationRelativePath.hasPrefix(prefix) }
+
+            switch kind {
+            case .music: touched.music = true
+            case .video: touched.video = true
+            case .photo: touched.images = true
+            case .unsupported: break
+            }
+        }
+
+        try saveManifest(manifest)
+        _ = writeSyncMarkerIfNeeded(touched)
+        if FirmwareCapabilities.supportedSyncMarkerVersion(volumeRoot: volumeRoot) == nil {
+            triggerFirmwareDBRebuild()
+        }
+        return deletedCount
+    }
+
     /// Ver contrato SS4. Si ya habia un marcador (el firmware no alcanzo
     /// a procesar el sync anterior), las secciones se ACUMULAN: el
     /// firmware tiene que reconstruir la union de lo que cambio en

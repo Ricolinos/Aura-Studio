@@ -465,6 +465,21 @@ final class LibraryViewModel: ObservableObject {
     nonisolated static func importableURLs(from expandedURLs: [URL], into target: LibraryItemKind?) -> [URL] {
         let context = CoverArtAssets.DropContext(urls: expandedURLs)
         return expandedURLs.filter { url in
+            // Encargo del dueño (reporte en hardware real): fotos que
+            // "no se ven" en el iPod resultaron ser sidecars AppleDouble
+            // de macOS ("._Nombre.jpg", el resource fork/xattrs que
+            // macOS deja junto al archivo real al copiar a un volumen
+            // sin esos atributos -- FAT32, exFAT, o un ZIP/USB de
+            // origen). `LibraryItemKind.classify` solo mira la
+            // extensión, así que ".jpg" los clasificaba como foto real
+            // -- `DroppedURLExpander.filesInsideDirectory` los filtra
+            // vía `.skipsHiddenFiles` SOLO cuando el drop expande una
+            // carpeta; un archivo suelto arrastrado directo (o ya
+            // visible por venir de un origen que no preservó la
+            // bandera de oculto) llegaba aquí sin filtrar. Nunca son
+            // contenido real del usuario -- se descartan siempre, sin
+            // aviso (no hay nada que "recuperar" de un sidecar).
+            if url.lastPathComponent.hasPrefix("._") { return false }
             let kind = LibraryItemKind.classify(url: url)
             guard kind != .unsupported else { return false }
             if let target, kind != target { return false }
@@ -926,6 +941,37 @@ final class LibraryViewModel: ObservableObject {
         // invalida el índice viejo -- si el dispositivo ya no responde
         // (desconexión real), `verifyDevice` simplemente no encuentra
         // nada que escanear y no falla.
+        await verifyDevice(at: volumeRoot)
+    }
+
+    /// Encargo del dueño (General → "Eliminar todos los archivos, o por
+    /// tipos de medios"): borra TODO el contenido sincronizado de los
+    /// tipos elegidos, directo del iPod -- sin tocar la biblioteca
+    /// local. La confirmación ("¿de verdad quieres borrar N archivos,
+    /// esto no se puede deshacer?") vive en la vista que llama a esto
+    /// (`DeviceGeneralView`, mismo criterio que `ForeignContentSheet`);
+    /// esta función asume que ya se confirmó. Mismo guard de escritura
+    /// concurrente que `sync()` -- nunca borrar mientras hay una
+    /// instalación o sync en curso.
+    func deleteAllDeviceContent(toVolumeAt volumeRoot: URL, kinds: Set<LibraryItemKind>) async {
+        guard !kinds.isEmpty else { return }
+        guard InstallerFlowRegistry.shared.beginWriting() else {
+            lastError = "Hay otra operación en curso con el iPod -- espera a que termine antes de borrar."
+            return
+        }
+        defer { InstallerFlowRegistry.shared.endWriting() }
+
+        do {
+            let sync = LibrarySync(volumeRoot: volumeRoot)
+            let deleted = try await Task.detached(priority: .userInitiated) {
+                try sync.deleteAllDeviceContent(kinds: kinds)
+            }.value
+            lastSyncSummary = deleted == 0
+                ? "No había nada que borrar."
+                : "Se eliminaron \(deleted) archivo(s) del iPod. El índice de la biblioteca se va a reconstruir la próxima vez que arranque Aura."
+        } catch {
+            lastError = "No se pudo borrar en \(volumeRoot.path): \(error.localizedDescription)"
+        }
         await verifyDevice(at: volumeRoot)
     }
 
