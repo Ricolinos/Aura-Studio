@@ -36,6 +36,16 @@ final class LibrarySyncDeleteAllContentTests: XCTestCase {
     private func photoItem() -> AuraStudio.LibraryItem {
         var item = AuraStudio.LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/source-\(UUID().uuidString).jpg"))
         item.preparedURL = photoStaging
+        item.category = "Fotos"
+        item.status = .ready
+        return item
+    }
+
+    private func videoItem(category: String = "Películas") -> AuraStudio.LibraryItem {
+        var item = AuraStudio.LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/source-\(UUID().uuidString).mkv"))
+        item.category = category
+        item.preparedURL = FileManager.default.temporaryDirectory.appendingPathComponent("staged-\(UUID().uuidString).mpg")
+        try? Data("fake mpg bytes".utf8).write(to: item.preparedURL!)
         item.status = .ready
         return item
     }
@@ -90,6 +100,28 @@ final class LibrarySyncDeleteAllContentTests: XCTestCase {
         XCTAssertEqual(result.filesCopied, 1, "el manifiesto limpio hace que se vuelva a copiar, no que se salte")
         let musicDestination = fakeIPod.appendingPathComponent("Music/Artist/Album/Song.mp3")
         XCTAssertTrue(FileManager.default.fileExists(atPath: musicDestination.path))
+    }
+
+    /// PLAN-biblioteca-medios-v2.md §3.5: los índices de categoría no
+    /// tienen entrada propia en el manifiesto (los escribe
+    /// `writeCategoryIndexes` a partir de TODO lo presente en cada
+    /// sync, no diferencial) -- sin este borrado explícito quedarían
+    /// apuntando a archivos que "Eliminar todos" ya borró.
+    func testDeletingVideoKindRemovesVideoCategoryIndex() throws {
+        let video = videoItem()
+        let photo = photoItem()
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+        _ = try sync.sync(items: [video, photo])
+
+        let videoCategoriesURL = fakeIPod.appendingPathComponent(LibrarySync.videoCategoriesRelativePath)
+        let photoCategoriesURL = fakeIPod.appendingPathComponent(LibrarySync.photoCategoriesRelativePath)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: videoCategoriesURL.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: photoCategoriesURL.path))
+
+        _ = try sync.deleteAllDeviceContent(kinds: [.video])
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: videoCategoriesURL.path), "el índice de video se borra con 'Eliminar todos' de video")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: photoCategoriesURL.path), "el índice de fotos no se toca si solo se borró video")
     }
 
     func testDeletionWritesSyncPendingMarkerForTheFirmware() throws {

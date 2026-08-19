@@ -56,6 +56,20 @@ struct LibraryItem: Identifiable, Equatable {
     /// usando puertas adentro). Se sugiere sola al procesar el item y
     /// el usuario la puede corregir a mano.
     var category: String?
+    /// PLAN-biblioteca-medios-v2.md §3.4: solo para `.video` en la
+    /// categoría Series -- nombre de la serie, temporada y episodio,
+    /// poblados al importar con `VideoTitleParser` o editables a mano
+    /// desde el inspector. Determinan el nombre de destino en el iPod
+    /// (` SxxEyy`, que `parse_sxxeyy()` del firmware agrupa) y el
+    /// póster de temporada. `nil` para todo lo que no sea un episodio
+    /// (película suelta, videoclip, música, foto).
+    var seriesName: String?
+    var season: Int?
+    var episode: Int?
+    /// PLAN-biblioteca-medios-v2.md §3.3: solo para `.photo` -- álbum
+    /// LOCAL dentro de Aura Studio (nunca viaja al iPod, `/Photos`
+    /// sigue plano, D-192). `nil` = sin álbum.
+    var photoAlbum: String?
     /// Se pone en `true` la primera vez que el usuario corrige metadata
     /// a mano (revision, renombrar, edicion en lote, quitar caratula) --
     /// nunca por `LibraryEnricher`/`LocalTagReader`, que solo llenan
@@ -77,6 +91,10 @@ struct LibraryItem: Identifiable, Equatable {
         self.metadata = nil
         self.preparedURL = nil
         self.category = nil
+        self.seriesName = nil
+        self.season = nil
+        self.episode = nil
+        self.photoAlbum = nil
         self.metadataEditedByUser = false
         self.addedAt = addedAt
     }
@@ -87,7 +105,8 @@ struct LibraryItem: Identifiable, Equatable {
     /// sesiones.
     init(id: UUID, sourceURL: URL, kind: LibraryItemKind,
          status: LibraryItemStatus, metadata: TrackMetadata?, preparedURL: URL?,
-         category: String? = nil, metadataEditedByUser: Bool = false,
+         category: String? = nil, seriesName: String? = nil, season: Int? = nil,
+         episode: Int? = nil, photoAlbum: String? = nil, metadataEditedByUser: Bool = false,
          addedAt: Date? = nil) {
         self.id = id
         self.sourceURL = sourceURL
@@ -96,6 +115,10 @@ struct LibraryItem: Identifiable, Equatable {
         self.metadata = metadata
         self.preparedURL = preparedURL
         self.category = category
+        self.seriesName = seriesName
+        self.season = season
+        self.episode = episode
+        self.photoAlbum = photoAlbum
         self.metadataEditedByUser = metadataEditedByUser
         self.addedAt = addedAt
     }

@@ -159,6 +159,12 @@ enum DeviceSyncIndexBuilder {
             if relative.hasPrefix("Videos/") {
                 let poster = (relative as NSString).deletingPathExtension + ".jpg"
                 owned.insert(poster)
+                // PLAN-biblioteca-medios-v2.md §3.5: el póster de
+                // temporada de un episodio de Series tampoco tiene
+                // registro propio -- ver seasonPosterRelativePath(from:).
+                if let seasonPoster = LibrarySync.seasonPosterRelativePath(fromEpisodeDestinationRelativePath: relative) {
+                    owned.insert(seasonPoster)
+                }
             }
         }
         return owned

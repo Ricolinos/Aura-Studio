@@ -314,8 +314,24 @@ final class LibraryViewModel: ObservableObject {
                 let transcoder = try FFmpegTranscoder()
                 let info = try? FFmpegTranscoder.probeVideoInfo(of: item.sourceURL, ffmpegURL: transcoder.ffmpegURL)
                 let duration = info?.duration
+                // PLAN-biblioteca-medios-v2.md §3.4, decisión C: un
+                // nombre con SxxEyy/1x02 es señal suficiente para
+                // clasificar como Series sola -- D-228 solo descartó la
+                // heurística por DURACIÓN, nunca un patrón explícito
+                // como este.
+                let parsedTitle = VideoTitleParser.parse(item.sourceURL.deletingPathExtension().lastPathComponent)
                 if items[index].category == nil {
-                    items[index].category = MediaCategoryHeuristics.classifyVideo(durationSeconds: duration ?? nil).displayName
+                    items[index].category = parsedTitle.isEpisode
+                        ? MediaCategory.series.displayName
+                        : MediaCategoryHeuristics.classifyVideo(durationSeconds: duration ?? nil).displayName
+                }
+                if parsedTitle.isEpisode,
+                   items[index].category == MediaCategory.series.displayNameSpanish
+                    || items[index].category == MediaCategory.series.displayNameEnglish,
+                   let seriesName = parsedTitle.seriesName, let season = parsedTitle.season, let episode = parsedTitle.episode {
+                    items[index].seriesName = seriesName
+                    items[index].season = season
+                    items[index].episode = episode
                 }
                 items[index].metadata = TrackMetadata(durationSeconds: duration ?? nil)
                 // D-228: la categoria ya esta resuelta -- copia a
@@ -1438,7 +1454,7 @@ final class LibraryViewModel: ObservableObject {
         let tempItem = LibraryItem(
             id: persistedItem.id, sourceURL: oldURL, kind: kind, status: .queued,
             metadata: LibraryPersistenceMapper.liveMetadata(persistedItem.metadata, coverArtData: nil),
-            preparedURL: nil, category: category)
+            preparedURL: nil, category: category, photoAlbum: persistedItem.photoAlbum)
 
         let relative = LibrarySync.localLibraryRelativePath(
             for: tempItem, kind: kind, fileName: oldURL.lastPathComponent,
@@ -1492,6 +1508,10 @@ final class LibraryViewModel: ObservableObject {
                 preparedRelativePath: item.preparedURL.map { relativePath(of: $0) },
                 coverRelativePath: coverRelative,
                 category: item.category,
+                seriesName: item.seriesName,
+                season: item.season,
+                episode: item.episode,
+                photoAlbum: item.photoAlbum,
                 metadataEditedByUser: item.metadataEditedByUser,
                 addedAt: item.addedAt
             ))
@@ -1558,6 +1578,10 @@ final class LibraryViewModel: ObservableObject {
                 // conocidos al string de display nuevo y deja pasar
                 // cualquier otro tal cual (ver su doc-comment).
                 category: p.category.map(LibraryPersistenceMapper.liveCategory),
+                seriesName: p.seriesName,
+                season: p.season,
+                episode: p.episode,
+                photoAlbum: p.photoAlbum,
                 metadataEditedByUser: p.metadataEditedByUser ?? false,
                 addedAt: p.addedAt
             ))

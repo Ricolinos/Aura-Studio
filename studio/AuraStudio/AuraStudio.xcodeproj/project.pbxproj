@@ -29,6 +29,7 @@
 		135A255167C64B601EFF2854 /* CoverArtArchiveClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAC95668C5FEF76FAC67EE52 /* CoverArtArchiveClient.swift */; };
 		14B0C14393E1FF6AC7FACCFF /* AuraPalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F4082F8F8734C49730074C2 /* AuraPalette.swift */; };
 		17A2510DAAA29D7069BF1480 /* PhotoStagingCollisionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346BA2D222B8F4C8F5CE1C58 /* PhotoStagingCollisionTests.swift */; };
+		17B905383D5AAE7BF97D1476 /* LibrarySyncSeriesNamingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 59650F837F8005FD75204211 /* LibrarySyncSeriesNamingTests.swift */; };
 		1A5862E9CB13506C27D87CAC /* ThemeValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5E9AF411CC0AC72D66C9F63 /* ThemeValidator.swift */; };
 		1B1F489ABC2214542DB2C46F /* VideoArtworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349E7DDC3F7A98547168FD9A /* VideoArtworkTests.swift */; };
 		1EF7EC20F69C186A9887856B /* MKS5LBootRunnerExecutableBitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD729ADB997C1F381DACBC45 /* MKS5LBootRunnerExecutableBitTests.swift */; };
@@ -76,6 +77,7 @@
 		6118105A223ED412EA7476B6 /* GitHubReleaseCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6CB9F09AC96C1409CC7C453C /* GitHubReleaseCheckerTests.swift */; };
 		62666A4A9BF729B61C851F76 /* ID3WriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF3580937C6126B24998BB6 /* ID3WriterTests.swift */; };
 		666C116F404FC775C15FFEAD /* AppStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AFC6DCF7F164C535175071 /* AppStrings.swift */; };
+		68E8BCDA1B3BC0F91F2A063A /* LibraryPersistenceSeriesAlbumFieldsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14888E0A766F5AAF8BCC8B5B /* LibraryPersistenceSeriesAlbumFieldsTests.swift */; };
 		6CEA99B326B7A9C0BC06BFBD /* DroppedURLExpander.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE112760998756CFF24E4267 /* DroppedURLExpander.swift */; };
 		6EB23316E8337CEA9599A124 /* TMDBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 055B3DA536778DFDE7011A60 /* TMDBClient.swift */; };
 		6F89B1D713BBFE9B9E1B369E /* rockbox.ipod in Resources */ = {isa = PBXBuildFile; fileRef = 2E8C3583DE937B8FBBECABFA /* rockbox.ipod */; };
@@ -141,6 +143,7 @@
 		C3AD25FC7C3C2CE8C2F3AD6F /* BundledArtifactsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */; };
 		C3ED448AEE28EACD02E4E2CC /* LibraryPersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093B5EA51C45529C66A3640F /* LibraryPersistence.swift */; };
 		C4E16B0230B926F38F44808C /* DroppedURLExpanderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB78E19CE6152C4A34DF642B /* DroppedURLExpanderTests.swift */; };
+		C695524FFC68AD87BB044B1A /* CategoryIndexWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D921E701B695E44C62DF9A38 /* CategoryIndexWriterTests.swift */; };
 		C6CF154C89DCC0132D58E648 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AD4FC67C48B4550BD7554E /* AppDelegate.swift */; };
 		C8C3FEC955A554BC479089A3 /* mks5lboot in Resources */ = {isa = PBXBuildFile; fileRef = 6799D48484C7BF9CBF98C612 /* mks5lboot */; };
 		C90101F74FA7DE7769EE2135 /* PlaylistArtGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 379EA3270923CF30079FF9EA /* PlaylistArtGenerator.swift */; };
@@ -196,6 +199,7 @@
 		117BF63B29CADB076B19CA27 /* IPodMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPodMonitor.swift; sourceTree = "<group>"; };
 		1266C986FED704BE10B0D5A2 /* SyncMarker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncMarker.swift; sourceTree = "<group>"; };
 		1290E12A3C253DAFF9B79163 /* MusicBrainzRateLimiter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicBrainzRateLimiter.swift; sourceTree = "<group>"; };
+		14888E0A766F5AAF8BCC8B5B /* LibraryPersistenceSeriesAlbumFieldsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryPersistenceSeriesAlbumFieldsTests.swift; sourceTree = "<group>"; };
 		14D5A27F7EA14F700832333A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		16512FA37AC623A52F006219 /* AuraDevice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraDevice.swift; sourceTree = "<group>"; };
 		1695E842D41B0B6B13805A1E /* LibrarySyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySyncTests.swift; sourceTree = "<group>"; };
@@ -242,6 +246,7 @@
 		528818777E4EF0B5EF8F9306 /* PlaylistImporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistImporterTests.swift; sourceTree = "<group>"; };
 		54210365FABAF87A55C820A6 /* LibrarySyncDeleteAllContentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySyncDeleteAllContentTests.swift; sourceTree = "<group>"; };
 		5788BF566829EC16317154CE /* AppPreferencesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferencesTests.swift; sourceTree = "<group>"; };
+		59650F837F8005FD75204211 /* LibrarySyncSeriesNamingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySyncSeriesNamingTests.swift; sourceTree = "<group>"; };
 		5A7F236B3BC2CD5356A7477E /* ArtistImageResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistImageResolver.swift; sourceTree = "<group>"; };
 		5D2320B965F851A493392022 /* MediaInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaInfoView.swift; sourceTree = "<group>"; };
 		5F7FD7689D1AF6C4178F68DD /* LibrarySyncCancellationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySyncCancellationTests.swift; sourceTree = "<group>"; };
@@ -334,6 +339,7 @@
 		D3ABCD2D0D6F8611364F950C /* DeviceSyncIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSyncIndex.swift; sourceTree = "<group>"; };
 		D3F0CDAA153138813C9AF84E /* AuraDeviceProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraDeviceProbe.swift; sourceTree = "<group>"; };
 		D789632A0A38C211E33DFCBF /* MediaTableRowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTableRowTests.swift; sourceTree = "<group>"; };
+		D921E701B695E44C62DF9A38 /* CategoryIndexWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryIndexWriterTests.swift; sourceTree = "<group>"; };
 		D96F62F5D0767305583513FF /* TrackMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackMetadata.swift; sourceTree = "<group>"; };
 		DA27EA46AF63E39DC0E94748 /* LibraryEnricherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryEnricherTests.swift; sourceTree = "<group>"; };
 		DAC2C915803E2ECA9BD01B52 /* PrivilegedActionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivilegedActionSheet.swift; sourceTree = "<group>"; };
@@ -498,6 +504,7 @@
 				476586878B17D64E6EB2F3BC /* BootloaderVerifiedDisksTests.swift */,
 				D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */,
 				AC0636DEF76695EC784AFCE2 /* CatalogSummaryWriterTests.swift */,
+				D921E701B695E44C62DF9A38 /* CategoryIndexWriterTests.swift */,
 				3F32B696741F0E62A203E7BC /* ClockSyncWriterTests.swift */,
 				C7A75E4AA4334B6A18D04537 /* CoverArtAssetsTests.swift */,
 				70ACE1220F0178A35F3CE798 /* DeviceNameStoreTests.swift */,
@@ -515,12 +522,14 @@
 				50C985AB6AA76CE6D4E38242 /* LibraryGroupingTests.swift */,
 				3854E1521F1D1535773CA89D /* LibraryLegacyMigrationTests.swift */,
 				A78B6EFC3F4E661073CF15D6 /* LibraryPersistenceFavoriteTests.swift */,
+				14888E0A766F5AAF8BCC8B5B /* LibraryPersistenceSeriesAlbumFieldsTests.swift */,
 				17FA97DC7618F234BE711AED /* LibraryPipelineIntegrationTests.swift */,
 				5F7FD7689D1AF6C4178F68DD /* LibrarySyncCancellationTests.swift */,
 				20952B2B1ED460054B80EC39 /* LibrarySyncConflictResolutionTests.swift */,
 				54210365FABAF87A55C820A6 /* LibrarySyncDeleteAllContentTests.swift */,
 				8885EF5A65AE8ED08914314A /* LibrarySyncLocalLibraryPathTests.swift */,
 				8F2CDF7B36135811140A2B3E /* LibrarySyncMusicPathTests.swift */,
+				59650F837F8005FD75204211 /* LibrarySyncSeriesNamingTests.swift */,
 				1695E842D41B0B6B13805A1E /* LibrarySyncTests.swift */,
 				F2E38E8394BAA788DC9544B0 /* LibraryViewModelLocalTagRereadTests.swift */,
 				D00683CD00E28700EF1DC416 /* LibraryViewModelSyncScopeTests.swift */,
@@ -772,6 +781,7 @@
 				7723B2E0BF669AA642A666D6 /* BootloaderVerifiedDisksTests.swift in Sources */,
 				C3AD25FC7C3C2CE8C2F3AD6F /* BundledArtifactsTests.swift in Sources */,
 				A97401AE31F2CC10AB44DDCD /* CatalogSummaryWriterTests.swift in Sources */,
+				C695524FFC68AD87BB044B1A /* CategoryIndexWriterTests.swift in Sources */,
 				741C227ABE979EE55749B07D /* ClockSyncWriterTests.swift in Sources */,
 				D14BAA69CD8F0052BDDAEB70 /* CoverArtAssetsTests.swift in Sources */,
 				C2F0510BAABF5CB03FD90D93 /* DeviceNameStoreTests.swift in Sources */,
@@ -789,12 +799,14 @@
 				238917846EFA62670BDB518D /* LibraryGroupingTests.swift in Sources */,
 				A272BCA595633440A1F595A9 /* LibraryLegacyMigrationTests.swift in Sources */,
 				70D019E7148CEEDA856FEC63 /* LibraryPersistenceFavoriteTests.swift in Sources */,
+				68E8BCDA1B3BC0F91F2A063A /* LibraryPersistenceSeriesAlbumFieldsTests.swift in Sources */,
 				0183BFA3AF5209C411B41F36 /* LibraryPipelineIntegrationTests.swift in Sources */,
 				AB3F8769FB758AFE883C8714 /* LibrarySyncCancellationTests.swift in Sources */,
 				A259EC600BB8C6311C09975E /* LibrarySyncConflictResolutionTests.swift in Sources */,
 				47CB97EC01FE0D881B00DC5C /* LibrarySyncDeleteAllContentTests.swift in Sources */,
 				EF1E083FA6047FB931707719 /* LibrarySyncLocalLibraryPathTests.swift in Sources */,
 				8C2ED0BC3B41CA56C08D20E8 /* LibrarySyncMusicPathTests.swift in Sources */,
+				17B905383D5AAE7BF97D1476 /* LibrarySyncSeriesNamingTests.swift in Sources */,
 				397F1385C6FF0BA8618B7956 /* LibrarySyncTests.swift in Sources */,
 				38134176857A7F8A50DEE343 /* LibraryViewModelLocalTagRereadTests.swift in Sources */,
 				353A2EF8D17CA3C702095B8C /* LibraryViewModelSyncScopeTests.swift in Sources */,

@@ -194,6 +194,12 @@ struct LibrarySync {
     static let manifestRelativePath = ".rockbox/aura/sync_manifest.json"
     static let summaryRelativePath = ".rockbox/aura/sync_summary.cfg"
     static let ratingsRelativePath = ".rockbox/aura/ratings.cfg"
+    /// PLAN-biblioteca-medios-v2.md §3.5 / CONTRATO-firmware-studio.md
+    /// §D.2 (D-316): índices de categoría por archivo que alimentan
+    /// las filas Películas/Series/Videoclips y Fotos/Imágenes/IA del
+    /// firmware, y el pool de Movie Flow.
+    static let videoCategoriesRelativePath = ".rockbox/aura/video_categories.cfg"
+    static let photoCategoriesRelativePath = ".rockbox/aura/photo_categories.cfg"
     static let playlistsRelativePath = "Playlists"
     /// PLAN-general-sync.md §8.2: presente mientras un sync esta en
     /// curso; ausente = ultimo sync cerro limpio (termino o se cancelo
@@ -619,6 +625,8 @@ struct LibrarySync {
         summary.playlistCount = playlistsWritten
         try writeSummary(summary)
         try writeRatings(items: items, destinationByItemID: destinationByItemID)
+        try writeCategoryIndexes(items: items, destinationByItemID: destinationByItemID)
+        writeSeasonPosters(items: items)
 
         // ST-012 / contrato SS4: si este sync toco algo (tambien si se
         // cancelo a medias -- lo copiado ya esta en el disco y el
@@ -679,8 +687,12 @@ struct LibrarySync {
 
             switch kind {
             case .music: touched.music = true
-            case .video: touched.video = true
-            case .photo: touched.images = true
+            case .video:
+                touched.video = true
+                try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(Self.videoCategoriesRelativePath))
+            case .photo:
+                touched.images = true
+                try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(Self.photoCategoriesRelativePath))
             case .unsupported: break
             }
         }
@@ -906,6 +918,86 @@ struct LibrarySync {
         try (lines.joined(separator: "\n") + "\n").write(to: url, atomically: true, encoding: .utf8)
     }
 
+    /// PLAN-biblioteca-medios-v2.md §3.5 / CONTRATO-firmware-studio.md
+    /// §D.2: le da al firmware, por primera vez, la categoría de cada
+    /// archivo individual de `/Videos`/`/Photos` -- hasta ahora Studio
+    /// solo emitía 3 contadores agregados (`sync_summary.cfg`, D-283),
+    /// insuficiente para que las filas Películas/Series/Videoclips y
+    /// Fotos/Imágenes/IA del firmware (D-316) tuvieran contenido real.
+    /// Mismo patrón que `writeRatings`: solo items REALMENTE presentes
+    /// en el iPod tras este sync (los que tienen destino resuelto),
+    /// nunca todo el catálogo; sin entradas -> se borra el archivo
+    /// (nunca deja un índice viejo apuntando a nada).
+    private func writeCategoryIndexes(items: [LibraryItem], destinationByItemID: [UUID: String]) throws {
+        let videoLines = items.compactMap { item -> String? in
+            guard item.kind == .video, let relative = destinationByItemID[item.id] else { return nil }
+            let code: String
+            switch item.category {
+            case MediaCategory.movies.displayNameSpanish, MediaCategory.movies.displayNameEnglish: code = "movie"
+            case MediaCategory.series.displayNameSpanish, MediaCategory.series.displayNameEnglish: code = "series"
+            default: code = "clip"
+            }
+            return "\((relative as NSString).lastPathComponent): \(code)"
+        }
+        try writeCategoryIndex(lines: videoLines, header: "# aura-video-categories v1",
+                                relativePath: Self.videoCategoriesRelativePath)
+
+        let photoLines = items.compactMap { item -> String? in
+            guard item.kind == .photo, let relative = destinationByItemID[item.id] else { return nil }
+            let code: String
+            switch item.category {
+            case "IA": code = "ai"
+            case "Fotos": code = "photo"
+            default: code = "image"
+            }
+            return "\((relative as NSString).lastPathComponent): \(code)"
+        }
+        try writeCategoryIndex(lines: photoLines, header: "# aura-photo-categories v1",
+                                relativePath: Self.photoCategoriesRelativePath)
+    }
+
+    private func writeCategoryIndex(lines: [String], header: String, relativePath: String) throws {
+        let url = volumeRoot.appendingPathComponent(relativePath)
+        guard !lines.isEmpty else {
+            try? fileManager.removeItem(at: url)
+            return
+        }
+        try fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let contents = header + "\n" + lines.joined(separator: "\n") + "\n"
+        try contents.write(to: url, atomically: true, encoding: .utf8)
+    }
+
+    /// PLAN-biblioteca-medios-v2.md §3.5: por cada (seriesName, season)
+    /// presente en `items`, escribe "Videos/<seriesName> S%02d.jpg" --
+    /// el mismo prefijo saneado que `seriesEpisodeFilename` usa para
+    /// sus episodios, para que `aura_movieflow.c` (que solo concatena
+    /// el nombre de programa que ya extrajo con " S%02d.jpg") encuentre
+    /// el archivo exacto. Toma el póster del primer episodio (por
+    /// número) de cada temporada que tenga `coverArtData`; solo
+    /// reescribe si el contenido cambió (compara bytes, no vale la pena
+    /// un manifiesto aparte para unos pocos KB por temporada).
+    private func writeSeasonPosters(items: [LibraryItem]) {
+        var bestByseason: [String: (episode: Int, cover: Data)] = [:]
+        for item in items {
+            guard item.kind == .video, Self.isSeriesCategory(item.category),
+                  let seriesName = item.seriesName, let season = item.season, let episode = item.episode,
+                  let cover = item.metadata?.coverArtData else { continue }
+            let key = "\(seriesName)\u{1}\(season)"
+            if let existing = bestByseason[key], existing.episode <= episode { continue }
+            bestByseason[key] = (episode, cover)
+        }
+        for (key, best) in bestByseason {
+            let parts = key.split(separator: "\u{1}", maxSplits: 1)
+            guard parts.count == 2, let season = Int(parts[1]) else { continue }
+            let seriesName = String(parts[0])
+            let relative = Self.seasonPosterRelativePath(seriesName: seriesName, season: season)
+            let url = volumeRoot.appendingPathComponent(relative)
+            if let existing = try? Data(contentsOf: url), existing == best.cover { continue }
+            try? fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try? ImageResizer.resizeToLCDOptimal(data: best.cover, destinationURL: url, maxDimension: 640)
+        }
+    }
+
     /// Fase 24: la musica pasa a vivir en `Music/<Artista>/<Album>/NN
     /// Titulo.ext` (la convencion que Rockbox espera de cualquier
     /// biblioteca real) en vez de un `Music/<archivo>` plano -- video y
@@ -1021,16 +1113,99 @@ struct LibrarySync {
         // sin sanear ni acotar (a diferencia de musica, que ya pasaba
         // por PathSanitizer). deviceFilenameMaxBytes coincide con
         // VIDEO_NAME_LEN/PHOTO_NAME_LEN del firmware (96 con el NUL).
-        case .video: return "Videos/\(PathSanitizer.sanitizeFilename(filename, maxBytes: Self.deviceFilenameMaxBytes))"
+        case .video:
+            // PLAN-biblioteca-medios-v2.md §3.5: un episodio de Series
+            // con seriesName/season/episode resueltos viaja como
+            // "<seriesName> SxxEyy.<ext>" -- el espacio+SxxEyy es lo que
+            // `parse_sxxeyy()` del firmware busca para agrupar episodios
+            // por temporada (aura_movieflow.c). Cualquier otro video
+            // (película suelta, videoclip, o una Serie sin esos tres
+            // campos resueltos) sigue el nombre preparado tal cual.
+            if isSeriesCategory(item.category),
+               let seriesName = item.seriesName, let season = item.season, let episode = item.episode {
+                let ext = (filename as NSString).pathExtension
+                return "Videos/\(Self.seriesEpisodeFilename(seriesName: seriesName, season: season, episode: episode, ext: ext))"
+            }
+            return "Videos/\(PathSanitizer.sanitizeFilename(filename, maxBytes: Self.deviceFilenameMaxBytes))"
         case .photo: return "Photos/\(PathSanitizer.sanitizeFilename(filename, maxBytes: Self.deviceFilenameMaxBytes))"
         case .unsupported: return "Unsupported/\(filename)"
         }
+    }
+
+    /// D-283: `item.category` para video se guarda como el displayName
+    /// LOCALIZADO -- comparar contra los dos idiomas para que un item
+    /// clasificado con la app en un idioma siga contando bien si el
+    /// usuario luego cambia el idioma de la app (mismo criterio que
+    /// `sync()` más abajo).
+    static func isSeriesCategory(_ category: String?) -> Bool {
+        category == MediaCategory.series.displayNameSpanish || category == MediaCategory.series.displayNameEnglish
     }
 
     /// docs/contracts/library-layout-v1.md §1: "nombre ≤ 95 bytes UTF-8
     /// incluyendo la extensión" para `/Videos/` y `/Photos/` --
     /// `VIDEO_NAME_LEN`/`PHOTO_NAME_LEN` del firmware son 96 con el NUL.
     static let deviceFilenameMaxBytes = 95
+
+    /// "<seriesName> S%02dE%02d.<ext>", saneado y acotado a `maxBytes`
+    /// SIN tocar el sufijo ` SxxEyy.<ext>` -- a diferencia de
+    /// `PathSanitizer.sanitizeFilename` (que recorta desde el final del
+    /// nombre completo, lo que mutilaría justo el sufijo que
+    /// `parse_sxxeyy()` necesita), acá el presupuesto de bytes se
+    /// calcula ANTES y solo `seriesName` se trunca.
+    static func seriesEpisodeFilename(seriesName: String, season: Int, episode: Int, ext: String, maxBytes: Int = deviceFilenameMaxBytes) -> String {
+        let suffix = String(format: " S%02dE%02d", season, episode)
+        let extSuffix = ext.isEmpty ? "" : ".\(ext)"
+        let budget = max(1, maxBytes - suffix.utf8.count - extSuffix.utf8.count)
+        // Reusa PathSanitizer.sanitize (caracteres ilegales de FAT32 -> "_",
+        // trim de espacios/puntos finales) antes de acotar por bytes.
+        var base = PathSanitizer.sanitize(seriesName, maxLength: Int.max)
+        while base.utf8.count > budget, !base.isEmpty {
+            base.removeLast()
+        }
+        while let last = base.last, last == "." || last == " " {
+            base.removeLast()
+        }
+        if base.isEmpty { base = "_" }
+        return base + suffix + extSuffix
+    }
+
+    /// "Videos/<seriesName saneado> S%02d.jpg" -- mismo prefijo saneado
+    /// que `seriesEpisodeFilename` (garantiza que el firmware, que solo
+    /// concatena el nombre de programa que ya parseó de un episodio con
+    /// " S%02d.jpg", encuentre el archivo exacto que Studio escribió).
+    /// Inversa aproximada de `seriesEpisodeFilename`: dado el destino ya
+    /// escrito de un episodio ("Videos/<seriesName> SxxEyy.mpg"), la
+    /// ruta del póster de temporada que le corresponde -- usado por
+    /// `DeviceSyncIndexBuilder.ownedDevicePaths` para que ese póster
+    /// (sin registro propio en el manifiesto, igual que el póster por
+    /// video) no aparezca como "solo en el iPod". `nil` si `relative`
+    /// no tiene la forma esperada (no es un episodio de Series).
+    static func seasonPosterRelativePath(fromEpisodeDestinationRelativePath relative: String) -> String? {
+        guard relative.hasPrefix("Videos/") else { return nil }
+        let base = ((relative as NSString).lastPathComponent as NSString).deletingPathExtension
+        guard let regex = try? NSRegularExpression(pattern: #"^(.*) S(\d{2})E\d{2,3}$"#) else { return nil }
+        let range = NSRange(base.startIndex..., in: base)
+        guard let match = regex.firstMatch(in: base, range: range),
+              let nameRange = Range(match.range(at: 1), in: base),
+              let seasonRange = Range(match.range(at: 2), in: base),
+              let season = Int(base[seasonRange]) else { return nil }
+        return seasonPosterRelativePath(seriesName: String(base[nameRange]), season: season)
+    }
+
+    static func seasonPosterRelativePath(seriesName: String, season: Int, maxBytes: Int = deviceFilenameMaxBytes) -> String {
+        let suffix = String(format: " S%02d", season)
+        let extSuffix = ".jpg"
+        let budget = max(1, maxBytes - suffix.utf8.count - extSuffix.utf8.count)
+        var base = PathSanitizer.sanitize(seriesName, maxLength: Int.max)
+        while base.utf8.count > budget, !base.isEmpty {
+            base.removeLast()
+        }
+        while let last = base.last, last == "." || last == " " {
+            base.removeLast()
+        }
+        if base.isEmpty { base = "_" }
+        return "Videos/\(base)\(suffix)\(extSuffix)"
+    }
 
     /// Borra el indice de tagcache del dispositivo. No es destructivo
     /// para la musica en si (solo el indice de busqueda, que Aura
