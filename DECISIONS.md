@@ -541,3 +541,7 @@ Ver **D-321** en `Aura-Firmware/DECISIONS.md` (diseño completo, criterio de cu�
 **Deliberadamente fuera de alcance**: idioma (el encargo decía "hora y region", no idioma).
 
 **Verificación**: `ClockSyncWriterTests` 6 (upsert agrega las 7 claves a un archivo vacío; reemplaza en el mismo lugar preservando otras claves — `theme_id` no se mueve ni se duplica; offset positivo de zona horaria — Tokio +9h = 36 cuartos; escritura real crea el archivo si falta; preserva líneas no relacionadas; ignora rutas de montaje inválidas sin lanzar). `swift build`, `swift test` completa (481 pruebas, 2 fallos — el flake de red ya conocido de `testCoverArtArchiveFetchesRealCover`, sin relación), `xcodegen generate` + `xcodebuild` → BUILD SUCCEEDED.
+
+## ST-036 — Pin a v0.2.10-beta (D-320/D-321 en Aura-Firmware)
+
+Encargo del dueño: publicar los commits pendientes en ambos repos y cortar un release del firmware para poder probar en hardware real. `FIRMWARE_VERSION` → `tag=v0.2.10-beta`, hashes de `rockbox.ipod`/`rockbox.zip` actualizados (`mks5lboot`/`bootloader-ipod6g.ipod` sin cambios — ninguno de los dos se recompiló en esta pasada). `fetch-firmware.sh` verificó los 4 checksums contra el Release publicado, `AuraPalette.swift` sin diferencias (ningún token de diseño cambió). `swift build` limpio; sin cambios de código Swift en esta pasada.
