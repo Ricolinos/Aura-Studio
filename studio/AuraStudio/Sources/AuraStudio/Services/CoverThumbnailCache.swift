@@ -43,6 +43,19 @@ final class CoverThumbnailCache: @unchecked Sendable {
               let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else {
             return nil
         }
-        return NSImage(cgImage: cgImage, size: NSSize(width: side, height: side))
+        // Bug real (encargo del dueño, 2026-08-19: "las imágenes se ven
+        // distorsionadas"): `kCGImageSourceThumbnailMaxPixelSize` solo
+        // acota el lado MAYOR -- una foto 16:9 decodifica a, p.ej.,
+        // 280×157, nunca 280×280. Forzar `size: (side, side)` acá
+        // mentía sobre el aspecto real del `NSImage` (quedaba "1:1" de
+        // metadata aunque el buffer de píxeles no lo fuera); SwiftUI
+        // calcula `.aspectRatio(contentMode: .fill)` contra ESE tamaño
+        // reportado, así que estiraba la imagen real para "llenar" un
+        // cuadrado que el contenido nunca tuvo -- distorsión visible en
+        // cualquier foto que no fuera ya cuadrada. El tamaño reportado
+        // tiene que ser el aspecto REAL del `cgImage` para que `.fill`
+        // recorte en vez de estirar.
+        let size = NSSize(width: CGFloat(cgImage.width) / scale, height: CGFloat(cgImage.height) / scale)
+        return NSImage(cgImage: cgImage, size: size)
     }
 }
