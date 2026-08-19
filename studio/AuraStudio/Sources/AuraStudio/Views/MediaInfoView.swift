@@ -14,6 +14,10 @@ struct MediaInfoView: View {
     var availableCategories: [String]?
     var onCategoryChanged: (String) -> Void = { _ in }
     var onRatingChanged: (Int?) -> Void = { _ in }
+    /// PLAN-biblioteca-medios-v2.md §3.4: título/serie/temporada/
+    /// episodio de un video, editables a mano -- `nil` = este video no
+    /// ofrece guardar esos campos (la vista que lo abre no lo soporta).
+    var onVideoInfoChanged: ((_ title: String?, _ seriesName: String?, _ season: Int?, _ episode: Int?) -> Void)?
     let onSave: (TrackMetadata) -> Void
     let onCancel: () -> Void
 
@@ -30,15 +34,21 @@ struct MediaInfoView: View {
     /// `LibraryViewModel.prepareMusic` como sidecar `.lrc`.
     @State private var lyrics: String
     @State private var rating: Int
+    @State private var videoTitle: String
+    @State private var seriesName: String
+    @State private var season: String
+    @State private var episode: String
 
     init(item: LibraryItem, availableCategories: [String]? = nil,
          onCategoryChanged: @escaping (String) -> Void = { _ in },
          onRatingChanged: @escaping (Int?) -> Void = { _ in },
+         onVideoInfoChanged: ((_ title: String?, _ seriesName: String?, _ season: Int?, _ episode: Int?) -> Void)? = nil,
          onSave: @escaping (TrackMetadata) -> Void, onCancel: @escaping () -> Void) {
         self.item = item
         self.availableCategories = availableCategories
         self.onCategoryChanged = onCategoryChanged
         self.onRatingChanged = onRatingChanged
+        self.onVideoInfoChanged = onVideoInfoChanged
         self.onSave = onSave
         self.onCancel = onCancel
         let metadata = item.metadata ?? TrackMetadata()
@@ -52,6 +62,14 @@ struct MediaInfoView: View {
         _trackNumber = State(initialValue: metadata.trackNumber.map(String.init) ?? "")
         _lyrics = State(initialValue: metadata.syncedLyrics ?? "")
         _rating = State(initialValue: metadata.rating ?? 0)
+        _videoTitle = State(initialValue: metadata.title ?? "")
+        _seriesName = State(initialValue: item.seriesName ?? "")
+        _season = State(initialValue: item.season.map(String.init) ?? "")
+        _episode = State(initialValue: item.episode.map(String.init) ?? "")
+    }
+
+    private var isSeriesItem: Bool {
+        item.category == MediaCategory.series.displayNameSpanish || item.category == MediaCategory.series.displayNameEnglish
     }
 
     private var isComplete: Bool {
@@ -73,6 +91,9 @@ struct MediaInfoView: View {
                         metadataForm
                         Divider()
                         lyricsSection
+                    }
+                    if item.kind == .video, onVideoInfoChanged != nil {
+                        videoInfoSection
                     }
                     if let availableCategories {
                         Divider()
@@ -172,6 +193,36 @@ struct MediaInfoView: View {
         }
     }
 
+    /// PLAN-biblioteca-medios-v2.md §3.4: título editable para video (no
+    /// existía ningún campo de metadata para video/foto antes de esto);
+    /// serie/temporada/episodio solo si la categoría ya es Series --
+    /// cambiar la categoría a Series desde `categorySection` de abajo y
+    /// reabrir la hoja los revela.
+    private var videoInfoSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Información").font(.callout)
+            Form {
+                TextField("Título", text: $videoTitle)
+                if isSeriesItem {
+                    TextField("Nombre de la serie", text: $seriesName)
+                    TextField("Temporada", text: $season)
+                        .onChange(of: season) { _, newValue in
+                            season = String(newValue.filter(\.isNumber).prefix(3))
+                        }
+                    TextField("Episodio", text: $episode)
+                        .onChange(of: episode) { _, newValue in
+                            episode = String(newValue.filter(\.isNumber).prefix(3))
+                        }
+                }
+            }
+            if isSeriesItem {
+                Text("El nombre de destino en el iPod se arma con estos tres campos -- cambiarlos y sincronizar de nuevo reagrupa el episodio en Movie Flow.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
     private func categorySection(_ categories: [String]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("Categoría").font(.callout)
@@ -258,6 +309,16 @@ struct MediaInfoView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(!isComplete)
+            } else if item.kind == .video, let onVideoInfoChanged {
+                Button("Guardar") {
+                    onVideoInfoChanged(
+                        videoTitle.isEmpty ? nil : videoTitle,
+                        isSeriesItem && !seriesName.isEmpty ? seriesName : nil,
+                        isSeriesItem ? Int(season) : nil,
+                        isSeriesItem ? Int(episode) : nil
+                    )
+                }
+                .buttonStyle(.borderedProminent)
             } else {
                 Button("Listo", action: onCancel)
                     .buttonStyle(.borderedProminent)

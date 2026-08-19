@@ -197,11 +197,137 @@ extension ArtistGroup {
     }
 }
 
-/// Ámbito de la tabla de Canciones cuando se embebe en Álbumes/Artistas
-/// (ST-031). Las claves son las de `LibraryGrouping.albumKey(of:)` /
-/// `artistKey(of:)`.
+/// Ámbito de la tabla de Canciones/Video cuando se embebe en Álbumes/
+/// Artistas/Películas/Series (ST-031, ampliado PLAN-biblioteca-medios-v2.md
+/// §3.4 Tanda 4). El nombre quedó de cuando solo cubría Música -- el
+/// plan permite no renombrarlo si solo hace falta sumar casos (§4.1.1);
+/// se documenta acá en vez de tocar cada sitio que ya lo usa. Las claves
+/// son las de `LibraryGrouping.albumKey(of:)` / `artistKey(of:)` /
+/// `videoCollectionKey(of:)`.
 enum MusicScope: Equatable {
     case all
     case album(String)
     case artist(String)
+    /// Todos los items de una película/serie (`VideoCollectionGroup.id`).
+    case videoCollection(String)
+    /// Solo los episodios de una temporada dentro de esa serie.
+    case season(String, Int)
+}
+
+/// Una temporada dentro de una serie: sus episodios, ordenados por
+/// número (los sin número, al final). `number == VideoCollectionGroup.
+/// noSeasonNumber` es el cajón "Sin temporada".
+struct SeasonGroup: Identifiable, Equatable {
+    let number: Int
+    let items: [LibraryItem]
+    var id: Int { number }
+}
+
+/// Una película o serie para las vistas "Películas"/"Series"
+/// (PLAN-biblioteca-medios-v2.md §3.4): grupo en memoria, igual que
+/// `AlbumGroup`/`ArtistGroup` -- nada de esto crea carpetas ni cambia
+/// la organización en disco.
+struct VideoCollectionGroup: Identifiable, Equatable {
+    static let noSeasonNumber = -1
+
+    let id: String
+    let title: String
+    let year: String?
+    let posterData: Data?
+    let isSeries: Bool
+    let items: [LibraryItem]
+    /// Vacío para una película. Para una serie, una entrada por número
+    /// de temporada presente (incluida `noSeasonNumber` si hay
+    /// episodios sin ese campo poblado), ordenadas de menor a mayor con
+    /// "Sin temporada" siempre al final.
+    let seasons: [SeasonGroup]
+
+    var episodeCount: Int { items.count }
+}
+
+extension LibraryGrouping {
+    /// Clave de agrupación de un video de Películas/Series: por
+    /// `seriesName` normalizado si es un episodio de Series (varios
+    /// archivos, un solo grupo); por título normalizado si es una
+    /// película (agrupa duplicados reales, p.ej. una reimportación) o,
+    /// sin título, por su propio id (nunca se agrupa con nada más).
+    static func videoCollectionKey(of item: LibraryItem) -> String {
+        if LibrarySync.isSeriesCategory(item.category),
+           let seriesName = item.seriesName?.trimmingCharacters(in: .whitespacesAndNewlines), !seriesName.isEmpty {
+            return "series\u{1F}\(normalize(seriesName))"
+        }
+        let title = item.metadata?.title?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let title, !title.isEmpty {
+            return "movie\u{1F}\(normalize(title))"
+        }
+        return "movie\u{1F}\(item.id.uuidString)"
+    }
+
+    /// Películas y Series (D-283: `item.category` guardado como
+    /// displayName localizado, doble idioma) agrupadas en
+    /// `VideoCollectionGroup` -- por nombre, "Sin temporada" al final
+    /// dentro de cada serie, artículo inicial ignorado al ordenar el
+    /// listado (mismo criterio que álbumes/artistas).
+    static func videoCollections(from items: [LibraryItem]) -> [VideoCollectionGroup] {
+        let videos = items.filter { item in
+            item.kind == .video && (
+                item.category == MediaCategory.movies.displayNameSpanish
+                || item.category == MediaCategory.movies.displayNameEnglish
+                || LibrarySync.isSeriesCategory(item.category)
+            )
+        }
+        var buckets: [String: [LibraryItem]] = [:]
+        var order: [String] = []
+        for item in videos {
+            let key = videoCollectionKey(of: item)
+            if buckets[key] == nil { order.append(key) }
+            buckets[key, default: []].append(item)
+        }
+        var groups = order.map { key -> VideoCollectionGroup in
+            let bucket = buckets[key]!
+            let first = bucket[0]
+            let isSeries = LibrarySync.isSeriesCategory(first.category)
+            let title: String = {
+                if isSeries, let seriesName = first.seriesName?.trimmingCharacters(in: .whitespacesAndNewlines), !seriesName.isEmpty {
+                    return seriesName
+                }
+                let metaTitle = first.metadata?.title?.trimmingCharacters(in: .whitespacesAndNewlines)
+                return (metaTitle?.isEmpty == false ? metaTitle : nil) ?? displayTitle(first)
+            }()
+
+            var seasons: [SeasonGroup] = []
+            if isSeries {
+                var seasonBuckets: [Int: [LibraryItem]] = [:]
+                var seasonOrder: [Int] = []
+                for episode in bucket {
+                    let number = episode.season ?? VideoCollectionGroup.noSeasonNumber
+                    if seasonBuckets[number] == nil { seasonOrder.append(number) }
+                    seasonBuckets[number, default: []].append(episode)
+                }
+                seasons = seasonOrder
+                    .sorted { a, b in
+                        if a == VideoCollectionGroup.noSeasonNumber { return false }
+                        if b == VideoCollectionGroup.noSeasonNumber { return true }
+                        return a < b
+                    }
+                    .map { number in
+                        let episodes = (seasonBuckets[number] ?? []).sorted { a, b in
+                            let ea = a.episode ?? Int.max, eb = b.episode ?? Int.max
+                            if ea != eb { return ea < eb }
+                            return displayTitle(a).localizedStandardCompare(displayTitle(b)) == .orderedAscending
+                        }
+                        return SeasonGroup(number: number, items: episodes)
+                    }
+            }
+
+            return VideoCollectionGroup(
+                id: key, title: title,
+                year: bucket.compactMap { $0.metadata?.year }.first,
+                posterData: bucket.compactMap { $0.metadata?.coverArtData }.first,
+                isSeries: isSeries, items: bucket, seasons: seasons
+            )
+        }
+        groups.sort { sortName($0.title).localizedStandardCompare(sortName($1.title)) == .orderedAscending }
+        return groups
+    }
 }

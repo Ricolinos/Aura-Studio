@@ -114,4 +114,79 @@ final class LibraryGroupingTests: XCTestCase {
         XCTAssertEqual(LibraryGrouping.sortName("(What's the Story) Morning Glory?"), "What's the Story) Morning Glory?")
         XCTAssertEqual(LibraryGrouping.sortName("..."), "...")
     }
+
+    // MARK: - videoCollections (PLAN-biblioteca-medios-v2.md §3.4, Tanda 4)
+
+    private func video(_ title: String, category: String, seriesName: String? = nil,
+                        season: Int? = nil, episode: Int? = nil, year: String? = nil,
+                        cover: Data? = nil) -> AuraStudio.LibraryItem {
+        var item = AuraStudio.LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/\(UUID().uuidString).mkv"))
+        item.metadata = TrackMetadata(title: title, year: year, coverArtData: cover)
+        item.category = category
+        item.seriesName = seriesName
+        item.season = season
+        item.episode = episode
+        return item
+    }
+
+    func testVideoCollectionsIgnoresNonMovieNonSeriesCategories() {
+        let clip = video("Clip", category: "Videos")
+        let photo = AuraStudio.LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/x.jpg"))
+        XCTAssertTrue(LibraryGrouping.videoCollections(from: [clip, photo]).isEmpty)
+    }
+
+    func testStandaloneMovieBecomesItsOwnGroup() {
+        let movie = video("Little Amelie", category: "Películas", year: "2025")
+        let groups = LibraryGrouping.videoCollections(from: [movie])
+        XCTAssertEqual(groups.count, 1)
+        XCTAssertEqual(groups[0].title, "Little Amelie")
+        XCTAssertEqual(groups[0].year, "2025")
+        XCTAssertFalse(groups[0].isSeries)
+        XCTAssertTrue(groups[0].seasons.isEmpty)
+        XCTAssertEqual(groups[0].episodeCount, 1)
+    }
+
+    func testSeriesWithTwoSeasonsGroupsByNormalizedSeriesName() {
+        let e1 = video("Piloto", category: "Series", seriesName: "Mi Serie", season: 1, episode: 1)
+        let e2 = video("Segundo", category: "Series", seriesName: "mi serie", season: 1, episode: 2)
+        let e3 = video("Estreno T2", category: "Series", seriesName: "Mi Serie", season: 2, episode: 1)
+        let groups = LibraryGrouping.videoCollections(from: [e1, e2, e3])
+        XCTAssertEqual(groups.count, 1, "misma serie, aunque la grafía del tag difiera en mayúsculas")
+        let show = groups[0]
+        XCTAssertTrue(show.isSeries)
+        XCTAssertEqual(show.episodeCount, 3)
+        XCTAssertEqual(show.seasons.map(\.number), [1, 2])
+        XCTAssertEqual(show.seasons[0].items.map { $0.episode }, [1, 2], "episodios ordenados dentro de la temporada")
+    }
+
+    func testEpisodeWithoutSeasonNumberGoesLast() {
+        let withSeason = video("Ep 1", category: "Series", seriesName: "Serie X", season: 1, episode: 1)
+        let withoutSeason = video("Extra", category: "Series", seriesName: "Serie X", season: nil, episode: nil)
+        let show = LibraryGrouping.videoCollections(from: [withSeason, withoutSeason])[0]
+        XCTAssertEqual(show.seasons.map(\.number), [1, VideoCollectionGroup.noSeasonNumber],
+                       "el cajón 'Sin temporada' siempre va al final, sin importar el orden de entrada")
+    }
+
+    func testMovieTitlesIgnoreLeadingArticleWhenSorting() {
+        let a = video("The Matrix", category: "Películas")
+        let b = video("Amelie", category: "Películas")
+        let groups = LibraryGrouping.videoCollections(from: [a, b])
+        XCTAssertEqual(groups.map(\.title), ["Amelie", "The Matrix"], "'The' no cuenta para el orden alfabético")
+    }
+
+    func testSeriesEnglishCategoryDisplayNameAlsoGroups() {
+        // D-283: item.category se guarda como el displayName LOCALIZADO
+        // -- "Series" en inglés (coincide con el español acá, pero
+        // MediaCategory.series.displayNameEnglish es la fuente real).
+        let e = video("Ep", category: MediaCategory.series.displayNameEnglish, seriesName: "Show", season: 1, episode: 1)
+        let groups = LibraryGrouping.videoCollections(from: [e])
+        XCTAssertEqual(groups.count, 1)
+        XCTAssertTrue(groups[0].isSeries)
+    }
+
+    func testMoviePosterComesFromCoverArtData() {
+        let data = Data("poster".utf8)
+        let movie = video("X", category: "Películas", cover: data)
+        XCTAssertEqual(LibraryGrouping.videoCollections(from: [movie])[0].posterData, data)
+    }
 }

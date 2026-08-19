@@ -526,6 +526,23 @@ final class LibraryViewModel: ObservableObject {
         persistCatalog()
     }
 
+    /// PLAN-biblioteca-medios-v2.md §3.4: título/serie/temporada/
+    /// episodio corregidos a mano desde el inspector de un video. A
+    /// diferencia de `applyReview` (música), no hace falta volver a
+    /// preparar el archivo -- el nombre de destino en el iPod se
+    /// recalcula solo en el próximo `sync()` (`LibrarySync.
+    /// destinationRelativePath`, que ya lee estos campos).
+    func updateVideoInfo(id: UUID, title: String?, seriesName: String?, season: Int?, episode: Int?) {
+        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
+        if items[index].metadata == nil { items[index].metadata = TrackMetadata() }
+        items[index].metadata?.title = title
+        items[index].seriesName = seriesName
+        items[index].season = season
+        items[index].episode = episode
+        items[index].metadataEditedByUser = true
+        persistCatalog()
+    }
+
     // MARK: - Menu contextual de la tabla de biblioteca (D-198)
 
     /// Quita items de la biblioteca -- borra tambien lo que Aura Studio

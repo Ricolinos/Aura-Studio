@@ -96,6 +96,9 @@ struct MediaSectionView: View {
         case .all: break
         case .album(let key): result = result.filter { LibraryGrouping.albumKey(of: $0) == key }
         case .artist(let key): result = result.filter { LibraryGrouping.artistKey(of: $0) == key }
+        case .videoCollection(let key): result = result.filter { LibraryGrouping.videoCollectionKey(of: $0) == key }
+        case .season(let key, let season):
+            result = result.filter { LibraryGrouping.videoCollectionKey(of: $0) == key && ($0.season ?? VideoCollectionGroup.noSeasonNumber) == season }
         }
         if let effectiveCategoryFilter = presetCategory ?? categoryFilter {
             result = result.filter { $0.category == effectiveCategoryFilter }

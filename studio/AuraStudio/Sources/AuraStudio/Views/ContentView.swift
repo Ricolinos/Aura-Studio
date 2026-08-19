@@ -255,11 +255,12 @@ struct ContentView: View {
         case .video, .videoGroup:
             MediaSectionView(kind: .video, viewModel: library, device: deviceMonitor.device, preferences: preferences)
         case .videoMovies:
-            MediaSectionView(kind: .video, viewModel: library, device: deviceMonitor.device, preferences: preferences,
-                              presetCategory: MediaCategory.movies.displayName)
+            // Tanda 4 de PLAN-biblioteca-medios-v2.md: cuadrícula de
+            // pósters en vez de la tabla plana (que sigue siendo lo que
+            // usa Videoclips, abajo).
+            MoviesView(viewModel: library, device: deviceMonitor.device, preferences: preferences)
         case .videoSeries:
-            MediaSectionView(kind: .video, viewModel: library, device: deviceMonitor.device, preferences: preferences,
-                              presetCategory: MediaCategory.series.displayName)
+            SeriesView(viewModel: library, device: deviceMonitor.device, preferences: preferences)
         case .videoClips:
             // El bucket "Videoclips" de la barra lateral es el MISMO
             // que ya usa la heurística automática (MediaCategory.videos,

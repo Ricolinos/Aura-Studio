@@ -44,6 +44,7 @@
 		2E42011A249AF7A131CF660B /* AuraDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16512FA37AC623A52F006219 /* AuraDevice.swift */; };
 		2F898C1996F39319211E9496 /* DoneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0116DC50EA8DBAE3B02AE0FB /* DoneView.swift */; };
 		31C1B49208706DAD1BB8E579 /* FFmpegTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAE64AFF0609F93FC361C6DE /* FFmpegTranscoder.swift */; };
+		31FE39F7713996DC2349E715 /* SeriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67F503AD10A4EC24D7DF63AC /* SeriesView.swift */; };
 		326C69D7688D8373156E1F73 /* LocalTagReaderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 181CDD2810F5EC0A301C1384 /* LocalTagReaderTests.swift */; };
 		346B3FB9BA174BB6659D8885 /* MediaCategory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F2FA6BAC2F043A38FEDD0C3 /* MediaCategory.swift */; };
 		353A2EF8D17CA3C702095B8C /* LibraryViewModelSyncScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D00683CD00E28700EF1DC416 /* LibraryViewModelSyncScopeTests.swift */; };
@@ -102,6 +103,7 @@
 		91FE918C092C1349381F3D67 /* PlaylistExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E68A879A0F3418A7220030C /* PlaylistExporter.swift */; };
 		944B27A4A60F4C5BF6A1AF1F /* MediaCategoryHeuristicsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63EEB772091BC184C410A194 /* MediaCategoryHeuristicsTests.swift */; };
 		94C6E0F1AA6F37EF6B4CB32A /* ImageResizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DC865282F8B113716D7C3AF /* ImageResizer.swift */; };
+		95B640A82CBEE1692124BBD1 /* MoviesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28EFB3D109DB9FCC2B421D68 /* MoviesView.swift */; };
 		9708C9B6AD06AFB89FA7A062 /* LibraryGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B59CFDAA76DDAEF44BAD84 /* LibraryGrouping.swift */; };
 		97338ABB5F9C787AAD97D514 /* AwaitBootloaderUSBView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C539DEA78844D9C617FBF1 /* AwaitBootloaderUSBView.swift */; };
 		98294989CBE015BFE717F68F /* MediaTableRowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D789632A0A38C211E33DFCBF /* MediaTableRowTests.swift */; };
@@ -217,6 +219,7 @@
 		22A9408836FAEA82165D554C /* PrivilegedExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrivilegedExecutor.swift; sourceTree = "<group>"; };
 		23AD4FC67C48B4550BD7554E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		2656D012F16CBEADE3FF9A6D /* InstallPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallPlannerTests.swift; sourceTree = "<group>"; };
+		28EFB3D109DB9FCC2B421D68 /* MoviesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoviesView.swift; sourceTree = "<group>"; };
 		2A3A899326AAAF78FF4F60C7 /* LRCLIBClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LRCLIBClient.swift; sourceTree = "<group>"; };
 		2B7808E74C42090DED30DCD9 /* IPodDiskIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPodDiskIdentifier.swift; sourceTree = "<group>"; };
 		2DCF37D4D32EF9A352A74CC8 /* DeviceActivityBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceActivityBar.swift; sourceTree = "<group>"; };
@@ -259,6 +262,7 @@
 		6661622F6714D86BC85E6E20 /* ImageResizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageResizerTests.swift; sourceTree = "<group>"; };
 		672B82A09A8641D47F326E8D /* ThemeValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeValidatorTests.swift; sourceTree = "<group>"; };
 		6799D48484C7BF9CBF98C612 /* mks5lboot */ = {isa = PBXFileReference; path = mks5lboot; sourceTree = "<group>"; };
+		67F503AD10A4EC24D7DF63AC /* SeriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeriesView.swift; sourceTree = "<group>"; };
 		6973A46003D114CD07FC2DB0 /* SyncMarkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncMarkerTests.swift; sourceTree = "<group>"; };
 		6C13F9E244B9751271DC8255 /* AudioTranscoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTranscoder.swift; sourceTree = "<group>"; };
 		6CB9F09AC96C1409CC7C453C /* GitHubReleaseCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubReleaseCheckerTests.swift; sourceTree = "<group>"; };
@@ -392,6 +396,7 @@
 				704F156897D746D67A145FEB /* LibraryBrowsingComponents.swift */,
 				5D2320B965F851A493392022 /* MediaInfoView.swift */,
 				E01FD2ED5703F8753781BE89 /* MediaSectionView.swift */,
+				28EFB3D109DB9FCC2B421D68 /* MoviesView.swift */,
 				F53DF863212996F0BD415EA7 /* MusicSettingsView.swift */,
 				847E40FA6D10BDD4F1267BA4 /* MusicViewOptionsView.swift */,
 				777383A161FBD9C32BFA6D82 /* PermissionsView.swift */,
@@ -399,6 +404,7 @@
 				B210703E5EF249635DE046AE /* PlaylistsView.swift */,
 				DAC2C915803E2ECA9BD01B52 /* PrivilegedActionSheet.swift */,
 				F527FF44025F6464CEC83FD6 /* RestoreHandoffView.swift */,
+				67F503AD10A4EC24D7DF63AC /* SeriesView.swift */,
 				B47BB629D898027E7C891D1B /* ServicesSettingsView.swift */,
 				F52FF3A536F1C7FAFB6822B6 /* SettingsSectionView.swift */,
 				B31CBD5016C6CD0867DB6CBA /* SyncSheets.swift */,
@@ -912,6 +918,7 @@
 				983F3D503FD3C67F03884D83 /* MediaCategoryClassifier.swift in Sources */,
 				2DD7F3B12503BC15F1AD8FB1 /* MediaInfoView.swift in Sources */,
 				027D6C9BFF2A5C75BFBA2FE7 /* MediaSectionView.swift in Sources */,
+				95B640A82CBEE1692124BBD1 /* MoviesView.swift in Sources */,
 				0D024EF762350292ACCC5474 /* MusicBrainzClient.swift in Sources */,
 				3C783558D1453D0413B42079 /* MusicBrainzRateLimiter.swift in Sources */,
 				CE010DE3070AC26AAE0DCA89 /* MusicSettingsView.swift in Sources */,
@@ -930,6 +937,7 @@
 				10EF0307FD5A491426F20395 /* PrivilegedOperationLog.swift in Sources */,
 				383210704833B1602E89F712 /* QuickLookCoordinator.swift in Sources */,
 				B8DE9892192CAACED7ECC3BD /* RestoreHandoffView.swift in Sources */,
+				31FE39F7713996DC2349E715 /* SeriesView.swift in Sources */,
 				5FD738F18BBCA9163DDAA684 /* ServicesSettingsView.swift in Sources */,
 				A801BD6910D0A5909C8AF4C1 /* SettingsSectionView.swift in Sources */,
 				ECC2E0FFEBBD150E6EE9DB18 /* SyncMarker.swift in Sources */,
