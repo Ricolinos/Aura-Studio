@@ -14,6 +14,8 @@ struct MoviesView: View {
     @State private var movies: [VideoCollectionGroup] = []
     @State private var searchText = ""
     @State private var selectedMovieID: String?
+    /// Selección múltiple estilo Finder (encargo del dueño, 2026-08-19).
+    @State private var selection = GridSelection<String>()
     @State private var reviewingItem: LibraryItem?
     @AppStorage("aura.moviesSort") private var sortRaw = MovieSort.title.rawValue
 
@@ -92,6 +94,15 @@ struct MoviesView: View {
         if let selectedMovieID, !movies.contains(where: { $0.id == selectedMovieID }) {
             self.selectedMovieID = nil
         }
+        selection.pruneMissing(from: Set(movies.map(\.id)))
+    }
+
+    /// Películas a las que aplica una acción disparada desde `movie`:
+    /// su selección completa si ya estaba seleccionada, o solo ella si
+    /// no (criterio Finder, ver `GridSelection.effectiveIDs`).
+    private func effectiveMovies(for movie: VideoCollectionGroup) -> [VideoCollectionGroup] {
+        let ids = selection.effectiveIDs(for: movie.id)
+        return movies.filter { ids.contains($0.id) }
     }
 
     // MARK: - Cuadrícula
@@ -130,7 +141,11 @@ struct MoviesView: View {
                         ForEach(visibleMovies) { movie in
                             MediaCardView(imageData: movie.posterData, title: movie.title, subtitle: movie.year,
                                           aspect: .poster(width: 140), placeholderSymbol: "film")
-                                .onTapGesture { selectedMovieID = movie.id }
+                                .librarySelectionBorder(selection.isSelected(movie.id))
+                                .onTapGesture(count: 2) { selectedMovieID = movie.id }
+                                .onTapGesture { selection.handleTap(movie.id, orderedIDs: visibleMovies.map(\.id)) }
+                                .contextMenu { movieContextMenu(movie) }
+                                .draggable(LibrarySelectionTransfer(itemIDs: effectiveMovies(for: movie).flatMap(\.items).map(\.id)))
                                 .help(movie.title)
                         }
                     }
@@ -212,5 +227,41 @@ struct MoviesView: View {
         let row = MediaTableRow(item: item)
         let parts = [row.durationText, item.sourceURL.pathExtension.uppercased()].filter { !$0.isEmpty && $0 != "--" }
         return parts.joined(separator: " · ")
+    }
+
+    /// Menú contextual: si se dispara sobre una película que forma
+    /// parte de una selección múltiple, actúa sobre TODA la selección
+    /// (encargo del dueño, 2026-08-19); si no, solo sobre `movie`.
+    @ViewBuilder
+    private func movieContextMenu(_ movie: VideoCollectionGroup) -> some View {
+        let targets = effectiveMovies(for: movie)
+        let items = targets.flatMap(\.items)
+        let allFavorite = items.allSatisfy { $0.metadata?.isFavorite == true }
+        let plural = targets.count > 1
+
+        if !plural {
+            Button("Abrir") { selectedMovieID = movie.id }
+            Divider()
+        }
+        Button(allFavorite ? "Quitar favorito" : "Marcar como favorito") {
+            viewModel.setFavorite(!allFavorite, forItems: Set(items.map(\.id)))
+        }
+        Button("Buscar póster en línea") {
+            Task { await viewModel.fetchVideoPosters(ids: Set(items.map(\.id))) }
+        }
+        Menu("Cambiar categoría") {
+            ForEach(MediaCategory.videoCategories) { category in
+                Button(category.displayName) {
+                    viewModel.setCategory(category.displayName, forItems: Set(items.map(\.id)))
+                }
+            }
+        }
+        Divider()
+        Button("Mostrar en Finder") {
+            NSWorkspace.shared.activateFileViewerSelecting(items.map(\.sourceURL))
+        }
+        Button(plural ? "Eliminar películas" : "Eliminar película", role: .destructive) {
+            viewModel.deleteItems(ids: Set(items.map(\.id)))
+        }
     }
 }

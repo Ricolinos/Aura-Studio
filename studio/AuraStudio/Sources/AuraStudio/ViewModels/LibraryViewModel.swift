@@ -521,8 +521,17 @@ final class LibraryViewModel: ObservableObject {
     /// (Fase 1B) -- la heuristica automatica de `MediaCategoryClassifier`/
     /// `MediaCategoryHeuristics` es solo un punto de partida.
     func setCategory(_ category: String, forItem id: UUID) {
-        guard let index = items.firstIndex(where: { $0.id == id }) else { return }
-        items[index].category = category
+        setCategory(category, forItems: [id])
+    }
+
+    /// Igual que `setCategory(_:forItem:)` pero para una selección
+    /// múltiple completa de una vez (encargo del dueño, 2026-08-19:
+    /// "organizar de una forma más cómoda la biblioteca" arrastrando o
+    /// reasignando varios álbumes/películas/fotos a la vez).
+    func setCategory(_ category: String, forItems ids: Set<UUID>) {
+        for index in items.indices where ids.contains(items[index].id) {
+            items[index].category = category
+        }
         persistCatalog()
     }
 

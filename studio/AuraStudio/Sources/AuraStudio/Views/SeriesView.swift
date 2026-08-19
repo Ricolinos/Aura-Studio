@@ -13,6 +13,12 @@ struct SeriesView: View {
     @State private var series: [VideoCollectionGroup] = []
     @State private var searchText = ""
     @State private var selectedSeriesID: String?
+    /// Selección múltiple de series en la cuadrícula (encargo del
+    /// dueño, 2026-08-19).
+    @State private var selection = GridSelection<String>()
+    /// Selección múltiple de episodios dentro de una serie abierta --
+    /// se limpia al volver a la cuadrícula (`selectedSeriesID = nil`).
+    @State private var episodeSelection = GridSelection<UUID>()
     @State private var reviewingItem: LibraryItem?
 
     private var visibleSeries: [VideoCollectionGroup] {
@@ -55,6 +61,25 @@ struct SeriesView: View {
         if let selectedSeriesID, !series.contains(where: { $0.id == selectedSeriesID }) {
             self.selectedSeriesID = nil
         }
+        selection.pruneMissing(from: Set(series.map(\.id)))
+        if let show = selectedSeries {
+            episodeSelection.pruneMissing(from: Set(show.items.map(\.id)))
+        } else {
+            episodeSelection.clear()
+        }
+    }
+
+    /// Series a las que aplica una acción disparada desde `show`: su
+    /// selección completa si ya estaba seleccionada, o solo ella si no
+    /// (criterio Finder, ver `GridSelection.effectiveIDs`).
+    private func effectiveSeries(for show: VideoCollectionGroup) -> [VideoCollectionGroup] {
+        let ids = selection.effectiveIDs(for: show.id)
+        return series.filter { ids.contains($0.id) }
+    }
+
+    private func effectiveEpisodes(for item: LibraryItem, in show: VideoCollectionGroup) -> [LibraryItem] {
+        let ids = episodeSelection.effectiveIDs(for: item.id)
+        return show.items.filter { ids.contains($0.id) }
     }
 
     // MARK: - Cuadrícula
@@ -81,7 +106,11 @@ struct SeriesView: View {
                         ForEach(visibleSeries) { show in
                             MediaCardView(imageData: show.posterData, title: show.title,
                                           subtitle: episodeCountText(show), aspect: .poster(width: 140), placeholderSymbol: "tv")
-                                .onTapGesture { selectedSeriesID = show.id }
+                                .librarySelectionBorder(selection.isSelected(show.id))
+                                .onTapGesture(count: 2) { selectedSeriesID = show.id }
+                                .onTapGesture { selection.handleTap(show.id, orderedIDs: visibleSeries.map(\.id)) }
+                                .contextMenu { seriesContextMenu(show) }
+                                .draggable(LibrarySelectionTransfer(itemIDs: effectiveSeries(for: show).flatMap(\.items).map(\.id)))
                                 .help(show.title)
                         }
                     }
@@ -117,6 +146,7 @@ struct SeriesView: View {
                 HStack {
                     Button {
                         selectedSeriesID = nil
+                        episodeSelection.clear()
                     } label: {
                         Label("Series", systemImage: "chevron.left")
                     }
@@ -135,7 +165,7 @@ struct SeriesView: View {
 
                 VStack(alignment: .leading, spacing: 28) {
                     ForEach(show.seasons) { season in
-                        seasonSection(season)
+                        seasonSection(season, show: show)
                     }
                 }
                 .padding(.horizontal, 20)
@@ -168,13 +198,13 @@ struct SeriesView: View {
         }
     }
 
-    private func seasonSection(_ season: SeasonGroup) -> some View {
+    private func seasonSection(_ season: SeasonGroup, show: VideoCollectionGroup) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(seasonTitle(season))
                 .font(.title2.bold())
             VStack(spacing: 0) {
                 ForEach(Array(season.items.enumerated()), id: \.element.id) { index, item in
-                    episodeRow(item)
+                    episodeRow(item, show: show)
                     if index < season.items.count - 1 {
                         Divider()
                     }
@@ -187,9 +217,10 @@ struct SeriesView: View {
         season.number == VideoCollectionGroup.noSeasonNumber ? "Sin temporada" : "Temporada \(season.number)"
     }
 
-    private func episodeRow(_ item: LibraryItem) -> some View {
+    private func episodeRow(_ item: LibraryItem, show: VideoCollectionGroup) -> some View {
         let title = LibraryGrouping.displayTitle(item)
         let syncState = viewModel.deviceSyncIndex?.state(forSourcePath: item.sourceURL.path)
+        let isSelected = episodeSelection.isSelected(item.id)
         return HStack(spacing: 12) {
             Text(item.episode.map { "\($0)" } ?? "--")
                 .font(.callout.monospacedDigit())
@@ -202,13 +233,82 @@ struct SeriesView: View {
                 .foregroundStyle(.secondary)
         }
         .padding(.vertical, 8)
+        .padding(.horizontal, 8)
+        .background(isSelected ? AuraColors.light.accent.opacity(0.15) : Color.clear)
+        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
         .contentShape(Rectangle())
-        .contextMenu {
+        .onTapGesture {
+            episodeSelection.handleTap(item.id, orderedIDs: show.seasons.flatMap(\.items).map(\.id))
+        }
+        .draggable(LibrarySelectionTransfer(itemIDs: effectiveEpisodes(for: item, in: show).map(\.id)))
+        .contextMenu { episodeContextMenu(item, show: show) }
+    }
+
+    /// Menú contextual: si `item` forma parte de una selección múltiple
+    /// de episodios, actúa sobre TODA la selección (encargo del dueño,
+    /// 2026-08-19); si no, solo sobre `item`.
+    @ViewBuilder
+    private func episodeContextMenu(_ item: LibraryItem, show: VideoCollectionGroup) -> some View {
+        let targets = effectiveEpisodes(for: item, in: show)
+        let allFavorite = targets.allSatisfy { $0.metadata?.isFavorite == true }
+        let plural = targets.count > 1
+
+        if !plural {
             Button("Más información...") { reviewingItem = item }
             Divider()
-            Button("Mostrar en Finder") {
-                NSWorkspace.shared.activateFileViewerSelecting([item.sourceURL])
+        }
+        Button(allFavorite ? "Quitar favorito" : "Marcar como favorito") {
+            viewModel.setFavorite(!allFavorite, forItems: Set(targets.map(\.id)))
+        }
+        Menu("Cambiar categoría") {
+            ForEach(MediaCategory.videoCategories) { category in
+                Button(category.displayName) {
+                    viewModel.setCategory(category.displayName, forItems: Set(targets.map(\.id)))
+                }
             }
+        }
+        Divider()
+        Button("Mostrar en Finder") {
+            NSWorkspace.shared.activateFileViewerSelecting(targets.map(\.sourceURL))
+        }
+        Button(plural ? "Eliminar episodios" : "Eliminar episodio", role: .destructive) {
+            viewModel.deleteItems(ids: Set(targets.map(\.id)))
+        }
+    }
+
+    /// Menú contextual de la cuadrícula de series: mismo criterio que
+    /// `episodeContextMenu` -- toda la selección si `show` ya estaba
+    /// seleccionada, o solo ella si no.
+    @ViewBuilder
+    private func seriesContextMenu(_ show: VideoCollectionGroup) -> some View {
+        let targets = effectiveSeries(for: show)
+        let items = targets.flatMap(\.items)
+        let allFavorite = items.allSatisfy { $0.metadata?.isFavorite == true }
+        let plural = targets.count > 1
+
+        if !plural {
+            Button("Abrir") { selectedSeriesID = show.id }
+            Divider()
+        }
+        Button(allFavorite ? "Quitar favorito" : "Marcar como favorito") {
+            viewModel.setFavorite(!allFavorite, forItems: Set(items.map(\.id)))
+        }
+        Button("Buscar póster en línea") {
+            Task { await viewModel.fetchVideoPosters(ids: Set(items.map(\.id))) }
+        }
+        Menu("Cambiar categoría") {
+            ForEach(MediaCategory.videoCategories) { category in
+                Button(category.displayName) {
+                    viewModel.setCategory(category.displayName, forItems: Set(items.map(\.id)))
+                }
+            }
+        }
+        Divider()
+        Button("Mostrar en Finder") {
+            NSWorkspace.shared.activateFileViewerSelecting(items.map(\.sourceURL))
+        }
+        Button(plural ? "Eliminar series" : "Eliminar serie", role: .destructive) {
+            viewModel.deleteItems(ids: Set(items.map(\.id)))
         }
     }
 }

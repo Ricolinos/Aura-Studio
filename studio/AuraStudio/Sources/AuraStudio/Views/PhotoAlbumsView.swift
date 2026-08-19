@@ -23,7 +23,14 @@ struct PhotoAlbumsView: View {
     @State private var albums: [PhotoAlbumGroup] = []
     @State private var searchText = ""
     @State private var selectedAlbumID: String?
-    @State private var selectedPhotoID: UUID?
+    /// Selección múltiple de álbumes (encargo del dueño, 2026-08-19).
+    @State private var selection = GridSelection<String>()
+    /// Selección múltiple de fotos dentro de un álbum abierto -- se
+    /// limpia al volver a la cuadrícula de álbumes. Espacio con
+    /// exactamente 1 seleccionada abre Vista Previa (mismo gesto de
+    /// siempre); con varias, no hace nada (no hay "vista previa
+    /// múltiple" con este espacio de nombres de Quick Look).
+    @State private var photoSelection = GridSelection<UUID>()
     @State private var renamingAlbum: PhotoAlbumGroup?
     @State private var quickLook = QuickLookCoordinator()
     @State private var isTargeted = false
@@ -109,6 +116,25 @@ struct PhotoAlbumsView: View {
         if let selectedAlbumID, !albums.contains(where: { $0.id == selectedAlbumID }) {
             self.selectedAlbumID = nil
         }
+        selection.pruneMissing(from: Set(albums.map(\.id)))
+        if let album = selectedAlbum {
+            photoSelection.pruneMissing(from: Set(album.items.map(\.id)))
+        } else {
+            photoSelection.clear()
+        }
+    }
+
+    /// Álbumes a los que aplica una acción disparada desde `album`: su
+    /// selección completa si ya estaba seleccionado, o solo él si no
+    /// (criterio Finder, ver `GridSelection.effectiveIDs`).
+    private func effectiveAlbums(for album: PhotoAlbumGroup) -> [PhotoAlbumGroup] {
+        let ids = selection.effectiveIDs(for: album.id)
+        return albums.filter { ids.contains($0.id) }
+    }
+
+    private func effectivePhotos(for item: LibraryItem, in album: PhotoAlbumGroup) -> [LibraryItem] {
+        let ids = photoSelection.effectiveIDs(for: item.id)
+        return album.items.filter { ids.contains($0.id) }
     }
 
     // MARK: - Cuadrícula de álbumes
@@ -140,8 +166,11 @@ struct PhotoAlbumsView: View {
                                   alignment: .leading, spacing: 28) {
                             ForEach(visibleAlbums) { album in
                                 PhotoAlbumCardView(album: album)
-                                    .onTapGesture { selectedAlbumID = album.id }
+                                    .librarySelectionBorder(selection.isSelected(album.id))
+                                    .onTapGesture(count: 2) { selectedAlbumID = album.id }
+                                    .onTapGesture { selection.handleTap(album.id, orderedIDs: visibleAlbums.map(\.id)) }
                                     .contextMenu { albumContextMenu(album) }
+                                    .draggable(LibrarySelectionTransfer(itemIDs: effectiveAlbums(for: album).flatMap(\.items).map(\.id)))
                                     .help(album.title)
                             }
                         }
@@ -168,15 +197,43 @@ struct PhotoAlbumsView: View {
         .padding(40)
     }
 
+    /// Menú contextual: si `album` forma parte de una selección
+    /// múltiple, actúa sobre TODA la selección (encargo del dueño,
+    /// 2026-08-19); si no, solo sobre `album`.
     @ViewBuilder
     private func albumContextMenu(_ album: PhotoAlbumGroup) -> some View {
-        Button("Abrir") { selectedAlbumID = album.id }
-        if !album.isUnknown {
+        let targets = effectiveAlbums(for: album)
+        let items = targets.flatMap(\.items)
+        let plural = targets.count > 1
+        let anyKnown = targets.contains { !$0.isUnknown }
+
+        if !plural {
+            Button("Abrir") { selectedAlbumID = album.id }
             Divider()
-            Button("Renombrar álbum...") { renamingAlbum = album }
-            Button("Disolver álbum", role: .destructive) {
-                viewModel.dissolvePhotoAlbum(items: Set(album.items.map(\.id)))
+        }
+        Menu("Cambiar categoría") {
+            ForEach(preferences.photoCollections, id: \.self) { collection in
+                Button(collection) {
+                    viewModel.setCategory(collection, forItems: Set(items.map(\.id)))
+                }
             }
+        }
+        .disabled(items.isEmpty)
+        if anyKnown {
+            Divider()
+            if !plural {
+                Button("Renombrar álbum...") { renamingAlbum = album }
+            }
+            Button(plural ? "Disolver álbumes" : "Disolver álbum", role: .destructive) {
+                viewModel.dissolvePhotoAlbum(items: Set(items.map(\.id)))
+            }
+        }
+        Divider()
+        Button("Mostrar en Finder") {
+            NSWorkspace.shared.activateFileViewerSelecting(items.map(\.sourceURL))
+        }
+        Button("Eliminar fotos de la biblioteca", role: .destructive) {
+            viewModel.deleteItems(ids: Set(items.map(\.id)))
         }
     }
 
@@ -187,7 +244,7 @@ struct PhotoAlbumsView: View {
             HStack {
                 Button {
                     selectedAlbumID = nil
-                    selectedPhotoID = nil
+                    photoSelection.clear()
                 } label: {
                     Label(category, systemImage: "chevron.left")
                 }
@@ -231,7 +288,7 @@ struct PhotoAlbumsView: View {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 120, maximum: 160), spacing: 12, alignment: .top)],
                               alignment: .leading, spacing: 12) {
                         ForEach(album.items) { item in
-                            photoThumb(item)
+                            photoThumb(item, album: album)
                         }
                     }
                     .padding(20)
@@ -239,37 +296,54 @@ struct PhotoAlbumsView: View {
             }
         }
         .onKeyPress(.space) {
-            guard let selectedPhotoID, let item = album.items.first(where: { $0.id == selectedPhotoID }) else { return .ignored }
+            guard photoSelection.selected.count == 1, let id = photoSelection.selected.first,
+                  let item = album.items.first(where: { $0.id == id }) else { return .ignored }
             quickLook.toggle(for: item.sourceURL)
             return .handled
         }
     }
 
-    private func photoThumb(_ item: LibraryItem) -> some View {
-        let isSelected = item.id == selectedPhotoID
+    private func photoThumb(_ item: LibraryItem, album: PhotoAlbumGroup) -> some View {
+        let isSelected = photoSelection.isSelected(item.id)
         return CoverArtView(data: try? Data(contentsOf: item.preparedURL ?? item.sourceURL), side: 140,
                             cornerRadius: 6, placeholderSymbol: "photo")
-            .overlay(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .stroke(isSelected ? AuraColors.light.accent : .clear, lineWidth: 3)
-            )
+            .librarySelectionBorder(isSelected, cornerRadius: 6)
             .contentShape(Rectangle())
             .onTapGesture(count: 2) { quickLook.toggle(for: item.sourceURL) }
-            .onTapGesture { selectedPhotoID = item.id }
-            .contextMenu {
-                Button("Vista previa") { quickLook.toggle(for: item.sourceURL) }
-                Divider()
-                Button("Quitar del álbum") {
-                    viewModel.dissolvePhotoAlbum(items: [item.id])
-                }
-                Button("Mostrar en Finder") {
-                    NSWorkspace.shared.activateFileViewerSelecting([item.sourceURL])
-                }
-                Divider()
-                Button("Eliminar de la biblioteca", role: .destructive) {
-                    viewModel.deleteItems(ids: [item.id])
+            .onTapGesture { photoSelection.handleTap(item.id, orderedIDs: album.items.map(\.id)) }
+            .draggable(LibrarySelectionTransfer(itemIDs: effectivePhotos(for: item, in: album).map(\.id)))
+            .contextMenu { photoContextMenu(item, album: album) }
+    }
+
+    /// Menú contextual: si `item` forma parte de una selección múltiple
+    /// de fotos, actúa sobre TODA la selección (encargo del dueño,
+    /// 2026-08-19); si no, solo sobre `item`.
+    @ViewBuilder
+    private func photoContextMenu(_ item: LibraryItem, album: PhotoAlbumGroup) -> some View {
+        let targets = effectivePhotos(for: item, in: album)
+        let plural = targets.count > 1
+
+        if !plural {
+            Button("Vista previa") { quickLook.toggle(for: item.sourceURL) }
+            Divider()
+        }
+        Menu("Cambiar categoría") {
+            ForEach(preferences.photoCollections, id: \.self) { collection in
+                Button(collection) {
+                    viewModel.setCategory(collection, forItems: Set(targets.map(\.id)))
                 }
             }
+        }
+        Button("Quitar del álbum") {
+            viewModel.dissolvePhotoAlbum(items: Set(targets.map(\.id)))
+        }
+        Button("Mostrar en Finder") {
+            NSWorkspace.shared.activateFileViewerSelecting(targets.map(\.sourceURL))
+        }
+        Divider()
+        Button("Eliminar de la biblioteca", role: .destructive) {
+            viewModel.deleteItems(ids: Set(targets.map(\.id)))
+        }
     }
 }
 

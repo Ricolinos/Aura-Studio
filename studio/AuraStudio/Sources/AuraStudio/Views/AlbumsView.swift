@@ -13,6 +13,11 @@ struct AlbumsView: View {
     @State private var albums: [AlbumGroup] = []
     @State private var searchText = ""
     @State private var selectedAlbumID: String?
+    /// Selección múltiple estilo Finder (encargo del dueño, 2026-08-19)
+    /// -- clic simple selecciona/alterna, doble clic abre el detalle
+    /// (como siempre lo hacía el tap único, ahora reservado al gesto de
+    /// doble clic).
+    @State private var selection = GridSelection<String>()
     @AppStorage("aura.albumsSort") private var sortRaw = AlbumSort.title.rawValue
 
     enum AlbumSort: String, CaseIterable, Identifiable {
@@ -81,6 +86,15 @@ struct AlbumsView: View {
         if let selectedAlbumID, !albums.contains(where: { $0.id == selectedAlbumID }) {
             self.selectedAlbumID = nil
         }
+        selection.pruneMissing(from: Set(albums.map(\.id)))
+    }
+
+    /// Álbumes a los que aplica una acción disparada desde `album`: su
+    /// selección completa si ya estaba seleccionado, o solo él si no
+    /// (criterio Finder, ver `GridSelection.effectiveIDs`).
+    private func effectiveAlbums(for album: AlbumGroup) -> [AlbumGroup] {
+        let ids = selection.effectiveIDs(for: album.id)
+        return albums.filter { ids.contains($0.id) }
     }
 
     // MARK: - Cuadrícula
@@ -120,7 +134,10 @@ struct AlbumsView: View {
                               alignment: .leading, spacing: 28) {
                         ForEach(visibleAlbums) { album in
                             AlbumCardView(album: album)
-                                .onTapGesture { selectedAlbumID = album.id }
+                                .librarySelectionBorder(selection.isSelected(album.id))
+                                .contentShape(Rectangle())
+                                .onTapGesture(count: 2) { selectedAlbumID = album.id }
+                                .onTapGesture { selection.handleTap(album.id, orderedIDs: visibleAlbums.map(\.id)) }
                                 .contextMenu { albumContextMenu(album) }
                                 .help("\(album.title) — \(album.artist)")
                         }
@@ -209,19 +226,31 @@ struct AlbumsView: View {
         return minutes > 0 ? "\(songs), \(minutes) min" : songs
     }
 
+    /// Menú contextual: si se dispara sobre un álbum que forma parte de
+    /// una selección múltiple, actúa sobre TODA la selección (encargo
+    /// del dueño, 2026-08-19); si no, solo sobre `album`.
     @ViewBuilder
     private func albumContextMenu(_ album: AlbumGroup) -> some View {
-        Button("Abrir") { selectedAlbumID = album.id }
-        Divider()
-        Button(album.isFavorite ? "Quitar favorito del álbum" : "Marcar álbum como favorito") {
-            viewModel.setFavorite(!album.isFavorite, forItems: Set(album.items.map(\.id)))
+        let targets = effectiveAlbums(for: album)
+        let items = targets.flatMap(\.items)
+        let allFavorite = items.allSatisfy { $0.metadata?.isFavorite == true }
+
+        if targets.count == 1 {
+            Button("Abrir") { selectedAlbumID = album.id }
+            Divider()
+        }
+        Button(allFavorite ? "Quitar favorito" : "Marcar como favorito") {
+            viewModel.setFavorite(!allFavorite, forItems: Set(items.map(\.id)))
         }
         Button("Buscar información en línea") {
-            Task { await viewModel.reenrichOnline(ids: Set(album.items.map(\.id)), fetchAlbumInfo: true, fetchLyrics: false) }
+            Task { await viewModel.reenrichOnline(ids: Set(items.map(\.id)), fetchAlbumInfo: true, fetchLyrics: false) }
         }
         Divider()
         Button("Mostrar en Finder") {
-            NSWorkspace.shared.activateFileViewerSelecting(album.items.map(\.sourceURL))
+            NSWorkspace.shared.activateFileViewerSelecting(items.map(\.sourceURL))
+        }
+        Button(targets.count > 1 ? "Eliminar álbumes" : "Eliminar álbum", role: .destructive) {
+            viewModel.deleteItems(ids: Set(items.map(\.id)))
         }
     }
 }

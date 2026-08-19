@@ -202,6 +202,21 @@ struct PhotoAlbumCardView: View {
     }
 }
 
+/// Borde de acento para tarjetas/miniaturas seleccionadas en las
+/// cuadrículas con selección múltiple (encargo del dueño, 2026-08-19:
+/// "seleccionar múltiples álbumes de música, artistas, o películas,
+/// series, episodios") -- mismo trazo que ya usaba `photoThumb` de
+/// `PhotoAlbumsView` (ST-042), ahora compartido por todas las
+/// cuadrículas de `GridSelection`.
+extension View {
+    func librarySelectionBorder(_ isSelected: Bool, cornerRadius: CGFloat = 10) -> some View {
+        overlay(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .stroke(isSelected ? AuraColors.light.accent : .clear, lineWidth: 3)
+        )
+    }
+}
+
 /// "Buscar en Álbumes" / "Buscar en Artistas" / "Buscar en Canciones":
 /// el campo es el mismo, cambia el ámbito -- cada vista filtra lo suyo.
 struct LibrarySearchField: View {

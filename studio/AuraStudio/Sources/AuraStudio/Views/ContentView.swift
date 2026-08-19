@@ -58,7 +58,10 @@ struct ContentView: View {
         NavigationSplitView {
             SidebarView(selection: $selection,
                         device: deviceMonitor.device,
-                        libraryLocked: libraryLocked)
+                        libraryLocked: libraryLocked,
+                        onDropSelection: { category, ids in
+                            library.setCategory(category, forItems: ids)
+                        })
                 .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
         } detail: {
             detail
@@ -504,6 +507,13 @@ private struct SidebarView: View {
     @Binding var selection: SidebarSection?
     let device: AuraDevice?
     let libraryLocked: Bool
+    /// Soltar una selección múltiple arrastrada desde Álbumes/Series/
+    /// Fotos... sobre una fila de Video o Fotos (encargo del dueño,
+    /// 2026-08-19: "arrastrar la selección completa") -- reasigna la
+    /// categoría de todos los items arrastrados de una vez. Música
+    /// queda fuera a propósito (organiza por metadata de tag, no por
+    /// `category`).
+    let onDropSelection: (String, Set<UUID>) -> Void
     /// D-228: "Listas" nace expandida -- tiene que ser facil de
     /// encontrar, no un submenu escondido por default.
     @State private var musicExpanded = true
@@ -517,6 +527,22 @@ private struct SidebarView: View {
     /// (nunca comparte tag con su primera subsección) que abre/cierra un
     /// `DisclosureGroup` con las filas anidadas -- mismo patrón para los
     /// tres grupos, parametrizado para no triplicar el `body`.
+    /// Categoría (`LibraryItem.category`) que corresponde a soltar una
+    /// selección arrastrada sobre esta fila -- `nil` para las filas que
+    /// no aceptan arrastre (Música, "Todos los videos"/"Todas las
+    /// fotos", grupos).
+    private func dropCategory(for section: SidebarSection) -> String? {
+        switch section {
+        case .videoMovies: return MediaCategory.movies.displayName
+        case .videoSeries: return MediaCategory.series.displayName
+        case .videoClips: return MediaCategory.videos.displayName
+        case .photosPhotos: return "Fotos"
+        case .photosImages: return "Imágenes"
+        case .photosAI: return "IA"
+        default: return nil
+        }
+    }
+
     @ViewBuilder
     private func groupRow(group: SidebarSection, subsections: [SidebarSection], isExpanded: Binding<Bool>) -> some View {
         DisclosureGroup(isExpanded: isExpanded) {
@@ -524,6 +550,13 @@ private struct SidebarView: View {
                 Label(sub.title, systemImage: sub.symbol)
                     .tag(sub)
                     .disabled(libraryLocked)
+                    .dropDestination(for: LibrarySelectionTransfer.self) { payloads, _ in
+                        guard let category = dropCategory(for: sub) else { return false }
+                        for payload in payloads {
+                            onDropSelection(category, Set(payload.itemIDs))
+                        }
+                        return true
+                    }
             }
         } label: {
             Label(group.title, systemImage: group.symbol)

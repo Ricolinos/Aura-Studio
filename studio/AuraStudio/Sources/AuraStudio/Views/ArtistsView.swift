@@ -17,16 +17,34 @@ struct ArtistsView: View {
 
     @State private var artists: [ArtistGroup] = []
     @State private var searchText = ""
-    @State private var selectedArtistID: String?
+    /// `List(selection:)` con `Set` da multi-selección Cmd/Shift-clic
+    /// nativa de Finder sin código propio (encargo del dueño,
+    /// 2026-08-19) -- a diferencia de las cuadrículas (Álbumes,
+    /// Películas...) que sí necesitan `GridSelection` a mano.
+    @State private var selectedArtistIDs: Set<String> = []
     @State private var reviewingItem: LibraryItem?
 
     private var visibleArtists: [ArtistGroup] {
         artists.filter { LibrarySearch.artist($0, matches: searchText) }
     }
 
+    /// Detalle de un solo artista -- `nil` cuando hay 0 o >1
+    /// seleccionados (ese caso lo cubre `selectionSummary`).
     private var selectedArtist: ArtistGroup? {
-        guard let selectedArtistID else { return nil }
-        return artists.first { $0.id == selectedArtistID }
+        guard selectedArtistIDs.count == 1, let id = selectedArtistIDs.first else { return nil }
+        return artists.first { $0.id == id }
+    }
+
+    private var selectedArtists: [ArtistGroup] {
+        artists.filter { selectedArtistIDs.contains($0.id) }
+    }
+
+    /// Artistas a los que aplica una acción disparada desde `artist`: su
+    /// selección completa si ya estaba seleccionado, o solo él si no
+    /// (mismo criterio Finder que `GridSelection.effectiveIDs`).
+    private func effectiveArtists(for artist: ArtistGroup) -> [ArtistGroup] {
+        let ids = selectedArtistIDs.contains(artist.id) ? selectedArtistIDs : [artist.id]
+        return artists.filter { ids.contains($0.id) }
     }
 
     var body: some View {
@@ -55,8 +73,10 @@ struct ArtistsView: View {
 
     private func rebuild() {
         artists = LibraryGrouping.artists(from: viewModel.items)
-        if selectedArtistID == nil || !artists.contains(where: { $0.id == selectedArtistID }) {
-            selectedArtistID = artists.first?.id
+        let validIDs = Set(artists.map(\.id))
+        selectedArtistIDs.formIntersection(validIDs)
+        if selectedArtistIDs.isEmpty, let first = artists.first {
+            selectedArtistIDs = [first.id]
         }
     }
 
@@ -98,7 +118,7 @@ struct ArtistsView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding()
             } else {
-                List(visibleArtists, selection: $selectedArtistID) { artist in
+                List(visibleArtists, selection: $selectedArtistIDs) { artist in
                     HStack(spacing: 12) {
                         ArtistAvatarView(imageData: viewModel.artistImages.image(forArtistKey: artist.id),
                                          fallbackCoverData: artist.fallbackCoverArtData,
@@ -131,6 +151,8 @@ struct ArtistsView: View {
                 .padding(24)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+        } else if selectedArtistIDs.count > 1 {
+            selectionSummary(selectedArtists)
         } else {
             VStack(spacing: 8) {
                 Image(systemName: "music.mic")
@@ -141,6 +163,41 @@ struct ArtistsView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+    }
+
+    /// Detalle cuando hay más de un artista seleccionado (encargo del
+    /// dueño, 2026-08-19: "organizar de una forma más cómoda la
+    /// biblioteca") -- mismas acciones masivas que el menú contextual,
+    /// visibles sin tener que abrir el menú.
+    private func selectionSummary(_ artists: [ArtistGroup]) -> some View {
+        let items = artists.flatMap(\.items)
+        let allFavorite = items.allSatisfy { $0.metadata?.isFavorite == true }
+        return VStack(spacing: 16) {
+            Image(systemName: "music.mic")
+                .font(.system(size: 36, weight: .light))
+                .foregroundStyle(.secondary)
+            Text("\(artists.count) artistas seleccionados")
+                .font(.title3.bold())
+            HStack(spacing: 10) {
+                Button(allFavorite ? "Quitar favorito" : "Marcar como favorito") {
+                    viewModel.setFavorite(!allFavorite, forItems: Set(items.map(\.id)))
+                }
+                Button("Buscar información en línea") {
+                    Task { await viewModel.reenrichOnline(ids: Set(items.map(\.id)), fetchAlbumInfo: true, fetchLyrics: false) }
+                }
+                if let onFetchArtistImages {
+                    Button("Buscar fotos") { onFetchArtistImages(artists) }
+                }
+                Button("Mostrar en Finder") {
+                    NSWorkspace.shared.activateFileViewerSelecting(items.map(\.sourceURL))
+                }
+                Button("Eliminar", role: .destructive) {
+                    viewModel.deleteItems(ids: Set(items.map(\.id)))
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding()
     }
 
     private func artistHeader(_ artist: ArtistGroup) -> some View {
@@ -273,19 +330,26 @@ struct ArtistsView: View {
         }
     }
 
+    /// Menú contextual: si `artist` forma parte de una selección
+    /// múltiple, actúa sobre toda la selección (encargo del dueño,
+    /// 2026-08-19); si no, solo sobre `artist`.
     @ViewBuilder
     private func artistContextMenu(_ artist: ArtistGroup) -> some View {
-        let allFavorite = artist.items.allSatisfy { $0.metadata?.isFavorite == true }
-        Button(allFavorite ? "Quitar favorito del artista" : "Marcar artista como favorito") {
-            viewModel.setFavorite(!allFavorite, forItems: Set(artist.items.map(\.id)))
+        let targets = effectiveArtists(for: artist)
+        let items = targets.flatMap(\.items)
+        let allFavorite = items.allSatisfy { $0.metadata?.isFavorite == true }
+        let plural = targets.count > 1
+
+        Button(allFavorite ? "Quitar favorito" : "Marcar como favorito") {
+            viewModel.setFavorite(!allFavorite, forItems: Set(items.map(\.id)))
         }
         Button("Buscar información en línea") {
-            Task { await viewModel.reenrichOnline(ids: Set(artist.items.map(\.id)), fetchAlbumInfo: true, fetchLyrics: false) }
+            Task { await viewModel.reenrichOnline(ids: Set(items.map(\.id)), fetchAlbumInfo: true, fetchLyrics: false) }
         }
         if let onFetchArtistImages {
-            Button("Buscar foto del artista") { onFetchArtistImages([artist]) }
+            Button(plural ? "Buscar fotos de los artistas" : "Buscar foto del artista") { onFetchArtistImages(targets) }
         }
-        if viewModel.artistImages.hasImage(forArtistKey: artist.id) {
+        if !plural, viewModel.artistImages.hasImage(forArtistKey: artist.id) {
             Button("Quitar foto del artista") {
                 viewModel.artistImages.remove(forArtistKey: artist.id)
                 viewModel.objectWillChange.send()
@@ -293,7 +357,10 @@ struct ArtistsView: View {
         }
         Divider()
         Button("Mostrar en Finder") {
-            NSWorkspace.shared.activateFileViewerSelecting(artist.items.prefix(1).map(\.sourceURL))
+            NSWorkspace.shared.activateFileViewerSelecting(plural ? items.map(\.sourceURL) : Array(items.prefix(1).map(\.sourceURL)))
+        }
+        Button(plural ? "Eliminar artistas" : "Eliminar artista", role: .destructive) {
+            viewModel.deleteItems(ids: Set(items.map(\.id)))
         }
     }
 }
