@@ -579,3 +579,7 @@ Encargo del dueño: publicar los commits pendientes en ambos repos y cortar un r
 **No verificado por automatización** (UI-only, sin test dedicado — mismo criterio que "MediaCardView no requiere test de UI" del propio plan, Tanda 4): que soltar una carpeta sugiera su nombre como álbum en `PhotoAlbumNameSheet` (`suggestedAlbumName(for:)` es privada a la vista, lógica trivial y de bajo riesgo — verificada leyendo el código, no con una prueba automatizada).
 
 **Pendiente**: **BARRERA 2** del plan (dueño, en Studio): arrastrar 3 fotos a "IA" → aparece la hoja de álbum; arrastrar 1 foto a "Fotos" → sin hoja; arrastrar a "Todas las fotos" → hoja con selector de tipo; cambiar la categoría de una foto desde el menú; sincronizar y comprobar `photo_categories.cfg`.
+
+## ST-039 — Pin a v0.3.0-beta (D-322 en Aura-Firmware)
+
+Encargo del dueño: publicar los commits pendientes (Tandas 1/2 del plan, ST-037/ST-038) y cortar release del firmware con la Tanda 3 (fotos de artista circulares en Artistas, D-322) para probar en hardware. `FIRMWARE_VERSION` → `tag=v0.3.0-beta`, hashes de `rockbox.ipod`/`rockbox.zip` actualizados (`mks5lboot`/`bootloader-ipod6g.ipod` sin cambios). `fetch-firmware.sh` verificó los 4 checksums contra el Release publicado, `AuraPalette.swift` sin diferencias. `swift build` limpio; sin cambios de código Swift en esta pasada.
