@@ -93,6 +93,7 @@
 		7723B2E0BF669AA642A666D6 /* BootloaderVerifiedDisksTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 476586878B17D64E6EB2F3BC /* BootloaderVerifiedDisksTests.swift */; };
 		79AD7B957943AB5C36B2BECF /* DeviceSyncIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3ABCD2D0D6F8611364F950C /* DeviceSyncIndex.swift */; };
 		7A8AD070A233B194127A7783 /* CoverArtAssets.swift in Sources */ = {isa = PBXBuildFile; fileRef = 212C4900E1BBB8F89EEF159F /* CoverArtAssets.swift */; };
+		7B299956D840E15EAA2D9FC6 /* ArtistImageExportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4197C3EE3BEC4457218AA161 /* ArtistImageExportTests.swift */; };
 		7BF0D6AD4C6C82D7E9602088 /* AudioTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C13F9E244B9751271DC8255 /* AudioTranscoder.swift */; };
 		7D905E8559BA02F19BE2AFE0 /* LyricsSidecarSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41E05507BDCB6ED7C42C9B6A /* LyricsSidecarSyncTests.swift */; };
 		7DE4A653C7B6086644BF8095 /* AuraUpdateCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A29F57327CE27D98C05565C /* AuraUpdateCheckerTests.swift */; };
@@ -239,6 +240,7 @@
 		3EBEB24F597D3C9B609AC775 /* InstallerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerViewModel.swift; sourceTree = "<group>"; };
 		3F32B696741F0E62A203E7BC /* ClockSyncWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockSyncWriterTests.swift; sourceTree = "<group>"; };
 		414CDC551592AE3B57A31C32 /* ThemesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemesView.swift; sourceTree = "<group>"; };
+		4197C3EE3BEC4457218AA161 /* ArtistImageExportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistImageExportTests.swift; sourceTree = "<group>"; };
 		41E05507BDCB6ED7C42C9B6A /* LyricsSidecarSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsSidecarSyncTests.swift; sourceTree = "<group>"; };
 		43B9358C341DF6C281F2636B /* InstallerStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerStep.swift; sourceTree = "<group>"; };
 		444381A58BB7B201C06A6866 /* DeviceSyncIndexTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSyncIndexTests.swift; sourceTree = "<group>"; };
@@ -503,6 +505,7 @@
 			children = (
 				38D65AA4A8035F7A98B1544B /* APIKeyStoreTests.swift */,
 				5788BF566829EC16317154CE /* AppPreferencesTests.swift */,
+				4197C3EE3BEC4457218AA161 /* ArtistImageExportTests.swift */,
 				CBA54FA0E3385DC4D97B068F /* ArtistImageTests.swift */,
 				72773374D5D4C62732AA92F3 /* AuraDeviceProbeTests.swift */,
 				89E70DA8C0602B1EB4521D53 /* AuraThemeTests.swift */,
@@ -780,6 +783,7 @@
 			files = (
 				3ED4A0A15C5D9AAF4324C069 /* APIKeyStoreTests.swift in Sources */,
 				5896172077C6C1E6312CE999 /* AppPreferencesTests.swift in Sources */,
+				7B299956D840E15EAA2D9FC6 /* ArtistImageExportTests.swift in Sources */,
 				72C172E3DF3F50EFAA165F95 /* ArtistImageTests.swift in Sources */,
 				D8363DAB3183238539D733A5 /* AuraDeviceProbeTests.swift in Sources */,
 				4F290B06AD636CCE2D057C53 /* AuraThemeTests.swift in Sources */,

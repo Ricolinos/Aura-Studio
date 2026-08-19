@@ -200,6 +200,12 @@ struct LibrarySync {
     /// firmware, y el pool de Movie Flow.
     static let videoCategoriesRelativePath = ".rockbox/aura/video_categories.cfg"
     static let photoCategoriesRelativePath = ".rockbox/aura/photo_categories.cfg"
+    /// PLAN-biblioteca-medios-v2.md §3.5 / CONTRATO-firmware-studio.md
+    /// §D.3 (contrato v6, D-322): fotos de artista reales -- el
+    /// firmware ya sabe leerlas (Tanda 3, aura_artist_images), esto es
+    /// lo que las pone en el disco por primera vez (Tanda 5).
+    static let artistImagesDirRelativePath = ".rockbox/aura/artists"
+    static let artistImagesIndexRelativePath = ".rockbox/aura/artist_images.cfg"
     static let playlistsRelativePath = "Playlists"
     /// PLAN-general-sync.md §8.2: presente mientras un sync esta en
     /// curso; ausente = ultimo sync cerro limpio (termino o se cancelo
@@ -627,6 +633,9 @@ struct LibrarySync {
         try writeRatings(items: items, destinationByItemID: destinationByItemID)
         try writeCategoryIndexes(items: items, destinationByItemID: destinationByItemID)
         writeSeasonPosters(items: items)
+        if writeArtistImages(items: items, libraryRoot: libraryRoot) {
+            touched.music = true
+        }
 
         // ST-012 / contrato SS4: si este sync toco algo (tambien si se
         // cancelo a medias -- lo copiado ya esta en el disco y el
@@ -686,7 +695,15 @@ struct LibrarySync {
             manifest.records = manifest.records.filter { !$0.value.destinationRelativePath.hasPrefix(prefix) }
 
             switch kind {
-            case .music: touched.music = true
+            case .music:
+                touched.music = true
+                // PLAN-biblioteca-medios-v2.md §3.5: fotos de artista e
+                // índice no tienen registro propio en el manifiesto
+                // (igual que los .cfg de categoría de video/foto) --
+                // "Eliminar toda la música" los deja huérfanos si no se
+                // borran acá.
+                try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(Self.artistImagesIndexRelativePath))
+                try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(Self.artistImagesDirRelativePath))
             case .video:
                 touched.video = true
                 try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(Self.videoCategoriesRelativePath))
@@ -965,6 +982,57 @@ struct LibrarySync {
         try fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         let contents = header + "\n" + lines.joined(separator: "\n") + "\n"
         try contents.write(to: url, atomically: true, encoding: .utf8)
+    }
+
+    /// PLAN-biblioteca-medios-v2.md §3.5 (Tanda 5) / CONTRATO-firmware-
+    /// studio.md §D.3: fotos de artista reales al iPod -- `ArtistImageStore`
+    /// (ST-032) ya las descarga y las guarda en la biblioteca local,
+    /// nunca las sincronizaba. Reducidas a 128px (contrato), mismo
+    /// nombre de archivo que ya usa la caché local
+    /// (`ArtistImageStore.fileName(forArtistKey:)`) para que un mismo
+    /// artista comparta un solo archivo entre ambos lados. El índice se
+    /// reescribe COMPLETO en cada sync (no diferencial, como
+    /// `writeCategoryIndexes`); sin ninguna foto -> se borra, nunca deja
+    /// uno viejo apuntando a nada. Devuelve `true` si escribió o borró
+    /// algo (para el marcador `sync-pending.json`, `changes.music`).
+    @discardableResult
+    private func writeArtistImages(items: [LibraryItem], libraryRoot: URL?) -> Bool {
+        guard let libraryRoot else { return false }
+        let store = ArtistImageStore(libraryRoot: libraryRoot)
+        let artistsDir = volumeRoot.appendingPathComponent(Self.artistImagesDirRelativePath)
+        let indexURL = volumeRoot.appendingPathComponent(Self.artistImagesIndexRelativePath)
+
+        var lines: [String] = []
+        var writtenFiles = Set<String>()
+        for artist in LibraryGrouping.artists(from: items) {
+            guard let data = store.image(forArtistKey: artist.id) else { continue }
+            let fileName = ArtistImageStore.fileName(forArtistKey: artist.id)
+            if !writtenFiles.contains(fileName) {
+                try? fileManager.createDirectory(at: artistsDir, withIntermediateDirectories: true)
+                try? ImageResizer.resizeToLCDOptimal(data: data, destinationURL: artistsDir.appendingPathComponent(fileName), maxDimension: 128)
+                writtenFiles.insert(fileName)
+            }
+            // Contrato §D.3: una línea por cada valor CRUDO distinto de
+            // `metadata.artist` entre las pistas del grupo -- solo trim
+            // de espacios extremos, SIN folding (el firmware compara
+            // byte a byte contra el tag real, D-322).
+            var seenRaw = Set<String>()
+            for item in artist.items {
+                guard let raw = item.metadata?.artist?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty,
+                      !seenRaw.contains(raw) else { continue }
+                seenRaw.insert(raw)
+                lines.append("\(fileName): \(raw)")
+            }
+        }
+
+        let existedBefore = fileManager.fileExists(atPath: indexURL.path)
+        guard !lines.isEmpty else {
+            if existedBefore { try? fileManager.removeItem(at: indexURL) }
+            return existedBefore
+        }
+        try? fileManager.createDirectory(at: indexURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try? ("# aura-artist-images v1\n" + lines.joined(separator: "\n") + "\n").write(to: indexURL, atomically: true, encoding: .utf8)
+        return true
     }
 
     /// PLAN-biblioteca-medios-v2.md §3.5: por cada (seriesName, season)

@@ -6,7 +6,11 @@ import Foundation
 /// `LibraryGrouping.artistKey(of:)` (nombre normalizado) codificada como
 /// nombre de archivo seguro. No van a `biblioteca.json`: el archivo es
 /// la fuente de verdad, igual que las carátulas (`.portadas/<id>.jpg`).
-/// Nunca van al iPod (el firmware no muestra artistas con foto).
+/// PLAN-biblioteca-medios-v2.md §3.5 (Tanda 5): viajan reducidas a
+/// `.rockbox/aura/artists/<mismo nombre de archivo>` en cada sync
+/// (`LibrarySync.writeArtistImages`) -- el firmware ya sabe leerlas
+/// (D-322, contrato v6 §D.3) y mostrarlas en círculo en Música →
+/// Artistas.
 /// Se lee desde las vistas (MainActor) y se escribe desde la descarga
 /// (`LibraryViewModel.fetchArtistImages`, tambien MainActor) -- pero
 /// para que el tipo sea `Sendable` de verdad (Swift 6 estricto), el
