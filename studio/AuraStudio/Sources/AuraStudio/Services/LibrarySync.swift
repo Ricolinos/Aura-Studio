@@ -1081,6 +1081,14 @@ struct LibrarySync {
             return "\(PersistedLibrary.musicDirName)/\(artist)/\(album)/\(fileName)"
         case .photo:
             if organizePhotosByCategory, let category = item.category, !category.isEmpty {
+                // PLAN-biblioteca-medios-v2.md §3.3: con álbum, un nivel
+                // más adentro de la categoría -- el álbum es un
+                // subconjunto DE la colección, nunca vive suelto al
+                // mismo nivel. Solo local (Finder); el iPod nunca ve
+                // esta jerarquía (D-192, /Photos sigue plano).
+                if let album = item.photoAlbum, !album.isEmpty {
+                    return "\(PersistedLibrary.imagesDirName)/\(PathSanitizer.sanitize(category))/\(PathSanitizer.sanitize(album))/\(fileName)"
+                }
                 return "\(PersistedLibrary.imagesDirName)/\(PathSanitizer.sanitize(category))/\(fileName)"
             }
             return "\(PersistedLibrary.imagesDirName)/\(fileName)"

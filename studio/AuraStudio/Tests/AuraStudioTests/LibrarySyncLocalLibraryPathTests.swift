@@ -72,6 +72,25 @@ final class LibrarySyncLocalLibraryPathTests: XCTestCase {
             "Imágenes/IMG_002.heic")
     }
 
+    /// PLAN-biblioteca-medios-v2.md §3.3: con álbum, un nivel más adentro
+    /// de la colección -- solo carpeta LOCAL (Finder), nunca llega al
+    /// iPod (D-192, /Photos plano).
+    func testPhotoWithAlbumGoesUnderCollectionThenAlbumFolder() {
+        var item = categorizedItem(kind: .photo, category: "Fotos")
+        item.photoAlbum = "Vacaciones 2026"
+        XCTAssertEqual(
+            LibrarySync.localLibraryRelativePath(for: item, kind: .photo, fileName: "IMG_001.heic", organizePhotosByCategory: true),
+            "Imágenes/Fotos/Vacaciones 2026/IMG_001.heic")
+    }
+
+    func testPhotoWithAlbumButOrganizationOffStaysFlat() {
+        var item = categorizedItem(kind: .photo, category: "Fotos")
+        item.photoAlbum = "Vacaciones 2026"
+        XCTAssertEqual(
+            LibrarySync.localLibraryRelativePath(for: item, kind: .photo, fileName: "IMG_001.heic", organizePhotosByCategory: false),
+            "Imágenes/IMG_001.heic", "sin organizar por categoría, el álbum tampoco se aplica")
+    }
+
     // MARK: - Video
 
     func testVideoWithCategoryAndOrganizationOnGoesUnderCategoryFolder() {

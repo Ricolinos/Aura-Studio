@@ -22,6 +22,19 @@ enum S {
     case playlists
     /// ST-031: subsecciones de Música en la barra lateral.
     case songs, albums, artists
+    /// PLAN-biblioteca-medios-v2.md §3.2: subsecciones de Video en la
+    /// barra lateral -- Películas/Series ya salen de
+    /// `MediaCategory.displayName` (misma fuente que el valor que se
+    /// guarda en `item.category`, sin duplicar la traducción); estas
+    /// cubren solo lo que no tenía nombre localizable todavía.
+    case videoAll, videoClips
+    /// Subsecciones de Fotos: "Todas las fotos" es chrome de la barra
+    /// lateral (localizable); "Fotos"/"Imágenes"/"IA" NO se traducen --
+    /// son las mismas 3 colecciones editables de `AppPreferences.
+    /// photoCollections`, que en todo el resto de la app son texto fijo
+    /// en español (D-228: el usuario las puede renombrar, no son un
+    /// concepto de idioma).
+    case photosAll
 
     var text: String {
         AppLanguageResolver.current == .english ? english : spanish
@@ -61,6 +74,9 @@ enum S {
         case .songs:               return "Canciones"
         case .albums:              return "Álbumes"
         case .artists:             return "Artistas"
+        case .videoAll:            return "Todos los videos"
+        case .videoClips:          return "Videoclips"
+        case .photosAll:           return "Todas las fotos"
         }
     }
 
@@ -98,6 +114,9 @@ enum S {
         case .songs:               return "Songs"
         case .albums:              return "Albums"
         case .artists:             return "Artists"
+        case .videoAll:            return "All Videos"
+        case .videoClips:          return "Clips"
+        case .photosAll:           return "All Photos"
         }
     }
 }

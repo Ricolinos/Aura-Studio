@@ -38,6 +38,15 @@ struct MediaSectionView: View {
     /// se embebe en Álbumes/Artistas. Con `.all` es la sección Canciones
     /// completa (zona de arrastre, banners, título de navegación).
     var scope: MusicScope = .all
+    /// PLAN-biblioteca-medios-v2.md §3.2: la categoría fija de la
+    /// subsección de la barra lateral que abrió esta vista (Películas/
+    /// Series/Videoclips; Fotos/Imágenes/IA) -- `nil` en "Todos los
+    /// videos"/"Todas las fotos" (sin filtrar, con la barra de chips de
+    /// siempre). Filtra `items` Y es la categoría que recibe todo lo que
+    /// se suelte aquí -- independiente de `scope` (que solo acota
+    /// álbum/artista de Música), así que el DropZone normal sigue
+    /// visible sin ninguna condición extra.
+    var presetCategory: String? = nil
 
     @State private var isTargeted = false
     /// ST-031: búsqueda contextual ("Buscar en Canciones/Video/Fotos").
@@ -69,6 +78,13 @@ struct MediaSectionView: View {
     @State private var batchEditingIDs: Set<UUID>?
     /// ST-030: hoja "Opciones de visualización" (solo musica).
     @State private var showingViewOptions = false
+    /// PLAN-biblioteca-medios-v2.md §3.3: archivos sueltos DENTRO de una
+    /// subsección de Fotos, esperando que el usuario nombre el álbum
+    /// (o elija "Sin álbum") -- categoría ya resuelta (`presetCategory`).
+    @State private var pendingAlbumNameURLs: [URL]?
+    /// §3.2: archivos sueltos en "Todas las fotos" (sin categoría),
+    /// esperando tipo + álbum opcional.
+    @State private var pendingPhotoImportURLs: [URL]?
 
     private var allItemsOfKind: [LibraryItem] {
         viewModel.items.filter { $0.kind == kind }
@@ -81,8 +97,8 @@ struct MediaSectionView: View {
         case .album(let key): result = result.filter { LibraryGrouping.albumKey(of: $0) == key }
         case .artist(let key): result = result.filter { LibraryGrouping.artistKey(of: $0) == key }
         }
-        if let categoryFilter {
-            result = result.filter { $0.category == categoryFilter }
+        if let effectiveCategoryFilter = presetCategory ?? categoryFilter {
+            result = result.filter { $0.category == effectiveCategoryFilter }
         }
         if kind == .music && preferences.musicShowOnlyFavorites {
             result = result.filter { $0.metadata?.isFavorite == true }
@@ -135,7 +151,9 @@ struct MediaSectionView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if let availableCategories {
+            // Con una categoría fija por la barra lateral, la barra de
+            // chips ("Todas"/categoría por categoría) sería redundante.
+            if let availableCategories, presetCategory == nil {
                 categoryFilterBar(availableCategories)
             }
             if items.isEmpty && !isEmbedded && searchText.isEmpty && !preferences.musicShowOnlyFavorites {
@@ -213,6 +231,36 @@ struct MediaSectionView: View {
                 reviewingItem = nil
             } onCancel: {
                 reviewingItem = nil
+            }
+        }
+        .sheet(isPresented: Binding(
+            get: { pendingAlbumNameURLs != nil },
+            set: { if !$0 { pendingAlbumNameURLs = nil } }
+        )) {
+            if let urls = pendingAlbumNameURLs, let presetCategory {
+                PhotoAlbumNameSheet(suggestedAlbumName: suggestedAlbumName(for: urls)) { albumName in
+                    viewModel.addDroppedFiles(urls, into: .photo, category: presetCategory, photoAlbum: albumName)
+                    Task { await viewModel.processAll() }
+                    pendingAlbumNameURLs = nil
+                }
+            }
+        }
+        .sheet(isPresented: Binding(
+            get: { pendingPhotoImportURLs != nil },
+            set: { if !$0 { pendingPhotoImportURLs = nil } }
+        )) {
+            if let urls = pendingPhotoImportURLs {
+                PhotoImportSheet(
+                    suggestedCategory: suggestedCategoryForImport(urls),
+                    categories: preferences.photoCollections,
+                    suggestedAlbumName: suggestedAlbumName(for: urls)
+                ) { category, albumName in
+                    viewModel.addDroppedFiles(urls, into: .photo, category: category, photoAlbum: albumName)
+                    Task { await viewModel.processAll() }
+                    pendingPhotoImportURLs = nil
+                } onCancel: {
+                    pendingPhotoImportURLs = nil
+                }
             }
         }
         .sheet(item: $renamingItem) { item in
@@ -871,6 +919,7 @@ struct MediaSectionView: View {
     }
 
     private var title: String {
+        if let presetCategory { return presetCategory }
         switch kind {
         case .music: return "Musica"
         case .video: return "Video"
@@ -892,9 +941,60 @@ struct MediaSectionView: View {
         DropZone(isTargeted: $isTargeted, prompt: prompt, symbol: symbolName) { urls in
             // ST-012: cada seccion ingiere solo su tipo -- un cover.jpg
             // dentro de un album soltado en Musica es caratula, no foto.
-            viewModel.addDroppedFiles(urls, into: kind)
+            handleDrop(urls)
+        }
+    }
+
+    /// PLAN-biblioteca-medios-v2.md §3.2/§3.3: Música y Video importan
+    /// directo (Video: "sin diálogo", el dueño no lo pidió ahí). Fotos
+    /// es el único caso con hojas modales -- "Todas las fotos" siempre
+    /// pregunta tipo (+ álbum opcional); dentro de una subsección
+    /// (categoría ya resuelta por `presetCategory`) solo pregunta álbum,
+    /// y solo cuando el drop trae MÁS de un archivo o una carpeta
+    /// entera -- un archivo suelto no amerita el diálogo.
+    private func handleDrop(_ urls: [URL]) {
+        guard kind == .photo else {
+            viewModel.addDroppedFiles(urls, into: kind, category: presetCategory)
+            Task { await viewModel.processAll() }
+            return
+        }
+
+        guard let presetCategory else {
+            pendingPhotoImportURLs = urls
+            return
+        }
+
+        let expanded = DroppedURLExpander.expand(urls)
+        let droppedAFolder = urls.contains { DroppedURLExpander.isDirectory($0) }
+        if expanded.count >= 2 || droppedAFolder {
+            pendingAlbumNameURLs = urls
+        } else {
+            viewModel.addDroppedFiles(urls, into: .photo, category: presetCategory)
             Task { await viewModel.processAll() }
         }
+    }
+
+    /// Si se soltó UNA sola carpeta, su nombre es la sugerencia de álbum
+    /// (encargo: "prefijado con el nombre de la carpeta si se arrastró
+    /// una"); archivos sueltos no sugieren nada, el campo arranca vacío.
+    private func suggestedAlbumName(for urls: [URL]) -> String? {
+        guard urls.count == 1, DroppedURLExpander.isDirectory(urls[0]) else { return nil }
+        return urls[0].lastPathComponent
+    }
+
+    /// Preselección del tipo en `PhotoImportSheet`: clasifica el primer
+    /// archivo real por EXIF (`MediaCategoryClassifier`, D-228) --
+    /// clasificar CIENTOS de archivos solo para elegir el valor inicial
+    /// del picker sería trabajo desperdiciado, el usuario puede corregir
+    /// antes de confirmar.
+    private func suggestedCategoryForImport(_ urls: [URL]) -> String {
+        let expanded = DroppedURLExpander.expand(urls)
+        let fallback = preferences.photoCollections.first ?? "Imágenes"
+        guard let first = expanded.first(where: { LibraryItemKind.classify(url: $0) == .photo }) else {
+            return fallback
+        }
+        let classified = MediaCategoryClassifier.classifyPhoto(at: first)
+        return preferences.photoCollections.contains(classified) ? classified : fallback
     }
 
     private var symbolName: String {
@@ -1051,6 +1151,91 @@ private struct RenameSheet: View {
         }
         .padding(24)
         .frame(width: 360)
+    }
+}
+
+/// PLAN-biblioteca-medios-v2.md §3.3: al soltar ≥2 archivos (o una
+/// carpeta) DENTRO de una subsección de Fotos ya categorizada -- solo
+/// pregunta el nombre del álbum, nunca el tipo (ya lo dio la barra
+/// lateral). "Sin álbum" es una salida explícita, no un cancelar: los
+/// archivos se importan igual, sin agruparlos.
+private struct PhotoAlbumNameSheet: View {
+    let onConfirm: (String?) -> Void
+
+    @State private var albumName: String
+
+    init(suggestedAlbumName: String?, onConfirm: @escaping (String?) -> Void) {
+        self.onConfirm = onConfirm
+        _albumName = State(initialValue: suggestedAlbumName ?? "")
+    }
+
+    private var trimmed: String { albumName.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Nombrar álbum").font(.title3.bold())
+            Text("¿Cómo quieres llamar al álbum que incluirá estas fotos?")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+            TextField("Nombre del álbum", text: $albumName)
+                .textFieldStyle(.roundedBorder)
+                .onSubmit { if !trimmed.isEmpty { onConfirm(trimmed) } }
+            HStack {
+                Button("Sin álbum") { onConfirm(nil) }
+                Spacer()
+                Button("Crear álbum") { onConfirm(trimmed) }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(trimmed.isEmpty)
+            }
+        }
+        .padding(24)
+        .frame(width: 360)
+    }
+}
+
+/// §3.2: al soltar en "Todas las fotos" (sin subsección, sin categoría
+/// resuelta) -- pregunta tipo Y álbum en la misma hoja. El tipo viene
+/// preseleccionado (`MediaCategoryClassifier.classifyPhoto` del primer
+/// archivo) pero editable, por si el usuario se equivoca o el archivo
+/// no trae EXIF confiable.
+private struct PhotoImportSheet: View {
+    let categories: [String]
+    let onConfirm: (_ category: String, _ albumName: String?) -> Void
+    let onCancel: () -> Void
+
+    @State private var category: String
+    @State private var albumName: String
+
+    init(suggestedCategory: String, categories: [String], suggestedAlbumName: String?,
+         onConfirm: @escaping (String, String?) -> Void, onCancel: @escaping () -> Void) {
+        self.categories = categories
+        self.onConfirm = onConfirm
+        self.onCancel = onCancel
+        _category = State(initialValue: suggestedCategory)
+        _albumName = State(initialValue: suggestedAlbumName ?? "")
+    }
+
+    private var trimmedAlbum: String { albumName.trimmingCharacters(in: .whitespacesAndNewlines) }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Importar fotos").font(.title3.bold())
+            Picker("Tipo", selection: $category) {
+                ForEach(categories, id: \.self) { Text($0).tag($0) }
+            }
+            .pickerStyle(.segmented)
+            TextField("Álbum (opcional)", text: $albumName)
+                .textFieldStyle(.roundedBorder)
+                .onSubmit { onConfirm(category, trimmedAlbum.isEmpty ? nil : trimmedAlbum) }
+            HStack {
+                Spacer()
+                Button("Cancelar", action: onCancel)
+                Button("Importar") { onConfirm(category, trimmedAlbum.isEmpty ? nil : trimmedAlbum) }
+                    .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(24)
+        .frame(width: 380)
     }
 }
 

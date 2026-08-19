@@ -123,7 +123,8 @@ struct ContentView: View {
             // igual que el resto de Música.
             if locked, let current = selection,
                current != .general,
-               SidebarSection.deviceSections.contains(current) || current.isMusicSection {
+               SidebarSection.deviceSections.contains(current) || current.isMusicSection
+                || current.isVideoSection || current.isPhotosSection {
                 selection = .general
             }
         }
@@ -251,10 +252,31 @@ struct ContentView: View {
             // Música (mismo destino al que apuntaba el boton "Listo" de
             // adentro de PlaylistsView cuando vivia como hoja/toggle).
             PlaylistsView(viewModel: library) { selection = .music }
-        case .video:
+        case .video, .videoGroup:
             MediaSectionView(kind: .video, viewModel: library, device: deviceMonitor.device, preferences: preferences)
-        case .photos:
+        case .videoMovies:
+            MediaSectionView(kind: .video, viewModel: library, device: deviceMonitor.device, preferences: preferences,
+                              presetCategory: MediaCategory.movies.displayName)
+        case .videoSeries:
+            MediaSectionView(kind: .video, viewModel: library, device: deviceMonitor.device, preferences: preferences,
+                              presetCategory: MediaCategory.series.displayName)
+        case .videoClips:
+            // El bucket "Videoclips" de la barra lateral es el MISMO
+            // que ya usa la heurística automática (MediaCategory.videos,
+            // "Videos") -- así un item clasificado sin pasar por esta
+            // subsección (p.ej. soltado en "Todos los videos") sigue
+            // apareciendo aquí, en vez de partirse en dos categorías
+            // que en el fondo son la misma cosa.
+            MediaSectionView(kind: .video, viewModel: library, device: deviceMonitor.device, preferences: preferences,
+                              presetCategory: MediaCategory.videos.displayName)
+        case .photos, .photosGroup:
             MediaSectionView(kind: .photo, viewModel: library, device: deviceMonitor.device, preferences: preferences)
+        case .photosPhotos:
+            MediaSectionView(kind: .photo, viewModel: library, device: deviceMonitor.device, preferences: preferences, presetCategory: "Fotos")
+        case .photosImages:
+            MediaSectionView(kind: .photo, viewModel: library, device: deviceMonitor.device, preferences: preferences, presetCategory: "Imágenes")
+        case .photosAI:
+            MediaSectionView(kind: .photo, viewModel: library, device: deviceMonitor.device, preferences: preferences, presetCategory: "IA")
         case .extras:
             ExtrasView(device: deviceMonitor.device)
         case .installer:
@@ -363,7 +385,21 @@ enum SidebarSection: Hashable, CaseIterable {
     /// y la fila "Canciones" compartieran `.music`, la lista resaltaria
     /// los dos a la vez.
     case musicGroup
+    /// PLAN-biblioteca-medios-v2.md §3.2: Video pasa a ser un grupo,
+    /// mismo tratamiento que Música -- `.video` ahora es "Todos los
+    /// videos" (antes la sección plana completa); `.videoGroup` es el
+    /// rótulo del grupo (mismo motivo que `.musicGroup`: identidad
+    /// propia para no resaltar junto con la primera subsección).
+    case videoMovies
+    case videoSeries
+    case videoClips
+    case videoGroup
     case video
+    /// Fotos, mismo patrón.
+    case photosPhotos
+    case photosImages
+    case photosAI
+    case photosGroup
     case photos
     case extras
     case installer
@@ -379,8 +415,16 @@ enum SidebarSection: Hashable, CaseIterable {
         case .musicArtists:   return S.artists.text
         case .musicAlbums:    return S.albums.text
         case .musicPlaylists: return S.playlists.text
-        case .video:          return S.video.text
-        case .photos:         return S.photos.text
+        case .videoGroup:     return S.video.text
+        case .video:          return S.videoAll.text
+        case .videoMovies:    return MediaCategory.movies.displayName
+        case .videoSeries:    return MediaCategory.series.displayName
+        case .videoClips:     return S.videoClips.text
+        case .photosGroup:    return S.photos.text
+        case .photos:         return S.photosAll.text
+        case .photosPhotos:   return "Fotos"
+        case .photosImages:   return "Imágenes"
+        case .photosAI:       return "IA"
         case .extras:         return S.extras.text
         case .installer:      return S.installer.text
         case .settings:       return S.settings.text
@@ -405,8 +449,16 @@ enum SidebarSection: Hashable, CaseIterable {
         case .musicArtists:   return "music.mic"
         case .musicAlbums:    return "square.stack"
         case .musicPlaylists: return "music.note.list"
+        case .videoGroup:     return "play.rectangle"
         case .video:          return "play.rectangle"
-        case .photos:         return "photo"
+        case .videoMovies:    return "film"
+        case .videoSeries:    return "tv"
+        case .videoClips:     return "music.note.tv"
+        case .photosGroup:    return "photo"
+        case .photos:         return "photo.on.rectangle"
+        case .photosPhotos:   return "camera"
+        case .photosImages:   return "photo"
+        case .photosAI:       return "sparkles"
         case .extras:         return "square.grid.2x2"
         case .installer:      return "square.and.arrow.down"
         case .settings:       return "gear"
@@ -419,11 +471,27 @@ enum SidebarSection: Hashable, CaseIterable {
     /// referencia del dueño: Artistas, Álbumes, Canciones; Listas al
     /// final).
     static let musicSubsections: [SidebarSection] = [.musicArtists, .musicAlbums, .music, .musicPlaylists]
+    /// PLAN-biblioteca-medios-v2.md §3.2: Películas/Series/Videoclips
+    /// primero (referencia del encargo), "Todos los videos" al final --
+    /// mismo criterio que Música (subsecciones específicas antes que la
+    /// tabla completa).
+    static let videoSubsections: [SidebarSection] = [.videoMovies, .videoSeries, .videoClips, .video]
+    static let photosSubsections: [SidebarSection] = [.photosPhotos, .photosImages, .photosAI, .photos]
 
     /// Todo lo que vive bajo el grupo Música (incluido el rotulo) -- se
     /// bloquea junto cuando `libraryLocked`.
     var isMusicSection: Bool {
         self == .musicGroup || Self.musicSubsections.contains(self)
+    }
+
+    /// Idem, para Video y Fotos -- mismo criterio que `isMusicSection`,
+    /// usado en el mismo chequeo de `ContentView.body` que ya cubría
+    /// Música (`deviceSections.contains(current) || current.isMusicSection`).
+    var isVideoSection: Bool {
+        self == .videoGroup || Self.videoSubsections.contains(self)
+    }
+    var isPhotosSection: Bool {
+        self == .photosGroup || Self.photosSubsections.contains(self)
     }
 }
 
@@ -434,32 +502,51 @@ private struct SidebarView: View {
     /// D-228: "Listas" nace expandida -- tiene que ser facil de
     /// encontrar, no un submenu escondido por default.
     @State private var musicExpanded = true
+    /// PLAN-biblioteca-medios-v2.md §3.2: Video/Fotos nacen expandidos,
+    /// mismo criterio que Música -- las subsecciones son justo lo que
+    /// este plan agrega, esconderlas por default las haría invisibles.
+    @State private var videoExpanded = true
+    @State private var photosExpanded = true
+
+    /// Fila de grupo (Música/Video/Fotos): rótulo con identidad propia
+    /// (nunca comparte tag con su primera subsección) que abre/cierra un
+    /// `DisclosureGroup` con las filas anidadas -- mismo patrón para los
+    /// tres grupos, parametrizado para no triplicar el `body`.
+    @ViewBuilder
+    private func groupRow(group: SidebarSection, subsections: [SidebarSection], isExpanded: Binding<Bool>) -> some View {
+        DisclosureGroup(isExpanded: isExpanded) {
+            ForEach(subsections, id: \.self) { sub in
+                Label(sub.title, systemImage: sub.symbol)
+                    .tag(sub)
+                    .disabled(libraryLocked)
+            }
+        } label: {
+            Label(group.title, systemImage: group.symbol)
+                .tag(group)
+                .disabled(libraryLocked)
+        }
+        .tag(group)
+    }
 
     var body: some View {
         List(selection: $selection) {
             Section(header: deviceHeader) {
                 ForEach(SidebarSection.deviceSections, id: \.self) { section in
-                    if section == .music {
-                        // ST-031: "Música" es un grupo (Artistas, Álbumes,
-                        // Canciones, Listas). El rotulo abre/cierra y, si
-                        // se toca, lleva a Canciones -- con su propia
-                        // identidad (`.musicGroup`), porque dentro de un
-                        // `ForEach` la fila del grupo hereda la etiqueta
-                        // implicita `.music` y resaltaria junto con la
-                        // fila "Canciones".
-                        DisclosureGroup(isExpanded: $musicExpanded) {
-                            ForEach(SidebarSection.musicSubsections, id: \.self) { sub in
-                                Label(sub.title, systemImage: sub.symbol)
-                                    .tag(sub)
-                                    .disabled(libraryLocked)
-                            }
-                        } label: {
-                            Label(SidebarSection.musicGroup.title, systemImage: SidebarSection.musicGroup.symbol)
-                                .tag(SidebarSection.musicGroup)
-                                .disabled(libraryLocked)
-                        }
-                        .tag(SidebarSection.musicGroup)
-                    } else {
+                    switch section {
+                    // ST-031 / PLAN-biblioteca-medios-v2.md §3.2: los
+                    // tres grupos con subsecciones. El rótulo del grupo
+                    // usa una etiqueta propia (`.musicGroup`/
+                    // `.videoGroup`/`.photosGroup`) porque dentro de un
+                    // `ForEach` la fila heredaría la etiqueta implícita
+                    // de `section` y resaltaría junto con su primera
+                    // subsección.
+                    case .music:
+                        groupRow(group: .musicGroup, subsections: SidebarSection.musicSubsections, isExpanded: $musicExpanded)
+                    case .video:
+                        groupRow(group: .videoGroup, subsections: SidebarSection.videoSubsections, isExpanded: $videoExpanded)
+                    case .photos:
+                        groupRow(group: .photosGroup, subsections: SidebarSection.photosSubsections, isExpanded: $photosExpanded)
+                    default:
                         Label(section.title, systemImage: section.symbol)
                             .tag(section)
                             // General queda siempre accesible: es donde se

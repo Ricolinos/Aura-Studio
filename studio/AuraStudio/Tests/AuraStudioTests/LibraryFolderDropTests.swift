@@ -1,4 +1,7 @@
 import XCTest
+import AppKit
+import ImageIO
+import UniformTypeIdentifiers
 @testable import AuraStudio
 
 /// D-229 (encargo del dueño, 2026-08-14): soltar una CARPETA sobre Aura
@@ -124,5 +127,64 @@ final class LibraryFolderDropTests: XCTestCase {
 
         XCTAssertEqual(viewModel.items.count, 1)
         XCTAssertTrue(prefs.linkedLibraryFolders.isEmpty)
+    }
+
+    // MARK: - PLAN-biblioteca-medios-v2.md §3.2/§3.3: category/photoAlbum preasignados
+
+    func testDroppedFilesCarryPresetCategoryAndAlbum() throws {
+        let file = externalFolder.appendingPathComponent("foto.jpg")
+        try Data("x".utf8).write(to: file)
+        let prefs = freshPreferences(copyMediaIntoLibrary: true)
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: prefs)
+
+        viewModel.addDroppedFiles([file], into: .photo, category: "IA", photoAlbum: "Vacaciones 2026")
+
+        XCTAssertEqual(viewModel.items.first?.category, "IA")
+        XCTAssertEqual(viewModel.items.first?.photoAlbum, "Vacaciones 2026")
+    }
+
+    func testDroppedFilesWithoutPresetCategoryStayNil() throws {
+        let file = externalFolder.appendingPathComponent("foto.jpg")
+        try Data("x".utf8).write(to: file)
+        let prefs = freshPreferences(copyMediaIntoLibrary: true)
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: prefs)
+
+        viewModel.addDroppedFiles([file], into: .photo)
+
+        XCTAssertNil(viewModel.items.first?.category)
+        XCTAssertNil(viewModel.items.first?.photoAlbum)
+    }
+
+    /// La categoría preasignada tiene que sobrevivir el pipeline
+    /// completo -- `process(itemAt:)` solo clasifica sola cuando
+    /// `category == nil` (ver `LibraryViewModel.swift`, caso `.photo`).
+    /// JPEG sintético (D-303): sin tocar la biblioteca real del dueño.
+    func testPresetCategorySurvivesFullPipelineProcessing() async throws {
+        let photoURL = externalFolder.appendingPathComponent("foto.jpg")
+        let data = try XCTUnwrap(makeFakeJPEGData())
+        try data.write(to: photoURL)
+        let prefs = freshPreferences(copyMediaIntoLibrary: false)
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: prefs)
+
+        viewModel.addDroppedFiles([photoURL], into: .photo, category: "IA")
+        await viewModel.processAll()
+
+        XCTAssertEqual(viewModel.items.first?.category, "IA", "la categoría preasignada por la subsección no debe ser pisada por la heurística automática")
+    }
+
+    private func makeFakeJPEGData() -> Data? {
+        let size = CGSize(width: 4, height: 4)
+        guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+              let context = CGContext(data: nil, width: Int(size.width), height: Int(size.height),
+                                       bitsPerComponent: 8, bytesPerRow: 0, space: colorSpace,
+                                       bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+        context.setFillColor(red: 1, green: 0, blue: 0, alpha: 1)
+        context.fill(CGRect(origin: .zero, size: size))
+        guard let cgImage = context.makeImage() else { return nil }
+        let mutableData = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(mutableData, "public.jpeg" as CFString, 1, nil) else { return nil }
+        CGImageDestinationAddImage(destination, cgImage, nil)
+        guard CGImageDestinationFinalize(destination) else { return nil }
+        return mutableData as Data
     }
 }

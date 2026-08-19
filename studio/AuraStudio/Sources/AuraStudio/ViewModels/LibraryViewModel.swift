@@ -150,11 +150,22 @@ final class LibraryViewModel: ObservableObject {
     /// reimportacion desde el iPod, `ForeignContentSheet`) se importa de
     /// todo, pero las imagenes que son caratulas (`CoverArtAssets`) igual
     /// se quedan afuera de Imagenes.
-    func addDroppedFiles(_ urls: [URL], into target: LibraryItemKind? = nil) {
+    /// `category`/`photoAlbum` (PLAN-biblioteca-medios-v2.md §3.2/§3.3):
+    /// la subsección de la barra lateral (o la hoja de importación) ya
+    /// resolvió la categoría/álbum ANTES de llamar aquí -- se asignan al
+    /// item recién creado para que `process(itemAt:)` los respete (su
+    /// heurística automática solo corre cuando `category == nil`).
+    func addDroppedFiles(_ urls: [URL], into target: LibraryItemKind? = nil,
+                          category: String? = nil, photoAlbum: String? = nil) {
         ensureLibraryStructure()
         let expandedURLs = DroppedURLExpander.expand(urls)
         let new = Self.importableURLs(from: expandedURLs, into: target)
-            .map { LibraryItem(sourceURL: $0) }
+            .map { url -> LibraryItem in
+                var item = LibraryItem(sourceURL: url)
+                item.category = category
+                item.photoAlbum = photoAlbum
+                return item
+            }
         items.append(contentsOf: new)
 
         if !preferences.copyMediaIntoLibrary {
