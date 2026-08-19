@@ -1,6 +1,8 @@
 # Contrato entre `Aura-Firmware` y Aura Studio
 
-**Versión 4 — 2026-08-17.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+**Versión 5 — 2026-08-18.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+
+**v5 (D-316, índice de categoría por archivo — Video/Fotos) — SOLO el lado firmware implementado en esta pasada.** Agrega dos archivos OPCIONALES nuevos a §D (`video_categories.cfg`/`photo_categories.cfg`) y el §D.2 con su formato exacto: le dan al firmware, por primera vez, la categoría (Película/Serie/Videoclip; Foto/Imagen/IA) de cada archivo individual de `/Videos`/`/Photos` — Aura Studio ya calcula esta categoría para su catálogo local (`biblioteca.json`, campo `category`) pero hasta ahora nunca la exportaba al dispositivo, solo 3 contadores agregados por sección (`sync_summary.cfg`, D-283). **Ausencia total de estos archivos es un caso soportado** (Studio todavía no los escribe): el firmware degrada a "sin categoría" en cada consulta, sin romper nada — ver `aura_media_categories.h`. **Pendiente**: el lado Studio (escribir estos dos archivos a partir de `category` en `biblioteca.json`) es trabajo aparte, en el repositorio de Aura Studio, no incluido en esta pasada.
 
 **v4 (D-293 / ST-012, estructura de biblioteca)** agrega el contrato de estructura de biblioteca como documento hermano — **`docs/contracts/library-layout-v1.md`** (misma convención de copia idéntica): estructura de directorios, colocación de carátulas y letras `.lrc`, y el **marcador de sincronización pendiente** `/.aura/sync-pending.json` con el que Studio le pide al firmware reconstruir los índices; este documento solo agrega esas filas a §D y la clave `sync_marker_supported` de `aura.cfg`. **v4 también reconcilia las dos copias**, que habían divergido: la de `Aura-Firmware` tenía §D.1 (`Photos/`, D-291) y la de Studio la fila `device.cfg` (v3, ST-011) — desde v4 las dos traen ambas cosas.
 
@@ -69,6 +71,9 @@ Esto **sí** es un acoplamiento permanente por diseño: ambos lados leen/escribe
 | `Playlists/` | Studio (`PlaylistExporter`) | Firmware | — |
 | `Music/`, `Videos/` | Studio (sync) | Firmware | 3 layouts posibles para `Music/` (Artista/Álbum, Álbum, Artista) — configurable en Studio. Estructura exacta, carátulas (`cover.jpg` en la carpeta del álbum o embebida) y letras `.lrc` (junto al audio, mismo nombre base) en `docs/contracts/library-layout-v1.md` §1–§3 |
 | `Photos/` | Studio (sync) | Firmware (`aura_photos.c`) | D-291. Contrato detallado en **D.1** abajo — formato, resolución, nombres |
+| `Videos/<archivo sin extensión>.jpg` | Studio (sync, opcional) | Firmware (`aura_screens.c`, cartel de CoverDrift) | Póster opcional hermano de cada video, mismo nombre base (`library-layout-v1.md` §2) — **el firmware ya listaba este campo del contrato, pero nunca lo leía hasta D-316**; ahora es la imagen que CoverDrift usa para Películas/Series |
+| `.rockbox/aura/video_categories.cfg` | Studio (sync, **OPCIONAL** — D-316) | Firmware (`aura_media_categories.c`) | D-316. Contrato detallado en **D.2** abajo. Ausente = "sin categoría" para todo archivo, degradación soportada, no un error |
+| `.rockbox/aura/photo_categories.cfg` | Studio (sync, **OPCIONAL** — D-316) | Firmware (`aura_media_categories.c`) | D-316. Ídem, formato en **D.2** |
 
 Cualquier cambio de ruta o de formato en esta tabla sube un `contract_version` (clave nueva a introducir en `sync_summary.cfg` y `aura.cfg` — no implementada todavía) y se registra en el diario de ambos repos (`D-NNN` en el firmware, `ST-NNN` en Studio), citándose cruzado.
 
@@ -89,6 +94,45 @@ Plano (sin subcarpetas — el firmware no recorre subdirectorios de `/Photos/`),
 
 Detalle completo, hallazgos y justificación en `docs/plans/archivo/PLAN-image-viewer.md` (plan ya ejecutado, en `Aura-Firmware`).
 
+### D.2 — Índice de categoría por archivo, Video/Fotos (D-316)
+
+Dos archivos **OPCIONALES**, uno por sección, en `.rockbox/aura/` (junto a `sync_summary.cfg`, no en `/.aura/` — no son un marcador de "hay trabajo pendiente", son datos que el firmware consulta bajo demanda). `/Videos/` y `/Photos/` en el volumen **siguen siendo planos** (D-192, sin cambios) — este índice no reorganiza nada, solo asocia cada nombre de archivo ya existente con una categoría.
+
+**Formato**: texto plano, una entrada por línea, `nombre_de_archivo: código` — mismo parser que `sync_summary.cfg` (`settings_parseline()`: separa en el primer `:`, una línea que empieza con `#` se descarta entera). `nombre_de_archivo` es el nombre EXACTO tal como aparece en `/Videos` o `/Photos` (con extensión, sin ruta). Líneas con un `código` desconocido se ignoran (compatibilidad hacia adelante).
+
+`.rockbox/aura/video_categories.cfg`:
+
+| Código | Significado |
+|---|---|
+| `movie` | Película |
+| `series` | Serie / programa de TV |
+| `clip` | Videoclip / video sin clasificar |
+
+```
+# aura-video-categories v1
+Avatar Aang el último maestro del aire.mpg: movie
+Little.Amelie.or.the.Character.of.Rain.2025.1080p.BDRIP.x264.DTS-AOC.mpg: movie
+```
+
+`.rockbox/aura/photo_categories.cfg`:
+
+| Código | Significado |
+|---|---|
+| `photo` | Fotografía real (cámara, EXIF con datos de cámara) |
+| `image` | Imagen (sin datos de cámara, capturas/diseños/reprocesadas) |
+| `ai` | Generada por inteligencia artificial |
+
+```
+# aura-photo-categories v1
+IMG_1814.JPG: photo
+96c8c13a-cf32-40b9-b323-06e226260fa9.jpg: image
+Gemini_Generated_Image_9epees9epees9epe.png: ai
+```
+
+Un archivo sin entrada en el índice correspondiente (o el índice ausente por completo) queda sin categoría — no aparece en ninguna de las filas filtradas (Películas/Series/Videoclips; Fotos/Imágenes/IA) pero sigue apareciendo en "Todos los videos"/"Todas las fotos", que nunca filtran. El firmware no vuelve a leer el disco por esto en cada cuadro: carga bajo demanda, cachea hasta que `aura_video_invalidate()`/`aura_photos_invalidate()` lo invaliden (mismos dos momentos que el resto de las listas de contenido: al entrar a la sección y al volver de la pantalla USB).
+
+**Pendiente del lado Studio**: generar estos dos archivos a partir del campo `category` que `biblioteca.json` ya calcula por ítem (`MediaCategoryClassifier`, D-192/D-228) — no implementado en esta pasada, es trabajo del repositorio de Aura Studio.
+
 ## E — Compatibilidad de versiones
 
 Aura Studio fija **una** versión exacta de firmware por build propio, en `FIRMWARE_VERSION`. Tabla de compatibilidad (se actualiza en cada release de cualquiera de los dos lados):
@@ -104,7 +148,8 @@ Aura Studio fija **una** versión exacta de firmware por build propio, en `FIRMW
 | 0.1.2 (histórico) | `v0.2.5-beta` (`FIRMWARE_VERSION`, PATCH: reproductor de video en español + modo "cubrir pantalla" con Select, sin cambio de contrato — D-304 en `Aura-Firmware`, ST-027 aquí) | v4 |
 | 0.1.2 (histórico) | `v0.2.6-beta` (`FIRMWARE_VERSION`, PATCH: corrige parpadeo del OSD en "cubrir" + barra de progreso en píldora + el reproductor respeta modo/tema/acento, sin cambio de contrato — D-305/D-306 en `Aura-Firmware`) | v4 |
 | 0.1.2 (histórico) | `v0.2.7-beta` (`FIRMWARE_VERSION`, PATCH: menú de ajustes del reproductor ya no es Rockbox nativo + corrige que "cubrir pantalla" se revirtiera solo, sin cambio de contrato — D-307/D-308 en `Aura-Firmware`) | v4 |
-| 0.1.2 | `v0.2.8-beta` (`FIRMWARE_VERSION`, PATCH: corrige recuadro blanco del menú de ajustes + calca la geometría/colores reales de las listas de Aura, sin cambio de contrato — D-309 en `Aura-Firmware`) | v4 |
+| 0.1.2 (histórico) | `v0.2.8-beta` (`FIRMWARE_VERSION`, PATCH: corrige recuadro blanco del menú de ajustes + calca la geometría/colores reales de las listas de Aura, sin cambio de contrato — D-309 en `Aura-Firmware`) | v4 |
+| 0.1.2 | `v0.2.9-beta` (`FIRMWARE_VERSION`, PATCH: niveles de Animaciones/Gráficos, CoverDrift en Video/Fotos, Music Flow/Movie Flow — contrato sube a v5 (D-316, índice de categoría opcional `video_categories.cfg`/`photo_categories.cfg`, solo lado firmware; el lado Studio que los escriba queda pendiente) — D-310..D-318 en `Aura-Firmware`) | v5 |
 
 Regla: un cambio a la sección D (contrato de datos) exige MINOR nuevo en ambos; un cambio de artefactos sin cambio de contrato es PATCH en el firmware y Studio solo actualiza el pin. `AuraUpdateChecker` (Studio) compara por hash SHA-256 del `rockbox.ipod` embebido vs. el instalado — sigue siendo la fuente de verdad para "hay actualización"; la UI puede mostrar además el tag de `FIRMWARE_VERSION` como referencia legible.
 
