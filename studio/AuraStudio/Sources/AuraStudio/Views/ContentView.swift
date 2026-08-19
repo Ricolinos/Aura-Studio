@@ -273,11 +273,15 @@ struct ContentView: View {
         case .photos, .photosGroup:
             MediaSectionView(kind: .photo, viewModel: library, device: deviceMonitor.device, preferences: preferences)
         case .photosPhotos:
-            MediaSectionView(kind: .photo, viewModel: library, device: deviceMonitor.device, preferences: preferences, presetCategory: "Fotos")
+            // Encargo del dueño (2026-08-18): cuadrícula de álbumes
+            // "similar en uso al iPod Classic original" -- reemplaza la
+            // tabla plana (que sigue siendo lo que usa "Todas las
+            // fotos", arriba).
+            PhotoAlbumsView(viewModel: library, device: deviceMonitor.device, preferences: preferences, category: "Fotos")
         case .photosImages:
-            MediaSectionView(kind: .photo, viewModel: library, device: deviceMonitor.device, preferences: preferences, presetCategory: "Imágenes")
+            PhotoAlbumsView(viewModel: library, device: deviceMonitor.device, preferences: preferences, category: "Imágenes")
         case .photosAI:
-            MediaSectionView(kind: .photo, viewModel: library, device: deviceMonitor.device, preferences: preferences, presetCategory: "IA")
+            PhotoAlbumsView(viewModel: library, device: deviceMonitor.device, preferences: preferences, category: "IA")
         case .extras:
             ExtrasView(device: deviceMonitor.device)
         case .installer:

@@ -189,4 +189,58 @@ final class LibraryGroupingTests: XCTestCase {
         let movie = video("X", category: "Películas", cover: data)
         XCTAssertEqual(LibraryGrouping.videoCollections(from: [movie])[0].posterData, data)
     }
+
+    // MARK: - photoAlbums (encargo del dueño, 2026-08-18: "similar en uso al iPod Classic original")
+
+    private func photo(category: String, album: String? = nil) -> AuraStudio.LibraryItem {
+        var item = AuraStudio.LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/\(UUID().uuidString).jpg"))
+        item.category = category
+        item.photoAlbum = album
+        return item
+    }
+
+    func testPhotoAlbumsOnlyIncludesMatchingCategory() {
+        let a = photo(category: "Fotos", album: "Viaje")
+        let b = photo(category: "Imágenes", album: "Viaje")
+        let groups = LibraryGrouping.photoAlbums(from: [a, b], category: "Fotos")
+        XCTAssertEqual(groups.count, 1)
+        XCTAssertEqual(groups[0].items.count, 1)
+    }
+
+    func testSameAlbumNameInDifferentCategoriesStaySeparate() {
+        // La clave incluye la categoría a propósito -- "Viaje" en Fotos
+        // y "Viaje" en Imágenes nunca deben mezclarse.
+        let a = photo(category: "Fotos", album: "Viaje")
+        let b = photo(category: "Imágenes", album: "Viaje")
+        XCTAssertEqual(LibraryGrouping.photoAlbums(from: [a, b], category: "Fotos").count, 1)
+        XCTAssertEqual(LibraryGrouping.photoAlbums(from: [a, b], category: "Imágenes").count, 1)
+    }
+
+    func testPhotosWithoutAlbumGoIntoUnknownBucketAtTheEnd() {
+        let withAlbum = photo(category: "Fotos", album: "Viaje")
+        let withoutAlbum = photo(category: "Fotos", album: nil)
+        let groups = LibraryGrouping.photoAlbums(from: [withoutAlbum, withAlbum], category: "Fotos")
+        XCTAssertEqual(groups.map(\.title), ["Viaje", LibraryGrouping.unknownPhotoAlbumTitle])
+        XCTAssertTrue(groups.last!.isUnknown)
+    }
+
+    func testAlbumNamesIgnoreCaseAndExtraWhitespaceWhenGrouping() {
+        let a = photo(category: "Fotos", album: "Viaje")
+        let b = photo(category: "Fotos", album: " viaje ")
+        let groups = LibraryGrouping.photoAlbums(from: [a, b], category: "Fotos")
+        XCTAssertEqual(groups.count, 1)
+        XCTAssertEqual(groups[0].items.count, 2)
+    }
+
+    func testEmptyPhotoAlbumStringCountsAsNoAlbum() {
+        let blank = photo(category: "Fotos", album: "   ")
+        let groups = LibraryGrouping.photoAlbums(from: [blank], category: "Fotos")
+        XCTAssertEqual(groups.count, 1)
+        XCTAssertTrue(groups[0].isUnknown)
+    }
+
+    func testNonPhotoItemsAreIgnored() {
+        let video = AuraStudio.LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/x.mkv"))
+        XCTAssertTrue(LibraryGrouping.photoAlbums(from: [video], category: "Fotos").isEmpty)
+    }
 }

@@ -526,6 +526,28 @@ final class LibraryViewModel: ObservableObject {
         persistCatalog()
     }
 
+    /// Renombra un álbum de fotos completo (encargo del dueño,
+    /// 2026-08-18: cuadrícula de álbumes "similar en uso al iPod
+    /// Classic original") -- reescribe `photoAlbum` en todos los items
+    /// del grupo. `newName` vacío o solo espacios equivale a
+    /// `dissolvePhotoAlbum` (pasa a "Sin álbum").
+    func renamePhotoAlbum(items ids: Set<UUID>, to newName: String) {
+        let trimmed = newName.trimmingCharacters(in: .whitespacesAndNewlines)
+        for index in items.indices where ids.contains(items[index].id) {
+            items[index].photoAlbum = trimmed.isEmpty ? nil : trimmed
+        }
+        persistCatalog()
+    }
+
+    /// "Disolver álbum": las fotos vuelven al cajón "Sin álbum" de su
+    /// colección -- nunca se borran ni cambian de categoría.
+    func dissolvePhotoAlbum(items ids: Set<UUID>) {
+        for index in items.indices where ids.contains(items[index].id) {
+            items[index].photoAlbum = nil
+        }
+        persistCatalog()
+    }
+
     /// PLAN-biblioteca-medios-v2.md §3.4: título/serie/temporada/
     /// episodio corregidos a mano desde el inspector de un video. A
     /// diferencia de `applyReview` (música), no hace falta volver a

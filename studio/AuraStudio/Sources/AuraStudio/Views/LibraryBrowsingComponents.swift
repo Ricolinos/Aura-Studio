@@ -155,6 +155,53 @@ struct AlbumCardView: View {
     }
 }
 
+/// Tarjeta de la cuadrícula de álbumes de Fotos (encargo del dueño,
+/// 2026-08-18: "similar en uso a lo que ofrecía el iPod Classic
+/// original" -- Álbumes como carpetas con mosaico de portada). Con 4
+/// fotos o más: mosaico 2×2 de las primeras 4; con menos, la primera
+/// foto sola; sin ninguna, el placeholder de `CoverArtView`.
+struct PhotoAlbumCardView: View {
+    let album: PhotoAlbumGroup
+    var side: CGFloat = 160
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            mosaic
+            Text(album.title)
+                .font(.callout.weight(.medium))
+                .lineLimit(2)
+                .multilineTextAlignment(.leading)
+            Text(album.count == 1 ? "1 foto" : "\(album.count) fotos")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+        }
+        .frame(width: side, alignment: .leading)
+        .contentShape(Rectangle())
+    }
+
+    @ViewBuilder
+    private var mosaic: some View {
+        let previews = album.previewImages
+        if previews.count >= 4 {
+            let half = ((side - 2) / 2).rounded(.down)
+            VStack(spacing: 2) {
+                HStack(spacing: 2) {
+                    CoverArtView(data: previews[0], side: half, cornerRadius: 0, placeholderSymbol: "photo")
+                    CoverArtView(data: previews[1], side: half, cornerRadius: 0, placeholderSymbol: "photo")
+                }
+                HStack(spacing: 2) {
+                    CoverArtView(data: previews[2], side: half, cornerRadius: 0, placeholderSymbol: "photo")
+                    CoverArtView(data: previews[3], side: half, cornerRadius: 0, placeholderSymbol: "photo")
+                }
+            }
+            .frame(width: side, height: side)
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        } else {
+            CoverArtView(data: previews.first, side: side, placeholderSymbol: "photo.on.rectangle")
+        }
+    }
+}
+
 /// "Buscar en Álbumes" / "Buscar en Artistas" / "Buscar en Canciones":
 /// el campo es el mismo, cambia el ámbito -- cada vista filtra lo suyo.
 struct LibrarySearchField: View {

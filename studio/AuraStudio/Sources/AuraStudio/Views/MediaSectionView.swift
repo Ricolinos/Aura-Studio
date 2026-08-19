@@ -99,6 +99,8 @@ struct MediaSectionView: View {
         case .videoCollection(let key): result = result.filter { LibraryGrouping.videoCollectionKey(of: $0) == key }
         case .season(let key, let season):
             result = result.filter { LibraryGrouping.videoCollectionKey(of: $0) == key && ($0.season ?? VideoCollectionGroup.noSeasonNumber) == season }
+        case .photoAlbum(let key):
+            result = result.filter { LibraryGrouping.photoAlbumKey(of: $0, category: $0.category ?? "") == key }
         }
         if let effectiveCategoryFilter = presetCategory ?? categoryFilter {
             result = result.filter { $0.category == effectiveCategoryFilter }
@@ -1162,7 +1164,7 @@ private struct RenameSheet: View {
 /// pregunta el nombre del álbum, nunca el tipo (ya lo dio la barra
 /// lateral). "Sin álbum" es una salida explícita, no un cancelar: los
 /// archivos se importan igual, sin agruparlos.
-private struct PhotoAlbumNameSheet: View {
+struct PhotoAlbumNameSheet: View {
     let onConfirm: (String?) -> Void
 
     @State private var albumName: String
@@ -1242,7 +1244,7 @@ private struct PhotoImportSheet: View {
     }
 }
 
-private struct DropZone: View {
+struct DropZone: View {
     @Binding var isTargeted: Bool
     let prompt: String
     let symbol: String

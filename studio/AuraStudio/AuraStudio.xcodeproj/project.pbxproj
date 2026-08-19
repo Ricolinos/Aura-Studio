@@ -79,6 +79,7 @@
 		62666A4A9BF729B61C851F76 /* ID3WriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEF3580937C6126B24998BB6 /* ID3WriterTests.swift */; };
 		666C116F404FC775C15FFEAD /* AppStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2AFC6DCF7F164C535175071 /* AppStrings.swift */; };
 		68E8BCDA1B3BC0F91F2A063A /* LibraryPersistenceSeriesAlbumFieldsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14888E0A766F5AAF8BCC8B5B /* LibraryPersistenceSeriesAlbumFieldsTests.swift */; };
+		68EB5BA59E5BBCD6D98EC6E2 /* PhotoAlbumsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E764E8CF210120775478A5EC /* PhotoAlbumsView.swift */; };
 		6CEA99B326B7A9C0BC06BFBD /* DroppedURLExpander.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE112760998756CFF24E4267 /* DroppedURLExpander.swift */; };
 		6EB23316E8337CEA9599A124 /* TMDBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 055B3DA536778DFDE7011A60 /* TMDBClient.swift */; };
 		6F89B1D713BBFE9B9E1B369E /* rockbox.ipod in Resources */ = {isa = PBXBuildFile; fileRef = 2E8C3583DE937B8FBBECABFA /* rockbox.ipod */; };
@@ -353,6 +354,7 @@
 		E01FD2ED5703F8753781BE89 /* MediaSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaSectionView.swift; sourceTree = "<group>"; };
 		E4E67EB1445E2CDC85691FD8 /* PlaylistImporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistImporter.swift; sourceTree = "<group>"; };
 		E61823B2E8AA5E3069393A0E /* AMPAgentsGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AMPAgentsGuard.swift; sourceTree = "<group>"; };
+		E764E8CF210120775478A5EC /* PhotoAlbumsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoAlbumsView.swift; sourceTree = "<group>"; };
 		E7EDF2D22E970198CC8A5C1B /* LiveEnrichmentIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveEnrichmentIntegrationTests.swift; sourceTree = "<group>"; };
 		EA742C8B72FA84420C621093 /* checksums.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = checksums.txt; sourceTree = "<group>"; };
 		EAC95668C5FEF76FAC67EE52 /* CoverArtArchiveClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverArtArchiveClient.swift; sourceTree = "<group>"; };
@@ -402,6 +404,7 @@
 				F53DF863212996F0BD415EA7 /* MusicSettingsView.swift */,
 				847E40FA6D10BDD4F1267BA4 /* MusicViewOptionsView.swift */,
 				777383A161FBD9C32BFA6D82 /* PermissionsView.swift */,
+				E764E8CF210120775478A5EC /* PhotoAlbumsView.swift */,
 				C455F59CE087518F3E7DE7C6 /* PhotoSettingsView.swift */,
 				B210703E5EF249635DE046AE /* PlaylistsView.swift */,
 				DAC2C915803E2ECA9BD01B52 /* PrivilegedActionSheet.swift */,
@@ -930,6 +933,7 @@
 				B3C248BDE83E3D949C3BE060 /* MusicViewOptionsView.swift in Sources */,
 				4B759AD84EC1F5D6DD7ACD26 /* PathSanitizer.swift in Sources */,
 				F745EA7E70AE91DF77279194 /* PermissionsView.swift in Sources */,
+				68EB5BA59E5BBCD6D98EC6E2 /* PhotoAlbumsView.swift in Sources */,
 				0EE55204A4DD509A38A4D088 /* PhotoSettingsView.swift in Sources */,
 				D97EFA41FAC51A50DC04A8F4 /* Playlist.swift in Sources */,
 				C90101F74FA7DE7769EE2135 /* PlaylistArtGenerator.swift in Sources */,

@@ -212,6 +212,39 @@ enum MusicScope: Equatable {
     case videoCollection(String)
     /// Solo los episodios de una temporada dentro de esa serie.
     case season(String, Int)
+    /// Todas las fotos de un álbum dentro de una colección
+    /// (`PhotoAlbumGroup.id`, incluye la categoría -- dos colecciones
+    /// distintas pueden tener un álbum con el mismo nombre).
+    case photoAlbum(String)
+}
+
+/// Un álbum de fotos DENTRO de una colección (Fotos/Imágenes/IA) --
+/// PLAN-biblioteca-medios-v2.md §3.3, encargo adicional del dueño
+/// (2026-08-18: "que sea muy similar en cuestión de uso a lo que
+/// ofrecía el iPod Classic original" -- Álbumes/Rollos como carpetas,
+/// mosaico de portada, clic para ver las fotos). Solo LOCAL: nunca
+/// llega al iPod (D-192, `/Photos` sigue plano), ni crea carpetas por
+/// sí solo -- es un grupo en memoria como `AlbumGroup`/`ArtistGroup`.
+struct PhotoAlbumGroup: Identifiable, Equatable {
+    let id: String
+    let title: String
+    let category: String
+    let items: [LibraryItem]
+    /// `true` para el cajón "Sin álbum" -- fotos de la colección sin
+    /// `photoAlbum` asignado, siempre al final de la cuadrícula.
+    let isUnknown: Bool
+
+    var count: Int { items.count }
+    /// Hasta 4, para el mosaico 2×2 de la tarjeta (una sola foto si hay
+    /// menos de 4). A diferencia de música/video, una foto NUNCA
+    /// completa `item.metadata` (`LibraryViewModel.process(itemAt:)`,
+    /// caso `.photo`) -- la imagen en sí es el contenido, se lee del
+    /// archivo preparado (o el original si todavía no se procesó).
+    var previewImages: [Data] {
+        items.prefix(4).compactMap { item in
+            try? Data(contentsOf: item.preparedURL ?? item.sourceURL)
+        }
+    }
 }
 
 /// Una temporada dentro de una serie: sus episodios, ordenados por
@@ -328,6 +361,46 @@ extension LibraryGrouping {
             )
         }
         groups.sort { sortName($0.title).localizedStandardCompare(sortName($1.title)) == .orderedAscending }
+        return groups
+    }
+
+    static let unknownPhotoAlbumTitle = "Sin álbum"
+
+    /// Clave de agrupación de un álbum de fotos: categoría + nombre de
+    /// álbum normalizado -- la categoría entra a propósito, dos
+    /// colecciones distintas (p.ej. "Fotos" e "Imágenes") pueden tener
+    /// cada una un álbum llamado igual sin mezclarse.
+    static func photoAlbumKey(of item: LibraryItem, category: String) -> String {
+        "\(normalize(category))\u{1F}\(normalize(item.photoAlbum))"
+    }
+
+    /// Álbumes de fotos dentro de UNA colección (encargo del dueño,
+    /// 2026-08-18: "similar en uso a lo que ofrecía el iPod Classic
+    /// original" -- álbumes como carpetas, mosaico de portada). Solo
+    /// items de `.photo` con esa `category` exacta; "Sin álbum" (fotos
+    /// sin `photoAlbum` asignado) siempre al final.
+    static func photoAlbums(from items: [LibraryItem], category: String) -> [PhotoAlbumGroup] {
+        let photos = items.filter { $0.kind == .photo && $0.category == category }
+        var buckets: [String: [LibraryItem]] = [:]
+        var order: [String] = []
+        for item in photos {
+            let key = photoAlbumKey(of: item, category: category)
+            if buckets[key] == nil { order.append(key) }
+            buckets[key, default: []].append(item)
+        }
+        var groups = order.map { key -> PhotoAlbumGroup in
+            let bucket = buckets[key]!
+            let albumName = bucket[0].photoAlbum?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let isUnknown = albumName.isEmpty
+            return PhotoAlbumGroup(
+                id: key, title: isUnknown ? unknownPhotoAlbumTitle : albumName,
+                category: category, items: bucket, isUnknown: isUnknown
+            )
+        }
+        groups.sort { a, b in
+            if a.isUnknown != b.isUnknown { return !a.isUnknown }
+            return sortName(a.title).localizedStandardCompare(sortName(b.title)) == .orderedAscending
+        }
         return groups
     }
 }
