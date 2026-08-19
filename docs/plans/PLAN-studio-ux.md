@@ -199,6 +199,8 @@ Regla dura: **con confianza `low` o `none` nunca se clasifica en silencio** — 
 
 ### 3.4 Contrato versionado: qué escribe Studio al iPod para el firmware
 
+> **Superado (2026-08-18, `PLAN-biblioteca-medios-v2.md`, carpeta padre).** El firmware implementó su propio formato en D-316/D-318 **antes** de que esta sección se ejecutara: dos archivos `.rockbox/aura/video_categories.cfg`/`photo_categories.cfg`, clave = nombre de archivo SIN ruta, códigos `movie|series|clip` / `photo|image|ai`, sin `contract_version`, sin sub-claves `#season`/`#episode` — formato exacto en `CONTRATO-firmware-studio.md` §D.2 (v5). Lo que sigue (un único `media_index.cfg` con rutas absolutas y cubetas `home`/`wallpaper`) **no se implementa** — manda el contrato ya publicado, no este plan. La implementación real del lado Studio está en `PLAN-biblioteca-medios-v2.md` Tanda 1.
+
 Se crea **`CONTRATO-indice-medios.md`** (raíz de este repo; copia idéntica en `Aura-Firmware`, que es la fuente canónica — exactamente el modelo de `CONTRATO-formato-tema.md`), y `CONTRATO-firmware-studio.md` §D lo referencia y por fin enumera las claves. Contenido propuesto (v1 de ese contrato = `contract_version: 2` del canal de datos, porque `sync_summary.cfg` ya existe sin versión):
 
 **A. `/.rockbox/aura/sync_summary.cfg` (existente, extendido, compatible hacia atrás)**

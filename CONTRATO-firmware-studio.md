@@ -1,6 +1,8 @@
 # Contrato entre `Aura-Firmware` y Aura Studio
 
-**Versión 5 — 2026-08-18.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+**Versión 6 — 2026-08-18.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+
+**v6 (`PLAN-biblioteca-medios-v2.md`, fotos de artista) — SOLO contrato en esta pasada, sin código todavía.** Agrega §D.3 y dos filas nuevas a §D: `.rockbox/aura/artists/<archivo>.jpg` (foto de artista, JPEG baseline cuadrada ≤128px) y `.rockbox/aura/artist_images.cfg` (índice `archivo: artista`, formato en **D.3**) — ambos OPCIONALES, mismo criterio de degradación soportada que v5. A diferencia de v5, este contrato se escribe **antes** de implementar cualquiera de los dos lados — la Tanda 3/5 de `PLAN-biblioteca-medios-v2.md` lo implementa después.
 
 **v5 (D-316, índice de categoría por archivo — Video/Fotos) — SOLO el lado firmware implementado en esta pasada.** Agrega dos archivos OPCIONALES nuevos a §D (`video_categories.cfg`/`photo_categories.cfg`) y el §D.2 con su formato exacto: le dan al firmware, por primera vez, la categoría (Película/Serie/Videoclip; Foto/Imagen/IA) de cada archivo individual de `/Videos`/`/Photos` — Aura Studio ya calcula esta categoría para su catálogo local (`biblioteca.json`, campo `category`) pero hasta ahora nunca la exportaba al dispositivo, solo 3 contadores agregados por sección (`sync_summary.cfg`, D-283). **Ausencia total de estos archivos es un caso soportado** (Studio todavía no los escribe): el firmware degrada a "sin categoría" en cada consulta, sin romper nada — ver `aura_media_categories.h`. **Pendiente**: el lado Studio (escribir estos dos archivos a partir de `category` en `biblioteca.json`) es trabajo aparte, en el repositorio de Aura Studio, no incluido en esta pasada.
 
@@ -74,6 +76,8 @@ Esto **sí** es un acoplamiento permanente por diseño: ambos lados leen/escribe
 | `Videos/<archivo sin extensión>.jpg` | Studio (sync, opcional) | Firmware (`aura_screens.c`, cartel de CoverDrift) | Póster opcional hermano de cada video, mismo nombre base (`library-layout-v1.md` §2) — **el firmware ya listaba este campo del contrato, pero nunca lo leía hasta D-316**; ahora es la imagen que CoverDrift usa para Películas/Series |
 | `.rockbox/aura/video_categories.cfg` | Studio (sync, **OPCIONAL** — D-316) | Firmware (`aura_media_categories.c`) | D-316. Contrato detallado en **D.2** abajo. Ausente = "sin categoría" para todo archivo, degradación soportada, no un error |
 | `.rockbox/aura/photo_categories.cfg` | Studio (sync, **OPCIONAL** — D-316) | Firmware (`aura_media_categories.c`) | D-316. Ídem, formato en **D.2** |
+| `.rockbox/aura/artists/<archivo>.jpg` | Studio (sync, **OPCIONAL**) | Firmware (`aura_artist_images.c`) | v6, `PLAN-biblioteca-medios-v2.md`. Foto de artista. Contrato detallado en **D.3** abajo. Ausente = placeholder circular con ícono, degradación soportada |
+| `.rockbox/aura/artist_images.cfg` | Studio (sync, **OPCIONAL**) | Firmware (`aura_artist_images.c`) | v6. Índice `archivo: artista`, formato en **D.3** |
 
 Cualquier cambio de ruta o de formato en esta tabla sube un `contract_version` (clave nueva a introducir en `sync_summary.cfg` y `aura.cfg` — no implementada todavía) y se registra en el diario de ambos repos (`D-NNN` en el firmware, `ST-NNN` en Studio), citándose cruzado.
 
@@ -132,6 +136,25 @@ Gemini_Generated_Image_9epees9epees9epe.png: ai
 Un archivo sin entrada en el índice correspondiente (o el índice ausente por completo) queda sin categoría — no aparece en ninguna de las filas filtradas (Películas/Series/Videoclips; Fotos/Imágenes/IA) pero sigue apareciendo en "Todos los videos"/"Todas las fotos", que nunca filtran. El firmware no vuelve a leer el disco por esto en cada cuadro: carga bajo demanda, cachea hasta que `aura_video_invalidate()`/`aura_photos_invalidate()` lo invaliden (mismos dos momentos que el resto de las listas de contenido: al entrar a la sección y al volver de la pantalla USB).
 
 **Pendiente del lado Studio**: generar estos dos archivos a partir del campo `category` que `biblioteca.json` ya calcula por ítem (`MediaCategoryClassifier`, D-192/D-228) — no implementado en esta pasada, es trabajo del repositorio de Aura Studio.
+
+### D.3 — Fotos de artista (v6, `PLAN-biblioteca-medios-v2.md`)
+
+Dos elementos **OPCIONALES**, ambos en `.rockbox/aura/` (no en `/Music/` — la foto de artista no es contenido reproducible, es metadata de presentación).
+
+**`.rockbox/aura/artists/<archivo>.jpg`** — la foto en sí. JPEG baseline, **cuadrada**, lado ≤ 128px (mismas reglas de formato que D.1: sRGB, sin progresivo, sin ICC). Nombre = el mismo algoritmo que ya usa Studio para su caché local (`ArtistImageStore.fileName(forArtistKey:)`: alfanuméricos ASCII y `-` tal cual, espacio → `-`, resto → `_%02x`, recortado a 120 caracteres + `.jpg`) — determinístico, no hace falta que el firmware lo calcule, solo lo busca por el nombre que dice el índice.
+
+**`.rockbox/aura/artist_images.cfg`** — el índice. Texto plano, mismo parser que D.2 (`settings_parseline()`, separa en el primer `:`, líneas `#` se descartan). **Formato invertido respecto a D.2 a propósito**: `nombre_de_archivo.jpg: <tag artist crudo>` — el nombre de archivo va PRIMERO porque es FAT-seguro (nunca contiene `:`); el nombre de artista, que sí puede traer `:` (p. ej. `"Panic! At The Disco: Live"`), va como valor. El firmware compara el tag `artist` de cada pista (`tag_artist` de tagcache, nunca `tag_albumartist`) contra el valor **byte a byte, sin normalizar acentos** (`strcmp`) — la clave debe ser el string UTF-8 exacto tal como está en el archivo de audio. Varias líneas pueden apuntar al mismo archivo (un grupo de artista de Studio agrupado por `albumArtist` puede tener pistas con `artist` ligeramente distinto, p. ej. "The 1975" y "The 1975 feat. Phoebe Bridgers" — ambas líneas apuntan a la misma foto).
+
+```
+# aura-artist-images v1
+the-1975.jpg: The 1975
+the-1975.jpg: The 1975 feat. Phoebe Bridgers
+gorillaz.jpg: Gorillaz
+```
+
+Reglas: valor duplicado (mismo artista dos veces) → gana la primera línea; archivo referenciado que no existe en `artists/` → placeholder, no error; artista sin ninguna línea → placeholder. Topes del firmware: hasta 300 entradas, nombre de artista hasta 64 bytes, nombre de archivo hasta 128 bytes — exceder cualquiera de los dos, la línea se ignora (compatibilidad hacia adelante, mismo criterio que D.2). Ausencia total de `artists/` y/o del índice es un caso soportado: toda la sección Artistas muestra el placeholder circular, sin romper nada.
+
+**Pendiente de implementar en ambos repos** (esta pasada del contrato es solo el formato): firmware en `PLAN-biblioteca-medios-v2.md` Tanda 3 (`aura_artist_images.c`, layout circular en la lista de Artistas); Studio en la Tanda 5 (`writeArtistImages` en `LibrarySync`).
 
 ## E — Compatibilidad de versiones
 
