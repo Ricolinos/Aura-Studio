@@ -529,3 +529,15 @@ El stream se DECLARA 4:3, pero el contenido real visible ocupa solo ~132-136px d
 ## ST-034 — Contrato v6: fotos de artista (§D.3) — solo formato, sin código todavía
 
 Ver **D-319** en `Aura-Firmware/DECISIONS.md` (la entrada canónica; esta es la contraparte del lado Studio, mismo contrato, mismo commit de docs). `CONTRATO-firmware-studio.md` → v6, copia idéntica a la del firmware (`cmp` limpio). Aprovechando la misma pasada de higiene de contratos: `docs/contracts/library-layout-v1.md` estaba desactualizado en v1.1 (canónico en el firmware: v1.3) — sincronizado por `cp` desde `Aura-Firmware`, `cmp` limpio. `docs/plans/PLAN-studio-ux.md` §3.4 marcado "Superado" (remitiendo a `PLAN-biblioteca-medios-v2.md`, carpeta padre) sin borrar el texto original — la propuesta de contrato versionado de esa sección quedó reemplazada por el diseño real que ya se implementó (v6 aquí mismo). Sin cambios de código en esta pasada.
+
+## ST-035 — Hora y zona horaria automáticas hacia el iPod (contrato v7, §D.4)
+
+Ver **D-321** en `Aura-Firmware/DECISIONS.md` (diseño completo, criterio de cuándo se reaplica el RTC). Contraparte del lado Studio: `ClockSyncWriter` (nuevo, `Services/`), puro y testeable — `upsertClockLines(_:date:timeZone:calendar:)` calcula las 7 líneas (`rtc_sync_year/month/day/hour/min/sec` desde `Calendar`/`TimeZone.current` en hora local, `tz_local_quarters` desde `secondsFromGMT() / 900`) y las upserta sobre las líneas existentes de `aura.cfg`, preservando el resto — mismo patrón que `ThemeInstaller.activate` para `theme_id`; `writeToDisk(mountPath:...)` hace la I/O real.
+
+**Dos disparadores**, ambos ya existentes en el flujo, sin nueva UI:
+- `IPodMonitor.handleDiskChange`: cada vez que el probe confirma `probed.isAura` (firmware Aura corriendo o con evidencia de haber arrancado), en el mismo bloque donde ya se anota `recordBootloaderVerified`. Toma el candado de `InstallerFlowRegistry` él mismo (`beginWriting()`/`endWriting()`) y cede en silencio si otro flujo ya está escribiendo — el próximo connect reintenta, no hace falta forzarlo.
+- `InstallerViewModel.copyFirmwareFiles`: justo después de crear las carpetas de medios (`Music`/`Photos`/`Videos`/`Playlists`), para que el primerísimo arranque tras instalar/actualizar ya traiga hora y zona correctas sin esperar una reconexión posterior. Esta función ya sostiene el candado de `InstallerFlowRegistry` desde antes (no es reentrante) — no lo vuelve a tomar.
+
+**Deliberadamente fuera de alcance**: idioma (el encargo decía "hora y region", no idioma).
+
+**Verificación**: `ClockSyncWriterTests` 6 (upsert agrega las 7 claves a un archivo vacío; reemplaza en el mismo lugar preservando otras claves — `theme_id` no se mueve ni se duplica; offset positivo de zona horaria — Tokio +9h = 36 cuartos; escritura real crea el archivo si falta; preserva líneas no relacionadas; ignora rutas de montaje inválidas sin lanzar). `swift build`, `swift test` completa (481 pruebas, 2 fallos — el flake de red ya conocido de `testCoverArtArchiveFetchesRealCover`, sin relación), `xcodegen generate` + `xcodebuild` → BUILD SUCCEEDED.

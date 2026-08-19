@@ -913,6 +913,15 @@ final class InstallerViewModel: ObservableObject {
                                          withIntermediateDirectories: true)
             }
 
+            // Encargo 2026-08-18: siembra la hora/zona del Mac en
+            // aura.cfg desde la instalación misma -- así el primer
+            // arranque ya trae el reloj correcto (ver
+            // ClockSyncWriter/CONTRATO-firmware-studio.md §D.4), sin
+            // esperar a una reconexión posterior con el firmware ya
+            // corriendo. El candado de escritura ya está tomado por esta
+            // misma función (línea ~799).
+            try? ClockSyncWriter.writeToDisk(mountPath: mountPath)
+
             if bootloaderAlreadyInstalled || bootloaderFlashedThisFlow {
                 // El iPod llego aca desde el "Bootloader USB mode" de
                 // Aura (o el flasheo ya se hizo en esta misma corrida,

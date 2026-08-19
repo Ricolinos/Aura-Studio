@@ -52,6 +52,7 @@
 		383210704833B1602E89F712 /* QuickLookCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37832F50724ABA2EA149F4CF /* QuickLookCoordinator.swift */; };
 		397F1385C6FF0BA8618B7956 /* LibrarySyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1695E842D41B0B6B13805A1E /* LibrarySyncTests.swift */; };
 		39A338816342C5D315399C77 /* LRCLIBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A3A899326AAAF78FF4F60C7 /* LRCLIBClient.swift */; };
+		3A7E4AD12A10E84BC236D09B /* ClockSyncWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F850F3EB621433BF09D641A2 /* ClockSyncWriter.swift */; };
 		3C55D1529747E73BFE103166 /* SyncPlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6A56207E06BF883E789308E /* SyncPlannerTests.swift */; };
 		3C783558D1453D0413B42079 /* MusicBrainzRateLimiter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1290E12A3C253DAFF9B79163 /* MusicBrainzRateLimiter.swift */; };
 		3CA0A3911ADDD2EED7918743 /* PrivilegedExecutorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F0A3F90A397101E33636987 /* PrivilegedExecutorTests.swift */; };
@@ -81,6 +82,7 @@
 		70D019E7148CEEDA856FEC63 /* LibraryPersistenceFavoriteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A78B6EFC3F4E661073CF15D6 /* LibraryPersistenceFavoriteTests.swift */; };
 		7128F973A9D8E656F326EB9F /* AuraUpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9961D8C11B7031D474CB9BE /* AuraUpdateChecker.swift */; };
 		72C172E3DF3F50EFAA165F95 /* ArtistImageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBA54FA0E3385DC4D97B068F /* ArtistImageTests.swift */; };
+		741C227ABE979EE55749B07D /* ClockSyncWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F32B696741F0E62A203E7BC /* ClockSyncWriterTests.swift */; };
 		7546240CE5322D7AB3B4BA1F /* TableHeaderMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8B17B3701CCA341AD9EF513 /* TableHeaderMenu.swift */; };
 		75D17708FBCBD04298B781AE /* bootloader-ipod6g.ipod in Resources */ = {isa = PBXBuildFile; fileRef = F42FE4EC16A2A0B63AA1E342 /* bootloader-ipod6g.ipod */; };
 		761724FFD96613E057D2C5EA /* ThemeInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A6B081BB0FE52BB27390C52 /* ThemeInstaller.swift */; };
@@ -228,6 +230,7 @@
 		3D93C4B54F192923EAF481E9 /* VideoSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoSettingsView.swift; sourceTree = "<group>"; };
 		3DC865282F8B113716D7C3AF /* ImageResizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageResizer.swift; sourceTree = "<group>"; };
 		3EBEB24F597D3C9B609AC775 /* InstallerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerViewModel.swift; sourceTree = "<group>"; };
+		3F32B696741F0E62A203E7BC /* ClockSyncWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockSyncWriterTests.swift; sourceTree = "<group>"; };
 		414CDC551592AE3B57A31C32 /* ThemesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemesView.swift; sourceTree = "<group>"; };
 		41E05507BDCB6ED7C42C9B6A /* LyricsSidecarSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsSidecarSyncTests.swift; sourceTree = "<group>"; };
 		43B9358C341DF6C281F2636B /* InstallerStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerStep.swift; sourceTree = "<group>"; };
@@ -349,6 +352,7 @@
 		F52FF3A536F1C7FAFB6822B6 /* SettingsSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSectionView.swift; sourceTree = "<group>"; };
 		F53DF863212996F0BD415EA7 /* MusicSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicSettingsView.swift; sourceTree = "<group>"; };
 		F5EB599930E65EEEA8E31ACE /* LocalTagReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTagReader.swift; sourceTree = "<group>"; };
+		F850F3EB621433BF09D641A2 /* ClockSyncWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockSyncWriter.swift; sourceTree = "<group>"; };
 		FAA6932017115B388ED81777 /* ThemeInstallerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeInstallerTests.swift; sourceTree = "<group>"; };
 		FB78E19CE6152C4A34DF642B /* DroppedURLExpanderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DroppedURLExpanderTests.swift; sourceTree = "<group>"; };
 		FC202F1A3D9164B1E6014A84 /* CatalogSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogSummary.swift; sourceTree = "<group>"; };
@@ -494,6 +498,7 @@
 				476586878B17D64E6EB2F3BC /* BootloaderVerifiedDisksTests.swift */,
 				D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */,
 				AC0636DEF76695EC784AFCE2 /* CatalogSummaryWriterTests.swift */,
+				3F32B696741F0E62A203E7BC /* ClockSyncWriterTests.swift */,
 				C7A75E4AA4334B6A18D04537 /* CoverArtAssetsTests.swift */,
 				70ACE1220F0178A35F3CE798 /* DeviceNameStoreTests.swift */,
 				444381A58BB7B201C06A6866 /* DeviceSyncIndexTests.swift */,
@@ -595,6 +600,7 @@
 				D3F0CDAA153138813C9AF84E /* AuraDeviceProbe.swift */,
 				B9961D8C11B7031D474CB9BE /* AuraUpdateChecker.swift */,
 				B8464D5E55C66D32740C7289 /* BundledArtifacts.swift */,
+				F850F3EB621433BF09D641A2 /* ClockSyncWriter.swift */,
 				EAC95668C5FEF76FAC67EE52 /* CoverArtArchiveClient.swift */,
 				2FAF58B738CE7203B6E7EA24 /* CoverThumbnailCache.swift */,
 				ABB9F8D5D85A96032603EE86 /* DeezerClient.swift */,
@@ -766,6 +772,7 @@
 				7723B2E0BF669AA642A666D6 /* BootloaderVerifiedDisksTests.swift in Sources */,
 				C3AD25FC7C3C2CE8C2F3AD6F /* BundledArtifactsTests.swift in Sources */,
 				A97401AE31F2CC10AB44DDCD /* CatalogSummaryWriterTests.swift in Sources */,
+				741C227ABE979EE55749B07D /* ClockSyncWriterTests.swift in Sources */,
 				D14BAA69CD8F0052BDDAEB70 /* CoverArtAssetsTests.swift in Sources */,
 				C2F0510BAABF5CB03FD90D93 /* DeviceNameStoreTests.swift in Sources */,
 				F42EA5AD49A256AC55366672 /* DeviceSyncIndexTests.swift in Sources */,
@@ -846,6 +853,7 @@
 				D0949902B40FBA74F1D9D0D6 /* BootModeView.swift in Sources */,
 				5EDA0D1DF2BC765B8F8D473B /* BundledArtifacts.swift in Sources */,
 				ABAA0A8B49C9C4BA781A5A09 /* CatalogSummary.swift in Sources */,
+				3A7E4AD12A10E84BC236D09B /* ClockSyncWriter.swift in Sources */,
 				401404E1D0A6D6FFBB155F2C /* ContentView.swift in Sources */,
 				135A255167C64B601EFF2854 /* CoverArtArchiveClient.swift in Sources */,
 				7A8AD070A233B194127A7783 /* CoverArtAssets.swift in Sources */,

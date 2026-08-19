@@ -1,6 +1,8 @@
 # Contrato entre `Aura-Firmware` y Aura Studio
 
-**Versión 6 — 2026-08-18.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+**Versión 7 — 2026-08-18.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+
+**v7 (D-321/ST-035, hora y zona horaria automáticas) — implementado en ambos repos en esta pasada.** Agrega §D.4 y siete claves nuevas de `aura.cfg`: `rtc_sync_year/month/day/hour/min/sec` (transitorias, un solo uso) y `tz_local_quarters` (persistente, ya existía como ajuste interno de Aura desde D-293 — v7 es la primera vez que Studio también la escribe). Studio escribe las siete cada vez que detecta firmware Aura corriendo (conexión) y al terminar de instalar/actualizar; el firmware las aplica al RTC real y descarta las transitorias en el mismo momento en que ya recupera el disco tras un posible USB de Studio (`aura_main_sync_after_disk_handoff()`, D-293) — nunca hace falta un reinicio completo aparte.
 
 **v6 (`PLAN-biblioteca-medios-v2.md`, fotos de artista) — SOLO contrato en esta pasada, sin código todavía.** Agrega §D.3 y dos filas nuevas a §D: `.rockbox/aura/artists/<archivo>.jpg` (foto de artista, JPEG baseline cuadrada ≤128px) y `.rockbox/aura/artist_images.cfg` (índice `archivo: artista`, formato en **D.3**) — ambos OPCIONALES, mismo criterio de degradación soportada que v5. A diferencia de v5, este contrato se escribe **antes** de implementar cualquiera de los dos lados — la Tanda 3/5 de `PLAN-biblioteca-medios-v2.md` lo implementa después.
 
@@ -78,6 +80,8 @@ Esto **sí** es un acoplamiento permanente por diseño: ambos lados leen/escribe
 | `.rockbox/aura/photo_categories.cfg` | Studio (sync, **OPCIONAL** — D-316) | Firmware (`aura_media_categories.c`) | D-316. Ídem, formato en **D.2** |
 | `.rockbox/aura/artists/<archivo>.jpg` | Studio (sync, **OPCIONAL**) | Firmware (`aura_artist_images.c`) | v6, `PLAN-biblioteca-medios-v2.md`. Foto de artista. Contrato detallado en **D.3** abajo. Ausente = placeholder circular con ícono, degradación soportada |
 | `.rockbox/aura/artist_images.cfg` | Studio (sync, **OPCIONAL**) | Firmware (`aura_artist_images.c`) | v6. Índice `archivo: artista`, formato en **D.3** |
+| `.rockbox/aura/aura.cfg` → claves `rtc_sync_year/month/day/hour/min/sec` | Studio (`ClockSyncWriter`, en cada conexión con Aura corriendo y al instalar/actualizar) | Firmware (`aura_settings_apply_pending_clock()`, en el mismo handoff de disco que D-293) | v7, D-321/ST-035. Transitorias — el firmware las aplica al RTC real y las descarta solas en su siguiente `aura_settings_save()`. Formato en **D.4** |
+| `.rockbox/aura/aura.cfg` → clave `tz_local_quarters` | Firmware (UI de Ajustes › Huso horario, D-293); Studio también la escribe ahora (`ClockSyncWriter`) | Firmware (reloj mundial, D-293) | v7. Cuartos de hora respecto a UTC. Ya existía como ajuste interno — v7 es la primera vez que Studio también la escribe |
 
 Cualquier cambio de ruta o de formato en esta tabla sube un `contract_version` (clave nueva a introducir en `sync_summary.cfg` y `aura.cfg` — no implementada todavía) y se registra en el diario de ambos repos (`D-NNN` en el firmware, `ST-NNN` en Studio), citándose cruzado.
 
@@ -155,6 +159,28 @@ gorillaz.jpg: Gorillaz
 Reglas: valor duplicado (mismo artista dos veces) → gana la primera línea; archivo referenciado que no existe en `artists/` → placeholder, no error; artista sin ninguna línea → placeholder. Topes del firmware: hasta 300 entradas, nombre de artista hasta 64 bytes, nombre de archivo hasta 128 bytes — exceder cualquiera de los dos, la línea se ignora (compatibilidad hacia adelante, mismo criterio que D.2). Ausencia total de `artists/` y/o del índice es un caso soportado: toda la sección Artistas muestra el placeholder circular, sin romper nada.
 
 **Pendiente de implementar en ambos repos** (esta pasada del contrato es solo el formato): firmware en `PLAN-biblioteca-medios-v2.md` Tanda 3 (`aura_artist_images.c`, layout circular en la lista de Artistas); Studio en la Tanda 5 (`writeArtistImages` en `LibrarySync`).
+
+### D.4 — Hora y zona horaria automáticas (v7, D-321/ST-035)
+
+Encargo del dueño: "cada que el ipod se conecte a Aura Studio, deberá actualizar su hora y region local para no tenerlo que configurar manualmente, igual al instalar o actualizar el firmware." El S5L8702 tiene RTC real (`CONFIG_RTC RTC_NANO2G`), pero solo se ajustaba a mano desde las pantallas de Ajustes › Fecha/Hora de Aura — nunca desde un archivo que Studio pudiera dejar.
+
+Siete claves en `.rockbox/aura/aura.cfg`, mismo parser `settings_parseline()` que el resto del archivo:
+
+```
+rtc_sync_year: 2026
+rtc_sync_month: 8
+rtc_sync_day: 18
+rtc_sync_hour: 14
+rtc_sync_min: 32
+rtc_sync_sec: 7
+tz_local_quarters: -24
+```
+
+`rtc_sync_year/month/day/hour/min/sec` son **transitorias, de un solo uso**: Studio las escribe con la hora/fecha actual del Mac (hora local, no UTC) cada vez que detecta firmware Aura corriendo, y también al terminar de copiar los archivos en una instalación/actualización. El firmware las lee en `aura_settings_apply_pending_clock()`, llamada en el mismo punto donde ya recupera el disco tras un posible USB de Studio (`aura_main_sync_after_disk_handoff()`, D-293 — arranque y vuelta de la pantalla USB): si las **seis** están presentes, ajusta el RTC real (`rtc_write_datetime()`) y llama a `aura_settings_save()`, que reescribe `aura.cfg` entero solo con las claves que `aura_settings_t` conoce — las `rtc_sync_*` desaparecen solas, sin que el firmware tenga que borrarlas a mano. Si falta cualquiera de las seis, no se toca el RTC (evita aplicar una hora a medias).
+
+`tz_local_quarters` es la clave que **ya existía** desde D-293 (ajuste interno de "Huso horario" en Ajustes, usado por el reloj mundial) — v7 es la primera vez que Studio también la escribe, calculada como `TimeZone.current.secondsFromGMT() / 900`. Es persistente, no transitoria: `aura_settings_load()` la lee normalmente en cada arranque, igual que cualquier otro ajuste.
+
+**Deliberadamente fuera de alcance**: idioma (`language`) — el encargo pedía "hora y region", no idioma; el dueño puede haber elegido a propósito un idioma distinto al de macOS. Formato de fecha (DD/MM vs MM/DD), 12h/24h y primer día de la semana tampoco se tocan — no forman parte del RTC ni de este encargo.
 
 ## E — Compatibilidad de versiones
 
