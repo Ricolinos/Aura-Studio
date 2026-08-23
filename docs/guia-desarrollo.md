@@ -51,6 +51,13 @@ xcodebuild -project AuraStudio.xcodeproj -scheme AuraStudio build
 xcodebuild -project AuraStudio.xcodeproj -scheme AuraStudio test
 ```
 
+**Empaquetar para usar** (ST-049): la app que Xcode deja en DerivedData al pulsar Run es Debug y solo se actualiza cuando vuelves a pulsar Run; un cambio que solo vive en el código no aparece en una app vieja. Para una build Release instalable en `/Applications`, con los dos firmwares embebidos y verificados:
+
+```bash
+scripts/build-app.sh              # fetch-firmware + xcodegen + xcodebuild Release + /Applications/AuraStudio.app
+scripts/build-app.sh --no-fetch   # sin volver a bajar los firmwares
+```
+
 ## Fixtures de prueba
 
 `tools/gen_test_media.sh` genera el fixture de foto que usa `LibraryPipelineIntegrationTests` (el video y el audio de prueba se generan al vuelo dentro del test, con ffmpeg — requiere `ffmpeg` instalado):

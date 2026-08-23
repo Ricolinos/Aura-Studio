@@ -756,3 +756,9 @@ El botón *"Instalar actualización de …"* vuelve para **cualquier familia ins
 ## ST-048 — Pin de Metro-Aura a v0.5.0 (Ronda 5 del firmware)
 
 Primer Release de Metro-Aura que Studio empaqueta (ST-047 se hizo con v0.4.0 como prueba de empaquetado). v0.5.0 trae M-081 (About ya no lee disco por cuadro — el cuelgue en hardware), M-082 (espaciado "ll"), M-083 (reproductor rediseñado, volumen 00–15, límite de volumen), M-084 (barra de estado) y M-085 (hub). Mismos assets y mismo `checksums.txt`; `fetch-firmware.sh --family metro` verificó los cuatro hashes. Instalado en el iPod del dueño por Terminal en la misma sesión (fuera de Studio — la instalación real de Metro *desde* Studio sigue pendiente como prueba de hardware de ST-047). Aura sigue en v0.3.1-beta (ST-045).
+
+## ST-049 — `scripts/build-app.sh`: la build que se prueba es la que se empaqueta
+
+**Reporte del dueño:** *"intenté probar instalar desde ahí el firmware y no me apareció la opción."* La app que abrió era la Debug que Xcode dejó en `DerivedData` el 19 de agosto al pulsar Run — anterior a ST-047. Ningún `AuraStudio.app` de la máquina tenía el código nuevo; no había nada que instalar "mal", solo una app vieja.
+
+**Decisión.** Un script que hace la build real y la deja donde se abre: `scripts/build-app.sh` = `fetch-firmware.sh` (las dos familias) → `xcodegen generate` → `xcodebuild -configuration Release` (firma ad-hoc "Sign to Run Locally", la de `project.yml`) → verificación del bundle (`codesign -vv`, `Resources/{,metro/}rockbox.ipod` y `firmware-version.txt`, bit de ejecución de ambos `mks5lboot`) → `ditto` a `/Applications/AuraStudio.app`. Documentado en `docs/guia-desarrollo.md`. La primera corrida real dejó en `/Applications` una app con Aura v0.3.1-beta y Metro v0.5.0 embebidos.
