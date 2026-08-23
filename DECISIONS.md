@@ -810,3 +810,7 @@ El paso "Modo de arranque" ofrecía *Dual boot* (recomendado) y *Solo Aura*. La 
 **Regla acumulada para este repo** (junto con ST-051): en Release, dos modificadores han dejado la ventana completa en blanco sin log ni crash — `@ObservedObject` con valor por defecto a un singleton, y `.fixedSize(horizontal: false, vertical: true)` en texto. Ninguno se vuelve a escribir, y **toda pantalla nueva se verifica en la build Release** (`scripts/build-app.sh`), no solo en Debug ni en `swift test`.
 
 Verificado en Release: Bienvenida y Licencias pintan.
+
+## ST-055 — Pin de Aura a v0.3.2-beta (D-325: listas sin tope de 300)
+
+Mismo defecto que M-087 en Metro, corregido del lado de Aura en su propia sesión (D-325): Canciones ya no se corta en 300. Sin cambio de contrato ni de `AuraPalette.swift` (byte-idéntica a la de v0.3.1-beta). `FIRMWARE_VERSION` actualizado con los cuatro hashes verificados por `fetch-firmware.sh`; Metro sigue en v0.5.3.
