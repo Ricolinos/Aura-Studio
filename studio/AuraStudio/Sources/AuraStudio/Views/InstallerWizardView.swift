@@ -72,7 +72,7 @@ struct InstallerWizardView: View {
                 case .preparingDisk:
                     SimpleProgressView(title: "Preparando el disco", message: viewModel.progressMessage, progress: nil)
                 case .copyingFiles:
-                    SimpleProgressView(title: "Instalando Aura", message: viewModel.progressMessage, progress: viewModel.copyProgress)
+                    SimpleProgressView(title: "Instalando \(viewModel.targetName)", message: viewModel.progressMessage, progress: viewModel.copyProgress)
                 case .restoreFormatting:
                     SimpleProgressView(title: "Preparando para Finder", message: viewModel.progressMessage, progress: nil)
                 case .restoreHandoff:
@@ -83,6 +83,7 @@ struct InstallerWizardView: View {
                     // decidio la instalacion anterior -- no se afirma
                     // dual boot que esta corrida no eligio.
                     DoneView(mode: viewModel.mode,
+                             firmwareName: viewModel.targetName,
                              dualBoot: !viewModel.destroyOriginalFirmware && !viewModel.bootloaderAlreadyInstalled,
                              assumedBootloaderWithoutVerifying: viewModel.bootloaderAlreadyInstalled && !viewModel.bootloaderFlashedThisFlow,
                              onBootloaderMissing: viewModel.retryWithBootloaderFlash,

@@ -39,6 +39,19 @@ struct DetectDeviceView: View {
                 onDeviceReady()
             }
         }
+        // ST-052: si el iPod YA estaba conectado en modo disco al llegar a
+        // este paso, `onChange` nunca dispara (nada cambia) y el texto
+        // "Preparando el siguiente paso..." se quedaba ahi para siempre --
+        // el dueño lo vivio como "instalar desde Studio no funciona". El
+        // boton "Ya lo conecte, continuar igual" lo destrababa, pero el
+        // texto no invitaba a pulsarlo. Mismo criterio que onChange: solo
+        // FAT32 montado; los demas estados siguen pidiendo el clic
+        // explicito porque implican formatear.
+        .onAppear {
+            if case .diskMode(let info) = monitor.state, info.isFAT32 {
+                onDeviceReady()
+            }
+        }
     }
 
     @ViewBuilder

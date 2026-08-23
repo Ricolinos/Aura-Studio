@@ -3,6 +3,8 @@ import AppKit
 
 struct DoneView: View {
     let mode: InstallerMode
+    /// ST-047/ST-052: "Aura" o "Metro" -- lo que se acaba de instalar.
+    var firmwareName: String = "Aura"
     /// Solo relevante en modo instalar -- si se eligio dual boot en
     /// `BootModeView`, el usuario necesita saber la combinacion de
     /// botones para volver a Apple alguna vez.
@@ -29,9 +31,9 @@ struct DoneView: View {
         case (.restore, _):
             return "Tu iPod va a reiniciar y arrancar con el firmware original de Apple. Ya puedes desconectar el cable."
         case (.install, true):
-            return "Aura quedó instalada. Ya puedes desconectar el cable con seguridad. El iPod se quedó esperando en \"Bootloader USB mode\": mantén SELECT + MENU unos 5 segundos para reiniciarlo y arranca con Aura. Después puedes usar la biblioteca de Aura Studio para sincronizar tu música, fotos y videos."
+            return "\(firmwareName) quedó instalado. Ya puedes desconectar el cable con seguridad. El iPod se quedó esperando en \"Bootloader USB mode\": mantén SELECT + MENU unos 5 segundos para reiniciarlo y arranca con \(firmwareName). Después puedes usar la biblioteca de Aura Studio para sincronizar tu música, fotos y videos."
         case (.install, false):
-            return "Todos los archivos quedaron instalados: ya puedes desconectar el cable con seguridad. El iPod va a arrancar con Aura -- si no reinicia solo, mantén SELECT + MENU unos segundos. Despues puedes usar la pestana Biblioteca de Aura Studio para sincronizar tu musica, fotos y videos."
+            return "Todos los archivos quedaron instalados: ya puedes desconectar el cable con seguridad. El iPod va a arrancar con \(firmwareName) -- si no reinicia solo, mantén SELECT + MENU unos segundos. Despues puedes usar la pestana Biblioteca de Aura Studio para sincronizar tu musica, fotos y videos."
         }
     }
 
@@ -40,7 +42,7 @@ struct DoneView: View {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 56))
                 .foregroundStyle(.green)
-            Text(mode == .install ? "Aura instalado" : "iPod restaurado")
+            Text(mode == .install ? "\(firmwareName) instalado" : "iPod restaurado")
                 .font(.title.bold())
             Text(doneMessage)
                 .multilineTextAlignment(.center)
@@ -51,7 +53,7 @@ struct DoneView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Label("Instalaste en modo dual boot", systemImage: "arrow.triangle.branch")
                         .font(.headline)
-                    Text("Para volver a Apple en cualquier momento, mantén SELECT + MENU presionados unos 5 segundos al encender el iPod. Cualquier otra combinacion (o nada) arranca Aura.")
+                    Text("Para volver a Apple en cualquier momento, mantén SELECT + MENU presionados unos 5 segundos al encender el iPod. Cualquier otra combinacion (o nada) arranca \(firmwareName).")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }
@@ -65,10 +67,10 @@ struct DoneView: View {
                     Label("¿Tu iPod sigue mostrando el firmware original?", systemImage: "exclamationmark.triangle.fill")
                         .font(.headline)
                         .foregroundStyle(.orange)
-                    Text("Detectamos que Aura ya había estado instalada antes, así que solo actualizamos los archivos sin volver a grabar el arranque. Si al desconectar el cable tu iPod NO arranca con Aura, el arranque se perdió desde la instalación anterior y hace falta grabarlo de nuevo por DFU.")
+                    Text("Detectamos que el firmware ya había estado instalado antes, así que solo actualizamos los archivos sin volver a grabar el arranque. Si al desconectar el cable tu iPod NO arranca con \(firmwareName), el arranque se perdió desde la instalación anterior y hace falta grabarlo de nuevo por DFU.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
-                    Button("No arrancó con Aura -- terminar por DFU", action: onBootloaderMissing)
+                    Button("No arrancó con \(firmwareName) -- terminar por DFU", action: onBootloaderMissing)
                         .buttonStyle(.bordered)
                 }
                 .padding(14)
@@ -118,7 +120,7 @@ struct FailedView: View {
                 .buttonStyle(.bordered)
             }
             if isCalmDecision, let onSwitchToSingleBoot {
-                Button("Instalar solo Aura en este iPod", action: onSwitchToSingleBoot)
+                Button("Instalar solo este firmware en el iPod", action: onSwitchToSingleBoot)
                     .buttonStyle(.borderedProminent)
                 Button("Reintentar (ya preparé el iPod con iTunes)", action: onRetry)
                     .buttonStyle(.bordered)

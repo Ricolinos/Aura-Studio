@@ -20,6 +20,7 @@ struct AutomaticUpdateView: View {
             case .done:
                 VStack(spacing: 20) {
                     DoneView(mode: .install,
+                             firmwareName: viewModel.targetName,
                              dualBoot: !viewModel.destroyOriginalFirmware,
                              assumedBootloaderWithoutVerifying: viewModel.bootloaderAlreadyInstalled,
                              onBootloaderMissing: viewModel.retryWithBootloaderFlash)
@@ -47,7 +48,7 @@ struct AutomaticUpdateView: View {
                 // siempre es copyingFiles sin pasar por DFU
                 // (`acknowledgeDeviceReady()`, caso
                 // `bootloaderAlreadyInstalled`).
-                SimpleProgressView(title: "Actualizando Aura",
+                SimpleProgressView(title: "Actualizando \(viewModel.targetName)",
                                     message: viewModel.progressMessage,
                                     progress: viewModel.copyProgress)
             }
