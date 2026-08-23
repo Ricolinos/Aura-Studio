@@ -95,7 +95,14 @@ final class IPodMonitor: ObservableObject {
             // repara aqui, antes de sondear, para que el sondeo vea un
             // iPod sano. Nunca mientras un flujo de instalacion escribe.
             if !InstallerFlowRegistry.shared.flowActive, !info.mountPath.isEmpty, info.mountPath.hasPrefix("/") {
-                _ = try? FirmwareSwitcher.repairIfNeeded(volumeRoot: URL(fileURLWithPath: info.mountPath))
+                let root = URL(fileURLWithPath: info.mountPath)
+                _ = try? FirmwareSwitcher.repairIfNeeded(volumeRoot: root)
+                // ST-061: un arbol activo sin los archivos del contrato
+                // (instalacion fresca de otra familia) los hereda del
+                // dormido, que si los tiene -- sin esto, Metro decia
+                // "sin sincronizar todavia" y perdia fotos de artista y
+                // categorias hasta el siguiente sync completo.
+                _ = FirmwareSwitcher.seedContractFilesToActiveTree(volumeRoot: root)
             }
             let probed = AuraDeviceProbe.probe(diskInfo: info)
             device = probed

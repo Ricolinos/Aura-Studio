@@ -218,6 +218,43 @@ enum FirmwareSwitcher {
         "aura/device.cfg",
     ]
 
+    /// ST-061: el problema inverso al espejo -- un arbol ACTIVO recien
+    /// instalado (extraccion fresca) no tiene los archivos del contrato
+    /// que Studio escribio en su vida anterior: sin `sync_summary.cfg`
+    /// el firmware dice "sin sincronizar todavia", sin
+    /// `artist_images.cfg`/`artists/` no hay fotos de artista, sin
+    /// `*_categories.cfg` los videos/fotos salen sin clasificar (reporte
+    /// del dueño con Metro). Si el arbol dormido SI los tiene (los
+    /// conservo al estacionarse, o el espejo de cada sync lo mantuvo al
+    /// dia), se copian de ahi. Solo cuando el activo NO tiene
+    /// `sync_summary.cfg` -- si lo tiene, lo suyo es igual o mas nuevo.
+    @discardableResult
+    static func seedContractFilesToActiveTree(volumeRoot: URL, fileManager: FileManager = .default) -> Bool {
+        let active = volumeRoot.appendingPathComponent(activeTreeName)
+        guard !fileManager.fileExists(atPath: active.appendingPathComponent("aura/sync_summary.cfg").path) else {
+            return false
+        }
+        guard let donorFamily = dormantFamilies(volumeRoot: volumeRoot, fileManager: fileManager).first(where: { family in
+            guard let name = family.dormantTreeName else { return false }
+            return fileManager.fileExists(atPath: volumeRoot.appendingPathComponent(name)
+                .appendingPathComponent("aura/sync_summary.cfg").path)
+        }), let donorName = donorFamily.dormantTreeName else { return false }
+
+        let donor = volumeRoot.appendingPathComponent(donorName)
+        try? fileManager.createDirectory(at: active.appendingPathComponent("aura"),
+                                         withIntermediateDirectories: true)
+        for entry in mirroredContractEntries {
+            let src = donor.appendingPathComponent(entry)
+            let dst = active.appendingPathComponent(entry)
+            guard fileManager.fileExists(atPath: src.path) else { continue }
+            if fileManager.fileExists(atPath: dst.path) {
+                try? fileManager.removeItem(at: dst)
+            }
+            try? fileManager.copyItem(at: src, to: dst)
+        }
+        return true
+    }
+
     static func mirrorContractFilesToDormantTrees(volumeRoot: URL, fileManager: FileManager = .default) throws {
         let active = volumeRoot.appendingPathComponent(activeTreeName)
         for family in dormantFamilies(volumeRoot: volumeRoot, fileManager: fileManager) {

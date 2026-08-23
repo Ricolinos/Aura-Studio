@@ -49,6 +49,36 @@ final class FirmwareSwitcherTests: XCTestCase {
         XCTAssertTrue(FirmwareSwitcher.hasActiveTree(volumeRoot: root))
     }
 
+    // MARK: - ST-061: sembrar los archivos del contrato al arbol activo
+
+    /// Arbol activo fresco (sin sync_summary) + dormido con los archivos:
+    /// se heredan. Con el activo ya poblado, no se toca nada.
+    func testSeedContractFilesFromDormantTree() throws {
+        try makeMetroActiveAuraDormant()
+        try write(".firmware-aura/aura/sync_summary.cfg", "music_count: 389\n")
+        try write(".firmware-aura/aura/artist_images.cfg", "x.jpg: X\n")
+        try write(".firmware-aura/aura/artists/x.jpg", "JPG")
+        try write(".firmware-aura/aura/video_categories.cfg", "peli.mpg: movie\n")
+
+        XCTAssertTrue(FirmwareSwitcher.seedContractFilesToActiveTree(volumeRoot: root))
+        XCTAssertEqual(read(".rockbox/aura/sync_summary.cfg"), "music_count: 389\n")
+        XCTAssertEqual(read(".rockbox/aura/video_categories.cfg"), "peli.mpg: movie\n")
+        XCTAssertEqual(read(".rockbox/aura/artists/x.jpg"), "JPG")
+        XCTAssertEqual(read(".rockbox/aura/aura.cfg"), "firmware_family: metro\naccent: 9\n",
+                       "los ajustes del activo no se tocan")
+
+        // Segunda llamada: el activo ya tiene sync_summary -> no-op.
+        try write(".firmware-aura/aura/sync_summary.cfg", "music_count: 1\n")
+        XCTAssertFalse(FirmwareSwitcher.seedContractFilesToActiveTree(volumeRoot: root))
+        XCTAssertEqual(read(".rockbox/aura/sync_summary.cfg"), "music_count: 389\n")
+    }
+
+    func testSeedDoesNothingWithoutDonor() throws {
+        try makeMetroActiveAuraDormant() // dormido sin sync_summary
+        XCTAssertFalse(FirmwareSwitcher.seedContractFilesToActiveTree(volumeRoot: root))
+        XCTAssertFalse(exists(".rockbox/aura/sync_summary.cfg"))
+    }
+
     // MARK: - v12 / ST-059: sello de biblioteca
 
     /// Primer cambio tras v12 (sin sello compartido): se crea, se anota

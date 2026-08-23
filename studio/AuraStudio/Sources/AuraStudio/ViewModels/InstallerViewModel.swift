@@ -982,6 +982,11 @@ final class InstallerViewModel: ObservableObject {
             // activa). Y el respaldo de la raiz apunta al activo.
             try? FirmwareSwitcher.removeDormantTree(of: targetFamily, volumeRoot: volumeRoot, fileManager: fm)
             try? FirmwareSwitcher.refreshRootBinary(volumeRoot: volumeRoot, fileManager: fm)
+            // ST-061: el arbol recien extraido hereda los archivos del
+            // contrato del dormido (el que se acaba de estacionar los
+            // tiene): asi el firmware nuevo arranca con contadores,
+            // fotos de artista y categorias, sin esperar otro sync.
+            _ = FirmwareSwitcher.seedContractFilesToActiveTree(volumeRoot: volumeRoot, fileManager: fm)
 
             // ST-058 / contrato v11: dejar anotado que quedo instalado,
             // para que la PROXIMA actualizacion pueda ser selectiva. Si

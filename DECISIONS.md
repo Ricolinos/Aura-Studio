@@ -856,3 +856,11 @@ Con esto las tres partes del contrato v10 están en producción: Studio (ST-056)
 ## ST-060 — Pin a Aura v0.3.4-beta + Metro v0.5.5 (contrato v12 en producción en las tres partes)
 
 Ambos releases traen D-329/M-091 (sello de biblioteca). Con este pin, la actualización desde Studio de cada firmware será la última completa (deja el primer `install_manifest.cfg`, ST-058); las siguientes serán selectivas.
+
+## ST-061 — Sembrar los archivos del contrato al árbol recién instalado (el "sin sincronizar todavía" de Metro)
+
+**Reporte del dueño:** con Metro activo, canciones bien pero sin fotos de artista, videos/fotos sin categorías y "Acerca de" diciendo "sin sincronizar todavía" — mientras que en Aura todo bien.
+
+**Causa estructural.** Los archivos del contrato (`sync_summary.cfg`, `artist_images.cfg` + `artists/`, `*_categories.cfg`, `ratings.cfg`, `device.cfg`) viven **dentro del árbol**. Una instalación fresca de la otra familia extrae un `.rockbox` nuevo **sin ellos**, y solo reaparecen en el siguiente sync completo con esa familia activa (el espejo de ST-056 corre en el sync, no en la instalación). Metro quedó instalado fresco y sin sus copias.
+
+**Corrección:** `FirmwareSwitcher.seedContractFilesToActiveTree` — si el árbol activo **no tiene** `sync_summary.cfg` y un dormido sí, hereda de ahí el juego completo (los ajustes del activo no se tocan; con el activo ya poblado es no-op). Se llama al conectar el iPod (junto a la reparación de v10 — esto arregla el iPod del dueño con solo conectarlo) y al terminar una instalación (el recién estacionado es el donante). Dos pruebas nuevas; 564 en verde.
