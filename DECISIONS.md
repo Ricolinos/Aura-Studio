@@ -852,3 +852,7 @@ Con esto las tres partes del contrato v10 están en producción: Studio (ST-056)
 **Reporte del dueño:** cada cambio de firmware costaba ~5 min de "optimización" en ambos sentidos, sin que la biblioteca hubiera cambiado. La causa era nuestra: el cambio (v10) dejaba el marcador con `music: true` incondicionalmente.
 
 **v12**: `/.aura/library-stamp` — Studio lo **renueva en cada sync que toca música** (`writeSyncMarkerIfNeeded`, junto al marcador); es LA definición de "la biblioteca cambió". Cada firmware anota en su árbol (`.rockbox/aura/db_stamp.txt`, **nunca espejado**) contra qué sello construyó su base. `FirmwareSwitcher.switchActiveFirmware` compara el sello del árbol entrante con el compartido: iguales → sin marcador (cambio instantáneo); distintos o sin anotar → marcador como antes. Arranque en frío: si el sello no existe, se crea y se anota al saliente, cuya base está al día. Tres pruebas nuevas (arranque en frío, ida-y-vuelta sin marcador, sync de por medio sí marca); 562 en total. Mismo mecanismo en los firmwares (M-091 / D-329).
+
+## ST-060 — Pin a Aura v0.3.4-beta + Metro v0.5.5 (contrato v12 en producción en las tres partes)
+
+Ambos releases traen D-329/M-091 (sello de biblioteca). Con este pin, la actualización desde Studio de cada firmware será la última completa (deja el primer `install_manifest.cfg`, ST-058); las siguientes serán selectivas.
