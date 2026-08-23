@@ -49,11 +49,10 @@ struct ModePickerView: View {
     let state: DeviceState
     let onChoose: (InstallerMode) -> Void
     /// ST-047: que familia instalaria "Instalar" ahora mismo (Extras ›
-    /// Firmware). Observada para que cambiarla en Extras se refleje aqui
-    /// sin recargar la vista.
-    @ObservedObject private var preferences = AppPreferences.shared
-
-    private var family: FirmwareFamily { preferences.firmwareFamilyToInstall }
+    /// Firmware). Se lee al construir la vista -- cambiarla en Extras y
+    /// volver aqui la reconstruye, asi que siempre esta al dia sin
+    /// observar el singleton desde esta vista (ver ST-051).
+    private var family: FirmwareFamily { AppPreferences.shared.firmwareFamilyToInstall }
     private var name: String { family.displayName }
 
     var body: some View {

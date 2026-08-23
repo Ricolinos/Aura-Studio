@@ -296,7 +296,7 @@ struct ContentView: View {
         case .photosAI:
             PhotoAlbumsView(viewModel: library, device: deviceMonitor.device, preferences: preferences, category: "IA")
         case .extras:
-            ExtrasView(device: deviceMonitor.device)
+            ExtrasView(device: deviceMonitor.device, preferences: preferences)
         case .installer:
             InstallerHomeView(monitor: deviceMonitor, viewModel: installer)
         case .settings:

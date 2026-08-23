@@ -162,7 +162,6 @@
 		CABAA540D5574B37628CFA0C /* metro in Resources */ = {isa = PBXBuildFile; fileRef = 014013C15A64389929222AD7 /* metro */; };
 		CD9B6AC91C5AECCDB4A6DC44 /* AuraDeviceProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3F0CDAA153138813C9AF84E /* AuraDeviceProbe.swift */; };
 		CE010DE3070AC26AAE0DCA89 /* MusicSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F53DF863212996F0BD415EA7 /* MusicSettingsView.swift */; };
-		D0949902B40FBA74F1D9D0D6 /* BootModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F462D2B7F9707F077FC4D782 /* BootModeView.swift */; };
 		D14BAA69CD8F0052BDDAEB70 /* CoverArtAssetsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7A75E4AA4334B6A18D04537 /* CoverArtAssetsTests.swift */; };
 		D2B29783F7FA00EA316CA587 /* InstallPlannerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2656D012F16CBEADE3FF9A6D /* InstallPlannerTests.swift */; };
 		D4AD421F984F0CACB047168D /* PrivilegedExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22A9408836FAEA82165D554C /* PrivilegedExecutor.swift */; };
@@ -376,7 +375,6 @@
 		F23689620B3C26365C6A2E5D /* MusicBrainzClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicBrainzClient.swift; sourceTree = "<group>"; };
 		F2E38E8394BAA788DC9544B0 /* LibraryViewModelLocalTagRereadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModelLocalTagRereadTests.swift; sourceTree = "<group>"; };
 		F42FE4EC16A2A0B63AA1E342 /* bootloader-ipod6g.ipod */ = {isa = PBXFileReference; path = "bootloader-ipod6g.ipod"; sourceTree = "<group>"; };
-		F462D2B7F9707F077FC4D782 /* BootModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootModeView.swift; sourceTree = "<group>"; };
 		F527FF44025F6464CEC83FD6 /* RestoreHandoffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreHandoffView.swift; sourceTree = "<group>"; };
 		F52FF3A536F1C7FAFB6822B6 /* SettingsSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSectionView.swift; sourceTree = "<group>"; };
 		F53DF863212996F0BD415EA7 /* MusicSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicSettingsView.swift; sourceTree = "<group>"; };
@@ -400,7 +398,6 @@
 				80C539DEA78844D9C617FBF1 /* AwaitBootloaderUSBView.swift */,
 				6E5C06E65D1A04EAD003DE49 /* BackContinueRow.swift */,
 				7E40BAA81737B8BE228F0A3F /* BatchMediaInfoView.swift */,
-				F462D2B7F9707F077FC4D782 /* BootModeView.swift */,
 				14D5A27F7EA14F700832333A /* ContentView.swift */,
 				963456BE314435186349AFAE /* CoverContaminationSheet.swift */,
 				9EBCF1EF29547CD3B01B5C98 /* DetectDeviceView.swift */,
@@ -904,7 +901,6 @@
 				97338ABB5F9C787AAD97D514 /* AwaitBootloaderUSBView.swift in Sources */,
 				87EB236DAA29660FD987218F /* BackContinueRow.swift in Sources */,
 				B16222D07788E9A40141A546 /* BatchMediaInfoView.swift in Sources */,
-				D0949902B40FBA74F1D9D0D6 /* BootModeView.swift in Sources */,
 				5EDA0D1DF2BC765B8F8D473B /* BundledArtifacts.swift in Sources */,
 				ABAA0A8B49C9C4BA781A5A09 /* CatalogSummary.swift in Sources */,
 				3A7E4AD12A10E84BC236D09B /* ClockSyncWriter.swift in Sources */,

@@ -15,8 +15,12 @@ struct ExtrasView: View {
     @State private var showingLicenses = false
     /// ST-047: la eleccion de firmware vive aqui (encargo del dueño: "en
     /// la seccion de Extras es donde vamos a poner la opcion para que el
-    /// usuario pueda decidir que firmware instalar").
-    @ObservedObject private var preferences = AppPreferences.shared
+    /// usuario pueda decidir que firmware instalar"). Inyectada desde
+    /// ContentView (su @StateObject), mismo patron que MediaSectionView --
+    /// NUNCA `@ObservedObject private var x = AppPreferences.shared` con
+    /// valor por defecto: en Release deja la ventana entera sin pintar
+    /// (ST-051).
+    @ObservedObject var preferences: AppPreferences
 
     /// D-289 / ST-003: "Temas" ahora abre la gestión real (instalar,
     /// activar, eliminar, construir) -- necesita un iPod con Aura
