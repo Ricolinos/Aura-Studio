@@ -830,3 +830,7 @@ Mismo defecto que M-087 en Metro, corregido del lado de Aura en su propia sesió
 **Detección:** `AuraDevice.dormantFamilies` por nombre de directorio; la activa sigue siendo `firmware_family` (v8).
 
 **Orden acordado:** Studio (esto) → Metro-Aura (M-090: fila "Cambiar a Aura" en Ajustes, misma secuencia desde el firmware: guardar, renombrar, marcador, reinicio en seco) → Aura-Firmware (D-327).
+
+## ST-057 — Pin a Aura v0.3.3-beta + Metro v0.5.4 (D-327 / M-090: cambio de firmware desde cada firmware)
+
+Con esto las tres partes del contrato v10 están en producción: Studio (ST-056) estaciona, cambia, espeja y repara; cada firmware ofrece "Cambiar a …" en sus ajustes. `AuraPalette.swift` sin cambios. Hashes verificados por `fetch-firmware.sh` para las dos familias.

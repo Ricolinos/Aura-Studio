@@ -87,6 +87,7 @@
 		70D019E7148CEEDA856FEC63 /* LibraryPersistenceFavoriteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A78B6EFC3F4E661073CF15D6 /* LibraryPersistenceFavoriteTests.swift */; };
 		7128F973A9D8E656F326EB9F /* AuraUpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9961D8C11B7031D474CB9BE /* AuraUpdateChecker.swift */; };
 		72C172E3DF3F50EFAA165F95 /* ArtistImageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBA54FA0E3385DC4D97B068F /* ArtistImageTests.swift */; };
+		74067E9EF82C1908682C7159 /* FirmwareSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DFA7816F1DDE457477003F /* FirmwareSwitcher.swift */; };
 		741C227ABE979EE55749B07D /* ClockSyncWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F32B696741F0E62A203E7BC /* ClockSyncWriterTests.swift */; };
 		7546240CE5322D7AB3B4BA1F /* TableHeaderMenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8B17B3701CCA341AD9EF513 /* TableHeaderMenu.swift */; };
 		75D17708FBCBD04298B781AE /* bootloader-ipod6g.ipod in Resources */ = {isa = PBXBuildFile; fileRef = F42FE4EC16A2A0B63AA1E342 /* bootloader-ipod6g.ipod */; };
@@ -182,6 +183,7 @@
 		F2BE7B1E7C226575EE128419 /* CoverThumbnailCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FAF58B738CE7203B6E7EA24 /* CoverThumbnailCache.swift */; };
 		F42EA5AD49A256AC55366672 /* DeviceSyncIndexTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 444381A58BB7B201C06A6866 /* DeviceSyncIndexTests.swift */; };
 		F58C68FA6A580D5B5790F9C0 /* DeezerClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = ABB9F8D5D85A96032603EE86 /* DeezerClient.swift */; };
+		F5CE36CB146E31DBE1C8A72C /* FirmwareSwitcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38C2A48BF9413EFF64A3020F /* FirmwareSwitcherTests.swift */; };
 		F745EA7E70AE91DF77279194 /* PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777383A161FBD9C32BFA6D82 /* PermissionsView.swift */; };
 		F7AF5D705D74FC1CC9B3F9FF /* DeviceActivityBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DCF37D4D32EF9A352A74CC8 /* DeviceActivityBar.swift */; };
 		F826489C2A3E807E5630E15D /* InstallerFlowRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B34640ACD3AC36633502AE41 /* InstallerFlowRegistry.swift */; };
@@ -246,6 +248,7 @@
 		37BA124E3419E12A08D4AADC /* FilenameGuesserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilenameGuesserTests.swift; sourceTree = "<group>"; };
 		37E3CA57FACEA209F6484781 /* ThemePackager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePackager.swift; sourceTree = "<group>"; };
 		3854E1521F1D1535773CA89D /* LibraryLegacyMigrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryLegacyMigrationTests.swift; sourceTree = "<group>"; };
+		38C2A48BF9413EFF64A3020F /* FirmwareSwitcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareSwitcherTests.swift; sourceTree = "<group>"; };
 		38D65AA4A8035F7A98B1544B /* APIKeyStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyStoreTests.swift; sourceTree = "<group>"; };
 		3D93C4B54F192923EAF481E9 /* VideoSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoSettingsView.swift; sourceTree = "<group>"; };
 		3DC865282F8B113716D7C3AF /* ImageResizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageResizer.swift; sourceTree = "<group>"; };
@@ -348,6 +351,7 @@
 		B9DF8DDA314F0AC41C9B3ECE /* AuraStudioTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AuraStudioTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE8C778BC2609D4718EBBC45 /* AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
 		BEEAD9ACEF33A34E0D7931DD /* firmware-version.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "firmware-version.txt"; sourceTree = "<group>"; };
+		C0DFA7816F1DDE457477003F /* FirmwareSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareSwitcher.swift; sourceTree = "<group>"; };
 		C455F59CE087518F3E7DE7C6 /* PhotoSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoSettingsView.swift; sourceTree = "<group>"; };
 		C70AA3068E3596A674879EA8 /* MKS5LBootRunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKS5LBootRunnerTests.swift; sourceTree = "<group>"; };
 		C7A75E4AA4334B6A18D04537 /* CoverArtAssetsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverArtAssetsTests.swift; sourceTree = "<group>"; };
@@ -543,6 +547,7 @@
 				37BA124E3419E12A08D4AADC /* FilenameGuesserTests.swift */,
 				81227B66ED077D9FB5416610 /* FirmwareFamilyPackagingTests.swift */,
 				299EBF5F71B9DAABD15F76F5 /* FirmwareFamilyTests.swift */,
+				38C2A48BF9413EFF64A3020F /* FirmwareSwitcherTests.swift */,
 				6CB9F09AC96C1409CC7C453C /* GitHubReleaseCheckerTests.swift */,
 				FEF3580937C6126B24998BB6 /* ID3WriterTests.swift */,
 				6661622F6714D86BC85E6E20 /* ImageResizerTests.swift */,
@@ -651,6 +656,7 @@
 				638FD209E9AF6417EE51ABC7 /* DiskArbitrationMonitor.swift */,
 				AF3BE096E51004D4621ABB60 /* FanartTVClient.swift */,
 				DAE64AFF0609F93FC361C6DE /* FFmpegTranscoder.swift */,
+				C0DFA7816F1DDE457477003F /* FirmwareSwitcher.swift */,
 				B1ACD0BCFD11F335D4C428F6 /* GitHubReleaseChecker.swift */,
 				D282E9DFA0D773AF988E69E5 /* ID3Writer.swift */,
 				3DC865282F8B113716D7C3AF /* ImageResizer.swift */,
@@ -828,6 +834,7 @@
 				BD809465DDDA7B9453FDAB86 /* FilenameGuesserTests.swift in Sources */,
 				070DB75C9D2C3D92E65CD274 /* FirmwareFamilyPackagingTests.swift in Sources */,
 				8ABEDA445E6B744AD30CE0BC /* FirmwareFamilyTests.swift in Sources */,
+				F5CE36CB146E31DBE1C8A72C /* FirmwareSwitcherTests.swift in Sources */,
 				6118105A223ED412EA7476B6 /* GitHubReleaseCheckerTests.swift in Sources */,
 				62666A4A9BF729B61C851F76 /* ID3WriterTests.swift in Sources */,
 				00B2C34B8394853F21116615 /* IPodDiskIdentifierTests.swift in Sources */,
@@ -925,6 +932,7 @@
 				31C1B49208706DAD1BB8E579 /* FFmpegTranscoder.swift in Sources */,
 				ABA0C93ACD3447A364A5222F /* FanartTVClient.swift in Sources */,
 				79D0D9F4478B449CA5ACA885 /* FirmwareFamily.swift in Sources */,
+				74067E9EF82C1908682C7159 /* FirmwareSwitcher.swift in Sources */,
 				B161B4A60CB2A4A93499C8EA /* GitHubReleaseChecker.swift in Sources */,
 				A5A21D0A2F516081CFFE838E /* GridSelection.swift in Sources */,
 				B9F991F96D02DF1AD4B32042 /* ID3Writer.swift in Sources */,

@@ -7,13 +7,13 @@
 # Sin prefijo = Aura (Ricolinos/Aura-Firmware). Prefijo `metro.` =
 # Metro-Aura (Ricolinos/Metro-Aura).
 
-tag=v0.3.2-beta
-rockbox.ipod=12409baceee5aafd20408ba4b50712f01b2c608a55147793a922fd3adce7a79a
-rockbox.zip=0b969d5180ecc59c59d044f53dd8c6def80ccc9af2e812cf3590daacfc10e7a3
+tag=v0.3.3-beta
+metro.tag=v0.5.4
+rockbox.ipod=35cd02bfc42abc4477d3928e472b79cd641d8c96f78b0550c7426ba503014f46
+rockbox.zip=01e5545cfa654fcb2fd279a0cc1bc0d9484fdb2179b8bf43c8da27db188da158
 mks5lboot=e846731057348a72bdda101e63929ae530c4b3224959e02a2634dbcffd9102b0
 bootloader-ipod6g.ipod=d263780452fda352a5afa229078b39da5b1a78f3b1930e3dee15cf60d123e348
-metro.tag=v0.5.3
-metro.rockbox.ipod=49ac835cd90890263c8bbaff91aa4da6c8e0d765cccf426d62a3e8660d07a9a9
-metro.rockbox.zip=ab6c465cc1d2c758c6c3204fa7f8fbd7b57b5dd0c0956708a6ff4586380bffd2
+metro.rockbox.ipod=a214fe9cde3ff4a84e0e3e3700663fa2bdaa54f00852d5f0be22ea64954c6b2c
+metro.rockbox.zip=aba5d761fc75f53bda1c17d728bc686a2cd85fca90a56df810000be991314ca5
 metro.mks5lboot=a4d46769cc18e9329a02cb0abab39cb4deca201e7725951b39e564a96f0f4b31
-metro.bootloader-ipod6g.ipod=9a09205cf1c06d191e40d718860fa340325cb46ff89f3329dabd30d85ede38a6
+metro.bootloader-ipod6g.ipod=9783bfaf0086b50f290a5cfc1e10eb16c1bf832318f99e133fb38cb7a7e0ef70
