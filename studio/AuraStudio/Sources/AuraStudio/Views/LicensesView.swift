@@ -35,7 +35,6 @@ struct LicensesView: View {
                     Text("Aura Studio es gratuita y se distribuye sin fines comerciales. Trae embebidos, tal cual se publicaron y sin modificarlos, dos firmwares para iPod Classic 6G que son software libre bajo la Licencia Pública General de GNU versión 2 (GPL v2). Cada uno es un derivado de Rockbox; su código fuente completo, la versión exacta incluida aquí y el registro de cambios respecto a Rockbox están en los enlaces de abajo, como exige la sección 3 de esa licencia.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
 
                     ForEach(FirmwareFamily.installable, id: \.displayName) { family in
                         FamilyLicenseCard(family: family)
@@ -46,7 +45,6 @@ struct LicensesView: View {
                         Text("Los dos firmwares, su bootloader dual-boot y la herramienta de flasheo mks5lboot derivan del proyecto Rockbox (GPL v2). Aura Studio no modifica ninguno de esos binarios.")
                             .font(.callout)
                             .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
                         LinkRow(title: "rockbox.org", url: URL(string: "https://www.rockbox.org/")!)
                         LinkRow(title: "Texto de la GPL v2", url: URL(string: "https://www.gnu.org/licenses/old-licenses/gpl-2.0.html")!)
                     }

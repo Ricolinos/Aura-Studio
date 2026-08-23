@@ -41,7 +41,6 @@ struct WelcomeView: View {
                             .foregroundStyle(.red)
                         Text("El firmware original de Apple se borra del arranque del iPod. Una vez instalado, el iPod solo arranca \(firmwareName); para volver a Apple hay que restaurarlo con iTunes/Finder desde cero. (El dual boot necesita un iPod en formato \"winpod\" -- restaurado desde Windows --, y un iPod restaurado desde Mac no lo es, asi que Aura Studio ya no lo ofrece.)")
                             .font(.callout)
-                            .fixedSize(horizontal: false, vertical: true)
                     }
                     Toggle("Entiendo que el arranque de Apple se borra", isOn: $acknowledgedErase)
                         .toggleStyle(.checkbox)

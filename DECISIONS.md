@@ -800,3 +800,13 @@ El paso "Modo de arranque" ofrecía *Dual boot* (recomendado) y *Solo Aura*. La 
 **Causa.** ST-050 dejó "Continuar" **deshabilitado** hasta marcar *"Entiendo que el arranque de Apple se borra"*. Correcto como bloqueo, pésimo como interfaz: un botón gris que no hace nada se lee como cuelgue, y la casilla, dentro de un recuadro de advertencia, no llama la atención como requisito.
 
 **Arreglo.** El botón responde siempre. Sin la casilla, en vez de avanzar muestra en rojo *"Marca la casilla de arriba para continuar"* (desaparece al marcarla). La confirmación sigue siendo obligatoria; lo que cambia es que la app contesta.
+
+## ST-054 — Segundo caso de ventana en blanco en Release: `.fixedSize(horizontal: false, vertical: true)`
+
+**Reporte del dueño:** al instalar Metro, la app "se queda pasmada" otra vez. Diagnóstico en vivo, sin interrumpir: la ventana estaba en la **Bienvenida**, con el árbol de accesibilidad completo (casilla sin marcar, botones habilitados) y **nada pintado** — el mismo síntoma de ST-051, que esa vez se había verificado en General/Extras/Instalador pero no en la Bienvenida (la captura de ese paso existía y no se había mirado: 13 colores, en blanco).
+
+**Causa.** `.fixedSize(horizontal: false, vertical: true)` sobre los `Text` largos de `WelcomeView` (ST-050) y `LicensesView` (ST-047). En Debug es inocuo; en Release deja la ventana entera sin pintar. Quitarlo basta: los textos siguen envolviendo bien dentro de su `frame(maxWidth:)`.
+
+**Regla acumulada para este repo** (junto con ST-051): en Release, dos modificadores han dejado la ventana completa en blanco sin log ni crash — `@ObservedObject` con valor por defecto a un singleton, y `.fixedSize(horizontal: false, vertical: true)` en texto. Ninguno se vuelve a escribir, y **toda pantalla nueva se verifica en la build Release** (`scripts/build-app.sh`), no solo en Debug ni en `swift test`.
+
+Verificado en Release: Bienvenida y Licencias pintan.
