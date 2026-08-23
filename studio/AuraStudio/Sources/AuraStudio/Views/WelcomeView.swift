@@ -12,6 +12,11 @@ struct WelcomeView: View {
     /// Eso antes lo confirmaba la tarjeta "Solo Aura" del paso "Modo de
     /// arranque"; al quitar el paso, la confirmacion explicita vive aqui.
     @State private var acknowledgedErase = false
+    /// ST-053: se pulso "Continuar" sin marcar la casilla. Antes el boton
+    /// estaba DESHABILITADO hasta marcarla, y un boton gris que no
+    /// responde se lee como "la app se quedo pasmada" (reporte del dueño).
+    /// Ahora responde siempre y, si falta la casilla, lo dice.
+    @State private var showAcknowledgeHint = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -40,6 +45,14 @@ struct WelcomeView: View {
                     }
                     Toggle("Entiendo que el arranque de Apple se borra", isOn: $acknowledgedErase)
                         .toggleStyle(.checkbox)
+                        .onChange(of: acknowledgedErase) { on in
+                            if on { showAcknowledgeHint = false }
+                        }
+                    if showAcknowledgeHint && !acknowledgedErase {
+                        Label("Marca la casilla de arriba para continuar.", systemImage: "arrow.up")
+                            .font(.callout.bold())
+                            .foregroundStyle(.red)
+                    }
                 }
                 .padding(14)
                 .background(RoundedRectangle(cornerRadius: 10).fill(Color.red.opacity(0.08)))
@@ -49,8 +62,13 @@ struct WelcomeView: View {
 
             Spacer()
 
-            BackContinueRow(onBack: onBack, continueTitle: "Continuar", onContinue: onContinue,
-                            continueDisabled: mode == .install && !acknowledgedErase)
+            BackContinueRow(onBack: onBack, continueTitle: "Continuar", onContinue: {
+                if mode == .install && !acknowledgedErase {
+                    withAnimation { showAcknowledgeHint = true }
+                } else {
+                    onContinue()
+                }
+            })
                 .frame(maxWidth: 460)
         }
     }

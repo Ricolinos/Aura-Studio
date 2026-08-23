@@ -792,3 +792,11 @@ El paso "Modo de arranque" ofrecía *Dual boot* (recomendado) y *Solo Aura*. La 
 **Arreglo.** `.onAppear` con el mismo criterio que `onChange` (solo `.diskMode` FAT32; los estados que implican formatear siguen pidiendo el clic explícito). Y las pantallas de progreso y de Listo (`SimpleProgressView`, `DoneView`, `AutomaticUpdateView`) reciben el nombre de la familia: instalar Metro ya no dice "Instalando Aura" ni "Aura instalado".
 
 544 pruebas. Verificado en Release, de punta a punta por accesibilidad, con el iPod real.
+
+## ST-053 — La Bienvenida "se quedaba pasmada": un botón deshabilitado no explica nada
+
+**Reporte del dueño:** al instalar Aura, *"sigue con el mismo problema… se queda pasmado"*. La app estaba en la Bienvenida; en cuanto se marcó la casilla y se pulsó Continuar, todo corrió (Aura v0.3.1-beta instalada sobre Metro en ~4 min, con el cambio de familia limpiando `aura.cfg` como está previsto).
+
+**Causa.** ST-050 dejó "Continuar" **deshabilitado** hasta marcar *"Entiendo que el arranque de Apple se borra"*. Correcto como bloqueo, pésimo como interfaz: un botón gris que no hace nada se lee como cuelgue, y la casilla, dentro de un recuadro de advertencia, no llama la atención como requisito.
+
+**Arreglo.** El botón responde siempre. Sin la casilla, en vez de avanzar muestra en rojo *"Marca la casilla de arriba para continuar"* (desaparece al marcarla). La confirmación sigue siendo obligatoria; lo que cambia es que la app contesta.
