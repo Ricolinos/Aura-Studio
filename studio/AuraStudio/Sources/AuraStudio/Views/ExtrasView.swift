@@ -150,9 +150,10 @@ struct ExtrasView: View {
     }
 }
 
-/// ST-047: tarjeta-radio del selector de firmware -- misma forma que
-/// `BootModeCard` (BootModeView.swift), que es el patron que el
-/// instalador ya usa para una eleccion excluyente con explicacion.
+/// ST-047: tarjeta-radio del selector de firmware -- la forma que el
+/// instalador usaba para una eleccion excluyente con explicacion
+/// (`BootModeCard`, retirada en ST-050 junto con el paso de modo de
+/// arranque).
 private struct FirmwareChoiceCard: View {
     let family: FirmwareFamily
     let icon: String

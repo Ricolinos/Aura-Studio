@@ -762,3 +762,15 @@ Primer Release de Metro-Aura que Studio empaqueta (ST-047 se hizo con v0.4.0 com
 **Reporte del dueño:** *"intenté probar instalar desde ahí el firmware y no me apareció la opción."* La app que abrió era la Debug que Xcode dejó en `DerivedData` el 19 de agosto al pulsar Run — anterior a ST-047. Ningún `AuraStudio.app` de la máquina tenía el código nuevo; no había nada que instalar "mal", solo una app vieja.
 
 **Decisión.** Un script que hace la build real y la deja donde se abre: `scripts/build-app.sh` = `fetch-firmware.sh` (las dos familias) → `xcodegen generate` → `xcodebuild -configuration Release` (firma ad-hoc "Sign to Run Locally", la de `project.yml`) → verificación del bundle (`codesign -vv`, `Resources/{,metro/}rockbox.ipod` y `firmware-version.txt`, bit de ejecución de ambos `mks5lboot`) → `ditto` a `/Applications/AuraStudio.app`. Documentado en `docs/guia-desarrollo.md`. La primera corrida real dejó en `/Applications` una app con Aura v0.3.1-beta y Metro v0.5.0 embebidos.
+
+## ST-050 — Se quita la opción de dual boot del instalador: siempre "Solo firmware"
+
+**Reporte del dueño (2026-08-23):** *"acabo de descubrir que no es funcional el dualboot cuando se instala desde el mac, ayúdame a quitar la opción de Aura Studio."*
+
+El paso "Modo de arranque" ofrecía *Dual boot* (recomendado) y *Solo Aura*. La propia tarjeta de dual boot ya advertía la condición: requiere un iPod en formato "winpod" (restaurado con iTunes en Windows); un iPod restaurado desde Mac usa particiones que Rockbox no lee. Ese es el caso de este proyecto, y el dueño lo confirmó en hardware: el arranque de Apple no funciona. Ofrecer como "recomendado" algo que no funciona en el único hardware real que tenemos es peor que no ofrecerlo.
+
+**Decisión.** El paso desaparece del asistente (`InstallerStep.chooseBootMode` queda en el enum sin visitarse; `BootModeView.swift` se elimina). `destroyOriginalFirmware` es `true` por defecto y `advanceFromWelcome()` lo fija así en toda instalación nueva → `mks5lboot --bl-inst --single`, con el orden de ST-017 (formatear → DFU → copiar por el modo USB del bootloader). **La confirmación destructiva no se pierde, se muda**: la Bienvenida muestra la advertencia en rojo ("el firmware original de Apple se borra del arranque… para volver hay que restaurar con iTunes/Finder") y exige marcar *"Entiendo que el arranque de Apple se borra"* para poder continuar (`BackContinueRow.continueDisabled`). Y dice por qué ya no hay dual boot, para que nadie lo busque.
+
+**Lo que NO cambia:** `startAutomaticUpdate()` sigue poniendo `destroyOriginalFirmware = !isDualBoot` — si un iPod YA está en dual boot funcional (instalado desde Windows), actualizar no destruye ese arranque de Apple. `DoneView` conserva su aviso de combinación de botones para ese caso. La detección y los textos de General que dicen "dual boot con Apple" describen lo que hay, no lo que se instala, y se quedan.
+
+544 pruebas en verde. App reempaquetada con `scripts/build-app.sh`.

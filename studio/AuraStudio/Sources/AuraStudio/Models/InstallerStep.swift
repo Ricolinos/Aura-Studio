@@ -27,6 +27,8 @@ enum InstallerStep: Int, CaseIterable, Comparable {
     case welcome
     /// Solo en modo instalar -- elegir dual boot (default) o reemplazar
     /// por completo el firmware de Apple. Restaurar la salta siempre.
+    /// ST-050: ya no se visita (la instalacion es siempre Solo firmware);
+    /// se conserva el caso para no renumerar ni romper el switch exhaustivo.
     case chooseBootMode
     case permissions
     case detectDevice

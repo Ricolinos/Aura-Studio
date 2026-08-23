@@ -8,6 +8,10 @@ struct BackContinueRow: View {
     let onBack: () -> Void
     let continueTitle: String
     let onContinue: () -> Void
+    /// ST-050: "Continuar" bloqueado hasta que el paso cumpla su
+    /// condicion (la Bienvenida exige reconocer que el arranque de Apple
+    /// se borra).
+    var continueDisabled: Bool = false
 
     var body: some View {
         HStack {
@@ -17,6 +21,7 @@ struct BackContinueRow: View {
             Button(continueTitle, action: onContinue)
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
+                .disabled(continueDisabled)
         }
     }
 }

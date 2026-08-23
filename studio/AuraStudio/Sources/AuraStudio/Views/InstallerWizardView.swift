@@ -24,12 +24,12 @@ struct InstallerWizardView: View {
             // modo USB del bootloader); dual boot copia primero.
             if viewModel.flashFirst {
                 return [
-                    .welcome, .chooseBootMode, .permissions, .detectDevice,
+                    .welcome, .permissions, .detectDevice,
                     .preparingDisk, .enterDFU, .installing, .awaitingBootloaderUSB, .copyingFiles, .done,
                 ]
             }
             return [
-                .welcome, .chooseBootMode, .permissions, .detectDevice,
+                .welcome, .permissions, .detectDevice,
                 .preparingDisk, .copyingFiles, .enterDFU, .installing, .done,
             ]
         case .restore:
@@ -53,9 +53,12 @@ struct InstallerWizardView: View {
             Group {
                 switch viewModel.step {
                 case .welcome:
-                    WelcomeView(mode: viewModel.mode, onBack: viewModel.backFromWelcome, onContinue: viewModel.advanceFromWelcome)
+                    WelcomeView(mode: viewModel.mode, firmwareName: viewModel.targetName, onBack: viewModel.backFromWelcome, onContinue: viewModel.advanceFromWelcome)
                 case .chooseBootMode:
-                    BootModeView(onBack: viewModel.backFromBootMode, onContinue: viewModel.advanceFromBootMode)
+                    // ST-050: ya no se llega aqui (advanceFromWelcome salta
+                    // a .permissions); el caso queda para que el switch
+                    // siga siendo exhaustivo sin tocar InstallerStep.
+                    EmptyView()
                 case .permissions:
                     PermissionsView(onBack: viewModel.backFromPermissions, onContinue: viewModel.advanceFromPermissions)
                 case .detectDevice:

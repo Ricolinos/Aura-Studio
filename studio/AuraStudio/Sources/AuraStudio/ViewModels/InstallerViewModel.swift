@@ -39,7 +39,15 @@ final class InstallerViewModel: ObservableObject {
     }
     @Published private(set) var progressMessage: String = ""
     @Published private(set) var lastError: InstallerError?
-    @Published var destroyOriginalFirmware: Bool = false
+    /// ST-050: SIEMPRE true en una instalacion nueva. El paso "Modo de
+    /// arranque" (dual boot vs Solo Aura) se quito: el dual boot solo
+    /// funciona con un iPod en formato "winpod", y un iPod restaurado
+    /// desde Mac -- el caso de este proyecto -- no lo es; el dueño lo
+    /// confirmo en hardware. Sigue existiendo como variable porque
+    /// `startAutomaticUpdate()` lo pone en false cuando el iPod YA esta
+    /// en dual boot funcional (instalado desde Windows): actualizar no
+    /// debe destruir un arranque de Apple que si sirve.
+    @Published var destroyOriginalFirmware: Bool = true
     @Published var pendingAuthorization: PendingAuthorization?
 
     let monitor: IPodMonitor
@@ -185,25 +193,13 @@ final class InstallerViewModel: ObservableObject {
     }
 
     func advanceFromWelcome() {
-        switch mode {
-        case .install:
-            step = .chooseBootMode
-        case .restore:
-            step = .permissions
+        // ST-050: sin paso de "Modo de arranque" -- instalar es siempre
+        // Solo firmware (la Bienvenida ya exigio confirmar que el
+        // arranque de Apple se borra).
+        if mode == .install {
+            destroyOriginalFirmware = true
         }
-    }
-
-    /// El usuario ya eligio si conservar el firmware de Apple (dual
-    /// boot, default seguro) o reemplazarlo por completo -- se guarda
-    /// en `destroyOriginalFirmware`, que `runInstallOrRestore()` le pasa
-    /// tal cual a `mks5lboot --bl-inst` (con o sin `--single`).
-    func advanceFromBootMode(dualBoot: Bool) {
-        destroyOriginalFirmware = !dualBoot
         step = .permissions
-    }
-
-    func backFromBootMode() {
-        step = .welcome
     }
 
     func advanceFromPermissions() {
@@ -331,7 +327,7 @@ final class InstallerViewModel: ObservableObject {
     }
 
     func backFromPermissions() {
-        step = mode == .install ? .chooseBootMode : .welcome
+        step = .welcome
     }
 
     func backFromDetectDevice() {
