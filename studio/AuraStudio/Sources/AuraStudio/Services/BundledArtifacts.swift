@@ -8,8 +8,25 @@ import CryptoKit
 /// sus fuentes. Ver CONTRATO-firmware-studio.md).
 struct BundledArtifacts {
     let bundle: Bundle
+    /// ST-047: de que familia son estos artefactos. Decide el
+    /// subdirectorio de Resources (`FirmwareFamily.bundleSubdirectory`).
+    let family: FirmwareFamily
 
+    init(bundle: Bundle, family: FirmwareFamily = .aura) {
+        self.bundle = bundle
+        self.family = family
+    }
+
+    /// Los de Aura, como siempre.
     static let shared = BundledArtifacts(bundle: .main)
+
+    /// ST-047: los de la familia pedida. Para una familia no instalable
+    /// devuelve igualmente un objeto, cuyo `url(for:)` sera nil para
+    /// todo -- el llamador ya deberia haber filtrado por
+    /// `FirmwareFamily.isInstallable`.
+    static func forFamily(_ family: FirmwareFamily) -> BundledArtifacts {
+        family == .aura ? shared : BundledArtifacts(bundle: .main, family: family)
+    }
 
     enum Name: String, CaseIterable {
         case firmware = "rockbox.ipod"
@@ -29,8 +46,21 @@ struct BundledArtifacts {
         let base = name.rawValue as NSString
         return bundle.url(
             forResource: base.deletingPathExtension,
-            withExtension: base.pathExtension.isEmpty ? nil : base.pathExtension
+            withExtension: base.pathExtension.isEmpty ? nil : base.pathExtension,
+            subdirectory: family.bundleSubdirectory
         )
+    }
+
+    /// ST-047: tag del Release del que salieron estos artefactos
+    /// (`firmware-version.txt`, lo escribe scripts/fetch-firmware.sh).
+    /// `nil` si la build se hizo sin el script (desarrollo viejo) -- la
+    /// pantalla de Licencias lo dice en vez de inventar un tag.
+    var releaseTag: String? {
+        guard let url = bundle.url(forResource: "firmware-version", withExtension: "txt",
+                                   subdirectory: family.bundleSubdirectory),
+              let text = try? String(contentsOf: url, encoding: .utf8) else { return nil }
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 
     /// Parsea `checksums.txt` (formato de `shasum -a 256`: hash, dos

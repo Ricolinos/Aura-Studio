@@ -9,3 +9,12 @@ rockbox.ipod=<sha256>
 rockbox.zip=<sha256>
 mks5lboot=<sha256>
 bootloader-ipod6g.ipod=<sha256>
+
+# ST-047: segunda familia, mismo formato con prefijo `metro.`
+# (Ricolinos/Metro-Aura). Sin esta seccion, fetch-firmware.sh --family metro
+# falla con mensaje claro; el resto de la app sigue funcionando con Aura.
+metro.tag=v0.1.0
+metro.rockbox.ipod=<sha256>
+metro.rockbox.zip=<sha256>
+metro.mks5lboot=<sha256>
+metro.bootloader-ipod6g.ipod=<sha256>

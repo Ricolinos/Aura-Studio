@@ -873,7 +873,7 @@ struct MediaSectionView: View {
         // puntual (no toda `viewModel.selectionForSync`, que puede
         // arrastrar seleccion vieja de otra vista si el usuario no volvio
         // a tocar nada aca desde que cambio de sección).
-        if let device, device.isAura, !targetItems.isEmpty {
+        if let device, device.supportsAuraContract, !targetItems.isEmpty {
             Button("Sincronizar la selección") {
                 Task {
                     await viewModel.sync(toVolumeAt: URL(fileURLWithPath: device.mountPath),

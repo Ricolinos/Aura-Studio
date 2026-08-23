@@ -12,6 +12,11 @@ import SwiftUI
 struct ExtrasView: View {
     let device: AuraDevice?
     @State private var showingThemes = false
+    @State private var showingLicenses = false
+    /// ST-047: la eleccion de firmware vive aqui (encargo del dueño: "en
+    /// la seccion de Extras es donde vamos a poner la opcion para que el
+    /// usuario pueda decidir que firmware instalar").
+    @ObservedObject private var preferences = AppPreferences.shared
 
     /// D-289 / ST-003: "Temas" ahora abre la gestión real (instalar,
     /// activar, eliminar, construir) -- necesita un iPod con Aura
@@ -19,15 +24,19 @@ struct ExtrasView: View {
     /// escriben en el dispositivo.
     private var canManageThemes: Bool {
         guard let device else { return false }
-        return device.isAura
+        return device.supportsAuraContract
     }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
+                firmwareChoice
+                Divider()
                 available
                 Divider()
                 planned
+                Divider()
+                licenses
             }
             .padding(24)
             .frame(maxWidth: 560, alignment: .leading)
@@ -35,9 +44,63 @@ struct ExtrasView: View {
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .navigationTitle("Extras")
         .sheet(isPresented: $showingThemes) {
-            if let device, device.isAura {
+            if let device, device.supportsAuraContract {
                 ThemesView(mountPath: device.mountPath)
             }
+        }
+        .sheet(isPresented: $showingLicenses) {
+            LicensesView()
+        }
+    }
+
+    /// ST-047: cual de los dos firmwares instala el asistente. Es una
+    /// PREFERENCIA, no una accion: elegir aqui no toca el iPod -- el
+    /// Instalador (seccion propia, con su flasheo y sus confirmaciones) es
+    /// el unico que escribe. Una actualizacion desde General ignora esto y
+    /// reinstala la familia que ya esta en el aparato.
+    private var firmwareChoice: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Firmware").font(.headline)
+            Text("Elige cuál de los dos firmwares instala Aura Studio la próxima vez que uses el Instalador. Los dos son software libre (GPL v2), derivados de Rockbox, y comparten la misma biblioteca: tu música, fotos y videos se sincronizan igual con cualquiera.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+            FirmwareChoiceCard(
+                family: .aura,
+                icon: "sparkles",
+                explanation: "Lenguaje visual \"Apple 2026\": tipografías SF, temas claro/oscuro y temas instalables, Cover Flow.",
+                isSelected: preferences.firmwareFamilyToInstall == .aura
+            ) { preferences.firmwareFamilyToInstall = .aura }
+            FirmwareChoiceCard(
+                family: .metro,
+                icon: "square.grid.2x2",
+                explanation: "Lenguaje visual Metro (Windows Phone 7 / Zune): tipografía Selawik, hub de tiles, acentos de color, transiciones de pivote.",
+                isSelected: preferences.firmwareFamilyToInstall == .metro
+            ) { preferences.firmwareFamilyToInstall = .metro }
+            if let device, device.supportsAuraContract {
+                let installed = device.declaredFamily
+                let chosen = preferences.firmwareFamilyToInstall
+                Text(installed == chosen
+                     ? "Tu iPod ya tiene \(installed.displayName). Instalar de nuevo lo reinstala conservando sus ajustes."
+                     : "Tu iPod tiene \(installed.displayName). Instalar \(chosen.displayName) lo reemplaza: tu biblioteca se conserva, los ajustes de \(installed.displayName) no.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    /// ST-047 / CONTRATO §B: la pantalla que el contrato promete desde
+    /// v1 y no existia. Obligatoria en cuanto Studio distribuye un
+    /// segundo firmware GPL.
+    private var licenses: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Licencias").font(.headline)
+            Button {
+                showingLicenses = true
+            } label: {
+                row("Software libre incluido", "doc.text",
+                    "Aura y Metro son GPL v2. Aquí están sus fuentes, versiones exactas y cambios.")
+            }
+            .buttonStyle(.plain)
         }
     }
 
@@ -84,5 +147,57 @@ struct ExtrasView: View {
             }
             Spacer()
         }
+    }
+}
+
+/// ST-047: tarjeta-radio del selector de firmware -- misma forma que
+/// `BootModeCard` (BootModeView.swift), que es el patron que el
+/// instalador ya usa para una eleccion excluyente con explicacion.
+private struct FirmwareChoiceCard: View {
+    let family: FirmwareFamily
+    let icon: String
+    let explanation: String
+    let isSelected: Bool
+    let onSelect: () -> Void
+
+    var body: some View {
+        Button(action: onSelect) {
+            HStack(alignment: .top, spacing: 14) {
+                Image(systemName: icon)
+                    .font(.title2)
+                    .foregroundStyle(Color.accentColor)
+                    .frame(width: 28)
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text(family.displayName).font(.headline)
+                        if let tag = BundledArtifacts.forFamily(family).releaseTag {
+                            Text(tag)
+                                .font(.caption.bold())
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 2)
+                                .background(Capsule().fill(Color.accentColor.opacity(0.15)))
+                                .foregroundStyle(Color.accentColor)
+                        }
+                    }
+                    Text(explanation)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
+            }
+            .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.secondary.opacity(isSelected ? 0.12 : 0.05))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .strokeBorder(isSelected ? Color.accentColor : Color.clear, lineWidth: 1.5)
+            )
+        }
+        .buttonStyle(.plain)
     }
 }

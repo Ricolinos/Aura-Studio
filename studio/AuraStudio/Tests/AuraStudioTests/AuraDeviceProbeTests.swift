@@ -53,7 +53,7 @@ final class AuraDeviceProbeTests: XCTestCase {
     func testEmptyVolumeIsEmptyNotStock() throws {
         let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
         XCTAssertEqual(device.firmware, .empty)
-        XCTAssertFalse(device.isAura)
+        XCTAssertFalse(device.supportsAuraContract)
         XCTAssertFalse(device.originalFirmwarePresent)
     }
 
@@ -71,7 +71,7 @@ final class AuraDeviceProbeTests: XCTestCase {
         try mkdir("iPod_Control/Music")
         let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
         XCTAssertEqual(device.firmware, .aura(hasBooted: true))
-        XCTAssertTrue(device.isAura)
+        XCTAssertTrue(device.supportsAuraContract)
         XCTAssertTrue(device.isDualBoot)
     }
 
@@ -88,7 +88,7 @@ final class AuraDeviceProbeTests: XCTestCase {
         XCTAssertEqual(device.firmware, .aura(hasBooted: false))
         XCTAssertEqual(device.runningFirmware, .apple)
         XCTAssertTrue(device.hasAuraFiles)
-        XCTAssertFalse(device.isAura)
+        XCTAssertFalse(device.supportsAuraContract)
         XCTAssertFalse(device.isDualBoot)
         XCTAssertFalse(device.rockboxFamilyVerified)
         XCTAssertFalse(device.canSkipBootloaderFlash(diskRecordedAsVerified: false))
@@ -102,7 +102,7 @@ final class AuraDeviceProbeTests: XCTestCase {
         try mkdir(".rockbox/icons/aura/masks")
         let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo(usb: Self.rockboxUSB)))
         XCTAssertEqual(device.runningFirmware, .rockboxFamily)
-        XCTAssertTrue(device.isAura)
+        XCTAssertTrue(device.supportsAuraContract)
         XCTAssertTrue(device.rockboxFamilyVerified)
         XCTAssertTrue(device.canSkipBootloaderFlash(diskRecordedAsVerified: false))
     }
@@ -114,7 +114,7 @@ final class AuraDeviceProbeTests: XCTestCase {
         try touch(".rockbox/aura/aura.cfg")
         let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo(usb: Self.appleDiskModeUSB)))
         XCTAssertEqual(device.runningFirmware, .apple)
-        XCTAssertTrue(device.isAura)
+        XCTAssertTrue(device.supportsAuraContract)
         XCTAssertFalse(device.canSkipBootloaderFlash(diskRecordedAsVerified: false))
         XCTAssertTrue(device.canSkipBootloaderFlash(diskRecordedAsVerified: true))
     }
@@ -126,7 +126,7 @@ final class AuraDeviceProbeTests: XCTestCase {
     func testEmptyDiskWithRockboxUSBHasBootloaderButNoAura() throws {
         let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo(usb: Self.rockboxUSB)))
         XCTAssertEqual(device.firmware, .empty)
-        XCTAssertFalse(device.isAura)
+        XCTAssertFalse(device.supportsAuraContract)
         XCTAssertTrue(device.rockboxFamilyVerified)
         XCTAssertTrue(device.canSkipBootloaderFlash(diskRecordedAsVerified: false))
     }
@@ -142,7 +142,7 @@ final class AuraDeviceProbeTests: XCTestCase {
         try touch(".rockbox/aura/aura.cfg")
         let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
         XCTAssertEqual(device.runningFirmware, .unknown)
-        XCTAssertTrue(device.isAura, "el rastro de arranque sigue valiendo sin lectura USB")
+        XCTAssertTrue(device.supportsAuraContract, "el rastro de arranque sigue valiendo sin lectura USB")
     }
 
     /// ST-016: un `.rockbox` sin rastro de arranque junto a `iPod_Control/`
@@ -175,7 +175,7 @@ final class AuraDeviceProbeTests: XCTestCase {
         try mkdir(".rockbox")
         let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
         XCTAssertEqual(device.firmware, .rockbox(hasBooted: false))
-        XCTAssertFalse(device.isAura)
+        XCTAssertFalse(device.supportsAuraContract)
     }
 
     func testRockboxConfigCfgAlsoCountsAsBootEvidence() throws {
@@ -191,7 +191,7 @@ final class AuraDeviceProbeTests: XCTestCase {
         let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
         XCTAssertEqual(device.firmware, .aura(hasBooted: false))
         XCTAssertTrue(device.hasAuraFiles)
-        XCTAssertFalse(device.isAura)
+        XCTAssertFalse(device.supportsAuraContract)
     }
 
     func testAuraDirWithoutConfigMeansNotBootedYet() throws {

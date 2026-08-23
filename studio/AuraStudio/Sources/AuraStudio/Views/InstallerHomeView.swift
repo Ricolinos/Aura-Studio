@@ -48,6 +48,13 @@ struct ModePickerView: View {
     let device: AuraDevice?
     let state: DeviceState
     let onChoose: (InstallerMode) -> Void
+    /// ST-047: que familia instalaria "Instalar" ahora mismo (Extras ›
+    /// Firmware). Observada para que cambiarla en Extras se refleje aqui
+    /// sin recargar la vista.
+    @ObservedObject private var preferences = AppPreferences.shared
+
+    private var family: FirmwareFamily { preferences.firmwareFamilyToInstall }
+    private var name: String { family.displayName }
 
     var body: some View {
         VStack(spacing: 24) {
@@ -60,6 +67,12 @@ struct ModePickerView: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: 440)
+            // ST-047: decir con todas sus letras cual de los dos firmwares
+            // va a instalar el boton -- la eleccion vive en Extras.
+            Label("Firmware a instalar: \(name) -- se elige en Extras › Firmware",
+                  systemImage: family == .metro ? "square.grid.2x2" : "sparkles")
+                .font(.callout)
+                .foregroundStyle(.secondary)
 
             HStack(spacing: 16) {
                 Button {
@@ -108,22 +121,32 @@ struct ModePickerView: View {
         return !(device.firmware == .stock && device.runningFirmware != .rockboxFamily)
     }
 
-    /// "Reinstalar" solo cuando Aura esta instalada DE VERDAD (`isAura`,
-    /// ST-016): archivos copiados sin evidencia de arranque se instalan,
-    /// no se reinstalan -- y esa instalacion pasa por DFU.
+    /// "Reinstalar" solo cuando Aura esta instalada DE VERDAD
+    /// (`supportsAuraContract`, ST-016): archivos copiados sin evidencia de
+    /// arranque se instalan, no se reinstalan -- y esa instalacion pasa por
+    /// DFU.
+    ///
+    /// ST-046: y ademas tiene que ser Aura. Un iPod con Metro-Aura cumple
+    /// `supportsAuraContract` (comparten el contrato de §D), asi que este
+    /// boton decia "Reinstalar Aura" sobre un firmware que no era Aura --
+    /// justo el texto que hace creer que se va a conservar algo. Lo que ahi
+    /// ocurre es una instalacion que REEMPLAZA Metro.
     private var installTitle: String {
-        device?.isAura == true ? "Reinstalar Aura" : "Instalar Aura"
+        // ST-047: "Reinstalar" solo si lo que hay es LA MISMA familia que
+        // se va a instalar; sobre otra familia es instalar (y reemplazar).
+        let same = device?.supportsAuraContract == true && device?.declaredFamily == family
+        return same ? "Reinstalar \(name)" : "Instalar \(name)"
     }
 
     private var detectionText: String {
         if case .diskModeNoFilesystem = state {
-            return "Tu iPod esta conectado, pero su disco no tiene un sistema de archivos legible -- instalar Aura lo prepara desde cero."
+            return "Tu iPod esta conectado, pero su disco no tiene un sistema de archivos legible -- instalar \(name) lo prepara desde cero."
         }
         if case .dfuMode = state {
             return "Tu iPod esta conectado en modo DFU, listo para flashear."
         }
         guard let device else {
-            return "Instala el firmware Aura en tu iPod Classic 6G, o restaura el firmware original si quieres volver atras."
+            return "Instala el firmware \(name) en tu iPod Classic 6G, o restaura el firmware original si quieres volver atras."
         }
         // ST-016: solo se afirma "instalado"/"dual boot" con evidencia
         // de arranque (USB atendido por Aura/Rockbox, o rastro en disco).
@@ -132,10 +155,15 @@ struct ModePickerView: View {
             return device.runningFirmware == .rockboxFamily
                 ? "Tu iPod tiene el firmware original de Apple en el disco, pero el USB lo atiende el bootloader de Aura/Rockbox."
                 : "Tu iPod tiene el firmware original de Apple."
-        case .aura where device.isAura:
-            return device.isDualBoot
-                ? "Tu iPod tiene Aura instalado, en dual boot con el firmware original de Apple."
-                : "Tu iPod ya tiene Aura instalado."
+        // ST-046/ST-047: se nombra lo que HAY por lo que declara, y se
+        // dice sin rodeos si instalar lo elegido lo reemplaza.
+        case .aura where device.supportsAuraContract:
+            let installed = device.declaredFamily.displayName
+            let dual = device.isDualBoot ? ", en dual boot con el firmware original de Apple" : ""
+            if device.declaredFamily == family {
+                return "Tu iPod ya tiene \(installed) instalado\(dual)."
+            }
+            return "Tu iPod tiene \(installed) instalado\(dual). Instalar \(name) lo reemplaza."
         case .aura:
             return device.runningFirmware == .apple
                 ? "Tu iPod tiene archivos de Aura en el disco, pero está corriendo el firmware de Apple y Aura nunca ha arrancado aquí -- no hay evidencia de que esté instalado."
@@ -164,20 +192,29 @@ struct ModePickerView: View {
         // "sin flashear".
         let skipsDFU = state.isReadyForInstall && device.canSkipBootloaderFlash(diskRecordedAsVerified: recorded)
         switch device.firmware {
-        case .aura where device.isAura:
+        case .aura where device.supportsAuraContract && device.declaredFamily == family:
             return skipsDFU
-                ? "Reinstalar solo reemplaza los archivos del firmware en el disco -- no hace falta flashear por DFU. Tus ajustes de Aura se conservan. Si al terminar tu iPod no arranca con Aura, la pantalla final ofrece completar el flasheo."
-                : "Reinstalar reemplaza los archivos del firmware y, como Aura Studio no puede confirmar desde aquí que el bootloader siga grabado, vuelve a flashear el arranque por DFU (reflashear es inofensivo). Tus ajustes de Aura se conservan. Para saltarte el DFU, conecta el iPod mientras está encendido con Aura."
+                ? "Reinstalar solo reemplaza los archivos del firmware en el disco -- no hace falta flashear por DFU. Tus ajustes de \(name) se conservan. Si al terminar tu iPod no arranca con \(name), la pantalla final ofrece completar el flasheo."
+                : "Reinstalar reemplaza los archivos del firmware y, como Aura Studio no puede confirmar desde aquí que el bootloader siga grabado, vuelve a flashear el arranque por DFU (reflashear es inofensivo). Tus ajustes de \(name) se conservan. Para saltarte el DFU, conecta el iPod mientras está encendido con \(name)."
+        // ST-046/ST-047: otra familia de la misma casa. El bootloader es el
+        // mismo de Rockbox, asi que el DFU se salta igual; lo que NO se
+        // conserva son los ajustes, porque el firmware que los escribio se
+        // va (el instalador borra su aura.cfg a proposito).
+        case .aura where device.supportsAuraContract:
+            let installed = device.declaredFamily.displayName
+            return skipsDFU
+                ? "Instalar \(name) reemplaza \(installed) en el disco -- no hace falta flashear por DFU, es el mismo arranque. Tu música y tus fotos no se tocan; los ajustes de \(installed) se pierden."
+                : "Instalar \(name) reemplaza \(installed) en el disco y vuelve a flashear el arranque por DFU, porque Aura Studio no puede confirmar desde aquí que el bootloader siga grabado (reflashear es inofensivo). Tu música y tus fotos no se tocan; los ajustes de \(installed) se pierden."
         case .aura:
             return "Hay archivos de Aura en el disco pero ninguna evidencia de que arranquen: instalar flashea el arranque por modo DFU y vuelve a copiar los archivos -- el asistente te guia paso a paso."
         case .rockbox:
             return skipsDFU
-                ? "Instalar Aura no requiere flashear ni entrar a modo DFU: solo se reemplaza la carpeta .rockbox del disco por la de Aura."
-                : "Instalar Aura reemplaza la carpeta .rockbox del disco por la de Aura y flashea el arranque por modo DFU, porque no hay evidencia suficiente de que el bootloader ya esté grabado. Para saltarte el DFU, conecta el iPod mientras está encendido con Rockbox."
+                ? "Instalar \(name) no requiere flashear ni entrar a modo DFU: solo se reemplaza la carpeta .rockbox del disco por la de \(name)."
+                : "Instalar \(name) reemplaza la carpeta .rockbox del disco por la de \(name) y flashea el arranque por modo DFU, porque no hay evidencia suficiente de que el bootloader ya esté grabado. Para saltarte el DFU, conecta el iPod mientras está encendido con Rockbox."
         case .stock:
             return skipsDFU
                 ? "El bootloader de Aura/Rockbox ya está atendiendo el USB: instalar solo copia los archivos, sin flashear."
-                : "Instalar Aura requiere flashear el arranque por modo DFU -- el asistente te guia paso a paso."
+                : "Instalar \(name) requiere flashear el arranque por modo DFU -- el asistente te guia paso a paso."
         case .empty:
             return skipsDFU
                 ? "El bootloader de Aura/Rockbox ya está atendiendo el USB: instalar solo copia los archivos, sin flashear."

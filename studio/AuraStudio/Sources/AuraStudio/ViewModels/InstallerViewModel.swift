@@ -117,10 +117,34 @@ final class InstallerViewModel: ObservableObject {
     /// formatear lo que ya esta listo.
     private var diskPreparedThisFlow = false
 
+    /// ST-047: que familia se va a instalar en ESTE flujo. La fija
+    /// `start(mode:)` a partir de la preferencia de Extras
+    /// (`AppPreferences.firmwareFamilyToInstall`); `startAutomaticUpdate()`
+    /// la sobreescribe con la familia DETECTADA en el iPod -- una
+    /// actualizacion nunca cambia de firmware a nadie. Artefactos, runner
+    /// (mks5lboot + bootloader), centinela del arbol y textos salen de
+    /// aqui.
+    @Published private(set) var targetFamily: FirmwareFamily = .aura
+
+    var artifacts: BundledArtifacts { BundledArtifacts.forFamily(targetFamily) }
+
+    /// Nombre para los textos del asistente ("Instalando Metro...").
+    var targetName: String { targetFamily.displayName }
+
     init(monitor: IPodMonitor? = nil, executor: PrivilegedExecutor = PrivilegedExecutor()) {
         self.monitor = monitor ?? IPodMonitor()
         self.executor = executor
         self.runner = try? MKS5LBootRunner()
+    }
+
+    /// ST-047: cambia la familia objetivo y rehace el runner con los
+    /// artefactos de esa familia. Solo tiene efecto fuera de un flujo en
+    /// curso -- en medio de una instalacion seria cambiarle el bootloader
+    /// a mitad de camino.
+    func setTargetFamily(_ family: FirmwareFamily) {
+        guard family.isInstallable else { return }
+        targetFamily = family
+        runner = try? MKS5LBootRunner(artifacts: BundledArtifacts.forFamily(family))
     }
 
     /// NO arranca ni detiene el monitor: desde que el `IPodMonitor` es
@@ -131,6 +155,8 @@ final class InstallerViewModel: ObservableObject {
     func start(mode: InstallerMode) {
         self.mode = mode
         self.lastError = nil
+        // ST-047: la eleccion de Extras manda en una instalacion nueva.
+        setTargetFamily(AppPreferences.shared.firmwareFamilyToInstall)
         isCopyingFirmware = false
         bootloaderAlreadyInstalled = false
         flashFirst = false
@@ -294,6 +320,12 @@ final class InstallerViewModel: ObservableObject {
         destroyOriginalFirmware = !(monitor.device?.isDualBoot ?? false)
         chosenMode = .install
         start(mode: .install)
+        // ST-047: actualizar = la MISMA familia que ya esta en el iPod,
+        // diga lo que diga la preferencia de Extras. Una familia
+        // desconocida no llega aqui (General no ofrece el boton).
+        if let detected = monitor.device?.declaredFamily, detected.isInstallable {
+            setTargetFamily(detected)
+        }
         step = .detectDevice
         acknowledgeDeviceReady()
     }
@@ -401,7 +433,7 @@ final class InstallerViewModel: ObservableObject {
         let plan = InstallPlanner.plan(volumeIsFAT32: volumeIsFAT32,
                                        singleBoot: destroyOriginalFirmware,
                                        canSkipFlash: canSkip,
-                                       deviceIsAura: device?.isAura == true,
+                                       deviceIsAura: device?.supportsAuraContract == true,
                                        bootloaderFlashedThisFlow: bootloaderFlashedThisFlow,
                                        diskPreparedThisFlow: diskPreparedThisFlow)
         if plan.flashFirst { flashFirst = true }
@@ -630,7 +662,7 @@ final class InstallerViewModel: ObservableObject {
         lastError = nil
         do {
             progressMessage = "Verificando integridad de los archivos..."
-            try BundledArtifacts.shared.verifyAll()
+            try artifacts.verifyAll()
 
             guard let runner else {
                 throw InstallerError.missingBundledArtifact("mks5lboot")
@@ -638,7 +670,7 @@ final class InstallerViewModel: ObservableObject {
 
             switch mode {
             case .install:
-                progressMessage = "Instalando el bootloader de Aura..."
+                progressMessage = "Instalando el bootloader de \(targetName)..."
                 let result = try runner.installBootloader(single: destroyOriginalFirmware)
                 guard result.exitCode == 0 else {
                     throw InstallerError.processFailed(exitCode: result.exitCode, output: result.stdout + result.stderr)
@@ -680,7 +712,7 @@ final class InstallerViewModel: ObservableObject {
                 }
 
             case .restore:
-                progressMessage = "Quitando el bootloader de Aura..."
+                progressMessage = "Quitando el bootloader de \(targetName)..."
                 let result = try runner.uninstallBootloader()
                 guard result.exitCode == 0 else {
                     throw InstallerError.processFailed(exitCode: result.exitCode, output: result.stdout + result.stderr)
@@ -802,10 +834,10 @@ final class InstallerViewModel: ObservableObject {
         }
         defer { InstallerFlowRegistry.shared.endWriting() }
         do {
-            guard let firmwareURL = BundledArtifacts.shared.url(for: .firmware) else {
+            guard let firmwareURL = artifacts.url(for: .firmware) else {
                 throw InstallerError.missingBundledArtifact(BundledArtifacts.Name.firmware.rawValue)
             }
-            guard let treeURL = BundledArtifacts.shared.url(for: .rockboxTree) else {
+            guard let treeURL = artifacts.url(for: .rockboxTree) else {
                 throw InstallerError.missingBundledArtifact(BundledArtifacts.Name.rockboxTree.rawValue)
             }
             step = .copyingFiles
@@ -813,7 +845,7 @@ final class InstallerViewModel: ObservableObject {
             // punto que escribe en el iPod -- la verificacion de
             // integridad no puede quedar solo en runInstallOrRestore().
             progressMessage = "Verificando integridad de los archivos..."
-            try BundledArtifacts.shared.verifyAll()
+            try artifacts.verifyAll()
             progressMessage = "Copiando el firmware al iPod..."
 
             let destination = URL(fileURLWithPath: mountPath).appendingPathComponent("rockbox.ipod")
@@ -823,11 +855,27 @@ final class InstallerViewModel: ObservableObject {
             }
             try fm.copyItem(at: firmwareURL, to: destination)
 
+            // ST-047: CAMBIO de familia (habia Metro y se instala Aura, o
+            // al reves): el `aura.cfg` que dejo el firmware anterior no le
+            // sirve al nuevo (sus ajustes son de otro programa) y ademas
+            // engañaria a la deteccion de Studio hasta el primer arranque
+            // -- Aura encontraria un `firmware_family: metro` que no es
+            // suyo y Studio lo seguiria llamando Metro. Se borra SOLO en
+            // ese caso; reinstalar la misma familia conserva los ajustes,
+            // como siempre prometio este instalador.
+            if let detected = monitor.device?.declaredFamily,
+               monitor.device?.supportsAuraContract == true,
+               detected != targetFamily {
+                let staleCfg = URL(fileURLWithPath: mountPath)
+                    .appendingPathComponent(".rockbox/aura/aura.cfg")
+                try? fm.removeItem(at: staleCfg)
+            }
+
             guard fm.fileExists(atPath: destination.path) else {
                 throw InstallerError.processFailed(exitCode: -1, output: "no se pudo verificar rockbox.ipod tras copiarlo")
             }
 
-            progressMessage = "Instalando Aura en el iPod (tipografías, iconos, códecs)... Puede tardar varios minutos por USB -- no desconectes el iPod."
+            progressMessage = "Instalando \(targetName) en el iPod (tipografías, iconos, códecs)... Puede tardar varios minutos por USB -- no desconectes el iPod."
 
             // Barra de progreso real (D-191): se cuentan los archivos
             // que `ditto -V` va confirmando por stderr A MEDIDA que
@@ -889,10 +937,11 @@ final class InstallerViewModel: ObservableObject {
             poller?.cancel()
             copyProgress = 1
 
-            // Centinela: una fuente del design system que el firmware
-            // carga al arrancar -- si esta, el arbol se extrajo bien.
+            // Centinela: una fuente que el firmware carga al arrancar --
+            // si esta, el arbol se extrajo bien. Por familia (ST-047):
+            // cada una trae sus propias fuentes.
             let sentinel = URL(fileURLWithPath: mountPath)
-                .appendingPathComponent(".rockbox/fonts/a26-title-20.fnt")
+                .appendingPathComponent(targetFamily.installedTreeSentinel ?? ".rockbox/rockbox.ipod")
             guard fm.fileExists(atPath: sentinel.path) else {
                 throw InstallerError.processFailed(exitCode: -1, output: "el árbol .rockbox no quedó completo tras extraerlo (falta \(sentinel.lastPathComponent))")
             }

@@ -99,7 +99,7 @@ final class IPodMonitor: ObservableObject {
             if let probed, probed.runningFirmware == .rockboxFamily {
                 AppPreferences.shared.recordBootloaderVerified(diskKey: probed.diskRecordKey)
             }
-            if let probed, probed.isAura {
+            if let probed, probed.supportsAuraContract {
                 syncClockIfNeeded(mountPath: probed.mountPath)
             }
             ejectRequested = false

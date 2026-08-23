@@ -104,7 +104,7 @@ struct DeviceActivityBar: View {
                     onSync(scopeChoice == .selection)
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(device?.isAura != true || isVerifying || (scopeChoice == .selection && selectionCount == 0))
+                .disabled(device?.supportsAuraContract != true || isVerifying || (scopeChoice == .selection && selectionCount == 0))
             }
         }
     }
@@ -124,7 +124,7 @@ struct DeviceActivityBar: View {
             Text(lastSyncSummary).font(.callout).foregroundStyle(.secondary)
         } else if device == nil {
             Text("Conecta tu iPod para sincronizar.").font(.callout).foregroundStyle(.secondary)
-        } else if device?.isAura != true {
+        } else if device?.supportsAuraContract != true {
             Text("Instala Aura en este iPod para poder sincronizar.").font(.callout).foregroundStyle(.secondary)
         } else if let index = deviceSyncIndex {
             Text(summaryText(for: index)).font(.callout).foregroundStyle(.secondary)

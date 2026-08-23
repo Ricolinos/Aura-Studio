@@ -17,6 +17,12 @@ import Foundation
 ///      `DiskModeInfo.usb`): que firmware esta atendiendo el USB ahora.
 ///      Es la unica lectura real -- los archivos se pueden copiar a mano,
 ///      los descriptores los emite el firmware que corre.
+///   3. ST-046: la clave `firmware_family` de `aura.cfg`
+///      (`AuraDevice.declaredFamily`): que dice ser el firmware instalado.
+///      Ninguna de las dos fuentes de arriba puede contestar eso --
+///      Metro-Aura escribe el mismo arbol `.rockbox/aura/` que Aura
+///      (comparten el contrato §D a proposito) y por USB los dos se
+///      anuncian como Rockbox.
 ///
 /// El bootloader en la NOR no se puede leer desde una Mac; ver
 /// `AuraDevice.canSkipBootloaderFlash`.
@@ -90,6 +96,8 @@ enum AuraDeviceProbe {
             firmware: firmware,
             originalFirmwarePresent: originalPresent,
             runningFirmware: diskInfo.usb?.runningFirmware ?? .unknown,
+            declaredFamily: FirmwareCapabilities.declaredFamily(volumeRoot: root,
+                                                                fileManager: fileManager),
             usbSerial: diskInfo.usb?.serialNumber,
             volumeUUID: diskInfo.volumeUUID,
             capacityBytes: capacity,

@@ -1,11 +1,20 @@
-# Versión de Aura-Firmware que consume esta build de Aura Studio.
-# Ver CONTRATO-firmware-studio.md §E -- se actualiza en cada release
-# de cualquiera de los dos lados. No se edita a mano salvo el `tag=`;
-# los hashes los produce `scripts/fetch-firmware.sh` verificando contra
-# el `checksums.txt` del propio Release.
+# Versiones de firmware que consume esta build de Aura Studio -- una
+# seccion por familia (ST-047). Ver CONTRATO-firmware-studio.md §E -- se
+# actualiza en cada release de cualquiera de los lados. No se edita a
+# mano salvo los `tag=`; los hashes los produce `scripts/fetch-firmware.sh`
+# verificando contra el `checksums.txt` del propio Release.
+#
+# Sin prefijo = Aura (Ricolinos/Aura-Firmware). Prefijo `metro.` =
+# Metro-Aura (Ricolinos/Metro-Aura).
 
 tag=v0.3.1-beta
 rockbox.ipod=a79bd9b924b958779d2f9218f8ad774cb2cb34da2b955e4471277c67524da703
 rockbox.zip=ab42bded408186e7b2a02674c0b486befa1b55666a5b7f06fac1dda55400643b
 mks5lboot=e846731057348a72bdda101e63929ae530c4b3224959e02a2634dbcffd9102b0
 bootloader-ipod6g.ipod=d263780452fda352a5afa229078b39da5b1a78f3b1930e3dee15cf60d123e348
+
+metro.tag=v0.4.0
+metro.rockbox.ipod=6ca58f499b9bb871ec138d2e0ea9eaec03323ece212979d6d755e48ea67d983d
+metro.rockbox.zip=b4fca82db3a15a45098d34db0a4c638c5b0be4466425812a71336e1b79eaebdb
+metro.mks5lboot=a4d46769cc18e9329a02cb0abab39cb4deca201e7725951b39e564a96f0f4b31
+metro.bootloader-ipod6g.ipod=ea94930bfe4ab754dd89d8d312c327190d36505a698398a80c35e988e20b4e10

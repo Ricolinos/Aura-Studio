@@ -24,7 +24,11 @@ struct DeviceGeneralView: View {
     /// true cuando el firmware que trae la app embebido difiere del
     /// instalado en el iPod (comparacion por hash, no por fecha).
     let updateAvailable: Bool
-    /// "Buscar actualizaciones de Aura" manual (PLAN-general-sync.md
+    /// ST-046: tag del Release mas nuevo conocido para la familia del
+    /// firmware instalado, para poder nombrarlo. `nil` = sin cache
+    /// vigente; la UI cae a un texto generico.
+    var latestReleaseTag: String? = nil
+    /// "Buscar actualizaciones" manual (PLAN-general-sync.md
     /// §1.1) -- antes solo corria solo al conectar el dispositivo.
     let onCheckForUpdates: () -> Void
     /// Despues de sincronizar hay que releer `sync_summary.cfg` a mano:
@@ -74,7 +78,7 @@ struct DeviceGeneralView: View {
                             .font(.callout)
                             .foregroundStyle(.secondary)
                     }
-                    if device.isAura {
+                    if device.supportsAuraContract {
                         updateSection
                     }
                     Divider()
@@ -186,9 +190,9 @@ struct DeviceGeneralView: View {
                 // vive bajo .rockbox/aura/, que recien existe ahi. Sin
                 // Aura, sigue mostrando la etiqueta de volumen de
                 // siempre, sin edición.
-                if device.isAura, canRenameDevice {
+                if device.supportsAuraContract, canRenameDevice {
                     DeviceNameField(name: device.displayName, onRename: handleRename)
-                } else if device.isAura {
+                } else if device.supportsAuraContract {
                     Text(device.displayName).font(.title2.bold())
                     Text("El nombre de este iPod se puso desde otra Mac; solo desde ahí se puede cambiar.")
                         .font(.caption)
@@ -229,17 +233,36 @@ struct DeviceGeneralView: View {
     /// no hay red, cae al hash de `rockbox.ipod` contra el firmware
     /// embebido en esta version de la app -- nunca se queda sin poder
     /// decidir.
+    ///
+    /// ST-046 descubrio que "Instalar actualizacion" sobre un iPod con
+    /// Metro lo habria REEMPLAZADO por Aura (el unico firmware embebido
+    /// entonces) y quito el boton para toda familia que no fuera Aura.
+    /// ST-047 embebe las dos, asi que el boton vuelve para cualquier
+    /// familia que esta version sepa instalar -- `startAutomaticUpdate()`
+    /// reinstala LA MISMA familia detectada, nunca la preferencia de
+    /// Extras. Una familia desconocida sigue sin boton: se la manda a su
+    /// Release, si se sabe cual es.
     @ViewBuilder
     private var updateSection: some View {
+        let family = device?.declaredFamily ?? .aura
+        let name = family.displayName
+        let version = latestReleaseTag.map { " \($0)" } ?? ""
+
         if updateAvailable {
             HStack(spacing: 12) {
                 Image(systemName: "arrow.down.circle.fill")
                     .foregroundStyle(.tint)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Actualización de Aura disponible").font(.headline)
-                    Text("Esta versión de Aura Studio trae un firmware más nuevo que el instalado en tu iPod. Actualizar no borra tu música ni tus ajustes.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
+                    Text("Actualización de \(name)\(version) disponible").font(.headline)
+                    if family.isInstallable {
+                        Text("Esta versión de Aura Studio trae un \(name) más nuevo que el instalado en tu iPod. Actualizar no borra tu música ni tus ajustes.")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Tu iPod tiene \(name), un firmware que esta versión de Aura Studio no trae embebido. Te avisa de sus actualizaciones pero no puede aplicarlas: descárgala de su repositorio e instálala como de costumbre. Tu biblioteca no se toca.")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 Spacer()
                 // PLAN-general-sync.md §1.1: nombre distinto de
@@ -248,18 +271,27 @@ struct DeviceGeneralView: View {
                 // inutilizar el iPod) y sigue siendo el UNICO disparador
                 // de instalacion (ST-006), nunca el mismo verbo/boton
                 // que el refresco inofensivo de la barra de herramientas.
-                Button("Instalar actualización de Aura", action: onUpdateAura)
-                    .buttonStyle(.borderedProminent)
+                if family.isInstallable {
+                    Button("Instalar actualización de \(name)", action: onUpdateAura)
+                        .buttonStyle(.borderedProminent)
+                } else if let repo = family.releaseRepository,
+                          let url = URL(string: "https://github.com/\(repo)/releases") {
+                    Button("Ver el Release de \(name)") { NSWorkspace.shared.open(url) }
+                        .buttonStyle(.bordered)
+                }
             }
             .padding(12)
             .background(RoundedRectangle(cornerRadius: 10).fill(Color.accentColor.opacity(0.08)))
         } else {
             HStack {
-                Label("Aura está al día con esta versión de Aura Studio.", systemImage: "checkmark.seal")
+                Label(family.isInstallable
+                        ? "\(name) está al día con esta versión de Aura Studio."
+                        : "\(name) está al día.",
+                      systemImage: "checkmark.seal")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                 Spacer()
-                Button("Buscar actualizaciones de Aura", action: onCheckForUpdates)
+                Button("Buscar actualizaciones de \(name)", action: onCheckForUpdates)
                     .buttonStyle(.borderless)
                     .font(.callout)
             }
@@ -275,17 +307,26 @@ struct DeviceGeneralView: View {
         let dual = device.isDualBoot ? " (dual boot con Apple)" : ""
         switch device.firmware {
         case .aura(let hasBooted):
+            // ST-046: el nombre sale de lo que el firmware DECLARA
+            // (`firmware_family`), no de que exista `.rockbox/aura/` --
+            // Metro-Aura escribe ese mismo arbol y hasta ahora se
+            // reportaba como "Firmware Aura instalado". Sin arrancar
+            // todavia no hay `aura.cfg` que leer, asi que ahi se dice
+            // "de la familia Aura" en vez de arriesgar un nombre.
+            let name = device.declaredFamily.displayName
             switch (device.runningFirmware, hasBooted) {
-            case (.rockboxFamily, _):
-                return "Firmware Aura instalado -- conectado desde Aura" + dual
+            case (.rockboxFamily, true):
+                return "Firmware \(name) instalado -- conectado desde \(name)" + dual
+            case (.rockboxFamily, false):
+                return "Firmware de la familia Aura instalado -- conectado desde el firmware, todavía sin escribir su configuración" + dual
             case (.apple, true):
-                return "Firmware Aura instalado -- conectado desde el modo disco de Apple" + dual
+                return "Firmware \(name) instalado -- conectado desde el modo disco de Apple" + dual
             case (.unknown, true):
-                return "Firmware Aura instalado" + dual
+                return "Firmware \(name) instalado" + dual
             case (.apple, false):
-                return "Archivos de Aura en el disco, pero el iPod está corriendo el firmware de Apple y Aura nunca ha arrancado aquí -- no hay evidencia de que esté instalado"
+                return "Archivos de la familia Aura en el disco, pero el iPod está corriendo el firmware de Apple y ese firmware nunca ha arrancado aquí -- no hay evidencia de que esté instalado"
             case (.unknown, false):
-                return "Archivos de Aura en el disco -- todavía sin arrancar (sin evidencia de que el bootloader esté instalado)"
+                return "Archivos de la familia Aura en el disco -- todavía sin arrancar (sin evidencia de que el bootloader esté instalado)"
             }
         case .rockbox(let hasBooted):
             switch (device.runningFirmware, hasBooted) {
@@ -312,7 +353,7 @@ struct DeviceGeneralView: View {
     @ViewBuilder
     private func contents(_ device: AuraDevice) -> some View {
         switch device.firmware {
-        case .aura where device.isAura:
+        case .aura where device.supportsAuraContract:
             auraContents(device)
         case .aura:
             // ST-016: archivos sin evidencia de arranque -- la biblioteca
@@ -444,7 +485,7 @@ struct DeviceGeneralView: View {
         // ST-012: segunda barrera ademas del boton deshabilitado en
         // DeviceActivityBar -- nunca se toca el disco de un iPod sin
         // Aura, sin importar por donde llegue la llamada.
-        guard let device, device.isAura else { return }
+        guard let device, device.supportsAuraContract else { return }
         let scope: LibraryViewModel.SyncScope = selectionOnly ? .selection(library.selectionForSync) : .all
         Task {
             await library.sync(toVolumeAt: URL(fileURLWithPath: device.mountPath), scope: scope, resolvedConflicts: resolvedConflicts)

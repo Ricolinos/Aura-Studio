@@ -35,6 +35,9 @@ struct ContentView: View {
     /// conectado (hash) -- alimenta el aviso de "Actualizar Aura" en
     /// General. Se recalcula al conectar/desconectar.
     @State private var updateAvailable = false
+    /// ST-046: tag del Release mas nuevo conocido para la familia del
+    /// firmware instalado, para poder nombrarlo en General.
+    @State private var updateLatestTag: String?
     /// Ya se navego automaticamente al Instalador por esta deteccion de
     /// disco ilegible -- no volver a saltar hasta que el estado cambie
     /// (el usuario debe poder irse a otra seccion sin que la app lo
@@ -51,7 +54,7 @@ struct ContentView: View {
     /// caso de uso real, se sincroniza al conectar.
     private var libraryLocked: Bool {
         guard let device = deviceMonitor.device else { return false }
-        return !device.isAura
+        return !device.supportsAuraContract
     }
 
     var body: some View {
@@ -90,7 +93,7 @@ struct ContentView: View {
             }
         }
         .focusedSceneValue(\.auraSyncCommand, SyncCommandContext(
-            canSync: (deviceMonitor.device?.isAura ?? false) && !library.isProcessing && library.syncProgress == nil,
+            canSync: (deviceMonitor.device?.supportsAuraContract ?? false) && !library.isProcessing && library.syncProgress == nil,
             action: { Task { await syncNow() } }
         ))
         .onAppear { deviceMonitor.start() }
@@ -137,7 +140,7 @@ struct ContentView: View {
             // de sincronización viejo. Sin dispositivo (o con firmware
             // no-Aura) no hay nada que verificar -- se limpia en vez de
             // dejar mostrando el estado de un iPod que ya no es este.
-            if let newDevice, newDevice.isAura {
+            if let newDevice, newDevice.supportsAuraContract {
                 Task {
                     await ensureDeviceNameAssigned(for: newDevice)
                     await library.verifyDevice(at: URL(fileURLWithPath: newDevice.mountPath))
@@ -202,13 +205,19 @@ struct ContentView: View {
     /// actualizaciones de Aura") -- ver nota de `forceRefresh` en
     /// `AuraUpdateChecker.checkForUpdate`.
     private func refreshUpdateAvailability(for device: AuraDevice?, forceRefresh: Bool = false) {
-        guard let device, device.isAura else {
+        guard let device, device.supportsAuraContract else {
             updateAvailable = false
+            updateLatestTag = nil
             return
         }
+        // ST-046: la familia decide a que repositorio se le pregunta. Antes
+        // se le preguntaba siempre al de Aura, tambien con Metro instalado.
+        let family = device.declaredFamily
         Task {
             updateAvailable = await AuraUpdateChecker.checkForUpdate(deviceMountPath: device.mountPath,
+                                                                       family: family,
                                                                        forceRefresh: forceRefresh)
+            updateLatestTag = AuraUpdateChecker.latestKnownTag(family: family)
         }
     }
 
@@ -231,6 +240,7 @@ struct ContentView: View {
                                   selection = .installer
                               },
                               updateAvailable: updateAvailable,
+                              latestReleaseTag: updateLatestTag,
                               onCheckForUpdates: { refreshUpdateAvailability(for: deviceMonitor.device, forceRefresh: true) },
                               onRefreshDevice: { deviceMonitor.refreshDevice() },
                               onRenameDevice: { newName in
@@ -321,8 +331,11 @@ struct ContentView: View {
         defer { isRefreshing = false }
         guard let device = deviceMonitor.device else { return }
         deviceMonitor.refreshDevice()
-        updateAvailable = await AuraUpdateChecker.checkForUpdate(deviceMountPath: device.mountPath, forceRefresh: true)
-        if device.isAura {
+        updateAvailable = await AuraUpdateChecker.checkForUpdate(deviceMountPath: device.mountPath,
+                                                                   family: device.declaredFamily,
+                                                                   forceRefresh: true)
+        updateLatestTag = AuraUpdateChecker.latestKnownTag(family: device.declaredFamily)
+        if device.supportsAuraContract {
             await library.verifyDevice(at: URL(fileURLWithPath: device.mountPath))
         }
     }
@@ -589,7 +602,12 @@ private struct SidebarView: View {
                             .tag(section)
                             // General queda siempre accesible: es donde se
                             // explica QUE firmware hay y que hacer con el.
-                            .disabled(libraryLocked && section != .general)
+                            // ST-047: Extras queda FUERA del candado de
+                            // biblioteca -- ahi vive el selector de
+                            // firmware, que hace falta justamente con un
+                            // iPod de fabrica; sus filas que escriben en
+                            // el iPod (Temas) ya se deshabilitan solas.
+                            .disabled(libraryLocked && section != .general && section != .extras)
                     }
                 }
             }

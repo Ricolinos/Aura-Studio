@@ -57,6 +57,18 @@ targets:
         buildPhase: resources
       - path: Vendor/firmware-dist/checksums.txt
         buildPhase: resources
+      # ST-047: tag del Release de Aura embebido, lo escribe
+      # fetch-firmware.sh; lo lee la pantalla de Licencias (CONTRATO §B).
+      - path: Vendor/firmware-dist/firmware-version.txt
+        buildPhase: resources
+      # ST-047: segunda familia, Metro-Aura, como REFERENCIA DE CARPETA
+      # (carpeta azul): se copia entera a Resources/metro/ y sus
+      # rockbox.ipod/rockbox.zip/mks5lboot/... no chocan con los de Aura
+      # de arriba. BundledArtifacts la resuelve con subdirectory: "metro".
+      # Tambien la puebla scripts/fetch-firmware.sh (--family metro).
+      - path: Vendor/firmware-dist/metro
+        type: folder
+        buildPhase: resources
       # App icon (Icon Composer, con soporte de modo oscuro y "glass"
       # nativo -- ver Resources/AppIcon.icon/icon.json). El nombre del
       # archivo sin extension tiene que matchear
@@ -96,11 +108,14 @@ targets:
       - name: "mks5lboot: asegurar bit de ejecucion"
         basedOnDependencyAnalysis: false
         script: |
-          BIN="${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/mks5lboot"
-          if [ -f "$BIN" ] && [ ! -x "$BIN" ]; then
-            chmod 755 "$BIN"
-            echo "mks5lboot: bit de ejecucion restaurado en el bundle"
-          fi
+          # ST-047: el de Aura en la raiz de Resources y el de Metro en metro/.
+          for BIN in "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/mks5lboot" \
+                     "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/metro/mks5lboot"; do
+            if [ -f "$BIN" ] && [ ! -x "$BIN" ]; then
+              chmod 755 "$BIN"
+              echo "mks5lboot: bit de ejecucion restaurado en el bundle ($BIN)"
+            fi
+          done
 
   AuraStudioTests:
     type: bundle.unit-test

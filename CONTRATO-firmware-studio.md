@@ -1,6 +1,29 @@
 # Contrato entre `Aura-Firmware` y Aura Studio
 
-**Versión 7 — 2026-08-18.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+**Versión 9 — 2026-08-23.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+
+**v9 (ST-047, Aura Studio distribuye e instala DOS familias) — implementado del lado Studio en esta pasada; sin trabajo del lado de ningún firmware.** Tres cambios, todos en lo que Studio hace con los Releases, ninguno en el disco del iPod:
+
+- **§A generaliza el canal.** Ya no es "un GitHub Release de `Aura-Firmware`" sino *el Release de la familia que corresponda*: `Ricolinos/Aura-Firmware` para Aura y `Ricolinos/Metro-Aura` para Metro-Aura, con la **misma** lista de assets (`rockbox.ipod`, `rockbox.zip`, `bootloader-ipod6g.ipod`, `mks5lboot`, `checksums.txt`, más `MODIFICATIONS.md` y `THIRD-PARTY-NOTICES.txt`) y la misma verificación por checksum. Los extras que solo Aura publica (`AuraPalette.swift`, `theme-format-v1.json`, `aura-theme-default.zip`) siguen siendo de Aura; Metro no los publica y Studio no los espera de él.
+- **§B se cumple por fin.** La pantalla de "Licencias" que el contrato prometía desde v1 (y que `DECISIONS.md` de Studio registraba como deuda) existe: Extras › Licencias, y lista **cada familia embebida** con su repositorio, el tag exacto incluido (leído de `firmware-version.txt`, que `fetch-firmware.sh` deja junto a los artefactos) y los enlaces a su `MODIFICATIONS.md` y `THIRD-PARTY-NOTICES.txt` del Release. Con un segundo firmware GPL a bordo esto dejó de ser opcional.
+- **§E: `FIRMWARE_VERSION` lleva una sección por familia.** Sin prefijo = Aura (compatibilidad total con lo que había); prefijo `metro.` = Metro-Aura. `fetch-firmware.sh` acepta `--family aura|metro` (por defecto las dos) y guarda Metro en `Vendor/firmware-dist/metro/`, que `project.yml` empaqueta como referencia de carpeta para que los dos `rockbox.ipod` no choquen en el bundle.
+
+**Qué NO cambia:** §D entero. Los dos firmwares hablan el mismo contrato de disco, que es justamente lo que hace posible que la biblioteca de Studio se sincronice igual con cualquiera; v8 ya dio la clave (`firmware_family`) para distinguirlos. Al **cambiar** de familia (instalar una sobre la otra) Studio borra `.rockbox/aura/aura.cfg` del firmware saliente — sus ajustes no le sirven al entrante y dejarlo engañaría la detección de v8 hasta el primer arranque; reinstalar la misma familia lo conserva, como siempre.
+
+**v8 (ST-046, identidad del firmware instalado) — documentado antes de implementar el lado Studio, y sin lado firmware que implementar.** Agrega **una** clave a §D: `firmware_family` en `aura.cfg`. Resuelve un problema que el contrato tenía abierto desde que existe un segundo firmware que lo habla: **§D no dice quién lo está hablando.**
+
+Hasta v7 el contrato asumía tácitamente un solo firmware. Eso dejó de ser cierto: **Metro-Aura** (`Ricolinos/Metro-Aura`, fork hermano de Rockbox con otro lenguaje visual) implementa §D completo a propósito — escribe `aura.cfg`, lee `sync_summary.cfg`, consume `artist_images.cfg` y `*_categories.cfg`, respeta `/.aura/sync-pending.json` — y sincroniza con Aura Studio sin un solo cambio. Esa compatibilidad es deseada y se conserva. Lo que **no** existía era forma de distinguirlos:
+
+- Los archivos no sirven: Metro escribe el mismo árbol `.rockbox/aura/`.
+- El USB tampoco: los dos son forks de Rockbox y se anuncian como `Rockbox.org` con el mismo VID/PID de Apple.
+
+Consecuencia real observada en hardware (iPod del dueño, 2026-08-20, Metro v0.4.0 instalado): Aura Studio lo clasificaba como Aura, le consultaba actualizaciones al repositorio de **Aura** y comparaba el `version.txt` de Metro contra los tags de Aura. No había roto nada solo porque `0.4.0 > 0.3.1-beta`; en cuanto Aura publicara una versión mayor, Studio habría ofrecido "actualizar" y eso habría **sobrescrito Metro con Aura**.
+
+**La ausencia de la clave significa `aura`**, y eso es lo que hace el cambio retrocompatible sin tocar `Aura-Firmware`: ese firmware nunca escribió esta clave ni la escribirá, así que "no está" es precisamente su firma. Todo iPod con Aura instalada — incluidos los instalados antes de v8 — se sigue reportando como Aura. **No hay trabajo del lado `Aura-Firmware` en este contrato**; el único firmware que escribe la clave hoy es Metro-Aura, que ya lo hacía desde antes de v8 (`metro_settings.c`, M-004) precisamente esperando esta lectura.
+
+Regla de interpretación, obligatoria para quien lea la clave: **un valor desconocido NO es Aura.** Un firmware que se molestó en declararse está diciendo justamente que es otra cosa; tratarlo como Aura repetiría el mismo error con un firmware futuro.
+
+Lo que v8 **no** hace: no le da a Studio la capacidad de instalar otro firmware que no sea Aura. Studio empaqueta un solo juego de artefactos (el de Aura), así que ante un firmware hermano informa de su Release nuevo — del repositorio correcto — y **no** ofrece el botón de instalar. Poder instalarlos es trabajo aparte, con su propio contrato de empaquetado y su obligación GPL §B correspondiente.
 
 **v7 (D-321/ST-035, hora y zona horaria automáticas) — implementado en ambos repos en esta pasada.** Agrega §D.4 y siete claves nuevas de `aura.cfg`: `rtc_sync_year/month/day/hour/min/sec` (transitorias, un solo uso) y `tz_local_quarters` (persistente, ya existía como ajuste interno de Aura desde D-293 — v7 es la primera vez que Studio también la escribe). Studio escribe las siete cada vez que detecta firmware Aura corriendo (conexión) y al terminar de instalar/actualizar; el firmware las aplica al RTC real y descarta las transitorias en el mismo momento en que ya recupera el disco tras un posible USB de Studio (`aura_main_sync_after_disk_handoff()`, D-293) — nunca hace falta un reinicio completo aparte.
 
@@ -20,7 +43,7 @@ Contexto: hasta el 2026-08-16 ambos proyectos vivían en un monorepo (`Aura-Proy
 
 ## A — Artefactos y canal de distribución
 
-Aura Studio **no lee el árbol de fuentes de `Aura-Firmware`**. La única vía es un **GitHub Release** de `Aura-Firmware`, con tag `vMAJOR.MINOR.PATCH` y estos assets, producidos por `firmware/tools/package_dist.sh` (más el bootloader, compilado a mano — ver `firmware/dist/README.md`):
+Aura Studio **no lee el árbol de fuentes de ningún firmware**. La única vía es un **GitHub Release** del repositorio de la familia (`Ricolinos/Aura-Firmware` para Aura, `Ricolinos/Metro-Aura` para Metro-Aura — v9), con tag `vMAJOR.MINOR.PATCH` y estos assets, producidos por `firmware/tools/package_dist.sh` (más el bootloader, compilado a mano — ver `firmware/dist/README.md`):
 
 | Asset | Verificado por checksum |
 |---|---|
@@ -40,11 +63,11 @@ En Aura Studio: `Vendor/firmware-dist/` (gitignorado) recibe estos archivos vía
 
 ## B — Cumplimiento GPL v2
 
-`mks5lboot`, `bootloader-ipod6g.ipod`, `rockbox.ipod` y `rockbox.zip` son derivados de Rockbox, GPL v2 (`rockbox.zip` además contiene Inter — SIL OFL — y Lucide/Phosphor — ISC/MIT — como fuentes/íconos del tema por defecto). Aura Studio (software cerrado) los distribuye embebidos como **agregación**, y cumple §3 (ofrecer la fuente) mostrando en una pantalla de "Licencias":
+`mks5lboot`, `bootloader-ipod6g.ipod`, `rockbox.ipod` y `rockbox.zip` son derivados de Rockbox, GPL v2 (`rockbox.zip` además contiene Inter — SIL OFL — y Lucide/Phosphor — ISC/MIT — como fuentes/íconos del tema por defecto). Aura Studio (software cerrado, gratuito, sin fines comerciales) los distribuye embebidos como **agregación**, y cumple §3 (ofrecer la fuente) mostrando en una pantalla de "Licencias" (Extras › Licencias, existe desde v9/ST-047), **por cada familia embebida**:
 
-- La URL de `Aura-Firmware`.
+- La URL de su repositorio (`Aura-Firmware` o `Metro-Aura`).
 - El tag exacto de `FIRMWARE_VERSION` que trae embebido.
-- Un enlace a `MODIFICATIONS.md` del release correspondiente.
+- Un enlace a `MODIFICATIONS.md` y a `THIRD-PARTY-NOTICES.txt` del release correspondiente.
 
 Las notas de cada release de Aura Studio repiten esos tres datos. Aura Studio no modifica esos binarios de ninguna forma.
 
@@ -63,6 +86,7 @@ Esto **sí** es un acoplamiento permanente por diseño: ambos lados leen/escribe
 | `.rockbox/aura/aura.cfg` → clave `theme_id` | Firmware (`aura_style.c`); Studio también puede escribirla al instalar/activar un tema | Firmware, al arrancar (`aura_style_boot()`) | D-289. Vacío o `default` = el tema compilado. Studio escribe editando la línea, nunca reescribe el archivo entero (lo owns el firmware, que lo regenera completo en cada `aura_settings_save()`) |
 | `.rockbox/aura/aura.cfg` → clave `theme_format_supported` | Firmware (siempre, en cada `aura_settings_save()`) | Studio (antes de instalar un tema, para saber si el firmware instalado lo soporta) | D-289. Solo escritura del lado firmware — nunca la relee |
 | `.rockbox/aura/aura.cfg` → clave `sync_marker_supported` | Firmware (siempre, en cada `aura_settings_save()`) | Studio (al terminar un sync: si está, escribe el marcador y **no** borra la base de datos; si falta, conserva su mecanismo previo de borrar `database_*.tcd`) | D-293. Solo escritura del lado firmware — nunca la relee. Valor = versión de esquema del marcador que entiende (`1`) |
+| `.rockbox/aura/aura.cfg` → clave `firmware_family` | Firmware (los que no son Aura; Aura **nunca** la escribe) | Studio (`FirmwareCapabilities.declaredFamily`, para nombrar el firmware y decidir a qué repositorio consultar actualizaciones) | v8, ST-046. Valor: identificador corto en minúsculas de la familia (`metro`). **Ausente = `aura`** — es la firma de Aura, no un fallback. Un valor desconocido NO se trata como Aura: sin repositorio conocido, Studio no ofrece actualizaciones en vez de arriesgar una sobrescritura. Solo lectura del lado Studio — nunca la escribe |
 | `.rockbox/aura/themes/<id>/` | Studio (instala/reempaqueta), o el propio usuario a mano | Firmware (`aura_style.c`, `aura_style_scan()`/`aura_style_activate()`) | D-289. Formato completo en `CONTRATO-formato-tema.md`. `<id>` nunca `default` (reservado) |
 | `.rockbox/aura/device.cfg` | Studio (solo la instalación `device_owner` edita el nombre) | Studio (nombre del iPod, barra lateral/General); firmware (`device_name`, slot "Mi iPod" de Acerca de — D-294) | ST-011 / ST-013 / D-294. Formato completo en `CONTRATO-dispositivo.md` (v2). El firmware **nunca** lo escribe — a diferencia de `theme_id`, no hay una clave que ambos lados toquen |
 | `/.aura/sync-pending.json` | Studio (al terminar cada sync que tocó archivos); Firmware (sube `attempts`, y lo **borra** al terminar bien) | Firmware (al arrancar y al volver de la pantalla USB) | D-293 / ST-012. Esquema y comportamiento completos en **`docs/contracts/library-layout-v1.md` §4**. Directorio propio en la raíz, separado de `.rockbox/aura/` a propósito |

@@ -16,14 +16,55 @@
 # En ambos casos verifica checksums.txt antes de dejar los archivos
 # utilizables, y falla con mensaje claro si algo no coincide o falta.
 
+# ST-047 (dos familias de firmware): el mismo script sirve a Aura y a
+# Metro-Aura. Aura se queda EXACTAMENTE donde estaba (Vendor/firmware-dist/,
+# con sus extras de temas y paleta que solo Aura publica); Metro va en el
+# subdirectorio Vendor/firmware-dist/metro/, que project.yml empaqueta
+# como referencia de carpeta para que sus rockbox.ipod/rockbox.zip no
+# choquen con los de Aura dentro del bundle. En FIRMWARE_VERSION la
+# seccion de Metro lleva el prefijo `metro.` (`metro.tag=...`).
+#
+#   scripts/fetch-firmware.sh                 # las dos familias
+#   scripts/fetch-firmware.sh --family aura   # solo una
+#   scripts/fetch-firmware.sh --family metro
+#   scripts/fetch-firmware.sh --from-dir <dist>            # Aura, desarrollo
+#   scripts/fetch-firmware.sh --family metro --from-dir <dist>
+
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-VENDOR_DIR="$ROOT_DIR/studio/AuraStudio/Vendor/firmware-dist"
+VENDOR_ROOT="$ROOT_DIR/studio/AuraStudio/Vendor/firmware-dist"
 VERSION_FILE="$ROOT_DIR/FIRMWARE_VERSION"
 
 ASSETS=(rockbox.ipod rockbox.zip mks5lboot checksums.txt)
-OPTIONAL_ASSETS=(bootloader-ipod6g.ipod AuraPalette.swift MODIFICATIONS.md theme-format-v1.json aura-theme-default.zip)
+OPTIONAL_ASSETS=(bootloader-ipod6g.ipod AuraPalette.swift MODIFICATIONS.md theme-format-v1.json aura-theme-default.zip THIRD-PARTY-NOTICES.txt)
+
+# Por familia: repositorio, prefijo de clave en FIRMWARE_VERSION y
+# destino. Se fijan con set_family antes de cualquier operacion.
+FAMILY=""
+REPO=""
+KEY_PREFIX=""
+VENDOR_DIR=""
+
+set_family() {
+  FAMILY="$1"
+  case "$FAMILY" in
+    aura)
+      REPO="Ricolinos/Aura-Firmware"; KEY_PREFIX=""; VENDOR_DIR="$VENDOR_ROOT" ;;
+    metro)
+      REPO="Ricolinos/Metro-Aura"; KEY_PREFIX="metro."; VENDOR_DIR="$VENDOR_ROOT/metro" ;;
+    *)
+      echo "ERROR: familia desconocida '$FAMILY' (aura|metro)" >&2; exit 1 ;;
+  esac
+}
+
+# Deja junto a los artefactos el tag que se descargo, para que la
+# pantalla de Licencias de la app (CONTRATO §B) pueda mostrarlo sin
+# leer FIRMWARE_VERSION, que no viaja en el bundle.
+write_version_marker() {
+  local dir="$1" tag="$2"
+  printf '%s\n' "$tag" > "$dir/firmware-version.txt"
+}
 
 verify_checksums() {
   local dir="$1"
@@ -72,9 +113,11 @@ from_dir() {
     echo "ERROR: $src no existe" >&2
     exit 1
   fi
-  echo "==> Copiando artefactos locales desde $src (modo desarrollo, --from-dir)"
+  echo "==> [$FAMILY] Copiando artefactos locales desde $src (modo desarrollo, --from-dir)"
   mkdir -p "$VENDOR_DIR"
-  rm -f "$VENDOR_DIR"/*
+  # Solo archivos: `rm -f dir/*` no toca el subdirectorio metro/ cuando
+  # se limpia la raiz de Aura, ni al reves.
+  find "$VENDOR_DIR" -maxdepth 1 -type f -delete
   for f in "${ASSETS[@]}" "${OPTIONAL_ASSETS[@]}"; do
     [[ -f "$src/$f" ]] && cp "$src/$f" "$VENDOR_DIR/$f"
   done
@@ -86,32 +129,57 @@ from_dir() {
   done
   verify_checksums "$VENDOR_DIR"
   restore_exec_bit "$VENDOR_DIR"
+  write_version_marker "$VENDOR_DIR" "local-dev"
   echo "==> Listo: $VENDOR_DIR (modo desarrollo -- sin bootloader-ipod6g.ipod si package_dist.sh no lo produjo)"
 }
 
 from_release() {
   if [[ ! -f "$VERSION_FILE" ]]; then
-    echo "ERROR: falta $VERSION_FILE (tag del Release de Aura-Firmware a usar)" >&2
+    echo "ERROR: falta $VERSION_FILE (tags de los Releases a usar)" >&2
     exit 1
   fi
   local tag
-  tag="$(grep '^tag=' "$VERSION_FILE" | cut -d= -f2)"
+  tag="$(grep "^${KEY_PREFIX}tag=" "$VERSION_FILE" | cut -d= -f2)"
   if [[ -z "$tag" ]]; then
-    echo "ERROR: $VERSION_FILE no define 'tag=' -- ver FIRMWARE_VERSION.example" >&2
+    echo "ERROR: $VERSION_FILE no define '${KEY_PREFIX}tag=' -- ver FIRMWARE_VERSION.example" >&2
     exit 1
   fi
-  echo "==> Descargando Release $tag de Aura-Firmware (gh release download)"
+  echo "==> [$FAMILY] Descargando Release $tag de $REPO (gh release download)"
   mkdir -p "$VENDOR_DIR"
-  rm -f "$VENDOR_DIR"/*
-  gh release download "$tag" --repo Ricolinos/Aura-Firmware --dir "$VENDOR_DIR" --clobber
+  find "$VENDOR_DIR" -maxdepth 1 -type f -delete
+  gh release download "$tag" --repo "$REPO" --dir "$VENDOR_DIR" --clobber
   verify_checksums "$VENDOR_DIR"
   restore_exec_bit "$VENDOR_DIR"
+  write_version_marker "$VENDOR_DIR" "$tag"
   echo "==> Listo: $VENDOR_DIR ($tag)"
 }
 
-if [[ "${1:-}" == "--from-dir" ]]; then
-  [[ -n "${2:-}" ]] || { echo "Uso: $0 --from-dir <ruta a firmware/dist/>" >&2; exit 1; }
-  from_dir "$2"
-else
-  from_release
+FAMILIES=(aura metro)
+FROM_DIR=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --family)
+      [[ -n "${2:-}" ]] || { echo "Uso: $0 [--family aura|metro] [--from-dir <dist>]" >&2; exit 1; }
+      FAMILIES=("$2"); shift 2 ;;
+    --from-dir)
+      [[ -n "${2:-}" ]] || { echo "Uso: $0 [--family aura|metro] --from-dir <ruta a firmware/dist/>" >&2; exit 1; }
+      FROM_DIR="$2"; shift 2 ;;
+    *)
+      echo "Uso: $0 [--family aura|metro] [--from-dir <dist>]" >&2; exit 1 ;;
+  esac
+done
+
+if [[ -n "$FROM_DIR" && ${#FAMILIES[@]} -ne 1 ]]; then
+  # --from-dir es un dist concreto de UNA familia; sin --family se asume
+  # Aura, que es lo que el script siempre hizo.
+  FAMILIES=(aura)
 fi
+
+for fam in "${FAMILIES[@]}"; do
+  set_family "$fam"
+  if [[ -n "$FROM_DIR" ]]; then
+    from_dir "$FROM_DIR"
+  else
+    from_release
+  fi
+done

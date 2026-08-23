@@ -53,6 +53,20 @@ final class AppPreferences: ObservableObject {
         var id: String { rawValue }
     }
 
+    /// ST-047: que firmware instala el asistente en una instalacion NUEVA
+    /// (Extras › Firmware). Aura por defecto -- lo que Studio siempre
+    /// instalo. Una actualizacion ignora esto y reinstala la familia que
+    /// ya esta en el iPod (`InstallerViewModel.startAutomaticUpdate`).
+    /// Se guarda el valor de `configValue` (`nil`/ausente = Aura), la
+    /// misma convencion que `firmware_family` en el contrato.
+    @Published var firmwareFamilyToInstall: FirmwareFamily {
+        didSet {
+            let value = firmwareFamilyToInstall.configValue
+            if let value { defaults.set(value, forKey: Keys.firmwareFamilyToInstall) }
+            else { defaults.removeObject(forKey: Keys.firmwareFamilyToInstall) }
+        }
+    }
+
     @Published var coverArtPolicy: CoverArtPolicy {
         didSet { defaults.set(coverArtPolicy.rawValue, forKey: Keys.coverArtPolicy) }
     }
@@ -431,6 +445,7 @@ final class AppPreferences: ObservableObject {
 
     private enum Keys {
         static let coverArtPolicy = "aura.coverArtPolicy"
+        static let firmwareFamilyToInstall = "aura.firmwareFamilyToInstall"
         static let fetchSyncedLyrics = "aura.fetchSyncedLyrics"
         static let enrichOnline = "aura.enrichOnline"
         static let language = "aura.language"
@@ -460,6 +475,10 @@ final class AppPreferences: ObservableObject {
     }
 
     init(defaults: UserDefaults = .standard) {
+        // ST-047: una familia guardada que esta version ya no sepa
+        // instalar cae a Aura -- nunca a "desconocida".
+        let storedFamily = FirmwareFamily.parse(configValue: defaults.string(forKey: Keys.firmwareFamilyToInstall))
+        self.firmwareFamilyToInstall = storedFamily.isInstallable ? storedFamily : .aura
         self.defaults = defaults
         self.coverArtPolicy = (defaults.string(forKey: Keys.coverArtPolicy)
             .flatMap(CoverArtPolicy.init(rawValue:))) ?? .albumOnly

@@ -138,7 +138,7 @@ Además de estas 41, hay 53 entradas mixtas (firmware + Studio) y varias puramen
 
 **Verificación**: `swift build` limpio. `swift test` — **259 tests** (31 nuevos de esta pasada), 2 saltados (sin fixtures, igual que siempre), **0 fallas** — el propio `LiveEnrichmentIntegrationTests` (histórico flaky por red real) pasó esta corrida completo.
 
-**Pendiente, documentado (Q9, hallazgo de D-290 en Aura-Firmware)**: `CONTRATO-firmware-studio.md` promete que esta app "cumple §3 mostrando una pantalla de Licencias" para el GPL v2 embebido — no existe tal vista en el código todavía. No bloqueaba el release del firmware (Studio sigue privado), pero hay que cerrarlo antes de que esta app se distribuya a terceros.
+**Pendiente, documentado (Q9, hallazgo de D-290 en Aura-Firmware)**: `CONTRATO-firmware-studio.md` promete que esta app "cumple §3 mostrando una pantalla de Licencias" para el GPL v2 embebido — no existe tal vista en el código todavía. No bloqueaba el release del firmware (Studio sigue privado), pero hay que cerrarlo antes de que esta app se distribuya a terceros. **Cerrado en ST-047** (`LicensesView`, Extras › Licencias, contrato v9).
 
 ## ST-007 — Lector local de metadatos que sí funciona (`LocalTagReader`), y relectura de la biblioteca existente
 
@@ -671,3 +671,84 @@ Arrastre a la barra lateral: `SidebarView` (dentro de `ContentView.swift`) gana 
 ## ST-045 — Pin a v0.3.1-beta (D-323 en Aura-Firmware)
 
 Encargo del dueño: cortar release del firmware con la cuadrícula de miniaturas en Fotos (D-323, "modo de pantalla completa" pedido junto con ST-044, tercer punto que resultó ser del firmware) para poder instalarla desde Aura Studio. `FIRMWARE_VERSION` → `tag=v0.3.1-beta`, hashes de `rockbox.ipod`/`rockbox.zip` actualizados (`mks5lboot`/`bootloader-ipod6g.ipod` sin cambios, coherente con que D-323 solo tocó `apps/aura/aura_photos.c`). `fetch-firmware.sh` verificó los 4 checksums contra el Release publicado; `AuraPalette.swift` sin diferencias (D-323 no toca el sistema de diseño). `swift build` limpio; sin cambios de código Swift en esta pasada.
+
+## ST-046 — Identidad del firmware instalado: separar "es Aura" de "habla el contrato de Aura" (contrato v8)
+
+**Encargo del dueño (2026-08-20):** *"Ayúdame a que Aura Studio pueda reconocer qué firmware está instalado, para que en la sección de General aparezca correctamente el nombre del firmware y salgan las actualizaciones correspondientes."*
+
+### El problema, con el hardware enfrente
+
+El iPod del dueño tenía **Metro-Aura v0.4.0** instalado. Aura Studio lo reportaba como *"Firmware Aura instalado"*, le ofrecía el botón *"Reinstalar Aura"* y le consultaba actualizaciones al repositorio de **Aura-Firmware**, comparando el `v0.4.0` de Metro contra los tags de Aura.
+
+Eso no era un detalle cosmético: **si se aceptaba esa actualización, Metro se perdía.** No había explotado todavía por pura aritmética — `0.4.0 > 0.3.1-beta`, el último tag de Aura — así que Studio decía "al día". El primer Release de Aura por encima de 0.4.0 habría convertido ese "al día" en un botón que borraba el firmware del dueño.
+
+Peor: el respaldo por hash (`isUpdateAvailable`) compara contra el `rockbox.ipod` **embebido en la app**, que es el de Aura. Contra cualquier otro firmware el hash **siempre** difiere, así que esa ruta contestaba "sí, hay actualización" de forma permanente.
+
+### Por qué la detección no existía
+
+Las dos fuentes que `AuraDeviceProbe` ya distinguía (ST-016) no pueden contestar la pregunta:
+
+- **Archivos en el disco**: Metro escribe el mismo árbol `.rockbox/aura/`. A propósito — implementa §D completo del contrato, y por eso sincroniza perfecto.
+- **Descriptores USB**: los dos son forks de Rockbox, se anuncian como `Rockbox.org` con el VID/PID de Apple (`USBDeviceIdentity.classify`).
+
+### La decisión: un tercer hecho, no un tercer significado del mismo
+
+Se agrega **`AuraDevice.declaredFamily`**, leído de `firmware_family` en `aura.cfg` (contrato **v8**). Va aparte de los otros dos por la misma razón que ellos van aparte entre sí: contesta otra pregunta.
+
+Y el cambio central, que es de nombres pero no es cosmético: **`isAura` se llama ahora `supportsAuraContract`**. Esa propiedad hacía dos trabajos a la vez —"la identidad es Aura" y "el contrato de biblioteca funciona aquí"— y para Metro el segundo es verdadero y el primero falso. Quien quería preguntar lo primero obtenía la respuesta de lo segundo. Ahí vivía el bug.
+
+- `supportsAuraContract` — **capacidad**. Sigue siendo `true` para Metro, y **debe** serlo: biblioteca, sync, contadores, nombre del iPod y reloj funcionan igual. El sync real con Metro ya estaba verificado en hardware.
+- `isAuraFirmware` — **identidad**. `supportsAuraContract && declaredFamily == .aura`. Es lo que decide nombrar el firmware, ofrecer el Release de Aura e instalar.
+
+Los temas no necesitaron nada: ya se decidían por `theme_format_supported`, que Metro no escribe. Es el precedente exacto de esta separación.
+
+**Ausente = Aura.** No es un fallback defensivo, es el contrato: Aura-Firmware nunca escribió esta clave, así que su ausencia es su firma. El cambio es retrocompatible **sin tocar el firmware de Aura**. Metro ya la escribía desde antes (M-004), esperando esta lectura.
+
+**Un valor desconocido NO es Aura.** Un firmware que se declara está diciendo que es otra cosa; tratarlo como Aura repetiría el bug con un firmware futuro. Sin repositorio conocido, Studio calla en vez de arriesgarse.
+
+### Qué cambia en pantalla
+
+- **General** nombra el firmware por lo que declara (`Firmware Metro instalado`), no por el árbol que encuentra.
+- **La sección de actualizaciones** consulta el repositorio de la familia (`Ricolinos/Metro-Aura`) y nombra el tag. Para un firmware hermano **no aparece el botón de instalar** — aparece *"Ver el Release de Metro"*: Studio solo empaqueta el firmware de Aura, así que "Instalar actualización" no lo actualizaría, lo reemplazaría. Se dice eso con todas sus letras.
+- **El Instalador** deja de decir *"Reinstalar Aura"* sobre un iPod con Metro, y su nota advierte que instalar Aura reemplaza Metro y que los ajustes de Metro se pierden (la música y las fotos no se tocan).
+- **El cache de Releases es por familia.** Con una sola llave, conectar un iPod con Metro y luego uno con Aura le habría mostrado al segundo los tags del primero durante las 24h del TTL.
+
+### Verificación
+
+16 pruebas nuevas (`FirmwareFamilyTests`), 544 en total en verde. Además, corrido contra el iPod real montado: familia `metro`, `supportsAuraContract` `true`, `isAuraFirmware` `false`, repositorio `Ricolinos/Metro-Aura`.
+
+Límite anotado en la propia prueba: en el arnés de SwiftPM no hay firmware embebido, así que `testHashFallbackNeverFiresForOtherFamilies` fija el contrato ("nunca `true` para otra familia") pero no puede distinguir por cuál de las dos guardas sale. La guarda de familia es la primera línea de `isUpdateAvailable` justamente para que el orden no dependa de si hay artefactos.
+
+### Fuera de alcance, deliberadamente
+
+Instalar Metro **desde** Aura Studio (el selector de firmware en Extras que pidió el dueño en el mismo encargo). Requiere un segundo juego de artefactos empaquetados y arrastra una obligación GPL §B que hoy está sin cumplir: la pantalla de Licencias que el contrato promete no existe (ver la nota de `DECISIONS.md` sobre §B). Se documenta aparte, no se implementa aquí.
+
+## ST-047 — Aura Studio instala dos firmwares: selector en Extras, empaquetado por familia, y la pantalla de Licencias que faltaba (contrato v9)
+
+**Encargo del dueño (2026-08-20):** *"Aura Studio le dé oportunidad al usuario de usar Metro-Aura o Aura como firmware personalizado para el iPod… en la sección de 'Extras' es donde vamos a poner la opción… recuerda que este proyecto es gratuito; si encuentras un tema con las licencias, confío en que sabrás resolverlo, ya que no quiero distribuir software que no es mío para hacer negocio. Ayúdame a implementarlo de una vez por todas."*
+
+### Licencias primero
+Las dos familias son GPL v2, derivadas de Rockbox. La GPL permite distribuirlas (incluso con fines comerciales, que aquí no los hay) con una condición concreta: ofrecer la fuente. El contrato (§B) fijaba desde v1 **cómo** la cumple Studio —una pantalla de Licencias con repositorio, tag exacto y `MODIFICATIONS.md`— y esa pantalla **no existía** (`DECISIONS.md`, nota de D-290). Con un solo firmware, propio, era deuda; con un segundo firmware GPL a bordo sería incumplimiento. Así que `LicensesView` va **antes** que el selector: Extras › Licencias lista cada familia embebida con su repositorio, la versión exacta incluida, la fuente de ese tag, y enlaces a `MODIFICATIONS.md` y `THIRD-PARTY-NOTICES.txt` del Release. El tag se lee de `firmware-version.txt`, que `fetch-firmware.sh` deja junto a los artefactos — nunca de una constante a mano que pueda envejecer respecto a lo que se empaquetó. La pantalla dice también, con todas sus letras, que Aura Studio es gratuita y sin fines comerciales.
+
+### Empaquetado: Aura no se mueve, Metro va en `metro/`
+Cuatro sitios asumían un solo firmware. La regla para tocarlos fue *cero riesgo para Aura*:
+- `FIRMWARE_VERSION`: sección por familia; sin prefijo = Aura (idéntico a lo que había), `metro.` = Metro-Aura.
+- `scripts/fetch-firmware.sh --family aura|metro` (por defecto las dos). Metro aterriza en `Vendor/firmware-dist/metro/`. La limpieza previa pasa de `rm -f dir/*` a `find -maxdepth 1 -type f -delete` para que limpiar una familia no borre la otra. Escribe `firmware-version.txt`.
+- `project.yml`: la carpeta `metro` entra como **referencia de carpeta** con `buildPhase: resources` → `Resources/metro/`. Así los dos `rockbox.ipod`/`rockbox.zip`/`mks5lboot` conviven sin chocar. Verificado con `xcodebuild` real: el bundle trae `Resources/firmware-version.txt` (`v0.3.1-beta`) y `Resources/metro/…` completo (`v0.4.0`). La fase que restaura el bit de ejecución de `mks5lboot` cubre los dos.
+- `BundledArtifacts(bundle:family:)` resuelve con `subdirectory:`; `.shared` sigue siendo Aura; `forFamily(_:)` da el otro. `releaseTag` lee el marcador.
+
+### El instalador instala "la familia objetivo"
+`InstallerViewModel.targetFamily`: la fija `start(mode:)` desde la preferencia de Extras; `startAutomaticUpdate()` la **sobreescribe con la familia detectada** en el iPod (`declaredFamily`, ST-046) — una actualización jamás cambia de firmware a nadie. De ahí salen artefactos, runner (`MKS5LBootRunner(artifacts:)`: mks5lboot y bootloader de esa familia), textos y el centinela del árbol, que ahora es por familia (`FirmwareFamily.installedTreeSentinel`): con el de Aura (`a26-title-20.fnt`), **toda instalación de Metro habría fallado como "incompleta"** tras extraerse bien.
+
+Al cambiar de familia, el instalador borra `.rockbox/aura/aura.cfg` del firmware saliente: sus ajustes no le sirven al entrante y, peor, Aura habría encontrado un `firmware_family: metro` que no es suyo y Studio lo habría seguido llamando Metro hasta el primer arranque (Aura regenera el archivo entero al guardar, así que el transitorio duraría exactamente eso). Reinstalar la misma familia lo conserva, como siempre prometió.
+
+### Dónde vive la elección
+En **Extras**, como pidió el dueño: dos tarjetas-radio (`FirmwareChoiceCard`, misma forma que `BootModeCard` del instalador) con el tag embebido como insignia y una línea que dice qué pasa con lo que ya hay en el iPod. Es una **preferencia** (`AppPreferences.firmwareFamilyToInstall`, Aura por defecto; un valor guardado desconocido cae a Aura), no una acción: elegir no toca el iPod, el Instalador sigue siendo el único que escribe. El `ModePickerView` del Instalador muestra *"Firmware a instalar: Metro — se elige en Extras › Firmware"* y sus textos ("Instalar Metro", "Reinstalar Aura", las notas de DFU) salen de la familia elegida y de la detectada.
+
+**Extras quedó fuera del candado de biblioteca** (`ContentView`, `section != .extras`): ese candado se puso para que nadie sincronizara contra un firmware que no habla el contrato, pero dejaba Extras inaccesible justo con un iPod de fábrica — el momento en que elegir firmware importa más. Las filas de Extras que escriben en el iPod (Temas) ya se deshabilitan solas.
+
+### General
+El botón *"Instalar actualización de …"* vuelve para **cualquier familia instalable** (ST-046 lo había quitado para todo lo que no fuera Aura porque no había otro firmware embebido); para una familia desconocida sigue el enlace a su Release. El respaldo por hash de `AuraUpdateChecker` compara cada familia contra **su** binario embebido.
+
+### Verificación
+`swift test` 544 en verde (6 nuevos: `FirmwareFamilyPackagingTests` — resolución por subdirectorio, familia sin carpeta = fallo explícito, centinela por familia, preferencia persistida y su caída a Aura). `xcodebuild` Debug compila y el bundle tiene la forma descrita. **Sin instalación real de Metro desde Studio contra el iPod en esta pasada** — queda como la prueba de hardware de la ronda.

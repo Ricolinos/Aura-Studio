@@ -41,7 +41,9 @@ Ver [`docs/guia-desarrollo.md`](docs/guia-desarrollo.md) para el detalle complet
 
 ```bash
 brew install xcodegen gh
-scripts/fetch-firmware.sh --from-dir /ruta/a/Aura-Firmware/firmware/dist   # sin Release público todavía
+scripts/fetch-firmware.sh                    # baja Aura Y Metro-Aura (tags de FIRMWARE_VERSION)
+# scripts/fetch-firmware.sh --family metro   # solo una familia
+# scripts/fetch-firmware.sh --from-dir /ruta/a/Aura-Firmware/firmware/dist   # Aura, en desarrollo
 cd studio/AuraStudio
 xcodegen generate
 open AuraStudio.xcodeproj

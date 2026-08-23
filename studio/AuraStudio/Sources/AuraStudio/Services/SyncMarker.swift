@@ -80,4 +80,25 @@ enum FirmwareCapabilities {
         }
         return nil
     }
+
+    /// ST-046 / contrato v8: que familia dice ser el firmware instalado
+    /// (`firmware_family`). **La ausencia de la clave devuelve `.aura`**, y
+    /// eso no es un fallback defensivo sino el contrato: Aura-Firmware
+    /// nunca escribio esta clave ni la escribira, asi que "no esta" es
+    /// precisamente su firma. El unico firmware que la escribe hoy es
+    /// Metro-Aura (`metro_settings.c`).
+    ///
+    /// Sin `aura.cfg` (firmware recien copiado, nunca arrancado) tambien
+    /// devuelve `.aura`. Es correcto: en ese estado
+    /// `AuraDevice.supportsAuraContract` es `false` y nadie usa la familia
+    /// todavia.
+    static func declaredFamily(volumeRoot: URL, fileManager: FileManager = .default) -> FirmwareFamily {
+        let cfgURL = volumeRoot.appendingPathComponent(auraConfigRelativePath)
+        guard let text = try? String(contentsOf: cfgURL, encoding: .utf8) else { return .aura }
+        let key = "firmware_family:"
+        for line in text.split(separator: "\n") where line.hasPrefix(key) {
+            return FirmwareFamily.parse(configValue: String(line.dropFirst(key.count)))
+        }
+        return .aura
+    }
 }

@@ -17,8 +17,18 @@ import Foundation
 /// Con esa separacion, una carpeta `.rockbox` copiada a mano sobre un
 /// iPod con firmware de Apple (caso real del dueño) ya no se reporta como
 /// "Aura instalado en dual boot": son archivos sin evidencia de arranque,
-/// con el firmware de Apple corriendo -- y `isAura`, que es lo que
-/// habilita biblioteca, sync, temas y nombre, exige evidencia.
+/// con el firmware de Apple corriendo -- y `supportsAuraContract`, que es
+/// lo que habilita biblioteca, sync, temas y nombre, exige evidencia.
+///
+/// ST-046 agrega un TERCER hecho, `declaredFamily`: que firmware dice ser
+/// el instalado (`firmware_family` de `aura.cfg`, contrato v8). Va aparte
+/// de los otros dos por la misma razon que ellos van aparte entre si --
+/// responde otra pregunta. `supportsAuraContract` dice "el contrato de
+/// biblioteca de Studio funciona en este aparato"; `declaredFamily` dice
+/// "quien es". Metro-Aura contesta SI a la primera y "no soy Aura" a la
+/// segunda, y hasta ST-046 esa distincion no existia: Studio le ofrecia
+/// actualizaciones de Aura a un iPod con Metro, que lo habrian
+/// sobrescrito.
 struct AuraDevice: Equatable {
     /// Que firmware se detecto EN EL DISCO (archivos), con la evidencia
     /// de arranque que cada uno deja.
@@ -60,6 +70,13 @@ struct AuraDevice: Equatable {
     /// ST-016: que firmware esta atendiendo el USB ahora mismo, leido de
     /// los descriptores USB del aparato. `.unknown` si no se pudo leer.
     let runningFirmware: RunningFirmware
+    /// ST-046 / contrato v8: que familia declara el firmware instalado en
+    /// su `aura.cfg` (`firmware_family`). `.aura` cuando la clave no esta,
+    /// que es el caso de toda instalacion de Aura -- ver `FirmwareFamily`.
+    /// Solo tiene sentido junto con `supportsAuraContract`: en un iPod sin
+    /// firmware de la familia no hay `aura.cfg` que leer y queda en su
+    /// valor por defecto.
+    let declaredFamily: FirmwareFamily
     /// Serial USB reportado por el firmware que corre (ver
     /// `USBDeviceIdentity.serialNumber` -- cambia entre modos).
     let usbSerial: String?
@@ -88,15 +105,32 @@ struct AuraDevice: Equatable {
         return false
     }
 
-    /// Aura instalada DE VERDAD: archivos de Aura en el disco y ademas
-    /// evidencia de que ese firmware corre en este aparato -- o bien esta
-    /// atendiendo el USB ahora mismo (lectura real), o bien ya arranco
-    /// alguna vez y dejo su `aura.cfg`. Es lo que habilita biblioteca,
-    /// sync, temas y nombre del iPod. Archivos copiados a mano sin
-    /// ninguna de las dos cosas NO cuentan (ST-016).
-    var isAura: Bool {
+    /// Un firmware que habla el contrato de biblioteca de Aura esta
+    /// instalado DE VERDAD: su arbol esta en el disco y ademas hay
+    /// evidencia de que corre en este aparato -- o bien esta atendiendo el
+    /// USB ahora mismo (lectura real), o bien ya arranco alguna vez y dejo
+    /// su `aura.cfg`. Es lo que habilita biblioteca, sync, temas y nombre
+    /// del iPod. Archivos copiados a mano sin ninguna de las dos cosas NO
+    /// cuentan (ST-016).
+    ///
+    /// **CAPACIDAD, no identidad** (ST-046). Es `true` tambien para
+    /// Metro-Aura, y debe serlo: Metro implementa el mismo §D del contrato
+    /// -- escribe `aura.cfg`, lee `sync_summary.cfg`, consume
+    /// `artist_images.cfg`-- y sincroniza correctamente. Se llamaba
+    /// `isAura` y esa era exactamente la trampa: quien queria preguntar
+    /// "¿es Aura?" (para nombrarlo o para ofrecerle una actualizacion)
+    /// obtenia "si" de un aparato con Metro. Para identidad,
+    /// `declaredFamily`.
+    var supportsAuraContract: Bool {
         guard case .aura(let hasBooted) = firmware else { return false }
         return hasBooted || runningFirmware == .rockboxFamily
+    }
+
+    /// Aura, la de verdad: habla el contrato Y se declara Aura. Es la
+    /// condicion para ofrecerle actualizaciones del Release de
+    /// `Aura-Firmware` y para llamarlo "Aura" en la interfaz.
+    var isAuraFirmware: Bool {
+        supportsAuraContract && declaredFamily == .aura
     }
 
     /// Hay un arbol de la familia Rockbox (Aura o Rockbox comun) en el

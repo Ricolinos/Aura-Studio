@@ -37,11 +37,17 @@ struct MKS5LBootRunner {
     /// Falla si el binario no existe o no se puede ejecutar -- mejor
     /// enterarse al crear el runner que descubrirlo por un `Process`
     /// que nunca arranca.
-    init(executableURL: URL? = nil, fileManager: FileManager = .default) throws {
+    /// ST-047: de que familia son el `mks5lboot` y el bootloader que usa
+    /// este runner. Aura por defecto -- el comportamiento de siempre.
+    let artifacts: BundledArtifacts
+
+    init(executableURL: URL? = nil, fileManager: FileManager = .default,
+         artifacts: BundledArtifacts = .shared) throws {
+        self.artifacts = artifacts
         let url: URL
         if let executableURL {
             url = executableURL
-        } else if let bundled = BundledArtifacts.shared.url(for: .mks5lboot) {
+        } else if let bundled = artifacts.url(for: .mks5lboot) {
             url = bundled
         } else {
             throw RunError.binaryNotFound
@@ -105,7 +111,7 @@ struct MKS5LBootRunner {
     /// solo lo ofrece si el usuario confirma explicitamente que no le
     /// interesa conservar el firmware original.
     func installBootloader(single: Bool) throws -> Result {
-        guard let bootloaderURL = BundledArtifacts.shared.url(for: .bootloader) else {
+        guard let bootloaderURL = artifacts.url(for: .bootloader) else {
             throw InstallerError.missingBundledArtifact(BundledArtifacts.Name.bootloader.rawValue)
         }
         var args = ["--bl-inst", bootloaderURL.path]

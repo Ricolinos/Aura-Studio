@@ -62,9 +62,12 @@ struct GitHubRelease: Codable, Equatable {
 
 enum GitHubReleaseCheckerError: Error, Equatable {
     case badResponse
+    /// El firmware instalado se declara de una familia que esta version de
+    /// Studio no conoce (ST-046): no hay repositorio al que consultar.
+    case unknownFamily
 }
 
-/// Consume `GET /repos/Ricolinos/Aura-Firmware/releases` -- publica,
+/// Consume `GET /repos/<owner>/<repo>/releases` -- publica,
 /// sin token (el repo es publico). Se usa `/releases` (lista) y no
 /// `/releases/latest` a proposito: `/latest` excluye prereleases y
 /// drafts por definicion de GitHub, y mientras el firmware siga en
@@ -74,8 +77,22 @@ enum GitHubReleaseCheckerError: Error, Equatable {
 enum GitHubReleaseChecker {
     static let apiURL = URL(string: "https://api.github.com/repos/Ricolinos/Aura-Firmware/releases")!
 
-    static func fetchReleases(session: URLSession = .shared) async throws -> [GitHubRelease] {
-        var request = URLRequest(url: apiURL)
+    /// ST-046: el repositorio ya no es uno solo. Metro-Aura es un firmware
+    /// hermano que publica sus propios Releases con los mismos assets
+    /// (`rockbox.ipod`, `rockbox.zip`, `bootloader-ipod6g.ipod`,
+    /// `mks5lboot`), asi que la maquinaria sirve igual -- lo unico que
+    /// cambia es a que repo se le pregunta. `nil` para una familia
+    /// desconocida: sin repo no hay a donde preguntar, y preguntarle al de
+    /// Aura seria justo el error que ST-046 arregla.
+    static func apiURL(for family: FirmwareFamily) -> URL? {
+        guard let repo = family.releaseRepository else { return nil }
+        return URL(string: "https://api.github.com/repos/\(repo)/releases")
+    }
+
+    static func fetchReleases(session: URLSession = .shared,
+                               family: FirmwareFamily = .aura) async throws -> [GitHubRelease] {
+        guard let url = apiURL(for: family) else { throw GitHubReleaseCheckerError.unknownFamily }
+        var request = URLRequest(url: url)
         request.setValue("AuraStudio", forHTTPHeaderField: "User-Agent")
         let (data, response) = try await session.data(for: request)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
