@@ -851,20 +851,20 @@ final class InstallerViewModel: ObservableObject {
             }
             try fm.copyItem(at: firmwareURL, to: destination)
 
-            // ST-047: CAMBIO de familia (habia Metro y se instala Aura, o
-            // al reves): el `aura.cfg` que dejo el firmware anterior no le
-            // sirve al nuevo (sus ajustes son de otro programa) y ademas
-            // engañaria a la deteccion de Studio hasta el primer arranque
-            // -- Aura encontraria un `firmware_family: metro` que no es
-            // suyo y Studio lo seguiria llamando Metro. Se borra SOLO en
-            // ese caso; reinstalar la misma familia conserva los ajustes,
-            // como siempre prometio este instalador.
+            // ST-056 / contrato v10: CAMBIO de familia (habia Metro y se
+            // instala Aura, o al reves): el arbol activo NO se borra ni se
+            // pisa -- se ESTACIONA como `/.firmware-<saliente>/`, entero y
+            // con sus ajustes, listo para despertarlo desde Extras o desde
+            // el propio firmware. (ST-047 borraba su aura.cfg; ya no hace
+            // falta: el nuevo arbol se extrae en un `/.rockbox/` fresco.)
+            // Reinstalar la MISMA familia sigue siendo un merge sobre el
+            // arbol activo, que conserva los ajustes como siempre.
+            let volumeRoot = URL(fileURLWithPath: mountPath)
             if let detected = monitor.device?.declaredFamily,
                monitor.device?.supportsAuraContract == true,
-               detected != targetFamily {
-                let staleCfg = URL(fileURLWithPath: mountPath)
-                    .appendingPathComponent(".rockbox/aura/aura.cfg")
-                try? fm.removeItem(at: staleCfg)
+               detected != targetFamily, detected.isInstallable {
+                progressMessage = "Guardando \(detected.displayName) para poder volver a él..."
+                try FirmwareSwitcher.parkActiveTree(as: detected, volumeRoot: volumeRoot, fileManager: fm)
             }
 
             guard fm.fileExists(atPath: destination.path) else {
@@ -941,6 +941,13 @@ final class InstallerViewModel: ObservableObject {
             guard fm.fileExists(atPath: sentinel.path) else {
                 throw InstallerError.processFailed(exitCode: -1, output: "el árbol .rockbox no quedó completo tras extraerlo (falta \(sentinel.lastPathComponent))")
             }
+
+            // ST-056: la familia recien instalada es la activa; un arbol
+            // dormido SUYO que hubiera quedado de antes ya no tiene
+            // sentido (contrato v10: nunca un dormido de la familia
+            // activa). Y el respaldo de la raiz apunta al activo.
+            try? FirmwareSwitcher.removeDormantTree(of: targetFamily, volumeRoot: volumeRoot, fileManager: fm)
+            try? FirmwareSwitcher.refreshRootBinary(volumeRoot: volumeRoot, fileManager: fm)
 
             // D-194: crear de una vez las carpetas de medios -- reporte
             // del dueño en hardware real: podia copiar musica/fotos/

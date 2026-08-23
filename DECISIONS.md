@@ -814,3 +814,19 @@ Verificado en Release: Bienvenida y Licencias pintan.
 ## ST-055 — Pin de Aura a v0.3.2-beta (D-325: listas sin tope de 300)
 
 Mismo defecto que M-087 en Metro, corregido del lado de Aura en su propia sesión (D-325): Canciones ya no se corta en 300. Sin cambio de contrato ni de `AuraPalette.swift` (byte-idéntica a la de v0.3.1-beta). `FIRMWARE_VERSION` actualizado con los cuatro hashes verificados por `fetch-firmware.sh`; Metro sigue en v0.5.3.
+
+## ST-056 — Dos firmwares instalados a la vez: cambio por renombre, sin borrar ni descargar (contrato v10)
+
+**Encargo del dueño (2026-08-23):** *"si el usuario quiere cambiar de firmware, que no se elimine la instalación previa… que no se tenga que estar borrando y descargando la carpeta"*, y la pregunta de si `.rockbox` podría llamarse `.aura`/`.metro`.
+
+**Decisión de diseño, conversada.** El árbol activo **sigue siendo `/.rockbox/`**: es la única ruta que el bootloader compartido (NOR, DFU) sabe arrancar y la que ambos firmwares y sus plugins llevan compilada; renombrarla obligaría a reflashear en cada cambio, justo lo que se quiere evitar, y además tocaría todo §D (v10) y chocaría con `/.aura/` (marcador de sync). Los árboles **dormidos** sí llevan nombre propio: `/.firmware-aura/`, `/.firmware-metro/` — un `.rockbox` completo, en reposo, **con sus propios ajustes** (bono respecto a antes: cambiar y volver ya no resetea nada). Un "archivo switch" que lea el bootloader sería un bootloader distinto; en FAT un renombre de directorio es instantáneo y logra lo mismo. Contrato **v10** escrito antes, copia idéntica en ambos repos.
+
+**`FirmwareSwitcher`** (puro sobre `FileManager`, 9 pruebas): `switchActiveFirmware(to:currentlyActive:)` ejecuta la secuencia del contrato — saliente `/.rockbox/` → `/.firmware-<saliente>/` **primero** (el peor corte deja un dormido entero, nunca ninguno), entrante → `/.rockbox/`, `/rockbox.ipod` de raíz := el del entrante (el respaldo del bootloader debe ser siempre el activo), marcador `/.aura/sync-pending.json` con `music: true` (la base de música vive dentro de cada árbol). `repairIfNeeded` levanta un cambio a medias (sin activo y un solo dormido) y `IPodMonitor` lo llama al conectar, antes de sondear. `parkActiveTree` y `removeDormantTree` los usa el instalador. `mirrorContractFilesToDormantTrees` copia al final de cada sync los archivos del contrato (`sync_summary`, `sync_manifest`, `artist_images`+`artists/`, categorías, `ratings`, `device.cfg`) a cada dormido — `aura.cfg` y `themes/` no.
+
+**Instalador.** Instalar la otra familia ya **no borra**: estaciona el activo como dormido (reemplazando un dormido anterior de esa familia) y extrae el nuevo en un `/.rockbox/` fresco; al terminar, quita un dormido de la familia recién instalada si lo hubiera (nunca un dormido de la activa) y rehace el respaldo de raíz. La limpieza de `aura.cfg` de ST-047 desaparece: ya no hace falta.
+
+**Extras › Firmware.** La tarjeta elegida muestra el estado real: activa ("nada que hacer"), dormida ("Cambiar a … — un segundo, no descarga ni borra; después reinicia el iPod"), o no instalada ("Instalar …", al Instalador). El cambio corre bajo el candado de escritura del instalador y expulsa el volumen; el reinicio lo hace el usuario (SELECT + MENU). General menciona el dormido ("… — Metro también instalado, dormido").
+
+**Detección:** `AuraDevice.dormantFamilies` por nombre de directorio; la activa sigue siendo `firmware_family` (v8).
+
+**Orden acordado:** Studio (esto) → Metro-Aura (M-090: fila "Cambiar a Aura" en Ajustes, misma secuencia desde el firmware: guardar, renombrar, marcador, reinicio en seco) → Aura-Firmware (D-327).

@@ -102,6 +102,18 @@ enum FirmwareFamily: Equatable {
         return URL(string: "https://github.com/\(repo)")
     }
 
+    /// ST-056 / contrato v10: nombre del arbol DORMIDO de esta familia en
+    /// la raiz del iPod (`/.firmware-aura/`, `/.firmware-metro/`): un
+    /// `.rockbox` completo, en reposo, con sus propios ajustes. El activo
+    /// es siempre `/.rockbox/` (lo unico que el bootloader arranca).
+    var dormantTreeName: String? {
+        switch self {
+        case .aura: return ".firmware-aura"
+        case .metro: return ".firmware-metro"
+        case .unknown: return nil
+        }
+    }
+
     /// Interpreta el valor crudo de la clave. Insensible a mayusculas y
     /// espacios porque el parser del firmware (`settings_parseline()`) no
     /// normaliza nada: lo que se escriba es lo que se lee.

@@ -77,6 +77,11 @@ struct AuraDevice: Equatable {
     /// firmware de la familia no hay `aura.cfg` que leer y queda en su
     /// valor por defecto.
     let declaredFamily: FirmwareFamily
+    /// ST-056 / contrato v10: familias con un arbol DORMIDO en el disco
+    /// (`/.firmware-aura/`, `/.firmware-metro/`) -- instaladas, con sus
+    /// ajustes, listas para despertar con un cambio. Nunca incluye la
+    /// activa. Solo habla de archivos.
+    let dormantFamilies: [FirmwareFamily]
     /// Serial USB reportado por el firmware que corre (ver
     /// `USBDeviceIdentity.serialNumber` -- cambia entre modos).
     let usbSerial: String?

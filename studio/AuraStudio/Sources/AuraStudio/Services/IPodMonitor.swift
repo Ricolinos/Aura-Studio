@@ -90,6 +90,13 @@ final class IPodMonitor: ObservableObject {
         lastDiskInfo = info
         if let info {
             state = .diskMode(info)
+            // ST-056 / contrato v10: un cambio de firmware que quedo a
+            // medias (sin `/.rockbox/` pero con un arbol dormido) se
+            // repara aqui, antes de sondear, para que el sondeo vea un
+            // iPod sano. Nunca mientras un flujo de instalacion escribe.
+            if !InstallerFlowRegistry.shared.flowActive, !info.mountPath.isEmpty, info.mountPath.hasPrefix("/") {
+                _ = try? FirmwareSwitcher.repairIfNeeded(volumeRoot: URL(fileURLWithPath: info.mountPath))
+            }
             let probed = AuraDeviceProbe.probe(diskInfo: info)
             device = probed
             // ST-016: ver este disco con Aura/Rockbox atendiendo el USB

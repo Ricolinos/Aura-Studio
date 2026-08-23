@@ -637,6 +637,13 @@ struct LibrarySync {
             touched.music = true
         }
 
+        // ST-056 / contrato v10: los archivos del contrato que acaba de
+        // escribir este sync en `.rockbox/aura/` se copian tambien a cada
+        // arbol DORMIDO presente, para que el firmware que despierte no
+        // despierte desactualizado. No es fatal si falla: el dormido se
+        // pondra al dia en el primer sync despues de despertar.
+        try? FirmwareSwitcher.mirrorContractFilesToDormantTrees(volumeRoot: volumeRoot, fileManager: fileManager)
+
         // ST-012 / contrato SS4: si este sync toco algo (tambien si se
         // cancelo a medias -- lo copiado ya esta en el disco y el
         // firmware tiene que verlo), se deja el marcador para que el

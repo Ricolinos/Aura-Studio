@@ -1,6 +1,18 @@
 # Contrato entre `Aura-Firmware` y Aura Studio
 
-**Versión 9 — 2026-08-23.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+**Versión 10 — 2026-08-23.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+
+**v10 (ST-056, dos firmwares instalados a la vez y conmutación entre ellos) — contrato primero; implementación en orden Studio → Metro-Aura → Aura-Firmware.** Hasta v9, instalar una familia sobre la otra **reemplazaba** el árbol `.rockbox/` (y con él los ajustes, temas y calificaciones del firmware saliente). v10 define cómo conviven los dos y cómo se cambia de uno a otro sin borrar ni volver a descargar nada:
+
+- **El árbol activo sigue siendo `/.rockbox/`.** No se renombra: es la única ruta que el bootloader (NOR, compartido por ambas familias) sabe arrancar, y la que ambos firmwares y sus plugins llevan compilada. Cambiarla obligaría a reflashear por DFU en cada cambio — justo lo que v10 evita.
+- **Árboles dormidos con nombre propio:** `/.firmware-aura/` y `/.firmware-metro/` — un árbol `.rockbox` completo de esa familia, en reposo (con su `rockbox.ipod`, fuentes, códecs, y **su propio `aura/aura.cfg`**, es decir sus ajustes). Nunca hay dos árboles dormidos de la misma familia; nunca un árbol dormido de la familia que está activa.
+- **Cambiar de firmware = dos renombres** (en FAT, instantáneos) **más reiniciar**, en este orden y sin nada en medio: (1) el firmware saliente guarda todo lo suyo (`aura.cfg`, cola de tagcache); (2) `/.rockbox/` → `/.firmware-<saliente>/`; (3) `/.firmware-<entrante>/` → `/.rockbox/`; (4) se copia `/.rockbox/rockbox.ipod` del entrante sobre `/rockbox.ipod` en la raíz (el respaldo que el bootloader usa si el árbol está incompleto debe apuntar **siempre** al firmware activo); (5) se deja `/.aura/sync-pending.json` con `music: true` — la base de datos de música vive **dentro** de cada árbol y la del entrante está desactualizada; (6) reinicio en seco, sin pasar por el apagado que guarda ajustes (escribiría los del saliente en el árbol del entrante). Lo hace **Studio** (Extras › Firmware) o **el propio firmware** (Ajustes › "Cambiar a …", fila inerte si el árbol del otro no existe), con la misma secuencia.
+- **Recuperación:** un disco con `/.rockbox/` ausente y un árbol dormido presente es un cambio que quedó a medias (batería, cable). Studio lo repara al conectar: renombra el dormido de vuelta a `/.rockbox/`. Por eso el orden (2)→(3): el peor caso deja un árbol dormido entero, nunca ninguno.
+- **Los archivos del contrato que escribe Studio** en `.rockbox/aura/` (`sync_summary.cfg`, `artist_images.cfg` + `artists/`, `video_categories.cfg`, `photo_categories.cfg`, `ratings.cfg`, `device.cfg`) **se escriben también en cada árbol dormido presente**, en cada sync — son chicos, y así el firmware que despierta no despierta desactualizado. `aura.cfg` **no**: es de cada firmware (las claves de reloj de v7 las escribe Studio solo en el activo; el dormido las recibe al despertar en su siguiente conexión). Los temas (`aura/themes/`) quedan en el árbol de Aura, activo o dormido.
+- **Instalar la otra familia** ya no borra: Studio **estaciona** el árbol activo como dormido (reemplazando un dormido anterior de esa misma familia, si lo hubiera) e instala la nueva en `/.rockbox/`. Si la familia pedida ya existe dormida, instalar es cambiar.
+- **Detección:** la familia activa se sigue leyendo de `/.rockbox/aura/aura.cfg` (v8); la de un árbol dormido la dice su nombre de directorio. `version.txt` va por árbol.
+
+Lo que v10 **no** cambia: §D para todo lo demás, el formato de ningún archivo, ni el bootloader.
 
 **v9 (ST-047, Aura Studio distribuye e instala DOS familias) — implementado del lado Studio en esta pasada; sin trabajo del lado de ningún firmware.** Tres cambios, todos en lo que Studio hace con los Releases, ninguno en el disco del iPod:
 
@@ -81,6 +93,8 @@ Esto **sí** es un acoplamiento permanente por diseño: ambos lados leen/escribe
 
 | Ruta | Escribe | Lee | Formato / notas |
 |---|---|---|---|
+| `/.firmware-aura/`, `/.firmware-metro/` | Studio (estaciona / instala / repara); Firmware (al cambiar desde Ajustes) | Studio (detecta qué familias hay; a cuál se puede cambiar); Firmware (si existe el del otro, ofrece "Cambiar a …") | v10, ST-056. Árbol `.rockbox` completo de esa familia, en reposo, con sus propios ajustes. Nunca dos de la misma familia; nunca el de la familia activa. El activo es siempre `/.rockbox/` (bootloader) |
+| `/rockbox.ipod` (raíz) | Studio (al instalar y al cambiar); Firmware (al cambiar) | Bootloader (solo si `/.rockbox/rockbox.ipod` no existe) | v10: es el respaldo del bootloader y debe ser **siempre** el binario del árbol activo — se copia del `/.rockbox/rockbox.ipod` entrante en cada cambio |
 | `.rockbox/rockbox.ipod` | Studio (instalador) | Firmware (bootloader), Studio (`AuraUpdateChecker`, sentinela de versión instalada) | Binario |
 | `.rockbox/aura/aura.cfg` | Firmware | Studio (`AuraDeviceProbe`, decide si "ya arrancó") | — |
 | `.rockbox/aura/aura.cfg` → clave `theme_id` | Firmware (`aura_style.c`); Studio también puede escribirla al instalar/activar un tema | Firmware, al arrancar (`aura_style_boot()`) | D-289. Vacío o `default` = el tema compilado. Studio escribe editando la línea, nunca reescribe el archivo entero (lo owns el firmware, que lo regenera completo en cada `aura_settings_save()`) |

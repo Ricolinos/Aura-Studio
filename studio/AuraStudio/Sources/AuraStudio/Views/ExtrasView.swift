@@ -21,6 +21,16 @@ struct ExtrasView: View {
     /// valor por defecto: en Release deja la ventana entera sin pintar
     /// (ST-051).
     @ObservedObject var preferences: AppPreferences
+    /// ST-056: ejecuta el cambio de firmware (contrato v10) y expulsa el
+    /// iPod; devuelve un mensaje de error o `nil` si salio bien. Lo
+    /// inyecta ContentView, que es quien tiene el monitor del iPod.
+    var onSwitchFirmware: ((FirmwareFamily) async -> String?)? = nil
+    /// ST-056: lleva al Instalador (cuando la familia elegida no tiene
+    /// arbol dormido que despertar).
+    var onOpenInstaller: (() -> Void)? = nil
+
+    @State private var switching = false
+    @State private var switchResult: String?
 
     /// D-289 / ST-003: "Temas" ahora abre la gestión real (instalar,
     /// activar, eliminar, construir) -- necesita un iPod con Aura
@@ -81,13 +91,66 @@ struct ExtrasView: View {
                 isSelected: preferences.firmwareFamilyToInstall == .metro
             ) { preferences.firmwareFamilyToInstall = .metro }
             if let device, device.supportsAuraContract {
-                let installed = device.declaredFamily
-                let chosen = preferences.firmwareFamilyToInstall
-                Text(installed == chosen
-                     ? "Tu iPod ya tiene \(installed.displayName). Instalar de nuevo lo reinstala conservando sus ajustes."
-                     : "Tu iPod tiene \(installed.displayName). Instalar \(chosen.displayName) lo reemplaza: tu biblioteca se conserva, los ajustes de \(installed.displayName) no.")
+                switchControls(device)
+            }
+        }
+    }
+
+    /// ST-056 / contrato v10: el estado real del iPod frente a la tarjeta
+    /// elegida, y la accion que corresponde. Tres casos:
+    ///  - la elegida ya es la activa: nada que hacer (y se dice);
+    ///  - la elegida esta DORMIDA en el disco: "Cambiar a …" -- dos
+    ///    renombres, expulsar, reiniciar; sus ajustes vuelven intactos;
+    ///  - la elegida no esta instalada: al Instalador, que estacionara la
+    ///    activa como dormida e instalara la nueva (nada se borra).
+    @ViewBuilder
+    private func switchControls(_ device: AuraDevice) -> some View {
+        let active = device.declaredFamily
+        let chosen = preferences.firmwareFamilyToInstall
+        let dormant = device.dormantFamilies
+
+        VStack(alignment: .leading, spacing: 8) {
+            if chosen == active {
+                Text("\(active.displayName) es el firmware activo de tu iPod." +
+                     (dormant.isEmpty ? "" : " \(dormant.map(\.displayName).joined(separator: ", ")) también está instalado, dormido: elige su tarjeta para cambiar."))
                     .font(.caption)
                     .foregroundStyle(.secondary)
+            } else if dormant.contains(chosen) {
+                Text("\(chosen.displayName) ya está instalado en tu iPod, dormido, con sus ajustes guardados. Cambiar toma un segundo (no descarga ni borra nada); después hay que reiniciar el iPod y la primera vez reconstruye su base de música.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                HStack {
+                    Button {
+                        guard let onSwitchFirmware else { return }
+                        switching = true
+                        switchResult = nil
+                        Task {
+                            let error = await onSwitchFirmware(chosen)
+                            switchResult = error ?? "Listo: el iPod quedó con \(chosen.displayName) y se expulsó. Desconéctalo y reinícialo (mantén SELECT + MENU unos segundos)."
+                            switching = false
+                        }
+                    } label: {
+                        Label("Cambiar a \(chosen.displayName)", systemImage: "arrow.triangle.2.circlepath")
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(switching)
+                    if switching { ProgressView().controlSize(.small) }
+                }
+            } else {
+                Text("Tu iPod tiene \(active.displayName). Instalar \(chosen.displayName) lo agrega: \(active.displayName) se guarda dormido con sus ajustes y podrás volver a él desde aquí sin volver a instalar nada.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Button {
+                    onOpenInstaller?()
+                } label: {
+                    Label("Instalar \(chosen.displayName)", systemImage: "square.and.arrow.down")
+                }
+                .buttonStyle(.bordered)
+            }
+            if let switchResult {
+                Text(switchResult)
+                    .font(.callout)
+                    .foregroundStyle(switchResult.hasPrefix("Listo") ? Color.primary : Color.red)
             }
         }
     }

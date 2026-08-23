@@ -296,7 +296,9 @@ struct ContentView: View {
         case .photosAI:
             PhotoAlbumsView(viewModel: library, device: deviceMonitor.device, preferences: preferences, category: "IA")
         case .extras:
-            ExtrasView(device: deviceMonitor.device, preferences: preferences)
+            ExtrasView(device: deviceMonitor.device, preferences: preferences,
+                       onSwitchFirmware: { family in await switchFirmware(to: family) },
+                       onOpenInstaller: { selection = .installer })
         case .installer:
             InstallerHomeView(monitor: deviceMonitor, viewModel: installer)
         case .settings:
@@ -326,6 +328,30 @@ struct ContentView: View {
     /// para el `.onChange(of: device)` automatico): aca se espera el
     /// resultado para que el spinner del boton dure lo que dura de
     /// verdad la consulta.
+    /// ST-056 / contrato v10: cambio de firmware por renombre y
+    /// expulsion. Con el candado de escritura del instalador: nunca
+    /// encima de una copia en curso. Devuelve un mensaje de error o nil.
+    private func switchFirmware(to family: FirmwareFamily) async -> String? {
+        guard let device = deviceMonitor.device, device.supportsAuraContract else {
+            return "No hay un iPod con firmware de la familia Aura conectado."
+        }
+        guard InstallerFlowRegistry.shared.beginWriting() else {
+            return "Hay una instalación en curso; espera a que termine."
+        }
+        defer { InstallerFlowRegistry.shared.endWriting() }
+        do {
+            try FirmwareSwitcher.switchActiveFirmware(to: family,
+                                                      currentlyActive: device.declaredFamily,
+                                                      volumeRoot: URL(fileURLWithPath: device.mountPath))
+        } catch FirmwareSwitcher.SwitchError.dormantTreeMissing(let f) {
+            return "\(f.displayName) no está instalado en el iPod; instálalo desde el Instalador."
+        } catch {
+            return "No se pudo cambiar de firmware: \(error.localizedDescription)"
+        }
+        _ = await deviceMonitor.unmountCurrentDisk()
+        return nil
+    }
+
     private func refreshNow() async {
         isRefreshing = true
         defer { isRefreshing = false }

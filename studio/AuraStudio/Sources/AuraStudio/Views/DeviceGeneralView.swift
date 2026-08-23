@@ -314,15 +314,19 @@ struct DeviceGeneralView: View {
             // todavia no hay `aura.cfg` que leer, asi que ahi se dice
             // "de la familia Aura" en vez de arriesgar un nombre.
             let name = device.declaredFamily.displayName
+            // ST-056: un arbol dormido de la otra familia se menciona;
+            // cambiar a el vive en Extras > Firmware.
+            let dormant = device.dormantFamilies.isEmpty ? ""
+                : " -- \(device.dormantFamilies.map(\.displayName).joined(separator: ", ")) también instalado, dormido"
             switch (device.runningFirmware, hasBooted) {
             case (.rockboxFamily, true):
-                return "Firmware \(name) instalado -- conectado desde \(name)" + dual
+                return "Firmware \(name) instalado -- conectado desde \(name)" + dual + dormant
             case (.rockboxFamily, false):
                 return "Firmware de la familia Aura instalado -- conectado desde el firmware, todavía sin escribir su configuración" + dual
             case (.apple, true):
-                return "Firmware \(name) instalado -- conectado desde el modo disco de Apple" + dual
+                return "Firmware \(name) instalado -- conectado desde el modo disco de Apple" + dual + dormant
             case (.unknown, true):
-                return "Firmware \(name) instalado" + dual
+                return "Firmware \(name) instalado" + dual + dormant
             case (.apple, false):
                 return "Archivos de la familia Aura en el disco, pero el iPod está corriendo el firmware de Apple y ese firmware nunca ha arrancado aquí -- no hay evidencia de que esté instalado"
             case (.unknown, false):

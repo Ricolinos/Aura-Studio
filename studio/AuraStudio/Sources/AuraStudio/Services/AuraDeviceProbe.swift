@@ -98,6 +98,7 @@ enum AuraDeviceProbe {
             runningFirmware: diskInfo.usb?.runningFirmware ?? .unknown,
             declaredFamily: FirmwareCapabilities.declaredFamily(volumeRoot: root,
                                                                 fileManager: fileManager),
+            dormantFamilies: FirmwareSwitcher.dormantFamilies(volumeRoot: root, fileManager: fileManager),
             usbSerial: diskInfo.usb?.serialNumber,
             volumeUUID: diskInfo.volumeUUID,
             capacityBytes: capacity,
