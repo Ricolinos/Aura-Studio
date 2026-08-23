@@ -752,3 +752,7 @@ El botón *"Instalar actualización de …"* vuelve para **cualquier familia ins
 
 ### Verificación
 `swift test` 544 en verde (6 nuevos: `FirmwareFamilyPackagingTests` — resolución por subdirectorio, familia sin carpeta = fallo explícito, centinela por familia, preferencia persistida y su caída a Aura). `xcodebuild` Debug compila y el bundle tiene la forma descrita. **Sin instalación real de Metro desde Studio contra el iPod en esta pasada** — queda como la prueba de hardware de la ronda.
+
+## ST-048 — Pin de Metro-Aura a v0.5.0 (Ronda 5 del firmware)
+
+Primer Release de Metro-Aura que Studio empaqueta (ST-047 se hizo con v0.4.0 como prueba de empaquetado). v0.5.0 trae M-081 (About ya no lee disco por cuadro — el cuelgue en hardware), M-082 (espaciado "ll"), M-083 (reproductor rediseñado, volumen 00–15, límite de volumen), M-084 (barra de estado) y M-085 (hub). Mismos assets y mismo `checksums.txt`; `fetch-firmware.sh --family metro` verificó los cuatro hashes. Instalado en el iPod del dueño por Terminal en la misma sesión (fuera de Studio — la instalación real de Metro *desde* Studio sigue pendiente como prueba de hardware de ST-047). Aura sigue en v0.3.1-beta (ST-045).
