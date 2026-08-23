@@ -146,6 +146,10 @@ enum FirmwareSwitcher {
     /// tal cual desde el activo a cada dormido presente, al final de cada
     /// sync. `aura.cfg` NO (es de cada firmware); `themes/` tampoco (es de
     /// Aura, activo o dormido, y viaja con su arbol).
+    /// NOTA (v11/ST-058): `aura/install_manifest.cfg` NO esta aqui a
+    /// proposito -- es POR ARBOL (describe lo instalado en ESE arbol) y
+    /// espejarlo haria que la actualizacion selectiva del dormido diera
+    /// por escritos archivos que nunca se le escribieron.
     static let mirroredContractEntries = [
         "aura/sync_summary.cfg",
         "aura/sync_manifest.json",

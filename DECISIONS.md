@@ -834,3 +834,15 @@ Mismo defecto que M-087 en Metro, corregido del lado de Aura en su propia sesió
 ## ST-057 — Pin a Aura v0.3.3-beta + Metro v0.5.4 (D-327 / M-090: cambio de firmware desde cada firmware)
 
 Con esto las tres partes del contrato v10 están en producción: Studio (ST-056) estaciona, cambia, espeja y repara; cada firmware ofrece "Cambiar a …" en sus ajustes. `AuraPalette.swift` sin cambios. Hashes verificados por `fetch-firmware.sh` para las dos familias.
+
+## ST-058 — Actualización selectiva por manifiesto: de 9 431 escrituras a ~5 (contrato v11)
+
+**Encargo del dueño:** *"especificar qué archivos cambiaron… para que el actualizador pueda ser selectivo y no tener que eliminar todo el firmware viejo y descargar el nuevo completamente."*
+
+**Dónde se iba el tiempo.** No en descargar (los binarios viajan embebidos): en **escribir**. Actualizar extraía el `rockbox.zip` completo — 9 431 archivos en Aura, 405 en Metro — y cada archivo chico paga su ida y vuelta USB+FAT en un disco de 1.8". Medido con los zips reales de dos releases consecutivos: **cambian 5 archivos (~1.9 MB) de 9 431** en Aura y 5 de 405 en Metro — las builds de Rockbox son reproducibles, así que todo lo demás es byte-idéntico.
+
+**Diseño (contrato v11), sin tocar los firmwares ni el release.** El zip ya trae la lista de archivos con su CRC32 en el directorio central (`unzip -lv`, no se calcula nada). Al instalar, Studio deja en el iPod `.rockbox/aura/install_manifest.cfg` (cabecera + `tag:` + una línea `crc32 tamaño ruta` por archivo; los firmwares lo ignoran). Al actualizar **la misma familia**, compara el manifiesto del zip nuevo contra el instalado: extrae el zip a un temporal local (segundos en SSD), copia al iPod **solo lo nuevo/cambiado**, **borra lo que desapareció** (la extracción-merge dejaba huérfanos para siempre) y reescribe el manifiesto.
+
+**Respaldo total, siempre**: sin manifiesto (instalación manual o pre-v11), cabecera de otra versión, delta mayor a un cuarto del zip, o cualquier error a mitad → extracción completa de siempre; nunca un firmware a medias. `delta()` además se niega a borrar fuera de `.rockbox/` pase lo que pase con un manifiesto corrupto. Es **por árbol** (v10): nunca se espeja a los dormidos (nota en `FirmwareSwitcher.mirroredContractEntries`). Salvedad documentada: un archivo tocado a mano que el manifiesto dé por idéntico no se repara en un delta — la reinstalación completa existe para eso.
+
+`InstallManifest` (parseo del listado de unzip, serialización, diff) con 6 pruebas, una de ellas punta a punta con zips reales; 559 en total. La primera actualización tras esto sigue siendo completa (escribe el primer manifiesto); la ganancia empieza en la segunda.

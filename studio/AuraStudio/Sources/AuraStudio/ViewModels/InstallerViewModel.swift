@@ -860,6 +860,11 @@ final class InstallerViewModel: ObservableObject {
             // Reinstalar la MISMA familia sigue siendo un merge sobre el
             // arbol activo, que conserva los ajustes como siempre.
             let volumeRoot = URL(fileURLWithPath: mountPath)
+            // ST-058: la actualizacion selectiva solo aplica cuando lo que
+            // hay en /.rockbox/ es LA MISMA familia que se va a escribir
+            // (un cambio de familia estaciona el arbol y extrae completo).
+            let sameFamilyUpdate = monitor.device?.supportsAuraContract == true
+                && monitor.device?.declaredFamily == targetFamily
             if let detected = monitor.device?.declaredFamily,
                monitor.device?.supportsAuraContract == true,
                detected != targetFamily, detected.isInstallable {
@@ -885,7 +890,36 @@ final class InstallerViewModel: ObservableObject {
             // de que el programa se colgo (reportado por el dueño en
             // hardware real). Contar archivos copiados sigue el ritmo
             // real del trabajo restante.
-            let expectedFiles = (try? await Self.zipEntryCount(of: treeURL)) ?? 0
+            // ST-058 / contrato v11: intento de actualizacion SELECTIVA --
+            // comparar el manifiesto del zip embebido contra el que quedo
+            // instalado y escribir solo la diferencia. Cualquier duda
+            // (sin manifiesto, delta enorme, error a mitad) cae a la
+            // extraccion completa de siempre, que empieza justo abajo.
+            var newEntries: [String: InstallManifest.Entry]? = try? InstallManifest.entriesFromZip(treeURL)
+            var deltaApplied = false
+            if sameFamilyUpdate, !cancelRequested,
+               let entries = newEntries,
+               let installed = InstallManifest.read(volumeRoot: volumeRoot, fileManager: fm),
+               !installed.entries.isEmpty {
+                let delta = InstallManifest.delta(installed: installed.entries, new: entries)
+                // Umbral de sensatez: con mas de un cuarto del zip por
+                // escribir, la extraccion completa es igual de rapida y
+                // mas simple de razonar.
+                if delta.toExtract.count + delta.toDelete.count <= max(50, entries.count / 4) {
+                    progressMessage = "Actualizando \(targetName): \(delta.toExtract.count) archivo(s) por escribir, \(delta.toDelete.count) por quitar..."
+                    do {
+                        try await applySelectiveUpdate(delta, zipURL: treeURL, volumeRoot: volumeRoot)
+                        deltaApplied = true
+                    } catch {
+                        // Ni idea de en que quedo el arbol: extraccion
+                        // completa encima (merge), que lo repara todo.
+                        progressMessage = "La actualización selectiva no pudo; instalando completo..."
+                        deltaApplied = false
+                    }
+                }
+            }
+
+            let expectedFiles = deltaApplied ? 0 : ((try? await Self.zipEntryCount(of: treeURL)) ?? 0)
             let poller: Task<Void, Never>? = expectedFiles > 0 ? Task { [weak self] in
                 while !Task.isCancelled {
                     if let copied = self?.extractionProgressCounter?.snapshotFilesCopied() {
@@ -902,7 +936,7 @@ final class InstallerViewModel: ObservableObject {
             // absoluto, reintentar es inutil -- eso se reporta como
             // desconexion real, no como error generico.
             var lastExtractError: Error?
-            for attempt in 1...2 {
+            for attempt in 1...2 where !deltaApplied {
                 do {
                     try await extractZip(at: treeURL, to: mountPath)
                     lastExtractError = nil
@@ -948,6 +982,18 @@ final class InstallerViewModel: ObservableObject {
             // activa). Y el respaldo de la raiz apunta al activo.
             try? FirmwareSwitcher.removeDormantTree(of: targetFamily, volumeRoot: volumeRoot, fileManager: fm)
             try? FirmwareSwitcher.refreshRootBinary(volumeRoot: volumeRoot, fileManager: fm)
+
+            // ST-058 / contrato v11: dejar anotado que quedo instalado,
+            // para que la PROXIMA actualizacion pueda ser selectiva. Si
+            // el listado del zip fallo arriba, se quita el manifiesto
+            // viejo -- describe un arbol que ya no es este.
+            if newEntries == nil { newEntries = try? InstallManifest.entriesFromZip(treeURL) }
+            if let entries = newEntries {
+                try? InstallManifest(tag: artifacts.releaseTag, entries: entries)
+                    .write(volumeRoot: volumeRoot, fileManager: fm)
+            } else {
+                try? fm.removeItem(at: volumeRoot.appendingPathComponent(InstallManifest.relativePath))
+            }
 
             // D-194: crear de una vez las carpetas de medios -- reporte
             // del dueño en hardware real: podia copiar musica/fotos/
@@ -1009,6 +1055,47 @@ final class InstallerViewModel: ObservableObject {
     /// instancia (no static) para exponer el proceso en
     /// `extractProcess`: es lo que permite que Cancelar lo termine de
     /// inmediato (D-188).
+    /// ST-058: aplica el delta -- extrae el zip a un temporal LOCAL (en
+    /// SSD tarda segundos aun con miles de archivos), copia al iPod solo
+    /// lo nuevo/cambiado y borra lo que desaparecio. Lanza al primer
+    /// fallo; el llamador cae a la extraccion completa.
+    private func applySelectiveUpdate(_ delta: InstallManifest.Delta,
+                                      zipURL: URL, volumeRoot: URL) async throws {
+        let fm = FileManager.default
+        let tmp = fm.temporaryDirectory.appendingPathComponent("aura-update-\(UUID().uuidString)")
+        try fm.createDirectory(at: tmp, withIntermediateDirectories: true)
+        defer { try? fm.removeItem(at: tmp) }
+
+        try await extractZip(at: zipURL, to: tmp.path)
+
+        let total = delta.toExtract.count + delta.toDelete.count
+        var done = 0
+        for path in delta.toExtract {
+            if cancelRequested { throw InstallerError.deviceDisconnectedDuringCopy }
+            let src = tmp.appendingPathComponent(path)
+            let dst = volumeRoot.appendingPathComponent(path)
+            guard fm.fileExists(atPath: src.path) else {
+                throw InstallerError.processFailed(exitCode: -1, output: "el zip no trae \(path)")
+            }
+            try fm.createDirectory(at: dst.deletingLastPathComponent(), withIntermediateDirectories: true)
+            if fm.fileExists(atPath: dst.path) {
+                try fm.removeItem(at: dst)
+            }
+            try fm.copyItem(at: src, to: dst)
+            done += 1
+            copyProgress = min(0.99, Double(done) / Double(max(1, total)))
+        }
+        for path in delta.toDelete {
+            let dst = volumeRoot.appendingPathComponent(path)
+            if fm.fileExists(atPath: dst.path) {
+                try? fm.removeItem(at: dst)
+            }
+            done += 1
+            copyProgress = min(0.99, Double(done) / Double(max(1, total)))
+        }
+        copyProgress = 1
+    }
+
     private func extractZip(at zipURL: URL, to destinationPath: String) async throws {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/ditto")

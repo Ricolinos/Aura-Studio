@@ -1,6 +1,14 @@
 # Contrato entre `Aura-Firmware` y Aura Studio
 
-**Versión 10 — 2026-08-23.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+**Versión 11 — 2026-08-23.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+
+**v11 (ST-058, actualizaciones selectivas por manifiesto) — solo lado Studio; los firmwares lo ignoran.** Actualizar extraía el `rockbox.zip` completo — 9 431 archivos en Aura, y cada archivo chico paga su ida y vuelta USB+FAT: minutos. Medido entre releases consecutivos reales, cambian ~5 archivos (~2 MB). v11 agrega **una** fila a §D: `.rockbox/aura/install_manifest.cfg`, escrito y leído **solo por Studio**:
+
+- **Formato**: primera línea `# aura-install-manifest v1`; luego `tag: <tag del Release instalado>`; luego una línea por archivo del zip instalado: `<crc32 en hex, 8 dígitos> <tamaño en bytes> <ruta>` (la ruta al final, puede llevar espacios). El CRC32 es el del directorio central del propio zip — no se calcula nada.
+- **Al instalar** (completo), Studio lo escribe. **Al actualizar la misma familia**, Studio compara el manifiesto del zip nuevo contra el instalado: extrae solo lo nuevo/cambiado, **borra** lo que desapareció (la extracción-merge de antes dejaba huérfanos para siempre) y reescribe el manifiesto. Umbral de sensatez: si el delta es enorme, extracción completa de siempre.
+- **Respaldo total**: sin manifiesto (instalación manual, o anterior a v11), manifiesto ilegible, o cualquier error a mitad del delta → extracción completa. Nunca un firmware a medias.
+- **Es por árbol** (v10): viaja dentro de `.rockbox/aura/` con su árbol al dormir/despertar y **nunca se espeja** a los árboles dormidos (cada uno describe lo suyo).
+- Salvedad documentada: un archivo tocado a mano en el iPod que el manifiesto dé por idéntico no se repara en un delta; la reinstalación completa sigue existiendo para eso.
 
 **v10 (ST-056, dos firmwares instalados a la vez y conmutación entre ellos) — contrato primero; implementación en orden Studio → Metro-Aura → Aura-Firmware.** Hasta v9, instalar una familia sobre la otra **reemplazaba** el árbol `.rockbox/` (y con él los ajustes, temas y calificaciones del firmware saliente). v10 define cómo conviven los dos y cómo se cambia de uno a otro sin borrar ni volver a descargar nada:
 
@@ -93,6 +101,7 @@ Esto **sí** es un acoplamiento permanente por diseño: ambos lados leen/escribe
 
 | Ruta | Escribe | Lee | Formato / notas |
 |---|---|---|---|
+| `.rockbox/aura/install_manifest.cfg` | Studio (al instalar/actualizar) | Studio (para la actualización selectiva) | v11, ST-058. Formato en la nota de v11. Los firmwares lo ignoran. **Por árbol** (v10): nunca se espeja a los dormidos |
 | `/.firmware-aura/`, `/.firmware-metro/` | Studio (estaciona / instala / repara); Firmware (al cambiar desde Ajustes) | Studio (detecta qué familias hay; a cuál se puede cambiar); Firmware (si existe el del otro, ofrece "Cambiar a …") | v10, ST-056. Árbol `.rockbox` completo de esa familia, en reposo, con sus propios ajustes. Nunca dos de la misma familia; nunca el de la familia activa. El activo es siempre `/.rockbox/` (bootloader) |
 | `/rockbox.ipod` (raíz) | Studio (al instalar y al cambiar); Firmware (al cambiar) | Bootloader (solo si `/.rockbox/rockbox.ipod` no existe) | v10: es el respaldo del bootloader y debe ser **siempre** el binario del árbol activo — se copia del `/.rockbox/rockbox.ipod` entrante en cada cambio |
 | `.rockbox/rockbox.ipod` | Studio (instalador) | Firmware (bootloader), Studio (`AuraUpdateChecker`, sentinela de versión instalada) | Binario |
