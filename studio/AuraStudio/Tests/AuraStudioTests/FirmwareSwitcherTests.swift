@@ -49,6 +49,54 @@ final class FirmwareSwitcherTests: XCTestCase {
         XCTAssertTrue(FirmwareSwitcher.hasActiveTree(volumeRoot: root))
     }
 
+    // MARK: - v12 / ST-059: sello de biblioteca
+
+    /// Primer cambio tras v12 (sin sello compartido): se crea, se anota
+    /// como del saliente, y el entrante -- sin sello propio -- SI recibe
+    /// marcador. El comportamiento de siempre, mas el arranque en frio.
+    func testFirstSwitchBootstrapsStampAndStillWritesMarker() throws {
+        try makeMetroActiveAuraDormant()
+        try FirmwareSwitcher.switchActiveFirmware(to: .aura, currentlyActive: .metro, volumeRoot: root)
+
+        XCTAssertNotNil(SyncPendingMarker.read(from: root), "sin sello del entrante -> marcador")
+        let shared = try XCTUnwrap(read(".aura/library-stamp"))
+        XCTAssertEqual(read(".firmware-metro/aura/db_stamp.txt"), shared,
+                       "el saliente (base al dia) queda anotado con el sello nuevo")
+    }
+
+    /// La ida y VUELTA sin sync de por medio: el arbol que vuelve tiene su
+    /// sello anotado e igual al compartido -> sin marcador -> sin
+    /// reconstruccion (el reporte del dueño: ~5 min por cada cambio).
+    func testSwitchBackWithoutSyncWritesNoMarker() throws {
+        try makeMetroActiveAuraDormant()
+        try FirmwareSwitcher.switchActiveFirmware(to: .aura, currentlyActive: .metro, volumeRoot: root)
+        // Aura reconstruyo y anoto (lo que haria el firmware al terminar):
+        let shared = try XCTUnwrap(read(".aura/library-stamp"))
+        try write(".rockbox/aura/db_stamp.txt", shared)
+        try? fm.removeItem(at: root.appendingPathComponent(".aura/sync-pending.json"))
+
+        try FirmwareSwitcher.switchActiveFirmware(to: .metro, currentlyActive: .aura, volumeRoot: root)
+
+        XCTAssertNil(SyncPendingMarker.read(from: root),
+                     "Metro vuelve con su base intacta: nada que reconstruir")
+        XCTAssertEqual(read(".firmware-aura/aura/db_stamp.txt"), shared,
+                       "la anotacion de Aura viaja con su arbol")
+    }
+
+    /// Con un sync REAL de por medio (sello renovado), el cambio si deja
+    /// marcador aunque el arbol entrante tenga sello -- esta viejo.
+    func testSwitchAfterSyncWritesMarker() throws {
+        try makeMetroActiveAuraDormant()
+        try FirmwareSwitcher.switchActiveFirmware(to: .aura, currentlyActive: .metro, volumeRoot: root)
+        try? fm.removeItem(at: root.appendingPathComponent(".aura/sync-pending.json"))
+
+        FirmwareSwitcher.bumpLibraryStamp(volumeRoot: root) // "hubo sync de musica"
+
+        try FirmwareSwitcher.switchActiveFirmware(to: .metro, currentlyActive: .aura, volumeRoot: root)
+        XCTAssertNotNil(SyncPendingMarker.read(from: root),
+                        "el sello de Metro quedo viejo: reconstruye")
+    }
+
     /// El cambio: el saliente queda dormido ENTERO con sus ajustes, el
     /// entrante es el activo con los suyos, el respaldo de la raiz es el
     /// del entrante, y el marcador pide reconstruir la musica.

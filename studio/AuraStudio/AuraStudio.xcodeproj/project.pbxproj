@@ -64,6 +64,7 @@
 		401404E1D0A6D6FFBB155F2C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14D5A27F7EA14F700832333A /* ContentView.swift */; };
 		40C77AF1FDE67E4379751F22 /* ThemesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 414CDC551592AE3B57A31C32 /* ThemesView.swift */; };
 		47CB97EC01FE0D881B00DC5C /* LibrarySyncDeleteAllContentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54210365FABAF87A55C820A6 /* LibrarySyncDeleteAllContentTests.swift */; };
+		4B14CF0961F2125ABA959B54 /* InstallManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBDC5DC42CD849AD336B37F /* InstallManifest.swift */; };
 		4B759AD84EC1F5D6DD7ACD26 /* PathSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D5B4EBBD054DC5C0C28307 /* PathSanitizer.swift */; };
 		4CE07ED3A6AF6A3EA04D9A2C /* LibraryItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62E6C2892E84F33B9EF97D15 /* LibraryItem.swift */; };
 		4D12212E13DA9BA4C48DC6C3 /* AutomaticUpdateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 662698C2304CE8EC077B7FA6 /* AutomaticUpdateView.swift */; };
@@ -73,6 +74,7 @@
 		5293F50A183109734EC3279E /* LibraryBrowsingComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 704F156897D746D67A145FEB /* LibraryBrowsingComponents.swift */; };
 		52A43D8ECC2CBF2433EA1B31 /* LibrarySync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CC2E3940E0EC5127461CB5 /* LibrarySync.swift */; };
 		57300DFC7BAED2805920E29F /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 7C461CE371AB2C341CE751F2 /* AppIcon.icon */; };
+		57FF776CC6D0F6C39B27CA45 /* InstallManifestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691E35B7F599BF052DF0CB88 /* InstallManifestTests.swift */; };
 		5896172077C6C1E6312CE999 /* AppPreferencesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5788BF566829EC16317154CE /* AppPreferencesTests.swift */; };
 		5EDA0D1DF2BC765B8F8D473B /* BundledArtifacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8464D5E55C66D32740C7289 /* BundledArtifacts.swift */; };
 		5FD738F18BBCA9163DDAA684 /* ServicesSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B47BB629D898027E7C891D1B /* ServicesSettingsView.swift */; };
@@ -280,6 +282,7 @@
 		672B82A09A8641D47F326E8D /* ThemeValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeValidatorTests.swift; sourceTree = "<group>"; };
 		6799D48484C7BF9CBF98C612 /* mks5lboot */ = {isa = PBXFileReference; path = mks5lboot; sourceTree = "<group>"; };
 		67F503AD10A4EC24D7DF63AC /* SeriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeriesView.swift; sourceTree = "<group>"; };
+		691E35B7F599BF052DF0CB88 /* InstallManifestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallManifestTests.swift; sourceTree = "<group>"; };
 		6973A46003D114CD07FC2DB0 /* SyncMarkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncMarkerTests.swift; sourceTree = "<group>"; };
 		6C13F9E244B9751271DC8255 /* AudioTranscoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTranscoder.swift; sourceTree = "<group>"; };
 		6CB9F09AC96C1409CC7C453C /* GitHubReleaseCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubReleaseCheckerTests.swift; sourceTree = "<group>"; };
@@ -293,6 +296,7 @@
 		78C8C5A2B4594B410D4C51A4 /* ExtrasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtrasView.swift; sourceTree = "<group>"; };
 		7A6B081BB0FE52BB27390C52 /* ThemeInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeInstaller.swift; sourceTree = "<group>"; };
 		7C461CE371AB2C341CE751F2 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
+		7CBDC5DC42CD849AD336B37F /* InstallManifest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallManifest.swift; sourceTree = "<group>"; };
 		7D3754C9E29F0BC93B660592 /* EnterDFUView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnterDFUView.swift; sourceTree = "<group>"; };
 		7E40BAA81737B8BE228F0A3F /* BatchMediaInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatchMediaInfoView.swift; sourceTree = "<group>"; };
 		7E7628837584B290697CA067 /* DeviceGeneralView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceGeneralView.swift; sourceTree = "<group>"; };
@@ -551,6 +555,7 @@
 				6CB9F09AC96C1409CC7C453C /* GitHubReleaseCheckerTests.swift */,
 				FEF3580937C6126B24998BB6 /* ID3WriterTests.swift */,
 				6661622F6714D86BC85E6E20 /* ImageResizerTests.swift */,
+				691E35B7F599BF052DF0CB88 /* InstallManifestTests.swift */,
 				2656D012F16CBEADE3FF9A6D /* InstallPlannerTests.swift */,
 				A077ACC4534A70565AC6B622 /* IPodDiskIdentifierTests.swift */,
 				DA27EA46AF63E39DC0E94748 /* LibraryEnricherTests.swift */,
@@ -661,6 +666,7 @@
 				D282E9DFA0D773AF988E69E5 /* ID3Writer.swift */,
 				3DC865282F8B113716D7C3AF /* ImageResizer.swift */,
 				B34640ACD3AC36633502AE41 /* InstallerFlowRegistry.swift */,
+				7CBDC5DC42CD849AD336B37F /* InstallManifest.swift */,
 				893A1B78BE8B3299A20AA52E /* InstallPlanner.swift */,
 				2B7808E74C42090DED30DCD9 /* IPodDiskIdentifier.swift */,
 				117BF63B29CADB076B19CA27 /* IPodMonitor.swift */,
@@ -839,6 +845,7 @@
 				62666A4A9BF729B61C851F76 /* ID3WriterTests.swift in Sources */,
 				00B2C34B8394853F21116615 /* IPodDiskIdentifierTests.swift in Sources */,
 				10C0A1742B2493ECB6919698 /* ImageResizerTests.swift in Sources */,
+				57FF776CC6D0F6C39B27CA45 /* InstallManifestTests.swift in Sources */,
 				D2B29783F7FA00EA316CA587 /* InstallPlannerTests.swift in Sources */,
 				0183EFC24D46256D94033FED /* LibraryEnricherTests.swift in Sources */,
 				A0BDFCBDE136A9D22AC2FA61 /* LibraryFolderDropTests.swift in Sources */,
@@ -939,6 +946,7 @@
 				37963AC2396257E4C78DB6B8 /* IPodDiskIdentifier.swift in Sources */,
 				1F8C7964D7763A72A86F1CF1 /* IPodMonitor.swift in Sources */,
 				94C6E0F1AA6F37EF6B4CB32A /* ImageResizer.swift in Sources */,
+				4B14CF0961F2125ABA959B54 /* InstallManifest.swift in Sources */,
 				007FBDFBB3E9AD760341167F /* InstallPlanner.swift in Sources */,
 				F826489C2A3E807E5630E15D /* InstallerFlowRegistry.swift in Sources */,
 				BB4E4B852CE6983C0E856BBA /* InstallerHomeView.swift in Sources */,

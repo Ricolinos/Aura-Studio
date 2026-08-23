@@ -1,6 +1,14 @@
 # Contrato entre `Aura-Firmware` y Aura Studio
 
-**Versión 11 — 2026-08-23.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+**Versión 12 — 2026-08-23.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+
+**v12 (ST-059, el cambio de firmware deja de reconstruir la base de datos sin motivo) — las tres partes.** Con v10, cambiar de firmware dejaba `/.aura/sync-pending.json` con `music: true` **siempre**, y el firmware que despertaba reconstruía su base (~5 min con biblioteca real) aunque nadie hubiera tocado la música (reporte del dueño). v12 introduce el **sello de biblioteca**:
+
+- **`/.aura/library-stamp`** — una sola línea opaca (marca de tiempo + sufijo aleatorio). **Solo cambia cuando cambia la biblioteca**: Studio lo renueva en cada sync que toca música (junto al marcador). Los firmwares no lo renuevan jamás por su cuenta; solo lo **crean** si falta al momento de un cambio de firmware (arranque en frío del mecanismo: el saliente, cuya base está al día, lo crea y lo anota como propio).
+- **`.rockbox/aura/db_stamp.txt`** (por árbol, junto a la base que describe; **nunca se espeja**) — el sello contra el que ese firmware construyó su base por última vez. Cada firmware lo escribe al terminar bien una (re)construcción — la disparada por marcador y la manual de Ajustes — copiando el sello vigente. Studio no lo escribe nunca.
+- **El cambio de firmware (v10, paso 5) se vuelve condicional**: se compara el `db_stamp.txt` del árbol **entrante** con `/.aura/library-stamp`; si coinciden, **no se escribe el marcador** y el entrante arranca directo con su base intacta. Si difieren, o el entrante no tiene sello (primera vez, o base anterior a v12), el marcador se escribe como hasta ahora. Aplica igual cuando el cambio lo hace Studio o cualquiera de los firmwares.
+- Resultado: una reconstrucción por árbol tras cada sync real, y **cero** en los cambios de ida y vuelta entre syncs.
+- Salvedad documentada: archivos de música copiados a mano por el Finder no renuevan el sello — tampoco disparaban reconstrucción antes de v12; el disparo manual ("Reconstruir biblioteca" / "biblioteca") sigue existiendo y también anota el sello al terminar.
 
 **v11 (ST-058, actualizaciones selectivas por manifiesto) — solo lado Studio; los firmwares lo ignoran.** Actualizar extraía el `rockbox.zip` completo — 9 431 archivos en Aura, y cada archivo chico paga su ida y vuelta USB+FAT: minutos. Medido entre releases consecutivos reales, cambian ~5 archivos (~2 MB). v11 agrega **una** fila a §D: `.rockbox/aura/install_manifest.cfg`, escrito y leído **solo por Studio**:
 
@@ -101,6 +109,8 @@ Esto **sí** es un acoplamiento permanente por diseño: ambos lados leen/escribe
 
 | Ruta | Escribe | Lee | Formato / notas |
 |---|---|---|---|
+| `/.aura/library-stamp` | Studio (en cada sync que toca música); Firmware (solo lo CREA si falta al cambiar de firmware) | Studio y Firmware (al cambiar de firmware) | v12, ST-059. Una línea opaca; se compara por igualdad exacta, nunca se interpreta |
+| `.rockbox/aura/db_stamp.txt` | Firmware (el dueño del árbol, al terminar bien una (re)construcción de su base) | Studio y Firmware (al cambiar de firmware) | v12. **Por árbol** (v10): nunca se espeja; Studio no lo escribe |
 | `.rockbox/aura/install_manifest.cfg` | Studio (al instalar/actualizar) | Studio (para la actualización selectiva) | v11, ST-058. Formato en la nota de v11. Los firmwares lo ignoran. **Por árbol** (v10): nunca se espeja a los dormidos |
 | `/.firmware-aura/`, `/.firmware-metro/` | Studio (estaciona / instala / repara); Firmware (al cambiar desde Ajustes) | Studio (detecta qué familias hay; a cuál se puede cambiar); Firmware (si existe el del otro, ofrece "Cambiar a …") | v10, ST-056. Árbol `.rockbox` completo de esa familia, en reposo, con sus propios ajustes. Nunca dos de la misma familia; nunca el de la familia activa. El activo es siempre `/.rockbox/` (bootloader) |
 | `/rockbox.ipod` (raíz) | Studio (al instalar y al cambiar); Firmware (al cambiar) | Bootloader (solo si `/.rockbox/rockbox.ipod` no existe) | v10: es el respaldo del bootloader y debe ser **siempre** el binario del árbol activo — se copia del `/.rockbox/rockbox.ipod` entrante en cada cambio |

@@ -17,6 +17,12 @@ import Foundation
 enum FirmwareSwitcher {
     static let activeTreeName = ".rockbox"
     static let rootFirmwareBinaryName = "rockbox.ipod"
+    /// ST-059 / contrato v12: sello de biblioteca compartido (cambia solo
+    /// cuando un sync toca musica) y su anotacion POR ARBOL (contra que
+    /// sello construyo su base ese firmware). Igualdad exacta de sellos =
+    /// la base del arbol entrante sigue valida = no se escribe marcador.
+    static let libraryStampRelativePath = ".aura/library-stamp"
+    static let dbStampRelativePathInTree = "aura/db_stamp.txt"
 
     enum SwitchError: Error, Equatable {
         /// No hay `/.firmware-<familia>/` que despertar.
@@ -123,9 +129,58 @@ enum FirmwareSwitcher {
         try fileManager.moveItem(at: targetDormant, to: active)
         // (4) respaldo del bootloader
         try refreshRootBinary(volumeRoot: volumeRoot, fileManager: fileManager)
-        // (5) el entrante reconstruye su base de musica al arrancar
-        try SyncPendingMarker(changes: .init(music: true, video: false, images: false))
-            .write(to: volumeRoot, fileManager: fileManager)
+        // (5) v12/ST-059: el marcador solo si la biblioteca cambio desde
+        // que el ENTRANTE construyo su base -- sin sync de por medio, el
+        // cambio es instantaneo y sin reconstruccion (reporte del dueño:
+        // cada ida y vuelta costaba ~5 min de "optimizando").
+        if !incomingDatabaseIsCurrent(volumeRoot: volumeRoot, outgoing: currentlyActive,
+                                      fileManager: fileManager) {
+            try SyncPendingMarker(changes: .init(music: true, video: false, images: false))
+                .write(to: volumeRoot, fileManager: fileManager)
+        }
+    }
+
+    /// ST-059: compara el sello del arbol ya renombrado a `/.rockbox/`
+    /// (el entrante) contra `/.aura/library-stamp`. Si el sello
+    /// compartido falta (primer cambio tras v12), lo crea y lo anota como
+    /// del SALIENTE -- su base si esta al dia, acaba de estar corriendo --
+    /// para que el proximo cambio de vuelta ya no reconstruya.
+    private static func incomingDatabaseIsCurrent(volumeRoot: URL, outgoing: FirmwareFamily,
+                                                  fileManager: FileManager) -> Bool {
+        let stampURL = volumeRoot.appendingPathComponent(libraryStampRelativePath)
+        var stamp = (try? String(contentsOf: stampURL, encoding: .utf8))?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if stamp == nil || stamp?.isEmpty == true {
+            let fresh = Self.makeLibraryStamp()
+            try? fileManager.createDirectory(at: stampURL.deletingLastPathComponent(),
+                                             withIntermediateDirectories: true)
+            try? (fresh + "\n").write(to: stampURL, atomically: true, encoding: .utf8)
+            if let name = outgoing.dormantTreeName {
+                let outgoingStamp = volumeRoot.appendingPathComponent(name)
+                    .appendingPathComponent(dbStampRelativePathInTree)
+                try? (fresh + "\n").write(to: outgoingStamp, atomically: true, encoding: .utf8)
+            }
+            stamp = fresh
+        }
+        let incoming = volumeRoot.appendingPathComponent(activeTreeName)
+            .appendingPathComponent(dbStampRelativePathInTree)
+        guard let recorded = try? String(contentsOf: incoming, encoding: .utf8) else { return false }
+        return recorded.trimmingCharacters(in: .whitespacesAndNewlines) == stamp
+    }
+
+    static func makeLibraryStamp(date: Date = Date()) -> String {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f.string(from: date) + "-" + UUID().uuidString.prefix(8)
+    }
+
+    /// ST-059: Studio renueva el sello en cada sync que toca musica -- es
+    /// LA definicion de "la biblioteca cambio" para el cambio de firmware.
+    static func bumpLibraryStamp(volumeRoot: URL, fileManager: FileManager = .default) {
+        let url = volumeRoot.appendingPathComponent(libraryStampRelativePath)
+        try? fileManager.createDirectory(at: url.deletingLastPathComponent(),
+                                         withIntermediateDirectories: true)
+        try? (makeLibraryStamp() + "\n").write(to: url, atomically: true, encoding: .utf8)
     }
 
     /// `/rockbox.ipod` (raiz) = el binario del arbol activo. Es lo que el
@@ -146,6 +201,8 @@ enum FirmwareSwitcher {
     /// tal cual desde el activo a cada dormido presente, al final de cada
     /// sync. `aura.cfg` NO (es de cada firmware); `themes/` tampoco (es de
     /// Aura, activo o dormido, y viaja con su arbol).
+    /// NOTA (v12/ST-059): `aura/db_stamp.txt` tampoco se espeja -- es la
+    /// anotacion de CADA arbol sobre su propia base de datos.
     /// NOTA (v11/ST-058): `aura/install_manifest.cfg` NO esta aqui a
     /// proposito -- es POR ARBOL (describe lo instalado en ESE arbol) y
     /// espejarlo haria que la actualizacion selectiva del dormido diera

@@ -743,6 +743,13 @@ struct LibrarySync {
         guard !changes.isEmpty else { return false }
         do {
             try SyncPendingMarker(changes: changes).write(to: volumeRoot, fileManager: fileManager)
+            // ST-059 / contrato v12: un sync que toca musica renueva el
+            // sello de biblioteca -- es lo que hace que un cambio de
+            // firmware posterior SI reconstruya (y que los cambios sin
+            // sync de por medio no lo hagan).
+            if changes.music {
+                FirmwareSwitcher.bumpLibraryStamp(volumeRoot: volumeRoot, fileManager: fileManager)
+            }
             return true
         } catch {
             return false
