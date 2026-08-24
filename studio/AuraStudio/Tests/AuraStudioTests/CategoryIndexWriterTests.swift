@@ -105,4 +105,29 @@ final class CategoryIndexWriterTests: XCTestCase {
         _ = try sync.sync(items: [try photoItem(category: "Fotos", preparedName: "solo.jpg")])
         XCTAssertFalse(FileManager.default.fileExists(atPath: videoCategoriesURL.path))
     }
+
+    func testIndexEntriesAreWrittenPrecomposedNFC() throws {
+        // ST-062: macOS reporta los nombres DESCOMPUESTOS (NFD) pero el
+        // driver msdosfs los GUARDA precompuestos (NFC) en el LFN de
+        // FAT32, que es lo que el firmware lee y compara byte a byte.
+        // Un nombre con acento debe serializarse en NFC o el firmware
+        // no lo empareja jamás (bug real: "Avatar Aang el último
+        // maestro del aire.mpg" invisible en Películas).
+        let nfdName = "Avatar Aang el \u{0075}\u{0301}ltimo maestro del aire.mpg"
+        let nfcName = nfdName.precomposedStringWithCanonicalMapping
+        XCTAssertNotEqual(Array(nfdName.utf8), Array(nfcName.utf8), "el fixture debe ser NFD de verdad")
+
+        let movie = try videoItem(category: "Películas", preparedName: nfdName)
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+
+        _ = try sync.sync(items: [movie])
+
+        let data = try Data(contentsOf: videoCategoriesURL)
+        let expectedLine = Data("\(nfcName): movie".utf8)
+        let forbiddenLine = Data("\(nfdName): movie".utf8)
+        XCTAssertNotNil(data.range(of: expectedLine), "la línea debe ir en NFC (precompuesta)")
+        // Nota: si expected == forbidden el nombre no era NFD; ya se
+        // afirmó arriba que difieren.
+        XCTAssertNil(data.range(of: forbiddenLine), "no debe quedar la forma NFD")
+    }
 }

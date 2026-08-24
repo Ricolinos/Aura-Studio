@@ -857,7 +857,9 @@ struct LibrarySync {
         let itemsByID = Dictionary(uniqueKeysWithValues: items.map { ($0.id, $0) })
         var written = 0
         for playlist in playlists {
-            let paths = playlist.trackItemIDs.compactMap { destinationByItemID[$0] }
+            /* ST-062: rutas en NFC -- el firmware abre estas rutas
+             * byte a byte contra los LFN del FAT (ver String.firmwareNFC). */
+            let paths = playlist.trackItemIDs.compactMap { destinationByItemID[$0]?.firmwareNFC }
             guard !paths.isEmpty else { continue }
             let url = dir.appendingPathComponent(PlaylistExporter.fileName(for: playlist.name))
             let contents = PlaylistExporter.m3u8Contents(trackDestinationPaths: paths)
@@ -937,7 +939,7 @@ struct LibrarySync {
             guard item.kind == .music, let rating = item.metadata?.rating, rating > 0,
                   let relative = destinationByItemID[item.id] else { return nil }
             let nativeRating = min(10, max(0, rating * 2))
-            return "/\(relative): \(nativeRating)"
+            return "/\(relative.firmwareNFC): \(nativeRating)"
         }
 
         let url = volumeRoot.appendingPathComponent(Self.ratingsRelativePath)
@@ -968,7 +970,7 @@ struct LibrarySync {
             case MediaCategory.series.displayNameSpanish, MediaCategory.series.displayNameEnglish: code = "series"
             default: code = "clip"
             }
-            return "\((relative as NSString).lastPathComponent): \(code)"
+            return "\((relative as NSString).lastPathComponent.firmwareNFC): \(code)"
         }
         try writeCategoryIndex(lines: videoLines, header: "# aura-video-categories v1",
                                 relativePath: Self.videoCategoriesRelativePath)
@@ -981,7 +983,7 @@ struct LibrarySync {
             case "Fotos": code = "photo"
             default: code = "image"
             }
-            return "\((relative as NSString).lastPathComponent): \(code)"
+            return "\((relative as NSString).lastPathComponent.firmwareNFC): \(code)"
         }
         try writeCategoryIndex(lines: photoLines, header: "# aura-photo-categories v1",
                                 relativePath: Self.photoCategoriesRelativePath)
@@ -1308,4 +1310,18 @@ struct LibrarySync {
             try? fileManager.removeItem(at: url)
         }
     }
+}
+
+/// ST-062: los LFN de FAT32 los guarda el driver msdosfs de macOS
+/// PRECOMPUESTOS (NFC), aunque FileManager los reporte DESCOMPUESTOS
+/// (NFD) al leerlos de vuelta. El firmware lee el UTF-16 del disco tal
+/// cual y compara byte a byte (aura_media_categories.c, ratings, rutas
+/// de .m3u8), así que todo nombre o ruta que viaje dentro de un archivo
+/// del contrato debe serializarse en NFC -- si no, cualquier nombre con
+/// acento ("último", "canción") no empareja JAMÁS con lo que el
+/// firmware ve en el disco. Bug real: "Avatar Aang el último maestro
+/// del aire.mpg" categorizado como `movie` en el cfg pero invisible en
+/// Películas/Movie Flow, mientras su vecino 100% ASCII sí aparecía.
+extension String {
+    var firmwareNFC: String { precomposedStringWithCanonicalMapping }
 }
