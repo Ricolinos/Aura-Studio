@@ -99,6 +99,71 @@ final class FirmwareFamilyTests: XCTestCase {
 
     // MARK: - lectura de aura.cfg
 
+    private func writeSentinel(_ family: FirmwareFamily) throws {
+        let url = root.appendingPathComponent(family.installedTreeSentinel!)
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(),
+                                                 withIntermediateDirectories: true)
+        try Data("fnt".utf8).write(to: url)
+    }
+
+    // MARK: - ST-067: arbol recien instalado, sin arrancar
+
+    /// El caso exacto del iPod del dueño (2026-08-26): moonlit recien
+    /// copiado, `aura.cfg` creado por `ClockSyncWriter` solo con la hora,
+    /// sin `firmware_family`. Antes se leia como Aura y Extras lo
+    /// estacionaba como `/.firmware-aura`.
+    func testNeverBootedMoonlitIsIdentifiedBySentinel() throws {
+        try writeConfig("""
+        rtc_sync_year: 2026
+        rtc_sync_month: 8
+        tz_local_quarters: -24
+        """)
+        try writeSentinel(.moonlit)
+        XCTAssertEqual(FirmwareCapabilities.declaredFamily(volumeRoot: root), .moonlit)
+    }
+
+    func testNeverBootedMetroWithoutConfigIsIdentifiedBySentinel() throws {
+        try writeSentinel(.metro)
+        XCTAssertEqual(FirmwareCapabilities.declaredFamily(volumeRoot: root), .metro)
+    }
+
+    /// La clave escrita por el firmware manda sobre el centinela.
+    func testDeclaredKeyBeatsSentinel() throws {
+        try writeConfig("firmware_family: metro\n")
+        try writeSentinel(.moonlit)
+        XCTAssertEqual(FirmwareCapabilities.declaredFamily(volumeRoot: root), .metro)
+    }
+
+    /// Un Aura real (sin clave, sin centinelas ajenos) sigue siendo Aura.
+    func testAuraTreeWithoutForeignSentinelsIsAura() throws {
+        try writeConfig("theme: 0\n")
+        try writeSentinel(.aura)
+        XCTAssertEqual(FirmwareCapabilities.declaredFamily(volumeRoot: root), .aura)
+        XCTAssertNil(FirmwareCapabilities.familyBySentinel(volumeRoot: root))
+    }
+
+    func testSeedDeclaredFamilyUpsertsKeepingClockLines() throws {
+        try writeConfig("rtc_sync_year: 2026\ntz_local_quarters: -24\n")
+        FirmwareCapabilities.seedDeclaredFamily(volumeRoot: root, family: .moonlit)
+        let text = try String(contentsOf: root.appendingPathComponent(".rockbox/aura/aura.cfg"), encoding: .utf8)
+        XCTAssertEqual(text, "firmware_family: moonlit\nrtc_sync_year: 2026\ntz_local_quarters: -24\n")
+        XCTAssertEqual(FirmwareCapabilities.declaredFamily(volumeRoot: root), .moonlit)
+        // Idempotente: una segunda siembra no duplica la clave.
+        FirmwareCapabilities.seedDeclaredFamily(volumeRoot: root, family: .moonlit)
+        let again = try String(contentsOf: root.appendingPathComponent(".rockbox/aura/aura.cfg"), encoding: .utf8)
+        XCTAssertEqual(again.components(separatedBy: "firmware_family:").count - 1, 1)
+    }
+
+    func testSeedDeclaredFamilyWritesNothingForAura() {
+        FirmwareCapabilities.seedDeclaredFamily(volumeRoot: root, family: .aura)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: root.appendingPathComponent(".rockbox/aura/aura.cfg").path))
+    }
+
+    func testSeedDeclaredFamilyCreatesConfigWhenMissing() throws {
+        FirmwareCapabilities.seedDeclaredFamily(volumeRoot: root, family: .metro)
+        XCTAssertEqual(FirmwareCapabilities.declaredFamily(volumeRoot: root), .metro)
+    }
+
     func testDeclaredFamilyWithoutConfigIsAura() {
         XCTAssertEqual(FirmwareCapabilities.declaredFamily(volumeRoot: root), .aura)
     }

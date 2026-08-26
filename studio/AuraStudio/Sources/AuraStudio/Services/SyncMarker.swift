@@ -102,17 +102,61 @@ enum FirmwareCapabilities {
     /// precisamente su firma. El unico firmware que la escribe hoy es
     /// Metro-Aura (`metro_settings.c`).
     ///
-    /// Sin `aura.cfg` (firmware recien copiado, nunca arrancado) tambien
-    /// devuelve `.aura`. Es correcto: en ese estado
-    /// `AuraDevice.supportsAuraContract` es `false` y nadie usa la familia
-    /// todavia.
+    /// ST-067: la premisa "sin arrancar no hay `aura.cfg`" era falsa --
+    /// el propio instalador crea `aura.cfg` con la hora del Mac
+    /// (`ClockSyncWriter`) antes del primer arranque, y un moonlit recien
+    /// instalado se identificaba como Aura: Extras lo estaciono como
+    /// `/.firmware-aura` y la siguiente instalacion de Aura lo borro
+    /// (iPod del dueño, 2026-08-26). Por eso, cuando la clave NO esta,
+    /// antes de concluir "Aura" se mira el centinela de arbol instalado
+    /// de cada familia que si escribe la clave (`installedTreeSentinel`:
+    /// una fuente que solo esa familia trae). Un Aura real no tiene esos
+    /// archivos, asi que la regla ST-046 "ausencia = Aura" sigue intacta
+    /// para todo arbol que ya arranco; solo cubre el hueco del arbol
+    /// recien copiado. Ademas el instalador siembra la clave
+    /// (`seedDeclaredFamily`) para que ese hueco ni siquiera exista.
     static func declaredFamily(volumeRoot: URL, fileManager: FileManager = .default) -> FirmwareFamily {
         let cfgURL = volumeRoot.appendingPathComponent(auraConfigRelativePath)
-        guard let text = try? String(contentsOf: cfgURL, encoding: .utf8) else { return .aura }
-        let key = "firmware_family:"
-        for line in text.split(separator: "\n") where line.hasPrefix(key) {
-            return FirmwareFamily.parse(configValue: String(line.dropFirst(key.count)))
+        if let text = try? String(contentsOf: cfgURL, encoding: .utf8) {
+            let key = "firmware_family:"
+            for line in text.split(separator: "\n") where line.hasPrefix(key) {
+                return FirmwareFamily.parse(configValue: String(line.dropFirst(key.count)))
+            }
         }
-        return .aura
+        return familyBySentinel(volumeRoot: volumeRoot, fileManager: fileManager) ?? .aura
+    }
+
+    /// ST-067: familia de un arbol que nunca arranco, por su centinela de
+    /// arbol instalado. Solo familias que declaran `firmware_family`
+    /// (`configValue != nil`); Aura se reconoce por ausencia, nunca por
+    /// centinela. `nil` si ningun centinela esta.
+    static func familyBySentinel(volumeRoot: URL, fileManager: FileManager = .default) -> FirmwareFamily? {
+        for family in FirmwareFamily.installable where family.configValue != nil {
+            guard let sentinel = family.installedTreeSentinel else { continue }
+            if fileManager.fileExists(atPath: volumeRoot.appendingPathComponent(sentinel).path) {
+                return family
+            }
+        }
+        return nil
+    }
+
+    /// ST-067: deja `firmware_family: <valor>` en `aura.cfg` del arbol
+    /// activo justo despues de instalarlo, para que el arbol tenga
+    /// identidad desde antes del primer arranque (el firmware reescribe
+    /// el archivo entero al guardar y pone exactamente el mismo valor,
+    /// asi que no hay conflicto). Para Aura no escribe nada: su firma es
+    /// la ausencia (ST-046). Upsert: respeta las demas lineas (la hora
+    /// que `ClockSyncWriter` acaba de dejar).
+    static func seedDeclaredFamily(volumeRoot: URL, family: FirmwareFamily, fileManager: FileManager = .default) {
+        guard let value = family.configValue else { return }
+        let cfgURL = volumeRoot.appendingPathComponent(auraConfigRelativePath)
+        let key = "firmware_family:"
+        var lines = ((try? String(contentsOf: cfgURL, encoding: .utf8)) ?? "")
+            .split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+        if let last = lines.last, last.isEmpty { lines.removeLast() }
+        lines.removeAll { $0.hasPrefix(key) }
+        lines.insert("\(key) \(value)", at: 0)
+        try? fileManager.createDirectory(at: cfgURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try? (lines.joined(separator: "\n") + "\n").write(to: cfgURL, atomically: true, encoding: .utf8)
     }
 }

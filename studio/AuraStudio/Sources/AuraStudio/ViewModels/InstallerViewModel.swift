@@ -1024,6 +1024,11 @@ final class InstallerViewModel: ObservableObject {
             // corriendo. El candado de escritura ya está tomado por esta
             // misma función (línea ~799).
             try? ClockSyncWriter.writeToDisk(mountPath: mountPath)
+            // ST-067: identidad del arbol antes del primer arranque --
+            // sin esto un Metro/moonlit recien copiado se lee como Aura
+            // y un cambio de familia lo estaciona con el nombre equivocado.
+            FirmwareCapabilities.seedDeclaredFamily(volumeRoot: URL(fileURLWithPath: mountPath),
+                                                    family: targetFamily, fileManager: fm)
 
             if bootloaderAlreadyInstalled || bootloaderFlashedThisFlow {
                 // El iPod llego aca desde el "Bootloader USB mode" de
