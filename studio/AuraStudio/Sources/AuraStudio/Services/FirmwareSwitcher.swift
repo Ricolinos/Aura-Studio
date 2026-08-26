@@ -1,6 +1,6 @@
 import Foundation
 
-/// ST-056 / CONTRATO-firmware-studio.md v10: dos firmwares instalados a la
+/// ST-056 / CONTRATO-firmware-studio.md v10 (ST-065: hasta tres): varios firmwares instalados a la
 /// vez y conmutacion entre ellos POR RENOMBRE, sin borrar ni descargar.
 ///
 /// El arbol activo es siempre `/.rockbox/` (lo unico que el bootloader

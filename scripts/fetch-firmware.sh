@@ -16,19 +16,24 @@
 # En ambos casos verifica checksums.txt antes de dejar los archivos
 # utilizables, y falla con mensaje claro si algo no coincide o falta.
 
-# ST-047 (dos familias de firmware): el mismo script sirve a Aura y a
-# Metro-Aura. Aura se queda EXACTAMENTE donde estaba (Vendor/firmware-dist/,
-# con sus extras de temas y paleta que solo Aura publica); Metro va en el
-# subdirectorio Vendor/firmware-dist/metro/, que project.yml empaqueta
-# como referencia de carpeta para que sus rockbox.ipod/rockbox.zip no
+# ST-047 / ST-065 (tres familias de firmware): el mismo script sirve a
+# Aura, a Metro-Aura y a moonlit.aura. Aura se queda EXACTAMENTE donde
+# estaba (Vendor/firmware-dist/, con sus extras de temas y paleta que solo
+# Aura publica); Metro va en el subdirectorio Vendor/firmware-dist/metro/
+# y moonlit en Vendor/firmware-dist/moonlit/, que project.yml empaqueta
+# como referencias de carpeta para que sus rockbox.ipod/rockbox.zip no
 # choquen con los de Aura dentro del bundle. En FIRMWARE_VERSION la
-# seccion de Metro lleva el prefijo `metro.` (`metro.tag=...`).
+# seccion de cada familia lleva su prefijo (`metro.tag=...`,
+# `moonlit.tag=...`). La lista de familias vive en FAMILIES (abajo) y en
+# `FirmwareFamily.installable` del lado Swift: se mantienen a la par.
 #
-#   scripts/fetch-firmware.sh                 # las dos familias
+#   scripts/fetch-firmware.sh                 # todas las familias
 #   scripts/fetch-firmware.sh --family aura   # solo una
 #   scripts/fetch-firmware.sh --family metro
+#   scripts/fetch-firmware.sh --family moonlit
 #   scripts/fetch-firmware.sh --from-dir <dist>            # Aura, desarrollo
 #   scripts/fetch-firmware.sh --family metro --from-dir <dist>
+#   scripts/fetch-firmware.sh --family moonlit --from-dir <dist>
 
 set -euo pipefail
 
@@ -53,8 +58,10 @@ set_family() {
       REPO="Ricolinos/Aura-Firmware"; KEY_PREFIX=""; VENDOR_DIR="$VENDOR_ROOT" ;;
     metro)
       REPO="Ricolinos/Metro-Aura"; KEY_PREFIX="metro."; VENDOR_DIR="$VENDOR_ROOT/metro" ;;
+    moonlit)
+      REPO="Ricolinos/moonlit-aura"; KEY_PREFIX="moonlit."; VENDOR_DIR="$VENDOR_ROOT/moonlit" ;;
     *)
-      echo "ERROR: familia desconocida '$FAMILY' (aura|metro)" >&2; exit 1 ;;
+      echo "ERROR: familia desconocida '$FAMILY' (aura|metro|moonlit)" >&2; exit 1 ;;
   esac
 }
 
@@ -154,18 +161,18 @@ from_release() {
   echo "==> Listo: $VENDOR_DIR ($tag)"
 }
 
-FAMILIES=(aura metro)
+FAMILIES=(aura metro moonlit)
 FROM_DIR=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --family)
-      [[ -n "${2:-}" ]] || { echo "Uso: $0 [--family aura|metro] [--from-dir <dist>]" >&2; exit 1; }
+      [[ -n "${2:-}" ]] || { echo "Uso: $0 [--family aura|metro|moonlit] [--from-dir <dist>]" >&2; exit 1; }
       FAMILIES=("$2"); shift 2 ;;
     --from-dir)
-      [[ -n "${2:-}" ]] || { echo "Uso: $0 [--family aura|metro] --from-dir <ruta a firmware/dist/>" >&2; exit 1; }
+      [[ -n "${2:-}" ]] || { echo "Uso: $0 [--family aura|metro|moonlit] --from-dir <ruta a firmware/dist/>" >&2; exit 1; }
       FROM_DIR="$2"; shift 2 ;;
     *)
-      echo "Uso: $0 [--family aura|metro] [--from-dir <dist>]" >&2; exit 1 ;;
+      echo "Uso: $0 [--family aura|metro|moonlit] [--from-dir <dist>]" >&2; exit 1 ;;
   esac
 done
 

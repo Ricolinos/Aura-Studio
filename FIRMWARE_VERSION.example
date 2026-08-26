@@ -18,3 +18,12 @@ metro.rockbox.ipod=<sha256>
 metro.rockbox.zip=<sha256>
 metro.mks5lboot=<sha256>
 metro.bootloader-ipod6g.ipod=<sha256>
+
+# ST-065: tercera familia, mismo formato con prefijo `moonlit.`
+# (Ricolinos/moonlit-aura). moonlit no publica los extras de Aura (paleta,
+# formato de tema): solo los cuatro artefactos base.
+moonlit.tag=v0.1.0
+moonlit.rockbox.ipod=<sha256>
+moonlit.rockbox.zip=<sha256>
+moonlit.mks5lboot=<sha256>
+moonlit.bootloader-ipod6g.ipod=<sha256>

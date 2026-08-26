@@ -33,12 +33,26 @@ struct ExtrasView: View {
     @State private var switchResult: String?
 
     /// D-289 / ST-003: "Temas" ahora abre la gestión real (instalar,
-    /// activar, eliminar, construir) -- necesita un iPod con Aura
-    /// montado, mismo criterio que el resto de las acciones que
-    /// escriben en el dispositivo.
+    /// activar, eliminar, construir) -- necesita un iPod con un firmware
+    /// del contrato montado Y que ese firmware anuncie
+    /// `theme_format_supported` en `aura.cfg` (ST-065: moonlit.aura no
+    /// tiene sistema de temas y no publica la clave; sin ella el boton se
+    /// deshabilita y se dice por que, patron ST-053).
     private var canManageThemes: Bool {
         guard let device else { return false }
-        return device.supportsAuraContract
+        return device.supportsAuraContract && device.themeFormatSupported
+    }
+
+    /// Por que "Temas" esta deshabilitado -- un boton deshabilitado
+    /// siempre explica que falta (ST-053).
+    private var themesDetail: String {
+        guard let device, device.supportsAuraContract else {
+            return "Conecta tu iPod con Aura instalado para instalar, activar o construir temas."
+        }
+        guard device.themeFormatSupported else {
+            return "Este firmware no admite temas (\(device.declaredFamily.displayName) no tiene sistema de temas)."
+        }
+        return "Tema integrado (Claro/Oscuro) más los que instales -- Ajustes > Estilo, en el iPod."
     }
 
     var body: some View {
@@ -67,7 +81,7 @@ struct ExtrasView: View {
         }
     }
 
-    /// ST-047: cual de los dos firmwares instala el asistente. Es una
+    /// ST-047: cual de los firmwares instala el asistente. Es una
     /// PREFERENCIA, no una accion: elegir aqui no toca el iPod -- el
     /// Instalador (seccion propia, con su flasheo y sus confirmaciones) es
     /// el unico que escribe. Una actualizacion desde General ignora esto y
@@ -75,21 +89,24 @@ struct ExtrasView: View {
     private var firmwareChoice: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Firmware").font(.headline)
-            Text("Elige cuál de los dos firmwares instala Aura Studio la próxima vez que uses el Instalador. Los dos son software libre (GPL v2), derivados de Rockbox, y comparten la misma biblioteca: tu música, fotos y videos se sincronizan igual con cualquiera.")
+            Text("Elige cuál de los firmwares instalables usa Aura Studio la próxima vez que abras el Instalador. Todos son software libre (GPL v2), derivados de Rockbox, y comparten la misma biblioteca: tu música, fotos y videos se sincronizan igual con cualquiera.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
             FirmwareChoiceCard(
                 family: .aura,
-                icon: "sparkles",
                 explanation: "Lenguaje visual \"Apple 2026\": tipografías SF, temas claro/oscuro y temas instalables, Cover Flow.",
                 isSelected: preferences.firmwareFamilyToInstall == .aura
             ) { preferences.firmwareFamilyToInstall = .aura }
             FirmwareChoiceCard(
                 family: .metro,
-                icon: "square.grid.2x2",
                 explanation: "Lenguaje visual Metro (Windows Phone 7 / Zune): tipografía Selawik, hub de tiles, acentos de color, transiciones de pivote.",
                 isSelected: preferences.firmwareFamilyToInstall == .metro
             ) { preferences.firmwareFamilyToInstall = .metro }
+            FirmwareChoiceCard(
+                family: .moonlit,
+                explanation: "Lenguaje visual Waning Crescent: calma nocturna, Material Design 3 adaptado al iPod, sin sistema de temas.",
+                isSelected: preferences.firmwareFamilyToInstall == .moonlit
+            ) { preferences.firmwareFamilyToInstall = .moonlit }
             if let device, device.supportsAuraContract {
                 switchControls(device)
             }
@@ -165,7 +182,7 @@ struct ExtrasView: View {
                 showingLicenses = true
             } label: {
                 row("Software libre incluido", "doc.text",
-                    "Aura y Metro son GPL v2. Aquí están sus fuentes, versiones exactas y cambios.")
+                    "Todos los firmwares son GPL v2. Aquí están sus fuentes, versiones exactas y cambios.")
             }
             .buttonStyle(.plain)
         }
@@ -177,10 +194,7 @@ struct ExtrasView: View {
             Button {
                 showingThemes = true
             } label: {
-                row("Temas", "circle.lefthalf.filled",
-                    canManageThemes
-                        ? "Tema integrado (Claro/Oscuro) más los que instales -- Ajustes > Estilo, en el iPod."
-                        : "Conecta tu iPod con Aura instalado para instalar, activar o construir temas.")
+                row("Temas", "circle.lefthalf.filled", themesDetail)
             }
             .buttonStyle(.plain)
             .disabled(!canManageThemes)
@@ -223,7 +237,6 @@ struct ExtrasView: View {
 /// arranque).
 private struct FirmwareChoiceCard: View {
     let family: FirmwareFamily
-    let icon: String
     let explanation: String
     let isSelected: Bool
     let onSelect: () -> Void
@@ -231,7 +244,7 @@ private struct FirmwareChoiceCard: View {
     var body: some View {
         Button(action: onSelect) {
             HStack(alignment: .top, spacing: 14) {
-                Image(systemName: icon)
+                Image(systemName: family.symbolName)
                     .font(.title2)
                     .foregroundStyle(Color.accentColor)
                     .frame(width: 28)

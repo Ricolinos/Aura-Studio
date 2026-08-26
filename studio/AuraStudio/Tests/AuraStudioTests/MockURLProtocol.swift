@@ -6,7 +6,9 @@ import Foundation
 /// proyecto (MusicBrainz, etc.) solo testean su logica pura sin red --
 /// este es el primero que necesita simular una respuesta real.
 final class MockURLProtocol: URLProtocol {
-    static var handler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
+    // Swift 6 estricto (xcodebuild, Xcode 26.6): estado global de prueba,
+    // se fija antes de cada caso y nunca se comparte entre hilos.
+    nonisolated(unsafe) static var handler: ((URLRequest) throws -> (HTTPURLResponse, Data))?
 
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }

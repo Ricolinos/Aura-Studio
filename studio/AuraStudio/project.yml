@@ -69,6 +69,12 @@ targets:
       - path: Vendor/firmware-dist/metro
         type: folder
         buildPhase: resources
+      # ST-065: tercera familia, moonlit.aura, misma mecanica que metro/.
+      # BundledArtifacts la resuelve con subdirectory: "moonlit"; la puebla
+      # scripts/fetch-firmware.sh (--family moonlit).
+      - path: Vendor/firmware-dist/moonlit
+        type: folder
+        buildPhase: resources
       # App icon (Icon Composer, con soporte de modo oscuro y "glass"
       # nativo -- ver Resources/AppIcon.icon/icon.json). El nombre del
       # archivo sin extension tiene que matchear
@@ -108,9 +114,11 @@ targets:
       - name: "mks5lboot: asegurar bit de ejecucion"
         basedOnDependencyAnalysis: false
         script: |
-          # ST-047: el de Aura en la raiz de Resources y el de Metro en metro/.
+          # ST-047/ST-065: el de Aura en la raiz de Resources, el de Metro
+          # en metro/ y el de moonlit en moonlit/.
           for BIN in "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/mks5lboot" \
-                     "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/metro/mks5lboot"; do
+                     "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/metro/mks5lboot" \
+                     "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/moonlit/mks5lboot"; do
             if [ -f "$BIN" ] && [ ! -x "$BIN" ]; then
               chmod 755 "$BIN"
               echo "mks5lboot: bit de ejecucion restaurado en el bundle ($BIN)"

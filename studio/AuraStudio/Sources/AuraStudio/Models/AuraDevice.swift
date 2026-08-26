@@ -78,10 +78,15 @@ struct AuraDevice: Equatable {
     /// valor por defecto.
     let declaredFamily: FirmwareFamily
     /// ST-056 / contrato v10: familias con un arbol DORMIDO en el disco
-    /// (`/.firmware-aura/`, `/.firmware-metro/`) -- instaladas, con sus
-    /// ajustes, listas para despertar con un cambio. Nunca incluye la
-    /// activa. Solo habla de archivos.
+    /// (`/.firmware-aura/`, `/.firmware-metro/`, `/.firmware-moonlit/`)
+    /// -- instaladas, con sus ajustes, listas para despertar con un
+    /// cambio. Nunca incluye la activa. Solo habla de archivos.
     let dormantFamilies: [FirmwareFamily]
+    /// ST-065: el firmware activo anuncia `theme_format_supported` en
+    /// `aura.cfg` -- tiene sistema de temas (Aura, Metro). moonlit.aura
+    /// no lo publica: sin la clave, "Temas" se deshabilita y lo explica.
+    /// Capacidad, no identidad (misma regla que `supportsAuraContract`).
+    let themeFormatSupported: Bool
     /// Serial USB reportado por el firmware que corre (ver
     /// `USBDeviceIdentity.serialNumber` -- cambia entre modos).
     let usbSerial: String?

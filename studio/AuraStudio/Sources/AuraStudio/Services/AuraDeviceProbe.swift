@@ -99,6 +99,8 @@ enum AuraDeviceProbe {
             declaredFamily: FirmwareCapabilities.declaredFamily(volumeRoot: root,
                                                                 fileManager: fileManager),
             dormantFamilies: FirmwareSwitcher.dormantFamilies(volumeRoot: root, fileManager: fileManager),
+            themeFormatSupported: FirmwareCapabilities.supportedThemeFormat(volumeRoot: root,
+                                                                            fileManager: fileManager) != nil,
             usbSerial: diskInfo.usb?.serialNumber,
             volumeUUID: diskInfo.volumeUUID,
             capacityBytes: capacity,

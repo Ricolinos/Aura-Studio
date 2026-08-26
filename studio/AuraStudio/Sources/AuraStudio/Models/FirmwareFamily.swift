@@ -24,10 +24,13 @@ import Foundation
 /// cambio retrocompatible: Aura-Firmware nunca la escribio ni la
 /// escribira, asi que todo iPod con Aura instalada -- incluidos los
 /// instalados antes de esta version de Studio -- cae en el caso correcto
-/// sin tocar el firmware. Metro si la escribe (`metro_settings.c`, M-004).
+/// sin tocar el firmware. Metro si la escribe (`metro_settings.c`, M-004)
+/// y moonlit.aura tambien (ST-065, contrato v14).
 enum FirmwareFamily: Equatable {
     case aura
     case metro
+    /// ST-065: tercera familia, moonlit.aura (`Ricolinos/moonlit-aura`).
+    case moonlit
     /// Una familia que esta version de Studio no conoce. Se conserva el
     /// texto crudo para poder mostrarlo y para no fingir que es Aura: un
     /// firmware que se molesto en declararse NO es Aura, aunque no
@@ -40,6 +43,7 @@ enum FirmwareFamily: Equatable {
         switch self {
         case .aura: return nil
         case .metro: return "metro"
+        case .moonlit: return "moonlit"
         case .unknown(let raw): return raw
         }
     }
@@ -49,7 +53,21 @@ enum FirmwareFamily: Equatable {
         switch self {
         case .aura: return "Aura"
         case .metro: return "Metro"
+        case .moonlit: return "moonlit.aura"
         case .unknown(let raw): return raw
+        }
+    }
+
+    /// SF Symbol que representa a la familia en toda la UI (tarjeta del
+    /// selector, cabecera del instalador). Es la UNICA fuente del icono:
+    /// ninguna vista decide "si es Metro, tal icono" por su cuenta
+    /// (ST-065).
+    var symbolName: String {
+        switch self {
+        case .aura: return "sparkles"
+        case .metro: return "square.grid.2x2"
+        case .moonlit: return "moon.stars"
+        case .unknown: return "questionmark"
         }
     }
 
@@ -60,14 +78,17 @@ enum FirmwareFamily: Equatable {
         switch self {
         case .aura: return "Ricolinos/Aura-Firmware"
         case .metro: return "Ricolinos/Metro-Aura"
+        case .moonlit: return "Ricolinos/moonlit-aura"
         case .unknown: return nil
         }
     }
 
-    /// ST-047: las dos familias que esta version de Studio trae
+    /// ST-047 / ST-065: las familias que esta version de Studio trae
     /// EMBEBIDAS y por lo tanto puede instalar. Una familia desconocida
-    /// se detecta pero no se instala.
-    static let installable: [FirmwareFamily] = [.aura, .metro]
+    /// se detecta pero no se instala. Es la UNICA lista de familias:
+    /// todo lo que las enumera (selector, licencias, dormidos, cambio)
+    /// itera sobre esto.
+    static let installable: [FirmwareFamily] = [.aura, .metro, .moonlit]
 
     var isInstallable: Bool { Self.installable.contains(self) }
 
@@ -79,6 +100,7 @@ enum FirmwareFamily: Equatable {
         switch self {
         case .aura: return nil
         case .metro: return "metro"
+        case .moonlit: return "moonlit"
         case .unknown: return nil
         }
     }
@@ -91,6 +113,7 @@ enum FirmwareFamily: Equatable {
         switch self {
         case .aura: return ".rockbox/fonts/a26-title-20.fnt"
         case .metro: return ".rockbox/fonts/metro-list-20.fnt"
+        case .moonlit: return ".rockbox/fonts/moonlit-body-18.fnt"
         case .unknown: return nil
         }
     }
@@ -103,13 +126,15 @@ enum FirmwareFamily: Equatable {
     }
 
     /// ST-056 / contrato v10: nombre del arbol DORMIDO de esta familia en
-    /// la raiz del iPod (`/.firmware-aura/`, `/.firmware-metro/`): un
+    /// la raiz del iPod (`/.firmware-aura/`, `/.firmware-metro/`,
+    /// `/.firmware-moonlit/`): un
     /// `.rockbox` completo, en reposo, con sus propios ajustes. El activo
     /// es siempre `/.rockbox/` (lo unico que el bootloader arranca).
     var dormantTreeName: String? {
         switch self {
         case .aura: return ".firmware-aura"
         case .metro: return ".firmware-metro"
+        case .moonlit: return ".firmware-moonlit"
         case .unknown: return nil
         }
     }
@@ -124,6 +149,7 @@ enum FirmwareFamily: Equatable {
         case "": return .aura
         case "aura": return .aura
         case "metro": return .metro
+        case "moonlit": return .moonlit
         default: return .unknown(value)
         }
     }

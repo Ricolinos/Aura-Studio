@@ -125,7 +125,7 @@ enum AuraUpdateChecker {
     /// ST-046 descubrio el bug de comparar el `rockbox.ipod` de Metro
     /// contra el de Aura embebido (el hash siempre difiere -> "hay
     /// actualizacion" eternamente -> sobrescribir Metro con Aura). ST-047
-    /// embebe las dos familias, asi que ahora cada una se compara contra
+    /// embebe todas las familias instalables, asi que cada una se compara contra
     /// la suya; una familia que esta version no trae embebida
     /// (`isInstallable == false`) devuelve `false`: sin binario propio no
     /// hay nada que comparar, y no compararlo es mejor que compararlo mal.

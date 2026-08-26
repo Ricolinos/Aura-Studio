@@ -81,6 +81,20 @@ enum FirmwareCapabilities {
         return nil
     }
 
+    /// ST-065: version del formato de tema que el firmware entiende
+    /// (`theme_format_supported`), o `nil` si no publica la clave: o es un
+    /// firmware anterior a D-289, o una familia SIN sistema de temas
+    /// (moonlit.aura). Misma lectura que `ThemeInstaller.supportedThemeFormat`
+    /// pero sobre `volumeRoot`, como el resto de este tipo.
+    static func supportedThemeFormat(volumeRoot: URL, fileManager: FileManager = .default) -> Int? {
+        let cfgURL = volumeRoot.appendingPathComponent(auraConfigRelativePath)
+        guard let text = try? String(contentsOf: cfgURL, encoding: .utf8) else { return nil }
+        for line in text.split(separator: "\n") where line.hasPrefix("theme_format_supported:") {
+            return Int(line.dropFirst("theme_format_supported:".count).trimmingCharacters(in: .whitespaces))
+        }
+        return nil
+    }
+
     /// ST-046 / contrato v8: que familia dice ser el firmware instalado
     /// (`firmware_family`). **La ausencia de la clave devuelve `.aura`**, y
     /// eso no es un fallback defensivo sino el contrato: Aura-Firmware

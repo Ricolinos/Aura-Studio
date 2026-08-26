@@ -34,11 +34,11 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ $FETCH -eq 1 ]]; then
-  echo "==> Artefactos de firmware (las dos familias, FIRMWARE_VERSION)"
+  echo "==> Artefactos de firmware (todas las familias, FIRMWARE_VERSION)"
   "$ROOT_DIR/scripts/fetch-firmware.sh"
 fi
 
-for f in rockbox.ipod rockbox.zip mks5lboot checksums.txt metro/rockbox.ipod metro/rockbox.zip metro/mks5lboot metro/checksums.txt; do
+for f in rockbox.ipod rockbox.zip mks5lboot checksums.txt metro/rockbox.ipod metro/rockbox.zip metro/mks5lboot metro/checksums.txt moonlit/rockbox.ipod moonlit/rockbox.zip moonlit/mks5lboot moonlit/checksums.txt; do
   if [[ ! -f "$PROJ_DIR/Vendor/firmware-dist/$f" ]]; then
     echo "ERROR: falta Vendor/firmware-dist/$f -- corre scripts/fetch-firmware.sh" >&2
     exit 1
@@ -61,10 +61,11 @@ fi
 
 echo "==> Verificando el bundle"
 codesign -vv "$APP" >/dev/null
-for f in rockbox.ipod firmware-version.txt metro/rockbox.ipod metro/firmware-version.txt; do
+for f in rockbox.ipod firmware-version.txt metro/rockbox.ipod metro/firmware-version.txt moonlit/rockbox.ipod moonlit/firmware-version.txt; do
   [[ -f "$APP/Contents/Resources/$f" ]] || { echo "ERROR: el bundle no trae Resources/$f" >&2; exit 1; }
 done
-[[ -x "$APP/Contents/Resources/mks5lboot" && -x "$APP/Contents/Resources/metro/mks5lboot" ]] \
+[[ -x "$APP/Contents/Resources/mks5lboot" && -x "$APP/Contents/Resources/metro/mks5lboot" \
+   && -x "$APP/Contents/Resources/moonlit/mks5lboot" ]] \
   || { echo "ERROR: mks5lboot sin bit de ejecucion en el bundle" >&2; exit 1; }
 
 echo "==> Instalando en $DEST_DIR/AuraStudio.app"
@@ -77,3 +78,4 @@ rm -rf "$DERIVED"
 echo "==> Listo: $DEST_DIR/AuraStudio.app"
 echo "    Aura:  $(cat "$DEST_DIR/AuraStudio.app/Contents/Resources/firmware-version.txt")"
 echo "    Metro: $(cat "$DEST_DIR/AuraStudio.app/Contents/Resources/metro/firmware-version.txt")"
+echo "    moonlit: $(cat "$DEST_DIR/AuraStudio.app/Contents/Resources/moonlit/firmware-version.txt")"

@@ -66,10 +66,10 @@ struct ModePickerView: View {
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: 440)
-            // ST-047: decir con todas sus letras cual de los dos firmwares
+            // ST-047: decir con todas sus letras cual de los firmwares
             // va a instalar el boton -- la eleccion vive en Extras.
             Label("Firmware a instalar: \(name) -- se elige en Extras › Firmware",
-                  systemImage: family == .metro ? "square.grid.2x2" : "sparkles")
+                  systemImage: family.symbolName)
                 .font(.callout)
                 .foregroundStyle(.secondary)
 

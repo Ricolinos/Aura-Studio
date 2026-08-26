@@ -1,8 +1,8 @@
 import XCTest
 @testable import AuraStudio
 
-/// ST-056 / contrato v10: dos firmwares instalados a la vez y cambio por
-/// renombre. Todo sobre carpetas temporales: lo que se fija es la
+/// ST-056 / contrato v10 (y ST-065, tres arboles): varios firmwares
+/// instalados a la vez y cambio por renombre. Todo sobre carpetas temporales: lo que se fija es la
 /// secuencia y sus invariantes, no el hardware.
 final class FirmwareSwitcherTests: XCTestCase {
     private var root: URL!
@@ -237,5 +237,72 @@ final class FirmwareSwitcherTests: XCTestCase {
         XCTAssertEqual(read(".firmware-aura/aura/artists/x.jpg"), "JPG")
         XCTAssertEqual(read(".firmware-aura/aura/aura.cfg"), "theme: 1\n", "los ajustes del dormido no se pisan")
         XCTAssertFalse(exists(".firmware-aura/aura/themes"), "los temas viajan con su arbol, no se espejan")
+    }
+
+    // MARK: - ST-065: tres familias a la vez (moonlit activa, dos dormidas)
+
+    private func makeMoonlitActiveWithTwoDormant() throws {
+        try write(".rockbox/rockbox.ipod", "MOONLIT BIN")
+        try write(".rockbox/aura/aura.cfg", "firmware_family: moonlit\nsync_marker_supported: 1\n")
+        try write(".rockbox/fonts/moonlit-body-18.fnt", "x")
+        try write(".firmware-aura/rockbox.ipod", "AURA BIN")
+        try write(".firmware-aura/aura/aura.cfg", "theme: 1\n")
+        try write(".firmware-metro/rockbox.ipod", "METRO BIN")
+        try write(".firmware-metro/aura/aura.cfg", "firmware_family: metro\naccent: 9\n")
+        try write("rockbox.ipod", "MOONLIT BIN")
+    }
+
+    func testThreeTreesDormantFamiliesListsBothSleepers() throws {
+        try makeMoonlitActiveWithTwoDormant()
+        XCTAssertEqual(FirmwareSwitcher.dormantFamilies(volumeRoot: root), [.aura, .metro])
+        XCTAssertEqual(FirmwareCapabilities.declaredFamily(volumeRoot: root), .moonlit)
+    }
+
+    /// Cambiar de moonlit a Aura toca solo esos dos arboles: Metro sigue
+    /// dormido donde estaba y moonlit se estaciona bajo SU nombre.
+    func testThreeTreesSwitchLeavesThirdFamilyUntouched() throws {
+        try makeMoonlitActiveWithTwoDormant()
+        try FirmwareSwitcher.switchActiveFirmware(to: .aura, currentlyActive: .moonlit, volumeRoot: root)
+
+        XCTAssertEqual(read(".rockbox/rockbox.ipod"), "AURA BIN")
+        XCTAssertEqual(read(".rockbox/aura/aura.cfg"), "theme: 1\n")
+        XCTAssertEqual(read(".firmware-moonlit/rockbox.ipod"), "MOONLIT BIN")
+        XCTAssertEqual(read(".firmware-moonlit/aura/aura.cfg"), "firmware_family: moonlit\nsync_marker_supported: 1\n")
+        XCTAssertTrue(exists(".firmware-moonlit/fonts/moonlit-body-18.fnt"))
+        XCTAssertEqual(read(".firmware-metro/rockbox.ipod"), "METRO BIN", "el tercero no se toca")
+        XCTAssertEqual(read(".firmware-metro/aura/aura.cfg"), "firmware_family: metro\naccent: 9\n")
+        XCTAssertFalse(exists(".firmware-aura"), "nunca un dormido de la familia activa")
+        XCTAssertEqual(read("rockbox.ipod"), "AURA BIN")
+        XCTAssertEqual(FirmwareSwitcher.dormantFamilies(volumeRoot: root), [.metro, .moonlit])
+    }
+
+    /// El espejo escribe en TODOS los dormidos, no solo en "el otro".
+    func testThreeTreesMirrorWritesToBothDormant() throws {
+        try makeMoonlitActiveWithTwoDormant()
+        try write(".rockbox/aura/sync_summary.cfg", "music_count: 389\n")
+        try write(".rockbox/aura/artists/x.jpg", "JPG")
+
+        try FirmwareSwitcher.mirrorContractFilesToDormantTrees(volumeRoot: root)
+
+        for tree in [".firmware-aura", ".firmware-metro"] {
+            XCTAssertEqual(read("\(tree)/aura/sync_summary.cfg"), "music_count: 389\n", tree)
+            XCTAssertEqual(read("\(tree)/aura/artists/x.jpg"), "JPG", tree)
+        }
+        XCTAssertEqual(read(".firmware-aura/aura/aura.cfg"), "theme: 1\n")
+        XCTAssertEqual(read(".firmware-metro/aura/aura.cfg"), "firmware_family: metro\naccent: 9\n")
+    }
+
+    /// Sin activo y con DOS dormidos (moonlit se perdio a medio cambio) no
+    /// se adivina: nil y nada nuevo en el disco.
+    func testThreeTreesRepairRefusesToGuessBetweenTwoDormant() throws {
+        try makeMoonlitActiveWithTwoDormant()
+        try fm.removeItem(at: root.appendingPathComponent(".rockbox"))
+
+        XCTAssertNil(try FirmwareSwitcher.repairIfNeeded(volumeRoot: root))
+        XCTAssertFalse(exists(".rockbox"))
+        XCTAssertFalse(exists(".firmware-moonlit"))
+        XCTAssertTrue(exists(".firmware-aura"))
+        XCTAssertTrue(exists(".firmware-metro"))
+        XCTAssertEqual(read("rockbox.ipod"), "MOONLIT BIN", "el respaldo de la raiz no se toca")
     }
 }

@@ -4,7 +4,7 @@ import AppKit
 /// ST-047 / CONTRATO-firmware-studio.md §B: la pantalla de "Licencias".
 ///
 /// Aura Studio distribuye embebidos, sin modificarlos, los binarios de
-/// dos firmwares derivados de Rockbox (GPL v2): Aura y Metro-Aura. La
+/// los firmwares derivados de Rockbox (GPL v2) que embebe (`FirmwareFamily.installable`). La
 /// GPL v2 §3 obliga a ofrecer la fuente de lo que se distribuye, y el
 /// contrato fija exactamente como se cumple: por cada firmware, la URL
 /// de su repositorio, el tag exacto que viene embebido y un enlace a su
@@ -32,7 +32,7 @@ struct LicensesView: View {
             Divider()
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    Text("Aura Studio es gratuita y se distribuye sin fines comerciales. Trae embebidos, tal cual se publicaron y sin modificarlos, dos firmwares para iPod Classic 6G que son software libre bajo la Licencia Pública General de GNU versión 2 (GPL v2). Cada uno es un derivado de Rockbox; su código fuente completo, la versión exacta incluida aquí y el registro de cambios respecto a Rockbox están en los enlaces de abajo, como exige la sección 3 de esa licencia.")
+                    Text("Aura Studio es gratuita y se distribuye sin fines comerciales. Trae embebidos, tal cual se publicaron y sin modificarlos, los firmwares instalables para iPod Classic 6G, todos software libre bajo la Licencia Pública General de GNU versión 2 (GPL v2). Cada uno es un derivado de Rockbox; su código fuente completo, la versión exacta incluida aquí y el registro de cambios respecto a Rockbox están en los enlaces de abajo, como exige la sección 3 de esa licencia.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
 
@@ -42,7 +42,7 @@ struct LicensesView: View {
 
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Rockbox").font(.headline)
-                        Text("Los dos firmwares, su bootloader dual-boot y la herramienta de flasheo mks5lboot derivan del proyecto Rockbox (GPL v2). Aura Studio no modifica ninguno de esos binarios.")
+                        Text("Todos los firmwares, su bootloader dual-boot y la herramienta de flasheo mks5lboot derivan del proyecto Rockbox (GPL v2). Aura Studio no modifica ninguno de esos binarios.")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                         LinkRow(title: "rockbox.org", url: URL(string: "https://www.rockbox.org/")!)

@@ -51,6 +51,17 @@ final class FirmwareFamilyTests: XCTestCase {
     func testKnownFamilies() {
         XCTAssertEqual(FirmwareFamily.parse(configValue: "metro"), .metro)
         XCTAssertEqual(FirmwareFamily.parse(configValue: "aura"), .aura)
+        XCTAssertEqual(FirmwareFamily.parse(configValue: "moonlit"), .moonlit)
+    }
+
+    /// ST-065: cada familia tiene su icono y ninguna vista lo decide por
+    /// su cuenta -- si dos familias compartieran simbolo, el selector y la
+    /// cabecera del instalador serian ambiguos.
+    func testSymbolNameIsDistinctPerFamily() {
+        let symbols = FirmwareFamily.installable.map(\.symbolName)
+        XCTAssertEqual(Set(symbols).count, symbols.count, "\(symbols)")
+        XCTAssertEqual(FirmwareFamily.moonlit.symbolName, "moon.stars")
+        XCTAssertEqual(FirmwareFamily.unknown("zeta").symbolName, "questionmark")
     }
 
     /// El firmware escribe con `fdprintf` y Studio lee con un
@@ -80,6 +91,9 @@ final class FirmwareFamilyTests: XCTestCase {
                        URL(string: "https://api.github.com/repos/Ricolinos/Aura-Firmware/releases"))
         XCTAssertEqual(GitHubReleaseChecker.apiURL(for: .metro),
                        URL(string: "https://api.github.com/repos/Ricolinos/Metro-Aura/releases"))
+        XCTAssertEqual(FirmwareFamily.moonlit.releaseRepository, "Ricolinos/moonlit-aura")
+        XCTAssertEqual(GitHubReleaseChecker.apiURL(for: .moonlit),
+                       URL(string: "https://api.github.com/repos/Ricolinos/moonlit-aura/releases"))
         XCTAssertNil(GitHubReleaseChecker.apiURL(for: .unknown("zeta")))
     }
 
@@ -139,6 +153,23 @@ final class FirmwareFamilyTests: XCTestCase {
                        "pero NO es Aura: de esto depende no ofrecerle el firmware de Aura")
     }
 
+    /// ST-065: moonlit habla el contrato (biblioteca y sync siguen) pero
+    /// no publica `theme_format_supported` -> "Temas" se deshabilita. Aura
+    /// y Metro si la publican.
+    func testProbeReadsThemeFormatSupport() throws {
+        try writeConfig("firmware_family: moonlit\nsync_marker_supported: 1\n")
+        let moonlit = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
+        XCTAssertEqual(moonlit.declaredFamily, .moonlit)
+        XCTAssertTrue(moonlit.supportsAuraContract)
+        XCTAssertFalse(moonlit.themeFormatSupported)
+        XCTAssertNil(FirmwareCapabilities.supportedThemeFormat(volumeRoot: root))
+
+        try writeConfig("sync_marker_supported: 1\ntheme_format_supported: 1\n")
+        let aura = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
+        XCTAssertTrue(aura.themeFormatSupported)
+        XCTAssertEqual(FirmwareCapabilities.supportedThemeFormat(volumeRoot: root), 1)
+    }
+
     func testProbeReportsAuraWhenKeyIsAbsent() throws {
         try writeConfig("sync_marker_supported: 1\n")
         let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
@@ -169,8 +200,11 @@ final class FirmwareFamilyTests: XCTestCase {
         try? Data("no soy el firmware de Aura".utf8)
             .write(to: root.appendingPathComponent(".rockbox/rockbox.ipod"))
 
-        let metro = await AuraUpdateChecker.isUpdateAvailable(deviceMountPath: root.path, family: .metro)
-        XCTAssertFalse(metro)
+        // Desde ST-047 Metro (y desde ST-065 moonlit) SI son instalables y
+        // vienen embebidos: contra un binario falso el hash difiere y eso es
+        // una actualizacion legitima de SU propia familia, no el bug de
+        // ST-046. Lo que sigue vigente es que una familia desconocida jamas
+        // recibe "hay actualizacion".
         let unknown = await AuraUpdateChecker.isUpdateAvailable(deviceMountPath: root.path,
                                                                  family: .unknown("zeta"))
         XCTAssertFalse(unknown)
