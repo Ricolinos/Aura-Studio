@@ -907,3 +907,9 @@ Ambos releases traen D-329/M-091 (sello de biblioteca). Con este pin, la actuali
 **Invariante:** ningún árbol de una familia que declara `firmware_family` existe en el iPod sin la clave, ni siquiera entre la instalación y el primer arranque; y Studio nunca deduce "Aura" de un árbol que trae el centinela de otra familia. Matiz al contrato v14 §D (`firmware_family`): Studio puede escribir la clave al instalar; el firmware la conserva.
 
 **No corregido aquí (ST-068 pendiente):** el botón "Cambiar a …" de Extras se quedó girando porque la expulsión posterior al renombre (`unmountCurrentDisk`) no terminó a tiempo; se destrabó solo al reconectar. `ContentView.swift` tiene WIP ajeno (ST-063) y no se toca en esta pasada.
+
+## ST-068 — Pin a moonlit.aura v0.1.1
+
+**Release (2026-08-26):** moonlit-aura `v0.1.1` (D-045 cerrada, D-049 pantalla "preparando biblioteca", D-050 creciente de arranque, D-051 Marea primer pivote, D-052 Motion Waning). Motivo del release: en el iPod del dueño (1 083 álbumes) la precarga de carátulas de Marea congelaba el iPod 4 min 18 s al entrar a Música sin ninguna pantalla; ahora corre en una pantalla propia con progreso e interrumpible.
+
+**Pin:** `moonlit.tag=v0.1.1` + 4 hashes verificados por `scripts/fetch-firmware.sh --family moonlit` (4 × OK). Delta v0.1.0 → v0.1.1 medido por CRC32: **5 archivos de 432** (`rockbox.ipod`, `rockbox-info.txt`, `rockbox.map`, `lastfm_scrobbler.rock`, `version.txt`) — el parche de `__TIME__` de ST-066 ya surte efecto: los `.ovl` de juegos no aparecen. Instalar sobre un v0.1.0 escribe esos 5 archivos, no 432.
