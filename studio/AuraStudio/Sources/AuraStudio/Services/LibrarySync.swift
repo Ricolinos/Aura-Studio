@@ -244,6 +244,25 @@ struct LibrarySync {
         ".rockbox/database_5.tcd",
         ".rockbox/database_6.tcd",
     ]
+    /// ST-069 / contrato v15: los tres firmwares comparten la base de
+    /// tagcache en `/.aura/tagcache/` (`database_*.tcd` + `db_stamp.txt`)
+    /// y Metro/moonlit las miniaturas en `/.aura/thumbs/`. Ambos
+    /// subdirectorios son PROPIEDAD DEL FIRMWARE aunque vivan bajo
+    /// `/.aura/`: Studio nunca los borra, mueve ni estaciona en
+    /// instalacion, cambio de familia, reparacion ni sync. La UNICA
+    /// excepcion es forzar la reconstruccion de la base
+    /// (`clearFirmwareDatabases`), que vacia `tagcache/` y deja
+    /// `thumbs/` intacto.
+    static let sharedTagcacheDirRelativePath = ".aura/tagcache"
+    static let sharedThumbsDirRelativePath = ".aura/thumbs"
+    /// Nombres de la base de tagcache que se borran al forzar una
+    /// reconstruccion, en cada directorio que pueda contenerla.
+    static let tagcacheDatabaseFileNames = [
+        "database_idx.tcd", "database_0.tcd", "database_1.tcd", "database_2.tcd",
+        "database_3.tcd", "database_4.tcd", "database_5.tcd", "database_6.tcd",
+        "database_tmp.tcd", "database_state.tcd",
+    ]
+    static let tagcacheDbStampFileName = "db_stamp.txt"
 
     let volumeRoot: URL
     private let fileManager = FileManager.default
@@ -1305,9 +1324,33 @@ struct LibrarySync {
     /// forma mas simple y robusta de decirle al firmware "hay archivos
     /// nuevos" sin reimplementar el formato binario de tagcache.
     private func triggerFirmwareDBRebuild() {
-        for relativePath in Self.tagcacheFilesToClear {
-            let url = volumeRoot.appendingPathComponent(relativePath)
-            try? fileManager.removeItem(at: url)
+        Self.clearFirmwareDatabases(volumeRoot: volumeRoot, fileManager: fileManager)
+    }
+
+    /// ST-069 / contrato v15: borra `database_*.tcd` y `db_stamp.txt` en
+    /// TODOS los lugares donde un firmware puede tenerlos:
+    ///   - `/.aura/tagcache/` (base compartida desde v15),
+    ///   - `/.rockbox/` y `/.rockbox/aura/db_stamp.txt` (v12-v14),
+    ///   - cada `/.firmware-*/` dormido (compatibilidad: un arbol anterior
+    ///     a v15 que despierte con su base vieja la daria por buena).
+    /// `/.aura/thumbs/` NO se toca: las miniaturas no dependen de la base
+    /// y regenerarlas cuesta minutos en un iPod grande.
+    static func clearFirmwareDatabases(volumeRoot: URL, fileManager: FileManager = .default) {
+        var databaseDirs = [volumeRoot.appendingPathComponent(sharedTagcacheDirRelativePath),
+                            volumeRoot.appendingPathComponent(FirmwareSwitcher.activeTreeName)]
+        for family in FirmwareSwitcher.dormantFamilies(volumeRoot: volumeRoot, fileManager: fileManager) {
+            if let name = family.dormantTreeName {
+                databaseDirs.append(volumeRoot.appendingPathComponent(name))
+            }
+        }
+        for dir in databaseDirs {
+            for name in tagcacheDatabaseFileNames {
+                try? fileManager.removeItem(at: dir.appendingPathComponent(name))
+            }
+            try? fileManager.removeItem(at: dir.appendingPathComponent(tagcacheDbStampFileName))
+        }
+        for dir in databaseDirs.dropFirst() {
+            try? fileManager.removeItem(at: dir.appendingPathComponent(FirmwareSwitcher.dbStampRelativePathInTree))
         }
     }
 }

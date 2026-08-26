@@ -305,4 +305,56 @@ final class FirmwareSwitcherTests: XCTestCase {
         XCTAssertTrue(exists(".firmware-metro"))
         XCTAssertEqual(read("rockbox.ipod"), "MOONLIT BIN", "el respaldo de la raiz no se toca")
     }
+
+    // MARK: - ST-069 / contrato v15: /.aura/tagcache y /.aura/thumbs son del firmware
+
+    private func plantSharedFirmwareData() throws {
+        try write(".aura/tagcache/database_idx.tcd", "IDX")
+        try write(".aura/tagcache/database_0.tcd", "T0")
+        try write(".aura/tagcache/db_stamp.txt", "2026-08-26T00:00:00Z-abcd1234")
+        try write(".aura/thumbs/albums/a.jpg", "JPG")
+        try write(".aura/thumbs/artists/b.jpg", "JPG")
+        try write(".aura/thumbs/photos/c.jpg", "JPG")
+    }
+
+    private func assertSharedFirmwareDataIntact(_ context: String, file: StaticString = #filePath, line: UInt = #line) {
+        for path in [".aura/tagcache/database_idx.tcd", ".aura/tagcache/database_0.tcd",
+                     ".aura/tagcache/db_stamp.txt", ".aura/thumbs/albums/a.jpg",
+                     ".aura/thumbs/artists/b.jpg", ".aura/thumbs/photos/c.jpg"] {
+            XCTAssertTrue(exists(path), "\(context): \(path) debe seguir existiendo", file: file, line: line)
+        }
+        XCTAssertEqual(read(".aura/tagcache/db_stamp.txt"), "2026-08-26T00:00:00Z-abcd1234",
+                       "\(context): el sello compartido no se reescribe", file: file, line: line)
+    }
+
+    /// Cambio de familia completo (estacionar, despertar, reparar, borrar
+    /// dormido, sembrar, espejar): la base y las miniaturas compartidas
+    /// sobreviven a todos.
+    func testTreeFlowsNeverTouchSharedTagcacheOrThumbs() throws {
+        try makeMetroActiveAuraDormant()
+        try plantSharedFirmwareData()
+
+        try FirmwareSwitcher.switchActiveFirmware(to: .aura, currentlyActive: .metro, volumeRoot: root)
+        assertSharedFirmwareDataIntact("switchActiveFirmware")
+
+        // Instalacion de otra familia: se estaciona el activo y se extrae
+        // uno fresco; luego se borra el dormido de la misma familia.
+        try FirmwareSwitcher.parkActiveTree(as: .aura, volumeRoot: root)
+        assertSharedFirmwareDataIntact("parkActiveTree")
+        try write(".rockbox/rockbox.ipod", "MOONLIT BIN")
+        try write(".rockbox/aura/aura.cfg", "firmware_family: moonlit\n")
+        try FirmwareSwitcher.removeDormantTree(of: .moonlit, volumeRoot: root)
+        try FirmwareSwitcher.removeDormantTree(of: .metro, volumeRoot: root)
+        assertSharedFirmwareDataIntact("removeDormantTree")
+        try FirmwareSwitcher.refreshRootBinary(volumeRoot: root)
+        _ = FirmwareSwitcher.seedContractFilesToActiveTree(volumeRoot: root)
+        try FirmwareSwitcher.mirrorContractFilesToDormantTrees(volumeRoot: root)
+        assertSharedFirmwareDataIntact("seed/mirror")
+
+        // Cambio a medias: sin activo y un solo dormido -> se repara.
+        try fm.removeItem(at: root.appendingPathComponent(".rockbox"))
+        XCTAssertEqual(try FirmwareSwitcher.repairIfNeeded(volumeRoot: root), .aura)
+        assertSharedFirmwareDataIntact("repairIfNeeded")
+        XCTAssertFalse(exists(".firmware-metro"), "el dormido de Metro si se borro (era el objetivo)")
+    }
 }

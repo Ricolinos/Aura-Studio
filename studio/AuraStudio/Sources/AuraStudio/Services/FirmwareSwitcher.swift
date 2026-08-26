@@ -14,6 +14,13 @@ import Foundation
 ///
 /// Esta misma secuencia la ejecuta el firmware desde Ajustes (M-090 /
 /// D-327); aqui esta la version de Studio.
+///
+/// INVARIANTE (ST-069 / contrato v15): todo lo de aqui opera SOLO sobre
+/// `/.rockbox/`, `/.firmware-*/` y `/rockbox.ipod`. `/.aura/tagcache/`
+/// (base de datos compartida por los tres firmwares) y `/.aura/thumbs/`
+/// (miniaturas compartidas) son propiedad del firmware aunque vivan bajo
+/// `/.aura/`: ningun renombre, estacionamiento, reparacion, siembra ni
+/// espejo los toca. Ver `LibrarySync.sharedTagcacheDirRelativePath`.
 enum FirmwareSwitcher {
     static let activeTreeName = ".rockbox"
     static let rootFirmwareBinaryName = "rockbox.ipod"
@@ -22,6 +29,11 @@ enum FirmwareSwitcher {
     /// sello construyo su base ese firmware). Igualdad exacta de sellos =
     /// la base del arbol entrante sigue valida = no se escribe marcador.
     static let libraryStampRelativePath = ".aura/library-stamp"
+    /// Hasta v14 la anotacion vivia por arbol; desde v15 (ST-069) el
+    /// firmware la lee/escribe en `/.aura/tagcache/db_stamp.txt`. Studio
+    /// conserva la ruta por arbol solo para compararla al cambiar de
+    /// familia con arboles anteriores a v15 y para borrarla al forzar una
+    /// reconstruccion.
     static let dbStampRelativePathInTree = "aura/db_stamp.txt"
 
     enum SwitchError: Error, Equatable {
