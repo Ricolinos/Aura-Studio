@@ -938,3 +938,9 @@ Ambos releases traen D-329/M-091 (sello de biblioteca). Con este pin, la actuali
 **Pin:** `FIRMWARE_VERSION` con `tag=v0.4.1-beta`, `metro.tag=v0.6.2`, `moonlit.tag=v0.1.2`; 12 hashes verificados por `scripts/fetch-firmware.sh` (4 × OK por familia). Deltas medidos por CRC32: Aura 5/9 463, Metro 5/430 (+4 en v0.6.2), moonlit 5/432.
 
 **Nota de operación:** durante esta pasada se creó por error un Release `v0.1.2` en `Ricolinos/Metro-Aura` (comando lanzado desde el directorio equivocado); se eliminó junto con su tag remoto en el mismo minuto, antes de que Studio o un usuario pudieran consumirlo. Regla: `gh release create` siempre con `--repo` explícito.
+
+## ST-071 — Pin a Aura v0.4.2-beta + moonlit.aura v0.1.3 (caché negativa de carátulas)
+
+**Releases (2026-08-26):** Aura-Firmware `v0.4.2-beta` (D-339) y moonlit-aura `v0.1.3` (D-056, D-057). Metro-Aura sin cambios (sigue `v0.6.2`). Motivo: en el iPod del dueño, 57 álbumes sin carátula resoluble disparaban "preparando biblioteca/carátulas" en cada entrada a Música (sin haber reiniciado); ahora se marcan `.none` una sola vez. Además, en moonlit, Marea cargaba las portadas visibles con retraso perceptible tras D-053 (una lectura por vuelta ociosa a 100 ms); D-057 la lleva al mismo patrón que el Music Flow de Aura (lectura acotada dentro del cuadro + tick a HZ/20 + prefetch direccional).
+
+**Pin:** `tag=v0.4.2-beta`, `moonlit.tag=v0.1.3` + 8 hashes verificados (2 × 4 OK). Deltas: Aura 5/9 463, moonlit 5/432.
