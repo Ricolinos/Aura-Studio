@@ -930,3 +930,11 @@ Ambos releases traen D-329/M-091 (sello de biblioteca). Con este pin, la actuali
 **Cambio:** `triggerFirmwareDBRebuild` → `LibrarySync.clearFirmwareDatabases(volumeRoot:)` borra `database_*.tcd` + `db_stamp.txt` en `/.aura/tagcache/` **además** de en `/.rockbox/` (+ `aura/db_stamp.txt`) y en cada `/.firmware-*/` presente (compatibilidad con árboles anteriores a v15). `/.aura/thumbs/` no se toca ni se crea nada. Sigue disparándose solo cuando `aura.cfg` no anuncia `sync_marker_supported` (ST-012). `install_manifest.cfg` no cambia.
 
 **Pruebas:** `FirmwareDBRebuildTests` (borra en los tres lugares y deja `thumbs/`, `library-stamp` y `sync-pending.json`; tolera que `/.aura/tagcache/` no exista sin crearlo; el camino real vía `sync()` con y sin `sync_marker_supported`) y `FirmwareSwitcherTests.testTreeFlowsNeverTouchSharedTagcacheOrThumbs` (cambio, estacionar, borrar dormido, sembrar, espejar y reparar con ambos directorios presentes → intactos, sello no reescrito). 129 pruebas verdes en el filtro `FirmwareSwitcher|InstallManifest|FirmwareFamily|LibrarySync|Rebuild|SyncMarker|LibraryPipeline`.
+
+## ST-070 — Pin a Aura v0.4.1-beta + Metro v0.6.2 + moonlit.aura v0.1.2 (contrato v15)
+
+**Releases (2026-08-26):** Aura-Firmware `v0.4.1-beta` (D-336/D-337/D-338), Metro-Aura `v0.6.1` → `v0.6.2` (M-095/M-096; v0.6.2 unifica la clave de miniaturas con moonlit: `a-<crc>.<mtime>.mth`, sin ello el GC de una familia borraba las de la otra en `/.aura/thumbs/`), moonlit-aura `v0.1.2` (D-053 Marea no bloqueante, D-054, D-055). Los tres implementan el contrato v15: base tagcache compartida en `/.aura/tagcache/` (migración por renombrado, sello compartido y sellado tras la primera construcción), claves de carátula estables por ruta+mtime, miniaturas Metro↔moonlit compartidas.
+
+**Pin:** `FIRMWARE_VERSION` con `tag=v0.4.1-beta`, `metro.tag=v0.6.2`, `moonlit.tag=v0.1.2`; 12 hashes verificados por `scripts/fetch-firmware.sh` (4 × OK por familia). Deltas medidos por CRC32: Aura 5/9 463, Metro 5/430 (+4 en v0.6.2), moonlit 5/432.
+
+**Nota de operación:** durante esta pasada se creó por error un Release `v0.1.2` en `Ricolinos/Metro-Aura` (comando lanzado desde el directorio equivocado); se eliminó junto con su tag remoto en el mismo minuto, antes de que Studio o un usuario pudieran consumirlo. Regla: `gh release create` siempre con `--repo` explícito.
