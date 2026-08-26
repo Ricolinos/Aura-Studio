@@ -1,6 +1,16 @@
 # Contrato entre `Aura-Firmware` y Aura Studio
 
-**Versión 13 — 2026-08-23.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+**Versión 14 — 2026-08-26.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+
+**v14 (D-333/D-335, M-093, D-047 de moonlit.aura — tres familias; registro de familias) — contrato y firmware Aura en esta pasada; Studio y las hermanas reciben copia idéntica después.** Hasta v13 el contrato hablaba de "dos familias" y de "la otra familia": Aura y Metro-Aura. Existe una tercera, **moonlit.aura** (`Ricolinos/moonlit-aura`, `firmware_family: moonlit`, primer Release `v0.1.0`), que habla §D completo igual que Metro. v14 no cambia el formato de ningún archivo de §D; generaliza lo que estaba escrito para dos:
+
+- **Nuevo §A bis — Registro de familias**: una tabla con, por familia, su valor de `firmware_family`, repositorio, árbol dormido, centinela de árbol instalado, prefijo de `FIRMWARE_VERSION` y subdirectorio del bundle de Studio. Es la única lista autorizada: una familia nueva es una fila más ahí (y una versión nueva de este contrato), nunca un caso especial en el código de Studio.
+- **Todo "la otra familia" pasa a "cualquier otra familia"** (v10 en particular): los renombres son `/.rockbox/ → /.firmware-<saliente>/` y `/.firmware-<entrante>/ → /.rockbox/`; puede haber hasta N−1 dormidos a la vez; el espejado de los archivos de Studio va a **todos** los dormidos; instalar una familia estaciona la activa y no toca los demás dormidos.
+- **Ajustes › Cambiar sistema** en el firmware activo: una fila por cada familia hermana, inerte (texto informativo) si su dormido no existe. Implementado en las tres familias (D-333 / M-093 / D-047).
+- **Recuperación con varios dormidos**: con `/.rockbox/` ausente y exactamente **un** dormido, Studio lo despierta solo; con dos o más, no adivina: pide elegir.
+- **§B**: moonlit.aura versiona la frontera GPL (bootloader + `mks5lboot`) con una etiqueta `BOOT-N` en su `CONTRATO-moonlit-studio.md` §B; su ausencia en las otras familias no es un error.
+- **§E**: `FIRMWARE_VERSION` lleva una sección por familia (sin prefijo / `metro.` / `moonlit.`); `fetch-firmware.sh --family aura|metro|moonlit`.
+- **Assets exclusivos de Aura**: `AuraPalette.swift`, `theme-format-v1.json` y `aura-theme-default.zip` solo los publica Aura; una familia sin sistema de temas no los publica, Studio no se los pide, y no declara `theme_format_supported` (moonlit no lo hace).
 
 **v13 (ST-062/D-331, nombres con acento: forma Unicode NFC en todo archivo del contrato) — regla transversal de §D; corrección solo del lado que escribe.** Bug real: "Avatar Aang el último maestro del aire.mpg" figuraba como `movie` en `video_categories.cfg` y aun así era invisible en Películas/Movie Flow, mientras su vecino 100 % ASCII sí aparecía. Causa: el driver `msdosfs` de macOS **guarda** los nombres largos de FAT32 precompuestos (NFC) pero se los **reporta descompuestos** (NFD) a las apps; Studio serializaba lo que le daba `FileManager` (NFD) y el firmware compara byte a byte contra el UTF-16 que lee del disco (NFC) — un nombre con acento no empareja jamás, y las dos formas son indistinguibles a simple vista. Regla desde v13: **todo nombre de archivo o ruta que viaje DENTRO de un archivo del contrato se serializa en NFC** (precompuesto): `video_categories.cfg`, `photo_categories.cfg`, `ratings.cfg` y las rutas dentro de los `.m3u8` de `Playlists/`. Los firmwares no cambian (siempre compararon contra lo que hay en el disco); los índices ya escritos en NFD se corrigen solos en el siguiente sync (todos esos archivos se reescriben completos). `artist_images.cfg` queda fuera a propósito: su valor de emparejamiento es el **tag** crudo del archivo de música (D-322), no un nombre de archivo en FAT.
 
@@ -23,11 +33,11 @@
 **v10 (ST-056, dos firmwares instalados a la vez y conmutación entre ellos) — contrato primero; implementación en orden Studio → Metro-Aura → Aura-Firmware.** Hasta v9, instalar una familia sobre la otra **reemplazaba** el árbol `.rockbox/` (y con él los ajustes, temas y calificaciones del firmware saliente). v10 define cómo conviven los dos y cómo se cambia de uno a otro sin borrar ni volver a descargar nada:
 
 - **El árbol activo sigue siendo `/.rockbox/`.** No se renombra: es la única ruta que el bootloader (NOR, compartido por ambas familias) sabe arrancar, y la que ambos firmwares y sus plugins llevan compilada. Cambiarla obligaría a reflashear por DFU en cada cambio — justo lo que v10 evita.
-- **Árboles dormidos con nombre propio:** `/.firmware-aura/` y `/.firmware-metro/` — un árbol `.rockbox` completo de esa familia, en reposo (con su `rockbox.ipod`, fuentes, códecs, y **su propio `aura/aura.cfg`**, es decir sus ajustes). Nunca hay dos árboles dormidos de la misma familia; nunca un árbol dormido de la familia que está activa.
-- **Cambiar de firmware = dos renombres** (en FAT, instantáneos) **más reiniciar**, en este orden y sin nada en medio: (1) el firmware saliente guarda todo lo suyo (`aura.cfg`, cola de tagcache); (2) `/.rockbox/` → `/.firmware-<saliente>/`; (3) `/.firmware-<entrante>/` → `/.rockbox/`; (4) se copia `/.rockbox/rockbox.ipod` del entrante sobre `/rockbox.ipod` en la raíz (el respaldo que el bootloader usa si el árbol está incompleto debe apuntar **siempre** al firmware activo); (5) se deja `/.aura/sync-pending.json` con `music: true` — la base de datos de música vive **dentro** de cada árbol y la del entrante está desactualizada; (6) reinicio en seco, sin pasar por el apagado que guarda ajustes (escribiría los del saliente en el árbol del entrante). Lo hace **Studio** (Extras › Firmware) o **el propio firmware** (Ajustes › "Cambiar a …", fila inerte si el árbol del otro no existe), con la misma secuencia.
-- **Recuperación:** un disco con `/.rockbox/` ausente y un árbol dormido presente es un cambio que quedó a medias (batería, cable). Studio lo repara al conectar: renombra el dormido de vuelta a `/.rockbox/`. Por eso el orden (2)→(3): el peor caso deja un árbol dormido entero, nunca ninguno.
-- **Los archivos del contrato que escribe Studio** en `.rockbox/aura/` (`sync_summary.cfg`, `artist_images.cfg` + `artists/`, `video_categories.cfg`, `photo_categories.cfg`, `ratings.cfg`, `device.cfg`) **se escriben también en cada árbol dormido presente**, en cada sync — son chicos, y así el firmware que despierta no despierta desactualizado. `aura.cfg` **no**: es de cada firmware (las claves de reloj de v7 las escribe Studio solo en el activo; el dormido las recibe al despertar en su siguiente conexión). Los temas (`aura/themes/`) quedan en el árbol de Aura, activo o dormido.
-- **Instalar la otra familia** ya no borra: Studio **estaciona** el árbol activo como dormido (reemplazando un dormido anterior de esa misma familia, si lo hubiera) e instala la nueva en `/.rockbox/`. Si la familia pedida ya existe dormida, instalar es cambiar.
+- **Árboles dormidos con nombre propio:** `/.firmware-<familia>/` (`/.firmware-aura/`, `/.firmware-metro/`, `/.firmware-moonlit/` — §A bis, v14) — un árbol `.rockbox` completo de esa familia, en reposo (con su `rockbox.ipod`, fuentes, códecs, y **su propio `aura/aura.cfg`**, es decir sus ajustes). Puede haber hasta N−1 dormidos a la vez (v14). Nunca hay dos árboles dormidos de la misma familia; nunca un árbol dormido de la familia que está activa.
+- **Cambiar de firmware = dos renombres** (en FAT, instantáneos) **más reiniciar**, en este orden y sin nada en medio: (1) el firmware saliente guarda todo lo suyo (`aura.cfg`, cola de tagcache); (2) `/.rockbox/` → `/.firmware-<saliente>/`; (3) `/.firmware-<entrante>/` → `/.rockbox/` (los demás dormidos, si los hay, no se tocan — v14); (4) se copia `/.rockbox/rockbox.ipod` del entrante sobre `/rockbox.ipod` en la raíz (el respaldo que el bootloader usa si el árbol está incompleto debe apuntar **siempre** al firmware activo); (5) se deja `/.aura/sync-pending.json` con `music: true` — la base de datos de música vive **dentro** de cada árbol y la del entrante está desactualizada; (6) reinicio en seco, sin pasar por el apagado que guarda ajustes (escribiría los del saliente en el árbol del entrante). Lo hace **Studio** (Extras › Firmware) o **el propio firmware activo**, que ofrece en Ajustes › Cambiar sistema **una fila por cada familia hermana**, inerte si su dormido no existe (v14; hasta v13 era una sola fila "Cambiar a …"), con la misma secuencia.
+- **Recuperación:** un disco con `/.rockbox/` ausente y un árbol dormido presente es un cambio que quedó a medias (batería, cable). Studio lo repara al conectar: con **exactamente un** dormido, lo renombra de vuelta a `/.rockbox/`; con **dos o más** (v14) no adivina cuál era el activo y pide elegir. Por eso el orden (2)→(3): el peor caso deja un árbol dormido entero, nunca ninguno.
+- **Los archivos del contrato que escribe Studio** en `.rockbox/aura/` (`sync_summary.cfg`, `artist_images.cfg` + `artists/`, `video_categories.cfg`, `photo_categories.cfg`, `ratings.cfg`, `device.cfg`) **se escriben también en todos los árboles dormidos presentes** (v14: no solo "el otro"), en cada sync — son chicos, y así el firmware que despierta no despierta desactualizado. `aura.cfg` **no**: es de cada firmware (las claves de reloj de v7 las escribe Studio solo en el activo; el dormido las recibe al despertar en su siguiente conexión). Los temas (`aura/themes/`) quedan en el árbol de Aura, activo o dormido.
+- **Instalar cualquier otra familia** ya no borra: Studio **estaciona** el árbol activo como dormido (reemplazando un dormido anterior de esa misma familia, si lo hubiera) e instala la nueva en `/.rockbox/`; los demás dormidos no se tocan (v14). Si la familia pedida ya existe dormida, instalar es cambiar.
 - **Detección:** la familia activa se sigue leyendo de `/.rockbox/aura/aura.cfg` (v8); la de un árbol dormido la dice su nombre de directorio. `version.txt` va por árbol.
 
 Lo que v10 **no** cambia: §D para todo lo demás, el formato de ningún archivo, ni el bootloader.
@@ -73,7 +83,7 @@ Contexto: hasta el 2026-08-16 ambos proyectos vivían en un monorepo (`Aura-Proy
 
 ## A — Artefactos y canal de distribución
 
-Aura Studio **no lee el árbol de fuentes de ningún firmware**. La única vía es un **GitHub Release** del repositorio de la familia (`Ricolinos/Aura-Firmware` para Aura, `Ricolinos/Metro-Aura` para Metro-Aura — v9), con tag `vMAJOR.MINOR.PATCH` y estos assets, producidos por `firmware/tools/package_dist.sh` (más el bootloader, compilado a mano — ver `firmware/dist/README.md`):
+Aura Studio **no lee el árbol de fuentes de ningún firmware**. La única vía es un **GitHub Release** del repositorio de la familia según el registro de **§A bis** (`Ricolinos/Aura-Firmware` para Aura, `Ricolinos/Metro-Aura` para Metro-Aura, `Ricolinos/moonlit-aura` para moonlit.aura — v9/v14), con tag `vMAJOR.MINOR.PATCH` y estos assets, producidos por `firmware/tools/package_dist.sh` (más el bootloader, compilado a mano — ver `firmware/dist/README.md`):
 
 | Asset | Verificado por checksum |
 |---|---|
@@ -87,19 +97,39 @@ Aura Studio **no lee el árbol de fuentes de ningún firmware**. La única vía 
 | `theme-format-v1.json` | No (Studio lo lee para saber roles/tamaños/nombres del formato de tema, ver `CONTRATO-formato-tema.md`) |
 | `aura-theme-default.zip` | No (el default reempaquetado como tema instalable, id `aura`, libre — ejemplo canónico del formato, no necesario para instalar/usar el firmware) |
 
+`AuraPalette.swift`, `theme-format-v1.json` y `aura-theme-default.zip` son **exclusivos de Aura** (v9/v14): una familia sin sistema de temas no los publica y Studio no los espera de ella. Los demás assets son los mismos para toda familia.
+
 En Aura Studio: `Vendor/firmware-dist/` (gitignorado) recibe estos archivos vía `scripts/fetch-firmware.sh`, que descarga el Release fijado en `FIRMWARE_VERSION` (versionado, contiene el tag + los hashes esperados) y verifica cada checksum antes de dejarlo utilizable; falla con un mensaje claro si algo no coincide o si el Release no tiene un asset esperado. Mientras `Aura-Firmware` no tenga ningún Release público, `fetch-firmware.sh --from-dir <ruta>` copia desde un `firmware/dist/` local (generado con `package_dist.sh` en un checkout del firmware) — uso de desarrollo, documentado como tal, nunca como ruta por defecto de `project.yml`.
 
 `project.yml` de Aura Studio apunta a `Vendor/firmware-dist/`, nunca a `../../firmware/dist/` ni a ninguna ruta que asuma un checkout hermano.
+
+## A bis — Registro de familias (v14)
+
+La lista completa de familias que hablan este contrato. Todo lo que en este documento dependa de "qué familia" se resuelve **solo** con esta tabla — nunca con un caso especial en código. Una familia nueva = una fila nueva + una versión nueva de este contrato.
+
+| Familia | `firmware_family` | Repositorio | Árbol dormido | Centinela de árbol instalado | Prefijo en `FIRMWARE_VERSION` | Subdirectorio del bundle |
+|---|---|---|---|---|---|---|
+| Aura | (ausente — es su firma, v8) | `Ricolinos/Aura-Firmware` | `/.firmware-aura/` | `.rockbox/fonts/a26-title-20.fnt` | (sin prefijo) | (raíz de `Vendor/firmware-dist/`) |
+| Metro-Aura | `metro` | `Ricolinos/Metro-Aura` | `/.firmware-metro/` | `.rockbox/fonts/metro-list-20.fnt` | `metro.` | `metro/` |
+| moonlit.aura | `moonlit` | `Ricolinos/moonlit-aura` | `/.firmware-moonlit/` | `.rockbox/fonts/moonlit-body-18.fnt` | `moonlit.` | `moonlit/` |
+
+Notas:
+
+- El **centinela** es el archivo cuya presencia en un árbol (activo o dormido) le dice a Studio "aquí hay un árbol de esta familia instalado" — cada familia lo elige entre sus propias fuentes, que ninguna otra trae.
+- `AuraPalette.swift`, `theme-format-v1.json` y `aura-theme-default.zip` son exclusivos de Aura (§A). moonlit.aura no tiene sistema de temas: no publica esos tres assets y **no declara `theme_format_supported`** en `aura.cfg`; Studio no le ofrece instalar temas.
+- Cada familia tiene su propio diario (`D-NNN` Aura, `M-NNN` Metro, `D-NNN` de moonlit citado como "D-NNN de moonlit") y, si le hace falta, su contrato hermano que **referencia** este (Metro: el suyo; moonlit: `CONTRATO-moonlit-studio.md`, §G).
 
 ## B — Cumplimiento GPL v2
 
 `mks5lboot`, `bootloader-ipod6g.ipod`, `rockbox.ipod` y `rockbox.zip` son derivados de Rockbox, GPL v2 (`rockbox.zip` además contiene Inter — SIL OFL — y Lucide/Phosphor — ISC/MIT — como fuentes/íconos del tema por defecto). Aura Studio (software cerrado, gratuito, sin fines comerciales) los distribuye embebidos como **agregación**, y cumple §3 (ofrecer la fuente) mostrando en una pantalla de "Licencias" (Extras › Licencias, existe desde v9/ST-047), **por cada familia embebida**:
 
-- La URL de su repositorio (`Aura-Firmware` o `Metro-Aura`).
+- La URL de su repositorio (el de §A bis: `Aura-Firmware`, `Metro-Aura` o `moonlit-aura`).
 - El tag exacto de `FIRMWARE_VERSION` que trae embebido.
 - Un enlace a `MODIFICATIONS.md` y a `THIRD-PARTY-NOTICES.txt` del release correspondiente.
 
 Las notas de cada release de Aura Studio repiten esos tres datos. Aura Studio no modifica esos binarios de ninguna forma.
+
+**Frontera GPL versionada (v14).** moonlit.aura versiona explícitamente el par `bootloader-ipod6g.ipod` + `mks5lboot` con una etiqueta `BOOT-N` en su `CONTRATO-moonlit-studio.md` §B (sube solo cuando cambia alguna de las dos fuentes; el SHA-256 cambia en cada recompilación y por eso no sirve como versión de fuente). Las otras familias no llevan esa etiqueta y **su ausencia no es un error**: el bootloader es el mismo NOR compartido, y la obligación de §3 se cumple igual con repositorio + tag + `MODIFICATIONS.md`.
 
 ## C — `tokens.json` / paleta de colores
 
@@ -114,14 +144,14 @@ Esto **sí** es un acoplamiento permanente por diseño: ambos lados leen/escribe
 | `/.aura/library-stamp` | Studio (en cada sync que toca música); Firmware (solo lo CREA si falta al cambiar de firmware) | Studio y Firmware (al cambiar de firmware) | v12, ST-059. Una línea opaca; se compara por igualdad exacta, nunca se interpreta |
 | `.rockbox/aura/db_stamp.txt` | Firmware (el dueño del árbol, al terminar bien una (re)construcción de su base) | Studio y Firmware (al cambiar de firmware) | v12. **Por árbol** (v10): nunca se espeja; Studio no lo escribe |
 | `.rockbox/aura/install_manifest.cfg` | Studio (al instalar/actualizar) | Studio (para la actualización selectiva) | v11, ST-058. Formato en la nota de v11. Los firmwares lo ignoran. **Por árbol** (v10): nunca se espeja a los dormidos |
-| `/.firmware-aura/`, `/.firmware-metro/` | Studio (estaciona / instala / repara); Firmware (al cambiar desde Ajustes) | Studio (detecta qué familias hay; a cuál se puede cambiar); Firmware (si existe el del otro, ofrece "Cambiar a …") | v10, ST-056. Árbol `.rockbox` completo de esa familia, en reposo, con sus propios ajustes. Nunca dos de la misma familia; nunca el de la familia activa. El activo es siempre `/.rockbox/` (bootloader) |
+| `/.firmware-<familia>/` (§A bis: `/.firmware-aura/`, `/.firmware-metro/`, `/.firmware-moonlit/`) | Studio (estaciona / instala / repara); Firmware (al cambiar desde Ajustes) | Studio (detecta qué familias hay; a cuáles se puede cambiar); Firmware (Ajustes › Cambiar sistema: una fila por hermana, inerte si su dormido no existe) | v10, ST-056; v14. Árbol `.rockbox` completo de esa familia, en reposo, con sus propios ajustes. Hasta N−1 dormidos a la vez; nunca dos de la misma familia; nunca el de la familia activa. El activo es siempre `/.rockbox/` (bootloader) |
 | `/rockbox.ipod` (raíz) | Studio (al instalar y al cambiar); Firmware (al cambiar) | Bootloader (solo si `/.rockbox/rockbox.ipod` no existe) | v10: es el respaldo del bootloader y debe ser **siempre** el binario del árbol activo — se copia del `/.rockbox/rockbox.ipod` entrante en cada cambio |
 | `.rockbox/rockbox.ipod` | Studio (instalador) | Firmware (bootloader), Studio (`AuraUpdateChecker`, sentinela de versión instalada) | Binario |
 | `.rockbox/aura/aura.cfg` | Firmware | Studio (`AuraDeviceProbe`, decide si "ya arrancó") | — |
 | `.rockbox/aura/aura.cfg` → clave `theme_id` | Firmware (`aura_style.c`); Studio también puede escribirla al instalar/activar un tema | Firmware, al arrancar (`aura_style_boot()`) | D-289. Vacío o `default` = el tema compilado. Studio escribe editando la línea, nunca reescribe el archivo entero (lo owns el firmware, que lo regenera completo en cada `aura_settings_save()`) |
 | `.rockbox/aura/aura.cfg` → clave `theme_format_supported` | Firmware (siempre, en cada `aura_settings_save()`) | Studio (antes de instalar un tema, para saber si el firmware instalado lo soporta) | D-289. Solo escritura del lado firmware — nunca la relee |
 | `.rockbox/aura/aura.cfg` → clave `sync_marker_supported` | Firmware (siempre, en cada `aura_settings_save()`) | Studio (al terminar un sync: si está, escribe el marcador y **no** borra la base de datos; si falta, conserva su mecanismo previo de borrar `database_*.tcd`) | D-293. Solo escritura del lado firmware — nunca la relee. Valor = versión de esquema del marcador que entiende (`1`) |
-| `.rockbox/aura/aura.cfg` → clave `firmware_family` | Firmware (los que no son Aura; Aura **nunca** la escribe) | Studio (`FirmwareCapabilities.declaredFamily`, para nombrar el firmware y decidir a qué repositorio consultar actualizaciones) | v8, ST-046. Valor: identificador corto en minúsculas de la familia (`metro`). **Ausente = `aura`** — es la firma de Aura, no un fallback. Un valor desconocido NO se trata como Aura: sin repositorio conocido, Studio no ofrece actualizaciones en vez de arriesgar una sobrescritura. Solo lectura del lado Studio — nunca la escribe |
+| `.rockbox/aura/aura.cfg` → clave `firmware_family` | Firmware (los que no son Aura; Aura **nunca** la escribe) | Studio (`FirmwareCapabilities.declaredFamily`, para nombrar el firmware y decidir a qué repositorio consultar actualizaciones) | v8, ST-046; v14. Valor: identificador corto en minúsculas de la familia, **registrado en §A bis** (`metro`, `moonlit`). **Ausente = `aura`** — es la firma de Aura, no un fallback. Un valor desconocido NO se trata como Aura: sin repositorio conocido, Studio no ofrece actualizaciones en vez de arriesgar una sobrescritura. Solo lectura del lado Studio — nunca la escribe |
 | `.rockbox/aura/themes/<id>/` | Studio (instala/reempaqueta), o el propio usuario a mano | Firmware (`aura_style.c`, `aura_style_scan()`/`aura_style_activate()`) | D-289. Formato completo en `CONTRATO-formato-tema.md`. `<id>` nunca `default` (reservado) |
 | `.rockbox/aura/device.cfg` | Studio (solo la instalación `device_owner` edita el nombre) | Studio (nombre del iPod, barra lateral/General); firmware (`device_name`, slot "Mi iPod" de Acerca de — D-294) | ST-011 / ST-013 / D-294. Formato completo en `CONTRATO-dispositivo.md` (v2). El firmware **nunca** lo escribe — a diferencia de `theme_id`, no hay una clave que ambos lados toquen |
 | `/.aura/sync-pending.json` | Studio (al terminar cada sync que tocó archivos); Firmware (sube `attempts`, y lo **borra** al terminar bien) | Firmware (al arrancar y al volver de la pantalla USB) | D-293 / ST-012. Esquema y comportamiento completos en **`docs/contracts/library-layout-v1.md` §4**. Directorio propio en la raíz, separado de `.rockbox/aura/` a propósito |
@@ -130,7 +160,7 @@ Esto **sí** es un acoplamiento permanente por diseño: ambos lados leen/escribe
 | `.rockbox/aura/sync_summary.cfg` | Studio | Firmware (pantalla "Acerca de") | Contrato inverso — el firmware depende de un archivo que solo Studio escribe |
 | `.rockbox/aura/ratings.cfg` | Studio | Studio | — |
 | `.rockbox/icons/aura/` | Instalador (parte de `rockbox.zip`) | Firmware | — |
-| `.rockbox/fonts/a26-title-20.fnt` | Instalador (parte de `rockbox.zip`) | Studio (`InstallerViewModel`, sentinela frágil de "árbol instalado") | Candidato a reemplazo por `.rockbox/aura/VERSION` explícito — no implementado en esta pasada |
+| `.rockbox/fonts/<centinela de la familia>` (§A bis: `a26-title-20.fnt` Aura, `metro-list-20.fnt` Metro, `moonlit-body-18.fnt` moonlit) | Instalador (parte de `rockbox.zip`) | Studio (`InstallerViewModel`, sentinela frágil de "árbol instalado", por familia — v14) | Candidato a reemplazo por `.rockbox/aura/VERSION` explícito — no implementado en esta pasada |
 | `Playlists/` | Studio (`PlaylistExporter`) | Firmware | — |
 | `Music/`, `Videos/` | Studio (sync) | Firmware | 3 layouts posibles para `Music/` (Artista/Álbum, Álbum, Artista) — configurable en Studio. Estructura exacta, carátulas (`cover.jpg` en la carpeta del álbum o embebida) y letras `.lrc` (junto al audio, mismo nombre base) en `docs/contracts/library-layout-v1.md` §1–§3 |
 | `Photos/` | Studio (sync) | Firmware (`aura_photos.c`) | D-291. Contrato detallado en **D.1** abajo — formato, resolución, nombres |
@@ -259,6 +289,8 @@ Aura Studio fija **una** versión exacta de firmware por build propio, en `FIRMW
 | 0.1.2 (histórico) | `v0.2.8-beta` (`FIRMWARE_VERSION`, PATCH: corrige recuadro blanco del menú de ajustes + calca la geometría/colores reales de las listas de Aura, sin cambio de contrato — D-309 en `Aura-Firmware`) | v4 |
 | 0.1.2 | `v0.2.9-beta` (`FIRMWARE_VERSION`, PATCH: niveles de Animaciones/Gráficos, CoverDrift en Video/Fotos, Music Flow/Movie Flow — contrato sube a v5 (D-316, índice de categoría opcional `video_categories.cfg`/`photo_categories.cfg`, solo lado firmware; el lado Studio que los escriba queda pendiente) — D-310..D-318 en `Aura-Firmware`) | v5 |
 
+`FIRMWARE_VERSION` lleva **una sección por familia** (v9/v14, §A bis): sin prefijo = Aura, `metro.` = Metro-Aura, `moonlit.` = moonlit.aura (`tag=` + hashes cada una). `fetch-firmware.sh` acepta `--family aura|metro|moonlit` (por defecto todas) y guarda cada familia en su subdirectorio del bundle según §A bis.
+
 Regla: un cambio a la sección D (contrato de datos) exige MINOR nuevo en ambos; un cambio de artefactos sin cambio de contrato es PATCH en el firmware y Studio solo actualiza el pin. `AuraUpdateChecker` (Studio) compara por hash SHA-256 del `rockbox.ipod` embebido vs. el instalado — sigue siendo la fuente de verdad para "hay actualización"; la UI puede mostrar además el tag de `FIRMWARE_VERSION` como referencia legible.
 
 ## F — Fixtures de prueba
@@ -271,12 +303,13 @@ Regla: un cambio a la sección D (contrato de datos) exige MINOR nuevo en ambos;
 - `docs/guia-flasheo-restauracion.md` (protocolo del dispositivo: bootloader dual, DFU, checksums) vive **solo** en `Aura-Firmware`, como referencia técnica; Aura Studio la enlaza por URL, no la copia.
 - `docs/guia-desarrollo.md` — cada repo tiene la suya, sin sección del otro proyecto.
 - Contratos hermanos, **copia idéntica en ambos repos**, canónicos en `Aura-Firmware`: `CONTRATO-formato-tema.md`, `CONTRATO-dispositivo.md`, `docs/contracts/library-layout-v1.md`.
+- `CONTRATO-moonlit-studio.md` vive **solo** en `moonlit-aura` y referencia este contrato (misma relación que el contrato propio de Metro-Aura): lo que ahí se define (frontera GPL `BOOT-N`, particularidades de esa familia) no se copia aquí; este documento solo lo cita (§A bis, §B).
 
 ## Qué queda pendiente de implementar (documentado aquí, no bloqueante)
 
 - `contract_version` explícito en `sync_summary.cfg`/`aura.cfg` (sección D).
 - Reemplazo del sentinela `.rockbox/fonts/a26-title-20.fnt` por un `.rockbox/aura/VERSION` explícito.
-- Primer Release público de `Aura-Firmware` con los 5+2+2 assets — hoy Studio se desarrolla contra un `firmware/dist/` local vía `fetch-firmware.sh --from-dir`.
+- (v14) El cambio entre **cualquier par** de familias desde el dispositivo (Ajustes › Cambiar sistema) queda implementado en las tres: Aura D-333, Metro-Aura M-093, moonlit.aura D-047. Lo que sigue pendiente es solo del lado Studio: recuperación con dos o más dormidos (pedir elegir) y `--family moonlit` en `fetch-firmware.sh`.
 - `accent_default`/`accent_presets` del formato de tema: aceptados y validables, pero el firmware no los lee todavía (ver `CONTRATO-formato-tema.md` §H y `sistema/05-temas.md`).
 - El lado "constructor pleno" de Aura Studio (rasterizar fuentes/íconos del sistema del usuario) es Fase 2B, posterior — Fase 2 (2A) entrega reempaquetar desde una carpeta de assets ya generados + instalar/listar/activar/eliminar.
 - Letras sin marcas de tiempo (D-293 / ST-012): Studio ya escribe el `.lrc` aunque solo tenga letra plana; el firmware la descarta (Modo 4 solo muestra líneas con `[mm:ss]`). Mostrar letra plana estática es trabajo del firmware, sin cambio de contrato.

@@ -885,3 +885,13 @@ Ambos releases traen D-329/M-091 (sello de biblioteca). Con este pin, la actuali
 
 **Pendientes del mismo lote:** el contrato v14 (`CONTRATO-firmware-studio.md`, copia idéntica de Aura-Firmware, que declara `firmware_family: moonlit` y la ausencia de `theme_format_supported` como válida) llega en este mismo lote; el pin `moonlit.tag=v0.1.0` en `FIRMWARE_VERSION` se registra en ST-066 al publicar el primer Release. Hasta entonces `Vendor/firmware-dist/moonlit/` está vacío y `build-app.sh` falla con mensaje claro (por diseño).
 
+
+## ST-066 — Pin a Aura v0.4.0-beta + Metro v0.6.0 + moonlit.aura v0.1.0 (contrato v14)
+
+**Releases (2026-08-26):** Aura-Firmware `v0.4.0-beta` (D-333/D-334/D-335), Metro-Aura `v0.6.0` (M-093/M-094) y el primer release de moonlit-aura, `v0.1.0` (D-046/D-047/D-048). Los tres traen el submenú "Cambiar sistema" con una fila por familia hermana, así que desde el dispositivo se puede ir de cualquier familia a cualquier otra que esté dormida; y los tres dejan de embeber `__TIME__`/`__DATE__` en los plugins SDL (quake/duke3d), que arrastraban ~2,2 MB de delta espurio en cada actualización selectiva.
+
+**Pin:** `FIRMWARE_VERSION` con `tag=v0.4.0-beta`, `metro.tag=v0.6.0`, `moonlit.tag=v0.1.0` y los 12 hashes verificados por `scripts/fetch-firmware.sh` contra el `checksums.txt` de cada Release (los cuatro `OK` por familia). `CONTRATO-firmware-studio.md` v14 copiado idéntico desde Aura-Firmware (`diff` vacío). `scripts/build-app.sh` deja `/Applications/AuraStudio.app` con `Resources/moonlit/` (rockbox.ipod, rockbox.zip, mks5lboot, firmware-version.txt).
+
+**Delta medido** (CRC32 por entrada del `rockbox.zip`, el mismo cálculo de `InstallManifest.delta`): Metro v0.5.6 → v0.6.0 = 7 archivos de 430; Aura v0.3.6-beta → v0.4.0-beta = 7 de 9 463. En ambos aparecen `quake.ovl`/`duke3d.ovl` **por última vez** (el parche mismo los cambió); a partir de aquí solo cambian los archivos que embeben `RBVERSION` (`rockbox.ipod`, `rockbox-info.txt`, `rockbox.map`, `lastfm_scrobbler.rock`, `version.txt`). Dos corridas consecutivas de `package_dist.sh` dan CRC idénticos en las 430/432/9 463 entradas; el SHA-256 del zip sí cambia (fechas de entrada), por eso el hash que fija el pin es el del Release publicado, no el de una recompilación local.
+
+**Pendiente de hardware (usuario):** verificar en un iPod real el cambio entre las tres familias (C20 de cada firmware) y la medición de Marea (moonlit M12, D-043).

@@ -5,15 +5,21 @@
 # verificando contra el `checksums.txt` del propio Release.
 #
 # Sin prefijo = Aura (Ricolinos/Aura-Firmware). Prefijo `metro.` =
-# Metro-Aura (Ricolinos/Metro-Aura).
+# Metro-Aura (Ricolinos/Metro-Aura). Prefijo `moonlit.` = moonlit.aura
+# (Ricolinos/moonlit-aura). Registro de familias: contrato v14 §A bis.
 
-tag=v0.3.6-beta
-metro.tag=v0.5.6
-rockbox.ipod=d29bcc372abdeb35bb0856b09cf8e1ee31f351a2fe2efc4a4daa328874160703
-rockbox.zip=099a21f1d08520ea2b419673499f33d8349cbe7a3d1306e6fc2ddde820b6034b
+tag=v0.4.0-beta
+metro.tag=v0.6.0
+moonlit.tag=v0.1.0
+rockbox.ipod=f9709ddb8da27557ac6f7c809018f3da3be38394a5537712636a6383d9915338
+rockbox.zip=1a6a3f6efc0f6fa3a9c85e9c4eab2d36ec85aec55423092e3ccf02fbec39dd67
 mks5lboot=e846731057348a72bdda101e63929ae530c4b3224959e02a2634dbcffd9102b0
 bootloader-ipod6g.ipod=d263780452fda352a5afa229078b39da5b1a78f3b1930e3dee15cf60d123e348
-metro.rockbox.ipod=b9014ef3344499f132f13e65bbf6368f1d35b9adf326ccf68a73d047ec7a8cd7
-metro.rockbox.zip=3f63c0e5901b15db265e006ecb1ec827f9adc09598cb7dad46aad07a514af870
+metro.rockbox.ipod=6a527763f2d96522ff7f274041fcd9ec360e9e18835b4e21ac5e058aa1196960
+metro.rockbox.zip=d59868f34a470a3e1046de0a3d6522f578a517513b74383c4f1e5a3159a8a96b
 metro.mks5lboot=a4d46769cc18e9329a02cb0abab39cb4deca201e7725951b39e564a96f0f4b31
-metro.bootloader-ipod6g.ipod=5149c28ad4040279d42967ac7c69765f1cfd14642e22a663e5b03a4089c48775
+metro.bootloader-ipod6g.ipod=857100e576440e9d8a59129999eb49cc6edffedf98c57437db58546ca04c8a75
+moonlit.rockbox.ipod=246d7035ae4f5d208417a21b522f6786da9f181017718e892c690b5ac196cdae
+moonlit.rockbox.zip=5f7937075c12fa13e359864db14a9cdffeef46e029c31d788b59c4f4784d4f6b
+moonlit.mks5lboot=035e14db2be7ce093a434a2dac8fff419c64a8be84644122710e2a1850fc3a91
+moonlit.bootloader-ipod6g.ipod=a9145ba8f3f030589593b40a64977b0be064b15272846d78417573169755e1df
