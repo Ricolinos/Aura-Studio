@@ -952,3 +952,23 @@ Ambos releases traen D-329/M-091 (sello de biblioteca). Con este pin, la actuali
 **Release:** moonlit-aura `v0.1.4` — un solo barrido, MENU responde en ≤1 s incluso durante el conteo, una sola consulta de tagcache por álbum en vez de dos. Verificado en simulador con abort real a mitad de barrido (16/312).
 
 **Pin:** `moonlit.tag=v0.1.4` + 4 hashes (4×OK). Delta v0.1.3→v0.1.4: 5/432.
+
+## ST-073 — Contrato v16: caché maestra compartida `/.aura/art` — Studio nunca la toca
+
+**Contexto (2026-08-26, contrato v16 redactándose en Aura-Firmware):** los tres firmwares comparten ahora una caché maestra de imágenes en `/.aura/art/{albums,artists,photos}/` (archivos `.art` RGB565 + marcadores negativos `.none`), con claves independientes de la base tagcache (crc32 de ruta + mtime). Es propiedad del firmware, como `/.aura/tagcache/` y `/.aura/thumbs/` (ST-069), pero con una diferencia: **ni siquiera forzar la reconstrucción de la base la borra**, porque sus claves no dependen de la base y regenerarla en un iPod grande cuesta más que la propia base.
+
+**Invariante:** Studio nunca borra, mueve ni estaciona `/.aura/art/` — ni en instalación, ni al cambiar de familia, ni al reparar, ni en sync, ni al forzar reconstrucción. `install_manifest.cfg` no la lista. El sync de música sigue escribiendo `/.aura/library-stamp` y `/.aura/sync-pending.json` como hoy; el firmware activo construye en segundo plano las maestras nuevas.
+
+**Revisión de cada flujo (evidencia, sobre el código actual):**
+- `LibrarySync.clearFirmwareDatabases` / `triggerFirmwareDBRebuild`: borra únicamente `tagcacheDatabaseFileNames` + `db_stamp.txt` dentro de `/.aura/tagcache/`, `/.rockbox/` y cada `/.firmware-*/`, más `aura/db_stamp.txt` por árbol. Ningún `removeItem` recibe una ruta bajo `/.aura/art/` (ni `thumbs/`). No enumera ni crea nada bajo `/.aura/`.
+- `FirmwareSwitcher`: sus 10 `removeItem`/`moveItem` nacen de `activeTreeName` (`.rockbox`), `dormantTreeName` (`.firmware-*`) o `rockbox.ipod`; bajo `/.aura/` solo escribe `library-stamp` y `sync-pending.json`. Sin cambios de código; se amplió la invariante de la cabecera.
+- `InstallerViewModel.copyFirmwareFiles`: `removeItem` sobre `/rockbox.ipod`, temporales de extracción, destinos dentro de `/.rockbox/` y `/.rockbox/aura/install_manifest.cfg`. Nada bajo `/.aura/`.
+- `InstallManifest.delta.toDelete`: filtro `hasPrefix(".rockbox/")` — imposible que liste `/.aura/art/`; los `.art` nunca van en `rockbox.zip`.
+- `LibrarySync` (sync, `deleteAllDeviceContent`, `sweepOrphanedTempFiles`, huérfanos): sus `removeItem` son sobre `Music/`, `Videos/`, `Photos/`, `Playlists/`, `.rockbox/aura/*` y `.aura/sync-in-progress`; `sweepOrphanedTempFiles` solo recorre `deviceContentDirectories` buscando `.aura-tmp`.
+- `SyncSheets` (elementos huérfanos): borra solo rutas registradas en `sync_manifest.json` (medios).
+
+**Cambio:** constante `LibrarySync.sharedArtDirRelativePath = ".aura/art"` junto a las de ST-069, documentación de la invariante en `LibrarySync` y `FirmwareSwitcher`. Sin cambios de comportamiento: el código ya cumplía.
+
+**Vista de espacio / limpieza de cachés:** no existe. `DeviceActivityBar` muestra Música/Video/Fotos/Otro/Libre a partir de `sync_summary.cfg` y la capacidad del volumen; no enumera `metrocache`/`cfcache`/`moonlitcache` ni ninguna carpeta del firmware, así que no hay nada donde añadir `/.aura/art` ni `/.aura/thumbs`. Si algún día se construye, debe ser de solo lectura.
+
+**Pruebas:** `FirmwareDBRebuildTests.testForcedRebuildKeepsSharedArtCache` (con `/.aura/art/albums/x.art`, `.none`, `artists/`, `photos/` presentes, la reconstrucción forzada borra las tres bases y deja `art/` byte a byte igual, con o sin `/.aura/tagcache/`); las pruebas ST-069 existentes ahora también siembran `art/` y lo verifican intacto en el camino real vía `sync()`; `FirmwareSwitcherTests.testTreeFlowsNeverTouchSharedTagcacheOrThumbs` siembra `/.aura/art/{albums,artists,photos}` y comprueba que cambio, estacionar, borrar dormido, sembrar, espejar y reparar lo dejan intacto y sin reescribir. 30 pruebas verdes en `Rebuild|FirmwareSwitcher|InstallManifest`.

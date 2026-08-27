@@ -253,8 +253,18 @@ struct LibrarySync {
     /// excepcion es forzar la reconstruccion de la base
     /// (`clearFirmwareDatabases`), que vacia `tagcache/` y deja
     /// `thumbs/` intacto.
+    ///
+    /// ST-073 / contrato v16: se suma `/.aura/art/{albums,artists,photos}/`
+    /// (cache maestra de imagenes: `.art` RGB565 + marcadores `.none`),
+    /// tambien propiedad del firmware. Sus claves son crc32 de ruta +
+    /// mtime, INDEPENDIENTES de la base tagcache, asi que ni siquiera
+    /// forzar la reconstruccion la toca: Studio nunca borra, mueve ni
+    /// estaciona `/.aura/art/`, y `install_manifest.cfg` no la lista.
+    /// El firmware activo construye las maestras nuevas en segundo plano
+    /// tras cada sync (que sigue renovando `library-stamp` y el marcador).
     static let sharedTagcacheDirRelativePath = ".aura/tagcache"
     static let sharedThumbsDirRelativePath = ".aura/thumbs"
+    static let sharedArtDirRelativePath = ".aura/art"
     /// Nombres de la base de tagcache que se borran al forzar una
     /// reconstruccion, en cada directorio que pueda contenerla.
     static let tagcacheDatabaseFileNames = [
@@ -1334,7 +1344,9 @@ struct LibrarySync {
     ///   - cada `/.firmware-*/` dormido (compatibilidad: un arbol anterior
     ///     a v15 que despierte con su base vieja la daria por buena).
     /// `/.aura/thumbs/` NO se toca: las miniaturas no dependen de la base
-    /// y regenerarlas cuesta minutos en un iPod grande.
+    /// y regenerarlas cuesta minutos en un iPod grande. `/.aura/art/`
+    /// (ST-073, contrato v16) tampoco: sus claves son ruta + mtime, no
+    /// la base, y reconstruir las maestras de un iPod grande cuesta mas.
     static func clearFirmwareDatabases(volumeRoot: URL, fileManager: FileManager = .default) {
         var databaseDirs = [volumeRoot.appendingPathComponent(sharedTagcacheDirRelativePath),
                             volumeRoot.appendingPathComponent(FirmwareSwitcher.activeTreeName)]

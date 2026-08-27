@@ -18,7 +18,8 @@ import Foundation
 /// INVARIANTE (ST-069 / contrato v15): todo lo de aqui opera SOLO sobre
 /// `/.rockbox/`, `/.firmware-*/` y `/rockbox.ipod`. `/.aura/tagcache/`
 /// (base de datos compartida por los tres firmwares) y `/.aura/thumbs/`
-/// (miniaturas compartidas) son propiedad del firmware aunque vivan bajo
+/// (miniaturas compartidas) y `/.aura/art/` (cache maestra de imagenes,
+/// ST-073 / contrato v16) son propiedad del firmware aunque vivan bajo
 /// `/.aura/`: ningun renombre, estacionamiento, reparacion, siembra ni
 /// espejo los toca. Ver `LibrarySync.sharedTagcacheDirRelativePath`.
 enum FirmwareSwitcher {

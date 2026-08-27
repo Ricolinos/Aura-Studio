@@ -4,7 +4,9 @@ import XCTest
 /// ST-069 / contrato v15: forzar la reconstruccion de la base borra
 /// `database_*.tcd` + `db_stamp.txt` en `/.aura/tagcache/` (compartida),
 /// en `/.rockbox/` y en cada `/.firmware-*/` (firmwares anteriores a
-/// v15), y deja `/.aura/thumbs/` intacto. Todo sobre carpetas temporales.
+/// v15), y deja `/.aura/thumbs/` intacto. ST-073 / contrato v16: tampoco
+/// toca `/.aura/art/` (cache maestra de imagenes, claves ruta + mtime
+/// independientes de la base). Todo sobre carpetas temporales.
 final class FirmwareDBRebuildTests: XCTestCase {
     private var root: URL!
     private let fm = FileManager.default
@@ -36,6 +38,8 @@ final class FirmwareDBRebuildTests: XCTestCase {
         try write(".aura/thumbs/albums/a.jpg")
         try write(".aura/thumbs/artists/b.jpg")
         try write(".aura/thumbs/photos/c.jpg")
+        try write(".aura/art/albums/x.art", "RGB565")
+        try write(".aura/art/albums/y.none", "")
         try write(".aura/library-stamp", "sello")
         try write(".aura/sync-pending.json", "{}")
         // Firmwares anteriores a v15: base por arbol.
@@ -55,10 +59,45 @@ final class FirmwareDBRebuildTests: XCTestCase {
             XCTAssertFalse(exists(gone), "\(gone) debe borrarse al forzar la reconstruccion")
         }
         for kept in [".aura/tagcache", ".aura/thumbs/albums/a.jpg", ".aura/thumbs/artists/b.jpg",
-                     ".aura/thumbs/photos/c.jpg", ".aura/library-stamp", ".aura/sync-pending.json",
+                     ".aura/thumbs/photos/c.jpg", ".aura/art/albums/x.art", ".aura/art/albums/y.none",
+                     ".aura/library-stamp", ".aura/sync-pending.json",
                      ".rockbox/aura/aura.cfg", ".firmware-metro/aura/aura.cfg"] {
             XCTAssertTrue(exists(kept), "\(kept) debe quedar intacto")
         }
+    }
+
+    /// ST-073 / contrato v16: la cache maestra de imagenes sobrevive a la
+    /// reconstruccion forzada, incluidos los marcadores negativos `.none`
+    /// y el caso en que `/.aura/tagcache/` no exista.
+    func testForcedRebuildKeepsSharedArtCache() throws {
+        try write(".aura/art/albums/x.art", "RGB565")
+        try write(".aura/art/albums/y.none", "")
+        try write(".aura/art/artists/a.art", "RGB565")
+        try write(".aura/art/photos/p.art", "RGB565")
+        try write(".aura/tagcache/database_idx.tcd")
+        try write(".rockbox/database_idx.tcd")
+        try write(".firmware-metro/database_idx.tcd")
+        try write(".firmware-metro/aura/aura.cfg", "firmware_family: metro\n")
+        let artDir = root.appendingPathComponent(LibrarySync.sharedArtDirRelativePath)
+        let before = try fm.contentsOfDirectory(atPath: artDir.path).sorted()
+
+        LibrarySync.clearFirmwareDatabases(volumeRoot: root)
+
+        XCTAssertFalse(exists(".aura/tagcache/database_idx.tcd"))
+        XCTAssertFalse(exists(".rockbox/database_idx.tcd"))
+        XCTAssertFalse(exists(".firmware-metro/database_idx.tcd"))
+        for kept in [".aura/art/albums/x.art", ".aura/art/albums/y.none",
+                     ".aura/art/artists/a.art", ".aura/art/photos/p.art"] {
+            XCTAssertTrue(exists(kept), "\(kept) debe quedar intacto: /.aura/art es del firmware")
+        }
+        XCTAssertEqual(try String(contentsOf: root.appendingPathComponent(".aura/art/albums/x.art"), encoding: .utf8), "RGB565")
+        XCTAssertEqual(try fm.contentsOfDirectory(atPath: artDir.path).sorted(), before)
+
+        // Sin base compartida tampoco se crea ni se toca nada bajo art/.
+        try fm.removeItem(at: root.appendingPathComponent(".aura/tagcache"))
+        LibrarySync.clearFirmwareDatabases(volumeRoot: root)
+        XCTAssertTrue(exists(".aura/art/albums/x.art"))
+        XCTAssertFalse(exists(".aura/tagcache"))
     }
 
     func testForcedRebuildToleratesMissingSharedDirectory() throws {
@@ -74,6 +113,7 @@ final class FirmwareDBRebuildTests: XCTestCase {
     func testSyncWithLegacyFirmwareClearsSharedTagcache() throws {
         try write(".aura/tagcache/database_idx.tcd")
         try write(".aura/thumbs/albums/a.jpg")
+        try write(".aura/art/albums/x.art", "RGB565")
         try write(".rockbox/aura/aura.cfg", "theme: 1\n")
         let staging = root.appendingPathComponent("staging.mp3")
         try Data("mp3".utf8).write(to: staging)
@@ -85,6 +125,7 @@ final class FirmwareDBRebuildTests: XCTestCase {
         _ = try LibrarySync(volumeRoot: root).sync(items: [item])
         XCTAssertFalse(exists(".aura/tagcache/database_idx.tcd"))
         XCTAssertTrue(exists(".aura/thumbs/albums/a.jpg"))
+        XCTAssertTrue(exists(".aura/art/albums/x.art"), "ST-073: el sync nunca toca /.aura/art")
         XCTAssertTrue(exists(".aura/library-stamp"), "el sync con musica sigue renovando el sello")
         XCTAssertTrue(exists(".aura/sync-pending.json"))
 
@@ -93,5 +134,6 @@ final class FirmwareDBRebuildTests: XCTestCase {
         _ = try LibrarySync(volumeRoot: root).sync(items: [item])
         XCTAssertTrue(exists(".aura/tagcache/database_idx.tcd"),
                       "con marcador soportado la base compartida sigue usable")
+        XCTAssertTrue(exists(".aura/art/albums/x.art"))
     }
 }

@@ -307,6 +307,7 @@ final class FirmwareSwitcherTests: XCTestCase {
     }
 
     // MARK: - ST-069 / contrato v15: /.aura/tagcache y /.aura/thumbs son del firmware
+    // MARK: - ST-073 / contrato v16: /.aura/art (cache maestra de imagenes) tambien
 
     private func plantSharedFirmwareData() throws {
         try write(".aura/tagcache/database_idx.tcd", "IDX")
@@ -315,21 +316,29 @@ final class FirmwareSwitcherTests: XCTestCase {
         try write(".aura/thumbs/albums/a.jpg", "JPG")
         try write(".aura/thumbs/artists/b.jpg", "JPG")
         try write(".aura/thumbs/photos/c.jpg", "JPG")
+        try write(".aura/art/albums/x.art", "RGB565")
+        try write(".aura/art/albums/y.none", "")
+        try write(".aura/art/artists/a.art", "RGB565")
+        try write(".aura/art/photos/p.art", "RGB565")
     }
 
     private func assertSharedFirmwareDataIntact(_ context: String, file: StaticString = #filePath, line: UInt = #line) {
         for path in [".aura/tagcache/database_idx.tcd", ".aura/tagcache/database_0.tcd",
                      ".aura/tagcache/db_stamp.txt", ".aura/thumbs/albums/a.jpg",
-                     ".aura/thumbs/artists/b.jpg", ".aura/thumbs/photos/c.jpg"] {
+                     ".aura/thumbs/artists/b.jpg", ".aura/thumbs/photos/c.jpg",
+                     ".aura/art/albums/x.art", ".aura/art/albums/y.none",
+                     ".aura/art/artists/a.art", ".aura/art/photos/p.art"] {
             XCTAssertTrue(exists(path), "\(context): \(path) debe seguir existiendo", file: file, line: line)
         }
+        XCTAssertEqual(read(".aura/art/albums/x.art"), "RGB565",
+                       "\(context): la maestra de imagenes no se reescribe", file: file, line: line)
         XCTAssertEqual(read(".aura/tagcache/db_stamp.txt"), "2026-08-26T00:00:00Z-abcd1234",
                        "\(context): el sello compartido no se reescribe", file: file, line: line)
     }
 
     /// Cambio de familia completo (estacionar, despertar, reparar, borrar
-    /// dormido, sembrar, espejar): la base y las miniaturas compartidas
-    /// sobreviven a todos.
+    /// dormido, sembrar, espejar): la base, las miniaturas y la cache
+    /// maestra de imagenes (`/.aura/art`, ST-073) sobreviven a todos.
     func testTreeFlowsNeverTouchSharedTagcacheOrThumbs() throws {
         try makeMetroActiveAuraDormant()
         try plantSharedFirmwareData()
