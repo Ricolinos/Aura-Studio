@@ -984,3 +984,13 @@ Ambos releases traen D-329/M-091 (sello de biblioteca). Con este pin, la actuali
 **Nota GPL v2.** Que los repos sean privados no cambia la obligación: mientras la app sea de uso personal del dueño no hay distribución y §3 no exige nada. En el momento en que la app (con `rockbox.ipod`, `rockbox.zip`, el bootloader y `mks5lboot` embebidos) se entregue a un tercero, hay que ofrecerle el fuente completo correspondiente de esos binarios (§3): publicar el repo, o entregar el fuente del tag exacto junto con la app. Los enlaces de Licencias siguen siendo la oferta; hoy solo la puede ejercer quien tenga acceso.
 
 **Pruebas** (`GitHubTokenTests`, con `MockURLProtocol`, sin tocar el Llavero real): formato aceptado/rechazado; sin token la petición no lleva `Authorization`; con token lleva las tres cabeceras y va al repo de la familia; 401 con token → `lastAuthFailure == true`, `[]` sin lanzar; 200 con token limpia el estado; 404 sin token sigue lanzando `badResponse` sin culpar al token. 32 pruebas verdes en `GitHub|UpdateChecker|Release`.
+
+## ST-075 — Pin a Aura v0.4.3-beta + Metro v0.6.3 + moonlit.aura v0.1.5 (contrato v16: caché maestra compartida)
+
+**Releases (2026-08-26):** las tres familias implementan el contrato v16 (D-340/D-341, M-097, D-059): caché maestra de imágenes compartida en `/.aura/art/{albums,artists,photos}/` (formato `.art`/`.none`, cabecera `MAST`, RGB565 fila-contigua, claves por ruta+mtime), construida en segundo plano por un hilo de baja prioridad en el firmware activo — cada imagen se decodifica una sola vez entre las tres familias. La cápsula "preparando carátulas" desaparece de los tres.
+
+**Pin:** `tag=v0.4.3-beta`, `metro.tag=v0.6.3`, `moonlit.tag=v0.1.5` + 12 hashes (3×4 OK). Deltas: Aura 5/9463, Metro 5/430, moonlit 5/432.
+
+**Nota de operación:** el release de Aura v0.4.3-beta se cortó por timeout subiendo `rockbox.ipod` (el asset más grande); se completó con `gh release upload` tras verificar que faltaba exactamente ese archivo. Verificar siempre `gh release view --json assets` tras un `gh release create` que tardó, antes de dar el release por completo.
+
+**ST-073/ST-074 incluidas en esta build**: protección de `/.aura/art` contra cualquier flujo de Studio, y token de GitHub en el Llavero para que el aviso de versiones funcione con los repos ahora privados (Ajustes › General).
