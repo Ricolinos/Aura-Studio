@@ -944,3 +944,11 @@ Ambos releases traen D-329/M-091 (sello de biblioteca). Con este pin, la actuali
 **Releases (2026-08-26):** Aura-Firmware `v0.4.2-beta` (D-339) y moonlit-aura `v0.1.3` (D-056, D-057). Metro-Aura sin cambios (sigue `v0.6.2`). Motivo: en el iPod del dueño, 57 álbumes sin carátula resoluble disparaban "preparando biblioteca/carátulas" en cada entrada a Música (sin haber reiniciado); ahora se marcan `.none` una sola vez. Además, en moonlit, Marea cargaba las portadas visibles con retraso perceptible tras D-053 (una lectura por vuelta ociosa a 100 ms); D-057 la lleva al mismo patrón que el Music Flow de Aura (lectura acotada dentro del cuadro + tick a HZ/20 + prefetch direccional).
 
 **Pin:** `tag=v0.4.2-beta`, `moonlit.tag=v0.1.3` + 8 hashes verificados (2 × 4 OK). Deltas: Aura 5/9 463, moonlit 5/432.
+
+## ST-072 — Pin a moonlit.aura v0.1.4 (corrección urgente: precarga congelada)
+
+**Reporte del dueño (2026-08-26):** en un iPod con 1083 álbumes, "preparando biblioteca/carátulas" quedó congelado 10+ minutos sin responder a MENU, obligando a reinicio forzado (SELECT+MENU). Causa diagnosticada en el propio firmware (D-058): el barrido de carátulas pendientes se ejecutaba dos veces completas antes de mostrar progreso, y durante el conteo no se sondeaban botones — el usuario no tenía forma de salir sin apagar.
+
+**Release:** moonlit-aura `v0.1.4` — un solo barrido, MENU responde en ≤1 s incluso durante el conteo, una sola consulta de tagcache por álbum en vez de dos. Verificado en simulador con abort real a mitad de barrido (16/312).
+
+**Pin:** `moonlit.tag=v0.1.4` + 4 hashes (4×OK). Delta v0.1.3→v0.1.4: 5/432.
