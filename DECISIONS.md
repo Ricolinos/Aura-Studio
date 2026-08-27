@@ -994,3 +994,14 @@ Ambos releases traen D-329/M-091 (sello de biblioteca). Con este pin, la actuali
 **Nota de operación:** el release de Aura v0.4.3-beta se cortó por timeout subiendo `rockbox.ipod` (el asset más grande); se completó con `gh release upload` tras verificar que faltaba exactamente ese archivo. Verificar siempre `gh release view --json assets` tras un `gh release create` que tardó, antes de dar el release por completo.
 
 **ST-073/ST-074 incluidas en esta build**: protección de `/.aura/art` contra cualquier flujo de Studio, y token de GitHub en el Llavero para que el aviso de versiones funcione con los repos ahora privados (Ajustes › General).
+
+## ST-076 — Pin a Aura v0.4.4-beta + Metro v0.6.4 + moonlit.aura v0.1.6 (guarda de commit al cambiar de sistema)
+
+**Diagnóstico del dueño (2026-08-27):** tras probar el contrato v15/v16, seguían apareciendo esperas al cambiar entre familias y la preparación de moonlit se sentía atada al menú Música. Investigación de solo lectura en los tres firmwares (`apps/tagcache.c` de Rockbox, compartido) confirmó dos causas reales, no relacionadas con el diseño de v15/v16 en sí:
+
+1. **Metro nunca sondeaba `metro_music_db_ready()` desde el arranque** — solo se llamaba al entrar a Música (a diferencia de Aura y moonlit, que ya lo hacían). Corregido en M-098: se sondea desde el bucle principal, igual que sus hermanas.
+2. **Los tres firmwares podían reiniciar con un commit de tagcache a mitad de escritura** al cambiar de familia (`tagcache_shutdown()` no lo espera). Eso deja la base **compartida** marcada `dirty=1`, y el siguiente arranque de CUALQUIER familia la ve como corrupta y reconstruye desde cero — la única causa real encontrada capaz de invalidar una base compartida sana. Corregido en los tres (D-342 Aura, M-099 Metro, D-060 moonlit): esperan (tope 8 s) a que `tagcache_get_commit_step() == 0` antes de renombrar árboles y reiniciar.
+
+**Releases:** Aura v0.4.4-beta, Metro v0.6.4, moonlit v0.1.6. **Pin:** 12 hashes (3×4 OK). Deltas: 5 archivos cada uno.
+
+**Límite documentado, no corregible sin riesgo alto:** este iPod no tiene el mecanismo de Rockbox para persistir la copia en RAM de la base entre reinicios (`HAVE_EEPROM_SETTINGS` no existe para `ipod6g`). Todo reinicio real —incluido cada cambio de familia— vuelve a leer el índice de disco a RAM desde cero; es rápido (segundos) si no hay que reconstruir nada, pero no es eliminable sin tocar capas profundas de Rockbox no diseñadas para este hardware.
