@@ -117,6 +117,10 @@ enum AuraUpdateChecker {
                                        defaults: UserDefaults,
                                        family: FirmwareFamily) async throws -> [GitHubRelease] {
         let releases = try await GitHubReleaseChecker.fetchReleases(session: session, family: family)
+        // ST-074: un rechazo del token devuelve [] sin lanzar. No se
+        // cachea: si no, arreglar el token en Ajustes no surtiría efecto
+        // hasta que venciera el TTL de 24 h.
+        if releases.isEmpty, GitHubReleaseChecker.lastAuthFailure { return releases }
         ReleaseCache.store(releases, defaults: defaults, family: family)
         return releases
     }

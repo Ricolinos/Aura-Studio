@@ -96,6 +96,12 @@ private struct FamilyLicenseCard: View {
                    let notices = URL(string: "\(repo.absoluteString)/releases/download/\(tag)/THIRD-PARTY-NOTICES.txt") {
                     LinkRow(title: "Avisos de terceros (tipografías e iconos)", url: notices)
                 }
+                // ST-074: los repos pasaron a privados. Los enlaces se
+                // conservan (son la oferta de fuente de GPL v2 §3); solo
+                // se avisa que hace falta sesión con acceso.
+                Text("Los repositorios son privados: los enlaces requieren sesión de GitHub con acceso.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
         .padding(14)

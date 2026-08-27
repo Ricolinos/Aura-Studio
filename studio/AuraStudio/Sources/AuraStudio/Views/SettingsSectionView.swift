@@ -63,6 +63,10 @@ struct SettingsSectionView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+
+            Divider()
+
+            GitHubTokenSettingsView()
         }
     }
 

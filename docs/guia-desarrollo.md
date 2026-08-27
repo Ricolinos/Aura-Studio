@@ -26,6 +26,15 @@ scripts/fetch-firmware.sh --from-dir /ruta/a/Aura-Firmware/firmware/dist
 
 Puebla `studio/AuraStudio/Vendor/firmware-dist/` (gitignorado).
 
+### Repos privados
+
+Desde agosto de 2026, `Ricolinos/Aura-Firmware`, `Ricolinos/Metro-Aura` y `Ricolinos/moonlit-aura` son **privados** (ST-074). Dos consecuencias, separadas a propósito:
+
+- **Compilar Studio** no cambia: `scripts/fetch-firmware.sh` descarga los Releases con `gh`, es decir, con la sesión del desarrollador (`gh auth login` una sola vez). No usa ningún token de la app.
+- **Que la app avise de versiones nuevas** sí necesita un token, porque `GitHubReleaseChecker` consulta `api.github.com/repos/<repo>/releases` desde la Mac del usuario y un repo privado responde 404 sin autenticación. El token se guarda en el Llavero de macOS desde **Ajustes › General › GitHub (repos privados)** (`GitHubToken`), nunca en `UserDefaults` ni en el repo. Sin token la app sigue instalando el firmware embebido; solo deja de avisar.
+
+Para crear el token: github.com › tu avatar › **Settings › Developer settings › Personal access tokens › Fine-grained tokens › Generate new token**. Resource owner: `Ricolinos`; Repository access: *Only select repositories* → `Aura-Firmware`, `Metro-Aura`, `moonlit-aura`; Permissions › Repository permissions › **Contents: Read-only** (nada más). Copia el `github_pat_…`, pégalo en Ajustes, "Guardar" y luego "Probar" (debe mostrar el tag más nuevo de Aura). Cuando expire, la misma sección dice "El token no es válido o expiró".
+
 ## Compilar y probar
 
 **Camino rápido** (Swift Package Manager — compila el mismo código fuente, sin generar el `.app` con recursos embebidos, y **no** requiere `Vendor/firmware-dist/` poblado, ver D-034 en `DECISIONS-ARCHIVE.md`):
