@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>AuraStudio.Core</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Lectura de etiquetas (ID3v2.3/2.4, Vorbis de FLAC, átomos MP4 y
+         carátulas embebidas). En macOS ese trabajo lo hace AVFoundation, que no
+         existe acá; TagLib# es lo que cubre los mismos contenedores con una
+         sola API. Es LGPL y se enlaza dinámicamente (paquete NuGet), compatible
+         con una app cerrada; se declara en la pantalla de Licencias.
+         Las REGLAS de mapeo de campos se portan aparte, en TrackTagRules, para
+         que el resultado coincida con el de macOS y se pueda verificar. -->
+    <PackageReference Include="TagLibSharp" Version="2.3.0" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,331 @@
+<Page
+    x:Class="AuraStudio.App.Views.DeviceListPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:AuraStudio.App.Converters"
+    xmlns:res="using:AuraStudio.App.Resources"
+    xmlns:vm="using:AuraStudio.App.ViewModels">
+
+    <Page.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+        <conv:InvertBoolConverter x:Key="InvertBool" />
+
+        <!-- La fila de la hoja de huérfanos: una casilla por archivo, y ninguna
+             marcada de entrada. -->
+        <DataTemplate x:Key="OrphanTemplate" x:DataType="vm:OrphanRow">
+            <CheckBox IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                      Content="{x:Bind DestinationRelativePath}" />
+        </DataTemplate>
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="{StaticResource AuraPageMargin}"
+              MaxWidth="{StaticResource AuraContentMaxWidth}"
+              HorizontalAlignment="Left"
+              RowSpacing="16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- Encabezado -->
+            <Grid Grid.Row="0" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <FontIcon Glyph="&#xE946;"
+                          FontSize="32"
+                          VerticalAlignment="Top"
+                          Foreground="{ThemeResource AccentFillColorDefaultBrush}" />
+
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="{x:Bind res:AppStrings.GeneralTitle}"
+                               Style="{StaticResource AuraPageTitleTextStyle}" />
+                    <TextBlock Text="{x:Bind res:AppStrings.GeneralSubtitle}"
+                               Style="{StaticResource AuraSecondaryTextStyle}" />
+                </StackPanel>
+
+                <Button Grid.Column="2"
+                        Content="{x:Bind res:AppStrings.ActionRefresh}"
+                        Command="{x:Bind ViewModel.RefreshCommand}"
+                        VerticalAlignment="Top"
+                        ToolTipService.ToolTip="{x:Bind res:AppStrings.ActionRefreshHelp}" />
+            </Grid>
+
+            <!-- ============ Con iPod conectado ============ -->
+            <StackPanel Grid.Row="1"
+                        Spacing="20"
+                        Visibility="{x:Bind ViewModel.HasDevice, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+
+                <!-- ==================== Quién es este iPod ====================
+                     Ficha, no pila de tarjetas (R3-3): icono, nombre, de dónde
+                     viene ese nombre, y UNA frase que dice qué firmware tiene.
+                     Antes eran pares etiqueta/valor que además imprimían el
+                     nombre interno del enum ("RockboxFamily") en pantalla. -->
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <FontIcon Glyph="&#xE955;" FontSize="48" VerticalAlignment="Top"
+                              Foreground="{ThemeResource AccentFillColorDefaultBrush}" />
+
+                    <StackPanel Grid.Column="1" Spacing="6">
+                        <!-- El nombre lo edita SOLO la instalación que lo puso
+                             (CONTRATO-dispositivo.md §C bis). Desde otra, se ve
+                             con la explicación, nunca escondido. -->
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBox Text="{x:Bind ViewModel.DeviceName, Mode=TwoWay}"
+                                     PlaceholderText="Nombre del iPod" MinWidth="260"
+                                     FontSize="20"
+                                     IsReadOnly="{x:Bind ViewModel.CanEditDeviceName, Mode=OneWay, Converter={StaticResource InvertBool}}" />
+                            <Button Content="Guardar" Command="{x:Bind ViewModel.SaveDeviceNameCommand}"
+                                    IsEnabled="{x:Bind ViewModel.CanEditDeviceName, Mode=OneWay}"
+                                    VerticalAlignment="Bottom" />
+                        </StackPanel>
+
+                        <TextBlock Text="{x:Bind ViewModel.DeviceNameExplanation, Mode=OneWay}"
+                                   Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
+
+                        <!-- La línea de estado: los tres hechos de ST-016
+                             dichos con palabras, no con identificadores. -->
+                        <TextBlock Text="{x:Bind ViewModel.FirmwareSummary, Mode=OneWay}"
+                                   Style="{StaticResource AuraSecondaryTextStyle}"
+                                   TextWrapping="Wrap" />
+
+                        <TextBlock Text="{x:Bind ViewModel.Device.VolumePath, Mode=OneWay}"
+                                   Style="{StaticResource AuraCaptionTextStyle}" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- ==================== Estado del firmware ====================
+                     Sobre la lógica que ya existía (ST-099): lo que cambia es
+                     que el caso normal —estar al día— ahora se DICE. Que el
+                     silencio signifique "todo bien" obliga a adivinar. -->
+                <InfoBar IsOpen="{x:Bind ViewModel.HasFirmwareUpdate, Mode=OneWay}"
+                         Severity="Informational" IsClosable="False"
+                         Message="{x:Bind ViewModel.FirmwareUpdateMessage, Mode=OneWay}">
+                    <InfoBar.ActionButton>
+                        <!-- Nombre distinto de "Actualizar" a propósito: instalar
+                             firmware tiene consecuencias serias y no puede
+                             compartir verbo con un refresco inofensivo. -->
+                        <Button Content="Instalar la actualización"
+                                Command="{x:Bind ViewModel.UpdateFirmwareCommand}"
+                                IsEnabled="{x:Bind ViewModel.IsUpdatingFirmware, Mode=OneWay, Converter={StaticResource InvertBool}}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center"
+                            Visibility="{x:Bind ViewModel.ShowsFirmwareStatus, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                    <FontIcon Glyph="&#xE930;" FontSize="14" VerticalAlignment="Center"
+                              Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                              Visibility="{x:Bind ViewModel.HasFirmwareUpdate, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}" />
+                    <TextBlock Text="{x:Bind ViewModel.FirmwareUpToDateMessage, Mode=OneWay}"
+                               Style="{StaticResource AuraSecondaryTextStyle}" VerticalAlignment="Center"
+                               Visibility="{x:Bind ViewModel.HasFirmwareUpdate, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}" />
+                    <HyperlinkButton Content="Buscar actualizaciones"
+                                     Command="{x:Bind ViewModel.CheckForUpdatesCommand}" />
+                </StackPanel>
+
+                <ProgressBar IsIndeterminate="True"
+                             Visibility="{x:Bind ViewModel.IsUpdatingFirmware, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+                <TextBlock Text="{x:Bind ViewModel.UpdateProgressMessage, Mode=OneWay}"
+                           Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap"
+                           Visibility="{x:Bind ViewModel.IsUpdatingFirmware, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+
+                <!-- ==================== En qué se va el espacio ====================
+                     La barra es el ancla de la ficha: dice de un vistazo lo que
+                     cuatro filas de números obligan a leer y restar. Los tramos
+                     y la leyenda los arma el code-behind, porque los anchos son
+                     proporcionales y eso no se expresa en XAML. -->
+                <Border Style="{StaticResource AuraCardStyle}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="{x:Bind res:AppStrings.SectionStorage}"
+                                   Style="{StaticResource AuraSectionTitleTextStyle}" />
+
+                        <Grid x:Name="StorageBar" Height="14" CornerRadius="7"
+                              Background="{ThemeResource ControlAltFillColorSecondaryBrush}" />
+
+                        <TextBlock Text="{x:Bind ViewModel.StorageUsageLine, Mode=OneWay}"
+                                   Style="{StaticResource AuraCaptionTextStyle}" />
+
+                        <StackPanel x:Name="StorageLegend" Orientation="Horizontal" Spacing="14" />
+
+                        <TextBlock Text="{x:Bind ViewModel.SummaryMessage, Mode=OneWay}"
+                                   Style="{StaticResource AuraCaptionTextStyle}"
+                                   TextWrapping="Wrap" Margin="0,4,0,0" />
+
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{x:Bind res:AppStrings.LabelMusic}" Style="{StaticResource AuraCaptionTextStyle}" />
+                                <TextBlock Text="{x:Bind ViewModel.Device.SummaryMusicDisplay, Mode=OneWay}" Style="{StaticResource AuraSectionTitleTextStyle}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="{x:Bind res:AppStrings.LabelVideo}" Style="{StaticResource AuraCaptionTextStyle}" />
+                                <TextBlock Text="{x:Bind ViewModel.Device.SummaryVideoDisplay, Mode=OneWay}" Style="{StaticResource AuraSectionTitleTextStyle}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="{x:Bind res:AppStrings.LabelPhotos}" Style="{StaticResource AuraCaptionTextStyle}" />
+                                <TextBlock Text="{x:Bind ViewModel.Device.SummaryPhotoDisplay, Mode=OneWay}" Style="{StaticResource AuraSectionTitleTextStyle}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="3">
+                                <TextBlock Text="{x:Bind res:AppStrings.LabelPlaylists}" Style="{StaticResource AuraCaptionTextStyle}" />
+                                <TextBlock Text="{x:Bind ViewModel.Device.SummaryPlaylistsDisplay, Mode=OneWay}" Style="{StaticResource AuraSectionTitleTextStyle}" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="{x:Bind res:AppStrings.ActionOpenInExplorer}"
+                            Command="{x:Bind ViewModel.OpenInExplorerCommand}" />
+                    <Button Content="{x:Bind res:AppStrings.ActionEject}"
+                            Command="{x:Bind ViewModel.EjectCommand}" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- ============ Sin iPod / identificación ambigua ============
+                 Un solo bloque para los dos estados vacíos: cambia el mensaje,
+                 no la estructura. En el caso ambiguo NUNCA se listan los
+                 discos candidatos. -->
+            <Border Grid.Row="1"
+                    Style="{StaticResource AuraCardStyle}"
+                    Padding="32"
+                    Visibility="{x:Bind ViewModel.HasDevice, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}">
+                <StackPanel Spacing="12" HorizontalAlignment="Center" MaxWidth="440">
+                    <FontIcon Glyph="&#xE946;"
+                              FontSize="28"
+                              Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                               Style="{StaticResource AuraSecondaryTextStyle}"
+                               TextAlignment="Center" />
+                    <TextBlock Text="{x:Bind res:AppStrings.LibraryAvailableWithoutDevice}"
+                               Style="{StaticResource AuraCaptionTextStyle}"
+                               TextAlignment="Center"
+                               Visibility="{x:Bind ViewModel.IsAmbiguous, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}" />
+                    <Button Content="{x:Bind res:AppStrings.ActionRefresh}"
+                            Command="{x:Bind ViewModel.RefreshCommand}"
+                            HorizontalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <!-- ================== Sincronización (R3-2, R3-3) ==================
+                 Vive acá y no en una sección aparte, igual que en macOS
+                 (`DeviceActivityBar` dentro de General): se decide
+                 sincronizar mirando el estado del iPod y lo que ocupa, así
+                 que la acción va junto a esos datos. Disparar la sync desde
+                 Música/Video/Fotos sigue siendo posible con «Sincronizar la
+                 selección» del menú contextual (§4.5).
+
+                 **Siempre visible, con o sin iPod** (R3-3): es la única entrada
+                 a la sincronización desde que dejó de ser una sección, y sin
+                 aparato tiene que poder decir "conecta tu iPod para
+                 sincronizar" en vez de desaparecer. -->
+            <Border Grid.Row="2" Style="{StaticResource AuraCardStyle}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Sincronización" Style="{StaticResource AuraSectionTitleTextStyle}" />
+
+                        <!-- Divergencia conocida contra macOS: allá la sync es
+                             siempre de todo, acá se puede acotar por tipo. Se
+                             conserva porque es capacidad del usuario, no un
+                             adorno del port. -->
+                        <StackPanel Orientation="Horizontal" Spacing="20">
+                            <CheckBox Content="{x:Bind res:AppStrings.LabelMusic}" IsChecked="{x:Bind Sync.SyncMusic, Mode=TwoWay}" />
+                            <CheckBox Content="{x:Bind res:AppStrings.LabelVideo}" IsChecked="{x:Bind Sync.SyncVideos, Mode=TwoWay}" />
+                            <CheckBox Content="{x:Bind res:AppStrings.LabelPhotos}" IsChecked="{x:Bind Sync.SyncImages, Mode=TwoWay}" />
+                        </StackPanel>
+
+                        <!-- Alcance (R3-4). "Solo la selección" queda apagado
+                             sin nada seleccionado, y se apaga solo si la
+                             selección se vacía: un alcance que apunta a nada no
+                             es un estado en el que dejar al usuario. -->
+                        <StackPanel Orientation="Horizontal" Spacing="16">
+                            <RadioButton Content="Toda la biblioteca"
+                                         IsChecked="{x:Bind Sync.ScopeIsSelection, Mode=TwoWay, Converter={StaticResource InvertBool}}"
+                                         GroupName="syncScope" />
+                            <RadioButton Content="{x:Bind Sync.SelectionScopeLabel, Mode=OneWay}"
+                                         IsChecked="{x:Bind Sync.ScopeIsSelection, Mode=TwoWay}"
+                                         IsEnabled="{x:Bind Sync.HasSelection, Mode=OneWay}"
+                                         GroupName="syncScope" />
+                        </StackPanel>
+
+                        <TextBlock Text="{x:Bind Sync.PendingLabel, Mode=OneWay}"
+                                   Style="{StaticResource AuraCaptionTextStyle}" />
+
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="Revisar cambios" Command="{x:Bind Sync.PreviewCommand}"
+                                    IsEnabled="{x:Bind Sync.IsBusy, Mode=OneWay, Converter={StaticResource InvertBool}}"
+                                    ToolTipService.ToolTip="Calcula qué se copiaría. No escribe nada en el iPod." />
+                            <!-- El botón nunca lleva a un camino que falla: sin
+                                 iPod con Aura, o con el alcance en una selección
+                                 vacía, no se puede sincronizar y se ve. -->
+                            <Button Content="Sincronizar" Command="{x:Bind Sync.SyncCommand}"
+                                    Style="{StaticResource AuraPrimaryButtonStyle}"
+                                    IsEnabled="{x:Bind Sync.CanSync, Mode=OneWay}" />
+                            <Button Content="Cancelar" Command="{x:Bind Sync.CancelCommand}"
+                                    IsEnabled="{x:Bind Sync.IsBusy, Mode=OneWay}" />
+                        </StackPanel>
+
+                        <TextBlock Text="{x:Bind Sync.StatusMessage, Mode=OneWay}" TextWrapping="Wrap" />
+
+                        <ProgressBar Value="{x:Bind Sync.ProgressValue, Mode=OneWay}"
+                                     IsIndeterminate="{x:Bind Sync.IsIndeterminate, Mode=OneWay}"
+                                     Visibility="{x:Bind Sync.IsBusy, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+
+                        <TextBlock Text="{x:Bind Sync.CurrentFile, Mode=OneWay}"
+                                   Style="{StaticResource AuraCaptionTextStyle}"
+                                   TextTrimming="CharacterEllipsis"
+                                   Visibility="{x:Bind Sync.HasCurrentFile, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+
+                        <TextBlock Text="{x:Bind Sync.FailureMessage, Mode=OneWay}" TextWrapping="Wrap"
+                                   Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                   Visibility="{x:Bind Sync.HasFailures, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+
+                        <Grid ColumnDefinitions="*,*,*" Margin="0,4,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Por copiar" Style="{StaticResource AuraCaptionTextStyle}" />
+                                <TextBlock Text="{x:Bind Sync.CopiedCount, Mode=OneWay}" Style="{StaticResource AuraSectionTitleTextStyle}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Ya al día" Style="{StaticResource AuraCaptionTextStyle}" />
+                                <TextBlock Text="{x:Bind Sync.SkippedCount, Mode=OneWay}" Style="{StaticResource AuraSectionTitleTextStyle}" />
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="Reubicados" Style="{StaticResource AuraCaptionTextStyle}" />
+                                <TextBlock Text="{x:Bind Sync.SweptCount, Mode=OneWay}" Style="{StaticResource AuraSectionTitleTextStyle}" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Lo único que Studio podría BORRAR del iPod, y borrar
+                             es lo único que no se deshace: por eso se ofrece
+                             como una hoja aparte, con su lista y su casilla por
+                             archivo, y nunca como un efecto de sincronizar.
+                             Mismo tratamiento que la hoja de macOS. -->
+                        <HyperlinkButton Content="{x:Bind Sync.OrphanHeader, Mode=OneWay}"
+                                         Click="Orphans_Click"
+                                         Visibility="{x:Bind Sync.HasOrphans, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+                    </StackPanel>
+                </Border>
+
+            <!-- Estado, siempre visible al pie -->
+            <Border Grid.Row="3"
+                    Style="{StaticResource AuraSubtleCardStyle}"
+                    Visibility="{x:Bind ViewModel.HasDevice, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                           Style="{StaticResource AuraSecondaryTextStyle}" />
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</Page>

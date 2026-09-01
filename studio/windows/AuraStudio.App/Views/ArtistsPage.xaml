@@ -1,0 +1,234 @@
+<Page
+    x:Class="AuraStudio.App.Views.ArtistsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:AuraStudio.App.Converters"
+    xmlns:vm="using:AuraStudio.App.ViewModels">
+
+    <Page.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+        <conv:InvertBoolConverter x:Key="InvertBool" />
+    </Page.Resources>
+
+    <!--
+        Maestro-detalle, como la vista de macOS (R2-6): a la izquierda la lista
+        de artistas con avatar; a la derecha la ficha del seleccionado con sus
+        álbumes y las canciones de cada uno.
+
+        La selección es la NATIVA del ListView (Ctrl y Mayús). Es el equivalente
+        exacto de la `List(selection:)` de macOS, y por eso esta vista no lleva
+        las casillas de las cuadrículas.
+    -->
+    <Grid RowDefinitions="*,Auto">
+        <Grid ColumnDefinitions="280,Auto,*">
+
+            <!-- ===================== Maestro ===================== -->
+            <Grid RowDefinitions="Auto,*" Padding="12,10,12,0">
+                <Grid ColumnSpacing="8" ColumnDefinitions="*,Auto">
+                    <TextBox PlaceholderText="Buscar artistas"
+                             Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             AutomationProperties.Name="Buscar artistas" />
+                    <Button Grid.Column="1" Click="FetchPhotos_Click"
+                            IsEnabled="{x:Bind ViewModel.Library.IsEnriching, Mode=OneWay, Converter={StaticResource InvertBool}}"
+                            ToolTipService.ToolTip="Buscar las fotos de los artistas en línea (fanart.tv / Deezer)">
+                        <FontIcon Glyph="&#xE8D4;" FontSize="14" />
+                    </Button>
+                </Grid>
+
+                <!-- Vacío: se dice qué falta, no se deja un panel en blanco. -->
+                <StackPanel Grid.Row="1" Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Center"
+                            Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                    <FontIcon Glyph="&#xE720;" FontSize="32"
+                              Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                    <TextBlock Text="Todavía no hay música en la biblioteca."
+                               Style="{StaticResource AuraSecondaryTextStyle}"
+                               TextWrapping="Wrap" TextAlignment="Center" />
+                </StackPanel>
+
+                <ListView Grid.Row="1"
+                          x:Name="ArtistList"
+                          Margin="-12,8,-12,0"
+                          ItemsSource="{x:Bind ViewModel.VisibleArtists, Mode=OneWay}"
+                          SelectionMode="Extended"
+                          SelectionChanged="ArtistList_SelectionChanged"
+                          ContextRequested="ArtistList_ContextRequested"
+                          Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ArtistRow">
+                            <!-- Sin esto, un lector de pantalla anuncia la fila
+                                 como el nombre de la clase del modelo. -->
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Padding="0,4"
+                                  AutomationProperties.Name="{x:Bind Name}">
+                                <Grid Width="40" Height="40" CornerRadius="20"
+                                      Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+                                    <TextBlock Text="{x:Bind Initial}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                                               Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                               Visibility="{x:Bind HasAvatar, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}" />
+                                    <Image Stretch="UniformToFill"
+                                           Visibility="{x:Bind HasAvatar, Converter={StaticResource BoolToVisibility}}"
+                                           Loaded="Avatar_Loaded" Tag="{x:Bind Id}" />
+                                </Grid>
+                                <TextBlock Grid.Column="1" Text="{x:Bind Name}"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" MaxLines="1" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+
+            <Border Grid.Column="1" Width="1"
+                    Background="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+            <!-- ===================== Detalle ===================== -->
+            <Grid Grid.Column="2">
+
+                <!-- Sin selección -->
+                <StackPanel Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Center"
+                            Visibility="{x:Bind ViewModel.ShowsEmptyDetail, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                    <FontIcon Glyph="&#xE720;" FontSize="36"
+                              Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                    <TextBlock Text="Elige un artista de la lista."
+                               Style="{StaticResource AuraSecondaryTextStyle}" />
+                </StackPanel>
+
+                <!-- Varios seleccionados: las mismas acciones del menú, a la
+                     vista, sin tener que abrirlo. -->
+                <StackPanel Spacing="16" VerticalAlignment="Center" HorizontalAlignment="Center"
+                            Visibility="{x:Bind ViewModel.HasMultipleSelection, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                    <FontIcon Glyph="&#xE720;" FontSize="36"
+                              Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                    <TextBlock Text="{x:Bind ViewModel.SelectionSummary, Mode=OneWay}"
+                               Style="{StaticResource AuraSectionTitleTextStyle}"
+                               HorizontalAlignment="Center" />
+                    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                        <Button Content="{x:Bind ViewModel.FavoriteButtonText, Mode=OneWay}" Click="BulkFavorite_Click" />
+                        <Button Content="Buscar información en línea" Click="BulkEnrich_Click" />
+                        <Button Content="Buscar fotos" Click="FetchPhotos_Click" />
+                        <Button Content="Mostrar en el Explorador" Click="BulkReveal_Click" />
+                        <Button Content="Eliminar" Click="BulkDelete_Click" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Un artista: su ficha -->
+                <ScrollViewer Visibility="{x:Bind ViewModel.HasSingleSelection, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel Spacing="28" Padding="24">
+
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="20">
+                            <Grid Width="96" Height="96" CornerRadius="48"
+                                  Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+                                <TextBlock x:Name="HeaderInitial" FontSize="36"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                <Image x:Name="HeaderAvatar" Stretch="UniformToFill" />
+                            </Grid>
+
+                            <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+                                <TextBlock x:Name="HeaderName"
+                                           Style="{StaticResource AuraPageTitleTextStyle}"
+                                           TextTrimming="CharacterEllipsis" MaxLines="2" />
+                                <TextBlock x:Name="HeaderSummary"
+                                           Style="{StaticResource AuraSecondaryTextStyle}" />
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                                    <Button Content="Buscar información en línea" Click="ArtistEnrich_Click" />
+                                    <Button Click="ArtistMenu_Click"
+                                            ToolTipService.ToolTip="Más acciones">
+                                        <FontIcon Glyph="&#xE712;" FontSize="14" />
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.SelectedAlbums, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ArtistAlbumRow">
+                                    <StackPanel Spacing="12" Margin="0,0,0,28">
+                                        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+                                            <Grid Width="128" Height="128" CornerRadius="6"
+                                                  Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+                                                <Image Stretch="UniformToFill"
+                                                       Visibility="{x:Bind HasCover, Converter={StaticResource BoolToVisibility}}"
+                                                       Loaded="AlbumCover_Loaded" Tag="{x:Bind Album.Id}" />
+                                            </Grid>
+
+                                            <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Top">
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <TextBlock Text="{x:Bind Title}"
+                                                               Style="{StaticResource AuraSectionTitleTextStyle}"
+                                                               TextTrimming="CharacterEllipsis" MaxLines="2" />
+                                                    <FontIcon Glyph="&#xE735;" FontSize="14"
+                                                              Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+                                                              Visibility="{x:Bind IsFavorite, Converter={StaticResource BoolToVisibility}}" />
+                                                </StackPanel>
+                                                <TextBlock Text="{x:Bind Detail}"
+                                                           Style="{StaticResource AuraSecondaryTextStyle}" />
+                                                <TextBlock Text="{x:Bind CountText}"
+                                                           Style="{StaticResource AuraCaptionTextStyle}" />
+                                            </StackPanel>
+
+                                            <Button Grid.Column="2" VerticalAlignment="Top"
+                                                    Click="AlbumMenu_Click" Tag="{x:Bind Album.Id}"
+                                                    ToolTipService.ToolTip="Más acciones">
+                                                <FontIcon Glyph="&#xE712;" FontSize="14" />
+                                            </Button>
+                                        </Grid>
+
+                                        <ItemsControl ItemsSource="{x:Bind Tracks}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:ArtistTrackRow">
+                                                    <Grid ColumnDefinitions="24,*,Auto,Auto" ColumnSpacing="12"
+                                                          Padding="0,8"
+                                                          ContextRequested="Track_ContextRequested">
+                                                        <TextBlock Text="{x:Bind Position}"
+                                                                   HorizontalAlignment="Right"
+                                                                   Style="{StaticResource AuraCaptionTextStyle}" />
+
+                                                        <StackPanel Grid.Column="1" Spacing="2">
+                                                            <TextBlock Text="{x:Bind Title}"
+                                                                       TextTrimming="CharacterEllipsis" MaxLines="1" />
+                                                            <!-- Solo cuando el crédito de la pista difiere del
+                                                                 artista del grupo: es donde se lee lo que la
+                                                                 homologación juntó. -->
+                                                            <TextBlock Text="{x:Bind TrackArtist}"
+                                                                       Style="{StaticResource AuraCaptionTextStyle}"
+                                                                       TextTrimming="CharacterEllipsis" MaxLines="1"
+                                                                       Visibility="{x:Bind ShowsArtist, Converter={StaticResource BoolToVisibility}}" />
+                                                        </StackPanel>
+
+                                                        <TextBlock Grid.Column="2" Text="{x:Bind DurationText}"
+                                                                   Style="{StaticResource AuraCaptionTextStyle}"
+                                                                   VerticalAlignment="Center" />
+
+                                                        <Button Grid.Column="3" Click="TrackFavorite_Click"
+                                                                Background="Transparent" BorderThickness="0"
+                                                                Padding="6"
+                                                                AutomationProperties.Name="{x:Bind FavoriteLabel, Mode=OneWay}">
+                                                            <FontIcon FontSize="14"
+                                                                      Glyph="{x:Bind FavoriteGlyph, Mode=OneWay}" />
+                                                        </Button>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
+        <Border Grid.Row="1" BorderThickness="0,1,0,0"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                Padding="12,8">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="{x:Bind ViewModel.StatusText, Mode=OneWay}"
+                           Style="{StaticResource AuraCaptionTextStyle}" />
+                <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.Library.StatusMessage, Mode=OneWay}"
+                           Style="{StaticResource AuraCaptionTextStyle}" />
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

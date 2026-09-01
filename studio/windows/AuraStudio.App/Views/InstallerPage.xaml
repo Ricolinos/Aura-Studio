@@ -1,0 +1,350 @@
+<Page
+    x:Class="AuraStudio.App.Views.InstallerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:AuraStudio.App.Converters"
+    xmlns:res="using:AuraStudio.App.Resources"
+    xmlns:core="using:AuraStudio.Core">
+
+    <Page.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+        <conv:InvertBoolConverter x:Key="InvertBool" />
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="{StaticResource AuraPageMargin}"
+                    MaxWidth="{StaticResource AuraContentMaxWidth}"
+                    HorizontalAlignment="Left"
+                    Spacing="16">
+
+            <StackPanel>
+                <TextBlock Text="{x:Bind res:AppStrings.InstallerTitle}"
+                           Style="{StaticResource AuraPageTitleTextStyle}" />
+                <TextBlock Text="{x:Bind res:AppStrings.InstallerSubtitle}"
+                           Style="{StaticResource AuraSecondaryTextStyle}" />
+            </StackPanel>
+
+            <!-- ============ Reconocimiento automático de DFU ============
+                 Solo pregunta. El ViewModel no la enciende si hay un flujo en
+                 curso (D-185: en macOS un disparo automático a mitad de una
+                 instalación lanzó un segundo instalador sobre el mismo
+                 volumen). -->
+            <Border Style="{StaticResource AuraCardStyle}"
+                    Visibility="{x:Bind ViewModel.DfuDetectedAwaitingChoice, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="{x:Bind res:AppStrings.InstallerDfuDetectedTitle}"
+                               Style="{StaticResource AuraSectionTitleTextStyle}" />
+                    <TextBlock Text="{x:Bind res:AppStrings.InstallerDfuDetectedDetail}"
+                               Style="{StaticResource AuraSecondaryTextStyle}" />
+
+                    <ComboBox MinWidth="240"
+                              Header="{x:Bind res:AppStrings.InstallerFamilyLabel}"
+                              ItemsSource="{x:Bind ViewModel.AvailableFamilies, Mode=OneWay}"
+                              SelectedItem="{x:Bind ViewModel.TargetFamily, Mode=TwoWay}"
+                              Visibility="{x:Bind ViewModel.HasAvailableFamilies, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate x:DataType="core:FirmwareFamily">
+                                <TextBlock Text="{x:Bind DisplayName}" />
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+
+                    <InfoBar IsOpen="{x:Bind ViewModel.HasAvailableFamilies, Mode=OneWay, Converter={StaticResource InvertBool}}"
+                             IsClosable="False" Severity="Warning"
+                             Message="{x:Bind res:AppStrings.InstallerDfuNoFamilies}" />
+
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="{x:Bind res:AppStrings.InstallerDfuDetectedInstall}"
+                                Command="{x:Bind ViewModel.AcceptDetectedDfuCommand}"
+                                Style="{StaticResource AuraPrimaryButtonStyle}"
+                                IsEnabled="{x:Bind ViewModel.HasAvailableFamilies, Mode=OneWay}" />
+                        <Button Content="{x:Bind res:AppStrings.InstallerDfuDetectedDismiss}"
+                                Command="{x:Bind ViewModel.DismissDetectedDfuCommand}" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- ============ Bienvenida ============ -->
+            <StackPanel Spacing="16"
+                        Visibility="{x:Bind ViewModel.IsWelcome, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                <Border Style="{StaticResource AuraCardStyle}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="{x:Bind res:AppStrings.InstallerWelcomeTitle}"
+                                   Style="{StaticResource AuraSectionTitleTextStyle}" />
+                        <TextBlock Text="{x:Bind res:AppStrings.InstallerWelcomeDetail}"
+                                   Style="{StaticResource AuraSecondaryTextStyle}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Lo irreversible se dice antes, no en una nota al pie. -->
+                <InfoBar IsOpen="True" IsClosable="False" Severity="Warning"
+                         Message="{x:Bind res:AppStrings.InstallerWelcomeWarning}" />
+
+                <Border Style="{StaticResource AuraCardStyle}">
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="{x:Bind res:AppStrings.InstallerFamilyLabel}"
+                                   Style="{StaticResource AuraCaptionTextStyle}" />
+                        <ComboBox MinWidth="240"
+                                  ItemsSource="{x:Bind ViewModel.Families}"
+                                  SelectedItem="{x:Bind ViewModel.TargetFamily, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="core:FirmwareFamily">
+                                    <TextBlock Text="{x:Bind DisplayName}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
+                </Border>
+
+                <Button Content="{x:Bind res:AppStrings.InstallerBegin}"
+                        Command="{x:Bind ViewModel.BeginCommand}"
+                        Style="{StaticResource AuraPrimaryButtonStyle}"
+                        HorizontalAlignment="Left" />
+            </StackPanel>
+
+            <!-- ============ Permisos (antes de cualquier diálogo del sistema) ============ -->
+            <StackPanel Spacing="16"
+                        Visibility="{x:Bind ViewModel.IsPermissions, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                <Border Style="{StaticResource AuraCardStyle}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="{x:Bind res:AppStrings.InstallerPermissionsTitle}"
+                                   Style="{StaticResource AuraSectionTitleTextStyle}" />
+                        <TextBlock Text="{x:Bind res:AppStrings.InstallerPermissionsDetail}"
+                                   Style="{StaticResource AuraSecondaryTextStyle}" />
+                    </StackPanel>
+                </Border>
+                <Button Content="{x:Bind res:AppStrings.InstallerPermissionsContinue}"
+                        Command="{x:Bind ViewModel.AcknowledgePermissionsCommand}"
+                        Style="{StaticResource AuraPrimaryButtonStyle}"
+                        HorizontalAlignment="Left" />
+            </StackPanel>
+
+            <!-- ============ Confirmación del dispositivo ============ -->
+            <StackPanel Spacing="16"
+                        Visibility="{x:Bind ViewModel.IsDetectDevice, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Text="{x:Bind res:AppStrings.InstallerDetectTitle}"
+                           Style="{StaticResource AuraSectionTitleTextStyle}" />
+                <TextBlock Text="{x:Bind res:AppStrings.InstallerDetectDetail}"
+                           Style="{StaticResource AuraSecondaryTextStyle}" />
+
+                <Border Style="{StaticResource AuraCardStyle}"
+                        Visibility="{x:Bind ViewModel.HasDevice, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                    <Grid RowSpacing="6" ColumnSpacing="16">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" MinWidth="150" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="{x:Bind res:AppStrings.LabelDevice}" Style="{StaticResource AuraSecondaryTextStyle}" />
+                        <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.DeviceName, Mode=OneWay}" Style="{StaticResource AuraSectionTitleTextStyle}" />
+
+                        <TextBlock Grid.Row="1" Text="{x:Bind res:AppStrings.LabelUnit}" Style="{StaticResource AuraSecondaryTextStyle}" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Bind ViewModel.DeviceVolume, Mode=OneWay}" />
+
+                        <TextBlock Grid.Row="2" Text="{x:Bind res:AppStrings.LabelCapacity}" Style="{StaticResource AuraSecondaryTextStyle}" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{x:Bind ViewModel.DeviceCapacity, Mode=OneWay}" />
+
+                        <TextBlock Grid.Row="3" Text="{x:Bind res:AppStrings.LabelBus}" Style="{StaticResource AuraSecondaryTextStyle}" />
+                        <TextBlock Grid.Row="3" Grid.Column="1" Text="{x:Bind ViewModel.DeviceBus, Mode=OneWay}" />
+
+                        <TextBlock Grid.Row="4" Text="{x:Bind res:AppStrings.LabelFirmware}" Style="{StaticResource AuraSecondaryTextStyle}" />
+                        <TextBlock Grid.Row="4" Grid.Column="1" Text="{x:Bind ViewModel.DeviceFirmware, Mode=OneWay}" />
+                    </Grid>
+                </Border>
+
+                <InfoBar IsOpen="{x:Bind ViewModel.HasDevice, Mode=OneWay, Converter={StaticResource InvertBool}}"
+                         IsClosable="False" Severity="Informational"
+                         Message="{x:Bind res:AppStrings.InstallerNoDevice}" />
+
+                <!-- ST-046/ST-056: instalar otra familia encima nunca pasa en
+                     silencio. La saliente se guarda entera y se puede volver. -->
+                <InfoBar IsOpen="{x:Bind ViewModel.IsFamilyChange, Mode=OneWay}"
+                         IsClosable="False" Severity="Warning"
+                         Message="{x:Bind ViewModel.FamilyChangeWarning, Mode=OneWay}" />
+
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="{x:Bind res:AppStrings.InstallerDryRun}"
+                            Command="{x:Bind ViewModel.DryRunFormatCommand}"
+                            Style="{StaticResource AuraPrimaryButtonStyle}"
+                            IsEnabled="{x:Bind ViewModel.HasDevice, Mode=OneWay}" />
+                    <Button Content="{x:Bind res:AppStrings.InstallerCopyFiles}"
+                            Command="{x:Bind ViewModel.CopyFilesCommand}"
+                            IsEnabled="{x:Bind ViewModel.HasDevice, Mode=OneWay}" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- ============ Preparación del disco ============ -->
+            <StackPanel Spacing="16"
+                        Visibility="{x:Bind ViewModel.IsPreparingDisk, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                <Border Style="{StaticResource AuraCardStyle}">
+                    <StackPanel Spacing="10">
+                        <!-- Que el ensayo no tocó nada se dice en el encabezado,
+                             no enterrado en el detalle. -->
+                        <TextBlock Text="{x:Bind res:AppStrings.InstallerDryRunHeading}"
+                                   Style="{StaticResource AuraSectionTitleTextStyle}"
+                                   Visibility="{x:Bind ViewModel.DryRunSucceeded, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+                        <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                                   Style="{StaticResource AuraSecondaryTextStyle}" />
+                        <TextBlock Text="{x:Bind ViewModel.DetailMessage, Mode=OneWay}"
+                                   Style="{StaticResource AuraSecondaryTextStyle}" />
+                        <ProgressBar IsIndeterminate="{x:Bind ViewModel.IsBusy, Mode=OneWay}"
+                                     Visibility="{x:Bind ViewModel.IsBusy, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Bloque destructivo, deliberadamente separado del resultado
+                     del ensayo y con su propio consentimiento.
+
+                     El ensayo NO es permiso: comprueba, no autoriza. Antes esto
+                     era un único botón con estilo de acento, justo donde había
+                     quedado el clic anterior — la forma exacta de un
+                     "Continuar" — y el dueño formateó dos veces creyendo que
+                     solo probaba el software. Por eso ahora: el disco se
+                     re-enuncia acá, hay una casilla que hay que marcar, el
+                     botón nombra el disco en vez de decir "formatear ahora", y
+                     NO lleva el estilo de acento: la acción destructiva no
+                     puede parecer el siguiente paso natural. -->
+                <Border Style="{StaticResource AuraCardStyle}"
+                        Visibility="{x:Bind ViewModel.DryRunSucceeded, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="{x:Bind res:AppStrings.InstallerFormatDangerHeading}"
+                                   Style="{StaticResource AuraSectionTitleTextStyle}" />
+                        <TextBlock Text="{x:Bind res:AppStrings.InstallerFormatDangerDetail}"
+                                   Style="{StaticResource AuraSecondaryTextStyle}" />
+
+                        <!-- El disco, otra vez y acá: en el momento del clic
+                             destructivo el usuario tiene que estar viendo sobre
+                             qué actúa, no recordarlo de la pantalla anterior. -->
+                        <Border Style="{StaticResource AuraSubtleCardStyle}">
+                            <TextBlock Text="{x:Bind ViewModel.FormatTargetDescription, Mode=OneWay}"
+                                       Style="{StaticResource AuraSectionTitleTextStyle}"
+                                       TextWrapping="Wrap" />
+                        </Border>
+
+                        <CheckBox IsChecked="{x:Bind ViewModel.FormatConfirmedByUser, Mode=TwoWay}"
+                                  Content="{x:Bind ViewModel.FormatConfirmText, Mode=OneWay}" />
+
+                        <Button Content="{x:Bind ViewModel.FormatButtonText, Mode=OneWay}"
+                                Command="{x:Bind ViewModel.FormatCommand}"
+                                IsEnabled="{x:Bind ViewModel.CanFormatNow, Mode=OneWay}"
+                                HorizontalAlignment="Left" />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- ============ DFU ============ -->
+            <StackPanel Spacing="16"
+                        Visibility="{x:Bind ViewModel.IsEnterDfu, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                <Border Style="{StaticResource AuraCardStyle}">
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="{x:Bind res:AppStrings.InstallerEnterDfuTitle}"
+                                   Style="{StaticResource AuraSectionTitleTextStyle}" />
+                        <!-- El "cuándo": el usuario tiene que saber que ESTE es
+                             el momento, no antes ni después. -->
+                        <TextBlock Text="{x:Bind res:AppStrings.InstallerEnterDfuWhen}"
+                                   Style="{StaticResource AuraSecondaryTextStyle}" />
+
+                        <StackPanel Spacing="8" Margin="0,4,0,0">
+                            <TextBlock Text="{x:Bind res:AppStrings.InstallerDfuStep1}" TextWrapping="Wrap" />
+                            <TextBlock Text="{x:Bind res:AppStrings.InstallerDfuStep2}" TextWrapping="Wrap" />
+                            <TextBlock Text="{x:Bind res:AppStrings.InstallerDfuStep3}" TextWrapping="Wrap" />
+                            <TextBlock Text="{x:Bind res:AppStrings.InstallerDfuStep4}" TextWrapping="Wrap" />
+                        </StackPanel>
+
+                        <HyperlinkButton Content="{x:Bind res:AppStrings.InstallerDfuGuideLink}"
+                                         NavigateUri="{x:Bind res:AppStrings.InstallerDfuGuideUrl}"
+                                         Padding="0" />
+                    </StackPanel>
+                </Border>
+
+                <!-- El error más común es soltar en cuanto la pantalla se apaga:
+                     se avisa aparte, no como una línea más de la lista. -->
+                <InfoBar IsOpen="True" IsClosable="False" Severity="Warning"
+                         Message="{x:Bind res:AppStrings.InstallerDfuTimingWarning}" />
+
+                <Border Style="{StaticResource AuraSubtleCardStyle}">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="{x:Bind res:AppStrings.DfuDriverHeading}"
+                                   Style="{StaticResource AuraCaptionTextStyle}" />
+                        <TextBlock Text="{x:Bind ViewModel.DriverStatusText, Mode=OneWay}"
+                                   Style="{StaticResource AuraSecondaryTextStyle}" />
+                    </StackPanel>
+                </Border>
+
+                <CheckBox Content="{x:Bind res:AppStrings.InstallerFlashConfirm}"
+                          IsChecked="{x:Bind ViewModel.FlashConfirmedByUser, Mode=TwoWay}" />
+
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="{x:Bind res:AppStrings.InstallerScanDfu}"
+                            Command="{x:Bind ViewModel.ScanDfuCommand}" />
+                    <Button Content="{x:Bind res:AppStrings.InstallerFlash}"
+                            Command="{x:Bind ViewModel.FlashCommand}"
+                            Style="{StaticResource AuraPrimaryButtonStyle}"
+                            IsEnabled="{x:Bind ViewModel.FlashConfirmedByUser, Mode=OneWay}" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- ============ En curso: copiar, grabar, esperar ============
+                 Solo para los pasos que NO traen su propio progreso: la
+                 preparación del disco ya lo muestra en su panel, y tenerlas las
+                 dos duplicaba el mensaje y la barra en pantalla. -->
+            <Border Style="{StaticResource AuraCardStyle}"
+                    Visibility="{x:Bind ViewModel.ShowGenericProgress, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                               Style="{StaticResource AuraSectionTitleTextStyle}" />
+                    <ProgressBar IsIndeterminate="True" />
+                    <TextBlock Text="{x:Bind ViewModel.DetailMessage, Mode=OneWay}"
+                               Style="{StaticResource AuraCaptionTextStyle}"
+                               TextTrimming="CharacterEllipsis" />
+                    <Button Content="Cancelar"
+                            Command="{x:Bind ViewModel.CancelCommand}"
+                            IsEnabled="{x:Bind ViewModel.IsNonCancelable, Mode=OneWay, Converter={StaticResource InvertBool}}"
+                            HorizontalAlignment="Left" />
+                </StackPanel>
+            </Border>
+
+            <!-- ============ Terminado / falló ============ -->
+            <InfoBar IsOpen="{x:Bind ViewModel.IsDone, Mode=OneWay}"
+                     IsClosable="False" Severity="Success"
+                     Title="{x:Bind res:AppStrings.InstallerDoneTitle}"
+                     Message="{x:Bind res:AppStrings.InstallerDoneDetail}" />
+
+            <InfoBar IsOpen="{x:Bind ViewModel.IsFailed, Mode=OneWay}"
+                     IsClosable="False" Severity="Error"
+                     Title="{x:Bind res:AppStrings.InstallerFailedTitle}"
+                     Message="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
+
+            <!-- Bitácora de la operación privilegiada: lo que de verdad hizo. -->
+            <Border Style="{StaticResource AuraSubtleCardStyle}"
+                    Visibility="{x:Bind ViewModel.HasPrivilegedLog, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="{x:Bind res:AppStrings.InstallerPrivilegedLogHeading}"
+                               Style="{StaticResource AuraCaptionTextStyle}" />
+                    <ItemsControl ItemsSource="{x:Bind ViewModel.PrivilegedLog, Mode=OneWay}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <TextBlock Text="{x:Bind}"
+                                           Style="{StaticResource AuraCaptionTextStyle}"
+                                           IsTextSelectionEnabled="True" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <Button Content="{x:Bind res:AppStrings.InstallerRestart}"
+                    Command="{x:Bind ViewModel.RestartCommand}"
+                    HorizontalAlignment="Left"
+                    Visibility="{x:Bind ViewModel.IsWelcome, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}" />
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

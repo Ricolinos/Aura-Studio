@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Medición de la biblioteca con una colección grande. NO está en
+       AuraStudio.Windows.slnx a propósito: no es parte de la app y no es una
+       prueba —no afirma nada, mide— así que no puede vivir en
+       AuraStudio.Core.Tests, donde todo tiene que correr en segundos.
+
+       Por qué existe: el dueño tiene ~1000 álbumes y el port se escribió
+       contra bibliotecas de fixtures de doce canciones. Lo que se mide acá es
+       lo que se hace en cada arranque y en cada cambio de sección: leer el
+       catálogo, agrupar por álbum y por artista, y armar las filas de la tabla.
+       El comando está en Program.cs. -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
+    <RootNamespace>AuraStudio.Tools.LibraryPerfCheck</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AuraStudio.Core\AuraStudio.Core.csproj" />
+  </ItemGroup>
+
+</Project>

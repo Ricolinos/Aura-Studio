@@ -1,0 +1,76 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+   <OutputType>WinExe</OutputType>
+   <!-- La versión del TFM = SDK de Windows instalado con el que se compila
+        (esta VM solo tiene 10.0.26100). El mínimo soportado en runtime sigue
+        siendo 10.0.19041 (Windows 10 2004), como pide D4 del plan. -->
+   <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+   <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+   <RootNamespace>AuraStudio.App</RootNamespace>
+   <Platforms>x64;ARM64</Platforms>
+   <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
+   <UseWinUI>true</UseWinUI>
+   <!-- CommunityToolkit.Mvvm 8.4 solo genera [ObservableProperty] sobre
+        propiedades parciales (MVVMTK0045) con LangVersion preview. -->
+   <LangVersion>preview</LangVersion>
+   <Nullable>enable</Nullable>
+   <ImplicitUsings>enable</ImplicitUsings>
+   <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+   <WindowsPackageType>None</WindowsPackageType>
+   <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+   <!-- Punto de entrada propio (Program.cs): hace falta para mirar los
+        argumentos antes de arrancar la interfaz — el proceso que se relanza
+        elevado para una operación privilegiada no abre ninguna ventana. -->
+   <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+   <!-- Icono del .exe (lo que muestra el Explorador). Lo genera
+        scripts\Make-Icon.ps1 desde el master del dueño; ver ese script. -->
+   <ApplicationIcon>Assets\AuraStudio.ico</ApplicationIcon>
+   <!-- Sin esta línea el `app.manifest` queda en el repo pero NUNCA se embebe
+        en el .exe, y la app arranca sin conciencia de DPI: en un monitor al
+        200% Windows le virtualiza las coordenadas, le escala el mapa de bits
+        (todo se ve suave) y —lo que se sintió como bug— la rueda del mouse
+        deja de llegarle por completo. El SDK no toma `app.manifest` por
+        convención; hay que nombrarlo. -->
+   <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.4.0" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4654" />
+    <!-- WMI (Win32_DiskDrive / Win32_LogicalDisk) para la detección real del
+         iPod por USB: ver Platform\WmiDiskEnumerator.cs. No viene en el BCL. -->
+    <PackageReference Include="System.Management" Version="10.0.11" />
+    <!-- Consulta (solo lectura) del servicio de dispositivos móviles de Apple:
+         mks5lboot.exe habla con el iPod en DFU por el driver de Apple, y ese
+         servicio puede quedarse con el USB durante el flasheo. Tampoco viene
+         en el BCL. -->
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AuraStudio.Core\AuraStudio.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Artefactos del firmware junto al ejecutable: es donde los busca
+         FirmwareArtifacts.DirectoryFor (AppContext.BaseDirectory\artifacts).
+         El directorio lo puebla scripts\FirmwareFetch.ps1 desde el Release
+         fijado en FIRMWARE_VERSION (contrato §A); acá solo se copian. Sin esta
+         regla la app compilada no encontraba nada y el instalador fallaba con
+         "faltan los archivos del firmware" incluso teniéndolos en el repo. -->
+    <None Include="..\artifacts\**\*" LinkBase="artifacts" CopyToOutputDirectory="PreserveNewest" />
+    <!-- El mismo .ico junto al ejecutable: AppWindow.SetIcon lo carga por ruta
+         en runtime para la barra de título y la barra de tareas. -->
+    <Content Include="Assets\AuraStudio.ico" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <PublishTrimmed>false</PublishTrimmed>
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+  </PropertyGroup>
+
+</Project>

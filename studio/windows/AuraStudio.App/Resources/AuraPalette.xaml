@@ -1,0 +1,70 @@
+<!--
+    Paleta de marca de Aura — transcripción de
+    `studio/AuraStudio/Sources/AuraStudio/Generated/AuraPalette.swift`, que a su
+    vez lo genera `design-system/generate.py` del firmware desde `tokens.json`.
+    Misma fuente de verdad que `apple2026_tokens.h`: **estos valores no se
+    inventan ni se ajustan a ojo acá**.
+
+    Conversión aplicada: cada canal 0…1 del Swift × 255, redondeado
+    (p. ej. accent claro 1.0000/0.1765/0.3333 → #FF2D55).
+
+    Al mover `FIRMWARE_VERSION` se vuelve a transcribir este archivo completo,
+    igual que se reemplaza entero `AuraPalette.swift` en la app de macOS.
+    (Lo limpio sería una salida XAML propia en el generador del firmware, al
+    lado de la de Swift; eso vive en el otro repositorio y no se toca desde acá.)
+
+    Tokens de MARCA. El acento de los controles interactivos NO sale de acá:
+    es el del sistema (`AccentFillColorDefaultBrush`), como manda Fluent 2 y
+    pide el principio 6 del plan. `AuraBrandAccentBrush` es para los momentos
+    de identidad de la app, no para pintar cada botón.
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.ThemeDictionaries>
+
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="AuraShellBackgroundBrush" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="AuraTextPrimaryBrush"     Color="#000000" />
+            <SolidColorBrush x:Key="AuraTextSecondaryBrush"   Color="#6E6E73" />
+            <SolidColorBrush x:Key="AuraTextTertiaryBrush"    Color="#3C3C43" />
+            <SolidColorBrush x:Key="AuraBrandAccentBrush"     Color="#FF2D55" />
+            <SolidColorBrush x:Key="AuraShellRailBrush"       Color="#C6C6C8" />
+            <SolidColorBrush x:Key="AuraProgressFillBrush"    Color="#3C3C43" />
+            <SolidColorBrush x:Key="AuraProgressTrackBrush"   Color="#E5E5EA" />
+            <SolidColorBrush x:Key="AuraSelectionFillBrush"   Color="#E5E5EA" />
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Dark">
+            <SolidColorBrush x:Key="AuraShellBackgroundBrush" Color="#1C1C1E" />
+            <SolidColorBrush x:Key="AuraTextPrimaryBrush"     Color="#FFFFFF" />
+            <SolidColorBrush x:Key="AuraTextSecondaryBrush"   Color="#98989D" />
+            <SolidColorBrush x:Key="AuraTextTertiaryBrush"    Color="#C7C7CC" />
+            <SolidColorBrush x:Key="AuraBrandAccentBrush"     Color="#FF456C" />
+            <SolidColorBrush x:Key="AuraShellRailBrush"       Color="#3A3A3C" />
+            <SolidColorBrush x:Key="AuraProgressFillBrush"    Color="#E5E5EA" />
+            <SolidColorBrush x:Key="AuraProgressTrackBrush"   Color="#48484A" />
+            <SolidColorBrush x:Key="AuraSelectionFillBrush"   Color="#2C2C2E" />
+        </ResourceDictionary>
+
+        <!--
+            Contraste alto: la paleta de marca se retira por completo y manda
+            el tema del usuario. Un tema de contraste alto existe justamente
+            para que ninguna app imponga sus colores.
+        -->
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="AuraShellBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="AuraTextPrimaryBrush"     Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AuraTextSecondaryBrush"   Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AuraTextTertiaryBrush"    Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AuraBrandAccentBrush"     Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="AuraShellRailBrush"       Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="AuraProgressFillBrush"    Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="AuraProgressTrackBrush"   Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="AuraSelectionFillBrush"   Color="{ThemeResource SystemColorHighlightColor}" />
+        </ResourceDictionary>
+
+    </ResourceDictionary.ThemeDictionaries>
+
+</ResourceDictionary>

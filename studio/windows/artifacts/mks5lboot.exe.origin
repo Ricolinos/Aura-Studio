@@ -1,0 +1,14 @@
+﻿# Procedencia del mks5lboot.exe de Windows.
+#
+# El Release del firmware publica `mks5lboot` (binario de Unix) y su hash en
+# checksums.txt; Windows necesita un .exe, que hoy NO viene del Release. Este
+# archivo fija exactamente qué binario acepta ejecutar Aura Studio: detecta que
+# lo reemplacen o se corrompa, pero NO acredita de qué fuente salió.
+#
+# `tag` es lo que el propio binario reporta al ejecutarlo sin argumentos
+# (`mks5lboot Version ...`): un git describe del arbol del firmware con el que
+# se compilo. La `M` significa que ese arbol tenia cambios sin commitear, asi
+# que no corresponde a ningun tag publicado -- ver la decision abierta en
+# DECISIONS.md y el punto correspondiente de ESTADO-PORT.md.
+sha256=4b150cc256dd870cbe39068bbb83029f877e760e344b26a78afbaa1996c64de1
+tag=fdf5be4e8fM-260831

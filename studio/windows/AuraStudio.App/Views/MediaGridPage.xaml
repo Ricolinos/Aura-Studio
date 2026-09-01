@@ -1,0 +1,143 @@
+<Page
+    x:Class="AuraStudio.App.Views.MediaGridPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:AuraStudio.App.Converters"
+    xmlns:res="using:AuraStudio.App.Resources"
+    xmlns:vm="using:AuraStudio.App.ViewModels"
+    AllowDrop="True"
+    DragOver="Page_DragOver"
+    Drop="Page_Drop"
+    KeyDown="Page_KeyDown">
+
+    <Page.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+        <conv:NotNullToBoolConverter x:Key="NotNullToBool" />
+        <conv:InvertBoolConverter x:Key="InvertBool" />
+        <conv:BoolToOpacityConverter x:Key="BoolToOpacity" />
+    </Page.Resources>
+
+    <Grid Margin="{StaticResource AuraPageMargin}" RowDefinitions="Auto,Auto,*,Auto">
+
+        <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock Text="{x:Bind ViewModel.Title, Mode=OneWay}"
+                           Style="{StaticResource AuraPageTitleTextStyle}" />
+                <TextBlock Text="{x:Bind ViewModel.Subtitle, Mode=OneWay}"
+                           Style="{StaticResource AuraSecondaryTextStyle}"
+                           TextWrapping="Wrap" MaxWidth="620" HorizontalAlignment="Left" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <Button Content="{x:Bind res:AppStrings.LibraryAddFiles}" Click="AddFiles_Click" />
+                <Button Content="{x:Bind res:AppStrings.LibraryAddFolder}" Click="AddFolder_Click" />
+
+                <Button Content="Buscar pósters" Click="VideoPosters_Click"
+                        Visibility="{x:Bind ViewModel.ShowsVideoPosterAction, Converter={StaticResource BoolToVisibility}}"
+                        IsEnabled="{x:Bind ViewModel.Library.IsEnriching, Mode=OneWay, Converter={StaticResource InvertBool}}"
+                        ToolTipService.ToolTip="Descarga los pósters que falten. Viajan pegados a su video en la próxima sincronización." />
+
+            </StackPanel>
+        </Grid>
+
+        <InfoBar Grid.Row="1"
+                 IsOpen="{x:Bind ViewModel.Library.LastDropMessage, Mode=OneWay, Converter={StaticResource NotNullToBool}}"
+                 Message="{x:Bind ViewModel.Library.LastDropMessage, Mode=OneWay}"
+                 Severity="Informational"
+                 Margin="0,0,0,12" />
+
+        <!-- Un clic selecciona, dos abren (ST-103, y es lo que hace cualquier
+             cuadrícula del sistema). La selección la lleva el modelo, no el
+             GridView: así la casilla y el clic pueden significar cosas
+             distintas sin pelearse con la selección propia del control. -->
+        <GridView Grid.Row="2"
+                  x:Name="CardsView"
+                  ItemsSource="{x:Bind ViewModel.Cards, Mode=OneWay}"
+                  IsItemClickEnabled="True"
+                  ItemClick="Cards_ItemClick"
+                  ContextRequested="Cards_ContextRequested"
+                  Tapped="Cards_Tapped"
+                  SelectionMode="None">
+            <GridView.ItemTemplate>
+                <DataTemplate x:DataType="vm:MediaCard">
+                    <StackPanel Width="168" Margin="0,0,12,16" Spacing="6"
+                                AutomationProperties.Name="{x:Bind Title}"
+                                DoubleTapped="Card_DoubleTapped"
+                                PointerEntered="Card_PointerEntered"
+                                PointerExited="Card_PointerExited">
+                        <Grid Width="152" Height="152" CornerRadius="6"
+                              Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+                            <!-- Sin imagen no se deja un cuadro vacío: la
+                                 inicial dice de qué tarjeta se trata. -->
+                            <TextBlock Text="{x:Bind Initial}"
+                                       FontSize="44"
+                                       Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Visibility="{x:Bind HasCover, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}" />
+                            <Image Stretch="UniformToFill"
+                                   Visibility="{x:Bind HasCover, Converter={StaticResource BoolToVisibility}}"
+                                   Loaded="Cover_Loaded"
+                                   Tag="{x:Bind Id}" />
+
+                            <!-- Marca de seleccionado: va encima de la portada,
+                                 así que no puede depender del contraste con la
+                                 imagen. -->
+                            <Border BorderThickness="3" CornerRadius="6"
+                                    BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                                    Visibility="{x:Bind IsSelected, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+
+                            <!-- R2-1 (ST-120): sin nada seleccionado no se ve
+                                 ninguna casilla; al pasar el cursor aparece la
+                                 de esa tarjeta; con algo seleccionado, todas.
+                                 Se oculta con OPACIDAD y no con Visibility para
+                                 que la tarjeta no dé un salto al aparecer, y por
+                                 eso hay que apagarle el clic aparte: una casilla
+                                 invisible que igual se puede marcar es peor que
+                                 una visible. -->
+                            <Border HorizontalAlignment="Left" VerticalAlignment="Top"
+                                    Margin="6" CornerRadius="4" Padding="2"
+                                    Opacity="{x:Bind ShowsSelectionBox, Mode=OneWay, Converter={StaticResource BoolToOpacity}}"
+                                    IsHitTestVisible="{x:Bind ShowsSelectionBox, Mode=OneWay}"
+                                    Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
+                                <CheckBox MinWidth="0" Padding="0"
+                                          IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                                          Tapped="SelectionBox_Tapped"
+                                          AutomationProperties.Name="{x:Bind Title}" />
+                            </Border>
+                        </Grid>
+                        <TextBlock Text="{x:Bind Title}" FontWeight="SemiBold"
+                                   TextTrimming="CharacterEllipsis" MaxLines="1" />
+                        <TextBlock Text="{x:Bind Subtitle}"
+                                   Style="{StaticResource AuraCaptionTextStyle}"
+                                   TextTrimming="CharacterEllipsis" MaxLines="1" />
+                    </StackPanel>
+                </DataTemplate>
+            </GridView.ItemTemplate>
+        </GridView>
+
+        <StackPanel Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Spacing="8" MaxWidth="440"
+                    Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+            <TextBlock Text="{x:Bind ViewModel.DropHint, Mode=OneWay}"
+                       Style="{StaticResource AuraSecondaryTextStyle}"
+                       TextWrapping="Wrap" TextAlignment="Center" />
+            <TextBlock Text="{x:Bind ViewModel.SectionRule, Mode=OneWay}"
+                       Style="{StaticResource AuraCaptionTextStyle}"
+                       TextWrapping="Wrap" TextAlignment="Center" />
+        </StackPanel>
+
+        <Border Grid.Row="3" BorderThickness="0,1,0,0"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                Padding="12,8,12,0" Margin="0,8,0,0">
+            <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="12">
+                <TextBlock Text="{x:Bind ViewModel.CountText, Mode=OneWay}"
+                           Style="{StaticResource AuraCaptionTextStyle}" />
+                <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.SelectionText, Mode=OneWay}"
+                           Style="{StaticResource AuraCaptionTextStyle}" />
+                <TextBlock Grid.Column="2" HorizontalAlignment="Right"
+                           Text="{x:Bind ViewModel.Library.StatusMessage, Mode=OneWay}"
+                           Style="{StaticResource AuraCaptionTextStyle}" />
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

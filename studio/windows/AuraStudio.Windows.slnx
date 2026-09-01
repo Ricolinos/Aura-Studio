@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="ARM64" />
+  </Configurations>
+  <Folder Name="/tests/">
+    <Project Path="tests/AuraStudio.Core.Tests/AuraStudio.Core.Tests.csproj" />
+  </Folder>
+  <Project Path="AuraStudio.App/AuraStudio.App.csproj">
+    <Platform Solution="*|Any CPU" Project="x86" />
+    <Platform Solution="*|ARM64" Project="ARM64" />
+  </Project>
+  <Project Path="AuraStudio.Core/AuraStudio.Core.csproj" />
+</Solution>

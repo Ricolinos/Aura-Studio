@@ -1,0 +1,171 @@
+<Page
+    x:Class="AuraStudio.App.Views.ExtrasPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:AuraStudio.App.Converters"
+    xmlns:vm="using:AuraStudio.App.ViewModels">
+
+    <Page.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+        <conv:InvertBoolConverter x:Key="InvertBool" />
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="{StaticResource AuraPageMargin}"
+                    MaxWidth="{StaticResource AuraContentMaxWidth}"
+                    HorizontalAlignment="Left"
+                    Spacing="20">
+
+            <StackPanel>
+                <TextBlock Text="Extras" Style="{StaticResource AuraPageTitleTextStyle}" />
+                <TextBlock Text="Lo que el firmware ofrece más allá de la biblioteca"
+                           Style="{StaticResource AuraSecondaryTextStyle}" />
+            </StackPanel>
+
+            <!-- ==================== Firmware (ST-047) ====================
+                 Es una PREFERENCIA, no una acción: elegir acá no toca el iPod.
+                 El Instalador —con su flasheo y sus confirmaciones— es el único
+                 que escribe, y una actualización desde General ignora esto y
+                 reinstala la familia que el aparato ya tiene (ST-046). -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Firmware" Style="{StaticResource AuraSectionTitleTextStyle}" />
+                <TextBlock Text="{x:Bind vm:ExtrasViewModel.FirmwareIntro}"
+                           Style="{StaticResource AuraSecondaryTextStyle}" TextWrapping="Wrap" />
+
+                <ItemsControl ItemsSource="{x:Bind ViewModel.Cards}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:FirmwareChoiceCard">
+                            <!-- La tarjeta ENTERA selecciona, como en macOS: el
+                                 radio solo, en el borde derecho, es un blanco de
+                                 clic diminuto para una elección que ocupa un
+                                 renglón completo. -->
+                            <Border Style="{StaticResource AuraCardStyle}" Margin="0,0,0,8"
+                                    Tapped="FirmwareCard_Tapped"
+                                    AutomationProperties.Name="{x:Bind Name}">
+                                <Grid ColumnSpacing="14" ColumnDefinitions="Auto,*,Auto">
+                                    <FontIcon Glyph="&#xE8B7;" FontSize="20" VerticalAlignment="Top"
+                                              Foreground="{ThemeResource AccentFillColorDefaultBrush}" />
+
+                                    <StackPanel Grid.Column="1" Spacing="4">
+                                        <StackPanel Orientation="Horizontal" Spacing="8">
+                                            <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold"
+                                                       VerticalAlignment="Center" />
+                                            <!-- La pastilla dice la versión Y de dónde salió: una
+                                                 versión sin procedencia no se puede interpretar. -->
+                                            <Border Background="{ThemeResource ControlAltFillColorSecondaryBrush}"
+                                                    CornerRadius="4" Padding="6,2"
+                                                    Visibility="{x:Bind HasVersion, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                                                <TextBlock Text="{x:Bind VersionBadge, Mode=OneWay}"
+                                                           Style="{StaticResource AuraCaptionTextStyle}" />
+                                            </Border>
+                                        </StackPanel>
+                                        <TextBlock Text="{x:Bind Explanation}"
+                                                   Style="{StaticResource AuraCaptionTextStyle}"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+
+                                    <RadioButton Grid.Column="2" GroupName="firmware"
+                                                 VerticalAlignment="Center"
+                                                 IsChecked="{x:Bind IsSelected, Mode=OneWay}"
+                                                 Checked="Firmware_Checked"
+                                                 AutomationProperties.Name="{x:Bind Name}" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- ST-077: de dónde salen las versiones. Sin esto, un tag no
+                     distingue "lo último publicado" de "lo que traigo adentro". -->
+                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <ProgressRing IsActive="True" Width="14" Height="14"
+                                  Visibility="{x:Bind ViewModel.IsRefreshing, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+                    <TextBlock Text="{x:Bind ViewModel.VersionSourceNote, Mode=OneWay}"
+                               Style="{StaticResource AuraCaptionTextStyle}"
+                               TextWrapping="Wrap" MaxWidth="470" VerticalAlignment="Center" />
+                    <HyperlinkButton Content="Revisar de nuevo"
+                                     Command="{x:Bind ViewModel.CheckAgainCommand}"
+                                     IsEnabled="{x:Bind ViewModel.IsRefreshing, Mode=OneWay, Converter={StaticResource InvertBool}}" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- ============ Disponible en el dispositivo ============ -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Disponible en el dispositivo" Style="{StaticResource AuraSectionTitleTextStyle}" />
+
+                <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                        Click="Themes_Click"
+                        IsEnabled="{x:Bind ViewModel.CanManageThemes, Mode=OneWay}">
+                    <Grid ColumnSpacing="12" ColumnDefinitions="Auto,*">
+                        <FontIcon Glyph="&#xE790;" FontSize="18" VerticalAlignment="Top" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock Text="Temas" />
+                            <!-- Un botón deshabilitado siempre explica qué falta (ST-053). -->
+                            <TextBlock Text="{x:Bind ViewModel.ThemesDetail, Mode=OneWay}"
+                                       Style="{StaticResource AuraCaptionTextStyle}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+                </Button>
+
+                <Grid ColumnSpacing="12" ColumnDefinitions="Auto,*" Margin="12,4,0,0">
+                    <FontIcon Glyph="&#xE945;" FontSize="18" VerticalAlignment="Top"
+                              Foreground="{ThemeResource AccentFillColorDefaultBrush}" />
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock Text="Animaciones y gráficos" />
+                        <TextBlock Text="{x:Bind vm:ExtrasViewModel.AnimationsDetail}"
+                                   Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <!-- ==================== Todavía no ====================
+                 D-063: juegos y cronómetro se decidieron NO implementar. Se
+                 dice de frente en vez de inventar filas que no hacen nada. -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Todavía no" Style="{StaticResource AuraSectionTitleTextStyle}" />
+                <TextBlock Text="{x:Bind vm:ExtrasViewModel.PlannedIntro}"
+                           Style="{StaticResource AuraSecondaryTextStyle}" TextWrapping="Wrap" />
+
+                <Grid ColumnSpacing="12" ColumnDefinitions="Auto,*" Margin="12,0,0,0">
+                    <FontIcon Glyph="&#xE7FC;" FontSize="18" VerticalAlignment="Top"
+                              Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock Text="Juegos" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{x:Bind vm:ExtrasViewModel.NotImplemented}"
+                                   Style="{StaticResource AuraCaptionTextStyle}" />
+                    </StackPanel>
+                </Grid>
+
+                <Grid ColumnSpacing="12" ColumnDefinitions="Auto,*" Margin="12,0,0,0">
+                    <FontIcon Glyph="&#xE916;" FontSize="18" VerticalAlignment="Top"
+                              Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock Text="Cronómetro y bloqueo de pantalla"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{x:Bind vm:ExtrasViewModel.NotImplemented}"
+                                   Style="{StaticResource AuraCaptionTextStyle}" />
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <!-- ==================== Licencias ====================
+                 CONTRATO §B: obligatoria en cuanto Studio distribuye firmware
+                 GPL v2. -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="Licencias" Style="{StaticResource AuraSectionTitleTextStyle}" />
+                <Button HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                        Click="Licenses_Click">
+                    <Grid ColumnSpacing="12" ColumnDefinitions="Auto,*">
+                        <FontIcon Glyph="&#xE8A5;" FontSize="18" VerticalAlignment="Top" />
+                        <StackPanel Grid.Column="1" Spacing="2">
+                            <TextBlock Text="Software libre incluido" />
+                            <TextBlock Text="{x:Bind vm:ExtrasViewModel.LicensesDetail}"
+                                       Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+                </Button>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -873,6 +873,26 @@ Ambos releases traen D-329/M-091 (sello de biblioteca). Con este pin, la actuali
 
 **Corrección (contrato v13, §D.2 y nota transversal):** `String.firmwareNFC` (`precomposedStringWithCanonicalMapping`) aplicado en los cuatro puntos de serialización de `LibrarySync`. `artist_images.cfg` queda fuera a propósito: su valor de emparejamiento es el tag crudo (D-322), no un nombre de archivo en FAT. Los índices ya escritos en NFD se corrigen solos en el siguiente sync (esos archivos se reescriben completos). Prueba nueva en `CategoryIndexWriterTests` con el nombre real del bug en NFD verificando que el cfg sale en NFC; suite completa en verde (571, dos flaky ajenas verdes al reintentar).
 
+## ST-063 — Barra de estado contextual, barra de menús en español y detector de elementos similares
+
+**Encargo del dueño (2026-08-23):** (1) una barra de estado al pie de cada sección "al estilo de la barra de estado del Finder", contextual — en Canciones, cantidad de canciones/artistas/álbumes y, con selección, cuántos elementos, artistas y álbumes están seleccionados; lo mismo, con sus propios conteos, en las 4 secciones de Música, 4 de Video y 4 de Fotos; visible por defecto y ocultable desde "Visualización". (2) La barra de menús de la app en español, con menús contextuales para las herramientas ya implementadas. (3) Detectar elementos "sospechosamente similares" (`"01 Amor"/"SodaStereo"` vs `"Amor"/"Soda-Stereo"`) en una ventana que permita decidir con cuál quedarse, eliminar o editar, con la sugerencia del programa según qué tan distintos sean.
+
+**Barra de estado.** Un solo `LibraryStatusBar` en la raíz (`ContentView`, bajo el `detail` del `NavigationSplitView`); cada vista publica su resumen con `.libraryStatus(_:)` (un `PreferenceKey`), así ninguna vista sabe cómo se dibuja ni si está oculta. Los cálculos viven en `LibraryStats` (puro, testable): pluralización en español, duración ("8 h 12 min"), tamaño en disco (con caché por ruta, para no pagar miles de `stat` en cada cambio de selección) y un constructor por sección: `music`, `albums`, `artists`, `playlists`, `videos` (con desglose películas/episodios/videoclips en "Todos los videos"), `movies`, `series`, `episodes`, `photos` (desglose por colección), `photoAlbums`, `photoAlbum`. Con un álbum/película/serie/álbum de fotos abierto, la barra muestra ese grupo y lo seleccionado adentro (la tabla embebida ya publica `selectionForSync`, se reutiliza). `AppPreferences.showStatusBar` (default `true`) la alterna desde "Visualización › Mostrar barra de estado" (⌘/, como Finder).
+
+**Menús.** El bundle declara español como ÚNICA localización (`Resources/es.lproj/InfoPlist.strings`, `CFBundleDevelopmentRegion = es`, `CFBundleLocalizations = [es]`, `developmentLanguage: es` en `project.yml`): así AppKit y SwiftUI arman los menús estándar (Aura Studio, Archivo, Edición, Visualización, Ventana, Ayuda y sus ítems: Salir, Ocultar, Copiar, Seleccionar todo, Ocultar barra lateral…) en español sin importar el idioma del sistema — no se reescriben a mano uno por uno. Lo propio (`AppMenuCommands.swift`, vía `FocusedValue` como `SyncCommandContext`): Archivo › "Agregar a la biblioteca…" (⌘O, `NSOpenPanel`, mismo camino que soltar archivos sobre la sección visible, con la categoría de la subsección) y "Sincronizar con el iPod" (⇧⌘S, ya existía); Visualización › barra de estado + "Ir a" cada sección (⌘0…⌘9); Biblioteca › "Buscar elementos similares…" (⌥⌘D) y "Mostrar carpeta de la biblioteca en Finder". Los menús contextuales de tabla y cuadrículas ya cubrían todas las herramientas (buscar info/letra/póster, releer etiquetas, favoritos, categoría, renombrar, lote, sincronizar selección, Finder, eliminar); se les suma "Buscar elementos similares…" en la tabla. El selector de idioma de Ajustes sigue aplicando solo a Ajustes/barra lateral (`AppStrings.swift`): la barra de menús queda fija en español, que es lo que pidió el dueño.
+
+**Elementos similares.** `SimilarItemsDetector` (puro): huella por elemento (título sin número de pista ni paréntesis, calificadores de versión detectados — live/remix/acústico…, artista y álbum sin acentos ni puntuación, nombre de archivo sin " copia"/"(1)", duración, tamaño, extensión, clave de episodio), bloqueo por 2 primeras letras (3 000 canciones en fracciones de segundo, prueba de rendimiento incluida), comparación de a pares con Levenshtein normalizada y unión de pares en grupos (union-find). Tres confianzas: **Duplicado** (mismo tamaño exacto, o título+artista equivalentes con duración ±2 s), **Probable** (título+artista equivalentes, duración cercana o desconocida), **Posible** (parecidos con una diferencia legítima: otra versión, artista muy distinto pero mismo álbum). Cada grupo trae las razones en texto ("Artista escrito distinto: «SodaStereo» / «Soda-Stereo»", "Misma duración (3:20)"…), el elemento sugerido a conservar (`keepScore`: sin pérdida > con carátula/letra > corregido a mano > más metadata > más grande) y ediciones propuestas: unificar artista/álbum al nombre **más frecuente en toda la biblioteca** (`canonicalSpelling`) y quitar el número de pista del título. Video: mismo episodio (serie/temporada/episodio) o título+duración; fotos: nombre de archivo equivalente y/o mismo tamaño exacto. La hoja `SimilarItemsView` (menú Biblioteca, menú contextual de la tabla) lista los grupos con filtro por tipo y confianza, explica, deja cambiar cuál conservar, "Conservar el marcado y eliminar el resto" (con confirmación; la eliminación pasa por `deleteItems`, que jamás borra originales fuera de la carpeta de la biblioteca), "Aplicar la metadata sugerida" (`LibraryViewModel.applySimilarityEdits`, mismo camino que una corrección manual), "Editar…" por elemento (`MediaInfoView`), "Eliminar solo este", "Mostrar en Finder" e "Ignorar este grupo" (`AppPreferences.ignoredSimilarGroups`, id estable por conjunto de miembros, restablecible desde el pie). Nunca borra ni edita nada por su cuenta.
+
+**Pruebas:** `SimilarItemsDetectorTests` (normalización, el ejemplo exacto del dueño, versión en vivo → posible, duraciones distintas → nada, canónico por frecuencia, sugerencia FLAC+carátula, ignorados, fotos copia, episodio repetido, rendimiento, resúmenes y formatos de la barra de estado).
+
+## ST-064 — Eliminar un duplicado no debe borrar el preparado que comparte con el que se conserva
+
+**Reporte del dueño (2026-08-23, recién instalada la build de ST-063):** al sincronizar, "No se pudo sincronizar en /Volumes/IPOD: El archivo "01 - Ain't No Sunshine.mp3" no ha podido abrirse porque no se encuentra". El catálogo tenía 4 canciones en "Listo" cuyo `.preparados/<nombre>.mp3` ya no existía; las 4 eran duplicados recién depurados desde "Elementos similares".
+
+**Causa.** `.preparados/` es una carpeta PLANA nombrada por el nombre del archivo de origen (`prepareMusic`), así que dos elementos con el mismo nombre — exactamente el caso de un duplicado — comparten el mismo preparado. `deleteItems` borraba el preparado del eliminado sin mirar si otro elemento lo seguía usando, y el que se conservaba quedaba "Listo" apuntando a nada. El bug existía desde antes (también aplicaba a "Eliminar" del menú contextual sobre uno de dos duplicados); la hoja nueva solo lo hizo cotidiano. Al reiniciar la app, `loadCatalog` ya re-encolaba esos elementos ("Listo sin preparado no es listo"), por eso solo se veía dentro de la misma sesión.
+
+**Corrección.** `deleteItems` calcula los preparados que siguen en uso por los sobrevivientes y solo borra un preparado (y su `.lrc`) cuando ninguno lo comparte. Prueba `LibraryViewModelSharedPreparedTests` con dos "01 - Ain't No Sunshine.mp3" de carpetas distintas. No se cambió el esquema de nombres de `.preparados/` (nombrarlo por id rompería los sidecars `.lrc` y los preparados existentes de todas las bibliotecas); queda como deuda documentada si vuelve a morder.
+
 ## ST-065 — Tercera familia moonlit.aura (contrato v14)
 
 **Encargo del dueño (2026-08-26):** Studio distribuye e instala un tercer firmware, **moonlit.aura** (`Ricolinos/moonlit-aura`; lenguaje visual Waning Crescent, Material Design 3 adaptado al iPod), y debe convivir con tres árboles a la vez: uno activo en `/.rockbox/` y hasta dos dormidos (`/.firmware-aura/`, `/.firmware-metro/`, `/.firmware-moonlit/`).
@@ -1005,3 +1025,883 @@ Ambos releases traen D-329/M-091 (sello de biblioteca). Con este pin, la actuali
 **Releases:** Aura v0.4.4-beta, Metro v0.6.4, moonlit v0.1.6. **Pin:** 12 hashes (3×4 OK). Deltas: 5 archivos cada uno.
 
 **Límite documentado, no corregible sin riesgo alto:** este iPod no tiene el mecanismo de Rockbox para persistir la copia en RAM de la base entre reinicios (`HAVE_EEPROM_SETTINGS` no existe para `ipod6g`). Todo reinicio real —incluido cada cambio de familia— vuelve a leer el índice de disco a RAM desde cero; es rápido (segundos) si no hay que reconstruir nada, pero no es eliminable sin tocar capas profundas de Rockbox no diseñadas para este hardware.
+
+## ST-077 — Instalar desde cero baja el Release más nuevo; el pin de `FIRMWARE_VERSION` pasa a ser el respaldo (contrato v17)
+
+**Diagnóstico (reporte del dueño, 2026-08-27):** *"ya configuré mi token […] funciona, pero aunque sí actualiza, en la sección extras aparece un release anterior. Debería aparecer el actualizado (por si hay que instalar desde cero, que instale el más reciente)."* Son **dos** síntomas del mismo hecho, y solo uno se ve:
+
+1. **Lo visible.** La pastilla de versión de cada tarjeta en Extras salía de `BundledArtifacts.forFamily(family).releaseTag` (`ExtrasView.swift`, `FirmwareChoiceCard`) — o sea, `firmware-version.txt` **empotrado en la app al compilar**, que refleja el pin de `FIRMWARE_VERSION` (`tag=v0.4.4-beta`, `metro.tag=v0.6.4`, `moonlit.tag=v0.1.6`). Nunca consultaba GitHub.
+2. **Lo que de verdad importaba.** No existía **ningún** descargador: `InstallerViewModel` instalaba siempre desde `BundledArtifacts`. Studio podía saber por ST-074 que existía un Release más nuevo, avisarlo, y aun así **escribir en el iPod la versión del pin** en una instalación desde cero.
+
+La contradicción quedaba a la vista: ST-074 ya consulta GitHub con el token del Llavero para el aviso de versiones, pero esa información no llegaba ni a la pastilla ni al instalador.
+
+**Decisión.** `FirmwareReleaseDownloader` (nuevo) baja los cinco assets de la tabla §A del Release más nuevo de la familia elegida y los deja verificados en `~/Library/Application Support/AuraStudio/firmware-cache/<familia>/<tag>/`. `BundledArtifacts` gana un inicializador `init(directory:family:)`: el mismo tipo, la misma `verifyAll()`, el mismo `releaseTag` — pero leyendo de ese directorio. Así `InstallerViewModel.artifacts` es `downloadedArtifacts ?? BundledArtifacts.forFamily(targetFamily)` y **nada más abajo tuvo que enterarse** de dónde salieron los archivos.
+
+Puntos que costaron y no son obvios:
+
+- **La descarga se resuelve JUSTO ANTES de cada uso real de `artifacts`**, no en paralelo al flujo: `ensureLatestArtifacts()` se llama al entrar a `runInstallOrRestore()` y a `copyFirmwareFiles()` (los dos caminos que escriben; el de recuperación sin DFU solo pasa por el segundo). Un `Task` disparado al principio del asistente habría dejado una carrera entre la descarga y la primera escritura al iPod.
+- **El bootloader y `mks5lboot` salen del mismo Release que el árbol.** `ensureLatestArtifacts()` rehace el `MKS5LBootRunner` con los artefactos descargados. Flashear el bootloader de una versión y copiar el árbol de otra sería una mezcla que ningún release probó.
+- **Permisos POSIX.** `mks5lboot` descargado llega **sin bit de ejecución** (los permisos no viajan en el cuerpo HTTP) y `MKS5LBootRunner` lo rechaza con `binaryNotExecutable`. Se le pone `0o755` al escribirlo. En el bundle venía ejecutable porque lo empaqueta el build — el caso no existía antes.
+- **Repos privados: la URL del API, no `browser_download_url`.** La segunda redirige a un host de almacenamiento que devuelve error si le llega la cabecera `Authorization` de GitHub. Se pide `/repos/:owner/:repo/releases/assets/:id` con `Accept: application/octet-stream`, y `RedirectAuthStripper` suelta `Authorization` cuando el 302 cambia de host — `URLSession` la reenviaría sola.
+- **Publicación atómica.** Se baja a `.descarga-<tag>/` y solo se renombra al directorio final cuando los cinco assets pasaron `verifyAll()` (hashes contra el `checksums.txt` del propio Release **y** el contenido real de `rockbox.zip`, D-297/D-298 — un checksum correcto por sí solo nunca detectó un Release mal empaquetado). Un corte a la mitad no puede dejar un directorio que la próxima corrida dé por completo.
+- **El tag nunca entra crudo a una ruta.** `isSafeTagComponent()` (alfanuméricos, `.`, `-`, `_`; sin `/`, sin `..`, ≤ 64) antes de componer el directorio de caché — mismo criterio que `AuraThemeID.isValid()` para los ids de tema.
+- **Fallar nunca detiene la instalación.** Cualquier problema (sin red, token sin acceso, Release incompleto, checksum malo) deja `downloadedArtifacts` en nil, instala lo embebido y escribe el motivo en `releaseSourceNote`. `releaseDownloadFailed`/`releaseMissingAsset` existen **para poder decir por qué**, no para abortar.
+
+**UI.** Extras consulta ahora las versiones disponibles (`AvailableFirmwareVersions`, con el caché de 24 h de `ReleaseCache` y un "Revisar de nuevo" que lo saltea — misma razón que `forceRefresh` en D-300). La pastilla muestra el tag **que se instalaría**; cuando ese tag es el embebido porque no se pudo consultar GitHub, se marca "incluida" y el pie lo explica remitiendo al token en Ajustes › General (ST-053: una pastilla que dice una versión tiene que decir de dónde salió).
+
+**Compatibilidad del caché.** `GitHubRelease` gana `assets`, decodificado con `decodeIfPresent` → `[]`: la lista guardada en `UserDefaults` por una versión anterior de Studio no lo tiene, y sin eso el Release entero fallaría al decodificar y el usuario se quedaría sin aviso de versiones hasta vencer el TTL.
+
+**Nota GPL v2.** No cambia nada de fondo, y de hecho mejora: lo que se instala ahora tiene siempre un tag exacto y su `firmware-version.txt` al lado, así que la pantalla de Licencias (§B) cita la versión realmente instalada y no la del pin. La obligación de §3 sigue siendo la de ST-074.
+
+**Contrato v17** (`CONTRATO-firmware-studio.md`, copia idéntica en `Aura-Firmware`): §A intacta, §E pasa de "única vía" a "respaldo". **§D no se toca** — nada de lo que se escribe en el disco del iPod cambia. Los tres firmwares no tienen trabajo en esta versión.
+
+**Verificado.**
+- `swift build`: 0 errores (los avisos de `onChange(of:perform:)` son preexistentes, ajenos a esta pasada).
+- **Dos cuelgues de la suite, uno corregido y otro reportado.** `swift test` completo no terminaba (47 min a 0 % de CPU). Causa encontrada: `GitHubReleaseCheckerFetchTests` llamaba `fetchReleases(session:)` **sin** `token:`, dejando el valor por defecto `GitHubToken.load()` — o sea el Llavero **real**; en una Mac con token guardado macOS puede pedir permiso y la prueba espera un diálogo para siempre. Corregido inyectando `token: nil` en los dos casos, la disciplina que `GitHubTokenTests` ya documentaba desde ST-074. De paso arregla un fallo latente: con un token presente, un 404 ya no lanza `badResponse` sino que devuelve `[]` (ST-074), así que `testThrowsOnNonOKStatus` habría fallado por el motivo equivocado. **Queda un segundo cuelgue, preexistente y ajeno a esta pasada**: `AuraDeviceProbeTests.testSummaryIsReadBackFromWhatLibrarySyncWrote` se queda colgado en `AuraDeviceProbe.probe(diskInfo:)` (toca IOKit/DiskArbitration reales). No se tocó — depende del hardware conectado a la Mac y arreglarlo a ciegas sería peor. Por eso la suite completa **no** se pudo correr de punta a punta en esta pasada; sí las suites vecinas, una por una.
+- Suites vecinas verdes, corridas por separado: `SemVerTests` (9), `GitHubReleaseCheckerPickLatestTests` (5), `GitHubReleaseCheckerFetchTests` (2), `AuraUpdateCheckerVersionMarkerTests` (5), `ReleaseCacheTests` (3), más las que alcanzaron a correr antes del cuelgue de `AuraDeviceProbeTests`, todas con 0 fallos.
+- `FirmwareReleaseDownloaderTests` (nuevo, **12/12 verdes**): tag inseguro rechazado (`..`, separadores, vacío, largo) y `cacheDirectory` que lo refleja; caché por familia y por tag; decodificación de `assets` y búsqueda por nombre; Release **sin** `assets` (caché viejo) que aun así decodifica; descarga que exige la URL del API + `Accept: application/octet-stream` + `Bearer`; asset truncado rechazado por tamaño; 404 propagado con su código en el motivo; Release al que le falta `mks5lboot` reportado nombrando el asset; rechazo del token explicado como tal; `BundledArtifacts` sobre directorio (incluye `releaseTag` desde `firmware-version.txt` y `nil` para lo que no está, sin caer al bundle); `isComplete` que exige los cinco.
+- **Límite documentado de esta verificación:** no se ejecutó una instalación real contra un iPod ni una descarga contra GitHub en vivo. Todo lo de red está cubierto con `MockURLProtocol`; lo que **no** se puede probar así y queda a verificación del dueño en hardware: (a) que `mks5lboot` descargado a Application Support ejecute sin fricción de Gatekeeper — se escribe con `Data.write` y por eso **no** lleva el atributo `com.apple.quarantine` que sí pondría un navegador, que es la razón por la que debería correr, pero no se comprobó; (b) el salto de redirección real de GitHub hacia su host de almacenamiento con un asset grande (`rockbox.ipod`, ~1.3 MB; `rockbox.zip`, ~9 MB).
+
+## ST-078 — Port a Windows: decisiones de facto de la sesión en la VM, formalizadas en la Fase 0 del port
+
+**Contexto.** `studio/windows/` (Aura Studio para Windows, WinUI 3/Fluent 2) se venía construyendo en sesiones de Claude Code corriendo **dentro** de la VM Windows ARM64 (Parallels, `Y:` = carpeta de la Mac mapeada), sin commitear nada todavía. `PLAN-aura-studio-windows-v2.md` (carpeta padre `Aura/docs/plans/`) formaliza el trabajo por fases; su Fase 0 pide registrar aquí lo que ya se decidió de hecho en esa VM antes de este plan existir, más lo que la propia Fase 0 corrigió.
+
+**Plataforma de compilación:**
+- TFM de `AuraStudio.App`: `net10.0-windows10.0.26100.0` — coincide con el Windows SDK realmente instalado en la VM (10.0.26100). `TargetPlatformMinVersion` se mantiene en `10.0.19041.0` (Windows 10 2004), el mínimo real de runtime — TFM de compilación y mínimo de plataforma son ejes distintos, no tienen que coincidir.
+- `Microsoft.WindowsAppSDK` 2.4.0 (no 1.7.x: sin paquete de `BuildTools` compatible con SDK 26100) + `Microsoft.Windows.SDK.BuildTools` 10.0.26100.4654.
+- `CommunityToolkit.Mvvm` 8.4 con `<LangVersion>preview</LangVersion>` — el generador de `[ObservableProperty]` en 8.4 solo emite código para propiedades **parciales**, no campos privados; sin `preview` el build falla con `CS9248`.
+- Enumeración de discos por **WMI** (`Win32_DiskDrive`/`Win32_PnPEntity`, paquete `System.Management`), no hay alternativa nativa a `IOKit`/`DiskArbitration` en este framework.
+- `AuraStudio.Windows.slnx` como solución real (no `.sln` clásico).
+
+**Bug corregido en esta misma Fase 0 (no una decisión, un defecto):** el mapeo de plataforma del `.slnx` tenía `<Platform Solution="*|ARM64" Project="x64" />` para `AuraStudio.App` — pedir `dotnet build -p:Platform=ARM64` a nivel solución compilaba silenciosamente un binario **x64**. Corregido a `Project="ARM64"`; verificado comparando el árbol de salida (`bin/x64/...` vs `bin/ARM64/...`) antes y después, y lanzando el `.exe` resultante. Cualquier verificación previa de "compila ARM64" hecha vía build de la solución (no del `.csproj` directo) debe darse por no confiable retroactivamente.
+
+**Warnings latentes cerrados y `TreatWarningsAsErrors` activado** en los 3 csproj (`AuraStudio.Core`, `AuraStudio.App`, `tests/AuraStudio.Core.Tests`) — la compuerta "0 warnings" del plan de Windows pasa de revisión manual a mecánica. Detalle de los fixes (`SyncMarker.cs` con `required`/`[SetsRequiredMembers]`, `VideoArtworkResolver.cs` con `_ => throw`) en `studio/windows/docs/ESTADO-PORT.md`, entrada Fase 0.
+
+**Herramientas descartadas:** `open-vm.command` + `scripts/OpenInVM.ps1` (control remoto de la VM y Visual Studio *desde macOS*) se eliminaron — eran del flujo pre-VM del plan v1 ("escribir a ciegas en la Mac"), invalidado por la premisa del plan v2 de que las sesiones ya corren dentro de la VM.
+
+**Alcance de este ST.** No toca nada de `studio/AuraStudio/` (macOS) ni ningún contrato con el firmware — es puramente infraestructura del port de Windows, documentado aquí porque `DECISIONS.md` es la fuente de verdad única del repo (regla del `CLAUDE.md`), no porque cambie el comportamiento de la app macOS o del firmware.
+
+## ST-079 — Port a Windows, Fase 1: cimientos de la app (sesión compartida, ventana, tokens Fluent, navegación, strings)
+
+**Contexto.** Fase 1 de `PLAN-aura-studio-windows-v2.md` (carpeta padre `Aura/docs/plans/`). Cierra lo que las notas del port marcaban como pendiente estructural y deja decidido lo que las fases siguientes dan por sentado. Nada de esto toca `studio/AuraStudio/` (macOS) ni ningún contrato con el firmware.
+
+**Estado de sesión compartido.** `IDeviceSessionService`/`DeviceSessionService` (singleton) pasa a ser la única fuente de "qué iPod hay conectado": publica `State` (`Detecting`/`NotConnected`/`Connected`/`Ambiguous`), `Device`, `Identification`, `StatusMessage`, `LibraryLocked` y un evento `Changed`. Antes, cada ViewModel consultaba `IUsbDeviceWatcher` por su cuenta y guardaba su propia copia — dos pantallas podían discrepar sobre qué iPod está conectado, y cada una re-enumeraba WMI. `MainViewModel`, que hacía de sesión improvisada, se eliminó. **Excepción deliberada que no debe "arreglarse":** `DeviceSafetyValidator` sigue yendo directo al watcher — la re-verificación previa a una operación destructiva no puede confiar en estado cacheado, por reciente que sea.
+
+**ViewModels suscritos a la sesión son singleton** (`ShellViewModel`, `DeviceListViewModel`, `SettingsViewModel`, `InstallerViewModel`, `SyncViewModel`). Las páginas se reconstruyen en cada navegación: un ViewModel transitorio suscrito a `Changed` deja una suscripción viva por visita. Es el mismo motivo por el que macOS sube el ViewModel del instalador al contenedor raíz (D-187).
+
+**Hecho que faltaba en Core: qué firmware hay EN EL DISCO.** `InstalledFirmware.cs` (`InstalledFirmwareKind`, `InstalledFirmware`, `FirmwareTreeFacts`, `FirmwareTreeProbe`) porta la mitad de `AuraDeviceProbe.probe` que clasifica archivos: mismas rutas y mismo orden de decisión que el Swift. Con eso, `IPodDiskInfo` gana `SupportsAuraContract`, `IsAuraFirmware`, `RockboxFamilyVerified`, `IsDualBoot` y `ThemeFormatSupported`, y **se retira `IsAura`** — que era exactamente la trampa capacidad-vs-identidad que ST-046 nombró: definida como `RunningFirmware == RockboxFamily && HasAuraConfig`, negaba el contrato a un iPod con Aura instalada conectado en modo disco de Apple (evidencia de arranque en disco, USB atendido por Apple), donde macOS sí lo habilita. 19 casos nuevos (`FirmwareTreeProbeTests`), Core 129/129.
+
+**Acento del sistema, no acento de marca.** `Resources/AuraPalette.xaml` transcribe `Generated/AuraPalette.swift` (canal 0…1 × 255) con los tres temas (`Light`/`Dark`/`HighContrast`; en contraste alto la marca se retira y manda el tema del usuario), pero **los controles usan el acento que el usuario eligió en Windows** (`AccentFillColorDefaultBrush`, `AccentButtonStyle`). La app de macOS tiñe todo con el acento de marca porque en macOS ese es el idioma de la plataforma; en Windows lo idiomático — y lo que el principio 6 del plan pide como criterio de aceptación ("acento del sistema funcionando") — es respetarlo. El acento de marca queda como `AuraBrandAccentBrush` para momentos de identidad. Al mover `FIRMWARE_VERSION` se re-transcribe el archivo completo, igual que en macOS se reemplaza entero el `.swift`; lo limpio sería una salida XAML en el generador del firmware, que vive en el otro repositorio y no se toca desde acá.
+
+**Navegación: misma estructura que la barra lateral de macOS, en idioma de Windows.** `ShellPage` con `NavigationView`: encabezado de dispositivo, General, los tres grupos con subsecciones (Música: Artistas/Álbumes/Canciones/Listas; Video: Películas/Series/Videoclips/Todos los videos; Fotos: Fotos/Imágenes/IA/Todas las fotos), Extras, y al pie Instalador + Ajustes. La biblioteca **se deshabilita, no se oculta**, cuando hay un iPod conectado que no habla el contrato (con la explicación en una `InfoBar`, ST-053) y queda abierta sin dispositivo — armarla offline es un caso de uso real; General y Extras nunca se bloquean (ST-047). Si la sección abierta se bloquea, la selección salta a General, igual que macOS. Las subsecciones no llevan icono: en Fluent la sangría ya expresa la jerarquía. "Sincronizar" **no** es una sección: macOS tampoco la tiene (la sincronización se dispara desde General), así que `SyncPage` y `LibraryPage` quedan fuera de la navegación como borradores de las fases 3 y 4.
+
+**Strings: clase estática, no `.resw`.** `Resources/AppStrings.cs`, equivalente de `AppStrings.swift`. La app tiene un solo idioma por regla del repo, así que lo que aporta MRT (resolución por idioma, `x:Uid` por elemento) no se usa, y a cambio cuesta verificación en tiempo de compilación: un `x:Uid` mal escrito no falla, deja el texto vacío en pantalla. Con una clase estática cada cadena es una propiedad que el compilador verifica, se compone con interpolación y se lee junto al código. Es lo mismo que decidió macOS frente a los `.strings` de Apple (y el firmware en `aura_lang.c`, D-013). Si algún día hace falta un segundo idioma se agrega el patrón del Swift, sin migrar a `.resw`.
+
+**Ventana y preferencias.** `MainWindow` se queda solo con lo propio de una ventana (la UI vive en `ShellPage`, porque `Window` de WinUI 3 no es `FrameworkElement`): Mica con degradación a acrílico y a sólido — Mica es de Windows 11 y el mínimo del proyecto es 10.0.19041 —, tema claro/oscuro/sistema con anulación desde Ajustes (incluida la barra de título vía `AppWindow.TitleBar.PreferredTheme`, que no es parte del árbol XAML), y geometría persistida que solo se restaura si sigue cayendo sobre una pantalla que exista hoy. `IAppPreferences` guarda un JSON en `%LOCALAPPDATA%\Aura Studio\preferences.json` — la app corre sin empaquetar (`WindowsPackageType None`), así que `Windows.Storage.ApplicationData` no está disponible — y nunca deja caer una excepción de disco a la UI. **Las API keys no van ahí**: Credential Manager vía `IApiKeyStore` (D-203/ST-032), Fase 6.
+
+**Los glifos de Segoe Fluent Icons se verifican, no se recuerdan.** `E94A`, heredado del código previo como icono de "Dispositivos", **es el signo de división**: el rango de uso privado no falla ni en compilación ni en runtime, simplemente dibuja otra cosa. Se comprobaron renderizando la fuente a una imagen y mirándola (método en `ESTADO-PORT.md`); quedan `E955` (reproductor portátil) para el encabezado de dispositivo y `E8A9` (cuadrícula 2×2, equivalente del `square.grid.2x2` de macOS) para Extras.
+
+**Verificado.** `dotnet build studio/windows -p:Platform=ARM64` → 0 errores / 0 warnings; `dotnet test tests/AuraStudio.Core.Tests` → 129/129; app lanzada en la VM y **verificada en pantalla** (capturas en `ESTADO-PORT.md`): Mica, claro y oscuro, cambio de tema en vivo, navegación completa, persistencia de geometría entre corridas. **No verificado con hardware:** los estados "conectado" y "ambiguo" de General — necesitan el iPod (y dos discos que califiquen) y quedan anotados para la sesión con el dueño.
+
+## ST-080 — Port a Windows, Fase 2 (primera sesión): instalador — núcleo verificable, artefactos, DFU y Licencias GPL
+
+**Contexto.** Primera de las sesiones de la Fase 2 de `PLAN-aura-studio-windows-v2.md`. Cubre los puntos 1, 2, 6 completos, y la parte de 3 y 4 que no necesita elevación ni el iPod. El asistente completo (punto 5), el `PrivilegedRunner` real y el formateo ejecutado quedan para la sesión siguiente. **Ninguna operación destructiva se ejecutó ni se puede ejecutar sin confirmación explícita del usuario.**
+
+**Colisión de sesiones, y qué quedó.** Una segunda sesión ejecutora arrancó la misma fase en paralelo por error y se retiró; sobreescribió con `git checkout --` un archivo en curso de esta sesión (restaurado) y dejó 13 archivos en `AuraStudio.Core/Installer/`. Se reconcilió a **un solo modelo por concepto**: sobreviven de ese trabajo `Fat32Formatter`, `FirmwareTreeWriter`, `FirmwareSwitcher`, `InstallerError`, `InstallerStep` y `PrivilegedOperation`; se descartaron sus duplicados de `InstallPlanner`/`InstallManifest`/`AuraUpdateChecker`/`BundledArtifacts` (los de esta sesión ya tenían pruebas y estaban integrados) y la cadena de descarga ST-077 (`FirmwareReleaseDownloader`/`ReleaseCache`/`FirmwareVersionResolver`), que colgaba del `BundledArtifacts` duplicado, no tenía pruebas ni cableado y no se puede ejercitar acá — sin `gh` instalado, con repos privados y sin almacén de credenciales (Fase 6). `FirmwareArtifacts.Load(directorio, familia)` ya acepta artefactos de cualquier directorio, que es lo único que esa cadena necesita del modelo.
+
+**Núcleo portado, con pruebas (Core 216/216).** `InstallManifest` (contrato v11/ST-058: entradas del zip por ruta/tamaño/CRC-32, `install_manifest.cfg` **byte a byte igual al de macOS** porque es contrato compartido, y el delta que evita reescribir 9,431 archivos para cambiar cinco); `InstallPlanner` (ST-017, port literal); `FirmwareArtifacts`/`FirmwareArtifactVerifier` (equivalente de `BundledArtifacts`, incluida la comprobación de D-297/D-298 de que `rockbox.zip` trae de verdad codecs y plugins — un checksum correcto nunca detectó ese bug); `AuraUpdateChecker` (tag primero, hash del binario de **la misma familia** como respaldo, ST-046); `Mks5lbootOutput`.
+
+**Mejora sobre macOS, no capricho:** el Swift lee el directorio central del zip invocando `/usr/bin/unzip -lv` y parseando su tabla de texto con una expresión regular de columnas. Acá `ZipArchiveEntry.Crc32` del BCL lo da directo: sin subproceso y sin parser. Lo que **no** cambia es el formato del archivo en el iPod.
+
+**Bug real corregido en el sondeo DFU.** `DfuFlashRunner.ScanAsync` decidía "hay un iPod en DFU" con `Output.Contains("DFU")`. Cuando NO hay dispositivo, `mks5lboot` imprime `no DFU devices found`, que también contiene "DFU"; solo el código de salida evitaba el falso positivo. Ahora se lee el estado (`DFU device state: N`) como hace macOS, con el parser en Core y probado contra las cadenas reales del binario. El runner además soporta `--single` y `--bl-uninst`, que faltaban: sin `--single` no existe el modo Solo firmware, que es el único que instala macOS desde ST-050.
+
+**`FirmwareTreeInstaller` reescrito.** Extraía el zip completo a `/.aura/install-staging` **dentro del iPod** y después copiaba archivo por archivo: el doble de escrituras sobre el medio más lento, sin delta, y dentro de `/.aura/`, que por contrato v16 es territorio del firmware. Ahora delega en `FirmwareTreeWriter`.
+
+**`mks5lboot.exe` no viene del Release — decisión ABIERTA, no cerrada.** El contrato §A publica `mks5lboot` (binario de Unix) y su hash en `checksums.txt`; Windows necesita un `.exe`. El que hay en `artifacts/` se cross-compiló en una sesión anterior y **no tenía ninguna procedencia registrada**. Mientras el dueño decide, esta sesión implementó el lado Studio de forma neutral, sin tocar el contrato: `FirmwareArtifactVerifier` reporta tres niveles (`ReleaseChecksums` > `LocalPin` > `Unverified`) y se agregó `artifacts/mks5lboot.exe.origin` con el SHA-256 del binario y el `tag` que el propio binario reporta al ejecutarlo (`fdf5be4e8fM-260831`). **Ese tag lleva `M`: se compiló de un árbol del firmware con cambios sin commitear**, así que no corresponde a ningún tag publicado — un hash fijado localmente detecta corrupción o reemplazo, pero no acredita origen, y eso es exactamente lo que la pantalla de Licencias dice. Las dos salidas posibles (que el Release publique `mks5lboot.exe`, cambio de §A coordinado con el firmware; o que Studio-Windows versione el suyo con procedencia real desde un árbol limpio) son del dueño, y la segunda además necesita rehacer el binario desde un checkout sin modificar para que la oferta de fuente de la GPL §3 sea verdadera.
+
+**FAT32 de más de 32 GB: el plan no podía funcionar.** El punto 3 de la Fase 2 daba por hecho `Format-Volume`/`diskpart`. Ninguno de los dos sirve para el iPod del dueño, y hay **dos límites distintos que conviene no fundir**: `FormatEx` (el motor de ambos) se niega a crear FAT32 de más de 32 GB, y por separado `format /?` en esta VM documenta un límite por cuenta de clústeres (65 526 < N < 4 177 918) que con la unidad máxima de 32 KB da un techo de ~127 GB. Ninguno de los dos está verificado en hardware acá. Por eso sobrevive `Installer/Fat32Formatter`: escribe las estructuras FAT32 (sector de arranque, respaldo, FSInfo, dos FAT y clúster raíz) según la especificación pública de Microsoft, sobre un `Stream` — lo que lo hace comprobable entero en memoria. Llegó sin una sola prueba y esta sesión le escribió 16, incluido el caso de sectores de 4096 que D-190 volvió obligatorio.
+
+**Pantalla de Licencias (contrato §B) — la restricción crítica, ya en pantalla.** Ajustes › Acerca de › Ver licencias, verificada en ejecución (`docs/capturas/fase2-licencias.png`). Declara, por cada familia embebida, repositorio, tag exacto y presencia de `MODIFICATIONS.md`/`THIRD-PARTY-NOTICES.txt`, más la procedencia de `mks5lboot.exe`. **Nunca inventa un tag**: sin `firmware-version.txt` dice "No se conoce" y explica cómo dejarlo registrado — citar una versión equivocada sería peor que no citar ninguna, porque la obligación del §3 es señalar la fuente exacta de lo que se distribuyó. Hoy dice justamente eso, porque `artifacts/` todavía no tiene ningún Release (ver abajo).
+
+**Driver de DFU: la vía WinUSB del plan no aplica.** El punto 4 planteaba "Apple Mobile Device Support si hay iTunes; si no, guía WinUSB". El `mks5lboot.exe` de este port no usa libusb ni WinUSB: importa `setupapi.dll` y abre el dispositivo por la interfaz `GUID_AAPLDFU` (visible entre sus símbolos), o sea la que publica el driver de Apple. Con este binario no hay alternativa WinUSB. `AppleDeviceSupport` (solo lectura, sin privilegios) reporta si hay un dispositivo Apple en el USB, si tiene driver (`ConfigManagerErrorCode` 28 = sin driver), si está el paquete de drivers y si el servicio de Apple corre. Dato aparte para la validación con el dueño: **el binario es x86 de 32 bits** y corre por emulación en ARM64.
+
+**Alcance de este ST.** No toca `studio/AuraStudio/` (macOS) ni ningún contrato. La única frontera rozada es §A (`mks5lboot.exe`) y queda **documentada como decisión abierta, sin implementar** ningún cambio de contrato, como manda el `CLAUDE.md` del repo.
+
+## ST-081 — Port a Windows, Fase 2 (segunda sesión): ejecución privilegiada, formateo FAT32 y asistente de instalación
+
+**Contexto.** Cierra los puntos 3, 4 y 5 de la Fase 2 de `PLAN-aura-studio-windows-v2.md`. Sigue sin ejecutarse ninguna operación destructiva: lo que esta sesión agrega es la maquinaria y el modo de validarla sin riesgo.
+
+**Elevación: se relanza la propia app, no un script.** `PrivilegedRunner` escribe la petición (`PrivilegedOperation` serializada) y relanza **el mismo ejecutable** con el verbo `runas` y un argumento (`--aura-privileged`); `PrivilegedHost` la intercepta en un `Program.cs` propio (`DISABLE_XAML_GENERATED_MAIN`) **antes de abrir ninguna ventana**, la vuelve a validar, re-verifica el disco y ejecuta. Un script en disco que se va a ejecutar como administrador es un blanco: entre que se escribe y que corre, cualquier proceso con acceso a esa carpeta podría cambiarlo, y lo que se elevaría sería el cambio. Relanzando el propio binario no hay nada nuevo que proteger. La petición viaja por archivo porque `runas` exige `UseShellExecute` y con eso no se pueden redirigir tuberías. Cancelar el diálogo de UAC (`ERROR_CANCELLED`, 1223) se distingue de un fallo, igual que el `-128` de AppleScript en macOS.
+
+**Re-verificación dentro del contexto privilegiado, no antes.** `PrivilegedHost.ReverifyDisk` consulta WMI **en el proceso elevado** y exige: que el disco exista, que el bus siga siendo USB, que tenga medio montado, que el tamaño coincida dentro de la tolerancia y que el modelo no haya cambiado. Entre la confirmación del usuario y el arranque de ese proceso hubo un diálogo de UAC de por medio: el disco pudo desconectarse, reconectarse con otro número, o ser otro. Es la misma regla que en macOS hace que el script re-verifique identidad dentro del script en vez de fiarse del identificador que le pasaron. Tras `clean` se re-verifica **otra vez** antes de escribir el sistema de archivos.
+
+**Formateo: `clean` del sistema, tabla y FAT32 propios.** `diskpart` solo hace `select disk` + `clean`. Sin particiones no hay volumen montado, así que las escrituras directas a `\.\PhysicalDriveN` no quedan bloqueadas por Windows y todo el formateo entra en un solo handle, sin bloquear ni desmontar nada. La tabla la escribe `MasterBootRecord` (Core, puro, 16 casos) con el tipo **0x0C** que el bootloader del iPod espera leer con su propio driver — `create partition primary` deja 0x07 (IFS), que no sirve — y con el primer sector alineado a 1 MiB calculado sobre el **tamaño de sector real del disco** (D-190: un valor fijo produce una tabla que Windows escribe sin error y que el bootloader interpreta mal). Encima va `Fat32Formatter`.
+
+**Modo ensayo (`DryRun`), y el asistente lo exige.** El proceso elevado hace todas las comprobaciones y devuelve el plan real —partición, clústeres, sectores por FAT, etiqueta— **sin escribir un byte**. El asistente no ofrece el formateo de verdad hasta que un ensayo haya salido bien. No es una comodidad: nada de esta cadena se pudo probar contra un iPod, y el ensayo es cómo se valida la elevación, el paso de la petición, la re-verificación y la geometría sin arriesgar un disco.
+
+**Verificado sin elevación y sin tocar discos.** Se invocó el ejecutable con el argumento del modo elevado y tres peticiones. Los tres guardas dispararon: disco inexistente → aborto por seguridad; petición sin tamaño esperado → aborto (no se puede re-verificar); y **el SSD del sistema → aborto por bus IDE**, con la bitácora del disco real. Ninguna ventana, códigos de salida correctos, resultado JSON escrito. Que el camino de formateo se niegue a tocar el disco de arranque es la prueba que más importaba.
+
+**Asistente (punto 5).** Sigue `InstallerStep`: bienvenida con el aviso de que borra todo, **pantalla de permisos antes de cualquier diálogo del sistema** —la promesa textual que `PermissionsView` hace en macOS: nunca abrir una consola ni escribir un comando—, confirmación del disco con nombre, unidad, capacidad, bus y firmware detectado, preparación, DFU con guía del controlador, grabado y cierre. El grabado exige una confirmación aparte (`FlashConfirmedByUser`): es irreversible y en Solo firmware destruye el arranque de Apple.
+
+**Aviso de cambio de familia.** Si el iPod tiene instalada una familia distinta de la elegida, se dice en pantalla que la saliente se guarda entera y se puede volver a ella. ST-046 nació justamente de ofrecerle a un iPod con Metro una actualización de Aura que lo habría sobrescrito; el cambio de familia es legítimo (contrato v10/ST-056) pero no puede pasar en silencio. Se escribieron **16 casos para `FirmwareSwitcher`**, que llegó sin ninguno: es el código que sostiene esa promesa.
+
+**Servicio de Apple durante el grabado.** Se pausa si está corriendo y se reanuda pase lo que pase — equivalente Windows del pausado de agentes AMP (D-191). Reanudar es best-effort: que falle no puede tapar el resultado real del grabado, pero queda en la bitácora.
+
+**Lo que esta sesión resolvió de la anterior.** El "bloqueo de biblioteca que no aparecía" con el iPod conectado **no era un defecto**: ese aparato tiene moonlit.aura instalado, así que `SupportsAuraContract` es `true` — habla el contrato aunque el USB lo atienda el firmware de Apple — y la biblioteca debe quedar abierta. Es el caso exacto que introdujo la corrección de ST-079, ahora confirmado contra hardware real.
+
+**Lo que sigue sin verificarse, y hay que decirlo claro.** Ningún disco se ha formateado con este código y ningún bootloader se ha grabado. `Fat32Formatter`, `MasterBootRecord` y `PrivilegedHost` están probados en todo lo que se puede probar sin hardware (estructuras en memoria, guardas de seguridad, serialización), pero el primer formateo real es una validación con el dueño, y el ensayo es el paso previo obligatorio.
+
+**Alcance de este ST.** No toca `studio/AuraStudio/` (macOS) ni ningún contrato.
+
+## ST-082 — Port a Windows, Fase 3: cómo se leen etiquetas e imágenes, y de dónde sale ffmpeg
+
+**Contexto.** Las tres decisiones que la Fase 3 de `PLAN-aura-studio-windows-v2.md` pide cerrar con el dueño antes de escribir código.
+
+**Lo que pidió el dueño, y cómo se interpretó.** Para etiquetas e imágenes respondió *"igual que lo hace Aura Studio para Mac, para no generar inconsistencias"*. Literalmente no es posible: el lector de macOS se apoya en **AVFoundation** y el redimensionador en **ImageIO/CoreGraphics**, frameworks de Apple que no existen en Windows. Así que "igual que macOS" se toma como lo que evidentemente quiso decir — **mismos resultados**, no misma API — y esa lectura decide las dos opciones:
+
+- **Etiquetas: TagLib#.** Es lo único que cubre lo mismo que AVFoundation (ID3v2.3/2.4, comentarios Vorbis de FLAC, átomos MP4/M4A, carátulas embebidas) con una sola API. Escribir los parsers a mano —que en Windows no sería *portar* el Swift sino escribirlos desde cero, porque allá ese trabajo lo hace el sistema— habría divergido en los casos raros, es decir, habría producido **más** inconsistencia, que es justo lo contrario de lo pedido.
+- **Imágenes: `Windows.Graphics.Imaging`.** El equivalente de plataforma a ImageIO, sin dependencias nuevas.
+
+**Lo que de verdad garantiza la equivalencia no es la librería, son las reglas.** Por eso el mapeo de campos se portó aparte, como funciones puras en `Core/Library/TrackTagRules`, con pruebas: el año como prefijo de 4 caracteres (y una cadena más corta se conserva tal cual, no se descarta), `"3/12"` → pista 3 (el bug concreto que perdía el número de pista en macOS incluso en ID3v2.3), los átomos `trkn`/`disk` de iTunes con el número en los bytes 2–3 big-endian y cero como "sin número", y el "primero que llega gana" del `??` de Swift —sin el cual el orden en que la librería entrega las etiquetas cambiaría el resultado—. Más el respaldo de ST-012: sin carátula embebida se toma la de carpeta (`cover.jpg`, `folder.jpg`…), que es lo que hace que un álbum arrastrado con su portada la conserve.
+
+**Obligación de licencia que esto agrega.** TagLib# es **LGPL** y se enlaza dinámicamente (paquete NuGet), lo que es compatible con una app cerrada. Pero hay que declararlo: la pantalla de Licencias (contrato §B) hoy solo habla de los derivados de Rockbox, y **le falta TagLib#**. Queda anotado como pendiente de la propia Fase 3, no de la 7 — una dependencia LGPL sin declarar es exactamente el tipo de deuda que este proyecto no deja correr.
+
+**ffmpeg: se busca en el sistema**, igual que macOS (D-038). Se localiza en el `PATH` y en las rutas típicas, y si no está se explica cómo instalarlo (`winget install Gyan.FFmpeg`) en vez de fallar en silencio. Sin binarios de terceros en el repositorio ni dudas de licencia. Hay una diferencia a favor de Windows que conviene anotar: allá el motivo de no empaquetarlo era el árbol de `.dylib` enlazadas dinámicamente; acá `ffmpeg.exe` es estático, un solo archivo, así que si algún día se decide empaquetarlo el obstáculo técnico no existe — lo que quedaría es la decisión de licencia (las builds habituales son GPL por incluir x264), que es del dueño. **Media Foundation se descartó a conciencia**: el iPod necesita MPEG-1/2 en contenedor MPEG-PS y Media Foundation no muxea MPEG-PS.
+
+**Entregado en esta sesión** (Core, 350/350 tests): `TrackMetadata`, `TrackTagRules` (+18), `CoverArtAssets` (+26, incluida la regla de que soltar una imagen a propósito en Fotos gana sobre el nombre de carátula), y `LocalTagReader` (+11) probado de punta a punta contra MP3 reales construidos en el momento —tramas MPEG-1 Layer III válidas— en vez de solo contra las reglas puras.
+
+**Alcance de este ST.** No toca `studio/AuraStudio/` (macOS) ni ningún contrato.
+
+## ST-083 — Port a Windows, Fase 3 (segunda sesión): catálogo de la biblioteca, imágenes y miniaturas
+
+**Se retiró el catálogo provisional de la Fase 0.** `Core/LibraryCatalog.cs` traía sus propios `LibraryItem`/`LibraryItemKind`/`LibraryItemStatus` —un esqueleto de cinco campos con `Status` = `Ready|Missing|Unsupported`— que ya no describía nada real: el `LibraryItem` portado de macOS tiene estados de proceso (en cola, enriqueciendo, transcodificando, listo, necesita revisión, falló), categoría, serie/temporada/episodio, álbum de fotos y la marca de metadata editada a mano. Dos tipos con el mismo nombre para el mismo concepto es exactamente cómo se termina con dos comportamientos distintos según quién importe cuál, así que se eliminó el esqueleto y sus dos consumidores (`LibraryViewModel`, `SyncService`) pasaron al modelo real. **Un efecto concreto:** `SyncService` copiaba siempre `SourcePath`; ahora manda al iPod lo **preparado** cuando existe (lo transcodificado o redimensionado) y el original solo si ya era apto — con el esqueleto eso era imposible de expresar, porque no había dónde guardar el resultado preparado.
+
+**El catálogo persistido (`biblioteca.json`) conserva las cuatro decisiones de macOS que importan**, y cada una está cubierta por pruebas porque cada una protege algo que duele perder:
+
+- **Todas las rutas son relativas** a la carpeta de biblioteca — mover esa carpeta a otro disco y volver a apuntarla la conserva entera. Con una excepción explícita: un archivo **fuera** de la biblioteca (con "copiar medios" apagado el archivo vive donde el usuario lo tiene) guarda su ruta absoluta, porque una relativa hacia afuera no significa nada.
+- **La carátula no viaja dentro del JSON.** Una imagen por pista lo inflaría a decenas de megabytes y cada guardado sería una reescritura completa; vive en `.portadas/<id>.jpg` y `LibraryStore` la lee y la escribe.
+- **Solo se persisten estados estables.** Lo transitorio y lo fallido se guardan como `queued`: al reabrir la app se reintenta, en vez de quedar congelado en un estado que ya no tiene proceso detrás.
+- **Todo campo agregado después es anulable.** Un catálogo escrito por una versión anterior no trae `metadataEditedByUser` ni `addedAt`, y exigirlos descartaría el catálogo **entero** por un campo. Misma razón detrás de traducir las categorías viejas (`images`→`Imágenes`, `homeVideos`→`Series`…, D-228) dejando pasar cualquier otro valor tal cual: puede ser una colección que creó el usuario.
+
+**JPEG baseline: macOS lo fuerza, Windows lo verifica.** D-291 del firmware es que el visor solo decodifica JPEG **baseline** — un progresivo sale en el iPod como "Formato no soportado". macOS se lo pide explícitamente a ImageIO (`kCGImagePropertyJFIFIsProgressive: false`); **el codificador JPEG de WIC no expone esa opción**. En vez de confiar en que haga lo correcto, la garantía se consigue del otro lado: `JpegMarkers.IsBaseline` lee los marcadores SOF de la salida y `ImageResizer` falla si no es baseline. Si algún día WIC cambiara, se sabe acá y no en la pantalla del iPod. Se comprobó de hecho, no de memoria: la salida real de WIC es baseline.
+
+**Las miniaturas respetan el aspecto real, y ese es el punto.** Se portó el bug que el dueño reportó en macOS ("las imágenes se ven distorsionadas"): acotar el lado mayor deja una carátula 16:9 en 96×54, no en 96×96, y **declarar 96×96 es lo que hacía que se estirara** para llenar un cuadrado que el contenido nunca tuvo. La clave de la caché es por **contenido** (SHA-256 de los bytes) y no por canción, para que las 14 pistas de un álbum compartan una sola miniatura; el resumen se calcula una vez por arreglo y queda atado a esa instancia, porque volver a resumir un megabyte en cada celda al hacer scroll es justo el costo que la caché existe para evitar.
+
+**Deuda de licencia de ST-082, pagada.** La pantalla de Licencias ya declara **TagLib# 2.3.0 (LGPL v2.1)**: qué hace, que se enlaza como archivo aparte —se verificó que `TagLibSharp.dll` efectivamente queda junto al ejecutable, que es lo que hace compatible su uso con una app cerrada— y dónde está su código.
+
+**Una herramienta de verificación fuera de las pruebas**, `tools/ImageResizerCheck` (no está en la solución; se corre a mano). Lo que hay que comprobar del redimensionado —salida baseline, transparencia aplanada sobre **blanco** y no sobre negro, orientación EXIF respetada— depende de WIC, que solo existe bajo un TFM de Windows, y `AuraStudio.Core.Tests` apunta a `net10.0` puro a propósito. Compila el mismo archivo fuente del resizer sin arrastrar WinUI y genera sus propias imágenes. Las partes puras (tamaño destino, lectura de marcadores, clave de miniatura) sí están en las pruebas normales.
+
+**Entregado en esta sesión** (Core, 408/408 tests; app ARM64 0 errores / 0 advertencias; 14/14 en el verificador de imágenes): `LibraryItem`, `LibraryPersistence` + `LibraryStore` (+26), `ImageResizePlan` y `JpegMarkers` (+15), `CoverThumbnailKey` (+6), `ImageResizer` y `CoverThumbnailCache` sobre WIC.
+
+**Alcance de este ST.** No toca `studio/AuraStudio/` (macOS) ni ningún contrato.
+
+## ST-084 — Port a Windows, Fase 3 (tercera sesión): listas, detector de similares y enriquecimiento
+
+**Listas M3U8: el formato no es una preferencia de Studio.** Lo lee el firmware con `playlist_create()` de Rockbox, que acepta rutas UNIX **absolutas** sin tocarlas — por eso las entradas son `/Music/…` y no rutas relativas al archivo de lista, que dejarían la resolución ambigua. Termina en salto de línea y usa `\n`, no `\r\n`: se escribe para el iPod, no para Windows. Y la portada lleva el **mismo nombre base** que el `.m3u8`, porque el firmware la encuentra pelándole la extensión y probando ese nombre con `.jpg` (`aura_playlist_art_load`); los dos comparten la misma llamada a `PathSanitizer` para que no puedan divergir. Al importar, en cambio, la tolerancia es amplia a propósito: rutas relativas resueltas contra la carpeta del propio archivo (como hace cualquier reproductor), rutas absolutas de Windows y UNC, `file://`, y `\r\n` recortado — sin eso, cada ruta de una lista exportada en Windows terminaría en `\r` y ninguna coincidiría con el catálogo.
+
+**El colage de la lista, con la geometría separada del dibujado.** `PlaylistArtLayout` (Core, con pruebas) decide cuadrantes, aspect-fill y las barras del tile; `PlaylistArtGenerator` (plataforma) dibuja con WIC. Con menos de cuatro carátulas se **reciclan desde el principio** en vez de dejar cuadrantes en blanco, y sin ninguna se dibuja el glifo de "lista" en los mismos grises que usa `aura_albumart_default_tile()` en el firmware, para que los dos casos no desentonen si el usuario los ve juntos. Dos diferencias de mecanismo con macOS, ambas verificadas contra WIC de verdad y no de memoria: el aspect-fill lo hace el propio decodificador (escala y **después** recorta, que es el orden que había que confirmar), y las puntas redondeadas se suavizan muestreando 4×4 por píxel porque acá no hay el antialiasing de CoreGraphics.
+
+**Un límite conocido del detector de similares, que NO se corrigió acá.** El detector no compara todos contra todos: agrupa por las 3 primeras letras del título y del nombre de archivo, y por tamaño exacto. La consecuencia es que la regla de "mismo episodio de la misma serie" —pensada justamente para el caso en que los títulos no se parecen— **casi nunca alcanza a aplicarse**: dos copias del mismo episodio llamadas `cap1.mkv` y `S01E01.mp4`, con tamaños distintos, nunca llegan a compararse. macOS tiene exactamente la misma limitación, y arreglarla solo en Windows haría que las dos apps mostraran duplicados distintos sobre la misma biblioteca — justo lo que ST-082 se propuso evitar. Queda documentado con una prueba que fija la conducta real (`TwoCopiesOfAnEpisodeWithUnrelatedNamesAndSizesAreNotCompared`) y **corresponde coordinarlo con la app de macOS**, no resolverlo por un lado.
+
+**Lo que el detector nunca debe hacer también está probado.** Un vivo contra su versión de estudio no puede salir como "Duplicado" —la sugerencia sería borrar uno de los dos—, dos canciones llamadas "Amor" de artistas distintos no se agrupan, e `IMG_0001` e `IMG_0002` son tomas consecutivas, no copias. Las propuestas de edición **nunca se aplican solas**: el detector devuelve evidencia, una confianza y una sugerencia, y quien ejecuta es la hoja de revisión con lo que el usuario elija.
+
+**Una prueba estaba saliendo a internet de verdad.** Al armar el enriquecedor con clientes de prueba se inyectaron MusicBrainz, Cover Art Archive y LRCLIB, pero fanart.tv y Deezer se quedaron con su cliente por omisión: la prueba de "un proveedor caído no detiene a los de atrás" falló porque Deezer devolvió una **carátula real** descargada de la red. Corregido inyectando los cinco. Vale anotarlo porque el modo de falla es traicionero: la prueba habría "pasado" en cuanto la carátula existiera, dependiendo de la conexión y del catálogo de un tercero.
+
+**"No encontré nada" y "falló la conexión" siguen siendo distintos** (D-203). `ReenrichAsync` reporta el error de red en su `EnrichmentOutcome`; `EnrichAsync` —el camino de importación en lote— se lo traga a propósito, porque una canción no puede quedar fuera de la biblioteca porque se cayó la red. El piso de puntaje de MusicBrainz (70, con un puntaje ausente contando como 0) se conservó tal cual: sin él, dos canciones del mismo álbum real terminaban con álbumes distintos, y "Sin álbum" se puede revisar mientras que un álbum inventado pasa desapercibido.
+
+**Entregado en esta sesión** (Core, 536/536 tests; app ARM64 0 errores / 0 advertencias; 26/26 en el verificador de imágenes): `Playlist` + `PlaylistExporter`/`PlaylistImporter` (+15), `PlaylistArtLayout` (+11) y `PlaylistArtGenerator` sobre WIC, `SimilarityText` (+31) y `SimilarItemsDetector` (+22), `FilenameGuesser` (+13) y `LibraryEnricher` (+18) con un stub de HTTP propio.
+
+**Alcance de este ST.** No toca `studio/AuraStudio/` (macOS) ni ningún contrato.
+
+## ST-085 — Port a Windows, Fase 3 (cuarta sesión): la interfaz de la biblioteca
+
+**La tabla de Canciones NO usa el DataGrid del Community Toolkit** — el plan pedía evaluarlo. Traería una dependencia nueva, con su propia licencia que declarar, para conseguir lo que acá hace falta: un conjunto de columnas **dinámico**. Un `ListView` con encabezado propio, armando encabezado y celdas desde la lista de columnas visibles, no tiene tope de columnas, que es justamente el punto de ST-030 frente a las 10 fijas de antes. **Lo que se cede es redimensionar columnas arrastrando**; queda anotado como pendiente, no como decisión tomada.
+
+**Una sola página para las seis cuadrículas** (Álbumes, Artistas, Películas, Series, colecciones de fotos, listados sin agrupar). Lo único que cambia entre ellas es de dónde salen las tarjetas y qué tipo aceptan al soltar; seis páginas casi idénticas se desincronizan solas.
+
+**El ordenamiento de la tabla es estable, y eso importa más de lo que parece.** El primer intento desempataba por título, y una prueba lo cazó: dos renglones que empatan tenían que quedar en el orden en que venían, como hace la tabla de macOS. Se cambió a un ordenamiento estable (`OrderBy`, no `List.Sort`) sin desempate artificial. Con uno inestable, las tres canciones de un mismo álbum se barajan entre sí cada vez que se reordena la tabla.
+
+**Los glifos se verificaron renderizándolos, otra vez.** Se agregó `Resources/Glyphs.cs` con los códigos de `Segoe Fluent Icons` que usa la app, **escritos por su número y no como el carácter suelto**: el carácter cae en el Área de Uso Privado, así que pegado en el fuente se ve como un cuadrito vacío y cualquier conversión de codificación lo corrompe en silencio. El precedente es concreto: en la Fase 1 se usó `E94A` de "Dispositivos" y resultó ser el signo de división. Los nueve de esta tanda se dibujaron a un PNG y se miraron antes de usarlos.
+
+**Se agregó el paso que faltaba entre importar y ver.** `LibraryProcessor` lee las etiquetas, adivina lo que falte del nombre del archivo y clasifica la imagen por su EXIF (`PhotoExifReader`, WIC en lugar de ImageIO). Corre al soltar **y al abrir la app sobre lo que quedó en cola**: el catálogo guarda como "en cola" lo transitorio y lo fallido justamente para que se reintente (ST-083), y hasta ahora nada lo reintentaba — se quedaba así para siempre. Una canción sin artista o sin álbum queda en "Necesita revisión", no escondida: en el iPod caería en "Desconocido" y el usuario tiene que poder verlo.
+
+**Dos límites que quedan a la vista, no tapados.** La duración de un video hoy no se puede leer —la daría ffmpeg, Fase 4—, así que la heurística devuelve "Videos", que es el valor correcto para "todavía no sé"; Series nunca se asigna sola (D-228). Y **quitar de la biblioteca no borra el archivo**: se dice en el propio menú, porque confundirlo con "eliminar" es caro y silencioso.
+
+**Verificado en pantalla, no solo compilado.** Se generó una biblioteca de prueba con MP3 reales etiquetados y se sembró **por el mismo camino de ingesta que usa la interfaz**: 12 canciones adentro y el `cover.jpg` del álbum reconocido como carátula y no como foto (ST-012, sobre archivos de verdad). Con eso a la vista se corrigieron dos cosas que solo se ven mirando: el encabezado de la tabla se desplazaba aparte de las filas —se despegaba de sus columnas en cuanto uno movía la tabla— y la tabla quedaba flotando en el centro al sobrar espacio. Capturas en `docs/capturas/fase3-*.png`.
+
+**Lo que sigue faltando de la interfaz**, dicho de frente: la hoja de edición de metadatos, la de revisión de similares (el detector ya está, sin pantalla), y las listas de reproducción (el modelo ya está, la sección sigue mostrando su aviso de pendiente).
+
+**Entregado en esta sesión** (Core, 625/625 tests; app ARM64 0 errores / 0 advertencias): `MusicTableColumn` + `MusicSortField` (+13), `MediaTableRow` con comparadores por columna (+22), `LibraryGrouping` (+28), `LibraryIngest` (+15), y en la app `LibraryViewModel`, `SongsViewModel`, `MediaGridViewModel`, `SongsPage`, `MediaGridPage`, `Glyphs`, `FilePickers`, `LibraryProcessor` y `PhotoExifReader`.
+
+**Alcance de este ST.** No toca `studio/AuraStudio/` (macOS) ni ningún contrato.
+
+## ST-086 — Ajustes con paridad de macOS, Credential Manager, y dos bugs que impedían leer una biblioteca hecha en la Mac
+
+**Encargo del dueño (2026-09-01)**, adelantado de la Fase 6 a la 3: que Ajustes tenga paridad con la app de Mac, empezando por la carpeta de la biblioteca configurable "y todo lo demás".
+
+**Las seis pestañas de macOS, con su inventario completo de preferencias**: General (tema, idioma, Acerca de con Licencias), Biblioteca (carpeta, copiar medios, carpetas vinculadas, política de carátula, enriquecimiento y letras al importar), Música (organización de carpetas, formato del nombre de archivo con ejemplo en vivo, calidad de audio), Fotos (calidad, organizar por colección, colecciones editables), Video (organizar por categoría, y por qué el formato **no** es una preferencia) y Servicios (orden de búsqueda de carátula, Deezer, claves).
+
+**Cambiar la carpeta de la biblioteca hace exactamente lo que hace macOS: nada más que cambiarla.** Se leyó `switchLibraryFolder` antes de escribir: no migra, no copia, no mueve — apunta a la carpeta nueva, crea su estructura y lee el catálogo que haya ahí, o empieza vacía. Acá se replica igual y **se dice antes**, en un aviso permanente arriba del control, en vez de que el usuario lo descubra después.
+
+**Las claves van al Administrador de credenciales de Windows** (`Platform/CredentialStore`, el equivalente del Llavero, D-203/ST-032/ST-033): nunca a `preferences.json`, nunca al repositorio. Se verificó contra el almacén real —guardar, leer con acentos, reemplazar, borrar, y que aparezca en `cmdkey`— y se limpió la credencial de prueba. Se implementó de verdad en vez de mostrarla deshabilitada porque era directo, que era la condición.
+
+**Sin selector de idioma, y dicho en pantalla.** macOS tiene español/inglés; esta app es de un solo idioma por regla del repo (ST-079). En vez de dejar la sección ausente sin explicación, Ajustes › General lo dice.
+
+### Dos bugs reales, encontrados con el catálogo del dueño
+
+Al verificar la pantalla, un clic mío apuntó la biblioteca a `V:\Mac Externo\Documents\Aura Library` — la biblioteca **real** hecha en la Mac, con 2809 elementos. La app la mostró como **"esta carpeta todavía no tiene una biblioteca: empieza vacía"**. No era cierto, y ahí estaban dos fallas encadenadas:
+
+1. **Las fechas de Swift.** `Codable` codifica un `Date` como segundos desde el 1 de enero de **2001**, no de 1970: `"addedAt" : 808784218.004062`. Un `DateTimeOffset?` no lo puede leer, la lectura fallaba y **se descartaba el catálogo entero**. `AppleEpochDateConverter` ahora entiende las dos formas —número de Apple y texto ISO— y sigue escribiendo ISO.
+2. **Un número de pista imposible.** Una canción tenía `"trackNumber" : 4294967295` (el máximo sin signo de 32 bits, lo que devuelve una etiqueta rota leída sin signo). No cabe en un `int`, y los 2809 elementos se perdían por esa sola canción. `TolerantInt32Converter` lo trata como "sin número" y aplica el mismo criterio al disco, la calificación, la temporada y el episodio.
+
+**Lo que dejó pasar los dos: no distinguir "vacía" de "no la pude leer".** `LibraryCatalogStore.Load` se tragaba la excepción y devolvía una biblioteca vacía, así que en pantalla los dos casos se veían idénticos. Ahora hay `TryLoad`, que dice **por qué** falló, y la pantalla distingue tres situaciones: vacía, ilegible, y catálogo bien leído pero con los archivos faltantes (lo que pasa al apuntar a la biblioteca de otra computadora).
+
+Es la misma regla que ST-083 ya había escrito —*"un campo no puede tirar el catálogo entero"*— incumplida por el propio código que la enunciaba. Con las dos correcciones, el catálogo real se lee completo: **2809 elementos, 1082 álbumes, 634 artistas**. A esa altura no se le había escrito nada a la biblioteca del dueño (verificado por fechas). **Eso cambió después**: ver ST-087.
+
+**Entregado en esta sesión** (Core, 659/659 tests; app ARM64 0 errores / 0 advertencias): `Library/LibraryOptions` (+14), `AppleEpochDateConverter` (+8), `TolerantInt32Converter` (+10), `Platform/CredentialStore` con `ApiKeyService`, y la reescritura de `SettingsPage`/`SettingsViewModel`/`AppPreferences`.
+
+**Alcance de este ST.** No toca `studio/AuraStudio/` (macOS) ni ningún contrato. Los dos bugs son **solo de Windows**: macOS escribe esos archivos, no los mal-lee.
+
+## ST-087 — Pérdida de datos en la biblioteca compartida: se guardó una lista filtrada como si fuera el catálogo entero
+
+**Qué pasó.** El dueño usa **la misma carpeta de biblioteca desde la Mac y desde Windows** (`V:\Mac Externo\Documents\Aura Library`) — es un requisito del producto, no una prueba accidental. Al abrir la app de Windows apuntada ahí, `biblioteca.json` pasó de **2809 elementos (3,456,595 bytes)** a **401 elementos (446,642 bytes)**. Se perdieron 2408 entradas del catálogo: sus títulos, artistas, álbumes, letras sincronizadas, enlaces de MusicBrainz, calificaciones, favoritos, categorías y álbumes de fotos. **Los archivos de medios no se tocaron**; lo perdido es la metadata que solo vivía en el catálogo.
+
+**La causa, en una frase**: la app descartaba al leer los elementos cuyo archivo no alcanzaba, y después guardaba esa lista recortada como si fuera el catálogo completo.
+
+`LibraryViewModel.Reload` filtraba con `File.Exists` —igual que hace macOS en `loadCatalog`— y `Save` escribía esa misma lista. En macOS la combinación es inofensiva porque es su propia biblioteca y los archivos siempre están. En Windows, con 2408 rutas que no se resuelven a través de la red, el filtro se convirtió en un borrado. Bastó que el proceso de reintento de elementos "en cola" disparara un guardado.
+
+**La regla que queda, y que no estaba escrita:** *lo que se guarda es siempre el catálogo completo; filtrar es cosa de la vista, y una lista filtrada no puede llegar jamás a una ruta de escritura.* Ahora `Items` es el catálogo entero —lo que se guarda—, `AvailableItems` es lo que se muestra, y las dos se recalculan juntas en un solo lugar. Los elementos cuyo archivo no está **se conservan intactos** y vuelven solos si el archivo reaparece. Cubierto por `CatalogPreservationTests`, que falla si el almacén vuelve a descartar algo por su cuenta.
+
+**Dos daños colaterales del mismo error, también corregidos.** Un elemento sin metadata cargada borraba su carátula en `.portadas/` al guardarse; ahora la carátula solo se toca cuando el elemento la trae. Y `CoverPath` usaba el identificador sin guiones y en minúsculas, mientras macOS escribe `<ID EN MAYÚSCULAS CON GUIONES>.jpg`: cada app escribía su propia carátula para la misma canción y ninguna veía la de la otra.
+
+**Escritura compatible con macOS** (requisito nuevo del producto, encargo del dueño). La app de macOS decodifica con `try? JSONDecoder().decode(...)` y un decodificador por omisión: **lo que no puede leer no da error, deja la biblioteca vacía en silencio** — el espejo exacto del bug de lectura de ST-086. Por eso ahora Windows escribe la forma que Swift decodifica: fechas como segundos desde 2001, identificadores en mayúsculas con guiones, y los nombres de campo exactos (`musicBrainzRecordingID`, `musicBrainzReleaseID`, `trackItemIDs` — los tres que la conversión automática a camelCase escribía distinto, y que Swift, que sí distingue mayúsculas, habría ignorado en silencio). `SwiftInteropTests` fija la lista completa de campos y sus tipos.
+
+**Lo que NO se pudo recuperar.** No hay copia previa al alcance: la escritura es atómica (sin archivo parcial), el recurso es de red (sin instantáneas de Windows) y la `.Trash` del recurso no tiene nada. **La vía de recuperación es Time Machine o el respaldo de la Mac**, y es del dueño.
+
+**Trabajo futuro anotado** (encargo del dueño): evaluar un aviso o un candado suave para cuando las dos apps abran la misma carpeta a la vez. Hoy la concurrencia es responsabilidad suya.
+
+**Entregado** (Core, 672/672 tests; app ARM64 0 errores / 0 advertencias): `CatalogPreservationTests` (+5), `SwiftInteropTests` (+8), `SwiftUuidConverter`, y las correcciones en `LibraryStore` y `LibraryViewModel`.
+
+## ST-088 — La app se cerraba sin decir nada: no había ningún manejador de excepciones, y el estado del dispositivo se actualizaba fuera del hilo de interfaz
+
+**Punto de partida: la evidencia, no la sospecha.** El plan pedía empezar por el crash dump y el Visor de eventos. Hay dos registros de `AuraStudio.App.exe`, ambos con excepción **`0xC000027B`** (excepción "guardada" no controlada) en `Microsoft.UI.Xaml.dll`, con el fallo real dentro de `combase.dll`: `0x80004005` (E_FAIL) el 31/08 a las 23:27 y `0x80004003` (E_POINTER) a las 16:13. **Del lado de Aura Studio no quedó absolutamente nada**: ni mensaje, ni archivo, ni pista.
+
+**Ese "nada" era el problema más grave, y era propio.** La app no tenía **ningún** manejador global de excepciones — ni `Application.UnhandledException`, ni `AppDomain`, ni `TaskScheduler`. En WinUI 3, una excepción que escapa de un manejador de interfaz **mata el proceso sin diálogo**; sin nada que la anote, lo único que queda es un código COM en el Visor de eventos. Ahora está `CrashReporter`: escribe tipo, mensaje y pila en `%LOCALAPPDATA%\Aura Studio\errores.log` y avisa en pantalla cuando puede. Se marca la excepción de interfaz como controlada — decisión con costo, porque la app sigue viva y quizá en un estado raro, pero morir en silencio es peor: el usuario no sabe si su iPod quedó a medias y no queda nada que mirar después.
+
+**El defecto concreto que sí se encontró y se corrigió**: el estado del dispositivo podía actualizarse **fuera del hilo de interfaz**. `UsbDeviceWatcher.Scan()` corre en `Task.Run`, y `DevicesChanged` termina llegando a `DeviceSessionService.Reevaluate()`, que muta propiedades observables leídas por los enlaces XAML. Desde un hilo del grupo eso revienta dentro de `combase.dll` — exactamente la firma registrada. Aparecería justo en el cambio de familia porque instalar Metro después de Aura hace que el iPod se re-enumere varias veces por USB (DFU, bootloader, modo disco), y cada una dispara otro sondeo. Ahora `Reevaluate` vuelve siempre al hilo de interfaz (`App.UiDispatcher`, capturado en `OnLaunched`), y un `Debug.Assert` avisa si algún camino nuevo se salta ese paso.
+
+**Lo que NO se puede afirmar.** Sin el iPod no hay forma de reproducir el crash, así que **no se puede decir que esté arreglado**: se corrigió un defecto real y compatible con la firma, y se eliminó la ceguera que impidió diagnosticarlo. La próxima vez que ocurra habrá un archivo legible con el tipo, el mensaje y la pila, en vez de arqueología sobre un código COM. Queda pendiente reproducirlo con el aparato.
+
+**Punto 2 de la lista de correcciones, verificado y cerrado**: el P0 de arranque ya no está. `UsbDeviceWatcher` no consulta WMI en su constructor, `DeviceSessionService` tampoco, y el primer sondeo lo pide la ventana en `Activated` con tope de 12 s.
+
+**`.preparados` y `.portadas` nunca se limpian** (instrucción del dueño tras ST-087). Hoy ningún código los borra; para que siga siendo cierto, `LibraryStore.NeverCleaned`/`IsProtected` lo declaran de forma consultable y `CatalogPreservationTests` lo fija. Son la reconstrucción latente de las 2408 entradas perdidas: audios ya convertidos con sus etiquetas y sus letras al lado.
+
+**Entregado** (Core, 674/674 tests; app ARM64 0 errores / 0 advertencias): `Services/CrashReporter`, `App.UiDispatcher`, el marshalling en `DeviceSessionService`, y `LibraryStore.NeverCleaned`/`IsProtected` con 2 casos.
+
+## ST-089 — Fase 3 cerrada: hoja de información, listas de reproducción y revisión de similares
+
+**Hoja "Más información"** (port de `MediaInfoView.swift`). La lógica va a Core (`MediaInfoEdit`, +19 casos) y la vista solo dibuja campos: qué cuenta como completo —**título, artista y álbum son obligatorios**, con el motivo dicho en pantalla y no un botón gris—, que un campo vacío se guarde como **ausente** y no como cadena vacía, que la letra conserve su formato pero una en blanco no se guarde, que cero estrellas signifique "sin calificar", y que la carátula y los identificadores de MusicBrainz **sobrevivan** a una edición que no los toca. La hoja se arma en código porque los campos dependen del tipo y de la categoría: en XAML serían tres plantillas casi iguales que se desincronizan solas.
+
+Editar a mano enciende `MetadataEditedByUser` — **la única vía que lo enciende**: leer etiquetas o completar en línea jamás lo hacen, que es lo que protege la corrección del usuario de una relectura masiva.
+
+**Listas de reproducción.** Crear, renombrar, eliminar, importar M3U/M3U8 y exportar. Al importar, las pistas se resuelven contra la biblioteca por ruta y **las que no están se cuentan y se dicen** ("faltan 12 que no están en tu biblioteca"), en vez de desaparecer y que la importación parezca a medias. Eliminar una lista no borra sus canciones, y se dice. `LibraryStore.SavePlaylists` relee el catálogo y solo reemplaza las listas: guardar una parte de la biblioteca nunca puede borrar la otra (ST-087).
+
+**Revisión de elementos parecidos** (ST-063). Cada grupo muestra **la evidencia** —por qué se juntó—, la confianza, cuál se sugiere conservar y qué correcciones propone. Nada se aplica solo. "Conservar solo este" quita de la biblioteca, **no borra archivos**, y lo dice después. "No son lo mismo" recuerda el grupo y no vuelve a mostrarlo, con un botón para restablecer. El detector corre fuera del hilo de interfaz: en una biblioteca grande compara miles de pares.
+
+**Glifos nuevos verificados renderizándolos**: `E735` estrella llena, `E734` contorno, `E70F` editar.
+
+**Entregado** (Core, 693/693 tests; app ARM64 0 errores / 0 advertencias): `Library/MediaInfoEdit` (+19), `LibraryStore.LoadPlaylists`/`SavePlaylists`, y en la app `MediaInfoDialog`, `PlaylistsPage`/`PlaylistsViewModel`, `SimilarItemsPage`/`SimilarItemsViewModel`.
+
+**Con esto la Fase 3 queda completa.** Las tres decisiones que la fase pedía cerrar con el dueño ya estaban tomadas en ST-082 (TagLib#, Windows.Graphics.Imaging, ffmpeg localizado en el sistema).
+
+## ST-090 — Port a Windows, Fase 4 (motor de sincronización): el manifiesto es el mismo archivo que lee la Mac
+
+El dueño sincroniza **el mismo iPod desde las dos apps**. El manifiesto (`/.rockbox/aura/sync_manifest.json`) es el único archivo que las dos escriben y leen, y el `SyncManifest` provisional que había en el port tenía otra forma por completo: una lista de entradas indexada por ruta de destino, sin autor ni huella del destino. macOS no lo habría podido decodificar, y `try? JSONDecoder()` del otro lado devuelve vacío en silencio: **la Mac habría vuelto a copiar la biblioteca entera** en el siguiente sync, y al revés.
+
+Se reemplazó por `DeviceSyncManifest`, port exacto del `SyncManifest`/`SyncRecord` de Swift: diccionario `records` indexado por ruta de origen, `contractVersion: 2`, y por registro `sourcePath`, `sourceSize`, `sourceModifiedAt`, `destinationRelativePath`, más los opcionales de v2 (`destinationSize`, `destinationModifiedAt`, `writtenBy`, `syncedAt`). Los detalles que parecen menores son justo los que rompen la compatibilidad, así que cada uno tiene su prueba: la fecha es un **número de segundos desde 1970** (el `TimeInterval` de Swift), no una fecha ISO ni los segundos desde 2001 que usa `Date` de `Codable`; un opcional ausente **no se escribe como `null`**, se omite, igual que hace Swift; un manifiesto v1 —sin las claves nuevas— decodifica igual, porque exigirlas tiraría el archivo entero por una clave que falta; y un manifiesto ilegible devuelve uno vacío en vez de una excepción, porque copiar de más solo tarda y no poder sincronizar es mucho peor.
+
+**Tolerancia de dos segundos al comparar fechas.** macOS compara igualdad exacta porque siempre lee la misma fecha del mismo disco. Acá la biblioteca vive en una carpeta compartida de Parallels, donde la fecha que ve Windows y la que vio la Mac difieren por el redondeo del transporte: sin tolerancia, **alternar entre las dos apps recopiaría la biblioteca completa cada vez**. Dos segundos es la granularidad de FAT32, el piso de todo lo que hay en juego; el tamaño se sigue comparando exacto, y el destino también (cambiar el layout o el formato de nombre no cambia el archivo pero sí dónde va).
+
+`writtenBy` va con el `InstallationId` de esta instalación: dos equipos sincronizando el mismo iPod no se pisan los registros.
+
+## ST-091 — Nada sale del iPod sin que el usuario lo pida
+
+El servicio provisional del port borraba del iPod, sin preguntar, todo lo que ya no estuviera en la biblioteca. Es exactamente lo que macOS decidió no hacer: sacar una canción de la biblioteca para reorganizarla no puede hacerla desaparecer del aparato.
+
+Ahora el plan distingue dos cosas que antes eran una sola. Lo que **se movió** (`ToSweep`) se barre solo: el archivo no desaparece, se está escribiendo ahora mismo en su lugar nuevo, y dejarlo sería tener la canción dos veces. Lo que **ya no está en la biblioteca** (`Orphans`) se reporta y se queda donde está; solo se borra lo que llegue en `ApprovedOrphanSourcePaths`, que va vacío por omisión. La pantalla lo dice con todas las letras y muestra el conteo.
+
+**El motor** (`LibrarySyncEngine`) es el port de la parte ejecutora de `LibrarySync.swift`, con las mismas defensas: se copia por bloques de 4 MB a un `<destino>.aura-tmp` —extensión desconocida para el firmware a propósito, para que un archivo a medio escribir **nunca** se indexe, a diferencia de un `.mp3` truncado, que sí se indexaría con metadata basura— y recién al final se renombra; los temporales que dejó un corte anterior se barren al empezar (los de las dos apps, que usan la misma extensión); hay un `sync_in_progress` mientras dura; **el manifiesto se guarda después de cada archivo**, que es lo que hace que desconectar el iPod a mitad conserve lo ya copiado; y un archivo que falla —nombre imposible para FAT32, corrupto, permisos— se anota y el resto sigue, porque el usuario prefiere 900 canciones y un aviso a nada y un aviso.
+
+**Cancelar no es abortar**: lo copiado queda completo en el disco, y el manifiesto y el marcador se escriben igual. Un iPod con menos archivos de los pedidos pero consistente, no uno a medias que el firmware no sabe que tiene que reindexar.
+
+**La base de música solo se borra si el firmware no anuncia `sync_marker_supported`** (contrato §4.4). Con un firmware que sí lo anuncia, borrarla le quitaría al usuario su música vieja mientras el firmware decide cuándo reconstruir. Y ni en ese caso se tocan `/.aura/thumbs/` ni `/.aura/art/`: son del firmware, sus claves no dependen de la base, y rehacerlas cuesta minutos de espera para nada.
+
+**Un defecto que macOS no tiene y el port sí necesitaba**: dos elementos distintos pueden caer en la misma ruta de destino (mismo título en el mismo álbum, dos fotos `IMG_0001.jpg` de carpetas distintas). Sin desambiguar, una pisa a la otra en silencio y el usuario termina con menos archivos de los que mandó, sin ningún aviso; ahora la segunda recibe un sufijo `(2)`.
+
+**Entregado** (Core, 789/789 tests; app ARM64 0 errores / 0 advertencias): `Library/SyncLayout`, `SyncPlanner`, `DeviceSyncManifest`, `LibrarySyncEngine`, `LibrarySyncFinalizer`, `ArtistImageStore`; en la app, `SyncService` reescrito sobre ellos y el `SyncManifest` provisional eliminado.
+
+## ST-092 — Lo que se escribe al final del sync: estado completo, y sin nada que decir el archivo se borra
+
+Después de copiar, el firmware lee media docena de archivos para armar sus pantallas. `LibrarySyncFinalizer` los escribe todos con la misma regla, que vale para cada uno: **se escribe el estado completo en cada pasada, no un diferencial**, y **sin nada que escribir el archivo se borra**. Lo primero es porque una letra que llegó por enriquecimiento después de que la canción ya estaba en el iPod tiene que llegar igual; lo segundo, porque un índice viejo apuntando a archivos que ya no están le hace mostrar al firmware entradas que no se pueden abrir.
+
+- **Letras** (contrato §3): junto al audio, mismo nombre base, `.lrc` — la única ruta que el firmware intenta. Sin la canción en el iPod no se escribe (sería el huérfano que el contrato prohíbe), una letra borrada en Studio se va del iPod, y una que no cambió no se reescribe: sobre USB 2.0, rehacer miles de archivos idénticos cuesta minutos.
+- **Carátulas**: `cover.jpg` una vez por carpeta de álbum, solo con la política `albumOnly`.
+- **Listas**: `.m3u8` con las rutas del dispositivo en **NFC** (ST-062: el firmware las abre byte a byte contra los nombres largos del FAT, y Windows y macOS no normalizan igual los acentos), más su portada con el mismo nombre base — la del usuario si eligió una, si no un mosaico con las carátulas de sus pistas.
+- **Pósters de temporada** (D-318): `Videos/<Serie> S0N.jpg`, del primer episodio que tenga carátula, con el mismo saneo que usaron los episodios porque el firmware concatena el nombre de programa que ya parseó con `" S%02d.jpg"`. Solo se reescribe si cambió.
+- **`sync_summary.cfg`**, **`ratings.cfg`** (la calificación no vive en ninguna etiqueta: es un dato de tagcache que se pierde en cada reconstrucción, y este sidecar es lo único que la conserva — de una vía, gana la de Studio), **`video_categories.cfg`**/**`photo_categories.cfg`**, y **`artist_images.cfg`** con las fotos reducidas a 128 px.
+
+`ArtistImageStore` porta el algoritmo de nombre de archivo **carácter por carácter** desde Swift: las dos apps escriben en la misma biblioteca y un artista tiene que quedarse con una sola foto, no con una por sistema operativo.
+
+## ST-093 — Transcodificación en Windows: el perfil es contrato con el aparato, y ffmpeg puede estar en cualquier carpeta
+
+El iPod Classic reproduce video con el plugin `mpegplayer` de Rockbox: MPEG-1/2 dentro de 320x240 con audio MPEG Layer II. Un archivo fuera de ese perfil **se copia perfecto y no se ve**, así que los argumentos de ffmpeg no son una preferencia sino contrato con el hardware. Por eso viven en Core, puros (`Media/FfmpegArguments`), y se prueban uno por uno sin ffmpeg instalado y sin un video de verdad: el códec, el contenedor, los 44100 Hz que libmad necesita —sin eso, un video de teléfono a 48 kHz queda mudo—, el escalado que **conserva la relación de aspecto y no rellena con barras negras** (rellenarlas dejaba todo en 320x240 exactos y el firmware no podía distinguir "video angosto" de "video con barras", volviendo inútil su lógica de ajustar/cubrir), el `-r 24` que solo se aplica cuando la fuente lo excede, y el recorte de franjas horneadas antes del escalado.
+
+Lo que se le lee a ffmpeg también es puro y probado con texto suelto (`Media/FfmpegOutput`): duración, cuadros por segundo, resolución —recorriendo carácter por carácter, porque el nombre del formato de píxel trae comas propias que partirían la línea en pedazos equivocados— y el recorte de `cropdetect` con su umbral: un recorte de 2-3% aparece hasta en fuentes sin ninguna franja, y aplicarlo recortaría un poco de **todos** los videos sin necesidad.
+
+**Un ajuste que macOS no tiene: dónde está ffmpeg.** Allá Homebrew lo deja siempre en uno de tres lugares y alcanza con buscarlo. En Windows puede estar en cualquier carpeta, y un usuario con ffmpeg en `D:\herramientas\` se quedaría sin recurso y sin explicación. Se busca solo en winget, Program Files, Chocolatey, Scoop y el PATH; si no aparece, la pantalla dice el comando exacto (`winget install Gyan.FFmpeg`) y ofrece elegir el ejecutable a mano. Lo elegido gana sobre la búsqueda, pero si esa ruta ya no existe se vuelve a buscar solo: desinstalar y reinstalar no puede dejar la app trabada.
+
+**Las fotos también viajan preparadas**: el LCD es de 320x240 y una foto de teléfono ocupa cien veces lo que hace falta para verse igual. Antes del port, `LibraryProcessor` dejaba las fotos sin preparar y el original entero se habría copiado al iPod.
+
+Un `.mpg` a medio escribir se borra si la conversión falla o se cancela: copiado al iPod se indexaría como si estuviera completo y no se podría reproducir.
+
+## ST-094 — La pantalla de sincronizar: lo que se va a borrar se ve antes, marcado por el usuario
+
+`SyncPage` existía y **no estaba en la navegación**: no había forma de llegar a ella. Ahora está en el pie, junto a Instalador, siempre a la vista.
+
+La pantalla muestra tres números —por copiar, ya al día, reubicados— y, aparte y siempre que existan, **los archivos del iPod que ya no están en la biblioteca**, cada uno con su casilla sin marcar. Se explican con todas las letras: se quedan donde están hasta que el usuario marque cuáles quitar. Borrar es lo único que no se puede deshacer, así que es lo único que exige una acción deliberada.
+
+El progreso es por archivo, con cancelación; cancelar deja lo copiado completo y anunciado al firmware, y así lo dice el mensaje final. "Expulsar el iPod" aparece recién al cerrar la sincronización — expulsar antes de escribir el marcador dejaría al firmware sin saber que tiene que reconstruir sus índices.
+
+**Verificado en pantalla**, no solo compilado: `docs/capturas/fase4-sincronizar.png` y `fase4-ajustes-video.png`. Las dos primeras versiones de la página tenían defectos que solo se veían mirando —la tarjeta de estado quedaba alta y vacía con renglones en blanco, y quitar la alineación izquierda mandó el contenido fuera del borde derecho—; el glifo `E895` se renderizó antes de usarlo, como manda el precedente.
+
+## ST-095 — Temas: la regla de licencia no depende de que la pantalla se acuerde
+
+La UI de temas no existía (había una `ThemeEditorPage` vacía de 22 líneas, sin navegación) y el servicio no sabía activar ni exportar. Ahora está completo, y **la lógica vive en Core** (`ThemeInstaller`) en vez de en la capa de la app: así el ciclo que pide el plan —construir, validar, instalar, activar, eliminar— se prueba entero contra un volumen de mentira, sin un iPod conectado. La clase de la app quedó como una costura de ocho líneas.
+
+**Un tema de uso personal nunca se exporta.** La pantalla deshabilita "Compartir…" con la explicación al lado —nunca lo esconde, ST-003— pero la regla se vuelve a verificar dentro de `Export`: si dependiera solo de la pantalla, cualquier camino nuevo la saltaría. Lo mismo con las otras dos reglas del repo: **se valida antes de instalar, nunca después** (un tema inválido no llega a tocar el iPod, y el que ya estaba sigue intacto), y **el id pasa por `AuraThemeID.IsValid` antes de tocar cualquier ruta que lo contenga** — probado con `..`, `../../..` y `con/barra`, que sin esa comprobación escribirían o borrarían fuera de la carpeta de temas.
+
+**Activar es editar `aura.cfg`, que son los ajustes del usuario.** `ThemeActivation` (puro, en Core) cambia solamente la línea `theme_id:` y deja el resto del archivo igual; perder de paso el volumen o el color de acento sería mucho peor que no cambiar el tema. Se escribe a un temporal y se reemplaza. Es una edición transitoria —el firmware reescribe el archivo entero la próxima vez que guarda— pero tiene que sobrevivir hasta el próximo arranque, que es justo cuando la lee.
+
+**Un tema que no carga se muestra igual, con el motivo**, y los motivos están en español y dicen qué hacer: "le faltan 3 fuentes: title, body, caption", "está hecho para la versión 2 del formato y este firmware entiende hasta la 1. Actualiza el firmware del iPod". Esconderlo dejaría al usuario sin entender por qué el tema que copió a mano no aparece. Eliminar el tema activo vuelve primero al integrado: borrar la carpeta que el firmware busca lo dejaría cargando el fallback sin explicación.
+
+**Entregado** (Core, 866/866 tests; app ARM64 0 errores / 0 advertencias): `ThemeActivation` (+13 casos), `ThemeInstaller` (+17), y en la app `ThemesPage`/`ThemesViewModel` colgando de Extras › Temas. Lo que **no** se pudo ver en pantalla es la lista con temas de verdad: eso necesita el iPod, y queda anotado para la sesión con el dueño.
+
+## ST-096 — Fase 6: el nombre del iPod, la hora, y completar en línea
+
+**El nombre del iPod** (`CONTRATO-dispositivo.md` v2). `DeviceNameStore` porta el contrato entero: el archivo es `device.cfg` y **no** `aura.cfg` porque el firmware reescribe ese último completo cada vez que guarda un ajuste, y cualquier clave que no conozca se perdería en el primer cambio de volumen. Lo que más se prueba es la propiedad del nombre: **solo la instalación que nombró el iPod la primera vez lo puede cambiar**; otra lo muestra con la explicación en pantalla y el campo en solo lectura —nunca escondido, que parecería un error de la app— y jamás pisa `device_owner`. Un archivo v1 sin dueño se reclama recién en el próximo guardado real, nunca reescribiendo el archivo solo para reclamarlo.
+
+El saneo del nombre sigue al de macOS carácter por carácter, incluido lo que parece raro: **los caracteres de control se descartan enteros**, así que un tabulador entre dos palabras las pega. Los emoji también se descartan en vez de recortarse, porque el iPod no tiene glifo fuera del BMP y mostraría cajas. Y los dos topes son a la vez: 32 caracteres **y** 48 bytes UTF-8, con una prueba que verifica que ninguna línea del archivo pase de 63 bytes — el techo real del lector de `.cfg` del firmware.
+
+**La hora**, al conectar (`ClockSyncWriter`, contrato §D.4). El iPod no tiene forma de saberla solo y ponerla a mano en una rueda de clic es de lo más molesto que tiene. Se escribe en `aura.cfg` con el mismo cuidado que la activación de temas: solo las líneas propias, el resto del archivo intacto, y sin duplicar nada al sincronizar dos veces. El huso va en cuartos de hora porque hay husos de media hora y de 45 minutos. **Silencioso de punta a punta**: es una cortesía en segundo plano y no puede interrumpir nada; un iPod donde el firmware nunca arrancó no tiene `aura.cfg` y simplemente no se toca.
+
+**Completar en línea**, que estaba escrito en Core desde hace tres fases y **no lo llamaba nadie**. Ahora hay un `EnrichmentService` que arma los clientes con las claves reales del Credential Manager, un botón en Canciones que trabaja sobre la selección —o sobre lo que esté incompleto si no hay selección, que es lo que uno quiere al apretarlo sin elegir nada— y otro en Artistas para las fotos.
+
+**Las fotos de artista** (`ArtistImageResolver`, ST-032) son dos llamadas encadenadas: fanart.tv **no busca por nombre**, así que MusicBrainz tiene que resolver el identificador primero. Lo que más importa no es la foto sino el motivo cuando no hay: "te falta la clave de fanart.tv" y "no se encontró a este artista" son cosas distintas, y confundirlas manda al usuario a buscar donde no es. Un artista que ya tiene foto no se vuelve a pedir: son dos llamadas por artista y una biblioteca real tiene cientos.
+
+**Verificado de verdad, no solo compilado**: se corrió "Completar en línea" contra una biblioteca de fixtures y la red real. La canción sin etiquetas pasó de "Necesita revisión" a "Listo" con artista y álbum resueltos, y la barra de estado reportó el conteo (`docs/capturas/fase6-completar-en-linea.png`).
+
+**Entregado** (Core, 901/901 tests; app ARM64 0 errores / 0 advertencias): `DeviceConfig`/`DeviceNameStore` (+18), `ClockSyncWriter` (+10), `ArtistImageResolver` (+6); en la app, el campo de nombre en General, la sincronización de hora al conectar, `EnrichmentService` y los dos botones.
+
+**Un descuido propio, corregido**: escribí un `VideoTitleParser` nuevo en `Media/` sin ver que ya existía uno idéntico en `Networking/`, portado en una fase anterior. Se eliminó el duplicado y las pruebas nuevas quedaron cubriendo al que ya estaba —que hasta ahora no tenía ninguna.
+
+## ST-097 — Fase 7: auditoría de paridad, y lo que queda para el dueño
+
+**Las 43 vistas de macOS, una por una**, contra lo que hay en Windows: la tabla está en `ESTADO-PORT.md`. Treinta y cuatro son equivalentes, cuatro resuelven el mismo trabajo con otro patrón (la barra de menú de la app, que Windows no lleva; la barra de actividad del dispositivo, repartida entre Sincronizar y el encabezado de la navegación; los componentes de listado y la botonera del instalador) y **tres están pendientes, a conciencia**:
+
+- **Volver al firmware de Apple** (`RestoreHandoffView`): en macOS lo termina Finder; en Windows sería iTunes o Dispositivos de Apple. **No se puede diseñar sin probarlo con el iPod**.
+- **Editar metadata por lote**: la de un elemento está completa; la de varios es comodidad, no contrato.
+- **Hoja de revisión de carátulas contaminadas**: `CoverArtAssets` ya decide en Core qué imagen es carátula, pero falta la hoja con vista previa que ST-012 exige antes de quitar nada de Imágenes. **Mientras no exista, ningún camino de la app borra imágenes**, así que la regla se cumple por ausencia y no por implementación — que es una diferencia que conviene tener escrita.
+
+**Fluent 2**: claro y oscuro verificados en pantalla con la tabla de Canciones (el caso más denso) y con Sincronizar; a 900×640 nada se corta ni se sale del borde; los botones primarios siguen el color de acento del sistema; los botones de solo ícono llevan nombre accesible. Dos cosas quedaron anotadas y **no** se arreglaron en caliente: los íconos decorativos de encabezado se anuncian como contenido, y el ajuste "barra de estado" existe sin que ninguna pantalla lo lea.
+
+**Lo que no se pudo hacer sin el dueño ni sin el aparato** quedó consolidado en `ESTADO-PORT.md` § "Sesión de cierre con el dueño": el empaquetado (decisión suya y bloqueante), el sync real al iPod, ffmpeg instalado, las claves de fanart.tv y TMDB, la vuelta al firmware de Apple, y la revisión visual con su biblioteca.
+
+## ST-098 — Rendimiento medido, no supuesto: 12 000 canciones y dónde está el único riesgo
+
+El port se escribió contra bibliotecas de fixtures de doce canciones y el dueño tiene ~1000 álbumes. `tools/LibraryPerfCheck` —fuera de la solución, como `ImageResizerCheck`, porque mide y no afirma— genera 12 000 canciones y cronometra lo que la app hace en cada arranque y en cada cambio de sección.
+
+Los números están en `ESTADO-PORT.md` y no piden ninguna optimización: leer el catálogo entero, 179 ms; agrupar los mil álbumes, 25 ms; armar y ordenar la tabla completa, 31 ms; planificar una sincronización de todo, 20 ms.
+
+**El único punto que puede doler no es ninguno de esos**: la app comprueba que el archivo de cada elemento exista en cada recarga —54 ms en disco local— y la biblioteca del dueño vive en una carpeta compartida de Parallels, donde cada una de esas 12 000 consultas se va por la red. Medirlo contra `V:` es parte de la sesión de cierre. Si duele, la salida es **cachear e invalidar al cambiar de carpeta**, nunca quitar la comprobación: es lo que distingue "el archivo no está" de "no está en la biblioteca", y confundir esas dos cosas es exactamente lo que costó 2408 entradas en ST-087.
+
+## ST-099 — Actualizar el firmware es un botón y una barra, no cinco pasos
+
+Port de D-222. El aviso de versión nueva vive en General, y **el botón que la instala está ahí mismo**: no manda al asistente, no pide elegir modo, no hace navegar. Lo único que se ve es el avance y el resultado.
+
+Por dentro es **exactamente el mismo camino de copia del asistente** —`CopyFilesAsync`, con sus mismas defensas: revalidar el disco antes de tocarlo y tomar el candado de escritura— y no hay nada nuevo que pueda romper: **no formatea y no entra a DFU**. Un árbol que ya arrancó una vez tiene su bootloader puesto, así que actualizar es reemplazar archivos y nada más.
+
+**Siempre la familia que ya está en el iPod** (ST-047), diga lo que diga la preferencia de Extras: actualizar nunca puede convertirse en cambiar de familia sin que nadie lo haya pedido.
+
+**No se pudo probar contra el aparato** — como todo el instalador. Lo que sí se puede afirmar es que no agrega ningún camino destructivo nuevo: si la copia del asistente es correcta, esta lo es, porque es la misma.
+
+## ST-100 — Cierre del port: el riesgo #6 se cierra en "no, todavía no"
+
+El plan v1 dejó abierto evaluar si `studio/windows/` debía salir a repositorio propio "si crece". Creció: **38 075 líneas de C# y XAML contra 25 246 de Swift** — el port ya es más grande que la app que porta.
+
+**Aun así se queda acá, y el tamaño no es el criterio.** Lo que haría falta para justificar la separación es un ciclo de release propio o gente distinta trabajando en cada lado, y no hay ninguna de las dos cosas. Lo que sí hay son tres razones para no separarlo:
+
+- **Los contratos viven en este repo** (`CONTRATO-firmware-studio.md`, `CONTRATO-formato-tema.md`, `CONTRATO-dispositivo.md`, `docs/contracts/library-layout-v1.md`) y el port los lee constantemente. Separarlo obliga a una cuarta copia sincronizada de cada uno — exactamente el modo de falla contra el que el repo ya se cuida.
+- **La numeración `ST-NNN` es compartida y se cruza todo el tiempo**: ST-046, ST-062, ST-087, ST-012 se citan desde el código de Windows porque describen decisiones que valen para las dos apps. Partirla en dos diarios haría que la mitad de las referencias apunten afuera.
+- **La paridad se audita comparando los dos árboles**, y esta misma noche eso se hizo media docena de veces leyendo el Swift al lado del C#. Con dos repositorios, cada una de esas lecturas es un checkout más.
+
+Se revisa de nuevo **cuando la app de Windows tenga su propio ciclo de publicación**, no antes.
+
+Con esto quedan corridas las fases 4 a 7 del plan hasta donde alcanza sin el iPod y sin el dueño. Lo que falta está consolidado en `ESTADO-PORT.md` § "Sesión de cierre con el dueño" (lo que lo necesita a él) y § "Post-plan" (lo no bloqueante que se encontró y se dejó anotado a propósito).
+
+## ST-101 — Pósters de video: el último punto de la Fase 6, y el motivo dicho cuando no hay
+
+`VideoArtworkResolver` estaba en Core desde ST-033 y **no lo llamaba nadie** — el mismo caso que `LibraryEnricher`. Peor: su `ResolveAsync` devolvía `null` para todo, y el `enum Failure` que declaraba no se usaba en ningún lado, así que quien lo llamara no podía distinguir "te falta la clave de TMDB" de "no se encontró". Esas dos cosas mandan al usuario a lugares distintos.
+
+Ahora hay `ResolveWithReasonAsync`, que **siempre trae el motivo**, y `KindOf(category)`, que traduce la categoría de Studio a lo que se busca — reconociendo también el nombre en inglés, porque un catálogo escrito por la app de macOS dice "Movies" y tratarlo como desconocido buscaría dos veces por nada.
+
+En la app, "Buscar pósters" aparece **solo en las cuadrículas de video** (Películas, Series, Videoclips, Todos los videos): en Fotos o en Álbumes el botón no diría nada. El póster se guarda como `<preparado>.jpg`, que es exactamente el archivo que la sincronización copia al lado del video, y también en la metadata, de donde salen la vista de la biblioteca y el póster de temporada. Uno que ya está **no se vuelve a pedir**, y si falta la clave de TMDB se corta en el primer video en vez de dar cientos de vueltas para repetir el mismo mensaje.
+
+**Sin clave de TMDB no hay póster por ningún camino**: fanart.tv no busca por título, necesita el identificador, y el único que lo resuelve es TMDB. Eso está probado por el lado que sí se puede probar sin claves reales — el del mensaje.
+
+**Entregado** (Core, 910/910 tests; app ARM64 0 errores / 0 advertencias): `VideoArtworkOutcome` + `ResolveWithReasonAsync` + `KindOf` (+9 casos), `EnrichmentService.FetchVideoPostersAsync`, y el botón en las cuatro cuadrículas de video (`docs/capturas/fase6-buscar-posters.png`).
+
+Con esto la Fase 6 queda completa salvo su criterio de aceptación, que **exige las claves reales del dueño**.
+
+## ST-102 — La biblioteca compartida se lee tolerante, y se sigue escribiendo igual
+
+El dueño apunta la MISMA carpeta de biblioteca desde Aura Studio en la Mac y desde Aura Studio en Windows. Con el catálogo real —401 elementos escritos del lado de Windows— **la app de macOS mostraba la biblioteca vacía. Sin un solo error.**
+
+El JSON decodificaba perfecto: los nombres de campo, los tipos y la fecha ya estaban acordados y probados del lado de Windows (`SwiftInteropTests`). Lo que fallaba era la **resolución de las rutas**, y ahí el modo de falla es silencioso por diseño: `loadCatalog()` omite todo elemento cuyo archivo no exista —criterio correcto, de un archivo ausente no hay nada que preparar ni sincronizar— así que 401 rutas irresolubles se ven **idénticas** a "todavía no agregaste nada". Es el mismo par de estados indistinguibles que costó 2408 entradas en ST-087.
+
+Dos causas, las dos medidas contra el archivo real:
+
+1. **Separadores `\`.** Windows arma sus rutas con `Path.Combine`, y en el JSON quedan `Música\Fatboy Slim\...`. Pegado con `appendingPathComponent` eso es UN componente con barras invertidas adentro. **401 de 401 rutas no existían; cambiando `\` por `/`, 401 de 401 existen.** Igual para las 401 `preparedRelativePath` y las 13 `coverRelativePath`.
+2. **Las dos apps nombran distinto el mismo archivo de carátula.** macOS usa `UUID.uuidString` (mayúsculas con guiones, `F26DBF19-0C21-…jpg`); Windows, el hexadecimal pelado del `Guid` (`f26dbf190c21…jpg`). Las 13 carátulas del catálogo apuntaban a nombres que no existen, con la imagen ahí al lado.
+
+**La corrección es solo de lectura.** `SharedCatalogPath` prueba candidatos en orden y se queda con el primero que exista: la ruta **literal primero** —en macOS `\` es un carácter válido en un nombre de archivo, y una biblioteca hecha acá con un archivo así tiene que seguir resolviendo a ESE archivo—, después la de separadores traducidos, y las dos normalizaciones Unicode (APFS y HFS+ no distinguen NFC de NFD, pero exFAT y un recurso de red sí). La carátula, además, cae al nombre canónico `.portadas/<UUID>.jpg` cuando la anotada no resuelve.
+
+**El formato de escritura no se toca**: esta app sigue guardando rutas relativas con `/`, que es lo que Windows lee sin problema. El efecto secundario es deseable: al primer guardado el catálogo compartido queda canonizado solo.
+
+Lo que la tolerancia **no** hace es inventar: una ruta absoluta de Windows (`C:\...`, `V:/...`, `\\servidor\...`) devuelve nil sin tocar disco —pegarla debajo de la raíz de la biblioteca daría una ruta absurda que además podría existir por casualidad— y un archivo que de verdad ya no está se sigue omitiendo.
+
+**Entregado:** `Models/SharedCatalogPath.swift`, `loadCatalog()`, la migración legacy de D-228 (que comparaba los prefijos `Originales/` contra rutas que podían venir con `\`) y 11 pruebas nuevas, entre ellas un `biblioteca.json` con la forma exacta que escribe Windows.
+
+**Para el Paquete B (Windows):** el separador canónico del catálogo compartido es `/`, y el nombre canónico de una carátula es `<UUID en mayúsculas con guiones>.jpg`. Windows lee bien las dos formas, así que **el arreglo de fondo es que escriba esas** — lo de acá es tolerancia de lectura, no la solución al problema de origen.
+
+## ST-103 — Casillas de selección: el gesto que no se ve no existe
+
+Las cuadrículas (Álbumes, Películas, Series, álbumes de Fotos, fotos) tenían selección múltiple desde el encargo del dueño de 2026-08-19, pero **solo se podía armar con Cmd+clic o Shift+clic**: un gesto que no aparece en ninguna parte de la pantalla y que hay que saber de antes. Las tablas, en cambio, siempre tuvieron su columna de casillas. La mitad de la app pedía conocimiento previo y la otra mitad no.
+
+Ahora cada tarjeta de cuadrícula lleva su casilla en la esquina superior izquierda, y cada fila de episodio al principio de la fila. **Se dibuja siempre**, no al pasar el mouse ni solo cuando ya hay algo seleccionado: una casilla que aparece únicamente cuando ya sabías que estaba no resuelve el problema que vino a resolver.
+
+La casilla **alterna** ese elemento sin tocar el resto (`GridSelection.toggle`, equivalente a Cmd+clic); el clic sobre la tarjeta sigue **reemplazando** la selección, como antes. Son dos cosas distintas a propósito: la casilla es acumulativa porque para eso existe.
+
+Va encima de portadas cualquiera —claras, oscuras, con detalle— así que no puede depender del contraste con la imagen: disco propio (acento si está marcada, negro translúcido si no) y aro blanco.
+
+**Artistas queda afuera** y no es un olvido: esa vista es una `List(selection:)` nativa, con la selección múltiple del sistema; agregarle casillas propias sería una segunda forma de hacer lo mismo, con otro comportamiento.
+
+## ST-104 — Buscar carátulas del álbum: elegir, no aceptar
+
+"Buscar información en línea" baja UNA carátula y la aplica sin preguntar. Está bien para enriquecer cientos de canciones de un tirón, pero cuando el usuario está mirando un álbum concreto y la tapa está mal, **no tenía forma de pedir otra**: la única salida era "Eliminar carátula" y quedarse sin ninguna.
+
+"Buscar carátulas del álbum..." busca varias y las muestra para que elija. La diferencia con "Buscar póster en línea" de Películas y Series es deliberada: TMDB identifica una película con bastante certeza, mientras que dos ediciones de un mismo disco tienen tapas distintas y **las dos son correctas**. Ahí elegir no es un lujo, es la única forma de acertar — por eso esta pantalla nunca aplica nada por su cuenta, ni siquiera cuando encuentra una sola.
+
+**Sin fuentes nuevas.** `AlbumCoverSearch` usa los clientes que ya estaban: MusicBrainz para buscar varias EDICIONES del álbum (`searchReleases`, nuevo) y Cover Art Archive para la tapa de cada una —ediciones distintas suelen tener arte distinto, y ahí está la variedad real que se le ofrece—, más Deezer (D-203, solo si está habilitado en Ajustes). Mejor esfuerzo de punta a punta: MusicBrainz caído no puede dejar sin resultados una búsqueda que Deezer sí podía contestar. Dos ediciones que comparten la misma imagen se muestran **una sola vez**: ofrecer dos veces lo mismo solo obliga a comparar dos imágenes idénticas.
+
+Se aplica a **todas las canciones del álbum** y marca `metadataEditedByUser`: una tapa elegida a mano es una decisión del usuario y ningún enriquecimiento posterior la puede pisar. Se vuelve a preparar cada canción para que la imagen quede embebida en el archivo que viaja al iPod; si eso falla se conserva el archivo preparado que ya había —mejor una canción sincronizable con la tapa vieja que una que se quedó sin nada listo—.
+
+**Exige UN álbum de destino.** Con una selección que mezcla discos no hay nada que buscar (¿la tapa de cuál?) y aplicar una sola imagen a todos sería justo lo contrario de lo pedido: el ítem no aparece. Tampoco para el grupo "Sin álbum", que no es un disco sino el cajón de lo que no tiene uno.
+
+Sin resultados **se dice en pantalla**, con qué revisar (título y artista) y que Deezer se puede activar en Ajustes › Servicios — nunca se cierra sola ni deja la tapa vieja sin explicación.
+
+**Entregado:** `Services/AlbumCoverSearch.swift`, `Views/AlbumCoverPickerView.swift`, `MusicBrainzClient.searchReleases`, `DeezerClient.searchAlbumCovers`/`fetchImage`, `LibraryViewModel.applyAlbumCover`, el ítem en el menú contextual de Álbumes y en el de la tabla de Canciones, el botón en la cabecera del detalle de álbum, y 11 pruebas con la red simulada.
+
+## ST-105 — El inventario de menús contextuales es un documento, no una lectura del código
+
+El Paquete B tiene que igualar en Windows los menús contextuales de macOS. Hacerlo leyendo el Swift al lado del C# **ya se probó y no escala**: los menús son diez, con condiciones que no están en ningún texto visible (el criterio Finder de qué alcanza la acción, los plurales, qué se deshabilita en vez de esconderse, dónde va cada separador). Lo que se pierde en esa lectura no da error: da un menú parecido.
+
+`docs/paridad-menus-contextuales.md` fija los diez menús ítem por ítem, en orden, con separadores y condiciones, más las cinco reglas transversales y —esto es lo que más fácil se agrega de más— **la lista de elementos que HOY no tienen menú contextual**. La paridad también es no inventar uno donde macOS no lo tiene.
+
+Se anotan las dos únicas divergencias legítimas: «Mostrar en Finder» es «Mostrar en el Explorador» en Windows (la excepción, escrita para que no se vuelva licencia para reescribir el resto de los textos), y el menú de un tema por omisión queda **vacío** —macOS no muestra nada— en vez de mostrar un ítem deshabilitado.
+
+**Se actualiza en el mismo cambio que toque un menú en macOS.** Un inventario que se atrasa es peor que no tenerlo: se sigue confiando en él.
+
+## ST-106 — Dos pruebas que con `xcodebuild` no podían pasar
+
+La compuerta de esta ronda es `xcodebuild` de verdad, no solo `swift test` (que es el camino rápido, ver `Package.swift`). Correrla destapó dos pruebas que estaban rotas desde antes y que `swift test` nunca iba a mostrar.
+
+**`LibrarySyncTests.testSyncWritesAlbumCoverInsideAlbumFolder`** armaba "la ruta mala" concatenando el **directorio de trabajo del proceso**. Con `swift test` el cwd es la carpeta del paquete y la prueba pasaba; con `xcodebuild` el cwd es `/`, la ruta mala se reducía a `<volumeRoot>/Music` —que el propio sync crea siempre— y **fallaba pasara lo que pasara**. Ahora enumera el volumen entero y exige que `cover.jpg` exista en la carpeta del álbum y en ninguna otra ruta: comprueba lo mismo, más fuerte, y sin depender del entorno.
+
+**`LiveEnrichmentIntegrationTests.testCoverArtArchiveFetchesRealCover`** se quedaba con la PRIMERA edición que devuelve MusicBrainz y exigía que tuviera tapa. MusicBrainz no devuelve siempre las mismas ediciones ni en el mismo orden, y no todas tienen arte en Cover Art Archive: **medido, fallaba 1 de cada 3 corridas** sin que el código cambiara. Ahora prueba hasta cinco ediciones y se saltea si ninguna tiene tapa. Lo que la prueba existe para verificar no se toca —el parseo contra la respuesta real y que un thumbnail `http://` se pida por `https` (ATS)—: un error de red o de decodificación sigue haciéndola fallar, solo "esta edición no tiene tapa" pasa a la siguiente.
+
+Ninguna de las dos es un cambio de comportamiento de la app. Se anotan porque **una prueba que falla sola enseña a ignorar las fallas**, y porque explican por qué el conteo verde de esta ronda (648/648 con `xcodebuild`) no se podía obtener antes.
+
+## ST-107 — La causa raíz era de Windows: el catálogo compartido se escribe canónico
+
+ST-102 le puso a macOS tolerancia de lectura y dejó dicho lo que faltaba de este lado. Eran **tres** cosas, no dos.
+
+**Los separadores.** `Path.GetRelativePath` produce `Música\Artista\a.mp3` en Windows, y del otro lado eso es **un solo componente con barras adentro**: el archivo no existe, el elemento se omite al leer, y 401 elementos omitidos se ven exactamente igual que una biblioteca vacía. Ahora todo lo que va al catálogo pasa por `CatalogPath` —una sola puerta— y sale con `/`. Leer sigue aceptando las dos formas: un catálogo escrito ayer por esta misma app tiene que seguir abriendo, y al primer guardado queda canonizado solo.
+
+**El nombre de la carátula, que ST-087 arregló a medias.** Aquel cambio corrigió el archivo que se **escribe en disco** (`<UUID en mayúsculas>.jpg`) pero no el nombre que se **anota en el catálogo**, que seguía siendo el hexadecimal pelado. Windows nunca lo notó porque lee la carátula por el id, no por ese campo; macOS sí, y vio 13 carátulas apuntando a un archivo inexistente con la imagen ahí al lado. Ahora el nombre sale del mismo lugar en los dos casos, y hay una prueba que compara justamente eso.
+
+**Y una tercera, que apareció al verificar lo anterior**: las carátulas guardadas por versiones de Windows **anteriores** a ST-087 quedaron con el nombre viejo, invisibles para las dos apps —con el archivo intacto al lado— y la siguiente pasada las habría dado por inexistentes. `ReadCover` ahora prueba el nombre canónico y, si no está, el viejo; al guardar quedan con el nuevo, sin que nadie tenga que migrar nada.
+
+Una ruta **absoluta** no se toca: traducirle los separadores no la haría portable —una ruta de Windows no significa nada en la Mac— y sí podría romperla acá.
+
+## ST-108 — Casillas de selección en Windows, y por qué Artistas sí las lleva
+
+La cuadrícula de Windows estaba en `SelectionMode="Single"` y **sin casillas**: no era una divergencia a corregir sino algo que faltaba entero. Ahora cada tarjeta lleva la suya, siempre visible, y la semántica es la de ST-103: la casilla **alterna** sin tocar el resto, el clic en la tarjeta **reemplaza** la selección.
+
+Eso obligó a mover **abrir** al doble clic, que es lo que hace macOS y lo que hace cualquier cuadrícula del sistema. Antes un clic abría; si se hubiera dejado así, el clic no habría podido seleccionar y la mitad de la regla se perdía.
+
+**Artistas sí lleva casillas acá, y en macOS no.** No es un descuido: allá la exclusión es por el control —`List(selection:)` trae la selección múltiple del sistema— y ese control no existe en Windows, donde Artistas es la misma cuadrícula que Álbumes. Reproducir la exclusión dejaría a Artistas como la única cuadrícula sin la forma visible de seleccionar, que es exactamente el problema que ST-103 vino a resolver. Queda como **tercera divergencia legítima**, anotada acá y en el documento de paridad.
+
+La casilla está enlazada en dos sentidos, no atada al clic: así también funciona con el teclado y con un lector de pantalla. Verificado por esa vía —dos casillas alternadas por automatización, la barra de estado diciendo "2 seleccionados"—, que es justo la que un `Tapped` habría dejado muerta.
+
+## ST-109 — El 503 de MusicBrainz es saturación, y el lote sigue
+
+El hallazgo del dueño quedó registrado en el propio `errores.log`: un `EnrichmentError (HTTP 503)` escapó del lote de fotos de artista, llegó al manejador global y se comió la operación entera con un diálogo.
+
+Ahora: el reintento **hace caso al servidor** si manda `Retry-After`, y si no espera 2 s, 5 s y 10 s —paciente de verdad, no tres intentos seguidos que fallan igual—; un artista que falla **no tumba a los que siguen**; y al terminar hay un resumen en la barra de estado, nunca un diálogo. El resumen distingue "no se encontró ninguna" de "el servicio está saturado, vuelve en un rato": confundirlas manda al usuario a creer que su biblioteca no tiene artistas reconocibles.
+
+Con el servicio caído de verdad **se deja de insistir a las tres saturaciones seguidas**: seguir pidiendo por cada uno de cientos de artistas son veinte minutos de espera para terminar sin nada.
+
+**Las esperas son inyectables** — no por elegancia: probar la saturación de verdad convirtió un suite de 5 s en uno de 52 s, y un suite lento se deja de correr.
+
+## ST-110 — Buscar carátulas del álbum: el núcleo, con la semántica de ST-104
+
+`AlbumCoverSearch` en Core con las fuentes que ya estaban: MusicBrainz para varias **ediciones** (`SearchReleasesAsync`, nuevo) y Cover Art Archive para la tapa de cada una, más Deezer (`SearchAlbumCoversAsync`, nuevo) solo si está habilitado. Dos ediciones que comparten la misma imagen se ofrecen **una sola vez**. Mejor esfuerzo de punta a punta: MusicBrainz caído no deja sin resultados una búsqueda que Deezer sí podía contestar.
+
+**Nunca aplica nada solo**, ni con un único resultado: dos ediciones de un disco tienen tapas distintas y las dos son correctas, así que elegir no es un lujo. Exige **un** álbum con título propio —"Sin álbum" es el cajón de lo que no tiene uno, no un disco— y sin resultados lo dice en pantalla, con qué revisar.
+
+En Windows la tapa elegida se aplica a todas las canciones del álbum y marca `MetadataEditedByUser`. **No se vuelven a preparar los archivos**, a diferencia de macOS: acá la música no se re-etiqueta, y al iPod la tapa llega como el `cover.jpg` que escribe la sincronización en la carpeta del álbum. Es otro mecanismo para el mismo resultado, y conviene tenerlo escrito.
+
+## ST-111 — Los menús contextuales se deciden en Core, no en la pantalla
+
+El documento de paridad es vinculante y tiene diez menús con condiciones que no están en ningún texto visible. Cablearlas en el código de las pantallas es exactamente lo que ST-105 dice que no escala: lo que se pierde no da error, da un menú parecido.
+
+Así que los menús los arma **Core** (`LibraryContextMenus`, `MediaTableContextMenu`) y la pantalla solo dibuja. Eso permite compararlos con el documento renglón por renglón: 30 pruebas nuevas verifican el orden, los separadores, los plurales, qué se deshabilita en vez de esconderse, el criterio de Finder para el alcance, y que **ningún menú empiece o termine con un separador ni tenga dos seguidos** — que es lo primero que se rompe cuando un bloque no aplica.
+
+Tres defectos míos los encontró esa comparación antes que cualquier persona: el submenú de categoría aparecía sobre música, y con alcance vacío el menú quedaba con un separador suelto arriba de "Eliminar".
+
+**Y uno que solo apareció mirando**: el menú de la tabla de Canciones **no abría** salvo justo sobre la columna del título. El manejador miraba el `DataContext` del origen, y dentro de cada renglón las celdas tienen el suyo propio; había que subir por el árbol. Estaba así desde antes de esta ronda.
+
+Cableados: el menú §4 (tablas, el más grande — 13 ítems verificados en pantalla uno por uno) y los de cuadrícula §1/§2/§5/§6/§8. **Falta cablear** §9 (fotos dentro de un álbum), §10 (temas) y §11 (encabezados de la tabla), y "Obtener información..." se filtra del §4 porque la edición en lote todavía no tiene pantalla — queda anotado en ESTADO-PORT, no escondido.
+
+## ST-112 — Paquete B cerrado: los diez menús, y un mapeo mío que estaba mal
+
+Quedaban por cablear §9 (fotos), §10 (temas) y §11 (encabezados). Al hacerlo apareció un error propio del turno anterior: **había mapeado "Todas las fotos" al menú §8**, el de álbumes de fotos. Una colección muestra álbumes; "Todas las fotos" muestra fotos sueltas. Son dos menús distintos y confundirlos ofrecía **"Disolver álbum" sobre una foto**. Ahora cada cuadrícula recibe el suyo, y los listados planos de video —que en macOS son tablas— reciben el menú §4 con su bloque de video, que es la equivalencia real.
+
+**§11 es el caso donde más valía tener el menú en Core**: el documento pide que el mismo contenido salga del clic derecho en el encabezado y del botón de la barra. Antes eran dos cosas distintas —un `MenuFlyout` declarado en XAML para ordenar y nada en el encabezado—; ahora las dos entradas llaman a `SongsHeaderMenu.Build`. Dos listas armadas por separado se desincronizan en cuanto alguien agregue una opción a una sola, y eso no da error: da un menú que dice cosas distintas según por dónde se abra.
+
+**§10 mantiene el menú vacío** para el tema por omisión: macOS no muestra ninguno, y un menú con un solo ítem deshabilitado no es lo mismo. La confirmación de eliminar es ahora una sola, compartida por el botón y por el menú.
+
+**Verificado en pantalla, menú por menú**: §4 (13 ítems), §1 (6), §11 (4) y §9 (5), leídos por automatización de accesibilidad — que además comprueba que un lector de pantalla los ve. **§10 no se pudo ver**: la lista de temas está vacía sin un iPod conectado, así que queda para la sesión con el dueño.
+
+Con esto el Paquete B queda cerrado: las cinco tareas completas, con las tres divergencias legítimas documentadas y "Obtener información..." filtrado a conciencia mientras no exista su pantalla.
+
+## ST-113 — R2-1: la casilla aparece cuando sirve, no siempre
+
+ST-103 puso las casillas **siempre visibles** con un argumento razonable: la selección múltiple solo se armaba con Cmd+clic, un gesto que no se ve en ningún lado. El dueño lo probó y el argumento no sobrevivió al uso: una retícula de círculos encima de TODAS las portadas, todo el tiempo, compite con lo único que la cuadrícula existe para mostrar.
+
+La regla nueva —**la misma en las dos apps**, ver `docs/paridad-menus-contextuales.md` §0.7— separa los dos problemas que ST-103 había mezclado:
+
+- **Sin nada seleccionado, cero casillas.** La cuadrícula se ve limpia.
+- **Al pasar el cursor, la casilla de ESA tarjeta.** Eso resuelve la descubribilidad —que era el problema real— sin costo visual permanente.
+- **Con selección ≥ 1, todas.** Ahí el usuario ya está en modo selección y necesita ver dónde sumar o quitar sin ir tanteando.
+
+La semántica no se tocó: la casilla **alterna**, el clic en la tarjeta **reemplaza**. Y se oculta con opacidad, no quitándola del árbol: si apareciera y desapareciera del layout, la cuadrícula daría un salto cada vez que el mouse cruza una tarjeta.
+
+**Lo de la primera fila.** El dueño reportó que la primera fila no pintaba los círculos y las demás sí. La causa es de layout, no de la casilla: Álbumes, Películas y Series ponían su cuadrícula **sin margen superior** (Fotos sí lo tenía, y por eso ahí no pasaba), así que la primera fila arranca pegada al borde del `ScrollView` y la casilla —que va a 6 pt del borde de la tarjeta— queda cortada apenas se desplaza un poco. Se unificó el margen de las cuatro cuadrículas. Es la explicación que encaja con que Fotos fuera la excepción; **no se pudo reproducir a ojo con el catálogo actual**, así que queda anotado para que el dueño lo confirme.
+
+Los episodios son filas y no tarjetas: ahí la casilla ocupa su lugar SIEMPRE aunque esté invisible, porque si entrara y saliera del layout el texto de todas las filas se correría al pasar el mouse. Y el hover lo detecta la fila, no la casilla: una casilla invisible no recibe eventos y no podría descubrirse sola.
+
+## ST-114 — R2-2: un ítem se ofrece si la acción tiene sentido, no si hay un solo elemento
+
+«Buscar carátulas del álbum...» desaparecía al seleccionar más de una canción **del mismo disco**. El ítem preguntaba lo que no era: cuántos elementos hay, en vez de a qué objeto resuelven.
+
+Ahora quien decide es `AlbumCoverRequest.forAlbum`, y decide con el **mismo agrupador que pinta la vista Álbumes** (`LibraryGrouping.albums`). Así "un álbum" significa exactamente lo que el usuario ve como un álbum —con la homologación de artistas de ST-116 incluida—, y no dos definiciones parecidas que se separan con el tiempo.
+
+Dos correcciones de fondo que salieron con esto:
+
+- **La tapa se aplica al álbum COMPLETO**, no solo a lo seleccionado. Elegir carátula con 2 de 12 canciones seleccionadas y que 10 se queden con la vieja no es "aplicar la carátula del álbum", es dejar el disco a medias.
+- **«Quitar foto del artista» ahora es plural** cuando varios artistas alcanzados tienen foto. Estaba restringido a uno sin más razón que no haberlo pensado.
+
+Lo que **sigue siendo singular a propósito**, revisado uno por uno: «Abrir» (abrir N detalles a la vez no significa nada), «Cambiar nombre...» y «Renombrar álbum...» (N cosas no comparten un nombre), «Más información...» (para música con varias ya existe «Obtener información...», la edición en lote) y «Vista previa» de una foto. **Video y fotos siguen sin edición en lote**: `BatchMediaInfoView` edita campos de música (artista, álbum, año, género, compositor) y no hay equivalente para los otros dos tipos — se anota como pendiente, no se disfraza.
+
+La regla quedó escrita como regla transversal en `docs/paridad-menus-contextuales.md` (§0.3), actualizado en este mismo cambio como manda ST-105.
+
+## ST-115 — R2-3: la carátula recomendada, y por qué el umbral es alto
+
+El picker de ST-104 resolvió "no puedo pedir otra tapa", pero dejó al usuario comparando ocho imágenes sin ninguna pista de cuál corresponde a SU disco. Ahora cada candidata se puntúa contra lo que la biblioteca sabe del álbum y la mejor se marca **"Recomendada"**, con botón «Usar recomendada».
+
+**`docs/caratula-recomendada.md` es la especificación vinculante** — puntaje, desempates y umbral — y la app de Windows la calca. La razón de que sea un documento y no "lo que diga el código" es concreta: si las dos apps recomiendan distinto para el mismo disco, el dueño ve la biblioteca cambiar sola según desde qué máquina la abrió.
+
+Los pesos (título 50 > año 25 > pistas 15 > oficial 6 + país 4 > tapa frontal 10, máximo 110) están elegidos para que el orden de importancia se respete **siempre**: todo lo que está debajo del título suma 62, menos que título + año, así que una edición con título distinto nunca le gana a una con título y año iguales.
+
+**El umbral automático es 85 de 110**, y es alto a propósito. Las dos combinaciones mínimas que llegan exigen el título MÁS una corroboración fuerte (año o número de pistas) MÁS una tapa frontal de verdad. Lo que deliberadamente NO alcanza es un título que coincide y nada más (50): es justo el caso peligroso, porque "Greatest Hits" coincide con el "Greatest Hits" de cualquiera. Deezer, que solo puede puntuar el título, **nunca llega solo al umbral**: aplicar sin preguntar exige que MusicBrainz lo respalde.
+
+Los desempates se agotan hasta el orden de descubrimiento, que no aporta nada semántico pero garantiza un orden **total y determinista**: sin él, dos candidatas empatadas quedarían en orden indefinido y las dos apps podrían elegir distinto.
+
+La acción automática aplica **solo** lo que supera el umbral; lo que no, **no se toca** y se cuenta en el resumen. Con exactamente un álbum pendiente se abre su picker ("si no lo supera, cae al picker"); con varios no, porque una fila de veinte pickers encadenados no es una función que alguien pueda usar.
+
+**`metadataEditedByUser` solo lo marca la elección manual.** La automática no: esa marca significa "el usuario lo decidió", no "algo lo escribió", y blindar una tapa que nadie miró dejaría al álbum con ella para siempre, incluso cuando después aparezca una mejor.
+
+## ST-116 — R2-4: homologar artistas agrupa, y no toca nada más
+
+Cada colaboración inventaba un artista nuevo: "Gorillaz" y "Gorillaz feat. De La Soul" eran dos filas en la vista Artistas, dos búsquedas de foto y dos imágenes distintas en el iPod para el mismo artista.
+
+La regla —lista **cerrada** de ocho separadores buscados como palabra completa, sin distinguir mayúsculas ni acentos— está en **`docs/normalizacion-artistas.md`**, vinculante para las dos apps. Comparar tokens completos y no subcadenas es lo que evita partir "Daft Punk" por el "ft" de adentro o "Confeti de Odio" por el "con".
+
+**`vs.` y `versus` no homologan**, por decisión explícita del dueño: "Spacemonkeyz vs. Gorillaz" es un proyecto con nombre y discografía propios, no Gorillaz con invitados. Se documentan como lista aparte para que se lean como decisión y no como olvido.
+
+**El alcance es la agrupación y nada más.** El `artist` de la pista no se toca nunca: los créditos completos siguen en la metadata, viajan en el archivo y se ven en la tabla y en «Más información». Y **las rutas en disco tampoco cambian** —ni la carpeta local ni la del iPod—: las dos siguen armándose con el `albumArtist ?? artist` crudo. R2-4 pidió agrupación, no reorganización, y mover carpetas en el iPod es una operación destructiva sobre archivos ya sincronizados. La consecuencia conocida (una carpeta `Gorillaz feat. De La Soul` en el iPod para un álbum que Studio muestra bajo "Gorillaz") queda anotada en el documento; unificarlas es una decisión aparte que toca el contrato de layout.
+
+**Las fotos de artista salen bien sin tocar el contrato**, y eso no fue suerte: el índice `artist_images.cfg` (§D.3) ya escribe una línea por cada valor CRUDO de `metadata.artist` del grupo, todas apuntando al mismo archivo. Al agrupar por principal, las dos grafías caen en el mismo grupo y sus dos líneas apuntan a `gorillaz.jpg`; el firmware sigue buscando por el tag real de la pista y la encuentra.
+
+Las opciones viajan **por parámetro** (`ArtistGroupingOptions`, `Sendable`), como `musicOrganization` y compañía, en vez de vivir en un global: así una prueba fija las suyas sin tocar las preferencias reales y `LibrarySync` —que corre fuera del hilo principal— las recibe como valor.
+
+**Riesgo asumido y anotado:** `con` y `with` son los separadores más agresivos; en español e inglés aparecen dentro de nombres de grupo reales ("Café con Leche"). No hay forma automática de distinguirlos, así que hay **lista de excepciones editable** y el ajuste completo se puede **apagar** — y apagarlo devuelve la agrupación exacta de antes, sin migrar nada, porque la homologación nunca escribió nada.
+
+## ST-117 — R2-4 en Windows: la homologación entra por la agrupación, no por las rutas
+
+Port de la regla de ST-116 contra `docs/normalizacion-artistas.md`, que es la fuente. `ArtistNameNormalizer.PrincipalArtist` recorre el crédito **por tokens delimitados por espacios** y corta en el primer separador de la lista cerrada; comparar tokens completos —y no subcadenas— es lo que evita partir "Daft Punk" por el "ft" de adentro, "Confeti de Odio" por el "con" y "Blink+182" por el "+" pegado.
+
+Los casos de prueba son **los mismos** que los de `ArtistNameNormalizerTests.swift`, a propósito: una diferencia entre las dos apps no se ve como un bug, se ve como que la biblioteca cambió sola según desde qué máquina se abrió — y le manda al iPod dos fotos para el mismo artista.
+
+**Dónde entra, exactamente.** `LibraryGrouping` gana `GroupingArtistOf`, que es el principal, y la deja al lado de `AlbumArtistOf`, que sigue siendo el crédito **crudo**. Las claves de agrupación (`AlbumKeyOf`, `ArtistKeyOf`) y el nombre que muestran los grupos usan la primera; las rutas en disco y en el iPod siguen usando la segunda. Son dos funciones con nombres distintos justamente para que nadie las confunda al leer.
+
+**Las opciones viajan por parámetro** (`ArtistGroupingOptions`), igual que en macOS: `LibraryGrouping`, `ArtistImageResolver.FetchMissingAsync` y `SyncFinalizeInput` las reciben. El riesgo real de esto no es el olvido de un parámetro sino el **desacuerdo**: si las pantallas agrupan con un criterio y el finalizador de sync con otro, el iPod recibe dos fotos para el artista que en Studio se ve como uno. Por eso las tres entradas salen de la misma propiedad (`IAppPreferences.ArtistGrouping`) y ninguna arma la suya.
+
+Cambiar el ajuste **reagrupa en el momento**: `LibraryViewModel` escucha `Changed` de preferencias y avisa. Sin eso el ajuste solo surtiría efecto al reiniciar, que es la clase de cosa que el usuario lee como un bug.
+
+## ST-118 — R2-3 en Windows: la recomendación se calca, no se reinterpreta
+
+`AlbumCoverScoring` es un port literal de `docs/caratula-recomendada.md`: los siete criterios con sus puntos, el máximo de 110, el umbral de 85 y los seis desempates en orden. Las pruebas comprueban **cada número contra el documento**, incluidas las dos combinaciones mínimas que llegan a 85 y las tres que deliberadamente no (solo el título = 50; título + señales menores = 70; cualquier candidata de Deezer, cuyo techo es 50).
+
+Para poder puntuar hubo que dejar de tirar datos que las fuentes ya devolvían: `MusicBrainzClient.Release` ahora deserializa `status`, `country` y `track-count`, y `CoverArtArchiveClient` gana `FetchCoverAsync`, que además de los bytes dice **si la imagen venía marcada como frontal**. Sin ese último dato, una contratapa puntuaba igual que una tapa.
+
+**El orden de descubrimiento como último desempate no es un detalle.** Sin él, dos candidatas empatadas hasta ahí quedan en orden indefinido, y entonces la misma app puede recomendar distinto en dos corridas — que es exactamente el síntoma que R2-3 vino a evitar.
+
+`AlbumCoverSearch.CandidatesAsync` devuelve la lista **ya ordenada por ese criterio**, así que "la recomendada" y "la primera de la lista" son la misma por construcción y no dos cálculos que se pueden separar.
+
+**Un hueco que apareció al hacerlo:** la cuadrícula de Álbumes **ofrecía** «Buscar carátulas del álbum...» y el ítem no hacía nada — el menú lo incluía desde la Ronda 1, pero el despachador de esa pantalla no tenía el caso. La hoja vivía dentro de la pantalla de Canciones; se extrajo a `AlbumCoverPicker` y ahora la comparten las tres entradas que pide §13.2 del documento de paridad.
+
+## ST-119 — R2-2 en Windows: dos ítems cambian de condición, y uno gana plural
+
+«Quitar foto del artista» se ofrecía **solo con un artista seleccionado**, así que quitar cinco fotos obligaba a cinco pasadas. Ahora se ofrece si **alguno** de los alcanzados tiene foto, y el plural lo decide **cuántos la tienen** —no cuántos se alcanzaron—: con tres artistas y una sola foto, se quita una sola foto y el texto lo dice.
+
+«Buscar carátulas del álbum...» ya usaba la condición correcta (`SingleAlbumWithTitle`, que resuelve el alcance a un álbum aunque sean varias canciones), así que ahí no hubo cambio de regla; lo que faltaba era el despachador, y eso está en ST-118.
+
+`MenuScope` gana `ArtistsWithPhotoCount` y `ApplyingRecommendedCover`. La prueba de paridad que fijaba la regla vieja se **actualizó**, no se borró: sigue comprobando que sin nadie con foto el ítem no aparece.
+
+## ST-120 — R2-1 en Windows: la casilla se oculta con opacidad, no saliéndose del layout
+
+Port de la regla de ST-113. `MediaCard` gana `IsHovered` y `AnySelection`, y de las tres sale `ShowsSelectionBox`; la cuadrícula empuja `AnySelection` a todas las tarjetas cuando cambia la selección, en vez de que cada tarjeta consulte hacia arriba.
+
+Se oculta con **opacidad** y no con `Visibility` por lo mismo que en macOS: quitarla del layout haría saltar la tarjeta cada vez que el mouse la cruza. La consecuencia es que lo invisible **sigue estando ahí para el mouse**, así que la casilla apaga también `IsHitTestVisible` — una casilla invisible que igual se puede marcar es peor que una visible.
+
+**Y hubo que agregar cómo volver a cero.** Verificando en pantalla apareció que, una vez seleccionado algo, **no había ningún gesto para vaciar la selección**: el clic en una tarjeta *reemplaza*, así que siempre deja uno marcado. Antes daba igual —las casillas se veían siempre—, pero con la regla nueva "sin nada seleccionado" es el estado normal de la cuadrícula, y el usuario no podía regresar a él. Ahora un clic en el espacio vacío la vacía, como en el Explorador y en el Finder, y Escape hace lo mismo para quien no usa el mouse.
+
+## ST-121 — R2-6: Artistas deja de ser una cuadrícula (se revoca ST-108)
+
+ST-108 había documentado como **divergencia legítima** que en Windows Artistas fuera la misma cuadrícula de tarjetas que Álbumes, con casillas, porque "acá no existe el control de lista nativo de macOS". El dueño la vio y dictaminó que no se parece en nada a la de macOS. **La divergencia queda revocada**: el argumento era cómodo, no cierto.
+
+La vista nueva calca `ArtistsView.swift`: **maestro-detalle**. A la izquierda, campo de búsqueda, botón de fotos de artista y la lista con avatar de 40 px y nombre; a la derecha, la ficha del artista — avatar de 96, nombre, resumen, «Buscar información en línea» y «⋯» — y debajo cada álbum con su portada de 128, título, "género · año", el conteo de canciones, su propio menú y sus pistas. La fila de pista lleva número, título, el **artista de la pista solo cuando difiere** del artista del grupo, duración y estrella.
+
+**La selección la lleva el control, no el modelo.** Un `ListView` en `SelectionMode="Extended"` da Ctrl y Mayús sin escribir lógica de selección, que es exactamente lo que hace la `List(selection:)` de macOS. Con eso, esta vista **queda fuera** de la regla de casillas de R2-1 —igual que en macOS— y §13.3 del documento de paridad vuelve a ser cierto en las dos apps.
+
+**Se borró el camino viejo, no se dejó apagado.** `MediaGridKind.Artists` y todo lo que colgaba de él salieron del modelo y de la pantalla de cuadrículas. Dejarlo habría significado tener dos vistas de Artistas, una inalcanzable, que es como se desincronizan las cosas sin que nadie lo note.
+
+Es además la vista donde se **ve** la homologación de ST-117: los tres "Gorillaz" de una biblioteca real tienen que ser una sola fila, y las canciones acreditadas a la colaboración dicen a quién más tienen en el renglón de abajo.
+
+## ST-122 — La app corría sin conciencia de DPI, y por eso no le llegaba la rueda del mouse
+
+El `app.manifest` estaba en el repo declarando `PerMonitorV2`, pero el `.csproj` nunca lo nombraba con `<ApplicationManifest>`, así que **no se embebía en el `.exe`**. El SDK de .NET no lo toma por convención; hay que nombrarlo.
+
+En un monitor al 200% eso significa que Windows le virtualiza las coordenadas a la app (medido: con el cursor en 2792,1400 el hilo recibía 1396,700), le escala el mapa de bits —de ahí que todo se viera un poco suave— y **deja de entregarle los mensajes de rueda por completo**. Con un espía de mensajes en el hilo de la interfaz no llegaba ni un `WM_MOUSEWHEEL`, mientras los `WM_MOUSEMOVE` sí. Por eso la rueda no movía nada en ninguna parte: ni cuadrículas, ni tablas, ni el panel lateral. Confirmado por el dueño en pantalla tras el arreglo.
+
+Se corrigió además `dpiAware` de `PerMonitorV2` a `true/pm`: ese elemento viejo no acepta ese valor y Windows lo ignoraba en silencio.
+
+**Lo que NO era:** el subclaseo Win32 de la ventana de WinUI que atiende `WM_DEVICECHANGE`. Se sospechó de él y se llegó a medir "sin subclaseo la rueda anda", pero esa medición era falsa: corría un binario viejo, porque `dotnet build -r win-arm64` deja la salida en `bin/Debug/<tfm>/win-arm64/` y la app se lanzaba desde `bin/arm64/Debug/<tfm>/`. Con el binario correcto, quitar el subclaseo no cambia nada. Quedó como estaba. El detalle de las tres trampas de medición está en `docs/ESTADO-PORT.md`.
+
+## ST-123 — R3-1: qué firmware corre se lee del bus USB, no de las cadenas SCSI del disco
+
+**El síntoma era "no me deja sincronizar".** Con Aura corriendo, el iPod del dueño quedaba con `RunningFirmware = Unknown`, y con eso `SupportsAuraContract` en falso: sin biblioteca, sin sync, sin temas — teniendo `aura.cfg` y `.rockbox` en el disco.
+
+**La causa.** ST-016 dice que qué firmware atiende el USB sale de los **descriptores USB**, y el comentario del enumerador afirmaba que eso hacía. No lo hacía: `USBDeviceIdentity` se rellenaba con el vendor/producto **SCSI** parseados del `PNPDeviceID` de USBSTOR. En un iPod de fábrica esas cadenas dicen "Apple"/"iPod" y todo parecía andar. Con el adaptador **iFlash** del dueño de por medio, las reporta el adaptador: `iFlash-P` / `latform iPod Ada` (el nombre partido por los 8 y 16 caracteres del formato SCSI). Ninguna de las dos es "rockbox", y el vendor no es Apple → desconocido.
+
+Peor: esa cadena **contiene "ipod"**, así que estaba a un carácter de clasificar mal en la otra dirección y afirmar "modo disco de Apple" sobre un iPod corriendo Aura.
+
+**La fuente correcta, verificada contra el aparato conectado.** El nodo USB del dispositivo (`USB\VID_05AC&PID_1261\…`) expone `DEVPKEY_Device_BusReportedDeviceDesc`, que es **lo que el aparato reporta por el bus** — el equivalente exacto del descriptor USB que lee macOS. Medido en el iPod del dueño con Aura corriendo:
+
+```
+BusReportedDeviceDesc = Rockbox media player
+DeviceDesc            = Apple iPod        ← el nombre del INF, no del aparato
+Manufacturer          = Apple             ← también del INF
+```
+
+`DeviceDesc` y `FriendlyName` dicen "Apple iPod" **siempre**, porque los pone el driver: por eso no sirven. Y el nodo de **interfaz** (`&MI_00`) se reporta como "USB Mass Storage Device", así que se salta explícitamente; el que habla es el nodo del aparato.
+
+Se lee con `GetDeviceProperties` de `Win32_PnPEntity` — el mismo camino que usa `Get-PnpDeviceProperty`—, así que no entra interop nuevo: sigue siendo la dependencia de WMI que ya estaba.
+
+**Se quitó la invención.** El código anterior, cuando no lograba parsear las cadenas SCSI, rellenaba con `"Apple Inc."`/`"iPod"`. Eso es afirmar sin evidencia justo lo que ST-016 prohíbe. Ahora: descriptor del bus si se pudo leer; si no, las cadenas SCSI; si tampoco, **desconocido**. Es un cambio de comportamiento para un iPod cuyo USBSTOR no parsee — antes decía "Apple" sin saberlo, ahora dice que no sabe.
+
+**Verificado contra el hardware, no contra una prueba.** Con el iPod conectado: General muestra "Firmware que atiende el USB: **RockboxFamily**" y "Familia declarada: **Aura**", la biblioteca se habilita, y la pantalla de Sincronizar calcula el plan real: **399 archivos por copiar**. La transferencia en sí no se ejecutó: escribir en el iPod del dueño es decisión suya.
+
+## ST-124 — Una etiqueta no puede tumbar una copia de firmware
+
+`FamilyChangeWarning` lanzó `NullReferenceException` dos veces en el `errores.log` del dueño: una desde `CopyFilesAsync` y otra desde `RunFormatAsync`. El camino es el mismo en las dos: `DeviceSafetyValidator.Validate` refresca la sesión —lo hace **a propósito**, revalidar el disco antes de cada operación destructiva es la regla— y ese refresco dispara `NotifyDeviceChanged`, que hace que el enlace de XAML lea la propiedad **en medio de la operación**, con el volumen yendo y viniendo.
+
+La propiedad dereferenciaba `TargetFamily` sin guardia, confiando en que el tipo lo declara no nulo. Ahora ni ese ni ningún otro valor se toca sin comprobar, y `InstalledFamily` traga lo que pueda fallar al leer un disco que se está formateando: sin familia conocida no hay aviso, que es la respuesta correcta.
+
+**No se aisló cuál de los dos valores estaba en nulo** — el `errores.log` da la línea, no el estado. Se dice acá en vez de afirmar una causa que no se comprobó. Lo que sí se corrigió es la consecuencia, que era la grave: una propiedad de **presentación** no puede lanzar, porque no rompe una etiqueta — mata el flujo del usuario a mitad de escribir en su iPod.
+
+## ST-125 — R3-2: sincronizar no es una sección, es lo que se hace en General
+
+La barra lateral de macOS (`ContentView.swift` → `SidebarSection`) **no tiene un caso para sincronizar**: están General, Música, Video, Fotos, Extras, Instalador y Ajustes, y nada más. La sincronización real vive en General, junto a `DeviceActivityBar`; la barra de herramientas solo trae "Actualizar", que es un refresco inofensivo y nunca escribe en el iPod.
+
+Windows tenía una sección «Sincronizar» propia, con su pantalla. Se quitó: obligaba a **irse de la vista del dispositivo justo para actuar sobre el dispositivo**, cuando lo que uno mira para decidir —qué firmware corre, cuánto espacio queda, qué hay adentro— está todo en General.
+
+Ahora General tiene su bloque de sincronización con el mismo contenido que la barra de macOS: qué se copia, los botones, el avance, el archivo en curso, los fallos y los tres conteos. Disparar la sync desde Música/Video/Fotos sigue siendo posible con «Sincronizar la selección» del menú contextual (§4.5).
+
+**Los huérfanos pasaron a una hoja.** Lo que quedó en el iPod y ya no está en la biblioteca es lo único que Studio podría **borrar**, y borrar es lo único que no se deshace. En la pantalla vieja era un bloque más, al final, entre otros ocho. Ahora es un diálogo aparte al que se entra a propósito, con una casilla por archivo y ninguna marcada de entrada — el mismo tratamiento que la hoja de macOS.
+
+**Divergencia conocida que se conserva:** las casillas de Música/Videos/Fotos. macOS no las tiene —allá la sync es siempre de todo—, así que son una invención del port. Se quedan porque son capacidad del usuario, no adorno; se anotan acá para que se lean como decisión.
+
+**Lo que NO se hizo, y se dice:** «Sincronizar la selección» lleva a General pero **todavía no acota a la selección**. `SyncViewModel` sabe filtrar por tipo, no por elemento. Prometer un alcance que no se aplica es peor que llevar al lugar donde se decide, así que por ahora navega y queda anotado.
+
+## ST-126 — Dos enlaces de Temas convertían un booleano a Visibility y tiraban la pantalla
+
+En el `errores.log` del dueño, `InvalidCastException: Unable to cast object of type 'System.Boolean' to type 'Microsoft.UI.Xaml.Visibility'` al dibujar la lista de temas.
+
+Eran dos enlaces de `ThemesPage.xaml`: uno ataba un `bool` a `Visibility` **sin convertidor**, y el otro usaba `InvertBoolConverter`, que devuelve un `bool` — o sea, tampoco convierte a `Visibility`. Los dos revientan al primer tema que se dibuja.
+
+Es una clase de error que **no se ve hasta que la pantalla se dibuja con datos**: compila, y la plantilla solo se instancia cuando hay filas. Por eso, además de arreglar los dos, se barrió el resto de la app buscando lo mismo —`Visibility` atado sin convertidor, `Visibility` atado con `InvertBool`, y el convertidor de visibilidad usado en propiedades que no son `Visibility`—: no había más.
+
+## ST-127 — R3-3 (a): la interfaz estaba imprimiendo el nombre de un enum
+
+El dueño comparó las dos Generales y encontró **"RockboxFamily"** en pantalla: en el título de la ficha, en la barra de estado y en el destino de la sincronización. No es una etiqueta mal redactada — es el identificador interno de uno de los tres hechos de ST-016, y no significa nada para quien solo quiere saber si su iPod está listo.
+
+Entraba por dos puertas:
+
+- `IPodDiskInfo.DisplayName` terminaba en `- {RunningFirmware}`, y ese nombre lo usan la ficha, la barra de estado y el encabezado de Sincronizar. Ahora es solo el nombre: "iPod Classic (IPOD)".
+- `DeviceListViewModel.FirmwareUsbDisplay` era literalmente `RunningFirmware.ToString()`, mostrado como el valor de una fila "Firmware que atiende el USB". Esa fila y su pareja ("Familia declarada") **desaparecen**: las reemplaza una frase.
+
+`DeviceFirmwareLabel` (Core) arma esa frase, port del `firmwareLabel` de macOS. Los tres hechos siguen separados por dentro; lo que cambia es que afuera se dicen con palabras: *"Firmware Aura instalado — conectado desde Aura"*.
+
+**Lo que la frase NO hace es redondear.** Las combinaciones que no son evidencia de instalación lo dicen enteras: archivos en el disco con el firmware de Apple atendiendo el USB y sin rastro de arranque se leen como *"no hay evidencia de que esté instalado"*, no como "instalado". Hay una prueba por combinación, y una que recorre las 24 y falla si cualquiera imprime `RockboxFamily`, `Unknown` o el nombre de un tipo.
+
+## ST-128 — R3-3 (b,d,f): General es una ficha de dispositivo, no una pila de tarjetas
+
+Era una columna de tarjetas con pares etiqueta/valor —el patrón de una pantalla de ajustes—, cuando lo que describe es **un aparato**. Ahora:
+
+- **Encabezado**: icono, nombre editable, de dónde viene ese nombre, la frase del firmware y la ruta del volumen. Sin tarjeta: es la identidad de la ficha, no un bloque más.
+- **Estado del firmware** sobre la lógica que ya existía (ST-099). Lo que se agregó es el caso normal: antes, "no hay actualización" era **silencio**, y el silencio obliga a adivinar. Ahora dice "Aura está al día con esta versión de Aura Studio", y hay un "Buscar actualizaciones" manual — antes solo se consultaba solo al conectar, así que quien deja el iPod conectado no tenía forma de volver a preguntar.
+- **Barra de capacidad segmentada**, con leyenda y "X usados de Y — Z libres", en lugar de cuatro filas de números que había que leer y restar. Es el ancla de la ficha.
+
+`StorageBreakdown` (Core) hace la aritmética con sus reglas: "Otro" es lo usado que no es biblioteca y **nunca es negativo** —si el resumen del último sync quedó viejo y suma más que lo usado, se recorta a cero en vez de dibujar una barra imposible—, y "Libre" no lleva entrada en la leyenda porque es el resto implícito (mismo criterio que la barra del firmware, D-282). Los colores se quedan en la vista: Core dice cuánto ocupa cada cosa, con qué se pinta es del tema.
+
+Los anchos se arman en código y no con enlaces: son **proporcionales a los bytes**, y eso no se expresa en XAML.
+
+**Lo que quedó pendiente de (e), y se dice:** el selector "Toda la biblioteca / Solo la selección" y el "N pendiente(s)" **no** se pusieron. `SyncViewModel` no tiene alcance por elemento ni conteo de pendientes previo a revisar; poner el control sin eso sería un adorno que no hace nada. Es el mismo hueco que ya estaba anotado en ST-125 para «Sincronizar la selección», y se cierra junto con él.
+
+## ST-129 — R3-4: alcance real de sincronización, y el huérfano que casi se inventa
+
+Cierra el hueco que ST-125 y ST-128 dejaron anotado: «Sincronizar la selección» navegaba sin acotar, y la ficha no podía ofrecer "Solo la selección" ni decir cuántos archivos había listos.
+
+**La regla vive en Core** (`SyncScopeResolver`), no en la pantalla, porque son tres negativas parecidas con tres textos distintos y un **orden** que cambia lo que el usuario entiende: primero las del alcance —son las que explican qué le falta a SU selección— y recién después la global. Al revés, quien selecciona tres canciones en una biblioteca sin nada listo leería "no hay nada listo para sincronizar" y no sabría si el problema es lo que eligió. Los tres mensajes son los mismos que los de macOS.
+
+Solo viaja lo que está **listo**: algo a medio convertir o esperando una decisión del usuario no es un archivo que se pueda copiar, y se queda fuera aunque esté seleccionado.
+
+**El defecto que apareció al conectarlo, y que es el motivo de contarlo aparte.** Acotar la copia acota el plan, y los **huérfanos salen del plan**: con "Solo la selección", todo lo demás del iPod habría aparecido como "ya no está en tu biblioteca" — una lista de cientos de archivos ofrecidos para borrar que en realidad sí están. Nada se borra sin que el usuario marque la casilla, pero ofrecerlo ya es el error: es la clase de cosa que se paga con archivos del usuario. Ahora los huérfanos **siempre** se calculan contra la biblioteca entera, aunque la copia esté acotada.
+
+**En la interfaz**: el selector "Toda la biblioteca / Solo la selección" con su conteo, la línea de cuántos hay listos, y el botón deshabilitado cuando el alcance apunta a una selección vacía — el botón nunca lleva a un camino que falla. Si la selección se vacía, el alcance vuelve solo a "toda la biblioteca": un alcance que apunta a nada no es un estado en el que dejar a alguien.
+
+**La selección la publica la vista activa** (tabla de Canciones, cuadrículas, Artistas) y se **limpia al salir**. Sin esa limpieza, "solo la selección" seguiría apuntando a lo que había seleccionado dos pantallas atrás, que es exactamente cómo se copia lo que no era. En las cuadrículas, una tarjeta es un álbum o un artista: lo que viaja son sus canciones, no la tarjeta.
+
+**El conteo de pendientes es una aproximación y se redacta como tal**: dice "N archivos listos para sincronizar", no "se van a copiar N" — eso lo dice «Revisar cambios», que sí compara contra el aparato. Alguno de esos N puede estar ya sincronizado con ESE iPod.
+
+## ST-130 — Un selector de la interfaz ponía en nulo la familia de destino
+
+`FirmwareArtifacts.DirectoryFor` lanzó `NullReferenceException` en el camino de copia de firmware. El nulo no era la ruta de la app —`AppContext.BaseDirectory` nunca lo es— sino **la familia**.
+
+**Y con eso quedó identificada la causa que ST-124 no pudo aislar.** Es la misma: `InstallerViewModel.TargetFamily` se queda en nulo. El culpable son **dos** enlaces `SelectedItem="{x:Bind ViewModel.TargetFamily, Mode=TwoWay}"` en la pantalla del instalador: cuando a un selector se le reemplaza la lista de opciones —cosa que pasa cada vez que se recalculan las familias disponibles—, el control vacía su selección y **escribe nulo de vuelta en la propiedad**. Nadie lo pidió, y nada lo delataba hasta que alguien la leía: el aviso de cambio de familia reventaba al pintarse, y la copia reventaba al resolver los artefactos, las dos con el iPod a medio escribir.
+
+El arreglo restaura el valor **anterior**, no "Aura": volver a Aura por omisión convertiría un destino Metro en un destino Aura sin que nadie lo eligiera, que es exactamente la trampa de ST-046.
+
+`DirectoryFor` además se endurece de dos maneras distintas a propósito: sin raíz cae a la del ejecutable —es lo que quería decir quien llamó—, pero **sin familia lanza**. Elegir una por omisión resolvería el directorio de un firmware que el usuario no pidió, y el que llama está a punto de copiarlo al iPod. Una excepción con nombre es mucho mejor que un `NullReferenceException`: dice qué faltaba.
+
+## ST-131 — La sincronización moría porque el avance se escribía desde otro hilo
+
+Verificando en pantalla apareció, en el camino de sincronización: *"No se pudo completar la sincronización: La aplicación llamó a una interfaz que se aplanó para un diferente subproceso."* Es `RPC_E_WRONG_THREAD`.
+
+`SyncViewModel.OnProgressChanged` escribía las propiedades enlazadas —archivo en curso, avance, mensaje— **desde el hilo del servicio**: el evento `ProgressChanged` se dispara dentro del `Task.Run` que hace la copia. Cada escritura notificaba a los enlaces de XAML, que tocaban el árbol visual fuera del hilo de la interfaz, y Windows abortaba la operación **a media copia**.
+
+Se cruza al hilo de la interfaz con el `DispatcherQueue` capturado al construirse. Vale anotar por qué el instalador nunca tuvo este problema: usa `IProgress<T>`, que **captura el contexto de sincronización al construirse** y marshalea solo. Un `event` no captura nada: corre donde lo disparen.
+
+**Verificado con el aparato**: con el arreglo puesto, una copia completa de 399 archivos terminó bien —"El iPod ya está al día con tu biblioteca", 0 por copiar, 399 al día— y `errores.log` no creció ni un byte. Sin el arreglo, esa misma copia moría en el camino.
+
+## ST-132 — Dos tercios del ático de ST-077 vuelven al build
+
+`ReleaseCache` y `FirmwareVersionResolver` estaban apartados en
+`docs/attic/st077-cadena-descarga/` desde la Fase 2, colgando de un modelo de
+artefactos (`BundledArtifacts`) que se descartó al reconciliar el árbol. La
+pantalla Extras los necesitaba —las pastillas de versión son justamente lo que
+resuelven—, así que se remontaron contra `FirmwareArtifacts`, que es el modelo
+que sobrevivió. La conversión fue la que el propio README del ático anticipaba:
+un parámetro.
+
+**Lo que las pruebas cuidan es la llave por familia.** Con una sola, la lista de
+Releases de Metro quedaría guardada bajo la de Aura: conectar un iPod con Metro
+y después uno con Aura le mostraría al segundo los tags del primero durante 24
+horas, comparados contra su propio `version.txt` (ST-046). Aura conserva las
+llaves históricas —sin sufijo— para que nadie pierda su caché al actualizar
+Studio.
+
+Un caché ilegible se trata como ausente, nunca como error de cara al usuario: la
+consulta en vivo lo reemplaza en la misma pasada.
+
+**El descargador se queda en el ático**, y no por olvido: Extras necesitaba
+saber *qué versión se instalaría*, no bajarla. Bajarla es otra tarea, con sus
+cinco trampas ya documentadas (la URL del API y no `browser_download_url`, el
+`Authorization` que se suelta en el 302, la publicación atómica, el tag validado
+antes de componer una ruta, y fallar sin detener la instalación). El README del
+ático quedó actualizado diciendo exactamente qué se remontó y qué no.
+
+## ST-133 — R4: Extras deja de ser un marcador de posición
+
+Port de `ExtrasView.swift`. Cuatro bloques, en el mismo orden que macOS y con
+sus textos: el selector de firmware, lo que hay en el dispositivo, lo que
+todavía no existe, y las licencias.
+
+**El selector es una preferencia, no una acción.** Elegir ahí no toca el iPod: el
+Instalador —con su flasheo y sus confirmaciones— es el único que escribe, y una
+actualización desde General lo ignora y reinstala la familia que el aparato ya
+tiene (ST-046). Se guarda por su `ConfigValue`, la misma cadena que escribe
+macOS, así que agregar una familia en medio de la lista no cambia lo que el
+usuario eligió; y **Aura se guarda como ausencia de clave**, igual que en
+`aura.cfg`.
+
+**Y el Instalador ahora la lee.** Esto no era un detalle de cableado: la
+preferencia existía en la pantalla y el asistente seguía fijando Aura en su
+constructor, así que elegir Metro en Extras no cambiaba nada de lo que se iba a
+instalar. Verificado de punta a punta con la app: elegir Metro → el archivo de
+preferencias dice `metro` → el Instalador abre con Metro.
+
+**Las pastillas dicen de dónde salió la versión.** "v0.6.4 (incluida)" no es lo
+mismo que "v0.6.4": la primera es la que trae esta copia de Studio, la segunda
+es la más nueva publicada. Sin esa distinción, un Release publicado después de
+poblar `artifacts/` era invisible ahí aunque el aviso de actualizaciones ya lo
+conociera. El pie lo dice entero y ofrece «Revisar de nuevo», que **salta el
+caché de 24 h**: una revisión manual tiene que ser una consulta en vivo (D-300).
+
+**Temas se deshabilita explicando qué falta** (ST-053), con las dos razones
+separadas: sin iPod con el contrato, o con un firmware que no tiene sistema de
+temas —moonlit.aura no publica la clave—.
+
+**Lo que NO se portó, y por qué.** El bloque de macOS para *cambiar* entre
+familias ya instaladas (ST-056: "Cambiar a Metro" cuando está dormido en el
+disco) se queda fuera: depende de saber qué familias hay **dormidas** en el
+aparato, y `IPodDiskInfo` no lo modela todavía en Windows. Poner el botón sin
+ese dato sería ofrecer un cambio que no se puede decidir. Queda como tarea con
+nombre, no como hueco silencioso.
+
+De paso se retiró `PlaceholderPage`: con Extras ya no queda ninguna sección sin
+pantalla propia, y dejar colgando el camino que la usaba invitaba a volver a
+colgar algo ahí.

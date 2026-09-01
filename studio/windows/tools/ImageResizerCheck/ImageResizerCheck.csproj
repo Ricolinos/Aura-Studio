@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Verificación del redimensionado de fotos (ImageResizer). NO está en
+       AuraStudio.Windows.slnx a propósito: no es parte de la app, se corre a
+       mano cuando se toca el redimensionado. El comando está en Program.cs.
+
+       Por qué existe: lo que hay que comprobar —que la salida sea JPEG
+       BASELINE (D-291), que la transparencia se aplane sobre BLANCO y no sobre
+       negro, y que una foto con orientación EXIF llegue derecha— depende de
+       WIC, que solo existe en un TFM de Windows. AuraStudio.Core.Tests apunta a
+       net10.0 puro (a propósito: las reglas portadas se prueban sin plataforma)
+       y no puede ejecutarlo. Este proyecto compila el MISMO archivo fuente del
+       resizer, sin arrastrar WinUI, y genera sus propias imágenes de prueba.
+       Las partes puras —tamaño destino y lectura de marcadores JPEG— sí están
+       cubiertas por AuraStudio.Core.Tests (ImageResizePlanTests). -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <Platforms>ARM64;x64</Platforms>
+    <RuntimeIdentifier>win-arm64</RuntimeIdentifier>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
+    <RootNamespace>ImageResizerCheck</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\AuraStudio.App\Platform\ImageResizer.cs" />
+    <Compile Include="..\..\AuraStudio.App\Platform\CoverThumbnailCache.cs" />
+    <Compile Include="..\..\AuraStudio.App\Platform\PlaylistArtGenerator.cs" />
+    <ProjectReference Include="..\..\AuraStudio.Core\AuraStudio.Core.csproj" />
+  </ItemGroup>
+
+</Project>

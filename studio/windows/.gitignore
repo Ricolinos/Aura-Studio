@@ -1,0 +1,40 @@
+# .NET
+bin/
+obj/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+
+# MSBuild
+*.csproj.user
+*.lock.json
+TestResults/
+out/
+_ReSharper.*/
+*.DotSettings.user
+
+# WinUI 3 artifacts
+AppPackages/
+BundleArtifacts/
+PackageLayouts/
+*[Tt]est[Rr]esult*.xml
+*.cache
+
+# Artefactos del firmware bajados de un Release (contrato §A).
+#
+# Análogo de `Vendor/firmware-dist/` en macOS, que también está ignorado: son
+# binarios reproducibles con `scripts/FirmwareFetch.ps1` desde el Release fijado
+# en FIRMWARE_VERSION, no fuente de este repositorio. Se verifican por checksum
+# en cada fetch y otra vez en runtime antes de escribir nada en el iPod.
+artifacts/*
+# Excepción: el mks5lboot de Windows NO viene del Release (§A publica el de
+# Unix) — es nuestro cross-compile y vive versionado, con su procedencia al
+# lado. Ver la decisión abierta sobre su origen en DECISIONS.md (ST-080).
+!artifacts/mks5lboot.exe
+!artifacts/mks5lboot.exe.origin
+
+# Misc
+.DS_Store
+Thumbs.db
