@@ -411,6 +411,11 @@ struct LibrarySync {
               coverArtPolicy: AppPreferences.CoverArtPolicy = .albumOnly,
               musicOrganization: AppPreferences.MusicOrganization = .artistAlbum,
               musicFilenameFormat: AppPreferences.MusicFilenameFormat = .titleOnly,
+              /// R2-4 (ST-116): con qué criterio se agrupan los artistas
+              /// para las FOTOS de artista del contrato §D.3. No toca
+              /// ninguna ruta de archivo -- las carpetas del iPod se
+              /// siguen armando con el `albumArtist ?? artist` crudo.
+              artistGrouping: ArtistGroupingOptions = .default,
               /// PLAN-general-sync.md §6: `nil` = copiar todo lo que
               /// `SyncPlanner` marque `.copy` (comportamiento de
               /// siempre). No-nil = "sincronizar solo la selección" --
@@ -662,7 +667,7 @@ struct LibrarySync {
         try writeRatings(items: items, destinationByItemID: destinationByItemID)
         try writeCategoryIndexes(items: items, destinationByItemID: destinationByItemID)
         writeSeasonPosters(items: items)
-        if writeArtistImages(items: items, libraryRoot: libraryRoot) {
+        if writeArtistImages(items: items, libraryRoot: libraryRoot, artistGrouping: artistGrouping) {
             touched.music = true
         }
 
@@ -1041,7 +1046,8 @@ struct LibrarySync {
     /// uno viejo apuntando a nada. Devuelve `true` si escribió o borró
     /// algo (para el marcador `sync-pending.json`, `changes.music`).
     @discardableResult
-    private func writeArtistImages(items: [LibraryItem], libraryRoot: URL?) -> Bool {
+    private func writeArtistImages(items: [LibraryItem], libraryRoot: URL?,
+                                   artistGrouping: ArtistGroupingOptions) -> Bool {
         guard let libraryRoot else { return false }
         let store = ArtistImageStore(libraryRoot: libraryRoot)
         let artistsDir = volumeRoot.appendingPathComponent(Self.artistImagesDirRelativePath)
@@ -1049,7 +1055,13 @@ struct LibrarySync {
 
         var lines: [String] = []
         var writtenFiles = Set<String>()
-        for artist in LibraryGrouping.artists(from: items) {
+        // R2-4: agrupar por artista principal es justo lo que hace que
+        // "Gorillaz" y "Gorillaz feat. De La Soul" compartan UNA foto.
+        // El índice del contrato §D.3 ya escribe una línea por cada
+        // valor CRUDO de `metadata.artist` del grupo, así que el
+        // firmware sigue encontrando la foto con el tag real de la
+        // pista, sin cambiar el contrato ni una coma.
+        for artist in LibraryGrouping.artists(from: items, options: artistGrouping) {
             guard let data = store.image(forArtistKey: artist.id) else { continue }
             let fileName = ArtistImageStore.fileName(forArtistKey: artist.id)
             if !writtenFiles.contains(fileName) {

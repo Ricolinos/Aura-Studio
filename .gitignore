@@ -27,3 +27,4 @@ studio/**/build/
 *.log
 *.tmp
 *.swp
+.serena/

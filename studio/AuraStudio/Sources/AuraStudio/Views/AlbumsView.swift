@@ -18,6 +18,8 @@ struct AlbumsView: View {
     /// (como siempre lo hacía el tap único, ahora reservado al gesto de
     /// doble clic).
     @State private var selection = GridSelection<String>()
+    /// ST-104: álbum cuyo menú pidió "Buscar carátulas del álbum".
+    @State private var coverSearch: AlbumCoverRequest?
     @AppStorage("aura.albumsSort") private var sortRaw = AlbumSort.title.rawValue
 
     enum AlbumSort: String, CaseIterable, Identifiable {
@@ -77,16 +79,67 @@ struct AlbumsView: View {
             }
         }
         .navigationTitle("Álbumes")
+        .libraryStatus(statusSummary)
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
+        .sheet(item: $coverSearch) { request in
+            AlbumCoverPickerView(
+                request: request,
+                search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled),
+                onApply: { data in
+                    viewModel.applyAlbumCover(data, toItems: request.trackIDs)
+                    coverSearch = nil
+                },
+                onCancel: { coverSearch = nil })
+        }
+    }
+
+    /// ST-063: barra de estado. En la cuadrícula, álbumes/artistas/
+    /// canciones y lo seleccionado; con un álbum abierto, sus canciones
+    /// (la selección de la tabla embebida llega por `selectionForSync`).
+    private var statusSummary: LibraryStatusSummary {
+        if let album = selectedAlbum {
+            let selectedTracks = album.items.filter { viewModel.selectionForSync.contains($0.id) }
+            var summary = LibraryStats.music(items: album.items, selected: selectedTracks, options: preferences.artistGrouping)
+            summary.total = "«\(album.title)» · " + summary.total
+            return summary
+        }
+        return LibraryStats.albums(visibleAlbums, selected: visibleAlbums.filter { selection.isSelected($0.id) })
     }
 
     private func rebuild() {
-        albums = LibraryGrouping.albums(from: viewModel.items)
+        albums = LibraryGrouping.albums(from: viewModel.items, options: preferences.artistGrouping)
         if let selectedAlbumID, !albums.contains(where: { $0.id == selectedAlbumID }) {
             self.selectedAlbumID = nil
         }
         selection.pruneMissing(from: Set(albums.map(\.id)))
+    }
+
+    /// El pedido de carátulas para un conjunto de canciones, resuelto
+    /// contra la biblioteca completa para que la tapa elegida se aplique
+    /// al álbum ENTERO y no solo a lo que estaba seleccionado.
+    private func coverRequest(for items: [LibraryItem]) -> AlbumCoverRequest? {
+        AlbumCoverRequest.forAlbum(of: items, in: viewModel.items,
+                                   options: preferences.artistGrouping)
+    }
+
+    /// Un pedido por cada álbum alcanzado que tenga sentido buscar.
+    private func coverRequests(for targets: [AlbumGroup]) -> [AlbumCoverRequest] {
+        targets.compactMap { coverRequest(for: $0.items) }
+    }
+
+    /// R2-3: aplica la recomendada donde alcanza el umbral. Si quedó
+    /// EXACTAMENTE un álbum sin opción segura, se abre su picker -- que
+    /// es "si no lo supera, cae al picker". Con varios no se abre nada:
+    /// una fila de pickers encadenados no se puede usar, y el resumen ya
+    /// dice cuántos quedaron pendientes.
+    private func applyRecommended(_ requests: [AlbumCoverRequest]) {
+        Task {
+            let pending = await viewModel.applyRecommendedCovers(
+                for: requests,
+                search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled))
+            if pending.count == 1 { coverSearch = pending[0] }
+        }
     }
 
     /// Álbumes a los que aplica una acción disparada desde `album`: su
@@ -134,7 +187,10 @@ struct AlbumsView: View {
                               alignment: .leading, spacing: 28) {
                         ForEach(visibleAlbums) { album in
                             AlbumCardView(album: album)
-                                .librarySelectionBorder(selection.isSelected(album.id))
+                                .librarySelectionCheckbox(selection.isSelected(album.id),
+                                                          anySelected: !selection.selected.isEmpty) {
+                                    selection.toggle(album.id)
+                                }
                                 .contentShape(Rectangle())
                                 .onTapGesture(count: 2) { selectedAlbumID = album.id }
                                 .onTapGesture { selection.handleTap(album.id, orderedIDs: visibleAlbums.map(\.id)) }
@@ -142,7 +198,15 @@ struct AlbumsView: View {
                                 .help("\(album.title) — \(album.artist)")
                         }
                     }
+                    // R2-1: mismo margen superior que la cuadrícula de
+                    // Fotos. Sin él la primera fila arranca pegada al
+                    // borde del ScrollView y su casilla -- que va a 6 pt
+                    // del borde de la tarjeta -- queda cortada apenas se
+                    // desplaza un poco, que es exactamente el síntoma que
+                    // reportó el dueño ("la primera fila no pinta los
+                    // círculos y las demás sí").
                     .padding(.horizontal, 20)
+                    .padding(.top, 16)
                     .padding(.bottom, 24)
                 }
             }
@@ -207,6 +271,11 @@ struct AlbumsView: View {
                         Button("Buscar información en línea") {
                             Task { await viewModel.reenrichOnline(ids: Set(album.items.map(\.id)), fetchAlbumInfo: true, fetchLyrics: false) }
                         }
+                        Button("Buscar carátulas del álbum...") {
+                            coverSearch = coverRequest(for: album.items)
+                        }
+                        .disabled(coverRequest(for: album.items) == nil)
+                        .help("Busca varias carátulas en Cover Art Archive y Deezer y aplica la que elijas a todas las canciones del álbum")
                     }
                 }
                 Spacer()
@@ -244,6 +313,26 @@ struct AlbumsView: View {
         }
         Button("Buscar información en línea") {
             Task { await viewModel.reenrichOnline(ids: Set(items.map(\.id)), fetchAlbumInfo: true, fetchLyrics: false) }
+        }
+        // R2-2: la condición es que la selección RESUELVA a un solo
+        // álbum, no que se haya hecho clic sobre una sola tarjeta --
+        // `AlbumCoverRequest.forAlbum` es quien lo decide, y decide
+        // igual acá que en la tabla de Canciones.
+        if let request = coverRequest(for: items) {
+            Button("Buscar carátulas del álbum...") { coverSearch = request }
+        }
+        // R2-3: la acción automática SÍ tiene sentido plural -- aplica
+        // la recomendada a cada álbum que tenga una lo bastante segura,
+        // y deja intactos los demás.
+        let recommendable = coverRequests(for: targets)
+        if !recommendable.isEmpty {
+            Button(recommendable.count > 1
+                   ? "Aplicar carátula recomendada a \(recommendable.count) álbumes"
+                   : "Aplicar carátula recomendada") {
+                applyRecommended(recommendable)
+            }
+            .disabled(viewModel.isApplyingRecommendedCovers)
+            .help("Aplica sin preguntar solo la carátula que supere el umbral de confianza; los álbumes sin una opción segura quedan sin tocar")
         }
         Divider()
         Button("Mostrar en Finder") {

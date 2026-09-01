@@ -56,6 +56,8 @@ struct ArtistsView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .navigationTitle("Artistas")
+        // ST-063: barra de estado -- artistas/álbumes/canciones y la selección.
+        .libraryStatus(LibraryStats.artists(visibleArtists, selected: selectedArtists))
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
         .sheet(item: $reviewingItem) { item in
@@ -72,7 +74,7 @@ struct ArtistsView: View {
     }
 
     private func rebuild() {
-        artists = LibraryGrouping.artists(from: viewModel.items)
+        artists = LibraryGrouping.artists(from: viewModel.items, options: preferences.artistGrouping)
         let validIDs = Set(artists.map(\.id))
         selectedArtistIDs.formIntersection(validIDs)
         if selectedArtistIDs.isEmpty, let first = artists.first {
@@ -349,9 +351,13 @@ struct ArtistsView: View {
         if let onFetchArtistImages {
             Button(plural ? "Buscar fotos de los artistas" : "Buscar foto del artista") { onFetchArtistImages(targets) }
         }
-        if !plural, viewModel.artistImages.hasImage(forArtistKey: artist.id) {
-            Button("Quitar foto del artista") {
-                viewModel.artistImages.remove(forArtistKey: artist.id)
+        // R2-2: quitar la foto tiene sentido plural -- se quitan las de
+        // todos los artistas alcanzados que tengan una. Antes solo se
+        // ofrecía con uno, sin más razón que no haberlo pensado.
+        let withImage = targets.filter { viewModel.artistImages.hasImage(forArtistKey: $0.id) }
+        if !withImage.isEmpty {
+            Button(withImage.count > 1 ? "Quitar fotos de los artistas" : "Quitar foto del artista") {
+                for target in withImage { viewModel.artistImages.remove(forArtistKey: target.id) }
                 viewModel.objectWillChange.send()
             }
         }

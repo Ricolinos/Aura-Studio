@@ -31,6 +31,9 @@ struct ExtrasView: View {
 
     @State private var switching = false
     @State private var switchResult: String?
+    /// ST-077: qué versión se instalaría hoy de cada familia (el Release
+    /// más nuevo de GitHub, o la embebida si no se pudo consultar).
+    @StateObject private var versions = AvailableFirmwareVersions()
 
     /// D-289 / ST-003: "Temas" ahora abre la gestión real (instalar,
     /// activar, eliminar, construir) -- necesita un iPod con un firmware
@@ -71,6 +74,7 @@ struct ExtrasView: View {
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
         .navigationTitle("Extras")
+        .task { await versions.load() }
         .sheet(isPresented: $showingThemes) {
             if let device, device.supportsAuraContract {
                 ThemesView(mountPath: device.mountPath)
@@ -95,22 +99,60 @@ struct ExtrasView: View {
             FirmwareChoiceCard(
                 family: .aura,
                 explanation: "Lenguaje visual \"Apple 2026\": tipografías SF, temas claro/oscuro y temas instalables, Cover Flow.",
-                isSelected: preferences.firmwareFamilyToInstall == .aura
+                isSelected: preferences.firmwareFamilyToInstall == .aura,
+                availableTag: versions.entry(for: .aura).tag,
+                isLatestFromGitHub: versions.entry(for: .aura).fromGitHub
             ) { preferences.firmwareFamilyToInstall = .aura }
             FirmwareChoiceCard(
                 family: .metro,
                 explanation: "Lenguaje visual Metro (Windows Phone 7 / Zune): tipografía Selawik, hub de tiles, acentos de color, transiciones de pivote.",
-                isSelected: preferences.firmwareFamilyToInstall == .metro
+                isSelected: preferences.firmwareFamilyToInstall == .metro,
+                availableTag: versions.entry(for: .metro).tag,
+                isLatestFromGitHub: versions.entry(for: .metro).fromGitHub
             ) { preferences.firmwareFamilyToInstall = .metro }
             FirmwareChoiceCard(
                 family: .moonlit,
                 explanation: "Lenguaje visual Waning Crescent: calma nocturna, Material Design 3 adaptado al iPod, sin sistema de temas.",
-                isSelected: preferences.firmwareFamilyToInstall == .moonlit
+                isSelected: preferences.firmwareFamilyToInstall == .moonlit,
+                availableTag: versions.entry(for: .moonlit).tag,
+                isLatestFromGitHub: versions.entry(for: .moonlit).fromGitHub
             ) { preferences.firmwareFamilyToInstall = .moonlit }
+            versionSourceNote
             if let device, device.supportsAuraContract {
                 switchControls(device)
             }
         }
+    }
+
+    /// ST-077: de dónde salen las versiones de las pastillas. Sin esto,
+    /// "v0.4.4-beta" no distingue "lo último publicado" de "lo que traigo
+    /// adentro" -- y esa diferencia es justo lo que el dueño necesitaba
+    /// ver (reporte 2026-08-27).
+    private var versionSourceNote: some View {
+        HStack(spacing: 8) {
+            if versions.isRefreshing {
+                ProgressView().controlSize(.small)
+                Text("Consultando GitHub...")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            } else {
+                Text(anyFromGitHub
+                     ? "Las versiones son las más recientes publicadas en GitHub: instalar desde cero descarga esa."
+                     : "No se pudo consultar GitHub (revisa el token en Ajustes › General): se muestran las versiones incluidas en Aura Studio, que son las que se instalarían.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Button("Revisar de nuevo") {
+                    Task { await versions.load(force: true) }
+                }
+                .buttonStyle(.link)
+                .font(.caption)
+            }
+            Spacer(minLength: 0)
+        }
+    }
+
+    private var anyFromGitHub: Bool {
+        FirmwareFamily.installable.contains { versions.entry(for: $0).fromGitHub }
     }
 
     /// ST-056 / contrato v10: el estado real del iPod frente a la tarjeta
@@ -239,6 +281,14 @@ private struct FirmwareChoiceCard: View {
     let family: FirmwareFamily
     let explanation: String
     let isSelected: Bool
+    /// ST-077: el tag que se va a INSTALAR. Antes esta tarjeta mostraba
+    /// `BundledArtifacts.releaseTag` -- el pin de `FIRMWARE_VERSION`
+    /// horneado al compilar --, asi que con un Release mas nuevo
+    /// publicado la pastilla decia una version vieja aunque el aviso de
+    /// actualizaciones ya supiera de la nueva (reporte del dueño,
+    /// 2026-08-27). Ahora lo decide `FirmwareVersionBadge`.
+    let availableTag: String?
+    let isLatestFromGitHub: Bool
     let onSelect: () -> Void
 
     var body: some View {
@@ -251,13 +301,22 @@ private struct FirmwareChoiceCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 8) {
                         Text(family.displayName).font(.headline)
-                        if let tag = BundledArtifacts.forFamily(family).releaseTag {
-                            Text(tag)
+                        if let availableTag {
+                            Text(availableTag)
                                 .font(.caption.bold())
                                 .padding(.horizontal, 8)
                                 .padding(.vertical, 2)
                                 .background(Capsule().fill(Color.accentColor.opacity(0.15)))
                                 .foregroundStyle(Color.accentColor)
+                        }
+                        // ST-053: una pastilla que dice una version tiene
+                        // que decir tambien de donde salio -- "lo mas nuevo
+                        // publicado" y "lo que trae la app" no son lo mismo
+                        // y el usuario decide con esa diferencia.
+                        if availableTag != nil, !isLatestFromGitHub {
+                            Text("incluida")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
                         }
                     }
                     Text(explanation)

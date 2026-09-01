@@ -60,13 +60,24 @@ final class LibrarySyncTests: XCTestCase {
         XCTAssertEqual(try? Data(contentsOf: expectedCover), Data("fake cover bytes".utf8),
                        "la portada debe quedar junto a la pista, dentro de la carpeta real del álbum")
 
-        // La regresión real: NADA fuera de `fakeIPod` (el volumeRoot de
-        // esta prueba) debería haberse tocado -- el bug viejo escribía
-        // en una ruta anidada bajo el cwd del proceso.
-        let bogusNested = fakeIPod.appendingPathComponent("Music").appendingPathComponent(
-            FileManager.default.currentDirectoryPath.hasPrefix("/") ? String(FileManager.default.currentDirectoryPath.dropFirst()) : FileManager.default.currentDirectoryPath)
-        XCTAssertFalse(FileManager.default.fileExists(atPath: bogusNested.path),
-                        "no debe existir ninguna ruta anidada con el cwd del proceso adentro de volumeRoot")
+        // La regresión real: la portada no puede quedar en NINGUNA otra
+        // ruta -- el bug viejo la mandaba a una carpeta anidada armada
+        // con el directorio de trabajo del proceso.
+        //
+        // Se comprueba enumerando el volumen entero en vez de construir
+        // "la ruta mala" a partir del cwd: esa versión de la prueba
+        // dependía de cuál era el cwd al correrla. Con `swift test` es
+        // la carpeta del paquete y pasaba; con `xcodebuild` es `/`, y
+        // entonces "la ruta mala" se reducía a `<volumeRoot>/Music`,
+        // que el propio sync crea siempre -- la prueba fallaba pasara
+        // lo que pasara. Enumerar no depende de nada de eso.
+        let coversFound = FileManager.default
+            .enumerator(at: fakeIPod, includingPropertiesForKeys: nil)?
+            .compactMap { $0 as? URL }
+            .filter { $0.lastPathComponent == "cover.jpg" }
+            .map { $0.standardizedFileURL.path } ?? []
+        XCTAssertEqual(coversFound, [expectedCover.standardizedFileURL.path],
+                       "la portada debe existir en la carpeta del álbum y en ninguna otra ruta del volumen")
     }
 
     func testMigrationDeletesStaleFlatFile() throws {

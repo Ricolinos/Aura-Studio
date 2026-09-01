@@ -74,6 +74,7 @@ struct MoviesView: View {
             }
         }
         .navigationTitle("Películas")
+        .libraryStatus(statusSummary)
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
         .sheet(item: $reviewingItem) { item in
@@ -87,6 +88,18 @@ struct MoviesView: View {
                 reviewingItem = nil
             }
         }
+    }
+
+    /// ST-063: barra de estado. Con una película abierta, sus archivos
+    /// (la selección de la tabla embebida llega por `selectionForSync`).
+    private var statusSummary: LibraryStatusSummary {
+        if let movie = selectedMovie {
+            let selected = movie.items.filter { viewModel.selectionForSync.contains($0.id) }
+            var summary = LibraryStats.videos(items: movie.items, selected: selected, breakdown: false)
+            summary.total = "«\(movie.title)» · " + summary.total
+            return summary
+        }
+        return LibraryStats.movies(visibleMovies, selected: visibleMovies.filter { selection.isSelected($0.id) })
     }
 
     private func rebuild() {
@@ -141,7 +154,10 @@ struct MoviesView: View {
                         ForEach(visibleMovies) { movie in
                             MediaCardView(imageData: movie.posterData, title: movie.title, subtitle: movie.year,
                                           aspect: .poster(width: 140), placeholderSymbol: "film")
-                                .librarySelectionBorder(selection.isSelected(movie.id))
+                                .librarySelectionCheckbox(selection.isSelected(movie.id),
+                                                          anySelected: !selection.selected.isEmpty) {
+                                    selection.toggle(movie.id)
+                                }
                                 .onTapGesture(count: 2) { selectedMovieID = movie.id }
                                 .onTapGesture { selection.handleTap(movie.id, orderedIDs: visibleMovies.map(\.id)) }
                                 .contextMenu { movieContextMenu(movie) }
@@ -149,7 +165,15 @@ struct MoviesView: View {
                                 .help(movie.title)
                         }
                     }
+                    // R2-1: mismo margen superior que la cuadrícula de
+                    // Fotos. Sin él la primera fila arranca pegada al
+                    // borde del ScrollView y su casilla -- que va a 6 pt
+                    // del borde de la tarjeta -- queda cortada apenas se
+                    // desplaza un poco, que es exactamente el síntoma que
+                    // reportó el dueño ("la primera fila no pinta los
+                    // círculos y las demás sí").
                     .padding(.horizontal, 20)
+                    .padding(.top, 16)
                     .padding(.bottom, 24)
                 }
             }

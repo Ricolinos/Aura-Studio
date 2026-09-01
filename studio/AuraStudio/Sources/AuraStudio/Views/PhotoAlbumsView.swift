@@ -60,6 +60,7 @@ struct PhotoAlbumsView: View {
             }
         }
         .navigationTitle(category)
+        .libraryStatus(statusSummary)
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
         .sheet(item: $renamingAlbum) { album in
@@ -109,6 +110,15 @@ struct PhotoAlbumsView: View {
     private func handleDetailDrop(_ urls: [URL], album: PhotoAlbumGroup) {
         viewModel.addDroppedFiles(urls, into: .photo, category: category, photoAlbum: album.isUnknown ? nil : album.title)
         Task { await viewModel.processAll() }
+    }
+
+    /// ST-063: barra de estado -- álbumes/fotos en la cuadrícula; con
+    /// un álbum abierto, sus fotos y las seleccionadas.
+    private var statusSummary: LibraryStatusSummary {
+        if let album = selectedAlbum {
+            return LibraryStats.photoAlbum(album, selected: album.items.filter { photoSelection.isSelected($0.id) })
+        }
+        return LibraryStats.photoAlbums(visibleAlbums, selected: visibleAlbums.filter { selection.isSelected($0.id) })
     }
 
     private func rebuild() {
@@ -166,7 +176,10 @@ struct PhotoAlbumsView: View {
                                   alignment: .leading, spacing: 28) {
                             ForEach(visibleAlbums) { album in
                                 PhotoAlbumCardView(album: album)
-                                    .librarySelectionBorder(selection.isSelected(album.id))
+                                    .librarySelectionCheckbox(selection.isSelected(album.id),
+                                                              anySelected: !selection.selected.isEmpty) {
+                                        selection.toggle(album.id)
+                                    }
                                     .onTapGesture(count: 2) { selectedAlbumID = album.id }
                                     .onTapGesture { selection.handleTap(album.id, orderedIDs: visibleAlbums.map(\.id)) }
                                     .contextMenu { albumContextMenu(album) }
@@ -307,7 +320,10 @@ struct PhotoAlbumsView: View {
         let isSelected = photoSelection.isSelected(item.id)
         return CoverArtView(data: try? Data(contentsOf: item.preparedURL ?? item.sourceURL), side: 140,
                             cornerRadius: 6, placeholderSymbol: "photo")
-            .librarySelectionBorder(isSelected, cornerRadius: 6)
+            .librarySelectionCheckbox(isSelected, anySelected: !photoSelection.selected.isEmpty,
+                                      cornerRadius: 6) {
+                photoSelection.toggle(item.id)
+            }
             .contentShape(Rectangle())
             .onTapGesture(count: 2) { quickLook.toggle(for: item.sourceURL) }
             .onTapGesture { photoSelection.handleTap(item.id, orderedIDs: album.items.map(\.id)) }

@@ -58,7 +58,74 @@ struct MusicSettingsView: View {
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
+
+            Divider()
+
+            artistHomologationSection
         }
+    }
+
+    // MARK: - R2-4: homologación de artistas
+
+    @State private var newException = ""
+
+    @ViewBuilder
+    private var artistHomologationSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Artistas invitados").font(.headline)
+            Toggle("Agrupar las colaboraciones bajo el artista principal",
+                   isOn: $preferences.homologateArtistCollaborations)
+            Text("«Gorillaz feat. De La Soul» se agrupa junto a «Gorillaz»: un solo artista en la lista y una sola foto. Los créditos completos NO se modifican -- se siguen viendo en la tabla de canciones y en «Más información».")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Text("Separadores que agrupan: " + ArtistNameNormalizer.collaborationSeparators.joined(separator: ", ")
+                 + ". «vs.» y «versus» nunca agrupan, porque ahí la colaboración tiene nombre propio.")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if preferences.homologateArtistCollaborations {
+                Text("Excepciones").font(.subheadline.weight(.medium))
+                    .padding(.top, 4)
+                Text("Nombres que no se deben recortar aunque traigan un separador, como «Simon + Garfunkel» o «Café con Leche».")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack {
+                    TextField("Nombre del artista tal como aparece", text: $newException)
+                        .textFieldStyle(.roundedBorder)
+                        .onSubmit(addException)
+                    Button("Agregar", action: addException)
+                        .disabled(newException.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+                if preferences.artistHomologationExceptions.isEmpty {
+                    Text("Todavía no hay excepciones.")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                } else {
+                    ForEach(preferences.artistHomologationExceptions, id: \.self) { name in
+                        HStack {
+                            Text(name)
+                            Spacer()
+                            Button {
+                                preferences.removeArtistHomologationException(name)
+                            } label: {
+                                Image(systemName: "minus.circle")
+                            }
+                            .buttonStyle(.plain)
+                            .help("Quitar «\(name)» de las excepciones")
+                        }
+                        .padding(.vertical, 1)
+                    }
+                }
+            }
+        }
+    }
+
+    private func addException() {
+        preferences.addArtistHomologationException(newException)
+        newException = ""
     }
 
     private var organizationDetail: String {

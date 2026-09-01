@@ -682,9 +682,24 @@ final class LibraryViewModel: ObservableObject {
         let fm = FileManager.default
         let rootPath = libraryRoot.standardizedFileURL.path
 
+        // ST-064: `.preparados/` es plano y se nombra por el nombre del
+        // archivo de origen, así que dos elementos con el mismo nombre
+        // (justo el caso de los duplicados que se eliminan desde
+        // "Elementos similares") COMPARTEN el preparado. Borrar el de
+        // uno dejaba al que se conserva en "Listo" apuntando a un
+        // archivo inexistente -- el sync fallaba con "no se encuentra".
+        // Solo se borra un preparado (y su .lrc) si ningún sobreviviente
+        // lo sigue usando.
+        let survivingPreparedPaths = Set(items.filter { !ids.contains($0.id) }
+            .compactMap { $0.preparedURL?.standardizedFileURL.path })
+
         for id in ids {
             guard let item = items.first(where: { $0.id == id }) else { continue }
-            if let prepared = item.preparedURL { try? fm.removeItem(at: prepared) }
+            if let prepared = item.preparedURL,
+               !survivingPreparedPaths.contains(prepared.standardizedFileURL.path) {
+                try? fm.removeItem(at: prepared)
+                try? fm.removeItem(at: prepared.deletingPathExtension().appendingPathExtension("lrc"))
+            }
             let coverURL = coversDirectory.appendingPathComponent("\(item.id.uuidString).jpg")
             try? fm.removeItem(at: coverURL)
             let sourcePath = item.sourceURL.standardizedFileURL.path
@@ -905,6 +920,98 @@ final class LibraryViewModel: ObservableObject {
         persistCatalog()
     }
 
+    /// ST-104: aplica una carátula a todas las canciones del álbum.
+    ///
+    /// Vuelve a preparar cada canción para que la imagen quede embebida
+    /// en el archivo que viaja al iPod, no solo en el catálogo. Si
+    /// re-preparar falla, se conserva el archivo preparado que ya había:
+    /// es preferible una canción sincronizable con la tapa vieja que una
+    /// que se quedó sin nada listo.
+    ///
+    /// `markEdited` distingue las dos formas de llegar acá (R2-3):
+    /// - **La eligió el usuario** en el picker → `true`. Una decisión
+    ///   suya la respeta todo enriquecimiento posterior.
+    /// - **La aplicó la recomendación automática** → `false`. Blindar
+    ///   una tapa que nadie miró dejaría al álbum con ella para siempre,
+    ///   incluso cuando después aparezca una mejor. `metadataEditedByUser`
+    ///   significa "el usuario lo decidió", no "algo lo escribió".
+    @discardableResult
+    func applyAlbumCover(_ data: Data, toItems ids: Set<UUID>, markEdited: Bool = true) -> Int {
+        guard !data.isEmpty else { return 0 }
+        var changed = 0
+        for index in items.indices where ids.contains(items[index].id) && items[index].kind == .music {
+            var metadata = items[index].metadata ?? TrackMetadata()
+            guard metadata.coverArtData != data else { continue }
+            metadata.coverArtData = data
+            items[index].metadata = metadata
+            if markEdited { items[index].metadataEditedByUser = true }
+            if let prepared = try? prepareMusic(item: items[index], metadata: metadata) {
+                items[index].preparedURL = prepared
+            }
+            changed += 1
+        }
+        guard changed > 0 else { return 0 }
+        if markEdited {
+            lastEnrichmentSummary = changed == 1
+                ? "Carátula aplicada a 1 canción."
+                : "Carátula aplicada a \(changed) canciones."
+        }
+        persistCatalog()
+        return changed
+    }
+
+    @Published private(set) var isApplyingRecommendedCovers = false
+
+    /// R2-3: "Aplicar carátula recomendada" sobre uno o varios álbumes.
+    ///
+    /// Para cada álbum busca candidatas y aplica la recomendada **solo
+    /// si supera el umbral** de `AlbumCoverScoring.automaticThreshold`.
+    /// Lo que no lo supera **no se toca**: se cuenta y se dice, para que
+    /// el usuario lo resuelva en el picker. Aplicar a ciegas una tapa
+    /// dudosa a veinte álbumes es exactamente el daño que R2-3 evita.
+    ///
+    /// Con UN solo álbum que no alcance el umbral, se abre el picker
+    /// (eso lo decide la vista con el `AlbumCoverRequest` devuelto).
+    /// Con varios no: veinte pickers en fila no son una función.
+    func applyRecommendedCovers(for requests: [AlbumCoverRequest],
+                                search: AlbumCoverSearch) async -> [AlbumCoverRequest] {
+        guard !isApplyingRecommendedCovers, !requests.isEmpty else { return [] }
+        isApplyingRecommendedCovers = true
+        defer { isApplyingRecommendedCovers = false }
+        lastError = nil
+
+        var applied = 0
+        var needsChoice: [AlbumCoverRequest] = []
+        var withoutResults = 0
+
+        for request in requests {
+            let candidates = await search.candidates(
+                for: AlbumCoverScoring.AlbumFacts(title: request.albumTitle,
+                                                  year: request.albumYear,
+                                                  trackCount: request.trackCount),
+                artist: request.albumArtist)
+            guard let best = candidates.first else {
+                withoutResults += 1
+                continue
+            }
+            if best.reachesAutomaticThreshold {
+                if applyAlbumCover(best.data, toItems: request.trackIDs, markEdited: false) > 0 {
+                    applied += 1
+                }
+            } else {
+                needsChoice.append(request)
+            }
+        }
+
+        var parts = ["Carátulas: \(applied) \(applied == 1 ? "aplicada" : "aplicadas")"]
+        if !needsChoice.isEmpty {
+            parts.append("\(needsChoice.count) sin una opción lo bastante segura (elígela tú)")
+        }
+        if withoutResults > 0 { parts.append("\(withoutResults) sin resultados") }
+        lastEnrichmentSummary = parts.joined(separator: ", ") + "."
+        return needsChoice
+    }
+
     /// D-218: aplica `BatchMediaInfoView` sobre varias canciones a la
     /// vez -- solo toca los campos que `changes` trae con valor real
     /// (`nil` = no tocar), nunca el título ni el numero de pista (esos
@@ -925,6 +1032,37 @@ final class LibraryViewModel: ObservableObject {
             items[index].metadataEditedByUser = true
             items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
             items[index].status = metadata.isComplete ? .ready : .needsReview
+        }
+        persistCatalog()
+    }
+
+    /// ST-063: aplica las ediciones que propuso `SimilarItemsDetector`
+    /// (unificar artista/álbum al nombre canónico, quitar el número de
+    /// pista del título). Mismo camino que una corrección manual:
+    /// marca `metadataEditedByUser`, re-prepara la música y persiste.
+    func applySimilarityEdits(_ edits: [SimilarityProposedEdit]) {
+        guard !edits.isEmpty else { return }
+        let byItem = Dictionary(grouping: edits, by: \.itemID)
+        for (id, itemEdits) in byItem {
+            guard let index = items.firstIndex(where: { $0.id == id }) else { continue }
+            var metadata = items[index].metadata ?? TrackMetadata()
+            for edit in itemEdits {
+                let value = edit.proposedValue.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !value.isEmpty else { continue }
+                switch edit.field {
+                case .title: metadata.title = value
+                case .artist: metadata.artist = value
+                case .album: metadata.album = value
+                }
+            }
+            items[index].metadata = metadata
+            items[index].metadataEditedByUser = true
+            if items[index].kind == .music {
+                items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
+                if items[index].status == .ready || items[index].status == .needsReview {
+                    items[index].status = metadata.isComplete ? .ready : .needsReview
+                }
+            }
         }
         persistCatalog()
     }
@@ -1154,6 +1292,9 @@ final class LibraryViewModel: ObservableObject {
         let coverArtPolicy = preferences.coverArtPolicy
         let musicOrganization = preferences.musicOrganization
         let musicFilenameFormat = preferences.musicFilenameFormat
+        // R2-4: se toma acá, en el hilo principal, para cruzar a la
+        // tarea separada como valor (`ArtistGroupingOptions` es Sendable).
+        let artistGroupingSnapshot = preferences.artistGrouping
         let libraryRootSnapshot = libraryRoot
         let installationIDSnapshot = preferences.installationID
         let startedAt = Date()
@@ -1167,6 +1308,7 @@ final class LibraryViewModel: ObservableObject {
                               coverArtPolicy: coverArtPolicy,
                               musicOrganization: musicOrganization,
                               musicFilenameFormat: musicFilenameFormat,
+                              artistGrouping: artistGroupingSnapshot,
                               restrictCopyToSourcePaths: restrictedSourcePaths,
                               forceRecopySourcePaths: resolvedConflicts.forceRecopySourcePaths,
                               removeOrphanedSourcePaths: resolvedConflicts.removeOrphanedSourcePaths,
@@ -1453,7 +1595,14 @@ final class LibraryViewModel: ObservableObject {
         let coversPrefix = "\(PersistedLibrary.legacyCoversDirName)/"
 
         for index in persisted.items.indices {
-            let item = persisted.items[index]
+            // ST-102: los prefijos se comparan sobre la ruta con
+            // separadores ya normalizados -- un catalogo que paso por
+            // Windows trae `Originales\...`, y con la comparacion cruda
+            // la migracion lo daria por ya migrado.
+            var item = persisted.items[index]
+            item.sourceRelativePath = SharedCatalogPath.withUnixSeparators(item.sourceRelativePath)
+            item.preparedRelativePath = item.preparedRelativePath.map(SharedCatalogPath.withUnixSeparators)
+            item.coverRelativePath = item.coverRelativePath.map(SharedCatalogPath.withUnixSeparators)
 
             if item.sourceRelativePath.hasPrefix(originalsPrefix),
                let newPath = migrateLegacySourceFile(item) {
@@ -1504,9 +1653,8 @@ final class LibraryViewModel: ObservableObject {
     /// al moverlo -- el item se deja tal cual esta (se reintenta en el
     /// proximo arranque, mientras `Originales/` siga existiendo).
     private func migrateLegacySourceFile(_ persistedItem: PersistedLibraryItem) -> String? {
-        let fm = FileManager.default
-        let oldURL = libraryRoot.appendingPathComponent(persistedItem.sourceRelativePath)
-        guard fm.fileExists(atPath: oldURL.path) else { return nil }
+        guard let oldURL = SharedCatalogPath.resolve(persistedItem.sourceRelativePath, in: libraryRoot)
+        else { return nil }
 
         let kind = LibraryPersistenceMapper.liveKind(persistedItem.kind)
         let category = persistedItem.category.map(LibraryPersistenceMapper.liveCategory)
@@ -1531,8 +1679,7 @@ final class LibraryViewModel: ObservableObject {
     /// move falla (p.ej. ya habia algo con ese nombre en el destino).
     private func moveLegacyFlatFile(fromRelative old: String, toRelative new: String) -> Bool {
         let fm = FileManager.default
-        let oldURL = libraryRoot.appendingPathComponent(old)
-        guard fm.fileExists(atPath: oldURL.path) else { return false }
+        guard let oldURL = SharedCatalogPath.resolve(old, in: libraryRoot, fileManager: fm) else { return false }
         let newURL = libraryRoot.appendingPathComponent(new)
         guard (try? fm.createDirectory(at: newURL.deletingLastPathComponent(), withIntermediateDirectories: true)) != nil else { return false }
         return (try? fm.moveItem(at: oldURL, to: newURL)) != nil
@@ -1596,26 +1743,24 @@ final class LibraryViewModel: ObservableObject {
         let fm = FileManager.default
         var restored: [LibraryItem] = []
         for p in persisted.items {
-            // `relativePath(of:)` guarda una ruta ABSOLUTA cuando el
-            // archivo no vive dentro de la biblioteca (modo "sin copiar
-            // medios", D-192) -- reconstruirla con `appendingPathComponent`
-            // la trataria como un componente literal en vez de una ruta
-            // absoluta real, rompiendo la referencia.
-            let sourceURL = p.sourceRelativePath.hasPrefix("/")
-                ? URL(fileURLWithPath: p.sourceRelativePath)
-                : libraryRoot.appendingPathComponent(p.sourceRelativePath)
-            // Si el archivo (la copia en Música/Imágenes/Videos, o el
-            // original referenciado sin copiar) ya no existe, el item se
-            // omite en silencio: no hay nada que preparar ni sincronizar
-            // desde un archivo ausente.
-            guard fm.fileExists(atPath: sourceURL.path) else { continue }
+            // ST-102: `SharedCatalogPath` resuelve la ruta con
+            // tolerancia -- ruta absoluta de macOS tal cual (modo "sin
+            // copiar medios", D-192), separadores `\` de un catalogo
+            // escrito por Aura Studio en Windows (biblioteca COMPARTIDA),
+            // y las dos normalizaciones Unicode. Devuelve `nil` cuando
+            // NINGUNA forma existe: si el archivo (la copia en Música/
+            // Imágenes/Videos, o el original referenciado sin copiar) ya
+            // no esta, el item se omite en silencio -- no hay nada que
+            // preparar ni sincronizar desde un archivo ausente.
+            guard let sourceURL = SharedCatalogPath.resolve(p.sourceRelativePath, in: libraryRoot, fileManager: fm)
+            else { continue }
 
-            let coverData = p.coverRelativePath
-                .map { libraryRoot.appendingPathComponent($0) }
+            let coverData = SharedCatalogPath
+                .coverURL(recorded: p.coverRelativePath, itemID: p.id, in: libraryRoot, fileManager: fm)
                 .flatMap { try? Data(contentsOf: $0) }
             let preparedURL = p.preparedRelativePath
-                .map { libraryRoot.appendingPathComponent($0) }
-            let preparedExists = preparedURL.map { fm.fileExists(atPath: $0.path) } ?? false
+                .flatMap { SharedCatalogPath.resolve($0, in: libraryRoot, fileManager: fm) }
+            let preparedExists = preparedURL != nil
 
             var status = LibraryPersistenceMapper.liveStatus(p.status)
             if status == .ready && !preparedExists {
@@ -1651,10 +1796,15 @@ final class LibraryViewModel: ObservableObject {
             // esta en disco (borrada a mano, biblioteca movida a medias)
             // no debe seguir referenciandose -- se trata como si nunca
             // hubiera existido, LibrarySync cae al default generado.
-            let imageExists = $0.imageRelativePath
-                .map { fm.fileExists(atPath: libraryRoot.appendingPathComponent($0).path) } ?? false
+            //
+            // ST-102: se guarda la forma que REALMENTE existe en disco
+            // (`existingRelative`), no la que venia anotada -- asi el
+            // resto de la app y el proximo guardado ya trabajan con la
+            // ruta buena aunque el catalogo lo haya escrito Windows.
+            let imageRelative = $0.imageRelativePath
+                .flatMap { SharedCatalogPath.existingRelative($0, in: libraryRoot, fileManager: fm) }
             return Playlist(id: $0.id, name: $0.name, trackItemIDs: $0.trackItemIDs,
-                             imageRelativePath: imageExists ? $0.imageRelativePath : nil)
+                             imageRelativePath: imageRelative)
         }
         evaluateLegacyMetadataRereadOffer()
         evaluateCoverContaminationOffer()

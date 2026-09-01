@@ -31,7 +31,16 @@ struct CoverArtArchiveClient {
     /// "large", que alcanza de sobra para el LCD de 320x240 del iPod y
     /// pesa mucho menos que la imagen original) para el release dado,
     /// o nil si ese release no tiene tapa registrada.
-    func fetchFrontCover(releaseID: String) async throws -> Data? {
+    /// R2-3: la tapa MÁS si venía realmente marcada como frontal. Una
+    /// imagen sin esa marca puede ser la contratapa o la cara del disco
+    /// -- sirve como último recurso, pero no como carátula recomendada,
+    /// y el puntaje tiene que poder distinguirlas.
+    struct Cover: Equatable {
+        let data: Data
+        let isFront: Bool
+    }
+
+    func fetchCover(releaseID: String) async throws -> Cover? {
         var request = URLRequest(url: baseURL.appendingPathComponent("release/\(releaseID)"))
         request.setValue(MusicBrainzClient.userAgent, forHTTPHeaderField: "User-Agent")
 
@@ -42,9 +51,11 @@ struct CoverArtArchiveClient {
         try MusicBrainzClient.validate(response)
 
         let decoded = try JSONDecoder().decode(CoverArtResponse.self, from: data)
-        guard let front = decoded.images.first(where: { $0.front }) ?? decoded.images.first else {
+        let marked = decoded.images.first(where: { $0.front })
+        guard let front = marked ?? decoded.images.first else {
             return nil
         }
+        let isFront = marked != nil
         // La API a veces devuelve URLs "http://" (nunca "https://") para
         // los thumbnails -- App Transport Security las bloquea por
         // default en la app real (a diferencia de `swift test`/`curl`,
@@ -58,6 +69,12 @@ struct CoverArtArchiveClient {
         imageRequest.setValue(MusicBrainzClient.userAgent, forHTTPHeaderField: "User-Agent")
         let (imageData, imageResponse) = try await session.data(for: imageRequest)
         try MusicBrainzClient.validate(imageResponse)
-        return imageData
+        return Cover(data: imageData, isFront: isFront)
+    }
+
+    /// La tapa a secas, para quien no necesita saber si estaba marcada
+    /// como frontal (el enriquecimiento automático de siempre).
+    func fetchFrontCover(releaseID: String) async throws -> Data? {
+        try await fetchCover(releaseID: releaseID)?.data
     }
 }

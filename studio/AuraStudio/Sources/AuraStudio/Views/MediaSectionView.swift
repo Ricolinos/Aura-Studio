@@ -53,6 +53,9 @@ struct MediaSectionView: View {
     @State private var searchText = ""
     @State private var reviewingItem: LibraryItem?
     @State private var renamingItem: LibraryItem?
+    /// ST-104: álbum cuyo menú contextual pidió "Buscar carátulas del
+    /// álbum".
+    @State private var coverSearch: AlbumCoverRequest?
     @State private var selection: Set<UUID> = []
     @State private var sortOrder: [KeyPathComparator<MediaTableRow>] = [.init(\.title, order: .forward)]
     @State private var quickLook = QuickLookCoordinator()
@@ -78,6 +81,8 @@ struct MediaSectionView: View {
     @State private var batchEditingIDs: Set<UUID>?
     /// ST-030: hoja "Opciones de visualización" (solo musica).
     @State private var showingViewOptions = false
+    /// ST-063: hoja "Elementos similares" abierta desde el menú contextual.
+    @State private var showingSimilarItems = false
     /// PLAN-biblioteca-medios-v2.md §3.3: archivos sueltos DENTRO de una
     /// subsección de Fotos, esperando que el usuario nombre el álbum
     /// (o elija "Sin álbum") -- categoría ya resuelta (`presetCategory`).
@@ -94,8 +99,8 @@ struct MediaSectionView: View {
         var result = allItemsOfKind
         switch scope {
         case .all: break
-        case .album(let key): result = result.filter { LibraryGrouping.albumKey(of: $0) == key }
-        case .artist(let key): result = result.filter { LibraryGrouping.artistKey(of: $0) == key }
+        case .album(let key): result = result.filter { LibraryGrouping.albumKey(of: $0, options: preferences.artistGrouping) == key }
+        case .artist(let key): result = result.filter { LibraryGrouping.artistKey(of: $0, options: preferences.artistGrouping) == key }
         case .videoCollection(let key): result = result.filter { LibraryGrouping.videoCollectionKey(of: $0) == key }
         case .season(let key, let season):
             result = result.filter { LibraryGrouping.videoCollectionKey(of: $0) == key && ($0.season ?? VideoCollectionGroup.noSeasonNumber) == season }
@@ -154,6 +159,25 @@ struct MediaSectionView: View {
         return items.first { $0.id == id }
     }
 
+    /// ST-063: barra de estado de la sección. Embebida en Álbumes/
+    /// Películas no publica nada (la vista contenedora arma el suyo con
+    /// `selectionForSync`, que esta tabla ya mantiene).
+    private var statusSummary: LibraryStatusSummary? {
+        guard !isEmbedded else { return nil }
+        let selected = items.filter { selection.contains($0.id) }
+        switch kind {
+        case .music:
+            return LibraryStats.music(items: items, selected: selected, options: preferences.artistGrouping)
+        case .video:
+            return LibraryStats.videos(items: items, selected: selected, breakdown: presetCategory == nil)
+        case .photo:
+            return LibraryStats.photos(items: items, selected: selected,
+                                       collections: presetCategory == nil ? preferences.photoCollections : nil)
+        case .unsupported:
+            return nil
+        }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             // Con una categoría fija por la barra lateral, la barra de
@@ -195,8 +219,14 @@ struct MediaSectionView: View {
             }
         }
         .navigationTitle(isEmbedded ? "" : title)
+        .libraryStatus(statusSummary)
         .sheet(isPresented: $showingViewOptions) {
             MusicViewOptionsView(preferences: preferences) { showingViewOptions = false }
+        }
+        .sheet(isPresented: $showingSimilarItems) {
+            SimilarItemsView(library: viewModel, preferences: preferences, initialKind: kind) {
+                showingSimilarItems = false
+            }
         }
         .onChange(of: sortOrder) { storeSortOrderInPreferences() }
         .onChange(of: preferences.musicSortField) { applySortOrderFromPreferences() }
@@ -267,6 +297,16 @@ struct MediaSectionView: View {
                     pendingPhotoImportURLs = nil
                 }
             }
+        }
+        .sheet(item: $coverSearch) { request in
+            AlbumCoverPickerView(
+                request: request,
+                search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled),
+                onApply: { data in
+                    viewModel.applyAlbumCover(data, toItems: request.trackIDs)
+                    coverSearch = nil
+                },
+                onCancel: { coverSearch = nil })
         }
         .sheet(item: $renamingItem) { item in
             RenameSheet(currentTitle: item.metadata?.title ?? item.sourceURL.deletingPathExtension().lastPathComponent) { newTitle in
@@ -777,6 +817,16 @@ struct MediaSectionView: View {
             Button("Buscar información en línea") {
                 runEnrichment { await viewModel.reenrichOnline(ids: targetIDs, fetchAlbumInfo: true, fetchLyrics: false) }
             }
+            // ST-104: elegir la tapa a mano, cuando la que trajo el
+            // enriquecimiento no es la buena. R2-2: aparece siempre que
+            // la selección RESUELVA a un solo álbum -- tres canciones
+            // del mismo disco son un álbum -- y se aplica al álbum
+            // completo, no solo a lo seleccionado.
+            if let request = AlbumCoverRequest.forAlbum(of: targetItems, in: viewModel.items,
+                                                       options: preferences.artistGrouping) {
+                Button("Buscar carátulas del álbum...") { coverSearch = request }
+                    .help("Busca varias carátulas en Cover Art Archive y Deezer y aplica la que elijas a todas las canciones del álbum")
+            }
             Button("Buscar letra") {
                 runEnrichment { await viewModel.reenrichOnline(ids: targetIDs, fetchAlbumInfo: false, fetchLyrics: true) }
             }
@@ -887,6 +937,11 @@ struct MediaSectionView: View {
         if !targetItems.isEmpty {
             Button("Mostrar en Finder") {
                 NSWorkspace.shared.activateFileViewerSelecting(targetItems.map(\.sourceURL))
+            }
+            // ST-063: misma hoja que "Biblioteca › Buscar elementos
+            // similares...", arrancando filtrada a este tipo de medio.
+            Button("Buscar elementos similares...") {
+                showingSimilarItems = true
             }
             Divider()
         }

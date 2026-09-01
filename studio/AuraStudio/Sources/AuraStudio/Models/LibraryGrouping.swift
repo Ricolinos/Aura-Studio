@@ -51,32 +51,49 @@ enum LibraryGrouping {
             .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
     }
 
-    /// Artista con el que se agrupa un álbum: la misma precedencia que
-    /// la ruta de sync (`LibrarySync`: `albumArtist ?? artist`), para
-    /// que lo que se ve en Studio coincida con las carpetas del iPod.
-    static func albumArtist(of item: LibraryItem) -> String? {
+    /// Artista con el que se agrupa un álbum: `albumArtist ?? artist`,
+    /// y desde R2-4 (ST-116) recortado a su **artista principal** --
+    /// "Gorillaz feat. De La Soul" agrupa bajo "Gorillaz". Ver
+    /// `ArtistNameNormalizer` y `docs/normalizacion-artistas.md`.
+    ///
+    /// **Solo agrupa.** El `artist` de la pista no se toca, y las rutas
+    /// en disco tampoco: tanto la carpeta local
+    /// (`LibrarySync.localLibraryRelativePath`) como la del iPod arman
+    /// su nombre con el valor CRUDO (`albumArtist ?? artist`), no con
+    /// esto. Es deliberado -- mover carpetas en el iPod es una
+    /// operación destructiva sobre archivos ya sincronizados, y R2-4
+    /// pidió agrupación, no reorganización. La consecuencia (una
+    /// carpeta "Gorillaz feat. De La Soul" en el iPod para un álbum que
+    /// Studio muestra bajo "Gorillaz") está anotada en
+    /// `docs/normalizacion-artistas.md` § Alcance.
+    static func albumArtist(of item: LibraryItem,
+                            options: ArtistGroupingOptions = .default) -> String? {
         let candidate = item.metadata?.albumArtist ?? item.metadata?.artist
         let trimmed = candidate?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        return trimmed.isEmpty ? nil : trimmed
+        guard !trimmed.isEmpty else { return nil }
+        return ArtistNameNormalizer.principalArtist(trimmed, options: options)
     }
 
-    static func albumKey(of item: LibraryItem) -> String {
-        "\(normalize(item.metadata?.album))\u{1F}\(normalize(albumArtist(of: item)))"
+    static func albumKey(of item: LibraryItem,
+                         options: ArtistGroupingOptions = .default) -> String {
+        "\(normalize(item.metadata?.album))\u{1F}\(normalize(albumArtist(of: item, options: options)))"
     }
 
-    static func artistKey(of item: LibraryItem) -> String {
-        normalize(albumArtist(of: item))
+    static func artistKey(of item: LibraryItem,
+                          options: ArtistGroupingOptions = .default) -> String {
+        normalize(albumArtist(of: item, options: options))
     }
 
     /// Álbumes: conocidos por título (orden natural, ignora artículo
     /// inicial), luego año; dentro, por disco, pista y título. "Sin
     /// álbum" (uno por artista) siempre al final.
-    static func albums(from items: [LibraryItem]) -> [AlbumGroup] {
+    static func albums(from items: [LibraryItem],
+                       options: ArtistGroupingOptions = .default) -> [AlbumGroup] {
         let music = items.filter { $0.kind == .music }
         var buckets: [String: [LibraryItem]] = [:]
         var order: [String] = []
         for item in music {
-            let key = albumKey(of: item)
+            let key = albumKey(of: item, options: options)
             if buckets[key] == nil { order.append(key) }
             buckets[key, default: []].append(item)
         }
@@ -91,7 +108,7 @@ enum LibraryGrouping {
             return AlbumGroup(
                 id: key,
                 title: isUnknown ? unknownAlbumTitle : albumTitle,
-                artist: albumArtist(of: first) ?? unknownArtistName,
+                artist: albumArtist(of: first, options: options) ?? unknownArtistName,
                 items: bucket,
                 coverArtData: bucket.compactMap { $0.metadata?.coverArtData }.first,
                 year: bucket.compactMap { $0.metadata?.year }.first,
@@ -105,8 +122,9 @@ enum LibraryGrouping {
 
     /// Artistas por nombre; "Artista desconocido" al final. Cada uno con
     /// sus álbumes en el orden de `albums(from:)`.
-    static func artists(from items: [LibraryItem]) -> [ArtistGroup] {
-        let albums = albums(from: items)
+    static func artists(from items: [LibraryItem],
+                        options: ArtistGroupingOptions = .default) -> [ArtistGroup] {
+        let albums = albums(from: items, options: options)
         var buckets: [String: [AlbumGroup]] = [:]
         var order: [String] = []
         for album in albums {

@@ -11,10 +11,25 @@ struct BundledArtifacts {
     /// ST-047: de que familia son estos artefactos. Decide el
     /// subdirectorio de Resources (`FirmwareFamily.bundleSubdirectory`).
     let family: FirmwareFamily
+    /// ST-077: si esta puesto, los artefactos NO salen del bundle sino de
+    /// este directorio (los que `FirmwareReleaseDownloader` bajo y
+    /// verifico del Release mas nuevo). Todo lo demas -- `verifyAll()`,
+    /// `releaseTag`, la verificacion del contenido de `rockbox.zip` --
+    /// funciona igual, que es justamente el punto: el instalador no
+    /// tiene que saber de donde vinieron los archivos.
+    let directory: URL?
 
     init(bundle: Bundle, family: FirmwareFamily = .aura) {
         self.bundle = bundle
         self.family = family
+        self.directory = nil
+    }
+
+    /// Artefactos ya bajados y verificados en disco (ST-077).
+    init(directory: URL, family: FirmwareFamily) {
+        self.bundle = .main
+        self.family = family
+        self.directory = directory
     }
 
     /// Los de Aura, como siempre.
@@ -43,6 +58,10 @@ struct BundledArtifacts {
     }
 
     func url(for name: Name) -> URL? {
+        if let directory {
+            let candidate = directory.appendingPathComponent(name.rawValue)
+            return FileManager.default.fileExists(atPath: candidate.path) ? candidate : nil
+        }
         let base = name.rawValue as NSString
         return bundle.url(
             forResource: base.deletingPathExtension,
@@ -56,8 +75,14 @@ struct BundledArtifacts {
     /// `nil` si la build se hizo sin el script (desarrollo viejo) -- la
     /// pantalla de Licencias lo dice en vez de inventar un tag.
     var releaseTag: String? {
-        guard let url = bundle.url(forResource: "firmware-version", withExtension: "txt",
-                                   subdirectory: family.bundleSubdirectory),
+        let versionURL: URL?
+        if let directory {
+            versionURL = directory.appendingPathComponent("firmware-version.txt")
+        } else {
+            versionURL = bundle.url(forResource: "firmware-version", withExtension: "txt",
+                                    subdirectory: family.bundleSubdirectory)
+        }
+        guard let url = versionURL,
               let text = try? String(contentsOf: url, encoding: .utf8) else { return nil }
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         return trimmed.isEmpty ? nil : trimmed

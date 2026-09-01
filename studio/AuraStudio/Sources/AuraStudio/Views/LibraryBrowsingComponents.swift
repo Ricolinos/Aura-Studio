@@ -215,6 +215,128 @@ extension View {
                 .stroke(isSelected ? AuraColors.light.accent : .clear, lineWidth: 3)
         )
     }
+
+    /// Selección de una tarjeta de cuadrícula: el borde de acento de
+    /// siempre MÁS la casilla, que aparece según la regla de R2-1
+    /// (ST-113).
+    ///
+    /// **Cuándo se ve la casilla** — la misma regla en las dos apps:
+    /// - Sin nada seleccionado, la cuadrícula se ve LIMPIA: cero
+    ///   casillas. Las portadas son el contenido; una retícula de
+    ///   círculos encima de todas, todo el tiempo, compite con ellas.
+    /// - Al pasar el cursor por una tarjeta aparece la SUYA. Eso es lo
+    ///   que hace descubrible la selección múltiple sin ensuciar nada:
+    ///   ST-103 la puso siempre visible justo porque el gesto Cmd+clic
+    ///   no se veía, y el hover resuelve lo mismo sin el costo visual.
+    /// - Con 1 o más elementos seleccionados aparecen TODAS: ahí el
+    ///   usuario ya está en modo selección y necesita ver dónde puede
+    ///   sumar o quitar sin ir tanteando tarjeta por tarjeta.
+    ///
+    /// La semántica no cambia: la casilla ALTERNA ese elemento
+    /// (`GridSelection.toggle`), el clic en la tarjeta REEMPLAZA la
+    /// selección.
+    func librarySelectionCheckbox(_ isSelected: Bool,
+                                  anySelected: Bool,
+                                  cornerRadius: CGFloat = 10,
+                                  toggle: @escaping () -> Void) -> some View {
+        modifier(LibrarySelectionOverlay(isSelected: isSelected,
+                                         anySelected: anySelected,
+                                         cornerRadius: cornerRadius,
+                                         toggle: toggle))
+    }
+}
+
+/// El borde + la casilla con su regla de visibilidad. Es un
+/// `ViewModifier` y no una función suelta porque necesita estado propio:
+/// cada tarjeta recuerda si el cursor está encima de ELLA.
+private struct LibrarySelectionOverlay: ViewModifier {
+    let isSelected: Bool
+    let anySelected: Bool
+    let cornerRadius: CGFloat
+    let toggle: () -> Void
+
+    @State private var isHovering = false
+
+    /// Una tarjeta seleccionada muestra su casilla aunque `anySelected`
+    /// llegara en `false` por un desfase de estado: "seleccionada y sin
+    /// casilla" sería una contradicción en pantalla.
+    private var showsCheckbox: Bool { isSelected || anySelected || isHovering }
+
+    func body(content: Content) -> some View {
+        content
+            .librarySelectionBorder(isSelected, cornerRadius: cornerRadius)
+            .overlay(alignment: .topLeading) {
+                LibrarySelectionCheckbox(isSelected: isSelected, toggle: toggle)
+                    .padding(6)
+                    // Se oculta con opacidad y no quitándola del árbol:
+                    // así la tarjeta no cambia de tamaño al aparecer la
+                    // casilla y la cuadrícula no da un salto.
+                    .opacity(showsCheckbox ? 1 : 0)
+                    .allowsHitTesting(showsCheckbox)
+                    .animation(.easeOut(duration: 0.12), value: showsCheckbox)
+            }
+            .onHover { isHovering = $0 }
+    }
+}
+
+/// La casilla para una FILA (los episodios de una serie), donde no hay
+/// portada sobre la que flotar. Misma regla de visibilidad que en las
+/// tarjetas, pero **siempre ocupa su lugar**: si apareciera y
+/// desapareciera del layout, el texto de todas las filas se correría al
+/// pasar el mouse.
+struct LibraryRowSelectionCheckbox: View {
+    let isSelected: Bool
+    let anySelected: Bool
+    /// El hover lo detecta la FILA, no la casilla: una casilla invisible
+    /// no recibe eventos, así que no podría descubrirse sola.
+    let isRowHovered: Bool
+    let toggle: () -> Void
+
+    private var showsCheckbox: Bool { isSelected || anySelected || isRowHovered }
+
+    var body: some View {
+        LibrarySelectionCheckbox(isSelected: isSelected, toggle: toggle, side: 18)
+            .opacity(showsCheckbox ? 1 : 0)
+            .allowsHitTesting(showsCheckbox)
+            .animation(.easeOut(duration: 0.12), value: showsCheckbox)
+    }
+}
+
+/// La casilla en sí -- solo el dibujo y el gesto. CUÁNDO se ve lo
+/// deciden `LibrarySelectionOverlay` (tarjetas) y
+/// `LibraryRowSelectionCheckbox` (filas), según la regla de R2-1.
+///
+/// Va encima de una portada cualquiera -- clara, oscura, con detalle --
+/// así que no puede depender del contraste con la imagen: disco propio
+/// (acento si está marcada, negro translúcido si no) y aro blanco.
+struct LibrarySelectionCheckbox: View {
+    let isSelected: Bool
+    let toggle: () -> Void
+    var side: CGFloat = 20
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(isSelected ? AuraColors.light.accent : Color.black.opacity(0.38))
+            Circle()
+                .strokeBorder(Color.white.opacity(0.9), lineWidth: 1.5)
+            if isSelected {
+                Image(systemName: "checkmark")
+                    .font(.system(size: side * 0.55, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+        }
+        .frame(width: side, height: side)
+        .shadow(color: .black.opacity(0.25), radius: 1, y: 0.5)
+        .contentShape(Circle())
+        // Gesto propio, no `Button`: al ser hijo de la tarjeta gana
+        // sobre los `onTapGesture` de ella, así que marcar la casilla
+        // nunca abre el detalle ni reemplaza la selección.
+        .onTapGesture(perform: toggle)
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+        .accessibilityLabel(isSelected ? "Quitar de la selección" : "Agregar a la selección")
+        .help(isSelected ? "Quitar de la selección" : "Agregar a la selección")
+    }
 }
 
 /// "Buscar en Álbumes" / "Buscar en Artistas" / "Buscar en Canciones":

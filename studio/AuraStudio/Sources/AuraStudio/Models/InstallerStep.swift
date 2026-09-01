@@ -153,6 +153,16 @@ enum InstallerError: Error, LocalizedError, Equatable {
     /// bootloader de Aura no quedo grabado (con `--single` el arranque de
     /// Apple ya no deberia existir).
     case bootloaderNotApplied
+    /// ST-077: no se pudo bajar el Release mas nuevo (sin red, token sin
+    /// acceso, Release incompleto). NUNCA es fatal por si mismo: el
+    /// instalador cae a los binarios embebidos y sigue. El caso existe
+    /// para poder DECIR por que se instalo la version embebida en vez de
+    /// la mas nueva, no para detener nada.
+    case releaseDownloadFailed(family: String, reason: String)
+    /// ST-077: el Release publicado no trae alguno de los assets que la
+    /// tabla §A del contrato exige. Mismo trato: se dice y se cae a lo
+    /// embebido.
+    case releaseMissingAsset(tag: String, asset: String)
 
     var errorDescription: String? {
         switch self {
@@ -164,6 +174,10 @@ enum InstallerError: Error, LocalizedError, Equatable {
             return "No se detecto el iPod en modo DFU a tiempo. Vuelve a intentar la combinacion de botones."
         case .checksumMismatch(let file):
             return "El archivo \(file) no supero la verificacion de integridad."
+        case .releaseDownloadFailed(let family, let reason):
+            return "No se pudo descargar la versión más reciente de \(family): \(reason). Se usará la versión que trae Aura Studio."
+        case .releaseMissingAsset(let tag, let asset):
+            return "Al Release \(tag) le falta \(asset), así que no se puede instalar desde él. Se usará la versión que trae Aura Studio."
         case .incompleteRockboxTree(let missing):
             return "El firmware de este Release está incompleto: a rockbox.zip le faltan \(missing.joined(separator: ", ")) -- el iPod quedaría sin video o sin audio. No es un problema de tu conexión; vuelve a intentar más tarde o avisa que este Release salió mal."
         case .processFailed(let exitCode, let output):

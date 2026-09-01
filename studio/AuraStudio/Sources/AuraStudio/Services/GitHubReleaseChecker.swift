@@ -47,16 +47,57 @@ struct SemVer: Equatable, Comparable {
     }
 }
 
+/// Un asset publicado en un Release. ST-077: `url` es la del **API**
+/// (`/repos/:owner/:repo/releases/assets/:id`), no `browser_download_url`
+/// -- en un repositorio privado la segunda no sirve con un token
+/// (redirige a un host de almacenamiento que no acepta la cabecera
+/// `Authorization`); la del API sí, pidiendo
+/// `Accept: application/octet-stream`.
+struct GitHubReleaseAsset: Codable, Equatable {
+    let name: String
+    let url: String
+    let size: Int
+}
+
 /// Un Release de la API publica de GitHub -- solo los campos que hacen
-/// falta para decidir cual es el mas nuevo utilizable.
+/// falta para decidir cual es el mas nuevo utilizable y, desde ST-077,
+/// para bajar sus artefactos.
 struct GitHubRelease: Codable, Equatable {
     let tagName: String
     let draft: Bool
     let prerelease: Bool
+    /// Ausente en el cache viejo (anterior a ST-077) y en cualquier
+    /// respuesta recortada: se decodifica como lista vacia en vez de
+    /// hacer fallar el Release entero, que dejaria sin aviso de version
+    /// a quien todavia tenga cache de la version anterior de Studio.
+    let assets: [GitHubReleaseAsset]
 
     enum CodingKeys: String, CodingKey {
         case tagName = "tag_name"
-        case draft, prerelease
+        case draft, prerelease, assets
+    }
+
+    init(tagName: String, draft: Bool, prerelease: Bool,
+         assets: [GitHubReleaseAsset] = []) {
+        self.tagName = tagName
+        self.draft = draft
+        self.prerelease = prerelease
+        self.assets = assets
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        tagName = try c.decode(String.self, forKey: .tagName)
+        draft = try c.decode(Bool.self, forKey: .draft)
+        prerelease = try c.decode(Bool.self, forKey: .prerelease)
+        assets = try c.decodeIfPresent([GitHubReleaseAsset].self, forKey: .assets) ?? []
+    }
+
+    /// El asset con ese nombre exacto, o `nil`. Los nombres son los de la
+    /// tabla §A del contrato (`rockbox.ipod`, `rockbox.zip`,
+    /// `bootloader-ipod6g.ipod`, `mks5lboot`, `checksums.txt`).
+    func asset(named name: String) -> GitHubReleaseAsset? {
+        assets.first { $0.name == name }
     }
 }
 

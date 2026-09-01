@@ -134,7 +134,61 @@ final class InstallerViewModel: ObservableObject {
     /// aqui.
     @Published private(set) var targetFamily: FirmwareFamily = .aura
 
-    var artifacts: BundledArtifacts { BundledArtifacts.forFamily(targetFamily) }
+    /// ST-077: artefactos del Release mas nuevo, bajados y verificados en
+    /// esta corrida. `nil` mientras no se hayan bajado o si la descarga
+    /// no salio -- y entonces `artifacts` cae a los embebidos.
+    @Published private(set) var downloadedArtifacts: BundledArtifacts?
+    /// ST-077: de donde salio lo que se esta instalando, en una frase.
+    /// `DoneView`/`InstallingView` lo muestran: el usuario tiene que
+    /// poder saber si le quedo la version mas nueva o la embebida, y por
+    /// que -- callarlo seria justo el bug que ST-077 arregla.
+    @Published private(set) var releaseSourceNote: String?
+    /// La preparacion ya corrio en esta corrida (salga bien o mal): no se
+    /// reintenta a mitad de un flujo, ni se baja dos veces cuando el
+    /// mismo flujo pasa por copiar y por flashear.
+    private var releasePreparationDone = false
+
+    /// Lo que se va a escribir en el iPod: el Release mas nuevo si se
+    /// pudo bajar y verificar, o lo embebido si no.
+    var artifacts: BundledArtifacts { downloadedArtifacts ?? BundledArtifacts.forFamily(targetFamily) }
+
+    /// ST-077: baja y verifica el Release mas nuevo de la familia
+    /// objetivo, una sola vez por corrida. **Nunca lanza ni falla el
+    /// flujo**: si algo sale mal, deja `downloadedArtifacts` en nil (o
+    /// sea, se instala lo embebido) y anota el motivo en
+    /// `releaseSourceNote`. Se llama justo antes de cada uso real de
+    /// `artifacts`, que es la unica forma de garantizar que ninguna
+    /// escritura al iPod empiece antes de que esto termine.
+    private func ensureLatestArtifacts() async {
+        guard !releasePreparationDone else { return }
+        releasePreparationDone = true
+
+        let family = targetFamily
+        do {
+            let prepared = try await FirmwareReleaseDownloader.prepareLatest(
+                family: family,
+                progress: { [weak self] message in
+                    Task { @MainActor in self?.progressMessage = message }
+                })
+            let downloaded = BundledArtifacts(directory: prepared.directory, family: family)
+            // El runner tambien sale del Release: el bootloader y
+            // mks5lboot que se van a flashear tienen que ser los de la
+            // MISMA version que el arbol que se copia, nunca una mezcla.
+            guard let freshRunner = try? MKS5LBootRunner(artifacts: downloaded) else {
+                throw InstallerError.releaseDownloadFailed(
+                    family: family.displayName,
+                    reason: "mks5lboot descargado no quedó ejecutable")
+            }
+            downloadedArtifacts = downloaded
+            runner = freshRunner
+            releaseSourceNote = "Instalando \(family.displayName) \(prepared.tag), descargado de GitHub."
+        } catch {
+            let bundledTag = BundledArtifacts.forFamily(family).releaseTag
+            let versionText = bundledTag.map { " (\($0))" } ?? ""
+            let why = (error as? InstallerError)?.errorDescription ?? error.localizedDescription
+            releaseSourceNote = "\(why) Se instalará la versión incluida en Aura Studio\(versionText)."
+        }
+    }
 
     /// Nombre para los textos del asistente ("Instalando Metro...").
     var targetName: String { targetFamily.displayName }
@@ -152,6 +206,11 @@ final class InstallerViewModel: ObservableObject {
     func setTargetFamily(_ family: FirmwareFamily) {
         guard family.isInstallable else { return }
         targetFamily = family
+        // ST-077: lo bajado era de la familia ANTERIOR -- instalar con
+        // eso mezclaria dos firmwares. Se descarta y se vuelve a preparar.
+        downloadedArtifacts = nil
+        releaseSourceNote = nil
+        releasePreparationDone = false
         runner = try? MKS5LBootRunner(artifacts: BundledArtifacts.forFamily(family))
     }
 
@@ -656,6 +715,11 @@ final class InstallerViewModel: ObservableObject {
     private func runInstallOrRestore() async {
         step = .installing
         lastError = nil
+        // ST-077: el Release mas nuevo, antes de tocar nada. En modo
+        // restaurar no hace falta (no se instala firmware), pero se pide
+        // igual porque `restore` usa el mismo `runner` para quitar el
+        // bootloader y ahi conviene el mks5lboot mas reciente.
+        await ensureLatestArtifacts()
         do {
             progressMessage = "Verificando integridad de los archivos..."
             try artifacts.verifyAll()
@@ -829,6 +893,11 @@ final class InstallerViewModel: ObservableObject {
             return
         }
         defer { InstallerFlowRegistry.shared.endWriting() }
+        // ST-077: en el camino de recuperacion (sin DFU) esta es la
+        // primera escritura del flujo, asi que la descarga tiene que
+        // resolverse aqui tambien -- no alcanza con hacerla en
+        // runInstallOrRestore().
+        await ensureLatestArtifacts()
         do {
             guard let firmwareURL = artifacts.url(for: .firmware) else {
                 throw InstallerError.missingBundledArtifact(BundledArtifacts.Name.firmware.rawValue)

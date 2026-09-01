@@ -4,6 +4,9 @@ options:
   deploymentTarget:
     macOS: "14.4"
   createIntermediateGroups: true
+  # ST-063: la app está localizada solo en español -- así la barra de
+  # menús estándar (AppKit/SwiftUI) sale en español, ver Resources/es.lproj.
+  developmentLanguage: es
   # Sin esto XcodeGen desempaqueta el .icon de Icon Composer (Xcode 26)
   # como si fuera una carpeta comun -- copia su icon.json y los SVG
   # internos sueltos en vez de agregarlo como un unico paquete de icono,
@@ -81,6 +84,9 @@ targets:
       # ASSETCATALOG_COMPILER_APPICON_NAME de abajo.
       - path: Resources/AppIcon.icon
         buildPhase: resources
+      # ST-063: única localización del bundle (español).
+      - path: Resources/es.lproj
+        buildPhase: resources
     info:
       path: Resources/Info.plist
       properties:
@@ -94,6 +100,8 @@ targets:
           biblioteca con el firmware Aura.
         LSApplicationCategoryType: public.app-category.music
         LSMinimumSystemVersion: "13.0"
+        CFBundleDevelopmentRegion: es
+        CFBundleLocalizations: [es]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ricolinos.aurastudio

@@ -35,6 +35,10 @@ struct ContentView: View {
     /// conectado (hash) -- alimenta el aviso de "Actualizar Aura" en
     /// General. Se recalcula al conectar/desconectar.
     @State private var updateAvailable = false
+    /// ST-063: lo que publica la sección visible para la barra de
+    /// estado (`.libraryStatus`), y la hoja de "Elementos similares".
+    @State private var libraryStatus: LibraryStatusSummary?
+    @State private var showingSimilarItems = false
     /// ST-046: tag del Release mas nuevo conocido para la familia del
     /// firmware instalado, para poder nombrarlo en General.
     @State private var updateLatestTag: String?
@@ -67,7 +71,17 @@ struct ContentView: View {
                         })
                 .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
         } detail: {
-            detail
+            VStack(spacing: 0) {
+                detail
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .onPreferenceChange(LibraryStatusPreferenceKey.self) { libraryStatus = $0 }
+                // ST-063: barra de estado estilo Finder, al pie de la
+                // sección; "Visualización › Mostrar barra de estado" la
+                // oculta. Solo aparece donde hay algo que resumir.
+                if preferences.showStatusBar, let libraryStatus {
+                    LibraryStatusBar(summary: libraryStatus)
+                }
+            }
         }
         .tint(AuraColors.light.accent)
         .toolbar {
@@ -96,6 +110,19 @@ struct ContentView: View {
             canSync: (deviceMonitor.device?.supportsAuraContract ?? false) && !library.isProcessing && library.syncProgress == nil,
             action: { Task { await syncNow() } }
         ))
+        .focusedSceneValue(\.auraLibraryCommand, LibraryCommandContext(
+            currentSection: selection ?? .general,
+            navigate: { selection = $0 },
+            addFiles: { addFilesFromOpenPanel() },
+            showSimilarItems: { showingSimilarItems = true },
+            revealLibraryFolder: { NSWorkspace.shared.activateFileViewerSelecting([library.libraryRoot]) }
+        ))
+        .sheet(isPresented: $showingSimilarItems) {
+            SimilarItemsView(library: library, preferences: preferences,
+                             initialKind: (selection ?? .general).libraryKind) {
+                showingSimilarItems = false
+            }
+        }
         .onAppear { deviceMonitor.start() }
         .onDisappear { deviceMonitor.stop() }
         .onChange(of: deviceMonitor.state) { newState in
@@ -306,6 +333,36 @@ struct ContentView: View {
         }
     }
 
+    /// ST-063: "Archivo › Agregar a la biblioteca..." (⌘O). Mismo camino
+    /// que soltar archivos sobre la sección visible: el tipo lo decide
+    /// la sección (Canciones → música, Video → video, Fotos → foto);
+    /// desde General/Extras/Ajustes se acepta cualquier tipo y cada
+    /// archivo cae en la biblioteca que le corresponde por extensión.
+    private func addFilesFromOpenPanel() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = true
+        panel.canChooseDirectories = true
+        panel.allowsMultipleSelection = true
+        panel.prompt = "Agregar"
+        panel.message = "Elige archivos o carpetas para agregar a la biblioteca de Aura Studio."
+        guard panel.runModal() == .OK, !panel.urls.isEmpty else { return }
+        let section = selection ?? .general
+        let target = section.libraryKind
+        let category: String? = {
+            switch section {
+            case .videoMovies: return MediaCategory.movies.displayName
+            case .videoSeries: return MediaCategory.series.displayName
+            case .videoClips: return MediaCategory.videos.displayName
+            case .photosPhotos: return "Fotos"
+            case .photosImages: return "Imágenes"
+            case .photosAI: return "IA"
+            default: return nil
+            }
+        }()
+        library.addDroppedFiles(panel.urls, into: target, category: category)
+        Task { await library.processAll() }
+    }
+
     /// El disparador REAL de sincronizacion (PLAN-general-sync.md §1.1)
     /// -- lo usa el comando de menu `Archivo → Sincronizar con el iPod`
     /// (⇧⌘S, via `auraSyncCommand`); el boton visible del dia a dia
@@ -407,6 +464,19 @@ struct SyncMenuCommand: View {
         }
         .keyboardShortcut("s", modifiers: [.command, .shift])
         .disabled(context?.canSync != true)
+    }
+}
+
+extension SidebarSection {
+    /// ST-063: tipo de biblioteca que muestra la sección (nil en
+    /// General/Extras/Instalador/Ajustes).
+    var libraryKind: LibraryItemKind? {
+        switch self {
+        case .music, .musicGroup, .musicArtists, .musicAlbums, .musicPlaylists: return .music
+        case .video, .videoGroup, .videoMovies, .videoSeries, .videoClips: return .video
+        case .photos, .photosGroup, .photosPhotos, .photosImages, .photosAI: return .photo
+        case .general, .extras, .installer, .settings: return nil
+        }
     }
 }
 

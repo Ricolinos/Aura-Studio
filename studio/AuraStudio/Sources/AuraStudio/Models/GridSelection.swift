@@ -36,6 +36,16 @@ struct GridSelection<ID: Hashable>: Equatable {
         lastTapped = id
     }
 
+    /// Alterna `id` desde su CASILLA de seleccion (ST-103). A
+    /// diferencia de `handleTap`, la casilla es un control explicito:
+    /// no depende de ninguna tecla y nunca reemplaza la seleccion
+    /// entera -- solo agrega o quita ese elemento. Es la unica forma de
+    /// armar una seleccion multiple sin saber que existe Cmd+clic.
+    mutating func toggle(_ id: ID) {
+        if selected.contains(id) { selected.remove(id) } else { selected.insert(id) }
+        lastTapped = id
+    }
+
     func isSelected(_ id: ID) -> Bool { selected.contains(id) }
 
     /// IDs a los que aplica una acción disparada DESDE `id` (menú

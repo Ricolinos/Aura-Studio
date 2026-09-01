@@ -89,6 +89,15 @@ final class GitHubReleaseCheckerPickLatestTests: XCTestCase {
     }
 }
 
+/// ST-077: `token:` se inyecta SIEMPRE, nunca se deja el valor por
+/// defecto. `fetchReleases(session:)` lo resuelve con
+/// `GitHubToken.load()`, o sea el Llavero REAL: en una Mac con token
+/// guardado macOS puede pedir permiso y la prueba se queda esperando un
+/// diálogo para siempre -- colgaba `swift test` entero, medido en esta
+/// pasada (47 min a 0 % de CPU). Además, con un token presente un 404 ya
+/// no lanza `badResponse` sino que devuelve `[]` (ST-074), así que
+/// `testThrowsOnNonOKStatus` habría fallado por el motivo equivocado.
+/// Misma disciplina que `GitHubTokenTests` documenta desde ST-074.
 final class GitHubReleaseCheckerFetchTests: XCTestCase {
     override func tearDown() {
         MockURLProtocol.handler = nil
@@ -112,7 +121,7 @@ final class GitHubReleaseCheckerFetchTests: XCTestCase {
             let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
             return (response, json)
         }
-        let releases = try await GitHubReleaseChecker.fetchReleases(session: mockSession())
+        let releases = try await GitHubReleaseChecker.fetchReleases(session: mockSession(), token: nil)
         XCTAssertEqual(releases, [
             GitHubRelease(tagName: "v0.1.0-beta", draft: true, prerelease: true),
             GitHubRelease(tagName: "v0.0.9", draft: false, prerelease: false),
@@ -125,7 +134,7 @@ final class GitHubReleaseCheckerFetchTests: XCTestCase {
             return (response, Data())
         }
         do {
-            _ = try await GitHubReleaseChecker.fetchReleases(session: mockSession())
+            _ = try await GitHubReleaseChecker.fetchReleases(session: mockSession(), token: nil)
             XCTFail("debería fallar con status 404")
         } catch GitHubReleaseCheckerError.badResponse {
             // esperado

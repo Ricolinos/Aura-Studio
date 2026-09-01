@@ -29,6 +29,14 @@ struct MusicBrainzClient {
         let id: String
         let title: String
         let date: String?
+        /// R2-3: lo que puntúa una edición (ver
+        /// `docs/caratula-recomendada.md`). Los tres son opcionales
+        /// porque la búsqueda de GRABACIONES trae las ediciones
+        /// anidadas y sin estos campos; solo la búsqueda de ediciones
+        /// (`searchReleases`) los devuelve completos.
+        let status: String?
+        let country: String?
+        let trackCount: Int?
         /// D-203: el "album" para fanart.tv (y para casi cualquier otra
         /// fuente que indexe por album, no por edicion especifica) es el
         /// RELEASE GROUP, no el release -- confirmado contra la API real
@@ -37,7 +45,8 @@ struct MusicBrainzClient {
         let releaseGroup: ReleaseGroup?
 
         enum CodingKeys: String, CodingKey {
-            case id, title, date
+            case id, title, date, status, country
+            case trackCount = "track-count"
             case releaseGroup = "release-group"
         }
     }
@@ -48,6 +57,10 @@ struct MusicBrainzClient {
 
     private struct SearchResponse: Decodable {
         let recordings: [Recording]
+    }
+
+    private struct ReleaseSearchResponse: Decodable {
+        let releases: [Release]
     }
 
     /// ST-032: artista de MusicBrainz -- su `id` (MBID) es la llave que
@@ -97,6 +110,35 @@ struct MusicBrainzClient {
         let data = try await performThrottled(request)
         let decoded = try JSONDecoder().decode(SearchResponse.self, from: data)
         return decoded.recordings.max { ($0.score ?? 0) < ($1.score ?? 0) }
+    }
+
+    /// ST-104: busca EDICIONES (releases) de un album por titulo y
+    /// artista, en orden de puntaje. Distinto de `searchRecording`, que
+    /// busca una cancion: aca interesa el album entero, y sobre todo
+    /// que vengan VARIAS ediciones -- cada una suele tener su propia
+    /// tapa en Cover Art Archive, y eso es justamente lo que le da al
+    /// usuario opciones para elegir en vez de una sola imagen impuesta.
+    func searchReleases(album: String, artist: String?, limit: Int = 5) async throws -> [Release] {
+        let trimmedAlbum = album.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedAlbum.isEmpty else { return [] }
+
+        var query = "release:\"\(Self.escapeLuceneQuoted(trimmedAlbum))\""
+        if let artist, !artist.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            query += " AND artist:\"\(Self.escapeLuceneQuoted(artist))\""
+        }
+
+        var components = URLComponents(url: baseURL.appendingPathComponent("release"), resolvingAgainstBaseURL: false)!
+        components.queryItems = [
+            URLQueryItem(name: "query", value: query),
+            URLQueryItem(name: "fmt", value: "json"),
+            URLQueryItem(name: "limit", value: "\(max(1, limit))"),
+        ]
+
+        var request = URLRequest(url: components.url!)
+        request.setValue(Self.userAgent, forHTTPHeaderField: "User-Agent")
+
+        let data = try await performThrottled(request)
+        return try JSONDecoder().decode(ReleaseSearchResponse.self, from: data).releases
     }
 
     /// ST-032: busca el artista por nombre. Devuelve el de mayor `score`

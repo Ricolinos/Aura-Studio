@@ -19,6 +19,10 @@ struct SeriesView: View {
     /// Selección múltiple de episodios dentro de una serie abierta --
     /// se limpia al volver a la cuadrícula (`selectedSeriesID = nil`).
     @State private var episodeSelection = GridSelection<UUID>()
+    /// R2-1: la casilla de un episodio aparece al pasar el cursor por su
+    /// FILA (la casilla oculta no recibe eventos, así que no puede
+    /// detectar su propio hover).
+    @State private var hoveredEpisodeID: UUID?
     @State private var reviewingItem: LibraryItem?
 
     private var visibleSeries: [VideoCollectionGroup] {
@@ -41,6 +45,7 @@ struct SeriesView: View {
             }
         }
         .navigationTitle("Series")
+        .libraryStatus(statusSummary)
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
         .sheet(item: $reviewingItem) { item in
@@ -54,6 +59,15 @@ struct SeriesView: View {
                 reviewingItem = nil
             }
         }
+    }
+
+    /// ST-063: barra de estado -- series/temporadas/episodios en la
+    /// cuadrícula; con una serie abierta, sus episodios y los seleccionados.
+    private var statusSummary: LibraryStatusSummary {
+        if let show = selectedSeries {
+            return LibraryStats.episodes(of: show, selected: show.items.filter { episodeSelection.isSelected($0.id) })
+        }
+        return LibraryStats.series(visibleSeries, selected: visibleSeries.filter { selection.isSelected($0.id) })
     }
 
     private func rebuild() {
@@ -106,7 +120,10 @@ struct SeriesView: View {
                         ForEach(visibleSeries) { show in
                             MediaCardView(imageData: show.posterData, title: show.title,
                                           subtitle: episodeCountText(show), aspect: .poster(width: 140), placeholderSymbol: "tv")
-                                .librarySelectionBorder(selection.isSelected(show.id))
+                                .librarySelectionCheckbox(selection.isSelected(show.id),
+                                                          anySelected: !selection.selected.isEmpty) {
+                                    selection.toggle(show.id)
+                                }
                                 .onTapGesture(count: 2) { selectedSeriesID = show.id }
                                 .onTapGesture { selection.handleTap(show.id, orderedIDs: visibleSeries.map(\.id)) }
                                 .contextMenu { seriesContextMenu(show) }
@@ -114,7 +131,15 @@ struct SeriesView: View {
                                 .help(show.title)
                         }
                     }
+                    // R2-1: mismo margen superior que la cuadrícula de
+                    // Fotos. Sin él la primera fila arranca pegada al
+                    // borde del ScrollView y su casilla -- que va a 6 pt
+                    // del borde de la tarjeta -- queda cortada apenas se
+                    // desplaza un poco, que es exactamente el síntoma que
+                    // reportó el dueño ("la primera fila no pinta los
+                    // círculos y las demás sí").
                     .padding(.horizontal, 20)
+                    .padding(.top, 16)
                     .padding(.bottom, 24)
                 }
             }
@@ -222,6 +247,13 @@ struct SeriesView: View {
         let syncState = viewModel.deviceSyncIndex?.state(forSourcePath: item.sourceURL.path)
         let isSelected = episodeSelection.isSelected(item.id)
         return HStack(spacing: 12) {
+            // ST-103: los episodios son filas, no tarjetas -- la casilla
+            // va al principio de la fila en vez de sobre una portada,
+            // pero hace exactamente lo mismo.
+            LibraryRowSelectionCheckbox(isSelected: isSelected,
+                                        anySelected: !episodeSelection.selected.isEmpty,
+                                        isRowHovered: hoveredEpisodeID == item.id,
+                                        toggle: { episodeSelection.toggle(item.id) })
             Text(item.episode.map { "\($0)" } ?? "--")
                 .font(.callout.monospacedDigit())
                 .foregroundStyle(.secondary)
@@ -237,6 +269,7 @@ struct SeriesView: View {
         .background(isSelected ? AuraColors.light.accent.opacity(0.15) : Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
         .contentShape(Rectangle())
+        .onHover { hoveredEpisodeID = $0 ? item.id : (hoveredEpisodeID == item.id ? nil : hoveredEpisodeID) }
         .onTapGesture {
             episodeSelection.handleTap(item.id, orderedIDs: show.seasons.flatMap(\.items).map(\.id))
         }

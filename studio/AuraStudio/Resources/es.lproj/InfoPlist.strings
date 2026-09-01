@@ -1,0 +1,7 @@
+/* ST-063: la app se declara localizada SOLO en español para que AppKit
+   y SwiftUI armen la barra de menús (Archivo, Edición, Visualización,
+   Ventana, Ayuda y los ítems estándar: Salir, Ocultar, Copiar...) en
+   español sin importar el idioma del sistema. */
+"CFBundleDisplayName" = "Aura Studio";
+"CFBundleName" = "Aura Studio";
+"NSRemovableVolumesUsageDescription" = "Aura Studio necesita acceder a volúmenes removibles para detectar tu iPod, verificar su formato y sincronizar tu biblioteca con el firmware Aura.";

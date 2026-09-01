@@ -93,6 +93,77 @@ struct DeezerClient {
         return imageData
     }
 
+    // MARK: - ST-104: varias caratulas para elegir
+
+    /// Un album encontrado en Deezer, con su tapa y con que dice Deezer
+    /// que es -- el titulo y el artista se le muestran al usuario para
+    /// que pueda descartar el homonimo equivocado antes de aplicarlo.
+    struct AlbumCoverMatch: Equatable {
+        let coverURL: URL
+        let title: String
+        let artist: String
+    }
+
+    private struct AlbumSearchResponse: Decodable {
+        let data: [AlbumHit]
+    }
+
+    private struct AlbumHit: Decodable {
+        let title: String
+        let coverXL: String?
+        let cover: String?
+        let artist: ArtistName?
+
+        enum CodingKeys: String, CodingKey {
+            case title, cover, artist
+            case coverXL = "cover_xl"
+        }
+    }
+
+    private struct ArtistName: Decodable {
+        let name: String
+    }
+
+    /// Busca ALBUMES (no canciones) por titulo y artista. A diferencia
+    /// de `fetchAlbumCover`, que se queda con el primer resultado para
+    /// enriquecer sin preguntar, esto devuelve varios para que el
+    /// usuario elija -- solo las URLs, sin descargar ninguna imagen
+    /// todavia.
+    func searchAlbumCovers(title: String, artist: String?, limit: Int = 5) async throws -> [AlbumCoverMatch] {
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return [] }
+
+        var query = "album:\"\(escapeQuoted(trimmed))\""
+        if let artist, !artist.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            query += " artist:\"\(escapeQuoted(artist))\""
+        }
+
+        var components = URLComponents(url: baseURL.appendingPathComponent("album"), resolvingAgainstBaseURL: false)!
+        components.queryItems = [
+            URLQueryItem(name: "q", value: query),
+            URLQueryItem(name: "limit", value: "\(max(1, limit))"),
+        ]
+
+        var request = URLRequest(url: components.url!)
+        request.setValue(MusicBrainzClient.userAgent, forHTTPHeaderField: "User-Agent")
+
+        let (data, response) = try await session.data(for: request)
+        try MusicBrainzClient.validate(response)
+
+        let decoded = try JSONDecoder().decode(AlbumSearchResponse.self, from: data)
+        return decoded.data.compactMap { hit in
+            guard let urlString = hit.coverXL ?? hit.cover, let url = URL(string: urlString) else { return nil }
+            return AlbumCoverMatch(coverURL: url, title: hit.title, artist: hit.artist?.name ?? "")
+        }
+    }
+
+    /// Descarga una tapa ya elegida de la lista de arriba.
+    func fetchImage(at url: URL) async throws -> Data {
+        let (data, response) = try await session.data(from: url)
+        try MusicBrainzClient.validate(response)
+        return data
+    }
+
     /// La query de Deezer no es Lucene (no acepta escape con barra
     /// invertida) -- una comilla doble sin cerrar simplemente rompe la
     /// frase de busqueda, asi que se quita en vez de escaparse.

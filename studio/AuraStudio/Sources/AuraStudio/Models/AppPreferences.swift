@@ -359,6 +359,21 @@ final class AppPreferences: ObservableObject {
         didSet { defaults.set(musicShowOnlyFavorites, forKey: Keys.musicShowOnlyFavorites) }
     }
 
+    /// ST-063: barra de estado al pie de cada sección de la biblioteca
+    /// (estilo Finder). Visible por defecto; "Visualización › Mostrar
+    /// barra de estado" (⌘/) la alterna.
+    @Published var showStatusBar: Bool {
+        didSet { defaults.set(showStatusBar, forKey: Keys.showStatusBar) }
+    }
+
+    /// ST-063: grupos de "elementos similares" que el usuario marcó
+    /// como "no son lo mismo" (`SimilarItemsGroup.id`, estable mientras
+    /// no cambien los miembros). No vuelven a aparecer hasta que se
+    /// restablezcan desde la propia hoja.
+    @Published var ignoredSimilarGroups: [String] {
+        didSet { defaults.set(ignoredSimilarGroups, forKey: Keys.ignoredSimilarGroups) }
+    }
+
     func toggleMusicColumn(_ column: MusicTableColumn) {
         if let index = musicVisibleColumns.firstIndex(of: column) {
             musicVisibleColumns.remove(at: index)
@@ -386,6 +401,47 @@ final class AppPreferences: ObservableObject {
     /// que pedirle primero al usuario.
     @Published var deezerEnabled: Bool {
         didSet { defaults.set(deezerEnabled, forKey: Keys.deezerEnabled) }
+    }
+
+    // MARK: - Homologación de artistas (R2-4, ST-116)
+
+    /// Agrupar "Gorillaz feat. De La Soul" bajo "Gorillaz". Default
+    /// encendido: sin esto, cada colaboración inventa un artista nuevo
+    /// en la vista Artistas y se lleva su propia foto. Apagarlo
+    /// devuelve la agrupación EXACTA de antes de R2-4 -- no reescribe
+    /// nada, porque la homologación nunca escribió nada.
+    /// Ver `docs/normalizacion-artistas.md`.
+    @Published var homologateArtistCollaborations: Bool {
+        didSet { defaults.set(homologateArtistCollaborations, forKey: Keys.homologateArtistCollaborations) }
+    }
+
+    /// Nombres que NO se recortan, tal como el usuario los escribió
+    /// ("Simon + Garfunkel", "Café con Leche"). Arreglo nativo y no
+    /// lista separada por comas, por la misma razón que
+    /// `linkedLibraryFolders`: un nombre de artista real puede traer una
+    /// coma ("Earth, Wind & Fire") y unirlos por coma los partiría mal.
+    @Published var artistHomologationExceptions: [String] {
+        didSet { defaults.set(artistHomologationExceptions, forKey: Keys.artistHomologationExceptions) }
+    }
+
+    /// Lo que consumen `LibraryGrouping` y `LibrarySync`: las dos
+    /// preferencias de arriba en el valor que viaja por parámetro.
+    var artistGrouping: ArtistGroupingOptions {
+        ArtistGroupingOptions(homologateCollaborations: homologateArtistCollaborations,
+                              exceptions: artistHomologationExceptions)
+    }
+
+    func addArtistHomologationException(_ name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty,
+              !artistHomologationExceptions.contains(where: {
+                  ArtistNameNormalizer.fold($0) == ArtistNameNormalizer.fold(trimmed)
+              }) else { return }
+        artistHomologationExceptions.append(trimmed)
+    }
+
+    func removeArtistHomologationException(_ name: String) {
+        artistHomologationExceptions.removeAll { $0 == name }
     }
 
     /// Carpetas externas que el usuario arrastro a Aura Studio con
@@ -466,10 +522,14 @@ final class AppPreferences: ObservableObject {
         static let coverArtProviderOrder = "aura.coverArtProviderOrder"
         static let deezerEnabled = "aura.deezerEnabled"
         static let linkedLibraryFolders = "aura.linkedLibraryFolders"
+        static let homologateArtistCollaborations = "aura.homologateArtistCollaborations"
+        static let artistHomologationExceptions = "aura.artistHomologationExceptions"
         static let musicVisibleColumns = "aura.musicVisibleColumns"
         static let musicSortField = "aura.musicSortField"
         static let musicSortAscending = "aura.musicSortAscending"
         static let musicShowOnlyFavorites = "aura.musicShowOnlyFavorites"
+        static let showStatusBar = "aura.showStatusBar"
+        static let ignoredSimilarGroups = "aura.ignoredSimilarGroups"
         /// Clave vieja del menu "+" (D-199) -- solo se lee para migrar.
         static let legacyMusicExtraColumns = "aura.visibleColumns.music"
     }
@@ -521,6 +581,13 @@ final class AppPreferences: ObservableObject {
         self.coverArtProviderOrder = storedOrder.isEmpty ? CoverArtProvider.defaultOrder : storedOrder
         self.deezerEnabled = defaults.object(forKey: Keys.deezerEnabled) as? Bool ?? true
         self.linkedLibraryFolders = defaults.stringArray(forKey: Keys.linkedLibraryFolders) ?? []
+        // R2-4: encendida salvo que el usuario la haya apagado (una
+        // clave ausente en UserDefaults lee `false`, que no es el
+        // default que queremos).
+        self.homologateArtistCollaborations =
+            defaults.object(forKey: Keys.homologateArtistCollaborations) as? Bool ?? true
+        self.artistHomologationExceptions =
+            defaults.stringArray(forKey: Keys.artistHomologationExceptions) ?? []
         if let storedColumns = defaults.string(forKey: Keys.musicVisibleColumns) {
             // Lista vacia guardada a proposito = el usuario quito todas
             // las columnas opcionales (solo queda Título): se respeta.
@@ -536,6 +603,8 @@ final class AppPreferences: ObservableObject {
             .flatMap(MusicSortField.init(rawValue:)) ?? .title
         self.musicSortAscending = defaults.object(forKey: Keys.musicSortAscending) as? Bool ?? true
         self.musicShowOnlyFavorites = defaults.object(forKey: Keys.musicShowOnlyFavorites) as? Bool ?? false
+        self.showStatusBar = defaults.object(forKey: Keys.showStatusBar) as? Bool ?? true
+        self.ignoredSimilarGroups = defaults.stringArray(forKey: Keys.ignoredSimilarGroups) ?? []
         AppLanguageResolver.current = self.language.resolved
     }
 }

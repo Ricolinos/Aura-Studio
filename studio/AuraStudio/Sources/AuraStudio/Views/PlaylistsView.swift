@@ -62,6 +62,9 @@ struct PlaylistsView: View {
             }
         }
         .frame(width: 600, height: 420)
+        // ST-063: barra de estado -- listas y canciones; la lista abierta.
+        .libraryStatus(LibraryStats.playlists(viewModel.playlists, musicItems: musicItems,
+                                              selected: viewModel.playlists.first { $0.id == selectedPlaylistID }))
         .onChange(of: viewModel.playlists.map(\.id)) { ids in
             if let selectedPlaylistID, !ids.contains(selectedPlaylistID) {
                 self.selectedPlaylistID = nil
