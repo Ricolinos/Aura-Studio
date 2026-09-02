@@ -126,6 +126,72 @@ public sealed partial class ExtrasViewModel : ViewModelBase
 
         foreach (FirmwareChoiceCard other in Cards)
             other.IsSelected = ReferenceEquals(other, card);
+
+        NotifyChoiceChanged();
+    }
+
+    // MARK: - Qué significa lo que acaba de elegir (ST-138)
+
+    /// <summary>
+    /// Port parcial de `switchControls` de `ExtrasView.swift`.
+    ///
+    /// <para>Sin esto, elegir una tarjeta no producía <b>ningún</b> efecto
+    /// visible más allá del punto del radio: el dueño lo reportó como «desde
+    /// Extras no ocurre nada». En macOS, elegir siempre contesta qué implica y
+    /// ofrece la acción que sigue; acá no contestaba nada.</para>
+    ///
+    /// <para><b>Lo que sigue faltando, y por qué:</b> macOS distingue un tercer
+    /// caso —la familia elegida está <i>dormida</i> en el disco, y entonces
+    /// ofrece «Cambiar a …», que no reinstala nada (ST-056)—. Windows no puede:
+    /// <c>IPodDiskInfo</c> no modela las familias dormidas todavía. Por eso los
+    /// textos de acá <b>no prometen</b> poder volver desde esta pantalla, que
+    /// es lo que sí promete el texto de macOS. Prometer un botón que no existe
+    /// sería peor que no decir nada.</para>
+    /// </summary>
+    public FirmwareFamily ChosenFamily => _preferences.FirmwareFamilyToInstall;
+
+    private FirmwareFamily? ActiveFamily =>
+        Device is { SupportsAuraContract: true } device ? device.DeclaredFamily : null;
+
+    /// <summary>La elegida ya es la que está corriendo: no hay nada que hacer, y se dice.</summary>
+    public bool ChoiceIsAlreadyActive => ActiveFamily is { } active && Equals(active, ChosenFamily);
+
+    public string ChoiceNote
+    {
+        get
+        {
+            if (ChoiceIsAlreadyActive)
+            {
+                return $"{ChosenFamily.DisplayName} es el firmware activo de tu iPod.";
+            }
+
+            if (ActiveFamily is { } active)
+            {
+                return $"Tu iPod tiene {active.DisplayName}. Instalar {ChosenFamily.DisplayName} lo agrega: " +
+                       $"{active.DisplayName} se guarda dormido con sus ajustes y no se borra nada.";
+            }
+
+            return $"Se instalará {ChosenFamily.DisplayName} la próxima vez que uses el Instalador.";
+        }
+    }
+
+    /// <summary>«Instalar Metro» — el mismo texto que macOS pone en su botón.</summary>
+    public string InstallActionLabel => $"Instalar {ChosenFamily.DisplayName}";
+
+    /// <summary>
+    /// El botón se ofrece salvo cuando no hay nada que instalar. Lleva al
+    /// Instalador; **no instala desde acá**: el flasheo y sus confirmaciones
+    /// son suyos y de nadie más.
+    /// </summary>
+    public bool CanOpenInstaller => !ChoiceIsAlreadyActive;
+
+    private void NotifyChoiceChanged()
+    {
+        OnPropertyChanged(nameof(ChosenFamily));
+        OnPropertyChanged(nameof(ChoiceIsAlreadyActive));
+        OnPropertyChanged(nameof(ChoiceNote));
+        OnPropertyChanged(nameof(InstallActionLabel));
+        OnPropertyChanged(nameof(CanOpenInstaller));
     }
 
     // MARK: - De dónde salen las versiones (ST-077)
@@ -236,5 +302,9 @@ public sealed partial class ExtrasViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(CanManageThemes));
         OnPropertyChanged(nameof(ThemesDetail));
+
+        // Conectar o desconectar el iPod cambia lo que la elección significa:
+        // «se instalará la próxima vez» no es lo mismo que «tu iPod tiene Aura».
+        NotifyChoiceChanged();
     }
 }

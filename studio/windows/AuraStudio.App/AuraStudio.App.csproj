@@ -73,4 +73,30 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
+  <!-- El índice de recursos de la app (AuraStudio.App.pri) es lo que resuelve
+       `ms-appx:///MainWindow.xaml`. El SDK lo genera y lo copia al directorio
+       de salida, pero NO lo marca para publicar: un `dotnet publish` sin esta
+       regla produce un árbol completo de 289 MB que compila, se instala, y al
+       arrancar muere con «Cannot locate resource from 'ms-appx:///MainWindow.xaml'»
+       (STATUS_STOWED_EXCEPTION, 0xC000027B). Los .pri del framework sí vienen
+       de sus paquetes NuGet, así que el publish aparenta tener índices de
+       recursos y le falta justo el único que es suyo. -->
+  <Target Name="AuraPublicarPriDeLaApp" AfterTargets="ComputeFilesToPublish">
+    <ItemGroup>
+      <ResolvedFileToPublish Include="$(OutDir)$(TargetName).pri"
+                             Condition="Exists('$(OutDir)$(TargetName).pri')">
+        <RelativePath>$(TargetName).pri</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+
+  <!-- Y si algún día esa regla deja de alcanzar, que se sepa acá y no cuando el
+       instalador ya esté en la máquina de alguien: un publish sin .pri es un
+       publish roto, no una advertencia. -->
+  <Target Name="AuraVerificarPriPublicado" AfterTargets="Publish">
+    <Error Condition="!Exists('$(PublishDir)$(TargetName).pri')"
+           Text="El publish quedó sin $(TargetName).pri: la app no arrancaría (no puede resolver ms-appx:///MainWindow.xaml). Revisa el target AuraPublicarPriDeLaApp." />
+  </Target>
+
 </Project>

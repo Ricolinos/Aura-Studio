@@ -57,7 +57,23 @@ public sealed partial class InstallerViewModel : ViewModelBase
     [ObservableProperty] public partial InstallerStep Step { get; set; }
     [ObservableProperty] public partial FirmwareFamily TargetFamily { get; set; }
     [ObservableProperty] public partial string StatusMessage { get; set; }
-    [ObservableProperty] public partial string DetailMessage { get; set; }
+
+    /// <summary>
+    /// El porqué concreto: qué archivo, qué no cuadró. Cuando algo falla, esto
+    /// es lo que distingue un problema de otro — ver <see cref="HasDetail"/>.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasDetail))]
+    public partial string DetailMessage { get; set; }
+
+    /// <summary>
+    /// Hay un detalle que mostrar. Existe porque la tarjeta de fallo enseñaba
+    /// **solo** <see cref="StatusMessage"/> —«Los archivos del firmware no se
+    /// pudieron verificar»— y dejaba fuera el `DetailMessage` que decía cuál y
+    /// por qué. El dueño se topó con eso probando Metro en la app instalada:
+    /// dos fallas muy distintas se veían idénticas en pantalla (ST-137).
+    /// </summary>
+    public bool HasDetail => !string.IsNullOrWhiteSpace(DetailMessage);
     [ObservableProperty] public partial bool IsBusy { get; set; }
     [ObservableProperty] public partial bool IsNonCancelable { get; set; }
 
@@ -782,8 +798,9 @@ public sealed partial class InstallerViewModel : ViewModelBase
 
             if (!result.Success)
             {
-                Fail(AppStrings.InstallerFlashFailed);
-                DetailMessage = result.Output;
+                // La salida de mks5lboot es el único testimonio de por qué no
+                // grabó; va al detalle, que ahora sí se ve en la tarjeta.
+                Fail(AppStrings.InstallerFlashFailed, result.Output);
                 return;
             }
 
@@ -849,10 +866,22 @@ public sealed partial class InstallerViewModel : ViewModelBase
 
     // MARK: - Apoyo
 
-    private void Fail(string message)
+    /// <summary>
+    /// Falla el asistente diciendo qué pasó y —cuando se sabe— por qué.
+    ///
+    /// <para><b>El detalle se fija siempre, aunque sea vacío.</b> Antes esto no
+    /// tocaba <c>DetailMessage</c>, así que un fallo sin detalle propio se
+    /// quedaba con el de la operación anterior: la última línea de progreso de
+    /// la copia colgando debajo de un error de otra cosa. Mientras el detalle
+    /// no se mostraba en la tarjeta de fallo daba igual; ahora se muestra
+    /// (ST-137), y un detalle viejo junto a un error nuevo es peor que
+    /// ninguno.</para>
+    /// </summary>
+    private void Fail(string message, string? detail = null)
     {
         Step = InstallerStep.Failed;
         StatusMessage = message;
+        DetailMessage = detail ?? "";
     }
 
     private bool TryGetArtifacts(out FirmwareArtifacts artifacts)
@@ -866,8 +895,8 @@ public sealed partial class InstallerViewModel : ViewModelBase
         // el usuario no eligió es peor que no instalar (ST-046).
         if (TargetFamily is null)
         {
-            Fail(AppStrings.InstallerArtifactsInvalid);
-            DetailMessage = "No se pudo determinar qué firmware instalar. Vuelve a elegirlo y reintenta.";
+            Fail(AppStrings.InstallerArtifactsInvalid,
+                 "No se pudo determinar qué firmware instalar. Vuelve a elegirlo y reintenta.");
             return false;
         }
 
@@ -877,8 +906,9 @@ public sealed partial class InstallerViewModel : ViewModelBase
         ArtifactVerificationResult verification = FirmwareArtifactVerifier.Verify(artifacts);
         if (verification.IsValid) return true;
 
-        Fail(AppStrings.InstallerArtifactsInvalid);
-        DetailMessage = string.Join(" ", verification.Errors);
+        // Un problema por renglón: pegados con espacios, tres archivos faltantes
+        // se leían como una sola frase larga.
+        Fail(AppStrings.InstallerArtifactsInvalid, string.Join("\n", verification.Errors));
         return false;
     }
 }

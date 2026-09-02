@@ -1905,3 +1905,145 @@ nombre, no como hueco silencioso.
 De paso se retiró `PlaceholderPage`: con Extras ya no queda ninguna sección sin
 pantalla propia, y dejar colgando el camino que la usaba invitaba a volver a
 colgar algo ahí.
+
+## ST-134 — Un publish completo que no arrancaba: falta el índice de recursos
+
+El primer `dotnet publish` autocontenido de la app Windows salió perfecto —437
+archivos, 289 MB, sin un solo error— y al abrirlo moría de inmediato con
+`STATUS_STOWED_EXCEPTION` (0xC000027B). El manejador global alcanzó a escribir
+el motivo: *«Cannot locate resource from `ms-appx:///MainWindow.xaml`»*.
+
+Faltaba **`AuraStudio.App.pri`**, el índice de recursos que resuelve las URIs
+`ms-appx:`. El SDK lo genera y lo copia al directorio de salida, pero **no lo
+marca para publicar**. Lo traicionero es que los `.pri` de los frameworks sí
+vienen —los traen sus paquetes NuGet— así que el publish aparenta tener índices
+de recursos y le falta justo el único que es suyo: 2 MB dentro de 289.
+
+Se arregla en `AuraStudio.App.csproj` con un target que lo agrega a
+`ResolvedFileToPublish`. Y junto a él va **un segundo target que falla el
+publish si el archivo no quedó**: un instalador que empaqueta una app que no
+abre es peor que un build roto, porque el error aparece en la máquina de quien
+la instaló y no acá. `scripts\Make-Installer.ps1` lo vuelve a comprobar antes
+de empaquetar, con la misma idea.
+
+## ST-135 — R5: el instalable de Windows es Inno Setup, por usuario y sin UAC
+
+Instalador clásico con publicación autocontenida (`WindowsAppSDKSelfContained`),
+**no MSIX**. La razón es la cadena privilegiada: Aura Studio se relanza a sí
+misma elevada (`PrivilegedRunner` → `PrivilegedHost`) para formatear el disco
+del iPod, y el contenedor de MSIX rompe justo ese patrón. Además espeja la
+decisión macOS de distribuir fuera de la tienda (D-033).
+
+**Instalar no pide permisos de administrador** (`PrivilegesRequired=lowest`,
+a `%LOCALAPPDATA%\Programs\Aura Studio`). Esto no es comodidad: la app le
+promete al usuario que la elevación llega **por operación**, explicada antes en
+pantalla y solo cuando de verdad va a tocar el disco. Un instalador que pide
+UAC de entrada enseña lo contrario en el primer segundo.
+
+**El riesgo real de empaquetar así era que la elevación dejara de funcionar
+desde la ruta instalada**, porque `PrivilegedRunner` relanza
+`Environment.ProcessPath`. Verificado desde la ruta instalada con una petición
+de ensayo (`DryRun`) contra un disco que no existe: el proceso arranca sin
+abrir ventana, revalida, vuelve a consultar el hardware y aborta con
+«el disco 42 ya no existe». Lo único que no se pudo probar sin el dueño
+presente es el diálogo de UAC en sí — está anotado en ESTADO-PORT.md con el
+comando exacto para hacerlo en un minuto.
+
+**El aviso GPL v2 se muestra antes de instalar**, no enterrado en una carpeta
+(`installer\AVISO-LICENCIAS.txt`): qué componentes son derivados de Rockbox,
+las tres familias con su versión, y las URLs de los tres repositorios de
+fuentes. Los `MODIFICATIONS.md` y `THIRD-PARTY-NOTICES.txt` de cada familia
+viajan junto a sus binarios, y `Make-Installer.ps1` **rehúsa empaquetar** si
+falta cualquiera de los seis.
+
+**Desinstalar no borra los datos del usuario.** `%LOCALAPPDATA%\Aura Studio`
+—preferencias, caché de Releases, registro de errores— sobrevive; el aviso de
+licencias dice dónde queda. Verificado desinstalando y reinstalando.
+
+Dos pendientes conscientes, no descuidos: **sin firma de código** (SmartScreen
+va a advertir la primera vez) y **solo ARM64**, que es lo único que esta ronda
+construyó y probó. Un x64 sin probar no se ofrece.
+
+## ST-136 — `mks5lboot.exe` se comparte desde la raíz: Metro y moonlit no se instalaban
+
+El dueño instaló Aura sin problema desde el instalable y las otras dos familias
+se negaron con «Los archivos del firmware no se pudieron verificar, así que no
+se instala nada».
+
+**No era la lógica, eran los datos.** Los Releases publican `mks5lboot`
+—binario POSIX— por familia, con tres hashes distintos; el `.exe` de Windows es
+nuestro cross-compile y vive **solo en la raíz** de `artifacts/`, con su
+`.origin` al lado (ST-080). La verificación lo exigía dentro de la carpeta de
+cada familia, así que Aura —que vive en la raíz— pasaba, y sus hermanas fallaban
+por faltarles un archivo que en Windows **nunca** van a traer.
+
+Ahora `FirmwareArtifacts.ResolveTool()` busca primero en la carpeta de la
+familia y, si no está, usa el de la raíz. **Se puede compartir porque la
+herramienta es independiente de la familia**: habla DFU con el hardware del iPod
+y recibe como argumento el bootloader que va a grabar. Ese bootloader sí es de
+cada familia, sí viene de su Release y se sigue verificando contra su propio
+`checksums.txt` — se comparte el martillo, no el clavo. El `.origin` que manda
+es el que está junto al binario que se va a ejecutar, no uno de la carpeta de la
+familia; y un `.exe` reemplazado en la raíz rompe a las tres, que es lo correcto.
+
+Si algún día un Release publica el `.exe` por familia, el suyo gana sin cambiar
+nada: el respaldo solo entra cuando no está.
+
+**Las pruebas de fixtures no podían encontrar esto**, porque escribían siempre
+un juego completo de archivos. Por eso se agregó `RealArtifactsTests`, que
+verifica las **tres** familias contra el `artifacts/` real del árbol. Se
+comprobó que muerde: quitando el `.exe` de la raíz, las tres fallan nombrando su
+propia ruta.
+
+## ST-137 — Un error que no dice cuál archivo ni por qué no es un error, es un ruido
+
+La misma falla dejó ver un patrón peor que el bug: la tarjeta de fallo del
+Instalador mostraba **solo** `StatusMessage` —«Los archivos del firmware no se
+pudieron verificar»— y descartaba el `DetailMessage`, que ya traía el detalle.
+Dos fallas muy distintas —falta un archivo, o un hash no cuadra— se veían
+idénticas, y la información existía: solo no estaba en pantalla.
+
+Tres cambios:
+
+- **La tarjeta de fallo muestra el detalle**, seleccionable, para poder copiar
+  el nombre del archivo e ir a verlo.
+- **Los mensajes nombran archivo y motivo.** «Falta `artifacts\metro\
+  mks5lboot.exe` (tampoco está en `artifacts\mks5lboot.exe`)», «El checksum de
+  `artifacts\metro\rockbox.ipod` no coincide (esperado a1b2c3d4…, calculado
+  9f8e7d6c…): el archivo está dañado o no es el que publicó el Release». Las
+  rutas se muestran desde `artifacts\` —la ruta de instalación completa es
+  ruido— y de los hashes se enseñan ocho caracteres, no sesenta y cuatro.
+  Un problema por renglón: pegados con espacios, tres archivos faltantes se
+  leían como una sola frase.
+- **`Fail()` fija el detalle siempre, aunque sea vacío.** Antes no lo tocaba, así
+  que un fallo sin detalle propio se quedaba con el de la operación anterior.
+  Mientras el detalle no se mostraba daba igual; ahora que se muestra, un
+  detalle viejo junto a un error nuevo sería peor que ninguno.
+
+## ST-138 — Elegir en Extras no producía ningún efecto visible
+
+«Desde Extras no ocurre nada», reportó el dueño. Verificado en la app instalada:
+la selección **sí** funciona —la tarjeta entera responde y la preferencia
+persiste, Aura como ausencia de clave— pero lo único que pasaba al elegir era
+que se movía el punto del radio.
+
+Lo que faltaba era el bloque que macOS sí tiene (`switchControls` de
+`ExtrasView.swift`): decir qué implica la elección y ofrecer la acción. Ahora,
+debajo del selector: «Se instalará Metro la próxima vez que uses el Instalador»
+—o, con el iPod conectado, «Tu iPod tiene Aura. Instalar Metro lo agrega: Aura
+se guarda dormido con sus ajustes y no se borra nada»— y un botón «Instalar
+Metro» que lleva al Instalador. **No instala desde ahí**: el flasheo y sus
+confirmaciones siguen siendo del asistente.
+
+**Lo que sigue faltando, dicho aquí para que no se pierda:** macOS distingue un
+tercer caso —la familia elegida está *dormida* en el disco, y entonces ofrece
+«Cambiar a …», que no reinstala nada (ST-056)—. Windows no puede todavía:
+`IPodDiskInfo` no modela las familias dormidas. Por eso los textos de acá **no
+prometen** poder volver desde esta pantalla, que es justo lo que sí promete el
+texto de macOS. Prometer un botón que no existe sería peor que no decir nada.
+
+De paso: navegar a otra sección desde Extras usaba `Frame.Navigate`, que cambia
+la página pero deja la barra lateral marcando «Extras» — el usuario terminaba en
+el Instalador sin que nada dijera dónde estaba. Ahora pasa por la barra
+(`ShellPage.GoToSection`), así que selección y contenido se mueven juntos.
+Licencias no está en la barra y por eso sigue abriéndose como subpágina.

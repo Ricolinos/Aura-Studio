@@ -38,3 +38,8 @@ artifacts/*
 # Misc
 .DS_Store
 Thumbs.db
+
+# Instaladores producidos por `scripts\Make-Installer.ps1`. Se reconstruyen
+# desde el árbol; un .exe de ~120 MB no se versiona. El .iss y el aviso de
+# licencias que los generan sí están en `installer/`.
+dist/

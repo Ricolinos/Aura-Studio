@@ -6,6 +6,157 @@
 > nada — todo compila desde la sesión del 2026-08-31 en la VM — por eso se
 > renombró en la Fase 0. Entradas nuevas van **arriba** de las viejas.
 
+## Ronda 6 — Metro y moonlit sí se instalan, y los errores dicen cuál (2026-09-01)
+
+Decisiones ST-136, ST-137 y ST-138. Build **0/0**, Core **1099/1099** (18
+pruebas nuevas). Todo verificado **en la app instalada desde el Setup**, que es
+el estándar de prueba desde esta ronda (`docs/capturas/r6-*.png`). Sin commit.
+
+### Lo que reportó el dueño, y lo que era
+
+Instaló Aura bien; Metro y moonlit.aura se negaban con «Los archivos del
+firmware no se pudieron verificar, así que no se instala nada».
+
+**No era la lógica, eran los datos** (ST-136). Los Releases publican
+`mks5lboot` —binario POSIX— por familia, con tres hashes distintos, y el `.exe`
+de Windows es nuestro cross-compile, que vive **solo en la raíz** de
+`artifacts/`. La verificación lo exigía dentro de la carpeta de cada familia:
+Aura vive en la raíz y pasaba; sus hermanas fallaban por faltarles un archivo
+que en Windows nunca van a traer. Ahora la resolución cae a la raíz cuando la
+familia no lo trae — se comparte la herramienta, que habla DFU con el hardware,
+no el bootloader, que es de cada familia y se sigue verificando contra su
+propio `checksums.txt`.
+
+**Ninguna prueba de fixtures podía encontrarlo**, porque escribían siempre un
+juego completo. De ahí `RealArtifactsTests`: verifica las **tres** familias
+contra el `artifacts/` real del árbol. Se comprobó que muerde — quitando el
+`.exe` de la raíz, las tres fallan nombrando su propia ruta.
+
+### El patrón que el bug dejó ver
+
+La tarjeta de fallo mostraba solo el mensaje genérico y **descartaba el detalle
+que el ViewModel ya tenía** (ST-137). La información existía; solo no estaba en
+pantalla. Ahora se muestra —seleccionable, para poder copiar el nombre del
+archivo— y los mensajes nombran archivo y motivo: «Falta
+`artifacts\metro\mks5lboot.exe` (tampoco está en `artifacts\mks5lboot.exe`)»,
+«El checksum de `artifacts\metro\rockbox.ipod` no coincide (esperado a1b2c3d4…,
+calculado 9f8e7d6c…)». Y `Fail()` fija el detalle siempre, aunque sea vacío:
+antes no lo tocaba, así que un error nuevo podía quedarse con el detalle del
+paso anterior — inofensivo mientras no se veía, veneno ahora que sí.
+
+### «Desde Extras no ocurre nada»
+
+**Diagnóstico con evidencia, y una corrección de rumbo a la mitad.** Un primer
+clic real sobre una tarjeta pareció no hacer nada, y estuve a punto de dar por
+roto el `Tapped`. No lo estaba: ese clic se consumió activando la ventana. Con
+la ventana ya activa, la tarjeta entera selecciona y la preferencia persiste
+(Aura como ausencia de clave). Casi «arreglo» algo que funcionaba.
+
+Lo que de verdad faltaba era el bloque de macOS (`switchControls`): elegir no
+producía **ningún** efecto visible más allá del punto del radio. Ahora, debajo
+del selector, se dice qué implica la elección y se ofrece «Instalar Metro», que
+lleva al Instalador (ST-138). De paso, esa navegación ahora pasa por la barra
+lateral: con `Frame.Navigate` a secas el contenido cambiaba y la barra seguía
+marcando «Extras».
+
+Sigue faltando el caso de **familia dormida** («Cambiar a …», ST-056):
+`IPodDiskInfo` no las modela todavía, y por eso los textos de acá no prometen
+poder volver desde esta pantalla, que es lo que sí promete el texto de macOS.
+
+### La prueba de cierre, en la app instalada
+
+Elegir Metro en Extras → «Instalar Metro» → el Instalador abre **con Metro** y
+la barra lateral marcando Instalador → «Comenzar» → permisos → **«Confirma que
+este es tu iPod»**, detenido solo por «No hay ningún iPod conectado», con
+«Ensayar sin escribir» y «Copiar el firmware» deshabilitados.
+
+Antes de esta ronda, ese recorrido moría en la verificación de artefactos. Ese
+es el límite alcanzable sin hardware: **el flasheo real es del dueño**.
+
+
+## Ronda 5 — Empaquetado: el instalable de Windows (2026-09-01)
+
+Decisiones ST-134 y ST-135. Build **0/0**, Core **1081/1081**. Instalador
+verificado instalándolo, abriéndolo, desinstalándolo y reinstalándolo en esta
+VM (`docs/capturas/r5-*.png`, todas de la app **instalada**, no del árbol de
+desarrollo). Sin commit.
+
+### El publish salía completo y no arrancaba
+
+437 archivos, 289 MB, cero errores, y moría al abrirse con
+`STATUS_STOWED_EXCEPTION`. Faltaba **`AuraStudio.App.pri`** (ST-134): 2 MB
+dentro de 289, el índice que resuelve `ms-appx:///MainWindow.xaml`. El SDK lo
+genera pero no lo marca para publicar, y como los `.pri` de los frameworks sí
+vienen de sus NuGet, el publish aparenta tener índices de recursos y le falta
+justo el suyo.
+
+Ahora el `.csproj` lo agrega **y falla el publish si no quedó**, y
+`Make-Installer.ps1` lo vuelve a comprobar antes de empaquetar. Un instalador
+que empaqueta una app que no abre falla en la máquina de quien la instaló, no
+acá; ese error tenía que volverse imposible de cometer en silencio.
+
+### Qué se armó
+
+- `installer\AuraStudio.iss` — Inno Setup 6, español, instalación **por
+  usuario sin UAC**, solo ARM64, mínimo Windows 10 2004. `AppId` fijo para que
+  reinstalar actualice en vez de duplicar la entrada en «Aplicaciones
+  instaladas».
+- `installer\AVISO-LICENCIAS.txt` — el aviso GPL v2 que se muestra **antes** de
+  instalar: las tres familias con su versión y las URLs de sus fuentes.
+- `scripts\Make-Installer.ps1` — publica, **verifica** (el `.pri`, el `.exe`,
+  las tres familias y los seis avisos de licencia) y compila. Rehúsa
+  empaquetar si falta cualquiera.
+- `dist\` ignorado en git. Resultado: `AuraStudioSetup-0.1.0-arm64.exe`,
+  93.6 MB.
+
+Inno Setup se instaló con `winget install --id JRSoftware.InnoSetup --scope
+user`, sin elevación; el script dice esa línea exacta si no lo encuentra.
+
+### El riesgo #1, verificado
+
+Empaquetar así podía romper la elevación, porque `PrivilegedRunner` relanza
+`Environment.ProcessPath` y esa ruta ahora es
+`%LOCALAPPDATA%\Programs\Aura Studio`. Se probó desde ahí, sin elevar y sin
+tocar ningún disco, con una petición de ensayo contra un disco inexistente:
+
+```
+"%LOCALAPPDATA%\Programs\Aura Studio\AuraStudio.App.exe" --aura-privileged req.json res.json
+→ exit 1
+→ {"Success":false,"SafetyAbort":true,"Message":"el disco 42 ya no existe"}
+```
+
+El proceso arranca sin abrir ventana, revalida la petición, vuelve a consultar
+el hardware y aborta. La pantalla Instalador de la app instalada tampoco dice
+«faltan los archivos del firmware», así que `artifacts\` viaja y se encuentra.
+
+**Lo único que falta probar es el diálogo de UAC en sí**, que necesita a
+alguien frente a la máquina (esta sesión tiene prohibido elevar). Un minuto,
+con el iPod desconectado y sin riesgo:
+
+```powershell
+$exe = "$env:LOCALAPPDATA\Programs\Aura Studio\AuraStudio.App.exe"
+Start-Process $exe -Verb runas -ArgumentList '--aura-privileged', 'req.json', 'res.json' -Wait
+```
+
+Con el mismo `req.json` de disco 42 y `DryRun`, tiene que salir el UAC
+—diciendo «Editor desconocido», porque todavía no hay firma— y dejar el mismo
+resultado de aborto.
+
+### El ciclo completo
+
+Instalar → abrir → desinstalar → reinstalar, todo verificado. El desinstalador
+quita el programa y el acceso directo y **conserva** `%LOCALAPPDATA%\Aura
+Studio` (preferencias, caché, registro de errores); el aviso de licencias dice
+dónde quedan.
+
+### Pendientes conscientes
+
+**Sin firma de código** — SmartScreen advertirá la primera vez; es decisión del
+dueño (certificado y su costo). **Solo ARM64** — es lo único que esta ronda
+construyó y probó; un x64 sin probar no se ofrece. Ninguno de los dos bloquea
+el instalable de hoy.
+
+
 ## Ronda de ajustes 4 — Extras, la última antes del primer commit (2026-09-01)
 
 Decisiones ST-132 y ST-133. Build **0/0**, Core **1081/1081**, verificado en

@@ -45,14 +45,39 @@ public sealed partial class ExtrasPage : Page
     }
 
     /// <summary>
+    /// Lleva al Instalador (ST-138). <b>No instala desde acá</b>: el flasheo y
+    /// sus confirmaciones son del asistente y de nadie más — esta pantalla solo
+    /// guarda una preferencia.
+    /// </summary>
+    private void OpenInstaller_Click(object sender, RoutedEventArgs e) => Go("installer");
+
+    /// <summary>
     /// Temas tiene pantalla propia y ya estaba en la barra lateral; desde acá se
     /// llega igual, que es como la ofrece macOS.
     /// </summary>
-    private void Themes_Click(object sender, RoutedEventArgs e) =>
-        Frame.Navigate(typeof(ThemesPage), null,
-            new Microsoft.UI.Xaml.Media.Animation.DrillInNavigationTransitionInfo());
+    private void Themes_Click(object sender, RoutedEventArgs e) => Go("extras.themes");
 
     private void Licenses_Click(object sender, RoutedEventArgs e) =>
         Frame.Navigate(typeof(LicensesPage), null,
             new Microsoft.UI.Xaml.Media.Animation.DrillInNavigationTransitionInfo());
+
+    /// <summary>
+    /// Navega por la barra lateral cuando el destino <b>es</b> una sección de
+    /// la barra. Con <c>Frame.Navigate</c> a secas el contenido cambiaba pero la
+    /// barra seguía marcando «Extras», así que el usuario terminaba en otra
+    /// pantalla sin que nada dijera dónde estaba. Licencias no está en la barra
+    /// y por eso sí se abre en el marco, como subpágina.
+    /// </summary>
+    private void Go(string tag)
+    {
+        if (ShellPage.Current is { } shell)
+        {
+            shell.GoToSection(tag);
+            return;
+        }
+
+        // Sin armazón (no debería pasar), al menos se llega a algún lado.
+        Frame.Navigate(tag == "installer" ? typeof(InstallerPage) : typeof(ThemesPage), null,
+            new Microsoft.UI.Xaml.Media.Animation.DrillInNavigationTransitionInfo());
+    }
 }

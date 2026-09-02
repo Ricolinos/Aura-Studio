@@ -31,12 +31,27 @@ public sealed partial class ShellPage : Page
     private static readonly string[] LibraryTags =
         ["music", "video", "photos"];
 
+    /// <summary>
+    /// El armazón vivo, para que una página de contenido pueda mandar a la app
+    /// a otra sección **por la barra lateral** y no por el marco a secas.
+    ///
+    /// <para>Navegar con <c>Frame.Navigate</c> desde adentro cambia la página
+    /// pero deja la barra marcando la sección anterior: el usuario acaba en el
+    /// Instalador con «Extras» resaltado. Con esto la selección y el contenido
+    /// se mueven juntos, que es lo único que el usuario puede entender.</para>
+    /// </summary>
+    public static ShellPage? Current { get; private set; }
+
     public ShellPage()
     {
         InitializeComponent();
         ViewModel = App.Services.GetRequiredService<ShellViewModel>();
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+        Current = this;
     }
+
+    /// <summary>Va a una sección de la barra lateral por su etiqueta.</summary>
+    public void GoToSection(string tag) => SelectTag(tag);
 
     private void NavView_Loaded(object sender, RoutedEventArgs e)
     {

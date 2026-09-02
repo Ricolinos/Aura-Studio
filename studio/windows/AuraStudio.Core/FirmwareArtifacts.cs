@@ -103,19 +103,83 @@ public sealed record FirmwareArtifacts(
     bool IsRelease)
 {
     public const string VersionMarkerFileName = "firmware-version.txt";
+    public const string Mks5lbootFileName = "mks5lboot.exe";
 
     public string RockboxImage => Path.Combine(Directory, "rockbox.ipod");
     public string RockboxArchive => Path.Combine(Directory, "rockbox.zip");
-    public string Mks5lboot => Path.Combine(Directory, "mks5lboot.exe");
+    public string Mks5lboot => ResolveTool().Path;
     public string? BootloaderImage => Find("bootloader-ipod6g.ipod");
     public string? Checksums => Find("checksums.txt");
     public string? Modifications => Find("MODIFICATIONS.md");
     public string? ThirdPartyNotices => Find("THIRD-PARTY-NOTICES.txt");
 
+    /// <summary>
+    /// Raíz de `artifacts/`. Aura vive ahí mismo; cada familia hermana en su
+    /// subdirectorio (§A bis), así que para ellas la raíz es el directorio padre.
+    /// </summary>
+    public string ArtifactsRoot => Family.ConfigValue is { Length: > 0 }
+        ? Path.GetDirectoryName(Directory) ?? Directory
+        : Directory;
+
     public string? Find(string name)
     {
         string path = Path.Combine(Directory, name);
         return File.Exists(path) ? path : null;
+    }
+
+    /// <summary>
+    /// Dónde quedó la herramienta de flasheo y de qué carpeta salió.
+    /// <paramref name="Shared"/> es `true` cuando se está usando la de la raíz
+    /// porque la familia no trae la suya.
+    /// </summary>
+    /// <param name="OwnPath">Ruta que le tocaría dentro de la familia — la que
+    /// nombran los mensajes de error, exista o no.</param>
+    public sealed record ToolLocation(string Path, bool Exists, bool Shared, string OwnPath);
+
+    /// <summary>
+    /// Ubica `mks5lboot.exe`, **con respaldo en la raíz de `artifacts/`** (ST-136).
+    ///
+    /// <para>Los Releases publican `mks5lboot` (binario POSIX) por familia, con
+    /// tres hashes distintos; el `.exe` de Windows es nuestro cross-compile y
+    /// vive solo en la raíz, con su `.origin` al lado. Sin este respaldo, Metro
+    /// y moonlit.aura no verificaban —y por lo tanto no se instalaban— por
+    /// faltarles un archivo que en Windows <b>nunca</b> van a traer.</para>
+    ///
+    /// <para>Se puede compartir porque la herramienta es <b>independiente de la
+    /// familia</b>: habla DFU con el hardware del iPod y recibe como argumento
+    /// el bootloader que va a grabar. Ese bootloader sí es de cada familia, sí
+    /// viene del Release y sí se sigue verificando contra su propio
+    /// `checksums.txt`. Lo que se comparte es el martillo, no el clavo.</para>
+    /// </summary>
+    public ToolLocation ResolveTool()
+    {
+        string own = Path.Combine(Directory, Mks5lbootFileName);
+        if (File.Exists(own)) return new ToolLocation(own, Exists: true, Shared: false, own);
+
+        string root = Path.Combine(ArtifactsRoot, Mks5lbootFileName);
+        if (!PathsEqual(root, own) && File.Exists(root))
+        {
+            return new ToolLocation(root, Exists: true, Shared: true, own);
+        }
+
+        // No está en ninguna de las dos: se devuelve la ruta propia para que el
+        // error nombre el archivo que la familia debería tener.
+        return new ToolLocation(own, Exists: false, Shared: false, own);
+    }
+
+    private static bool PathsEqual(string a, string b) =>
+        string.Equals(Path.GetFullPath(a), Path.GetFullPath(b), StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// La ruta como conviene decirla en pantalla: desde `artifacts\` en
+    /// adelante. Un mensaje de error tiene que nombrar el archivo de forma que
+    /// el usuario lo pueda ir a ver, y la ruta completa de instalación es ruido.
+    /// </summary>
+    public static string DisplayPath(string fullPath)
+    {
+        string[] parts = fullPath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        int at = Array.FindLastIndex(parts, p => p.Equals("artifacts", StringComparison.OrdinalIgnoreCase));
+        return at < 0 ? fullPath : string.Join('\\', parts[at..]);
     }
 
     /// <summary>
@@ -211,7 +275,8 @@ public static class FirmwareArtifactVerifier
         if (!Directory.Exists(artifacts.Directory))
         {
             return new ArtifactVerificationResult(false,
-                ["No existe el directorio de artefactos del firmware."]);
+                [$"No existe la carpeta {FirmwareArtifacts.DisplayPath(artifacts.Directory)}, " +
+                 $"donde deberían estar los archivos de {artifacts.Family.DisplayName}."]);
         }
 
         string? checksumsPath = artifacts.Checksums;
@@ -221,7 +286,8 @@ public static class FirmwareArtifactVerifier
 
         if (checksumsPath is null)
         {
-            errors.Add("Falta checksums.txt: no hay con qué verificar los archivos del firmware.");
+            errors.Add($"Falta {FirmwareArtifacts.DisplayPath(Path.Combine(artifacts.Directory, "checksums.txt"))}: " +
+                       "no hay con qué verificar los archivos del firmware.");
         }
 
         bool wantsTree = scope is ArtifactScope.FirmwareTree or ArtifactScope.All;
@@ -244,7 +310,9 @@ public static class FirmwareArtifactVerifier
             // El bootloader sí viaja en el Release y sí está en checksums.txt.
             if (artifacts.BootloaderImage is null)
             {
-                errors.Add("Falta bootloader-ipod6g.ipod: no se puede grabar el bootloader.");
+                errors.Add($"Falta {FirmwareArtifacts.DisplayPath(
+                    Path.Combine(artifacts.Directory, "bootloader-ipod6g.ipod"))}: " +
+                    "no se puede grabar el bootloader.");
             }
             else
             {
@@ -266,40 +334,54 @@ public static class FirmwareArtifactVerifier
                                                         Dictionary<string, string> expected,
                                                         List<string> errors)
     {
-        if (!File.Exists(artifacts.Mks5lboot))
+        FirmwareArtifacts.ToolLocation tool = artifacts.ResolveTool();
+        if (!tool.Exists)
         {
-            errors.Add("Falta mks5lboot.exe: sin esa herramienta no se puede grabar el bootloader.");
+            // Se nombran las DOS carpetas donde se buscó: con una sola, quien
+            // lea el error no sabe si el respaldo de la raíz llegó a mirarse.
+            errors.Add($"Falta {FirmwareArtifacts.DisplayPath(tool.OwnPath)} " +
+                       $"(tampoco está en {FirmwareArtifacts.DisplayPath(
+                           Path.Combine(artifacts.ArtifactsRoot, FirmwareArtifacts.Mks5lbootFileName))}): " +
+                       "sin esa herramienta no se puede grabar el bootloader.");
             return (ToolProvenance.Missing, null);
         }
 
-        string actual = Sha256Hex(artifacts.Mks5lboot);
+        string shown = FirmwareArtifacts.DisplayPath(tool.Path);
+        string actual = Sha256Hex(tool.Path);
 
         // 1) Lo ideal: el Release publicó el .exe y su hash.
-        if (expected.TryGetValue("mks5lboot.exe", out string? released))
+        if (!tool.Shared && expected.TryGetValue(FirmwareArtifacts.Mks5lbootFileName, out string? released))
         {
             if (!string.Equals(actual, released, StringComparison.OrdinalIgnoreCase))
             {
-                errors.Add("El checksum de mks5lboot.exe no coincide con el del Release.");
+                errors.Add($"El checksum de {shown} no coincide con el del Release " +
+                           $"(esperado {Short(released)}, calculado {Short(actual)}): " +
+                           "el archivo está dañado o no es el que publicó el Release.");
                 return (ToolProvenance.Unverified, null);
             }
             return (ToolProvenance.ReleaseChecksums, artifacts.ReleaseTag);
         }
 
-        // 2) Hash fijado localmente: detecta corrupción o reemplazo, no acredita origen.
-        ToolOrigin? origin = ToolOrigin.Read(artifacts.Directory);
+        // 2) Hash fijado localmente: detecta corrupción o reemplazo, no acredita
+        //    origen. El `.origin` vive junto al binario — si se está usando el de
+        //    la raíz, es el de la raíz el que manda.
+        string toolDirectory = Path.GetDirectoryName(tool.Path) ?? artifacts.Directory;
+        ToolOrigin? origin = ToolOrigin.Read(toolDirectory);
         if (origin?.Sha256 is { Length: 64 } pinned)
         {
             if (!string.Equals(actual, pinned, StringComparison.OrdinalIgnoreCase))
             {
-                errors.Add("mks5lboot.exe no coincide con el hash fijado en " +
-                           $"{ToolOrigin.FileName}: el archivo cambió y no se puede confiar en él.");
+                errors.Add($"{shown} no coincide con el hash fijado en {ToolOrigin.FileName} " +
+                           $"(esperado {Short(pinned)}, calculado {Short(actual)}): " +
+                           "el archivo cambió y no se puede confiar en él.");
                 return (ToolProvenance.Unverified, origin.Tag);
             }
             return (ToolProvenance.LocalPin, origin.Tag);
         }
 
         // 3) Nada con qué comparar.
-        errors.Add($"mks5lboot.exe no se puede verificar: ni el Release lo publica ni existe {ToolOrigin.FileName}.");
+        errors.Add($"{shown} no se puede verificar: ni el Release publica " +
+                   $"{FirmwareArtifacts.Mks5lbootFileName} ni existe {ToolOrigin.FileName} junto al binario.");
         return (ToolProvenance.Unverified, null);
     }
 
@@ -310,21 +392,34 @@ public static class FirmwareArtifactVerifier
                                                bool required)
     {
         string path = Path.Combine(artifacts.Directory, name);
+        string shown = FirmwareArtifacts.DisplayPath(path);
         if (!File.Exists(path))
         {
-            if (required) errors.Add($"Falta {name}.");
+            if (required) errors.Add($"Falta {shown}.");
             return;
         }
         if (!expected.TryGetValue(name, out string? hash))
         {
-            errors.Add($"checksums.txt no describe {name}.");
+            errors.Add($"{FirmwareArtifacts.DisplayPath(artifacts.Checksums ?? "checksums.txt")} " +
+                       $"no describe {name}, así que no hay con qué verificarlo.");
             return;
         }
-        if (!string.Equals(Sha256Hex(path), hash, StringComparison.OrdinalIgnoreCase))
+        string actual = Sha256Hex(path);
+        if (!string.Equals(actual, hash, StringComparison.OrdinalIgnoreCase))
         {
-            errors.Add($"El checksum de {name} no coincide.");
+            errors.Add($"El checksum de {shown} no coincide " +
+                       $"(esperado {Short(hash)}, calculado {Short(actual)}): " +
+                       "el archivo está dañado o no es el que publicó el Release.");
         }
     }
+
+    /// <summary>
+    /// Los primeros 8 caracteres de un SHA-256. Un mensaje de error tiene que
+    /// decir <b>qué</b> no coincidió sin volcar 128 caracteres de hexadecimal
+    /// en pantalla; con 8 alcanza para comparar contra `checksums.txt`.
+    /// </summary>
+    private static string Short(string hash) =>
+        hash.Length <= 8 ? hash : hash[..8] + "…";
 
     public static string Sha256Hex(string path)
     {

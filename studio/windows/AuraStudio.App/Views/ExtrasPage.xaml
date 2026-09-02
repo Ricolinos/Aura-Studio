@@ -87,6 +87,20 @@
                                      Command="{x:Bind ViewModel.CheckAgainCommand}"
                                      IsEnabled="{x:Bind ViewModel.IsRefreshing, Mode=OneWay, Converter={StaticResource InvertBool}}" />
                 </StackPanel>
+
+                <!-- ST-138: qué significa lo que se acaba de elegir, y la
+                     acción que sigue. Sin este bloque, elegir una tarjeta no
+                     producía ningún efecto visible más allá del punto del
+                     radio — «desde Extras no ocurre nada». -->
+                <StackPanel Spacing="8" Margin="0,4,0,0">
+                    <TextBlock Text="{x:Bind ViewModel.ChoiceNote, Mode=OneWay}"
+                               Style="{StaticResource AuraCaptionTextStyle}"
+                               TextWrapping="Wrap" />
+                    <Button Content="{x:Bind ViewModel.InstallActionLabel, Mode=OneWay}"
+                            Click="OpenInstaller_Click"
+                            HorizontalAlignment="Left"
+                            Visibility="{x:Bind ViewModel.CanOpenInstaller, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+                </StackPanel>
             </StackPanel>
 
             <!-- ============ Disponible en el dispositivo ============ -->

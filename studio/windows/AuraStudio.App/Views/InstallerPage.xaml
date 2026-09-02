@@ -317,10 +317,24 @@
                      Title="{x:Bind res:AppStrings.InstallerDoneTitle}"
                      Message="{x:Bind res:AppStrings.InstallerDoneDetail}" />
 
+            <!-- El detalle va DENTRO de la tarjeta de fallo, y seleccionable.
+                 Sin él se veía solo «Los archivos del firmware no se pudieron
+                 verificar»: dos fallas distintas —falta un archivo, o un hash
+                 no cuadra— quedaban indistinguibles en pantalla aunque el
+                 ViewModel ya supiera cuál era (ST-137). Quien lo lea tiene que
+                 poder copiar el nombre del archivo para ir a verlo. -->
             <InfoBar IsOpen="{x:Bind ViewModel.IsFailed, Mode=OneWay}"
                      IsClosable="False" Severity="Error"
                      Title="{x:Bind res:AppStrings.InstallerFailedTitle}"
-                     Message="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" />
+                     Message="{x:Bind ViewModel.StatusMessage, Mode=OneWay}">
+                <InfoBar.Content>
+                    <TextBlock Text="{x:Bind ViewModel.DetailMessage, Mode=OneWay}"
+                               Visibility="{x:Bind ViewModel.HasDetail, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
+                               TextWrapping="Wrap"
+                               IsTextSelectionEnabled="True"
+                               Margin="0,0,0,12" />
+                </InfoBar.Content>
+            </InfoBar>
 
             <!-- Bitácora de la operación privilegiada: lo que de verdad hizo. -->
             <Border Style="{StaticResource AuraSubtleCardStyle}"

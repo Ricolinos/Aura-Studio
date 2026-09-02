@@ -1,0 +1,40 @@
+﻿Aura Studio 0.1.0 — Windows (ARM64)
+
+Aura Studio es software propietario. Esta copia incluye, además, los
+componentes del firmware que instala en el iPod: son obras derivadas de
+Rockbox y se distribuyen bajo la Licencia Pública General de GNU, versión 2
+(GPL v2), como agregación dentro de este programa.
+
+Se instalan en la carpeta «artifacts», junto al programa:
+
+    bootloader-ipod6g.ipod, rockbox.ipod, rockbox.zip y mks5lboot
+
+para las tres familias de firmware que esta versión conoce:
+
+    Aura            v0.4.4-beta
+    Metro-Aura      v0.6.4
+    moonlit.aura    v0.1.6
+
+Conforme al §3 de la GPL v2, el código fuente completo de cada una está
+publicado en:
+
+    https://github.com/Ricolinos/Aura-Firmware
+    https://github.com/Ricolinos/Metro-Aura
+    https://github.com/Ricolinos/moonlit-aura
+
+Cada familia trae, junto a sus archivos, el aviso completo
+(THIRD-PARTY-NOTICES.txt) y la lista de cambios respecto de Rockbox
+(MODIFICATIONS.md). La pantalla «Extras › Licencias» del programa los muestra
+y enlaza al repositorio y al tag exacto de cada uno.
+
+Sobre los permisos: esta instalación es solo para su cuenta de usuario. No
+pide permisos de administrador ni modifica el sistema, y se puede desinstalar
+desde «Aplicaciones instaladas» de Windows. Aura Studio sí se los pedirá más
+adelante —una operación a la vez, y explicando en pantalla qué va a hacer y
+por qué, antes del diálogo de Windows— cuando tenga que dar formato al disco
+del iPod o instalarle el firmware.
+
+Al desinstalar se quitan los archivos del programa, pero se conservan sus
+preferencias y su registro de errores en:
+
+    %LOCALAPPDATA%\Aura Studio
