@@ -91,7 +91,119 @@ public static class ImageResizer
             BitmapPixelFormat.Bgra8, BitmapAlphaMode.Straight, transform,
             ExifOrientationMode.RespectExifOrientation, ColorManagementMode.ColorManageToSRgb);
 
-        using SoftwareBitmap flattened = FlattenOntoWhite(scaled);
+        return await EncodeJpegAsync(scaled, quality);
+    }
+
+    // --- Recorte cuadrado (contrato v18, ST-140) ---
+
+    /// <summary>
+    /// El JPEG cuadrado de lado <paramref name="side"/>, recortado al centro
+    /// desde el lado corto de la fuente (fill + center-crop, nunca estirado ni
+    /// con bandas). Es la primitiva que usan la biblioteca local y el sync:
+    /// carátulas de álbum (<c>cover.jpg</c> 320), fotos de artista (128) y la
+    /// copia local de <c>.portadas\</c> (lado corto, tope 1000).
+    ///
+    /// <para>Nunca escala hacia arriba: una fuente cuyo lado corto sea menor
+    /// que <paramref name="side"/> sale con ese lado corto. La orientación EXIF
+    /// se respeta y se hornea en los píxeles. Port de
+    /// <c>ImageResizer.squareCrop(data:side:quality:)</c> en macOS — mismos
+    /// números, misma aritmética (<see cref="SquareCropPlan"/>).</para>
+    /// </summary>
+    public static async Task<byte[]> EncodeSquareAsync(byte[] source, int side, double quality)
+    {
+        if (source.Length == 0) throw new ImageResizeException("No se pudo leer la imagen de origen.");
+
+        using var input = new InMemoryRandomAccessStream();
+        await input.WriteAsync(ToBuffer(source));
+        input.Seek(0);
+
+        BitmapDecoder decoder;
+        try
+        {
+            decoder = await BitmapDecoder.CreateAsync(input);
+        }
+        catch (Exception ex)
+        {
+            string detail = string.IsNullOrWhiteSpace(ex.Message) ? "" : $" ({ex.Message.Trim()})";
+            throw new ImageResizeException($"No se pudo leer la imagen de origen.{detail}");
+        }
+
+        // El plan se calcula sobre las medidas YA orientadas: lo que se recorta
+        // es lo que se ve, no cómo está guardado el archivo.
+        var plan = SquareCropPlan.For((int)decoder.OrientedPixelWidth, (int)decoder.OrientedPixelHeight, side);
+        if (plan.IsEmpty)
+            throw new ImageResizeException("La imagen de origen no tiene un tamaño válido.");
+
+        // Lo que hay que fijar es el lado CORTO (el que sobrevive al recorte),
+        // no el mayor: se lleva EXACTO al lado pedido y el largo se redondea
+        // hacia arriba, para que el recorte nunca tenga que agrandar nada y el
+        // resultado mida exactamente lo que el contrato v18 fija (320, 128).
+        // Las medidas van en el espacio CRUDO, que es lo que espera
+        // BitmapTransform; la orientación solo intercambia o espeja los lados,
+        // así que el lado corto es el mismo en los dos espacios.
+        int rawWidth = (int)decoder.PixelWidth, rawHeight = (int)decoder.PixelHeight;
+        int scaledWidth, scaledHeight;
+        if (rawWidth <= rawHeight)
+        {
+            scaledWidth = plan.OutputSide;
+            scaledHeight = Math.Max(plan.OutputSide,
+                                    (int)Math.Ceiling((double)rawHeight * plan.OutputSide / rawWidth));
+        }
+        else
+        {
+            scaledHeight = plan.OutputSide;
+            scaledWidth = Math.Max(plan.OutputSide,
+                                   (int)Math.Ceiling((double)rawWidth * plan.OutputSide / rawHeight));
+        }
+
+        // Bounds recorta sobre la imagen YA escalada. Un cuadrado centrado es
+        // el mismo antes y después de la orientación EXIF (girar 90° o espejar
+        // no mueve el centro), así que da igual en qué espacio lo aplique WIC:
+        // lo único que puede cambiar de lado es el píxel sobrante de un margen
+        // impar, que es medio píxel de diferencia con macOS y no se ve.
+        var crop = SquareCropPlan.For(scaledWidth, scaledHeight, plan.OutputSide);
+        var transform = new BitmapTransform
+        {
+            ScaledWidth = (uint)scaledWidth,
+            ScaledHeight = (uint)scaledHeight,
+            InterpolationMode = BitmapInterpolationMode.Fant,
+            Bounds = new BitmapBounds
+            {
+                X = (uint)crop.CropX,
+                Y = (uint)crop.CropY,
+                Width = (uint)crop.CropSide,
+                Height = (uint)crop.CropSide
+            }
+        };
+
+        using SoftwareBitmap square = await decoder.GetSoftwareBitmapAsync(
+            BitmapPixelFormat.Bgra8, BitmapAlphaMode.Straight, transform,
+            ExifOrientationMode.RespectExifOrientation, ColorManagementMode.ColorManageToSRgb);
+
+        return await EncodeJpegAsync(square, quality);
+    }
+
+    /// <summary>
+    /// Escribe el JPEG cuadrado directo a un archivo, creando su carpeta.
+    /// </summary>
+    public static async Task SquareCropAsync(byte[] source, string destinationPath, int side,
+                                             double quality = DefaultQuality)
+    {
+        byte[] jpeg = await EncodeSquareAsync(source, side, quality).ConfigureAwait(false);
+
+        string? directory = Path.GetDirectoryName(destinationPath);
+        if (!string.IsNullOrEmpty(directory)) Directory.CreateDirectory(directory);
+        await File.WriteAllBytesAsync(destinationPath, jpeg).ConfigureAwait(false);
+    }
+
+    public static Task SquareCropAsync(string sourcePath, string destinationPath, int side,
+                                       double quality = DefaultQuality)
+        => SquareCropAsync(File.ReadAllBytes(sourcePath), destinationPath, side, quality);
+
+    /// <summary>El JPEG de la imagen, aplanada sobre blanco y ya verificada como baseline.</summary>
+    private static async Task<byte[]> EncodeJpegAsync(SoftwareBitmap bitmap, double quality)
+    {
+        using SoftwareBitmap flattened = FlattenOntoWhite(bitmap);
 
         using var output = new InMemoryRandomAccessStream();
         var options = new BitmapPropertySet

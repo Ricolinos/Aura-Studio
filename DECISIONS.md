@@ -2047,3 +2047,95 @@ la página pero deja la barra lateral marcando «Extras» — el usuario termina
 el Instalador sin que nada dijera dónde estaba. Ahora pasa por la barra
 (`ShellPage.GoToSection`), así que selección y contenido se mueven juntos.
 Licencias no está en la barra y por eso sigue abriéndose como subpágina.
+
+## ST-140 — El recorte cuadrado es una primitiva, no un efecto del reescalado
+
+Hasta hoy Aura Studio **nunca** recortó una imagen. `ImageResizer` (macOS) y su
+port de Windows hacen una sola cosa —meter el lado mayor dentro de un máximo
+conservando la proporción—, y de ahí salían dos incumplimientos del contrato:
+`cover.jpg` viajaba **cruda**, con la proporción que tuviera la fuente
+(~1000 px, 4:3, 16:9, lo que fuera), y las fotos de artista iban a 128 px de
+lado **mayor** con su proporción original, cuando §D.3 las exige **cuadradas**
+desde v6 (`LibrarySync.swift:1069`, `LibrarySyncFinalizer.cs:448`).
+
+Que el firmware lo tolere no lo vuelve inocuo. Su caché maestra sí rellena y
+recorta (§D.5), pero los caminos que **no** pasan por la maestra —"Ahora suena"
+a 135 px y el decode de CoverDrift a 320 px en Aura, el fondo sin mtime de
+Metro— decodifican con ajuste dentro de una caja cuadrada y después aplican
+esquinas, reflejo y transposición **asumiendo que el bitmap es cuadrado**: con
+una carátula 4:3 el stride no coincide y la imagen se rompe en pantalla. Eso es
+exactamente el glitch que reportó el dueño. El arreglo tiene dos mitades —la
+del firmware (ronda de los tres firmwares) y la de acá— y esta es la de acá:
+que lo que Studio escribe sea cuadrado de origen.
+
+**La aritmética se separa del codificador.** `SquareCropPlan` (macOS:
+`Sources/AuraStudio/Services/SquareCropPlan.swift`; Windows:
+`AuraStudio.Core/Library/SquareCropPlan.cs`) responde, sin tocar ImageIO ni
+WIC: qué cuadrado se conserva y de qué lado sale. Es la misma decisión de
+diseño que `ImageResizePlan` en el port —lo verificable sin plataforma se
+prueba sin plataforma—, y acá vale doble: los dos archivos de prueba
+(`SquareCropPlanTests.swift` / `.cs`) tienen los **mismos casos con los mismos
+números**, así que el día que una plataforma cambie de criterio se ve en el
+diff, no en el iPod.
+
+Lo que el plan fija:
+
+- **Rellenar y recortar al centro**, nunca estirar ni poner bandas. Se conserva
+  el cuadrado central del lado corto; se tira la mitad sobrante del lado largo
+  repartida en los dos extremos.
+- **El píxel sobrante de un margen impar se descarta del lado derecho (o
+  inferior)**, por división entera. Da igual cuál se elija, pero tiene que ser
+  el mismo en las dos plataformas y siempre el mismo: si no, dos apps producen
+  `cover.jpg` distintas para la misma carátula y el sync las reescribe en
+  ping-pong.
+- **Nunca se agranda.** Una fuente con lado corto de 200 px sale de 200, no de
+  320 — el mismo criterio que ya tenía `resizeToLCDOptimal`.
+- **El plan se calcula sobre las medidas ya orientadas.** Una foto vertical de
+  cámara viene guardada horizontal con la rotación en EXIF; se recorta lo que
+  se ve, no cómo está guardado.
+
+Y lo que fija el codificador:
+
+- **Se fija el lado CORTO, no el mayor.** ImageIO y WIC escalan por el lado
+  mayor; pedirles 320 daría un lado corto de 240 y el recorte tendría que
+  agrandar. Se les pide el mayor proporcional redondeado **hacia arriba**, y el
+  recorte sale sin inventar píxeles.
+- **El lado final es el del plan sobre la fuente, siempre.** Si el redondeo de
+  la miniatura deja 319, se reescala a 320: el contrato v18 fija medidas
+  exactas (320×320, 128×128) y un píxel de menos es un incumplimiento, no un
+  detalle.
+- Sigue valiendo todo lo de antes: aplanado sobre **blanco** (no negro) para
+  las fuentes con transparencia, y **JPEG baseline** garantizado —macOS se lo
+  pide a ImageIO, Windows verifica la salida con `JpegMarkers.IsBaseline`
+  porque WIC no expone la opción (D-291).
+
+**Nadie llama todavía a la primitiva.** Esta entrada agrega la herramienta y su
+verificación; los puntos de ingreso de la biblioteca (ST-141) y la escritura al
+iPod (ST-142) son las dos fases siguientes, y hasta entonces el comportamiento
+observable de la app no cambia. Se hizo así a propósito: una primitiva de
+imagen que se estrena directo en el camino que escribe al iPod es la clase de
+cambio que se descubre con el iPod en la mano.
+
+**Verificación.** macOS: 705 pruebas en verde (21 nuevas), y las de recorte no
+comprueban solo el tamaño —pintan franjas de color en los márgenes que el
+recorte debe tirar y verifican en las cuatro esquinas del resultado que ya no
+están, que es lo que delata un recorte descentrado o un "ajuste" con bandas.
+Windows: `AuraStudio.Core` con 1 112 pruebas (13 nuevas); las 32 que fallan en
+una Mac son las de siempre —rutas con `\`, `C:\`, ffmpeg de winget— y no
+cambiaron de número.
+
+**Lo que queda para la VM de Windows**: `EncodeSquareAsync`/`SquareCropAsync`
+viven en `AuraStudio.App/Platform/ImageResizer.cs`, que depende de WIC y **no
+compila en macOS**; acá solo se verificó que el archivo parsea y que su uso de
+`SquareCropPlan` type-checkea contra `AuraStudio.Core`. Las comprobaciones
+20-27 nuevas de `tools\ImageResizerCheck` (`dotnet run --project
+tools\ImageResizerCheck -c Release`) son las que cierran esa mitad: mismos
+casos que macOS, mismos números. Ojo con una diferencia real de la plataforma:
+en WIC el recorte se pide con `BitmapTransform.Bounds`, que se aplica sobre la
+imagen ya escalada; un cuadrado centrado es el mismo antes y después de la
+orientación EXIF, así que lo único que puede cambiar de lado es el píxel
+sobrante de un margen impar.
+
+Evidencia: `docs/capturas/ronda-caratulas/fase1-recorte-cuadrado.png` (origen
+con la franja descartada en rojo → resultado, para 4:3, 16:9 y 1:4) y los tres
+JPEG que produjo el código de producción, junto a ella.
