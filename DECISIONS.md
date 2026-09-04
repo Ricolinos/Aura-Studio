@@ -2899,3 +2899,36 @@ Lo nuevo que trae la v19 y que no tocaba ningún código de esta ronda: la fila
 de `THIRD-PARTY-NOTICES.txt` en §A (documentación de una fila que faltaba en
 la tabla, sin asset nuevo — todo Release real ya lo publicaba) y la tabla de
 compatibilidad de §E, que no cambia comportamiento del lado Studio.
+
+## Ronda "ajustes 2" — lista de verificación con el iPod real
+
+Lo de ST-146/ST-147 está probado contra volúmenes de prueba. Lo que sigue es
+del dueño, con el aparato en la mano.
+
+### 1. Hora tras sincronizar, con cada familia
+
+Repetir con Aura, Metro y moonlit instalados (uno a la vez, o vía "Cambiar
+sistema" entre sincronizaciones):
+
+1. Desconfigurar la hora del iPod a propósito (Ajustes › Fecha y hora, o
+   dejarlo apagado varios días).
+2. Conectar y sincronizar desde Aura Studio — **sin que la biblioteca tenga
+   nada nuevo que copiar** (repetir el mismo sync dos veces si hace falta,
+   para probar justo el caso "sync vacío").
+3. Desconectar y entrar a Ajustes › Fecha y hora (o Acerca de) en el iPod:
+   la hora debe coincidir con la del Mac, sin haber tocado nada a mano.
+4. Repetir cambiando de familia (Ajustes › Cambiar sistema) sin sincronizar
+   de por medio: el árbol que despierta también debe traer la hora puesta,
+   no la de la última vez que corrió.
+
+### 2. `/.aura/settings.cfg` sobrevive a todo menos a Restaurar
+
+1. Con el archivo ya escrito por el firmware (cualquier ajuste compartido
+   cambiado desde el propio iPod), hacer un ciclo completo desde Studio:
+   sincronizar, cambiar de familia y volver, forzar "Actualizar biblioteca"
+   (reconstrucción de la base). En cada paso, verificar en el volumen
+   montado que `/.aura/settings.cfg` sigue teniendo el mismo contenido
+   (`cat` antes y después).
+2. Confirmar que "Restaurar iPod original" SÍ se lleva el archivo por
+   delante (formatea la partición) — es el comportamiento esperado, no un
+   bug: si sobreviviera a un restaurar, algo estaría mal.
