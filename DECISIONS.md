@@ -2676,3 +2676,6 @@ más arriba en "Ronda de carátulas cuadradas — lista de verificación con el
 iPod real". Lo único que esta sesión pudo confirmar en vivo fue que la oferta
 de "Actualizar el arranque" aparece correctamente; el resto de esa lista sigue
 pendiente de que el dueño la corra con el iPod en la mano.
+
+**Verificado en hardware por el dueño el 2026-09-04: instalación,
+actualización del arranque y sync correctos.**
