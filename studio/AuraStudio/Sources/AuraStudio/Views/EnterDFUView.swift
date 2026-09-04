@@ -8,6 +8,13 @@ import SwiftUI
 struct EnterDFUView: View {
     @ObservedObject var monitor: IPodMonitor
     let onBack: () -> Void
+    /// ST-143 (addendum): la ayuda de último recurso -- pausar los
+    /// servicios de macOS que pueden estorbar la detección. Solo la
+    /// enciende el flujo de "Actualizar el arranque", y solo después de
+    /// esperar de más: ese flujo promete cero contraseñas en el camino
+    /// normal.
+    var canPauseServices: Bool = false
+    var onPauseServices: () -> Void = {}
 
     var body: some View {
         VStack(spacing: 24) {
@@ -23,6 +30,18 @@ struct EnterDFUView: View {
             .frame(maxWidth: 460, alignment: .leading)
 
             statusBadge
+
+            if canPauseServices, !monitor.state.isDFU {
+                VStack(spacing: 4) {
+                    Button("¿No aparece? Pausar los servicios de macOS que pueden interferir",
+                           action: onPauseServices)
+                        .buttonStyle(.link)
+                    Text("Pedirá tu contraseña. Se reactivan solos al terminar.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: 460)
+            }
 
             Spacer()
 

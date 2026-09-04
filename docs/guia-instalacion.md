@@ -71,6 +71,11 @@ Studio), el **Instalador** ofrece **Actualizar el arranque**.
   exactamente donde están: este paso no escribe ni un archivo en el disco.
 - **No formatea ni copia archivos**, así que **no te pide tu contraseña de
   administrador ni una sola vez** — a diferencia de una instalación desde cero.
+  La única excepción es voluntaria: si tu iPod ya está en modo DFU y la app no
+  lo detecta después de unos 20 segundos, esa misma pantalla ofrece **"¿No
+  aparece? Pausar los servicios de macOS que pueden interferir"**. Eso sí pide
+  la contraseña, y los servicios se reactivan solos al terminar. Si no te hace
+  falta, no aparece.
 - **No es obligatorio.** Aura funciona igual con el arranque anterior; lo único
   que cambia es la pantalla que ves al encender el iPod.
 

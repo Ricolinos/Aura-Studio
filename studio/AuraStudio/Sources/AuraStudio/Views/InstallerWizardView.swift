@@ -80,7 +80,10 @@ struct InstallerWizardView: View {
                 case .detectDevice:
                     DetectDeviceView(monitor: viewModel.monitor, onBack: viewModel.backFromDetectDevice, onDeviceReady: viewModel.acknowledgeDeviceReady)
                 case .enterDFU:
-                    EnterDFUView(monitor: viewModel.monitor, onBack: viewModel.backFromEnterDFU)
+                    EnterDFUView(monitor: viewModel.monitor,
+                                 onBack: viewModel.backFromEnterDFU,
+                                 canPauseServices: viewModel.offersServicePauseInDFU,
+                                 onPauseServices: viewModel.pauseServicesForDFU)
                 case .installing:
                     InstallingView(mode: viewModel.mode, message: viewModel.progressMessage)
                 case .awaitingBootloaderUSB:

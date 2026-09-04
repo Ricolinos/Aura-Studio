@@ -2431,6 +2431,31 @@ modo del asistente y la pantalla en WinUI.
 Evidencia: `docs/capturas/ronda-caratulas/fase4-actualizar-arranque.png` — las
 cuatro pantallas reales del flujo, renderizadas de las vistas de verdad.
 
+### Addendum — la salida cuando el DFU no se detecta
+
+Al escribir la lista de verificación en hardware apareció el agujero: el
+instalador completo ofrece pausar los agentes AMP (D-041/D-044) **antes** de la
+guía de DFU, y este flujo no lo hace, justamente porque eso pediría la
+contraseña que la pantalla promete no pedir. En una Mac donde esos agentes
+estorben, el usuario vería su iPod en DFU y la app esperando para siempre, y su
+única salida sería cancelar y usar el instalador completo — que además formatea
+o copia cosas que acá no hacen falta.
+
+La respuesta no es elegir entre las dos: **el flujo arranca con cero
+contraseñas, y solo si tras 20 segundos en la pantalla de DFU el iPod sigue sin
+aparecer, esa misma pantalla ofrece "¿No aparece? Pausar los servicios de macOS
+que pueden interferir (pedirá tu contraseña)"**. Reutiliza tal cual lo que ya
+existe: `PendingAuthorization.pauseAMPAgents()` con su explicación previa,
+`PrivilegedExecutor.pauseAMPAgents` y `AMPAgentsGuard`, que garantiza la
+reactivación al salir del asistente y al cerrar la app.
+
+Veinte segundos y no menos: la combinación de botones tarda doce, así que un
+plazo más corto ofrecería la ayuda mientras el usuario todavía está apretando.
+La regla es pura y tiene prueba (`BootloaderUpdate.shouldOfferServicePause`):
+**antes del plazo la opción no existe**, con el iPod ya detectado tampoco, si ya
+se pausaron una vez tampoco, y en el instalador completo nunca — ahí se ofrece
+antes, y pedir la contraseña dos veces por lo mismo sería peor que no ofrecerla.
+
 ## Ronda de carátulas cuadradas — lista de verificación con el iPod real
 
 Todo lo de ST-140…ST-143 está probado contra volúmenes y bibliotecas de prueba.
@@ -2485,17 +2510,25 @@ Orden exacto de pantallas, y **cuántas veces pide la contraseña: 0**.
 5. **"Arranque actualizado"**.
 
 **Ningún diálogo de contraseña en ningún punto** — no se formatea, no se copia y
-`mks5lboot` corre sin privilegios (D-043). Si aparece uno, es un bug.
+`mks5lboot` corre sin privilegios (D-043). Si aparece uno sin que lo hayas
+pedido, es un bug.
+
+La única excepción es voluntaria y hay que probarla también: **con el iPod en
+DFU y la app sin detectarlo, a los ~20 segundos la pantalla ofrece "¿No aparece?
+Pausar los servicios de macOS que pueden interferir"**. Antes de ese plazo la
+opción NO debe existir. Si se usa, pide la contraseña una vez (con su
+explicación previa, como todo lo privilegiado) y los servicios se reactivan
+solos al salir del asistente.
 
 Lo que hay que mirar además: que la **música y los ajustes sigan intactos**
 (este flujo no escribe nada en el disco), que al reiniciar aparezca la
 **pantalla de arranque nueva**, y que la oferta **ya no vuelva a aparecer** al
 reconectar (el hash quedó registrado).
 
-**Si el iPod entra a DFU y la app no lo detecta**: este flujo, a diferencia del
-instalador completo, no ofrece pausar los servicios de macOS (AMPDevicesAgent),
-porque eso sí pediría contraseña. En esa Mac, cancelar y usar el Instalador
-completo, que sí lo ofrece. Vale la pena reportarlo si pasa.
+**Si el iPod entra a DFU y la app no lo detecta**: esperar los ~20 segundos y
+usar la opción de pausar los servicios de macOS que aparece ahí mismo. Vale la
+pena reportarlo si pasa: es la única causa conocida de que un iPod que sí está
+en DFU no aparezca (D-041/D-044).
 
 ### 3. Instalación desde cero
 

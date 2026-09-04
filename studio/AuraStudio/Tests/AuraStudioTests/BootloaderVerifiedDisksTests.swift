@@ -120,6 +120,44 @@ final class BootloaderUpdateTests: XCTestCase {
                                                     hasOurFirmware: false))
     }
 
+    // MARK: - La ayuda de último recurso en la pantalla de DFU
+
+    func testTheServicePauseIsNotOfferedBeforeTheWait() {
+        // El caso normal tiene que seguir siendo de CERO contraseñas:
+        // antes del plazo, la opción no existe.
+        XCTAssertFalse(BootloaderUpdate.shouldOfferServicePause(
+            mode: .updateBootloader, secondsWaiting: 0, isDFUDetected: false, alreadyPaused: false))
+        XCTAssertFalse(BootloaderUpdate.shouldOfferServicePause(
+            mode: .updateBootloader, secondsWaiting: BootloaderUpdate.assistDelaySeconds - 1,
+            isDFUDetected: false, alreadyPaused: false))
+    }
+
+    func testAfterTheWaitWithoutDetectionItIsOffered() {
+        XCTAssertTrue(BootloaderUpdate.shouldOfferServicePause(
+            mode: .updateBootloader, secondsWaiting: BootloaderUpdate.assistDelaySeconds,
+            isDFUDetected: false, alreadyPaused: false))
+    }
+
+    func testWithTheIPodAlreadyDetectedThereIsNothingToHelpWith() {
+        XCTAssertFalse(BootloaderUpdate.shouldOfferServicePause(
+            mode: .updateBootloader, secondsWaiting: 999, isDFUDetected: true, alreadyPaused: false))
+    }
+
+    func testItIsNotOfferedTwice() {
+        // Ya pausados, volver a pedir la contraseña no arreglaría nada.
+        XCTAssertFalse(BootloaderUpdate.shouldOfferServicePause(
+            mode: .updateBootloader, secondsWaiting: 999, isDFUDetected: false, alreadyPaused: true))
+    }
+
+    func testTheFullInstallerNeverOffersItHere() {
+        // Ese flujo ya lo propone ANTES de llegar al DFU: ofrecerlo dos
+        // veces sería pedir la contraseña dos veces por lo mismo.
+        for mode in [InstallerMode.install, .restore] {
+            XCTAssertFalse(BootloaderUpdate.shouldOfferServicePause(
+                mode: mode, secondsWaiting: 999, isDFUDetected: false, alreadyPaused: false))
+        }
+    }
+
     func testWithoutAnEmbeddedBootloaderNothingIsOffered() {
         // Una build sin `fetch-firmware.sh`: no hay con qué comparar, y
         // ofrecer flashear algo que no existe sería peor que no ofrecer.

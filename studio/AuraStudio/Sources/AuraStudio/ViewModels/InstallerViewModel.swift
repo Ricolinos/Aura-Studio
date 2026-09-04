@@ -253,6 +253,13 @@ final class InstallerViewModel: ObservableObject {
     /// su ciclo de vida lo maneja `ContentView` -- el asistente solo lo
     /// observa. Antes cada `InstallerHomeView` creaba el suyo propio y
     /// habia dos sondeos DFU corriendo en paralelo.
+    /// ST-143 (addendum): la pantalla de DFU ya esperó de más sin
+    /// detectar el iPod, así que ofrece pausar los servicios de macOS
+    /// que pueden estorbar. Solo en el flujo de actualizar el arranque:
+    /// el instalador completo ya lo propone antes de llegar acá.
+    @Published private(set) var offersServicePauseInDFU = false
+    private var dfuAssistTask: Task<Void, Never>?
+
     /// ST-143: por qué se está ofreciendo actualizar el arranque, fijado
     /// al abrir el flujo (la pantalla lo dice; el motivo no cambia a
     /// mitad de camino aunque el iPod entre a DFU y deje de verse).
@@ -293,6 +300,9 @@ final class InstallerViewModel: ObservableObject {
     /// seguridad.
     func stop() {
         cancellables.removeAll()
+        dfuAssistTask?.cancel()
+        dfuAssistTask = nil
+        offersServicePauseInDFU = false
         Task { await AMPAgentsGuard.shared.resumeIfNeeded() }
     }
 
@@ -306,7 +316,44 @@ final class InstallerViewModel: ObservableObject {
         // ST-143: actualizar el arranque no formatea, no copia y no pide
         // contraseña -- no hay nada que pedir en Permisos. Del aviso se
         // va derecho al DFU, que es lo unico que hace falta.
-        step = mode == .updateBootloader ? .enterDFU : .permissions
+        if mode == .updateBootloader {
+            step = .enterDFU
+            startDFUAssistCountdown()
+        } else {
+            step = .permissions
+        }
+    }
+
+    /// ST-143 (addendum): si tras `BootloaderUpdate.assistDelaySeconds` el
+    /// iPod sigue sin detectarse en DFU, la pantalla ofrece pausar los
+    /// agentes AMP -- la única causa conocida de que un iPod que SÍ está
+    /// en DFU no aparezca (D-041/D-044). Antes de ese plazo la opción no
+    /// existe: el caso normal tiene que seguir siendo de cero contraseñas.
+    private func startDFUAssistCountdown() {
+        dfuAssistTask?.cancel()
+        offersServicePauseInDFU = false
+        dfuAssistTask = Task { [weak self] in
+            let delay = BootloaderUpdate.assistDelaySeconds
+            try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            await MainActor.run { [weak self] in
+                guard let self, self.step == .enterDFU else { return }
+                self.offersServicePauseInDFU = BootloaderUpdate.shouldOfferServicePause(
+                    mode: self.mode,
+                    secondsWaiting: delay,
+                    isDFUDetected: self.monitor.state.isDFU,
+                    alreadyPaused: AMPAgentsGuard.shared.isPaused)
+            }
+        }
+    }
+
+    /// "¿No aparece? Pausar los servicios de macOS" -- el mismo pedido de
+    /// autorización, con la misma explicación previa, que usa el
+    /// instalador completo. Reanudarlos sigue estando garantizado por
+    /// `stop()`/`cancelFlow()` y por `AppDelegate` al cerrar la app.
+    func pauseServicesForDFU() {
+        offersServicePauseInDFU = false
+        pendingAuthorization = .pauseAMPAgents()
     }
 
     func advanceFromPermissions() {

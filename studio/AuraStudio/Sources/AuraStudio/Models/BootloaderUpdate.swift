@@ -45,6 +45,29 @@ enum BootloaderUpdate {
         case unknownBootloader
     }
 
+    /// Segundos que se espera en la pantalla de DFU antes de ofrecer la
+    /// ayuda de último recurso (pausar los agentes AMP). Doce son los
+    /// que tarda la combinación de botones; veinte dan margen para
+    /// intentarla una vez y ver que no pasó nada.
+    static let assistDelaySeconds: TimeInterval = 20
+
+    /// ST-143 (addendum): si la pantalla de DFU debe ofrecer **"¿No
+    /// aparece? Pausar los servicios de macOS"**.
+    ///
+    /// El flujo de actualizar el arranque arranca con **cero diálogos de
+    /// contraseña** a propósito, así que esta ayuda no puede estar desde
+    /// el principio: aparece solo cuando ya se esperó de más y el iPod
+    /// sigue sin detectarse. En el instalador completo no se ofrece acá
+    /// porque ese flujo ya lo propone antes de llegar al DFU.
+    static func shouldOfferServicePause(mode: InstallerMode,
+                                        secondsWaiting: TimeInterval,
+                                        isDFUDetected: Bool,
+                                        alreadyPaused: Bool) -> Bool {
+        guard mode == .updateBootloader else { return false }
+        guard !isDFUDetected, !alreadyPaused else { return false }
+        return secondsWaiting >= assistDelaySeconds
+    }
+
     static func reason(recordedHash: String?, embeddedHash: String?, hasOurFirmware: Bool) -> Reason? {
         guard isAvailable(recordedHash: recordedHash, embeddedHash: embeddedHash,
                           hasOurFirmware: hasOurFirmware) else { return nil }
