@@ -2430,3 +2430,120 @@ modo del asistente y la pantalla en WinUI.
 
 Evidencia: `docs/capturas/ronda-caratulas/fase4-actualizar-arranque.png` — las
 cuatro pantallas reales del flujo, renderizadas de las vistas de verdad.
+
+## Ronda de carátulas cuadradas — lista de verificación con el iPod real
+
+Todo lo de ST-140…ST-143 está probado contra volúmenes y bibliotecas de prueba.
+Lo que sigue **solo se puede comprobar con el aparato en la mano**, y es del
+dueño. Está escrita para hacerse en este orden, porque cada punto deja al iPod
+en el estado que necesita el siguiente.
+
+### 1. Sincronizar una biblioteca migrada
+
+1. Abrir Aura Studio con la biblioteca de siempre. **Al abrir** debe aparecer al
+   pie la franja "Normalizando carátulas… N de M" con su botón **Cancelar**.
+   Vale cancelarla y volver a abrir: tiene que retomar donde iba, sin repetir lo
+   hecho (ST-141). Cuando termina, el resumen dice cuántas normalizó.
+2. Mirar la sección Álbumes: las carátulas que eran 4:3 o 16:9 ahora se ven
+   cuadradas y **sin deformar** (recortadas al centro, no estiradas). Los
+   **pósters de video siguen siendo 3:4** — si alguno salió cuadrado, es un bug.
+3. Conectar el iPod y sincronizar. Al terminar, con el volumen montado:
+
+   ```
+   sips -g pixelWidth -g pixelHeight "/Volumes/<iPod>/Music/<Artista>/<Álbum>/cover.jpg"
+   sips -g pixelWidth -g pixelHeight "/Volumes/<iPod>/.rockbox/aura/artists/"*.jpg
+   ```
+
+   Esperado: **320×320** y **128×128**. (Una carátula cuyo lado corto ya era
+   menor a 320 sale más chica: eso es correcto, nunca se agranda.)
+4. **Sincronizar otra vez sin cambiar nada.** Ninguna de esas imágenes debe
+   cambiar de fecha:
+
+   ```
+   ls -l "/Volumes/<iPod>/Music/<Artista>/<Álbum>/cover.jpg"
+   ```
+
+   Es el punto más importante de los cuatro: desde v18 el `mtime` de
+   `cover.jpg` forma parte de la clave de caché del firmware, y reescribirla de
+   más le tira su caché de carátulas en cada conexión (ST-142).
+5. Desconectar y arrancar el iPod: las carátulas 4:3 y 16:9 deben verse bien
+   **en lista, en cuadrícula, en Music Flow / Marea, en "Ahora suena" y de
+   fondo** — que es donde estaba el glitch original.
+
+### 2. Actualizar el arranque
+
+Orden exacto de pantallas, y **cuántas veces pide la contraseña: 0**.
+
+1. Instalador → debajo de los dos botones aparece **"Actualizar el arranque"**
+   con la explicación de por qué (arranque más nuevo, o "no sabemos cuál
+   tienes").
+2. Pantalla **"Actualizar el arranque"**: qué es, por qué DFU, qué no se toca,
+   y que no es obligatorio. Botón "Actualizar el arranque".
+3. **"Entra a modo DFU"** (SELECT + MENU ~12 s). La app lo detecta sola.
+4. **"Actualizando el arranque…"** → "Arranque enviado. Esperando a que el iPod
+   confirme y reinicie…".
+5. **"Arranque actualizado"**.
+
+**Ningún diálogo de contraseña en ningún punto** — no se formatea, no se copia y
+`mks5lboot` corre sin privilegios (D-043). Si aparece uno, es un bug.
+
+Lo que hay que mirar además: que la **música y los ajustes sigan intactos**
+(este flujo no escribe nada en el disco), que al reiniciar aparezca la
+**pantalla de arranque nueva**, y que la oferta **ya no vuelva a aparecer** al
+reconectar (el hash quedó registrado).
+
+**Si el iPod entra a DFU y la app no lo detecta**: este flujo, a diferencia del
+instalador completo, no ofrece pausar los servicios de macOS (AMPDevicesAgent),
+porque eso sí pediría contraseña. En esa Mac, cancelar y usar el Instalador
+completo, que sí lo ofrece. Vale la pena reportarlo si pasa.
+
+### 3. Instalación desde cero
+
+Hasta **3 diálogos de contraseña**, y cada uno **con su pantalla explicativa
+antes** (nunca un diálogo de macOS a secas):
+
+1. **Formatear el disco** — solo si el disco no está en FAT32.
+2. **Pausar los servicios de macOS** (AMPDevicesAgent / AMPDeviceDiscoveryAgent),
+   justo antes de la guía de DFU.
+3. **Reanudar esos servicios** al terminar el asistente.
+
+La caché de autorización de macOS puede hacer que el segundo y el tercero no
+vuelvan a preguntar. Lo que hay que verificar es el **orden** y que **ninguno
+llegue sin su explicación previa** (`PrivilegedActionSheet`), que es la promesa
+que hace `PermissionsView`.
+
+### 4. Con un firmware anterior a v18
+
+Si se sincroniza contra un firmware viejo, las carátulas nuevas **no se ven
+hasta que ese firmware purgue su caché**: no tiene `/.aura/art/format.txt` ni la
+clave con `mtime`. No es un bug de Studio — es la razón por la que los tres
+firmwares y este Studio salen en el mismo ciclo de release (ST-142).
+
+## Procedimiento del pin de firmwares (Fase 5 — NO ejecutado)
+
+Escrito para que el día que el dueño lo indique sea mecánico. **Nada de esto
+está hecho todavía**: `FIRMWARE_VERSION` sigue apuntando a Aura v0.4.4-beta,
+Metro v0.6.4 y moonlit v0.1.6.
+
+1. **Esperar los tres Releases** publicados y verificados en hardware. Sin los
+   tres no se pinea ninguno: las carátulas cuadradas necesitan el firmware v18
+   del otro lado para verse (§4 de arriba).
+2. **`FIRMWARE_VERSION`**: subir `tag=`, `metro.tag=` y `moonlit.tag=`. Los 12
+   hashes (4 por familia) **no se escriben a mano**: los produce
+   `scripts/fetch-firmware.sh` verificando contra el `checksums.txt` del propio
+   Release.
+3. **`scripts/fetch-firmware.sh`** (las tres familias) y confirmar que
+   `Vendor/firmware-dist/` queda con los artefactos de los tres tags nuevos.
+4. **`Generated/AuraPalette.swift`**: se reemplaza **entero** con el que trae el
+   Release nuevo (`design-system/generate.py --swift-out`, ejecutado en el repo
+   del firmware). Esta ronda agrega el token `tile_placeholder` — si la paleta
+   nueva no lo trae, el pin está incompleto. **Nunca se edita a mano.**
+5. **`scripts/build-app.sh`** completo, y revisar que la pantalla de
+   **Licencias** cite los tres tags nuevos y el `MODIFICATIONS.md` correcto
+   (cumplimiento GPL §3, contrato §B).
+6. **Verificar el hash del arranque**: con el pin nuevo, un iPod instalado con
+   el pin anterior debe empezar a ver la oferta de "Actualizar el arranque"
+   (ST-143). Si no aparece, el `bootloader-ipod6g.ipod` del Release no cambió y
+   hay que confirmar por qué.
+7. **ST-144** con la tabla de pins (familia → tag → 4 hashes) y el resultado de
+   la verificación en hardware.
