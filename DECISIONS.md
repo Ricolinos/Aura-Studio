@@ -2876,3 +2876,26 @@ lista de limpieza conocida, y una de `InstallManifest.delta` nombrada) y
 pruebas** (8 nuevas, los mismos siete casos más el de `Delta`); las 32 que
 fallan en una Mac son las de siempre — confirmado diff línea por línea
 contra la lista base de la ronda anterior, sin ninguna nueva.
+
+## ST-145 — Contrato v19 copiado byte a byte
+
+Fase 1 de la ronda "ajustes 2". `CONTRATO-firmware-studio.md` reemplazado
+entero por la copia canónica de `Aura-Firmware` (commit `f95a5fff`, ya en su
+`main`), verificado con `cmp` (sin diferencias) y hash SHA-256 idéntico en
+los dos repos.
+
+Se ejecutó al final a propósito, no al principio: el plan hijo lo pedía así
+("si aún no existe al empezar, arrancar por la Fase 2 y volver") — al
+arrancar esta sesión el commit del contrato todavía no existía en
+`Aura-Firmware`, así que las Fases 2 y 3 se hicieron primero, contra la
+especificación del plan maestro (que sí estaba disponible desde el
+principio), y esta entrada solo confirma que el texto que la sesión de
+`Aura-Firmware` terminó escribiendo coincide con lo que ST-146/ST-147 ya
+implementaban: hora en cualquier familia corriendo (no solo Aura), al
+terminar cada sync, y `/.aura/settings.cfg` con el mismo trato que
+`/.aura/art`.
+
+Lo nuevo que trae la v19 y que no tocaba ningún código de esta ronda: la fila
+de `THIRD-PARTY-NOTICES.txt` en §A (documentación de una fila que faltaba en
+la tabla, sin asset nuevo — todo Release real ya lo publicaba) y la tabla de
+compatibilidad de §E, que no cambia comportamiento del lado Studio.

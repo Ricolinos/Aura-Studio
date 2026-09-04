@@ -1,6 +1,8 @@
 # Contrato entre `Aura-Firmware` y Aura Studio
 
-**Versión 18 — 2026-09-03.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+**Versión 19 — 2026-09-04.** Copia idéntica en ambos repositorios (`Aura-Firmware` es la fuente canónica; Aura Studio la referencia como "copia de la versión N de este contrato"). Cualquier cambio se hace en los dos repos en la misma unidad de trabajo y sube el número de versión.
+
+**v19 (ronda "ajustes 2" — sincronía de ajustes entre familias, y hora en cada sincronización).** Dos mitades: **§D.6**, un archivo nuevo (`/.aura/art` es el precedente de forma: fuera de `.rockbox/`, propiedad de los firmwares, Studio nunca lo toca) donde las tres familias comparten un pequeño conjunto de ajustes (bloqueo, brillo, apagado, idioma, apariencia…) para que cambiar de firmware no signifique reconfigurar todo desde cero; y una precisión en **§D.4**, que corrige el alcance real del encargo de hora automática — no solo "Aura corriendo", cualquier familia, y no solo "al conectar", también al terminar cada sincronización. De paso corrige la tabla de **§A**: a Aura Studio siempre le llegó `THIRD-PARTY-NOTICES.txt` como asset del Release (todo release real lo publicó, incluido el anterior a esta ronda) pero la tabla nunca lo listó — quedó pendiente de la ronda anterior, se cierra aquí.
 
 **v18 (ronda de los tres firmwares — imágenes cuadradas de punta a punta).** Dos mitades que salen en el mismo ciclo: **Studio** garantiza que lo que escribe es cuadrado (carátula de álbum `cover.jpg` de 320×320, foto de artista de 128×128, ambas recortadas al centro desde su copia local, ST-140/ST-141/ST-142), y **los tres firmwares** dejan de suponerlo sin verificarlo: cada decode que no pasa por la caché maestra usa la misma primitiva fill + center-crop, `/.aura/art/format.txt` permite purgar de una vez las cachés derivadas de versiones anteriores, y la clave de álbum incorpora el `mtime` de `cover.jpg` para que una carátula reescrita invalide la maestra. Los cambios de esta versión están abajo en **§D.3**, **§D.5** y la fila nueva de la tabla de **§D**; ningún otro archivo del disco cambia de ruta ni de formato.
 
@@ -129,6 +131,7 @@ Aura Studio **no lee el árbol de fuentes de ningún firmware**. La única vía 
 | `checksums.txt` | — (es el propio archivo de hashes, SHA-256, formato `shasum -a 256`) |
 | `AuraPalette.swift` | No (Studio lo reemplaza directo; no hay verificación en runtime, solo en el momento de actualizar la dependencia) |
 | `MODIFICATIONS.md` | No (documentación, para la pantalla de licencias) |
+| `THIRD-PARTY-NOTICES.txt` | No (v19: documentación — licencias de Inter/Lucide/Phosphor citadas en la pantalla de Licencias junto a `MODIFICATIONS.md`, §B. Todo Release real publicado hasta hoy ya lo incluyó; esta fila solo corrige que la tabla nunca lo había listado — no es un asset nuevo) |
 | `theme-format-v1.json` | No (Studio lo lee para saber roles/tamaños/nombres del formato de tema, ver `CONTRATO-formato-tema.md`) |
 | `aura-theme-default.zip` | No (el default reempaquetado como tema instalable, id `aura`, libre — ejemplo canónico del formato, no necesario para instalar/usar el firmware) |
 
@@ -184,6 +187,7 @@ Esto **sí** es un acoplamiento permanente por diseño: ambos lados leen/escribe
 | `/.aura/art/artists/` (`<r-crc32 8 hex>.<mtime>.art`/`.none`) | Firmware (**las tres familias**) | Firmware (las tres familias) | v16, D-340/D-341. Caché MAESTRA de foto de artista, 130×130, sin tema. Formato en **D.5** |
 | `/.aura/art/photos/` (`<p-crc32 8 hex>.<mtime>.art`/`.none`) | Firmware (**las tres familias**) | Firmware (las tres familias) | v16, D-340/D-341. Caché MAESTRA de foto de `/Photos`, 80×80, sin tema. Formato en **D.5** |
 | `/.aura/art/format.txt` | Firmware (**las tres familias**) | Firmware (las tres familias) | v18; escriben/leen las tres familias; Studio no lo toca. Versión de formato de la caché maestra y de las L2 privadas — detalle en **D.5**, "Versión de formato y purga" |
+| `/.aura/settings.cfg` | Firmware (**las tres familias**, solo al cambiar un ajuste compartido en Ajustes o al Restablecer ajustes) | Firmware (las tres familias, al arrancar y al volver de USB) | v19, **D.6**. Ajustes compartidos entre familias (bloqueo, brillo, apagado, idioma…) — Studio **nunca** lo toca ni lo borra, igual que `/.aura/art` |
 | `.rockbox/aura/db_stamp.txt` | — (retirado en v15) | Firmware (solo como origen de migración) | v12–v14. **Por árbol**: nunca se espejaba; hoy un firmware v15 lo mueve a `/.aura/tagcache/` y no lo vuelve a escribir |
 | `.rockbox/aura/install_manifest.cfg` | Studio (al instalar/actualizar) | Studio (para la actualización selectiva) | v11, ST-058. Formato en la nota de v11. Los firmwares lo ignoran. **Por árbol** (v10): nunca se espeja a los dormidos |
 | `/.firmware-<familia>/` (§A bis: `/.firmware-aura/`, `/.firmware-metro/`, `/.firmware-moonlit/`) | Studio (estaciona / instala / repara); Firmware (al cambiar desde Ajustes) | Studio (detecta qué familias hay; a cuáles se puede cambiar); Firmware (Ajustes › Cambiar sistema: una fila por hermana, inerte si su dormido no existe) | v10, ST-056; v14. Árbol `.rockbox` completo de esa familia, en reposo, con sus propios ajustes. Hasta N−1 dormidos a la vez; nunca dos de la misma familia; nunca el de la familia activa. El activo es siempre `/.rockbox/` (bootloader) |
@@ -211,7 +215,7 @@ Esto **sí** es un acoplamiento permanente por diseño: ambos lados leen/escribe
 | `.rockbox/aura/photo_categories.cfg` | Studio (sync, **OPCIONAL** — D-316) | Firmware (`aura_media_categories.c`) | D-316. Ídem, formato en **D.2** |
 | `.rockbox/aura/artists/<archivo>.jpg` | Studio (sync, **OPCIONAL**) | Firmware (`aura_artist_images.c`) | v6, `PLAN-biblioteca-medios-v2.md`. Foto de artista. Contrato detallado en **D.3** abajo. Ausente = placeholder circular con ícono, degradación soportada |
 | `.rockbox/aura/artist_images.cfg` | Studio (sync, **OPCIONAL**) | Firmware (`aura_artist_images.c`) | v6. Índice `archivo: artista`, formato en **D.3** |
-| `.rockbox/aura/aura.cfg` → claves `rtc_sync_year/month/day/hour/min/sec` | Studio (`ClockSyncWriter`, en cada conexión con Aura corriendo y al instalar/actualizar) | Firmware (`aura_settings_apply_pending_clock()`, en el mismo handoff de disco que D-293) | v7, D-321/ST-035. Transitorias — el firmware las aplica al RTC real y las descarta solas en su siguiente `aura_settings_save()`. Formato en **D.4** |
+| `.rockbox/aura/aura.cfg` → claves `rtc_sync_year/month/day/hour/min/sec` | Studio (`ClockSyncWriter`; v19: en cada conexión con **cualquier** familia corriendo, al terminar cada sincronización, y al instalar/actualizar/cambiar de familia — siempre en el árbol activo) | Firmware (`aura_settings_apply_pending_clock()`, en el mismo handoff de disco que D-293) | v7, D-321/ST-035 → v19. Transitorias — el firmware las aplica al RTC real y las descarta solas en su siguiente `aura_settings_save()`. Formato en **D.4** |
 | `.rockbox/aura/aura.cfg` → clave `tz_local_quarters` | Firmware (UI de Ajustes › Huso horario, D-293); Studio también la escribe ahora (`ClockSyncWriter`) | Firmware (reloj mundial, D-293) | v7. Cuartos de hora respecto a UTC. Ya existía como ajuste interno — v7 es la primera vez que Studio también la escribe |
 
 Cualquier cambio de ruta o de formato en esta tabla sube un `contract_version` (clave nueva a introducir en `sync_summary.cfg` y `aura.cfg` — no implementada todavía) y se registra en el diario de ambos repos (`D-NNN` en el firmware, `ST-NNN` en Studio), citándose cruzado.
@@ -313,6 +317,8 @@ tz_local_quarters: -24
 
 **Deliberadamente fuera de alcance**: idioma (`language`) — el encargo pedía "hora y region", no idioma; el dueño puede haber elegido a propósito un idioma distinto al de macOS. Formato de fecha (DD/MM vs MM/DD), 12h/24h y primer día de la semana tampoco se tocan — no forman parte del RTC ni de este encargo.
 
+**v19: alcance corregido.** Hasta v18, `ClockSyncWriter` solo escribía "al detectar firmware Aura corriendo" y "al instalar/actualizar" — dejaba sin hora automática cualquier sincronización que NO tocara archivos (biblioteca ya al día) y a Metro-Aura/moonlit.aura enteros, que ya leen estas mismas siete claves desde antes de esta ronda pero nunca las recibían. Desde v19, `ClockSyncWriter` corre en **tres** momentos, siempre sobre el árbol **activo** (el que responde en ese momento, cualquiera de las tres familias): (1) al detectar **cualquier** firmware Rockbox corriendo (no solo Aura), (2) al **terminar cada sincronización** de biblioteca, toque o no archivos — antes de escribir `/.aura/sync-pending.json` —, y (3) al instalar, actualizar o cambiar de familia (sin cambio respecto a v18). Los firmwares no cambian: ya aplican las `rtc_sync_*` en el mismo handoff de disco donde siempre lo hicieron.
+
 ### D.5 — Caché maestra compartida de imágenes (v16, D-340/D-341)
 
 Hasta v15 cada familia decodificaba por su cuenta el mismo JPEG/BMP fuente (carátula de álbum, foto de artista, foto de `/Photos`) para producir su propio formato final (Aura: `.pfraw` 130 px transpuesto con esquinas del tema; Metro-Aura/moonlit.aura: `.mth` 80 px) — un decode por familia instalada, del mismo archivo, con el mismo resultado visual de fondo. v16 agrega un nivel intermedio **entre el archivo fuente y la caché privada de cada familia**: la maestra, decodificada UNA sola vez (por el firmware que llegue primero) y reusada por las demás.
@@ -339,6 +345,61 @@ Una pista/foto reescrita por un sync (Studio no preserva fechas) cambia el `mtim
 **Constructor en segundo plano** (solo se documenta el comportamiento observable; la implementación es de cada firmware, no parte del contrato): cada firmware activo, al confirmar que su base de datos de música es usable, recorre álbumes → fotos de artista → fotos de `/Photos` y deja resuelta (`.art` o `.none`) la maestra de cada elemento que no la tenga ya — sin pantalla, sin bloquear al usuario, a ritmo bajo (cede CPU/disco frente a reproducción y frente a la interfaz activa). Aura-Firmware lo implementa como un hilo de baja prioridad (D-341); otra familia podría implementarlo distinto (un paso por vuelta del bucle principal, por ejemplo) sin romper el contrato, siempre que el resultado en disco sea el mismo formato.
 
 **GC**: cada firmware barre su propia `/.aura/art/<tipo>/` con la misma tabla de claves vivas que usa para el GC de su caché privada (D-338/D-339) — una maestra o un `.none` cuya clave no está en esa tabla es huérfano (fuente borrada, o reescrita por un sync) y se borra con presupuesto. Studio **nunca** toca `/.aura/art/` — ni al instalar, ni al cambiar de familia, ni al sincronizar; es exclusivamente del firmware, igual que `/.aura/tagcache/`.
+
+### D.6 — Ajustes compartidos entre familias (v19)
+
+Cambiar de firmware (Ajustes › Cambiar sistema, D-333/M-093/D-047) ya conserva la biblioteca y la caché de imágenes por D-337/D-340 — lo que no conservaba era un puñado de ajustes de uso diario: bloqueo, brillo, apagado automático, idioma. Cambiar de familia significaba reconfigurar todo eso desde cero, cada vez. v19 agrega un archivo compartido, mismo patrón que `/.aura/art/format.txt`: fuera de `.rockbox/` (que se renombra al cambiar de familia — D-326), propiedad exclusiva de los firmwares, Studio nunca lo toca ni lo borra.
+
+**`/.aura/settings.cfg`** — texto plano, `settings_parseline()` (una clave por línea `clave: valor`), UTF-8, orden libre, escritura atómica (archivo temporal + `rename`). Primera línea obligatoria: `# aura-shared-settings v1`.
+
+| Clave | Valores | Notas |
+|---|---|---|
+| `rev` | entero ≥ 1 | Sube en 1 en cada escritura; desempata "quién manda" entre familias |
+| `updated_by` | `aura` · `metro` · `moonlit` | Diagnóstico — qué familia escribió por última vez |
+| `screen_lock_enabled` | `0` · `1` | |
+| `screen_lock_pin` | 4 dígitos ASCII (`0427`) o vacío | Aura lo guarda como entero (`screen_lock_pin` de `aura_settings_t`) y convierte a/desde cadena de 4 dígitos al leer/escribir este archivo |
+| `screen_lock_require` | `hold` · `1min` · `5min` · `boot` | Mismos nombres en las tres familias (D-351) |
+| `brightness` | entero, escala nativa de Rockbox (`1..MAX_BRIGHTNESS_SETTING`) | Mismo panel de ajuste en las tres |
+| `backlight_timeout` | segundos; `-1` = nunca | Cada familia mapea a su propio índice/tabla interna |
+| `idle_poweroff` | minutos; `0` = nunca | |
+| `keyclick` | `0` · `1` | |
+| `volume_limit` | dB, escala nativa de Rockbox | Metro-Aura/moonlit.aura (niveles 0..15) mapean al nivel más cercano |
+| `replaygain` | `off` · `track` · `album` | |
+| `language` | `es` · `en` · `fr` · `de` · `ru` · `it` | Código de dos letras, no el nombre nativo que muestra el selector |
+| `appearance` | `dark` · `light` | Aura: tema oscuro/claro. Metro-Aura: oscuro/claro. moonlit.aura: night/dawn |
+
+Fuera del archivo, deliberadamente: acento (paletas de color distintas por familia), ecualizador (presets distintos), temporizador de reposo (de sesión, no persistente entre encendidos) y cualquier ajuste exclusivo de una familia (estilos/animaciones/gráficos de Aura, que no tienen equivalente 1:1 en las otras dos).
+
+**Semántica, idéntica en las tres familias:**
+
+1. Cada familia guarda en su propio `aura.cfg` una clave nueva, `shared_rev_applied` — el último `rev` de `/.aura/settings.cfg` que ya aplicó.
+2. **Al arrancar y al volver de USB** (mismo punto donde ya se aplica la hora, §D.4): si `/.aura/settings.cfg` existe y `rev > shared_rev_applied`, se aplican todas las claves conocidas — a los ajustes nativos de Rockbox (`global_settings`, con `settings_save()` + flush inmediato, mismo criterio que D-351) y a los propios de cada familia (bloqueo, idioma, apariencia) — y se actualiza `shared_rev_applied`. Una clave desconocida se ignora **y se preserva** cuando ese mismo firmware vuelva a escribir el archivo. Un valor fuera de rango se ignora clave por clave — nunca aborta el archivo entero.
+3. **Al cambiar un ajuste compartido** en Ajustes: se guarda local como siempre, y además se reescribe `/.aura/settings.cfg` completo con `rev+1`, `updated_by` con el nombre de la familia, y todas las claves conocidas con su valor actual; `shared_rev_applied` queda igual a ese `rev` nuevo (ya está aplicado, es quien lo escribió).
+4. **Restablecer ajustes**: reescribe el archivo con los valores de fábrica de las claves compartidas (`rev+1`).
+5. Si el archivo no existe, o existe pero no trae la cabecera `# aura-shared-settings v1`: se comporta como si no existiera (todo queda local, como antes de v19) y lo crea la primera escritura de cualquier familia.
+6. El PIN viaja en claro, como ya viaja dentro de cada `aura.cfg` — la salida de emergencia por USB durante el bloqueo (D-238, y el equivalente de Metro-Aura) depende de que sea legible sin descifrar nada.
+
+**Vector de prueba canónico** (idéntico en los tests host de las tres familias — evita que cada una interprete el formato de una manera distinta):
+
+```
+# aura-shared-settings v1
+rev: 7
+updated_by: metro
+screen_lock_enabled: 1
+screen_lock_pin: 0427
+screen_lock_require: 1min
+brightness: 32
+backlight_timeout: 10
+idle_poweroff: 20
+keyclick: 1
+volume_limit: -6
+replaygain: album
+language: fr
+appearance: light
+clave_futura: lo que sea
+```
+
+Esperado: las 13 claves conocidas se parsean exactas, `rev` da 7, y `clave_futura` sobrevive intacta si ese mismo firmware reescribe el archivo. Un segundo vector sin la línea de cabecera se rechaza entero (regla 5). Un tercero con `brightness: 999` (fuera de rango) solo descarta esa clave, el resto del archivo se aplica igual (regla 2).
 
 ## E — Compatibilidad de versiones
 
