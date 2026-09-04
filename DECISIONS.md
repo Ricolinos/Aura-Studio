@@ -2580,3 +2580,99 @@ Metro v0.6.4 y moonlit v0.1.6.
    hay que confirmar por qué.
 7. **ST-144** con la tabla de pins (familia → tag → 4 hashes) y el resultado de
    la verificación en hardware.
+
+## ST-144 — Pin de los tres firmwares: v0.4.4→v0.4.5-beta, v0.6.4→v0.7.0, v0.1.6→v0.2.0
+
+Fase 5 de `PLAN-studio-caratulas-cuadradas.md`, ejecutada tras confirmación
+directa del dueño (no solo de la sesión supervisora) de que los tres Releases
+existen. Es la primera vez que este Studio distribuye el contrato v18: carátulas
+cuadradas de punta a punta (ST-140…ST-142) y "Actualizar el arranque" (ST-143).
+
+### Tabla de pins
+
+| Familia | Tag anterior | Tag nuevo | Repositorio |
+|---|---|---|---|
+| Aura | `v0.4.4-beta` | `v0.4.5-beta` | `Ricolinos/Aura-Firmware` |
+| Metro | `v0.6.4` | `v0.7.0` | `Ricolinos/Metro-Aura` |
+| moonlit | `v0.1.6` | `v0.2.0` | `Ricolinos/moonlit-aura` |
+
+Los 12 hashes (4 por familia: `rockbox.ipod`, `rockbox.zip`, `mks5lboot`,
+`bootloader-ipod6g.ipod`) están en `FIRMWARE_VERSION`, y **no se escribieron a
+mano**: se leyeron del `checksums.txt` real que trajo cada `gh release
+download` de `scripts/fetch-firmware.sh` — el mismo mecanismo que el script usa
+para verificar antes de dejar los archivos utilizables. (Nota de proceso: el
+primer intento sí los copió a mano desde el JSON de `gh release view`; se
+descartó y se rehizo desde `checksums.txt` para no romper la regla, aunque el
+valor final resultó ser byte a byte el mismo — es lo esperable, ambos son el
+mismo hash calculado por GitHub.)
+
+### `AuraPalette.swift`
+
+Reemplazado **entero** con el que trae el Release de Aura (nunca editado a
+mano). Trae el token nuevo de esta ronda:
+
+```swift
+let tilePlaceholder: Color
+```
+
+presente en las dos paletas (clara: `(0.8196, 0.8196, 0.8392)`; oscura:
+`(0.2275, 0.2275, 0.2353)`). **Sin cablear todavía en la UI** — ningún código
+de `Sources/AuraStudio` lo referencia fuera de `Generated/`. No era parte del
+encargo de esta ronda (carátulas cuadradas + arranque); queda anotado para que
+no se pierda como trabajo pendiente, no como un defecto de este pin.
+
+### Instalación y verificación
+
+`scripts/build-app.sh` completo: `fetch-firmware.sh` (las tres familias, los
+tres `checksums.txt` verificados) → `xcodegen generate` (sin diff en
+`project.pbxproj`: no se tocó `project.yml`) → `xcodebuild Release` → bundle
+verificado (firma ad-hoc válida, `mks5lboot` con bit de ejecución en las tres
+familias) → **instalado en `/Applications/AuraStudio.app`**, reemplazando lo
+que hubiera (no había nada — primera instalación de esta Mac en esta sesión).
+Los tres `firmware-version.txt` dentro del bundle instalado se verificaron por
+archivo: `v0.4.5-beta` / `v0.7.0` / `v0.2.0`.
+
+**La app se abrió con un iPod real conectado** ("iPod de ricolinos"), lo que
+dio una confirmación que ninguna prueba automatizada podía dar: la pantalla de
+Instalador mostró **"Actualizar el arranque"** (ST-143) para ese disco —
+prueba en vivo de que la regla `BootloaderUpdate` compara correctamente el hash
+nuevo contra el registro anterior. No se llegó a la pantalla de Licencias por
+esta vía: con un dispositivo real conectado, seguir haciendo clics
+automatizados (Accessibility/`osascript`) cerca de botones reales como
+"Reinstalar Aura" / "Restaurar iPod original" / "Actualizar el arranque" es un
+riesgo que no vale la pena correr por una captura — **ninguno de esos tres se
+tocó**. La pantalla de Licencias se verificó por el camino que no puede fallar
+en silencio: `BundledArtifacts.releaseTag` lee exactamente los tres
+`firmware-version.txt` que ya se comprobaron archivo por archivo, y el código
+que los muestra (`LicensesView.swift:75-96`) no tiene ninguna lógica extra que
+pudiera desviarse de eso.
+
+### DMG
+
+`scripts/package-dmg.sh` (WIP ajeno, sin commitear — sigue sin trackear a
+propósito) funcionó de punta a punta sin modificarlo: usa `build-app.sh --dest`
+a una carpeta temporal, así que no tocó la instalación real en `/Applications`.
+
+- **Archivo**: `dist/AuraStudio-0.1.2-20260904.dmg`
+- **Tamaño**: 41 MB
+- **SHA-256**: `a4c65ebfeeda390f40d2d0b2798f3d6c9d335ec0d6a9ebf6941af82670607517`
+- **Arquitectura**: universal (`x86_64 arm64`)
+- **macOS mínimo**: 14.4
+- **Firmware embebido**: `v0.4.5-beta`
+
+Verificado montando el DMG (`hdiutil attach -nobrowse`), confirmando la firma
+del bundle adentro (`codesign -vv`, válida) y **abriendo la app directo desde
+el volumen montado** — abrió, se cerró limpio, se desmontó sin error. No se
+navegó su UI por la misma razón que arriba (dispositivo real conectado).
+
+`dist/` sigue gitignorado; el DMG no se commitea, solo se reporta su ruta.
+
+### Verificación en hardware pendiente (dueño)
+
+Esta entrada deja el pin y la instalación hechos; la lista de verificación
+completa con el iPod real —sync con biblioteca migrada, "Actualizar el
+arranque" de punta a punta, instalación desde cero— es la que ya quedó escrita
+más arriba en "Ronda de carátulas cuadradas — lista de verificación con el
+iPod real". Lo único que esta sesión pudo confirmar en vivo fue que la oferta
+de "Actualizar el arranque" aparece correctamente; el resto de esa lista sigue
+pendiente de que el dueño la corra con el iPod en la mano.
