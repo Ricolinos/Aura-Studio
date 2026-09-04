@@ -274,9 +274,26 @@ struct LibrarySync {
     /// estaciona `/.aura/art/`, y `install_manifest.cfg` no la lista.
     /// El firmware activo construye las maestras nuevas en segundo plano
     /// tras cada sync (que sigue renovando `library-stamp` y el marcador).
+    ///
+    /// ST-147 / contrato v19: se suma `/.aura/settings.cfg` (ajustes
+    /// compartidos entre las tres familias -- bloqueo, brillo, idioma,
+    /// etc., ver `docs/plans/PLAN-ronda-ajustes-2-maestro.md` §A). Mismo
+    /// trato que `/.aura/art/`: es un ARCHIVO, no un directorio, pero la
+    /// regla es identica -- Studio nunca lo borra, mueve ni reescribe en
+    /// instalacion (completa o selectiva), cambio de familia, reparacion,
+    /// sync, ni al forzar la reconstruccion de la base, y
+    /// `install_manifest.cfg` no lo lista (solo describe el contenido de
+    /// `rockbox.zip`, que nunca incluye nada bajo `/.aura/`). Ningun
+    /// codigo de este repo enumera `/.aura/` de forma amplia -- cada
+    /// operacion nombra explicitamente los archivos que le tocan (ver
+    /// `clearFirmwareDatabases`), asi que un archivo nuevo bajo `/.aura/`
+    /// esta a salvo por construccion, no por una excepcion agregada a
+    /// mano; esta constante y las pruebas de `SettingsCfgProtectionTests`
+    /// existen para que ese hecho quede fijado, no solo asumido.
     static let sharedTagcacheDirRelativePath = ".aura/tagcache"
     static let sharedThumbsDirRelativePath = ".aura/thumbs"
     static let sharedArtDirRelativePath = ".aura/art"
+    static let sharedSettingsRelativePath = ".aura/settings.cfg"
     /// Nombres de la base de tagcache que se borran al forzar una
     /// reconstruccion, en cada directorio que pueda contenerla.
     static let tagcacheDatabaseFileNames = [

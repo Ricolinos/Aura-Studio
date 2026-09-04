@@ -2810,3 +2810,69 @@ de WinUI), que no compila en macOS. La llamada de conexión
 (`DeviceSessionService.SyncClockIfConnected`) ya estaba desde antes de esta
 ronda; falta agregar la de instalación/actualización, simétrica a como
 `InstallerViewModel.swift:1214` ya lo hace en macOS.
+
+## ST-147 — `/.aura/settings.cfg` (contrato v19): protegido por construcción, ahora también por prueba
+
+Ronda "ajustes 2". El contrato v19 agrega `/.aura/settings.cfg` (ajustes
+compartidos entre Aura, Metro y moonlit — bloqueo, brillo, idioma, etc.,
+§A del maestro) como cuarto archivo/directorio de propiedad exclusiva del
+firmware bajo `/.aura/`, junto a `tagcache/`, `thumbs/` y `art/`
+(ST-069/ST-073).
+
+### El hallazgo: no había nada que arreglar, y eso también hay que probarlo
+
+Igual que con la hora en ST-146, la primera pregunta fue si algún flujo de
+Studio ya lo tocaba sin darse cuenta. Búsqueda exhaustiva de toda referencia
+a `.aura/` en el código de Studio (macOS: tres archivos en total —
+`FirmwareSwitcher.swift`, `LibrarySync.swift`, `SyncMarker.swift`; Windows:
+la misma huella en `Installer/FirmwareSwitcher.cs` y
+`Library/LibrarySyncEngine.cs`): **ningún camino enumera `/.aura/` de forma
+amplia**. Cada operación que borra o mueve algo nombra explícitamente sus
+archivos:
+
+- `clearFirmwareDatabases`/`ClearFirmwareDatabases` solo borra los nombres
+  fijos de `tagcacheDatabaseFileNames`/`DatabaseFileNames` (`database_*.tcd`,
+  `db_stamp.txt`) en directorios concretos — nunca un `.none`/`.art` de
+  `/.aura/art/`, nunca `settings.cfg`.
+- `mirroredContractEntries`/`MirroredContractEntries` (lo que viaja al
+  espejar/sembrar entre árboles dormidos) son todas rutas bajo
+  `<árbol>/aura/` (por familia), nunca bajo el `/.aura/` compartido de la
+  raíz del volumen.
+- La actualización selectiva del instalador (`applySelectiveUpdate` /
+  `InstallManifestDelta`) ya traía, desde ST-058, un guardia explícito:
+  `Delta()` solo propone borrar rutas que empiecen con `.rockbox/`
+  (`toDelete.filter { $0.hasPrefix(".rockbox/") }` / `path.StartsWith(TreePrefix)`)
+  — un manifiesto corrupto o ajeno no puede proponer borrar nada fuera del
+  árbol del firmware, y eso incluye cualquier cosa bajo `/.aura/` por
+  definición.
+- `install_manifest.cfg` describe únicamente el contenido de `rockbox.zip`
+  (`entriesFromZip`/`ReadsPathSizeAndCrcFromTheZip`), que nunca empaqueta
+  nada de `/.aura/` — así que no hay forma de que lo liste.
+
+**La protección real no es una excepción añadida a mano para
+`settings.cfg` — es que el código nunca tuvo la clase de operación que
+pudiera amenazarlo.** Lo que agrega esta entrada es la constante
+(`LibrarySync.sharedSettingsRelativePath` / `FirmwareSwitcher.SharedSettingsRelativePath`)
+para que quede nombrado igual que sus tres hermanos, y las pruebas que
+fijan el hecho contra cada flujo real: cambiar de familia, reparar un
+arranque en frío, sembrar y espejar archivos del contrato, sincronizar
+(incluido un sync vacío) y forzar la reconstrucción de la base — más dos
+pruebas dedicadas a `InstallManifest.Delta`/`Delta()` con el nombre real
+del archivo, sumadas a la genérica que ya existía desde ST-058.
+
+**Restaurar queda fuera a propósito**: el flujo de "Restaurar iPod
+original" termina en un formateo real de la partición (`RestoreHandoffView`,
+D-184) — eso borra `/.aura/` entero junto con todo lo demás, y es
+exactamente lo que el usuario pidió al elegir esa opción. La protección de
+esta entrada es sobre las operaciones que dejan el volumen montado e
+intacto; un formateo deliberado no es un bug que evitar.
+
+### Verificación
+
+macOS: `swift build` + **753 pruebas en verde** (8 nuevas: seis flujos
+reales protegidos, una prueba de que `settings.cfg` no aparece en ninguna
+lista de limpieza conocida, y una de `InstallManifest.delta` nombrada) y
+`scripts/build-app.sh` completo. Windows: `AuraStudio.Core` con **1 160
+pruebas** (8 nuevas, los mismos siete casos más el de `Delta`); las 32 que
+fallan en una Mac son las de siempre — confirmado diff línea por línea
+contra la lista base de la ronda anterior, sin ninguna nueva.

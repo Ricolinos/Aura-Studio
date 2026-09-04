@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Text;
 using AuraStudio.Core;
+using AuraStudio.Core.Installer;
 using Xunit;
 
 namespace AuraStudio.Core.Tests;
@@ -255,6 +256,24 @@ public class InstallManifestTests : IDisposable
             Entries());
 
         Assert.Equal([".rockbox/interno"], delta.ToDelete);
+    }
+
+    /// <summary>
+    /// ST-147 / contrato v19: mismo guardia de arriba, nombrado con el archivo
+    /// real que protege — un manifiesto viejo (o corrupto) que de alguna forma
+    /// llegara a listar <c>/.aura/settings.cfg</c> NUNCA puede hacer que la
+    /// actualización selectiva lo borre: <c>Delta()</c> exige el prefijo
+    /// <c>.rockbox/</c> para cualquier candidato a <c>ToDelete</c>.
+    /// </summary>
+    [Fact]
+    public void DeltaNeverDeletesTheSharedSettingsFile()
+    {
+        InstallManifestDelta delta = InstallManifest.Delta(
+            Entries((".rockbox/rockbox.ipod", 1, 1),
+                    (FirmwareSwitcher.SharedSettingsRelativePath, 2, 2)),
+            Entries((".rockbox/rockbox.ipod", 1, 1)));
+
+        Assert.Empty(delta.ToDelete);
     }
 
     [Fact]

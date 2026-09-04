@@ -160,6 +160,7 @@
 		ABA0C93ACD3447A364A5222F /* FanartTVClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF3BE096E51004D4621ABB60 /* FanartTVClient.swift */; };
 		ABAA0A8B49C9C4BA781A5A09 /* CatalogSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC202F1A3D9164B1E6014A84 /* CatalogSummary.swift */; };
 		AC8A963EB0ECC59E9602FA61 /* CoverContaminationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963456BE314435186349AFAE /* CoverContaminationSheet.swift */; };
+		AE442C1E61833E91EB81BF95 /* SettingsCfgProtectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C61C5B4FA6D06A4B3BF823A0 /* SettingsCfgProtectionTests.swift */; };
 		AE58688D8D8C42B7D0CBB722 /* CoverThumbnailCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DC1376D9856F82C80DF182B /* CoverThumbnailCacheTests.swift */; };
 		B0B3874015C1B83B8ABA7FC2 /* AuraTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1699B4EBFF7C57FD06990C88 /* AuraTheme.swift */; };
 		B161B4A60CB2A4A93499C8EA /* GitHubReleaseChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1ACD0BCFD11F335D4C428F6 /* GitHubReleaseChecker.swift */; };
@@ -416,6 +417,7 @@
 		BEEAD9ACEF33A34E0D7931DD /* firmware-version.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "firmware-version.txt"; sourceTree = "<group>"; };
 		C0DFA7816F1DDE457477003F /* FirmwareSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareSwitcher.swift; sourceTree = "<group>"; };
 		C455F59CE087518F3E7DE7C6 /* PhotoSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoSettingsView.swift; sourceTree = "<group>"; };
+		C61C5B4FA6D06A4B3BF823A0 /* SettingsCfgProtectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCfgProtectionTests.swift; sourceTree = "<group>"; };
 		C70AA3068E3596A674879EA8 /* MKS5LBootRunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKS5LBootRunnerTests.swift; sourceTree = "<group>"; };
 		C7A75E4AA4334B6A18D04537 /* CoverArtAssetsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverArtAssetsTests.swift; sourceTree = "<group>"; };
 		CA13795782D45FD63CB5A1FA /* LibraryViewModelSharedPreparedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModelSharedPreparedTests.swift; sourceTree = "<group>"; };
@@ -683,6 +685,7 @@
 				7F307EFCD3106FEFB532DF8E /* PlaylistExporterTests.swift */,
 				528818777E4EF0B5EF8F9306 /* PlaylistImporterTests.swift */,
 				8F0A3F90A397101E33636987 /* PrivilegedExecutorTests.swift */,
+				C61C5B4FA6D06A4B3BF823A0 /* SettingsCfgProtectionTests.swift */,
 				61E13AE080C61D53DD31BC2E /* SharedCatalogInteropTests.swift */,
 				82C6AEB753EB596261D12780 /* SimilarItemsDetectorTests.swift */,
 				8FE0ED199852C215C9423943 /* SquareCropPlanTests.swift */,
@@ -997,6 +1000,7 @@
 				7F80040C49B6F9BAEC7C4EB4 /* PlaylistExporterTests.swift in Sources */,
 				C29E1A48C58E8CBCAFC485EA /* PlaylistImporterTests.swift in Sources */,
 				3CA0A3911ADDD2EED7918743 /* PrivilegedExecutorTests.swift in Sources */,
+				AE442C1E61833E91EB81BF95 /* SettingsCfgProtectionTests.swift in Sources */,
 				B9CE37DDF75A0432AA14480B /* SharedCatalogInteropTests.swift in Sources */,
 				3C9BA6C7EC120BEA5C9F6DC5 /* SimilarItemsDetectorTests.swift in Sources */,
 				A708CE9C17FD00F4465C6D1E /* SquareCropPlanTests.swift in Sources */,

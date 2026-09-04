@@ -84,6 +84,26 @@ final class InstallManifestTests: XCTestCase {
                        "jamás se borra fuera de .rockbox/, ni con un manifiesto raro")
     }
 
+    /// ST-147 / contrato v19: mismo guardia de arriba, nombrado con el
+    /// archivo real que protege -- un manifiesto viejo (o corrupto) que
+    /// de alguna forma llegara a listar `/.aura/settings.cfg` NUNCA puede
+    /// hacer que la actualización selectiva lo borre: `delta()` exige
+    /// `.hasPrefix(".rockbox/")` para cualquier candidato a `toDelete`.
+    func testDeltaNeverDeletesTheSharedSettingsFile() {
+        let e = { (p: String) in InstallManifest.Entry(path: p, size: 1, crc32: 1) }
+        let old: [String: InstallManifest.Entry] = [
+            ".rockbox/rockbox.ipod": e(".rockbox/rockbox.ipod"),
+            LibrarySync.sharedSettingsRelativePath: e(LibrarySync.sharedSettingsRelativePath),
+        ]
+        let new: [String: InstallManifest.Entry] = [
+            ".rockbox/rockbox.ipod": e(".rockbox/rockbox.ipod"),
+            // Ausente del zip nuevo -- exactamente el caso que activaría el
+            // borrado si el guardia de prefijo no existiera.
+        ]
+        let d = InstallManifest.delta(installed: old, new: new)
+        XCTAssertTrue(d.toDelete.isEmpty)
+    }
+
     /// Punta a punta con zips reales: el delta entre dos zips detecta
     /// exactamente el archivo cambiado y el eliminado.
     func testDeltaBetweenTwoRealZips() throws {

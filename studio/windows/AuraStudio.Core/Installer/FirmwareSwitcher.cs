@@ -16,18 +16,31 @@ namespace AuraStudio.Core.Installer;
 /// — el saliente primero — más el respaldo del bootloader en la raíz y el
 /// marcador de sync para que el entrante reconstruya su base de datos.
 ///
-/// <b>INVARIANTE (ST-069/ST-073, contrato v15/v16)</b>: todo lo de acá opera
-/// SOLO sobre <c>/.rockbox/</c>, <c>/.firmware-*/</c> y <c>/rockbox.ipod</c>.
-/// <c>/.aura/tagcache/</c> (base compartida por los tres firmwares),
-/// <c>/.aura/thumbs/</c> (miniaturas compartidas) y <c>/.aura/art/</c> (caché
-/// maestra de imágenes) son propiedad del firmware aunque vivan bajo
-/// <c>/.aura/</c>: ningún renombre, estacionamiento, reparación, siembra ni
-/// espejo los toca.
+/// <b>INVARIANTE (ST-069/ST-073/ST-147, contrato v15/v16/v19)</b>: todo lo de
+/// acá opera SOLO sobre <c>/.rockbox/</c>, <c>/.firmware-*/</c> y
+/// <c>/rockbox.ipod</c>. <c>/.aura/tagcache/</c> (base compartida por los tres
+/// firmwares), <c>/.aura/thumbs/</c> (miniaturas compartidas),
+/// <c>/.aura/art/</c> (caché maestra de imágenes) y
+/// <see cref="SharedSettingsRelativePath"/> (ajustes compartidos) son
+/// propiedad del firmware aunque vivan bajo <c>/.aura/</c>: ningún renombre,
+/// estacionamiento, reparación, siembra ni espejo los toca.
 /// </summary>
 public static class FirmwareSwitcher
 {
     public const string ActiveTreeName = ".rockbox";
     public const string RootFirmwareBinaryName = "rockbox.ipod";
+
+    /// <summary>
+    /// ST-147 / contrato v19: ajustes compartidos entre las tres familias
+    /// (bloqueo, brillo, idioma, etc.). Es un ARCHIVO, no un directorio, pero
+    /// la regla es la misma que <c>/.aura/art/</c> desde ST-073 — Studio nunca
+    /// lo borra, mueve ni reescribe. Ningún código de este repo enumera
+    /// <c>/.aura/</c> de forma amplia (cada operación nombra explícitamente lo
+    /// que le toca, ver <c>LibrarySyncEngine.ClearFirmwareDatabases</c>), así
+    /// que esta constante existe para que la protección quede fijada por
+    /// pruebas, no solo asumida.
+    /// </summary>
+    public const string SharedSettingsRelativePath = ".aura/settings.cfg";
 
     /// <summary>
     /// ST-059 / contrato v12: sello de biblioteca compartido — cambia solo
