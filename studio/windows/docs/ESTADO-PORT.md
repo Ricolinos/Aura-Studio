@@ -6,6 +6,66 @@
 > nada — todo compila desde la sesión del 2026-08-31 en la VM — por eso se
 > renombró en la Fase 0. Entradas nuevas van **arriba** de las viejas.
 
+## Ronda 7 — La variante x64, probada emulada en el propio aparato (2026-09-01)
+
+Decisión ST-139. Build **0/0**, Core **1099/1099**. El Setup x64 se instaló,
+se abrió y se usó **en esta VM ARM64**, bajo emulación
+(`docs/capturas/r7-*.png`). Sin commit.
+
+### Por qué ya no es a ciegas
+
+Hasta la ronda 5 el argumento era «un x64 sin probar no se ofrece». Caducó:
+Windows 11 en ARM64 ejecuta x64 emulado, así que el instalable se arma,
+se instala y se usa en la misma máquina del dueño — con el precedente de que
+`mks5lboot.exe` es x86-32 y lleva todo el proyecto corriendo emulado.
+
+### Qué se armó
+
+- `installer\AuraStudio.iss` recibe la arquitectura por `/DArch=`;
+  `Make-Installer.ps1 -Architecture arm64|x64|both`.
+- `ArchitecturesAllowed=x64compatible` (no `x64os`): es lo que permite
+  instalar el x64 en ARM64. Ahí **avisa que existe la versión nativa y deja
+  continuar**; calla en modo silencioso.
+- **Un solo `AppId`**: instalar una reemplaza a la otra. No conviven, a
+  propósito — ver ST-139.
+- Dos verificaciones nuevas en el script: la **cabecera PE** del ejecutable
+  publicado contra la arquitectura pedida (contra el error silencioso de
+  empaquetar el árbol equivocado), y la **comparación de los dos árboles** para
+  avisar de archivos huérfanos que `[InstallDelete]` no cubra.
+
+### El precio de compartir carpeta
+
+Casi todo el árbol se sobrescribe solo; lo que no —dos DLL con la arquitectura
+en el nombre y unos `workloads.*.json` del Windows App SDK— quedaba tirado, y
+el desinstalador de la otra arquitectura no lo conoce. Lo limpia
+`[InstallDelete]`.
+
+**El primer intento se quedó corto**: enumeré las dos DLL, reinstalé, y los
+`workloads.*.json` seguían ahí. De ahí salió la comparación automática de los
+dos árboles: la lista escrita a mano se pudre, y tenía que avisarlo el script
+en vez de descubrirlo alguien con la carpeta sucia.
+
+### Qué quedó probado, y qué no
+
+Con `xtajit64se.dll` —el emulador— cargado en el proceso y la máquina nativa
+reportando `0xAA64`:
+
+- Instala, arranca, pinta la interfaz completa y lee la biblioteca.
+- **Cadena privilegiada**: arranca sin ventana, revalida, vuelve a consultar el
+  hardware por WMI y aborta con «el disco 42 ya no existe». `System.Management`
+  y las llamadas nativas funcionan emuladas.
+- **`mks5lboot.exe` (x86-32) corre desde el proceso x64 emulado** —emulación
+  anidada— y hace su `--dfuscan`.
+- Cambiar de arquitectura en los dos sentidos: una entrada, un ejecutable,
+  **cero huérfanos**. La VM quedó con la ARM64 nativa.
+
+**No probado, y hay que decirlo:** no había iPod conectado (`Win32_DiskDrive`
+reporta un solo disco fijo), así que la detección real, el formateo y el
+flasheo **no se ejercitaron en el x64**. Y una VM ARM64 emulando x64 no es una
+máquina x64 física: comparten el binario, no el hardware ni el controlador USB
+de Apple. Falta una prueba con iPod, de preferencia en x64 de verdad.
+
+
 ## Ronda 6 — Metro y moonlit sí se instalan, y los errores dicen cuál (2026-09-01)
 
 Decisiones ST-136, ST-137 y ST-138. Build **0/0**, Core **1099/1099** (18

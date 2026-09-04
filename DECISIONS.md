@@ -2048,6 +2048,73 @@ el Instalador sin que nada dijera dónde estaba. Ahora pasa por la barra
 (`ShellPage.GoToSection`), así que selección y contenido se mueven juntos.
 Licencias no está en la barra y por eso sigue abriéndose como subpágina.
 
+## ST-139 — La variante x64, probada bajo emulación en el propio aparato ARM64
+
+Hasta ST-135 solo se ofrecía ARM64, con el argumento de que «un x64 sin probar
+no se ofrece». Ese argumento **caducó**: Windows 11 en ARM64 ejecuta binarios
+x64 emulados, así que el instalable x64 se puede armar, instalar y usar en la
+misma máquina del dueño. No es fe, es una prueba — con el precedente de que
+`mks5lboot.exe` es x86-32 y lleva todo el proyecto corriendo emulado.
+
+`installer\AuraStudio.iss` recibe la arquitectura por `/DArch=`, y
+`Make-Installer.ps1 -Architecture arm64|x64|both` produce
+`dist\AuraStudioSetup-0.1.0-<arch>.exe`.
+
+**`ArchitecturesAllowed=x64compatible` para el x64, no `x64os`**: la primera
+incluye a ARM64 y es justo lo que permite instalarlo ahí. En una máquina ARM64
+el Setup x64 **avisa que existe la versión nativa y deja continuar** — informar,
+no prohibir: quien lo instale a propósito puede tener su razón (probar,
+reproducir un problema). El aviso calla en modo silencioso, donde no hay quien
+lo lea y un diálogo colgaría una instalación desatendida.
+
+**Un solo `AppId` para las dos.** Son el mismo programa; la arquitectura es un
+detalle del empaquetado. La consecuencia buscada es que **no convivan**:
+instalar una reemplaza a la otra en el mismo lugar. Dos entradas con el mismo
+nombre y el mismo icono serían ~600 MB y ninguna forma de saber cuál abre el
+acceso directo — y el caso que de verdad ocurre, alguien en ARM64 que bajó el
+x64 por error y después instala el nativo, se arregla solo. Lo que sí cambia
+por arquitectura es `UninstallDisplayName`, para que la entrada diga cuál está
+instalada.
+
+**El precio de compartir carpeta, y cómo se paga.** Casi todo el árbol tiene
+los mismos nombres en las dos y se sobrescribe solo; lo que no —dos DLL con la
+arquitectura en el nombre, y unos `workloads.*.json` del Windows App SDK—
+quedaba tirado, y el desinstalador de la otra arquitectura no lo conoce: basura
+que sobrevive a la desinstalación. Lo limpia `[InstallDelete]`.
+
+Esa lista se pudre en cuanto el SDK agregue otro archivo así — de hecho el
+primer intento se quedó corto y los `workloads.*.json` aparecieron después. Por
+eso **`Make-Installer.ps1 -Architecture both` compara los dos árboles
+publicados archivo por archivo y avisa** si aparece uno que ningún patrón
+cubra. Avisa y sigue: un huérfano no justifica no entregar el instalador.
+
+Y una verificación más, contra el error silencioso y caro de empaquetar el
+árbol de una arquitectura dentro del Setup de la otra: se lee la cabecera PE
+del ejecutable publicado y se compara con la arquitectura pedida.
+
+### Qué quedó probado bajo emulación, y qué no
+
+Todo esto **en el x64 instalado y corriendo en esta VM ARM64**, con
+`xtajit64se.dll` —el emulador— cargado en el proceso, y con la máquina nativa
+reportando `0xAA64`:
+
+- Instala, arranca y pinta la interfaz completa; lee la biblioteca.
+- La **cadena privilegiada** funciona: el proceso arranca sin ventana, revalida
+  la petición, vuelve a consultar el hardware por WMI y aborta con «el disco 42
+  ya no existe». Es decir, `System.Management` y las llamadas nativas funcionan
+  emuladas.
+- **`mks5lboot.exe` (x86-32) corre desde el proceso x64 emulado** —emulación
+  anidada— y hace su `--dfuscan`.
+- Cambiar de arquitectura en los dos sentidos deja una sola entrada, un solo
+  ejecutable y **ningún archivo huérfano**.
+
+**Lo que NO se pudo probar, y hay que decirlo:** no había ningún iPod conectado
+—`Win32_DiskDrive` reporta un solo disco fijo—, así que la detección real del
+aparato, el formateo y el flasheo **no se ejercitaron en el x64**. Y una VM
+ARM64 emulando x64 no es lo mismo que una máquina x64 física: comparten el
+binario, no el hardware ni el controlador USB de Apple. Lo que falta es una
+prueba con iPod, preferentemente en una máquina x64 de verdad.
+
 ## ST-140 — El recorte cuadrado es una primitiva, no un efecto del reescalado
 
 Hasta hoy Aura Studio **nunca** recortó una imagen. `ImageResizer` (macOS) y su
