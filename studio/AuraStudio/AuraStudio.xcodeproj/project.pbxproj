@@ -129,6 +129,7 @@
 		95B640A82CBEE1692124BBD1 /* MoviesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28EFB3D109DB9FCC2B421D68 /* MoviesView.swift */; };
 		9708C9B6AD06AFB89FA7A062 /* LibraryGrouping.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89B59CFDAA76DDAEF44BAD84 /* LibraryGrouping.swift */; };
 		97338ABB5F9C787AAD97D514 /* AwaitBootloaderUSBView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C539DEA78844D9C617FBF1 /* AwaitBootloaderUSBView.swift */; };
+		97A1DFD383108D67DED9917B /* BootloaderUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8CD49E31B125A9D6F628F45 /* BootloaderUpdate.swift */; };
 		98294989CBE015BFE717F68F /* MediaTableRowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D789632A0A38C211E33DFCBF /* MediaTableRowTests.swift */; };
 		982F00F48C834DC4C0F57A3A /* MusicBrainzRateLimiterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E14855D7F760E14EB547DE /* MusicBrainzRateLimiterTests.swift */; };
 		983F3D503FD3C67F03884D83 /* MediaCategoryClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFA40682BAFE0828DAA2B507 /* MediaCategoryClassifier.swift */; };
@@ -153,6 +154,7 @@
 		A989674D62D8CE1AB1A78C6F /* LicensesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5F5744B03DEE73ECA86298 /* LicensesView.swift */; };
 		A994E0FE4CABA16BE4B72715 /* SharedCatalogPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = D91D24A2286B684E8FE45C2F /* SharedCatalogPath.swift */; };
 		A9F8DF2008E248463E13EB6E /* LocalTagReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5EB599930E65EEEA8E31ACE /* LocalTagReader.swift */; };
+		AA5BCB0D068E33D1B6337E39 /* UpdateBootloaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C214CEEFDB94378C60B0A4 /* UpdateBootloaderView.swift */; };
 		AB3F8769FB758AFE883C8714 /* LibrarySyncCancellationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F7FD7689D1AF6C4178F68DD /* LibrarySyncCancellationTests.swift */; };
 		AB786B1A7164AA76254BE3C3 /* CoverArtNormalizerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2718B5F687440629F34AEB40 /* CoverArtNormalizerTests.swift */; };
 		ABA0C93ACD3447A364A5222F /* FanartTVClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF3BE096E51004D4621ABB60 /* FanartTVClient.swift */; };
@@ -383,6 +385,7 @@
 		A748D34D6FB4243BEE9BB64A /* AlbumsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumsView.swift; sourceTree = "<group>"; };
 		A78B6EFC3F4E661073CF15D6 /* LibraryPersistenceFavoriteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryPersistenceFavoriteTests.swift; sourceTree = "<group>"; };
 		A8B17B3701CCA341AD9EF513 /* TableHeaderMenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TableHeaderMenu.swift; sourceTree = "<group>"; };
+		A8CD49E31B125A9D6F628F45 /* BootloaderUpdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootloaderUpdate.swift; sourceTree = "<group>"; };
 		A8CE183219531C13D58EE6D5 /* FirmwareReleaseDownloaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareReleaseDownloaderTests.swift; sourceTree = "<group>"; };
 		A92C5F3EC062AD8FA6D8B4FA /* Playlist.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Playlist.swift; sourceTree = "<group>"; };
 		ABB9F8D5D85A96032603EE86 /* DeezerClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeezerClient.swift; sourceTree = "<group>"; };
@@ -448,6 +451,7 @@
 		F23689620B3C26365C6A2E5D /* MusicBrainzClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicBrainzClient.swift; sourceTree = "<group>"; };
 		F2E38E8394BAA788DC9544B0 /* LibraryViewModelLocalTagRereadTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModelLocalTagRereadTests.swift; sourceTree = "<group>"; };
 		F36F32A4BCCCF9A67A370B04 /* AlbumCoverSearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumCoverSearch.swift; sourceTree = "<group>"; };
+		F3C214CEEFDB94378C60B0A4 /* UpdateBootloaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateBootloaderView.swift; sourceTree = "<group>"; };
 		F42FE4EC16A2A0B63AA1E342 /* bootloader-ipod6g.ipod */ = {isa = PBXFileReference; path = "bootloader-ipod6g.ipod"; sourceTree = "<group>"; };
 		F527FF44025F6464CEC83FD6 /* RestoreHandoffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestoreHandoffView.swift; sourceTree = "<group>"; };
 		F52FF3A536F1C7FAFB6822B6 /* SettingsSectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsSectionView.swift; sourceTree = "<group>"; };
@@ -509,6 +513,7 @@
 				B31CBD5016C6CD0867DB6CBA /* SyncSheets.swift */,
 				A8B17B3701CCA341AD9EF513 /* TableHeaderMenu.swift */,
 				414CDC551592AE3B57A31C32 /* ThemesView.swift */,
+				F3C214CEEFDB94378C60B0A4 /* UpdateBootloaderView.swift */,
 				3D93C4B54F192923EAF481E9 /* VideoSettingsView.swift */,
 				1AF1D56D4FC12419217F8960 /* WelcomeView.swift */,
 			);
@@ -583,6 +588,7 @@
 				A44B703F4DB8DCD3F12F4492 /* ArtistNameNormalizer.swift */,
 				16512FA37AC623A52F006219 /* AuraDevice.swift */,
 				1699B4EBFF7C57FD06990C88 /* AuraTheme.swift */,
+				A8CD49E31B125A9D6F628F45 /* BootloaderUpdate.swift */,
 				FC202F1A3D9164B1E6014A84 /* CatalogSummary.swift */,
 				212C4900E1BBB8F89EEF159F /* CoverArtAssets.swift */,
 				5FA85A3E42CB4E67E9DAC4E5 /* DeviceState.swift */,
@@ -1035,6 +1041,7 @@
 				97338ABB5F9C787AAD97D514 /* AwaitBootloaderUSBView.swift in Sources */,
 				87EB236DAA29660FD987218F /* BackContinueRow.swift in Sources */,
 				B16222D07788E9A40141A546 /* BatchMediaInfoView.swift in Sources */,
+				97A1DFD383108D67DED9917B /* BootloaderUpdate.swift in Sources */,
 				5EDA0D1DF2BC765B8F8D473B /* BundledArtifacts.swift in Sources */,
 				ABAA0A8B49C9C4BA781A5A09 /* CatalogSummary.swift in Sources */,
 				3A7E4AD12A10E84BC236D09B /* ClockSyncWriter.swift in Sources */,
@@ -1134,6 +1141,7 @@
 				40C77AF1FDE67E4379751F22 /* ThemesView.swift in Sources */,
 				04F788FCD4F07563E5750ED9 /* TrackMetadata.swift in Sources */,
 				504431053F83E4A629E97E0C /* USBDeviceIdentity.swift in Sources */,
+				AA5BCB0D068E33D1B6337E39 /* UpdateBootloaderView.swift in Sources */,
 				A77A37B6CF7FECABA28DD45C /* VideoSettingsView.swift in Sources */,
 				ECBCFCC6104EA5F8E3F445BF /* WelcomeView.swift in Sources */,
 			);

@@ -26,12 +26,24 @@ struct DoneView: View {
     /// "Hold MENU+SELECT to reboot" -- NO reinicia solo, hay que decirlo.
     var needsManualReboot: Bool = false
 
+    private var doneTitle: String {
+        switch mode {
+        case .install: return "\(firmwareName) instalado"
+        case .restore: return "iPod restaurado"
+        // ST-143: no se instaló ni se restauró nada -- solo cambió el
+        // arranque, y decirle "restaurado" al usuario sería mentirle.
+        case .updateBootloader: return "Arranque actualizado"
+        }
+    }
+
     private var doneMessage: String {
         switch (mode, needsManualReboot) {
         case (.restore, _):
             return "Tu iPod va a reiniciar y arrancar con el firmware original de Apple. Ya puedes desconectar el cable."
         case (.install, true):
             return "\(firmwareName) quedó instalado. Ya puedes desconectar el cable con seguridad. El iPod se quedó esperando en \"Bootloader USB mode\": mantén SELECT + MENU unos 5 segundos para reiniciarlo y arranca con \(firmwareName). Después puedes usar la biblioteca de Aura Studio para sincronizar tu música, fotos y videos."
+        case (.updateBootloader, _):
+            return "El arranque quedó actualizado. Tu música, tus fotos y tus ajustes siguen exactamente donde estaban -- esto no tocó el disco. Ya puedes desconectar el cable; si el iPod no reinicia solo, mantén SELECT + MENU unos segundos."
         case (.install, false):
             return "Todos los archivos quedaron instalados: ya puedes desconectar el cable con seguridad. El iPod va a arrancar con \(firmwareName) -- si no reinicia solo, mantén SELECT + MENU unos segundos. Despues puedes usar la pestana Biblioteca de Aura Studio para sincronizar tu musica, fotos y videos."
         }
@@ -42,7 +54,7 @@ struct DoneView: View {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 56))
                 .foregroundStyle(.green)
-            Text(mode == .install ? "\(firmwareName) instalado" : "iPod restaurado")
+            Text(doneTitle)
                 .font(.title.bold())
             Text(doneMessage)
                 .multilineTextAlignment(.center)

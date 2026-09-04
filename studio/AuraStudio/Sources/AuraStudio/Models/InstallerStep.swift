@@ -60,6 +60,11 @@ enum InstallerStep: Int, CaseIterable, Comparable {
 enum InstallerMode: Equatable {
     case install
     case restore
+    /// ST-143 (plan maestro §B.5): regrabar SOLO el bootloader, sin
+    /// formatear, sin copiar archivos y sin tocar la biblioteca. Existe
+    /// porque el arranque cambió de versión y la NOR no se puede releer:
+    /// la única forma de ponerlo al día es volver a flashearlo por DFU.
+    case updateBootloader
 }
 
 /// Una accion privilegiada pendiente de autorizacion del usuario. La UI

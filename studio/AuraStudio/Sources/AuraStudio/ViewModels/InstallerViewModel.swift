@@ -193,6 +193,40 @@ final class InstallerViewModel: ObservableObject {
     /// Nombre para los textos del asistente ("Instalando Metro...").
     var targetName: String { targetFamily.displayName }
 
+    /// ST-143: el SHA-256 del `bootloader-ipod6g.ipod` que se acaba de
+    /// (o se va a) flashear. Se calcula del artefacto REAL que usa este
+    /// flujo -- el descargado si lo hay, el embebido si no --, nunca de
+    /// `FIRMWARE_VERSION` a mano: ese archivo describe lo embebido y
+    /// dejaría de ser cierto en cuanto ST-077 instale un Release más
+    /// nuevo. `nil` si el artefacto no está (una build sin
+    /// `fetch-firmware.sh`): entonces no hay con qué comparar y no se
+    /// ofrece actualizar nada.
+    var embeddedBootloaderHash: String? {
+        guard let url = artifacts.url(for: .bootloader) else { return nil }
+        return try? BundledArtifacts.sha256Hex(of: url)
+    }
+
+    /// El hash del bootloader que trae esta build para la familia que el
+    /// iPod tiene instalada -- no para la familia elegida en Extras. Un
+    /// iPod con Metro se compara contra el arranque de Metro.
+    static func embeddedBootloaderHash(forFamily family: FirmwareFamily) -> String? {
+        guard let url = BundledArtifacts.forFamily(family).url(for: .bootloader) else { return nil }
+        return try? BundledArtifacts.sha256Hex(of: url)
+    }
+
+    /// ST-143: si a este iPod le conviene "Actualizar el arranque".
+    /// Devuelve el motivo (para poder decirlo en pantalla) o `nil`.
+    ///
+    /// **Nunca bloquea nada**: el firmware nuevo funciona igual con el
+    /// arranque viejo; lo único que cambia es la pantalla de arranque.
+    static func bootloaderUpdateReason(for device: AuraDevice?) -> BootloaderUpdate.Reason? {
+        guard let device else { return nil }
+        return BootloaderUpdate.reason(
+            recordedHash: AppPreferences.shared.bootloaderHash(diskKey: device.diskRecordKey),
+            embeddedHash: embeddedBootloaderHash(forFamily: device.declaredFamily),
+            hasOurFirmware: device.firmware.hasBooted || device.runningFirmware == .rockboxFamily)
+    }
+
     init(monitor: IPodMonitor? = nil, executor: PrivilegedExecutor = PrivilegedExecutor()) {
         self.monitor = monitor ?? IPodMonitor()
         self.executor = executor
@@ -219,9 +253,20 @@ final class InstallerViewModel: ObservableObject {
     /// su ciclo de vida lo maneja `ContentView` -- el asistente solo lo
     /// observa. Antes cada `InstallerHomeView` creaba el suyo propio y
     /// habia dos sondeos DFU corriendo en paralelo.
+    /// ST-143: por qué se está ofreciendo actualizar el arranque, fijado
+    /// al abrir el flujo (la pantalla lo dice; el motivo no cambia a
+    /// mitad de camino aunque el iPod entre a DFU y deje de verse).
+    @Published private(set) var updateBootloaderReason: BootloaderUpdate.Reason?
+
     func start(mode: InstallerMode) {
         self.mode = mode
         self.lastError = nil
+        if mode == .updateBootloader {
+            updateBootloaderReason = Self.bootloaderUpdateReason(for: monitor.device)
+            // El arranque que se actualiza es el de la familia que el
+            // iPod TIENE, no el que Extras elegiría para instalar.
+            if let installed = monitor.device?.declaredFamily { setTargetFamily(installed) }
+        }
         // ST-047: la eleccion de Extras manda en una instalacion nueva.
         setTargetFamily(AppPreferences.shared.firmwareFamilyToInstall)
         isCopyingFirmware = false
@@ -258,7 +303,10 @@ final class InstallerViewModel: ObservableObject {
         if mode == .install {
             destroyOriginalFirmware = true
         }
-        step = .permissions
+        // ST-143: actualizar el arranque no formatea, no copia y no pide
+        // contraseña -- no hay nada que pedir en Permisos. Del aviso se
+        // va derecho al DFU, que es lo unico que hace falta.
+        step = mode == .updateBootloader ? .enterDFU : .permissions
     }
 
     func advanceFromPermissions() {
@@ -422,7 +470,7 @@ final class InstallerViewModel: ObservableObject {
     ///   un `DiskModeInfo` porque no hay volumen del que sacar uno.
     func acknowledgeDeviceReady() {
         switch mode {
-        case .restore:
+        case .restore, .updateBootloader:
             proceedToDFU()
         case .install:
             switch monitor.state {
@@ -754,7 +802,8 @@ final class InstallerViewModel: ObservableObject {
                 // anotar el disco para que la proxima reinstalacion
                 // pueda saltarse el DFU con fundamento (la NOR no se
                 // puede releer; este registro es lo que lo sustituye).
-                AppPreferences.shared.recordBootloaderVerified(diskKey: lastSeenDiskKey)
+                AppPreferences.shared.recordBootloaderVerified(diskKey: lastSeenDiskKey,
+                                                               hash: embeddedBootloaderHash)
                 bootloaderFlashedThisFlow = true
                 if flashFirst {
                     // ST-017 (Solo Aura): el arranque ya esta grabado;
@@ -770,6 +819,29 @@ final class InstallerViewModel: ObservableObject {
                     progressMessage = "Listo."
                     step = .done
                 }
+
+            case .updateBootloader:
+                // ST-143: el MISMO flasheo que una instalacion, sin nada
+                // mas. `single: false` a proposito: `--single` borra el
+                // arranque de Apple, y actualizar no puede destruir mas
+                // de lo que ya estaba destruido -- en un iPod instalado
+                // con Solo firmware el de Apple ya no esta, y en uno con
+                // dual boot no hay por que quitarselo ahora.
+                progressMessage = "Actualizando el arranque de \(targetName)..."
+                let result = try runner.installBootloader(single: false)
+                guard result.exitCode == 0 else {
+                    throw InstallerError.processFailed(exitCode: result.exitCode, output: result.stdout + result.stderr)
+                }
+                progressMessage = "Arranque enviado. Esperando a que el iPod confirme y reinicie..."
+                guard await waitForDeviceToLeaveDFU(timeoutSeconds: 45) else {
+                    throw InstallerError.deviceStuckInDFU
+                }
+                // Ahora si se sabe QUE bootloader tiene ese disco.
+                AppPreferences.shared.recordBootloaderVerified(diskKey: lastSeenDiskKey,
+                                                               hash: embeddedBootloaderHash)
+                bootloaderFlashedThisFlow = true
+                progressMessage = "Listo."
+                step = .done
 
             case .restore:
                 progressMessage = "Quitando el bootloader de \(targetName)..."

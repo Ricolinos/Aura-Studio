@@ -44,6 +44,36 @@ Aura Studio te explica cada permiso antes de pedírtelo, en su propia pantalla, 
 8. Aura Studio copia el firmware al iPod y verifica que haya quedado bien.
 9. Cuando termina, desconecta el cable y tu iPod arranca solo con Aura.
 
+## 4 bis. Actualizar el arranque
+
+A veces, al actualizar Aura Studio, el **arranque** cambia de versión. El
+arranque es el programa diminuto que corre apenas enciendes el iPod, antes que
+Aura: dibuja la pantalla de arranque y decide qué sistema iniciar. No vive en el
+disco, vive en un chip aparte — por eso hace falta el modo DFU para tocarlo, y
+por eso Aura Studio no puede leerlo para saber cuál tienes: solo puede acordarse
+de cuál grabó.
+
+Cuando la versión que trae la app no coincide con la que anotó (o cuando no sabe
+cuál tienes, porque lo instaló otra computadora o una versión anterior de Aura
+Studio), el **Instalador** ofrece **Actualizar el arranque**.
+
+1. Abre Aura Studio → pestaña **Instalador**. Debajo de los botones aparece
+   **Actualizar el arranque** con la explicación de por qué.
+2. La pantalla te dice qué es el arranque, por qué hace falta el modo DFU y qué
+   no se toca. Presiona **Actualizar el arranque**.
+3. **Entra a modo DFU**: SELECT + MENU unos 12 segundos, igual que al instalar.
+   La app lo detecta sola.
+4. Se graba el arranque nuevo y el iPod reinicia. Listo.
+
+**Qué no hace, y conviene saberlo:**
+
+- **No borra nada.** Tu música, tus fotos, tus listas y tus ajustes se quedan
+  exactamente donde están: este paso no escribe ni un archivo en el disco.
+- **No formatea ni copia archivos**, así que **no te pide tu contraseña de
+  administrador ni una sola vez** — a diferencia de una instalación desde cero.
+- **No es obligatorio.** Aura funciona igual con el arranque anterior; lo único
+  que cambia es la pantalla que ves al encender el iPod.
+
 ## 5. Sincronizar tu música, fotos y videos
 
 Pestaña **Biblioteca**: arrastra tus archivos (música, fotos, videos) a la zona de "suelta aquí". Aura Studio:

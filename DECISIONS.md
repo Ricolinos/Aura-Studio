@@ -2345,3 +2345,88 @@ Evidencia: `docs/capturas/ronda-caratulas/fase3-sync-contrato-v18.png` — una
 sincronización real contra un volumen de prueba, con los tamaños medidos sobre
 los archivos escritos, la segunda pasada sin reescrituras y el
 `sync-pending.json` que quedó.
+
+## ST-143 — "Actualizar el arranque": lo único que la NOR no deja verificar
+
+El bootloader de esta ronda cambia (pantalla de arranque nueva, plan maestro
+§B). El problema es que **la NOR del iPod no se puede leer desde la Mac**: la
+única forma de saber qué arranque tiene grabado un aparato es acordarse de
+haberlo grabado. Ese registro existe desde ST-016
+(`AppPreferences.bootloaderVerifiedDisks`), pero guardaba **la fecha**, que no
+sirve para responder la pregunta que ahora importa: *¿el arranque que tiene es
+el que traigo yo?*
+
+**El valor pasa a ser el SHA-256 del `bootloader-ipod6g.ipod` que se flasheó.**
+Los registros anteriores se migran a `"unknown"` — que **no** es lo mismo que
+"no verificado": hay un arranque nuestro, solo que no se sabe cuál. Tirarlos
+habría forzado un DFU innecesario en cada iPod ya instalado.
+
+Y el hash de comparación sale del **artefacto real que usaría este flujo**
+(`InstallerViewModel.embeddedBootloaderHash`), no de leer `FIRMWARE_VERSION` a
+mano: ese archivo describe lo embebido y dejaría de ser cierto en cuanto ST-077
+instale un Release más nuevo que el pin. Se compara además contra **la familia
+que el iPod tiene instalada** (`device.declaredFamily`), no contra la elegida en
+Extras: a un iPod con Metro se le ofrece el arranque de Metro.
+
+### La regla, y por qué es un tipo aparte
+
+`BootloaderUpdate` (macOS y `AuraStudio.Core`, con los mismos casos en los dos
+archivos de prueba) decide con tres datos y nada más:
+
+- **hash registrado ≠ hash embebido** → hay algo que ofrecer;
+- **y hay rastro de firmware nuestro en el disco** → si no, lo que corresponde
+  es *instalar*, no "actualizar el arranque";
+- **sin bootloader embebido** (una build sin `fetch-firmware.sh`) no se ofrece
+  nada: flashear algo que no existe es peor que no ofrecer.
+
+Devuelve además el **motivo**, porque la pantalla no dice lo mismo en los dos
+casos: "esta versión trae un arranque más nuevo" cuando se sabe, y "no sabemos
+cuál tienes — lo instaló otra computadora, o una versión anterior de la app"
+cuando el registro es `unknown` o no existe.
+
+### El flujo
+
+Modo nuevo del asistente (`InstallerMode.updateBootloader`) con **cuatro pasos y
+ninguno toca el disco**: pantalla propia → DFU → grabar → listo. Sin Permisos
+(no hay nada privilegiado que pedir: `mks5lboot` corre sin contraseña, D-043),
+sin Preparar el disco y sin Copiar archivos. **Cero diálogos de contraseña**, a
+diferencia de una instalación desde cero, que llega a tres.
+
+**Se flashea con `single: false`, a propósito.** `--single` borra el arranque de
+Apple de la NOR; actualizar no puede destruir más de lo que ya estaba destruido
+—en un iPod instalado con "Solo firmware" el de Apple ya no está, y en uno con
+dual boot no hay ninguna razón para quitárselo ahora—. Al terminar se registra
+el hash nuevo, que es lo que evita volver a ofrecerlo.
+
+La pantalla responde las tres preguntas que cualquiera se haría antes de apretar
+un botón que pide modo DFU: **qué es el arranque** (el programa que corre antes
+del firmware, en un chip aparte), **por qué hace falta DFU** (ese chip no se
+puede escribir de otra forma) y **qué NO se toca** (nada del disco: música,
+fotos, listas y ajustes se quedan igual). Y una cuarta que evita una llamada de
+soporte: **no es obligatorio** — el firmware nuevo funciona con el arranque
+viejo; lo único que cambia es la pantalla de encendido. La oferta en el
+Instalador va debajo de los botones y con estilo discreto por la misma razón.
+
+`docs/guia-instalacion.md` gana la sección "4 bis. Actualizar el arranque" con
+lo mismo, incluido el "no te pide tu contraseña ni una sola vez".
+
+### Verificación
+
+macOS: `swift build` + **735 pruebas en verde** (9 nuevas: la migración del
+registro viejo, el hash como valor, y los seis casos de la regla) y
+`scripts/build-app.sh` completo. Windows: `AuraStudio.Core` con **1 147
+pruebas** (8 nuevas, los mismos casos).
+
+Armar la captura encontró dos cosas que las pruebas no podían ver: la pantalla
+final decía **"iPod restaurado"** (heredado del `switch` de dos ramas de
+`DoneView`) y "Instalando Aura…" mientras se grababa el arranque. Las dos
+corregidas — por eso la evidencia son las pantallas reales renderizadas, y no
+una descripción de ellas.
+
+**Lo que queda para la VM de Windows**: allá el registro de discos verificados
+**no existe todavía** (ST-016 es solo de macOS), así que la regla está portada y
+probada en Core pero nadie la llama: falta el almacén de hashes por disco, el
+modo del asistente y la pantalla en WinUI.
+
+Evidencia: `docs/capturas/ronda-caratulas/fase4-actualizar-arranque.png` — las
+cuatro pantallas reales del flujo, renderizadas de las vistas de verdad.

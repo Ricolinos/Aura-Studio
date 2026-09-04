@@ -127,18 +127,38 @@ final class AppPreferences: ObservableObject {
     /// saltarse el DFU (`AuraDevice.canSkipBootloaderFlash`) -- la NOR no
     /// se puede leer, asi que esto sustituye a "confiar en un archivo que
     /// pudo copiarse de otro iPod". Se borra al restaurar (`--bl-uninst`).
-    @Published private(set) var bootloaderVerifiedDisks: [String: Date] {
+    /// ST-143: el valor pasa de "cuándo lo verificamos" a **qué
+    /// bootloader verificamos** -- el SHA-256 del `bootloader-ipod6g.ipod`
+    /// que se flasheó. La fecha no servía para nada (nadie la leía) y el
+    /// hash sí: es lo único que permite saber que el arranque grabado en
+    /// la NOR quedó viejo cuando el pin de `FIRMWARE_VERSION` trae otro.
+    /// Los registros anteriores a ST-143 se migran a `unknownBootloader`
+    /// -- "sí hay un bootloader nuestro, pero no sabemos cuál".
+    @Published private(set) var bootloaderVerifiedDisks: [String: String] {
         didSet { defaults.set(bootloaderVerifiedDisks, forKey: Keys.bootloaderVerifiedDisks) }
     }
+
+    /// Ver `BootloaderUpdate.unknownBootloader`: la constante vive allá
+    /// porque la regla de "¿hay que ofrecer actualizar?" se evalúa fuera
+    /// del actor principal.
+    static let unknownBootloader = BootloaderUpdate.unknownBootloader
 
     func isBootloaderVerified(diskKey: String?) -> Bool {
         guard let diskKey else { return false }
         return bootloaderVerifiedDisks[diskKey] != nil
     }
 
-    func recordBootloaderVerified(diskKey: String?, at date: Date = Date()) {
+    /// El SHA-256 registrado para ese disco, `unknownBootloader` si se
+    /// verificó antes de ST-143, o `nil` si esta instalación nunca le
+    /// verificó el arranque.
+    func bootloaderHash(diskKey: String?) -> String? {
+        guard let diskKey else { return nil }
+        return bootloaderVerifiedDisks[diskKey]
+    }
+
+    func recordBootloaderVerified(diskKey: String?, hash: String? = nil) {
         guard let diskKey, !diskKey.isEmpty else { return }
-        bootloaderVerifiedDisks[diskKey] = date
+        bootloaderVerifiedDisks[diskKey] = hash ?? Self.unknownBootloader
     }
 
     func forgetBootloaderVerified(diskKey: String?) {
@@ -556,7 +576,14 @@ final class AppPreferences: ObservableObject {
             self.installationID = newID
         }
         self.knownDeviceNames = defaults.dictionary(forKey: Keys.knownDeviceNames) as? [String: String] ?? [:]
-        self.bootloaderVerifiedDisks = defaults.dictionary(forKey: Keys.bootloaderVerifiedDisks) as? [String: Date] ?? [:]
+        // ST-143: hasta ST-142 el valor era una `Date`. Se migra en la
+        // lectura -- una entrada vieja significa "hay bootloader nuestro,
+        // no sabemos cuál", no "no hay". Perderla obligaría a un DFU
+        // innecesario en cada iPod que ya estaba instalado.
+        self.bootloaderVerifiedDisks = (defaults.dictionary(forKey: Keys.bootloaderVerifiedDisks) ?? [:])
+            .reduce(into: [String: String]()) { result, entry in
+                result[entry.key] = entry.value as? String ?? Self.unknownBootloader
+            }
         self.libraryFolderPath = defaults.string(forKey: Keys.libraryFolderPath)
             ?? Self.defaultLibraryFolderPath
         self.copyMediaIntoLibrary = defaults.object(forKey: Keys.copyMediaIntoLibrary) as? Bool ?? true

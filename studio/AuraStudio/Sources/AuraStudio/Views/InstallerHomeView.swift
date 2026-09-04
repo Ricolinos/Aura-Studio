@@ -96,6 +96,30 @@ struct ModePickerView: View {
             }
             .frame(maxWidth: 440)
 
+            // ST-143: la oferta de actualizar el arranque. Va DEBAJO de
+            // los botones y con estilo discreto a propósito: no es una
+            // acción que haya que hacer -- el firmware funciona igual
+            // con el arranque viejo, solo cambia la pantalla de arranque.
+            if let reason = InstallerViewModel.bootloaderUpdateReason(for: device) {
+                VStack(spacing: 6) {
+                    Button {
+                        onChoose(.updateBootloader)
+                    } label: {
+                        Label("Actualizar el arranque", systemImage: "power.circle")
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.large)
+
+                    Text(reason == .differentBootloader
+                         ? "Esta versión trae un arranque más nuevo que el que tiene grabado tu iPod. No borra nada: tu música y tus ajustes se quedan igual."
+                         : "Aura Studio no sabe qué versión del arranque tiene tu iPod (lo instaló otra computadora, o una versión anterior de la app). Actualizarlo no borra nada.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: 440)
+                }
+            }
+
             if let note = installNote {
                 Text(note)
                     .font(.callout)

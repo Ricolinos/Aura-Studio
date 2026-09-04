@@ -39,6 +39,11 @@ struct InstallerWizardView: View {
                 .welcome, .permissions, .detectDevice, .enterDFU,
                 .installing, .restoreFormatting, .restoreHandoff,
             ]
+        case .updateBootloader:
+            // ST-143: cuatro pasos y ninguno toca el disco. Sin Permisos
+            // (no hay nada privilegiado que pedir: `mks5lboot` corre sin
+            // contraseña, D-043) y sin Preparar/Copiar.
+            return [.welcome, .enterDFU, .installing, .done]
         }
     }
 
@@ -53,7 +58,18 @@ struct InstallerWizardView: View {
             Group {
                 switch viewModel.step {
                 case .welcome:
-                    WelcomeView(mode: viewModel.mode, firmwareName: viewModel.targetName, onBack: viewModel.backFromWelcome, onContinue: viewModel.advanceFromWelcome)
+                    if viewModel.mode == .updateBootloader {
+                        // ST-143: pantalla propia -- lo que hay que
+                        // explicar acá (qué es el arranque, por qué DFU,
+                        // qué NO se toca) no tiene nada que ver con lo
+                        // que dice la Bienvenida de instalar.
+                        UpdateBootloaderView(firmwareName: viewModel.targetName,
+                                             reason: viewModel.updateBootloaderReason ?? .unknownBootloader,
+                                             onBack: viewModel.backFromWelcome,
+                                             onContinue: viewModel.advanceFromWelcome)
+                    } else {
+                        WelcomeView(mode: viewModel.mode, firmwareName: viewModel.targetName, onBack: viewModel.backFromWelcome, onContinue: viewModel.advanceFromWelcome)
+                    }
                 case .chooseBootMode:
                     // ST-050: ya no se llega aqui (advanceFromWelcome salta
                     // a .permissions); el caso queda para que el switch
