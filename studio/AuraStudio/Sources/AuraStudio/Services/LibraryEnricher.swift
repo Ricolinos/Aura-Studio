@@ -110,11 +110,11 @@ struct LibraryEnricher {
         metadata.title = metadata.title ?? guess.title
         metadata.artist = metadata.artist ?? guess.artist
 
-        guard online else { return metadata }
+        guard online else { return normalizingCover(metadata) }
 
         guard let recording = try? await musicBrainz.searchRecording(title: metadata.title, artist: metadata.artist),
               (recording.score ?? 0) >= Self.minimumMusicBrainzScore else {
-            return metadata
+            return normalizingCover(metadata)
         }
 
         metadata.title = metadata.title ?? recording.title
@@ -138,7 +138,18 @@ struct LibraryEnricher {
             metadata.syncedLyrics = try? await lrclib.fetchSyncedLyrics(title: title, artist: artist, album: metadata.album)
         }
 
-        return metadata
+        return normalizingCover(metadata)
+    }
+
+    /// ST-141: toda carátula que entra a la biblioteca queda cuadrada,
+    /// venga de la etiqueta del archivo (`LocalTagReader`, incluido el
+    /// `cover.jpg` de la carpeta) o de la red. Acá está el único punto
+    /// por el que pasan las dos.
+    private func normalizingCover(_ metadata: TrackMetadata) -> TrackMetadata {
+        guard let cover = metadata.coverArtData else { return metadata }
+        var normalized = metadata
+        normalized.coverArtData = CoverArtNormalizer.normalized(cover)
+        return normalized
     }
 
     /// D-198: "Buscar información"/"Buscar letra" del menú contextual de
@@ -203,7 +214,7 @@ struct LibraryEnricher {
             }
         }
 
-        return (metadata, outcome)
+        return (normalizingCover(metadata), outcome)
     }
 }
 

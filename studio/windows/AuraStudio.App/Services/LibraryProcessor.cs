@@ -82,6 +82,11 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
         metadata.Title ??= guess.Title;
         metadata.Artist ??= guess.Artist;
 
+        // ST-141: la carátula embebida en el archivo (o el `cover.jpg` de su
+        // carpeta) entra cuadrada, igual que la que baja de la red.
+        if (metadata.CoverArtData is { Length: > 0 } cover)
+            metadata.CoverArtData = WicSquareImageEncoder.SharedNormalizer.Normalize(cover);
+
         item.Metadata = metadata;
 
         // Sin artista o sin álbum la canción igual sirve, pero en el iPod cae en

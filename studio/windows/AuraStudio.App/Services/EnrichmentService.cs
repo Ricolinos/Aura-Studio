@@ -47,6 +47,7 @@ public interface IEnrichmentService
 
 public sealed class EnrichmentService(IAppPreferences preferences, CredentialStore credentials) : IEnrichmentService
 {
+
     public async Task<EnrichmentReport> EnrichAsync(
         IReadOnlyList<LibraryItem> items, IProgress<string>? progress = null, CancellationToken ct = default)
     {
@@ -77,6 +78,12 @@ public sealed class EnrichmentService(IAppPreferences preferences, CredentialSto
                 coverArtOrder: preferences.CoverArtProviderOrder,
                 deezerEnabled: preferences.DeezerEnabled,
                 ct: ct).ConfigureAwait(false);
+
+            // ST-141: la carátula que entra —de la etiqueta del archivo o de la
+            // red— queda cuadrada acá mismo, no al sincronizar.
+            metadata.CoverArtData = metadata.CoverArtData is { Length: > 0 } cover
+                ? WicSquareImageEncoder.SharedNormalizer.Normalize(cover)
+                : metadata.CoverArtData;
 
             item.Metadata = metadata;
 
@@ -177,7 +184,9 @@ public sealed class EnrichmentService(IAppPreferences preferences, CredentialSto
             hasFanartKey: () => credentials.HasKey(ApiKeyService.FanartTV.Key));
 
         return await resolver.FetchMissingAsync(
-            items, new ArtistImageStore(libraryRoot),
+            // ST-141: la foto de artista se guarda cuadrada (§D.3 la exige
+            // cuadrada en el iPod, y hasta v18 viajaba con su proporción).
+            items, new ArtistImageStore(libraryRoot, WicSquareImageEncoder.SharedNormalizer),
             onArtistDone: (name, reason) => progress?.Report(reason is null ? name : $"{name}: {reason}"),
             ct: ct,
             // Una sola foto para "Gorillaz" — el efecto que R2-4 vino a

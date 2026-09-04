@@ -47,6 +47,15 @@ public sealed class PersistedLibrary
 
     public List<PersistedLibraryItem> Items { get; set; } = [];
     public List<PersistedPlaylist> Playlists { get; set; } = [];
+
+    /// <summary>
+    /// ST-141: versión del formato de las imágenes de <c>.portadas\</c>.
+    /// Ausente = biblioteca anterior al recorte cuadrado (hay que migrarla);
+    /// <c>2</c> = todas las carátulas de música y todas las fotos de artista son
+    /// cuadradas y de lado ≤ 1000. Anulable por la misma razón que el resto de
+    /// los campos nuevos: un catálogo viejo no lo trae.
+    /// </summary>
+    public int? CoversNormalized { get; set; }
 }
 
 public sealed class PersistedLibraryItem

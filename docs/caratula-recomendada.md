@@ -132,3 +132,30 @@ Sigue vigente todo lo de "Buscar carátulas del álbum": se exige **un solo
 imágenes idénticas, se aplica a **todas** las canciones del álbum, se
 vuelve a preparar cada archivo conservando el anterior si falla, y
 **sin resultados se explica en pantalla**.
+
+## 8. El recorte cuadrado no cambia el puntaje (ST-141)
+
+Desde ST-141 **toda** carátula que entra a la biblioteca se guarda
+cuadrada (recorte centrado, lado = min(lado corto, 1000), calidad 0.92) —
+la elegida a mano, la arrastrada, la que trae la etiqueta del archivo y
+la que baja de la red, sin distinción. Eso deja una pregunta obvia: ¿una
+candidata que **ya viene cuadrada** debería puntuar más?
+
+**No, y es deliberado.** Tres razones:
+
+1. **No cambiaría ningún resultado.** Todas terminan cuadradas igual; el
+   bonus solo desempataría entre dos imágenes que van a quedar idénticas
+   en proporción.
+2. **La proporción no dice nada sobre si la tapa es la correcta.** Lo que
+   este puntaje mide es *si esta edición es este disco* (título, año,
+   número de pistas) y *si esta imagen es la portada* (tapa frontal). Una
+   candidata 4:3 puede ser exactamente la tapa buena escaneada con
+   márgenes.
+3. **Costaría lo que este documento existe para evitar.** El máximo (110)
+   y el umbral automático (85) están calibrados uno contra otro; mover el
+   máximo obliga a recalibrar el umbral y a cambiarlo en los tres lugares
+   a la vez. Un bonus que no cambia ningún resultado no vale ese riesgo.
+
+Lo que sí conviene recordar al leer el §1: las candidatas se puntúan como
+llegan de la red, **antes** de normalizarse. El recorte pasa después, al
+aplicarlas.

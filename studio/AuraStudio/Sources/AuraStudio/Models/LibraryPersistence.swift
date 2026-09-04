@@ -12,6 +12,13 @@ import Foundation
 struct PersistedLibrary: Codable {
     var items: [PersistedLibraryItem] = []
     var playlists: [PersistedPlaylist] = []
+    /// ST-141: version del formato de las imagenes de `.portadas/`.
+    /// Ausente = biblioteca anterior al recorte cuadrado (hay que
+    /// migrarla); `2` = todas las caratulas de musica y todas las fotos
+    /// de artista son cuadradas y de lado <= 1000. Opcional por la misma
+    /// razon que el resto de los campos nuevos: un catalogo viejo no lo
+    /// trae y un `Int` no-opcional tiraria la decodificacion entera.
+    var coversNormalized: Int?
 
     static let catalogFileName = "biblioteca.json"
     /// D-228: ya no hay una unica carpeta "Originales" plana -- el

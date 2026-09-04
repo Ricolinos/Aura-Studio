@@ -2139,3 +2139,102 @@ sobrante de un margen impar.
 Evidencia: `docs/capturas/ronda-caratulas/fase1-recorte-cuadrado.png` (origen
 con la franja descartada en rojo → resultado, para 4:3, 16:9 y 1:4) y los tres
 JPEG que produjo el código de producción, junto a ella.
+
+## ST-141 — La carátula se guarda cuadrada desde que entra, no al salir
+
+ST-140 dejó la herramienta; esta entrada la enchufa. **Todo** lo que hace que
+una carátula exista en la biblioteca pasa ahora por la misma normalización —
+cuadrada, lado = min(lado corto, 1000), JPEG q0.92:
+
+- la que baja de la red (Cover Art Archive, fanart.tv, Deezer) y la que trae la
+  etiqueta del archivo (o el `cover.jpg` de su carpeta): las dos salen de
+  `LibraryEnricher.enrich`/`reenrich`, que es donde se normaliza (Windows:
+  `EnrichmentService.EnrichAsync` y `LibraryProcessor.ProcessMusic`);
+- la que el usuario elige en la hoja de candidatas, la que arrastra y la que
+  aplica la recomendación automática: `applyAlbumCover` / `ApplyAlbumCover`,
+  una sola vez por álbum y no una por canción;
+- la que aparece al "volver a leer etiquetas del archivo": `mergingLocalTags` /
+  `RetagFromFile`;
+- las fotos de artista: `ArtistImageStore.save` / `.Save`.
+
+**Por qué desde el origen y no al sincronizar.** Lo que viaja al iPod se deriva
+de la copia local, así que una copia 4:3 obliga a recortar en cada sync y deja
+la vista previa de la app mostrando una imagen distinta a la del aparato.
+Guardándola cuadrada una sola vez, la app, el iPod y la carátula embebida
+muestran lo mismo. Y el decode caro (una imagen de 1000 px) ocurre una vez por
+carátula, no una por sincronización.
+
+**Lo que se pierde, dicho de frente: la franja recortada no se recupera.** Es lo
+pedido —cuadrado siempre—, y por eso el recorte solo toca la copia de
+`.portadas/`: **el archivo original del usuario no se toca nunca**, ni en la
+migración ni al ingresar.
+
+**Los pósters de video NO se tocan.** Son 3:4 por diseño (contrato §A.1) y viven
+en la misma carpeta, con el mismo formato de nombre (`<id>.jpg`) que una
+carátula de álbum, porque comparten el campo `coverArtData`. Por eso la lista de
+archivos a migrar se arma **desde los items del catálogo, mirando su `kind`**, y
+no listando el directorio: recortar un póster cuadrado sería el bug, no el
+arreglo. Hay una prueba que lo fija (`VideoPostersAreNeverInTheList`).
+
+### La migración de una biblioteca que ya existe
+
+`biblioteca.json` gana `coversNormalized` (ausente = biblioteca vieja; `2` =
+carátulas cuadradas). Al abrir una biblioteca sin la marca, una pasada en
+segundo plano recorre las carátulas de las canciones y todas las fotos de
+artista. Tres propiedades, y las tres tienen prueba:
+
+- **No reescribe lo que ya cumple.** Cuadrada y ≤ 1000 px se salta leyendo solo
+  la cabecera. Recomprimir de gratis pierde calidad y no arregla nada.
+- **Se puede cancelar** (botón en la barra de progreso, al pie de la ventana),
+  y se consulta antes de cada archivo. La escritura es atómica: cancelar nunca
+  deja un archivo a medias.
+- **Se retoma sola, sin archivo de progreso.** Saltarse lo ya hecho ES el
+  mecanismo: la siguiente apertura vuelve a recorrer (leer cabeceras es barato)
+  y termina lo que falte. Por eso la marca se escribe **solo** cuando la pasada
+  llega al final; una cancelada no marca nada.
+
+Al terminar, lo que quedó en memoria es la versión vieja, así que se relee de
+disco (macOS `reloadCoversFromDisk` + `artistImages.invalidate()`; Windows
+`Reload()`): sin eso, la app seguiría mostrando la rectangular hasta el próximo
+arranque.
+
+La barra de progreso **no la esconde** "Visualización › Mostrar barra de
+estado", a diferencia de la barra de estado normal: mientras corre hay archivos
+reescribiéndose y un botón para detenerlos; ocultarlo dejaría al usuario sin la
+única forma de cancelar.
+
+### Dos cosas que NO cambiaron, a propósito
+
+- **`CoverThumbnailCache` y el `aspectFill` de las cuadrículas se quedan como
+  están.** Con carátulas cuadradas el "llenar" no recorta nada, pero el mismo
+  componente dibuja los pósters de video (3:4): quitarlo los deformaría. El
+  arreglo de ST-113 —que el `NSImage` reporte el aspecto REAL del bitmap para
+  que `.fill` recorte en vez de estirar— sigue siendo lo correcto.
+- **El puntaje de la carátula recomendada no cambia.** Un bonus para las
+  candidatas ya cuadradas no cambiaría ningún resultado (todas terminan
+  cuadradas), la proporción no dice nada sobre si la tapa es la correcta, y
+  mover el máximo (110) obligaría a recalibrar el umbral automático (85) en los
+  tres lugares a la vez. Queda escrito en `docs/caratula-recomendada.md` §8.
+
+### Verificación
+
+macOS: `swift build` + **717 pruebas en verde** (12 nuevas), y además
+`scripts/build-app.sh` completo —`xcodegen` + `xcodebuild` Release, que compila
+en **modo Swift 6 estricto** (D-034), donde el primer intento de publicar el
+avance desde el hilo de la migración era un error de captura concurrente y no
+un aviso—. Windows: `AuraStudio.Core` con **1 131 pruebas** (19 nuevas); las 32
+que fallan en una Mac son las de siempre (rutas con `\`, `C:\`, ffmpeg de
+winget) y no cambiaron de número.
+
+**Lo que queda para la VM de Windows**: `WicSquareImageEncoder` (el puente a
+WIC) y el cableado en `LibraryViewModel`/`EnrichmentService`/`LibraryProcessor`
+no compilan en macOS; acá solo se verificó que parsean y que su uso de Core
+type-checkea. Y falta **el botón de cancelar en la interfaz**: el modelo ya
+expone `IsNormalizingCovers` y `CancelCoverNormalization()`, y el avance se
+publica por `StatusMessage` (que las páginas ya muestran), pero el botón en sí
+es XAML y se agrega allá — mientras tanto, en Windows la migración se puede
+detener cerrando la app, y se retoma igual.
+
+Evidencia: `docs/capturas/ronda-caratulas/fase2-biblioteca-cuadrada.png` (antes
+y después de una migración real, con la barra de progreso renderizada de la
+vista de verdad).

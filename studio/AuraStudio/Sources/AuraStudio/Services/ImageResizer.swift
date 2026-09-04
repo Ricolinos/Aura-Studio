@@ -148,6 +148,20 @@ struct ImageResizer {
         return try encodeBaselineJPEG(resized, quality: quality)
     }
 
+    /// Medidas de una imagen en memoria, **ya orientadas**. `nil` si los
+    /// bytes no son una imagen legible. Lee solo la cabecera: no
+    /// decodifica los pixeles (por eso la migracion de ST-141 puede
+    /// preguntarselo a miles de archivos sin costo real).
+    static func orientedPixelSize(of data: Data) -> (width: Int, height: Int)? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+        return orientedPixelSize(of: source)
+    }
+
+    static func orientedPixelSize(ofFileAt url: URL) -> (width: Int, height: Int)? {
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+        return orientedPixelSize(of: source)
+    }
+
     /// Medidas de la imagen **ya orientadas** -- una foto vertical de
     /// camara viene guardada horizontal con la rotacion en EXIF, y el
     /// recorte tiene que planearse sobre lo que se ve.

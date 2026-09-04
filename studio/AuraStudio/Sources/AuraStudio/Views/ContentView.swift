@@ -75,6 +75,16 @@ struct ContentView: View {
                 detail
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .onPreferenceChange(LibraryStatusPreferenceKey.self) { libraryStatus = $0 }
+                // ST-141: la migración única de carátulas, mientras
+                // corre. Va ARRIBA de la barra de estado y no la
+                // reemplaza: son dos cosas distintas (una resume la
+                // sección, la otra informa un trabajo en curso que se
+                // puede detener).
+                if let normalization = library.coverNormalization {
+                    CoverNormalizationBar(progress: normalization) {
+                        library.cancelCoverNormalization()
+                    }
+                }
                 // ST-063: barra de estado estilo Finder, al pie de la
                 // sección; "Visualización › Mostrar barra de estado" la
                 // oculta. Solo aparece donde hay algo que resumir.

@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using AuraStudio.App.Platform;
 using AuraStudio.App.Resources;
 using AuraStudio.App.Services;
 using AuraStudio.Core;
@@ -145,6 +146,11 @@ public sealed partial class LibraryViewModel : ViewModelBase
     {
         if (cover.Length == 0) return 0;
 
+        // ST-141: la elegida a mano, la arrastrada y la recomendada entran
+        // todas por acá, y todas quedan cuadradas. Se normaliza UNA vez, no una
+        // por canción: es la misma imagen para todo el álbum.
+        cover = WicSquareImageEncoder.SharedNormalizer.Normalize(cover);
+
         int applied = 0;
 
         foreach (LibraryItem item in Items.Where(item => item.Kind == LibraryItemKind.Music
@@ -254,7 +260,121 @@ public sealed partial class LibraryViewModel : ViewModelBase
             [.. AvailableItems.Where(item => item.Status.State == LibraryItemState.Queued)];
 
         if (pending.Count > 0) _ = ProcessAsync(pending);
+
+        StartCoverNormalizationIfNeeded();
     }
+
+    // --- Migración de carátulas a cuadradas (ST-141) ---
+
+    private CancellationTokenSource? _coverNormalization;
+
+    /// <summary>
+    /// El hilo de la interfaz, capturado al construirse. La migración corre en
+    /// el pool y escribe <c>StatusMessage</c> desde ahí; sin esto pasa lo mismo
+    /// que en ST-131 —la sincronización se moría porque el avance se escribía
+    /// desde otro hilo—. <c>null</c> si el modelo se construyera fuera del hilo
+    /// de interfaz: entonces se escribe directo, que es degradar, no romper.
+    /// </summary>
+    private readonly Microsoft.UI.Dispatching.DispatcherQueue? _dispatcher =
+        Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+
+    private void Dispatch(Action work)
+    {
+        if (_dispatcher is { HasThreadAccess: false })
+        {
+            _dispatcher.TryEnqueue(() => work());
+            return;
+        }
+
+        work();
+    }
+
+    /// <summary>
+    /// <c>true</c> mientras la pasada única de carátulas corre. La interfaz lo
+    /// usa para mostrar el botón de detenerla.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsNormalizingCovers { get; private set; }
+
+    /// <summary>
+    /// Deja cuadradas las carátulas de una biblioteca hecha antes de ST-141.
+    /// Corre <b>una sola vez</b> por biblioteca (la marca vive en
+    /// <c>biblioteca.json</c>), en segundo plano y sin bloquear nada.
+    ///
+    /// <para>Se puede detener (<see cref="CancelCoverNormalization"/>) y se
+    /// retoma sola: lo que ya está cuadrado se salta, así que la próxima
+    /// apertura termina lo que falte. La marca se escribe <b>solo</b> si la
+    /// pasada llegó al final.</para>
+    /// </summary>
+    private void StartCoverNormalizationIfNeeded()
+    {
+        if (_coverNormalization is not null) return;
+        if (_store.CoversNormalized == CoverArtNormalization.NormalizedVersion) return;
+
+        List<string> files = CoverNormalizationMigration.FilesToNormalize(Items, _store);
+        if (files.Count == 0)
+        {
+            // Nada que migrar (biblioteca vacía, o sin carátulas): se marca
+            // igual, para no volver a recorrer en cada apertura.
+            MarkCoversNormalized();
+            return;
+        }
+
+        var cancellation = new CancellationTokenSource();
+        _coverNormalization = cancellation;
+        IsNormalizingCovers = true;
+        StatusMessage = $"Normalizando carátulas… 0 de {files.Count}";
+
+        _ = Task.Run(() =>
+        {
+            CoverNormalizationMigration.Result result = CoverNormalizationMigration.Run(
+                files, WicSquareImageEncoder.SharedNormalizer, cancellation.Token,
+                onProgress: (done, total) =>
+                    Dispatch(() => StatusMessage = $"Normalizando carátulas… {done} de {total}"));
+
+            Dispatch(() => FinishCoverNormalization(result));
+        }, cancellation.Token);
+    }
+
+    private void FinishCoverNormalization(CoverNormalizationMigration.Result result)
+    {
+        _coverNormalization?.Dispose();
+        _coverNormalization = null;
+        IsNormalizingCovers = false;
+
+        if (result.Cancelled)
+        {
+            StatusMessage = "Se detuvo la normalización de carátulas. Lo que falte sigue la próxima vez.";
+            return;
+        }
+
+        MarkCoversNormalized();
+
+        if (result.Normalized == 0)
+        {
+            StatusMessage = "";
+            return;
+        }
+
+        // Lo que quedó en memoria es la versión vieja (rectangular): se relee de
+        // disco para que la app muestre lo mismo que se va a sincronizar.
+        Reload();
+        StatusMessage = result.Normalized == 1
+            ? "Se normalizó 1 carátula: ahora es cuadrada."
+            : $"Se normalizaron {result.Normalized} carátulas: ahora son cuadradas.";
+    }
+
+    private void MarkCoversNormalized()
+    {
+        _store.CoversNormalized = CoverArtNormalization.NormalizedVersion;
+        Save();
+    }
+
+    /// <summary>
+    /// Detiene la pasada. Lo hecho queda hecho; lo que falta se retoma la
+    /// próxima vez que se abra la biblioteca.
+    /// </summary>
+    public void CancelCoverNormalization() => _coverNormalization?.Cancel();
 
     /// <summary>
     /// Guarda y vuelve a publicar la biblioteca. Lo usan las acciones que mutan
@@ -709,6 +829,10 @@ public sealed partial class LibraryViewModel : ViewModelBase
             if (!File.Exists(item.SourcePath)) continue;
 
             TrackMetadata fresh = LocalTagReader.Read(item.SourcePath);
+            // ST-141: la del archivo entra cuadrada; la que ya estaba en la
+            // biblioteca ya lo está (o la migración se encargará de ella).
+            if (fresh.CoverArtData is { Length: > 0 } fromFile)
+                fresh.CoverArtData = WicSquareImageEncoder.SharedNormalizer.Normalize(fromFile);
             fresh.CoverArtData ??= item.Metadata?.CoverArtData;
             fresh.SyncedLyrics ??= item.Metadata?.SyncedLyrics;
             fresh.IsFavorite = item.Metadata?.IsFavorite ?? false;

@@ -68,7 +68,13 @@ final class ArtistImageStore: @unchecked Sendable {
         image(forArtistKey: key) != nil
     }
 
+    /// ST-141: la foto se guarda **cuadrada** (lado = min(lado corto,
+    /// 1000)). El contrato §D.3 exige cuadradas en el iPod y hasta v18
+    /// Studio mandaba el lado mayor a 128 con la proporción original --
+    /// se arregla desde el origen, no al sincronizar, para que la vista
+    /// Artistas y el aparato muestren la misma imagen.
     func save(_ data: Data, forArtistKey key: String) throws {
+        let data = CoverArtNormalizer.normalized(data)
         try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
         try data.write(to: url(forArtistKey: key), options: .atomic)
         lock.lock(); defer { lock.unlock() }

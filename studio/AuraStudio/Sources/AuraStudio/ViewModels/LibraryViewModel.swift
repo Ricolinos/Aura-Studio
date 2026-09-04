@@ -75,6 +75,15 @@ final class LibraryViewModel: ObservableObject {
     /// ST-031: fotos de artista de la biblioteca actual (`.portadas/
     /// artistas/`). Se recrea al cambiar de carpeta.
     private(set) var artistImages: ArtistImageStore
+
+    /// ST-141: version de `coversNormalized` que trae el catalogo en
+    /// disco. `nil` = biblioteca anterior al recorte cuadrado.
+    private var coversNormalizedVersion: Int?
+    /// Progreso de la migracion de caratulas mientras corre; `nil`
+    /// cuando no hay ninguna (que es casi siempre). Lo dibuja
+    /// `ContentView` sobre la barra de estado.
+    @Published private(set) var coverNormalization: CoverNormalizationProgress?
+    private var coverNormalizationTask: Task<Void, Never>?
     private var stagingDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.preparedDirName, isDirectory: true) }
     private var coversDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.coversDirName, isDirectory: true) }
     private var musicDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.musicDirName, isDirectory: true) }
@@ -938,6 +947,11 @@ final class LibraryViewModel: ObservableObject {
     @discardableResult
     func applyAlbumCover(_ data: Data, toItems ids: Set<UUID>, markEdited: Bool = true) -> Int {
         guard !data.isEmpty else { return 0 }
+        // ST-141: la elegida a mano, la arrastrada y la recomendada
+        // entran todas por aca, y todas quedan cuadradas. Se normaliza
+        // UNA vez, no una por cancion: es la misma imagen para todo el
+        // album.
+        let data = CoverArtNormalizer.normalized(data)
         var changed = 0
         for index in items.indices where ids.contains(items[index].id) && items[index].kind == .music {
             var metadata = items[index].metadata ?? TrackMetadata()
@@ -1170,7 +1184,9 @@ final class LibraryViewModel: ObservableObject {
         merged.genre = fresh.genre ?? current.genre
         merged.composer = fresh.composer ?? current.composer
         merged.trackNumber = fresh.trackNumber ?? current.trackNumber
-        merged.coverArtData = fresh.coverArtData ?? current.coverArtData
+        // ST-141: la carátula de la etiqueta (o el `cover.jpg` de la
+        // carpeta) entra cuadrada, igual que la que baja de la red.
+        merged.coverArtData = fresh.coverArtData.map(CoverArtNormalizer.normalized) ?? current.coverArtData
         return merged
     }
 
@@ -1554,12 +1570,136 @@ final class LibraryViewModel: ObservableObject {
     }
 
     private func switchLibraryFolder(to newPath: String) {
+        // La migración en curso es de la biblioteca que se está
+        // dejando: seguir reescribiendo archivos de una carpeta que ya
+        // no es la activa no tiene sentido (y su marca se escribiría en
+        // el catálogo equivocado). `loadCatalog` arranca la de la nueva.
+        cancelCoverNormalization()
         libraryRoot = URL(fileURLWithPath: newPath, isDirectory: true)
         ensureLibraryStructure()
         migrateLegacyLibraryLayoutIfNeeded()
         items = []
         playlists = []
         loadCatalog()
+    }
+
+    // MARK: - Migracion de caratulas a cuadradas (ST-141)
+
+    /// Los archivos de `.portadas/` que la migración debe mirar: las
+    /// carátulas de las CANCIONES y todas las fotos de artista.
+    ///
+    /// Lo que queda deliberadamente afuera:
+    /// - **Los pósters de video**, que viven en la misma carpeta y con el
+    ///   mismo nombre (`<id>.jpg`) pero son 3:4 por diseño (contrato
+    ///   §A.1). Por eso esto se arma desde los items del catálogo, con su
+    ///   `kind`, y no listando el directorio a ciegas.
+    /// - **Las imágenes de las listas** (`playlist-<id>.jpg`), que ya las
+    ///   genera cuadradas `PlaylistArtGenerator` (128×128).
+    /// - **Los archivos originales del usuario**: la migración solo toca
+    ///   la copia de la biblioteca.
+    private func coverFilesToNormalize() -> [URL] {
+        let fm = FileManager.default
+        var files: [URL] = []
+
+        for item in items where item.kind == .music {
+            let url = coversDirectory.appendingPathComponent("\(item.id.uuidString).jpg")
+            if fm.fileExists(atPath: url.path) { files.append(url) }
+        }
+
+        let artistsDirectory = coversDirectory.appendingPathComponent("artistas", isDirectory: true)
+        if let contents = try? fm.contentsOfDirectory(at: artistsDirectory,
+                                                      includingPropertiesForKeys: nil,
+                                                      options: [.skipsHiddenFiles]) {
+            files += contents.filter { $0.pathExtension.lowercased() == "jpg" }
+        }
+
+        return files
+    }
+
+    /// Arranca la pasada única si esta biblioteca todavía no la tuvo.
+    /// Corre en segundo plano y a prioridad baja: la app se usa
+    /// normalmente mientras tanto.
+    private func startCoverNormalizationIfNeeded() {
+        guard coverNormalizationTask == nil,
+              coversNormalizedVersion != CoverArtNormalizer.normalizedVersion else { return }
+
+        let files = coverFilesToNormalize()
+        guard !files.isEmpty else {
+            // Nada que migrar (biblioteca vacía, o sin carátulas): se
+            // marca igual, para no volver a recorrer en cada apertura.
+            markCoversNormalized()
+            return
+        }
+
+        coverNormalization = CoverNormalizationProgress(completed: 0, total: files.count)
+
+        // El avance se publica desde el hilo de la migración, así que
+        // vuelve al MainActor por su cuenta. `[weak self]` una sola vez,
+        // acá: capturarlo otra vez dentro del `Task` interno sería
+        // capturar una variable en código concurrente (error en Swift 6,
+        // que es con lo que compila `xcodebuild` -- D-034).
+        let report: @Sendable (Int, Int) -> Void = { [weak self] completed, total in
+            Task { @MainActor in
+                // Si ya no hay migración (se canceló y se limpió el
+                // estado) no se resucita la barra.
+                guard let self, self.coverNormalization != nil else { return }
+                self.coverNormalization = CoverNormalizationProgress(completed: completed, total: total)
+            }
+        }
+        let finish: @Sendable (CoverNormalizationMigration.Result) -> Void = { [weak self] result in
+            Task { @MainActor in self?.finishCoverNormalization(result) }
+        }
+
+        coverNormalizationTask = Task.detached(priority: .utility) {
+            finish(CoverNormalizationMigration.run(files: files,
+                                                   isCancelled: { Task.isCancelled },
+                                                   onProgress: report))
+        }
+    }
+
+    /// Cierra la pasada: la marca SOLO si terminó completa. Cancelada,
+    /// la próxima apertura la retoma -- y como saltarse lo que ya está
+    /// cuadrado es la regla, retomar cuesta leer cabeceras, no reescribir.
+    private func finishCoverNormalization(_ result: CoverNormalizationMigration.Result) {
+        coverNormalizationTask = nil
+        coverNormalization = nil
+
+        guard !result.cancelled else { return }
+        markCoversNormalized()
+
+        guard result.normalized > 0 else { return }
+        // Lo que quedó en memoria es la versión vieja (rectangular): se
+        // relee de disco para que la app muestre lo mismo que se va a
+        // sincronizar. `artistImages` cachea por su cuenta, así que se le
+        // avisa aparte.
+        reloadCoversFromDisk()
+        artistImages.invalidate()
+        lastEnrichmentSummary = result.normalized == 1
+            ? "Se normalizó 1 carátula: ahora es cuadrada."
+            : "Se normalizaron \(result.normalized) carátulas: ahora son cuadradas."
+    }
+
+    private func markCoversNormalized() {
+        coversNormalizedVersion = CoverArtNormalizer.normalizedVersion
+        persistCatalog()
+    }
+
+    /// "Cancelar" de la barra de progreso. Lo hecho queda hecho; lo que
+    /// falta se retoma la próxima vez que se abra la biblioteca.
+    func cancelCoverNormalization() {
+        coverNormalizationTask?.cancel()
+        coverNormalizationTask = nil
+        coverNormalization = nil
+    }
+
+    private func reloadCoversFromDisk() {
+        for index in items.indices where items[index].kind == .music {
+            let url = coversDirectory.appendingPathComponent("\(items[index].id.uuidString).jpg")
+            guard let data = try? Data(contentsOf: url), !data.isEmpty,
+                  var metadata = items[index].metadata, metadata.coverArtData != data else { continue }
+            metadata.coverArtData = data
+            items[index].metadata = metadata
+        }
     }
 
     // MARK: - Migracion del esquema viejo (D-228)
@@ -1697,6 +1837,10 @@ final class LibraryViewModel: ObservableObject {
     /// archivos aparte (`Portadas/<id>.jpg`) -- ver PersistedLibrary.
     private func persistCatalog() {
         var persisted = PersistedLibrary()
+        // ST-141: la marca de "carátulas ya cuadradas" sobrevive a cada
+        // guardado. Perderla haría que la migración se repitiera en cada
+        // apertura (barata, pero recorriendo miles de archivos de balde).
+        persisted.coversNormalized = coversNormalizedVersion
         for item in items {
             var coverRelative: String?
             if let cover = item.metadata?.coverArtData {
@@ -1806,8 +1950,10 @@ final class LibraryViewModel: ObservableObject {
             return Playlist(id: $0.id, name: $0.name, trackItemIDs: $0.trackItemIDs,
                              imageRelativePath: imageRelative)
         }
+        coversNormalizedVersion = persisted.coversNormalized
         evaluateLegacyMetadataRereadOffer()
         evaluateCoverContaminationOffer()
+        startCoverNormalizationIfNeeded()
     }
 
     private func relativePath(of url: URL) -> String {

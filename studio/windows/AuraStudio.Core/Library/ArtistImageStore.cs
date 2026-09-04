@@ -13,7 +13,16 @@ namespace AuraStudio.Core.Library;
 /// cada sync, con el mismo nombre de archivo, para que el firmware las
 /// encuentre (contrato §D.3).</para>
 /// </summary>
-public sealed class ArtistImageStore(string libraryRoot)
+/// <param name="normalizer">
+/// ST-141: con él, la foto se guarda <b>cuadrada</b> (lado = min(lado corto,
+/// 1000)). El contrato §D.3 exige cuadradas en el iPod y hasta v18 Studio
+/// mandaba el lado mayor a 128 con la proporción original — se arregla desde el
+/// origen, no al sincronizar, para que la vista Artistas y el aparato muestren
+/// la misma imagen. Es opcional porque la normalización necesita la plataforma
+/// (WIC) y este tipo vive en Core: sin él, se guarda tal cual (es lo que hacen
+/// las pruebas que no miran imágenes).
+/// </param>
+public sealed class ArtistImageStore(string libraryRoot, CoverArtNormalizer? normalizer = null)
 {
     public string Directory { get; } =
         Path.Combine(libraryRoot, PersistedLibrary.CoversDirName, "artistas");
@@ -68,6 +77,8 @@ public sealed class ArtistImageStore(string libraryRoot)
     public void Save(string artistKey, byte[] image)
     {
         System.IO.Directory.CreateDirectory(Directory);
+
+        image = normalizer?.Normalize(image) ?? image;
 
         string path = PathFor(artistKey);
         string temporary = path + ".tmp";

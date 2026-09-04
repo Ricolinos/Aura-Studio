@@ -16,6 +16,14 @@ public sealed class LibraryStore(string root)
 
     public string CoversDirectory => Path.Combine(Root, PersistedLibrary.CoversDirName);
 
+    /// <summary>
+    /// ST-141: la versión de <c>coversNormalized</c> que trae el catálogo en
+    /// disco (<c>null</c> = biblioteca anterior al recorte cuadrado). Se lee al
+    /// cargar y se vuelve a escribir en cada guardado: perderla haría que la
+    /// migración se repitiera en cada apertura.
+    /// </summary>
+    public int? CoversNormalized { get; set; }
+
     public string PreparedDirectory => Path.Combine(Root, PersistedLibrary.PreparedDirName);
 
     /// <summary>
@@ -86,6 +94,7 @@ public sealed class LibraryStore(string root)
         error = load.Error;
 
         PersistedLibrary catalog = load.Catalog;
+        CoversNormalized = catalog.CoversNormalized;
         var items = new List<LibraryItem>(catalog.Items.Count);
 
         foreach (PersistedLibraryItem persisted in catalog.Items)
@@ -160,7 +169,7 @@ public sealed class LibraryStore(string root)
         List<PersistedPlaylist> keptPlaylists =
             playlists?.ToList() ?? LibraryCatalogStore.Load(Root).Playlists;
 
-        var catalog = new PersistedLibrary { Playlists = keptPlaylists };
+        var catalog = new PersistedLibrary { Playlists = keptPlaylists, CoversNormalized = CoversNormalized };
 
         foreach (LibraryItem item in items)
         {
