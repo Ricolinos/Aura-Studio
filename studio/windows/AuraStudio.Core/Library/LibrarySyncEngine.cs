@@ -1,3 +1,5 @@
+using AuraStudio.Core;
+
 namespace AuraStudio.Core.Library;
 
 /// <summary>Un archivo que el plan marcó para copiar y que no se pudo escribir.</summary>
@@ -204,6 +206,13 @@ public static class LibrarySyncEngine
         }
 
         manifest.Save(volumeRoot);
+
+        // ST-146 / maestro §B: la hora del Mac se sincroniza al TERMINAR cada
+        // sync -- no solo al conectar -- y siempre, tenga o no tenga el sync
+        // cambios de medios que copiar. Antes del marcador de abajo a
+        // propósito: si algo de lo de acá abajo fallara, la hora ya quedó
+        // puesta.
+        ClockSyncWriter.WriteToDisk(volumeRoot);
 
         if (!sections.IsEmpty) WriteMarkerAndMaybeClearDatabases(volumeRoot, sections);
 

@@ -95,6 +95,48 @@ public sealed class LibrarySyncEngineTests : IDisposable
             Assert.True(Directory.Exists(Path.Combine(_volume, directory)), directory);
     }
 
+    // MARK: - ST-146 / maestro §B: la hora en cada sincronización
+
+    /// <summary>Un sync SIN cambios de medios también deja la hora de la computadora puesta.</summary>
+    [Fact]
+    public void ASyncWithoutMediaChangesStillWritesTheClock()
+    {
+        PutOnDevice(".rockbox/aura/aura.cfg", "sync_marker_supported: 1");
+
+        LibrarySyncEngine.Apply(_volume, PlanOf());
+
+        Assert.Contains("rtc_sync_year:", OnDeviceText(".rockbox/aura/aura.cfg"));
+    }
+
+    /// <summary>La hora se escribe ANTES del marcador de sync-pending (maestro §B).</summary>
+    [Fact]
+    public void TheClockIsWrittenBeforeTheSyncPendingMarker()
+    {
+        PutOnDevice(".rockbox/aura/aura.cfg", "sync_marker_supported: 1");
+
+        LibrarySyncEngine.Apply(_volume, PlanOf(Ready(Source("a.mp3"), "Music/A/a.mp3")));
+
+        Assert.Contains("rtc_sync_year:", OnDeviceText(".rockbox/aura/aura.cfg"));
+        Assert.True(File.Exists(OnDevice(SyncPendingMarker.RelativePath)));
+    }
+
+    /// <summary>La hora escrita coincide con la del reloj real de la máquina.</summary>
+    [Fact]
+    public void TheWrittenClockMatchesTheRealMachineClock()
+    {
+        PutOnDevice(".rockbox/aura/aura.cfg", "sync_marker_supported: 1");
+
+        LibrarySyncEngine.Apply(_volume, PlanOf());
+
+        string cfg = OnDeviceText(".rockbox/aura/aura.cfg");
+        DateTimeOffset now = DateTimeOffset.Now;
+        Assert.Contains($"rtc_sync_year: {now.Year}", cfg);
+        Assert.Contains($"rtc_sync_month: {now.Month}", cfg);
+        Assert.Contains($"rtc_sync_day: {now.Day}", cfg);
+    }
+
+    private string OnDeviceText(string relativePath) => File.ReadAllText(OnDevice(relativePath));
+
     [Fact]
     public void NoTemporaryFileSurvivesASuccessfulCopy()
     {

@@ -147,6 +147,24 @@ public class FirmwareSwitcherTests : IDisposable
     }
 
     [Fact]
+    public void SwitchingWritesTheClockOnTheIncomingTree()
+    {
+        // ST-146 / maestro §B: el árbol que acaba de despertar puede llevar
+        // días dormido -- su reloj queda tan atrasado como el último apagado.
+        // El cambio de familia deja la hora de la computadora puesta en el
+        // árbol ENTRANTE, sin esperar a que el usuario desconecte y reconecte.
+        GiveActiveTree("aura");
+        WriteFile(".firmware-metro/rockbox.ipod", "binario-de-metro");
+        WriteFile(".firmware-metro/aura/aura.cfg", "firmware_family: metro\naccent: 9");
+
+        FirmwareSwitcher.SwitchActiveFirmware(FirmwareFamily.Metro, FirmwareFamily.Aura, _root);
+
+        string cfg = Read(".rockbox/aura/aura.cfg");
+        Assert.StartsWith("firmware_family: metro\naccent: 9\n", cfg);
+        Assert.Contains("rtc_sync_year:", cfg);
+    }
+
+    [Fact]
     public void SwitchingRefreshesTheRootBinaryFromTheIncomingTree()
     {
         // El bootloader arranca /rockbox.ipod de la raíz: si no se actualiza,

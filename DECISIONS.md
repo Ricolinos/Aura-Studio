@@ -2746,3 +2746,67 @@ pendiente de que el dueño la corra con el iPod en la mano.
 
 **Verificado en hardware por el dueño el 2026-09-04: instalación,
 actualización del arranque y sync correctos.**
+
+## ST-146 — La hora se sincroniza en cada conexión, cada sync y cada cambio de familia — para CUALQUIER familia
+
+Ronda "ajustes 2" (plan maestro §B). Hasta hoy `ClockSyncWriter` corría en dos
+momentos (conectar con evidencia de arranque, e instalar/actualizar); el
+encargo amplía a un tercero — **terminar cada sincronización de biblioteca,
+incluida una que no copió ni un archivo** — y, más importante, aclara que
+"cualquier familia corriendo" ya no era una aspiración: **ya lo era**.
+
+### Lo que ya estaba bien, y lo que faltaba de verdad
+
+`IPodMonitor.syncClockIfNeeded` (macOS) y `DeviceSessionService.SyncClockIfConnected`
+(Windows) disparan con `supportsAuraContract`/`SupportsAuraContract` — una
+propiedad que, pese a su nombre histórico (`Firmware.aura`/`InstalledFirmwareKind.Aura`
+en el enum que clasifica archivos), es **de capacidad, no de identidad**
+(ST-046): da `true` para Metro y moonlit exactamente igual que para Aura,
+porque las tres escriben `.rockbox/aura/aura.cfg` y hablan el mismo §D del
+contrato. El comentario de `IPodMonitor` decía "en cada conexión con Aura
+corriendo" — texto viejo, código ya correcto desde ST-046. Se corrigió el
+comentario y se agregó la prueba que faltaba (`Metro y moonlit también
+satisfacen supportsAuraContract`, en las dos plataformas) para que ese hecho
+quede fijado, no solo inferido.
+
+Lo que sí faltaba, en las dos plataformas:
+
+1. **Al terminar cada sincronización de biblioteca.** `LibrarySync.sync()`
+   (macOS) y `LibrarySyncEngine.Apply` (Windows) nunca llamaban a
+   `ClockSyncWriter`. Se agrega justo antes de escribir el marcador de
+   `sync-pending.json` — a propósito: si algo de lo que sigue fallara, la hora
+   ya quedó puesta — y **sin condicionarlo a que el sync haya copiado algo**:
+   un sync vacío también sincroniza la hora, que es exactamente el caso que
+   el maestro pedía cubrir explícitamente.
+2. **Al cambiar de familia.** `FirmwareSwitcher.switchActiveFirmware`
+   (macOS) / `FirmwareSwitcher.SwitchActiveFirmware` (Windows) tampoco lo
+   hacían. Un árbol dormido puede llevar semanas dormido — su reloj queda tan
+   atrasado como el último apagado de esa familia —, así que el cambio deja
+   la hora puesta en el árbol **entrante** (ya renombrado a `/.rockbox/`
+   cuando corre la escritura), sin esperar a que el usuario desconecte y
+   reconecte el iPod.
+
+### Verificación
+
+macOS: `swift build` + **745 pruebas en verde** (10 nuevas: Metro/moonlit
+satisfacen `supportsAuraContract`; el cambio de familia deja la hora en el
+árbol entrante conservando sus demás claves; un sync sin cambios de medios,
+uno con cambios, y que la hora escrita coincide con el reloj real de la
+máquina) y `scripts/build-app.sh` completo. Windows: `AuraStudio.Core` con
+**1 152 pruebas** (5 nuevas, mismos casos); las 32 que fallan en una Mac son
+las de siempre.
+
+**Verificación real pedida por el plan** (no solo con datos sintéticos): una
+sincronización de verdad (`LibrarySync.sync`) contra un volumen de prueba cuyo
+`aura.cfg` declara `firmware_family: metro` — no Aura —, primero sin ningún
+cambio de medios que copiar. El archivo quedó con `rtc_sync_year/month/day/hour/min/sec`
+y `tz_local_quarters` puestos, coincidiendo con la hora real del Mac en el
+momento de correrlo, y conservando `firmware_family`/`accent` tal como
+estaban. Evidencia: `docs/capturas/ajustes-2/fase2-hora-en-cada-sync.png`.
+
+**Lo que queda para la VM de Windows**: el punto (3) del maestro —"al
+instalar/actualizar"— vive del lado de `AuraStudio.App` (el `InstallerViewModel`
+de WinUI), que no compila en macOS. La llamada de conexión
+(`DeviceSessionService.SyncClockIfConnected`) ya estaba desde antes de esta
+ronda; falta agregar la de instalación/actualización, simétrica a como
+`InstallerViewModel.swift:1214` ya lo hace en macOS.

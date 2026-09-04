@@ -75,6 +75,29 @@ final class AuraDeviceProbeTests: XCTestCase {
         XCTAssertTrue(device.isDualBoot)
     }
 
+    /// ST-146 / maestro §B: `supportsAuraContract` es lo que decide si
+    /// `IPodMonitor` sincroniza la hora al conectar -- tiene que dar
+    /// `true` para Metro y moonlit exactamente igual que para Aura, no
+    /// solo para quien no declara `firmware_family` (que es Aura por
+    /// default, D-... "ausente = aura"). Sin este caso, un cambio futuro
+    /// que restringiera la propiedad a `declaredFamily == .aura` pasaría
+    /// el resto de la suite sin que nada lo note.
+    func testMetroAndMoonlitAlsoSupportTheContract() throws {
+        for family in ["metro", "moonlit"] {
+            let cfg = "firmware_family: \(family)\n"
+            let url = root.appendingPathComponent(".rockbox/aura/aura.cfg")
+            try FileManager.default.createDirectory(at: url.deletingLastPathComponent(),
+                                                     withIntermediateDirectories: true)
+            try cfg.write(to: url, atomically: true, encoding: .utf8)
+
+            let device = try XCTUnwrap(AuraDeviceProbe.probe(diskInfo: diskInfo()))
+            XCTAssertTrue(device.supportsAuraContract, "\(family) debería hablar el contrato")
+            XCTAssertNotEqual(device.declaredFamily, .aura, "\(family) no debería declararse Aura")
+
+            try FileManager.default.removeItem(at: root.appendingPathComponent(".rockbox"))
+        }
+    }
+
     // MARK: - ST-016: lectura real por USB + evidencia de arranque
 
     /// El caso exacto del dueño (2026-08-17): iPod con firmware original de

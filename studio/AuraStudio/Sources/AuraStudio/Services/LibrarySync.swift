@@ -691,6 +691,13 @@ struct LibrarySync {
         // pondra al dia en el primer sync despues de despertar.
         try? FirmwareSwitcher.mirrorContractFilesToDormantTrees(volumeRoot: volumeRoot, fileManager: fileManager)
 
+        // ST-146 / maestro §B: la hora del Mac se sincroniza al TERMINAR
+        // cada sync -- no solo al conectar -- y siempre, tenga o no tenga
+        // el sync cambios de medios que copiar. Antes del marcador de
+        // abajo a proposito: si algo de lo de aca abajo fallara, la hora
+        // ya quedo puesta.
+        try? ClockSyncWriter.writeToDisk(mountPath: volumeRoot.path, fileManager: fileManager)
+
         // ST-012 / contrato SS4: si este sync toco algo (tambien si se
         // cancelo a medias -- lo copiado ya esta en el disco y el
         // firmware tiene que verlo), se deja el marcador para que el

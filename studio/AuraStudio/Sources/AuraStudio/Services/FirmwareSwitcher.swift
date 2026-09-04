@@ -151,6 +151,13 @@ enum FirmwareSwitcher {
             try SyncPendingMarker(changes: .init(music: true, video: false, images: false))
                 .write(to: volumeRoot, fileManager: fileManager)
         }
+
+        // ST-146 / maestro §B: el árbol que acaba de despertar puede llevar
+        // días o semanas dormido -- su reloj queda tan atrasado como el
+        // último apagado. Se sincroniza aquí, en el árbol ENTRANTE (ya
+        // renombrado a `/.rockbox/` arriba), sin esperar a que el usuario
+        // desconecte y vuelva a conectar.
+        try? ClockSyncWriter.writeToDisk(mountPath: volumeRoot.path, fileManager: fileManager)
     }
 
     /// ST-059: compara el sello del arbol ya renombrado a `/.rockbox/`

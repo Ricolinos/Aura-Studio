@@ -2398,6 +2398,14 @@ durante la corrida nocturna.
   el estado "sin dispositivo". El ciclo completo está probado contra un volumen
   de mentira, pero la lista, la activación y el bloqueo de compartir no se han
   visto en pantalla con datos reales.
+- **Agregar la sincronización de hora al instalar/actualizar** (ST-146,
+  ronda "ajustes 2"): `DeviceSessionService.SyncClockIfConnected` (al
+  conectar) y `LibrarySyncEngine.Apply`/`FirmwareSwitcher.SwitchActiveFirmware`
+  (al terminar un sync, al cambiar de familia) ya llaman a `ClockSyncWriter`
+  desde `AuraStudio.Core` -- probado y verde ahí. Falta la tercera pata, que
+  vive en `AuraStudio.App` (`InstallerViewModel`, WinUI): escribir la hora al
+  terminar de copiar los archivos, simétrico a
+  `InstallerViewModel.swift:1214` en macOS.
 - **Probar el recorte cuadrado en la VM** (ST-140/ST-141/ST-142): correr
   `dotnet run --project tools\ImageResizerCheck -c Release` (comprobaciones
   20-27) y confirmar que no hay pausa perceptible al aplicar una tapa — el

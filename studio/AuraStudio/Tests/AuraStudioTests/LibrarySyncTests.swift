@@ -108,6 +108,50 @@ final class LibrarySyncTests: XCTestCase {
                        "la portada debe existir en la carpeta del álbum y en ninguna otra ruta del volumen")
     }
 
+    // MARK: - ST-146 / maestro §B: la hora en cada sincronización
+
+    /// Un sync SIN cambios de medios (nada nuevo que copiar, nada
+    /// borrado) también deja la hora del Mac puesta -- no solo el que
+    /// copia archivos.
+    func testASyncWithoutMediaChangesStillWritesTheClock() throws {
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+        _ = try sync.sync(items: [])   // sin items: nada que copiar
+
+        let cfgURL = fakeIPod.appendingPathComponent(".rockbox/aura/aura.cfg")
+        let cfg = try XCTUnwrap(try? String(contentsOf: cfgURL, encoding: .utf8))
+        XCTAssertTrue(cfg.contains("rtc_sync_year:"), "un sync vacío también sincroniza la hora")
+    }
+
+    /// La hora se escribe ANTES del marcador de sync-pending -- si algo de
+    /// lo que sigue fallara, la hora ya quedó puesta (maestro §B).
+    func testTheClockIsWrittenBeforeTheSyncPendingMarker() throws {
+        let item = musicItem()
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+        _ = try sync.sync(items: [item])
+
+        let cfgURL = fakeIPod.appendingPathComponent(".rockbox/aura/aura.cfg")
+        let cfg = try XCTUnwrap(try? String(contentsOf: cfgURL, encoding: .utf8))
+        XCTAssertTrue(cfg.contains("rtc_sync_year:"))
+        XCTAssertTrue(FileManager.default.fileExists(
+            atPath: fakeIPod.appendingPathComponent(".aura/sync-pending.json").path))
+    }
+
+    /// La hora escrita coincide con la del reloj real del Mac (con un
+    /// margen de un minuto, por si el test cruza el límite del minuto).
+    func testTheWrittenClockMatchesTheRealMacClock() throws {
+        let sync = LibrarySync(volumeRoot: fakeIPod)
+        _ = try sync.sync(items: [])
+
+        let cfgURL = fakeIPod.appendingPathComponent(".rockbox/aura/aura.cfg")
+        let cfg = try XCTUnwrap(try? String(contentsOf: cfgURL, encoding: .utf8))
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = .current
+        let now = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: Date())
+        XCTAssertTrue(cfg.contains("rtc_sync_year: \(now.year!)"))
+        XCTAssertTrue(cfg.contains("rtc_sync_month: \(now.month!)"))
+        XCTAssertTrue(cfg.contains("rtc_sync_day: \(now.day!)"))
+    }
+
     func testMigrationDeletesStaleFlatFile() throws {
         let item = musicItem()
         let sync = LibrarySync(volumeRoot: fakeIPod)

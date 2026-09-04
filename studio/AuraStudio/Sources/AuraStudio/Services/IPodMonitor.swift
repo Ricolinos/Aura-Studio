@@ -127,10 +127,12 @@ final class IPodMonitor: ObservableObject {
     }
 
     /// Hora y zona horaria del Mac hacia `aura.cfg` (encargo 2026-08-18,
-    /// ver `ClockSyncWriter`): en cada conexion con Aura corriendo, para
-    /// que el dueño nunca tenga que configurarlas a mano. Cede el
-    /// candado sin quejarse si otro flujo (instalacion, sync) ya lo
-    /// tiene -- el proximo connect lo vuelve a intentar.
+    /// ver `ClockSyncWriter`): en cada conexion con CUALQUIER familia
+    /// corriendo (Aura, Metro, moonlit -- ST-146/maestro §B; las tres
+    /// hablan el mismo contrato de `aura.cfg`, `supportsAuraContract` no
+    /// distingue cual), para que el dueño nunca tenga que configurarlas a
+    /// mano. Cede el candado sin quejarse si otro flujo (instalacion,
+    /// sync) ya lo tiene -- el proximo connect lo vuelve a intentar.
     private func syncClockIfNeeded(mountPath: String) {
         guard InstallerFlowRegistry.shared.beginWriting() else { return }
         defer { InstallerFlowRegistry.shared.endWriting() }

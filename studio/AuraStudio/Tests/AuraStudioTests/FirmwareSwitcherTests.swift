@@ -84,6 +84,20 @@ final class FirmwareSwitcherTests: XCTestCase {
     /// Primer cambio tras v12 (sin sello compartido): se crea, se anota
     /// como del saliente, y el entrante -- sin sello propio -- SI recibe
     /// marcador. El comportamiento de siempre, mas el arranque en frio.
+    /// ST-146 / maestro §B: el árbol que acaba de despertar puede llevar
+    /// días dormido -- su reloj queda tan atrasado como el último apagado.
+    /// El cambio de familia deja la hora del Mac puesta en el árbol
+    /// ENTRANTE, sin esperar a que el usuario desconecte y reconecte.
+    func testSwitchWritesTheClockOnTheIncomingTree() throws {
+        try makeMetroActiveAuraDormant()
+        try FirmwareSwitcher.switchActiveFirmware(to: .aura, currentlyActive: .metro, volumeRoot: root)
+
+        // El activo despues del cambio es Aura -- ".rockbox/" es ahora su arbol.
+        let cfg = try XCTUnwrap(read(".rockbox/aura/aura.cfg"))
+        XCTAssertTrue(cfg.contains("rtc_sync_year:"), "el arbol entrante debe traer la hora puesta")
+        XCTAssertTrue(cfg.contains("theme: 1"), "y conservar lo que ya tenia -- no se reescribe entero")
+    }
+
     func testFirstSwitchBootstrapsStampAndStillWritesMarker() throws {
         try makeMetroActiveAuraDormant()
         try FirmwareSwitcher.switchActiveFirmware(to: .aura, currentlyActive: .metro, volumeRoot: root)
@@ -136,7 +150,12 @@ final class FirmwareSwitcherTests: XCTestCase {
         try FirmwareSwitcher.switchActiveFirmware(to: .aura, currentlyActive: .metro, volumeRoot: root)
 
         XCTAssertEqual(read(".rockbox/rockbox.ipod"), "AURA BIN")
-        XCTAssertEqual(read(".rockbox/aura/aura.cfg"), "theme: 1\n", "Aura despierta con SUS ajustes")
+        // ST-146: el entrante recibe ademas la hora del Mac (ver
+        // testSwitchWritesTheClockOnTheIncomingTree) -- se conserva lo
+        // que tenia y se le agregan las claves rtc_sync_*.
+        let auraCfg = try XCTUnwrap(read(".rockbox/aura/aura.cfg"))
+        XCTAssertTrue(auraCfg.hasPrefix("theme: 1\n"), "Aura despierta con SUS ajustes")
+        XCTAssertTrue(auraCfg.contains("rtc_sync_year:"))
         XCTAssertTrue(exists(".rockbox/fonts/a26-title-20.fnt"))
         XCTAssertEqual(read(".firmware-metro/rockbox.ipod"), "METRO BIN")
         XCTAssertEqual(read(".firmware-metro/aura/aura.cfg"), "firmware_family: metro\naccent: 9\n",
@@ -155,8 +174,15 @@ final class FirmwareSwitcherTests: XCTestCase {
         try FirmwareSwitcher.switchActiveFirmware(to: .aura, currentlyActive: .metro, volumeRoot: root)
         try FirmwareSwitcher.switchActiveFirmware(to: .metro, currentlyActive: .aura, volumeRoot: root)
         XCTAssertEqual(read(".rockbox/rockbox.ipod"), "METRO BIN")
-        XCTAssertEqual(read(".rockbox/aura/aura.cfg"), "firmware_family: metro\naccent: 9\n")
-        XCTAssertEqual(read(".firmware-aura/aura/aura.cfg"), "theme: 1\n")
+        // ST-146: cada arbol lleva la hora puesta desde que entro --
+        // Metro ahora (segundo switch), Aura desde el primero, y ese
+        // registro viaja dormido con ella sin que nada lo borre.
+        let metroCfg = try XCTUnwrap(read(".rockbox/aura/aura.cfg"))
+        XCTAssertTrue(metroCfg.hasPrefix("firmware_family: metro\naccent: 9\n"))
+        XCTAssertTrue(metroCfg.contains("rtc_sync_year:"))
+        let auraCfgDormant = try XCTUnwrap(read(".firmware-aura/aura/aura.cfg"))
+        XCTAssertTrue(auraCfgDormant.hasPrefix("theme: 1\n"))
+        XCTAssertTrue(auraCfgDormant.contains("rtc_sync_year:"))
         XCTAssertEqual(read("rockbox.ipod"), "METRO BIN")
     }
 
@@ -265,7 +291,9 @@ final class FirmwareSwitcherTests: XCTestCase {
         try FirmwareSwitcher.switchActiveFirmware(to: .aura, currentlyActive: .moonlit, volumeRoot: root)
 
         XCTAssertEqual(read(".rockbox/rockbox.ipod"), "AURA BIN")
-        XCTAssertEqual(read(".rockbox/aura/aura.cfg"), "theme: 1\n")
+        let auraCfgActive = try XCTUnwrap(read(".rockbox/aura/aura.cfg"))
+        XCTAssertTrue(auraCfgActive.hasPrefix("theme: 1\n"))
+        XCTAssertTrue(auraCfgActive.contains("rtc_sync_year:"), "ST-146: el entrante recibe la hora")
         XCTAssertEqual(read(".firmware-moonlit/rockbox.ipod"), "MOONLIT BIN")
         XCTAssertEqual(read(".firmware-moonlit/aura/aura.cfg"), "firmware_family: moonlit\nsync_marker_supported: 1\n")
         XCTAssertTrue(exists(".firmware-moonlit/fonts/moonlit-body-18.fnt"))

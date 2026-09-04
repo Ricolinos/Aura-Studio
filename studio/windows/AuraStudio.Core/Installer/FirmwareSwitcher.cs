@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using AuraStudio.Core;
 
 namespace AuraStudio.Core.Installer;
 
@@ -173,6 +174,13 @@ public static class FirmwareSwitcher
             new SyncPendingMarker(new SyncPendingMarker.Changes(Music: true, Video: false, Images: false))
                 .Write(volumeRoot);
         }
+
+        // ST-146 / maestro §B: el árbol que acaba de despertar puede llevar
+        // días o semanas dormido — su reloj queda tan atrasado como el último
+        // apagado. Se sincroniza acá, en el árbol ENTRANTE (ya renombrado a
+        // ActiveTreeName arriba), sin esperar a que el usuario desconecte y
+        // vuelva a conectar.
+        ClockSyncWriter.WriteToDisk(volumeRoot);
     }
 
     /// <summary>

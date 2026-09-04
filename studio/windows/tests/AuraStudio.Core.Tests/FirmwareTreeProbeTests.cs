@@ -190,6 +190,21 @@ public class FirmwareTreeProbeTests : IDisposable
         Assert.False(device.IsAuraFirmware);
     }
 
+    /// <summary>
+    /// ST-146 / maestro §B: `SupportsAuraContract` es lo que decide si
+    /// <c>DeviceSessionService</c> sincroniza la hora al conectar -- tiene que
+    /// dar <c>true</c> para moonlit igual que para Metro y Aura, no solo para
+    /// quien no declara familia (que es Aura por default).
+    /// </summary>
+    [Fact]
+    public void MoonlitAlsoSupportsTheContract()
+    {
+        var device = Device(InstalledFirmwareKind.Aura, hasBooted: true,
+                            RunningFirmware.RockboxFamily, FirmwareFamily.Moonlit);
+        Assert.True(device.SupportsAuraContract);
+        Assert.False(device.IsAuraFirmware);
+    }
+
     [Fact]
     public void AuraDeclaredIsAuraFirmware()
     {
