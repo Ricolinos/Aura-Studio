@@ -103,6 +103,26 @@ public sealed record SyncPendingMarker
         }
     }
 
+    /// <summary>
+    /// Escribe el marcador <b>uniendo</b> lo que ya había: las secciones se
+    /// suman, nunca se pierden. Un sync deja el marcador en varios momentos
+    /// (al copiar, y al final si las carátulas cambiaron), y el segundo no
+    /// puede borrar lo que anunció el primero — el firmware reconstruiría de
+    /// menos. Es el mismo criterio que `writeSyncMarkerIfNeeded` en macOS.
+    ///
+    /// <para>No hace nada si no hay ninguna sección que anunciar.</para>
+    /// </summary>
+    public static void Merge(string volumeRoot, Changes changes)
+    {
+        if (!changes.Music && !changes.Video && !changes.Images) return;
+
+        Changes? previous = Read(volumeRoot)?.Changeset;
+        new SyncPendingMarker(new Changes(
+            changes.Music || (previous?.Music ?? false),
+            changes.Video || (previous?.Video ?? false),
+            changes.Images || (previous?.Images ?? false))).Write(volumeRoot);
+    }
+
     /// <summary>`null` si el archivo no existe o no es JSON válido (o no decodifica).</summary>
     public static SyncPendingMarker? Read(string volumeRoot)
     {

@@ -206,6 +206,18 @@ struct LibrarySync {
     /// lo que las pone en el disco por primera vez (Tanda 5).
     static let artistImagesDirRelativePath = ".rockbox/aura/artists"
     static let artistImagesIndexRelativePath = ".rockbox/aura/artist_images.cfg"
+
+    /// Contrato v18 §A.1: los tamaños con los que las imágenes llegan al
+    /// iPod. 320 no es caprichoso -- es el consumidor más exigente que
+    /// hay (CoverDrift decodifica el JPEG directo a 320); con 120 se veía
+    /// borroso, y con los ~1000 px de la biblioteca la fase de fotos del
+    /// constructor del firmware se hacía lenta para nada.
+    static let deviceCoverSide = 320
+    /// §D.3: la foto de artista, cuadrada y de 128.
+    static let deviceArtistSide = 128
+    /// La misma que el resto de lo que viaja al aparato (§D.1).
+    static let deviceCoverQuality: CGFloat = 0.85
+
     static let playlistsRelativePath = "Playlists"
     /// PLAN-general-sync.md §8.2: presente mientras un sync esta en
     /// curso; ausente = ultimo sync cerro limpio (termino o se cancelo
@@ -656,8 +668,9 @@ struct LibrarySync {
         writeLyricsSidecars(items: items, destinationByItemID: destinationByItemID,
                             onlyForSourcePaths: restrictCopyToSourcePaths)
 
-        if coverArtPolicy == .albumOnly {
-            writeAlbumCovers(items: items, destinationByItemID: destinationByItemID)
+        if coverArtPolicy == .albumOnly,
+           writeAlbumCovers(items: items, destinationByItemID: destinationByItemID) {
+            touched.music = true
         }
 
         let playlistsWritten = try writePlaylists(playlists, destinationByItemID: destinationByItemID,
@@ -845,8 +858,25 @@ struct LibrarySync {
         }
     }
 
+    /// La carátula del álbum en el iPod: `cover.jpg` de **320×320**
+    /// (contrato v18 §A.1 / `library-layout-v1.md` §2), recortada al
+    /// centro desde la copia local -- que desde ST-141 ya es cuadrada,
+    /// así que acá es solo un reescalado.
+    ///
+    /// **Se escribe solo si cambió.** No es una micro-optimización: desde
+    /// v18 la clave de la caché maestra del firmware incluye el `mtime` de
+    /// `cover.jpg`, así que reescribirla en cada sync —como se hacía hasta
+    /// acá— le tiraría al firmware toda su caché de carátulas en cada
+    /// sincronización, aunque nada hubiera cambiado.
+    /// Devuelve `true` si alguna carátula se escribió o cambió -- importa
+    /// para el marcador: desde v18 el firmware rehace su caché maestra por
+    /// una clave que incluye el `mtime` de `cover.jpg`, así que un sync que
+    /// solo cambió carátulas **sí** tocó la sección Música aunque no haya
+    /// copiado audio.
+    @discardableResult
     private func writeAlbumCovers(items: [LibraryItem],
-                                   destinationByItemID: [UUID: String]) {
+                                   destinationByItemID: [UUID: String]) -> Bool {
+        var changed = false
         var written = Set<String>()
 
         for item in items where item.kind == .music {
@@ -871,10 +901,16 @@ struct LibrarySync {
             guard !written.contains(albumFolder) else { continue }
             written.insert(albumFolder)
 
+            guard let square = try? ImageResizer.squareCrop(data: cover, side: Self.deviceCoverSide,
+                                                            quality: Self.deviceCoverQuality) else { continue }
             let coverURL = albumDestination.appendingPathComponent("cover.jpg")
+            if let existing = try? Data(contentsOf: coverURL), existing == square { continue }
             try? fileManager.createDirectory(at: albumDestination, withIntermediateDirectories: true)
-            try? cover.write(to: coverURL)
+            try? square.write(to: coverURL, options: .atomic)
+            changed = true
         }
+
+        return changed
     }
 
     /// Escribe siempre las playlists (son archivos de texto de unos
@@ -1065,8 +1101,19 @@ struct LibrarySync {
             guard let data = store.image(forArtistKey: artist.id) else { continue }
             let fileName = ArtistImageStore.fileName(forArtistKey: artist.id)
             if !writtenFiles.contains(fileName) {
-                try? fileManager.createDirectory(at: artistsDir, withIntermediateDirectories: true)
-                try? ImageResizer.resizeToLCDOptimal(data: data, destinationURL: artistsDir.appendingPathComponent(fileName), maxDimension: 128)
+                // §D.3 las exige CUADRADAS y hasta v18 esto mandaba el
+                // lado mayor a 128 con la proporción original -- lo que
+                // el contrato prohibía desde v6. Mismo criterio que
+                // `cover.jpg`: solo se escribe si cambió.
+                let destination = artistsDir.appendingPathComponent(fileName)
+                if let square = try? ImageResizer.squareCrop(data: data, side: Self.deviceArtistSide,
+                                                             quality: Self.deviceCoverQuality) {
+                    let existing = try? Data(contentsOf: destination)
+                    if existing != square {
+                        try? fileManager.createDirectory(at: artistsDir, withIntermediateDirectories: true)
+                        try? square.write(to: destination, options: .atomic)
+                    }
+                }
                 writtenFiles.insert(fileName)
             }
             // Contrato §D.3: una línea por cada valor CRUDO distinto de

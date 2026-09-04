@@ -2238,3 +2238,110 @@ detener cerrando la app, y se retoma igual.
 Evidencia: `docs/capturas/ronda-caratulas/fase2-biblioteca-cuadrada.png` (antes
 y después de una migración real, con la barra de progreso renderizada de la
 vista de verdad).
+
+## ST-142 — Lo que llega al iPod: 320×320, y solo cuando cambia
+
+Tercera pata de la ronda: ST-140 hizo la herramienta, ST-141 dejó cuadrada la
+biblioteca local, y esto es lo que de verdad ve el firmware.
+
+**`cover.jpg` pasa a ser 320×320** y **`.rockbox/aura/artists/*.jpg` a 128×128**,
+las dos recortadas al centro desde la copia local — que desde ST-141 ya es
+cuadrada, así que acá es un reescalado y nada más. La carátula **embebida**
+(política "una por canción") es el mismo JPEG de 320: hasta hoy se embebía la
+copia de biblioteca (~1000 px), casi un megabyte por canción para que el aparato
+la reescalara a 130 de todos modos.
+
+**320 no es un número al azar** (maestro §A.1): es el consumidor más exigente
+que existe — CoverDrift decodifica el JPEG directo a 320. Con 120 se veía
+borroso; con los ~1000 px de la biblioteca, la fase de fotos del constructor del
+firmware se hacía lenta para nada.
+
+### El hallazgo que cambió el alcance: reescribir de más rompe la caché del firmware
+
+`writeAlbumCovers` reescribía **todas** las carátulas en **cada** sincronización,
+y `writeArtistImages` lo mismo con las fotos de artista. Hasta v17 eso era solo
+desperdicio de USB 2.0. Con v18 es un bug: la clave de la caché maestra del
+firmware incluye ahora el `mtime` de `cover.jpg`, así que reescribirla idéntica
+en cada sync le tira **toda** su caché de carátulas cada vez que el iPod se
+conecta — justo lo contrario de lo que la ronda vino a arreglar. Desde acá, las
+dos escrituras comparan contra lo que ya está en el disco y **solo escriben si
+los bytes cambiaron** (mismo criterio que ya tenían las letras `.lrc`).
+
+Y su consecuencia en el marcador: un sync que no copió ni una canción pero sí
+cambió una carátula **sí tocó la sección Música**, porque el firmware tiene que
+rehacer esa maestra. `writeAlbumCovers` ahora informa si escribió algo y eso
+alimenta `sync-pending.json` (en Windows, `SyncFinalizeResult.AlbumCoversChanged`
++ `SyncPendingMarker.Merge`, que **une** secciones en vez de reemplazarlas: el
+motor escribe el marcador antes de que corra el finalizador, y el segundo no
+puede borrar lo que anunció el primero).
+
+### Cuánto cuesta el primer sync
+
+Con **N** álbumes y **A** artistas con foto, el primer sync tras esta versión
+reescribe **N + A** imágenes — una vez. Todas cambian de bytes (antes iban
+crudas o con la proporción original), así que no hay forma de evitarlo, y es
+exactamente lo que hace falta para que el firmware v18 regenere su maestra con
+la clave nueva. **A partir del segundo sync son 0** mientras el usuario no
+cambie una carátula. Está probado en las dos plataformas: dos pasadas seguidas
+dejan el mismo `mtime`.
+
+**El conteo de "pendientes" no las cuenta, y nunca las contó**: ese número sale
+de `SyncPlanner`, que planea archivos de medios (audio, video, fotos); las
+carátulas, las letras y los índices se escriben en `finalize`, después de
+copiar. No es algo que esta ronda cambie — se deja anotado porque el plan pedía
+verificarlo: lo que el usuario ve como "N pendientes" seguirá siendo el número
+de canciones, aunque además se reescriban N carátulas la primera vez.
+
+### Con firmwares anteriores a v18
+
+Las carátulas nuevas **no se ven hasta que ese firmware purgue su caché**: sin
+`/.aura/art/format.txt` ni la clave con `mtime` de `cover.jpg`, un tile mal
+derivado sobrevive para siempre. No hay nada que Studio pueda hacer desde este
+lado — es la razón por la que los tres firmwares y este Studio salen en el
+**mismo ciclo de release**.
+
+### El contrato
+
+`CONTRATO-firmware-studio.md` sube a **v18** con el texto del maestro §A.2:
+nota de v18 en §D.3 (fotos de artista), párrafo nuevo "Versión de formato y
+purga" y la clave de álbum con `mtime` de `cover.jpg` en §D.5, fila nueva
+`/.aura/art/format.txt` en la tabla de §D, y sale de "pendientes" el
+`--family moonlit` de `fetch-firmware.sh` (ya implementado). Verificado
+byte-idéntico contra la copia canónica de `Aura-Firmware`.
+
+**`docs/contracts/library-layout-v1.md` destapó un problema real: la copia de
+Studio llevaba desactualizada desde el 2026-08-26.** El plan maestro pedía
+numerar el párrafo nuevo como "v1.3", pero acá la v1.3 ya existía (D-318,
+2026-08-18) — y al mirar el archivo del hermano apareció que allá ya iba una
+**v1.4** (D-341: `cfcache` con clave estable, GC con presupuesto, la caché
+maestra compartida) que **nunca se copió a Studio**. La versión canónica quedó
+en **v1.5** (D-349), con el contenido de D-341 más el párrafo de las carátulas
+cuadradas, y este repo la tiene ahora byte a byte (`cmp` limpio).
+
+**La regla que sale de esto, y que vale para cualquier contrato compartido:
+antes de copiar, `diff` del archivo ENTERO contra el hermano.** Copiar en la
+dirección equivocada no da un conflicto que alguien note — da una reversión
+silenciosa, y el archivo se queda meses diciendo algo que ya no es cierto.
+
+### Verificación
+
+macOS: `swift build`, **726 pruebas en verde** (9 nuevas de sync sobre un
+volumen de prueba: 320×320, 128×128, sin agrandar una carátula chica, no
+reescribir lo idéntico, sí reescribir lo que cambió, no mandar nada si la
+imagen no se puede decodificar, y el marcador con Música) y
+`scripts/build-app.sh` completo (xcodebuild Release, Swift 6 estricto).
+Windows: `AuraStudio.Core` con **1 139 pruebas** (8 nuevas); las 32 que fallan
+en una Mac son las de siempre (rutas Windows).
+
+**Lo que queda para la VM de Windows**: `EncodeSquareAsync` y el puente
+`SquareCrop` de `SyncService` no compilan en macOS (WIC). Y un hallazgo que
+**no** es de esta ronda pero conviene no perder: Windows fija
+`CoverArtPolicy.AlbumOnly` al sincronizar, ignorando la preferencia del
+usuario — allá no existe la escritura de etiquetas, así que "una por canción"
+dejaría al iPod sin ninguna carátula. Es coherente, pero no está dicho en
+ninguna parte del código.
+
+Evidencia: `docs/capturas/ronda-caratulas/fase3-sync-contrato-v18.png` — una
+sincronización real contra un volumen de prueba, con los tamaños medidos sobre
+los archivos escritos, la segunda pasada sin reescrituras y el
+`sync-pending.json` que quedó.

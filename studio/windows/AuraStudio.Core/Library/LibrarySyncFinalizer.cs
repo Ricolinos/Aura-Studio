@@ -27,6 +27,14 @@ public sealed record SyncFinalizeInput
 
     public Func<byte[], int, byte[]?>? Downscale { get; init; }
 
+    /// <summary>
+    /// ST-142 / contrato v18: recorta una imagen a un cuadrado del lado dado
+    /// (fill + center-crop). Lo pone la app (WIC); sin esto, ni la carátula de
+    /// álbum ni la foto de artista viajan — antes que mandar al iPod algo que
+    /// incumple el contrato, no se manda nada.
+    /// </summary>
+    public Func<byte[], int, byte[]?>? SquareCrop { get; init; }
+
     public Func<IReadOnlyList<byte[]>, byte[]?>? PlaylistArt { get; init; }
 
     /// <summary>
@@ -42,7 +50,14 @@ public sealed record SyncFinalizeInput
 /// Si cambió algo en las fotos de artista — el firmware las lee al armar la
 /// vista de Música, así que hay que pedirle que reconstruya esa sección.
 /// </param>
-public sealed record SyncFinalizeResult(int PlaylistsWritten, bool ArtistImagesChanged);
+/// <param name="AlbumCoversChanged">
+/// ST-142: alguna <c>cover.jpg</c> se escribió o cambió. Importa para el
+/// marcador: desde v18 el firmware rehace su caché maestra por la clave que
+/// incluye el <c>mtime</c> de <c>cover.jpg</c>, así que un sync que solo cambió
+/// carátulas <b>sí</b> tocó la sección Música, aunque no haya copiado audio.
+/// </param>
+public sealed record SyncFinalizeResult(int PlaylistsWritten, bool ArtistImagesChanged,
+                                        bool AlbumCoversChanged = false);
 
 /// <summary>
 /// Todo lo que se escribe <b>después</b> de copiar los archivos: letras,
@@ -68,13 +83,24 @@ public static class LibrarySyncFinalizer
     public const string ArtistImagesIndexRelativePath = ".rockbox/aura/artist_images.cfg";
 
     /// <summary>Lado máximo de una foto de artista en el iPod (contrato §D.3).</summary>
+    /// <summary>
+    /// Contrato v18 §A.1: el lado con el que la carátula llega al iPod. 320 no
+    /// es caprichoso — es el consumidor más exigente que hay (CoverDrift
+    /// decodifica el JPEG directo a 320); con 120 se veía borroso, y con los
+    /// ~1000 px de la biblioteca la fase de fotos del constructor del firmware
+    /// se hacía lenta para nada.
+    /// </summary>
+    public const int DeviceCoverSide = 320;
+
+    /// <summary>§D.3: la foto de artista, <b>cuadrada</b> y de 128.</summary>
     public const int ArtistImageMaxDimension = 128;
 
     public static SyncFinalizeResult Run(string volumeRoot, SyncFinalizeInput input)
     {
         WriteLyricsSidecars(volumeRoot, input);
 
-        if (input.CoverArtPolicy == CoverArtPolicy.AlbumOnly) WriteAlbumCovers(volumeRoot, input);
+        bool albumCovers = input.CoverArtPolicy == CoverArtPolicy.AlbumOnly
+                           && WriteAlbumCovers(volumeRoot, input);
 
         int playlists = WritePlaylists(volumeRoot, input);
         WriteSeasonPosters(volumeRoot, input);
@@ -84,7 +110,7 @@ public static class LibrarySyncFinalizer
 
         bool artistImages = WriteArtistImages(volumeRoot, input);
 
-        return new SyncFinalizeResult(playlists, artistImages);
+        return new SyncFinalizeResult(playlists, artistImages, albumCovers);
     }
 
     // MARK: - Letras (contrato §3)
@@ -127,10 +153,22 @@ public static class LibrarySyncFinalizer
 
     /// <summary>
     /// <c>cover.jpg</c> en la carpeta del álbum: el lugar que comparten todas
-    /// las pistas y donde <c>find_albumart()</c> mira.
+    /// las pistas y donde <c>find_albumart()</c> mira. Desde el contrato v18 es
+    /// <b>320×320</b>, recortada al centro desde la copia local — que desde
+    /// ST-141 ya es cuadrada, así que acá es solo un reescalado.
+    ///
+    /// <para><b>Se escribe solo si cambió.</b> No es una micro-optimización:
+    /// desde v18 la clave de la caché maestra del firmware incluye el
+    /// <c>mtime</c> de <c>cover.jpg</c>, así que reescribirla en cada sync
+    /// —como se hacía hasta acá— le tiraría al firmware toda su caché de
+    /// carátulas en cada sincronización, aunque nada hubiera cambiado.</para>
     /// </summary>
-    private static void WriteAlbumCovers(string volumeRoot, SyncFinalizeInput input)
+    /// <returns><c>true</c> si alguna carátula se escribió o cambió.</returns>
+    private static bool WriteAlbumCovers(string volumeRoot, SyncFinalizeInput input)
     {
+        if (input.SquareCrop is null) return false;
+
+        bool changed = false;
         var written = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (LibraryItem item in input.Items)
@@ -144,11 +182,19 @@ public static class LibrarySyncFinalizer
 
             try
             {
+                if (input.SquareCrop(cover, DeviceCoverSide) is not { Length: > 0 } square) continue;
+
+                string path = Path.Combine(folder, "cover.jpg");
+                if (SameBytesOnDisk(path, square)) continue;
+
                 Directory.CreateDirectory(folder);
-                WriteBytesAtomically(Path.Combine(folder, "cover.jpg"), cover);
+                WriteBytesAtomically(path, square);
+                changed = true;
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
         }
+
+        return changed;
     }
 
     // MARK: - Listas
@@ -445,9 +491,14 @@ public static class LibrarySyncFinalizer
                 try
                 {
                     Directory.CreateDirectory(artistsDirectory);
-                    byte[]? reduced = input.Downscale(image, ArtistImageMaxDimension);
-                    if (reduced is { Length: > 0 })
-                        WriteBytesAtomically(Path.Combine(artistsDirectory, fileName), reduced);
+                    // §D.3 las exige CUADRADAS y hasta v18 esto mandaba el lado
+                    // mayor a 128 con la proporción original — lo que el
+                    // contrato prohibía desde v6. Mismo criterio que
+                    // `cover.jpg`: solo se escribe si cambió.
+                    byte[]? square = input.SquareCrop?.Invoke(image, ArtistImageMaxDimension);
+                    string path = Path.Combine(artistsDirectory, fileName);
+                    if (square is { Length: > 0 } && !SameBytesOnDisk(path, square))
+                        WriteBytesAtomically(path, square);
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
             }
@@ -498,6 +549,23 @@ public static class LibrarySyncFinalizer
         string temporary = path + ".tmp";
         File.WriteAllText(temporary, contents, new UTF8Encoding(false));
         File.Move(temporary, path, overwrite: true);
+    }
+
+    /// <summary>
+    /// <c>true</c> si el archivo ya tiene exactamente esos bytes. Sirve para no
+    /// reescribir una imagen idéntica: desde v18 el <c>mtime</c> de
+    /// <c>cover.jpg</c> forma parte de la clave de caché del firmware.
+    /// </summary>
+    private static bool SameBytesOnDisk(string path, byte[] contents)
+    {
+        try
+        {
+            return File.Exists(path) && File.ReadAllBytes(path).AsSpan().SequenceEqual(contents);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
     }
 
     private static void WriteBytesAtomically(string path, byte[] contents)

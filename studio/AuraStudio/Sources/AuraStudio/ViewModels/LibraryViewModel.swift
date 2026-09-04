@@ -486,13 +486,21 @@ final class LibraryViewModel: ObservableObject {
         }
 
         if destination.pathExtension.lowercased() == "mp3" {
+            // ST-142 / contrato v18: la carátula EMBEBIDA es el mismo JPEG
+            // de 320×320 que `cover.jpg`. Embeber la copia de biblioteca
+            // (~1000 px) metía casi un megabyte en cada canción para que
+            // el aparato la reescalara a 130 de todos modos.
             let embedCover = preferences.coverArtPolicy == .perTrack
+            let embedded = embedCover ? metadata.coverArtData.flatMap {
+                try? ImageResizer.squareCrop(data: $0, side: LibrarySync.deviceCoverSide,
+                                             quality: LibrarySync.deviceCoverQuality)
+            } : nil
             let tag = ID3Writer.Tag(
                 title: metadata.title, artist: metadata.artist, album: metadata.album,
                 albumArtist: metadata.albumArtist, year: metadata.year, genre: metadata.genre,
                 composer: metadata.composer,
                 trackNumber: metadata.trackNumber,
-                coverArtData: embedCover ? metadata.coverArtData : nil
+                coverArtData: embedded
             )
             try ID3Writer.write(tag, toFileAt: destination)
         }

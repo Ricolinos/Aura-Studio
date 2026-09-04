@@ -1,3 +1,4 @@
+using AuraStudio.Core;
 using AuraStudio.Core.Library;
 
 namespace AuraStudio.App.Services;
@@ -117,7 +118,7 @@ public sealed class SyncService : ISyncService
             .Where(pair => !failed.Contains(pair.Value))
             .ToDictionary(pair => pair.Key, pair => pair.Value);
 
-        LibrarySyncFinalizer.Run(volumeRoot, new SyncFinalizeInput
+        SyncFinalizeResult finalized = LibrarySyncFinalizer.Run(volumeRoot, new SyncFinalizeInput
         {
             Items = scan.Items,
             DestinationByItemId = destinations,
@@ -125,6 +126,7 @@ public sealed class SyncService : ISyncService
             LibraryRoot = scan.LibraryRoot,
             CoverArtPolicy = CoverArtPolicy.AlbumOnly,
             Downscale = options.SyncArtistImages ? Downscale : null,
+            SquareCrop = SquareCrop,
             PlaylistArt = ComposePlaylistArt,
 
             // El MISMO criterio que usan las pantallas (R2-4): si acá se
@@ -132,6 +134,17 @@ public sealed class SyncService : ISyncService
             // que en Studio se ve como uno solo.
             ArtistGrouping = _preferences.ArtistGrouping
         });
+
+        // ST-142: un sync que no copió ni una canción, pero cambió carátulas o
+        // fotos de artista, SÍ tocó la sección Música — desde v18 el firmware
+        // rehace su caché maestra por una clave que incluye el `mtime` de
+        // `cover.jpg`. El marcador se une con el que dejó el motor: sumar
+        // secciones, nunca perderlas.
+        if (finalized.AlbumCoversChanged || finalized.ArtistImagesChanged)
+        {
+            SyncPendingMarker.Merge(volumeRoot,
+                new SyncPendingMarker.Changes(Music: true, Video: false, Images: false));
+        }
     }
 
     /// <summary>
@@ -142,6 +155,18 @@ public sealed class SyncService : ISyncService
     private static byte[]? Downscale(byte[] source, int maxDimension)
     {
         try { return Platform.ImageResizer.EncodeAsync(source, maxDimension, Platform.ImageResizer.DefaultQuality).GetAwaiter().GetResult(); }
+        catch (Exception ex) when (ex is Platform.ImageResizeException or IOException) { return null; }
+    }
+
+    /// <summary>
+    /// ST-142: el recorte cuadrado con el que la carátula (320) y la foto de
+    /// artista (128) llegan al iPod. Mismo motivo que <see cref="Downscale"/>
+    /// para esperar acá: esto corre en un hilo de fondo, nunca en el de la
+    /// interfaz.
+    /// </summary>
+    private static byte[]? SquareCrop(byte[] source, int side)
+    {
+        try { return Platform.ImageResizer.EncodeSquareAsync(source, side, Platform.ImageResizer.DefaultQuality).GetAwaiter().GetResult(); }
         catch (Exception ex) when (ex is Platform.ImageResizeException or IOException) { return null; }
     }
 

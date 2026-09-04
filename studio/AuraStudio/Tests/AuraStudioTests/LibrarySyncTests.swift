@@ -1,5 +1,7 @@
 import XCTest
 import AppKit
+import ImageIO
+import UniformTypeIdentifiers
 @testable import AuraStudio
 
 /// Fase 24: LibrarySync.sync() contra una carpeta temporal en vez de un
@@ -20,6 +22,29 @@ final class LibrarySyncTests: XCTestCase {
     override func tearDownWithError() throws {
         try? FileManager.default.removeItem(at: fakeIPod)
         try? FileManager.default.removeItem(at: stagingFile)
+    }
+
+    /// Un JPEG liso de verdad (ST-142: el sync decodifica la carátula
+    /// para recortarla, así que ya no sirve cualquier secuencia de bytes).
+    private func solidJPEG(width: Int, height: Int) throws -> Data {
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        for i in stride(from: 0, to: pixels.count, by: 4) {
+            pixels[i] = 180; pixels[i + 1] = 70; pixels[i + 2] = 120; pixels[i + 3] = 255
+        }
+        guard let context = pixels.withUnsafeMutableBytes({ buffer in
+            CGContext(data: buffer.baseAddress, width: width, height: height, bitsPerComponent: 8,
+                      bytesPerRow: width * 4, space: CGColorSpaceCreateDeviceRGB(),
+                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        }), let image = context.makeImage() else {
+            throw XCTSkip("no se pudo generar la imagen de prueba")
+        }
+        let output = NSMutableData()
+        guard let destination = CGImageDestinationCreateWithData(output, UTType.jpeg.identifier as CFString, 1, nil) else {
+            throw XCTSkip("no se pudo codificar el JPEG de prueba")
+        }
+        CGImageDestinationAddImage(destination, image, nil)
+        XCTAssertTrue(CGImageDestinationFinalize(destination))
+        return output as Data
     }
 
     private func musicItem() -> AuraStudio.LibraryItem {
@@ -51,13 +76,16 @@ final class LibrarySyncTests: XCTestCase {
     /// antes, pasó desapercibido en cada sync, incluidos los reales.
     func testSyncWritesAlbumCoverInsideAlbumFolder() throws {
         var item = musicItem()
-        item.metadata?.coverArtData = Data("fake cover bytes".utf8)
+        // ST-142: la carátula ya no viaja cruda -- se recorta a 320x320
+        // antes de escribirla, así que tiene que ser una imagen de
+        // verdad (unos bytes cualesquiera ya no son una carátula).
+        item.metadata?.coverArtData = try solidJPEG(width: 800, height: 600)
         let sync = LibrarySync(volumeRoot: fakeIPod)
 
         _ = try sync.sync(items: [item], coverArtPolicy: .albumOnly)
 
         let expectedCover = fakeIPod.appendingPathComponent("Music/Queen/A Night at the Opera/cover.jpg")
-        XCTAssertEqual(try? Data(contentsOf: expectedCover), Data("fake cover bytes".utf8),
+        XCTAssertEqual(ImageResizer.orientedPixelSize(ofFileAt: expectedCover)?.width, LibrarySync.deviceCoverSide,
                        "la portada debe quedar junto a la pista, dentro de la carpeta real del álbum")
 
         // La regresión real: la portada no puede quedar en NINGUNA otra

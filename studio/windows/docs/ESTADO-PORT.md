@@ -2338,6 +2338,16 @@ durante la corrida nocturna.
   el estado "sin dispositivo". El ciclo completo está probado contra un volumen
   de mentira, pero la lista, la activación y el bloqueo de compartir no se han
   visto en pantalla con datos reales.
+- **Probar el recorte cuadrado en la VM** (ST-140/ST-141/ST-142): correr
+  `dotnet run --project tools\ImageResizerCheck -c Release` (comprobaciones
+  20-27) y confirmar que no hay pausa perceptible al aplicar una tapa — el
+  puente a WIC de `WicSquareImageEncoder` es síncrono
+  (`Task.Run(...).GetAwaiter().GetResult()`), que es lo que permite normalizar
+  desde los puntos de entrada síncronos de Core.
+- **Agregar el botón de cancelar la normalización de carátulas** (ST-141): el
+  modelo ya expone `IsNormalizingCovers` y `CancelCoverNormalization()`, y el
+  avance sale por `StatusMessage`, que las páginas ya muestran; falta el XAML.
+  Mientras tanto la migración se detiene cerrando la app y se retoma sola.
 - **Revisión visual** de las pantallas nuevas en su monitor y con su biblioteca.
 - **Instalar ffmpeg** (`winget install Gyan.FFmpeg`) — no está en esta VM, así
   que ninguna conversión de video real se ejecutó todavía. Los argumentos y los

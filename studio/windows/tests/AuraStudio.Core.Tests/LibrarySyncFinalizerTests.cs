@@ -1,3 +1,4 @@
+using System.Text;
 using AuraStudio.Core;
 using AuraStudio.Core.Library;
 using Xunit;
@@ -72,9 +73,17 @@ public sealed class LibrarySyncFinalizerTests : IDisposable
     private static LibraryItem Photo(string category) =>
         new() { Kind = LibraryItemKind.Photo, SourcePath = @"C:\lib\f.jpg", Status = LibraryItemStatus.Ready, Category = category };
 
+    /// <summary>
+    /// El recorte cuadrado de mentira: deja los bytes originales con el lado
+    /// pedido al frente, para que cada prueba pueda comprobar CON QUÉ LADO se
+    /// recortó (320 la carátula, 128 la foto de artista) sin decodificar nada.
+    /// </summary>
+    private static byte[] Squared(byte[] source, int side) => [.. Encoding.UTF8.GetBytes($"{side}:"), .. source];
+
     private SyncFinalizeResult Run(IReadOnlyList<LibraryItem> items, IReadOnlyDictionary<Guid, string> destinations,
         IReadOnlyList<Playlist>? playlists = null, Func<byte[], int, byte[]?>? downscale = null,
-        Func<IReadOnlyList<byte[]>, byte[]?>? playlistArt = null) =>
+        Func<IReadOnlyList<byte[]>, byte[]?>? playlistArt = null,
+        Func<byte[], int, byte[]?>? squareCrop = null) =>
         LibrarySyncFinalizer.Run(_volume, new SyncFinalizeInput
         {
             Items = items,
@@ -82,7 +91,8 @@ public sealed class LibrarySyncFinalizerTests : IDisposable
             Playlists = playlists ?? [],
             LibraryRoot = _library,
             Downscale = downscale,
-            PlaylistArt = playlistArt
+            PlaylistArt = playlistArt,
+            SquareCrop = squareCrop ?? Squared
         });
 
     // MARK: - Letras (contrato §3)
@@ -170,7 +180,77 @@ public sealed class LibrarySyncFinalizerTests : IDisposable
             [b.Id] = "Music/Soda Stereo/Signos/B.mp3"
         });
 
-        Assert.Equal(cover, File.ReadAllBytes(OnDevice("Music/Soda Stereo/Signos/cover.jpg")));
+        // v18: llega recortada a 320x320, no cruda.
+        Assert.Equal(Squared(cover, LibrarySyncFinalizer.DeviceCoverSide),
+                     File.ReadAllBytes(OnDevice("Music/Soda Stereo/Signos/cover.jpg")));
+    }
+
+    [Fact]
+    public void AnUnchangedCoverIsNotRewritten()
+    {
+        // Desde v18 el mtime de cover.jpg forma parte de la clave de la caché
+        // maestra del firmware: reescribirla igual en cada sync le tiraría toda
+        // su caché de carátulas sin que nada hubiera cambiado.
+        LibraryItem song = Song("A", cover: [1, 2, 3]);
+        PutOnDevice("Music/A/B/A.mp3");
+        var destinations = new Dictionary<Guid, string> { [song.Id] = "Music/A/B/A.mp3" };
+
+        Run([song], destinations);
+        DateTime first = File.GetLastWriteTimeUtc(OnDevice("Music/A/B/cover.jpg"));
+
+        Run([song], destinations);
+
+        Assert.Equal(first, File.GetLastWriteTimeUtc(OnDevice("Music/A/B/cover.jpg")));
+    }
+
+    [Fact]
+    public void ACoverThatChangedDoesTravelAgain()
+    {
+        LibraryItem song = Song("A", cover: [1, 2, 3]);
+        PutOnDevice("Music/A/B/A.mp3");
+        var destinations = new Dictionary<Guid, string> { [song.Id] = "Music/A/B/A.mp3" };
+        Run([song], destinations);
+
+        song.Metadata!.CoverArtData = [9, 9, 9];
+        Run([song], destinations);
+
+        Assert.Equal(Squared([9, 9, 9], LibrarySyncFinalizer.DeviceCoverSide),
+                     File.ReadAllBytes(OnDevice("Music/A/B/cover.jpg")));
+    }
+
+    [Fact]
+    public void ASyncThatOnlyChangedTheCoverStillReportsIt()
+    {
+        // Desde v18 el firmware rehace su caché maestra por una clave que
+        // incluye el mtime de `cover.jpg`: un sync que no copió ni una canción
+        // pero cambió la carátula SÍ tocó Música, y quien llama tiene que
+        // poder decirlo en el marcador.
+        LibraryItem song = Song("A", cover: [1, 2, 3]);
+        PutOnDevice("Music/A/B/A.mp3");
+        var destinations = new Dictionary<Guid, string> { [song.Id] = "Music/A/B/A.mp3" };
+
+        Assert.True(Run([song], destinations).AlbumCoversChanged);
+
+        // Y la segunda pasada, con todo idéntico, ya no anuncia nada.
+        Assert.False(Run([song], destinations).AlbumCoversChanged);
+    }
+
+    [Fact]
+    public void WithoutASquareCropNoCoverIsWritten()
+    {
+        // Antes que mandarle al iPod algo que incumple el contrato (una
+        // carátula con la proporción que sea), no se manda nada.
+        LibraryItem song = Song("A", cover: [1, 2, 3]);
+        PutOnDevice("Music/A/B/A.mp3");
+
+        LibrarySyncFinalizer.Run(_volume, new SyncFinalizeInput
+        {
+            Items = [song],
+            DestinationByItemId = new Dictionary<Guid, string> { [song.Id] = "Music/A/B/A.mp3" },
+            LibraryRoot = _library
+        });
+
+        Assert.False(File.Exists(OnDevice("Music/A/B/cover.jpg")));
     }
 
     [Fact]
@@ -389,7 +469,10 @@ public sealed class LibrarySyncFinalizerTests : IDisposable
         Assert.StartsWith("# aura-artist-images v1\n", index);
         Assert.Contains($"{fileName}: Soda Stereo\n", index);
         Assert.Contains($"{fileName}: soda stereo\n", index);
-        Assert.True(File.Exists(Path.Combine(_volume, ".rockbox", "aura", "artists", fileName)));
+        // §D.3: cuadrada de 128, no el lado mayor a 128 con la proporción
+        // original, que es lo que Studio mandaba hasta v18.
+        Assert.Equal(Squared([1, 2, 3, 4], LibrarySyncFinalizer.ArtistImageMaxDimension),
+                     File.ReadAllBytes(Path.Combine(_volume, ".rockbox", "aura", "artists", fileName)));
     }
 
     [Fact]
