@@ -28,3 +28,6 @@ studio/**/build/
 *.tmp
 *.swp
 .serena/
+
+# Paquetes armados por scripts/package-dmg.sh
+dist/
