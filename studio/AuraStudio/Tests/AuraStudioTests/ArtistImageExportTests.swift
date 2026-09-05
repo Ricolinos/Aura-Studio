@@ -100,7 +100,11 @@ final class ArtistImageExportTests: XCTestCase {
         XCTAssertTrue(index.contains("\(fileName): Panic! At The Disco: Live"))
     }
 
-    func testExportedImageIsResizedToAtMost128px() throws {
+    /// Contrato v20 (ST-159): la foto de artista que llega al iPod es de
+    /// `LibrarySync.deviceArtistSide` (320×320 desde v20, antes 128) --
+    /// se compara contra la constante, no un número de más, para que
+    /// esta prueba no quede desactualizada la próxima vez que cambie.
+    func testExportedImageIsResizedToDeviceArtistSide() throws {
         let e1 = musicItem(title: "Uno", artist: "Grande", albumArtist: "Grande", album: "A")
         let key = LibraryGrouping.artistKey(of: e1)
         let store = ArtistImageStore(libraryRoot: libraryRoot)
@@ -115,8 +119,8 @@ final class ArtistImageExportTests: XCTestCase {
         let props = try XCTUnwrap(CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any])
         let width = try XCTUnwrap(props[kCGImagePropertyPixelWidth] as? Int)
         let height = try XCTUnwrap(props[kCGImagePropertyPixelHeight] as? Int)
-        XCTAssertLessThanOrEqual(width, 128)
-        XCTAssertLessThanOrEqual(height, 128)
+        XCTAssertEqual(width, LibrarySync.deviceArtistSide)
+        XCTAssertEqual(height, LibrarySync.deviceArtistSide)
     }
 
     func testDeletingAllMusicRemovesArtistImagesAndIndex() throws {

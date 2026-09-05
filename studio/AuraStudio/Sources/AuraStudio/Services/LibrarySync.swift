@@ -213,8 +213,13 @@ struct LibrarySync {
     /// borroso, y con los ~1000 px de la biblioteca la fase de fotos del
     /// constructor del firmware se hacía lenta para nada.
     static let deviceCoverSide = 320
-    /// §D.3: la foto de artista, cuadrada y de 128.
-    static let deviceArtistSide = 128
+    /// Contrato v20 §D.3: la foto de artista, cuadrada, 320×320 -- mismo
+    /// tamaño exacto que `cover.jpg` (antes de v20, 128). Studio
+    /// reescribe las fotos de artista existentes al tamaño nuevo en la
+    /// primera sincronización que corra tras esta versión (la
+    /// comparación por bytes de más abajo ya lo hace sola: el archivo
+    /// viejo de 128 nunca es igual al nuevo de 320).
+    static let deviceArtistSide = 320
     /// La misma que el resto de lo que viaja al aparato (§D.1).
     static let deviceCoverQuality: CGFloat = 0.85
 
@@ -1097,7 +1102,7 @@ struct LibrarySync {
     /// PLAN-biblioteca-medios-v2.md §3.5 (Tanda 5) / CONTRATO-firmware-
     /// studio.md §D.3: fotos de artista reales al iPod -- `ArtistImageStore`
     /// (ST-032) ya las descarga y las guarda en la biblioteca local,
-    /// nunca las sincronizaba. Reducidas a 128px (contrato), mismo
+    /// nunca las sincronizaba. Reducidas a 320×320 (contrato v20), mismo
     /// nombre de archivo que ya usa la caché local
     /// (`ArtistImageStore.fileName(forArtistKey:)`) para que un mismo
     /// artista comparta un solo archivo entre ambos lados. El índice se

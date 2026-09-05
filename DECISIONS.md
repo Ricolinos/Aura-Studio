@@ -4281,3 +4281,62 @@ falta ya estaba expuesto desde ST-141.
   biblioteca de fixtures y la herramienta que la generó vivieron fuera
   del repo (carpeta de trabajo de la sesión) y se borraron al cerrar la
   fase.
+
+## ST-159 — Fotos de artista al iPod: 128×128 → 320×320 (contrato v20)
+
+Encargo del dueño, confirmado directamente: mismo formato exacto que ya
+usa `cover.jpg` desde v1.5 del contrato de biblioteca (D-349) —
+`aura_master_art.c` sigue derivando su caché maestra a 130×130 sin
+cambios (§D.5 del contrato no se toca), esto solo le da a Studio más
+resolución de origen para escribir.
+
+`CONTRATO-firmware-studio.md` reemplazado entero por la copia canónica
+de `Aura-Firmware` (commit `f4ec59af`, v20), verificado con `cmp` y
+SHA-256 idéntico en los dos repos.
+
+`LibrarySync.deviceArtistSide` pasa de `128` a `320`
+(`Services/LibrarySync.swift`) — la única constante que hacía falta
+tocar; `writeArtistImages` ya llama `ImageResizer.squareCrop(data:side:)`
+con ella, y la comparación por bytes contra lo que ya hay en el iPod
+(`existing != square`) hace sola la migración: la primera sincronización
+tras esta versión encuentra que la foto vieja de 128 nunca es igual a la
+nueva de 320, así que la reescribe; no hizo falta ningún código de
+migración aparte.
+
+Dos pruebas actualizadas para seguir la constante en vez de un número
+suelto (así no quedan desactualizadas la próxima vez que cambie el
+contrato): `ArtistImageExportTests.testExportedImageIsResizedToAtMost128px`
+→ `testExportedImageIsResizedToDeviceArtistSide` (medía `<=128`, ahora
+`== LibrarySync.deviceArtistSide`) y
+`LibrarySyncSquareCoversTests.testTheArtistPhotoArrivesSquareAtOneHundredAndTwentyEight`
+→ `testTheArtistPhotoArrivesSquareAtDeviceArtistSide` (el cuerpo ya
+usaba la constante; solo el nombre había quedado desactualizado).
+
+### Verificación EXIF-6, en macOS
+
+Windows encontró y corrigió (ST-162) un bug real en su `EncodeSquareAsync`
+de WIC: mezclaba el espacio de coordenadas crudo (antes de aplicar la
+orientación EXIF) con el orientado (después), y una foto vertical
+guardada horizontal con rotación EXIF salía rectangular en vez de
+cuadrada. En macOS, `ImageResizer.squareCrop` usa
+`CGImageSourceCreateThumbnailWithTransform`, que orienta ANTES de que el
+código de Studio calcule el recorte -- **ya no era un bug por corregir,
+era una propiedad por confirmar con una prueba real**, y ya existía:
+`ImageResizerSquareCropTests.testAPhotoWithExifOrientationIsCroppedOnWhatIsSeen`
+(400×200 crudo con orientación EXIF 6, se ve 200×400, se recorta a
+200×200 -- el lado corto de lo que se VE, no de lo crudo). Corrida de
+nuevo para esta ronda: pasa. No hizo falta escribir ninguna prueba
+nueva, solo confirmar que la que ya había cubre exactamente el
+escenario que preocupaba.
+
+### Verificación
+
+`swift build`, `xcodebuild` (Debug, Swift 6 estricto) y `swift test`:
+780/780 (1 saltada, red -- fluctuación de entorno). `scripts/build-app.sh`
+verificado contra un directorio temporal (Release).
+
+No se tocó ningún archivo de `studio/windows/` (ST-163, la paridad en
+Core, es trabajo de la sesión de Windows). No se subió la versión —
+ST-159 sale como parche `0.2.1` en una unidad de trabajo aparte, cuando
+el dueño autorice ese release; este commit es solo el cambio de código
+y contrato.

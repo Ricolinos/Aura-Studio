@@ -3,11 +3,11 @@ import ImageIO
 import UniformTypeIdentifiers
 @testable import AuraStudio
 
-/// ST-142 / contrato v18: lo que llega al iPod es cuadrado y del tamaño
-/// exacto que fija el contrato -- `cover.jpg` de 320×320 y
-/// `.rockbox/aura/artists/*.jpg` de 128×128. Se comprueba sobre un
-/// volumen de prueba, midiendo los archivos que quedaron escritos, no el
-/// código que los escribe.
+/// ST-142 / ST-159, contrato v20: lo que llega al iPod es cuadrado y del
+/// tamaño exacto que fija el contrato -- `cover.jpg` de 320×320 y, desde
+/// v20, `.rockbox/aura/artists/*.jpg` también de 320×320 (antes 128×128).
+/// Se comprueba sobre un volumen de prueba, midiendo los archivos que
+/// quedaron escritos, no el código que los escribe.
 final class LibrarySyncSquareCoversTests: XCTestCase {
     private var fakeIPod: URL!
     private var libraryRoot: URL!
@@ -162,7 +162,7 @@ final class LibrarySyncSquareCoversTests: XCTestCase {
         XCTAssertTrue(decoded.changes.music)
     }
 
-    func testTheArtistPhotoArrivesSquareAtOneHundredAndTwentyEight() throws {
+    func testTheArtistPhotoArrivesSquareAtDeviceArtistSide() throws {
         // §D.3 las exige cuadradas desde v6; hasta v18 Studio mandaba el
         // lado mayor a 128 con la proporción original.
         let item = musicItem(cover: nil)
