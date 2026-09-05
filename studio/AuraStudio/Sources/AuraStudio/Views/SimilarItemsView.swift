@@ -104,7 +104,7 @@ struct SimilarItemsView: View {
             MediaInfoView(item: item,
                           availableCategories: categories,
                           onCategoryChanged: { category in library.setCategory(category, forItem: item.id) },
-                          onRatingChanged: { rating in library.setRating(rating, forItem: item.id) },
+                          onRatingChanged: { rating in Task { await library.setRating(rating, forItem: item.id) } },
                           onVideoInfoChanged: videoInfoHandler,
                           onSave: { metadata in
                               library.applyReview(id: item.id, metadata: metadata)

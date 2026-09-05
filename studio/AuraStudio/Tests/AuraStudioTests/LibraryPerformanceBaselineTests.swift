@@ -170,24 +170,15 @@ final class LibraryPerformanceBaselineTests: XCTestCase {
         }
     }
 
-    /// Addendum a ST-155 (Fase 3 punto 1): "una estrella" -- el ejemplo
-    /// textual del pedido de la supervisora de por qué el congelamiento
-    /// no era solo de acciones en lote. `setRating` ahora llama
-    /// `schedulePersistCatalog()` (debounce + escritura en
-    /// `Task.detached`) en vez de `persistCatalog()` directo -- esto
-    /// mide el costo en el hilo que llama, que es lo que el usuario
-    /// siente al hacer clic. Objetivo del pedido: < 10 ms.
-    func testSetRatingMainThreadCost() {
-        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
-        viewModel.replaceItemsForPerformanceTesting(syntheticItems)
-        // Deliberadamente SIN `makePersistenceSynchronousForTesting()`:
-        // lo que se quiere medir es justo el camino de producción real
-        // (debounce + `Task.detached`), no el modo síncrono de prueba.
-        let id = syntheticItems[0].id
-        measure {
-            viewModel.setRating(Int.random(in: 1...5), forItem: id)
-        }
-    }
+    /// `testSetRatingMainThreadCost` (ST-155, Fase 3 punto 1) medía el
+    /// costo síncrono de `setRating` en el hilo que llama -- ese costo
+    /// ya no existe: PLAN-studio-rendimiento.md Fase 4 paso 4 movió
+    /// `prepareMusic` a `LibraryFileWorker` y `setRating` pasó a `async`,
+    /// así que ya no se puede medir con `measure { }` (síncrono). La
+    /// comprobación equivalente -- cero bloqueos > 250 ms calificando
+    /// muchas pistas seguidas, el mismo escenario "una estrella" que
+    /// motivó esta prueba -- vive ahora en
+    /// `SetRatingWorkerTests.testThreeHundredSequentialRatingsNeverBlockTheMainThreadOverTheWatchdogThreshold`.
 
     // MARK: - statusSummary (ST-153 addendum, Fase 1 punto 3)
     //

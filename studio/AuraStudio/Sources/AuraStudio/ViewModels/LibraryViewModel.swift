@@ -784,17 +784,32 @@ final class LibraryViewModel: ObservableObject {
 
     /// Calificacion de 0 a 5 estrellas (D-199), editable desde "Más
     /// información..." -- `nil` la borra (distinto de 0 estrellas).
-    func setRating(_ rating: Int?, forItem id: UUID) {
+    /// PLAN-studio-rendimiento.md Fase 4 paso 4: la calificación misma
+    /// nunca viaja en el ID3 (va aparte en `ratings.cfg`, ver
+    /// `LibrarySync.import_ratings_from_studio`) -- se ve pintada al
+    /// instante con solo actualizar `metadata` en el hilo principal.
+    /// `prepareMusic` (transcode/ID3, el mismo criterio de siempre: el
+    /// archivo en staging refleja la metadata completa) corre después
+    /// en `fileWorker`, sin bloquear la estrella. Si el rating vuelve a
+    /// cambiar antes de que termine, la segunda llamada produce un
+    /// archivo preparado idéntico (ningún campo del ID3 depende del
+    /// rating), así que no hay carrera observable.
+    func setRating(_ rating: Int?, forItem id: UUID) async {
         guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .music else { return }
         var metadata = items[index].metadata ?? TrackMetadata()
         metadata.rating = rating.map { max(0, min(5, $0)) }
         items[index].metadata = metadata
-        items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
         // PLAN-studio-rendimiento.md Fase 3 punto 1: poner varias
         // estrellas seguidas (fila por fila) coalesce en un solo
         // guardado real, fuera del hilo principal -- diagnóstico §0.4,
         // el ejemplo textual del dueño de por qué se sentía el
         // congelamiento en ediciones individuales, no solo en lote.
+        schedulePersistCatalog()
+
+        let item = items[index]
+        let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
+        guard let currentIndex = items.firstIndex(where: { $0.id == id }) else { return }
+        items[currentIndex].preparedURL = prepared ?? items[currentIndex].preparedURL
         schedulePersistCatalog()
     }
 

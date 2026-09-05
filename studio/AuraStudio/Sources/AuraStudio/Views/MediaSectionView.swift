@@ -323,7 +323,7 @@ struct MediaSectionView: View {
             MediaInfoView(item: item, availableCategories: availableCategories) { category in
                 viewModel.setCategory(category, forItem: item.id)
             } onRatingChanged: { rating in
-                viewModel.setRating(rating, forItem: item.id)
+                Task { await viewModel.setRating(rating, forItem: item.id) }
             } onSave: { metadata in
                 viewModel.applyReview(id: item.id, metadata: metadata)
                 reviewingItem = nil

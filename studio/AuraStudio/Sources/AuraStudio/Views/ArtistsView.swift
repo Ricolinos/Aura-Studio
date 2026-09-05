@@ -63,7 +63,7 @@ struct ArtistsView: View {
         .sheet(item: $reviewingItem) { item in
             MediaInfoView(item: item, availableCategories: nil) { _ in
             } onRatingChanged: { rating in
-                viewModel.setRating(rating, forItem: item.id)
+                Task { await viewModel.setRating(rating, forItem: item.id) }
             } onSave: { metadata in
                 viewModel.applyReview(id: item.id, metadata: metadata)
                 reviewingItem = nil

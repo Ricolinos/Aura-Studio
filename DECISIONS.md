@@ -5127,3 +5127,52 @@ cero bloqueos > 250 ms.
 directorio temporal (Release). Sin pruebas existentes de ninguna de las
 dos funciones antes de esta ronda -- nada que pudiera romperse por el
 cambio de firma a `async`.
+
+## ST-157 (paso 4/6) — `setRating`: la estrella pinta al instante
+
+Último paso de "una sola edición rápida" del plan (Fase 0 §0.4: "una
+estrella" fue el ejemplo textual del dueño de por qué el congelamiento
+no era solo de acciones en lote). Hallazgo al mirar `prepareMusic`
+antes de tocarlo: la calificación NUNCA viaja en el tag ID3 (no está
+entre los campos de `ID3Writer.Tag`) -- va aparte, en
+`.rockbox/aura/ratings.cfg`, que `LibrarySync.
+import_ratings_from_studio` escribe leyendo `item.metadata.rating`
+directo del catálogo. `setRating` de siempre igual volvía a transcodificar/
+reescribir el ID3 de la canción completa en el hilo principal por cada
+clic en una estrella, sin que ese re-preparado cambiara ni un byte del
+archivo resultante.
+
+Se mantuvo el mismo criterio conservador de los pasos 1-3 (mover el
+trabajo, no decidir por cuenta propia que sobra): `setRating` pasa a
+`async`, actualiza `metadata` (la estrella visible) en el hilo
+principal de forma síncrona -- eso es lo que el usuario ve al
+instante -- y solo después `await` a `fileWorker.prepareMusic(...)`
+para refrescar `preparedURL`, exactamente como antes salvo por el
+`await`. Si la calificación vuelve a cambiar antes de que termine el
+`prepareMusic` anterior, las dos llamadas producen un archivo idéntico
+(ningún campo del ID3 depende del rating), así que no hay carrera
+observable pese a no haber lote/batching acá -- una sola pista a la
+vez, sin necesidad del patrón de lotes de los pasos 2-3.
+
+Los 3 llamadores (`ArtistsView`, `MediaSectionView`, `SimilarItemsView`,
+los tres cierres `onRatingChanged` del inspector) se envolvieron en
+`Task { await ... }`.
+
+### Pruebas
+
+`LibraryPerformanceBaselineTests.testSetRatingMainThreadCost` (ST-155)
+medía justo el costo síncrono que este paso elimina -- ya no se puede
+medir con `measure { }` sobre una función `async`. Se retiró y se
+reemplazó por `SetRatingWorkerTests.swift` (nuevo, 4 pruebas): calificar
+actualiza `metadata.rating` y re-prepara el archivo; quitar la
+calificación (`nil`) no deja `preparedURL` en `nil`; un ítem que no es
+música se ignora sin tocar `prepareMusic`; y el criterio de cierre --
+300 pistas calificadas UNA POR UNA seguidas (el escenario real, no un
+lote explícito) con el vigilante real activado -- cero bloqueos > 250 ms.
+
+### Verificación
+
+`swift test`: 804/804 en verde (804 = 801 + 4 nuevas − 1 retirada).
+`xcodegen generate` + `xcodebuild` (Debug, Swift 6 estricto):
+`BUILD SUCCEEDED`. `scripts/build-app.sh` verificado contra un
+directorio temporal (Release).
