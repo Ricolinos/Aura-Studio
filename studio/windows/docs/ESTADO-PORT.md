@@ -2382,12 +2382,17 @@ durante la corrida nocturna.
 - **Formateo real y DFU** nunca ejecutados contra el iPod.
 - **Procedencia GPL §3 de `mks5lboot.exe`**: el binario actual se compiló de un
   árbol sucio. Bloquea el release público, no el desarrollo.
-- **Poblar `artifacts/` con un Release real** (instalar `gh` y autenticar).
+- **Poblar `artifacts/` con un Release real** (instalar `gh` y autenticar):
+  **hecho** — `FirmwareFetch.ps1` corrido contra el Release publicado: Aura
+  `v0.4.6-beta`, Metro `v0.7.2`, moonlit `v0.2.2`.
 - **Medir la comprobación de archivos contra `V:`** con su biblioteca real: en
   disco local son 54 ms para 12 000 elementos, pero por la carpeta compartida
   pueden ser segundos (ST-098).
-- **Decidir el empaquetado** (Fase 7): sin empaquetar + instalador, o MSIX;
-  ARM64 primero y x64 después. Es una decisión suya y bloquea el cierre.
+- **Decidir el empaquetado** (Fase 7): **hecho, decidido y ejecutado** —
+  instalador Inno Setup por usuario, sin UAC, ARM64 y x64 con un solo `AppId`
+  (instalar uno reemplaza al otro); publicado como Aura Studio 0.2.0
+  (instaladores del 2026-09-05; ST-160, `6e7192b`, corrigió el nombre de
+  salida que había quedado hardcodeado en `0.1.0`).
 - **Diseñar la vuelta al firmware de Apple en Windows** (`RestoreHandoffView`
   de macOS lo termina Finder; acá sería iTunes o Dispositivos de Apple): no se
   puede diseñar sin el iPod.
@@ -2399,23 +2404,34 @@ durante la corrida nocturna.
   de mentira, pero la lista, la activación y el bloqueo de compartir no se han
   visto en pantalla con datos reales.
 - **Agregar la sincronización de hora al instalar/actualizar** (ST-146,
-  ronda "ajustes 2"): `DeviceSessionService.SyncClockIfConnected` (al
-  conectar) y `LibrarySyncEngine.Apply`/`FirmwareSwitcher.SwitchActiveFirmware`
-  (al terminar un sync, al cambiar de familia) ya llaman a `ClockSyncWriter`
-  desde `AuraStudio.Core` -- probado y verde ahí. Falta la tercera pata, que
-  vive en `AuraStudio.App` (`InstallerViewModel`, WinUI): escribir la hora al
-  terminar de copiar los archivos, simétrico a
-  `InstallerViewModel.swift:1214` en macOS.
-- **Probar el recorte cuadrado en la VM** (ST-140/ST-141/ST-142): correr
-  `dotnet run --project tools\ImageResizerCheck -c Release` (comprobaciones
-  20-27) y confirmar que no hay pausa perceptible al aplicar una tapa — el
-  puente a WIC de `WicSquareImageEncoder` es síncrono
-  (`Task.Run(...).GetAwaiter().GetResult()`), que es lo que permite normalizar
-  desde los puntos de entrada síncronos de Core.
-- **Agregar el botón de cancelar la normalización de carátulas** (ST-141): el
-  modelo ya expone `IsNormalizingCovers` y `CancelCoverNormalization()`, y el
-  avance sale por `StatusMessage`, que las páginas ya muestran; falta el XAML.
-  Mientras tanto la migración se detiene cerrando la app y se retoma sola.
+  ronda "ajustes 2"): **hecho (ST-165, `74f3a50`)** — la tercera pata vive en
+  `FirmwareTreeWriter.WriteAsync` (`AuraStudio.Core`, no en el ViewModel: así
+  alcanza al asistente y a la actualización directa con una sola línea
+  probada) y llama a `ClockSyncWriter.WriteToDisk` justo después de escribir
+  el árbol. Verificado con dos pruebas contra un volumen de mentira. Queda
+  para el dueño con hardware real: confirmar que un iPod recién flasheado por
+  DFU (instalación desde cero, sin `aura.cfg` previo) trae la hora correcta en
+  su **segunda** conexión, y que una actualización directa sobre un iPod ya
+  corriendo Aura la trae correcta de inmediato, en la primera.
+- **Probar el recorte cuadrado en la VM** (ST-140/ST-141/ST-142): **hecho** —
+  `dotnet run --project tools\ImageResizerCheck -c Release` encontró **1
+  FALLA real** (comprobación 25, EXIF orientación 6 → cuadrado: escalar y
+  recortar no vivían en el mismo espacio), que ST-162 (`b0789e1`) corrigió;
+  vuelto a correr, **40/40** en verde. Latencia del puente síncrono de WIC
+  (`WicSquareImageEncoder`, `Task.Run(...).GetAwaiter().GetResult()`) medida
+  con un arnés temporal contra imágenes 4:3 y 16:9 grandes (3000×2250 y
+  3840×2160): **10-25 ms por imagen**, muy por debajo del umbral de 100 ms —
+  imperceptible.
+- **Agregar el botón de cancelar la normalización de carátulas** (ST-141):
+  **hecho (ST-164, `bd5e198`)** — `Controls\LibraryStatusStrip` (el mismo
+  texto de `StatusMessage` más el botón, colapsado fuera de una
+  normalización), cableado en las cuatro páginas de biblioteca (Artistas,
+  Álbumes/cuadrículas, Canciones, Listas). Verificado en vivo contra una
+  biblioteca de fixtures de 8000 canciones: la franja aparece a mitad de
+  normalizar con el botón habilitado, y al invocarlo el mensaje cambia al
+  instante a "Se detuvo la normalización de carátulas…"
+  (`docs/capturas/st164-normalizacion-cancelar.png` y
+  `st164-normalizacion-cancelada.png`).
 - **Revisión visual** de las pantallas nuevas en su monitor y con su biblioteca.
 - **Instalar ffmpeg** (`winget install Gyan.FFmpeg`) — no está en esta VM, así
   que ninguna conversión de video real se ejecutó todavía. Los argumentos y los
@@ -2428,6 +2444,53 @@ durante la corrida nocturna.
   la Fase 4). El manifiesto ya tiene pruebas de compatibilidad; el resto
   (`sync_summary.cfg`, `ratings.cfg`, índices) se comparó contra el código de
   macOS, no contra su salida real.
+
+### Lo que dejó la Fase D (ST-166…ST-169: registro de arranque, modos del
+instalador, "Actualizar el arranque" y el guardián del servicio de Apple)
+
+**Hecho**: ST-166 (`efb51a6`, el registro de qué arranque tiene cada iPod, por
+serial USB), ST-167 (`0537398`, el recorrido del instalador vuelto un dato,
+`InstallerFlow`), ST-168 (`38417af`, "Actualizar el arranque" cableado a la
+pantalla, con los cuatro textos que mentían corregidos) y ST-169 (`15901ea`,
+la tarea programada que reactiva el servicio de Apple si la app muere con él
+pausado). Con el iPod y con una corrida elevada real, lo siguiente no se pudo
+ejercitar sin arriesgar el archivo de preferencias real ni el servicio de
+verdad:
+
+- **"Actualizar el arranque" (ST-167/ST-168)**: el flasheo real con
+  `single: false` (no debe borrar el arranque de Apple en un iPod con dual
+  boot); que el disco no se toca; que el camino normal no pide UAC ni una vez;
+  que la oferta desaparece después de actualizar, porque el hash quedó
+  anotado; y que un iPod que nunca pasó por esta app muestra el motivo "no
+  sabemos cuál" y no el de "arranque distinto".
+- **El guardián del servicio de Apple (ST-169)**: (1) una corrida elevada real
+  de `schtasks` con la configuración regional de su Windows, que la tarea se
+  registre sin error; (2) que aparezca en el Programador de tareas bajo "Aura
+  Studio", corriendo como SYSTEM; (3) que **desaparezca** al reanudar por el
+  camino normal; (4) que si se mata la app con el servicio pausado, el
+  servicio vuelva solo a los diez minutos; (5) la ayuda de los 20 s en
+  pantalla, que solo se llega a ella con un iPod que no se detecta en DFU.
+  Para probar 1-4 sin tocar el `preferences.json` real, la variable de entorno
+  `AURA_STUDIO_PREFERENCES` (apuntando a un archivo temporal) hace que la app
+  lea/escriba ahí en vez del archivo del dueño — es una ayuda de verificación
+  de ST-169, no una función del producto; sin la variable, todo queda como
+  siempre.
+
+**Verificación de la integración (Fase E, sobre `main` en `15901ea`)**:
+`dotnet test tests\AuraStudio.Core.Tests -c Release` → **1287/1287**;
+`dotnet build AuraStudio.App -c Release` → **0 advertencias, 0 errores** tanto
+en `-p:Platform=ARM64` como en `-p:Platform=x64`. No se regeneraron los
+instaladores: los `AuraStudioSetup-0.2.0-*.exe` de `dist\` son los del release
+publicado y el 0.2.1 lo arma una unidad de trabajo aparte que el dueño
+autorice.
+
+### Nota de proceso: EOL
+
+El clon tiene `core.autocrlf=false` desde la sesión de hoy (2026-09-05); los
+archivos de `studio/windows` (y `DECISIONS.md`/`ESTADO-PORT.md`) se commitean
+en LF. Verificar con `git ls-files --eol -- studio/windows` antes de cada
+commit: un diff de cientos de líneas en un archivo que nadie tocó a propósito
+es casi siempre un cambio de fin de línea, no de contenido.
 
 ## Post-plan (diferido a propósito)
 
