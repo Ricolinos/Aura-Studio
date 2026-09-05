@@ -221,12 +221,109 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
     public string LibraryPath => _preferences.LibraryPath;
 
+    // MARK: - Está la biblioteca donde dice (ST-171)
+
+    /// <summary>
+    /// Si la biblioteca está donde dice. Una biblioteca en un disco externo
+    /// desmontado es un <b>estado normal</b>, no un error: las páginas lo
+    /// cuentan en la ventana y ofrecen qué hacer.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsLibraryAvailable))]
+    [NotifyPropertyChangedFor(nameof(IsLibraryRootMissing))]
+    [NotifyPropertyChangedFor(nameof(RootMissingMessage))]
+    public partial LibraryAvailability Availability { get; private set; }
+
+    public bool IsLibraryAvailable => Availability.IsAvailable;
+
+    public bool IsLibraryRootMissing => Availability.IsRootMissing;
+
+    public string RootMissingMessage => AppStrings.LibraryRootMissing(Availability.Root);
+
+    /// <summary>
+    /// Cada cuánto se mira si el disco volvió. Cinco segundos es un
+    /// <c>Directory.Exists</c> cada cinco segundos <b>solo mientras falta</b>:
+    /// se apaga en cuanto la biblioteca aparece, y no existe si nunca faltó.
+    /// </summary>
+    private static readonly TimeSpan RootPollInterval = TimeSpan.FromSeconds(5);
+
+    private CancellationTokenSource? _rootWatch;
+
+    /// <summary>
+    /// Vigila la vuelta del disco mientras la biblioteca no está, y recarga
+    /// sola en cuanto aparece. Sin esto, alguien que conecta el disco con la
+    /// app abierta tendría que adivinar que hay que apretar algo.
+    /// </summary>
+    private void WatchForTheRoot(bool watching)
+    {
+        if (!watching)
+        {
+            _rootWatch?.Cancel();
+            _rootWatch?.Dispose();
+            _rootWatch = null;
+            return;
+        }
+
+        if (_rootWatch is not null) return;   // ya se está vigilando
+
+        var watch = new CancellationTokenSource();
+        _rootWatch = watch;
+        _ = ReloadWhenTheRootComesBackAsync(watch.Token);
+    }
+
+    private async Task ReloadWhenTheRootComesBackAsync(CancellationToken ct)
+    {
+        try
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                await Task.Delay(RootPollInterval, ct);
+
+                // La comprobación va fuera del hilo de interfaz: en una unidad
+                // de red desconectada, `Directory.Exists` puede tardar.
+                string root = _preferences.LibraryPath;
+                bool back = await Task.Run(() => LibraryRoot.IsAvailable(root), ct);
+
+                if (back && !ct.IsCancellationRequested) Reload();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // La biblioteca volvió por otro camino, o cambió de carpeta.
+        }
+    }
+
     // MARK: - Carga y guardado
 
     [RelayCommand]
     public void Reload()
     {
         _store = new LibraryStore(_preferences.LibraryPath);
+        Availability = _store.Availability;
+
+        // ST-171: con la carpeta ausente no se carga, no se normaliza, no se
+        // comprueban archivos, no se enriquece y —sobre todo— NO SE GUARDA. Un
+        // catálogo que no se pudo leer es indistinguible de una biblioteca
+        // vacía, así que cualquier cosa que se escribiera acá sería una
+        // conclusión sacada de una lectura que nunca ocurrió.
+        //
+        // Y **no lanza**: esto corre desde el constructor, que la inyección de
+        // dependencias llama la primera vez que alguien pide la biblioteca.
+        // Cuando lanzaba, el modelo no llegaba a existir nunca, así que CADA
+        // navegación volvía a intentarlo y volvía a explotar en la cara del
+        // usuario — de ahí que el diálogo saliera desde `ShellPage`.
+        if (Availability.IsRootMissing)
+        {
+            Items = [];
+            AvailableItems = [];
+            MissingFileCount = 0;
+            LoadError = null;
+            StatusMessage = "";
+            WatchForTheRoot(true);
+            return;
+        }
+
+        WatchForTheRoot(false);
 
         // Un archivo que el usuario borró del disco desde afuera deja de estar
         // en la biblioteca: mostrarlo sería ofrecer sincronizar algo que no
@@ -309,6 +406,13 @@ public sealed partial class LibraryViewModel : ViewModelBase
     private void StartCoverNormalizationIfNeeded()
     {
         if (_coverNormalization is not null) return;
+
+        // ST-171: cinturón, además del tirante de `Reload`. Sin la biblioteca
+        // delante, "no encontré carátulas que normalizar" no significa que no
+        // haya: significa que no se pudo mirar. Darla por normalizada y
+        // guardarlo era exactamente el bug.
+        if (!_store.Availability.IsAvailable) return;
+
         if (_store.CoversNormalized == CoverArtNormalization.NormalizedVersion) return;
 
         List<string> files = CoverNormalizationMigration.FilesToNormalize(Items, _store);
@@ -391,9 +495,33 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
     private void Save()
     {
-        // SIEMPRE el catálogo entero. Guardar cualquier lista más chica —la
-        // filtrada por archivos presentes, por ejemplo— borra datos del usuario.
-        _store.SaveItems(Items);
+        // ST-171: sin la biblioteca delante no se escribe. Lo que hay en
+        // memoria entonces no es el catálogo del usuario —es lo que quedó de no
+        // haber podido leerlo—, y guardarlo lo reemplazaría por eso. El
+        // catálogo también se defiende solo (`LibraryCatalogStore.Save` exige
+        // el volumen montado), pero acá se sabe además que la carpeta está.
+        if (!_store.Availability.IsAvailable)
+        {
+            Availability = _store.Availability;
+            WatchForTheRoot(true);
+            return;
+        }
+
+        try
+        {
+            // SIEMPRE el catálogo entero. Guardar cualquier lista más chica —la
+            // filtrada por archivos presentes, por ejemplo— borra datos del usuario.
+            _store.SaveItems(Items);
+        }
+        catch (LibraryRootUnavailableException)
+        {
+            // El disco se fue entre la comprobación y la escritura. Es un
+            // estado, no un error que mostrar en un diálogo.
+            Availability = LibraryAvailability.For(_store.Root);
+            WatchForTheRoot(true);
+            return;
+        }
+
         RefreshAvailable();
     }
 

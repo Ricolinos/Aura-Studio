@@ -11,6 +11,14 @@ public sealed class LibraryStore(string root)
 {
     public string Root { get; } = root;
 
+    /// <summary>
+    /// Si se puede trabajar con esta biblioteca ahora mismo (ST-171). Se lee
+    /// <b>cada vez</b> y no se guarda: un disco externo se conecta y se
+    /// desconecta mientras la app está abierta, así que la respuesta de hace un
+    /// minuto no sirve.
+    /// </summary>
+    public LibraryAvailability Availability => LibraryAvailability.For(Root);
+
     public static string DefaultRoot => Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Aura Studio");
 

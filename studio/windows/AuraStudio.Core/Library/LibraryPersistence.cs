@@ -310,6 +310,22 @@ public static class LibraryCatalogStore
     {
         string path;
 
+        // ST-171: "el disco de la biblioteca no está" NO es "la biblioteca está
+        // vacía". Sin esta distinción las dos se veían idénticas —catálogo
+        // vacío y sin error—, y de ahí salía el bug: con el disco desmontado la
+        // app concluía que no había carátulas que normalizar, se daba por
+        // normalizada y trataba de GUARDAR esa conclusión en una unidad que no
+        // existe.
+        //
+        // Se pregunta por el VOLUMEN y no por la carpeta: una carpeta que aún
+        // no existe en un disco montado es una biblioteca nueva, y ésa sí se
+        // lee como vacía y sin error, que es lo correcto.
+        if (!LibraryRoot.VolumeIsMounted(libraryRoot))
+        {
+            return new CatalogLoad(new PersistedLibrary(),
+                $"La biblioteca no está disponible: {libraryRoot}");
+        }
+
         try
         {
             path = CatalogPath(libraryRoot);
@@ -341,8 +357,23 @@ public static class LibraryCatalogStore
         }
     }
 
+    /// <summary>
+    /// Escribe el catálogo entero, creando la carpeta si hace falta.
+    ///
+    /// <para>ST-171: <b>no si el volumen no está montado.</b> Crear la carpeta
+    /// de una biblioteca nueva es legítimo —es lo que pasa en el primer
+    /// arranque—, pero crearla en una unidad que no está es inventar un disco:
+    /// eso es lo que reventaba con una <c>DirectoryNotFoundException</c> en la
+    /// cara del usuario cuando abría la app con su disco externo desmontado. Y
+    /// si la unidad hubiera existido con la carpeta borrada, habría sido peor:
+    /// habría escrito un catálogo vacío encima, en silencio.</para>
+    /// </summary>
+    /// <exception cref="LibraryRootUnavailableException">El volumen de esa ruta no está montado.</exception>
     public static void Save(string libraryRoot, PersistedLibrary catalog)
     {
+        if (!LibraryRoot.VolumeIsMounted(libraryRoot))
+            throw new LibraryRootUnavailableException(libraryRoot);
+
         Directory.CreateDirectory(libraryRoot);
         string path = CatalogPath(libraryRoot);
         string temporary = path + ".tmp";

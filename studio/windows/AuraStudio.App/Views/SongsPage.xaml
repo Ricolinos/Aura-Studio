@@ -224,5 +224,10 @@
                                              Library="{x:Bind ViewModel.Library, Mode=OneWay}" />
             </Grid>
         </Border>
+
+        <!-- ST-171: encima de la página mientras la biblioteca no esté. No
+             reemplaza nada — cuando el disco vuelve se apaga solo. -->
+        <controls:LibraryUnavailableView Grid.Row="0" Grid.RowSpan="4"
+                                         Library="{x:Bind ViewModel.Library, Mode=OneWay}" />
     </Grid>
 </Page>

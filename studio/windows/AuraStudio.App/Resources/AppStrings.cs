@@ -93,6 +93,24 @@ public static class AppStrings
 
     public static string LibraryEmpty => "Tu biblioteca está vacía.";
 
+    // La biblioteca no está donde dice (ST-171). Un disco externo desconectado
+    // es un estado normal, no un error: se cuenta en la ventana, con la ruta
+    // completa —para que el usuario reconozca CUÁL biblioteca falta— y con lo
+    // que puede hacer.
+
+    public static string LibraryRootMissing(string root) =>
+        string.IsNullOrWhiteSpace(root)
+            ? "No hay ninguna carpeta de biblioteca configurada."
+            : $"La biblioteca está en un disco que no está conectado: {root}";
+
+    public static string LibraryRootMissingDetail =>
+        "No se perdió nada: el catálogo y tus archivos siguen en ese disco. Conéctalo y la " +
+        "biblioteca vuelve sola.";
+
+    public static string LibraryRootRetry => "Conectar el disco y reintentar";
+    public static string LibraryRootChoose => "Elegir otra biblioteca";
+    public static string LibraryRootCreate => "Crear una nueva";
+
     public static string LibraryDropHint(LibraryItemKind kind) => kind switch
     {
         LibraryItemKind.Music => "Arrastra aquí tu música o una carpeta de álbumes.",

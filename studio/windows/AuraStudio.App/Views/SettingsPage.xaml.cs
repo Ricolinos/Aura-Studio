@@ -59,10 +59,32 @@ public sealed partial class SettingsPage : Page
 
     // MARK: - Biblioteca
 
+    /// <summary>
+    /// ST-171: con el disco de la biblioteca desconectado esto era un segundo
+    /// diálogo de "Algo salió mal" esperando — <c>CreateDirectory</c> sobre una
+    /// unidad que no está lanza igual que en el arranque. Y con la unidad
+    /// presente pero la carpeta borrada, la creaba: el Explorador abría una
+    /// carpeta vacía recién inventada como si fuera la biblioteca del usuario.
+    ///
+    /// <para>Ahora solo se crea si el volumen está montado —el caso legítimo de
+    /// una biblioteca nueva que todavía no tiene carpeta— y si aun así no se
+    /// puede abrir, no pasa nada: la pantalla ya dice dónde está y que no está.</para>
+    /// </summary>
     private void OpenLibraryFolder_Click(object sender, RoutedEventArgs e)
     {
-        Directory.CreateDirectory(ViewModel.LibraryPath);
-        FilePickers.OpenFolder(ViewModel.LibraryPath);
+        string root = ViewModel.LibraryPath;
+        if (!LibraryRoot.VolumeIsMounted(root)) return;
+
+        try
+        {
+            Directory.CreateDirectory(root);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return;
+        }
+
+        FilePickers.OpenFolder(root);
     }
 
     private async void ChangeLibraryFolder_Click(object sender, RoutedEventArgs e)

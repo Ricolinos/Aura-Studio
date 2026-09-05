@@ -5359,3 +5359,162 @@ Sin cambios de código: solo capturas y esta decisión. Instalado 0.2.1 sobre el
 0.2.0 sin UAC (mismo `AppId`), `V:` montada, sin iPod. Tres corridas
 independientes de la app (cada una la abre, navega y la cierra); ninguna
 registró un solo segundo sin responder después del arranque.
+
+## ST-171 — Un disco de biblioteca desconectado es un estado, no un error
+
+El dueño abrió la 0.2.1 con la unidad `V:` —su disco externo de la Mac, mapeado—
+sin montar, y le salió un diálogo de **"Algo salió mal"** con
+`Could not find a part of the path 'V:\Mac Externo\Documents\Aura Library'`.
+Un disco de biblioteca ausente es lo más normal del mundo: hay que contarlo en la
+ventana, no tratarlo como una falla inesperada.
+
+### Diagnóstico
+
+La pila de `errores.log` (2026-09-05 18:07:30Z) va derecho al punto:
+
+```
+LibraryCatalogStore.Save   ← Directory.CreateDirectory sobre la raíz inexistente
+LibraryStore.SaveItems
+LibraryViewModel.Save
+LibraryViewModel.MarkCoversNormalized
+LibraryViewModel.StartCoverNormalizationIfNeeded
+LibraryViewModel.Reload
+LibraryViewModel..ctor      ← vía inyección de dependencias
+```
+
+Con la raíz ausente, la normalización de carátulas (ST-141) no encuentra
+archivos, concluye que **ya está todo normalizado**, y trata de **guardar** esa
+conclusión — creando el directorio de una unidad que no existe.
+
+**Por qué "vacía" y "no la pude leer" se confundían.**
+`LibraryCatalogStore.TryLoad` devolvía catálogo vacío **y sin error** cuando el
+archivo no estaba (`LibraryPersistence.cs`), que es indistinguible de una
+biblioteca nueva. Toda la cadena sale de ahí: si no se puede leer, cualquier
+conclusión que se saque es sobre una lectura que nunca ocurrió.
+
+**Por qué el diálogo salía desde `ShellPage` y en cada navegación.** La excepción
+ocurre en el **constructor** del `LibraryViewModel`, que es singleton. La
+inyección de dependencias nunca llegaba a construirlo, así que no quedaba nada
+en caché: **cada** página que lo pedía volvía a intentarlo y volvía a explotar.
+De ahí que el log tenga dos ocurrencias con la misma pila interna y disparadores
+distintos —18:07:12 al ir a Ajustes y 18:07:30 otra vez—, y que el error se
+reportara desde `ShellPage.NavigateTo` en vez de desde la biblioteca.
+
+**El peligro que no llegó a pasar.** Si `CreateDirectory` hubiera tenido éxito
+—disco presente, carpeta borrada—, la app habría marcado `CoversNormalized` y
+escrito un catálogo **vacío** encima del del usuario, en silencio. El fallo
+ruidoso tapaba un fallo callado y peor.
+
+### La regla, en Core: lo que decide es el disco, no la carpeta
+
+`LibraryRoot.VolumeIsMounted` gobierna todo: sin el disco no se lee, no se
+escribe y no se concluye nada; `LibraryAvailability` queda en `RootMissing` y la
+pantalla lo cuenta. Con el disco presente, una carpeta que todavía no existe es
+una biblioteca **nueva** y se comporta como siempre — se crea sola al primer
+guardado.
+
+**Esta parte se corrigió sobre sí misma antes de commitear.** El primer intento
+ataba la regla a que la **carpeta** existiera, y eso rompía el primer arranque:
+con `Documentos\Aura Studio` sin crear todavía —o con cualquier biblioteca
+nueva—, la primera pantalla de quien abre la app decía *"La biblioteca está en un
+disco que no está conectado"*, señalando su propia carpeta de Documentos. Se
+reprodujo en vivo antes de tocar nada y se corrigió con su prueba.
+`LibraryRoot.IsAvailable` (la carpeta existe) sigue existiendo, pero **no
+gobierna ningún flujo**: queda para distinguir "por estrenar" de "ya usada" sin
+volver a tocar el disco.
+
+**Lo que se acepta a cambio**: con el disco presente y la carpeta borrada por
+fuera, la app la trata como biblioteca nueva y la vuelve a crear, igual que antes
+de ST-171. Distinguir ese caso del primer arranque exige recordar si alguna vez
+se leyó esa biblioteca, y ese estado extra no vale lo que cuesta — el catálogo ya
+se había perdido junto con la carpeta.
+
+`LibraryCatalogStore.Save` exige el volumen montado y lanza `LibraryRootUnavailableException`
+—un tipo propio, para que quien llama pueda distinguir "no está disponible" de un
+error de E/S de verdad—. Y `TryLoad` ahora **informa** la raíz ausente en vez de
+devolver un vacío silencioso.
+
+**El constructor ya no lanza nunca por esto.** `Reload` con `RootMissing` deja el
+catálogo vacío, publica el estado y vuelve. Era condición para que el reintento
+pudiera siquiera construir el modelo.
+
+### Auditoría de los accesos a la raíz
+
+| Dónde | Qué pasaba | Qué cambió |
+|---|---|---|
+| `LibraryCatalogStore.TryLoad` | Vacío **sin error** con la raíz ausente | Informa la raíz ausente |
+| `LibraryCatalogStore.Save` | `CreateDirectory` a ciegas | Exige volumen montado |
+| `LibraryViewModel.Reload` | Cargaba, normalizaba y guardaba igual | Corta en `RootMissing` |
+| `StartCoverNormalizationIfNeeded` (ST-141) | "No hay nada que normalizar" = "ya está" | No corre sin biblioteca |
+| `LibraryViewModel.Save` | Escribía siempre | No escribe sin biblioteca; atrapa la carrera disco-que-se-va |
+| Comprobación de archivos (ST-098) | `File.Exists` por elemento | No se llega: `Reload` corta antes |
+| Enriquecimiento, fotos de artista | Escriben vía `Save` | Cubiertos por la guardia de `Save` |
+| **Ajustes › "Abrir la carpeta"** | `CreateDirectory` + abrir | **Segundo diálogo esperando**: ver abajo |
+
+**Un hallazgo de la auditoría, no del reporte**: `SettingsPage.OpenLibraryFolder_Click`
+hacía `Directory.CreateDirectory(LibraryPath)` antes de abrir el Explorador. Con
+el disco desconectado, eso era otro "Algo salió mal" listo para saltar; y con el
+disco presente y la carpeta borrada, **la creaba**, y el Explorador abría una
+carpeta vacía recién inventada como si fuera la biblioteca del usuario. Ahora
+solo crea si el volumen está montado.
+
+`SyncService` y `LibraryProcessor` también arman `LibraryStore`, pero no en el
+arranque: corren con el usuario delante y un iPod conectado, y heredan la
+guardia de `Save`. Quedan anotados y sin cambios.
+
+### En pantalla
+
+`LibraryUnavailableView` (control compartido) se pone **encima** de Artistas,
+Álbumes, Canciones, Listas, Fotos y Video mientras la biblioteca falta. No
+reemplaza la página: cuando el disco vuelve se apaga y debajo está todo intacto.
+Dice la ruta completa —para reconocer **cuál** biblioteca falta—, responde la
+primera pregunta que se hace cualquiera ("no se perdió nada: el catálogo y tus
+archivos siguen en ese disco") y ofrece tres salidas: **conectar el disco y
+reintentar**, **elegir otra biblioteca** (el mismo selector de Ajustes) y **crear
+una nueva** (en `Documentos\Aura Studio`, sin selector: quien aprieta eso no
+quiere elegir, quiere seguir trabajando; y si ahí ya había una, se abre esa —
+crear no puede significar perder).
+
+**El Instalador y Extras no lo llevan**, a propósito: no necesitan la biblioteca
+y tienen que seguir usables. Es lo que hace que un disco desconectado no
+convierta la app en un cartel.
+
+**Reintento automático**: mientras falta, un `Directory.Exists` cada 5 s fuera
+del hilo de interfaz —una unidad de red desconectada puede tardar en responder—.
+Se apaga en cuanto la biblioteca aparece y no existe si nunca faltó.
+
+### Verificación
+
+- `dotnet test tests/AuraStudio.Core.Tests`: **1303/1303** (1287 antes + 16).
+- `dotnet build AuraStudio.App -c Release -p:Platform=ARM64`: verde, 0 advertencias.
+- **El disco desconectado**, con `AURA_STUDIO_PREFERENCES` (ST-169) apuntando a
+  un `preferences.json` temporal con `LibraryPath` en `Q:\no\existe\Aura Library`:
+  la app abre **sin ningún diálogo**, Álbumes muestra el estado con sus tres
+  botones, el **Instalador y Extras funcionan** con normalidad y `Q:` no se
+  inventa. Captura: `docs/capturas/st171-biblioteca-desconectada.png`.
+- **El primer arranque**, con la carpeta sin crear en un volumen montado: se ve
+  la biblioteca vacía de siempre ("0 canciones · Tu biblioteca está vacía", con
+  su invitación a arrastrar música) y la carpeta y su `biblioteca.json` se crean
+  solos. Es el caso que el primer intento de esta decisión rompía.
+- **El reintento, probado de las dos mitades**: con el disco ausente la app **no
+  creó nada**; al aparecer la carpeta con la app abierta, a los ~14 s se recargó
+  **sola** y escribió su catálogo ahí, sin que el usuario tocara nada.
+- El `preferences.json` del dueño quedó con el mismo SHA-256 antes y después de
+  las cuatro corridas, y `V:` no se tocó en ninguna.
+
+Las 16 pruebas cubren: carpeta que está y que no; **carpeta sin crear en un disco
+montado = biblioteca nueva** (el primer arranque, en Core y sin error de
+lectura); ruta vacía o nula; que **disco ausente ≠ biblioteca vacía** en
+`TryLoad`; que guardar en una unidad ausente falla **sin dejar ninguna carpeta
+inventada**; que la excepción dice de qué biblioteca se trata; que guardar **sí**
+crea la carpeta de una biblioteca nueva en un disco montado; y —el resumen de lo
+que hubo que corregir sobre la marcha— que **solo el disco ausente** deja la
+biblioteca fuera de alcance, nunca la carpeta sola.
+
+### Visto y fuera de alcance
+
+Con la biblioteca **presente** en `V:`, la ventana aparece en blanco y "No
+responde" entre 9 y 15 segundos al arrancar (~12 s de CPU): la carga de la
+biblioteca corre en el hilo de interfaz desde el constructor. Se recupera sola y
+no tiene que ver con este arreglo — queda anotado acá para que no se pierda, y
+se propone aparte.
