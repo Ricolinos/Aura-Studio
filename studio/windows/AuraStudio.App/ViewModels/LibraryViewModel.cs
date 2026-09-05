@@ -540,8 +540,18 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
     public int SelectionForSyncCount => SelectionForSync.Count;
 
+    /// <summary>
+    /// Publica lo seleccionado, y <b>avisa solo si de verdad cambió</b>
+    /// (ST-161). La comparación es por contenido: cada refresco de una
+    /// cuadrícula arma una lista nueva con los mismos ids, así que comparar
+    /// referencias diría "cambió" siempre — y ese aviso de más era el que
+    /// cerraba el ciclo que colgaba la app (refrescar publica la selección,
+    /// publicar avisa, el aviso vuelve a refrescar).
+    /// </summary>
     public void PublishSelectionForSync(IReadOnlyCollection<Guid> ids)
     {
+        if (SelectionPublication.SameSelection(SelectionForSync, ids)) return;
+
         SelectionForSync = ids;
         OnPropertyChanged(nameof(SelectionForSync));
         OnPropertyChanged(nameof(SelectionForSyncCount));

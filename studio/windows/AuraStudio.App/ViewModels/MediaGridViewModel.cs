@@ -103,11 +103,37 @@ public sealed partial class MediaGridViewModel : ViewModelBase
     public MediaGridViewModel(LibraryViewModel library)
     {
         _library = library;
-        _library.PropertyChanged += (_, _) => Refresh();
+        _library.PropertyChanged += OnLibraryChanged;
         Cards = [];
         Title = "";
         Subtitle = "";
     }
+
+    /// <summary>
+    /// La cuadrícula se rehace cuando cambia el <b>contenido</b> de la
+    /// biblioteca, no ante cualquier aviso suyo (ST-161).
+    ///
+    /// <para>Escucharlos todos costaba dos cosas. Una, trabajo: cada renglón de
+    /// avance de la normalización de carátulas —que escribe
+    /// <c>StatusMessage</c> decenas de veces— reagrupaba la biblioteca entera.
+    /// La otra, un ciclo: refrescar publica la selección, publicar avisaba, y
+    /// ese aviso volvía a refrescar, sin fin.</para>
+    /// </summary>
+    private void OnLibraryChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (ChangesLibraryContent(e.PropertyName)) Refresh();
+    }
+
+    /// <summary>
+    /// Nombre vacío o <c>null</c> significa "cambió todo" en
+    /// <c>INotifyPropertyChanged</c>: eso sí obliga a rehacer. Y no reabre el
+    /// ciclo, porque publicar lo mismo ya no avisa
+    /// (<see cref="LibraryViewModel.PublishSelectionForSync"/>).
+    /// </summary>
+    private static bool ChangesLibraryContent(string? propertyName) =>
+        string.IsNullOrEmpty(propertyName)
+        || propertyName == nameof(LibraryViewModel.Items)
+        || propertyName == nameof(LibraryViewModel.AvailableItems);
 
     public LibraryViewModel Library => _library;
 

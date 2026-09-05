@@ -118,12 +118,30 @@ public sealed partial class ArtistsViewModel : ViewModelBase
     public ArtistsViewModel(LibraryViewModel library)
     {
         _library = library;
-        _library.PropertyChanged += (_, _) => Refresh();
+        _library.PropertyChanged += OnLibraryChanged;
         Artists = [];
         VisibleArtists = [];
         SelectedAlbums = [];
         SearchText = "";
     }
+
+    /// <summary>
+    /// Igual que la cuadrícula (ST-161): la lista se rehace ante cambios de
+    /// <b>contenido</b> de la biblioteca, no ante cualquier aviso suyo.
+    /// <see cref="Refresh"/> termina en <see cref="SetSelection"/>, que publica
+    /// la selección; escuchar ese aviso cerraba el mismo ciclo sin fin que
+    /// colgaba la app en Álbumes.
+    /// </summary>
+    private void OnLibraryChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (ChangesLibraryContent(e.PropertyName)) Refresh();
+    }
+
+    /// <summary>Nombre vacío o <c>null</c> es "cambió todo": eso sí obliga a rehacer.</summary>
+    private static bool ChangesLibraryContent(string? propertyName) =>
+        string.IsNullOrEmpty(propertyName)
+        || propertyName == nameof(LibraryViewModel.Items)
+        || propertyName == nameof(LibraryViewModel.AvailableItems);
 
     public LibraryViewModel Library => _library;
 

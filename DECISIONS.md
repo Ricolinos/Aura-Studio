@@ -3783,3 +3783,160 @@ la selección de fila de `Table`, y que Shift+clic/Cmd+clic sigan
 sintiéndose iguales que antes. Sesión conjunta con el dueño pendiente
 antes de la PARADA 2 formal (que además pide, textualmente, "prueba de
 UI -- XCUITest o guion").
+
+## ST-161 — La cuadrícula de Álbumes se llamaba a sí misma sin fin: la app se congelaba con un núcleo al 100%
+
+Encontrado sobre la build 0.2.0 instalada (`33e5f4f`), con la biblioteca real
+del dueño (`V:\Mac Externo\Documents\Aura Library` — 2576 canciones, 1092
+álbumes, 225 fotos) y sin iPod. Reproducido **2 de 2 veces**: la ventana
+aparecía al segundo, la app respondía un rato en General, y de golpe dejaba de
+responder con un núcleo al 100% hasta que Windows la mataba (`AppHangB1` en el
+Visor de eventos). Sin excepción y sin nada en `errores.log` — para el proceso
+no había pasado nada malo.
+
+### Diagnóstico
+
+La pila del hilo principal (`dotnet-stack report`, completa en
+`studio/windows/docs/capturas/v0.2.0-cuelgue-pila.txt`; la pantalla del momento,
+en `v0.2.0-cuelgue-general-117s.png`) dice todo en cinco renglones que se
+repiten cientos de veces:
+
+```
+System.Collections.Generic.Dictionary`2.Resize(int32,bool)
+AuraStudio.Core.Library.LibraryGrouping.Bucket(...)
+AuraStudio.Core.Library.LibraryGrouping.Albums(...)
+AuraStudio.App.ViewModels.MediaGridViewModel.Refresh()
+AuraStudio.App.ViewModels.MediaGridViewModel.NotifySelectionChanged()
+AuraStudio.App.ViewModels.MediaGridViewModel.Refresh()
+AuraStudio.App.ViewModels.MediaGridViewModel.NotifySelectionChanged()
+...
+```
+
+Recursión infinita, cerrada por tres piezas que por separado son razonables:
+
+1. `MediaGridViewModel` (constructor) se suscribía a **cualquier** aviso de la
+   biblioteca: `_library.PropertyChanged += (_, _) => Refresh();`
+2. `Refresh()` rearma las tarjetas —agrupando la biblioteca entera con
+   `LibraryGrouping`— y termina llamando a `NotifySelectionChanged()`, que
+   publica la selección con `_library.PublishSelectionForSync(...)`.
+3. `PublishSelectionForSync` asignaba y **avisaba siempre**, hubiera cambiado
+   algo o no. Y nunca cambiaba nada: una cuadrícula recién refrescada no tiene
+   nada seleccionado, así que publicaba una lista vacía **nueva** cada vez.
+
+Aviso → refresco → publicación → aviso. Cada vuelta reagrupa 2576 elementos, así
+que el desbordamiento de pila tarda minutos en llegar; mientras tanto el hilo de
+interfaz está muerto y Windows ve una app colgada.
+
+`ArtistsViewModel` tenía **el mismo ciclo por el mismo camino**: constructor
+idéntico, y su `Refresh()` termina en `SetSelection(...)`, que también publica.
+
+**Qué NO era, aunque lo parecía.** Se sospechaba un `PropertyChanged` tardío de
+la biblioteca a los ~110 s (el fin de la comprobación de archivos de ST-098, o
+la normalización de carátulas de ST-141). No es eso. Medido en esta VM con la
+build **sin** el arreglo, con la biblioteca real y sin iPod:
+
+- **200 s en General sin tocar nada**: `Responding=True` todo el tiempo, CPU
+  total plana en 1.9 s. Repetido con la ventana visible en pantalla, 170 s:
+  igual, plana en 1.4 s, incluido el minuto 110. No hay ningún evento tardío.
+- **Basta una sola navegación a Álbumes.** El `MediaGridViewModel` es singleton,
+  pero **nadie lo construye hasta que se abre una cuadrícula**: `MediaGridPage`
+  es el único que lo pide del contenedor (`App.xaml.cs:107`), y el armazón
+  arranca en General → `DeviceListPage`. En cuanto existe, su primer `Refresh()`
+  —el de su propio `OnNavigatedTo`— entra al ciclo: CPU 1.6 s → 47.8 s, la
+  interfaz muerta desde el clic, y el proceso murió con `0xC00000FD`
+  (`STATUS_STACK_OVERFLOW`) a los ~50 s.
+
+O sea: los ~110 s del reporte no son un temporizador de la biblioteca, son el
+momento en que esa corrida abrió una cuadrícula por primera vez. Queda escrito
+porque buscar el evento tardío —que no existe— cuesta bastante más que el
+arreglo.
+
+### Arreglo
+
+**(a) Publicar la selección solo avisa si de verdad cambió.**
+`SelectionPublication.SameSelection` (nuevo, `AuraStudio.Core/Library/`, al lado
+de `GridSelection`, que es donde ya vive la política de selección) compara **por
+contenido y como conjunto**, nunca por referencia: cada refresco arma una lista
+nueva con los mismos ids, y comparar instancias diría "cambió" siempre — esa
+lectura era justo la que cerraba el ciclo. `LibraryViewModel.PublishSelectionForSync`
+se sale antes de tocar nada si el conjunto es igual al ya publicado.
+
+**(b) Las vistas se refrescan por cambios de contenido, no por cualquier aviso.**
+`MediaGridViewModel` y `ArtistsViewModel` filtran `e.PropertyName`: rehacen ante
+`Items`, `AvailableItems` o un nombre vacío/`null` (que en
+`INotifyPropertyChanged` significa "cambió todo"), y ante nada más. Todo cambio
+de contenido pasa por alguno de esos dos avisos, incluido el reagrupamiento por
+`GroupCollaborations` (que ya publicaba `Items` a propósito) y el cambio de
+carpeta de biblioteca (que pasa por `Reload()`).
+
+Las dos son suficientes **por separado**, y esa es la idea: (a) rompe el ciclo
+aunque alguien vuelva a suscribirse a todo, y (b) hace que el ciclo ni siquiera
+empiece. (b) además quita trabajo que nunca tuvo sentido: cada renglón de
+"Normalizando carátulas… N de M" —que se escribe decenas de veces— reagrupaba la
+biblioteca entera.
+
+**Lo que no se hizo, y por qué.** No se agregó una guardia de reentrada en
+`Refresh()`. Una guardia no impide el ciclo: lo trunca. Y truncarlo tiene su
+propio costo — un `Refresh` anidado que se descarta deja la cuadrícula mostrando
+tarjetas viejas, que es un bug bastante más difícil de ver que un cuelgue. Con
+(a) el ciclo no puede formarse aunque alguien vuelva a escuchar todo, así que la
+guardia solo serviría para esconder el siguiente ciclo distinto en vez de
+dejarlo salir.
+
+**Lo que se dejó igual, a propósito.** `SongsViewModel` y `PlaylistsViewModel`
+siguen escuchando cualquier aviso de la biblioteca. Ninguno publica selección
+desde su `Refresh()` —la de la tabla de Canciones la publica la página, no el
+modelo—, así que ninguno cierra el ciclo. Y en el caso de Canciones el filtro
+sería **incorrecto**: su `Refresh()` depende de `VisibleColumns`, `SortField`,
+`SortAscending` y `FavoritesOnly`, que son propiedades observables de
+`LibraryViewModel` y no cambian el contenido; filtrarlas dejaría la tabla sin
+reordenarse al tocar un encabezado.
+
+### Pruebas
+
+`studio/windows/tests/AuraStudio.Core.Tests/SelectionPublicationTests.cs` — 9
+pruebas nuevas. La central reproduce el ciclo en miniatura: una biblioteca y una
+cuadrícula de juguete conectadas como las de verdad (refrescar publica, publicar
+avisa, el aviso refresca). Con la regla vieja —avisar siempre— la recursión no
+termina, y la prueba lo demuestra con un tope de 500 vueltas
+(`StackOverflowException` no se puede atrapar en .NET: el ciclo se demuestra
+contando, no dejándolo desbordar); con la regla de ahora se detiene en un solo
+refresco y cero avisos. Las demás fijan la comparación por contenido: dos listas
+nuevas con los mismos ids son la misma selección, el orden y las repeticiones no
+cuentan, agregar o vaciar sí.
+
+- `dotnet test tests/AuraStudio.Core.Tests`: **1175/1175** (1166 antes + 9).
+- Con la regla vieja puesta a la fuerza (`SameSelection` devolviendo `false`
+  siempre), **6 de las 9 nuevas fallan** — incluida la del ciclo. Las pruebas
+  distinguen el arreglo, no solo lo acompañan.
+- `dotnet build AuraStudio.App -c Release -p:Platform=ARM64`: en verde,
+  0 advertencias, 0 errores.
+
+Lo que las pruebas **no** alcanzan: el filtro por `e.PropertyName` vive en los
+ViewModels de `AuraStudio.App` (WinUI), y el único proyecto de pruebas
+referencia solo `AuraStudio.Core`. Queda cubierto por la verificación en vivo.
+
+### Verificación en vivo
+
+Build del árbol (Release ARM64) corrida contra la biblioteca real y sin iPod,
+con `Process.Responding` y CPU muestreados cada segundo: **11 min 49 s de vida
+del proceso y 0 segundos sin responder**, CPU total 7.5 s y memoria estable en
+~313 MB. El recorrido cabe en los primeros 106 s: Álbumes (1092 tarjetas) a los
+17 s, tres tarjetas seleccionadas a los 38 s, Artistas a los 51 s, Películas a
+los 72 s con dos seleccionadas a los 90 s, y vuelta a General a los 95 s — cada
+paso con la app respondiendo. Los ~10 minutos restantes, quieta en General, con
+la CPU sin moverse de 7.5 s.
+
+Con la build **sin** el arreglo, ese mismo recorrido mataba el proceso a los
+~50 s del primer clic en Álbumes.
+
+### Evidencia
+
+- `studio/windows/docs/capturas/v0.2.0-cuelgue-pila.txt` — la pila completa del
+  hilo principal, con la recursión.
+- `v0.2.0-cuelgue-general-117s.png` — la pantalla colgada en General, a los
+  117 s.
+- `st161-albumes-seleccion.png` — Álbumes con selección, ya con el arreglo.
+- `v0.2.0-licencias.png` y `v0.2.0-extras-github.png` — verificación del 0.2.0
+  instalado: la pantalla de Licencias y la consulta de versiones a GitHub, las
+  dos funcionando.
