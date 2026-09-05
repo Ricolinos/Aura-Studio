@@ -4611,3 +4611,106 @@ los dos lados, sin lógica nueva que pueda haber divergido.
 directorio temporal (Release). Nada de esto cambia comportamiento
 observable todavía -- `prepareMusic` de `LibraryViewModel` sigue siendo
 lo que corre en producción hasta el paso 2.
+
+## ST-166 — El registro de qué arranque tiene cada iPod: la memoria que sustituye a leer la NOR
+
+Fase D del port de Windows, primera de cuatro (ST-166…ST-169), que trae a
+Windows lo que ST-143 dejó hecho solo en macOS: "Actualizar el arranque". Ésta
+es la base y **nadie la llama todavía**, igual que ST-143 dejó la regla portada
+sin nadie que la usara.
+
+**El agujero, confirmado y no supuesto**: en Windows no existía ningún registro
+de arranques verificados. `grep -rn "bootloaderVerified"` sobre todo
+`studio/windows` (fuera de `obj/`/`bin/`) no devuelve nada, y `AppPreferences.cs`
+no menciona "bootloader" en ninguna línea. ST-016 nunca se portó. Sin ese
+registro, `BootloaderUpdate` —la regla, portada y probada desde ST-143— no tiene
+con qué responder la única pregunta que importa: *¿el arranque que este iPod
+tiene grabado es el que traigo yo?*
+
+### La clave de disco: el serial USB, y no el volumen
+
+`IPodDiskInfo.DiskRecordKey` es el serial USB, que ya se lee del `PNPDeviceID`
+(`PnpDeviceId`). **Es una divergencia deliberada con macOS**, que usa
+`volumeUUID ?? usb.serialNumber`, y conviene dejar escrito por qué:
+
+- El UUID del volumen **no se recolecta hoy** en Windows; conseguirlo obligaría a
+  tocar `VolumeProbe` y `WmiDiskEnumerator`, que no es trabajo de esta decisión.
+- Y sobre todo: **el UUID del volumen cambia al formatear**, que es exactamente
+  lo que hace una instalación. Con el volumen primero, la clave de un iPod
+  cambiaría justo después de grabarle el arranque que se acaba de anotar — o
+  sea, el registro se perdería en el peor momento posible. El serial USB
+  sobrevive al formateo porque identifica al **aparato**, no a su contenido.
+
+Los dos registros son por instalación y no se comparten entre plataformas, así
+que la divergencia no deja nada incompatible. El UUID del volumen queda como
+"si algún día hace falta": no se descartó por malo, se descartó por innecesario.
+
+**Sin clave no se anota nada, y tampoco se ofrece.** Un iPod que no expone
+serial USB no se puede seguir: lo que se le grabara no se podría anotar en
+ningún lado y la oferta volvería en cada conexión, para siempre. Es mejor no
+ofrecerla. La condición es de verdad la que decide, y hay una prueba que lo
+demuestra: con los mismos datos, la regla pura **sí** ofrecería (motivo "no
+sabemos cuál").
+
+### La migración a `unknown`: no hay nada que migrar, y aun así existe
+
+En macOS, ST-143 migró los registros de ST-016 —que guardaban una fecha— a
+`unknown`, que **no** es "sin verificar" sino "hay un arranque nuestro, no
+sabemos cuál". Acá no hay nada de eso: el archivo de preferencias nunca tuvo esa
+clave.
+
+`BootloaderRegistry.Normalize` es tolerante igual, por un caso que sí es real:
+`preferences.json` es un archivo de texto que se puede editar a mano, y un valor
+que no tenga forma de SHA-256 tiene que leerse como `unknown` y nunca como
+ausente — descartarlo forzaría un DFU innecesario en un iPod que ya estaba
+instalado. Cae ahí una fecha ISO (el formato viejo de macOS, por si alguien
+copia un archivo entre plataformas), la cadena vacía, `null` y cualquier texto.
+
+El hexadecimal se normaliza a minúsculas porque la regla compara **cadenas**, no
+números: `FirmwareArtifactVerifier.Sha256Hex` ya las devuelve así, y normalizar
+al leer es lo que evita que el mismo arranque anotado en mayúsculas se lea como
+otro y se ofrezca actualizarlo para siempre.
+
+**Lo que esto no cubre**: un valor que no sea *una cadena JSON* (un número, un
+objeto) hace fallar la deserialización del archivo entero y `AppPreferences` cae
+a los valores por omisión. Es el comportamiento que ya tienen todos los demás
+campos del archivo, no algo que ST-166 introduzca, y se deja escrito acá para
+que no se descubra como sorpresa.
+
+### Qué quedó en Core y por qué
+
+`BootloaderRegistry` (nuevo, `AuraStudio.Core`) no toca disco ni preferencias:
+normaliza lo leído, busca por disco, **anota** (`WithRecord`), **olvida**
+(`Without`), dice si dos registros son iguales (`SameRegistry`) y responde por
+qué se ofrece (`OfferReason`, que es `BootloaderUpdate.ReasonFor` más la
+condición de la clave).
+
+Las tres del medio empezaron dentro de `AppPreferences` y se movieron: eran unos
+veinte renglones de manipulación de diccionario que ningún proyecto de pruebas
+podía alcanzar —el único que hay referencia solo a `AuraStudio.Core`— y son
+justo donde se esconden los errores de esta clase de código (duplicar una
+entrada, borrar la que no era, reescribir el archivo cuando no cambió nada). En
+`AppPreferences` quedó lo que de verdad es suyo: serializar.
+
+`SameRegistry` no es un adorno: anotar el mismo arranque en el mismo iPod pasa
+**en cada reconexión**, y sin esa comparación el archivo de preferencias se
+reescribiría cada vez para dejarlo igual.
+
+### Verificación
+
+- `dotnet test tests/AuraStudio.Core.Tests`: **1235/1235** (1188 antes + 47).
+- `dotnet build AuraStudio.App -c Release -p:Platform=ARM64`: verde, 0
+  advertencias, 0 errores.
+
+Las 47 cubren: la forma de un hash; la normalización de una fecha, de la cadena
+vacía, de `null` y de texto suelto; que la caja de las letras no hace dos
+arranques; las entradas sin clave; anotar, reanotar, no duplicar y no tocar a
+los otros iPods; olvidar; cuándo NO hay que reescribir el archivo; los cuatro
+motivos de la oferta (otro arranque, no sabemos cuál, ya está al día, iPod de
+fábrica); que sin bootloader embebido no se ofrece nada; y que la clave sale del
+serial USB, con sus casos sin serial.
+
+**Lo que las pruebas no alcanzan**: la escritura y relectura del JSON en
+`AppPreferences` (WinUI, fuera del alcance del único proyecto de pruebas). Queda
+cubierta por la verificación en vivo de ST-168, donde la oferta aparece o no
+según lo que este registro haya guardado — que es exactamente ese ida y vuelta.

@@ -122,4 +122,21 @@ public sealed record IPodDiskInfo
 
     /// <summary>True si es un iPod Classic válido (VID/PID correcto).</summary>
     public bool IsValidIPod => USBIdentity?.IsIPodClassicUSB == true;
+
+    /// <summary>
+    /// Con qué nombre se anota este iPod en el registro de arranques
+    /// verificados (ST-166). <c>null</c> cuando no hay con qué identificarlo:
+    /// entonces no se anota nada y tampoco se ofrece actualizar el arranque
+    /// (ver <see cref="BootloaderRegistry.CanTrack"/>).
+    ///
+    /// <para><b>El serial USB, y no el volumen.</b> Es una divergencia
+    /// deliberada con macOS, que usa <c>volumeUUID ?? serial</c>: acá el serial
+    /// ya se lee del <c>PNPDeviceID</c> (<see cref="PnpDeviceId"/>), identifica
+    /// al aparato y —a diferencia del volumen— <b>sobrevive a un formateo</b>,
+    /// que es justo lo que hace una instalación. Con el UUID del volumen
+    /// primero, la clave de un iPod cambiaría justo después de grabarle el
+    /// arranque que se acaba de anotar.</para>
+    /// </summary>
+    public string? DiskRecordKey =>
+        USBIdentity?.SerialNumber?.Trim() is { Length: > 0 } serial ? serial : null;
 }

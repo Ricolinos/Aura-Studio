@@ -150,6 +150,34 @@ public interface IAppPreferences
     /// </summary>
     FirmwareFamily FirmwareFamilyToInstall { get; set; }
 
+    // MARK: - Arranques verificados (ST-166)
+
+    /// <summary>
+    /// El SHA-256 del <c>bootloader-ipod6g.ipod</c> que <b>esta instalación</b>
+    /// le grabó a ese iPod, <c>BootloaderUpdate.UnknownBootloader</c> si hay uno
+    /// nuestro pero no se sabe cuál, o <c>null</c> si nunca se le grabó ninguno
+    /// desde acá.
+    ///
+    /// <para>La NOR del iPod no se puede leer desde la computadora: este
+    /// registro <b>es</b> lo único que la app sabe del arranque de un aparato.
+    /// La clave es <c>IPodDiskInfo.DiskRecordKey</c> (el serial USB).</para>
+    /// </summary>
+    string? BootloaderHash(string? diskKey);
+
+    /// <summary>
+    /// Anota qué arranque quedó grabado en ese iPod. Sin clave no anota nada
+    /// —no habría cómo volver a encontrarlo—; sin hash anota
+    /// <c>BootloaderUpdate.UnknownBootloader</c>.
+    /// </summary>
+    void RecordBootloaderVerified(string? diskKey, string? hash);
+
+    /// <summary>
+    /// Olvida lo anotado para ese iPod. Es lo que corresponde al quitarle el
+    /// arranque (restaurar): a partir de ahí lo que tiene es el de Apple, no uno
+    /// nuestro.
+    /// </summary>
+    void ForgetBootloaderVerified(string? diskKey);
+
     // MARK: - Identidad de esta instalación
 
     /// <summary>

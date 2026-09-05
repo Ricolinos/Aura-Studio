@@ -348,6 +348,47 @@ public sealed class AppPreferences : IAppPreferences
         }
     }
 
+    // MARK: - Arranques verificados (ST-166)
+
+    /// <summary>
+    /// Lo que hay anotado, ya normalizado. Se recalcula al leerlo en vez de
+    /// guardarse aparte: el mapa tiene una entrada por iPod que pasó por esta
+    /// computadora —dos o tres, no dos mil— y así no hay dos copias del mismo
+    /// dato que puedan desincronizarse.
+    /// </summary>
+    private IReadOnlyDictionary<string, string> BootloaderRegistryMap =>
+        BootloaderRegistry.Normalize(_values.BootloaderVerifiedDisks);
+
+    public string? BootloaderHash(string? diskKey) =>
+        BootloaderRegistry.HashFor(BootloaderRegistryMap, diskKey);
+
+    /// <summary>
+    /// Anota qué arranque quedó grabado. Quién decide qué se guarda —y qué pasa
+    /// sin clave o sin hash— vive en <c>BootloaderRegistry</c> y está probado
+    /// ahí; acá solo queda escribirlo.
+    /// </summary>
+    public void RecordBootloaderVerified(string? diskKey, string? hash) =>
+        StoreBootloaderRegistry(
+            BootloaderRegistry.WithRecord(BootloaderRegistryMap, diskKey, hash));
+
+    public void ForgetBootloaderVerified(string? diskKey) =>
+        StoreBootloaderRegistry(BootloaderRegistry.Without(BootloaderRegistryMap, diskKey));
+
+    private void StoreBootloaderRegistry(IReadOnlyDictionary<string, string> updated)
+    {
+        // Anotar el mismo arranque en el mismo iPod pasa en cada reconexión:
+        // sin esto se reescribiría el archivo de preferencias cada vez, para
+        // dejarlo igual.
+        if (BootloaderRegistry.SameRegistry(BootloaderRegistryMap, updated)) return;
+
+        _values = _values with
+        {
+            BootloaderVerifiedDisks = updated.ToDictionary(
+                entry => entry.Key, entry => (string?)entry.Value, StringComparer.Ordinal)
+        };
+        Persist(nameof(BootloaderHash));
+    }
+
     // MARK: - Plomería
 
     private void Set<T>(T value, T current, Action<T> assign,
@@ -447,5 +488,15 @@ public sealed class AppPreferences : IAppPreferences
         public string? FirmwareFamilyToInstall { get; init; }
         public bool GroupCollaborations { get; init; } = true;
         public string[]? ArtistGroupingExceptions { get; init; }
+
+        /// <summary>
+        /// ST-166: qué arranque tiene grabado cada iPod que pasó por esta
+        /// computadora — clave, el serial USB; valor, el SHA-256 del
+        /// <c>bootloader-ipod6g.ipod</c> que se le grabó, o <c>"unknown"</c>.
+        /// La NOR no se puede leer, así que este mapa es lo único que la app
+        /// sabe. Lo interpreta <c>BootloaderRegistry.Normalize</c>: un valor que
+        /// no sea un hash se lee como <c>"unknown"</c>, nunca como ausente.
+        /// </summary>
+        public Dictionary<string, string?>? BootloaderVerifiedDisks { get; init; }
     }
 }
