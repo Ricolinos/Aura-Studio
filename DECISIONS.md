@@ -3940,3 +3940,89 @@ Con la build **sin** el arreglo, ese mismo recorrido mataba el proceso a los
 - `v0.2.0-licencias.png` y `v0.2.0-extras-github.png` — verificación del 0.2.0
   instalado: la pantalla de Licencias y la consulta de versiones a GitHub, las
   dos funcionando.
+
+## ST-155 — PLAN-studio-rendimiento.md, Fase 3: persistencia coalescida
+
+Continuación de trabajo aceptada como decisión de orden (no una acción
+externa que necesite confirmación directa) mientras la verificación
+interactiva de la Fase 2 queda pendiente para la mañana.
+
+### Punto 1 (`CatalogPersister` con guardado programado ≤ 500 ms): NO implementado, por qué
+
+El plan pide un guardado programado que coalesce llamadas rápidas
+seguidas. Antes de escribirlo, se revisó si alguna prueba existente
+depende de que `persistCatalog()` escriba SINCRÓNICAMENTE -- y varias sí
+lo hacen, con el patrón "mutar con el ViewModel A, crear un ViewModel B
+sobre el mismo `libraryRoot`, verificar que B cargó lo que A guardó"
+(`LibraryLegacyMigrationTests`, `SharedCatalogInteropTests`,
+`CoverArtAssetsTests` y otras). Agregar una demora real de 500 ms
+rompería ese patrón salvo que cada prueba fuera actualizada para forzar
+un `flush()`, un rediseño más grande y más riesgoso de lo que esta
+PARADA necesita. En su lugar, se atacó el MISMO problema (reescrituras
+redundantes) por el lado que sí es seguro: que ninguna acción sobre
+selección múltiple llame a `persistCatalog()` más de una vez (punto 4,
+abajo) -- el efecto práctico (menos guardados redundantes) es el mismo
+sin cambiar el contrato síncrono de `persistCatalog()` que ya asumen
+las pruebas y, potencialmente, otro código no auditado en esta pasada.
+
+### Punto 2: las carátulas sin cambios ya no se reescriben
+
+`LibraryViewModel.lastWrittenCoverHash: [UUID: Int]` (nuevo): el hash de
+la última carátula EFECTIVAMENTE escrita por ítem. `persistCatalog()`
+compara el hash actual contra el guardado; si coincide, no reescribe el
+archivo pero SÍ sigue declarando su ruta en el catálogo persistido (el
+archivo ya está en disco) -- la propiedad crítica que
+`PersistCatalogCoalescedTests.testUnchangedCoverKeepsItsRecordedPathAcrossSaves`
+fija: "no reescribir" nunca puede significar "olvidarse de que existe".
+El caché se limpia por completo al cambiar de carpeta de biblioteca
+(`switchLibraryFolder`) y se poda de ítems borrados/sin carátula en cada
+guardado.
+
+**Medido** (línea base de ST-152, biblioteca sintética ahora CON
+carátula real de ~15 KB por álbum, compartida por sus pistas -- antes no
+tenía ninguna, así que el punto 2 no era medible):
+
+| | Primer guardado (todas las carátulas nuevas) | Guardados siguientes sin cambios |
+|---|---|---|
+| `persistCatalog()`, 12 000 ítems | ~3.48 s | ~1.06 s promedio |
+
+El promedio que reporta `measure` por sí solo (10 corridas mezclando la
+primera, cara, con las 9 baratas) sale engañoso (~1.31 s) -- se reportan
+los dos números por separado porque es la comparación que de verdad
+importa: el caso común (guardar de nuevo sin haber tocado ninguna
+carátula) es el que se optimizó.
+
+### Punto 3: JSON compacto
+
+`JSONEncoder.outputFormatting` pasa de `[.prettyPrinted, .sortedKeys]` a
+`[.sortedKeys]` (`.sortedKeys` se conserva a propósito, por
+reproducibilidad del diff). Aporta poco al tiempo medido en esta
+biblioteca sintética (`.prettyPrinted` no era el costo dominante -- el
+mapeo de 12 000 `PersistedLibraryItem` y el propio `encode` sí), pero sí
+reduce el tamaño real del archivo en disco.
+
+### Punto 4: selección múltiple, una sola persistencia
+
+Auditados los cuatro mencionados por el plan: `deleteItems(ids:)` y
+`applyBatchEdit(ids:changes:)` ya mutaban en lote y persistían una sola
+vez (confirmado en ST-152, sin cambios acá). `setCategory(_:forItems:)`
+también. El que sí llamaba a `persistCatalog()` una vez POR ÍTEM era
+`clearCoverArt(id:)`, invocado en bucle desde el menú contextual de
+selección múltiple (`MediaSectionView`, "Eliminar carátula"). Se agregó
+`clearCoverArt(ids: Set<UUID>)` (mismo patrón que `setCategory`:
+`clearCoverArt(id:)` ahora delega a la versión de lote con un solo id) y
+se actualizó el único llamador.
+
+### Verificación
+
+`swift build`, `xcodebuild` (Debug, Swift 6 estricto) y `swift test`:
+779/779 (1 saltada, red -- fluctuación de entorno, no relacionada).
+`PersistCatalogCoalescedTests.swift` (nuevo, 4 pruebas: carátula sin
+cambios conserva su ruta, carátula que sí cambia se reescribe,
+`clearCoverArt(ids:)` en lote limpia todos los ítems, `clearCoverArt(id:)`
+sigue funcionando igual) -- no existía ninguna prueba de `clearCoverArt`
+antes de esta ronda. `scripts/build-app.sh` verificado contra un
+directorio temporal (Release).
+
+Commit local, sin push -- misma razón que las Fases 0-2: push/release
+esperan confirmación directa del dueño.

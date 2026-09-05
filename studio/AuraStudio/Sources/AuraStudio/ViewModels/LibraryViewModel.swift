@@ -938,14 +938,26 @@ final class LibraryViewModel: ObservableObject {
     /// "Eliminar carátula" del menu contextual -- solo tiene sentido
     /// para musica (fotos/video no tienen caratula embebida propia).
     func clearCoverArt(id: UUID) {
-        guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .music else { return }
-        var metadata = items[index].metadata ?? TrackMetadata()
-        metadata.coverArtData = nil
-        items[index].metadata = metadata
-        items[index].metadataEditedByUser = true
-        items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
-        let coverURL = coversDirectory.appendingPathComponent("\(items[index].id.uuidString).jpg")
-        try? FileManager.default.removeItem(at: coverURL)
+        clearCoverArt(ids: [id])
+    }
+
+    /// PLAN-studio-rendimiento.md Fase 3 punto 4: igual que
+    /// `clearCoverArt(id:)` pero para una selección múltiple completa,
+    /// con una sola llamada a `persistCatalog()` al final -- antes, el
+    /// menú contextual sobre varias canciones llamaba
+    /// `clearCoverArt(id:)` una vez POR ÍTEM (`MediaSectionView.
+    /// clearCoverArtMenuAction` o equivalente), y cada una reescribía el
+    /// catálogo entero.
+    func clearCoverArt(ids: Set<UUID>) {
+        for index in items.indices where ids.contains(items[index].id) && items[index].kind == .music {
+            var metadata = items[index].metadata ?? TrackMetadata()
+            metadata.coverArtData = nil
+            items[index].metadata = metadata
+            items[index].metadataEditedByUser = true
+            items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
+            let coverURL = coversDirectory.appendingPathComponent("\(items[index].id.uuidString).jpg")
+            try? FileManager.default.removeItem(at: coverURL)
+        }
         persistCatalog()
     }
 
@@ -1600,6 +1612,9 @@ final class LibraryViewModel: ObservableObject {
         migrateLegacyLibraryLayoutIfNeeded()
         items = []
         playlists = []
+        // La carpeta cambió: el hash de la última carátula escrita era
+        // de la carpeta anterior, ya no dice nada de ésta.
+        lastWrittenCoverHash = [:]
         loadCatalog()
     }
 
@@ -1853,6 +1868,14 @@ final class LibraryViewModel: ObservableObject {
         try? fm.removeItem(at: url)
     }
 
+    /// PLAN-studio-rendimiento.md Fase 3 punto 2: hash de la última
+    /// carátula efectivamente ESCRITA por ítem -- `persistCatalog()` la
+    /// vuelve a escribir solo si cambió desde la última vez. Vive tan
+    /// solo mientras dure este `LibraryViewModel` (se pierde al
+    /// relanzar la app o cambiar de carpeta de biblioteca): el peor
+    /// caso de perderla es una reescritura de más, nunca una de menos.
+    private var lastWrittenCoverHash: [UUID: Int] = [:]
+
     /// Serializa el catalogo completo. Las portadas se escriben como
     /// archivos aparte (`Portadas/<id>.jpg`) -- ver PersistedLibrary.
     ///
@@ -1866,12 +1889,24 @@ final class LibraryViewModel: ObservableObject {
         // guardado. Perderla haría que la migración se repitiera en cada
         // apertura (barata, pero recorriendo miles de archivos de balde).
         persisted.coversNormalized = coversNormalizedVersion
+        // PLAN-studio-rendimiento.md Fase 3 punto 2: diagnóstico §0.4 --
+        // esto reescribía TODAS las carátulas en cada guardado, aunque
+        // ninguna hubiera cambiado. Ahora, solo la que cambió desde la
+        // última vez que se escribió de verdad -- el resto conserva su
+        // ruta (el archivo ya está en disco) sin tocarlo.
+        var coverIDsOnDisk: Set<UUID> = []
         for item in items {
             var coverRelative: String?
             if let cover = item.metadata?.coverArtData {
                 let coverURL = coversDirectory.appendingPathComponent("\(item.id.uuidString).jpg")
-                if (try? cover.write(to: coverURL, options: .atomic)) != nil {
+                let hash = cover.hashValue
+                if lastWrittenCoverHash[item.id] == hash {
                     coverRelative = "\(PersistedLibrary.coversDirName)/\(item.id.uuidString).jpg"
+                    coverIDsOnDisk.insert(item.id)
+                } else if (try? cover.write(to: coverURL, options: .atomic)) != nil {
+                    coverRelative = "\(PersistedLibrary.coversDirName)/\(item.id.uuidString).jpg"
+                    lastWrittenCoverHash[item.id] = hash
+                    coverIDsOnDisk.insert(item.id)
                 }
             }
             persisted.items.append(PersistedLibraryItem(
@@ -1891,6 +1926,12 @@ final class LibraryViewModel: ObservableObject {
                 addedAt: item.addedAt
             ))
         }
+        // Un ítem borrado, o al que le quitaron la carátula, deja de
+        // aparecer en `coverIDsOnDisk` -- si vuelve a tener una más
+        // adelante (id reusado nunca pasa con UUID, pero una carátula
+        // reasignada sí), se escribe de cero en vez de darse por buena
+        // por error.
+        lastWrittenCoverHash = lastWrittenCoverHash.filter { coverIDsOnDisk.contains($0.key) }
         persisted.playlists = playlists.map {
             PersistedPlaylist(id: $0.id, name: $0.name, trackItemIDs: $0.trackItemIDs,
                                imageRelativePath: $0.imageRelativePath)
@@ -1898,7 +1939,12 @@ final class LibraryViewModel: ObservableObject {
 
         do {
             let encoder = JSONEncoder()
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+            // PLAN-studio-rendimiento.md Fase 3 punto 3: sin
+            // `.prettyPrinted` -- `.sortedKeys` se conserva a propósito,
+            // por reproducibilidad del diff (un `git diff`/`diff` de
+            // `biblioteca.json` entre dos guardados solo cambia lo que
+            // de verdad cambió, sin reordenar claves al azar).
+            encoder.outputFormatting = [.sortedKeys]
             try encoder.encode(persisted).write(to: catalogURL, options: .atomic)
         } catch {
             lastError = "No se pudo guardar el catalogo de la biblioteca: \(error.localizedDescription)"

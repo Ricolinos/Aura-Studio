@@ -80,6 +80,14 @@ final class LibraryPerformanceBaselineTests: XCTestCase {
                 .appendingPathComponent(albumName, isDirectory: true)
             try fm.createDirectory(at: albumDir, withIntermediateDirectories: true)
 
+            // PLAN-studio-rendimiento.md Fase 3 punto 2: una carátula
+            // "real" (tamaño plausible, ~15 KB) por álbum, compartida por
+            // sus pistas -- como en una biblioteca de verdad -- para que
+            // la prueba (c) pueda medir el efecto de saltarse las
+            // carátulas sin cambios en vez de reescribir las 12 000 en
+            // cada guardado.
+            let albumCoverArt = Data(repeating: UInt8(albumNumber % 256), count: 15_000)
+
             for track in 1...tracksThisAlbum {
                 let fileURL = albumDir.appendingPathComponent(String(format: "%02d Canción.mp3", track))
                 try tinyPayload.write(to: fileURL)
@@ -95,6 +103,7 @@ final class LibraryPerformanceBaselineTests: XCTestCase {
                     year: "1986",
                     genre: "Rock",
                     trackNumber: track,
+                    coverArtData: albumCoverArt,
                     durationSeconds: Double(180 + track)
                 )
                 items.append(item)

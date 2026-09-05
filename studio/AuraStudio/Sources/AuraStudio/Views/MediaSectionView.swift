@@ -900,7 +900,10 @@ struct MediaSectionView: View {
             }
             .help("Vuelve a leer título, artista, álbum, año, género, autor, N.º de pista y carátula directamente del archivo original")
             Button("Eliminar carátula") {
-                for item in targetItems { viewModel.clearCoverArt(id: item.id) }
+                // PLAN-studio-rendimiento.md Fase 3 punto 4: una sola
+                // llamada por lote, no una por ítem -- `clearCoverArt(ids:)`
+                // persiste el catálogo UNA vez al final.
+                viewModel.clearCoverArt(ids: Set(targetItems.map(\.id)))
             }
             .disabled(!targetItems.contains { $0.metadata?.coverArtData != nil })
 
