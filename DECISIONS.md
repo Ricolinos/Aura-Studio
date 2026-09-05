@@ -3481,3 +3481,136 @@ posterior -- no se pudo reproducir, tratada como fluctuación puntual del
 entorno y no como regresión de este cambio; si vuelve a aparecer con un
 nombre de prueba consistente, se investiga entonces. `scripts/build-app.sh`
 pendiente de correr una vez más antes de cerrar esta PARADA (ver abajo).
+
+## ST-153 — PLAN-studio-rendimiento.md, Fase 1: selección y render (el congelamiento al seleccionar)
+
+Ataca las dos causas raíz que la línea base de ST-152 midió directo:
+publicar la selección en el ViewModel gigante (§0.1) y recalcular `rows`
+en el `body` (§0.2). Completos los puntos 1 y 2 del plan; 3, 4 y 5 quedan
+deliberadamente recortados de esta PARADA -- ver "Qué queda afuera" al
+final, con el motivo de cada uno.
+
+### 1. `SelectionStore` reemplaza `LibraryViewModel.selectionForSync`
+
+`Models/SelectionStore.swift` (nuevo): `@MainActor ObservableObject`
+chico, un solo `@Published private(set) var selected: Set<UUID>`. Un
+único `SelectionStore` compartido (no uno por tipo de medio) **a
+propósito**: así ya funciona hoy `selectionForSync` -- `AlbumsView`/
+`MoviesView` leen la selección que publica la tabla de canciones/video
+EMBEBIDA dentro de un álbum/película expandido (comentario ya existente
+en esos archivos: "la selección de la tabla embebida llega por..."), y
+partirlo por tipo de medio habría sido un cambio de comportamiento
+disfrazado de cambio de rendimiento. `MediaSectionView` (tabla de nivel
+superior y cada instancia embebida) sigue publicando en
+`.onAppear`/`.onChange(of: selection)`/`.onDisappear` exactamente igual
+que antes -- cambia únicamente A DÓNDE publica.
+
+`selectionForSync` se borró de `LibraryViewModel` (era observado por
+`ContentView` entero). Los tres consumidores reales, confirmados por
+lectura de código (coinciden exacto con lo que dice el plan):
+`DeviceGeneralView` (cuenta para el botón + arma `.selection(...)` al
+disparar el sync, ahora leído de `selectionStore.selected` EN ESE
+MOMENTO, no publicado continuamente), `AlbumsView`, `MoviesView`. Los
+tres reciben `selectionStore: SelectionStore` nuevo; `ContentView` crea
+UNO (`@StateObject`) y lo reparte a los 4 sitios de `MediaSectionView`,
+`AlbumsView` y `MoviesView`.
+
+### 2. `RowsModel` -- filas memoizadas, nunca recalculadas por selección
+
+`Models/RowsModel.swift` (nuevo): `@MainActor ObservableObject` con
+`rows: [MediaTableRow]` publicado. `recompute(items:deviceSyncIndex:sortOrder:)`
+hace exactamente lo que hacía el `rows` computed var de
+`MediaSectionView` (`map` + `sorted(using:)`), pero con más de 2000
+ítems (`asyncThreshold`, el tamaño de la línea base de ST-152) lo corre
+en un `Task.detached(priority: .userInitiated)` y publica el resultado
+de una sola vez -- un contador de generación (`generation`) descarta el
+resultado de una recomputación vieja si otra más nueva ya arrancó
+mientras la anterior corría.
+
+`MediaSectionView` dispara `recomputeRowsIfNeeded()` desde
+`.onChange(of: items)` (el ítems YA FILTRADO -- barato, un puñado de
+`filter`), `.onChange(of: sortOrder)` y `.onChange(of: viewModel.
+deviceSyncIndex)`, y una vez en `.onAppear`. **Nunca desde
+`.onChange(of: selection)`**: `items` no depende de la selección, así
+que marcar/desmarcar una fila no cambia ese valor y ningún `onChange`
+dispara el recálculo -- exactamente el objetivo del plan ("recalculadas
+solo cuando cambian items... nunca por selección").
+
+Un seam nuevo, sin cambiar el camino de producción:
+`GridSelection.handleTap(_:orderedIDs:modifierFlags:)` (overload) separa
+la lectura de `NSEvent.modifierFlags` -- ya estaba desde ST-152, se
+reutiliza igual acá.
+
+### Verificación
+
+`swift build`, `xcodebuild` (Debug, Swift 6 estricto) y `swift test`
+762/762 (1 saltada, red) en verde. `xcodebuild` encontró algo que
+`swift build` no: dos problemas de concurrencia estricta nuevos --
+
+1. Una expresión en `MediaSectionView.swift` (el `Binding(get:set:)` de
+   `batchEditingIDs`, sin relación directa con esta Fase) que el
+   type-checker ya no lograba resolver en tiempo razonable después de
+   agregar los `.onChange` nuevos al `body` -- se resolvió anotando los
+   tipos explícitos (`Binding<Bool>`, closure con `(newValue: Bool) in`).
+   Cambio cosmético, mismo comportamiento.
+2. `MainThreadWatchdog` (ST-152): sus variables estáticas venían sin
+   anotar para concurrencia estricta -- funcionaban porque `swift build`
+   no lo exige. Se marcaron `nonisolated(unsafe)` con el motivo exacto de
+   por qué cada una es segura igual (sincronización manual con un
+   manejador de señal de C, que no entiende `Sendable`), no un silencio
+   ciego del chequeo.
+
+Pruebas de rendimiento re-corridas contra el código real (ya no el proxy
+de ST-152 -- `RowsModel` existe):
+
+| Medición | ST-152 (proxy) | ST-153 (real) |
+|---|---|---|
+| Recomputar rows, por título | 367 ms | 365 ms |
+| Recomputar rows, por tamaño | 1 182 ms | 1 157 ms |
+| Cambiar selección ×100 | 1 ms | 1 ms |
+
+**Los números de "recomputar rows" no bajaron, y es lo esperado.** Fase 1
+no hace que el `sorted(using:)` en sí sea más rápido (eso es la caché de
+`fileSizeBytes`, punto 4, recortado de esta PARADA) -- lo que arregla es
+que ese cálculo YA NO SE DISPARA en cada cambio de selección. Una prueba
+que SIEMPRE dispara el recálculo (como esta) no puede ver esa mejora; la
+prueba (b) tampoco la ve por la misma razón de siempre (ST-152: mide el
+costo de escribir el `@Published`, no el de qué re-renderiza SwiftUI
+alrededor). La mejora real -- que un clic ya no re-renderiza toda la
+ventana -- se verificó por lectura de código (`selection`/`rows` ya no
+tocan nada que `ContentView` observe) y queda pendiente de confirmar con
+`Self._printChanges()` contra una jerarquía de vistas real, con el iPod
+del dueño, en la Fase 7.
+
+### Qué queda afuera de esta PARADA, y por qué
+
+- **Punto 1 (parcial): no se quitó el `onPreferenceChange` de
+  `ContentView.swift`.** Es un mecanismo YA desacoplado a propósito (la
+  vista hija no sabe cómo se dibuja la barra de estado ni si el usuario
+  la ocultó) -- reemplazarlo exige que cada sección exponga sus totales
+  de otra forma sin ese desacople, un cambio estructural aparte que no es
+  lo que miden las pruebas (a)/(b) de esta PARADA. Con `statusSummary`
+  cacheado (punto 3) el costo de lo que viaja por ese canal baja aunque
+  el canal en sí siga igual.
+- **Punto 3: `statusSummary` sigue en el `body`, sin cachear ni debounce.**
+  Con la selección ya fuera de `LibraryViewModel`, el impacto directo del
+  síntoma reportado (congelarse al seleccionar) ya está resuelto por los
+  puntos 1-2; cachear los conteos totales del catálogo y debouncear los
+  de la selección es una optimización real pero incremental, no la causa
+  del congelamiento.
+- **Punto 4: `fileSizeBytes` sin caché persistida.** Es un cambio de
+  esquema de `PersistedLibraryItem` con migración (`Int64?` nuevo,
+  siguiendo la regla ya documentada en el propio archivo: todo campo
+  nuevo es opcional o una `try?` decode tira el catálogo entero) -- more
+  aislado y de menor riesgo que 1-2, pero también el que explica la
+  brecha completa entre ordenar por título (365 ms) y por tamaño
+  (1157 ms) en la línea base.
+- **Punto 5: `ContentView` sigue pasando `library` entero a cada vista.**
+  `MediaSectionView`/`AlbumsView`/`MoviesView`/`DeviceGeneralView` ya
+  reciben `selectionStore`/`rowsModel` acotados además de `library` (un
+  primer paso real hacia lo que pide el punto), pero la verificación con
+  `Self._printChanges()` contra una jerarquía real queda pendiente.
+
+Los tres quedan anotados para una PARADA 1b o para plegarse a las Fases
+2/3 (que ya tocan `GridSelection`/`persistCatalog` de todos modos) --
+decisión de la supervisora, no tomada acá.

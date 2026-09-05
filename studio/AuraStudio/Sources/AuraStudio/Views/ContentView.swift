@@ -24,6 +24,12 @@ struct ContentView: View {
     @StateObject private var installer: InstallerViewModel
     @StateObject private var library = LibraryViewModel()
     @StateObject private var preferences = AppPreferences.shared
+    /// PLAN-studio-rendimiento.md Fase 1: la selección de la biblioteca
+    /// ya no vive en `library` (observado por toda esta vista) -- ver
+    /// `SelectionStore`. Uno solo, compartido por las tres secciones de
+    /// medios y sus vistas de grupo (Álbumes/Películas), igual que hacía
+    /// `selectionForSync` antes.
+    @StateObject private var selectionStore = SelectionStore()
     @State private var selection: SidebarSection? = .general
 
     init() {
@@ -265,6 +271,7 @@ struct ContentView: View {
             DeviceGeneralView(device: deviceMonitor.device,
                               state: deviceMonitor.state,
                               library: library,
+                              selectionStore: selectionStore,
                               onEject: { await deviceMonitor.unmountCurrentDisk() },
                               onUpdateAura: {
                                   // D-222: "Actualizar" ya no manda al
@@ -286,7 +293,7 @@ struct ContentView: View {
                               },
                               canRenameDevice: deviceMonitor.device?.deviceIdentity?.canRename(from: preferences.installationID) ?? true)
         case .music, .musicGroup:
-            MediaSectionView(kind: .music, viewModel: library, device: deviceMonitor.device, preferences: preferences)
+            MediaSectionView(kind: .music, viewModel: library, device: deviceMonitor.device, preferences: preferences, selectionStore: selectionStore)
         case .musicArtists:
             // ST-031 / ST-032: Artistas con fotos de artista opcionales.
             ArtistsView(viewModel: library, device: deviceMonitor.device, preferences: preferences,
@@ -295,7 +302,7 @@ struct ContentView: View {
                         },
                         isFetchingArtistImages: library.isFetchingArtistImages)
         case .musicAlbums:
-            AlbumsView(viewModel: library, device: deviceMonitor.device, preferences: preferences)
+            AlbumsView(viewModel: library, device: deviceMonitor.device, preferences: preferences, selectionStore: selectionStore)
         case .musicPlaylists:
             // D-228: "Listas" ahora se llega directo desde la barra
             // lateral, anidada bajo "Música" -- "onDismiss" vuelve a
@@ -303,12 +310,12 @@ struct ContentView: View {
             // adentro de PlaylistsView cuando vivia como hoja/toggle).
             PlaylistsView(viewModel: library) { selection = .music }
         case .video, .videoGroup:
-            MediaSectionView(kind: .video, viewModel: library, device: deviceMonitor.device, preferences: preferences)
+            MediaSectionView(kind: .video, viewModel: library, device: deviceMonitor.device, preferences: preferences, selectionStore: selectionStore)
         case .videoMovies:
             // Tanda 4 de PLAN-biblioteca-medios-v2.md: cuadrícula de
             // pósters en vez de la tabla plana (que sigue siendo lo que
             // usa Videoclips, abajo).
-            MoviesView(viewModel: library, device: deviceMonitor.device, preferences: preferences)
+            MoviesView(viewModel: library, device: deviceMonitor.device, preferences: preferences, selectionStore: selectionStore)
         case .videoSeries:
             SeriesView(viewModel: library, device: deviceMonitor.device, preferences: preferences)
         case .videoClips:
@@ -319,9 +326,9 @@ struct ContentView: View {
             // apareciendo aquí, en vez de partirse en dos categorías
             // que en el fondo son la misma cosa.
             MediaSectionView(kind: .video, viewModel: library, device: deviceMonitor.device, preferences: preferences,
-                              presetCategory: MediaCategory.videos.displayName)
+                              selectionStore: selectionStore, presetCategory: MediaCategory.videos.displayName)
         case .photos, .photosGroup:
-            MediaSectionView(kind: .photo, viewModel: library, device: deviceMonitor.device, preferences: preferences)
+            MediaSectionView(kind: .photo, viewModel: library, device: deviceMonitor.device, preferences: preferences, selectionStore: selectionStore)
         case .photosPhotos:
             // Encargo del dueño (2026-08-18): cuadrícula de álbumes
             // "similar en uso al iPod Classic original" -- reemplaza la

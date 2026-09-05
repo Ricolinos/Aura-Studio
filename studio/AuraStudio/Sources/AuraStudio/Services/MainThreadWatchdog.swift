@@ -31,11 +31,20 @@ enum MainThreadWatchdog {
     private static let maxFrames = 64
 
     private static let heartbeatLock = NSLock()
-    private static var lastHeartbeat = Date()
-    private static var mainThreadPort: pthread_t?
-    private static let frameBuffer = UnsafeMutablePointer<UnsafeMutableRawPointer?>.allocate(capacity: maxFrames)
-    private static var frameCount: Int32 = -1
-    private static var started = false
+    // nonisolated(unsafe): sincronizado a mano a propósito, no con el
+    // modelo de actores de Swift -- esto habla con un manejador de
+    // señal de C, que no sabe nada de `Sendable`. `lastHeartbeat` va
+    // siempre bajo `heartbeatLock`; `mainThreadPort` se escribe una sola
+    // vez antes de arrancar el hilo vigilante y después solo se lee;
+    // `frameBuffer`/`frameCount` los llena el manejador de la señal (que
+    // corre en el hilo principal interrumpido) y los lee el hilo
+    // vigilante DESPUÉS de confirmar que `frameCount` ya se puso -- sin
+    // solapamiento real, aunque el compilador no pueda verlo.
+    nonisolated(unsafe) private static var lastHeartbeat = Date()
+    nonisolated(unsafe) private static var mainThreadPort: pthread_t?
+    nonisolated(unsafe) private static let frameBuffer = UnsafeMutablePointer<UnsafeMutableRawPointer?>.allocate(capacity: maxFrames)
+    nonisolated(unsafe) private static var frameCount: Int32 = -1
+    nonisolated(unsafe) private static var started = false
     #endif
 
     /// Se llama una vez al arrancar la app, desde el hilo principal

@@ -12,6 +12,9 @@ struct DeviceGeneralView: View {
     let device: AuraDevice?
     let state: DeviceState
     @ObservedObject var library: LibraryViewModel
+    /// PLAN-studio-rendimiento.md Fase 1: la selección ya no vive en
+    /// `library` -- ver `SelectionStore`.
+    @ObservedObject var selectionStore: SelectionStore
     /// Expulsa el volumen del iPod (desmonta el disco completo) --
     /// disponible con CUALQUIER firmware: desconectar sin expulsar es
     /// el clasico camino a un FAT32 corrupto, asi que el boton no
@@ -101,7 +104,7 @@ struct DeviceGeneralView: View {
                     lastError: library.lastError,
                     pendingCount: pendingCount,
                     deviceSyncIndex: library.deviceSyncIndex,
-                    selectionCount: library.selectionForSync.count,
+                    selectionCount: selectionStore.selected.count,
                     onSync: { selectionOnly in
                         // §0.1/§1.2: si hay conflictos (algo modificado
                         // en el iPod, o huérfanos), se pregunta ANTES de
@@ -490,7 +493,7 @@ struct DeviceGeneralView: View {
         // DeviceActivityBar -- nunca se toca el disco de un iPod sin
         // Aura, sin importar por donde llegue la llamada.
         guard let device, device.supportsAuraContract else { return }
-        let scope: LibraryViewModel.SyncScope = selectionOnly ? .selection(library.selectionForSync) : .all
+        let scope: LibraryViewModel.SyncScope = selectionOnly ? .selection(selectionStore.selected) : .all
         Task {
             await library.sync(toVolumeAt: URL(fileURLWithPath: device.mountPath), scope: scope, resolvedConflicts: resolvedConflicts)
             onRefreshDevice()

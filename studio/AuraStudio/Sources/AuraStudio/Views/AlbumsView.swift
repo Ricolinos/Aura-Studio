@@ -9,6 +9,9 @@ struct AlbumsView: View {
     @ObservedObject var viewModel: LibraryViewModel
     let device: AuraDevice?
     @ObservedObject var preferences: AppPreferences
+    /// PLAN-studio-rendimiento.md Fase 1: la selección de la tabla
+    /// embebida (álbum expandido) llega por acá -- ver `SelectionStore`.
+    @ObservedObject var selectionStore: SelectionStore
 
     @State private var albums: [AlbumGroup] = []
     @State private var searchText = ""
@@ -96,10 +99,10 @@ struct AlbumsView: View {
 
     /// ST-063: barra de estado. En la cuadrícula, álbumes/artistas/
     /// canciones y lo seleccionado; con un álbum abierto, sus canciones
-    /// (la selección de la tabla embebida llega por `selectionForSync`).
+    /// (la selección de la tabla embebida llega por `selectionStore`).
     private var statusSummary: LibraryStatusSummary {
         if let album = selectedAlbum {
-            let selectedTracks = album.items.filter { viewModel.selectionForSync.contains($0.id) }
+            let selectedTracks = album.items.filter { selectionStore.selected.contains($0.id) }
             var summary = LibraryStats.music(items: album.items, selected: selectedTracks, options: preferences.artistGrouping)
             summary.total = "«\(album.title)» · " + summary.total
             return summary
@@ -285,7 +288,7 @@ struct AlbumsView: View {
             Divider()
 
             MediaSectionView(kind: .music, viewModel: viewModel, device: device,
-                             preferences: preferences, scope: .album(album.id))
+                             preferences: preferences, selectionStore: selectionStore, scope: .album(album.id))
         }
     }
 

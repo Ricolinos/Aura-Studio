@@ -40,12 +40,13 @@ final class LibraryViewModel: ObservableObject {
     /// ST-012: cuantas entradas de Imagenes parecen caratulas de album
     /// (ver `coverContaminationCandidates()`); nil = nada que ofrecer.
     @Published private(set) var coverContaminationOfferCount: Int?
-    /// La seleccion de la vista de biblioteca ACTIVA (Musica/Video/
-    /// Fotos) en este instante -- alimenta "Solo la selección" en
-    /// `DeviceActivityBar` (PLAN-general-sync.md §6). `MediaSectionView`
-    /// la publica aca en `onAppear`/`onChange`/`onDisappear`; la de la
-    /// vista activa manda, se limpia al cambiar de sección.
-    @Published var selectionForSync: Set<UUID> = []
+    /// PLAN-studio-rendimiento.md Fase 1: la selección de la vista de
+    /// biblioteca activa vivía acá (`selectionForSync`) -- un `@Published`
+    /// de este ViewModel, que `ContentView` observa entero, así que
+    /// publicar la selección en cada clic re-renderizaba toda la ventana
+    /// (diagnóstico §0.1). Se movió a `SelectionStore`, chico y aparte,
+    /// observado solo por quien de verdad consume la selección
+    /// (`DeviceGeneralView`, `AlbumsView`, `MoviesView`).
     @Published var lastError: String?
     @Published private(set) var playlists: [Playlist] = []
     /// D-217: progreso de un `sync(toVolumeAt:)` en curso -- `nil`

@@ -1,3 +1,4 @@
+import Combine
 import XCTest
 @testable import AuraStudio
 
@@ -7,23 +8,22 @@ import XCTest
 /// pruebas fijan los números ANTES de tocar nada (ST-152), y cada fase
 /// siguiente se vuelve a correr contra ellas.
 ///
-/// Dos mediciones (`testRecomputeRows...`) son un PROXY: `MediaSectionView.
-/// rows`/`items` (Views/MediaSectionView.swift) es un computed var de una
-/// `View` de SwiftUI, no una función aislada -- exactamente el problema
-/// #2 del diagnóstico (Fase 0 §0). Estas pruebas reproducen la MISMA
-/// operación (`items.map { MediaTableRow(item:) }.sorted(using:)`, caso
-/// "sin filtros activos": scope .all, sin categoría/búsqueda/favoritos)
-/// para medir el costo real hoy. Cuando la Fase 1 extraiga `RowsModel`,
-/// esta prueba se reengancha a la extracción real en vez de reproducir
-/// la expresión.
+/// PLAN-studio-rendimiento.md Fase 1 (ST-153): `testRecomputeRows...`
+/// medían un PROXY (`MediaSectionView.rows` era un computed var de una
+/// `View`, no una función aislada). Ahora que `RowsModel` existe, miden
+/// el camino real de punta a punta -- `RowsModel.recompute(...)`, con el
+/// salto a `Task.detached` que toma con 12 000 ítems incluido.
 ///
-/// El resto (selección, `persistCatalog`, `GridSelection`, `loadCatalog`)
-/// mide código de producción real, sin proxy: `persistCatalog()` pasó a
-/// visibilidad `internal` (ver `LibraryViewModel.swift`) y `GridSelection.
+/// Todo lo demás (selección, `persistCatalog`, `GridSelection`,
+/// `loadCatalog`) también mide código de producción real, sin proxy:
+/// `persistCatalog()` pasó a visibilidad `internal` (ver
+/// `LibraryViewModel.swift`) y `GridSelection.
 /// handleTap(_:orderedIDs:modifierFlags:)` es un overload nuevo, sin
 /// cambiar el camino real (`handleTap(_:orderedIDs:)` sigue leyendo
 /// `NSEvent.modifierFlags` en producción) -- ambos, solo para poder medir
-/// sin depender de un entorno de UI real.
+/// sin depender de un entorno de UI real. La selección se mide contra
+/// `SelectionStore` (Fase 1), no contra `LibraryViewModel.selectionForSync`
+/// (que ya no existe).
 @MainActor
 final class LibraryPerformanceBaselineTests: XCTestCase {
     private var libraryRoot: URL!
@@ -103,36 +103,50 @@ final class LibraryPerformanceBaselineTests: XCTestCase {
         return items
     }
 
-    // MARK: - (a) Recomputar `rows` -- por título y por tamaño (PROXY, ver arriba)
+    // MARK: - (a) Recomputar `rows` -- por título y por tamaño
+    //
+    // PLAN-studio-rendimiento.md Fase 1 (ST-153): ya no es un proxy --
+    // `RowsModel` existe, así que esto mide el camino real de punta a
+    // punta (con 12 000 ítems siempre toma la rama `Task.detached`, ver
+    // `RowsModel.asyncThreshold`), incluido el costo del salto de hilo.
 
-    func testRecomputeRowsSortedByTitle() {
+    func testRecomputeRowsSortedByTitle() throws {
         let sortOrder: [KeyPathComparator<MediaTableRow>] = [.init(\.title, order: .forward)]
         measure {
-            _ = syntheticItems
-                .map { MediaTableRow(item: $0, syncState: nil) }
-                .sorted(using: sortOrder)
+            let rowsModel = RowsModel()
+            let done = expectation(description: "rows computed")
+            let cancellable = rowsModel.$rows.dropFirst().sink { _ in done.fulfill() }
+            rowsModel.recompute(items: syntheticItems, deviceSyncIndex: nil, sortOrder: sortOrder)
+            wait(for: [done], timeout: 10)
+            cancellable.cancel()
         }
     }
 
-    func testRecomputeRowsSortedBySize() {
+    func testRecomputeRowsSortedBySize() throws {
         let sortOrder: [KeyPathComparator<MediaTableRow>] = [.init(\.fileSizeBytes, order: .forward)]
         measure {
-            _ = syntheticItems
-                .map { MediaTableRow(item: $0, syncState: nil) }
-                .sorted(using: sortOrder)
+            let rowsModel = RowsModel()
+            let done = expectation(description: "rows computed")
+            let cancellable = rowsModel.$rows.dropFirst().sink { _ in done.fulfill() }
+            rowsModel.recompute(items: syntheticItems, deviceSyncIndex: nil, sortOrder: sortOrder)
+            wait(for: [done], timeout: 10)
+            cancellable.cancel()
         }
     }
 
     // MARK: - (b) Cambiar la selección 100 veces
 
+    /// PLAN-studio-rendimiento.md Fase 1 (ST-153): `selectionForSync`
+    /// desapareció de `LibraryViewModel` -- la selección se publica ahora
+    /// en `SelectionStore` (chico, sin relación con el catálogo de 12 000
+    /// ítems). Se mide igual, sobre el reemplazo real.
     func testChangeSelectionOneHundredTimes() {
-        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
-        viewModel.replaceItemsForPerformanceTesting(syntheticItems)
+        let selectionStore = SelectionStore()
         let ids = syntheticItems.map(\.id)
         measure {
             for i in 0..<100 {
                 let start = (i * 37) % (ids.count - 50)
-                viewModel.selectionForSync = Set(ids[start..<(start + 50)])
+                selectionStore.replace(with: Set(ids[start..<(start + 50)]))
             }
         }
     }

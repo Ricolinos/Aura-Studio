@@ -34,6 +34,14 @@ struct MediaSectionView: View {
     /// (`photoCollections`) que arma el picker/filtro para `.photo` --
     /// video sigue usando el conjunto fijo de `MediaCategory`.
     @ObservedObject var preferences: AppPreferences
+    /// PLAN-studio-rendimiento.md Fase 1: la selección ya no se publica
+    /// en `viewModel` (observado por TODA la ventana) -- este objeto
+    /// chico es lo único que de verdad necesita saber qué hay
+    /// seleccionado (`DeviceGeneralView`, `AlbumsView`, `MoviesView`).
+    /// Un solo `SelectionStore` compartido entre la tabla de nivel
+    /// superior y cualquier tabla embebida en un álbum/película
+    /// expandido, ver el comentario de `SelectionStore`.
+    @ObservedObject var selectionStore: SelectionStore
     /// ST-031: la misma tabla, acotada a un álbum o a un artista, cuando
     /// se embebe en Álbumes/Artistas. Con `.all` es la sección Canciones
     /// completa (zona de arrastre, banners, título de navegación).
@@ -57,6 +65,11 @@ struct MediaSectionView: View {
     /// álbum".
     @State private var coverSearch: AlbumCoverRequest?
     @State private var selection: Set<UUID> = []
+    /// PLAN-studio-rendimiento.md Fase 1: `rows` memoizado -- ver
+    /// `RowsModel`. Uno por instancia de esta vista (la de nivel
+    /// superior y cada tabla embebida en un álbum/película expandido
+    /// tienen la suya, igual que ya pasaba con `selection`).
+    @StateObject private var rowsModel = RowsModel()
     @State private var sortOrder: [KeyPathComparator<MediaTableRow>] = [.init(\.title, order: .forward)]
     @State private var quickLook = QuickLookCoordinator()
     @State private var categoryFilter: String?
@@ -132,11 +145,16 @@ struct MediaSectionView: View {
         }
     }
 
-    private var rows: [MediaTableRow] {
-        let index = viewModel.deviceSyncIndex
-        return items
-            .map { MediaTableRow(item: $0, syncState: index?.state(forSourcePath: $0.sourceURL.path)) }
-            .sorted(using: sortOrder)
+    /// PLAN-studio-rendimiento.md Fase 1: ya no se recalcula acá --
+    /// `rowsModel.recompute(...)` (disparado por `.onChange`/`.onAppear`
+    /// más abajo, sobre `items`/`sortOrder`, nunca sobre `selection`) deja
+    /// el resultado en `rowsModel.rows`. Diagnóstico §0.2: esto era un
+    /// `filter` ×4 + `map` + `sorted(using:)` en cada pasada del `body`,
+    /// incluidas las que solo cambiaban qué fila estaba marcada.
+    private var rows: [MediaTableRow] { rowsModel.rows }
+
+    private func recomputeRowsIfNeeded() {
+        rowsModel.recompute(items: items, deviceSyncIndex: viewModel.deviceSyncIndex, sortOrder: sortOrder)
     }
 
     /// Solo fotos y video se organizan por categoria (D-192) -- musica
@@ -228,9 +246,21 @@ struct MediaSectionView: View {
                 showingSimilarItems = false
             }
         }
-        .onChange(of: sortOrder) { storeSortOrderInPreferences() }
+        .onChange(of: sortOrder) {
+            storeSortOrderInPreferences()
+            recomputeRowsIfNeeded()
+        }
         .onChange(of: preferences.musicSortField) { applySortOrderFromPreferences() }
         .onChange(of: preferences.musicSortAscending) { applySortOrderFromPreferences() }
+        // PLAN-studio-rendimiento.md Fase 1: `items` es el resultado YA
+        // filtrado (scope/categoría/búsqueda/favoritos) -- recalcularlo
+        // es barato (un puñado de `filter`), lo caro es lo que
+        // `rowsModel` hace con el resultado (`map` + `sorted`). Disparar
+        // acá, nunca por selección: `items` no depende de `selection`,
+        // así que marcar/desmarcar una fila no cambia este valor y
+        // `onChange` no dispara nada.
+        .onChange(of: items) { recomputeRowsIfNeeded() }
+        .onChange(of: viewModel.deviceSyncIndex) { recomputeRowsIfNeeded() }
         .toolbar {
             if kind == .music {
                 ToolbarItem {
@@ -248,14 +278,19 @@ struct MediaSectionView: View {
         .onAppear {
             loadVisibleColumns()
             applySortOrderFromPreferences()
-            viewModel.selectionForSync = selection
+            selectionStore.replace(with: selection)
+            recomputeRowsIfNeeded()
         }
         // PLAN-general-sync.md §6: "Solo la selección" en
         // `DeviceActivityBar` -- la vista de biblioteca activa publica
         // su seleccion; se limpia al salir para que otra sección no
         // herede una selección que ya no es la que el usuario ve.
-        .onChange(of: selection) { viewModel.selectionForSync = $0 }
-        .onDisappear { viewModel.selectionForSync = [] }
+        // PLAN-studio-rendimiento.md Fase 1: publica en `selectionStore`
+        // (chico, observado solo por quien consume la selección) en vez
+        // de `viewModel` (observado por toda la ventana) -- mismo
+        // comportamiento de siempre, solo cambia a dónde se publica.
+        .onChange(of: selection) { selectionStore.replace(with: $0) }
+        .onDisappear { selectionStore.clear() }
         .sheet(item: $reviewingItem) { item in
             MediaInfoView(item: item, availableCategories: availableCategories) { category in
                 viewModel.setCategory(category, forItem: item.id)
@@ -332,9 +367,9 @@ struct MediaSectionView: View {
                 }
             }
         }
-        .sheet(isPresented: Binding(
+        .sheet(isPresented: Binding<Bool>(
             get: { batchEditingIDs != nil },
-            set: { if !$0 { batchEditingIDs = nil } }
+            set: { (newValue: Bool) in if !newValue { batchEditingIDs = nil } }
         )) {
             if let ids = batchEditingIDs {
                 BatchMediaInfoView(items: items.filter { ids.contains($0.id) }) { changes in

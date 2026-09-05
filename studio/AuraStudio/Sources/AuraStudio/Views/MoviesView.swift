@@ -10,6 +10,9 @@ struct MoviesView: View {
     @ObservedObject var viewModel: LibraryViewModel
     let device: AuraDevice?
     @ObservedObject var preferences: AppPreferences
+    /// PLAN-studio-rendimiento.md Fase 1: la selección de la tabla
+    /// embebida (película expandida) llega por acá -- ver `SelectionStore`.
+    @ObservedObject var selectionStore: SelectionStore
 
     @State private var movies: [VideoCollectionGroup] = []
     @State private var searchText = ""
@@ -91,10 +94,10 @@ struct MoviesView: View {
     }
 
     /// ST-063: barra de estado. Con una película abierta, sus archivos
-    /// (la selección de la tabla embebida llega por `selectionForSync`).
+    /// (la selección de la tabla embebida llega por `selectionStore`).
     private var statusSummary: LibraryStatusSummary {
         if let movie = selectedMovie {
-            let selected = movie.items.filter { viewModel.selectionForSync.contains($0.id) }
+            let selected = movie.items.filter { selectionStore.selected.contains($0.id) }
             var summary = LibraryStats.videos(items: movie.items, selected: selected, breakdown: false)
             summary.total = "«\(movie.title)» · " + summary.total
             return summary
@@ -243,7 +246,7 @@ struct MoviesView: View {
             Divider()
 
             MediaSectionView(kind: .video, viewModel: viewModel, device: device,
-                             preferences: preferences, scope: .videoCollection(movie.id))
+                             preferences: preferences, selectionStore: selectionStore, scope: .videoCollection(movie.id))
         }
     }
 
