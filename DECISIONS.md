@@ -4496,3 +4496,71 @@ pide el plan) queda pendiente hasta que exista `LibraryFileWorker` --
 sin él, esas dos operaciones siguen bloqueando el hilo principal
 exactamente igual que antes de esta PARADA, así que medirlas ahora no
 diría nada nuevo.
+
+## ST-163 — Windows: fotos de artista al iPod, 128×128 → 320×320 (paridad de ST-159, contrato v20)
+
+### Qué cambió
+
+`LibrarySyncFinalizer.ArtistImageMaxDimension` pasa de `128` a `320` —
+la única constante que hacía falta tocar. `WriteArtistImages` ya llamaba
+`input.SquareCrop?.Invoke(image, ArtistImageMaxDimension)` y ya
+comparaba bytes contra lo que hubiera en el iPod
+(`!SameBytesOnDisk(path, square)`) antes de reescribir; ninguna de las
+dos líneas cambió. Exactamente el mismo patrón que ST-159 en macOS
+(`LibrarySync.deviceArtistSide` 128 → 320, un literal, no una referencia
+a la constante de la carátula — se sigue el mismo criterio acá).
+
+### El camino de escritura, verificado antes de tocar la constante
+
+`input.SquareCrop` (inyectado desde `SyncService.SquareCrop`, en
+`AuraStudio.App`) llama `ImageResizer.EncodeSquareAsync(source, side,
+ImageResizer.DefaultQuality)` — **la misma función, con la misma
+calidad (0.85), que ya usa `cover.jpg`** desde ST-140/ST-141/ST-142.
+`EncodeJpegAsync` (compartida por las dos) aplana sobre blanco, codifica
+con WIC y verifica que la salida sea baseline
+(`JpegMarkers.IsBaseline`) antes de devolverla; en ningún punto del
+archivo se fija ni se copia un perfil ICC, así que la salida es sRGB
+implícito sin ICC embebido, que es lo que pide §D.3. Al ser el mismo
+código que `cover.jpg` (ya confiado desde v18), cambiar el lado de 128 a
+320 no cambia nada de calidad, baseline ni color — solo el tamaño. No
+hizo falta pausar ni tocar `WicSquareImageEncoder`/`ImageResizer`.
+
+### La migración, ya estaba
+
+El encargo pedía verificar que una foto vieja de 128 se reescribe sola
+la primera vez que corre el sync con esta versión, y que una ya de 320
+no se toca. `WriteArtistImages` ya comparaba
+`!SameBytesOnDisk(path, square)` desde ST-140 (mismo criterio que
+`cover.jpg`, l.188 de `LibrarySyncFinalizer.cs`) — no hizo falta ningún
+código de migración nuevo, solo confirmarlo con una prueba real (mismo
+espíritu que la verificación EXIF-6 de ST-159 en macOS: una propiedad
+por confirmar, no un bug por corregir).
+
+### Pruebas nuevas (`LibrarySyncFinalizerTests.cs`)
+
+- `ArtistImageMaxDimensionIsTheContractV20Size`: la constante es
+  literalmente `320` — para que un cambio accidental se note aunque el
+  resto de las pruebas comparen contra la constante y no contra un
+  número suelto.
+- `AnOldSizedArtistPhotoIsRewrittenToTheNewSize`: una foto de artista ya
+  en el disco con el formato viejo (`Squared(source, 128)`, simulando lo
+  que dejó una versión anterior a ST-163) se reescribe con el nuevo
+  (`Squared(source, 320)`) en el siguiente sync.
+- `AnUnchangedArtistPhotoIsNotRewritten`: la misma foto sincronizada dos
+  veces seguidas no toca el archivo la segunda vez (mismo mtime) — mismo
+  criterio que `AnUnchangedCoverIsNotRewritten` para `cover.jpg`.
+
+También se actualizaron dos comentarios que citaban "128" como el lado
+de la foto de artista (el de la ayuda `Squared` y el de
+`TheArtistPhotoTravelsReducedWithOneLinePerRawTagValue`), que quedaban
+desactualizados sin ningún cambio de código.
+
+### Verificación
+
+- `dotnet test tests\AuraStudio.Core.Tests -c Release` → **1193/1193**
+  (1190 + las 3 nuevas).
+- `dotnet build AuraStudio.App -c Release -p:Platform=ARM64` → 0
+  advertencias, 0 errores.
+- No se tocó `CONTRATO-firmware-studio.md` (ya está en v20 desde ST-159,
+  que lo copió idéntico de `Aura-Firmware`) ni `§D.5` (la caché maestra
+  del firmware sigue en 130×130, sin relación con este cambio).

@@ -76,7 +76,8 @@ public sealed class LibrarySyncFinalizerTests : IDisposable
     /// <summary>
     /// El recorte cuadrado de mentira: deja los bytes originales con el lado
     /// pedido al frente, para que cada prueba pueda comprobar CON QUÉ LADO se
-    /// recortó (320 la carátula, 128 la foto de artista) sin decodificar nada.
+    /// recortó (320 tanto la carátula como, desde v20/ST-163, la foto de
+    /// artista) sin decodificar nada.
     /// </summary>
     private static byte[] Squared(byte[] source, int side) => [.. Encoding.UTF8.GetBytes($"{side}:"), .. source];
 
@@ -469,8 +470,9 @@ public sealed class LibrarySyncFinalizerTests : IDisposable
         Assert.StartsWith("# aura-artist-images v1\n", index);
         Assert.Contains($"{fileName}: Soda Stereo\n", index);
         Assert.Contains($"{fileName}: soda stereo\n", index);
-        // §D.3: cuadrada de 128, no el lado mayor a 128 con la proporción
-        // original, que es lo que Studio mandaba hasta v18.
+        // §D.3, contrato v20: cuadrada de 320 (era 128 antes de ST-163), no el
+        // lado mayor con la proporción original, que es lo que Studio mandaba
+        // hasta v18.
         Assert.Equal(Squared([1, 2, 3, 4], LibrarySyncFinalizer.ArtistImageMaxDimension),
                      File.ReadAllBytes(Path.Combine(_volume, ".rockbox", "aura", "artists", fileName)));
     }
@@ -486,6 +488,58 @@ public sealed class LibrarySyncFinalizerTests : IDisposable
 
         Assert.True(result.ArtistImagesChanged);
         Assert.False(File.Exists(OnDevice(LibrarySyncFinalizer.ArtistImagesIndexRelativePath)));
+    }
+
+    [Fact]
+    public void ArtistImageMaxDimensionIsTheContractV20Size()
+    {
+        // Un cambio accidental a esta constante no lo atraparía ninguna otra
+        // prueba (todas comparan contra la constante, no contra un número
+        // suelto) — esta sí.
+        Assert.Equal(320, LibrarySyncFinalizer.ArtistImageMaxDimension);
+    }
+
+    [Fact]
+    public void AnOldSizedArtistPhotoIsRewrittenToTheNewSize()
+    {
+        // v20/ST-163: una foto de artista ya sincronizada en el formato viejo
+        // (128) nunca coincide byte a byte con la nueva de 320, así que la
+        // comparación de WriteArtistImages hace sola la migración sin ningún
+        // código aparte.
+        var store = new ArtistImageStore(_library);
+        byte[] source = [1, 2, 3, 4];
+        store.Save(LibraryGrouping.ArtistKeyOf(Song("A")), source);
+
+        LibraryItem song = Song("A", artist: "Soda Stereo");
+        string fileName = ArtistImageStore.FileName(LibraryGrouping.ArtistKeyOf(song));
+        string path = Path.Combine(_volume, ".rockbox", "aura", "artists", fileName);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        File.WriteAllBytes(path, Squared(source, 128)); // lo que dejó una versión anterior a ST-163
+
+        Run([song], new Dictionary<Guid, string> { [song.Id] = "Music/A/A.mp3" }, downscale: (data, _) => data);
+
+        Assert.Equal(Squared(source, LibrarySyncFinalizer.ArtistImageMaxDimension), File.ReadAllBytes(path));
+    }
+
+    [Fact]
+    public void AnUnchangedArtistPhotoIsNotRewritten()
+    {
+        // Mismo criterio que AnUnchangedCoverIsNotRewritten: reescribir lo
+        // mismo en cada sync solo gasta USB sin ningún beneficio.
+        var store = new ArtistImageStore(_library);
+        store.Save(LibraryGrouping.ArtistKeyOf(Song("A")), [1, 2, 3, 4]);
+
+        LibraryItem song = Song("A", artist: "Soda Stereo");
+        var destinations = new Dictionary<Guid, string> { [song.Id] = "Music/A/A.mp3" };
+
+        Run([song], destinations, downscale: (data, _) => data);
+        string fileName = ArtistImageStore.FileName(LibraryGrouping.ArtistKeyOf(song));
+        string path = Path.Combine(_volume, ".rockbox", "aura", "artists", fileName);
+        DateTime first = File.GetLastWriteTimeUtc(path);
+
+        Run([song], destinations, downscale: (data, _) => data);
+
+        Assert.Equal(first, File.GetLastWriteTimeUtc(path));
     }
 
     // MARK: - Nombres de archivo compartidos con la Mac

@@ -92,8 +92,18 @@ public static class LibrarySyncFinalizer
     /// </summary>
     public const int DeviceCoverSide = 320;
 
-    /// <summary>§D.3: la foto de artista, <b>cuadrada</b> y de 128.</summary>
-    public const int ArtistImageMaxDimension = 128;
+    /// <summary>
+    /// §D.3, contrato v20 (ST-159/ST-163): la foto de artista, <b>cuadrada</b> y
+    /// de 320 — antes de v20 era 128, mismo lado que <c>cover.jpg</c>
+    /// (<see cref="DeviceCoverSide"/>) desde v1.5 del contrato de biblioteca. Los
+    /// firmwares siguen aceptando fotos viejas de ≤128 px (§D.5, fill-crop y
+    /// ampliación); no hay ruptura hacia atrás, solo más resolución de origen
+    /// para las que se sincronicen desde ahora. La comparación por bytes de
+    /// <see cref="WriteArtistImages"/> hace sola la migración: una foto vieja de
+    /// 128 nunca coincide con la nueva de 320, así que la primera sincronización
+    /// tras este cambio la reescribe sin ningún código de migración aparte.
+    /// </summary>
+    public const int ArtistImageMaxDimension = 320;
 
     public static SyncFinalizeResult Run(string volumeRoot, SyncFinalizeInput input)
     {
