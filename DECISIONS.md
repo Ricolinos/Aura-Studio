@@ -4907,3 +4907,46 @@ ruta —pensado para pruebas—, pero `App.xaml.cs` registra el que usa
 variable `%LOCALAPPDATA%`. Para no tocar el archivo del dueño durante la
 verificación se respaldó antes y se restauró después, verificando que quedara
 idéntico.
+
+## ST-157 (paso 2/6) — `applyBatchEdit` sobre `LibraryFileWorker`
+
+`applyBatchEdit(ids:changes:)` pasa a `async`: cada `prepareMusic` corre
+en `fileWorker` (`await`), reporta "N de M" a `taskCenter`, y los
+resultados vuelven a `items` en lotes -- `Self.batchApplySize = 50` o
+`Self.batchApplyInterval = 0.1` s desde el último lote, lo que ocurra
+primero, más un flush final. `applyPendingBatchEditResults` (nuevo,
+privado) hace ese recorrido de `items.indices` SIN ningún `await` de por
+medio a propósito: es lo que hace que SwiftUI vea el lote entero como
+un solo cambio, no `batchApplySize` cambios sueltos -- con `await` por
+ítem, publicar `items[index] = ...` después de cada uno SÍ habría creado
+justo el problema que el lote evita (cada `await` es un punto de
+suspensión real; sin agrupar, cada reanudación es su propia pasada de
+SwiftUI).
+
+Único llamador (`MediaSectionView`, "Editar en lote"): se envuelve en
+`Task { await ... }`, la hoja se cierra al toque, el progreso real se ve
+en el centro de tareas.
+
+### El criterio de cierre del paso, verificado de verdad
+
+`MainThreadWatchdog.onHangDetectedForTesting` (nuevo, gancho `@Sendable`
+solo para pruebas): antes, verificar "cero bloqueos > 250 ms" solo se
+podía leer por consola. Ahora
+`ApplyBatchEditWorkerTests.testFiveHundredItemsNeverBlockTheMainThreadOverTheWatchdogThreshold`
+activa el vigilante de verdad (`AURA_WATCHDOG=1` puesto en el proceso de
+pruebas -- nunca había corrido antes ahí, las pruebas no pasan por
+`AuraStudioApp.init()`) contra una edición en lote real de 500 ítems, y
+falla si el vigilante alguna vez detecta un bloqueo. Pasa: cero
+bloqueos, 500 ítems en ~0.4 s de pared.
+
+Dos pruebas más (`ApplyBatchEditWorkerTests`, 3 en total): que el cambio
+llega a los ítems seleccionados y a NINGÚN otro, y que la tarea se
+desregistra sola del centro al terminar.
+
+### Verificación
+
+`swift build`, `xcodebuild` (Debug, Swift 6 estricto) y `swift test`:
+795/795 en verde. `scripts/build-app.sh` verificado contra un
+directorio temporal (Release). Sin pruebas existentes de
+`applyBatchEdit` antes de esta ronda -- nada que pudiera romperse por
+el cambio de firma a `async`.

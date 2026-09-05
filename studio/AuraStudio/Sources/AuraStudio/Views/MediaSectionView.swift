@@ -401,7 +401,11 @@ struct MediaSectionView: View {
         )) {
             if let ids = batchEditingIDs {
                 BatchMediaInfoView(items: items.filter { ids.contains($0.id) }) { changes in
-                    viewModel.applyBatchEdit(ids: ids, changes: changes)
+                    // PLAN-studio-rendimiento.md Fase 4 paso 2: applyBatchEdit
+                    // es async ahora (corre en fileWorker) -- la hoja se
+                    // cierra de inmediato, el progreso real se ve en el
+                    // centro de tareas de la barra de herramientas.
+                    Task { await viewModel.applyBatchEdit(ids: ids, changes: changes) }
                     batchEditingIDs = nil
                 } onCancel: {
                     batchEditingIDs = nil

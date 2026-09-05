@@ -106,7 +106,15 @@ enum MainThreadWatchdog {
         }
     }
 
+    /// PLAN-studio-rendimiento.md Fase 4: gancho para que una PRUEBA
+    /// pueda verificar "cero bloqueos > 250 ms" sin tener que capturar
+    /// lo que este archivo imprime por consola -- `nonisolated(unsafe)`
+    /// por el mismo motivo que el resto del estado de este tipo (ver
+    /// arriba). Nunca se usa fuera de pruebas.
+    nonisolated(unsafe) static var onHangDetectedForTesting: (@Sendable (Int) -> Void)?
+
     private static func report(durationMs: Int) {
+        onHangDetectedForTesting?(durationMs)
         log("[MainThreadWatchdog] bloqueo de ~\(durationMs) ms en el hilo principal")
         guard frameCount > 0 else {
             log("    (no se alcanzó a capturar la pila -- el bloqueo terminó antes de que la señal llegara)")

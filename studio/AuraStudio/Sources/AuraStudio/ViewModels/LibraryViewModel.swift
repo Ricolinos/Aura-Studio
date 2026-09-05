@@ -1085,11 +1085,28 @@ final class LibraryViewModel: ObservableObject {
     /// vez -- solo toca los campos que `changes` trae con valor real
     /// (`nil` = no tocar), nunca el título ni el numero de pista (esos
     /// ni siquiera son parte de `BatchMetadataChanges`, ver ese tipo).
-    func applyBatchEdit(ids: Set<UUID>, changes: BatchMetadataChanges) {
+    /// PLAN-studio-rendimiento.md Fase 4 paso 2: `prepareMusic` corre en
+    /// `fileWorker` (fuera del actor principal); los resultados vuelven
+    /// a `items` en lotes de `batchApplySize` (o antes, si pasan
+    /// `batchApplyInterval` desde el último lote) -- nunca una
+    /// publicación de `items` por ítem. Diagnóstico §0.5.
+    static let batchApplySize = 50
+    static let batchApplyInterval: TimeInterval = 0.1
+
+    func applyBatchEdit(ids: Set<UUID>, changes: BatchMetadataChanges) async {
         guard !changes.isEmpty else { return }
-        for id in ids {
-            guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .music else { continue }
-            var metadata = items[index].metadata ?? TrackMetadata()
+        let targets = items.filter { ids.contains($0.id) && $0.kind == .music }
+        guard !targets.isEmpty else { return }
+
+        let handle = taskCenter.begin(title: "Editando \(targets.count) \(targets.count == 1 ? "canción" : "canciones")…",
+                                      progress: .determinate(completed: 0, total: targets.count))
+        defer { taskCenter.finish(handle) }
+
+        var pendingResults: [UUID: (metadata: TrackMetadata, preparedURL: URL?, status: LibraryItemStatus)] = [:]
+        var lastFlush = Date()
+
+        for (completed, item) in targets.enumerated() {
+            var metadata = item.metadata ?? TrackMetadata()
             if let artist = changes.artist { metadata.artist = artist }
             if let album = changes.album { metadata.album = album }
             if let albumArtist = changes.albumArtist { metadata.albumArtist = albumArtist }
@@ -1097,12 +1114,37 @@ final class LibraryViewModel: ObservableObject {
             if let genre = changes.genre { metadata.genre = genre }
             if let composer = changes.composer { metadata.composer = composer }
             if let rating = changes.rating { metadata.rating = rating }
-            items[index].metadata = metadata
-            items[index].metadataEditedByUser = true
-            items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
-            items[index].status = metadata.isComplete ? .ready : .needsReview
+
+            let preparedURL = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
+            pendingResults[item.id] = (metadata, preparedURL, metadata.isComplete ? .ready : .needsReview)
+
+            handle.update(.determinate(completed: completed + 1, total: targets.count),
+                          statusText: "\(completed + 1) de \(targets.count)")
+
+            let shouldFlush = pendingResults.count >= Self.batchApplySize
+                || Date().timeIntervalSince(lastFlush) >= Self.batchApplyInterval
+                || completed == targets.count - 1
+            if shouldFlush, !pendingResults.isEmpty {
+                applyPendingBatchEditResults(pendingResults)
+                pendingResults.removeAll(keepingCapacity: true)
+                lastFlush = Date()
+            }
         }
         persistCatalog()
+    }
+
+    /// Un solo recorrido de `items.indices`, sin ningún `await` de por
+    /// medio -- todas las mutaciones de este lote quedan en la misma
+    /// pasada síncrona, así que SwiftUI las ve como un cambio, no
+    /// `pendingResults.count` cambios sueltos.
+    private func applyPendingBatchEditResults(_ results: [UUID: (metadata: TrackMetadata, preparedURL: URL?, status: LibraryItemStatus)]) {
+        for index in items.indices where results[items[index].id] != nil {
+            let result = results[items[index].id]!
+            items[index].metadata = result.metadata
+            items[index].metadataEditedByUser = true
+            items[index].preparedURL = result.preparedURL
+            items[index].status = result.status
+        }
     }
 
     /// ST-063: aplica las ediciones que propuso `SimilarItemsDetector`
@@ -1914,6 +1956,19 @@ final class LibraryViewModel: ObservableObject {
     /// coalesce guardados de ediciones rápidas seguidas -- ver
     /// `CatalogPersister`.
     private let catalogPersister = CatalogPersister()
+
+    /// PLAN-studio-rendimiento.md Fase 4 paso 2: `prepareMusic` fuera
+    /// del actor principal -- ver `LibraryFileWorker`.
+    private let fileWorker = LibraryFileWorker()
+
+    /// Snapshot `Sendable` de lo que `fileWorker.prepareMusic` necesita
+    /// de las preferencias -- se lee en el actor principal, antes de
+    /// cruzar al worker (nunca se le pasa `AppPreferences` completo).
+    private func makePrepareMusicRequest(for item: LibraryItem, metadata: TrackMetadata) -> LibraryFileWorker.PrepareMusicRequest {
+        LibraryFileWorker.PrepareMusicRequest(
+            sourceURL: item.sourceURL, stagingDirectory: stagingDirectory, metadata: metadata,
+            audioQuality: preferences.audioQuality, coverArtPolicy: preferences.coverArtPolicy)
+    }
 
     /// Solo para pruebas: `schedulePersistCatalog()` escribe de
     /// inmediato en vez de esperar el debounce de 500 ms, para el

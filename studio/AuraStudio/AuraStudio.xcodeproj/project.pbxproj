@@ -178,6 +178,7 @@
 		B1845030E08621FDF34358FA /* DiskArbitrationMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 638FD209E9AF6417EE51ABC7 /* DiskArbitrationMonitor.swift */; };
 		B2C80035A3A4CA85259C3EF3 /* ArtistNameNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A44B703F4DB8DCD3F12F4492 /* ArtistNameNormalizer.swift */; };
 		B3674CA82A35D45F26989B93 /* LibraryEnricher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 206063864F8205232A3581AE /* LibraryEnricher.swift */; };
+		B36C72F73C88F88BAD57297C /* ApplyBatchEditWorkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 782E91A183A2BBFDDB6889A1 /* ApplyBatchEditWorkerTests.swift */; };
 		B3C248BDE83E3D949C3BE060 /* MusicViewOptionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847E40FA6D10BDD4F1267BA4 /* MusicViewOptionsView.swift */; };
 		B6FE316A1AC0BB3EE91DFC14 /* SquareCropPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5D90CE89259CFECF42A8C20 /* SquareCropPlan.swift */; };
 		B7B3A4130C1D78013C59DB4B /* ThemePackagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F2C5305438A32C3A01C767 /* ThemePackagerTests.swift */; };
@@ -358,6 +359,7 @@
 		722702AD0F209BDEA893FA8D /* MKS5LBootRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKS5LBootRunner.swift; sourceTree = "<group>"; };
 		72773374D5D4C62732AA92F3 /* AuraDeviceProbeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraDeviceProbeTests.swift; sourceTree = "<group>"; };
 		777383A161FBD9C32BFA6D82 /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
+		782E91A183A2BBFDDB6889A1 /* ApplyBatchEditWorkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplyBatchEditWorkerTests.swift; sourceTree = "<group>"; };
 		78AF5B1286F86F1B3B967983 /* LibraryStatusSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryStatusSummary.swift; sourceTree = "<group>"; };
 		78C8C5A2B4594B410D4C51A4 /* ExtrasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtrasView.swift; sourceTree = "<group>"; };
 		7A6B081BB0FE52BB27390C52 /* ThemeInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeInstaller.swift; sourceTree = "<group>"; };
@@ -647,6 +649,7 @@
 				E286AB9FD28A2882CEFE08AF /* AlbumCoverScoringTests.swift */,
 				BCF577C3F409A6B94D0F9D36 /* AlbumCoverSearchTests.swift */,
 				38D65AA4A8035F7A98B1544B /* APIKeyStoreTests.swift */,
+				782E91A183A2BBFDDB6889A1 /* ApplyBatchEditWorkerTests.swift */,
 				5788BF566829EC16317154CE /* AppPreferencesTests.swift */,
 				4197C3EE3BEC4457218AA161 /* ArtistImageExportTests.swift */,
 				CBA54FA0E3385DC4D97B068F /* ArtistImageTests.swift */,
@@ -972,6 +975,7 @@
 				8FD604184EB262D68C69A4C5 /* AlbumCoverScoringTests.swift in Sources */,
 				D9BC616061E0B49D5BC6CEFB /* AlbumCoverSearchTests.swift in Sources */,
 				5896172077C6C1E6312CE999 /* AppPreferencesTests.swift in Sources */,
+				B36C72F73C88F88BAD57297C /* ApplyBatchEditWorkerTests.swift in Sources */,
 				7B299956D840E15EAA2D9FC6 /* ArtistImageExportTests.swift in Sources */,
 				72C172E3DF3F50EFAA165F95 /* ArtistImageTests.swift in Sources */,
 				5A818212F40426911C5CAE42 /* ArtistNameNormalizerTests.swift in Sources */,
