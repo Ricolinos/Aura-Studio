@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Management;
 using System.ServiceProcess;
+using System.Text;
 using Microsoft.Win32.SafeHandles;
 using AuraStudio.Core;
 using AuraStudio.Core.Installer;
@@ -399,10 +401,14 @@ internal static class PrivilegedHost
             {
                 if (status is ServiceControllerStatus.Running or ServiceControllerStatus.StartPending)
                 {
+                    // Se borra igual: puede haber quedado programada de una
+                    // corrida anterior que sí lo detuvo.
+                    RemoveResumeGuard(log);
                     return PrivilegedOperationResult.Ok("El servicio de Apple ya estaba en marcha.", log);
                 }
                 service.Start();
                 service.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(20));
+                RemoveResumeGuard(log);
                 return PrivilegedOperationResult.Ok("Se volvió a arrancar el servicio de Apple.", log);
             }
 
@@ -414,6 +420,19 @@ internal static class PrivilegedHost
             {
                 return PrivilegedOperationResult.Failure("El servicio de Apple no se puede detener.", log);
             }
+
+            // ST-169: PRIMERO la red, DESPUÉS el salto. Si no se pudo programar
+            // la reactivación, no se detiene nada: dejar el servicio caído sin
+            // forma de que vuelva —si esta app se muere entre una cosa y la
+            // otra— le quita al usuario iTunes y Dispositivos Apple sin que
+            // tenga forma de adivinar por qué.
+            if (!AppleServiceGuard.CanPause(ScheduleResumeGuard(log)))
+            {
+                return PrivilegedOperationResult.Failure(
+                    "No se pudo preparar la reactivación automática, así que no se detuvo ningún servicio.",
+                    log);
+            }
+
             service.Stop();
             service.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(20));
             return PrivilegedOperationResult.Ok("Se detuvo el servicio de Apple durante el grabado.", log);
@@ -430,6 +449,92 @@ internal static class PrivilegedHost
             return PrivilegedOperationResult.Failure(
                 "El servicio de Apple no respondió a tiempo.", log);
         }
+    }
+
+    // MARK: - La red de ST-169
+
+    /// <summary>
+    /// Programa la reactivación del servicio para dentro de
+    /// <see cref="AppleServiceGuard.ResumeAfterMinutes"/> minutos. Devuelve si
+    /// quedó programada — y quien llama <b>no debe pausar</b> si no.
+    ///
+    /// <para>Corre acá, dentro de la operación elevada que va a pausar, y no en
+    /// una segunda: registrar una tarea que corre como SYSTEM necesita permisos
+    /// de administrador, y pedirlos aparte sería un segundo diálogo por lo
+    /// mismo. Que sea la misma elevación es lo que hace que "primero la red"
+    /// sea literal.</para>
+    /// </summary>
+    private static bool ScheduleResumeGuard(List<string> log)
+    {
+        string xmlPath = Path.Combine(Path.GetTempPath(),
+            $"aura-guardian-{Guid.NewGuid():N}.xml");
+
+        try
+        {
+            // El Programador espera el XML en UTF-16, que es lo que declara la
+            // propia definición.
+            File.WriteAllText(
+                xmlPath,
+                AppleServiceGuard.TaskXml(AppleServiceGuard.FiresAt(DateTimeOffset.Now),
+                                          AppleDeviceSupport.ServiceName),
+                new UnicodeEncoding(bigEndian: false, byteOrderMark: true));
+
+            (int exitCode, string output) = RunSchtasks(AppleServiceGuard.CreateArguments(xmlPath));
+            log.Add($"programar la reactivación: código {exitCode}");
+            if (output.Length > 0) log.Add(output);
+
+            return exitCode == 0;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
+                                      or System.ComponentModel.Win32Exception)
+        {
+            log.Add($"no se pudo programar la reactivación: {ex.Message}");
+            return false;
+        }
+        finally
+        {
+            try { if (File.Exists(xmlPath)) File.Delete(xmlPath); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        }
+    }
+
+    /// <summary>
+    /// Borra la tarea al reanudar por el camino normal. Que falle no puede
+    /// tapar el resultado real —el servicio ya volvió, que es lo que importa—;
+    /// queda en la bitácora.
+    /// </summary>
+    private static void RemoveResumeGuard(List<string> log)
+    {
+        try
+        {
+            (int exitCode, string output) = RunSchtasks(AppleServiceGuard.DeleteArguments());
+            // Código 1 con "no existe" es lo normal: nadie la había programado.
+            log.Add($"borrar la reactivación programada: código {exitCode}");
+            if (output.Length > 0) log.Add(output);
+        }
+        catch (Exception ex) when (ex is IOException or System.ComponentModel.Win32Exception)
+        {
+            log.Add($"no se pudo borrar la reactivación programada: {ex.Message}");
+        }
+    }
+
+    private static (int ExitCode, string Output) RunSchtasks(string arguments)
+    {
+        var psi = new ProcessStartInfo("schtasks.exe", arguments)
+        {
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+
+        using Process? process = Process.Start(psi);
+        if (process is null) return (-1, "no se pudo ejecutar schtasks.exe");
+
+        string output = process.StandardOutput.ReadToEnd() + process.StandardError.ReadToEnd();
+        process.WaitForExit(TimeSpan.FromSeconds(30));
+
+        return (process.HasExited ? process.ExitCode : -1, output.Trim());
     }
 }
 

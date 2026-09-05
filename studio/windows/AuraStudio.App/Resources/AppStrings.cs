@@ -441,6 +441,23 @@ public static class AppStrings
         "Tu música y tus ajustes siguen intactos. La próxima vez que enciendas el iPod vas a ver " +
         "la pantalla de arranque nueva.";
 
+    // MARK: - La salida cuando el DFU no aparece (ST-169)
+
+    public static string ServicePauseTitle => "¿No aparece?";
+
+    public static string ServicePauseDetail =>
+        "Windows puede tener el servicio de Apple ocupando el iPod. Podemos detenerlo mientras dura " +
+        "esto y lo volvemos a encender al terminar.";
+
+    /// <summary>Se dice antes de apretar, no después: es el único permiso de este flujo.</summary>
+    public static string ServicePauseAsksForPermission =>
+        "Esto sí te va a pedir permiso de administrador.";
+
+    public static string ServicePauseButton => "Pausar los servicios de Apple";
+
+    public static string ServicePauseNotRunning =>
+        "El servicio de Apple no está corriendo, así que no es lo que está estorbando.";
+
     public static string InstallerDoneTitle => "Listo";
     public static string InstallerDoneDetail =>
         "El firmware quedó instalado. Expulsa el iPod desde General antes de desconectarlo.";

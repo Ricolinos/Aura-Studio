@@ -4950,3 +4950,130 @@ desregistra sola del centro al terminar.
 directorio temporal (Release). Sin pruebas existentes de
 `applyBatchEdit` antes de esta ronda -- nada que pudiera romperse por
 el cambio de firma a `async`.
+
+## ST-169 — Pausar el servicio de Apple no tenía red: si la app moría, se quedaba caído para siempre
+
+Última de las cuatro decisiones de la Fase D, y la única que arregla algo que ya
+estaba mal en vez de agregar una función.
+
+**El agujero.** Detener el "Apple Mobile Device Service" es lo único que destraba
+un iPod en DFU que Windows no deja ver (D-041/D-044), y la app lo reanudaba en el
+`finally` del grabado. Si moría entre una cosa y la otra —un cierre forzado, un
+cuelgue, un corte de luz— **el servicio quedaba detenido para siempre**: el
+usuario se quedaba sin iTunes y sin Dispositivos Apple, sin ninguna forma de
+adivinar por qué ni de relacionarlo con lo que había hecho un rato antes.
+Reanudar al cerrar la ventana no alcanza, porque cerrar bien es justamente lo que
+no pasa en un cuelgue.
+
+El addendum de ST-143 multiplica las veces que se pausa —ahora también desde la
+pantalla de DFU—, así que la red tenía que existir antes de ofrecer más pausas.
+
+### La red: una tarea programada, creada antes de pausar
+
+Dentro de la **misma operación elevada** que pausa, y en este orden:
+
+1. programar la reactivación (tarea de un disparo, a diez minutos),
+2. **si programarla falla, no se pausa nada** y la operación devuelve fallo,
+3. solo entonces, detener el servicio.
+
+Que sea la misma elevación no es una comodidad: es lo que hace que "primero la
+red" sea **literal** y no una intención. Registrar una tarea que corre como
+SYSTEM necesita permisos de administrador, y pedirlos por separado habría sido un
+segundo diálogo por lo mismo — o peor, la tentación de saltárselo.
+
+Al reanudar por el camino normal la tarea se borra. Los diez minutos solo cuentan
+si la app murió.
+
+**Por qué una tarea y no un proceso ayudante.** `PrivilegedHost` podría quedarse
+vivo como vigilante, pero eso deja un **proceso elevado colgado** cuya muerte no
+está más garantizada que la de la app: se cambiaría un modo de fallo por otro,
+con más superficie y con permisos de administrador de por medio. La tarea la
+sostiene Windows, que es exactamente lo que hace falta cuando lo que puede morir
+es nuestro propio proceso.
+
+**Por qué XML y no `/ST`.** `schtasks` interpreta las fechas de la línea de
+comandos con el **formato regional** de la máquina: la misma cadena significa
+cosas distintas en dos Windows y en algunos no es válida. El XML lleva la hora en
+ISO-8601, deja declarar que la tarea se borre sola al vencer, y nombra a SYSTEM
+por su SID (`S-1-5-18`) y no por un nombre de cuenta que en un Windows en español
+está traducido. De paso, el caso de borde deja de existir: a las 23:55 la tarea
+cae al día siguiente porque la fecha va completa.
+
+**Los diez minutos, con la cuenta.** Grabar el arranque y esperar a que el iPod
+salga de DFU suman menos de dos minutos (la espera de salida son 45 s). Diez deja
+margen de sobra para cualquier corrida legítima —si la tarea saltara en medio, el
+servicio volvería y podría quitarle el USB a `mks5lboot`— y sigue siendo poco
+para alguien que se quedó sin iTunes sin saberlo.
+
+**Un límite conocido, y por qué se deja así.** Sería mejor renovar la tarea al
+empezar el grabado, para que los diez minutos se cuenten desde ahí. No se hace:
+`PrivilegedRunner` lanza el proceso elevado **por operación** y espera a que
+termine (`LaunchElevatedAsync`), así que no queda ningún host elevado vivo al que
+pedirle la renovación — y renovarla exigiría un segundo diálogo de permiso por
+algo que el usuario ya autorizó. Se prefiere el límite antes que el segundo
+permiso. En la práctica no aprieta: entre la ayuda de los 20 s y el final del
+grabado pasan menos de dos minutos de los diez.
+
+**Si no se pudo preparar la reactivación, no se pausa** — y la pantalla lo dice
+con esas palabras, en el mismo `InfoBar` donde estaba el botón. Un botón que no
+hace nada es peor que uno que explica por qué no lo hace. La regla vive en
+`AppleServiceGuard.CanPause`, que es una línea y tiene su prueba: es la que
+sostiene la decisión entera.
+
+### La ayuda de los 20 segundos
+
+`BootloaderUpdate.ShouldOfferServicePause`, portada de macOS con sus siete casos:
+antes del plazo no existe; a los veinte exactos sí; con el iPod ya detectado no;
+habiendo pausado ya tampoco; y en instalar y restaurar nunca — el instalador
+completo la propone antes de llegar al DFU, y pedir permiso dos veces por lo
+mismo es peor que no ofrecerlo.
+
+**Veinte y no menos**: la combinación de botones tarda doce, así que un plazo más
+corto interrumpiría a alguien que está haciendo bien las cosas. La cuenta vive
+con la pantalla de DFU y se cancela al salir de ella; al vencer se vuelve a
+sondear el iPod, porque en veinte segundos pudo haber entrado a DFU y entonces no
+hay nada con qué ayudar.
+
+### `AURA_STUDIO_PREFERENCES`
+
+Una línea en `App.xaml.cs`: si la variable trae una ruta, las preferencias salen
+de ahí, usando el constructor con ruta que `AppPreferences` ya tenía para sus
+pruebas. **Es una ayuda de verificación, no una función del producto**, y existe
+porque sin ella no hay forma de probar la app sin escribir en el archivo real del
+usuario: `Environment.GetFolderPath(LocalApplicationData)` no lee `%LOCALAPPDATA%`
+en Windows. Sin la variable, todo queda exactamente como estaba.
+
+### Verificación
+
+- `dotnet test tests/AuraStudio.Core.Tests`: **1287/1287** (1265 antes + 22: 15
+  del guardián y 7 de la regla de los 20 s).
+- `dotnet build AuraStudio.App -c Release -p:Platform=ARM64`: verde, 0
+  advertencias.
+- **El override, probado de verdad**: se corrió la app con
+  `AURA_STUDIO_PREFERENCES` apuntando a un archivo temporal; se creó ahí, y el
+  `preferences.json` del dueño quedó con **el mismo SHA-256 antes y después**.
+
+Las 15 pruebas del guardián cubren: que sin la red no se pausa (y que con ella
+sí); los diez minutos y el cruce de medianoche; que la hora es ISO y no regional;
+que la tarea arranca el servicio que se le dijo; que corre como SYSTEM **por
+SID**; que se borra sola al vencer (con el final declarado, sin el cual eso no
+aplica); que corre con la laptop desenchufada —el caso normal de alguien
+flasheando en la mesa de la cocina, y con el ajuste por omisión de Windows no
+correría—; que no se pierde si la máquina estaba suspendida; que `/F` reemplaza
+una tarea previa en vez de duplicarla; que borrar nombra **la misma** tarea que
+crear —si se separaran, quedaría huérfana y reiniciaría el servicio diez minutos
+después en medio de otra cosa—; y que un nombre de servicio con `<` o `&` no
+puede romper el XML.
+
+**Lo que no se puede verificar sin el aparato y sin elevar**, y queda para el
+dueño:
+
+1. Una corrida elevada real de `schtasks` con la configuración regional de su
+   Windows: que la tarea se registre sin error.
+2. Que aparezca en el Programador de tareas bajo "Aura Studio", corriendo como
+   SYSTEM.
+3. Que **desaparezca** al reanudar por el camino normal.
+4. Que si se mata la app con el servicio pausado, el servicio vuelve solo a los
+   diez minutos.
+5. La ayuda de los 20 s en pantalla: solo se llega a ella con un iPod que no se
+   detecta en DFU.

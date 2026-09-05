@@ -1,3 +1,5 @@
+using AuraStudio.Core.Installer;
+
 namespace AuraStudio.Core;
 
 /// <summary>
@@ -65,5 +67,34 @@ public static class BootloaderUpdate
         return recordedHash is null or UnknownBootloader
             ? Reason.UnknownBootloader
             : Reason.DifferentBootloader;
+    }
+
+    // MARK: - La salida cuando el DFU no se detecta (ST-143 addendum, ST-169)
+
+    /// <summary>
+    /// Segundos que se espera en la pantalla de DFU antes de ofrecer la ayuda
+    /// de último recurso. <b>Veinte y no menos</b>: la combinación de botones
+    /// tarda doce, así que un plazo más corto ofrecería la ayuda mientras el
+    /// usuario todavía la está haciendo.
+    /// </summary>
+    public const double AssistDelaySeconds = 20;
+
+    /// <summary>
+    /// Si la pantalla de DFU debe ofrecer pausar el servicio de Apple.
+    ///
+    /// <para>El flujo de actualizar el arranque arranca con <b>cero diálogos de
+    /// permiso</b> a propósito, así que esta ayuda no puede estar desde el
+    /// principio: aparece solo cuando ya se esperó de más y el iPod sigue sin
+    /// detectarse. En el instalador completo no se ofrece acá, porque ese flujo
+    /// ya la propone antes de llegar al DFU — y pedir permiso dos veces por lo
+    /// mismo es peor que no ofrecerlo.</para>
+    /// </summary>
+    public static bool ShouldOfferServicePause(InstallerMode mode, double secondsWaiting,
+                                               bool isDfuDetected, bool alreadyPaused)
+    {
+        if (mode != InstallerMode.UpdateBootloader) return false;
+        if (isDfuDetected || alreadyPaused) return false;
+
+        return secondsWaiting >= AssistDelaySeconds;
     }
 }

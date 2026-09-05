@@ -242,6 +242,15 @@ public sealed partial class MainWindow : Window
     private void MainWindow_Closed(object sender, WindowEventArgs args)
     {
         SavePlacement();
+
+        // ST-169: si esta app detuvo el servicio de Apple, se reanuda al
+        // cerrar. Es el camino rápido, no la garantía — cerrar bien es
+        // justamente lo que no pasa en un cuelgue, y para eso está la tarea
+        // programada que el lado elevado crea ANTES de detener nada.
+        App.Services.GetRequiredService<ViewModels.InstallerViewModel>()
+            .ResumeAppleServiceIfPausedAsync()
+            .ContinueWith(_ => { }, TaskScheduler.Default);
+
         _preferences.Changed -= OnPreferenceChanged;
         _arrivalDebounce.Stop();
         _mountRetry.Stop();

@@ -63,7 +63,23 @@ public sealed partial class App : Application
         var services = new ServiceCollection();
 
         // Servicios de plataforma y sesión
-        services.AddSingleton<Services.IAppPreferences, Services.AppPreferences>();
+        //
+        // ST-169: `AURA_STUDIO_PREFERENCES` apunta las preferencias a otro
+        // archivo. Es una **ayuda de verificación, no una función del
+        // producto**: sin ella no hay forma de probar la app sin escribir en el
+        // archivo real del usuario, porque `Environment.GetFolderPath` no lee
+        // `%LOCALAPPDATA%`. Usa el constructor con ruta que `AppPreferences` ya
+        // tenía para sus pruebas. Sin la variable, todo queda como estaba.
+        string? preferencesOverride = Environment.GetEnvironmentVariable("AURA_STUDIO_PREFERENCES");
+        if (string.IsNullOrWhiteSpace(preferencesOverride))
+        {
+            services.AddSingleton<Services.IAppPreferences, Services.AppPreferences>();
+        }
+        else
+        {
+            services.AddSingleton<Services.IAppPreferences>(
+                _ => new Services.AppPreferences(preferencesOverride));
+        }
         services.AddSingleton<Services.IUsbDeviceWatcher, Services.UsbDeviceWatcher>();
         services.AddSingleton<Services.IDeviceSessionService, Services.DeviceSessionService>();
         services.AddSingleton<Services.IVolumeService, Services.VolumeService>();

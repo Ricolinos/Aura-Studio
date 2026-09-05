@@ -320,6 +320,7 @@ public sealed partial class InstallerViewModel : ViewModelBase
         Step = InstallerStep.Welcome;
         StatusMessage = AppStrings.InstallerWelcomeTitle;
         DetailMessage = "";
+        ServicePauseMessage = "";
         DriverStatusText = "";
         PrivilegedLog = [];
         AvailableFamilies = [];
@@ -444,6 +445,116 @@ public sealed partial class InstallerViewModel : ViewModelBase
 
     partial void OnModeChanged(InstallerMode value) => NotifyStepChanged();
 
+    // MARK: - La salida cuando el DFU no aparece (ST-143 addendum, ST-169)
+
+    /// <summary>
+    /// La pantalla de DFU ya esperó de más sin detectar el iPod y ofrece pausar
+    /// el servicio de Apple. <b>Solo en el flujo de actualizar el arranque</b>:
+    /// el instalador completo ya lo propone antes de llegar acá.
+    /// </summary>
+    [ObservableProperty] public partial bool OffersServicePauseInDfu { get; private set; }
+
+    /// <summary>Qué pasó al intentar pausar. Vacío mientras no se haya intentado.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasServicePauseMessage))]
+    public partial string ServicePauseMessage { get; private set; }
+
+    public bool HasServicePauseMessage => !string.IsNullOrWhiteSpace(ServicePauseMessage);
+
+    /// <summary>
+    /// Esta app detuvo el servicio de Apple y todavía no lo reanudó. Lo que
+    /// garantiza que vuelva pase lo que pase es la tarea programada de ST-169;
+    /// esto es el camino normal, que es más rápido.
+    /// </summary>
+    private bool _appleServicePaused;
+
+    private CancellationTokenSource? _dfuAssist;
+
+    private void StartDfuAssistCountdown()
+    {
+        CancelDfuAssistCountdown();
+        if (!IsUpdatingBootloader || Step != InstallerStep.EnterDfu) return;
+
+        var countdown = new CancellationTokenSource();
+        _dfuAssist = countdown;
+        _ = OfferServicePauseAfterDelayAsync(countdown.Token);
+    }
+
+    private void CancelDfuAssistCountdown()
+    {
+        _dfuAssist?.Cancel();
+        _dfuAssist?.Dispose();
+        _dfuAssist = null;
+        OffersServicePauseInDfu = false;
+    }
+
+    private async Task OfferServicePauseAfterDelayAsync(CancellationToken ct)
+    {
+        try
+        {
+            await Task.Delay(TimeSpan.FromSeconds(BootloaderUpdate.AssistDelaySeconds), ct);
+
+            // La lectura más fresca posible: en veinte segundos el iPod pudo
+            // haber entrado a DFU y entonces no hay nada con qué ayudar.
+            DfuScanResult scan = await _dfu.ScanAsync(ct);
+
+            OffersServicePauseInDfu = BootloaderUpdate.ShouldOfferServicePause(
+                Mode, BootloaderUpdate.AssistDelaySeconds,
+                isDfuDetected: scan.IsPresent, alreadyPaused: _appleServicePaused);
+        }
+        catch (OperationCanceledException)
+        {
+            // Se salió de la pantalla de DFU: no hay nada que ofrecer.
+        }
+    }
+
+    /// <summary>
+    /// "¿No aparece? Pausar los servicios de Apple". Es el único punto de este
+    /// flujo que pide permiso de administrador, y solo si el usuario lo aprieta.
+    ///
+    /// <para>La reactivación queda garantizada por la tarea programada que crea
+    /// la propia operación elevada <b>antes</b> de detener nada (ST-169): si
+    /// esta app se muere, el servicio vuelve solo.</para>
+    /// </summary>
+    [RelayCommand]
+    private async Task PauseServicesForDfuAsync()
+    {
+        OffersServicePauseInDfu = false;
+
+        if (!_appleSupport.Probe().ServiceRunning)
+        {
+            ServicePauseMessage = AppStrings.ServicePauseNotRunning;
+            return;
+        }
+
+        PrivilegedOperationResult result = await _privileged.RunAsync(new PrivilegedOperation
+        {
+            Kind = PrivilegedOperationKind.PauseAppleMobileDeviceService
+        });
+
+        // El mensaje del lado elevado ya explica el caso en que no se pudo
+        // preparar la reactivación y por eso no se detuvo nada.
+        ServicePauseMessage = result.Message;
+        if (!result.Success) return;
+
+        _appleServicePaused = true;
+        RefreshDriverStatus();
+        await ScanDfuCommand.ExecuteAsync(null);
+    }
+
+    /// <summary>
+    /// Reanuda el servicio si esta app lo detuvo. Se llama al salir del
+    /// asistente y al cerrar la ventana; la tarea programada cubre lo que
+    /// ninguno de los dos alcanza.
+    /// </summary>
+    public async Task ResumeAppleServiceIfPausedAsync()
+    {
+        if (!_appleServicePaused) return;
+
+        _appleServicePaused = false;
+        await ResumeAppleServiceAsync();
+    }
+
     // Los cuatro textos que ST-143 encontró mintiendo en macOS al armar la
     // captura —y que ninguna prueba podía ver—. Acá pasaba lo mismo: los de
     // Windows estaban escritos para una sola rama.
@@ -475,7 +586,14 @@ public sealed partial class InstallerViewModel : ViewModelBase
         ? AppStrings.BootloaderUpdateDoneDetail
         : AppStrings.InstallerDoneDetail;
 
-    partial void OnStepChanged(InstallerStep value) => NotifyStepChanged();
+    partial void OnStepChanged(InstallerStep value)
+    {
+        NotifyStepChanged();
+        // ST-169: la cuenta de los 20 s vive con la pantalla de DFU. Al salir
+        // de ella se cancela, para que la ayuda no aparezca en otra pantalla ni
+        // después de que el iPod ya se detectó.
+        StartDfuAssistCountdown();
+    }
 
     /// <summary>
     /// <b>La familia de destino nunca puede quedar en nulo</b> (ST-130).
@@ -676,6 +794,11 @@ public sealed partial class InstallerViewModel : ViewModelBase
         // al DFU sin que nadie lo pidiera.
         Mode = InstallerMode.Install;
         BootloaderUpdateReason = null;
+        // ST-169: salir del asistente reanuda el servicio por el camino normal.
+        // La tarea programada sigue siendo la red para lo que esto no alcanza.
+        CancelDfuAssistCountdown();
+        ServicePauseMessage = "";
+        _ = ResumeAppleServiceIfPausedAsync();
         Step = InstallerStep.Welcome;
         StatusMessage = AppStrings.InstallerWelcomeTitle;
     }
@@ -994,7 +1117,7 @@ public sealed partial class InstallerViewModel : ViewModelBase
         // El servicio de Apple puede quedarse con el USB justo cuando el iPod
         // entra en DFU (equivalente de los agentes AMP en macOS, D-191). Se
         // pausa si está, y se reanuda pase lo que pase.
-        bool pausedAppleService = await PauseAppleServiceAsync();
+        await PauseAppleServiceAsync();
         try
         {
             DfuOperationResult result = await _dfu.InstallBootloaderAsync(
@@ -1058,7 +1181,9 @@ public sealed partial class InstallerViewModel : ViewModelBase
         }
         finally
         {
-            if (pausedAppleService) await ResumeAppleServiceAsync();
+            // Se pregunta por la bandera y no por lo que devolvió la pausa de
+            // acá: pudo haberla hecho la ayuda de los 20 s, antes del grabado.
+            await ResumeAppleServiceIfPausedAsync();
             _flowRegistry.EndWriting();
             // Mismo criterio que el formateo: el permiso se consume, no se reusa.
             FlashConfirmedByUser = false;
@@ -1078,6 +1203,10 @@ public sealed partial class InstallerViewModel : ViewModelBase
         {
             Kind = PrivilegedOperationKind.PauseAppleMobileDeviceService
         });
+
+        // ST-169: si el lado elevado no pudo programar la reactivación, no
+        // detuvo nada — y entonces acá tampoco hay nada que reanudar después.
+        if (result.Success) _appleServicePaused = true;
         return result.Success;
     }
 

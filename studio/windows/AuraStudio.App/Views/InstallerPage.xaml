@@ -341,6 +341,33 @@
                     </StackPanel>
                 </Border>
 
+                <!-- ST-169: la ayuda de último recurso. NO está desde el
+                     principio: aparece solo si tras 20 s el iPod sigue sin
+                     detectarse, porque este flujo promete cero contraseñas y
+                     esta es la única excepción — y se avisa antes de apretar,
+                     no después. -->
+                <InfoBar IsOpen="{x:Bind ViewModel.OffersServicePauseInDfu, Mode=OneWay}"
+                         IsClosable="False" Severity="Informational"
+                         Title="{x:Bind res:AppStrings.ServicePauseTitle}"
+                         Message="{x:Bind res:AppStrings.ServicePauseDetail}">
+                    <InfoBar.ActionButton>
+                        <Button Content="{x:Bind res:AppStrings.ServicePauseButton}"
+                                Command="{x:Bind ViewModel.PauseServicesForDfuCommand}" />
+                    </InfoBar.ActionButton>
+                    <InfoBar.Content>
+                        <TextBlock Text="{x:Bind res:AppStrings.ServicePauseAsksForPermission}"
+                                   Style="{StaticResource AuraCaptionTextStyle}"
+                                   TextWrapping="Wrap" Margin="0,4,0,8" />
+                    </InfoBar.Content>
+                </InfoBar>
+
+                <!-- Qué pasó al intentarlo. Incluye el caso en que no se pudo
+                     preparar la reactivación automática y por eso NO se detuvo
+                     nada: un botón que no explica es peor que uno que no está. -->
+                <InfoBar IsOpen="{x:Bind ViewModel.HasServicePauseMessage, Mode=OneWay}"
+                         IsClosable="False" Severity="Warning"
+                         Message="{x:Bind ViewModel.ServicePauseMessage, Mode=OneWay}" />
+
                 <!-- ST-168: el de instalar dice que se reemplaza el arranque de
                      Apple y no se puede deshacer. Actualizar graba con
                      single=false y no lo quita: hacerle firmar al usuario algo
