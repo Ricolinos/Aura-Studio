@@ -82,14 +82,14 @@ final class PersistCatalogCoalescedTests: XCTestCase {
     /// PLAN-studio-rendimiento.md Fase 3 punto 4: `clearCoverArt(ids:)`
     /// sobre varios ítems a la vez limpia todos y persiste -- el catálogo
     /// recargado no debe declarar ninguna carátula para ninguno.
-    func testClearCoverArtBatchClearsAllSelectedItems() throws {
+    func testClearCoverArtBatchClearsAllSelectedItems() async throws {
         let itemA = try makeReadyMusicItem(cover: Data(repeating: 0x01, count: 50))
         let itemB = try makeReadyMusicItem(cover: Data(repeating: 0x02, count: 50))
         let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
         viewModel.replaceItemsForPerformanceTesting([itemA, itemB])
         viewModel.persistCatalog()
 
-        viewModel.clearCoverArt(ids: [itemA.id, itemB.id])
+        await viewModel.clearCoverArt(ids: [itemA.id, itemB.id])
 
         XCTAssertNil(viewModel.items.first { $0.id == itemA.id }?.metadata?.coverArtData)
         XCTAssertNil(viewModel.items.first { $0.id == itemB.id }?.metadata?.coverArtData)
@@ -101,13 +101,13 @@ final class PersistCatalogCoalescedTests: XCTestCase {
 
     /// `clearCoverArt(id:)` (un solo ítem) sigue funcionando igual que
     /// antes -- ahora delega a `clearCoverArt(ids:)`.
-    func testClearCoverArtSingleItemStillWorks() throws {
+    func testClearCoverArtSingleItemStillWorks() async throws {
         let item = try makeReadyMusicItem(cover: Data(repeating: 0x01, count: 50))
         let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
         viewModel.replaceItemsForPerformanceTesting([item])
         viewModel.persistCatalog()
 
-        viewModel.clearCoverArt(id: item.id)
+        await viewModel.clearCoverArt(id: item.id)
 
         XCTAssertNil(viewModel.items.first?.metadata?.coverArtData)
     }

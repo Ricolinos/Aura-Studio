@@ -107,9 +107,11 @@ struct SimilarItemsView: View {
                           onRatingChanged: { rating in Task { await library.setRating(rating, forItem: item.id) } },
                           onVideoInfoChanged: videoInfoHandler,
                           onSave: { metadata in
-                              library.applyReview(id: item.id, metadata: metadata)
-                              editingItem = nil
-                              rescan()
+                              Task {
+                                  await library.applyReview(id: item.id, metadata: metadata)
+                                  editingItem = nil
+                                  rescan()
+                              }
                           },
                           onCancel: { editingItem = nil })
         }

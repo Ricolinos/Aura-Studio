@@ -30,7 +30,7 @@ final class LibraryViewModelSharedPreparedTests: XCTestCase {
         try? FileManager.default.removeItem(at: sourceB.deletingLastPathComponent())
     }
 
-    func testDeletingOneDuplicateKeepsTheSurvivorsPreparedFile() throws {
+    func testDeletingOneDuplicateKeepsTheSurvivorsPreparedFile() async throws {
         let prefs = AppPreferences(defaults: UserDefaults(suiteName: "SharedPrepared-\(UUID().uuidString)")!)
         prefs.copyMediaIntoLibrary = false
         let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: prefs)
@@ -38,7 +38,7 @@ final class LibraryViewModelSharedPreparedTests: XCTestCase {
         let ids = viewModel.items.map(\.id)
         XCTAssertEqual(ids.count, 2)
         let metadata = TrackMetadata(title: "Ain't No Sunshine", artist: "Bill Withers", album: "Just As I Am")
-        for id in ids { viewModel.applyReview(id: id, metadata: metadata) }
+        for id in ids { await viewModel.applyReview(id: id, metadata: metadata) }
 
         let prepared = try XCTUnwrap(viewModel.items[1].preparedURL)
         XCTAssertEqual(viewModel.items[0].preparedURL?.path, prepared.path, "mismo nombre => mismo preparado")

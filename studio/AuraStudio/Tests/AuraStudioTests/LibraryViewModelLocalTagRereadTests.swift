@@ -71,7 +71,7 @@ final class LibraryViewModelLocalTagRereadTests: XCTestCase {
         preExisting.genre = "Genero previo"
         preExisting.rating = 4
         preExisting.syncedLyrics = "la la la"
-        viewModel.applyReview(id: id, metadata: preExisting)
+        await viewModel.applyReview(id: id, metadata: preExisting)
 
         await viewModel.rereadLocalTags(ids: [id])
 
@@ -96,7 +96,7 @@ final class LibraryViewModelLocalTagRereadTests: XCTestCase {
         manual.title = "Corregido a mano"
         manual.artist = "Artista a mano"
         manual.album = "Album a mano"
-        viewModel.applyReview(id: id, metadata: manual) // marca metadataEditedByUser = true
+        await viewModel.applyReview(id: id, metadata: manual) // marca metadataEditedByUser = true
 
         await viewModel.rereadLocalTags(ids: [id], respectUserEdits: true)
         var metadata = try XCTUnwrap(viewModel.items.first(where: { $0.id == id })?.metadata)
@@ -150,7 +150,7 @@ final class LibraryViewModelLocalTagRereadTests: XCTestCase {
         let idA = try XCTUnwrap(firstSession.items.first(where: { $0.sourceURL == urlA })?.id)
         var manual = TrackMetadata()
         manual.title = "Corregido a mano"
-        firstSession.applyReview(id: idA, metadata: manual)
+        await firstSession.applyReview(id: idA, metadata: manual)
 
         let secondSession = LibraryViewModel(libraryRoot: libraryRoot, preferences: prefs)
         XCTAssertEqual(secondSession.legacyMetadataRereadOfferCount, 2)

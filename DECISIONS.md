@@ -5237,3 +5237,68 @@ intactos, mismos SHA-256 de siempre (`3256297bad5a...537ab` el arm64,
 
 `dist\` sigue ignorado en git: los `.exe` no se commitean, solo esta
 decisión.
+
+## ST-157 (paso 5/6) — los últimos llamadores directos de `prepareMusic`
+
+Los 6 sitios sincronos que quedaban: `process(itemAt:)` (la rama
+MÚSICA de `processAll()`, la importación misma), `applyReview`,
+`renameItem`, `clearCoverArt(ids:)`, `reenrichOnline` y
+`rereadLocalTags`. Mismo criterio que los pasos 1-4 en todos: mover el
+`prepareMusic` a `fileWorker`, sin cambiar comportamiento observable.
+
+**Alcance deliberado, dejado afuera a propósito**: las ramas VIDEO y
+FOTO de `process(itemAt:)` también hacen trabajo pesado síncrono
+(`transcoder.transcode(...)` completo, `ImageResizer.
+resizeToLCDOptimal`) en el mismo actor principal -- pero eso es
+transcodificación de video/imagen, no lo que `LibraryFileWorker` fue
+pensado para envolver (`prepareMusic`, específico de audio/ID3). Se
+anota como hueco real y separado, no resuelto en esta ronda ni en el
+plan original de 6 pasos.
+
+- **`process(itemAt:)`** (rama música): un solo cambio de línea --
+  `try await fileWorker.prepareMusic(...)` en vez de `try
+  prepareMusic(...)`. La función ya era `async`; el `throws`/`catch`
+  de alrededor no cambia. Es el camino de MÁS impacto: todas las
+  canciones nuevas, una por una, pasan por acá.
+- **`applyReview`, `renameItem`**: mismo patrón de un solo ítem que
+  `setRating` (paso 4) -- capturar el índice de nuevo después del
+  `await` por si cambió, sin lotes (no hacen falta para un ítem).
+- **`clearCoverArt(ids:)`, `reenrichOnline`, `rereadLocalTags`**: mismo
+  patrón de lotes que `applyBatchEdit` (paso 2) -- `targets =
+  items.filter { ... }` capturado UNA vez al principio (en vez de
+  buscar por id en cada vuelta, como hacían `reenrichOnline`/
+  `rereadLocalTags` antes) y `applyPendingXResults` sin ningún `await`
+  de por medio. Efecto secundario intencional, ya aceptado en el paso
+  2: con `targets` vacío, ninguna de las tres vuelve a llamar
+  `persistCatalog()` ni abre una entrada en `taskCenter` -- antes sí lo
+  hacían aunque no hubiera nada que hacer.
+
+### Pruebas
+
+`RemainingCallSitesWorkerTests.swift` (nuevo, 6 pruebas): importar
+pistas nuevas por `processAll()` las deja `preparedURL` listo;
+`applyReview`/`renameItem` actualizan metadata y re-preparan;
+`reenrichOnline` con `fetchAlbumInfo`/`fetchLyrics` en `false` (sin red,
+`LibraryEnricher.reenrich` no llama a nada con ambos apagados) sigue
+re-preparando el archivo; y dos criterios de cierre con el vigilante
+real -- 300 pistas importadas SEGUIDAS por `processAll()`, y 300 por
+`reenrichOnline` + otras 300 por `rereadLocalTags` -- cero bloqueos
+> 250 ms en ambos.
+
+`reenrichOnline`/`rereadLocalTags` no tenían ninguna prueba antes de
+esta ronda; `clearCoverArt(ids:)`/`applyReview` sí (`
+PersistCatalogCoalescedTests`, `LibraryViewModelLocalTagRereadTests`,
+`LibraryViewModelSharedPreparedTests`) -- se actualizaron a `async`/
+`await` sin cambiar lo que verifican.
+
+### Verificación
+
+`swift build`, `xcodegen generate` + `xcodebuild` (Debug, Swift 6
+estricto) y `swift test`: 810/810 (1 se salta por una condición de red
+en vivo preexistente, sin relación). `scripts/build-app.sh` verificado
+contra un directorio temporal (Release). Una corrida intermedia mostró
+1 falla aislada por un bloqueo puntual del `MainThreadWatchdog` (activo
+para el resto del proceso una vez que un test lo arranca, y esta
+máquina tenía varias compilaciones en paralelo en ese momento) -- no
+se reprodujo en la corrida limpia siguiente ni en ninguna posterior;
+se anota como fragilidad de entorno, no un bug del cambio.

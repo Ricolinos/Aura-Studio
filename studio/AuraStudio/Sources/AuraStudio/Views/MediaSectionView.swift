@@ -325,7 +325,7 @@ struct MediaSectionView: View {
             } onRatingChanged: { rating in
                 Task { await viewModel.setRating(rating, forItem: item.id) }
             } onSave: { metadata in
-                viewModel.applyReview(id: item.id, metadata: metadata)
+                Task { await viewModel.applyReview(id: item.id, metadata: metadata) }
                 reviewingItem = nil
             } onCancel: {
                 reviewingItem = nil
@@ -373,7 +373,7 @@ struct MediaSectionView: View {
         }
         .sheet(item: $renamingItem) { item in
             RenameSheet(currentTitle: item.metadata?.title ?? item.sourceURL.deletingPathExtension().lastPathComponent) { newTitle in
-                viewModel.renameItem(id: item.id, title: newTitle)
+                Task { await viewModel.renameItem(id: item.id, title: newTitle) }
                 renamingItem = nil
             } onCancel: {
                 renamingItem = nil
@@ -907,7 +907,8 @@ struct MediaSectionView: View {
                 // PLAN-studio-rendimiento.md Fase 3 punto 4: una sola
                 // llamada por lote, no una por ítem -- `clearCoverArt(ids:)`
                 // persiste el catálogo UNA vez al final.
-                viewModel.clearCoverArt(ids: Set(targetItems.map(\.id)))
+                let ids = Set(targetItems.map(\.id))
+                Task { await viewModel.clearCoverArt(ids: ids) }
             }
             .disabled(!targetItems.contains { $0.metadata?.coverArtData != nil })
 

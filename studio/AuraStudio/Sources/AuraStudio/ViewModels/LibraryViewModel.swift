@@ -348,7 +348,12 @@ final class LibraryViewModel: ObservableObject {
                 // carpeta (Música/<Artista>/<Álbum>/) -- por eso la copia
                 // a la biblioteca pasa por aca y no por `addDroppedFiles`.
                 copyIntoLibraryIfNeeded(itemAt: index)
-                items[index].preparedURL = try prepareMusic(item: items[index], metadata: metadata)
+                // PLAN-studio-rendimiento.md Fase 4 paso 5: mismo criterio
+                // que los pasos 1-4 -- `prepareMusic` (transcode/ID3) corre
+                // en `fileWorker`, fuera del actor principal. La
+                // importación es justo el camino con más impacto: son
+                // TODAS las canciones nuevas, una por una.
+                items[index].preparedURL = try await fileWorker.prepareMusic(makePrepareMusicRequest(for: items[index], metadata: metadata))
                 items[index].status = metadata.isComplete ? .ready : .needsReview
 
             case .video:
@@ -546,15 +551,21 @@ final class LibraryViewModel: ObservableObject {
     /// en staging (y su tag ID3/sidecars) reflejen la correccion -- sin
     /// esto, el archivo que se sincroniza al iPod seguiria teniendo la
     /// metadata vieja/incompleta que el usuario acaba de corregir.
-    func applyReview(id: UUID, metadata: TrackMetadata) {
+    /// PLAN-studio-rendimiento.md Fase 4 paso 5: `prepareMusic` corre en
+    /// `fileWorker` -- mismo criterio que los pasos 1-4.
+    func applyReview(id: UUID, metadata: TrackMetadata) async {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
         items[index].metadata = metadata
         items[index].metadataEditedByUser = true
+        let item = items[index]
         do {
-            items[index].preparedURL = try prepareMusic(item: items[index], metadata: metadata)
-            items[index].status = metadata.isComplete ? .ready : .needsReview
+            let prepared = try await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
+            guard let currentIndex = items.firstIndex(where: { $0.id == id }) else { return }
+            items[currentIndex].preparedURL = prepared
+            items[currentIndex].status = metadata.isComplete ? .ready : .needsReview
         } catch {
-            items[index].status = .failed(error.localizedDescription)
+            guard let currentIndex = items.firstIndex(where: { $0.id == id }) else { return }
+            items[currentIndex].status = .failed(error.localizedDescription)
         }
         persistCatalog()
     }
@@ -765,7 +776,9 @@ final class LibraryViewModel: ObservableObject {
     /// "Cambiar nombre" del menu contextual -- solo el TITULO mostrado/
     /// usado al armar la ruta de sincronizacion (`LibrarySync`), nunca
     /// el nombre del archivo original en disco.
-    func renameItem(id: UUID, title: String) {
+    /// PLAN-studio-rendimiento.md Fase 4 paso 5: `prepareMusic` corre en
+    /// `fileWorker` -- mismo criterio que los pasos 1-4.
+    func renameItem(id: UUID, title: String) async {
         guard let index = items.firstIndex(where: { $0.id == id }) else { return }
         let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
@@ -774,9 +787,12 @@ final class LibraryViewModel: ObservableObject {
         items[index].metadata = metadata
         items[index].metadataEditedByUser = true
         if items[index].kind == .music {
-            items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
-            if items[index].status == .ready || items[index].status == .needsReview {
-                items[index].status = metadata.isComplete ? .ready : .needsReview
+            let item = items[index]
+            let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
+            guard let currentIndex = items.firstIndex(where: { $0.id == id }) else { return }
+            items[currentIndex].preparedURL = prepared
+            if items[currentIndex].status == .ready || items[currentIndex].status == .needsReview {
+                items[currentIndex].status = metadata.isComplete ? .ready : .needsReview
             }
         }
         persistCatalog()
@@ -975,8 +991,8 @@ final class LibraryViewModel: ObservableObject {
 
     /// "Eliminar carátula" del menu contextual -- solo tiene sentido
     /// para musica (fotos/video no tienen caratula embebida propia).
-    func clearCoverArt(id: UUID) {
-        clearCoverArt(ids: [id])
+    func clearCoverArt(id: UUID) async {
+        await clearCoverArt(ids: [id])
     }
 
     /// PLAN-studio-rendimiento.md Fase 3 punto 4: igual que
@@ -986,17 +1002,42 @@ final class LibraryViewModel: ObservableObject {
     /// `clearCoverArt(id:)` una vez POR ÍTEM (`MediaSectionView.
     /// clearCoverArtMenuAction` o equivalente), y cada una reescribía el
     /// catálogo entero.
-    func clearCoverArt(ids: Set<UUID>) {
-        for index in items.indices where ids.contains(items[index].id) && items[index].kind == .music {
-            var metadata = items[index].metadata ?? TrackMetadata()
+    /// Fase 4 paso 5: `prepareMusic` corre en `fileWorker`, en lotes --
+    /// mismo patrón que `applyBatchEdit` (paso 2).
+    func clearCoverArt(ids: Set<UUID>) async {
+        let targets = items.filter { ids.contains($0.id) && $0.kind == .music }
+        guard !targets.isEmpty else { return }
+
+        var pendingResults: [UUID: (metadata: TrackMetadata, preparedURL: URL?)] = [:]
+        var lastFlush = Date()
+
+        for (completed, item) in targets.enumerated() {
+            var metadata = item.metadata ?? TrackMetadata()
             metadata.coverArtData = nil
-            items[index].metadata = metadata
-            items[index].metadataEditedByUser = true
-            items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
-            let coverURL = coversDirectory.appendingPathComponent("\(items[index].id.uuidString).jpg")
+            let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
+            pendingResults[item.id] = (metadata, prepared)
+            let coverURL = coversDirectory.appendingPathComponent("\(item.id.uuidString).jpg")
             try? FileManager.default.removeItem(at: coverURL)
+
+            let shouldFlush = pendingResults.count >= Self.batchApplySize
+                || Date().timeIntervalSince(lastFlush) >= Self.batchApplyInterval
+                || completed == targets.count - 1
+            if shouldFlush, !pendingResults.isEmpty {
+                applyPendingClearCoverArtResults(pendingResults)
+                pendingResults.removeAll(keepingCapacity: true)
+                lastFlush = Date()
+            }
         }
         persistCatalog()
+    }
+
+    private func applyPendingClearCoverArtResults(_ results: [UUID: (metadata: TrackMetadata, preparedURL: URL?)]) {
+        for index in items.indices where results[items[index].id] != nil {
+            let result = results[items[index].id]!
+            items[index].metadata = result.metadata
+            items[index].metadataEditedByUser = true
+            items[index].preparedURL = result.preparedURL
+        }
     }
 
     /// ST-104: aplica una carátula a todas las canciones del álbum.
@@ -1289,11 +1330,15 @@ final class LibraryViewModel: ObservableObject {
     /// pantalla, asi que un fallo silencioso (o un exito que no
     /// encontraba nada porque el archivo ya tenia titulo/artista) se
     /// veian exactamente igual: nada.
+    /// Fase 4 paso 5: `prepareMusic` corre en `fileWorker`, en lotes --
+    /// mismo patrón que `applyBatchEdit` (paso 2).
     func reenrichOnline(ids: Set<UUID>, fetchAlbumInfo: Bool, fetchLyrics: Bool) async {
+        let targets = items.filter { ids.contains($0.id) && $0.kind == .music }
+        guard !targets.isEmpty else { return }
+
         var found = 0
         var withoutResult = 0
         var networkErrors: [String] = []
-        var attempted = 0
 
         // PLAN-studio-rendimiento.md Fase 4: primera operación real
         // conectada al centro de tareas -- "N de M" en vez del banner
@@ -1301,25 +1346,24 @@ final class LibraryViewModel: ObservableObject {
         // ya lo aplica `enricher` por dentro; el centro solo muestra el
         // progreso, no lo acelera.
         let handle = taskCenter.begin(title: "Buscando información en línea…",
-                                      progress: .determinate(completed: 0, total: ids.count))
+                                      progress: .determinate(completed: 0, total: targets.count))
         defer { taskCenter.finish(handle) }
 
-        for id in ids {
-            guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .music else { continue }
-            attempted += 1
-            handle.update(.determinate(completed: attempted, total: ids.count),
-                          statusText: "\(attempted) de \(ids.count)")
-            let item = items[index]
+        var pendingResults: [UUID: (metadata: TrackMetadata, preparedURL: URL?, status: LibraryItemStatus)] = [:]
+        var lastFlush = Date()
+
+        for (completed, item) in targets.enumerated() {
             let current = item.metadata ?? TrackMetadata()
             let (updated, outcome) = await enricher.reenrich(
                 item: item, currentMetadata: current,
                 fetchAlbumInfo: fetchAlbumInfo, fetchLyrics: fetchLyrics,
                 coverArtOrder: preferences.coverArtProviderOrder,
                 deezerEnabled: preferences.deezerEnabled)
-            guard index < items.count else { continue }
-            items[index].metadata = updated
-            items[index].preparedURL = try? prepareMusic(item: items[index], metadata: updated)
-            items[index].status = updated.isComplete ? .ready : .needsReview
+            let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: updated))
+            pendingResults[item.id] = (updated, prepared, updated.isComplete ? .ready : .needsReview)
+
+            handle.update(.determinate(completed: completed + 1, total: targets.count),
+                          statusText: "\(completed + 1) de \(targets.count)")
 
             if let message = outcome.networkErrorMessage {
                 networkErrors.append(message)
@@ -1328,16 +1372,34 @@ final class LibraryViewModel: ObservableObject {
             } else {
                 withoutResult += 1
             }
+
+            let shouldFlush = pendingResults.count >= Self.batchApplySize
+                || Date().timeIntervalSince(lastFlush) >= Self.batchApplyInterval
+                || completed == targets.count - 1
+            if shouldFlush, !pendingResults.isEmpty {
+                applyPendingReenrichResults(pendingResults)
+                pendingResults.removeAll(keepingCapacity: true)
+                lastFlush = Date()
+            }
         }
         persistCatalog()
 
-        if attempted == 0 { return }
+        let attempted = targets.count
         if !networkErrors.isEmpty {
             lastError = "No se pudo completar la busqueda para \(networkErrors.count) de \(attempted) cancion(es): \(networkErrors[0])"
         }
         lastEnrichmentSummary = found == 0
             ? "No se encontro informacion nueva para ninguna de las \(attempted) cancion(es) seleccionadas."
             : "Se encontro informacion nueva para \(found) de \(attempted) cancion(es)."
+    }
+
+    private func applyPendingReenrichResults(_ results: [UUID: (metadata: TrackMetadata, preparedURL: URL?, status: LibraryItemStatus)]) {
+        for index in items.indices where results[items[index].id] != nil {
+            let result = results[items[index].id]!
+            items[index].metadata = result.metadata
+            items[index].preparedURL = result.preparedURL
+            items[index].status = result.status
+        }
     }
 
     /// "Volver a leer etiquetas del archivo" del menu contextual, y lo
@@ -1355,31 +1417,50 @@ final class LibraryViewModel: ObservableObject {
     /// cualquier item que el usuario ya haya corregido a mano
     /// (`metadataEditedByUser`); con `false` (la accion explicita del
     /// menu contextual), siempre relee, sea cual sea ese valor.
+    /// Fase 4 paso 5: `prepareMusic` corre en `fileWorker`, en lotes --
+    /// mismo patrón que `applyBatchEdit` (paso 2).
     func rereadLocalTags(ids: Set<UUID>, respectUserEdits: Bool = false) async {
+        let targets = items.filter {
+            ids.contains($0.id) && $0.kind == .music && !(respectUserEdits && $0.metadataEditedByUser)
+        }
+        guard !targets.isEmpty else { return }
+
         var updated = 0
-        var attempted = 0
+        var pendingResults: [UUID: (metadata: TrackMetadata, preparedURL: URL?, status: LibraryItemStatus)] = [:]
+        var lastFlush = Date()
 
-        for id in ids {
-            guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .music else { continue }
-            if respectUserEdits && items[index].metadataEditedByUser { continue }
-            attempted += 1
-
-            let item = items[index]
+        for (completed, item) in targets.enumerated() {
             let fresh = await LocalTagReader.readTag(from: item.sourceURL)
             let current = item.metadata ?? TrackMetadata()
             let merged = mergingLocalTags(fresh, into: current)
-            guard index < items.count else { continue }
             if merged != current { updated += 1 }
-            items[index].metadata = merged
-            items[index].preparedURL = try? prepareMusic(item: items[index], metadata: merged)
-            items[index].status = merged.isComplete ? .ready : .needsReview
+            let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: merged))
+            pendingResults[item.id] = (merged, prepared, merged.isComplete ? .ready : .needsReview)
+
+            let shouldFlush = pendingResults.count >= Self.batchApplySize
+                || Date().timeIntervalSince(lastFlush) >= Self.batchApplyInterval
+                || completed == targets.count - 1
+            if shouldFlush, !pendingResults.isEmpty {
+                applyPendingRereadLocalTagsResults(pendingResults)
+                pendingResults.removeAll(keepingCapacity: true)
+                lastFlush = Date()
+            }
         }
         persistCatalog()
 
-        guard attempted > 0 else { return }
+        let attempted = targets.count
         lastEnrichmentSummary = updated == 0
             ? "No habia nada que actualizar en \(attempted) cancion(es): ya tenian lo que traen sus archivos."
             : "Se actualizaron \(updated) de \(attempted) cancion(es) con lo que traen sus archivos."
+    }
+
+    private func applyPendingRereadLocalTagsResults(_ results: [UUID: (metadata: TrackMetadata, preparedURL: URL?, status: LibraryItemStatus)]) {
+        for index in items.indices where results[items[index].id] != nil {
+            let result = results[items[index].id]!
+            items[index].metadata = result.metadata
+            items[index].preparedURL = result.preparedURL
+            items[index].status = result.status
+        }
     }
 
     private func mergingLocalTags(_ fresh: TrackMetadata, into current: TrackMetadata) -> TrackMetadata {
