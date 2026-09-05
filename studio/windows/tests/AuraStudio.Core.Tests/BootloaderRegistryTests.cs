@@ -308,6 +308,32 @@ public class BootloaderRegistryTests
         Assert.Null(BootloaderRegistry.OfferReason(registry, "IPOD-1", "", hasOurFirmware: true));
     }
 
+    // MARK: - La misma decisión, con el hash ya buscado
+
+    [Fact]
+    public void TheOverloadThatTakesTheHashDecidesTheSame()
+    {
+        // Es la que usa la app: el almacén de preferencias ya resolvió la
+        // búsqueda por disco y entrega el valor. Las dos formas tienen que
+        // decidir igual, o la oferta diría una cosa en las pruebas y otra en
+        // pantalla.
+        var registry = BootloaderRegistry.Normalize(
+            new Dictionary<string, string?> { ["IPOD-1"] = OtherHash });
+
+        Assert.Equal(
+            BootloaderRegistry.OfferReason(registry, "IPOD-1", Hash, hasOurFirmware: true),
+            BootloaderRegistry.OfferReason("IPOD-1", OtherHash, Hash, hasOurFirmware: true));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public void TheOverloadAlsoRefusesWithoutADiskKey(string? diskKey)
+    {
+        Assert.Null(BootloaderRegistry.OfferReason(diskKey, OtherHash, Hash, hasOurFirmware: true));
+    }
+
     // MARK: - La clave de disco sale del serial USB
 
     [Fact]

@@ -42,6 +42,7 @@ public sealed partial class InstallerViewModel : ViewModelBase
     private readonly IPrivilegedRunner _privileged;
     private readonly IAppleDeviceSupport _appleSupport;
     private readonly InstallerFlowRegistry _flowRegistry;
+    private readonly IAppPreferences _preferences;
 
     /// <summary>
     /// La regla de "¿se puede borrar el disco ahora?", en Core y probada:
@@ -55,6 +56,17 @@ public sealed partial class InstallerViewModel : ViewModelBase
     // MARK: - Estado
 
     [ObservableProperty] public partial InstallerStep Step { get; set; }
+
+    /// <summary>
+    /// A qué vino el asistente (ST-167/ST-168). Hasta ST-167 no había modos:
+    /// esto solo instalaba. Lo fijan <see cref="Begin"/> —que asume instalar— y
+    /// <see cref="StartUpdateBootloader"/>.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SingleBoot))]
+    [NotifyPropertyChangedFor(nameof(IsUpdatingBootloader))]
+    public partial InstallerMode Mode { get; set; }
+
     [ObservableProperty] public partial FirmwareFamily TargetFamily { get; set; }
     [ObservableProperty] public partial string StatusMessage { get; set; }
 
@@ -81,8 +93,15 @@ public sealed partial class InstallerViewModel : ViewModelBase
     /// Solo firmware (`--single`): destruye el arranque NOR original de Apple.
     /// Es el modo que instala macOS desde ST-050; se deja explícito para que
     /// nunca sea un detalle escondido del flujo.
+    ///
+    /// <para>ST-168: <b>ya no se puede asignar</b>. Sale de
+    /// <see cref="InstallerFlow.FlashesSingle"/>, o sea del modo. Mientras hubo
+    /// un solo modo daba igual que fuera una propiedad suelta que nadie
+    /// vigilaba; con dos, dejarla en <c>true</c> por olvido al actualizar el
+    /// arranque le borraría el arranque de Apple a un iPod con dual boot — que
+    /// es exactamente lo que ST-143 prohíbe.</para>
     /// </summary>
-    [ObservableProperty] public partial bool SingleBoot { get; set; }
+    public bool SingleBoot => InstallerFlow.FlashesSingle(Mode);
 
     /// <summary>
     /// El usuario vio en pantalla qué va a pasar y lo confirmó. Sin esto,
@@ -139,7 +158,30 @@ public sealed partial class InstallerViewModel : ViewModelBase
 
     // MARK: - Visibilidad de cada paso
 
-    public bool IsWelcome => Step == InstallerStep.Welcome;
+    /// <summary>
+    /// La Bienvenida <b>del asistente de instalar</b>. Actualizar el arranque
+    /// empieza en el mismo paso pero con su propia pantalla
+    /// (<see cref="IsUpdateBootloaderIntro"/>): lo que tiene que decir es otra
+    /// cosa, y decirlo con la pantalla de instalar sería mentirle al usuario.
+    /// </summary>
+    public bool IsWelcome => Step == InstallerStep.Welcome && !IsUpdatingBootloader;
+
+    /// <summary>La pantalla propia de "Actualizar el arranque" (paso 1 de 4).</summary>
+    public bool IsUpdateBootloaderIntro => Step == InstallerStep.Welcome && IsUpdatingBootloader;
+
+    /// <summary>
+    /// Si se ofrece "Empezar de nuevo". En la pantalla inicial no: no hay nada
+    /// que reiniciar.
+    ///
+    /// <para>Antes esto se ataba a <see cref="IsWelcome"/>, que significaba
+    /// exactamente eso mientras hubo un solo modo. Con dos dejó de
+    /// significarlo —la pantalla propia de actualizar el arranque también es el
+    /// principio, y ahí <c>IsWelcome</c> es <c>false</c>—, así que el botón
+    /// aparecía duplicado: el de esa pantalla y el general. Se vio en la
+    /// captura, no en una prueba (ST-168).</para>
+    /// </summary>
+    public bool ShowsRestart => Step != InstallerStep.Welcome;
+
     public bool IsPermissions => Step == InstallerStep.Permissions;
     public bool IsDetectDevice => Step == InstallerStep.DetectDevice;
     public bool IsPreparingDisk => Step == InstallerStep.PreparingDisk;
@@ -264,13 +306,17 @@ public sealed partial class InstallerViewModel : ViewModelBase
         _artifactsProvider = artifactsProvider;
         _privileged = privileged;
         _appleSupport = appleSupport;
+        _preferences = preferences;
         _flowRegistry = flowRegistry;
 
         // R4: la elección de Extras es la que manda acá (ST-047). Antes esta
         // línea fijaba Aura, así que elegir Metro en Extras no cambiaba lo que
         // el asistente iba a instalar — la preferencia existía y no se leía.
         TargetFamily = preferences.FirmwareFamilyToInstall;
-        SingleBoot = true;                     // ST-050: la instalación es siempre Solo firmware
+        // ST-050: la instalación es siempre Solo firmware. Desde ST-168 eso ya
+        // no se asigna acá — `SingleBoot` sale del modo, y el modo por omisión
+        // es instalar.
+        Mode = InstallerMode.Install;
         Step = InstallerStep.Welcome;
         StatusMessage = AppStrings.InstallerWelcomeTitle;
         DetailMessage = "";
@@ -283,10 +329,151 @@ public sealed partial class InstallerViewModel : ViewModelBase
         // al abrir la página.
         _session.Changed += (_, _) =>
         {
+            RememberDiskKey();
             NotifyDeviceChanged();
             _ = LookForDfuAsync();
         };
     }
+
+    // MARK: - Actualizar el arranque (ST-143, ST-168)
+
+    /// <summary>
+    /// La clave del último iPod que se vio montado (ST-166). Se captura en cada
+    /// cambio de la sesión porque <b>en el momento de grabar ya no hay disco</b>:
+    /// el aparato está en DFU y no expone ni volumen ni el serial de
+    /// almacenamiento. Sin esto, lo grabado no se podría anotar.
+    /// </summary>
+    private string? _lastSeenDiskKey;
+
+    private void RememberDiskKey()
+    {
+        if (_session.Device?.DiskRecordKey is { Length: > 0 } key) _lastSeenDiskKey = key;
+    }
+
+    /// <summary>
+    /// Por qué se le está ofreciendo a este iPod actualizar el arranque, o
+    /// <c>null</c> si no se le ofrece. Se fija al abrir el flujo y no cambia a
+    /// mitad de camino, aunque el iPod entre a DFU y deje de verse.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BootloaderUpdateDetail))]
+    public partial BootloaderUpdate.Reason? BootloaderUpdateReason { get; private set; }
+
+    /// <summary>
+    /// El SHA-256 del <c>bootloader-ipod6g.ipod</c> que esta build trae para esa
+    /// familia. <c>null</c> si el artefacto no está (una build sin
+    /// <c>FirmwareFetch.ps1</c>): entonces no hay con qué comparar y no se
+    /// ofrece nada.
+    ///
+    /// <para>Sale del <b>artefacto real</b>, nunca de <c>FIRMWARE_VERSION</c> a
+    /// mano: ese archivo describe lo embebido y dejaría de ser cierto en cuanto
+    /// se instale un Release más nuevo que el pin.</para>
+    /// </summary>
+    public string? EmbeddedBootloaderHash(FirmwareFamily? family)
+    {
+        if (family is null) return null;
+
+        try
+        {
+            return _artifactsProvider.For(family).BootloaderImage is { Length: > 0 } path
+                ? FirmwareArtifactVerifier.Sha256Hex(path)
+                : null;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // No poder leer el artefacto no es motivo para tumbar la pantalla:
+            // simplemente no hay con qué comparar, y no se ofrece nada.
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Si al iPod conectado le conviene actualizar el arranque. La familia con
+    /// la que se compara es la que el iPod <b>tiene instalada</b>, no la elegida
+    /// en Extras: a un iPod con Metro se le ofrece el arranque de Metro.
+    /// </summary>
+    public bool OffersBootloaderUpdate => OfferedBootloaderReason() is not null;
+
+    private BootloaderUpdate.Reason? OfferedBootloaderReason()
+    {
+        if (_session.Device is not { } device) return null;
+
+        return BootloaderRegistry.OfferReason(
+            device.DiskRecordKey,
+            _preferences.BootloaderHash(device.DiskRecordKey),
+            EmbeddedBootloaderHash(device.DeclaredFamily),
+            device.RockboxFamilyVerified);
+    }
+
+    /// <summary>El texto que explica por qué se ofrece; vacío si no se ofrece.</summary>
+    public string BootloaderUpdateDetail => BootloaderUpdateReason switch
+    {
+        BootloaderUpdate.Reason.DifferentBootloader => AppStrings.BootloaderUpdateOfferDifferent,
+        BootloaderUpdate.Reason.UnknownBootloader => AppStrings.BootloaderUpdateOfferUnknown,
+        _ => ""
+    };
+
+    /// <summary>
+    /// Abre el flujo de cuatro pasos. No formatea, no copia y no pide
+    /// contraseña: de la pantalla propia se va derecho al DFU.
+    /// </summary>
+    [RelayCommand]
+    private void StartUpdateBootloader()
+    {
+        if (!_flowRegistry.CanInterrupt) return;
+
+        RememberDiskKey();
+        BootloaderUpdateReason = OfferedBootloaderReason();
+        if (BootloaderUpdateReason is null) return;
+
+        // El arranque que se actualiza es el de la familia que el iPod TIENE,
+        // no el que Extras elegiría para instalar.
+        if (_session.Device?.DeclaredFamily is { } installed) TargetFamily = installed;
+
+        Mode = InstallerMode.UpdateBootloader;
+        PrivilegedLog = [];
+        DetailMessage = "";
+        DfuDetectedAwaitingChoice = false;
+        _flowRegistry.FlowActive = true;
+        Step = InstallerStep.Welcome;
+        StatusMessage = AppStrings.BootloaderUpdateTitle;
+    }
+
+    /// <summary>Si el flujo en curso es el de actualizar el arranque.</summary>
+    public bool IsUpdatingBootloader => Mode == InstallerMode.UpdateBootloader;
+
+    partial void OnModeChanged(InstallerMode value) => NotifyStepChanged();
+
+    // Los cuatro textos que ST-143 encontró mintiendo en macOS al armar la
+    // captura —y que ninguna prueba podía ver—. Acá pasaba lo mismo: los de
+    // Windows estaban escritos para una sola rama.
+
+    /// <summary>Por qué toca el DFU ahora. Instalar ya preparó el disco; actualizar no tocó nada.</summary>
+    public string DfuWhenText => IsUpdatingBootloader
+        ? AppStrings.BootloaderUpdateEnterDfuWhen
+        : AppStrings.InstallerEnterDfuWhen;
+
+    /// <summary>
+    /// Lo que el usuario confirma antes de grabar. El de instalar dice que se
+    /// reemplaza el arranque de Apple y no se puede deshacer — con
+    /// <c>single: false</c> eso es falso, y hacerle firmar al usuario algo que
+    /// no va a pasar es peor que no pedirle nada.
+    /// </summary>
+    public string FlashConfirmText => IsUpdatingBootloader
+        ? AppStrings.BootloaderUpdateFlashConfirm
+        : AppStrings.InstallerFlashConfirm;
+
+    public string DoneTitle => IsUpdatingBootloader
+        ? AppStrings.BootloaderUpdateDoneTitle
+        : AppStrings.InstallerDoneTitle;
+
+    /// <summary>
+    /// "El firmware quedó instalado. Expulsa el iPod…" no aplica cuando no se
+    /// instaló ningún firmware: solo se regrabó el arranque.
+    /// </summary>
+    public string DoneDetail => IsUpdatingBootloader
+        ? AppStrings.BootloaderUpdateDoneDetail
+        : AppStrings.InstallerDoneDetail;
 
     partial void OnStepChanged(InstallerStep value) => NotifyStepChanged();
 
@@ -324,10 +511,12 @@ public sealed partial class InstallerViewModel : ViewModelBase
     {
         foreach (string name in new[]
         {
-            nameof(IsWelcome), nameof(IsPermissions), nameof(IsDetectDevice), nameof(IsPreparingDisk),
+            nameof(IsWelcome), nameof(IsUpdateBootloaderIntro), nameof(ShowsRestart),
+            nameof(IsPermissions), nameof(IsDetectDevice), nameof(IsPreparingDisk),
             nameof(IsCopyingFiles), nameof(IsEnterDfu), nameof(IsInstalling),
             nameof(IsAwaitingBootloaderUsb), nameof(IsDone), nameof(IsFailed),
-            nameof(ShowGenericProgress)
+            nameof(ShowGenericProgress),
+            nameof(DfuWhenText), nameof(FlashConfirmText), nameof(DoneTitle), nameof(DoneDetail)
         })
         {
             OnPropertyChanged(name);
@@ -344,7 +533,8 @@ public sealed partial class InstallerViewModel : ViewModelBase
             nameof(DeviceBus), nameof(DeviceFirmware), nameof(DeviceMessage),
             nameof(IsFamilyChange), nameof(FamilyChangeWarning),
             nameof(FormatTargetDescription), nameof(FormatConfirmText),
-            nameof(FormatButtonText), nameof(CanFormatNow)
+            nameof(FormatButtonText), nameof(CanFormatNow),
+            nameof(OffersBootloaderUpdate)
         })
         {
             OnPropertyChanged(name);
@@ -447,8 +637,14 @@ public sealed partial class InstallerViewModel : ViewModelBase
         // A partir de acá hay un flujo del usuario: nada automático puede
         // interrumpirlo (D-185).
         _flowRegistry.FlowActive = true;
-        Step = InstallerStep.Permissions;
-        StatusMessage = AppStrings.InstallerPermissionsTitle;
+        // ST-168: a dónde va la Bienvenida lo decide el modo, no este método.
+        // Actualizar el arranque se salta Permisos porque no hay nada
+        // privilegiado que pedir, y su pantalla se lo promete al usuario.
+        Step = InstallerFlow.AfterWelcome(Mode);
+        StatusMessage = Step == InstallerStep.EnterDfu
+            ? AppStrings.InstallerEnterDfuTitle
+            : AppStrings.InstallerPermissionsTitle;
+        if (Step == InstallerStep.EnterDfu) RefreshDriverStatus();
     }
 
     /// <summary>
@@ -475,6 +671,11 @@ public sealed partial class InstallerViewModel : ViewModelBase
         DetailMessage = "";
         DfuDetectedAwaitingChoice = false;
         _flowRegistry.FlowActive = false;
+        // ST-168: empezar de nuevo es volver al asistente de instalar. Dejar el
+        // modo de actualizar el arranque pegado haría que la Bienvenida saltara
+        // al DFU sin que nadie lo pidiera.
+        Mode = InstallerMode.Install;
+        BootloaderUpdateReason = null;
         Step = InstallerStep.Welcome;
         StatusMessage = AppStrings.InstallerWelcomeTitle;
     }
@@ -782,7 +983,12 @@ public sealed partial class InstallerViewModel : ViewModelBase
         Step = InstallerStep.Installing;
         IsBusy = true;
         IsNonCancelable = true;
-        StatusMessage = AppStrings.InstallerFlashing;
+        // ST-168: en el flujo de actualizar el arranque, "Instalando…" era
+        // mentira. Es el mismo error que ST-143 encontró en macOS al armar la
+        // captura, y que ninguna prueba podía ver.
+        StatusMessage = IsUpdatingBootloader
+            ? AppStrings.BootloaderUpdateFlashing(TargetFamily?.DisplayName)
+            : AppStrings.InstallerFlashing;
         _cancellation = new CancellationTokenSource();
 
         // El servicio de Apple puede quedarse con el USB justo cuando el iPod
@@ -804,15 +1010,42 @@ public sealed partial class InstallerViewModel : ViewModelBase
                 return;
             }
 
-            Step = InstallerStep.AwaitingBootloaderUsb;
-            StatusMessage = AppStrings.InstallerAwaitingReboot;
+            // Actualizar el arranque no espera ningún "Bootloader USB mode":
+            // ese paso existe porque tras instalar faltan los archivos, y acá
+            // no falta nada (ST-167, `InstallerFlow`).
+            if (!IsUpdatingBootloader) Step = InstallerStep.AwaitingBootloaderUsb;
+
+            StatusMessage = IsUpdatingBootloader
+                ? AppStrings.BootloaderUpdateAwaitingReboot
+                : AppStrings.InstallerAwaitingReboot;
+
             bool exited = await _dfu.WaitForExitAsync(TimeSpan.FromSeconds(45),
                 new Progress<string>(line => DetailMessage = line), _cancellation.Token);
 
             if (exited)
             {
                 _session.Refresh();
-                StatusMessage = AppStrings.InstallerRebooted;
+
+                // ST-166/ST-168: recién AHORA se sabe qué arranque tiene ese
+                // iPod — el aparato confirmó y reinició, que es lo único que
+                // prueba que el grabado se aplicó. Se anota en los DOS caminos:
+                // sin anotarlo al instalar, el registro nacería vacío y a cada
+                // iPod recién instalado se le ofrecería actualizar justo el
+                // arranque que la app le acaba de grabar.
+                _preferences.RecordBootloaderVerified(
+                    _lastSeenDiskKey, EmbeddedBootloaderHash(TargetFamily));
+
+                if (IsUpdatingBootloader)
+                {
+                    Step = InstallerStep.Done;
+                    StatusMessage = AppStrings.BootloaderUpdateDoneTitle;
+                    DetailMessage = AppStrings.BootloaderUpdateDoneDetail;
+                    _flowRegistry.FlowActive = false;   // el flujo terminó de verdad
+                }
+                else
+                {
+                    StatusMessage = AppStrings.InstallerRebooted;
+                }
             }
             else
             {

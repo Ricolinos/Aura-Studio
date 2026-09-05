@@ -4811,3 +4811,99 @@ pantalla. Hay una prueba que lo fija.
 **La app no se tocó**: `InstallerFlow` no tiene todavía ningún usuario. El
 cableado —que es la parte con riesgo, porque toca el flujo de instalar que ya
 funciona— es ST-168, y estas pruebas son la red que lo sostiene.
+
+## ST-168 — "Actualizar el arranque" en Windows: el modo cableado, y los textos que mentían
+
+Tercera de las cuatro decisiones de la Fase D. ST-166 puso la memoria, ST-167 el
+recorrido; acá se conectan a la pantalla y el flujo queda usable.
+
+### Lo que se cableó
+
+- **`InstallerViewModel.Mode`**, que hasta ahora no existía. `StartUpdateBootloader`
+  lo fija, elige como familia **la que el iPod tiene instalada** —no la que
+  Extras elegiría para instalar— y arranca en la pantalla propia.
+- **La oferta discreta** en el Instalador, debajo del botón de Comenzar y en
+  estilo de enlace: aparece solo si hay algo que ofrecer, y dice **por qué** se
+  ofrece (arranque distinto, o "no sabemos cuál").
+- **El hash del arranque se anota en los DOS caminos**, instalar y actualizar, y
+  recién cuando el iPod **confirmó y reinició** — que es lo único que prueba que
+  el grabado se aplicó. Sin anotarlo al instalar, el registro de ST-166 nacería
+  vacío y a cada iPod recién instalado se le ofrecería actualizar justo el
+  arranque que la app le acababa de grabar.
+- **La clave del disco se captura en cada cambio de la sesión**, no al grabar:
+  en ese momento el iPod está en DFU y no expone ni volumen ni serial de
+  almacenamiento. Sin eso, lo grabado no se podría anotar.
+
+### `SingleBoot` dejó de poder quedar mal por olvido
+
+Era una propiedad pública y asignable que se fijaba una vez en el constructor y
+nadie vigilaba. Con un solo modo daba igual. Con dos, dejarla en `true` al
+actualizar el arranque le borraría a un iPod con dual boot el arranque de Apple
+— exactamente lo que ST-143 prohíbe.
+
+Ahora **no se puede asignar**: `SingleBoot => InstallerFlow.FlashesSingle(Mode)`.
+Sale del modo, y el modo es un dato con pruebas (ST-167). No es que se recuerde
+ponerla bien: es que no hay dónde ponerla mal.
+
+### Los textos que mentían
+
+ST-143 contó que armar la captura en macOS encontró dos textos que ninguna
+prueba podía ver: la pantalla final decía "iPod restaurado" y el progreso
+"Instalando Aura…". En Windows pasaba lo mismo, porque estaban escritos para una
+sola rama. Los cuatro, con lo que decían:
+
+| Dónde | Decía | Por qué está mal al actualizar el arranque |
+|---|---|---|
+| Progreso al grabar | "Grabando el arranque en el iPod…" | Sirve, pero no dice de qué familia. Ahora: "Actualizando el arranque de {familia}…" |
+| Confirmación previa | "Entiendo que esto **reemplaza el arranque original de Apple** y no se puede deshacer sin restaurarlo." | Con `single: false` **no** lo reemplaza. Hacerle firmar al usuario algo que no va a pasar es peor que no pedirle nada. |
+| "Cuándo" del DFU | "**el disco ya está listo** y lo que sigue es grabar el arranque" | El disco no se preparó: este flujo no lo toca. |
+| Pantalla final | "**El firmware quedó instalado.** Expulsa el iPod…" | No se instaló ningún firmware; solo se regrabó el arranque. |
+
+Los cuatro salen ahora del ViewModel según el modo, no de una constante.
+
+### Lo que encontró la captura y ninguna prueba podía ver
+
+Al renderizar la pantalla nueva aparecieron **dos botones "Empezar de nuevo"**:
+el de la pantalla y el general de la página.
+
+La causa es más interesante que el síntoma. El botón general se mostraba con
+`IsWelcome` invertido, que significaba "no estoy al principio" **mientras hubo
+un solo modo**. Al haber dos pantallas iniciales, `IsWelcome` dejó de significar
+eso: en la de actualizar el arranque es `false` aunque el usuario esté
+exactamente al principio. Se corrigió en la raíz —`ShowsRestart`, que mira el
+paso y no el modo— y no quitando un botón.
+
+Es la misma lección de ST-143: **la evidencia es la pantalla renderizada, no una
+descripción de ella**.
+
+### Verificación
+
+- `dotnet test tests/AuraStudio.Core.Tests`: **1260/1260** (1256 antes + 4: las
+  del `OfferReason` que recibe el hash ya buscado, que es la forma que usa la
+  app).
+- `dotnet build AuraStudio.App -c Release -p:Platform=ARM64`: verde, 0
+  advertencias.
+- **En vivo, sin iPod**: la app abre, el Instalador se ve igual que antes
+  (bienvenida, aviso, selector de familia, Comenzar) y **la oferta no aparece** —
+  que es lo correcto: sin aparato conectado no hay a quién ofrecerle nada. Es la
+  verificación que más importaba, porque ST-168 tocó el flujo de instalar que ya
+  funcionaba.
+- **La pantalla propia** está en `docs/capturas/st168-actualizar-arranque.png`,
+  renderizada de la vista real. Para llegar a ella sin iPod hizo falta un gancho
+  temporal en el ViewModel (forzar la oferta y el motivo); se revirtió, y el
+  árbol quedó sin rastro de él — se verificó con `grep` antes de compilar de
+  nuevo y volver a correr la suite.
+
+**Lo que no se pudo verificar acá** y queda para el dueño con el iPod: el
+flasheo real con `single: false`, que el disco no se toca, que el camino normal
+no pide UAC ni una vez, que la oferta desaparece después de actualizar (porque
+el hash quedó anotado), y que un iPod que nunca pasó por esta app muestra el
+motivo "no sabemos cuál" y no el de "arranque distinto".
+
+**Una limitación del entorno, para que quede escrita**: no hay forma de apuntar
+la app a otro archivo de preferencias. `AppPreferences` tiene un constructor con
+ruta —pensado para pruebas—, pero `App.xaml.cs` registra el que usa
+`Environment.GetFolderPath(LocalApplicationData)`, que en Windows **no** lee la
+variable `%LOCALAPPDATA%`. Para no tocar el archivo del dueño durante la
+verificación se respaldó antes y se restauró después, verificando que quedara
+idéntico.

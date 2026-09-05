@@ -100,6 +100,66 @@
                         Command="{x:Bind ViewModel.BeginCommand}"
                         Style="{StaticResource AuraPrimaryButtonStyle}"
                         HorizontalAlignment="Left" />
+
+                <!-- ST-143/ST-168: la oferta va DEBAJO de los botones y en
+                     estilo discreto porque no es obligatoria — el firmware
+                     nuevo funciona igual con el arranque viejo. Aparece solo si
+                     hay algo que ofrecer: iPod con firmware nuestro, arranque
+                     embebido distinto del anotado, y clave de disco con la que
+                     poder anotarlo después. -->
+                <StackPanel Spacing="2" Margin="0,4,0,0"
+                            Visibility="{x:Bind ViewModel.OffersBootloaderUpdate, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                    <HyperlinkButton Content="{x:Bind res:AppStrings.BootloaderUpdateOffer}"
+                                     Command="{x:Bind ViewModel.StartUpdateBootloaderCommand}"
+                                     Padding="0" />
+                    <TextBlock Text="{x:Bind ViewModel.BootloaderUpdateDetail, Mode=OneWay}"
+                               Style="{StaticResource AuraCaptionTextStyle}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </StackPanel>
+
+            <!-- ============ Actualizar el arranque: pantalla propia (1 de 4) ============
+                 Responde las cuatro preguntas de ST-143 antes de pedir DFU: qué
+                 es el arranque, por qué hace falta DFU, qué NO se toca y que no
+                 es obligatorio. La promesa de "ni una sola contraseña" es
+                 literal: este flujo no visita Permisos ni prepara el disco
+                 (InstallerFlow, ST-167). -->
+            <StackPanel Spacing="16"
+                        Visibility="{x:Bind ViewModel.IsUpdateBootloaderIntro, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                <Border Style="{StaticResource AuraCardStyle}">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="{x:Bind res:AppStrings.BootloaderUpdateTitle}"
+                                   Style="{StaticResource AuraSectionTitleTextStyle}" />
+                        <TextBlock Text="{x:Bind ViewModel.BootloaderUpdateDetail, Mode=OneWay}"
+                                   Style="{StaticResource AuraSecondaryTextStyle}"
+                                   TextWrapping="Wrap" />
+                        <TextBlock Text="{x:Bind res:AppStrings.BootloaderUpdateWhatItIs}"
+                                   TextWrapping="Wrap" Margin="0,4,0,0" />
+                        <TextBlock Text="{x:Bind res:AppStrings.BootloaderUpdateWhyDfu}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Lo que NO se toca se dice destacado, no en una nota al pie:
+                     es la pregunta que frena a cualquiera antes de un DFU. -->
+                <InfoBar IsOpen="True" IsClosable="False" Severity="Success"
+                         Message="{x:Bind res:AppStrings.BootloaderUpdateNothingTouched}" />
+
+                <InfoBar IsOpen="True" IsClosable="False" Severity="Informational"
+                         Message="{x:Bind res:AppStrings.BootloaderUpdateNotRequired}" />
+
+                <Border Style="{StaticResource AuraSubtleCardStyle}">
+                    <TextBlock Text="{x:Bind res:AppStrings.BootloaderUpdateNoPassword}"
+                               Style="{StaticResource AuraSecondaryTextStyle}"
+                               TextWrapping="Wrap" />
+                </Border>
+
+                <!-- Sin "Empezar de nuevo" propio: el general de más abajo ya
+                     sirve, y poner los dos los mostraba duplicados. -->
+                <Button Content="{x:Bind res:AppStrings.BootloaderUpdateContinue}"
+                        Command="{x:Bind ViewModel.BeginCommand}"
+                        Style="{StaticResource AuraPrimaryButtonStyle}"
+                        HorizontalAlignment="Left" />
             </StackPanel>
 
             <!-- ============ Permisos (antes de cualquier diálogo del sistema) ============ -->
@@ -248,7 +308,10 @@
                                    Style="{StaticResource AuraSectionTitleTextStyle}" />
                         <!-- El "cuándo": el usuario tiene que saber que ESTE es
                              el momento, no antes ni después. -->
-                        <TextBlock Text="{x:Bind res:AppStrings.InstallerEnterDfuWhen}"
+                        <!-- ST-168: instalar ya preparó el disco; actualizar el
+                             arranque no tocó nada. El mismo texto para los dos
+                             mentiría en uno. -->
+                        <TextBlock Text="{x:Bind ViewModel.DfuWhenText, Mode=OneWay}"
                                    Style="{StaticResource AuraSecondaryTextStyle}" />
 
                         <StackPanel Spacing="8" Margin="0,4,0,0">
@@ -278,7 +341,11 @@
                     </StackPanel>
                 </Border>
 
-                <CheckBox Content="{x:Bind res:AppStrings.InstallerFlashConfirm}"
+                <!-- ST-168: el de instalar dice que se reemplaza el arranque de
+                     Apple y no se puede deshacer. Actualizar graba con
+                     single=false y no lo quita: hacerle firmar al usuario algo
+                     que no va a pasar es peor que no pedirle nada. -->
+                <CheckBox Content="{x:Bind ViewModel.FlashConfirmText, Mode=OneWay}"
                           IsChecked="{x:Bind ViewModel.FlashConfirmedByUser, Mode=TwoWay}" />
 
                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -312,10 +379,13 @@
             </Border>
 
             <!-- ============ Terminado / falló ============ -->
+            <!-- ST-168: "El firmware quedó instalado" no aplica cuando no se
+                 instaló ningún firmware, solo se regrabó el arranque. Es el
+                 mismo error que ST-143 encontró en macOS al armar la captura. -->
             <InfoBar IsOpen="{x:Bind ViewModel.IsDone, Mode=OneWay}"
                      IsClosable="False" Severity="Success"
-                     Title="{x:Bind res:AppStrings.InstallerDoneTitle}"
-                     Message="{x:Bind res:AppStrings.InstallerDoneDetail}" />
+                     Title="{x:Bind ViewModel.DoneTitle, Mode=OneWay}"
+                     Message="{x:Bind ViewModel.DoneDetail, Mode=OneWay}" />
 
             <!-- El detalle va DENTRO de la tarjeta de fallo, y seleccionable.
                  Sin él se veía solo «Los archivos del firmware no se pudieron
@@ -354,10 +424,13 @@
                 </StackPanel>
             </Border>
 
+            <!-- ST-168: antes esto era `IsWelcome` invertido, que significaba
+                 "no estoy al principio" mientras hubo un solo modo. Con dos
+                 pantallas iniciales dejó de significarlo. -->
             <Button Content="{x:Bind res:AppStrings.InstallerRestart}"
                     Command="{x:Bind ViewModel.RestartCommand}"
                     HorizontalAlignment="Left"
-                    Visibility="{x:Bind ViewModel.IsWelcome, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}" />
+                    Visibility="{x:Bind ViewModel.ShowsRestart, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
 
         </StackPanel>
     </ScrollViewer>

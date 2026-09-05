@@ -149,11 +149,19 @@ public static class BootloaderRegistry
     /// </summary>
     public static BootloaderUpdate.Reason? OfferReason(
         IReadOnlyDictionary<string, string>? registry, string? diskKey,
-        string? embeddedHash, bool hasOurFirmware)
+        string? embeddedHash, bool hasOurFirmware) =>
+        OfferReason(diskKey, HashFor(registry, diskKey), embeddedHash, hasOurFirmware);
+
+    /// <summary>
+    /// La misma decisión cuando quien llama <b>ya tiene</b> el hash anotado y no
+    /// el registro entero — que es el caso de la app: el almacén de preferencias
+    /// resuelve la búsqueda por disco y entrega el valor.
+    /// </summary>
+    public static BootloaderUpdate.Reason? OfferReason(
+        string? diskKey, string? recordedHash, string? embeddedHash, bool hasOurFirmware)
     {
         if (!CanTrack(diskKey)) return null;
 
-        return BootloaderUpdate.ReasonFor(
-            HashFor(registry, diskKey), embeddedHash, hasOurFirmware);
+        return BootloaderUpdate.ReasonFor(recordedHash, embeddedHash, hasOurFirmware);
     }
 }

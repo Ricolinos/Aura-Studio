@@ -377,6 +377,70 @@ public static class AppStrings
     public static string InstallerStuckInDfu =>
         "El iPod sigue en modo DFU y no se confirmó la instalación. No desconectes: vuelve a buscarlo.";
 
+    // MARK: - Actualizar el arranque (ST-143, ST-168)
+    //
+    // La pantalla responde las cuatro preguntas que cualquiera se hace antes de
+    // apretar un botón que pide modo DFU: qué es el arranque, por qué hace falta
+    // DFU, qué NO se toca y —la que evita una llamada de soporte— que no es
+    // obligatorio.
+
+    public static string BootloaderUpdateOffer => "Actualizar el arranque de este iPod";
+
+    public static string BootloaderUpdateOfferDifferent =>
+        "Esta versión trae un arranque más nuevo que el que tiene tu iPod.";
+
+    public static string BootloaderUpdateOfferUnknown =>
+        "No sabemos qué arranque tiene tu iPod: lo instaló otra computadora, o una versión " +
+        "anterior de la app.";
+
+    public static string BootloaderUpdateTitle => "Actualizar el arranque";
+
+    public static string BootloaderUpdateWhatItIs =>
+        "El arranque es el programa que corre antes del firmware, en un chip aparte del disco. " +
+        "Esta versión trae uno nuevo, con otra pantalla de encendido.";
+
+    public static string BootloaderUpdateWhyDfu =>
+        "Hace falta modo DFU porque ese chip no se puede escribir de ninguna otra forma.";
+
+    public static string BootloaderUpdateNothingTouched =>
+        "No se toca nada del disco. Tu música, tus fotos, tus listas y tus ajustes se quedan " +
+        "exactamente como están.";
+
+    public static string BootloaderUpdateNotRequired =>
+        "No es obligatorio. El firmware nuevo funciona igual con el arranque que ya tienes; " +
+        "lo único que cambia es la pantalla de encendido.";
+
+    public static string BootloaderUpdateNoPassword =>
+        "No te pide tu contraseña de administrador ni una sola vez.";
+
+    public static string BootloaderUpdateContinue => "Continuar";
+
+    public static string BootloaderUpdateEnterDfuWhen =>
+        "El iPod tiene que estar conectado por USB mientras lo haces. No se toca su disco: " +
+        "solo se regraba el arranque.";
+
+    public static string BootloaderUpdateFlashConfirm =>
+        "Entiendo que esto regraba el arranque del iPod. No borra su disco ni quita el arranque " +
+        "de Apple.";
+
+    /// <summary>
+    /// El nombre de la familia va adentro: se está regrabando SU arranque, no
+    /// uno genérico — a un iPod con Metro se le graba el de Metro.
+    /// </summary>
+    public static string BootloaderUpdateFlashing(string? family) =>
+        string.IsNullOrWhiteSpace(family)
+            ? "Actualizando el arranque del iPod…"
+            : $"Actualizando el arranque de {family}…";
+
+    public static string BootloaderUpdateAwaitingReboot =>
+        "Arranque enviado. Esperando a que el iPod confirme y reinicie…";
+
+    public static string BootloaderUpdateDoneTitle => "Listo: el arranque quedó actualizado";
+
+    public static string BootloaderUpdateDoneDetail =>
+        "Tu música y tus ajustes siguen intactos. La próxima vez que enciendas el iPod vas a ver " +
+        "la pantalla de arranque nueva.";
+
     public static string InstallerDoneTitle => "Listo";
     public static string InstallerDoneDetail =>
         "El firmware quedó instalado. Expulsa el iPod desde General antes de desconectarlo.";
