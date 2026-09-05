@@ -5302,3 +5302,60 @@ para el resto del proceso una vez que un test lo arranca, y esta
 máquina tenía varias compilaciones en paralelo en ese momento) -- no
 se reprodujo en la corrida limpia siguiente ni en ninguna posterior;
 se anota como fragilidad de entorno, no un bug del cambio.
+
+## ST-172 — Verificación del 0.2.1 de Windows instalado en la VM: versión, Licencias, GitHub y las cuadrículas que colgaban
+
+Verificación de `AuraStudioSetup-0.2.1-arm64.exe` (ST-170) instalado por el
+dueño en la VM ARM64 de Parallels, con su biblioteca real
+(`V:\Mac Externo\Documents\Aura Library`, unidad montada) y sin iPod. Es la
+comprobación en pantalla que pide `CLAUDE.md` (la versión se mira en la app
+compilada, no solo en los archivos) más la prueba de que el cuelgue de ST-161
+no volvió en la build publicada.
+
+### Qué se comprobó, y cómo
+
+Todo con la app instalada en `%LOCALAPPDATA%\Programs\Aura Studio` (registro
+HKCU: 0.2.1; `AuraStudio.App.exe` declara `0.2.1+3213a412…`), manejada por
+UI Automation y clics reales, con `Process.Responding` y CPU muestreados cada
+segundo. Las capturas son de la ventana real, en `studio/windows/docs/capturas/`.
+
+- **Versión en pantalla**: Ajustes › Acerca de muestra **0.2.1**
+  (`v0.2.1-ajustes-acerca-de.png`). Coincide con `AuraStudio.iss`,
+  `AuraStudio.App.csproj` y el `project.yml` de la Mac (commit `3213a41`).
+- **Licencias** (Extras › Licencias › "Software libre incluido"): Aura
+  `v0.4.6-beta`, Metro `v0.7.2`, moonlit.aura `v0.2.2`, cada uno con su
+  repositorio público y "MODIFICATIONS.md / THIRD-PARTY-NOTICES.txt: incluido"
+  (`v0.2.1-licencias.png`).
+- **Consulta a GitHub** (Extras › Firmware): las tres tarjetas muestran esos
+  mismos tags con la nota "Las versiones son las más recientes publicadas en
+  GitHub" y sin ningún texto de repositorio privado (`v0.2.1-extras-github.png`).
+  Matiz que sigue igual que en el 0.2.0: en esta VM hay un token de GitHub
+  guardado en el Administrador de credenciales, así que la consulta fue con
+  token; la prueba sin token es la de los endpoints públicos (ST-150).
+- **Álbumes y Artistas sin cuelgue** (la regresión de ST-161): abrir Álbumes
+  renderiza **1091 álbumes** con **0 s sin responder** en 20 s de observación
+  (CPU +1.6 s); Artistas, **611 artistas · 1091 álbumes · 2576 canciones**,
+  0 s sin responder en 10 s (CPU +2 s); vuelta a General y 30 s en reposo,
+  0 s sin responder (`v0.2.1-albumes.png`, `v0.2.1-artistas.png`). En el 0.2.0
+  el mismo clic mataba el proceso a los ~50 s.
+
+### Lo que se vio de paso y queda fuera de esta decisión
+
+- **Arranque en blanco**: con la biblioteca en `V:` (carpeta compartida de la
+  Mac) la ventana aparece al segundo pero **no responde durante ~9-15 s**
+  (CPU ~5-13 s) hasta que termina de cargar la biblioteca en el hilo de
+  interfaz desde el constructor de `LibraryViewModel`. No es un cuelgue —se
+  recupera sola— pero Windows la marca "No responde" mientras tanto, y las
+  llamadas de UI Automation se bloquean en ese lapso. Es el mismo terreno que
+  `PLAN-studio-rendimiento.md` está trabajando en macOS; para Windows queda
+  como candidato del 0.3.0.
+- **Biblioteca en disco desconectado**: si `V:` no está montada, la app
+  muestra "Algo salió mal … Could not find a part of the path" en vez de un
+  estado propio. Es ST-171, en curso en paralelo.
+
+### Verificación
+
+Sin cambios de código: solo capturas y esta decisión. Instalado 0.2.1 sobre el
+0.2.0 sin UAC (mismo `AppId`), `V:` montada, sin iPod. Tres corridas
+independientes de la app (cada una la abre, navega y la cierra); ninguna
+registró un solo segundo sin responder después del arranque.
