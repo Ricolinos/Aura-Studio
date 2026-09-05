@@ -4,6 +4,10 @@ import SwiftUI
 struct AuraStudioApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
+    init() {
+        MainThreadWatchdog.startIfRequested()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

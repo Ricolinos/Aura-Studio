@@ -3340,3 +3340,144 @@ se descartó y se restauró la copia de respaldo; `Get-FileHash` sobre los
 dos `.exe` en `dist\` después de restaurar dio, byte a byte, los mismos
 dos SHA-256 de arriba. Los `AuraStudioSetup-0.1.0-*.exe` del 2026-09-01
 no se tocaron.
+
+## Release v0.2.0 publicado
+
+Tag `v0.2.0` sobre `33e5f4f` (ST-149/ST-150/ST-151, el pin corregido con
+el fix del cuelgue ya adentro), release en `Ricolinos/Aura-Studio` con
+EXACTAMENTE tres assets — `AuraStudio-0.2.0.dmg`
+(`12f81606db7a47a06001280d2cec23cfb5f3bbdfeac02ffefa5a3169affb1c5f`),
+`AuraStudioSetup-0.2.0-x64.exe`
+(`e0162946f7a5b412d46394efafbc03242b5886e46421855b1f31514353216fbb`),
+`AuraStudioSetup-0.2.0-arm64.exe`
+(`3256297bad5a81694f11457f5ea03b2a85e0b193ae241c2755d4780c050537ab`) —
+verificados los tres de forma independiente con `shasum -a 256`/
+`Get-FileHash` antes de subir, coincidieron con lo reportado por la sesión
+de la VM. Notas en inglés, `v0.1.2` marcado como superseded en el texto,
+sin tocar ese release. Confirmado con el dueño antes del tag y antes del
+`gh release create`, siguiendo la misma disciplina de todo el resto de
+esta sesión con acciones públicas/irreversibles.
+
+https://github.com/Ricolinos/Aura-Studio/releases/tag/v0.2.0
+
+## ST-152 — PLAN-studio-rendimiento.md, Fase 0: línea base medida antes de tocar nada
+
+Primera decisión de la ronda de rendimiento (sesión D de la supervisora,
+`aura-studio-43`). Antes de escribir una sola línea de la Fase 1, el plan
+mismo pide verificar su propio diagnóstico (§0) contra el código actual
+— se hizo con un fork de exploración dedicado, comparando cada una de las
+9 causas raíz línea por línea contra el código de hoy.
+
+### Verificación del diagnóstico — 8 de 9 exactas, 1 con una precisión
+
+Las 9 causas de §0 se confirmaron todas en sustancia. Ocho, con las
+mismas líneas citadas (o un corrimiento de pocas líneas por cambios
+posteriores del archivo, sin alterar la causa). La única corrección real:
+el punto 4 (`persistCatalog()` llamado "una vez por ítem" en acciones
+sobre selección múltiple) cita dos ejemplos —
+`MediaSectionView.swift:838` y `:953`—, pero solo el primero
+(`clearCoverArt`, vía un loop que persiste en cada iteración) hace
+exactamente eso. El segundo (`:953`, `deleteItems(ids:)`) ya recibe el
+lote completo y persiste **una sola vez** al final — no ilustra el
+problema que dice ilustrar, aunque el problema en sí (con `clearCoverArt`
+y otras 28 llamadas a `persistCatalog()`) sigue siendo real y es exactamente
+lo que la Fase 3 va a coalescer.
+
+### Infraestructura de medición nueva
+
+1. **Biblioteca sintética** (`LibraryPerformanceBaselineTests.
+   makeSyntheticItems`, dentro del propio archivo de pruebas en vez de un
+   target aparte — más simple para `@testable import` y no necesita
+   ningún paso de build adicional): 12 000 canciones / 900 álbumes / 300
+   artistas (3 álbumes por artista, 13-14 pistas por álbum para llegar
+   exacto a 12 000), archivos "diminutos" (256 bytes, contenido
+   irrelevante) en vez de audio real vía `ffmpeg` — lo que se mide es el
+   número de syscalls de `stat()`/E/S por ítem, no el tamaño real, y
+   spawnear `ffmpeg` 12 000 veces habría sido más lento que la cosa que
+   se está midiendo.
+2. **Dos seams de prueba, sin cambiar comportamiento de producción**:
+   `LibraryViewModel.persistCatalog()` pasa de `private` a visibilidad de
+   módulo (`internal`) para poder medirla aislada; `LibraryViewModel.
+   replaceItemsForPerformanceTesting(_:)` (nuevo) inyecta un catálogo ya
+   armado sin pasar por `addDroppedFiles`/`process(itemAt:)` (que copia,
+   corre `ffmpeg` y espera POR ÍTEM -- exactamente el costo que NO hay que
+   medir acá); `GridSelection.handleTap(_:orderedIDs:modifierFlags:)`
+   (nuevo overload) separa la lectura de `NSEvent.modifierFlags` para
+   poder simular Shift+clic sin depender del teclado real -- el camino de
+   producción (`handleTap(_:orderedIDs:)`) sigue leyendo el estado global
+   exactamente igual que antes, delegando a este.
+3. **`MainThreadWatchdog`** (`Services/MainThreadWatchdog.swift`, nuevo):
+   vigilante de hilo principal, solo `DEBUG` + `AURA_WATCHDOG=1`. Late un
+   corazón en el hilo principal cada 50 ms desde un hilo aparte; más de
+   250 ms sin uno = bloqueo. La pila se captura en dos tiempos a
+   propósito -- el manejador de la señal (`SIGUSR2`, enviada al hilo
+   principal con `pthread_kill`) solo llama `backtrace()` sobre un buffer
+   ya reservado (sin `malloc`), y `backtrace_symbols` (que sí reserva
+   memoria) corre después, ya en el hilo vigilante -- symbolizar DENTRO
+   del manejador podría colgar algo de verdad si el hilo principal tenía
+   el lock de `malloc` tomado justo cuando lo interrumpió la señal, que es
+   precisamente el escenario que existe para detectar. Probado con un
+   bloqueo deliberado de 500 ms en una prueba temporal (borrada después de
+   confirmar): detectó el bloqueo real (~543 ms) y capturó la pila
+   symbolizada de verdad, con los frames de `XCTestCore` incluidos.
+
+### Línea base (12 000 ítems, Mac del dueño, Debug, `swift test`, promedio de 10 corridas de `measure`)
+
+| Medición | Promedio | Nota |
+|---|---|---|
+| (a) Recomputar `rows`, orden por título | 367 ms | PROXY -- ver abajo |
+| (a) Recomputar `rows`, orden por tamaño | 1 182 ms | PROXY; `stat()` sin caché por fila explica la diferencia de 815 ms contra ordenar por título |
+| (b) Cambiar la selección 100 veces | 1 ms | Ver nota "lo que esto NO mide" |
+| (c) `persistCatalog()` | 976 ms | Código real, sin proxy |
+| (d) Shift+clic de 1 a 1 000 (`GridSelection`) | 37 ms | Código real, sin proxy |
+| (e) `loadCatalog` en frío | 1 372 ms | Código real, sin proxy |
+
+**Las dos mediciones de "(a)" son un PROXY, no código de producción
+medido directo.** `MediaSectionView.rows`/`items`
+(Views/MediaSectionView.swift:94-140) es un computed var de una `View` de
+SwiftUI -- exactamente el problema #2 del diagnóstico, que todavía no
+está extraído a una función aislada (eso es lo que la Fase 1 va a hacer
+con `RowsModel`). Estas dos pruebas reproducen la MISMA operación
+(`items.map { MediaTableRow(item:) }.sorted(using:)`) para el caso "sin
+filtros activos" (scope `.all`, sin categoría/búsqueda/favoritos), que es
+exactamente lo que `items` devuelve en ese caso. Cuando la Fase 1 extraiga
+`RowsModel`, la PARADA 1 reengancha esta prueba a la extracción real en
+vez de reproducir la expresión -- se documenta ahora para que nadie lea
+"367 ms"/"1 182 ms" como si vinieran de llamar código real.
+
+**Lo que "(b) cambiar la selección 100 veces" NO mide, y por qué el
+número (1 ms) no contradice el síntoma del dueño.** Esta prueba solo
+mide el costo de asignar `LibraryViewModel.selectionForSync` (un
+`@Published`) 100 veces, SIN ninguna vista de SwiftUI observándolo --
+ese costo es, en efecto, despreciable. La medición **confirma** la causa
+#1 del diagnóstico en vez de contradecirla: el congelamiento no viene de
+publicar la selección, viene de cuánto vuelve a renderizar SwiftUI
+cuando `ContentView` entero (que observa el `LibraryViewModel` global,
+`ContentView.swift:25,64,262`) reacciona a ese cambio. Falta un
+`XCTOSSignpostMetric`/`Self._printChanges()` contra una jerarquía de
+vistas real para medir ESE costo -- queda pendiente, anotado para la
+Fase 1 (que además ataca la causa moviendo la selección a un
+`SelectionStore` acotado).
+
+### Costo de mantener esto
+
+`swift test` completo pasó de ~15-25 s a **~76-90 s** con estas 6 pruebas
+nuevas (`persistCatalog`/`loadCatalog`/orden-por-tamaño rondan 1 s cada
+una, ×10 corridas de `measure`, ×2-3 con la generación de la biblioteca
+sintética en `setUp`). Es el costo aceptado de "nada se da por resuelto
+sin medirlo" -- si en una fase futura esto empieza a estorbar el ciclo de
+desarrollo, ahí se decide bajar el número de corridas de `measure`
+(`XCTMeasureOptions.iterationCount`) o mover estas pruebas a un esquema
+aparte, pero no antes: la Fase 0 completa depende de tener el número real,
+no uno recortado.
+
+### Verificación
+
+`swift build`, `xcodebuild` (Debug, Swift 6 estricto) y `swift test`:
+762/762 en verde (1 saltada, la prueba de red en vivo de ST-150 -- sin
+relación con esta ronda). Una corrida previa reportó 1 falla aislada que
+no se repitió en la corrida siguiente (762/762 limpio) ni en ninguna
+posterior -- no se pudo reproducir, tratada como fluctuación puntual del
+entorno y no como regresión de este cambio; si vuelve a aparecer con un
+nombre de prueba consistente, se investiga entonces. `scripts/build-app.sh`
+pendiente de correr una vez más antes de cerrar esta PARADA (ver abajo).

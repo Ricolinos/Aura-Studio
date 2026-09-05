@@ -11,6 +11,17 @@ import Combine
 @MainActor
 final class LibraryViewModel: ObservableObject {
     @Published private(set) var items: [LibraryItem] = []
+
+    /// PLAN-studio-rendimiento.md Fase 0: inyecta un catálogo ya armado
+    /// (ítems `.ready`, con metadata) sin pasar por `addDroppedFiles`/
+    /// `process(itemAt:)` -- ese pipeline copia el archivo, corre
+    /// `ffmpeg` y espera por ítem, que es exactamente el costo que NO se
+    /// quiere medir en las pruebas de rendimiento de la biblioteca ya
+    /// cargada (selección, orden, `persistCatalog`). Nunca se llama
+    /// desde la UI.
+    func replaceItemsForPerformanceTesting(_ newItems: [LibraryItem]) {
+        items = newItems
+    }
     @Published private(set) var isProcessing = false
     @Published private(set) var lastSyncSummary: String?
     /// D-203: resultado de "Buscar información en línea"/"Buscar letra"
@@ -1843,7 +1854,12 @@ final class LibraryViewModel: ObservableObject {
 
     /// Serializa el catalogo completo. Las portadas se escriben como
     /// archivos aparte (`Portadas/<id>.jpg`) -- ver PersistedLibrary.
-    private func persistCatalog() {
+    ///
+    /// PLAN-studio-rendimiento.md Fase 0: visibilidad `internal` (no
+    /// `private`) a propósito, para que las pruebas de rendimiento
+    /// (`@testable import AuraStudio`) puedan medirla aislada. Sigue sin
+    /// ser parte de ninguna API pública fuera del módulo.
+    func persistCatalog() {
         var persisted = PersistedLibrary()
         // ST-141: la marca de "carátulas ya cuadradas" sobrevive a cada
         // guardado. Perderla haría que la migración se repitiera en cada

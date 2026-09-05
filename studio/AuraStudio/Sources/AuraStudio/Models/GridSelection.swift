@@ -23,7 +23,15 @@ struct GridSelection<ID: Hashable>: Equatable {
     /// Aplica un clic simple sobre `id`, dado el orden visible actual
     /// (`orderedIDs`, para resolver el rango de Shift+clic).
     mutating func handleTap(_ id: ID, orderedIDs: [ID]) {
-        let flags = NSEvent.modifierFlags
+        handleTap(id, orderedIDs: orderedIDs, modifierFlags: NSEvent.modifierFlags)
+    }
+
+    /// PLAN-studio-rendimiento.md Fase 0: separado de `handleTap` para
+    /// poder medir (y más adelante probar) el camino de Shift+clic sin
+    /// depender del estado global de teclado -- `NSEvent.modifierFlags`
+    /// no se puede simular en una prueba. El camino de producción sigue
+    /// siendo exactamente el mismo (`handleTap` de arriba se lo delega).
+    mutating func handleTap(_ id: ID, orderedIDs: [ID], modifierFlags flags: NSEvent.ModifierFlags) {
         if flags.contains(.shift), let last = lastTapped,
            let lastIndex = orderedIDs.firstIndex(of: last), let thisIndex = orderedIDs.firstIndex(of: id) {
             let range = lastIndex <= thisIndex ? lastIndex...thisIndex : thisIndex...lastIndex
