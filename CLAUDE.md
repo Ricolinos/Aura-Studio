@@ -39,3 +39,26 @@ Si un plan en `docs/plans/` no tiene encabezado de estado, es activo.
 La fuente de verdad de las decisiones es `DECISIONS.md`, no los planes.
 Ante una discrepancia entre un plan archivado y `DECISIONS.md`, manda
 `DECISIONS.md`.
+
+## Releases
+
+Versionado `MAYOR.MENOR.PARCHE` (cualquier posición admite dos o más
+dígitos si hace falta):
+
+- **MAYOR** queda en `0` mientras el proyecto siga en beta.
+- **MENOR** sube con cada release estable que trae funciones nuevas
+  (Studio entró a `0.2` con la ronda de publicación en repos públicos;
+  el release que cierre `PLAN-studio-rendimiento.md` — centro de tareas,
+  selección tipo Finder — es `0.3.0`).
+- **PARCHE** sube con un arreglo aislado entre rondas de funciones nuevas
+  (p. ej. un bug o un problema de seguridad encontrado después de un
+  `MENOR`, sin funciones nuevas de por medio) — sería `0.2.1`.
+
+La versión se sube en **los tres lugares a la vez, en el mismo commit del
+release**: `project.yml` (`CFBundleShortVersionString`,
+`MARKETING_VERSION`), `studio/windows/installer/AuraStudio.iss`
+(`AppVersion`) y `studio/windows/AuraStudio.App/AuraStudio.App.csproj`
+(`<Version>`). Se verifica que los tres coincidan viendo Ajustes ›
+Licencias / Acerca de en la app ya compilada, no solo leyendo los
+archivos — un lugar desalineado no se detecta hasta que alguien lo mira
+en pantalla.
