@@ -65,7 +65,7 @@ final class IPodMonitor: ObservableObject {
     func start() {
         diskMonitor.start { [weak self] info in
             Task { @MainActor in
-                self?.handleDiskChange(info)
+                await self?.handleDiskChange(info)
             }
         }
         startDFUPolling()
@@ -86,25 +86,38 @@ final class IPodMonitor: ObservableObject {
         }
     }
 
-    private func handleDiskChange(_ info: DiskModeInfo?) {
+    private func handleDiskChange(_ info: DiskModeInfo?) async {
         lastDiskInfo = info
         if let info {
             state = .diskMode(info)
-            // ST-056 / contrato v10: un cambio de firmware que quedo a
-            // medias (sin `/.rockbox/` pero con un arbol dormido) se
-            // repara aqui, antes de sondear, para que el sondeo vea un
-            // iPod sano. Nunca mientras un flujo de instalacion escribe.
-            if !InstallerFlowRegistry.shared.flowActive, !info.mountPath.isEmpty, info.mountPath.hasPrefix("/") {
-                let root = URL(fileURLWithPath: info.mountPath)
-                _ = try? FirmwareSwitcher.repairIfNeeded(volumeRoot: root)
-                // ST-061: un arbol activo sin los archivos del contrato
-                // (instalacion fresca de otra familia) los hereda del
-                // dormido, que si los tiene -- sin esto, Metro decia
-                // "sin sincronizar todavia" y perdia fotos de artista y
-                // categorias hasta el siguiente sync completo.
-                _ = FirmwareSwitcher.seedContractFilesToActiveTree(volumeRoot: root)
-            }
-            let probed = AuraDeviceProbe.probe(diskInfo: info)
+            let flowActive = InstallerFlowRegistry.shared.flowActive
+            // Todo lo que toca archivos del iPod pasa a un hilo aparte:
+            // el primer acceso a un volumen recien conectado puede quedar
+            // esperando el dialogo nativo de "acceso a volumenes
+            // removibles" de macOS (por ejemplo, justo despues de
+            // reinstalar la app, que cambia de firma ad-hoc y pierde el
+            // permiso ya concedido). Si esa lectura corriera en el actor
+            // principal, la ventana de la app nunca llegaba a mostrarse
+            // -- el dialogo de permiso no tiene donde aparecer, y la app
+            // se quedaba congelada para siempre sin ningun indicio
+            // (encontrado con un iPod real conectado al reinstalar).
+            let probed: AuraDevice? = await Task.detached(priority: .userInitiated) {
+                // ST-056 / contrato v10: un cambio de firmware que quedo a
+                // medias (sin `/.rockbox/` pero con un arbol dormido) se
+                // repara aqui, antes de sondear, para que el sondeo vea un
+                // iPod sano. Nunca mientras un flujo de instalacion escribe.
+                if !flowActive, !info.mountPath.isEmpty, info.mountPath.hasPrefix("/") {
+                    let root = URL(fileURLWithPath: info.mountPath)
+                    _ = try? FirmwareSwitcher.repairIfNeeded(volumeRoot: root)
+                    // ST-061: un arbol activo sin los archivos del contrato
+                    // (instalacion fresca de otra familia) los hereda del
+                    // dormido, que si los tiene -- sin esto, Metro decia
+                    // "sin sincronizar todavia" y perdia fotos de artista y
+                    // categorias hasta el siguiente sync completo.
+                    _ = FirmwareSwitcher.seedContractFilesToActiveTree(volumeRoot: root)
+                }
+                return AuraDeviceProbe.probe(diskInfo: info)
+            }.value
             device = probed
             // ST-016: ver este disco con Aura/Rockbox atendiendo el USB
             // es prueba de bootloader grabado -- se anota para que la

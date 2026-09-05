@@ -3174,3 +3174,82 @@ como una sola entrega: este pin (ST-149), la verificación de actualizaciones
 sin token y el README en inglés (ST-150), y el bump de versión a 0.2.0 que
 ST-150 ya dejó hecho. Un solo commit, para que el release `v0.2.0` en
 `Ricolinos/Aura-Studio` salga de un punto limpio del historial.
+
+## ST-151 — La app se congelaba sin ventana si el iPod ya estaba conectado al abrirla
+
+Encontrado con un iPod real conectado, tratando de tomar capturas para el
+README (ST-150) sobre la build recién instalada de ST-149. Reproducido
+**3 de 3 veces**: al abrir Aura Studio con el iPod ya conectado, la app
+nunca mostraba ninguna ventana — quedaba corriendo (0% CPU, sin colgarse
+de forma visible) pero completamente inerte, sin ningún indicio en pantalla
+de qué pasaba ni por qué.
+
+### Diagnóstico
+
+`sample <pid>` (lee la pila de un proceso en ejecución, sin tocar nada) lo
+dejó exacto las tres veces:
+
+```
+DispatchQueue_1: com.apple.main-thread
+  IPodMonitor.handleDiskChange(_:)
+    AuraDeviceProbe.probe(diskInfo:fileManager:)
+      FirmwareCapabilities.declaredFamily(volumeRoot:fileManager:)
+        String.init(contentsOf:encoding:) → ... → open() [bloqueado]
+```
+
+El hilo principal quedaba esperando indefinidamente una syscall `open()`
+sobre un archivo del iPod (`.rockbox/aura/aura.cfg`). Leer el mismo archivo
+desde la Terminal, al mismo tiempo, respondía instantáneo — el disco no
+estaba colgado. Confirmado con el dueño presente frente a la pantalla:
+**había un diálogo nativo de macOS pendiente, pidiendo el permiso de
+"volumen removible"**, que la app nunca llegó a mostrar en pantalla —no
+tenía ninguna ventana propia donde adjuntarlo, porque esa ventana nunca
+termina de aparecer mientras el hilo principal esté bloqueado esperando
+justo esa respuesta. Un candado circular: sin ventana no hay dónde mostrar
+el diálogo, y sin que alguien apruebe el diálogo a ciegas (sin verlo) el
+hilo principal nunca se libera para crear la ventana.
+
+**Por qué apareció justo ahora y no antes**: la app está firmada ad-hoc
+(`CODE_SIGN_IDENTITY "-"`, sin certificado Developer ID — ver
+`scripts/package-dmg.sh`), y macOS liga el permiso de TCC a un hash de esa
+firma. Cada `build-app.sh` produce una firma ad-hoc distinta, así que
+**cada reinstalación pierde el permiso ya concedido** y macOS vuelve a
+pedirlo — con el iPod ya conectado en ese momento (como pasa siempre en
+esta ronda de pines: se reinstala y se verifica con el mismo iPod), el
+primer sondeo del disco dispara el permiso exactamente en el peor momento
+posible, antes de que exista ninguna ventana.
+
+### Corrección — `IPodMonitor.swift`
+
+`handleDiskChange` pasa de síncrono a `async`. Todo lo que toca archivos
+del iPod (`FirmwareSwitcher.repairIfNeeded`, `seedContractFilesToActiveTree`
+y `AuraDeviceProbe.probe`, en ese orden, sin cambiarlo) se movió dentro de
+un `Task.detached(priority: .userInitiated)`, `await`ado desde el actor
+principal — el hilo principal queda libre mientras esa lectura corre (y
+mientras macOS, si hace falta, muestra su diálogo de permiso con una
+ventana real ya en pantalla donde adjuntarlo). `InstallerFlowRegistry.shared.flowActive`
+se lee ANTES de entrar al `Task.detached` (es `@MainActor`, no se puede
+leer desde ahí) y se pasa capturado. El orden relativo de las operaciones
+no cambió, solo el hilo donde corren; `recordBootloaderVerified` y
+`syncClockIfNeeded` (los dos pasos posteriores al `probe`) se quedaron en
+el actor principal sin cambios, porque no fueron el punto donde se
+reprodujo el cuelgue.
+
+**Confirmado que el patrón correcto ya existía del lado Windows** —
+`DeviceSessionService.cs` (`Reevaluate()`) documenta exactamente el
+problema inverso que llevó a la misma solución: el sondeo pesado corre en
+`Task.Run` y solo el resultado ya calculado se consume de vuelta en el
+hilo de interfaz. No hizo falta ningún cambio ahí.
+
+### Verificación
+
+`swift build` y `xcodebuild` (Debug, Swift 6 estricto — la build de SPM no
+detecta errores de `Sendable`, la de `xcodebuild` sí) en verde, sin ningún
+error de concurrencia por cruzar `DiskModeInfo`/`AuraDevice` al
+`Task.detached`. `swift test`: 756/756. Reinstalado en `/Applications` y
+relanzado con el mismo iPod real conectado: abre su ventana normalmente
+(detalle de la verificación final, más abajo en este archivo una vez
+terminó de correr `build-app.sh`).
+
+Nada de esto tocó ningún archivo de Windows: el bug y su causa (TCC de
+macOS) no existen ahí.
