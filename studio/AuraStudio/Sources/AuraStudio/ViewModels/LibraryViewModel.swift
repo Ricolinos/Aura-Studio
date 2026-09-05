@@ -10,6 +10,16 @@ import Combine
 /// antes de sincronizar.
 @MainActor
 final class LibraryViewModel: ObservableObject {
+    /// PLAN-studio-rendimiento.md Fase 4 punto 1: fuente única de verdad
+    /// de qué corre en segundo plano ahora mismo. Primera integración
+    /// real, en esta ronda: `reenrichOnline` (abajo). El resto de las
+    /// operaciones largas listadas en el plan (edición en lote, aplicar
+    /// carátula, fotos de artista, pósters, carátulas recomendadas,
+    /// eliminar, verificar dispositivo, carga inicial) TODAVÍA usan sus
+    /// booleanos sueltos de siempre -- migrarlas es trabajo aparte,
+    /// documentado como pendiente en DECISIONS.md (ST-156).
+    let taskCenter = BackgroundTaskCenter()
+
     @Published private(set) var items: [LibraryItem] = []
 
     /// PLAN-studio-rendimiento.md Fase 0: inyecta un catálogo ya armado
@@ -1138,9 +1148,20 @@ final class LibraryViewModel: ObservableObject {
         var networkErrors: [String] = []
         var attempted = 0
 
+        // PLAN-studio-rendimiento.md Fase 4: primera operación real
+        // conectada al centro de tareas -- "N de M" en vez del banner
+        // fijo de siempre. El límite de 1 pedido/segundo de MusicBrainz
+        // ya lo aplica `enricher` por dentro; el centro solo muestra el
+        // progreso, no lo acelera.
+        let handle = taskCenter.begin(title: "Buscando información en línea…",
+                                      progress: .determinate(completed: 0, total: ids.count))
+        defer { taskCenter.finish(handle) }
+
         for id in ids {
             guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .music else { continue }
             attempted += 1
+            handle.update(.determinate(completed: attempted, total: ids.count),
+                          statusText: "\(attempted) de \(ids.count)")
             let item = items[index]
             let current = item.metadata ?? TrackMetadata()
             let (updated, outcome) = await enricher.reenrich(

@@ -4420,3 +4420,79 @@ el firmware nuevo — sin esperar una reconexión.
   desde cero, sin `aura.cfg` previo) trae la hora correcta en su
   **segunda** conexión, y que una actualización directa sobre un iPod
   ya corriendo Aura la trae correcta de inmediato, en la primera.
+
+## ST-156 — PLAN-studio-rendimiento.md, Fase 4: centro de tareas en segundo plano (parcial)
+
+La supervisora la señaló como "el encargo central del dueño: nada largo
+sin indicador". El alcance completo del plan (actor `LibraryFileWorker`
+fuera de main, migrar ~12 operaciones, `setRating` sin reescribir el
+archivo en el acto) es la unidad de trabajo más grande de toda esta
+ronda -- tocar `prepareMusic`/ID3 de punta a punta sin poder verificarlo
+interactivo es un riesgo real de dejar algo roto en un flujo que
+escribe archivos del usuario. Esta PARADA entrega la base, sólida y
+probada, más UNA integración real de punta a punta -- el resto queda
+listado al final, explícito, para otra pasada.
+
+### Hecho
+
+**`BackgroundTaskCenter`** (nuevo, `Services/BackgroundTaskCenter.swift`):
+`@MainActor ObservableObject` con una cola de `TaskHandle` (título en
+español, progreso `.determinate(completed:total:)`/`.indeterminate`,
+texto de estado, error, cancelar opcional). Cada `TaskHandle` es su
+propio `ObservableObject` -- actualizar el progreso de una tarea
+publica `objectWillChange` de ESA fila, no del centro entero ni de la
+ventana. `aggregateFraction` promedia solo las tareas determinadas,
+para el anillo agregado de la barra de herramientas. 9 pruebas nuevas
+(`BackgroundTaskCenterTests.swift`).
+
+**UI** (`BackgroundTaskCenterIndicator.swift`, nuevo): botón en la barra
+de herramientas, invisible sin ninguna tarea corriendo (nunca ocupa
+espacio de más); con tareas, anillo de progreso + "N tareas", y un
+popover que lista cada una con su progreso y Cancelar -- mismo patrón
+que la ventana de copia del Finder / la actividad de Xcode, como pedía
+el plan.
+
+**Primera integración real**: `reenrichOnline` (buscar información en
+línea / letra) ahora reporta "N de M" al centro en vez de solo dejar un
+resumen al final. Elegida a propósito como primer caso: ya era `async`,
+ya iteraba con un contador (`attempted`), y no toca `prepareMusic`/ID3
+-- el camino de menor riesgo para probar el centro contra código real
+antes de migrar algo más delicado.
+
+### Qué queda explícitamente afuera de esta PARADA
+
+- **`LibraryFileWorker`** (actor fuera de main para copiar/transcodificar/
+  recortar carátula/escribir ID3/leer etiquetas/borrar): no escrito.
+  Es el cambio que de verdad saca `prepareMusic` del hilo principal
+  (diagnóstico §0.5) -- requiere convertir sus ~6 llamadores
+  (`setRating`, `clearCoverArt`, `applyAlbumCover`, `applyBatchEdit`,
+  `applySimilarityEdits`, `reenrichOnline`) a un patrón async con
+  resultados por lote, no uno por ítem.
+- **Las otras ~11 operaciones del punto 3** (edición en lote, aplicar
+  carátula, similares, releer etiquetas, fotos de artista, pósters,
+  carátulas recomendadas, eliminar, verificar dispositivo, carga
+  inicial) siguen con sus booleanos sueltos de siempre
+  (`isProcessing`, `isFetchingArtistImages`, `isVerifyingDevice`,
+  `isFetchingVideoPosters`, `isApplyingRecommendedCovers`, el
+  `@State isEnriching` de `MediaSectionView`) -- no se tocó ninguna.
+- **`setRating` sin reescribir el archivo en el acto**: sigue llamando
+  `prepareMusic` sincrónico en cada estrella (el guardado del catálogo
+  ya no bloquea, desde el addendum de ST-155, pero el re-etiquetado
+  ID3 sí sigue ahí). Depende de que exista `LibraryFileWorker` primero.
+- **Límites de concurrencia por tipo** (disco: 1; red: limitador de
+  MusicBrainz; CPU: núcleos disponibles): `BackgroundTaskCenter` por
+  ahora es solo visibilidad/cancelación, no gatekeeping -- no hay
+  ninguna operación real routeada por un worker común todavía contra
+  la cual aplicar un límite con sentido.
+
+### Verificación
+
+`swift build`, `xcodebuild` (Debug, Swift 6 estricto) y `swift test`:
+789/789 en verde (9 pruebas nuevas de `BackgroundTaskCenterTests`).
+`scripts/build-app.sh` verificado contra un directorio temporal
+(Release). El vigilante de hilo principal contra una edición en lote de
+500 ítems y una importación de 1000 archivos (el criterio de cierre que
+pide el plan) queda pendiente hasta que exista `LibraryFileWorker` --
+sin él, esas dos operaciones siguen bloqueando el hilo principal
+exactamente igual que antes de esta PARADA, así que medirlas ahora no
+diría nada nuevo.

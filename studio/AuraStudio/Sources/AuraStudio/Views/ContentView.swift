@@ -101,6 +101,11 @@ struct ContentView: View {
         }
         .tint(AuraColors.light.accent)
         .toolbar {
+            // PLAN-studio-rendimiento.md Fase 4 punto 4: centro de
+            // tareas en segundo plano -- invisible sin nada corriendo.
+            ToolbarItem(placement: .primaryAction) {
+                BackgroundTaskCenterIndicator(center: library.taskCenter)
+            }
             // PLAN-general-sync.md §1.1: "Actualizar" (refresco
             // inofensivo, NUNCA escribe en el iPod) reemplaza al viejo
             // boton "Sincronizar" de la barra de herramientas -- la
