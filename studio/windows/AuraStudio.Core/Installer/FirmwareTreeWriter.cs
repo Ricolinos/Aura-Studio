@@ -185,6 +185,15 @@ public static class FirmwareTreeWriter
         // estacionaría con el nombre equivocado.
         TryIgnoringIo(() => FirmwareCapabilities.SeedDeclaredFamily(volumeRoot, targetFamily));
 
+        // ST-165: la tercera pata de la hora del iPod (contrato §D.4) — al
+        // conectar (DeviceSessionService.SyncClockIfConnected) y al cambiar de
+        // familia (FirmwareSwitcher.SwitchActiveFirmware) ya se sembraba en
+        // aura.cfg; acá faltaba lo mismo justo después de instalar o
+        // actualizar el árbol, simétrico a InstallerViewModel.swift de macOS.
+        // Sin efecto si aura.cfg todavía no existe (nunca arrancó): no es un
+        // fallo, DeviceSessionService la siembra en la próxima conexión igual.
+        ClockSyncWriter.WriteToDisk(volumeRoot);
+
         progress?.Report(new("Listo.", 1));
         return new FirmwareWriteResult(written, usedDelta, parked);
     }

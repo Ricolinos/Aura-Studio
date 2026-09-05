@@ -4340,3 +4340,83 @@ Core, es trabajo de la sesión de Windows). No se subió la versión —
 ST-159 sale como parche `0.2.1` en una unidad de trabajo aparte, cuando
 el dueño autorice ese release; este commit es solo el cambio de código
 y contrato.
+
+## ST-165 — Windows: la hora del iPod no se sembraba al terminar de instalar o actualizar el firmware (tercera pata de ST-146)
+
+### Qué faltaba
+
+El contrato §D.4 (sembrar `aura.cfg` con la hora/zona de la computadora
+para que el primer arranque ya la traiga en hora) tenía dos de sus tres
+patas en Windows: `DeviceSessionService.SyncClockIfConnected` (al
+conectar el iPod) y `FirmwareSwitcher.SwitchActiveFirmware` (al cambiar
+de familia) ya llamaban `ClockSyncWriter.WriteToDisk(volumeRoot)`, las
+dos probadas. Faltaba la tercera: justo después de copiar los archivos
+del firmware al iPod (instalación por primera vez o actualización
+directa), simétrico a `InstallerViewModel.swift:1214` de macOS —ahí la
+llamada vive justo después de crear las carpetas de medios y antes de
+decidir si toca DFU o el flujo ya terminó, con el mismo candado de
+escritura tomado—.
+
+### Dónde, y por qué ahí y no en el ViewModel
+
+macOS hace la llamada directo en el `ViewModel`. En Windows el camino
+real de copia (`InstallerViewModel.CopyFilesAsync`, usado tanto por el
+asistente como por `UpdateInPlaceAsync` para la actualización directa)
+delega **todo** el trabajo de escribir el árbol —binario raíz, extracción
+selectiva o completa del zip, manifiesto v11, carpetas de medios,
+identidad de familia (ST-067)— en `FirmwareTreeWriter.WriteAsync`
+(`AuraStudio.Core.Installer`), que ya es la pieza **decidible y
+probada** que hace ese trabajo sin ninguna API de Windows. Ahí es donde
+vive la llamada nueva a `ClockSyncWriter.WriteToDisk(volumeRoot)`, justo
+antes de reportar "Listo." — al lado de los otros pasos que ST-067/v11
+ya trataban como mejoras que no invalidan un firmware ya escrito y
+verificado por centinela (el resto de esos pasos van envueltos en
+`TryIgnoringIo`; este no hace falta porque `ClockSyncWriter.WriteToDisk`
+ya captura sus propias excepciones de E/S y devuelve `false`).
+
+Poner la llamada en `FirmwareTreeWriter` en vez de en
+`InstallerViewModel.cs` cubre **las dos** rutas (asistente y
+actualización directa) con una sola línea, y la deja alcanzable por una
+prueba unitaria real —cosa que `InstallerViewModel.cs`, atado a WinUI,
+`IDfuFlashRunner` y al resto de la sesión del dispositivo, no ofrece sin
+inventar mocks para todo el instalador—.
+
+### Por qué es silencioso si `aura.cfg` no existe todavía
+
+Una instalación **de verdad la primera vez**, antes de que el firmware
+haya arrancado una sola vez, no tiene `aura.cfg` en el disco —lo crea el
+propio firmware al primer arranque, no el zip—. `ClockSyncWriter.WriteToDisk`
+ya estaba diseñado para ese caso: no crea el archivo a medias, devuelve
+`false` y no hace ruido. La hora queda sembrada de todos modos en la
+próxima conexión (`DeviceSessionService`), que es el camino que sí
+puede ver el firmware ya corrido. Donde esta pata sí actúa siempre es en
+`UpdateInPlaceAsync` (actualizar sin formatear ni entrar a DFU): ahí el
+árbol "ya arrancó una vez" por definición, así que `aura.cfg` ya existe
+y la hora se refresca en el mismo momento en que se termina de escribir
+el firmware nuevo — sin esperar una reconexión.
+
+### Verificación
+
+- `FirmwareTreeWriterTests.cs` (nuevo, `AuraStudio.Core.Tests`): dos
+  pruebas contra un volumen de mentira (una carpeta temporal, no un
+  iPod) y un juego mínimo de artefactos que pasa
+  `ArtifactVerificationResult` de `ArtifactScope.FirmwareTree`. Con
+  `aura.cfg` sembrado de antemano (el caso real de `UpdateInPlaceAsync`),
+  `FirmwareTreeWriter.WriteAsync` deja `rtc_sync_year:` en el archivo sin
+  tocar el resto de sus líneas; sin `aura.cfg` de antemano (primera
+  instalación), termina igual de bien y no crea el archivo.
+- `dotnet test tests\AuraStudio.Core.Tests -c Release` → **1190/1190**
+  (1188 + las 2 nuevas).
+- `dotnet build AuraStudio.App -c Release -p:Platform=ARM64` → 0
+  advertencias, 0 errores.
+- No se verificó contra un iPod real ni contra DFU: esta sesión no tiene
+  uno conectado. La pieza que cambió es exclusivamente de Core
+  (`FirmwareTreeWriter`, sin ninguna API de Windows) y la prueba nueva
+  ya la ejercita con exactamente el mismo código que corre en la
+  instalación real, contra un volumen de mentira — es la verificación
+  equivalente a un volumen simulado que pedía el encargo, hecha con
+  xUnit en vez de a mano. Falta, y queda para el dueño con hardware
+  real: confirmar que un iPod recién flasheado por DFU (instalación
+  desde cero, sin `aura.cfg` previo) trae la hora correcta en su
+  **segunda** conexión, y que una actualización directa sobre un iPod
+  ya corriendo Aura la trae correcta de inmediato, en la primera.
