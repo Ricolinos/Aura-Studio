@@ -2932,3 +2932,245 @@ sistema" entre sincronizaciones):
 2. Confirmar que "Restaurar iPod original" SÍ se lleva el archivo por
    delante (formatea la partición) — es el comportamiento esperado, no un
    bug: si sobreviviera a un restaurar, algo estaría mal.
+
+## ST-148 — Pin de la ronda "ajustes 2": v0.4.5-beta→v0.4.6-beta, v0.7.0→v0.7.1, v0.2.0→v0.2.1
+
+Segundo pin de los tres firmwares, mismo procedimiento que ST-144, tras los
+releases de la ronda "ajustes 2" (ajustes compartidos, hora en cada sync,
+visor de fotos, idiomas).
+
+### Tabla de pins
+
+| Familia | Tag anterior | Tag nuevo | Publicado |
+|---|---|---|---|
+| Aura | `v0.4.5-beta` | `v0.4.6-beta` | 2026-09-05T02:59Z |
+| Metro | `v0.7.0` | `v0.7.1` | 2026-09-05T02:54Z |
+| moonlit | `v0.2.0` | `v0.2.1` | 2026-09-05T02:58Z |
+
+Los 12 hashes de `FIRMWARE_VERSION` se regeneraron leyendo el `checksums.txt`
+real que trajo cada `gh release download` — **nunca a mano** (la regla que
+ST-144 dejó escrita tras equivocarse en el primer intento; esta vez se siguió
+desde el principio).
+
+### Dos cosas que este pin NO cambió, y que conviene no confundir con un error
+
+1. **`AuraPalette.swift` es byte-idéntico al anterior.** El Release de Aura lo
+   sigue publicando, se reemplazó entero como manda la regla (nunca se edita a
+   mano), y el `diff` dio vacío: v0.4.6-beta no tocó ningún token de diseño.
+   `git status` no lo reporta como modificado y eso es correcto, no un fetch
+   incompleto.
+2. **El `bootloader-ipod6g.ipod` de Aura tampoco cambió** (`e4b8b922…`, el
+   mismo de v0.4.5-beta), ni `mks5lboot` de ninguna de las tres. Los que **sí**
+   cambiaron son los bootloaders de Metro (`a1f47beb…`) y moonlit
+   (`252e90c0…`). Consecuencia directa en ST-143: a un iPod con **Aura** no se
+   le va a ofrecer "Actualizar el arranque" con este pin —su hash registrado
+   sigue coincidiendo—, y a uno con Metro o moonlit **sí**. Es el
+   comportamiento correcto de la regla, no un fallo de detección.
+
+### Instalación y verificación
+
+`scripts/build-app.sh` corrió dos veces a propósito: primero contra una carpeta
+temporal, para validar que todo compilaba y que el bundle traía los tres tags
+**antes** de tocar la app instalada; y recién después, con el visto bueno
+explícito del dueño, sin `--dest`, para reemplazar `/Applications/AuraStudio.app`.
+Los tres marcadores del bundle instalado, leídos archivo por archivo:
+`v0.4.6-beta` / `v0.7.1` / `v0.2.1`, con firma ad-hoc válida y los tres
+`mks5lboot` con bit de ejecución. La app se abrió y se cerró limpio; **no se
+navegó su interfaz**, por la misma razón que en ST-144 (con un iPod real
+conectado, un clic automatizado cerca de "Reinstalar"/"Restaurar" no vale el
+riesgo por una captura).
+
+`swift test`: 753 pruebas en verde tras el pin.
+
+### DMG
+
+`scripts/package-dmg.sh` sin modificar:
+
+- **Archivo**: `dist/AuraStudio-0.1.2-20260904.dmg`
+- **Tamaño**: 41 MB (43 206 207 bytes)
+- **SHA-256**: `5934b7a6746b2dc8e2abac6dbfff7f33d41224f4e9b246fae55d423fa16f417b`
+- **Arquitectura**: universal (`x86_64 arm64`) · **macOS mínimo**: 14.4
+- **Firmware embebido**: `v0.4.6-beta`
+
+Verificado montándolo: el `AuraStudio.app` de adentro trae `v0.4.6-beta`, tiene
+firma válida, abre y cierra bien, y el volumen desmonta sin error.
+
+**El DMG de ST-144 ya no existe.** El script nombra el archivo con la fecha
+local (`AuraStudio-<versión>-<AAAAMMDD>.dmg`) y hace `rm -f` antes de crear:
+como los dos pins cayeron el mismo día local (2026-09-04, el segundo a las
+21:06), el segundo sobrescribió al primero. El SHA-256 que ST-144 anotó
+(`a4c65ebf…`) ya no corresponde a ningún archivo en `dist/`. No se perdió nada
+reproducible —ese DMG se vuelve a generar con `git checkout` del pin anterior y
+`package-dmg.sh`—, pero queda dicho para que nadie lo busque.
+
+## ST-150 — Publicación en repos públicos: verificación de actualizaciones sin token, texto obsoleto de "repo privado", y dos User-Agent que seguían apuntando al monorepo archivado
+
+Primer bloque de `PLAN-publicacion-repos-publicos.md` §C que no depende del
+pin corregido (ST-149): §C.2 (verificar actualizaciones desde los repos
+públicos) y la mitad de §C.1 (versión 0.2.0, sin commitear todavía — ver
+más abajo por qué).
+
+### Los tres repos del firmware ya funcionan sin token
+
+`GitHubReleaseChecker.fetchReleases`/`FetchReleasesAsync` nunca necesitaron
+cambiar: desde ST-074 arman la petición con o sin `Authorization` según
+haya token guardado, y GitHub responde igual a un repo público con o sin
+esa cabecera. Confirmado con dos pruebas nuevas por plataforma
+(`testWithoutATokenNoAuthorizationHeaderTravelsForAnyFamily` /
+`testEachFamilyQueriesItsOwnPublicRepository` en Swift,
+`WithoutATokenNoAuthorizationHeaderTravels` / `EachFamilyQueriesItsOwnPublicRepository`
+en `GitHubReleaseCheckerTests.cs`, nuevo) y, del lado macOS, una prueba
+**en vivo** contra la API real de GitHub sin ningún token
+(`GitHubReleaseCheckerLiveTests.testAllThreePublicReposAnswerWithoutAToken`,
+`XCTSkip` si no hay red) — pasó contra los tres repos reales en 1.041 s.
+Del lado Windows no se agregó el equivalente en vivo: xUnit v2 puro no trae
+mecanismo de "saltar sin red" (no hay `Xunit.SkippableFact` en el proyecto)
+y agregar una dependencia nueva para una sola prueba no valía la pena —el
+código es casi idéntico al de Swift, ya probado en vivo ahí, y las dos
+pruebas mockeadas ya fijan la forma exacta de la petición. Queda dicho en un
+comentario en el propio archivo de pruebas, no es un hueco silencioso.
+
+### Texto de UI y comentarios que seguían diciendo "repositorio privado"
+
+Encontrados por búsqueda exhaustiva de "privad" en ambas plataformas, seis
+archivos: `GitHubTokenSettingsView.swift` (encabezado y las tres cadenas de
+cara al usuario, más el mensaje de error que tenía una rama entera para
+"repositorio privado"), `LicensesView.swift` (una línea que ya no aplicaba),
+`GitHubToken.swift` y `GitHubReleaseChecker.swift` (comentarios de
+documentación) del lado macOS; `CredentialStore.cs`
+(`ApiKeyService.GitHub`: título, descripción e instrucciones) y
+`GitHubReleaseChecker.cs` (comentario) del lado Windows. Mensaje nuevo en
+los dos: el token es opcional, solo sube el límite de la API de GitHub
+(60/hora sin token → 5000/hora con uno), e instalar el firmware nunca
+depende de esto porque los binarios viajan embebidos en la app.
+
+### `AuraUpdateChecker` no revisa la propia app — el plan asumía que sí
+
+§C.2 pedía verificar que `AuraUpdateChecker` "apunta al repo público
+`Ricolinos/Aura-Studio` para la propia app". Búsqueda exhaustiva de
+`AuraUpdateChecker` en las dos plataformas: **no existe ningún mecanismo que
+revise actualizaciones de Aura Studio misma** — todo lo que hay son avisos
+de firmware nuevo (Aura/Metro/moonlit), nunca de la app. Es una
+inexactitud del plan, no un bug: no se construyó nada nuevo para cerrar
+esta brecha porque un auto-chequeo de la app (nueva llamada a GitHub, nueva
+UI, nueva lógica de "hay una versión más reciente de Aura Studio, bájala
+tú mismo") es una funcionalidad completa que el plan no pidió explícitamente
+y que amplía el alcance de esta ronda — queda para que el dueño decida si
+la quiere y cuándo.
+
+### Dos User-Agent que seguían citando el monorepo archivado
+
+Al revisar todo lo que sale hacia servicios externos, cuatro constantes
+(`MusicBrainzClient.userAgent` y `LRCLIBClient.clientIdentifier`/
+`clientIdentifier` en las dos plataformas) traían
+`AuraStudio/0.1.0 (https://github.com/Ricolinos/Aura-Proyect)` — el
+monorepo que se archivó al separar este repo (ver encabezado de
+`MEMORY.md`). No es cosmético: es el identificador que estas dos APIs
+externas reciben en cada petición, y apuntaba a un repo que ya no es el
+lugar correcto para que alguien reporte un problema. Las cuatro se
+actualizaron a `AuraStudio/0.2.0 (https://github.com/Ricolinos/Aura-Studio)`
+en el mismo cambio que el bump de versión, para no dejar la versión vieja
+citada en un identificador de red.
+
+### Versión 0.2.0 — bump hecho, **sin commitear**
+
+`project.yml` (`CFBundleShortVersionString`, `MARKETING_VERSION`),
+`AuraStudio.iss` (`AppVersion`, que estaba en `0.1.0` — desalineado incluso
+antes de este bump) y, nuevo, `<Version>0.2.0</Version>` agregado a
+`AuraStudio.App.csproj`: no existía ninguna declaración de versión ahí, así
+que `SettingsViewModel.AppVersion` (que lee
+`Assembly.GetExecutingAssembly().GetName().Version`) mostraba el default del
+SDK (`1.0.0.0`), sin relación con la versión real del producto. `swift build`
+y `dotnet build` de `AuraStudio.Core` en verde tras el cambio; `swift test`
+756/756 (1 skip, la prueba en vivo por falta de red en este entorno);
+`dotnet test` de `AuraStudio.Core` 1134/1166 (las mismas 32 fallas
+preexistentes de `LibraryIngestTests`, sin relación con este cambio).
+
+Todo esto queda **sin commitear a propósito**: la instrucción confirmada del
+dueño es que el bump de versión y el README en inglés se commitean juntos,
+en un solo commit, junto con ST-149 (el pin con los tags corregidos de
+Metro/moonlit) — para que el release v0.2.0 salga de un commit limpio en
+vez de dos.
+
+## ST-149 — Pin corregido: v0.7.1→v0.7.2 (Metro), v0.2.1→v0.2.2 (moonlit); Aura sin cambio
+
+Reemplaza el pin de ST-148, que nunca se llegó a empujar (`git reset --soft
+HEAD~1` sobre `cb9799f`, sus cambios volvieron al índice) por el bug de
+truncado de oraciones largas en ruso, reportado antes de hacer push — ver
+la entrada de ST-148 arriba, que documenta el build/instalación/DMG de esa
+versión con el bug **ya corregidos por este pin**, no vigentes.
+
+| Firmware | Antes | Ahora |
+|---|---|---|
+| Aura | `v0.4.6-beta` | `v0.4.6-beta` (sin cambio — Aura no republicó) |
+| Metro | `v0.7.1` | `v0.7.2` |
+| moonlit | `v0.2.1` | `v0.2.2` |
+
+Los 12 hashes se regeneraron de la forma de siempre: `scripts/fetch-firmware.sh`
+descargó las tres familias y verificó cada `checksums.txt` contra el propio
+Release antes de que el hash tocara `FIRMWARE_VERSION` (nunca a mano). Los
+cuatro de Aura quedaron idénticos a ST-148 (tag sin cambio, esperado).
+`AuraPalette.swift`: `diff` vacío contra el ya presente, también esperado.
+
+**Lo que sí cambió, y confirma el aviso de la sesión de `Aura-Firmware`**:
+en Metro y moonlit cambiaron `rockbox.ipod`, `rockbox.zip` y
+`bootloader-ipod6g.ipod` — el nuevo bootloader de arranque, con
+`BOOT_VERSION` fijo de ahora en más según el aviso recibido — pero **no**
+`mks5lboot` en ninguna de las dos (la herramienta de DFU no cambió).
+Consecuencia en ST-143: a un iPod con Metro o moonlit instalado con el pin
+anterior se le va a volver a ofrecer "Actualizar el arranque" con este pin
+(el hash registrado ya no coincide); es el comportamiento correcto, no un
+efecto secundario.
+
+### Instalación y verificación
+
+`scripts/build-app.sh` corrió dos veces: primero contra `--dest` temporal
+para confirmar que compilaba y traía los tres tags correctos antes de
+tocar nada instalado, y después sin `--dest`, reemplazando
+`/Applications/AuraStudio.app` de ST-148. Verificado archivo por archivo en
+el bundle instalado: `CFBundleShortVersionString` = `0.2.0` (ST-150), firma
+ad-hoc válida (`codesign -dv`), los tres `mks5lboot` (raíz, `metro/`,
+`moonlit/`) con bit de ejecución. **No se navegó la interfaz** — la app se
+verificó por inspección de archivos y `codesign`, nunca haciendo clic cerca
+de "Reinstalar"/"Restaurar"/"Actualizar el arranque", misma razón que
+ST-144/ST-148.
+
+`swift build` y `swift test`: 756/756 en verde (esta vez sin ningún test
+saltado — había red disponible para la prueba en vivo de ST-150).
+
+### DMG
+
+`scripts/package-dmg.sh` sin modificar, corrido después del build de
+`/Applications` (recompila Release aparte para el propio DMG, mismo
+código fuente):
+
+- **Archivo**: `dist/AuraStudio-0.2.0-20260904.dmg`
+- **Tamaño**: 41 MB
+- **SHA-256**: `d64b89a6443797b588f615d0ff877a8cf7170a0bcd86d6a59869741a2760b745`
+  (verificado de forma independiente con `shasum -a 256`, coincide con lo
+  que reportó el script)
+- **Arquitectura**: universal (`x86_64 arm64`) · **macOS mínimo**: 14.4
+- **Firmware embebido**: Aura `v0.4.6-beta` / Metro `v0.7.2` / moonlit `v0.2.2`
+
+El nombre del asset del release `v0.2.0` (§C.4 del plan de publicación) es
+`AuraStudio-0.2.0.dmg`, sin el sufijo de fecha que pone el script — se
+renombra una copia al momento de crear el release en GitHub, no este
+archivo en `dist/` (que sigue el patrón de siempre, `git status` no lo ve:
+`dist/` está en `.gitignore`).
+
+### Qué falta para el release v0.2.0
+
+Este commit deja listos el pin, la versión y el README. Según el orden de
+§C.5 del plan de publicación, faltan: (b) ya hecho por este mismo commit;
+(c) push a `origin/main`; (d) la VM de Windows compila
+`AuraStudioSetup-0.2.0-x64.exe` / `-arm64.exe` desde este commit exacto
+(prompt ya redactado en el plan); (e) el DMG de arriba, ya generado desde
+este mismo commit; (f) `gh release create v0.2.0` con los tres archivos.
+El release `v0.1.2` existente no se toca — decisión del dueño, no de esta
+sesión.
+
+Este commit reúne, a propósito, tres unidades de trabajo que el dueño pidió
+como una sola entrega: este pin (ST-149), la verificación de actualizaciones
+sin token y el README en inglés (ST-150), y el bump de versión a 0.2.0 que
+ST-150 ya dejó hecho. Un solo commit, para que el release `v0.2.0` en
+`Ricolinos/Aura-Studio` salga de un punto limpio del historial.

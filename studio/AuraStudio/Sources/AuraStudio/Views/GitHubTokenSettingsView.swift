@@ -1,14 +1,22 @@
 import SwiftUI
 import AppKit
 
-/// ST-074: sección "GitHub (repos privados)" de Ajustes › General.
+/// ST-074, actualizado en ST-150: sección "GitHub (opcional)" de
+/// Ajustes › General.
 ///
-/// Los repositorios del firmware son privados; sin un token de solo
-/// lectura en el Llavero, `AuraUpdateChecker` no puede saber si hay
-/// una versión nueva (GitHub responde 404). Aquí el usuario pega el
-/// token, lo guarda en el Llavero (`GitHubToken`), lo quita y lo
-/// prueba contra el repo de Aura. La instalación del firmware NO
-/// depende de esto: los binarios van embebidos en la app.
+/// Los cuatro repositorios (los tres firmwares y Aura Studio) son
+/// públicos desde la ronda de publicación -- avisar de versiones
+/// nuevas funciona sin ningún token. Lo que un token de solo lectura sí
+/// sigue aportando es el límite de peticiones: sin token, la API de
+/// GitHub limita a 60 consultas por hora por dirección IP; con token,
+/// a 5000. Con la caché de 24h que ya tiene `AuraUpdateChecker` nunca
+/// hace falta en el uso normal, pero queda disponible para quien
+/// comparta IP con muchas otras consultas (una red corporativa, varias
+/// instalaciones de Aura Studio detrás del mismo router). Aquí el
+/// usuario pega el token, lo guarda en el Llavero (`GitHubToken`), lo
+/// quita y lo prueba contra el repo de Aura. La instalación del
+/// firmware NUNCA depende de esto: los binarios van embebidos en la
+/// app.
 ///
 /// ST-053: ningún botón queda gris sin explicación -- "Guardar" y
 /// "Probar" responden siempre y dicen en pantalla por qué no pudieron.
@@ -29,7 +37,7 @@ struct GitHubTokenSettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                Text("GitHub (repos privados)").font(.headline)
+                Text("GitHub (opcional)").font(.headline)
                 if isSaved {
                     Label("Token en el Llavero", systemImage: "checkmark.circle.fill")
                         .font(.caption).foregroundStyle(.green)
@@ -45,10 +53,10 @@ struct GitHubTokenSettingsView: View {
                 .font(.caption)
             }
 
-            Text("Los repositorios del firmware son privados. Sin este token, Aura Studio no puede avisarte cuando hay una versión nueva; instalar el firmware sigue funcionando igual, porque viene incluido en la app.")
+            Text("Los repositorios de los firmwares son públicos: Aura Studio ya avisa de versiones nuevas sin necesitar nada de esto. Un token de solo lectura solo eleva el límite de consultas a la API de GitHub (útil si compartes tu conexión con muchas otras consultas); instalar el firmware nunca depende de esto, porque viene incluido en la app.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
-            Text("Crea un fine-grained token en github.com › Settings › Developer settings con acceso solo a Aura-Firmware, Metro-Aura y moonlit-aura y permiso Contents: Read-only. Solo se usa para consultar si hay versiones nuevas.")
+            Text("Si de todas formas quieres uno: crea un fine-grained token en github.com › Settings › Developer settings con acceso solo a Aura-Firmware, Metro-Aura y moonlit-aura y permiso Contents: Read-only.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -132,11 +140,10 @@ struct GitHubTokenSettingsView: View {
                     testMessage = Message(text: "GitHub respondió, pero no hay ningún Release con versión reconocible.", isError: true)
                 }
             } catch {
-                if token == nil {
-                    testMessage = Message(text: "No hay token guardado y el repositorio es privado: GitHub no devolvió nada. Pega y guarda un token primero.", isError: true)
-                } else {
-                    testMessage = Message(text: "No se pudo consultar GitHub (¿sin conexión?): \(error.localizedDescription)", isError: true)
-                }
+                // ST-150: el repo es público -- sin token esto casi siempre
+                // es falta de red o el límite de peticiones sin autenticar
+                // (60/hora), no falta de permiso.
+                testMessage = Message(text: "No se pudo consultar GitHub (¿sin conexión, o se agotó el límite de peticiones sin token?): \(error.localizedDescription)", isError: true)
             }
         }
     }

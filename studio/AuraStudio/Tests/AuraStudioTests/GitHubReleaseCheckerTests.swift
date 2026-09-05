@@ -142,4 +142,68 @@ final class GitHubReleaseCheckerFetchTests: XCTestCase {
             XCTFail("error inesperado: \(error)")
         }
     }
+
+    // MARK: - ST-150: los repos son públicos, sin token
+
+    /// Los tres repos son públicos desde la ronda de publicación: sin
+    /// token, la petición no debe llevar cabecera `Authorization` en
+    /// ninguna de las tres familias -- llevarla de todos modos no
+    /// rompería nada hoy, pero significaría que el código sigue
+    /// asumiendo que hace falta autenticarse para leerlos.
+    func testWithoutATokenNoAuthorizationHeaderTravelsForAnyFamily() async throws {
+        for family: FirmwareFamily in [.aura, .metro, .moonlit] {
+            var capturedRequest: URLRequest?
+            MockURLProtocol.handler = { request in
+                capturedRequest = request
+                let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                return (response, Data("[]".utf8))
+            }
+            _ = try await GitHubReleaseChecker.fetchReleases(session: mockSession(), family: family, token: nil)
+            XCTAssertNil(capturedRequest?.value(forHTTPHeaderField: "Authorization"),
+                         "\(family): sin token no debe viajar Authorization")
+        }
+    }
+
+    /// Cada familia le pregunta al repo público que le corresponde --
+    /// nunca al de Aura por default, que era exactamente el bug que
+    /// ST-046 cerró para todo lo demás.
+    func testEachFamilyQueriesItsOwnPublicRepository() async throws {
+        let expected: [(family: FirmwareFamily, url: String)] = [
+            (.aura, "https://api.github.com/repos/Ricolinos/Aura-Firmware/releases"),
+            (.metro, "https://api.github.com/repos/Ricolinos/Metro-Aura/releases"),
+            (.moonlit, "https://api.github.com/repos/Ricolinos/moonlit-aura/releases"),
+        ]
+        for (family, url) in expected {
+            var capturedURL: URL?
+            MockURLProtocol.handler = { request in
+                capturedURL = request.url
+                let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+                return (response, Data("[]".utf8))
+            }
+            _ = try await GitHubReleaseChecker.fetchReleases(session: mockSession(), family: family, token: nil)
+            XCTAssertEqual(capturedURL?.absoluteString, url)
+        }
+    }
+}
+
+/// ST-150: contra la API real de GitHub, sin ningún token -- la prueba
+/// honesta de que "los repos son públicos, no hace falta nada guardado
+/// en el Llavero para avisar de versiones nuevas" no la da un mock que
+/// yo mismo escribí, la da la red de verdad. Se salta sin red, no falla.
+final class GitHubReleaseCheckerLiveTests: XCTestCase {
+    private func skipIfOffline() async throws {
+        guard (try? await URLSession.shared.data(from: URL(string: "https://api.github.com")!)) != nil else {
+            throw XCTSkip("Sin acceso a red, saltando test de integracion")
+        }
+    }
+
+    func testAllThreePublicReposAnswerWithoutAToken() async throws {
+        try await skipIfOffline()
+
+        for family: FirmwareFamily in [.aura, .metro, .moonlit] {
+            let releases = try await GitHubReleaseChecker.fetchReleases(family: family, token: nil)
+            XCTAssertFalse(releases.isEmpty, "\(family.displayName): el repo público no devolvió ningún Release")
+            XCTAssertFalse(GitHubReleaseChecker.lastAuthFailure)
+        }
+    }
 }

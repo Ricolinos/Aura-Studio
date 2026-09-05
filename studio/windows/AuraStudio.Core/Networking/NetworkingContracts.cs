@@ -7,7 +7,7 @@ namespace AuraStudio.Core.Networking;
 /// </summary>
 public static class HttpUserAgent
 {
-    public const string Value = "AuraStudio/0.1.0 (https://github.com/Ricolinos/Aura-Proyect)";
+    public const string Value = "AuraStudio/0.2.0 (https://github.com/Ricolinos/Aura-Studio)";
 }
 
 /// <summary>

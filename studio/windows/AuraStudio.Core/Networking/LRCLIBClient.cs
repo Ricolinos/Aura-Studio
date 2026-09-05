@@ -26,7 +26,7 @@ public sealed class LRCLIBClient
         [JsonPropertyName("duration")] public double? Duration { get; init; }
     }
 
-    public const string ClientIdentifier = "AuraStudio v0.1.0 (https://github.com/Ricolinos/Aura-Proyect)";
+    public const string ClientIdentifier = "AuraStudio v0.2.0 (https://github.com/Ricolinos/Aura-Studio)";
 
     private readonly HttpClient _http;
     private readonly string _baseURL;

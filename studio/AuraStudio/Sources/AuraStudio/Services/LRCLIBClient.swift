@@ -16,7 +16,7 @@ struct LRCLIBClient {
         let duration: Double?
     }
 
-    static let clientIdentifier = "AuraStudio v0.1.0 (https://github.com/Ricolinos/Aura-Proyect)"
+    static let clientIdentifier = "AuraStudio v0.2.0 (https://github.com/Ricolinos/Aura-Studio)"
 
     private let session: URLSession
     private let baseURL: URL

@@ -7,15 +7,17 @@ using AuraStudio.Core;
 namespace AuraStudio.Core.Networking;
 
 /// <summary>
-/// Consume <c>GET /repos/&lt;owner&gt;/&lt;repo&gt;/releases</c>. ST-074: los repos
-/// del firmware son privados desde 2026-08; si el usuario guardó un token de
-/// solo lectura (<c>GitHubToken</c>), la petición va autenticada; sin token se
-/// sigue preguntando como repo público (GitHub contesta 404 y el aviso de
-/// versiones simplemente calla). Se usa <c>/releases</c> (lista) y no
-/// <c>/releases/latest</c> a propósito: <c>/latest</c> excluye prereleases y
-/// drafts por definición de GitHub, y mientras el firmware siga en beta esa
-/// llamada nunca devolvería nada útil. Acá es Studio quien decide, con
-/// <c>PickLatest</c>, si una prerelease cuenta como "la más nueva".
+/// Consume <c>GET /repos/&lt;owner&gt;/&lt;repo&gt;/releases</c>. ST-074, actualizado
+/// en ST-150: los tres repos del firmware son públicos, así que esto funciona
+/// igual con o sin token — si el usuario guardó uno de solo lectura
+/// (<c>GitHubToken</c>), la petición va autenticada (sube el límite de
+/// peticiones de la API, de 60 a 5000 por hora); sin token se pregunta igual
+/// como repo público y GitHub responde normal. Se usa <c>/releases</c> (lista)
+/// y no <c>/releases/latest</c> a propósito: <c>/latest</c> excluye
+/// prereleases y drafts por definición de GitHub, y mientras el firmware siga
+/// en beta esa llamada nunca devolvería nada útil. Acá es Studio quien
+/// decide, con <c>PickLatest</c>, si una prerelease cuenta como "la más
+/// nueva".
 /// </summary>
 public static class GitHubReleaseChecker
 {

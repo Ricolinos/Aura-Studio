@@ -108,12 +108,13 @@ enum GitHubReleaseCheckerError: Error, Equatable {
     case unknownFamily
 }
 
-/// Consume `GET /repos/<owner>/<repo>/releases`. ST-074: los repos
-/// del firmware son privados desde 2026-08; si el usuario guardó un
-/// token de solo lectura en el Llavero (`GitHubToken`), la petición
-/// va autenticada; sin token se sigue preguntando como repo público
-/// (GitHub contesta 404 y el aviso de versiones simplemente calla).
-/// Se usa `/releases` (lista) y no
+/// Consume `GET /repos/<owner>/<repo>/releases`. ST-074, actualizado en
+/// ST-150: los tres repos del firmware son públicos, así que esto
+/// funciona igual con o sin token -- si el usuario guardó uno de solo
+/// lectura en el Llavero (`GitHubToken`), la petición va autenticada
+/// (sube el límite de peticiones de la API, de 60 a 5000 por hora);
+/// sin token se pregunta igual como repo público y GitHub responde
+/// normal. Se usa `/releases` (lista) y no
 /// `/releases/latest` a proposito: `/latest` excluye prereleases y
 /// drafts por definicion de GitHub, y mientras el firmware siga en
 /// beta esa llamada nunca devolveria nada util. Aca es Studio quien

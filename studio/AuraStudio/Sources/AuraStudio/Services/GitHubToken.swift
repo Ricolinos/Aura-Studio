@@ -1,12 +1,14 @@
 import Foundation
 import Security
 
-/// ST-074: token de GitHub de SOLO LECTURA para consultar Releases de
-/// los repositorios del firmware, que pasaron a ser privados. Vive
-/// únicamente en el Llavero de macOS (`kSecClassGenericPassword`,
-/// sin iCloud Keychain), igual que las API keys de `APIKeyStore`
-/// (D-203, ST-032): nunca en `UserDefaults`, nunca en logs, nunca en
-/// el repo.
+/// ST-074, opcional desde ST-150: token de GitHub de SOLO LECTURA para
+/// consultar Releases de los repositorios del firmware. Los tres son
+/// públicos, así que esto ya no hace falta para el aviso de "hay una
+/// versión nueva" -- solo eleva el límite de peticiones a la API
+/// (60/hora sin token, 5000/hora con uno). Vive únicamente en el
+/// Llavero de macOS (`kSecClassGenericPassword`, sin iCloud Keychain),
+/// igual que las API keys de `APIKeyStore` (D-203, ST-032): nunca en
+/// `UserDefaults`, nunca en logs, nunca en el repo.
 ///
 /// Solo lo consume `GitHubReleaseChecker.fetchReleases` (el aviso de
 /// "hay una versión nueva"). La INSTALACIÓN no lo necesita: los

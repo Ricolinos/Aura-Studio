@@ -75,7 +75,7 @@ struct MusicBrainzClient {
         let artists: [Artist]
     }
 
-    static let userAgent = "AuraStudio/0.1.0 (https://github.com/Ricolinos/Aura-Proyect)"
+    static let userAgent = "AuraStudio/0.2.0 (https://github.com/Ricolinos/Aura-Studio)"
     private let session: URLSession
     private let baseURL: URL
     private let rateLimiter: MusicBrainzRateLimiter

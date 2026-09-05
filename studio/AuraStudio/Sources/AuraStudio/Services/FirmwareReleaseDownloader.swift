@@ -168,12 +168,13 @@ enum FirmwareReleaseDownloader {
         return Prepared(tag: latest.tagName, directory: directory)
     }
 
-    /// Baja un asset por la URL del API. En un repositorio privado esta
-    /// es la unica via que funciona con token: `browser_download_url`
-    /// redirige a un host de almacenamiento que **rechaza** la cabecera
-    /// `Authorization` ("only one auth mechanism allowed"). Por eso
-    /// tambien el delegado de abajo: GitHub responde 302 hacia ese host
-    /// y hay que soltar la cabecera en el salto.
+    /// Baja un asset por la URL del API, con o sin token (ST-150: los
+    /// repos son públicos, así que sin token esto funciona igual).
+    /// Cuando SÍ hay token, esta es la única vía que funciona:
+    /// `browser_download_url` redirige a un host de almacenamiento que
+    /// **rechaza** la cabecera `Authorization` ("only one auth mechanism
+    /// allowed"). Por eso también el delegado de abajo: GitHub responde
+    /// 302 hacia ese host y hay que soltar la cabecera en el salto.
     static func downloadAsset(_ asset: GitHubReleaseAsset,
                                session: URLSession = .shared,
                                token: String?,

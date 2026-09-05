@@ -2,6 +2,10 @@
 
   <PropertyGroup>
    <OutputType>WinExe</OutputType>
+   <!-- Versión del producto: la misma que AppVersion en installer/AuraStudio.iss
+        y MARKETING_VERSION en project.yml (macOS). Sin esto, Assembly.GetName().Version
+        cae al default del SDK (1.0.0.0) y SettingsViewModel.AppVersion mentía. -->
+   <Version>0.2.0</Version>
    <!-- La versión del TFM = SDK de Windows instalado con el que se compila
         (esta VM solo tiene 10.0.26100). El mínimo soportado en runtime sigue
         siendo 10.0.19041 (Windows 10 2004), como pide D4 del plan. -->

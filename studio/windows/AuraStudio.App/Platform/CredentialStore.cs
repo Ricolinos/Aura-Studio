@@ -151,16 +151,18 @@ public sealed record ApiKeyService(string Key, string DisplayName, string Summar
         "https://www.themoviedb.org/settings/api");
 
     /// <summary>
-    /// ST-074: el token de GitHub. No es una fuente de metadata — sin él, el
-    /// aviso de versión nueva no funciona porque los repositorios del firmware
-    /// son privados. <b>Instalar el firmware no depende de esto</b>: los
+    /// ST-074, opcional desde ST-150: el token de GitHub. No es una fuente de
+    /// metadata — los tres repos del firmware son públicos, así que el aviso
+    /// de versión nueva ya funciona sin esto. Un token de solo lectura solo
+    /// eleva el límite de peticiones a la API (60/hora sin token, 5000/hora
+    /// con uno). <b>Instalar el firmware nunca depende de esto</b>: los
     /// binarios vienen incluidos en la app.
     /// </summary>
     public static readonly ApiKeyService GitHub = new(
         "github",
-        "GitHub (repositorios privados)",
-        "Los repositorios del firmware son privados. Sin este token, Aura Studio no puede avisarte cuando hay una versión nueva; instalar el firmware sigue funcionando igual, porque viene incluido en la app.",
-        "Crea un token de acceso personal \"fine-grained\" en github.com › Settings › Developer settings, con acceso solo a Aura-Firmware, Metro-Aura y moonlit-aura, y permiso Contents: Read-only. Solo se usa para consultar si hay versiones nuevas.",
+        "GitHub (opcional)",
+        "Los repositorios de los firmwares son públicos: Aura Studio ya avisa de versiones nuevas sin necesitar nada de esto. Un token de solo lectura solo eleva el límite de consultas a la API de GitHub; instalar el firmware nunca depende de esto, porque viene incluido en la app.",
+        "Si de todas formas quieres uno: crea un token de acceso personal \"fine-grained\" en github.com › Settings › Developer settings, con acceso solo a Aura-Firmware, Metro-Aura y moonlit-aura, y permiso Contents: Read-only.",
         "https://github.com/settings/personal-access-tokens/new");
 
     public static readonly IReadOnlyList<ApiKeyService> MetadataServices = [FanartTV, Tmdb];
