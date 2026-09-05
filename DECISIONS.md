@@ -4564,3 +4564,50 @@ desactualizados sin ningún cambio de código.
 - No se tocó `CONTRATO-firmware-studio.md` (ya está en v20 desde ST-159,
   que lo copió idéntico de `Aura-Firmware`) ni `§D.5` (la caché maestra
   del firmware sigue en 130×130, sin relación con este cambio).
+
+## ST-157 (paso 1/6) — `LibraryFileWorker`: `prepareMusic` fuera del actor principal
+
+Continuación de la Fase 4 (ST-156), confirmada directamente con el
+dueño: sigue ahora, incremental, un commit por operación, verificando
+con él después de cada uno (no recién al final de la fase).
+
+`LibraryFileWorker` (nuevo, `Services/LibraryFileWorker.swift`): un
+`actor` (no `@MainActor`) con `prepareMusic(_:)` -- copia deliberada de
+`LibraryViewModel.prepareMusic` (mismo orden de pasos: copiar/
+transcodificar, recortar y embeber carátula, escribir ID3, sidecar de
+letra), no una reescritura. Recibe todo lo que necesita como
+`PrepareMusicRequest` (`Sendable`: `sourceURL`, `stagingDirectory`,
+`metadata`, `audioQuality`, `coverArtPolicy`) -- nunca
+`LibraryViewModel`/`AppPreferences` completos, que son afines al actor
+principal y cruzarlos tal cual habría sido el error de concurrencia
+típico de este refactor.
+
+`LibraryViewModel.prepareMusic` pasa de `private` a visibilidad de
+módulo (mismo criterio que `persistCatalog()` en la Fase 0), para que
+la prueba de equivalencia pueda llamar a las dos versiones lado a lado.
+**Todavía no tiene ningún llamador** -- este commit solo agrega el
+worker y prueba que produce lo mismo; migrar `setRating`/
+`clearCoverArt`/etc. para que lo usen de verdad es un paso aparte (3 y
+4 de esta lista).
+
+### La prueba que hace este refactor seguro
+
+`LibraryFileWorkerEquivalenceTests.swift` (nuevo, 3 pruebas): 50 pistas
+sintéticas, comparando el resultado byte a byte entre
+`LibraryViewModel.prepareMusic` (el camino viejo) y `LibraryFileWorker.
+prepareMusic` (el nuevo) -- para "mantener original" (política default,
+no depende de que `ffmpeg` esté instalado en la máquina que corre la
+prueba) con carátula por pista Y con carátula por álbum (las dos
+políticas reales que existen), más una prueba aparte para el sidecar
+`.lrc`. Las tres pasan: mismos bytes, mismo nombre de archivo. La
+transcodificación real (`audioQuality: .compressed`, que sí llama
+`ffmpeg`) no se probó acá -- es la misma llamada a `AudioTranscoder` en
+los dos lados, sin lógica nueva que pueda haber divergido.
+
+### Verificación
+
+`swift build`, `xcodebuild` (Debug, Swift 6 estricto) y `swift test`:
+792/792 en verde. `scripts/build-app.sh` verificado contra un
+directorio temporal (Release). Nada de esto cambia comportamiento
+observable todavía -- `prepareMusic` de `LibraryViewModel` sigue siendo
+lo que corre en producción hasta el paso 2.

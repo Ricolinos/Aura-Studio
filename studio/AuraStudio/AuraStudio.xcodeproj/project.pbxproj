@@ -71,9 +71,11 @@
 		3C9BA6C7EC120BEA5C9F6DC5 /* SimilarItemsDetectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 82C6AEB753EB596261D12780 /* SimilarItemsDetectorTests.swift */; };
 		3CA0A3911ADDD2EED7918743 /* PrivilegedExecutorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F0A3F90A397101E33636987 /* PrivilegedExecutorTests.swift */; };
 		3ED4A0A15C5D9AAF4324C069 /* APIKeyStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38D65AA4A8035F7A98B1544B /* APIKeyStoreTests.swift */; };
+		3EFC63921FCED5C452445D8D /* LibraryFileWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47743EE0AFDC25CC932BDBB /* LibraryFileWorker.swift */; };
 		3F24271B399390E28A24C5A2 /* DeviceGeneralView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E7628837584B290697CA067 /* DeviceGeneralView.swift */; };
 		401404E1D0A6D6FFBB155F2C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14D5A27F7EA14F700832333A /* ContentView.swift */; };
 		40C77AF1FDE67E4379751F22 /* ThemesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 414CDC551592AE3B57A31C32 /* ThemesView.swift */; };
+		439F2B0C5CA093DAF294EA13 /* LibraryFileWorkerEquivalenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4C0B18EAD871AB2CB02A249 /* LibraryFileWorkerEquivalenceTests.swift */; };
 		477047AEFFB6167A3BB0EA65 /* AlbumCoverPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 024CBB3922236478FC2CB4D9 /* AlbumCoverPickerView.swift */; };
 		47CB97EC01FE0D881B00DC5C /* LibrarySyncDeleteAllContentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54210365FABAF87A55C820A6 /* LibrarySyncDeleteAllContentTests.swift */; };
 		4822E27747BE866F4E933C18 /* GitHubTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43B2B93C80B360CA92398D78 /* GitHubTokenTests.swift */; };
@@ -398,6 +400,7 @@
 		A0CF9C66B5F702F5086AFE98 /* PathSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathSanitizerTests.swift; sourceTree = "<group>"; };
 		A2AFC6DCF7F164C535175071 /* AppStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStrings.swift; sourceTree = "<group>"; };
 		A44B703F4DB8DCD3F12F4492 /* ArtistNameNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistNameNormalizer.swift; sourceTree = "<group>"; };
+		A4C0B18EAD871AB2CB02A249 /* LibraryFileWorkerEquivalenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryFileWorkerEquivalenceTests.swift; sourceTree = "<group>"; };
 		A5D90CE89259CFECF42A8C20 /* SquareCropPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SquareCropPlan.swift; sourceTree = "<group>"; };
 		A5E9AF411CC0AC72D66C9F63 /* ThemeValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeValidator.swift; sourceTree = "<group>"; };
 		A748D34D6FB4243BEE9BB64A /* AlbumsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumsView.swift; sourceTree = "<group>"; };
@@ -450,6 +453,7 @@
 		D365079CDE0C53D8F427BB2E /* ArtistImageStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistImageStore.swift; sourceTree = "<group>"; };
 		D3ABCD2D0D6F8611364F950C /* DeviceSyncIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSyncIndex.swift; sourceTree = "<group>"; };
 		D3F0CDAA153138813C9AF84E /* AuraDeviceProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraDeviceProbe.swift; sourceTree = "<group>"; };
+		D47743EE0AFDC25CC932BDBB /* LibraryFileWorker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryFileWorker.swift; sourceTree = "<group>"; };
 		D789632A0A38C211E33DFCBF /* MediaTableRowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaTableRowTests.swift; sourceTree = "<group>"; };
 		D91D24A2286B684E8FE45C2F /* SharedCatalogPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCatalogPath.swift; sourceTree = "<group>"; };
 		D921E701B695E44C62DF9A38 /* CategoryIndexWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryIndexWriterTests.swift; sourceTree = "<group>"; };
@@ -679,6 +683,7 @@
 				2656D012F16CBEADE3FF9A6D /* InstallPlannerTests.swift */,
 				A077ACC4534A70565AC6B622 /* IPodDiskIdentifierTests.swift */,
 				DA27EA46AF63E39DC0E94748 /* LibraryEnricherTests.swift */,
+				A4C0B18EAD871AB2CB02A249 /* LibraryFileWorkerEquivalenceTests.swift */,
 				B4B1B446620BF0826DE1BEF2 /* LibraryFolderDropTests.swift */,
 				50C985AB6AA76CE6D4E38242 /* LibraryGroupingTests.swift */,
 				3854E1521F1D1535773CA89D /* LibraryLegacyMigrationTests.swift */,
@@ -809,6 +814,7 @@
 				2B7808E74C42090DED30DCD9 /* IPodDiskIdentifier.swift */,
 				117BF63B29CADB076B19CA27 /* IPodMonitor.swift */,
 				206063864F8205232A3581AE /* LibraryEnricher.swift */,
+				D47743EE0AFDC25CC932BDBB /* LibraryFileWorker.swift */,
 				48CC2E3940E0EC5127461CB5 /* LibrarySync.swift */,
 				F5EB599930E65EEEA8E31ACE /* LocalTagReader.swift */,
 				2A3A899326AAAF78FF4F60C7 /* LRCLIBClient.swift */,
@@ -1001,6 +1007,7 @@
 				57FF776CC6D0F6C39B27CA45 /* InstallManifestTests.swift in Sources */,
 				D2B29783F7FA00EA316CA587 /* InstallPlannerTests.swift in Sources */,
 				0183EFC24D46256D94033FED /* LibraryEnricherTests.swift in Sources */,
+				439F2B0C5CA093DAF294EA13 /* LibraryFileWorkerEquivalenceTests.swift in Sources */,
 				A0BDFCBDE136A9D22AC2FA61 /* LibraryFolderDropTests.swift in Sources */,
 				238917846EFA62670BDB518D /* LibraryGroupingTests.swift in Sources */,
 				A272BCA595633440A1F595A9 /* LibraryLegacyMigrationTests.swift in Sources */,
@@ -1134,6 +1141,7 @@
 				39A338816342C5D315399C77 /* LRCLIBClient.swift in Sources */,
 				5293F50A183109734EC3279E /* LibraryBrowsingComponents.swift in Sources */,
 				B3674CA82A35D45F26989B93 /* LibraryEnricher.swift in Sources */,
+				3EFC63921FCED5C452445D8D /* LibraryFileWorker.swift in Sources */,
 				9708C9B6AD06AFB89FA7A062 /* LibraryGrouping.swift in Sources */,
 				4CE07ED3A6AF6A3EA04D9A2C /* LibraryItem.swift in Sources */,
 				C3ED448AEE28EACD02E4E2CC /* LibraryPersistence.swift in Sources */,

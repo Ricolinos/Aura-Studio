@@ -483,7 +483,12 @@ final class LibraryViewModel: ObservableObject {
     ///     que un `cover.jpg` ahi lo pisaria el album siguiente (y encima
     ///     LibrarySync solo copia `preparedURL`, nunca lo habria subido al
     ///     iPod).
-    private func prepareMusic(item: LibraryItem, metadata: TrackMetadata) throws -> URL {
+    /// PLAN-studio-rendimiento.md Fase 4 paso 1: visibilidad `internal`
+    /// (no `private`) a propósito, para que
+    /// `LibraryFileWorkerEquivalenceTests` (`@testable import`) pueda
+    /// compararla byte a byte contra `LibraryFileWorker.prepareMusic` --
+    /// mismo criterio que `persistCatalog()` desde la Fase 0.
+    func prepareMusic(item: LibraryItem, metadata: TrackMetadata) throws -> URL {
         // "Comprimir a buena calidad" (D-192): siempre se transcodifica
         // a MP3 256kbps, sin importar el formato de origen -- incluso un
         // MP3 de origen se re-encodifica, para que el bitrate resultante
