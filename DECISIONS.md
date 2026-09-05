@@ -3246,10 +3246,30 @@ hilo de interfaz. No hizo falta ningún cambio ahí.
 `swift build` y `xcodebuild` (Debug, Swift 6 estricto — la build de SPM no
 detecta errores de `Sendable`, la de `xcodebuild` sí) en verde, sin ningún
 error de concurrencia por cruzar `DiskModeInfo`/`AuraDevice` al
-`Task.detached`. `swift test`: 756/756. Reinstalado en `/Applications` y
-relanzado con el mismo iPod real conectado: abre su ventana normalmente
-(detalle de la verificación final, más abajo en este archivo una vez
-terminó de correr `build-app.sh`).
+`Task.detached`. `swift test`: 756/756. `scripts/build-app.sh` reinstaló
+`/Applications/AuraStudio.app` (Release) con el fix; relanzado con el mismo
+iPod real todavía conectado: abre su ventana de inmediato, sin ningún
+cuelgue.
 
 Nada de esto tocó ningún archivo de Windows: el bug y su causa (TCC de
 macOS) no existen ahí.
+
+Commit `8e3fc10`, empujado a `origin/main` a continuación de `84e26b1`
+(ST-149/ST-150) — separado a propósito, no una enmienda: es un hallazgo
+posterior, con su propio diagnóstico y verificación. De paso viaja la
+primera captura real para el README (`docs/readme/01-general.png`, pantalla
+General con el iPod real conectado).
+
+### DMG regenerado
+
+El DMG de ST-149 (`dist/AuraStudio-0.2.0-20260904.dmg`,
+`d64b89a6...`) tenía el bug de este ST-151 — se borró y se generó de nuevo
+desde el binario ya corregido, mismo nombre de archivo (mismo día):
+
+- **SHA-256 nuevo**: `12f81606db7a47a06001280d2cec23cfb5f3bbdfeac02ffefa5a3169affb1c5f`
+  (verificado independiente con `shasum -a 256`)
+- Resto de los datos sin cambio: 41 MB, universal (`x86_64 arm64`), macOS
+  mínimo 14.4, firmware Aura `v0.4.6-beta` / Metro `v0.7.2` / moonlit `v0.2.2`.
+
+El hash de ST-149 (`d64b89a6...`) queda obsoleto — si alguien lo tiene
+anotado en otro lado, es el DMG con el bug del cuelgue.
