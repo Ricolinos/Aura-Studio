@@ -170,6 +170,25 @@ final class LibraryPerformanceBaselineTests: XCTestCase {
         }
     }
 
+    /// Addendum a ST-155 (Fase 3 punto 1): "una estrella" -- el ejemplo
+    /// textual del pedido de la supervisora de por qué el congelamiento
+    /// no era solo de acciones en lote. `setRating` ahora llama
+    /// `schedulePersistCatalog()` (debounce + escritura en
+    /// `Task.detached`) en vez de `persistCatalog()` directo -- esto
+    /// mide el costo en el hilo que llama, que es lo que el usuario
+    /// siente al hacer clic. Objetivo del pedido: < 10 ms.
+    func testSetRatingMainThreadCost() {
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
+        viewModel.replaceItemsForPerformanceTesting(syntheticItems)
+        // Deliberadamente SIN `makePersistenceSynchronousForTesting()`:
+        // lo que se quiere medir es justo el camino de producción real
+        // (debounce + `Task.detached`), no el modo síncrono de prueba.
+        let id = syntheticItems[0].id
+        measure {
+            viewModel.setRating(Int.random(in: 1...5), forItem: id)
+        }
+    }
+
     // MARK: - statusSummary (ST-153 addendum, Fase 1 punto 3)
     //
     // Antes: `LibraryStats.music(items:selected:)` recalculaba TODO

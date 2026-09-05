@@ -194,6 +194,7 @@
 		C45C083C46CC78000D0F840D /* LibraryStatusSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78AF5B1286F86F1B3B967983 /* LibraryStatusSummary.swift */; };
 		C4E16B0230B926F38F44808C /* DroppedURLExpanderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB78E19CE6152C4A34DF642B /* DroppedURLExpanderTests.swift */; };
 		C53547E1351DF54D95064451 /* RowsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED8D2945BDAC8711D857F1DF /* RowsModel.swift */; };
+		C67D1E3C9BDFA1BC9BEAC8E8 /* CatalogPersister.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA39E2EC2511CDDC4FAA888 /* CatalogPersister.swift */; };
 		C695524FFC68AD87BB044B1A /* CategoryIndexWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D921E701B695E44C62DF9A38 /* CategoryIndexWriterTests.swift */; };
 		C6CF154C89DCC0132D58E648 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23AD4FC67C48B4550BD7554E /* AppDelegate.swift */; };
 		C8C3FEC955A554BC479089A3 /* mks5lboot in Resources */ = {isa = PBXBuildFile; fileRef = 6799D48484C7BF9CBF98C612 /* mks5lboot */; };
@@ -326,6 +327,7 @@
 		59650F837F8005FD75204211 /* LibrarySyncSeriesNamingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySyncSeriesNamingTests.swift; sourceTree = "<group>"; };
 		5A7F236B3BC2CD5356A7477E /* ArtistImageResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistImageResolver.swift; sourceTree = "<group>"; };
 		5D2320B965F851A493392022 /* MediaInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaInfoView.swift; sourceTree = "<group>"; };
+		5EA39E2EC2511CDDC4FAA888 /* CatalogPersister.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogPersister.swift; sourceTree = "<group>"; };
 		5F7FD7689D1AF6C4178F68DD /* LibrarySyncCancellationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySyncCancellationTests.swift; sourceTree = "<group>"; };
 		5FA85A3E42CB4E67E9DAC4E5 /* DeviceState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceState.swift; sourceTree = "<group>"; };
 		5FCBED0DC8229A8F37142B89 /* moonlit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = moonlit; path = "Vendor/firmware-dist/moonlit"; sourceTree = SOURCE_ROOT; };
@@ -774,6 +776,7 @@
 				D3F0CDAA153138813C9AF84E /* AuraDeviceProbe.swift */,
 				B9961D8C11B7031D474CB9BE /* AuraUpdateChecker.swift */,
 				B8464D5E55C66D32740C7289 /* BundledArtifacts.swift */,
+				5EA39E2EC2511CDDC4FAA888 /* CatalogPersister.swift */,
 				F850F3EB621433BF09D641A2 /* ClockSyncWriter.swift */,
 				EAC95668C5FEF76FAC67EE52 /* CoverArtArchiveClient.swift */,
 				7112AA8DB5475B1134DBEECE /* CoverArtNormalizer.swift */,
@@ -1071,6 +1074,7 @@
 				B16222D07788E9A40141A546 /* BatchMediaInfoView.swift in Sources */,
 				97A1DFD383108D67DED9917B /* BootloaderUpdate.swift in Sources */,
 				5EDA0D1DF2BC765B8F8D473B /* BundledArtifacts.swift in Sources */,
+				C67D1E3C9BDFA1BC9BEAC8E8 /* CatalogPersister.swift in Sources */,
 				ABAA0A8B49C9C4BA781A5A09 /* CatalogSummary.swift in Sources */,
 				3A7E4AD12A10E84BC236D09B /* ClockSyncWriter.swift in Sources */,
 				401404E1D0A6D6FFBB155F2C /* ContentView.swift in Sources */,

@@ -4121,3 +4121,94 @@ solo se ve ejecutándolo. No las trata distinto: pasa.
 De paso, esa comprobación confirma el orden que WIC no documenta con claridad y
 que este arreglo asume: **escala, orienta, recorta**. Si algún día cambiara, las
 dos comprobaciones de orientación lo dicen en la primera corrida.
+
+## Addendum a ST-155 — punto 1: `CatalogPersister`, guardado programado ≤ 500 ms
+
+La supervisora no aceptó diferir el punto 1: el guardado de ~1 s en el
+hilo principal por cada edición individual (una estrella, una
+categoría) es una causa directa del congelamiento, separada de la de
+selección múltiple que ST-155 ya había resuelto. Implementado con el
+patrón exacto que pidió, evitando romper las pruebas que asumían
+`persistCatalog()` síncrono.
+
+### `CatalogPersister` (nuevo, `Services/CatalogPersister.swift`)
+
+`@MainActor`, con un `Snapshot` `Sendable` (copiar `items`/`playlists`
+es barato -- son arreglos de valor con copy-on-write, no arrastran el
+costo de sus 12 000 elementos solo por asignarse). Tres formas de
+guardar:
+
+- **`schedule(_:apply:)`**: programa un guardado ≤ 500 ms después de la
+  última llamada -- una llamada nueva reemplaza la pendiente y reinicia
+  el reloj, así que varias ediciones rápidas seguidas terminan en UN
+  guardado real. Cuando el debounce expira, `flush(_:)` hace la
+  escritura en un `Task.detached(priority: .utility)`.
+- **`flush(_:)`**: guardado inmediato de lo pendiente, sin esperar el
+  debounce, pero la escritura sigue fuera del hilo principal.
+- **`flushSynchronously(_:)`** / **`writeNow(_:)`**: escritura
+  inmediata Y bloqueante, en el actor que llama -- para salir de la app
+  o pasar a segundo plano (un `Task.detached` que sigue corriendo
+  cuando el proceso ya murió no sirve ahí) y para
+  `isSynchronousForTesting`.
+
+### `LibraryViewModel`: qué cambió y qué NO
+
+`persistCatalog()` **sigue siendo exactamente el mismo guardado
+inmediato y síncrono de siempre** -- ahora delega en
+`catalogPersister.writeNow(_:)`, mismo código de escritura, mismo
+comportamiento observable. Ningún llamador existente (los ~27 que no
+son `setRating`/`setCategory`) se tocó ni necesita cambios.
+
+`schedulePersistCatalog()` (nuevo) es lo que usan ahora **solo dos
+sitios**, los que la supervisora señaló textualmente como el ejemplo
+del congelamiento por edición individual: `setRating(_:forItem:)` y
+`setCategory(_:forItems:)` (de la que `setCategory(_:forItem:)` ya
+delegaba, así que también quedó cubierto). El resto de los ~27
+llamadores de `persistCatalog()` (`addDroppedFiles`,
+`clearCoverArt(ids:)`, `deleteItems`, `applyBatchEdit`, `applyReview`,
+etc.) se dejaron sin tocar a propósito: son o bien acciones en lote
+(ya arregladas en ST-155) o ediciones donde una garantía inmediata de
+"ya quedó en disco" importa más que el ahorro de un guardado
+(`applyReview` viene de una hoja modal que se cierra al guardar, por
+ejemplo).
+
+`flushPendingPersistence()` (nuevo): guardado inmediato y síncrono,
+para cuando la app sale o pasa a segundo plano -- pendiente de
+conectar a `NSApplication`/`AppDelegate` en un paso siguiente (no se
+hizo en esta pasada; el mecanismo ya existe, falta el enganche a los
+eventos del ciclo de vida de la app).
+
+`makePersistenceSynchronousForTesting()` (nuevo, solo pruebas): pone a
+`catalogPersister.isSynchronousForTesting = true`. **Auditoría
+completa antes de escribir una sola línea**: un fork de investigación
+buscó en TODO `Tests/AuraStudioTests/` qué pruebas dependen de que
+`persistCatalog()` complete sincrónicamente (patrón "mutar con un
+ViewModel A, construir un ViewModel B sobre el mismo `libraryRoot`,
+verificar sin esperar nada"). La lista que había pasado la supervisora
+(`LibraryLegacyMigrationTests`, `SharedCatalogInteropTests`,
+`CoverArtAssetsTests`) resultó ser **incorrecta** -- ninguna de esas
+tres llama a un método mutador; solo escriben `biblioteca.json` a mano
+como fixture antes de probar la CARGA. Las que sí dependen del patrón
+son dos pruebas de `LibraryViewModelLocalTagRereadTests.swift`
+(`testOfferAppearsOnceForExistingLibraryWithMusic`,
+`testAcceptingOfferRereadsAllMusicRespectingManualEditsAndDismisses`),
+pero ninguna de las dos necesitó cambios: mutan vía `addDroppedFiles`/
+`applyReview`, que siguen llamando al `persistCatalog()` síncrono de
+siempre, nunca al nuevo `schedulePersistCatalog()`. **779/779 en verde
+sin tocar ningún archivo de prueba** -- la auditoría confirmó que la
+elección conservadora de solo migrar dos llamadores (en vez de los ~27)
+evitó toda la superficie de riesgo que preocupaba.
+
+### Medido
+
+`testSetRatingMainThreadCost` (nuevo, sin `isSynchronousForTesting` --
+mide el camino de producción real): **~3 ms promedio** (2.3-7.8 ms) en
+el hilo que llama, contra el objetivo pedido de <10 ms. Antes de este
+addendum, `setRating` bloqueaba el hilo principal por el mismo ~1 s que
+medía la prueba (c) de ST-152/155, en cada estrella.
+
+### Verificación
+
+`swift build`, `xcodebuild` (Debug, Swift 6 estricto) y `swift test`:
+780/780 en verde. `scripts/build-app.sh` verificado contra un
+directorio temporal (Release).

@@ -561,7 +561,10 @@ final class LibraryViewModel: ObservableObject {
         for index in items.indices where ids.contains(items[index].id) {
             items[index].category = category
         }
-        persistCatalog()
+        // PLAN-studio-rendimiento.md Fase 3 punto 1: varias reasignaciones
+        // rápidas seguidas (arrastrar ítems uno a uno) coalescen en un
+        // solo guardado real, fuera del hilo principal.
+        schedulePersistCatalog()
     }
 
     /// Renombra un álbum de fotos completo (encargo del dueño,
@@ -772,7 +775,12 @@ final class LibraryViewModel: ObservableObject {
         metadata.rating = rating.map { max(0, min(5, $0)) }
         items[index].metadata = metadata
         items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
-        persistCatalog()
+        // PLAN-studio-rendimiento.md Fase 3 punto 1: poner varias
+        // estrellas seguidas (fila por fila) coalesce en un solo
+        // guardado real, fuera del hilo principal -- diagnóstico §0.4,
+        // el ejemplo textual del dueño de por qué se sentía el
+        // congelamiento en ediciones individuales, no solo en lote.
+        schedulePersistCatalog()
     }
 
     // MARK: - Posters de video (ST-033)
@@ -1876,79 +1884,74 @@ final class LibraryViewModel: ObservableObject {
     /// caso de perderla es una reescritura de más, nunca una de menos.
     private var lastWrittenCoverHash: [UUID: Int] = [:]
 
-    /// Serializa el catalogo completo. Las portadas se escriben como
-    /// archivos aparte (`Portadas/<id>.jpg`) -- ver PersistedLibrary.
+    /// PLAN-studio-rendimiento.md Fase 3 punto 1 (addendum a ST-155):
+    /// coalesce guardados de ediciones rápidas seguidas -- ver
+    /// `CatalogPersister`.
+    private let catalogPersister = CatalogPersister()
+
+    /// Solo para pruebas: `schedulePersistCatalog()` escribe de
+    /// inmediato en vez de esperar el debounce de 500 ms, para el
+    /// patrón "mutar con un ViewModel, cargar con otro sobre el mismo
+    /// `libraryRoot`, verificar sin esperar nada" que ya usaban algunas
+    /// pruebas escritas antes de que existiera este coalescer.
+    func makePersistenceSynchronousForTesting() {
+        catalogPersister.isSynchronousForTesting = true
+    }
+
+    private func makeCatalogSnapshot() -> CatalogPersister.Snapshot {
+        CatalogPersister.Snapshot(items: items, playlists: playlists,
+                                  coversNormalizedVersion: coversNormalizedVersion,
+                                  libraryRoot: libraryRoot,
+                                  lastWrittenCoverHash: lastWrittenCoverHash)
+    }
+
+    private func applyCatalogWriteResult(_ result: CatalogPersister.WriteResult) {
+        lastWrittenCoverHash = result.lastWrittenCoverHash
+        if let error = result.errorDescription {
+            lastError = error
+        }
+    }
+
+    /// PLAN-studio-rendimiento.md Fase 3 punto 1: para ediciones rápidas
+    /// individuales (una estrella, una categoría) -- varias seguidas
+    /// coalescen en un solo guardado real, con la escritura fuera del
+    /// hilo principal. `persistCatalog()` sigue siendo el guardado
+    /// inmediato de siempre (acciones en lote, y cualquier sitio que
+    /// necesite la garantía de que ya quedó en disco al volver).
+    func schedulePersistCatalog() {
+        catalogPersister.schedule(makeCatalogSnapshot()) { [weak self] result in
+            self?.applyCatalogWriteResult(result)
+        }
+    }
+
+    /// Guardado inmediato y síncrono -- para salir de la app o pasar a
+    /// segundo plano, donde hace falta la garantía de que el archivo
+    /// quedó escrito antes de que el proceso pueda morir (un guardado
+    /// programado que sigue corriendo por detrás no sirve ahí).
+    func flushPendingPersistence() {
+        catalogPersister.flushSynchronously { [weak self] result in
+            self?.applyCatalogWriteResult(result)
+        }
+    }
+
+    /// Serializa el catalogo completo, de inmediato -- para acciones en
+    /// lote y cualquier sitio que necesite la garantía de que ya quedó
+    /// en disco antes de seguir. Las portadas se escriben como archivos
+    /// aparte (`Portadas/<id>.jpg`) -- ver PersistedLibrary.
     ///
     /// PLAN-studio-rendimiento.md Fase 0: visibilidad `internal` (no
     /// `private`) a propósito, para que las pruebas de rendimiento
     /// (`@testable import AuraStudio`) puedan medirla aislada. Sigue sin
     /// ser parte de ninguna API pública fuera del módulo.
+    ///
+    /// PLAN-studio-rendimiento.md Fase 3 punto 1 (addendum a ST-155): la
+    /// escritura en sí vive en `CatalogPersister` (`writeNow`, mismo
+    /// código que antes, ahora compartido con `schedulePersistCatalog()`)
+    /// -- este método arma el snapshot y aplica el resultado de siempre,
+    /// sin cambiar su comportamiento observable: sigue siendo síncrono,
+    /// en el actor principal, exactamente como antes de esta ronda.
     func persistCatalog() {
-        var persisted = PersistedLibrary()
-        // ST-141: la marca de "carátulas ya cuadradas" sobrevive a cada
-        // guardado. Perderla haría que la migración se repitiera en cada
-        // apertura (barata, pero recorriendo miles de archivos de balde).
-        persisted.coversNormalized = coversNormalizedVersion
-        // PLAN-studio-rendimiento.md Fase 3 punto 2: diagnóstico §0.4 --
-        // esto reescribía TODAS las carátulas en cada guardado, aunque
-        // ninguna hubiera cambiado. Ahora, solo la que cambió desde la
-        // última vez que se escribió de verdad -- el resto conserva su
-        // ruta (el archivo ya está en disco) sin tocarlo.
-        var coverIDsOnDisk: Set<UUID> = []
-        for item in items {
-            var coverRelative: String?
-            if let cover = item.metadata?.coverArtData {
-                let coverURL = coversDirectory.appendingPathComponent("\(item.id.uuidString).jpg")
-                let hash = cover.hashValue
-                if lastWrittenCoverHash[item.id] == hash {
-                    coverRelative = "\(PersistedLibrary.coversDirName)/\(item.id.uuidString).jpg"
-                    coverIDsOnDisk.insert(item.id)
-                } else if (try? cover.write(to: coverURL, options: .atomic)) != nil {
-                    coverRelative = "\(PersistedLibrary.coversDirName)/\(item.id.uuidString).jpg"
-                    lastWrittenCoverHash[item.id] = hash
-                    coverIDsOnDisk.insert(item.id)
-                }
-            }
-            persisted.items.append(PersistedLibraryItem(
-                id: item.id,
-                sourceRelativePath: relativePath(of: item.sourceURL),
-                kind: LibraryPersistenceMapper.persistedKind(item.kind),
-                status: LibraryPersistenceMapper.persistedStatus(item.status),
-                metadata: LibraryPersistenceMapper.persistedMetadata(item.metadata),
-                preparedRelativePath: item.preparedURL.map { relativePath(of: $0) },
-                coverRelativePath: coverRelative,
-                category: item.category,
-                seriesName: item.seriesName,
-                season: item.season,
-                episode: item.episode,
-                photoAlbum: item.photoAlbum,
-                metadataEditedByUser: item.metadataEditedByUser,
-                addedAt: item.addedAt
-            ))
-        }
-        // Un ítem borrado, o al que le quitaron la carátula, deja de
-        // aparecer en `coverIDsOnDisk` -- si vuelve a tener una más
-        // adelante (id reusado nunca pasa con UUID, pero una carátula
-        // reasignada sí), se escribe de cero en vez de darse por buena
-        // por error.
-        lastWrittenCoverHash = lastWrittenCoverHash.filter { coverIDsOnDisk.contains($0.key) }
-        persisted.playlists = playlists.map {
-            PersistedPlaylist(id: $0.id, name: $0.name, trackItemIDs: $0.trackItemIDs,
-                               imageRelativePath: $0.imageRelativePath)
-        }
-
-        do {
-            let encoder = JSONEncoder()
-            // PLAN-studio-rendimiento.md Fase 3 punto 3: sin
-            // `.prettyPrinted` -- `.sortedKeys` se conserva a propósito,
-            // por reproducibilidad del diff (un `git diff`/`diff` de
-            // `biblioteca.json` entre dos guardados solo cambia lo que
-            // de verdad cambió, sin reordenar claves al azar).
-            encoder.outputFormatting = [.sortedKeys]
-            try encoder.encode(persisted).write(to: catalogURL, options: .atomic)
-        } catch {
-            lastError = "No se pudo guardar el catalogo de la biblioteca: \(error.localizedDescription)"
-        }
+        applyCatalogWriteResult(catalogPersister.writeNow(makeCatalogSnapshot()))
     }
 
     private func loadCatalog() {
