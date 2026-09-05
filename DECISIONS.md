@@ -5518,3 +5518,79 @@ responde" entre 9 y 15 segundos al arrancar (~12 s de CPU): la carga de la
 biblioteca corre en el hilo de interfaz desde el constructor. Se recupera sola y
 no tiene que ver con este arreglo — queda anotado acá para que no se pierda, y
 se propone aparte.
+
+## ST-173 — Instaladores de Windows 0.2.2 (ST-171 y pin Metro v0.7.3 / moonlit v0.2.3 sobre 0.2.1)
+
+Arma los dos instaladores del parche `0.2.2`, desde el commit de versión
+`08204e0` (`main`, `AuraStudio.iss` `AppVersion "0.2.2"` y
+`AuraStudio.App.csproj` `<Version>0.2.2</Version>`, verificados antes de
+compilar).
+
+### Qué trae 0.2.2 que 0.2.1 no tenía
+
+- **ST-171** — un disco de biblioteca desconectado pasa a ser un estado que la
+  interfaz sabe mostrar, no un error que la tumba.
+- **Pin de firmware nuevo**: `FIRMWARE_VERSION` sube `metro.tag` de `v0.7.2` a
+  `v0.7.3` y `moonlit.tag` de `v0.2.2` a `v0.2.3`. Aura se queda en
+  `v0.4.6-beta`, sin cambio.
+
+`.\scripts\FirmwareFetch.ps1` (las tres familias) corrido antes de compilar:
+"Checksums OK" por familia, `firmware-version.txt` = `v0.4.6-beta` / `v0.7.3` /
+`v0.2.3`. Los 12 hashes de `FIRMWARE_VERSION` (`rockbox.ipod`, `rockbox.zip`,
+`mks5lboot`, `bootloader-ipod6g.ipod`, por familia) cruzados uno por uno contra
+`Get-FileHash` de `artifacts\`, `artifacts\metro\` y `artifacts\moonlit\`: los
+12 coinciden.
+
+### Verificación
+
+`.\scripts\Make-Installer.ps1 -Architecture both` en `studio\windows`, Release,
+sin advertencias:
+
+- `[arm64] Publish verificado: 553 archivos, 291 MB.`
+- `[x64] Publish verificado: 557 archivos, 276 MB.`
+- `Las dos arquitecturas no dejan huérfanos sin cubrir.`
+- `Listo: ...\dist\AuraStudioSetup-0.2.2-arm64.exe` (94.5 MB)
+- `Listo: ...\dist\AuraStudioSetup-0.2.2-x64.exe` (97 MB)
+
+`(Get-Item ...).VersionInfo` de los dos `AuraStudioSetup-0.2.2-*.exe` declara
+`ProductVersion`/`FileVersion` `0.2.2`; el `AuraStudio.App.exe` de cada publish
+declara `ProductVersion`
+`0.2.2+08204e00ce7d40a1bbdf114c0d43d598ed4686ab` — el commit exacto grabado en
+el binario. Los tres `firmware-version.txt` de ambos publish dicen
+`v0.4.6-beta` / `v0.7.3` / `v0.2.3`.
+
+SHA-256 de los dos instaladores nuevos:
+
+- `AuraStudioSetup-0.2.2-arm64.exe` (99 044 380 bytes):
+  `abd608241a7fe813a9ff992fc3f9ca44b2e9448dba350e7210716df901616f05`
+- `AuraStudioSetup-0.2.2-x64.exe` (101 697 010 bytes):
+  `4083fa4f2dc730fb7dbbb9189bdf300410f79944058331af8635f21ed00fe769`
+
+`dist\` sigue ignorado en git: los `.exe` no se commitean, solo esta decisión.
+
+### Estado de `dist\` al compilar
+
+Al verificar que los instaladores anteriores seguían intactos (paso rutinario
+desde ST-160), `dist\` solo tenía `AuraStudioSetup-0.2.1-{arm64,x64}.exe` y los
+`0.2.2` recién armados. Los `AuraStudioSetup-0.2.0-{arm64,x64}.exe` — y también
+los `0.1.0` que llevaban ahí desde el 2026-09-01 — **ya no estaban**: no un
+hash distinto, el archivo no existía. Confirmado que no fue ninguna sesión de
+Windows (ni esta, ni el Experto): entre el cierre de ST-170 (11:47) y esta
+verificación (~17:00) ninguna tocó `dist\`. `AuraStudio.Windows.slnx` es la
+única modificación ajena visible en el árbol en esa ventana (el
+`.gitattributes` de la renormalización de la Mac), sin relación con `dist\`.
+
+`dist\` está ignorado en git y es carpeta de trabajo compartida con quien sea
+que use este árbol (la Mac, el dueño) — no hay registro de quién limpió qué.
+**No se restauraron** los `0.2.0`: la copia canónica sigue a salvo en el
+Release `v0.2.0` de GitHub, mismos tamaños de siempre
+(`AuraStudioSetup-0.2.0-arm64.exe` 98 989 459 bytes,
+`AuraStudioSetup-0.2.0-x64.exe` 101 638 140) y mismos SHA-256
+(`3256297bad5a81694f11457f5ea03b2a85e0b193ae241c2755d4780c050537ab` el arm64,
+`e0162946f7a5b412d46394efafbc03242b5886e46421855b1f31514353216fbb` el x64), así
+que no hay nada que reconstruir con urgencia. Queda una copia de respaldo
+verificada de los dos en `/tmp/st160-backup/` (hecha durante ST-160), sin
+tocar, hasta que se decida si vale la pena devolverla a `dist\`. El `0.2.1`
+**sí** se verificó intacto en esta misma pasada: mismos SHA-256 de ST-170
+(`db2b6938995b2940022f2262934a8547048e497b9ecadb1c6acedadb9f8e0c84` el arm64,
+`e621e325c6b05f4528b6b042ce1445d096db84429db098445615a6a2bdb31c7d` el x64).
