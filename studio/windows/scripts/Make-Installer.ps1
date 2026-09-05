@@ -45,6 +45,15 @@ $project = Join-Path $repo 'AuraStudio.App\AuraStudio.App.csproj'
 $iss     = Join-Path $repo 'installer\AuraStudio.iss'
 $dist    = Join-Path $repo 'dist'
 
+# El nombre del instalador lo decide el .iss (OutputBaseFilename), no el
+# Version del .csproj: se lee de ahí para no repetir un número que se
+# desincroniza en cuanto uno de los dos cambia y el otro no (ST-160).
+$issContent = Get-Content -Raw $iss
+if ($issContent -notmatch '(?m)^\s*#define\s+AppVersion\s+"([^"]+)"') {
+    throw "No se encontró '#define AppVersion `"x.y.z`"' en $iss."
+}
+$appVersion = $Matches[1]
+
 # Lo que cambia entre una arquitectura y otra, en un solo lugar.
 $perfiles = @{
     'arm64' = @{ Rid = 'win-arm64'; Platform = 'ARM64'; PeMachine = 0xAA64 }
@@ -163,7 +172,7 @@ function Build-Installer([string] $arch) {
     & $iscc "/DArch=$arch" $iss | Out-Host
     if ($LASTEXITCODE -ne 0) { throw "[$arch] Inno Setup falló (código $LASTEXITCODE)." }
 
-    $setup = Join-Path $dist "AuraStudioSetup-0.1.0-$arch.exe"
+    $setup = Join-Path $dist "AuraStudioSetup-$appVersion-$arch.exe"
     if (-not (Test-Path $setup)) {
         throw "[$arch] Inno Setup terminó bien pero no dejó $setup."
     }

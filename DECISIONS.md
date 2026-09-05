@@ -3273,3 +3273,70 @@ desde el binario ya corregido, mismo nombre de archivo (mismo día):
 
 El hash de ST-149 (`d64b89a6...`) queda obsoleto — si alguien lo tiene
 anotado en otro lado, es el DMG con el bug del cuelgue.
+
+## ST-160 — `Make-Installer.ps1` nombraba el instalador con un "0.1.0" hardcodeado, no con el `AppVersion` real del `.iss`
+
+### Qué pasó
+
+`Build-Installer`, en `studio\windows\scripts\Make-Installer.ps1`, construía
+el nombre del `.exe` esperado tras compilar con Inno Setup así:
+
+```powershell
+$setup = Join-Path $dist "AuraStudioSetup-0.1.0-$arch.exe"
+```
+
+mientras `installer\AuraStudio.iss` define `#define AppVersion "0.2.0"` y
+`OutputBaseFilename=AuraStudioSetup-{#AppVersion}-{#Arch}` — Inno Setup
+llevaba tiempo generando `AuraStudioSetup-0.2.0-$arch.exe`, un nombre que
+el script nunca iba a encontrar.
+
+El síntoma fue silencioso: en el `dist\` de la máquina donde se detectó
+esto sobrevivían `AuraStudioSetup-0.1.0-arm64.exe` y
+`AuraStudioSetup-0.1.0-x64.exe` del 2026-09-01, así que
+`Test-Path $setup` los encontraba a ELLOS — archivos viejos, no los que
+la corrida actual acababa de generar — y el resumen final "Listo: ..."
+los nombraba como si fueran el resultado de esa compilación. En un
+`dist\` limpio (o en cualquier máquina que nunca hubiera tenido un 0.1.0),
+el script habría lanzado la excepción "Inno Setup terminó bien pero no
+dejó $setup" después de una compilación que en realidad sí había
+funcionado.
+
+### Por qué pasó
+
+El nombre del instalador lo decide una sola fuente: `OutputBaseFilename`
+en el `.iss`, resuelto con el `AppVersion` que el propio `.iss` define.
+El `Version` de `AuraStudio.App.csproj` es una fuente distinta y no
+sincronizada automáticamente con el `.iss` — las dos quedaron en 0.2.0
+por coincidencia de mantenimiento manual, no por ningún mecanismo que
+las ate. El script de empaquetado tenía el número copiado a mano una
+tercera vez, congelado en el valor que tenía el `.iss` el día que se
+escribió el script.
+
+### Corrección
+
+`Make-Installer.ps1` lee `AppVersion` del `.iss` una sola vez, al
+principio del script (junto a `$iss`), con un regex sobre la línea
+`#define AppVersion "x.y.z"`, y falla con un mensaje explícito si no la
+encuentra. `Build-Installer` arma `$setup` con esa variable
+(`$appVersion`) en vez del literal. No se tocó `AuraStudio.iss`, el
+`.csproj` ni el resto del script — el `.iss` sigue siendo la única
+fuente del número de versión que aparece en el nombre del archivo.
+
+### Verificación
+
+Antes de correr nada, se respaldaron fuera del repo (y se les sacó
+SHA-256) los dos instaladores 0.2.0 ya comprometidos para el release:
+
+- `AuraStudioSetup-0.2.0-arm64.exe`:
+  `3256297bad5a81694f11457f5ea03b2a85e0b193ae241c2755d4780c050537ab`
+- `AuraStudioSetup-0.2.0-x64.exe`:
+  `e0162946f7a5b412d46394efafbc03242b5886e46421855b1f31514353216fbb`
+
+`.\scripts\Make-Installer.ps1 -Architecture arm64 -SkipPublish` (empaqueta
+el publish ARM64 ya presente en el árbol, sin recompilar) terminó con
+`Listo: ...\dist\AuraStudioSetup-0.2.0-arm64.exe` / `94.4 MB` — el nombre
+correcto, sin rastro de "0.1.0". El `.exe` arm64 generado por esa corrida
+se descartó y se restauró la copia de respaldo; `Get-FileHash` sobre los
+dos `.exe` en `dist\` después de restaurar dio, byte a byte, los mismos
+dos SHA-256 de arriba. Los `AuraStudioSetup-0.1.0-*.exe` del 2026-09-01
+no se tocaron.
