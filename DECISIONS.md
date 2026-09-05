@@ -4212,3 +4212,72 @@ medía la prueba (c) de ST-152/155, en cada estrella.
 `swift build`, `xcodebuild` (Debug, Swift 6 estricto) y `swift test`:
 780/780 en verde. `scripts/build-app.sh` verificado contra un
 directorio temporal (Release).
+
+## ST-164 — Windows sin botón para cancelar la normalización de carátulas (paridad con ST-141 de macOS)
+
+### Qué faltaba
+
+`LibraryViewModel` (ST-141) ya traía todo lo necesario para cancelar la
+migración que deja cuadradas las carátulas de una biblioteca vieja:
+`IsNormalizingCovers` (observable), `CancelCoverNormalization()`, y el
+mensaje de cierre "Se detuvo la normalización de carátulas. Lo que
+falte sigue la próxima vez." en `StatusMessage`. Lo único que faltaba
+era el XAML: las cuatro páginas de biblioteca (Artistas, Álbumes/
+cuadrículas, Canciones, Listas) mostraban `Library.StatusMessage` en un
+`TextBlock` suelto, sin ningún control para detener la pasada en curso
+— macOS sí lo tiene desde ST-141.
+
+### Por qué un control compartido
+
+Las cuatro páginas ya repetían el mismo `TextBlock` bindeado a
+`Library.StatusMessage`, cada una en un `Grid` de columnas distinto
+(`ArtistsPage`: `*,Auto`; `MediaGridPage`: `Auto,Auto,*`; `SongsPage`:
+`Auto,*`; `PlaylistsPage`: sin columnas, un solo `TextBlock` en un
+`Border`). En vez de repetir el mismo par TextBlock+Button cuatro
+veces, `Controls\LibraryStatusStrip.xaml(.cs)` es un `UserControl` con
+una única `DependencyProperty Library` (tipo `LibraryViewModel`) y, por
+dentro, el `TextBlock` de siempre más un `Button` "Cancelar" cuya
+`Visibility` sigue a `Library.IsNormalizingCovers` (con
+`BoolToVisibilityConverter`, el mismo que ya usan las páginas) y cuyo
+`Click` llama `Library.CancelCoverNormalization()`. Ninguna de las
+cuatro sustituciones resultó invasiva: en las tres primeras
+`StatusMessage` ya vivía en su propia celda de `Grid`, y en
+`PlaylistsPage` el control reemplaza el `TextBlock` suelto sin tocar el
+resto del layout. El botón queda `Collapsed` (ancho cero) fuera de una
+normalización, así que el caso normal — sin nada que cancelar — se ve
+exactamente igual que antes.
+
+`AutomationProperties.Name` del botón: "Cancelar la normalización de
+carátulas".
+
+Sin tocar `AuraStudio.Core` ni `LibraryViewModel`: todo lo que hacía
+falta ya estaba expuesto desde ST-141.
+
+### Verificación
+
+- `dotnet build AuraStudio.App -c Release -p:Platform=ARM64`: **0
+  advertencias, 0 errores** (el proyecto tiene
+  `TreatWarningsAsErrors`).
+- `dotnet test studio\windows\tests\AuraStudio.Core.Tests -c Release`:
+  **1188/1188** (no cambia con esto; se corrió para confirmar que
+  seguía en verde).
+- **En vivo, contra una biblioteca de fixtures** (nunca la real del
+  dueño en `V:\Mac Externo\Documents\Aura Library`): se generó una
+  biblioteca sintética de 8000 canciones con carátulas 4:3 sin marcar
+  `coversNormalized`, apuntando `Ajustes › Biblioteca` ahí solo durante
+  la prueba. Con la app abierta en Canciones, la franja mostró
+  "Normalizando carátulas… N de 8000" con el botón "Cancelar" visible y
+  habilitado; al invocarlo, el mensaje cambió de inmediato a "Se detuvo
+  la normalización de carátulas. Lo que falte sigue la próxima vez." y
+  el botón desapareció (`docs/capturas/st164-normalizacion-cancelar.png`
+  y `st164-normalizacion-cancelada.png`, tomadas contra la ventana real
+  con `PrintWindow`). Se revisaron también Álbumes, Artistas y Listas
+  tras la cancelación: la franja se ve igual en las cuatro, sin huecos
+  ni corrimientos.
+- Antes de tocar `Ajustes › Biblioteca`, se respaldó
+  `%LOCALAPPDATA%\Aura Studio\preferences.json`; al terminar se
+  devolvió `LibraryPath` a `V:\Mac Externo\Documents\Aura Library` y se
+  comprobó **byte a byte** contra el respaldo que quedó idéntico. La
+  biblioteca de fixtures y la herramienta que la generó vivieron fuera
+  del repo (carpeta de trabajo de la sesión) y se borraron al cerrar la
+  fase.
