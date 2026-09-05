@@ -128,51 +128,29 @@ public static class ImageResizer
             throw new ImageResizeException($"No se pudo leer la imagen de origen.{detail}");
         }
 
-        // El plan se calcula sobre las medidas YA orientadas: lo que se recorta
-        // es lo que se ve, no cómo está guardado el archivo.
-        var plan = SquareCropPlan.For((int)decoder.OrientedPixelWidth, (int)decoder.OrientedPixelHeight, side);
+        // ST-162: `ScaledWidth`/`ScaledHeight` y `Bounds` NO viven en el mismo
+        // espacio. WIC escala antes de aplicar la orientación EXIF y recorta
+        // después, así que el escalado va en medidas crudas y el recorte en
+        // medidas orientadas. Toda esa aritmética —incluido el cuadrado del
+        // lado corto, que se decide sobre lo que se ve— está en Core y probada
+        // ahí; acá solo se traduce a lo que pide BitmapTransform.
+        var plan = SquareCropTransform.For(
+            (int)decoder.PixelWidth, (int)decoder.PixelHeight,
+            (int)decoder.OrientedPixelWidth, (int)decoder.OrientedPixelHeight, side);
         if (plan.IsEmpty)
             throw new ImageResizeException("La imagen de origen no tiene un tamaño válido.");
 
-        // Lo que hay que fijar es el lado CORTO (el que sobrevive al recorte),
-        // no el mayor: se lleva EXACTO al lado pedido y el largo se redondea
-        // hacia arriba, para que el recorte nunca tenga que agrandar nada y el
-        // resultado mida exactamente lo que el contrato v18 fija (320, 128).
-        // Las medidas van en el espacio CRUDO, que es lo que espera
-        // BitmapTransform; la orientación solo intercambia o espeja los lados,
-        // así que el lado corto es el mismo en los dos espacios.
-        int rawWidth = (int)decoder.PixelWidth, rawHeight = (int)decoder.PixelHeight;
-        int scaledWidth, scaledHeight;
-        if (rawWidth <= rawHeight)
-        {
-            scaledWidth = plan.OutputSide;
-            scaledHeight = Math.Max(plan.OutputSide,
-                                    (int)Math.Ceiling((double)rawHeight * plan.OutputSide / rawWidth));
-        }
-        else
-        {
-            scaledHeight = plan.OutputSide;
-            scaledWidth = Math.Max(plan.OutputSide,
-                                   (int)Math.Ceiling((double)rawWidth * plan.OutputSide / rawHeight));
-        }
-
-        // Bounds recorta sobre la imagen YA escalada. Un cuadrado centrado es
-        // el mismo antes y después de la orientación EXIF (girar 90° o espejar
-        // no mueve el centro), así que da igual en qué espacio lo aplique WIC:
-        // lo único que puede cambiar de lado es el píxel sobrante de un margen
-        // impar, que es medio píxel de diferencia con macOS y no se ve.
-        var crop = SquareCropPlan.For(scaledWidth, scaledHeight, plan.OutputSide);
         var transform = new BitmapTransform
         {
-            ScaledWidth = (uint)scaledWidth,
-            ScaledHeight = (uint)scaledHeight,
+            ScaledWidth = (uint)plan.ScaledWidth,
+            ScaledHeight = (uint)plan.ScaledHeight,
             InterpolationMode = BitmapInterpolationMode.Fant,
             Bounds = new BitmapBounds
             {
-                X = (uint)crop.CropX,
-                Y = (uint)crop.CropY,
-                Width = (uint)crop.CropSide,
-                Height = (uint)crop.CropSide
+                X = (uint)plan.CropX,
+                Y = (uint)plan.CropY,
+                Width = (uint)plan.CropSide,
+                Height = (uint)plan.CropSide
             }
         };
 

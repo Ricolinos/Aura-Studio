@@ -10,7 +10,12 @@ public static class Orient
 
     /// JPEG de 400x200 (horizontal) con EXIF orientation = 6 (rotar 90 CW),
     /// o sea que ORIENTADO mide 200x400 (vertical).
-    public static async Task<byte[]> MakeRotatedJpeg()
+    public static Task<byte[]> MakeRotatedJpeg() => MakeRotatedJpeg(6);
+
+    /// El mismo JPEG con la orientacion que se pida. La 6 y la 8 giran para
+    /// lados opuestos y las dos intercambian los lados: el recorte cuadrado
+    /// tiene que dar lo mismo con las dos (ST-162).
+    public static async Task<byte[]> MakeRotatedJpeg(ushort orientation)
     {
         int w = 400, h = 200;
         var px = new byte[w * h * 4];
@@ -25,7 +30,7 @@ public static class Orient
         {
             new KeyValuePair<string, BitmapTypedValue>(
                 "System.Photo.Orientation",
-                new BitmapTypedValue((ushort)6, Windows.Foundation.PropertyType.UInt16))
+                new BitmapTypedValue(orientation, Windows.Foundation.PropertyType.UInt16))
         });
         await enc.FlushAsync();
         s.Seek(0);

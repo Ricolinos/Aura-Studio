@@ -279,6 +279,13 @@ var (rw, rh, _) = await DecodeAsync(
     await ImageResizer.EncodeSquareAsync(await ImageResizerCheck.Orient.MakeRotatedJpeg(), 320, 0.85));
 Check("EXIF orientacion 6 -> cuadrada de 200", rw == 200 && rh == 200, $"({rw}x{rh})");
 
+// 25b) ST-162: la 8 gira para el otro lado y tambien intercambia los lados. El
+//      recorte no distingue las cuatro rotaciones —solo si hay intercambio—,
+//      asi que si el decodificador tratara distinto a la 8, se sabe aca.
+var (ow2, oh2, _) = await DecodeAsync(
+    await ImageResizer.EncodeSquareAsync(await ImageResizerCheck.Orient.MakeRotatedJpeg(8), 320, 0.85));
+Check("EXIF orientacion 8 -> cuadrada de 200", ow2 == 200 && oh2 == 200, $"({ow2}x{oh2})");
+
 // 26) Basura rechazada con mensaje claro, igual que el otro camino.
 try { await ImageResizer.EncodeSquareAsync(new byte[] { 1, 2, 3, 4 }, 320, 0.85); Check("basura rechazada (cuadrado)", false); }
 catch (ImageResizeException e) { Check("basura rechazada (cuadrado)", true, $"\"{e.Message}\""); }

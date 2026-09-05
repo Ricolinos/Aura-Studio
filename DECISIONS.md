@@ -4026,3 +4026,98 @@ directorio temporal (Release).
 
 Commit local, sin push -- misma razón que las Fases 0-2: push/release
 esperan confirmación directa del dueño.
+
+## ST-162 — El recorte cuadrado de una foto con orientación EXIF salía rectangular: escalar y recortar no viven en el mismo espacio
+
+Encontrado por la comprobación 25 de `studio/windows/tools/ImageResizerCheck`
+("EXIF orientación 6 → cuadrada de 200"): devolvía **100×200**. 38 PASS / 1
+FALLA con `dotnet run --project studio/windows/tools/ImageResizerCheck -c Release`.
+
+No es un caso de laboratorio: cualquier foto vertical de cámara viene guardada
+horizontal con la rotación en EXIF, y esta es la primitiva con la que se
+generan `cover.jpg` (320), las fotos de artista (128) y la copia local de
+`.portadas/` (contrato v18, ST-140/ST-141). Una carátula elegida desde una foto
+así llegaba al iPod deformada — o, más exacto, no cuadrada.
+
+### Diagnóstico
+
+`ImageResizer.EncodeSquareAsync` le da al decodificador de WIC dos cosas a la
+vez: `ScaledWidth`/`ScaledHeight` y un `Bounds` de recorte. **No viven en el
+mismo espacio de coordenadas**, y el código las calculaba como si sí:
+
+- `ScaledWidth`/`ScaledHeight` se interpretan en las medidas **crudas** (las del
+  archivo). El escalado ocurre **antes** de aplicar la orientación EXIF.
+- `Bounds` cae sobre la imagen **ya orientada**, o sea después.
+
+Con la foto de la prueba —400×200 en el archivo, 200×400 a la vista— el plan
+salía así: lado corto 200, sin escalado (400×200 se queda igual), y el recorte
+se calculaba sobre esas medidas crudas: `x=100, y=0, 200×200`. Pero WIC lo
+aplica sobre la imagen orientada, que ahí mide **200 de ancho**: desde x=100
+solo quedan 100 píxeles. WIC recorta lo que hay y sale 100×200.
+
+El comentario del código afirmaba justamente lo contrario —"un cuadrado centrado
+es el mismo antes y después de la orientación EXIF […] da igual en qué espacio
+lo aplique WIC"—. Es cierto que el centro no se mueve al girar; lo que no es
+cierto es que las coordenadas del cuadrado sean las mismas: al intercambiarse
+los lados se intercambian también el margen horizontal y el vertical. `x=100,
+y=0` tenía que ser `x=0, y=100`.
+
+La comprobación 9 (el camino **no** cuadrado, con la misma foto) pasaba y sirvió
+de referencia: ahí `EncodeAsync` solo escala, y como el factor de escala es el
+mismo en los dos espacios, nunca se nota la diferencia. El bug necesita las dos
+operaciones juntas.
+
+### Arreglo
+
+`SquareCropTransform` (nuevo, `AuraStudio.Core/Library/`) toma las medidas
+crudas, las orientadas y el lado pedido, y devuelve **cada número en su
+espacio**: `ScaledWidth`/`ScaledHeight` en crudas, `CropX`/`CropY`/`CropSide` en
+orientadas. La aritmética del cuadrado sigue siendo la de `SquareCropPlan` —lado
+corto, recorte al centro, nunca agrandar—; lo único que se agrega es en qué
+espacio va cada cosa:
+
+```
+bool swapsSides = orientedWidth != rawWidth || orientedHeight != rawHeight;
+(cropSpaceWidth, cropSpaceHeight) = swapsSides ? (scaledHeight, scaledWidth)
+                                               : (scaledWidth, scaledHeight);
+```
+
+`EncodeSquareAsync` quedó como traductor: pide el plan y lo copia a
+`BitmapTransform`. Las 20 líneas de aritmética que tenía adentro —que era donde
+estaba el error y donde nadie podía probarlas— ya no están ahí.
+
+Las cuatro orientaciones que giran (EXIF 5 a 8) se tratan igual, y es correcto:
+al recorte solo le importa **si los lados se intercambian**, no hacia dónde
+quedó la foto. Detectarlo comparando medidas orientadas contra crudas cubre las
+cuatro sin leer la etiqueta, y para una fuente ya cuadrada da `false`, que es lo
+que corresponde (no hay nada que intercambiar).
+
+### Pruebas
+
+`tests/AuraStudio.Core.Tests/SquareCropTransformTests.cs` — 13 pruebas (8 casos
+más 6 de tamaños inutilizables). La que resume el bug es
+`TheCropAlwaysFitsInsideTheOrientedImage`: el cuadrado tiene que caber entero
+dentro de la imagen sobre la que cae (`CropX + CropSide <= ancho`,
+`CropY + CropSide <= alto`) — eso era exactamente lo que ST-162 violaba, y por
+eso WIC entregaba un rectángulo. `TheSameImageRotatedGivesTheSameCropOnTheOtherAxis`
+fija el par simétrico: 300×1200 sin rotación y 1200×300 con ella dan el **mismo**
+recorte, con el escalado invertido.
+
+- Con la regla vieja puesta a la fuerza (`swapsSides` fijo en `false`), **fallan
+  3 de las 13**, incluidas esas dos. Distinguen el arreglo, no solo lo acompañan.
+- Suite completa: **1188/1188** (1175 antes + 13).
+- `ImageResizerCheck`: **40/40** (39 antes + 1 nueva).
+- `dotnet build AuraStudio.App -c Release -p:Platform=ARM64`: verde, 0
+  advertencias, 0 errores.
+
+**Comprobación 25b, nueva**: la misma foto con orientación **8** (gira para el
+otro lado, también intercambia los lados) tiene que dar 200×200. Va de punta a
+punta y no como prueba unitaria a propósito: en `SquareCropTransform` la 6 y la
+8 son literalmente la misma entrada —las mismas medidas orientadas—, así que una
+prueba unitaria que las comparara compararía dos llamadas idénticas y no
+afirmaría nada. Lo que sí podía tratarlas distinto es el decodificador, y eso
+solo se ve ejecutándolo. No las trata distinto: pasa.
+
+De paso, esa comprobación confirma el orden que WIC no documenta con claridad y
+que este arreglo asume: **escala, orienta, recorta**. Si algún día cambiara, las
+dos comprobaciones de orientación lo dicen en la primera corrida.
