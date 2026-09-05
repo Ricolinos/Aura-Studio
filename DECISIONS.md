@@ -5077,3 +5077,53 @@ dueño:
    diez minutos.
 5. La ayuda de los 20 s en pantalla: solo se llega a ella con un iPod que no se
    detecta en DFU.
+
+## ST-157 (paso 3/6) — `applyAlbumCover` y `applySimilarityEdits` sobre `LibraryFileWorker`
+
+Mismo patrón que el paso 2 (lotes de `Self.batchApplySize`/
+`batchApplyInterval`, progreso "N de M" al `taskCenter`), aplicado a las
+dos operaciones que el plan pedía para este paso.
+
+**`applyAlbumCover`**: pasa a `async`. Único caso a cuidar: el llamador
+interno `applyRecommendedCovers` (R2-3) ya era `async` -- solo hizo
+falta agregar `await`, sin cambiar su firma. Los otros dos llamadores
+(los dos pickers de carátula, `AlbumsView`/`MediaSectionView`) se
+envolvieron en `Task { await ... }`. Regla original preservada tal
+cual: si `prepareMusic` falla al re-preparar una canción, se conserva
+el `preparedURL` que ya había, nunca se pisa con `nil`.
+
+**`applySimilarityEdits`**: pasa a `async`. Fotos/video pasan por acá
+también (unificar artista/álbum), pero NUNCA llamaban `prepareMusic` --
+esa distinción se preservó con un doble opcional deliberado en el
+resultado pendiente del lote (`preparedURL: URL??`, `status:
+LibraryItemStatus?`): `nil` de afuera = "no era música, no tocar";
+`.some(nil)` = "era música, `prepareMusic` corrió y falló, sí hay que
+limpiar" -- exactamente lo que hacía el `try? prepareMusic(...)` síncrono
+de siempre (sobreescribe con `nil` si falla, a diferencia de
+`applyAlbumCover`). Único llamador (`SimilarItemsView`, "Aplicar la
+metadata sugerida"): el `rescan()` que sigue ahora espera el `await`
+adentro del mismo `Task`, para no re-escanear antes de que la edición
+terminara.
+
+### Pruebas
+
+`ApplyAlbumCoverAndSimilarityWorkerTests.swift` (nuevo, 6 pruebas): la
+carátula llega a las 12 pistas del álbum, `markEdited: false` no marca
+`metadataEditedByUser`, aplicar la misma carátula ya puesta no cambia
+nada (`changed == 0`), las ediciones de similitud llegan a los campos
+correctos y SOLO al ítem con ediciones propuestas, un ítem que no es
+música se edita sin tocar `preparedURL`. Ninguna de las dos operaciones
+tenía pruebas antes de esta ronda.
+
+**Criterio de cierre verificado de verdad, de nuevo**: una
+"compilación" sintética de 300 pistas con `applyAlbumCover`, vigilante
+real activado (mismo gancho `onHangDetectedForTesting` del paso 2) --
+cero bloqueos > 250 ms.
+
+### Verificación
+
+`swift build`, `xcodebuild` (Debug, Swift 6 estricto) y `swift test`:
+801/801 en verde. `scripts/build-app.sh` verificado contra un
+directorio temporal (Release). Sin pruebas existentes de ninguna de las
+dos funciones antes de esta ronda -- nada que pudiera romperse por el
+cambio de firma a `async`.

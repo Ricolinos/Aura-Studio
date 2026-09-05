@@ -341,9 +341,16 @@ struct SimilarItemsView: View {
                             .font(.callout)
                         }
                         Button("Aplicar la metadata sugerida") {
-                            library.applySimilarityEdits(group.proposedEdits)
-                            lastActionSummary = "Metadata unificada en \(Set(group.proposedEdits.map(\.itemID)).count) elemento(s)."
-                            rescan()
+                            // PLAN-studio-rendimiento.md Fase 4 paso 3:
+                            // applySimilarityEdits es async ahora (corre en
+                            // fileWorker) -- rescan() espera a que termine,
+                            // igual que antes esperaba a que terminara el
+                            // camino síncrono.
+                            Task {
+                                await library.applySimilarityEdits(group.proposedEdits)
+                                lastActionSummary = "Metadata unificada en \(Set(group.proposedEdits.map(\.itemID)).count) elemento(s)."
+                                rescan()
+                            }
                         }
                         .help("Aplica solo estos cambios de artista/álbum/título. No elimina nada.")
                     }

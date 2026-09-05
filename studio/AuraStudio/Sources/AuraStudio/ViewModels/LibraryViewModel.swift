@@ -999,27 +999,53 @@ final class LibraryViewModel: ObservableObject {
     ///   una tapa que nadie miró dejaría al álbum con ella para siempre,
     ///   incluso cuando después aparezca una mejor. `metadataEditedByUser`
     ///   significa "el usuario lo decidió", no "algo lo escribió".
+    /// PLAN-studio-rendimiento.md Fase 4 paso 3: `prepareMusic` corre en
+    /// `fileWorker`, resultados en lotes -- mismo patrón que
+    /// `applyBatchEdit` (paso 2). Si re-preparar una canción falla, se
+    /// conserva el archivo preparado que ya había (`item.preparedURL`,
+    /// no `nil`) -- regla original sin cambios: es preferible una
+    /// canción sincronizable con la tapa vieja que una que se quedó sin
+    /// nada listo.
     @discardableResult
-    func applyAlbumCover(_ data: Data, toItems ids: Set<UUID>, markEdited: Bool = true) -> Int {
+    func applyAlbumCover(_ data: Data, toItems ids: Set<UUID>, markEdited: Bool = true) async -> Int {
         guard !data.isEmpty else { return 0 }
         // ST-141: la elegida a mano, la arrastrada y la recomendada
         // entran todas por aca, y todas quedan cuadradas. Se normaliza
         // UNA vez, no una por cancion: es la misma imagen para todo el
         // album.
-        let data = CoverArtNormalizer.normalized(data)
-        var changed = 0
-        for index in items.indices where ids.contains(items[index].id) && items[index].kind == .music {
-            var metadata = items[index].metadata ?? TrackMetadata()
-            guard metadata.coverArtData != data else { continue }
-            metadata.coverArtData = data
-            items[index].metadata = metadata
-            if markEdited { items[index].metadataEditedByUser = true }
-            if let prepared = try? prepareMusic(item: items[index], metadata: metadata) {
-                items[index].preparedURL = prepared
-            }
-            changed += 1
+        let normalized = CoverArtNormalizer.normalized(data)
+        let targets = items.filter {
+            ids.contains($0.id) && $0.kind == .music && $0.metadata?.coverArtData != normalized
         }
-        guard changed > 0 else { return 0 }
+        guard !targets.isEmpty else { return 0 }
+
+        let handle = taskCenter.begin(title: "Aplicando carátula a \(targets.count) \(targets.count == 1 ? "canción" : "canciones")…",
+                                      progress: .determinate(completed: 0, total: targets.count))
+        defer { taskCenter.finish(handle) }
+
+        var pendingResults: [UUID: (metadata: TrackMetadata, preparedURL: URL?)] = [:]
+        var lastFlush = Date()
+
+        for (completed, item) in targets.enumerated() {
+            var metadata = item.metadata ?? TrackMetadata()
+            metadata.coverArtData = normalized
+            let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
+            pendingResults[item.id] = (metadata, prepared ?? item.preparedURL)
+
+            handle.update(.determinate(completed: completed + 1, total: targets.count),
+                          statusText: "\(completed + 1) de \(targets.count)")
+
+            let shouldFlush = pendingResults.count >= Self.batchApplySize
+                || Date().timeIntervalSince(lastFlush) >= Self.batchApplyInterval
+                || completed == targets.count - 1
+            if shouldFlush, !pendingResults.isEmpty {
+                applyPendingAlbumCoverResults(pendingResults, markEdited: markEdited)
+                pendingResults.removeAll(keepingCapacity: true)
+                lastFlush = Date()
+            }
+        }
+
+        let changed = targets.count
         if markEdited {
             lastEnrichmentSummary = changed == 1
                 ? "Carátula aplicada a 1 canción."
@@ -1027,6 +1053,15 @@ final class LibraryViewModel: ObservableObject {
         }
         persistCatalog()
         return changed
+    }
+
+    private func applyPendingAlbumCoverResults(_ results: [UUID: (metadata: TrackMetadata, preparedURL: URL?)], markEdited: Bool) {
+        for index in items.indices where results[items[index].id] != nil {
+            let result = results[items[index].id]!
+            items[index].metadata = result.metadata
+            if markEdited { items[index].metadataEditedByUser = true }
+            items[index].preparedURL = result.preparedURL
+        }
     }
 
     @Published private(set) var isApplyingRecommendedCovers = false
@@ -1064,7 +1099,7 @@ final class LibraryViewModel: ObservableObject {
                 continue
             }
             if best.reachesAutomaticThreshold {
-                if applyAlbumCover(best.data, toItems: request.trackIDs, markEdited: false) > 0 {
+                if await applyAlbumCover(best.data, toItems: request.trackIDs, markEdited: false) > 0 {
                     applied += 1
                 }
             } else {
@@ -1151,12 +1186,27 @@ final class LibraryViewModel: ObservableObject {
     /// (unificar artista/álbum al nombre canónico, quitar el número de
     /// pista del título). Mismo camino que una corrección manual:
     /// marca `metadataEditedByUser`, re-prepara la música y persiste.
-    func applySimilarityEdits(_ edits: [SimilarityProposedEdit]) {
+    /// PLAN-studio-rendimiento.md Fase 4 paso 3: `prepareMusic` (solo
+    /// para música -- fotos/video no lo necesitan) corre en `fileWorker`,
+    /// resultados en lotes -- mismo patrón que `applyBatchEdit`/
+    /// `applyAlbumCover`.
+    func applySimilarityEdits(_ edits: [SimilarityProposedEdit]) async {
         guard !edits.isEmpty else { return }
         let byItem = Dictionary(grouping: edits, by: \.itemID)
-        for (id, itemEdits) in byItem {
-            guard let index = items.firstIndex(where: { $0.id == id }) else { continue }
-            var metadata = items[index].metadata ?? TrackMetadata()
+        let targetIDs = Set(byItem.keys)
+        let targets = items.filter { targetIDs.contains($0.id) }
+        guard !targets.isEmpty else { return }
+
+        let handle = taskCenter.begin(title: "Corrigiendo \(targets.count) \(targets.count == 1 ? "elemento" : "elementos")…",
+                                      progress: .determinate(completed: 0, total: targets.count))
+        defer { taskCenter.finish(handle) }
+
+        var pendingResults: [UUID: (metadata: TrackMetadata, preparedURL: URL??, status: LibraryItemStatus?)] = [:]
+        var lastFlush = Date()
+
+        for (completed, item) in targets.enumerated() {
+            guard let itemEdits = byItem[item.id] else { continue }
+            var metadata = item.metadata ?? TrackMetadata()
             for edit in itemEdits {
                 let value = edit.proposedValue.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !value.isEmpty else { continue }
@@ -1166,16 +1216,51 @@ final class LibraryViewModel: ObservableObject {
                 case .album: metadata.album = value
                 }
             }
-            items[index].metadata = metadata
-            items[index].metadataEditedByUser = true
-            if items[index].kind == .music {
-                items[index].preparedURL = try? prepareMusic(item: items[index], metadata: metadata)
-                if items[index].status == .ready || items[index].status == .needsReview {
-                    items[index].status = metadata.isComplete ? .ready : .needsReview
+
+            var preparedURL: URL??
+            var status: LibraryItemStatus?
+            if item.kind == .music {
+                let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
+                preparedURL = .some(prepared)
+                if item.status == .ready || item.status == .needsReview {
+                    status = metadata.isComplete ? .ready : .needsReview
                 }
+            }
+            pendingResults[item.id] = (metadata, preparedURL, status)
+
+            handle.update(.determinate(completed: completed + 1, total: targets.count),
+                          statusText: "\(completed + 1) de \(targets.count)")
+
+            let shouldFlush = pendingResults.count >= Self.batchApplySize
+                || Date().timeIntervalSince(lastFlush) >= Self.batchApplyInterval
+                || completed == targets.count - 1
+            if shouldFlush, !pendingResults.isEmpty {
+                applyPendingSimilarityEditResults(pendingResults)
+                pendingResults.removeAll(keepingCapacity: true)
+                lastFlush = Date()
             }
         }
         persistCatalog()
+    }
+
+    /// `preparedURL`/`status` son `??`/`?` a propósito: `nil` de afuera
+    /// significa "no era música, no se tocó" (conserva lo que ya
+    /// había); `.some(nil)` significa "sí era música, pero
+    /// `prepareMusic` falló" -- ahí SÍ hay que limpiar, igual que hacía
+    /// el código síncrono de siempre (`preparedURL = try? ...` sin
+    /// `if let`, que sobreescribe con `nil` si falla).
+    private func applyPendingSimilarityEditResults(_ results: [UUID: (metadata: TrackMetadata, preparedURL: URL??, status: LibraryItemStatus?)]) {
+        for index in items.indices where results[items[index].id] != nil {
+            let result = results[items[index].id]!
+            items[index].metadata = result.metadata
+            items[index].metadataEditedByUser = true
+            if let preparedURL = result.preparedURL {
+                items[index].preparedURL = preparedURL
+            }
+            if let status = result.status {
+                items[index].status = status
+            }
+        }
     }
 
     /// "Buscar información en línea"/"Buscar letra" del menu contextual

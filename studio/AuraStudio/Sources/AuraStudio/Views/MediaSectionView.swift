@@ -366,7 +366,7 @@ struct MediaSectionView: View {
                 request: request,
                 search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled),
                 onApply: { data in
-                    viewModel.applyAlbumCover(data, toItems: request.trackIDs)
+                    Task { await viewModel.applyAlbumCover(data, toItems: request.trackIDs) }
                     coverSearch = nil
                 },
                 onCancel: { coverSearch = nil })

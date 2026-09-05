@@ -153,6 +153,7 @@
 		A272BCA595633440A1F595A9 /* LibraryLegacyMigrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3854E1521F1D1535773CA89D /* LibraryLegacyMigrationTests.swift */; };
 		A3A2D51E636D88553296B467 /* DeviceNameStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 078AFCAA859DD62801EEBA05 /* DeviceNameStore.swift */; };
 		A460D2EDAD091663AF6E3B37 /* AlbumCoverSearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = F36F32A4BCCCF9A67A370B04 /* AlbumCoverSearch.swift */; };
+		A4C9FD9D2211C12BA908AA1A /* ApplyAlbumCoverAndSimilarityWorkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0950DA0C0716604D3133CAAB /* ApplyAlbumCoverAndSimilarityWorkerTests.swift */; };
 		A5A21D0A2F516081CFFE838E /* GridSelection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F5CDF0D4B25103661D7A22F /* GridSelection.swift */; };
 		A6102DAAC4859DC90AED77B7 /* CoverArtNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7112AA8DB5475B1134DBEECE /* CoverArtNormalizer.swift */; };
 		A708CE9C17FD00F4465C6D1E /* SquareCropPlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FE0ED199852C215C9423943 /* SquareCropPlanTests.swift */; };
@@ -263,6 +264,7 @@
 		055B3DA536778DFDE7011A60 /* TMDBClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TMDBClient.swift; sourceTree = "<group>"; };
 		078AFCAA859DD62801EEBA05 /* DeviceNameStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceNameStore.swift; sourceTree = "<group>"; };
 		093B5EA51C45529C66A3640F /* LibraryPersistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryPersistence.swift; sourceTree = "<group>"; };
+		0950DA0C0716604D3133CAAB /* ApplyAlbumCoverAndSimilarityWorkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplyAlbumCoverAndSimilarityWorkerTests.swift; sourceTree = "<group>"; };
 		0B586A5B221FF4A7457E9633 /* MainThreadWatchdog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainThreadWatchdog.swift; sourceTree = "<group>"; };
 		0E68A879A0F3418A7220030C /* PlaylistExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistExporter.swift; sourceTree = "<group>"; };
 		117BF63B29CADB076B19CA27 /* IPodMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPodMonitor.swift; sourceTree = "<group>"; };
@@ -649,6 +651,7 @@
 				E286AB9FD28A2882CEFE08AF /* AlbumCoverScoringTests.swift */,
 				BCF577C3F409A6B94D0F9D36 /* AlbumCoverSearchTests.swift */,
 				38D65AA4A8035F7A98B1544B /* APIKeyStoreTests.swift */,
+				0950DA0C0716604D3133CAAB /* ApplyAlbumCoverAndSimilarityWorkerTests.swift */,
 				782E91A183A2BBFDDB6889A1 /* ApplyBatchEditWorkerTests.swift */,
 				5788BF566829EC16317154CE /* AppPreferencesTests.swift */,
 				4197C3EE3BEC4457218AA161 /* ArtistImageExportTests.swift */,
@@ -975,6 +978,7 @@
 				8FD604184EB262D68C69A4C5 /* AlbumCoverScoringTests.swift in Sources */,
 				D9BC616061E0B49D5BC6CEFB /* AlbumCoverSearchTests.swift in Sources */,
 				5896172077C6C1E6312CE999 /* AppPreferencesTests.swift in Sources */,
+				A4C9FD9D2211C12BA908AA1A /* ApplyAlbumCoverAndSimilarityWorkerTests.swift in Sources */,
 				B36C72F73C88F88BAD57297C /* ApplyBatchEditWorkerTests.swift in Sources */,
 				7B299956D840E15EAA2D9FC6 /* ArtistImageExportTests.swift in Sources */,
 				72C172E3DF3F50EFAA165F95 /* ArtistImageTests.swift in Sources */,
