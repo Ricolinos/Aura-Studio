@@ -21,6 +21,9 @@ struct AlbumsView: View {
     /// (como siempre lo hacía el tap único, ahora reservado al gesto de
     /// doble clic).
     @State private var selection = GridSelection<String>()
+    /// PLAN-studio-rendimiento.md Fase 2 punto 2: construido una vez por
+    /// cambio de la cuadrícula visible, nunca en el gesto de tap.
+    @State private var visibleOrder = GridOrder<String>.empty
     /// ST-104: álbum cuyo menú pidió "Buscar carátulas del álbum".
     @State private var coverSearch: AlbumCoverRequest?
     @AppStorage("aura.albumsSort") private var sortRaw = AlbumSort.title.rawValue
@@ -196,7 +199,7 @@ struct AlbumsView: View {
                                 }
                                 .contentShape(Rectangle())
                                 .onTapGesture(count: 2) { selectedAlbumID = album.id }
-                                .onTapGesture { selection.handleTap(album.id, orderedIDs: visibleAlbums.map(\.id)) }
+                                .onTapGesture { selection.handleTap(album.id, order: visibleOrder) }
                                 .contextMenu { albumContextMenu(album) }
                                 .help("\(album.title) — \(album.artist)")
                         }
@@ -213,6 +216,23 @@ struct AlbumsView: View {
                     .padding(.bottom, 24)
                 }
             }
+        }
+        // PLAN-studio-rendimiento.md Fase 2: `visibleOrder` se
+        // reconstruye solo cuando cambia el conjunto/orden visible, no
+        // en cada clic (punto 2); Cmd+A selecciona todo lo visible,
+        // Escape deselecciona (punto 1). Pendiente de verificar
+        // interactivo con el dueño (gestos de teclado en macOS).
+        .onAppear { visibleOrder = GridOrder(visibleAlbums.map(\.id)) }
+        .onChange(of: visibleAlbums.map(\.id)) { visibleOrder = GridOrder($0) }
+        .onKeyPress(.escape) {
+            guard !selection.selected.isEmpty else { return .ignored }
+            selection.clear()
+            return .handled
+        }
+        .onKeyPress(keys: ["a"]) { press in
+            guard press.modifiers.contains(.command) else { return .ignored }
+            selection.selectAll(visibleOrder)
+            return .handled
         }
     }
 

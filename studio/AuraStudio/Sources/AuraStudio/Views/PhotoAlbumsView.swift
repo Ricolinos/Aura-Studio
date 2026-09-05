@@ -31,6 +31,10 @@ struct PhotoAlbumsView: View {
     /// siempre); con varias, no hace nada (no hay "vista previa
     /// múltiple" con este espacio de nombres de Quick Look).
     @State private var photoSelection = GridSelection<UUID>()
+    /// PLAN-studio-rendimiento.md Fase 2 punto 2: construidos una vez
+    /// por cambio de la cuadrícula/álbum visible, nunca en el gesto de tap.
+    @State private var visibleOrder = GridOrder<String>.empty
+    @State private var photoOrder = GridOrder<UUID>.empty
     @State private var renamingAlbum: PhotoAlbumGroup?
     @State private var quickLook = QuickLookCoordinator()
     @State private var isTargeted = false
@@ -181,7 +185,7 @@ struct PhotoAlbumsView: View {
                                         selection.toggle(album.id)
                                     }
                                     .onTapGesture(count: 2) { selectedAlbumID = album.id }
-                                    .onTapGesture { selection.handleTap(album.id, orderedIDs: visibleAlbums.map(\.id)) }
+                                    .onTapGesture { selection.handleTap(album.id, order: visibleOrder) }
                                     .contextMenu { albumContextMenu(album) }
                                     .draggable(LibrarySelectionTransfer(itemIDs: effectiveAlbums(for: album).flatMap(\.items).map(\.id)))
                                     .help(album.title)
@@ -193,6 +197,21 @@ struct PhotoAlbumsView: View {
                     }
                 }
             }
+        }
+        // PLAN-studio-rendimiento.md Fase 2: ver el comentario
+        // equivalente en AlbumsView.grid -- mismo patrón. Pendiente de
+        // verificar interactivo con el dueño.
+        .onAppear { visibleOrder = GridOrder(visibleAlbums.map(\.id)) }
+        .onChange(of: visibleAlbums.map(\.id)) { visibleOrder = GridOrder($0) }
+        .onKeyPress(.escape) {
+            guard !selection.selected.isEmpty else { return .ignored }
+            selection.clear()
+            return .handled
+        }
+        .onKeyPress(keys: ["a"]) { press in
+            guard press.modifiers.contains(.command) else { return .ignored }
+            selection.selectAll(visibleOrder)
+            return .handled
         }
     }
 
@@ -314,6 +333,20 @@ struct PhotoAlbumsView: View {
             quickLook.toggle(for: item.sourceURL)
             return .handled
         }
+        // PLAN-studio-rendimiento.md Fase 2: fotos de ESTE álbum
+        // abierto. Pendiente de verificar interactivo con el dueño.
+        .onAppear { photoOrder = GridOrder(album.items.map(\.id)) }
+        .onChange(of: album.items.map(\.id)) { photoOrder = GridOrder($0) }
+        .onKeyPress(.escape) {
+            guard !photoSelection.selected.isEmpty else { return .ignored }
+            photoSelection.clear()
+            return .handled
+        }
+        .onKeyPress(keys: ["a"]) { press in
+            guard press.modifiers.contains(.command) else { return .ignored }
+            photoSelection.selectAll(photoOrder)
+            return .handled
+        }
     }
 
     private func photoThumb(_ item: LibraryItem, album: PhotoAlbumGroup) -> some View {
@@ -326,7 +359,7 @@ struct PhotoAlbumsView: View {
             }
             .contentShape(Rectangle())
             .onTapGesture(count: 2) { quickLook.toggle(for: item.sourceURL) }
-            .onTapGesture { photoSelection.handleTap(item.id, orderedIDs: album.items.map(\.id)) }
+            .onTapGesture { photoSelection.handleTap(item.id, order: photoOrder) }
             .draggable(LibrarySelectionTransfer(itemIDs: effectivePhotos(for: item, in: album).map(\.id)))
             .contextMenu { photoContextMenu(item, album: album) }
     }

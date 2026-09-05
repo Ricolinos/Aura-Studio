@@ -19,6 +19,10 @@ struct SeriesView: View {
     /// Selección múltiple de episodios dentro de una serie abierta --
     /// se limpia al volver a la cuadrícula (`selectedSeriesID = nil`).
     @State private var episodeSelection = GridSelection<UUID>()
+    /// PLAN-studio-rendimiento.md Fase 2 punto 2: construidos una vez
+    /// por cambio de la cuadrícula/serie visible, nunca en el gesto de tap.
+    @State private var visibleOrder = GridOrder<String>.empty
+    @State private var episodeOrder = GridOrder<UUID>.empty
     /// R2-1: la casilla de un episodio aparece al pasar el cursor por su
     /// FILA (la casilla oculta no recibe eventos, así que no puede
     /// detectar su propio hover).
@@ -125,7 +129,7 @@ struct SeriesView: View {
                                     selection.toggle(show.id)
                                 }
                                 .onTapGesture(count: 2) { selectedSeriesID = show.id }
-                                .onTapGesture { selection.handleTap(show.id, orderedIDs: visibleSeries.map(\.id)) }
+                                .onTapGesture { selection.handleTap(show.id, order: visibleOrder) }
                                 .contextMenu { seriesContextMenu(show) }
                                 .draggable(LibrarySelectionTransfer(itemIDs: effectiveSeries(for: show).flatMap(\.items).map(\.id)))
                                 .help(show.title)
@@ -143,6 +147,21 @@ struct SeriesView: View {
                     .padding(.bottom, 24)
                 }
             }
+        }
+        // PLAN-studio-rendimiento.md Fase 2: ver el comentario
+        // equivalente en AlbumsView.grid -- mismo patrón. Pendiente de
+        // verificar interactivo con el dueño.
+        .onAppear { visibleOrder = GridOrder(visibleSeries.map(\.id)) }
+        .onChange(of: visibleSeries.map(\.id)) { visibleOrder = GridOrder($0) }
+        .onKeyPress(.escape) {
+            guard !selection.selected.isEmpty else { return .ignored }
+            selection.clear()
+            return .handled
+        }
+        .onKeyPress(keys: ["a"]) { press in
+            guard press.modifiers.contains(.command) else { return .ignored }
+            selection.selectAll(visibleOrder)
+            return .handled
         }
     }
 
@@ -196,6 +215,22 @@ struct SeriesView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 24)
             }
+        }
+        // PLAN-studio-rendimiento.md Fase 2: la selección de episodios
+        // de ESTA serie abierta -- se reconstruye al abrir la serie o si
+        // sus episodios cambian, nunca por clic. Pendiente de verificar
+        // interactivo con el dueño.
+        .onAppear { episodeOrder = GridOrder(show.seasons.flatMap(\.items).map(\.id)) }
+        .onChange(of: show.seasons.flatMap(\.items).map(\.id)) { episodeOrder = GridOrder($0) }
+        .onKeyPress(.escape) {
+            guard !episodeSelection.selected.isEmpty else { return .ignored }
+            episodeSelection.clear()
+            return .handled
+        }
+        .onKeyPress(keys: ["a"]) { press in
+            guard press.modifiers.contains(.command) else { return .ignored }
+            episodeSelection.selectAll(episodeOrder)
+            return .handled
         }
     }
 
@@ -271,7 +306,7 @@ struct SeriesView: View {
         .contentShape(Rectangle())
         .onHover { hoveredEpisodeID = $0 ? item.id : (hoveredEpisodeID == item.id ? nil : hoveredEpisodeID) }
         .onTapGesture {
-            episodeSelection.handleTap(item.id, orderedIDs: show.seasons.flatMap(\.items).map(\.id))
+            episodeSelection.handleTap(item.id, order: episodeOrder)
         }
         .draggable(LibrarySelectionTransfer(itemIDs: effectiveEpisodes(for: item, in: show).map(\.id)))
         .contextMenu { episodeContextMenu(item, show: show) }

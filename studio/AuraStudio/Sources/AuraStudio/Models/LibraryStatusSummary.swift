@@ -134,6 +134,46 @@ enum LibraryStats {
         }).count
     }
 
+    // MARK: - Solo la selección (PLAN-studio-rendimiento.md Fase 1 punto 3)
+    //
+    // `music`/`videos`/`photos` de abajo recalculan SIEMPRE el total
+    // (artistas/álbumes/duración/tamaño de TODOS los items) aunque solo
+    // haga falta el texto de la selección -- exactamente lo que
+    // `MediaSectionView.statusSummary` dispara en cada clic (diagnóstico
+    // §0.2: "normaliza cadenas de todos los items y de todos los
+    // seleccionados"). Estas tres funciones repiten SOLO la parte de
+    // `selected` (barata: proporcional a lo seleccionado, no al
+    // catálogo entero) para combinarla con un total ya cacheado --
+    // ver `StatusSummaryModel`.
+
+    static func musicSelectionText(selected: [LibraryItem], totalCount: Int,
+                                   options: ArtistGroupingOptions = .default) -> String? {
+        guard !selected.isEmpty else { return nil }
+        return join([
+            "\(formatted(selected.count)) de \(formatted(totalCount)) seleccionadas",
+            count(artistCount(of: selected, options: options), "artista", "artistas"),
+            count(albumCount(of: selected, options: options), "álbum", "álbumes"),
+            durationText(seconds: totalDuration(of: selected)),
+        ])
+    }
+
+    static func videoSelectionText(selected: [LibraryItem], totalCount: Int) -> String? {
+        guard !selected.isEmpty else { return nil }
+        return join([
+            "\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados",
+            durationText(seconds: totalDuration(of: selected)),
+            sizeText(bytes: totalSize(of: selected)),
+        ])
+    }
+
+    static func photoSelectionText(selected: [LibraryItem], totalCount: Int) -> String? {
+        guard !selected.isEmpty else { return nil }
+        return join([
+            "\(formatted(selected.count)) de \(formatted(totalCount)) seleccionadas",
+            sizeText(bytes: totalSize(of: selected)),
+        ])
+    }
+
     // MARK: - Resúmenes por sección
 
     /// Canciones (tabla completa) y cualquier lista de pistas.

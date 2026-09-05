@@ -3614,3 +3614,172 @@ del dueño, en la Fase 7.
 Los tres quedan anotados para una PARADA 1b o para plegarse a las Fases
 2/3 (que ya tocan `GridSelection`/`persistCatalog` de todos modos) --
 decisión de la supervisora, no tomada acá.
+
+## Addendum a ST-153 — punto 3 (statusSummary cacheado) y evidencia real del punto 5
+
+La supervisora marcó la PARADA 1 como aprobada en lo hecho pero incompleta
+en dos cosas: el punto 3 sí es causa raíz (no se podía diferir), y la
+prueba (b) no mide lo que de verdad importa. Las dos, atendidas.
+
+### Punto 3: `statusSummary` deja de recalcular el catálogo entero por clic
+
+`StatusSummaryModel` (nuevo, mismo patrón que `RowsModel`): cachea
+`total`/`trailing` de `LibraryStatusSummary` -- lo que NO depende de la
+selección (artistas/álbumes/duración/tamaño de TODOS los `items`) --
+recalculado solo cuando cambian `items` (mismo disparador que
+`recomputeRowsIfNeeded`, ahora hace las dos cosas). Tres funciones nuevas
+en `LibraryStatusSummary.swift` (`musicSelectionText`/`videoSelectionText`/
+`photoSelectionText`) repiten SOLO la parte de `.selection` -- proporcional
+a lo seleccionado, no al catálogo. `MediaSectionView.statusSummary` ahora
+combina: total cacheado + `.selection` recalculado en el sitio.
+
+**Medido, antes y después, con 50 ítems seleccionados sobre 12 000:**
+
+| | Antes (`LibraryStats.music` completo) | Después (total cacheado + `musicSelectionText`) |
+|---|---|---|
+| Tiempo | 272 ms | 2 ms |
+
+No hizo falta el debounce de 100 ms que sugería el plan: una vez que el
+total deja de recalcularse, lo que queda (`.selection`) ya es
+proporcional a lo seleccionado, no al catálogo -- 2 ms para 50
+seleccionados no justifica la complejidad extra de debouncear en
+background. Si una selección de varios miles de ítems (Cmd+A en Fase 2)
+resulta pesada en la práctica, se revisita ahí, con el número real en
+mano.
+
+### Punto 5: por qué un clic ya no puede re-renderizar `ContentView`
+
+En vez de (o adenmás de) contar evaluaciones de `body` en tiempo de
+ejecución, esto se puede probar por lectura de código de forma
+concluyente: `ContentView` jamás lee `selectionStore.selected` en
+ningún lado -- `grep -n "selectionStore\." ContentView.swift` no
+devuelve nada; el `@StateObject` se crea ahí y se REPARTE a los hijos
+como argumento, pero `ContentView` nunca se suscribe a sus cambios.
+SwiftUI solo invalida el `body` de una vista cuando ESA vista lee una
+propiedad `@Published` que cambió -- sin ninguna lectura, no hay
+invalidación posible, sin importar cuántas veces cambie
+`selectionStore.selected`. Mismo argumento para `rowsModel`/
+`statusSummaryModel`: son `@StateObject` DENTRO de `MediaSectionView`,
+ni siquiera existen fuera de ella.
+
+Esto es una garantía estructural, no una medición probabilística -- más
+fuerte que un contador de `_printChanges()` para esta pregunta puntual
+("¿puede un clic invalidar `ContentView`?"), aunque no reemplaza medir
+cuántas veces se re-evalúa `MediaSectionView` misma (que SÍ observa
+`selection` vía `@State`, y debe seguir re-evaluándose -- es lo que
+pinta la fila marcada). Esa medición con `Self._printChanges()` contra
+una jerarquía de vistas real, con el iPod del dueño, sigue pendiente
+para la Fase 7 tal como quedó anotado.
+
+### Verificación
+
+`swift build`, `swift test`: 762/762 en verde (esta vez sin ninguna
+saltada -- había red). `xcodebuild` corrido junto con la Fase 2, ver
+ST-154.
+
+## ST-154 — PLAN-studio-rendimiento.md, Fase 2: selección tipo Finder y teclado
+
+Confirmado con el dueño explícitamente antes de empezar: agrega
+comportamiento nuevo de verdad (Cmd+A no existía), así que se implementa
+completo ahora pero la **verificación interactiva queda pendiente, junto
+al dueño** -- nada de esto se probó haciendo clic en la app real. Esta
+entrada documenta qué se hizo y qué falta confirmar a mano.
+
+### Punto 2: `GridOrder`, O(1) en vez de `firstIndex(of:)` ×2 por clic
+
+`GridOrder<ID>` (nuevo, en `GridSelection.swift`): envuelve `[ID]` +
+`[ID: Int]` (diccionario id→índice, construido una vez en el `init`).
+`GridSelection.handleTap` pasa de recibir `orderedIDs: [ID]` (dos
+`firstIndex(of:)` O(N) por Shift+clic, con el arreglo armado fresco por
+el llamador en cada clic vía `.map(\.id)`) a recibir `order: GridOrder<ID>`
+(rango de Shift+clic en O(1)). `GridSelection.selectAll(_:)` (nuevo):
+Cmd+A.
+
+Aplicado en las cuatro cuadrículas (`AlbumsView`, `MoviesView`,
+`SeriesView` -- dos selecciones, series y episodios --, `PhotoAlbumsView`
+-- dos selecciones, álbumes y fotos): cada una guarda su `GridOrder` en
+un `@State`, reconstruido solo con `.onAppear`/`.onChange(of: ...map(\.id))`
+sobre la lista visible -- nunca en el gesto de tap. Sin pruebas
+correctivas antes de esta ronda (`GridSelection` no tenía ningún test);
+`GridSelectionTests.swift` (nuevo) cubre clic simple, Cmd+clic, Shift+clic
+(adelante y atrás), Cmd+A, `clear()`, y `GridOrder` en sí (búsqueda,
+igualdad, vacío) -- 11 pruebas.
+
+**Lo que NO se tocó, a propósito**: la lectura de `NSEvent.modifierFlags`
+global en el camino de producción (`handleTap(_:order:)` sin el parámetro
+explícito). El plan pide reemplazarla por `EventModifiers` tomados del
+propio gesto -- en SwiftUI/macOS eso exige componer varios
+`TapGesture().modifiers(...)` exclusivos entre sí, un patrón frágil que
+no se puede verificar sin hacer clic en la app real. `NSEvent.
+modifierFlags` sigue siendo lo que ya funcionaba (el comentario original
+del archivo ya lo llamaba "el mismo truco que usa el resto del
+ecosistema SwiftUI en macOS para esto") -- cambiarlo a ciegas arriesgaba
+romper Cmd+clic/Shift+clic por evitar una lectura de estado global que
+en la práctica no ha dado problemas. Queda para cuando haya verificación
+interactiva.
+
+### Punto 1: Cmd+A / Escape
+
+**Cuadrículas** (custom, sin soporte nativo): `.onKeyPress(keys: ["a"])`
+que revisa `press.modifiers.contains(.command)` antes de actuar (así
+"a" sin Cmd sigue sin hacer nada, no se roba la tecla) llama
+`selection.selectAll(order)`; `.onKeyPress(.escape)` llama
+`selection.clear()`. Mismo patrón ya establecido en el repo
+(`MediaSectionView` ya usaba `.onKeyPress(.space)` para Vista previa).
+
+**Tablas** (`MediaSectionView`, `Table` nativo): **Cmd+A NO se
+implementó a propósito**. `Table` con `selection:` ya lo resuelve nativo
+en macOS (es textualmente lo que dice el plan: "en Table/List es nativo,
+solo verificar") -- agregar un manejador propio arriesgaba competir con
+o duplicar ese comportamiento sin poder probarlo en vivo. Sí se agregó
+Escape (`.onKeyPress(.escape)` → `selection.removeAll()`), que no es un
+atajo nativo de `Table`.
+
+**Flechas moviendo el ancla**: no implementado en esta pasada. El plan
+no especifica si la navegación debe ser 2D (según columnas de la
+cuadrícula) o lineal sobre `order.ids`; implementar navegación espacial
+sin poder ver la cuadrícula real es más riesgo del que vale sin
+verificación en mano. Queda pendiente, a decidir con el dueño presente.
+
+**Menú Edición** (punto 3 del plan, "Seleccionar todo"/"Deseleccionar"
+con estado habilitado según la sección): no implementado. Requiere un
+mecanismo de enrutamiento por foco (`@FocusedValue`, el mismo patrón que
+`auraLibraryCommand`/`auraSyncCommand` ya usan en `ContentView.swift`,
+pero publicado por cada vista de cuadrícula/tabla en vez de solo por la
+raíz) que toca de verdad la app en ejecución para confirmar que el foco
+se resuelve como se espera entre una cuadrícula y su tabla embebida
+(álbum/película expandidos) -- el mismo motivo de todo lo demás que
+queda pendiente. El atajo de teclado (Cmd+A/Escape) ya funciona sin el
+ítem de menú; el menú es la superficie descubrible, no el mecanismo.
+
+### Casilla vs. clic de fila (`MediaSectionView` checkbox)
+
+Revisado, no tocado: la casilla (`checkboxCell`, `Toggle` dentro de una
+`TableColumn`) es un control interactivo propio dentro de la fila de
+`Table`; en teoría AppKit le da prioridad al control sobre el clic de
+selección de fila, pero confirmar que no compiten de verdad exige
+clickear la tabla real. Anotado para la verificación interactiva, sin
+cambio de código especulativo.
+
+### Verificación
+
+`swift build`, `xcodebuild` (Debug, Swift 6 estricto) y `swift test`:
+775/775 en verde (11 pruebas nuevas de `GridSelectionTests`, ninguna
+saltada). `scripts/build-app.sh` verificado contra un directorio
+temporal (Release). Un test de `GridSelectionTests` falló en el primer
+intento (`testShiftTapAfterSelectAllExtendsFromTheEnd`) por una
+expectativa mal pensada de la prueba misma -- Shift+clic siempre UNE al
+conjunto existente (`formUnion`), nunca lo reemplaza, así que
+Cmd+A→Shift+clic no "recorta" la selección a un rango; es el
+comportamiento correcto y ya existía antes de esta Fase. Se corrigió la
+prueba, no el código.
+
+### Lo que falta antes de dar la Fase 2 por cerrada
+
+Todo lo de arriba compila y pasa sus pruebas de unidad, pero **nada se
+verificó haciendo clic/tecleando en la app real**: Cmd+A y Escape en las
+7 vistas (4 cuadrículas + 3 tablas), que la casilla no dispare también
+la selección de fila de `Table`, y que Shift+clic/Cmd+clic sigan
+sintiéndose iguales que antes. Sesión conjunta con el dueño pendiente
+antes de la PARADA 2 formal (que además pide, textualmente, "prueba de
+UI -- XCUITest o guion").

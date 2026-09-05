@@ -19,6 +19,9 @@ struct MoviesView: View {
     @State private var selectedMovieID: String?
     /// Selección múltiple estilo Finder (encargo del dueño, 2026-08-19).
     @State private var selection = GridSelection<String>()
+    /// PLAN-studio-rendimiento.md Fase 2 punto 2: construido una vez
+    /// por cambio de la cuadrícula visible, nunca en el gesto de tap.
+    @State private var visibleOrder = GridOrder<String>.empty
     @State private var reviewingItem: LibraryItem?
     @AppStorage("aura.moviesSort") private var sortRaw = MovieSort.title.rawValue
 
@@ -162,7 +165,7 @@ struct MoviesView: View {
                                     selection.toggle(movie.id)
                                 }
                                 .onTapGesture(count: 2) { selectedMovieID = movie.id }
-                                .onTapGesture { selection.handleTap(movie.id, orderedIDs: visibleMovies.map(\.id)) }
+                                .onTapGesture { selection.handleTap(movie.id, order: visibleOrder) }
                                 .contextMenu { movieContextMenu(movie) }
                                 .draggable(LibrarySelectionTransfer(itemIDs: effectiveMovies(for: movie).flatMap(\.items).map(\.id)))
                                 .help(movie.title)
@@ -180,6 +183,21 @@ struct MoviesView: View {
                     .padding(.bottom, 24)
                 }
             }
+        }
+        // PLAN-studio-rendimiento.md Fase 2: ver el comentario
+        // equivalente en AlbumsView.grid -- mismo patrón. Pendiente de
+        // verificar interactivo con el dueño.
+        .onAppear { visibleOrder = GridOrder(visibleMovies.map(\.id)) }
+        .onChange(of: visibleMovies.map(\.id)) { visibleOrder = GridOrder($0) }
+        .onKeyPress(.escape) {
+            guard !selection.selected.isEmpty else { return .ignored }
+            selection.clear()
+            return .handled
+        }
+        .onKeyPress(keys: ["a"]) { press in
+            guard press.modifiers.contains(.command) else { return .ignored }
+            selection.selectAll(visibleOrder)
+            return .handled
         }
     }
 

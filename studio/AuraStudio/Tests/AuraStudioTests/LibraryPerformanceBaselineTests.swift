@@ -161,15 +161,46 @@ final class LibraryPerformanceBaselineTests: XCTestCase {
         }
     }
 
-    // MARK: - (d) Shift+clic de 1 a 1 000 en `GridSelection`
+    // MARK: - statusSummary (ST-153 addendum, Fase 1 punto 3)
+    //
+    // Antes: `LibraryStats.music(items:selected:)` recalculaba TODO
+    // (artistas/álbumes/duración/tamaño de los 12 000 ítems) en cada
+    // acceso, sin importar que solo cambiara qué había seleccionado.
+    // Después: el total sale de `StatusSummaryModel` (cacheado, ver
+    // `MediaSectionView.statusSummary`) y esta prueba mide lo único que
+    // sigue corriendo en cada cambio de selección -- el texto de
+    // `LibraryStats.musicSelectionText`, proporcional a lo seleccionado.
 
+    func testStatusSummaryFullRecomputeEveryAccess_beforeFix() {
+        let selected = Array(syntheticItems.prefix(50))
+        measure {
+            _ = LibraryStats.music(items: syntheticItems, selected: selected, options: .default)
+        }
+    }
+
+    func testStatusSummarySelectionOnly_afterFix() {
+        let statusSummaryModel = StatusSummaryModel()
+        statusSummaryModel.recompute(items: syntheticItems, kind: .music, options: .default,
+                                     presetCategory: nil, photoCollections: [])
+        let selected = Array(syntheticItems.prefix(50))
+        measure {
+            _ = LibraryStats.musicSelectionText(selected: selected, totalCount: syntheticItems.count, options: .default)
+        }
+    }
+
+    // MARK: - (d) Shift+clic de 1 a 1 000 en `GridSelection`
+    //
+    // PLAN-studio-rendimiento.md Fase 2 punto 2: `GridOrder` (el
+    // diccionario id→índice) se construye UNA VEZ, fuera del `measure`
+    // -- así es como lo va a usar la vista real (una vez por cambio de
+    // cuadrícula, nunca por clic). Lo que se mide son los 1000 clics.
     func testShiftClickExtendingSelectionOneToOneThousand() {
-        let orderedIDs = syntheticItems.map(\.id)
+        let order = GridOrder(syntheticItems.map(\.id))
         measure {
             var selection = GridSelection<UUID>()
-            selection.handleTap(orderedIDs[0], orderedIDs: orderedIDs, modifierFlags: [])
+            selection.handleTap(order.ids[0], order: order, modifierFlags: [])
             for i in 1...1_000 {
-                selection.handleTap(orderedIDs[i], orderedIDs: orderedIDs, modifierFlags: [.shift])
+                selection.handleTap(order.ids[i], order: order, modifierFlags: [.shift])
             }
         }
     }

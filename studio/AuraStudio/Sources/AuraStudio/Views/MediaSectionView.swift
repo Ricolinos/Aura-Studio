@@ -70,6 +70,10 @@ struct MediaSectionView: View {
     /// superior y cada tabla embebida en un álbum/película expandido
     /// tienen la suya, igual que ya pasaba con `selection`).
     @StateObject private var rowsModel = RowsModel()
+    /// PLAN-studio-rendimiento.md Fase 1 punto 3: la parte de
+    /// `statusSummary` que no depende de la selección, memoizada -- ver
+    /// `StatusSummaryModel`.
+    @StateObject private var statusSummaryModel = StatusSummaryModel()
     @State private var sortOrder: [KeyPathComparator<MediaTableRow>] = [.init(\.title, order: .forward)]
     @State private var quickLook = QuickLookCoordinator()
     @State private var categoryFilter: String?
@@ -155,6 +159,8 @@ struct MediaSectionView: View {
 
     private func recomputeRowsIfNeeded() {
         rowsModel.recompute(items: items, deviceSyncIndex: viewModel.deviceSyncIndex, sortOrder: sortOrder)
+        statusSummaryModel.recompute(items: items, kind: kind, options: preferences.artistGrouping,
+                                     presetCategory: presetCategory, photoCollections: preferences.photoCollections)
     }
 
     /// Solo fotos y video se organizan por categoria (D-192) -- musica
@@ -180,20 +186,29 @@ struct MediaSectionView: View {
     /// ST-063: barra de estado de la sección. Embebida en Álbumes/
     /// Películas no publica nada (la vista contenedora arma el suyo con
     /// `selectionForSync`, que esta tabla ya mantiene).
+    /// PLAN-studio-rendimiento.md Fase 1 punto 3: `total`/`trailing`
+    /// salen de `statusSummaryModel` (cacheados, recalculados solo
+    /// cuando cambian `items` -- ver `recomputeRowsIfNeeded`). Lo único
+    /// que se calcula en cada acceso (cada clic, cada cambio de
+    /// selección) es `.selection`, con las funciones "solo selección" de
+    /// `LibraryStats` -- proporcional a lo seleccionado, no al catálogo
+    /// entero. Diagnóstico §0.2: antes esto recalculaba TODO (artistas/
+    /// álbumes/duración/tamaño de los 12 000 ítems) en cada clic.
     private var statusSummary: LibraryStatusSummary? {
-        guard !isEmbedded else { return nil }
+        guard !isEmbedded, var summary = statusSummaryModel.total else { return nil }
         let selected = items.filter { selection.contains($0.id) }
         switch kind {
         case .music:
-            return LibraryStats.music(items: items, selected: selected, options: preferences.artistGrouping)
+            summary.selection = LibraryStats.musicSelectionText(selected: selected, totalCount: items.count,
+                                                                 options: preferences.artistGrouping)
         case .video:
-            return LibraryStats.videos(items: items, selected: selected, breakdown: presetCategory == nil)
+            summary.selection = LibraryStats.videoSelectionText(selected: selected, totalCount: items.count)
         case .photo:
-            return LibraryStats.photos(items: items, selected: selected,
-                                       collections: presetCategory == nil ? preferences.photoCollections : nil)
+            summary.selection = LibraryStats.photoSelectionText(selected: selected, totalCount: items.count)
         case .unsupported:
-            return nil
+            summary.selection = nil
         }
+        return summary
     }
 
     var body: some View {
@@ -232,6 +247,19 @@ struct MediaSectionView: View {
                     .onKeyPress(.space) {
                         guard let selectedItem else { return .ignored }
                         quickLook.toggle(for: selectedItem.sourceURL)
+                        return .handled
+                    }
+                    // PLAN-studio-rendimiento.md Fase 2 punto 1: Cmd+A
+                    // NO se agrega acá a propósito -- `Table` con
+                    // `selection:` ya lo resuelve nativo (es exactamente
+                    // lo que dice el plan: "en Table/List es nativo, solo
+                    // verificar"). Agregar un manejador propio arriesgaba
+                    // competir con o duplicar ese comportamiento sin
+                    // poder probarlo en vivo. Escape sí hace falta: no es
+                    // un atajo nativo de `Table`.
+                    .onKeyPress(.escape) {
+                        guard !selection.isEmpty else { return .ignored }
+                        selection.removeAll()
                         return .handled
                     }
             }

@@ -13,6 +13,28 @@ import UniformTypeIdentifiers
 /// mismo") en el momento del clic -- mismo truco que usa el resto del
 /// ecosistema SwiftUI en macOS para esto.
 ///
+/// PLAN-studio-rendimiento.md Fase 2 punto 2: el orden visible de una
+/// cuadrícula, con su índice id→posición ya construido -- para que
+/// `GridSelection.handleTap` resuelva un rango de Shift+clic en O(1) en
+/// vez de escanear el arreglo dos veces por clic. Cada vista de
+/// cuadrícula construye el suyo cuando cambia lo que se ve (filtro,
+/// orden, biblioteca), nunca en el gesto de tap.
+struct GridOrder<ID: Hashable>: Equatable where ID: Equatable {
+    let ids: [ID]
+    private let indexByID: [ID: Int]
+
+    init(_ ids: [ID]) {
+        self.ids = ids
+        self.indexByID = Dictionary(uniqueKeysWithValues: ids.enumerated().map { ($1, $0) })
+    }
+
+    static var empty: GridOrder<ID> { GridOrder([]) }
+
+    func index(of id: ID) -> Int? { indexByID[id] }
+
+    static func == (lhs: GridOrder<ID>, rhs: GridOrder<ID>) -> Bool { lhs.ids == rhs.ids }
+}
+
 /// Genérico sobre `ID` para reusarse en Álbumes/Artistas/Películas/
 /// Series/episodios/álbumes de fotos/fotos -- cada cuadrícula guarda
 /// la suya (`@State private var selection = GridSelection<String>()`).
@@ -20,22 +42,27 @@ struct GridSelection<ID: Hashable>: Equatable {
     var selected: Set<ID> = []
     private var lastTapped: ID?
 
-    /// Aplica un clic simple sobre `id`, dado el orden visible actual
-    /// (`orderedIDs`, para resolver el rango de Shift+clic).
-    mutating func handleTap(_ id: ID, orderedIDs: [ID]) {
-        handleTap(id, orderedIDs: orderedIDs, modifierFlags: NSEvent.modifierFlags)
+    /// Aplica un clic simple sobre `id`, dado el orden visible actual.
+    /// PLAN-studio-rendimiento.md Fase 2 punto 2: `order` se construye
+    /// UNA VEZ por cambio de la cuadrícula (ver `GridOrder`), no en cada
+    /// clic -- antes, cada llamador armaba `[ID]` con un `.map(\.id)`
+    /// fresco por clic y esta función hacía dos `firstIndex(of:)`
+    /// O(N) sobre esa lista. Ahora el rango de Shift+clic sale de un
+    /// diccionario id→índice, O(1).
+    mutating func handleTap(_ id: ID, order: GridOrder<ID>) {
+        handleTap(id, order: order, modifierFlags: NSEvent.modifierFlags)
     }
 
     /// PLAN-studio-rendimiento.md Fase 0: separado de `handleTap` para
-    /// poder medir (y más adelante probar) el camino de Shift+clic sin
-    /// depender del estado global de teclado -- `NSEvent.modifierFlags`
-    /// no se puede simular en una prueba. El camino de producción sigue
-    /// siendo exactamente el mismo (`handleTap` de arriba se lo delega).
-    mutating func handleTap(_ id: ID, orderedIDs: [ID], modifierFlags flags: NSEvent.ModifierFlags) {
+    /// poder medir/probar el camino de Shift+clic sin depender del
+    /// estado global de teclado -- `NSEvent.modifierFlags` no se puede
+    /// simular en una prueba. El camino de producción sigue siendo
+    /// exactamente el mismo (`handleTap` de arriba se lo delega).
+    mutating func handleTap(_ id: ID, order: GridOrder<ID>, modifierFlags flags: NSEvent.ModifierFlags) {
         if flags.contains(.shift), let last = lastTapped,
-           let lastIndex = orderedIDs.firstIndex(of: last), let thisIndex = orderedIDs.firstIndex(of: id) {
+           let lastIndex = order.index(of: last), let thisIndex = order.index(of: id) {
             let range = lastIndex <= thisIndex ? lastIndex...thisIndex : thisIndex...lastIndex
-            selected.formUnion(orderedIDs[range])
+            selected.formUnion(order.ids[range])
         } else if flags.contains(.command) {
             if selected.contains(id) { selected.remove(id) } else { selected.insert(id) }
         } else {
@@ -68,6 +95,14 @@ struct GridSelection<ID: Hashable>: Equatable {
     mutating func clear() {
         selected.removeAll()
         lastTapped = nil
+    }
+
+    /// PLAN-studio-rendimiento.md Fase 2 punto 1: Cmd+A -- selecciona
+    /// todo lo VISIBLE (`order` ya viene filtrado por quien llama, igual
+    /// que para `handleTap`).
+    mutating func selectAll(_ order: GridOrder<ID>) {
+        selected = Set(order.ids)
+        lastTapped = order.ids.last
     }
 
     /// Quita del set los ids que ya no existen (p. ej. tras borrar
