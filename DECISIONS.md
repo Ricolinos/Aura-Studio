@@ -4714,3 +4714,100 @@ serial USB, con sus casos sin serial.
 `AppPreferences` (WinUI, fuera del alcance del único proyecto de pruebas). Queda
 cubierta por la verificación en vivo de ST-168, donde la oferta aparece o no
 según lo que este registro haya guardado — que es exactamente ese ida y vuelta.
+
+## ST-167 — El instalador de Windows no tenía modos: el recorrido pasa a ser un dato
+
+Segunda de las cuatro decisiones de la Fase D. No cambia ningún flujo: le pone
+nombre al que había, para poder agregarle uno nuevo sin romperlo.
+
+**El hallazgo**: el instalador de Windows **no tenía modos**. `InstallerMode`
+existía en Core desde el port (`Installer/InstallerStep.cs`) con sus casos
+`Install` y `Restore`, pero `grep -n "InstallerMode\|Restore"` sobre
+`InstallerViewModel.cs` no devolvía **nada**: el asistente solo instalaba, y su
+recorrido vivía disperso en las asignaciones a `Step` repartidas por el
+ViewModel. No había forma de preguntarle nada al flujo sin leerlo entero.
+
+Eso alcanzaba mientras hubiera un solo camino. Con "Actualizar el arranque" deja
+de alcanzar: su promesa —**cuatro pasos, ninguno toca el disco, ninguno pide
+contraseña**— quedaría escrita como cinco `if` repartidos, y cada paso nuevo que
+alguien agregara tendría que acordarse de todos. Por eso el recorrido pasa a ser
+un dato: `InstallerFlow`.
+
+### Primero se fijó el flujo que ya existía
+
+Las primeras once pruebas **no describen nada nuevo**. Fijan el recorrido que el
+asistente ya hacía, copiado de sus transiciones antes de tocar nada:
+
+```
+Welcome → Permissions → DetectDevice → PreparingDisk → EnterDfu
+        → Installing → AwaitingBootloaderUsb → CopyingFiles → Done
+```
+
+y el de la actualización directa de General (D-222), que no abre el asistente:
+`CopyingFiles → Done`, sin bienvenida, sin permisos, sin formateo y sin DFU.
+
+Si alguna de ellas se pone roja, lo que cambió es el flujo de **instalar** — y
+eso no es parte de "Actualizar el arranque". Ese es todo el punto de haberlas
+escrito primero.
+
+Dos cosas más quedaron fijadas de paso, porque se pierden en silencio:
+`ChooseBootMode` no lo visita nadie (ST-050 lo dejó sin usar y el caso se
+conservó para no renumerar), y `Failed` no es parte de ningún recorrido — se
+llega desde cualquier lado, es la interrupción del camino y no un tramo suyo.
+
+Y un tercero, verificado contra el ViewModel para esta decisión: **hoy `Install`
+graba con `--single` siempre** (ST-050). `SingleBoot` se fija en `true` en el
+constructor de `InstallerViewModel` y **no se asigna en ningún otro lado** — ni
+XAML, ni preferencia, ni otra rama de código; de ahí va derecho a
+`InstallBootloaderAsync`. Así que `FlashesSingle(Install) == true` no es una
+elección de `InstallerFlow`: es lo que el instalador ya hacía, escrito donde se
+puede preguntar.
+
+Queda una punta suelta que ST-168 tiene que atar: `SingleBoot` es una propiedad
+**pública y asignable** del ViewModel, hoy sin nada que la vigile. Mientras hubo
+un solo modo daba igual; con dos, grabar el arranque con `--single` borraría el
+de Apple en un iPod con dual boot, que es justo lo que ST-143 prohíbe.
+
+**`InstallerFlow` declara a dónde puede llegar cada modo, no en qué orden está
+obligado a pisar cada casilla.** El atajo que ya existía sigue existiendo: con
+el iPod en DFU al abrir, el asistente salta de la Bienvenida directo a
+`EnterDfu` (`AcceptDetectedDfu`), porque el disco no hace falta prepararlo si lo
+que sigue es grabar. Está dicho en el código para que nadie lo "arregle".
+
+### El flujo nuevo
+
+`InstallerMode.UpdateBootloader` (tercer caso, igual que en macOS) recorre
+cuatro pasos: `Welcome → EnterDfu → Installing → Done`. Lo que no hace está
+probado una por una, y no por gusto de repetir: cada "no" es una promesa que la
+pantalla le hace al usuario por escrito.
+
+- No visita `Permissions`, y `NeedsPrivilegesInNormalPath` es `false`:
+  **cero contraseñas**. `mks5lboot` no las pide (D-043).
+- No visita `PreparingDisk` ni `CopyingFiles`, y `TouchesDisk` es `false`: la
+  música, las fotos, las listas y los ajustes se quedan como están.
+- No visita `AwaitingBootloaderUsb`: ese paso existe porque tras instalar faltan
+  los archivos; acá no falta nada, el iPod reinicia y ya está.
+- `FlashesSingle` es `false` (ST-143): `--single` borra el arranque de Apple, y
+  actualizar no puede destruir más de lo que ya estaba destruido.
+
+"En el camino normal" es literal en `NeedsPrivilegesInNormalPath`: ST-169 le
+agrega a la pantalla de DFU una ayuda opcional que **sí** pide permisos, y que
+aparece solo si el iPod no se detecta después de esperar. Que sea la excepción y
+no la regla es el punto, y por eso el nombre lo dice.
+
+### Restaurar sigue sin existir en Windows
+
+`InstallerMode.Restore` viene del Swift y nadie lo recorre acá. `InstallerFlow`
+**falla con `NotSupportedException`** en vez de devolver una lista vacía: una
+lista vacía dibujaría un asistente sin pasos y nadie se enteraría hasta verlo en
+pantalla. Hay una prueba que lo fija.
+
+### Verificación
+
+- `dotnet test tests/AuraStudio.Core.Tests`: **1256/1256** (1235 antes + 21).
+- `dotnet build AuraStudio.App -c Release -p:Platform=ARM64`: verde, 0
+  advertencias, 0 errores.
+
+**La app no se tocó**: `InstallerFlow` no tiene todavía ningún usuario. El
+cableado —que es la parte con riesgo, porque toca el flujo de instalar que ya
+funciona— es ST-168, y estas pruebas son la red que lo sostiene.

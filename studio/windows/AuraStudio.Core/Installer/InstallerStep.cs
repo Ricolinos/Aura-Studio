@@ -66,9 +66,24 @@ public enum InstallerStep
     Failed
 }
 
-/// <summary>Instalar el firmware, o devolver el iPod a su firmware original.</summary>
+/// <summary>
+/// Qué viene a hacer el asistente. Hasta ST-167 el instalador de Windows no
+/// tenía modos —solo instalaba—, y este enum existía sin que nadie lo usara.
+/// </summary>
 public enum InstallerMode
 {
     Install,
-    Restore
+
+    /// <summary>
+    /// Devolver el iPod a su firmware original. <b>No está implementado en
+    /// Windows</b> (ver <see cref="InstallerFlow"/>): el caso existe para no
+    /// renumerar ni romper el <c>switch</c> exhaustivo, igual que en el Swift.
+    /// </summary>
+    Restore,
+
+    /// <summary>
+    /// ST-143/ST-167: solo regrabar el arranque en la NOR, sin tocar el disco.
+    /// Cuatro pasos y ninguna contraseña — ver <see cref="InstallerFlow"/>.
+    /// </summary>
+    UpdateBootloader
 }
