@@ -1,0 +1,21 @@
+# Finales de línea: LF en todo el repo (el clon compartido Mac/Windows tenía autocrlf=true en Windows).
+* text=auto eol=lf
+*.slnx text eol=crlf
+*.png -text
+*.jpg -text
+*.jpeg -text
+*.gif -text
+*.icns -text
+*.ico -text
+*.exe -text
+*.dll -text
+*.ipod -text
+*.zip -text
+*.dmg -text
+*.origin -text
+*.fnt -text
+*.bmp -text
+*.ttf -text
+*.mp3 -text
+*.aiff -text
+*.m4a -text
