@@ -5176,3 +5176,64 @@ lote explícito) con el vigilante real activado -- cero bloqueos > 250 ms.
 `xcodegen generate` + `xcodebuild` (Debug, Swift 6 estricto):
 `BUILD SUCCEEDED`. `scripts/build-app.sh` verificado contra un
 directorio temporal (Release).
+
+## ST-170 — Instaladores de Windows 0.2.1 (ST-161..169 sobre 0.2.0)
+
+Arma los dos instaladores del parche `0.2.1`, desde el commit de versión
+`3213a41` (`main`, `AuraStudio.iss` `AppVersion "0.2.1"` y
+`AuraStudio.App.csproj` `<Version>0.2.1</Version>`, verificados antes de
+compilar). Sin cambios de código de esta unidad de trabajo — el parche es
+íntegro el de las nueve decisiones que se acumularon sobre `0.2.0`.
+
+### Qué trae 0.2.1 que 0.2.0 no tenía
+
+- **ST-161** — la cuadrícula de Álbumes se llamaba a sí misma sin fin y
+  congelaba la app con un núcleo al 100 %.
+- **ST-162** — el recorte cuadrado de una foto con orientación EXIF salía
+  rectangular (escalar y recortar no vivían en el mismo espacio).
+- **ST-163** — fotos de artista al iPod, 128×128 → 320×320 (paridad con
+  macOS, contrato v20).
+- **ST-164** — botón "Cancelar" para la normalización de carátulas
+  (paridad con ST-141 de macOS).
+- **ST-165** — la hora del iPod también se siembra al terminar de instalar
+  o actualizar el árbol de firmware (tercera pata de ST-146).
+- **ST-166..169** (Fase D) — el registro de qué arranque tiene cada iPod
+  (por serial USB); el recorrido del instalador vuelto un dato
+  (`InstallerFlow`); "Actualizar el arranque" cableado a la pantalla, con
+  los cuatro textos que mentían corregidos; y la tarea programada que
+  reactiva el servicio de Apple si la app muere con él pausado.
+
+El firmware embebido no cambió respecto de `0.2.0`: Aura `v0.4.6-beta`,
+Metro `v0.7.2`, moonlit `v0.2.2` (verificado en `artifacts/` antes de
+compilar y de nuevo dentro de los dos publish, `firmware-version.txt` de
+las tres familias).
+
+### Verificación
+
+`.\scripts\Make-Installer.ps1 -Architecture both` en `studio\windows`,
+Release, sin advertencias:
+
+- `[arm64] Publish verificado: 553 archivos, 291 MB.`
+- `[x64] Publish verificado: 557 archivos, 276 MB.`
+- `Las dos arquitecturas no dejan huérfanos sin cubrir.`
+- `Listo: ...\dist\AuraStudioSetup-0.2.1-arm64.exe` (94.4 MB)
+- `Listo: ...\dist\AuraStudioSetup-0.2.1-x64.exe` (97 MB)
+
+`(Get-Item ...).VersionInfo` de los dos `AuraStudioSetup-0.2.1-*.exe`
+declara `ProductVersion`/`FileVersion` `0.2.1`; el `AuraStudio.App.exe` de
+cada publish declara `ProductVersion` `0.2.1+3213a4126551f4a705eced55ba13587d23437fe1`
+— el commit exacto grabado en el binario.
+
+SHA-256 de los dos instaladores nuevos:
+
+- `AuraStudioSetup-0.2.1-arm64.exe` (99 019 447 bytes):
+  `db2b6938995b2940022f2262934a8547048e497b9ecadb1c6acedadb9f8e0c84`
+- `AuraStudioSetup-0.2.1-x64.exe` (101 689 047 bytes):
+  `e621e325c6b05f4528b6b042ce1445d096db84429db098445615a6a2bdb31c7d`
+
+Los `AuraStudioSetup-0.2.0-*.exe` del release anterior se comprobaron
+intactos, mismos SHA-256 de siempre (`3256297bad5a...537ab` el arm64,
+`e0162946f7a5...216fbb` el x64) — este parche no los toca.
+
+`dist\` sigue ignorado en git: los `.exe` no se commitean, solo esta
+decisión.
