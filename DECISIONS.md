@@ -8883,3 +8883,118 @@ que una que sola no cabe no se guarde, que reemplazar no cuente el costo dos
 veces) y para las tres formas de clave. `ImageResizerCheck`: **todo bien**, con
 tres comprobaciones nuevas —el tope es de memoria, lo expulsado se vuelve a
 decodificar, lo que está en caché no—.
+
+## ST-210 — Windows: "Buscar actualizaciones" consulta de verdad la red
+
+Encargo del dueño para esta ronda. Paridad con `AuraUpdateChecker.checkForUpdate`
+de macOS, que sí sale a preguntar.
+
+### Qué había
+
+`DeviceListViewModel.CheckForUpdates` era **sincrónico y no tocaba la red**:
+
+```csharp
+private void CheckForUpdates()
+{
+    CheckFirmwareUpdate();   // ← compara contra el PIN horneado, sin red
+    StatusMessage = HasFirmwareUpdate ? FirmwareUpdateMessage : FirmwareUpToDateMessage;
+}
+```
+
+`CheckFirmwareUpdate` pasa `artifacts.ReleaseTag` —el tag que trae esta copia de
+Studio— como "el Release más nuevo conocido". O sea que el botón comparaba el
+iPod contra **lo que Studio ya tenía adentro**, y con eso contestaba. Si el iPod
+tenía lo mismo que el pin, la pantalla decía «Aura está al día con esta versión
+de Aura Studio», aunque hubiera un Release publicado hacía semanas.
+
+Peor: `FirmwareUpToDateMessage` lo afirmaba **sin que nadie hubiera preguntado
+nunca**, porque es una propiedad calculada que solo mira la familia. Un usuario
+que abría la pantalla y no tocaba nada ya leía "está al día".
+
+La maquinaria para preguntar existía entera y sin usar desde ST-074/ST-077:
+`GitHubReleaseChecker` (con token opcional y su `LastAuthFailure`), `ReleaseCache`
+con TTL de 24 h, y `FirmwareVersionResolver`, que solo consumía la pantalla de
+Extras.
+
+### Qué hay
+
+**Un comando asíncrono de verdad.** `CheckForUpdatesAsync` sale a GitHub, lee el
+disco del iPod fuera del hilo de interfaz y publica un veredicto. Mientras dura,
+el enlace se ve deshabilitado, aparece un indicador de avance y un **Cancelar**
+—`[RelayCommand(IncludeCancelCommand = true)]`—; cancelar no concluye nada y deja
+la pantalla como estaba.
+
+**Consulta en vivo, sin caché.** La revisión manual pasa `force: true`: si el
+caché de 24 h se llenó justo antes de publicarse el Release nuevo, apretar el
+botón seguiría diciendo "al día" hasta que el TTL venciera solo. Es exactamente
+el bug que D-300 arregló en la Mac, y acá el botón nunca había tenido cómo
+saltárselo.
+
+**Tres versiones, no dos.** La del iPod (`version.txt`, D-290), la publicada en
+GitHub y la que Studio trae adentro. `FirmwareUpdateDecision` —puro, en Core— las
+compara y devuelve qué decir y **si el botón de instalar sirve**:
+
+| | |
+|---|---|
+| iPod ≥ publicado | al día, y se nombra la versión |
+| iPod < pin | hay actualización **y se puede instalar ahora** |
+| publicado > pin ≥ iPod | se puede instalar el pin **y** se avisa que existe una más nueva |
+| publicado > pin, iPod = pin | **se avisa y no se ofrece instalar** |
+| sin red | "no se pudo consultar", nunca "al día" |
+
+La cuarta fila es la que obligó a separar el pin de lo publicado. **Studio no
+descarga firmware**: el instalador copia lo que hay en `Vendor\firmware-dist\`.
+Lo comprobé antes de decidirlo — `FirmwareVersionResolver` solo resuelve un tag,
+`GitHubReleaseAsset` no lo consume nadie, y no existe ningún descargador. Ofrecer
+"Instalar la actualización" para un Release que no está bajado sería un botón que
+no puede cumplir; entonces se dice la verdad: *"Se publicó Aura v0.5.0-beta, pero
+esta copia de Aura Studio trae v0.4.6-beta. Actualiza Aura Studio para poder
+instalarla."*
+
+**Sin red no se miente.** Un fallo de red, GitHub caído o un token rechazado dan
+`Unknown` con el motivo, y el estado anterior queda intacto. Si además el
+respaldo por hash pudo concluir que lo instalado coincide con lo que Studio trae,
+se dice **eso**, que no es lo mismo que estar al día con lo publicado.
+
+**ST-046 intacto**: se pregunta al repositorio de la familia **instalada**, y una
+familia sin repositorio no ofrece nada. Comparar Metro contra Aura daría "hay
+actualización" para siempre, o sea ofrecer sobrescribir Metro con Aura.
+
+**`FirmwareUpToDateMessage` dejó de afirmar de más.** Sin haber consultado dice
+lo único que el chequeo sin red puede sostener —«coincide con la versión que trae
+esta copia de Aura Studio»— e invita a preguntar; después de consultar, repite lo
+que se concluyó. Al cambiar de iPod se descarta: lo que se supo era de otro
+momento y a veces de otro dispositivo.
+
+**Una sola forma de preguntar.** `FirmwareVersionResolver` gana
+`LatestPublishedAsync`, y las dos consultas comparten la misma búsqueda con
+caché: dos copias serían dos criterios distintos de cuándo se cachea un fallo de
+token (ST-074). La diferencia entre las dos es deliberada — `ResolveAsync` cae al
+tag local cuando GitHub no contesta (Extras necesita mostrar *algo*), y
+`LatestPublishedAsync` distingue "no hay nada más nuevo" de "no se pudo
+preguntar", que es justo lo que hace falta para no mentir acá.
+
+### Lo que NO entra acá
+
+- **Descargar el firmware.** Que "Instalar la actualización" pueda traer un
+  Release más nuevo que el pin es otra cosa, con su propia verificación de
+  checksums y su propia decisión sobre el contrato de artefactos. Acá se avisa y
+  se explica, que es lo que se puede hacer honestamente hoy.
+- **El chequeo automático al conectar** sigue siendo el de siempre, sin red: es
+  el que evita pegarle a la API de GitHub en cada conexión, y su mensaje ya no
+  afirma de más.
+- **Las actualizaciones de la propia app** (ST-211) esperan a que la Mac entregue
+  ST-191.
+
+### Verificación
+
+`dotnet build` de Core, App y los dos arneses: **0 advertencias, 0 errores**.
+`dotnet test`: **1 525 pruebas en verde**, dieciséis nuevas para la decisión pura
+—al día, iPod más nuevo que lo publicado, pin en el medio, Release más nuevo que
+el pin, sin red con y sin respaldo por hash, sin `version.txt`, tag ilegible,
+familia sin repositorio, árbol incompleto, y que las tres versiones viajen en el
+informe—.
+
+Lo que **no** se verificó acá: la consulta contra GitHub de verdad. Esta sesión no
+abre la ventana ni tiene por qué pegarle a la API; lo que se prueba es la decisión
+—que es donde estaba el error— y el cableado se ve en pantalla.

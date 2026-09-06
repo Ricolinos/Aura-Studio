@@ -129,8 +129,18 @@
                     <TextBlock Text="{x:Bind ViewModel.FirmwareUpToDateMessage, Mode=OneWay}"
                                Style="{StaticResource AuraSecondaryTextStyle}" VerticalAlignment="Center"
                                Visibility="{x:Bind ViewModel.HasFirmwareUpdate, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}" />
+                    <!-- ST-210: mientras consulta GitHub el enlace se ve
+                         deshabilitado y aparece el aviso con "Cancelar". Un
+                         enlace que no responde y no explica nada parece roto. -->
                     <HyperlinkButton Content="Buscar actualizaciones"
-                                     Command="{x:Bind ViewModel.CheckForUpdatesCommand}" />
+                                     Command="{x:Bind ViewModel.CheckForUpdatesCommand}"
+                                     IsEnabled="{x:Bind ViewModel.IsCheckingUpdates, Mode=OneWay, Converter={StaticResource InvertBool}}" />
+                    <ProgressRing IsActive="{x:Bind ViewModel.IsCheckingUpdates, Mode=OneWay}" Width="16" Height="16"
+                                  Visibility="{x:Bind ViewModel.IsCheckingUpdates, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
+                                  VerticalAlignment="Center" />
+                    <HyperlinkButton Content="Cancelar"
+                                     Command="{x:Bind ViewModel.CheckForUpdatesCancelCommand}"
+                                     Visibility="{x:Bind ViewModel.IsCheckingUpdates, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
                 </StackPanel>
 
                 <ProgressBar IsIndeterminate="True"

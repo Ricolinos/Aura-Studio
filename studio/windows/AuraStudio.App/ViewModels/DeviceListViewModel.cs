@@ -18,10 +18,13 @@ namespace AuraStudio.App.ViewModels;
 public sealed partial class DeviceListViewModel : ViewModelBase
 {
     private readonly IDeviceSessionService _session;
+    private readonly System.Net.Http.HttpClient _http = new();
     private readonly IVolumeService _volumes;
     private readonly IAppPreferences _preferences;
     private readonly IFirmwareArtifactsProvider _artifacts;
     private readonly InstallerViewModel _installer;
+    private readonly IReleaseCacheStore _cache;
+    private readonly Platform.CredentialStore _credentials;
 
     [ObservableProperty]
     public partial IPodDiskInfo? Device { get; set; }
@@ -65,9 +68,16 @@ public sealed partial class DeviceListViewModel : ViewModelBase
         Device is { } device ? StorageBreakdown.UsageLine(device) : "";
 
     /// <summary>
-    /// La línea de estado del firmware cuando NO hay actualización — el caso
-    /// normal, que antes no decía nada. Que el silencio signifique "está al
-    /// día" obliga a adivinar.
+    /// La línea de estado del firmware cuando NO hay una actualización que
+    /// instalar — el caso normal, que antes no decía nada. Que el silencio
+    /// signifique "está al día" obliga a adivinar.
+    ///
+    /// <para>ST-210: <b>solo dice "al día" si se preguntó</b>. Antes lo afirmaba
+    /// siempre, comparando contra el pin horneado en esta copia de Studio: con un
+    /// Release publicado hacía semanas, la pantalla seguía diciendo que todo
+    /// estaba al día. Sin haber consultado se dice exactamente lo que se sabe —
+    /// que lo instalado coincide con lo que Studio trae— y se invita a
+    /// preguntar.</para>
     /// </summary>
     public string FirmwareUpToDateMessage
     {
@@ -75,11 +85,16 @@ public sealed partial class DeviceListViewModel : ViewModelBase
         {
             if (Device is not { } device || !device.SupportsAuraContract) return "";
 
+            // Ya se preguntó: se repite lo que se concluyó, incluido "no se pudo
+            // saber".
+            if (LastUpdateReport.Message is { Length: > 0 } concluded) return concluded;
+
             FirmwareFamily family = device.DeclaredFamily ?? FirmwareFamily.Aura;
 
             return family.IsInstallable
-                ? $"{family.DisplayName} está al día con esta versión de Aura Studio."
-                : $"{family.DisplayName} está al día.";
+                ? $"{family.DisplayName} coincide con la versión que trae esta copia de Aura Studio. " +
+                  "Busca actualizaciones para saber si hay una más nueva publicada."
+                : $"No se sabe si hay una versión más nueva de {family.DisplayName}.";
         }
     }
 
@@ -87,19 +102,91 @@ public sealed partial class DeviceListViewModel : ViewModelBase
     public bool ShowsFirmwareStatus => Device?.SupportsAuraContract == true;
 
     /// <summary>
-    /// Buscar actualizaciones <b>a mano</b>. Antes solo corría solo al
-    /// conectar: sin esto, quien deja el iPod conectado no tiene forma de
-    /// volver a preguntar.
+    /// Buscar actualizaciones <b>a mano</b> (ST-210). Consulta de verdad los
+    /// Releases publicados de la familia instalada, fuera del hilo de interfaz y
+    /// con cancelación.
+    ///
+    /// <para><b>Qué había.</b> Esto era sincrónico y <b>no salía a la red</b>:
+    /// comparaba el iPod contra el pin horneado en esta copia de Studio y
+    /// respondía "está al día" aunque hubiera un Release publicado hacía
+    /// semanas. El botón decía una cosa y hacía otra.</para>
+    ///
+    /// <para><b>Consulta en vivo, sin caché.</b> Una revisión que el usuario
+    /// pide a mano tiene que preguntar de verdad: si el caché de 24 h se llenó
+    /// justo antes de publicarse el Release nuevo, apretar el botón seguiría
+    /// diciendo "al día" hasta que el TTL venciera solo (D-300).</para>
     /// </summary>
-    [RelayCommand]
-    private void CheckForUpdates()
+    [RelayCommand(IncludeCancelCommand = true)]
+    private async Task CheckForUpdatesAsync(CancellationToken ct)
     {
-        CheckFirmwareUpdate();
+        if (Device is not { VolumePath.Length: > 0 } device || !device.SupportsAuraContract) return;
 
-        StatusMessage = HasFirmwareUpdate ? FirmwareUpdateMessage : FirmwareUpToDateMessage;
+        // ST-046: contra la familia INSTALADA, siempre.
+        FirmwareFamily family = device.DeclaredFamily ?? FirmwareFamily.Aura;
+        FirmwareArtifacts artifacts = _artifacts.For(family);
+        string volume = device.VolumePath;
+
+        IsCheckingUpdates = true;
+        StatusMessage = $"Buscando actualizaciones de {family.DisplayName}…";
+
+        try
+        {
+            string? token = _credentials.Load(Platform.ApiKeyService.GitHub.Key);
+
+            LatestReleaseLookup published = await FirmwareVersionResolver.LatestPublishedAsync(
+                family, _http, _cache, token, force: true, ct);
+
+            // Leer `version.txt` y resumir el binario instalado es disco: va
+            // fuera del hilo de interfaz, como la consulta.
+            FirmwareUpdateReport report = await Task.Run(() =>
+            {
+                string? installed = AuraUpdateChecker.InstalledVersionTag(volume);
+                UpdateVerdict hash = AuraUpdateChecker.CompareBinaries(volume, artifacts);
+
+                return FirmwareUpdateDecision.Decide(
+                    family, installed, published.Tag, artifacts.ReleaseTag, hash, published.Failed);
+            }, ct);
+
+            Apply(report);
+        }
+        catch (OperationCanceledException)
+        {
+            // Lo que había en pantalla sigue valiendo: cancelar no concluye nada.
+            StatusMessage = "Se detuvo la búsqueda de actualizaciones.";
+        }
+        finally
+        {
+            IsCheckingUpdates = false;
+        }
+    }
+
+    /// <summary>
+    /// Mientras dura, el botón se ve <b>deshabilitado</b> y la pantalla dice qué
+    /// está pasando: un botón que no responde y no explica nada parece roto.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsCheckingUpdates { get; set; }
+
+    private void Apply(FirmwareUpdateReport report)
+    {
+        LastUpdateReport = report;
+
+        // Solo se ofrece instalar lo que esta copia de Studio TIENE. Con un
+        // Release más nuevo que el pin se avisa y no se ofrece: el instalador
+        // copia lo que hay en `Vendor\firmware-dist\`, no descarga Releases.
+        HasFirmwareUpdate = report.CanInstallNow;
+        FirmwareUpdateMessage = report.CanInstallNow ? report.Message : "";
+        StatusMessage = report.Message;
 
         OnPropertyChanged(nameof(FirmwareUpToDateMessage));
     }
+
+    /// <summary>
+    /// Lo último que se concluyó, para que la pantalla pueda distinguir "al día"
+    /// de "no se pudo saber" sin volver a decidirlo.
+    /// </summary>
+    [ObservableProperty]
+    public partial FirmwareUpdateReport LastUpdateReport { get; set; }
 
     public string SummaryMessage => Device?.HasLibrarySummary == true
         ? AppStrings.LastSyncSummary
@@ -132,6 +219,11 @@ public sealed partial class DeviceListViewModel : ViewModelBase
     {
         HasFirmwareUpdate = false;
         FirmwareUpdateMessage = "";
+
+        // ST-210: lo que se concluyó consultando GitHub era de OTRO momento —y a
+        // veces de otro iPod—. Se descarta: la línea vuelve a decir solo lo que
+        // este chequeo sin red puede afirmar.
+        LastUpdateReport = default;
 
         if (Device is not { VolumePath.Length: > 0 } device || !device.SupportsAuraContract) return;
 
@@ -207,13 +299,16 @@ public sealed partial class DeviceListViewModel : ViewModelBase
         CanEditDeviceName ? "" : DeviceNameStore.NotOwnerExplanation;
 
     public DeviceListViewModel(IDeviceSessionService session, IVolumeService volumes,
-        IAppPreferences preferences, IFirmwareArtifactsProvider artifacts, InstallerViewModel installer)
+        IAppPreferences preferences, IFirmwareArtifactsProvider artifacts, InstallerViewModel installer,
+        IReleaseCacheStore cache, Platform.CredentialStore credentials)
     {
         _session = session;
         _volumes = volumes;
         _preferences = preferences;
         _artifacts = artifacts;
         _installer = installer;
+        _cache = cache;
+        _credentials = credentials;
 
         // El avance de la copia lo publica el instalador; esta pantalla solo lo
         // repite para no dejar al usuario mirando un botón mudo.

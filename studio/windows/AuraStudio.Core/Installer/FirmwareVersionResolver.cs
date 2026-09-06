@@ -54,31 +54,91 @@ public static class FirmwareVersionResolver
     {
         string? local = localArtifacts.ReleaseTag;
 
-        var releases = force ? null : ReleaseCache.Load(cache, family);
-        if (releases is null && family.ReleaseRepository is not null)
-        {
-            try
-            {
-                var fetched = await GitHubReleaseChecker.FetchReleasesAsync(http, family, token, ct).ConfigureAwait(false);
-                // ST-074: `[]` con fallo de token NO se cachea — arreglar el token
-                // en Ajustes debe surtir efecto de inmediato, no en 24 h.
-                if (!(fetched.Count == 0 && GitHubReleaseChecker.LastAuthFailure))
-                {
-                    ReleaseCache.Store(fetched, cache, family);
-                }
-                releases = fetched;
-            }
-            catch (Exception ex) when (ex is HttpRequestException or GitHubReleaseCheckerError or TaskCanceledException)
-            {
-                // Sin red no se falla: se cae al tag local, marcado como local.
-                releases = null;
-            }
-        }
+        ReleaseLookup lookup = await LookupAsync(family, http, cache, token, force, ct).ConfigureAwait(false);
 
-        if (releases is not null && GitHubReleaseChecker.PickLatest(releases, includePrereleases: true) is { } latest)
+        if (lookup.Releases is { } found
+            && GitHubReleaseChecker.PickLatest(found, includePrereleases: true) is { } latest)
         {
             return new FirmwareVersionEntry(latest.TagName, FromGitHub: true);
         }
+
         return new FirmwareVersionEntry(local, FromGitHub: false);
     }
+
+    /// <summary>
+    /// El tag del Release más nuevo publicado de esa familia, o por qué no se
+    /// sabe (ST-210).
+    ///
+    /// <para>Es lo que "Buscar actualizaciones" necesita y
+    /// <see cref="ResolveAsync"/> no puede dar: ese cae al tag local cuando
+    /// GitHub no contesta, y para decidir si hay actualización hace falta
+    /// distinguir "no hay nada más nuevo" de "no se pudo preguntar".</para>
+    /// </summary>
+    public static async Task<LatestReleaseLookup> LatestPublishedAsync(
+        FirmwareFamily family,
+        HttpClient http,
+        IReleaseCacheStore cache,
+        string? token = null,
+        bool force = false,
+        CancellationToken ct = default)
+    {
+        ReleaseLookup lookup = await LookupAsync(family, http, cache, token, force, ct).ConfigureAwait(false);
+
+        string? tag = lookup.Releases is { } found
+            ? GitHubReleaseChecker.PickLatest(found, includePrereleases: true)?.TagName
+            : null;
+
+        return new LatestReleaseLookup(tag, lookup.Failed);
+    }
+
+    private readonly record struct ReleaseLookup(IReadOnlyList<GitHubRelease>? Releases, bool Failed);
+
+    /// <summary>
+    /// La consulta con caché, compartida por las dos formas de preguntar: dos
+    /// copias de esto serían dos criterios de cuándo se cachea un fallo de token.
+    /// </summary>
+    private static async Task<ReleaseLookup> LookupAsync(
+        FirmwareFamily family,
+        HttpClient http,
+        IReleaseCacheStore cache,
+        string? token,
+        bool force,
+        CancellationToken ct)
+    {
+        IReadOnlyList<GitHubRelease>? releases = force ? null : ReleaseCache.Load(cache, family);
+        if (releases is not null) return new ReleaseLookup(releases, Failed: false);
+
+        // Sin repositorio no hay a quién preguntar; eso no es un fallo de red.
+        if (family.ReleaseRepository is null) return new ReleaseLookup(null, Failed: false);
+
+        try
+        {
+            List<GitHubRelease> fetched =
+                await GitHubReleaseChecker.FetchReleasesAsync(http, family, token, ct).ConfigureAwait(false);
+
+            // ST-074: `[]` con fallo de token NO se cachea — arreglar el token
+            // en Ajustes debe surtir efecto de inmediato, no en 24 h.
+            bool tokenRejected = fetched.Count == 0 && GitHubReleaseChecker.LastAuthFailure;
+            if (!tokenRejected) ReleaseCache.Store(fetched, cache, family);
+
+            return new ReleaseLookup(fetched, Failed: tokenRejected);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or GitHubReleaseCheckerError or TaskCanceledException)
+        {
+            // Sin red no se falla: se dice que no se pudo, y quien llama decide
+            // qué mostrar. Lo que nunca se hace es concluir "está al día".
+            return new ReleaseLookup(null, Failed: true);
+        }
+    }
 }
+
+/// <summary>
+/// Lo que se supo al preguntar por el Release más nuevo (ST-210).
+/// </summary>
+/// <param name="Tag">El tag más nuevo publicado, o <c>null</c> si no se supo.</param>
+/// <param name="Failed">
+/// Si la consulta se intentó y no se pudo: sin red, GitHub caído, o el token
+/// rechazado. Con <c>Tag</c> nulo y esto en <c>false</c>, es que no había a quién
+/// preguntar o que el repo no tiene Releases utilizables.
+/// </param>
+public readonly record struct LatestReleaseLookup(string? Tag, bool Failed);
