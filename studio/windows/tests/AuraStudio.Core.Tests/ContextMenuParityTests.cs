@@ -611,4 +611,63 @@ public class SongsHeaderMenuTests
         Assert.False(items[0].IsSeparator);
         Assert.False(items[^1].IsSeparator);
     }
+
+    // MARK: - Buscar carátulas, en singular y en plural (ST-206)
+
+    [Fact]
+    public void ConUnAlbumConTituloElItemVaEnSingular()
+    {
+        IReadOnlyList<MenuEntry> menu = MediaTableContextMenu.Build(
+            LibraryItemKind.Music, new MenuScope(12, SingleAlbumWithTitle: true, AlbumCount: 1));
+
+        Assert.Contains(menu, item => item.Id == "album.covers"
+                                      && item.Text == "Buscar carátulas del álbum...");
+    }
+
+    [Fact]
+    public void ConVariosAlbumesElItemVaEnPluralYDiceCuantos()
+    {
+        // Es el caso que el dueño reportó: en Canciones con todo seleccionado el
+        // ítem NO aparecía. La respuesta no es esconderlo sino buscar la de cada
+        // uno.
+        IReadOnlyList<MenuEntry> menu = MediaTableContextMenu.Build(
+            LibraryItemKind.Music, new MenuScope(12_000, AlbumCount: 7));
+
+        Assert.Contains(menu, item => item.Id == "album.covers"
+                                      && item.Text == "Buscar carátulas de 7 álbumes...");
+    }
+
+    [Fact]
+    public void SinNingunAlbumConTituloNoHayNadaQueBuscar()
+    {
+        // "Sin álbum" no es un disco: es el cajón de lo que no tiene uno.
+        IReadOnlyList<MenuEntry> menu = MediaTableContextMenu.Build(
+            LibraryItemKind.Music, new MenuScope(40, AlbumCount: 0));
+
+        Assert.DoesNotContain(menu, item => item.Id == "album.covers");
+    }
+
+    [Fact]
+    public void ElMenuDeAlbumesNoDuplicaLaAccionEnLote()
+    {
+        // En Álbumes el lote ya se ofrece como "Aplicar carátula recomendada a N
+        // álbumes" (R2-3): dos ítems que hacen lo mismo en el mismo menú son
+        // peor que uno.
+        IReadOnlyList<MenuEntry> menu = LibraryContextMenus.ForAlbums(
+            new MenuScope(7, AnyNamedAlbum: true, AlbumCount: 7));
+
+        Assert.DoesNotContain(menu, item => item.Id == "album.covers");
+        Assert.Contains(menu, item => item.Id == "album.cover.recommended"
+                                      && item.Text == "Aplicar carátula recomendada a 7 álbumes");
+    }
+
+    [Fact]
+    public void EnAlbumesUnoSoloSigueAbriendoSuSelector()
+    {
+        IReadOnlyList<MenuEntry> menu = LibraryContextMenus.ForAlbums(
+            new MenuScope(1, SingleAlbumWithTitle: true, AnyNamedAlbum: true, AlbumCount: 1));
+
+        Assert.Contains(menu, item => item.Id == "album.covers"
+                                      && item.Text == "Buscar carátulas del álbum...");
+    }
 }

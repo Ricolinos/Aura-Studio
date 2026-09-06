@@ -60,6 +60,12 @@ public static class GridSelection
 /// Cuántos de los alcanzados la tienen — es lo que decide el plural del ítem
 /// para quitarla, que no es lo mismo que cuántos artistas se alcanzaron.
 /// </param>
+/// <param name="AlbumCount">
+/// Cuántos álbumes CON TÍTULO PROPIO alcanza la selección (ST-206). Con más de
+/// uno, "Buscar carátulas del álbum..." pasa a su forma plural en vez de
+/// desaparecer: era el caso que el dueño reportó como "en Canciones con todo
+/// seleccionado no aparece Buscar carátulas".
+/// </param>
 /// <param name="ApplyingRecommendedCover">
 /// Si ya se está aplicando la carátula recomendada: el ítem se deshabilita
 /// mientras dura, en vez de desaparecer.
@@ -78,7 +84,8 @@ public readonly record struct MenuScope(
     bool AnyNamedAlbum = false,
     bool IsDefaultTheme = false,
     int ArtistsWithPhotoCount = 0,
-    bool ApplyingRecommendedCover = false)
+    bool ApplyingRecommendedCover = false,
+    int AlbumCount = 0)
 {
     public bool IsEmpty => Count == 0;
 
@@ -113,6 +120,33 @@ public static class LibraryContextMenus
         new(allFavorite ? "favorite.remove" : "favorite.add",
             allFavorite ? removeText : "Marcar como favorito");
 
+    /// <summary>
+    /// El ítem de buscar tapas, en singular o en plural según a cuántos álbumes
+    /// alcance la selección (ST-206; hermano de ST-182 en la Mac).
+    ///
+    /// <para>Antes, con la selección tocando varios discos, el ítem
+    /// <b>desaparecía</b> — "¿la tapa de cuál?" —, y eso es lo que el dueño
+    /// reportó: en Canciones con todo seleccionado no aparecía. La respuesta no
+    /// es esconderlo sino buscar la de cada uno: aplica sola la que supere el
+    /// umbral y las dudosas se revisan de a una.</para>
+    /// </summary>
+    /// <param name="batch">
+    /// Si esta vista ofrece la forma en lote. En <b>Álbumes</b> no: ahí el lote
+    /// ya se ofrece como "Aplicar carátula recomendada a N álbumes" (R2-3), y
+    /// dos ítems que hacen lo mismo en el mismo menú son peor que uno.
+    /// </param>
+    internal static MenuEntry? AlbumCovers(MenuScope scope, bool batch = true)
+    {
+        if (scope.SingleAlbumWithTitle) return new MenuEntry("album.covers", SearchAlbumCovers);
+
+        // "Sin álbum" no cuenta: no es un disco sino el cajón de lo que no tiene
+        // uno, y no hay tapa que buscarle.
+        if (batch && scope.AlbumCount > 1)
+            return new MenuEntry("album.covers", $"Buscar carátulas de {scope.AlbumCount} álbumes...");
+
+        return null;
+    }
+
     // MARK: - 1. Álbum de música
 
     public static IReadOnlyList<MenuEntry> ForAlbums(MenuScope scope)
@@ -128,10 +162,11 @@ public static class LibraryContextMenus
         items.Add(Favorite(scope.AllFavorite));
         items.Add(new MenuEntry("enrich", SearchOnline));
 
-        // ST-104: con una selección que mezcla discos no hay nada que buscar
-        // (¿la tapa de cuál?), y "Sin álbum" no es un disco sino el cajón de lo
-        // que no tiene uno.
-        if (scope.SingleAlbumWithTitle) items.Add(new MenuEntry("album.covers", SearchAlbumCovers));
+        // ST-104: uno solo abre su selector. En plural NO va acá: este menú ya
+        // ofrece el lote como "Aplicar carátula recomendada a N álbumes" (R2-3),
+        // que es la misma operación. "Sin álbum" no cuenta en ningún caso — no
+        // es un disco sino el cajón de lo que no tiene uno.
+        if (AlbumCovers(scope, batch: false) is { } covers) items.Add(covers);
 
         // R2-3: aplica SIN preguntar solo lo que supere el umbral de
         // `docs/caratula-recomendada.md`. Lo que no lo supere no se toca y se
@@ -373,9 +408,9 @@ public static class MediaTableContextMenu
     {
         List<MenuEntry> items = [new MenuEntry("enrich", "Buscar información en línea")];
 
-        // ST-104: solo si TODAS las alcanzadas son del MISMO álbum y ese álbum
-        // tiene título.
-        if (scope.SingleAlbumWithTitle) items.Add(new MenuEntry("album.covers", "Buscar carátulas del álbum..."));
+        // ST-104: si TODAS las alcanzadas son del MISMO álbum con título; desde
+        // ST-206, también en plural cuando la selección toca varios discos.
+        if (LibraryContextMenus.AlbumCovers(scope) is { } covers) items.Add(covers);
 
         items.Add(new MenuEntry("lyrics", "Buscar letra"));
         items.Add(new MenuEntry("retag", "Volver a leer etiquetas del archivo"));

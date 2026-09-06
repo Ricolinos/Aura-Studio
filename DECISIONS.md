@@ -8211,3 +8211,157 @@ disco ausente lo dice sin romper— y una existente reescrita a mano
 Lo que **no** se verificó acá: cómo se siente la app. Esta sesión no puede abrir
 la ventana; que cerrarla escriba lo pendiente y que la tapa recién elegida
 repinte en el acto los ve quien la tenga delante.
+
+## ST-204 (addendum) — Las carátulas sucias se siguen escribiendo en el hilo de interfaz
+
+**Decisión de la Maestra.** ST-204 dejó anotado que `LibraryStore.Snapshot`
+—que corre en el hilo de interfaz, porque es el único lugar donde los elementos
+vivos se pueden leer sin carreras— escribe ahí mismo las carátulas **pendientes**
+antes de armar el catálogo. Bajarlas al segundo plano queda **fuera de esta
+ronda**, por dos razones:
+
+- **El catálogo no puede anunciar una tapa que no se escribió.** Anotar la ruta y
+  el hash primero y escribir el archivo después obliga a corregir el elemento
+  desde el hilo de fondo si la escritura falla, que es exactamente la carrera que
+  ST-204 vino a quitar. La propiedad actual —"decir que tiene una tapa que no se
+  pudo escribir sería mentirle al catálogo", de `WriteCover`— vale más que los
+  milisegundos.
+- **Con un guardado por lote ya no es un problema de volumen.** Solo se escriben
+  las **sucias**, y son las que el usuario acaba de cambiar: unos 15 KB por tapa.
+  Lo que dolía era escribir el catálogo entero doscientas veces, no escribir
+  doscientos JPEG una vez.
+
+Queda dicho, no hecho: si algún día una biblioteca en red lo vuelve visible, el
+diseño tiene que empezar por cómo deshacer la anotación sin tocar el elemento
+desde el hilo equivocado.
+
+## ST-206 — Windows: el menú deja de recorrer la biblioteca, y buscar carátulas en lote existe en Canciones
+
+Ronda 2 de rendimiento, encargo W6 de `docs/plans/PLAN-studio-rendimiento-2.md`.
+Hermano de **ST-182** en la Mac, con el diseño que fijó la Maestra desde ahí.
+
+Ataca dos cosas a la vez, y la segunda no es lentitud: el dueño reportó que **en
+Canciones con todo seleccionado no aparece «Buscar carátulas»**. No aparecía
+porque el ítem se escondía cuando la selección tocaba más de un disco — "¿la tapa
+de cuál?" —, así que era una acción que **no existía**, no una que tardaba.
+
+### 1. El clic derecho deja de ser cuadrático
+
+`SongsPage.Rows_ContextRequested` resolvía el alcance así:
+
+```csharp
+List<LibraryItem> items = [.. ViewModel.Library.Items.Where(item => reached.Contains(item.Id))];
+```
+
+`reached` es una `List<Guid>`, y `List.Contains` es una pasada lineal. Con toda
+la biblioteca seleccionada eso es 12 000 × 12 000: **ciento cuarenta y cuatro
+millones de comparaciones para ABRIR un menú**. Ahora es una búsqueda en el
+índice por elemento alcanzado —`LibraryCatalogIndex.ById`—, y de paso conserva el
+orden de la selección, que el `Where` sobre el catálogo perdía.
+
+### 2. `ScopeOf` pregunta al índice en vez de reagrupar
+
+De los diez datos que el menú necesita, el caro era uno: `SingleAlbumWithTitle`
+recalculaba `LibraryGrouping.AlbumKeyOf` de **cada canción alcanzada** —dos
+normalizaciones de cadena por canción, sin acentos ni mayúsculas, más el recorte
+de artista principal de R2-4— y encima hacía `Distinct().Count()` sobre todas
+ellas.
+
+`LibraryCatalogIndex` gana la **dirección contraria** (ST-201 solo tenía
+`albumKey → elementos`): `AlbumKeyOf(id)` y `AlbumKeysOf(selección)`, la clave
+guardada al pasar, sin calcularla dos veces. Responder "de qué álbumes es esta
+selección" con 12 000 canciones marcadas pasa de 24 000 normalizaciones a 12 000
+búsquedas en una tabla hash.
+
+**Se calienta en segundo plano.** Armar el índice son 12 000 claves. Hacerlo solo
+perezoso alcanza para que el menú deje de costar decenas de milisegundos, pero
+deja **esa** cuenta en el primer clic derecho después de cada cambio del
+catálogo. `WarmCatalogIndex()` lo arma en el grupo de hilos cuando cambia el
+catálogo y descarta el resultado si el catálogo volvió a cambiar mientras tanto;
+si nadie lo llama no pasa nada, porque `Index` lo arma igual —en el hilo de
+interfaz— la primera vez que se lo pidan. Calentarlo es una optimización, nunca
+un requisito.
+
+Lleva un candado de **uno a la vez**: un lote de tapas sube la versión del
+catálogo una vez por álbum, y sin él serían doscientas construcciones para tirar
+ciento noventa y nueve.
+
+### 3. «Buscar carátulas de N álbumes...» en Canciones
+
+Lo que faltaba, no lo que era lento. Con la selección tocando varios discos, el
+ítem ahora aparece en plural y dice cuántos. La acción es la de R2-3 (ST-115):
+aplica **sin preguntar solo** la tapa que supere el umbral de
+`docs/caratula-recomendada.md`, y los álbumes sin una opción segura no se tocan.
+
+**En Álbumes no se duplica.** Ese menú ya ofrece la misma operación como
+«Aplicar carátula recomendada a N álbumes» (§1 punto 5 del documento de paridad),
+y dos ítems que hacen lo mismo en el mismo menú son peor que uno. Con **un solo**
+álbum, las dos vistas siguen abriendo su selector como siempre. Queda anotado en
+`docs/paridad-menus-contextuales.md` §13 punto 7, y la fila §4.1 punto 2 quedó
+actualizada con el plural.
+
+### 4. El lote es una tarea del centro de tareas, y vive en la biblioteca
+
+`ApplyRecommendedCoversAsync` se mudó de `MediaGridViewModel` a
+`LibraryViewModel`: el mismo lote se pide desde dos pantallas, y tenerlo dos
+veces sería tener dos criterios de "tapa segura" esperando a divergir — con solo
+uno de los dos apareciendo en el centro de tareas. La cuadrícula conserva su
+firma y su tipo (`MediaGridViewModel.AlbumCoverTarget`) y delega.
+
+Puede tocar mil álbumes con una búsqueda en red por cada uno, así que va al
+`BackgroundTaskCenter` con avance **"N de M"**, el nombre del álbum en curso y
+**cancelación** — §A del plan: "todas las operaciones largas con indicador y
+cancelación en el centro de tareas".
+
+**Cancelar no deshace lo ya aplicado** —cada álbum es una operación terminada en
+sí misma— sino que deja de empezar los que faltan, y lo dice en el resumen
+("N quedaron sin revisar (cancelaste)"). Los que quedaron sin empezar **no**
+entran en la lista de dudosos: si el usuario paró, paró, y encolarle selectores
+sería no haber parado.
+
+El guardado es **uno solo** para todo el lote, por el persistidor de ST-204, y el
+aviso a las vistas también.
+
+### Lo que NO entra acá
+
+- **La cola de dudosos del selector.** "Álbum 2 de 7", "Omitir este álbum" y
+  "Cancelar el resto" viven en `AlbumCoverPicker`, que en este momento lo está
+  tocando W5 (miniaturas con caché). Hasta que aterrice, con **un** álbum dudoso
+  se abre su hoja como siempre y con varios no se abre ninguna: el resumen dice
+  cuántos quedaron, que es exactamente lo que hacía antes. Encadenar hojas sin
+  decir dónde está parada la revisión es lo que R2-3 descartó con razón, así que
+  se deja sin hacer en vez de a medias.
+- **El resumen de `MediaGridPage`** sigue siendo el suyo, sin la parte de
+  "cancelaste": ese archivo es de W5 en esta ronda. `AlbumCoverBatchResult.Summary()`
+  ya lo dice y está listo para que ese llamador lo use cuando se pueda tocar.
+
+### Números
+
+Arnés de ST-200, 12 000 canciones en 1 000 álbumes
+(`dotnet run --project tools/LibraryPerfCheck -c Release -- 1000 12 0`). Las dos
+filas "antes" siguen en el arnés a propósito, para el contraste directo en la
+misma corrida.
+
+| Medición (12 000 canciones seleccionadas) | antes | después | objetivo §A |
+|---|---|---|---|
+| Alcance del clic derecho (`reached.Contains` dentro de un `Where`) | 23 ms | **1 ms** | — |
+| `ScopeOf` (claves de álbum de la selección) | 22 ms | **5 ms** | ~5 ms — **cumplido** |
+| **Abrir el menú entero** (alcance + `ScopeOf`) | 45 ms | **4 ms** | < 200 ms — **cumplido** |
+| Armar `LibraryCatalogIndex` (una vez) | — | 16 ms | se paga en segundo plano (`WarmCatalogIndex`) |
+
+Los "antes" de esta corrida son más bajos que los de ST-200 —la VM va por rachas—
+pero se midieron **en la misma corrida** que los "después", que es lo único que
+hace comparables a dos números acá.
+
+### Verificación
+
+`dotnet build` de Core, App y el arnés: **0 advertencias, 0 errores**.
+`dotnet test`: **1 458 pruebas en verde**, once nuevas — seis para la dirección
+contraria del índice (la misma clave que la agrupación, `null` para lo que no es
+música, sin repetir y en orden, las dos direcciones cerrando entre sí) y cinco
+para el ítem del menú en singular, en plural, ausente sin álbumes con título, y
+sin duplicarse en Álbumes.
+
+Lo que **no** se verificó acá: cómo se ve. Esta sesión no puede abrir la ventana;
+que el ítem aparezca en plural, que la tarea muestre "N de M" con el álbum en
+curso y que cancelar corte el lote los ve quien la tenga delante.

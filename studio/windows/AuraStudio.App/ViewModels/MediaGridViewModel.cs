@@ -611,7 +611,8 @@ public sealed partial class MediaGridViewModel : ViewModelBase
             SingleAlbumWithTitle: Kind == MediaGridKind.Albums && cards.Count == 1
                                   && items.FirstOrDefault()?.Metadata?.Album is { Length: > 0 },
             AnyNamedAlbum: AnyNamedAlbumIn(cards, items),
-            ApplyingRecommendedCover: IsApplyingRecommendedCover);
+            ApplyingRecommendedCover: IsApplyingRecommendedCover,
+            AlbumCount: NamedAlbumCount(cards));
     }
 
     /// <summary>
@@ -631,13 +632,34 @@ public sealed partial class MediaGridViewModel : ViewModelBase
             ? items.Any(item => item.Metadata?.Album is { Length: > 0 })
             : cards.Any(card => card.Id.Length > 0);
 
+    /// <summary>
+    /// Cuántos de los álbumes alcanzados tienen <b>título propio</b> (ST-206).
+    /// Es lo que decide si "Buscar carátulas..." aparece en plural.
+    ///
+    /// <para>Fuera de Álbumes es cero: en Películas o en Fotos no hay discos que
+    /// contar, y devolver otra cosa haría aparecer el ítem donde no va.</para>
+    /// </summary>
+    private int NamedAlbumCount(IReadOnlyList<MediaCard> cards)
+    {
+        if (Kind != MediaGridKind.Albums) return 0;
+
+        LibraryCatalogIndex index = _library.Index;
+
+        return cards.Count(
+            card => index.ByAlbumKey(card.Id).FirstOrDefault()?.Metadata?.Album is { Length: > 0 });
+    }
+
     // MARK: - Carátula recomendada (R2-3)
 
     /// <summary>
     /// Mientras dura la operación el ítem del menú se ve <b>deshabilitado</b>:
     /// que desaparezca a mitad de camino deja al usuario pensando que se rompió.
+    ///
+    /// <para>Lo lleva la biblioteca desde ST-206, no la cuadrícula: el mismo
+    /// lote se puede haber pedido desde la tabla de Canciones, y el ítem tiene
+    /// que verse deshabilitado igual.</para>
     /// </summary>
-    [ObservableProperty] public partial bool IsApplyingRecommendedCover { get; private set; }
+    public bool IsApplyingRecommendedCover => _library.IsApplyingRecommendedCover;
 
     /// <summary>Un álbum al que se le puede recomendar tapa, con los hechos que se puntúan.</summary>
     public sealed record AlbumCoverTarget(
@@ -690,62 +712,31 @@ public sealed partial class MediaGridViewModel : ViewModelBase
         IReadOnlyList<AlbumCoverTarget> targets = AlbumCoverTargets(cards);
         if (targets.Count == 0) return (0, []);
 
-        var search = new AlbumCoverSearch();
+        // ST-206: el lote lo corre la biblioteca, que es de donde también lo
+        // pide la tabla de Canciones. Tenerlo dos veces sería tener dos
+        // criterios de "tapa segura" esperando a divergir — y solo uno de los
+        // dos aparecería en el centro de tareas.
+        AlbumCoverBatchResult result = await _library.ApplyRecommendedCoversAsync(
+            [.. targets.Select(target =>
+                new AlbumCoverJob(target.AlbumKey, target.Title, target.Artist, target.Facts))],
+            deezerEnabled, ct);
+
+        // De vuelta a tarjetas: quien abre el selector las necesita para
+        // refrescar la cuadrícula.
+        Dictionary<string, AlbumCoverTarget> byKey = [];
+        foreach (AlbumCoverTarget target in targets) byKey.TryAdd(target.AlbumKey, target);
+
         List<AlbumCoverTarget> pending = [];
-        int applied = 0;
-
-        IsApplyingRecommendedCover = true;
-
-        try
+        foreach (AlbumCoverJob job in result.Pending)
         {
-            foreach (AlbumCoverTarget target in targets)
-            {
-                ct.ThrowIfCancellationRequested();
-
-                AlbumCoverCandidate? best;
-
-                try
-                {
-                    IReadOnlyList<AlbumCoverCandidate> candidates = await search.CandidatesAsync(
-                        target.Title, target.Artist, deezerEnabled, ct, target.Facts);
-
-                    best = candidates.FirstOrDefault();
-                }
-                catch (Exception ex) when (ex is not OperationCanceledException)
-                {
-                    // Que un álbum falle no puede tumbar el lote: el usuario
-                    // pidió las tapas de su selección, no la de uno.
-                    best = null;
-                }
-
-                if (best is { CanApplyWithoutAsking: true })
-                {
-                    _library.ApplyAlbumCover(
-                        target.AlbumKey, best.Data, markEditedByUser: false, inBatch: true);
-                    applied++;
-                }
-                else
-                {
-                    pending.Add(target);
-                }
-            }
-        }
-        finally
-        {
-            IsApplyingRecommendedCover = false;
+            if (byKey.TryGetValue(job.AlbumKey, out AlbumCoverTarget? target)) pending.Add(target);
         }
 
-        // ST-204: un solo aviso y un solo guardado para todo el lote. Adentro del
-        // bucle eran doscientas reconstrucciones de la cuadrícula y doscientas
-        // escrituras del catálogo entero.
-        //
-        // El aviso de la biblioteca ya rehace ESTA cuadrícula (OnLibraryChanged):
-        // llamar además a Refresh() sería reconstruir las mil tarjetas dos veces
-        // seguidas para dejarlas igual.
-        if (applied > 0) _library.FinishAlbumCoverBatch();
-        else Refresh();
+        // Con algo aplicado, el aviso de la biblioteca ya rehace esta cuadrícula
+        // (OnLibraryChanged); sin nada aplicado, nadie avisó.
+        if (result.Applied == 0) Refresh();
 
-        return (applied, pending);
+        return (result.Applied, pending);
     }
 
     /// <summary>Abre con el visor del sistema. No hay uno propio, y no hace falta.</summary>

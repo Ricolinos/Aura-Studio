@@ -218,4 +218,97 @@ public class LibraryCatalogIndexTests
                 index.ByAlbumKey(clave));
         }
     }
+
+    // MARK: - La dirección contraria: de la canción a su álbum (ST-206)
+
+    [Fact]
+    public void DiceDeQueAlbumEsCadaCancion()
+    {
+        LibraryItem a = Song(@"C:\a.mp3", "Kid A", "Radiohead");
+        LibraryItem otro = Song(@"C:\c.mp3", "OK Computer", "Radiohead");
+
+        var index = LibraryCatalogIndex.Build([a, otro]);
+
+        // La MISMA clave que la agrupación, no una parecida: si divergen, la
+        // cuadrícula muestra un álbum y el menú actúa sobre otro.
+        Assert.Equal(LibraryGrouping.AlbumKeyOf(a), index.AlbumKeyOf(a.Id));
+        Assert.Equal(LibraryGrouping.AlbumKeyOf(otro), index.AlbumKeyOf(otro.Id));
+    }
+
+    [Fact]
+    public void LoQueNoEsMusicaNoTieneAlbum()
+    {
+        LibraryItem pelicula = Video(@"C:\v.mp4", "Películas", "Amélie");
+        LibraryItem foto = Photo(@"C:\f.jpg", "Fotos");
+
+        var index = LibraryCatalogIndex.Build([pelicula, foto]);
+
+        // `null` y no "": un video no tiene álbum, y devolver la cadena vacía lo
+        // metería en el mismo cajón que las canciones sin disco.
+        Assert.Null(index.AlbumKeyOf(pelicula.Id));
+        Assert.Null(index.AlbumKeyOf(foto.Id));
+    }
+
+    [Fact]
+    public void UnaCancionQueNoEstaNoTieneAlbum()
+    {
+        var index = LibraryCatalogIndex.Build([Song(@"C:\a.mp3", "Kid A", "Radiohead")]);
+
+        Assert.Null(index.AlbumKeyOf(Guid.NewGuid()));
+    }
+
+    [Fact]
+    public void LasClavesDeUnaSeleccionSalenSinRepetirYEnOrden()
+    {
+        LibraryItem a1 = Song(@"C:\a1.mp3", "Kid A", "Radiohead");
+        LibraryItem b = Song(@"C:\b.mp3", "OK Computer", "Radiohead");
+        LibraryItem a2 = Song(@"C:\a2.mp3", "Kid A", "Radiohead");
+
+        var index = LibraryCatalogIndex.Build([a1, b, a2]);
+
+        // Dos canciones del mismo disco son UN álbum, y el orden es el de la
+        // selección: es el orden en que el usuario los ve.
+        Assert.Equal(
+            [LibraryGrouping.AlbumKeyOf(a1), LibraryGrouping.AlbumKeyOf(b)],
+            index.AlbumKeysOf([a1, b, a2]));
+    }
+
+    [Fact]
+    public void LasClavesDeUnaSeleccionIgnoranLoQueNoEsMusica()
+    {
+        LibraryItem cancion = Song(@"C:\a.mp3", "Kid A", "Radiohead");
+        LibraryItem pelicula = Video(@"C:\v.mp4", "Películas", "Amélie");
+
+        var index = LibraryCatalogIndex.Build([cancion, pelicula]);
+
+        Assert.Equal([LibraryGrouping.AlbumKeyOf(cancion)], index.AlbumKeysOf([cancion, pelicula]));
+    }
+
+    [Fact]
+    public void LasDosDireccionesDicenLoMismo()
+    {
+        List<LibraryItem> catalogo =
+        [
+            .. Enumerable.Range(0, 60).Select(n =>
+                Song($@"C:\{n}.mp3", $"Álbum {n % 7}", $"Artista {n % 3}"))
+        ];
+
+        var index = LibraryCatalogIndex.Build(catalogo, ArtistGroupingOptions.Default);
+
+        // Ir y volver: la clave de una canción tiene que llevar a un grupo que
+        // la contenga. Dos índices que no cierran son dos respuestas distintas a
+        // la misma pregunta.
+        foreach (LibraryItem item in catalogo)
+        {
+            string? key = index.AlbumKeyOf(item.Id);
+
+            Assert.NotNull(key);
+            Assert.Contains(item, index.ByAlbumKey(key!));
+        }
+
+        // 21 y no 7: la clave de álbum lleva el artista adentro, así que el
+        // mismo título de siete discos repartido entre tres artistas son
+        // veintiún álbumes distintos — que es lo que muestra la cuadrícula.
+        Assert.Equal(21, index.AlbumKeysOf(catalogo).Count);
+    }
 }

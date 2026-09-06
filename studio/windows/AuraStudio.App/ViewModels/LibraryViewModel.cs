@@ -10,6 +10,60 @@ using AuraStudio.Core.Networking;
 namespace AuraStudio.App.ViewModels;
 
 /// <summary>
+/// Un álbum al que buscarle tapa, con los hechos que se puntúan (ST-206).
+///
+/// <para>Vive fuera de cualquier vista porque el lote se pide desde dos lugares
+/// —la tabla de Canciones y la cuadrícula de Álbumes— y una tapa aplicada tiene
+/// que significar lo mismo en los dos.</para>
+/// </summary>
+public sealed record AlbumCoverJob(string AlbumKey, string Title, string? Artist, AlbumFacts Facts);
+
+/// <summary>
+/// Cómo terminó un lote de carátulas.
+/// </summary>
+/// <param name="Applied">A cuántos álbumes se les aplicó una tapa segura.</param>
+/// <param name="Pending">
+/// Los que se buscaron y <b>no</b> tenían una opción segura. Son los que se
+/// revisan de a uno; los que quedaron sin empezar por una cancelación no están
+/// acá.
+/// </param>
+/// <param name="Cancelled">Si el usuario cortó el lote.</param>
+/// <param name="NotStarted">Cuántos quedaron sin buscar por esa cancelación.</param>
+public sealed record AlbumCoverBatchResult(
+    int Applied, IReadOnlyList<AlbumCoverJob> Pending, bool Cancelled, int NotStarted = 0)
+{
+    /// <summary>
+    /// El renglón que se le dice al usuario cuando termina el lote. Vive con el
+    /// resultado y no en cada pantalla porque un resumen que no cuenta lo que
+    /// <b>no</b> se hizo es peor que no tener resumen: la parte de "cuántos
+    /// quedaron" es justamente la que se olvida al copiarlo.
+    /// </summary>
+    public string Summary()
+    {
+        int pending = Pending.Count;
+
+        string done = (Applied, pending) switch
+        {
+            (0, 0) => "No había ningún álbum con título al que aplicarle una tapa.",
+            (0, 1) => "No se encontró una tapa segura para ese álbum.",
+            (0, _) => $"No se encontró una tapa segura para {pending} álbumes.",
+            (1, 0) => "Se aplicó la tapa recomendada a 1 álbum.",
+            (_, 0) => $"Se aplicó la tapa recomendada a {Applied} álbumes.",
+            (1, _) => $"Se aplicó la tapa recomendada a 1 álbum; {pending} quedaron sin una opción segura.",
+            _ => $"Se aplicó la tapa recomendada a {Applied} álbumes; {pending} quedaron sin una opción segura."
+        };
+
+        // Cancelar no deshace lo aplicado: deja de empezar lo que falta. Decirlo
+        // es lo que separa "se hizo todo" de "lo paraste a la mitad".
+        if (!Cancelled || NotStarted == 0) return done;
+
+        return NotStarted == 1
+            ? $"{done} 1 quedó sin revisar (cancelaste)."
+            : $"{done} {NotStarted} quedaron sin revisar (cancelaste).";
+    }
+}
+
+/// <summary>
 /// La biblioteca local: un solo modelo para todas las secciones (Canciones,
 /// Álbumes, Artistas, Películas, Series, Fotos). Es singleton a propósito —
 /// todas las vistas miran el mismo catálogo, y con una instancia por página el
@@ -178,6 +232,63 @@ public sealed partial class LibraryViewModel : ViewModelBase
         }
     }
 
+    private bool _warmingIndex;
+
+    /// <summary>
+    /// Arma el índice <b>en segundo plano</b> cuando cambia el catálogo (ST-206;
+    /// hermano de <c>warmCatalogIndex()</c> de ST-182 en la Mac).
+    ///
+    /// <para>Construirlo son 12 000 claves normalizadas. Hacerlo solo perezoso
+    /// alcanza para que el menú deje de costar segundos, pero deja <b>esa</b>
+    /// cuenta en el primer clic derecho después de cada cambio del catálogo —
+    /// otra vez contra el objetivo de los 200 ms. Acá se paga antes de que
+    /// alguien lo pida.</para>
+    ///
+    /// <para>Si nadie lo llama no pasa nada: <see cref="Index"/> lo arma igual,
+    /// en el hilo de interfaz, la primera vez que se lo pidan. Calentarlo es una
+    /// optimización, nunca un requisito.</para>
+    ///
+    /// <para><b>Uno a la vez.</b> Un lote de tapas sube la versión del catálogo
+    /// una vez por álbum; sin este candado serían doscientas construcciones para
+    /// tirar ciento noventa y nueve. Cuando el que está corriendo termina, si la
+    /// versión volvió a moverse, arranca otro.</para>
+    /// </summary>
+    public void WarmCatalogIndex()
+    {
+        if (_warmingIndex) return;
+        if (_index is not null && _indexedVersion == _catalogVersion) return;
+
+        int version = _catalogVersion;
+
+        // La lista y el criterio se toman ACÁ, en el hilo de interfaz: leerlos
+        // desde el hilo de fondo sería leerlos mientras la interfaz los cambia.
+        IReadOnlyList<LibraryItem> items = AvailableItems;
+        ArtistGroupingOptions? grouping = ArtistGrouping;
+
+        _warmingIndex = true;
+
+        _ = Task.Run(() =>
+        {
+            LibraryCatalogIndex built = LibraryCatalogIndex.Build(items, grouping);
+
+            Dispatch(() =>
+            {
+                _warmingIndex = false;
+
+                // Si el catálogo cambió mientras se armaba, esto ya no describe
+                // la biblioteca que hay: se tira y se vuelve a empezar.
+                if (_catalogVersion != version)
+                {
+                    WarmCatalogIndex();
+                    return;
+                }
+
+                _index = built;
+                _indexedVersion = version;
+            });
+        });
+    }
+
     // MARK: - Completar en línea
 
     /// <summary>
@@ -288,7 +399,142 @@ public sealed partial class LibraryViewModel : ViewModelBase
     /// <see cref="ApplyAlbumCover"/> (ST-204): avisar a las vistas. El guardado
     /// ya lo junta el persistidor solo.
     /// </summary>
-    public void FinishAlbumCoverBatch() => OnPropertyChanged(nameof(Items));
+    public void FinishAlbumCoverBatch()
+    {
+        OnPropertyChanged(nameof(Items));
+
+        // El lote subió la versión del catálogo una vez por álbum sin pasar por
+        // RefreshAvailable: el índice se calienta acá, una sola vez (ST-206).
+        WarmCatalogIndex();
+    }
+
+    // MARK: - Carátulas en lote (ST-206)
+
+    /// <summary>
+    /// Los álbumes alcanzados que tienen <b>título propio</b> (ST-206). "Sin
+    /// álbum" no es un disco sino el cajón de lo que no tiene uno: no hay tapa
+    /// que buscarle.
+    ///
+    /// <para>Una consulta al índice por clave, en O(1) cada una. El número de
+    /// pistas que se puntúa es el del <b>álbum entero</b> en la biblioteca, no
+    /// el de lo que esté seleccionado: si no, elegir tres canciones de un disco
+    /// de doce haría fallar el criterio contra todas las ediciones.</para>
+    /// </summary>
+    public IReadOnlyList<AlbumCoverJob> AlbumCoverJobsFor(IEnumerable<string> albumKeys)
+    {
+        LibraryCatalogIndex index = Index;
+        List<AlbumCoverJob> jobs = [];
+
+        foreach (string key in albumKeys)
+        {
+            IReadOnlyList<LibraryItem> tracks = index.ByAlbumKey(key);
+            if (tracks.Count == 0) continue;
+
+            LibraryItem first = tracks[0];
+            if (first.Metadata?.Album is not { Length: > 0 } title) continue;
+
+            jobs.Add(new AlbumCoverJob(
+                key, title, first.Metadata?.Artist,
+                new AlbumFacts(title, first.Metadata?.Year, tracks.Count)));
+        }
+
+        return jobs;
+    }
+
+    /// <summary>
+    /// Mientras dura la operación el ítem del menú se ve <b>deshabilitado</b>:
+    /// que desaparezca a mitad de camino deja al usuario pensando que se rompió.
+    /// </summary>
+    [ObservableProperty] public partial bool IsApplyingRecommendedCover { get; private set; }
+
+    /// <summary>
+    /// Busca y aplica la tapa recomendada de cada álbum, <b>sin preguntar y solo
+    /// donde el puntaje supera el umbral</b> de <c>docs/caratula-recomendada.md</c>
+    /// (R2-3, ST-115). Lo dudoso vuelve en <c>Pending</c> para revisarse de a uno.
+    ///
+    /// <para><b>Es una tarea del centro de tareas</b> (ST-206): puede tocar mil
+    /// álbumes con una búsqueda en red por cada uno, y eso no puede ser un botón
+    /// que se queda gris sin decir nada. Lleva avance "N de M", el nombre del
+    /// álbum en curso y cancelación.</para>
+    ///
+    /// <para><b>Cancelar no deshace lo ya aplicado</b> — cada álbum es una
+    /// operación terminada en sí misma — sino que deja de empezar los que
+    /// faltan, y lo dice en el resumen. Los que quedaron sin empezar tampoco
+    /// entran en <c>Pending</c>: si el usuario paró, paró, y encolarle selectores
+    /// sería no haber parado.</para>
+    ///
+    /// <para>No marca <c>MetadataEditedByUser</c>: eso significa "el usuario lo
+    /// decidió", y acá no lo decidió nadie.</para>
+    /// </summary>
+    public async Task<AlbumCoverBatchResult> ApplyRecommendedCoversAsync(
+        IReadOnlyList<AlbumCoverJob> jobs, bool deezerEnabled, CancellationToken ct = default)
+    {
+        if (jobs.Count == 0) return new AlbumCoverBatchResult(0, [], false);
+
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(ct);
+
+        BackgroundTaskHandle task = _tasks.Begin(
+            jobs.Count == 1 ? "Buscando carátula…" : $"Buscando carátulas de {jobs.Count} álbumes…",
+            BackgroundTaskProgress.Of(0, jobs.Count),
+            cancellation.Cancel);
+
+        var search = new AlbumCoverSearch();
+        List<AlbumCoverJob> pending = [];
+        int applied = 0;
+        int done = 0;
+
+        IsApplyingRecommendedCover = true;
+
+        try
+        {
+            foreach (AlbumCoverJob job in jobs)
+            {
+                if (cancellation.IsCancellationRequested) break;
+
+                task.Update(BackgroundTaskProgress.Of(done, jobs.Count), job.Title);
+
+                AlbumCoverCandidate? best;
+
+                try
+                {
+                    IReadOnlyList<AlbumCoverCandidate> candidates = await search.CandidatesAsync(
+                        job.Title, job.Artist, deezerEnabled, cancellation.Token, job.Facts);
+
+                    best = candidates.FirstOrDefault();
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    // Que un álbum falle no puede tumbar el lote: el usuario
+                    // pidió las tapas de su selección, no la de uno.
+                    best = null;
+                }
+
+                if (best is { CanApplyWithoutAsking: true })
+                {
+                    ApplyAlbumCover(job.AlbumKey, best.Data, markEditedByUser: false, inBatch: true);
+                    applied++;
+                }
+                else
+                {
+                    pending.Add(job);
+                }
+
+                done++;
+            }
+        }
+        finally
+        {
+            IsApplyingRecommendedCover = false;
+            _tasks.Finish(task);
+        }
+
+        // Un solo aviso a las vistas para todo el lote; el guardado ya lo junta
+        // el persistidor de ST-204 en una sola escritura.
+        if (applied > 0) FinishAlbumCoverBatch();
+
+        return new AlbumCoverBatchResult(
+            applied, pending, cancellation.IsCancellationRequested, jobs.Count - done);
+    }
 
     /// <summary>Los pósters de video que falten. Viajan pegados a su video.</summary>
     public async Task FetchVideoPostersAsync(CancellationToken ct = default)
@@ -933,6 +1179,11 @@ public sealed partial class LibraryViewModel : ViewModelBase
         // no vale. Se invalida acá y no en cada mutación suelta porque este es
         // el único punto por el que pasan todas.
         _catalogVersion++;
+
+        // ST-206: y se vuelve a armar antes de que alguien lo pida, en segundo
+        // plano. El primer clic derecho después de un cambio no tiene por qué
+        // pagar las 12 000 claves.
+        WarmCatalogIndex();
 
         UpdateStatus();
     }
