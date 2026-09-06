@@ -8971,6 +8971,53 @@ pregunta de `Sources/`, para "experto en código opus" -- reportado
 así, con los números exactos, en vez de seguir iterando a ciegas sobre
 un seam que no es mío.
 
+**Segundo intento del seam** (`78d9c14` + merge `975a4ad`, "experto en
+código opus": apaga `isRestorable`/`setFrameAutosaveName`, coloca la
+ventana en tres momentos distintos, y registra el marco antes/después
+con `fflush`). Corriendo la prueba real de nuevo, con el mismo
+`launchEnvironment`:
+
+- **La ventana SÍ quedó en la pantalla principal esta vez** -- el
+  volcado de accesibilidad, tomado al fallar, muestra `Window (Main),
+  {{640.0, 293.0}, {1280.0, 800.0}}` -- x=640, dentro de 0-2560. El
+  bloqueo de "point.x/y != INFINITY" parece resuelto.
+- **No se pudieron recuperar las líneas `[MainWindowPlacer]`** que pidió
+  Opus, pese a intentar tres vías: la salida capturada de `xcodebuild
+  test` (ni una coincidencia con "MainWindowPlacer"/"placer"), `log
+  show --predicate 'processID == <pid>'` sobre la ventana de tiempo de
+  la corrida (una sola línea, sin contenido), y `xcresulttool` sobre el
+  `.xcresult` (comando obsoleto en esta versión de Xcode sin
+  `--legacy`, no se insistió). El `print()` del proceso de la APP bajo
+  prueba, a diferencia de los `print()` del proceso de PRUEBA (los
+  `[DIAG]` de este mismo archivo, que sí aparecen siempre), no llega a
+  ninguno de los tres canales que se probó -- dato en sí mismo, por si
+  ayuda a decidir cómo instrumentar la próxima vez (¿escribir a un
+  archivo en vez de `print`/`fflush`?).
+- **La prueba falló en un punto nuevo, antes de llegar al arrastre**:
+  tras hacer clic en "Álbumes" de la barra lateral (el clic mismo no
+  lanzó ninguna aserción), la cuadrícula nunca apareció. El contenido
+  real que quedó en pantalla, según el mismo volcado, era la pantalla
+  de "Conecta tu iPod" (sin dispositivo) bajo el título "General" --
+  **no** la sección Álbumes de la biblioteca local. Es decir: el clic
+  no navegó a donde se esperaba, o navegó a otra cosa con ese mismo
+  texto ("Álbumes" también podría existir como opción de menú de la
+  barra de menús, y el predicado de la prueba busca por
+  `label`/`value` en CUALQUIER tipo de elemento de todo el árbol, sin
+  distinguir si es la fila de la barra lateral o un ítem de menú --
+  hipótesis sin confirmar, apuntada para quien lo retome).
+- La corrida completa tardó 75 s (antes, sin este seam, rondaba 20-30
+  s) -- los tres intentos de colocación probablemente añaden tiempo de
+  espera real.
+
+**Se cierra F7 con el arrastre como pendiente para el dueño**, tal como
+indicó "Sesión Maestra": el bloqueo original (ventana fuera de
+pantalla) parece resuelto, pero surgió uno nuevo (navegación de la
+barra lateral) que necesita seguirse investigando -- no es un arreglo
+de minutos que se pueda resolver leyendo el log tal cual quedó, así que
+no se intenta una tercera vuelta desde acá. El gesto sigue escrito,
+compilado, y más cerca que nunca de un resultado real; los otros siete
+gestos de F4/§A siguen automatizados y en verde (35/35).
+
 ### Incidente: preferencia real sobrescrita (2026-09-06)
 
 Intentando mejorar la traza "antes" de Instruments (que la traza de
