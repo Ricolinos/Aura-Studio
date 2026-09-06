@@ -89,6 +89,7 @@
 		439F2B0C5CA093DAF294EA13 /* LibraryFileWorkerEquivalenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4C0B18EAD871AB2CB02A249 /* LibraryFileWorkerEquivalenceTests.swift */; };
 		448126410EB0CE2FA1BC1851 /* GridMarquee.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A12B93EFC865A3AAECC03B /* GridMarquee.swift */; };
 		477047AEFFB6167A3BB0EA65 /* AlbumCoverPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 024CBB3922236478FC2CB4D9 /* AlbumCoverPickerView.swift */; };
+		478ABE9483FF0F8A81BACBD8 /* LibraryRootAvailabilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55834CD9514C371332F32105 /* LibraryRootAvailabilityTests.swift */; };
 		47CB97EC01FE0D881B00DC5C /* LibrarySyncDeleteAllContentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54210365FABAF87A55C820A6 /* LibrarySyncDeleteAllContentTests.swift */; };
 		4822E27747BE866F4E933C18 /* GitHubTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43B2B93C80B360CA92398D78 /* GitHubTokenTests.swift */; };
 		4B14CF0961F2125ABA959B54 /* InstallManifest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBDC5DC42CD849AD336B37F /* InstallManifest.swift */; };
@@ -369,6 +370,7 @@
 		528818777E4EF0B5EF8F9306 /* PlaylistImporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistImporterTests.swift; sourceTree = "<group>"; };
 		52D4E82AAFA06A6EB27519FF /* MainWindowPlacer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainWindowPlacer.swift; sourceTree = "<group>"; };
 		54210365FABAF87A55C820A6 /* LibrarySyncDeleteAllContentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySyncDeleteAllContentTests.swift; sourceTree = "<group>"; };
+		55834CD9514C371332F32105 /* LibraryRootAvailabilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryRootAvailabilityTests.swift; sourceTree = "<group>"; };
 		5788BF566829EC16317154CE /* AppPreferencesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferencesTests.swift; sourceTree = "<group>"; };
 		57A12B93EFC865A3AAECC03B /* GridMarquee.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridMarquee.swift; sourceTree = "<group>"; };
 		59650F837F8005FD75204211 /* LibrarySyncSeriesNamingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySyncSeriesNamingTests.swift; sourceTree = "<group>"; };
@@ -772,6 +774,7 @@
 				A78B6EFC3F4E661073CF15D6 /* LibraryPersistenceFavoriteTests.swift */,
 				14888E0A766F5AAF8BCC8B5B /* LibraryPersistenceSeriesAlbumFieldsTests.swift */,
 				17FA97DC7618F234BE711AED /* LibraryPipelineIntegrationTests.swift */,
+				55834CD9514C371332F32105 /* LibraryRootAvailabilityTests.swift */,
 				5F7FD7689D1AF6C4178F68DD /* LibrarySyncCancellationTests.swift */,
 				20952B2B1ED460054B80EC39 /* LibrarySyncConflictResolutionTests.swift */,
 				54210365FABAF87A55C820A6 /* LibrarySyncDeleteAllContentTests.swift */,
@@ -1133,6 +1136,7 @@
 				70D019E7148CEEDA856FEC63 /* LibraryPersistenceFavoriteTests.swift in Sources */,
 				68E8BCDA1B3BC0F91F2A063A /* LibraryPersistenceSeriesAlbumFieldsTests.swift in Sources */,
 				0183BFA3AF5209C411B41F36 /* LibraryPipelineIntegrationTests.swift in Sources */,
+				478ABE9483FF0F8A81BACBD8 /* LibraryRootAvailabilityTests.swift in Sources */,
 				AB3F8769FB758AFE883C8714 /* LibrarySyncCancellationTests.swift in Sources */,
 				A259EC600BB8C6311C09975E /* LibrarySyncConflictResolutionTests.swift in Sources */,
 				47CB97EC01FE0D881B00DC5C /* LibrarySyncDeleteAllContentTests.swift in Sources */,

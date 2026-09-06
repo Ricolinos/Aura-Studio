@@ -9870,10 +9870,16 @@ forma de alcanzar la `NSWindow` desde SwiftUI, y se aplica **una sola
 vez**: recolocar la ventana en cada cambio de layout sería pelearse con
 el usuario.
 
-**Nota sobre la regla de ST-187** ("ninguna sesión escribe en
-`~/Library/Preferences`"): las pruebas unitarias no pueden cumplirla al
-pie de la letra, y conviene decirlo en vez de dejarlo como una
-contradicción silenciosa. `UserDefaults(suiteName:)` **escribe ahí por
+**La regla de ST-187, matizada** (decisión de la sesión maestra tras
+plantearle esto): las pruebas **sí** escriben en `~/Library/Preferences`,
+pero solo en **suites propias con nombre de prueba** —nunca el dominio
+del bundle real, y nunca con un `HOME` alterno— y **las borran al
+terminar**. El goteo residual de `cfprefsd` lo cubre el script, que
+ejecutan a mano el dueño o la sesión maestra. El rediseño de
+`AppPreferences` para aceptar un almacén no persistente **no va en esta
+ronda**.
+
+El razonamiento, por si alguien lo revisa más adelante: `UserDefaults(suiteName:)` **escribe ahí por
 definición** — es dónde vive una suite —, y `AppPreferences` recibe un
 `UserDefaults`, así que probar sus valores exige uno. Lo que ST-194
 consigue es que lo que escriben **se borre**, no que no escriban. Dejarlo
