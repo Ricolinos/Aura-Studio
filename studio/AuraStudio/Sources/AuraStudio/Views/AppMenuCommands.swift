@@ -78,6 +78,37 @@ struct EditMenuCommands: View {
     }
 }
 
+/// ST-193: lo que la ventana expone al menú de la app para buscar
+/// actualizaciones de Aura Studio.
+struct AppUpdateCommandContext {
+    let isChecking: Bool
+    let check: () -> Void
+}
+
+private struct AppUpdateCommandKey: FocusedValueKey {
+    typealias Value = AppUpdateCommandContext
+}
+
+extension FocusedValues {
+    var auraAppUpdateCommand: AppUpdateCommandContext? {
+        get { self[AppUpdateCommandKey.self] }
+        set { self[AppUpdateCommandKey.self] = newValue }
+    }
+}
+
+/// Menú "Aura Studio": "Buscar actualizaciones de Aura Studio…", justo
+/// donde cualquier app de macOS lo pone (debajo de "Acerca de").
+struct AppUpdateMenuCommand: View {
+    @FocusedValue(\.auraAppUpdateCommand) private var context
+
+    var body: some View {
+        Button("Buscar actualizaciones de Aura Studio...") {
+            context?.check()
+        }
+        .disabled(context == nil || context?.isChecking == true)
+    }
+}
+
 /// Menú Archivo: "Agregar a la biblioteca..." (⌘O) -- mismo camino que
 /// soltar archivos sobre la sección visible.
 struct AddToLibraryMenuCommand: View {

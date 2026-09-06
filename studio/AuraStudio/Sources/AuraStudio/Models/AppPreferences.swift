@@ -514,6 +514,28 @@ final class AppPreferences: ObservableObject {
         linkedLibraryFolders.removeAll { $0 == path }
     }
 
+    // MARK: - Actualizaciones de la propia app (ST-193)
+
+    /// Cuándo se consultó por última vez, **con éxito**, si hay una
+    /// versión más nueva de Aura Studio. `nil` = nunca.
+    @Published var lastAppUpdateCheckAt: Date? {
+        didSet { defaults.set(lastAppUpdateCheckAt, forKey: Keys.lastAppUpdateCheckAt) }
+    }
+
+    /// El tag que el usuario ya descartó ("no me lo recuerdes"). Un
+    /// aviso por versión: la siguiente vuelve a anunciarse porque su tag
+    /// es otro.
+    @Published var dismissedAppUpdateTag: String? {
+        didSet { defaults.set(dismissedAppUpdateTag, forKey: Keys.dismissedAppUpdateTag) }
+    }
+
+    /// Si una versión beta cuenta como novedad. Hoy TODO lo publicado es
+    /// beta, así que por omisión sí; el interruptor importa el día que
+    /// exista un canal estable.
+    @Published var appUpdatesIncludePrereleases: Bool {
+        didSet { defaults.set(appUpdatesIncludePrereleases, forKey: Keys.appUpdatesIncludePrereleases) }
+    }
+
     static var defaultLibraryFolderPath: String {
         FileManager.default
             .urls(for: .documentDirectory, in: .userDomainMask).first?
@@ -535,6 +557,9 @@ final class AppPreferences: ObservableObject {
         static let knownDeviceNames = "aura.knownDeviceNames"
         static let bootloaderVerifiedDisks = "aura.bootloaderVerifiedDisks"
         static let libraryFolderPath = "aura.libraryFolderPath"
+        static let lastAppUpdateCheckAt = "aura.lastAppUpdateCheckAt"
+        static let dismissedAppUpdateTag = "aura.dismissedAppUpdateTag"
+        static let appUpdatesIncludePrereleases = "aura.appUpdatesIncludePrereleases"
         static let copyMediaIntoLibrary = "aura.copyMediaIntoLibrary"
         static let musicOrganization = "aura.musicOrganization"
         static let musicFilenameFormat = "aura.musicFilenameFormat"
@@ -590,6 +615,10 @@ final class AppPreferences: ObservableObject {
             }
         self.libraryFolderPath = defaults.string(forKey: Keys.libraryFolderPath)
             ?? Self.defaultLibraryFolderPath
+        self.lastAppUpdateCheckAt = defaults.object(forKey: Keys.lastAppUpdateCheckAt) as? Date
+        self.dismissedAppUpdateTag = defaults.string(forKey: Keys.dismissedAppUpdateTag)
+        self.appUpdatesIncludePrereleases =
+            defaults.object(forKey: Keys.appUpdatesIncludePrereleases) as? Bool ?? true
         self.copyMediaIntoLibrary = defaults.object(forKey: Keys.copyMediaIntoLibrary) as? Bool ?? true
         self.musicOrganization = (defaults.string(forKey: Keys.musicOrganization)
             .flatMap(MusicOrganization.init(rawValue:))) ?? .artistAlbum

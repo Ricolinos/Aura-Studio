@@ -6,6 +6,12 @@ import AppKit
 /// cambian ahi -- aca solo esta lo que le toca decidir a Studio.
 struct SettingsSectionView: View {
     @ObservedObject var preferences: AppPreferences
+    /// ST-193: el comprobador de versiones nuevas de la app, para el
+    /// botón "Buscar actualizaciones" de la pestaña General. Opcional
+    /// para que las vistas previas y cualquier uso suelto sigan
+    /// construyendo esta pantalla sin él.
+    var appUpdates: AppUpdateChecker?
+
     @State private var tab: Tab = .general
 
     enum Tab: Hashable {
@@ -65,6 +71,12 @@ struct SettingsSectionView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             Divider()
+
+            if let appUpdates {
+                AppUpdateSettingsSection(checker: appUpdates,
+                                         includePrereleases: $preferences.appUpdatesIncludePrereleases)
+                Divider()
+            }
 
             GitHubTokenSettingsView()
         }
@@ -204,6 +216,67 @@ struct SettingsSectionView: View {
         panel.directoryURL = URL(fileURLWithPath: preferences.libraryFolderPath, isDirectory: true)
         if panel.runModal() == .OK, let url = panel.url {
             preferences.libraryFolderPath = url.path
+        }
+    }
+}
+
+/// ST-193: "Buscar actualizaciones" en Ajustes › General.
+///
+/// A diferencia del chequeo automático, éste **siempre contesta algo** --
+/// el usuario preguntó. Y distingue "no pude preguntar" de "no hay
+/// novedades": decir "ya tienes la más nueva" cuando en realidad no hubo
+/// red es mentir, y es el defecto que Windows arregló en ST-210 para el
+/// chequeo del firmware.
+struct AppUpdateSettingsSection: View {
+    @ObservedObject var checker: AppUpdateChecker
+    @Binding var includePrereleases: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Actualizaciones de Aura Studio").font(.headline)
+
+            HStack(spacing: 10) {
+                Text("Versión instalada: \(AppVersion.current)")
+                    .font(.callout.monospaced())
+                Spacer()
+                Button("Buscar actualizaciones") {
+                    Task { await checker.checkNow() }
+                }
+                .disabled(checker.isChecking)
+                if checker.isChecking {
+                    ProgressView().controlSize(.small)
+                }
+            }
+
+            if let outcome = checker.lastManualOutcome {
+                outcomeText(outcome)
+                    .font(.caption)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Toggle("Avisarme también de versiones beta", isOn: $includePrereleases)
+            Text("Hoy todas las versiones publicadas de Aura Studio son beta, así que conviene dejarlo activado. "
+                 + "Aura Studio nunca se actualiza sola: solo te avisa y te deja bajar el instalador.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    @ViewBuilder
+    private func outcomeText(_ outcome: AppUpdateDecision.Outcome) -> some View {
+        switch outcome {
+        case .upToDate:
+            Text("Ya tienes la versión más nueva.")
+                .foregroundStyle(.secondary)
+        case .available(let update):
+            Text("Hay una versión nueva: \(update.version.releaseString). El aviso está al pie de la ventana.")
+                .foregroundStyle(AuraColors.light.accent)
+        case .couldNotCheck(let reason):
+            // Se dice QUE no se pudo y POR QUÉ. "No hay novedades" sería
+            // una respuesta distinta y no es la que tenemos.
+            Text("No se pudo comprobar: \(reason)")
+                .foregroundStyle(.secondary)
         }
     }
 }

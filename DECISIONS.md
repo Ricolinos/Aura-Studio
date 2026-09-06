@@ -9487,3 +9487,164 @@ Lo que conviene saber sin abrir el documento:
 El documento termina con cuatro preguntas concretas para fijar con
 Windows, la primera de las cuales (congelar el patrón de nombres) es
 bloqueante para implementar.
+
+## ST-193 — "Buscar actualizaciones de Aura Studio", lado macOS
+
+Implementa la propuesta de [ST-191](#st-191) con las cuatro respuestas
+que fijó la sesión maestra. **Esta PARADA es la referencia para
+Windows**: `AppUpdateDecision` se escribe primero en Swift y Windows la
+porta citando esta ST, así que la firma y las reglas van escritas acá
+enteras.
+
+### `AppUpdateDecision` — la firma
+
+```swift
+enum AppUpdateDecision {
+    static let repository = "Ricolinos/Aura-Studio"
+
+    struct Available: Equatable {
+        let version: SemVer          // la publicada, parseada
+        let tag: String              // tal cual GitHub: "v0.3.0"
+        let releasePageURL: URL?     // "Ver novedades"
+        let downloadURL: URL?        // nil si falta el asset esperado
+        let assetName: String        // el que se buscó, para poder decirlo
+    }
+
+    enum Outcome: Equatable {
+        case available(Available)
+        case upToDate
+        case couldNotCheck(String)   // NO es lo mismo que upToDate
+    }
+
+    static func decide(installedVersion: String,
+                       releases: [GitHubRelease],
+                       includePrereleases: Bool,
+                       platform: AppUpdatePlatform = .current) -> Available?
+}
+```
+
+Es **pura**: no consulta la red, no lee el bundle, no toca disco. Por eso
+se prueba entera sin red (`AppUpdateDecisionTests`, 13 casos) y por eso
+sirve de referencia.
+
+### Las reglas, en orden
+
+1. Un **draft** nunca cuenta: no es instalable.
+2. Una **prerelease** cuenta solo si `includePrereleases`.
+3. El tag se lee como SemVer (`v0.3.0` → `0.3.0`). **Un tag que no parsea
+   se ignora**, no rompe nada (`nightly` conviviendo con `v0.3.0` no
+   impide encontrar la segunda).
+4. De los que quedan, gana **el mayor**, no el primero de la lista.
+5. Hay novedad solo si ese mayor es **estrictamente mayor** que lo
+   instalado. Nunca se ofrece actualizar hacia atrás ni a la misma.
+6. **Si la versión instalada no parsea, se calla**: sin saber qué hay
+   instalado no se puede afirmar que algo sea más nuevo.
+7. El asset se busca por **nombre exacto**. Si falta, **igual se anuncia
+   la versión** pero sin botón de descarga, y se enlaza la página del
+   Release: un botón "Descargar" que falla es peor que no tenerlo.
+8. La página del Release es la `html_url` que da GitHub; si no viene, se
+   arma como `https://github.com/<repo>/releases/tag/<tag>`.
+
+### El patrón de nombres (el único contrato nuevo)
+
+Congelado por la sesión maestra, verificado contra los Releases v0.2.2 y
+v0.2.3 reales, y con una prueba que lo sostiene como candado — cambiarlo
+rompe la actualización de **todas** las versiones ya instaladas:
+
+```
+tag:  v<versión>
+mac:  AuraStudio-<versión>.dmg
+win:  AuraStudioSetup-<versión>-arm64.exe
+      AuraStudioSetup-<versión>-x64.exe
+```
+
+Ningún otro asset cuenta. Las tres plataformas viven en
+`AppUpdatePlatform` aunque macOS use una sola, a propósito: tener el
+patrón en un solo lugar es lo que permite que Windows lo porte sin volver
+a decidir nada. Y en Windows **elegir mal la arquitectura es peor que no
+ofrecer nada**: ST-135 documenta que el Setup x64 en una máquina ARM
+avisa y deja continuar, así que ofrecerlo por defecto sería empujar al
+usuario a la versión lenta.
+
+### Lo que no es puro, y por qué está aparte
+
+`AppUpdateChecker` (`@MainActor`) tiene lo que no se puede probar sin red
+ni reloj: cuándo se pregunta, qué se recuerda, qué se muestra.
+
+- **Automático cada 24 h**, al arrancar, en segundo plano.
+- **La fecha del último chequeo se anota solo si la consulta salió
+  bien.** Si falló, el próximo arranque vuelve a intentar en vez de
+  esperar 24 h por una pregunta que nunca llegó a hacerse.
+- **Sin red, el automático calla.** El manual **siempre** contesta y
+  distingue "no pude preguntar" de "no hay novedades" — decir "ya tienes
+  la más nueva" cuando en realidad no hubo red es mentir, y es el defecto
+  que Windows arregló en ST-210 para el chequeo del firmware.
+- **Un aviso por versión**: descartar guarda el tag
+  (`dismissedAppUpdateTag`); la siguiente versión vuelve a anunciarse
+  porque su tag es otro. El chequeo **a pedido** ignora el descarte: si
+  el usuario pregunta, se le contesta.
+
+### En pantalla
+
+- Una **franja** al pie, del mismo alto y estilo que
+  `CoverNormalizationBar` (ST-141), con "Ver novedades", "Descargar" y
+  "Ahora no". **Nada modal**: una app no interrumpe a nadie para contarle
+  que existe otra versión de sí misma.
+- **Ajustes › General**: versión instalada, botón "Buscar
+  actualizaciones", el resultado del último chequeo manual y el
+  interruptor de betas.
+- **Menú "Aura Studio" → "Buscar actualizaciones de Aura Studio…"**,
+  debajo de "Acerca de", donde lo pone cualquier app de macOS.
+
+La franja la observa `AppUpdateBarHost` y el comando lo publica
+`AppUpdateCommandRelay`, las dos vistas chicas: `ContentView` guarda el
+comprobador en un `@State` y **no lo observa**, por lo mismo que ST-186
+(si lo observara, anunciar una versión reevaluaría la ventana entera).
+
+### Sin auto-actualización, y por qué
+
+"Descargar" **abre la URL del asset**: el navegador lo baja como
+cualquier otra descarga y el usuario monta el DMG y arrastra. No se
+descarga desde la app, no se monta nada, no se ejecuta nada.
+
+La razón está en ST-191 y se sostiene: una app no puede reemplazarse a sí
+misma mientras corre sin un ayudante externo (el patrón de Sparkle), y
+eso es un componente nuevo, con firma propia, que hay que mantener y en
+el que hay que confiar. No vale la pena para una app fuera de la App
+Store, con firma ad-hoc, cuyo dueño es una persona.
+
+**Consecuencia sobre la propuesta**: ST-191 §6 prometía verificar el
+SHA-256 de lo bajado. Al no bajar nada nosotros —y sobre todo al no
+ejecutar nada— esa verificación **no se implementa**: el archivo llega
+por HTTPS desde GitHub al navegador del usuario, y lo que lo abre es
+Finder. Verificar un archivo que no controlamos ni ejecutamos sería
+teatro. Queda anotado acá para que no se lea como un olvido.
+
+### De paso: `fetchReleases` acepta cualquier repositorio
+
+Hasta acá solo sabía preguntar por el firmware, con el repo saliendo de
+una `FirmwareFamily`. Actualizar la app es la misma llamada contra otro
+repo, así que se generalizó — el mismo razonamiento por el que ST-046
+generalizó de un repo a una familia. La versión por familia se queda: los
+llamadores del firmware no tienen por qué saber armar una URL.
+
+También se agregaron dos campos opcionales que la API ya devolvía y no se
+decodificaban: `browser_download_url` del asset y `html_url` del Release.
+Opcionales, para que una respuesta recortada o un caché viejo no hagan
+fallar el Release entero.
+
+### Y una pieza que faltaba: la app nunca supo su propia versión
+
+`AppVersion.current` lee `CFBundleShortVersionString`. Tiene
+`overrideForTesting` porque bajo `swift test` no hay bundle de app — ese
+Info.plist solo existe en el `.app` que arma `xcodebuild`.
+
+### Verificación
+
+`swift build` limpio, `xcodebuild -configuration Release` **BUILD
+SUCCEEDED**, `swift test` completo en verde, con `AppUpdateDecisionTests`
+en **13/13**.
+
+Lo que **no** se pudo verificar acá: cómo se ve la franja y si el menú
+aparece donde debe. Requiere abrir la app, y esta sesión no tiene sesión
+gráfica (ver el hallazgo de ST-187). Va al guion del dueño.

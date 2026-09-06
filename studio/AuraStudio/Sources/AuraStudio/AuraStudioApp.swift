@@ -20,6 +20,12 @@ struct AuraStudioApp: App {
         // porque el bundle declara español como única localización
         // (Resources/es.lproj, CFBundleLocalizations). Lo propio va acá.
         .commands {
+            // ST-193: donde cualquier app de macOS lo pone -- en el menú
+            // de la app, debajo de "Acerca de Aura Studio".
+            CommandGroup(after: .appInfo) {
+                Divider()
+                AppUpdateMenuCommand()
+            }
             CommandGroup(after: .newItem) {
                 AddToLibraryMenuCommand()
                 Divider()

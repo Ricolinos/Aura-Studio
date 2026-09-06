@@ -52,6 +52,11 @@ struct ContentView: View {
     /// y cada clic costaba dos pasadas completas de `body` de toda la
     /// ventana -- diagnóstico §0.3).
     @State private var statusCenter = LibraryStatusCenter()
+    /// ST-193: si hay una versión más nueva de Aura Studio. En `@State`
+    /// y no en `@StateObject` por el mismo motivo que `statusCenter`:
+    /// quien lo observa es la franja de 28 pt del pie
+    /// (`AppUpdateBarHost`), no la ventana.
+    @State private var appUpdates = AppUpdateChecker()
     @State private var selection: SidebarSection? = .general
 
     init() {
@@ -119,6 +124,11 @@ struct ContentView: View {
                 // sección, la otra informa un trabajo en curso que se
                 // puede detener).
                 CoverNormalizationBarHost(library: library)
+                // ST-193: el aviso de versión nueva va ARRIBA de la
+                // barra de estado, como la migración de carátulas, y por
+                // el mismo motivo: son cosas distintas (una resume la
+                // sección, la otra informa algo que pasó fuera).
+                AppUpdateBarHost(checker: appUpdates)
                 // ST-063: barra de estado estilo Finder, al pie de la
                 // sección; "Visualización › Mostrar barra de estado" la
                 // oculta. Solo aparece donde hay algo que resumir.
@@ -128,6 +138,10 @@ struct ContentView: View {
             }
         }
         .environment(\.libraryStatusCenter, statusCenter)
+        // ST-193: el chequeo automático, una vez cada 24 h. Sale a la red
+        // en segundo plano; sin red, calla.
+        .onAppear { appUpdates.checkAutomaticallyIfDue() }
+        .background(AppUpdateCommandRelay(checker: appUpdates))
         .tint(AuraColors.light.accent)
         .toolbar {
             // PLAN-studio-rendimiento.md Fase 4 punto 4: centro de
@@ -388,7 +402,7 @@ struct ContentView: View {
         case .installer:
             InstallerHomeView(monitor: deviceMonitor, viewModel: installer)
         case .settings:
-            SettingsSectionView(preferences: preferences)
+            SettingsSectionView(preferences: preferences, appUpdates: appUpdates)
         }
     }
 
@@ -894,5 +908,20 @@ struct LibraryAvailabilityGate<Content: View>: View {
                                        onChooseAnother: onChooseAnother,
                                        onCreateNew: onCreateNew)
             .onReceive(library.$libraryAvailability) { availability = $0 }
+    }
+}
+
+/// ST-193: publica al menú de la app el comando "Buscar actualizaciones
+/// de Aura Studio…", observando el comprobador **en lugar de**
+/// `ContentView` -- mismo patrón que `SyncCommandRelay`.
+struct AppUpdateCommandRelay: View {
+    @ObservedObject var checker: AppUpdateChecker
+
+    var body: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .focusedSceneValue(\.auraAppUpdateCommand, AppUpdateCommandContext(
+                isChecking: checker.isChecking,
+                check: { Task { await checker.checkNow() } }))
     }
 }

@@ -57,6 +57,26 @@ struct GitHubReleaseAsset: Codable, Equatable {
     let name: String
     let url: String
     let size: Int
+    /// ST-193: la URL de descarga por navegador. Para los assets del
+    /// FIRMWARE no se usa (ver la nota de arriba: en un repo privado no
+    /// sirve con token), pero para actualizar **la app** sí es la buena:
+    /// `Aura-Studio` es público y lo que hace "Descargar" es
+    /// exactamente abrirla en el navegador, que la baja como cualquier
+    /// otra descarga. Opcional: una respuesta recortada o un caché viejo
+    /// no debe hacer fallar el Release entero.
+    let browserDownloadURL: String?
+
+    enum CodingKeys: String, CodingKey {
+        case name, url, size
+        case browserDownloadURL = "browser_download_url"
+    }
+
+    init(name: String, url: String, size: Int, browserDownloadURL: String? = nil) {
+        self.name = name
+        self.url = url
+        self.size = size
+        self.browserDownloadURL = browserDownloadURL
+    }
 }
 
 /// Un Release de la API publica de GitHub -- solo los campos que hacen
@@ -66,6 +86,10 @@ struct GitHubRelease: Codable, Equatable {
     let tagName: String
     let draft: Bool
     let prerelease: Bool
+    /// ST-193: la página del Release en GitHub, para "Ver novedades".
+    /// Opcional por lo mismo que `assets`; si no viene, se puede armar
+    /// con el repo y el tag (`AppUpdateDecision.releasePageURL`).
+    let htmlURL: String?
     /// Ausente en el cache viejo (anterior a ST-077) y en cualquier
     /// respuesta recortada: se decodifica como lista vacia en vez de
     /// hacer fallar el Release entero, que dejaria sin aviso de version
@@ -74,15 +98,17 @@ struct GitHubRelease: Codable, Equatable {
 
     enum CodingKeys: String, CodingKey {
         case tagName = "tag_name"
+        case htmlURL = "html_url"
         case draft, prerelease, assets
     }
 
     init(tagName: String, draft: Bool, prerelease: Bool,
-         assets: [GitHubReleaseAsset] = []) {
+         assets: [GitHubReleaseAsset] = [], htmlURL: String? = nil) {
         self.tagName = tagName
         self.draft = draft
         self.prerelease = prerelease
         self.assets = assets
+        self.htmlURL = htmlURL
     }
 
     init(from decoder: Decoder) throws {
@@ -91,6 +117,7 @@ struct GitHubRelease: Codable, Equatable {
         draft = try c.decode(Bool.self, forKey: .draft)
         prerelease = try c.decode(Bool.self, forKey: .prerelease)
         assets = try c.decodeIfPresent([GitHubReleaseAsset].self, forKey: .assets) ?? []
+        htmlURL = try c.decodeIfPresent(String.self, forKey: .htmlURL)
     }
 
     /// El asset con ese nombre exacto, o `nil`. Los nombres son los de la
@@ -164,6 +191,30 @@ enum GitHubReleaseChecker {
                                family: FirmwareFamily = .aura,
                                token: String? = GitHubToken.load()) async throws -> [GitHubRelease] {
         guard let url = apiURL(for: family) else { throw GitHubReleaseCheckerError.unknownFamily }
+        return try await fetchReleases(at: url, session: session, token: token)
+    }
+
+    /// ST-193: la misma consulta, contra **cualquier** repositorio.
+    ///
+    /// Hasta acá esto solo sabía preguntar por el firmware, y el repo
+    /// salía de una `FirmwareFamily`. Actualizar la propia app es la
+    /// misma llamada contra `Ricolinos/Aura-Studio`, así que lo que
+    /// cambia es solo a dónde se pregunta -- exactamente el mismo
+    /// razonamiento por el que ST-046 generalizó de un repo a una
+    /// familia. La versión de arriba se queda: los llamadores del
+    /// firmware no tienen por qué saber armar una URL.
+    static func fetchReleases(repository: String,
+                              session: URLSession = .shared,
+                              token: String? = GitHubToken.load()) async throws -> [GitHubRelease] {
+        guard let url = URL(string: "https://api.github.com/repos/\(repository)/releases") else {
+            throw GitHubReleaseCheckerError.badResponse
+        }
+        return try await fetchReleases(at: url, session: session, token: token)
+    }
+
+    private static func fetchReleases(at url: URL,
+                                      session: URLSession,
+                                      token: String?) async throws -> [GitHubRelease] {
         var request = URLRequest(url: url)
         request.setValue("AuraStudio", forHTTPHeaderField: "User-Agent")
         if let token {
