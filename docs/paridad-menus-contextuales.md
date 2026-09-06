@@ -87,7 +87,7 @@ alcanzados (`items`).
 | — | ─── | solo si se mostró «Abrir» |
 | 2 | **Marcar como favorito** / **Quitar favorito** | «Quitar favorito» si TODAS las canciones alcanzadas ya son favoritas; si no, «Marcar como favorito» |
 | 3 | **Buscar información en línea** | siempre |
-| 4 | **Buscar carátulas del álbum...** | solo si el alcance **resuelve a UN álbum** con título propio (no «Sin álbum») — ST-104, aridad corregida en R2-2. Aplica al álbum COMPLETO, no solo a lo seleccionado |
+| 4 | **Buscar carátulas del álbum...** / **Buscar carátulas de N álbumes...** | si el alcance **resuelve a UN álbum** con título propio (no «Sin álbum») — ST-104, aridad corregida en R2-2. Aplica al álbum COMPLETO, no solo a lo seleccionado. **Con varios va en plural** (ST-182 en macOS, addendum de ST-206 en Windows): aplica sola la que supera el umbral y encola los dudosos en el selector |
 | 5 | **Aplicar carátula recomendada** / **Aplicar carátula recomendada a N álbumes** | si algún álbum alcanzado tiene título propio; plural con más de uno. **Deshabilitado** mientras se está aplicando. Aplica sin preguntar solo lo que supere el umbral de `docs/caratula-recomendada.md` — R2-3 |
 | — | ─── | siempre |
 | 6 | **Mostrar en Finder** | siempre — en Windows: «Mostrar en el Explorador» |
@@ -369,10 +369,12 @@ Lo que el Paquete B tiene que resolver, anotado desde el lado macOS:
    mostrar en el Explorador—; no está numerado en este documento porque
    del lado macOS es un `Menu` de la vista, no un menú contextual.
 
-7. **En Álbumes, el plural de «Buscar carátulas» no se repite** (ST-206,
-   Windows). El §4.1 punto 2 lleva la forma plural a la tabla de
-   Canciones; el menú de Álbumes (§1) **no** la lleva, porque ahí la
-   misma operación ya se ofrece como «Aplicar carátula recomendada a N
-   álbumes» (§1 punto 5, R2-3). Dos ítems que hacen lo mismo en el mismo
-   menú son peor que uno. Con **un solo** álbum, §1 punto 4 sigue igual
-   que en macOS: abre su selector.
+7. **«Buscar carátulas de N álbumes...» va en las DOS pantallas**
+   (ST-206 y su addendum, Windows; ST-182 en macOS). El §4.1 punto 2 lleva
+   la forma plural a la tabla de Canciones y el §1 punto 4 la lleva al
+   menú de Álbumes. **No** es lo mismo que «Aplicar carátula recomendada a
+   N álbumes» (§1 punto 5): esa no pregunta nunca, y esta aplica sola la
+   que supera el umbral y **encola los dudosos en el selector**, que los
+   recorre de a uno diciendo «Álbum 2 de 7», con «Omitir este álbum» y
+   «Cancelar el resto». Con **un solo** álbum, las dos siguen abriendo su
+   selector como siempre.

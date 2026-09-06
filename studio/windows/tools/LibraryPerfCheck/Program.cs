@@ -2,6 +2,7 @@ using System.Diagnostics;
 using AuraStudio.App.Services;
 using AuraStudio.App.ViewModels;
 using AuraStudio.Core.Library;
+using AuraStudio.App.Platform;
 using AuraStudio.Tools.LibraryPerfCheck;
 
 // Cómo correrlo:
@@ -391,6 +392,71 @@ try
     Console.WriteLine($"    hilo que pidió: {callerThread} -- hilo que escribió: {persisterHost.LastWriteThreadId}"
                       + $" ({(persisterHost.LastWriteThreadId != callerThread ? "fuera del de interfaz, correcto" : "MISMO HILO: mal")})");
     Console.WriteLine($"    un guardado suelto: {afterMs} ms (antes eran {beforeMs / (double)coverBatch:0} ms x {albums} álbumes)");
+
+    // --- c-ter. Miniaturas de carátula (ST-205) ---
+    //
+    // Lo que hace la cuadrícula al aparecer cada tarjeta: pedir la miniatura de
+    // la tapa del álbum. Antes de ST-205 eso era leer el archivo y decodificar
+    // la carátula ENTERA cada vez, también al volver a desplazarse.
+
+    Console.WriteLine();
+    Console.WriteLine("--- c-ter. Miniaturas de carátula (ST-205) ---");
+    Console.WriteLine();
+
+    // Una por álbum: la primera pista de cada uno, que es de donde sale la tapa
+    // de la tarjeta.
+    List<LibraryItem> albumCovers =
+    [
+        .. loaded.Where((_, position) => position % tracksPerAlbum == 0)
+    ];
+
+    var thumbnails = new CoverThumbnailCache();
+    const int thumbnailSide = 304;   // 152 pt a 2x, el lado de la tarjeta
+
+    async Task<int> RequestAsync(IEnumerable<LibraryItem> requested)
+    {
+        int asked = 0;
+
+        foreach (LibraryItem item in requested)
+        {
+            asked++;
+
+            string key = CoverThumbnailKey.ForHash(item.CoverHash, thumbnailSide)
+                         ?? CoverThumbnailKey.ForPath(item.SourcePath, thumbnailSide)!;
+
+            await thumbnails.ThumbnailAsync(
+                key, thumbnailSide, _ => Task.FromResult(store.ReadCover(item)));
+        }
+
+        return asked;
+    }
+
+    Console.WriteLine($"    (pedidos por pasada: {albumCovers.Count})");
+
+    await MeasureAsync("Miniaturas: pasada en frío (caché vacía)",
+        () => RequestAsync(albumCovers));
+
+    Console.WriteLine($"    aciertos: {thumbnails.Hits} -- decodificaciones: {thumbnails.Misses}");
+
+    Console.WriteLine($"    en caché: {thumbnails.Count} miniaturas, "
+                      + $"{thumbnails.Cost / 1024.0 / 1024.0:0.0} MB (tope {ThumbnailCacheIndex.DefaultCostLimit / 1024 / 1024} MB)");
+
+    await MeasureAsync("Miniaturas: la misma pasada otra vez (con expulsión de por medio)",
+        () => RequestAsync(albumCovers));
+
+    Console.WriteLine($"    aciertos: {thumbnails.Hits} -- decodificaciones: {thumbnails.Misses}");
+
+    // Lo que de verdad pasa al desplazarse un poco y volver: lo último visto
+    // sigue estando.
+    int recent = Math.Min(thumbnails.Count, albumCovers.Count);
+
+    await MeasureAsync($"Miniaturas: las últimas {recent} otra vez (todas en caché)",
+        () => RequestAsync(albumCovers.TakeLast(recent)));
+
+    Console.WriteLine($"    aciertos: {thumbnails.Hits} -- decodificaciones: {thumbnails.Misses}");
+    ReportMemory("con la caché de miniaturas llena");
+
+    thumbnails.Clear();
 
     if (diskDelayMs > 0)
     {

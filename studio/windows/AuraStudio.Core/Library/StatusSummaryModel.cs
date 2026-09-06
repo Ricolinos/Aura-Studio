@@ -17,7 +17,8 @@ namespace AuraStudio.Core.Library;
 public readonly record struct LibraryStatusScope(
     LibraryStatusSection Section,
     string Category = "",
-    IReadOnlyList<string>? Collections = null)
+    IReadOnlyList<string>? Collections = null,
+    bool ClipsOnly = false)
 {
     /// <summary>
     /// Una sección sola es un ámbito válido: es el caso de Canciones, Álbumes,
@@ -31,7 +32,7 @@ public readonly record struct LibraryStatusScope(
     /// una por elemento.
     /// </summary>
     internal string MemoKey =>
-        $"{Section}\u0001{Category}\u0001{string.Join('\u0001', Collections ?? [])}";
+        $"{Section}\u0001{Category}\u0001{ClipsOnly}\u0001{string.Join('\u0001', Collections ?? [])}";
 }
 
 /// <summary>
@@ -121,6 +122,7 @@ public sealed class StatusSummaryModel
             LibraryStatusSection.Series => VideoTotal(index, series: true, out denominator),
             LibraryStatusSection.Photos => PhotosTotal(index, scope.Collections, out denominator),
             LibraryStatusSection.PhotoAlbums => PhotoAlbumsTotal(index, scope.Category, out denominator),
+            LibraryStatusSection.Videos => VideosTotal(index, scope.ClipsOnly, out denominator),
             _ => MusicTotal(index, scope.Section, out denominator)
         };
 
@@ -238,6 +240,45 @@ public sealed class StatusSummaryModel
             LibraryStats.SizeText(LibraryStats.TotalSize(photos)));
     }
 
+
+    /// <summary>
+    /// Un listado plano de videos: todos, o solo los clips. Desglosa por tipo
+    /// —películas, episodios, videoclips— cuando están todos: es lo que hace que
+    /// el renglón diga algo que la lista no muestra.
+    /// </summary>
+    private static LibraryStatusSummary VideosTotal(
+        LibraryCatalogIndex index, bool clipsOnly, out int denominator)
+    {
+        IReadOnlyList<LibraryItem> videos =
+        [
+            .. index.Items.Where(item => item.Kind == LibraryItemKind.Video
+                && (!clipsOnly
+                    || (!MediaCategoryNames.IsMoviesCategory(item.Category)
+                        && !MediaCategoryNames.IsSeriesCategory(item.Category))))
+        ];
+
+        denominator = videos.Count;
+
+        List<string?> parts = [LibraryStats.Count(videos.Count, "video", "videos")];
+
+        if (!clipsOnly && videos.Count > 0)
+        {
+            int movies = videos.Count(video => MediaCategoryNames.IsMoviesCategory(video.Category));
+            int episodes = videos.Count(video => MediaCategoryNames.IsSeriesCategory(video.Category));
+            int clips = videos.Count - movies - episodes;
+
+            if (movies > 0) parts.Add(LibraryStats.Count(movies, "película", "películas"));
+            if (episodes > 0) parts.Add(LibraryStats.Count(episodes, "episodio", "episodios"));
+            if (clips > 0) parts.Add(LibraryStats.Count(clips, "videoclip", "videoclips"));
+        }
+
+        return new LibraryStatusSummary(
+            LibraryStats.Join([.. parts]),
+            "",
+            LibraryStats.Join(
+                LibraryStats.DurationText(LibraryStats.TotalDuration(videos)),
+                LibraryStats.SizeText(LibraryStats.TotalSize(videos))));
+    }
     private static LibraryStatusSummary PhotoAlbumsTotal(
         LibraryCatalogIndex index, string category, out int denominator)
     {
@@ -310,10 +351,13 @@ public sealed class StatusSummaryModel
                 LibraryStats.Count(selected.Count, "episodio", "episodios"),
                 duration),
 
-            // En "Todas las fotos" la tarjeta ES la foto: se cuentan elementos y
-            // no grupos, porque son lo mismo.
+            // En "Todas las fotos" y en los listados planos de video la tarjeta ES
+            // el elemento: se cuentan elementos y no grupos, porque son lo mismo.
             LibraryStatusSection.Photos => LibraryStats.Join(
                 OfTotal(selected.Count, "seleccionadas"), size),
+
+            LibraryStatusSection.Videos => LibraryStats.Join(
+                OfTotal(selected.Count, "seleccionados"), duration, size),
 
             LibraryStatusSection.PhotoAlbums => LibraryStats.Join(
                 OfTotal(selectedGroupCount, "seleccionados"),

@@ -8874,3 +8874,304 @@ derecho → carátulas), Fotos, importar 200, sincronizar. Se apoya en
 de selección.
 
 Sin cambio de versión ni release en esta PARADA, según lo acordado.
+
+## ST-205 — Windows: las miniaturas salen de una caché, y no se pinta la carátula de otro álbum
+
+Ronda 2 de rendimiento, encargo W5 de `docs/plans/PLAN-studio-rendimiento-2.md`
+(reasignado a esta sesión). Hermano de **ST-183** en la Mac.
+
+### Qué había
+
+`CoverThumbnailCache` existe desde **ST-031** y **nadie la usaba**. Las tres
+vistas que muestran carátulas leían el archivo y decodificaban cada vez que una
+tarjeta aparecía:
+
+- **la cuadrícula** (`MediaGridPage`), por `Loaded` y por `DataContextChanged`;
+- **la lista de Artistas**, solo por `Loaded` —así que al reciclar una fila
+  quedaba el avatar del artista anterior— y buscando la fila con un
+  `FirstOrDefault` **por tarjeta**;
+- **el selector de tapas**, decodificando cada candidata entera cada vez que se
+  abría.
+
+ST-208 lo hizo más visible al sacar las carátulas de la RAM: desde entonces
+**desplazarse hacia atrás vuelve a leer el disco**. Quedó anotado ahí mismo como
+consecuencia directa, y es lo que esta ST cierra.
+
+### La caché, cableada
+
+- **La clave sale del `coverHash` del catálogo** (ST-208), no de resumir los
+  bytes: por eso responder desde la caché **no toca el disco**. Si el elemento no
+  lo trae —una biblioteca anterior a ST-208— se lee una vez, la lectura lo deja
+  anotado y el siguiente guardado lo persiste; a partir de ahí esa rama no vuelve
+  a correr. Las imágenes que no son del catálogo (fotos, vistas previas) van por
+  ruta y lado.
+- **El tope es de memoria, no de cantidad: 64 MB.** "600 entradas" no dice nada
+  —seiscientas miniaturas de 48 px son 5 MB y seiscientas de 304 px son 220 MB—;
+  lo que se acota es lo que ocupan, contando cuatro bytes por píxel, que es como
+  vive un `Bgra8`. El orden y el costo viven en Core (`ThumbnailCacheIndex`,
+  puro y probado), y las imágenes en la app.
+- **Sin búsqueda lineal.** El índice guarda el nodo de cada clave en la lista de
+  uso: marcar una como reciente es O(1). Antes era `LinkedList.Remove(key)`, que
+  recorre — una lista recorrida por tarjeta al desplazarse es exactamente el
+  costo que una caché viene a quitar.
+- **Una decodificación por clave.** Doce tarjetas del mismo álbum apareciendo
+  juntas esperan la misma tarea en vez de decodificar doce veces la misma imagen.
+- **Cancelación por contenedor.** Cada control de imagen tiene su carga en curso
+  en una tabla débil; empezar otra corta la anterior y **borra lo que muestre**.
+  Sin eso, una carátula que tardó en leerse aterriza en la tarjeta que ocupó su
+  lugar: el álbum equivocado, con su nombre debajo. Se comprueba dos veces —antes
+  y después de convertir la miniatura en fuente de imagen— que el control siga
+  mostrando la misma tarjeta.
+- **Se pinta una copia.** La miniatura de la caché la comparten todas las
+  tarjetas que muestren esa carátula; entregársela a un control sería dejar que
+  su ciclo de vida decida por las demás.
+
+En **Artistas**, además, las filas ahora cargan por `DataContextChanged` y leen
+su fila del `DataContext` en vez de buscarla por `Tag` con un `FirstOrDefault`
+sobre la lista entera.
+
+### Un error que las mediciones destaparon
+
+La primera versión registraba la tarea de decodificación en el mapa de "lo que se
+está decodificando" **después** de arrancarla. Si terminaba antes de llegar al
+mapa, su propia limpieza corría primero y la entrada quedaba ahí **para
+siempre**: a partir de entonces esa clave se respondía con una miniatura que la
+caché ya había expulsado —y liberado—, sin volver a decodificar.
+
+Se vio en los números antes que en la pantalla: la segunda pasada sobre mil
+carátulas daba 185 aciertos, **una** decodificación y 3 ms, cuando con 186
+entradas en caché tenían que ser ochocientas y pico de decodificaciones. Ahora la
+entrada se registra **antes** de empezar, a través de una promesa, y la limpieza
+ocurre antes de entregar el resultado.
+
+### Números
+
+Arnés de ST-200, 12 000 canciones en 1 000 álbumes con carátula real, sección
+`c-ter` nueva. Un pedido por álbum, al lado de la tarjeta (304 px = 152 pt a 2×).
+
+| | |
+|---|---|
+| Pasada en frío (1 000 pedidos, caché vacía) | **881 ms** — 1 000 decodificaciones |
+| En caché al terminar | **186 miniaturas, 63.9 MB** (tope 64 MB) |
+| Volver a lo último visto (186 pedidos) | **0 ms** — 186 aciertos, ninguna decodificación |
+| Barrer los 1 000 otra vez | 732 ms — 1 000 decodificaciones |
+
+La última fila es honesta y vale la pena explicarla: con un tope de 64 MB entran
+186 de las 1 000, así que recorrer la biblioteca entera en orden expulsa cada una
+justo antes de volver a pedirla. **Eso no es desplazarse**: desplazarse es la
+fila de arriba —volver sobre lo que se acaba de ver— y ahí la caché responde
+entera sin tocar el disco ni decodificar nada. Subir el tope cambiaría dónde está
+ese límite, no que exista.
+
+### Lo que NO se verificó acá
+
+**Nada de lo que se ve.** Esta sesión no puede abrir la ventana. Queda para W7,
+con el mecánico y la pasada guionizada (scroll por UI Automation con
+`AURA_WATCHDOG=1` y capturas):
+
+- que la capa que captura el arrastre reciba los eventos del ratón estando
+  **detrás** de la cuadrícula —si el `GridView` pintara un fondo opaco, no le
+  llegaría nada—;
+- que al desplazarse rápido no aparezca la carátula de un álbum en la tarjeta de
+  otro;
+- que el autoscroll del arrastre se sienta bien.
+
+## ST-206 (addendum) — La cola de dudosos, y "Buscar carátulas de N álbumes..." también en Álbumes
+
+Las dos cosas que ST-206 había dejado sin hacer porque vivían en archivos que en
+ese momento tocaba W5. Con W5 reasignado a esta sesión, entran acá.
+
+### La cola
+
+Cuando un lote deja **varios** álbumes sin una opción segura, se revisan de a uno
+en la **misma** hoja, que no se cierra entre uno y otro: cambia de contenido, dice
+dónde está parada —"Álbum 2 de 7 · tapas de «X»"— y ofrece **"Omitir este
+álbum"** y **"Cancelar el resto"**. Encadenar hojas sin decir eso es lo que R2-3
+había descartado con razón; con eso dicho, se puede usar.
+
+**"Usar recomendada" no está en la cola**, a diferencia de la hoja suelta: la
+recomendada viene preseleccionada, así que "Usar esta" ya es ese botón. Cuatro
+acciones no entran en una hoja de tres botones de Windows, y la que sobra es la
+que se puede hacer igual con un clic.
+
+Cancelar **no deshace lo ya aplicado** —cada álbum es una operación terminada en
+sí misma— sino que deja de preguntar. Lo elegido hasta ahí se aplica en el
+momento, así que cortar a la mitad deja hecho lo de la mitad.
+
+### El ítem en Álbumes
+
+**Decisión de la Maestra**: «Aplicar carátula recomendada a N álbumes» y «Buscar
+carátulas de N álbumes...» **no son la misma acción**. La primera no pregunta
+nunca; la segunda aplica sola la que supera el umbral y **encola los dudosos**.
+La Mac tiene la segunda en las dos pantallas, así que Windows también: el menú de
+Álbumes lleva las dos, y el de Canciones lleva la de buscar.
+
+Queda actualizado `docs/paridad-menus-contextuales.md` (§1 punto 4 y §13 punto 7,
+que decía lo contrario mientras la cola no existía).
+
+## ST-209 (addendum) — El recuadro, cableado
+
+El núcleo del arrastre estaba entero y probado desde ST-209; lo que faltaba era
+la traducción a eventos, que vivía en `MediaGridPage`. Con W5 reasignado, entra.
+
+- **La capa que captura va DETRÁS de las tarjetas**, no encima. Arrastrar DESDE
+  una tarjeta la mueve —eso es su propio arrastre— y arrastrar desde un hueco
+  dibuja el recuadro. Puesta de fondo, las tarjetas conservan sus clics y sus
+  arrastres tal cual, y a la capa solo le llega lo que empezó en un hueco.
+- **Los marcos se calculan en cada movimiento**, desde los contenedores
+  realizados de la cuadrícula, en coordenadas del contenido. Con la
+  virtualización son las decenas que se ven, no las mil que hay, y es más barato
+  que mantener al día un mapa que se desactualiza justo cuando la cuadrícula se
+  desplaza sola. El punto del puntero se pide directamente en esas coordenadas,
+  así que el desplazamiento no entra en ninguna cuenta a mano.
+- **Se aplica por rangos**: `SelectRange` y `DeselectRange` sobre índices
+  contiguos, que no desvirtualizan la cuadrícula y avisan una vez por gesto
+  (ST-202). Lo que cambia sale del núcleo como `SelectionDelta`.
+- **Autoscroll** en los bordes, con la velocidad que decide `GridAutoScroll`.
+- **Clic en un hueco limpia la selección**, como en el Explorador; con Mayús o
+  Control apretados no toca nada, porque ahí se está construyendo una selección.
+- **Con Mayús y Control a la vez manda Control**, regla fijada por la Maestra
+  para las dos plataformas y ya probada en el núcleo.
+- Con el dedo no hay recuadro: arrastrar es desplazar.
+
+Lo que queda por ver con la ventana delante (W7) está anotado en ST-205.
+
+## ST-202 (2.º addendum) — Los listados planos de video también llevan resumen
+
+**Decisión de la Maestra**: la Mac lo tiene en **todas** las secciones de
+`MediaSectionView`, así que "Todos los videos" y "Clips" no son la excepción.
+
+- **Todos los videos**: «N videos · N películas · N episodios · N videoclips»,
+  con la duración y el tamaño a la derecha. El desglose por tipo es justamente lo
+  que la lista no muestra.
+- **Clips**: «N videos» sin desglose — ahí todos son del mismo tipo, y repetirlo
+  no diría nada.
+- La selección, en los dos: «N de M seleccionados · duración · tamaño».
+
+Con eso, `ShowsStatusSummary` pasa a ser siempre cierto y el primer addendum de
+ST-202 queda completo: las siete secciones dicen lo mismo que dice la Mac.
+
+### Verificación
+
+`dotnet build` de Core, App y los dos arneses: **0 advertencias, 0 errores**.
+`dotnet test`: **1 509 pruebas en verde**, quince nuevas para el índice de la
+caché (el tope de memoria, la expulsión de lo más viejo, que usar una la salve,
+que una que sola no cabe no se guarde, que reemplazar no cuente el costo dos
+veces) y para las tres formas de clave. `ImageResizerCheck`: **todo bien**, con
+tres comprobaciones nuevas —el tope es de memoria, lo expulsado se vuelve a
+decodificar, lo que está en caché no—.
+
+## ST-210 — Windows: "Buscar actualizaciones" consulta de verdad la red
+
+Encargo del dueño para esta ronda. Paridad con `AuraUpdateChecker.checkForUpdate`
+de macOS, que sí sale a preguntar.
+
+### Qué había
+
+`DeviceListViewModel.CheckForUpdates` era **sincrónico y no tocaba la red**:
+
+```csharp
+private void CheckForUpdates()
+{
+    CheckFirmwareUpdate();   // ← compara contra el PIN horneado, sin red
+    StatusMessage = HasFirmwareUpdate ? FirmwareUpdateMessage : FirmwareUpToDateMessage;
+}
+```
+
+`CheckFirmwareUpdate` pasa `artifacts.ReleaseTag` —el tag que trae esta copia de
+Studio— como "el Release más nuevo conocido". O sea que el botón comparaba el
+iPod contra **lo que Studio ya tenía adentro**, y con eso contestaba. Si el iPod
+tenía lo mismo que el pin, la pantalla decía «Aura está al día con esta versión
+de Aura Studio», aunque hubiera un Release publicado hacía semanas.
+
+Peor: `FirmwareUpToDateMessage` lo afirmaba **sin que nadie hubiera preguntado
+nunca**, porque es una propiedad calculada que solo mira la familia. Un usuario
+que abría la pantalla y no tocaba nada ya leía "está al día".
+
+La maquinaria para preguntar existía entera y sin usar desde ST-074/ST-077:
+`GitHubReleaseChecker` (con token opcional y su `LastAuthFailure`), `ReleaseCache`
+con TTL de 24 h, y `FirmwareVersionResolver`, que solo consumía la pantalla de
+Extras.
+
+### Qué hay
+
+**Un comando asíncrono de verdad.** `CheckForUpdatesAsync` sale a GitHub, lee el
+disco del iPod fuera del hilo de interfaz y publica un veredicto. Mientras dura,
+el enlace se ve deshabilitado, aparece un indicador de avance y un **Cancelar**
+—`[RelayCommand(IncludeCancelCommand = true)]`—; cancelar no concluye nada y deja
+la pantalla como estaba.
+
+**Consulta en vivo, sin caché.** La revisión manual pasa `force: true`: si el
+caché de 24 h se llenó justo antes de publicarse el Release nuevo, apretar el
+botón seguiría diciendo "al día" hasta que el TTL venciera solo. Es exactamente
+el bug que D-300 arregló en la Mac, y acá el botón nunca había tenido cómo
+saltárselo.
+
+**Tres versiones, no dos.** La del iPod (`version.txt`, D-290), la publicada en
+GitHub y la que Studio trae adentro. `FirmwareUpdateDecision` —puro, en Core— las
+compara y devuelve qué decir y **si el botón de instalar sirve**:
+
+| | |
+|---|---|
+| iPod ≥ publicado | al día, y se nombra la versión |
+| iPod < pin | hay actualización **y se puede instalar ahora** |
+| publicado > pin ≥ iPod | se puede instalar el pin **y** se avisa que existe una más nueva |
+| publicado > pin, iPod = pin | **se avisa y no se ofrece instalar** |
+| sin red | "no se pudo consultar", nunca "al día" |
+
+La cuarta fila es la que obligó a separar el pin de lo publicado. **Studio no
+descarga firmware**: el instalador copia lo que hay en `Vendor\firmware-dist\`.
+Lo comprobé antes de decidirlo — `FirmwareVersionResolver` solo resuelve un tag,
+`GitHubReleaseAsset` no lo consume nadie, y no existe ningún descargador. Ofrecer
+"Instalar la actualización" para un Release que no está bajado sería un botón que
+no puede cumplir; entonces se dice la verdad: *"Se publicó Aura v0.5.0-beta, pero
+esta copia de Aura Studio trae v0.4.6-beta. Actualiza Aura Studio para poder
+instalarla."*
+
+**Sin red no se miente.** Un fallo de red, GitHub caído o un token rechazado dan
+`Unknown` con el motivo, y el estado anterior queda intacto. Si además el
+respaldo por hash pudo concluir que lo instalado coincide con lo que Studio trae,
+se dice **eso**, que no es lo mismo que estar al día con lo publicado.
+
+**ST-046 intacto**: se pregunta al repositorio de la familia **instalada**, y una
+familia sin repositorio no ofrece nada. Comparar Metro contra Aura daría "hay
+actualización" para siempre, o sea ofrecer sobrescribir Metro con Aura.
+
+**`FirmwareUpToDateMessage` dejó de afirmar de más.** Sin haber consultado dice
+lo único que el chequeo sin red puede sostener —«coincide con la versión que trae
+esta copia de Aura Studio»— e invita a preguntar; después de consultar, repite lo
+que se concluyó. Al cambiar de iPod se descarta: lo que se supo era de otro
+momento y a veces de otro dispositivo.
+
+**Una sola forma de preguntar.** `FirmwareVersionResolver` gana
+`LatestPublishedAsync`, y las dos consultas comparten la misma búsqueda con
+caché: dos copias serían dos criterios distintos de cuándo se cachea un fallo de
+token (ST-074). La diferencia entre las dos es deliberada — `ResolveAsync` cae al
+tag local cuando GitHub no contesta (Extras necesita mostrar *algo*), y
+`LatestPublishedAsync` distingue "no hay nada más nuevo" de "no se pudo
+preguntar", que es justo lo que hace falta para no mentir acá.
+
+### Lo que NO entra acá
+
+- **Descargar el firmware.** Que "Instalar la actualización" pueda traer un
+  Release más nuevo que el pin es otra cosa, con su propia verificación de
+  checksums y su propia decisión sobre el contrato de artefactos. Acá se avisa y
+  se explica, que es lo que se puede hacer honestamente hoy.
+- **El chequeo automático al conectar** sigue siendo el de siempre, sin red: es
+  el que evita pegarle a la API de GitHub en cada conexión, y su mensaje ya no
+  afirma de más.
+- **Las actualizaciones de la propia app** (ST-211) esperan a que la Mac entregue
+  ST-191.
+
+### Verificación
+
+`dotnet build` de Core, App y los dos arneses: **0 advertencias, 0 errores**.
+`dotnet test`: **1 525 pruebas en verde**, dieciséis nuevas para la decisión pura
+—al día, iPod más nuevo que lo publicado, pin en el medio, Release más nuevo que
+el pin, sin red con y sin respaldo por hash, sin `version.txt`, tag ilegible,
+familia sin repositorio, árbol incompleto, y que las tres versiones viajen en el
+informe—.
+
+Lo que **no** se verificó acá: la consulta contra GitHub de verdad. Esta sesión no
+abre la ventana ni tiene por qué pegarle a la API; lo que se prueba es la decisión
+—que es donde estaba el error— y el cableado se ve en pantalla.

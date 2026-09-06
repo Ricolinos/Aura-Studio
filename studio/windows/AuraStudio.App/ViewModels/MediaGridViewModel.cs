@@ -261,15 +261,12 @@ public sealed partial class MediaGridViewModel : ViewModelBase
     /// pantalla</b>: cuántos artistas hay detrás de los álbumes marcados, cuánto
     /// dura lo seleccionado, cuánto ocupa.
     ///
-    /// <para>Los listados planos de video —Todos los videos y Clips— siguen con
-    /// <see cref="CountText"/> y <see cref="SelectionText"/>: ahí la tarjeta ES
-    /// el elemento y el resumen no agregaría nada que la cuadrícula no muestre.</para>
+    /// <para>Lo llevan TODAS, decisión de la maestra: la Mac lo tiene en cada
+    /// sección de <c>MediaSectionView</c>. En los listados planos de video la
+    /// tarjeta ES el elemento, y aun así el resumen agrega lo que la lista no
+    /// muestra: el desglose por tipo, cuánto dura y cuánto ocupa.</para>
     /// </summary>
-    public bool ShowsStatusSummary => Kind is MediaGridKind.Albums
-        or MediaGridKind.Movies
-        or MediaGridKind.Series
-        or MediaGridKind.PhotoCollection
-        or MediaGridKind.AllPhotos;
+    public bool ShowsStatusSummary => true;
 
     private readonly StatusSummaryModel _statusSummary = new();
 
@@ -286,6 +283,9 @@ public sealed partial class MediaGridViewModel : ViewModelBase
             new LibraryStatusScope(LibraryStatusSection.PhotoAlbums, PhotoCategory),
         MediaGridKind.AllPhotos =>
             new LibraryStatusScope(LibraryStatusSection.Photos, Collections: _library.PhotoCollections),
+        MediaGridKind.AllVideos => LibraryStatusSection.Videos,
+        MediaGridKind.Clips =>
+            new LibraryStatusScope(LibraryStatusSection.Videos, ClipsOnly: true),
         _ => LibraryStatusSection.Albums
     };
 

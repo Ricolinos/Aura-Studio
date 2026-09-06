@@ -130,18 +130,13 @@ public static class LibraryContextMenus
     /// es esconderlo sino buscar la de cada uno: aplica sola la que supere el
     /// umbral y las dudosas se revisan de a una.</para>
     /// </summary>
-    /// <param name="batch">
-    /// Si esta vista ofrece la forma en lote. En <b>Álbumes</b> no: ahí el lote
-    /// ya se ofrece como "Aplicar carátula recomendada a N álbumes" (R2-3), y
-    /// dos ítems que hacen lo mismo en el mismo menú son peor que uno.
-    /// </param>
-    internal static MenuEntry? AlbumCovers(MenuScope scope, bool batch = true)
+    internal static MenuEntry? AlbumCovers(MenuScope scope)
     {
         if (scope.SingleAlbumWithTitle) return new MenuEntry("album.covers", SearchAlbumCovers);
 
         // "Sin álbum" no cuenta: no es un disco sino el cajón de lo que no tiene
         // uno, y no hay tapa que buscarle.
-        if (batch && scope.AlbumCount > 1)
+        if (scope.AlbumCount > 1)
             return new MenuEntry("album.covers", $"Buscar carátulas de {scope.AlbumCount} álbumes...");
 
         return null;
@@ -162,11 +157,12 @@ public static class LibraryContextMenus
         items.Add(Favorite(scope.AllFavorite));
         items.Add(new MenuEntry("enrich", SearchOnline));
 
-        // ST-104: uno solo abre su selector. En plural NO va acá: este menú ya
-        // ofrece el lote como "Aplicar carátula recomendada a N álbumes" (R2-3),
-        // que es la misma operación. "Sin álbum" no cuenta en ningún caso — no
-        // es un disco sino el cajón de lo que no tiene uno.
-        if (AlbumCovers(scope, batch: false) is { } covers) items.Add(covers);
+        // ST-104 y ST-206: uno solo abre su selector; varios buscan la de cada
+        // uno y los dudosos se revisan en la cola. NO es lo mismo que "Aplicar
+        // carátula recomendada a N álbumes", que no pregunta nunca: esta sí.
+        // "Sin álbum" no cuenta en ninguno de los dos casos — no es un disco
+        // sino el cajón de lo que no tiene uno.
+        if (AlbumCovers(scope) is { } covers) items.Add(covers);
 
         // R2-3: aplica SIN preguntar solo lo que supere el umbral de
         // `docs/caratula-recomendada.md`. Lo que no lo supere no se toca y se
