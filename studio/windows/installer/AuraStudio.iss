@@ -39,7 +39,7 @@
 #endif
 
 #define AppName        "Aura Studio"
-#define AppVersion     "0.2.2"
+#define AppVersion     "0.2.3"
 #define AppPublisher   "Ricolinos"
 #define AppExe         "AuraStudio.App.exe"
 #define AppUrl         "https://github.com/Ricolinos/Aura-Studio"
