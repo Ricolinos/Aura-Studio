@@ -2216,61 +2216,83 @@ final class LibraryViewModel: ObservableObject {
         applyCatalogWriteResult(catalogPersister.writeNow(makeCatalogSnapshot()))
     }
 
+    /// PLAN-studio-rendimiento.md Fase 4 paso 6 (Fase 5.1): medido en
+    /// `testLoadCatalogCold` -- ~1.9 s en frío con 12 000 ítems, TODO
+    /// en el hilo principal dentro de `init()`. El costo es real e
+    /// inherente (3 `fileExists` + 1 lectura de ~15 KB por ítem, cada
+    /// canción tiene su PROPIA carátula en `.portadas/<UUID>.jpg` --
+    /// no hay una ruta compartida que deduplicar aunque el contenido
+    /// se repita dentro de un álbum), así que se resuelve cada ítem en
+    /// paralelo (`DispatchQueue.concurrentPerform`, un hilo por
+    /// núcleo) en vez de uno a la vez. Sigue siendo SÍNCRONA de cara a
+    /// quien llama -- `loadCatalog()`/`init()` no cambian de firma,
+    /// cero impacto en los 70+ sitios de prueba que hoy leen `.items`
+    /// justo después de construir el ViewModel.
     private func loadCatalog() {
         guard let data = try? Data(contentsOf: catalogURL),
               let persisted = try? JSONDecoder().decode(PersistedLibrary.self, from: data) else { return }
 
         let fm = FileManager.default
-        var restored: [LibraryItem] = []
-        for p in persisted.items {
-            // ST-102: `SharedCatalogPath` resuelve la ruta con
-            // tolerancia -- ruta absoluta de macOS tal cual (modo "sin
-            // copiar medios", D-192), separadores `\` de un catalogo
-            // escrito por Aura Studio en Windows (biblioteca COMPARTIDA),
-            // y las dos normalizaciones Unicode. Devuelve `nil` cuando
-            // NINGUNA forma existe: si el archivo (la copia en Música/
-            // Imágenes/Videos, o el original referenciado sin copiar) ya
-            // no esta, el item se omite en silencio -- no hay nada que
-            // preparar ni sincronizar desde un archivo ausente.
-            guard let sourceURL = SharedCatalogPath.resolve(p.sourceRelativePath, in: libraryRoot, fileManager: fm)
-            else { continue }
+        let root = libraryRoot
+        let persistedItems = persisted.items
+        var resolved = [LibraryItem?](repeating: nil, count: persistedItems.count)
+        resolved.withUnsafeMutableBufferPointer { buffer in
+            DispatchQueue.concurrentPerform(iterations: persistedItems.count) { index in
+                let p = persistedItems[index]
+                // ST-102: `SharedCatalogPath` resuelve la ruta con
+                // tolerancia -- ruta absoluta de macOS tal cual (modo
+                // "sin copiar medios", D-192), separadores `\` de un
+                // catalogo escrito por Aura Studio en Windows
+                // (biblioteca COMPARTIDA), y las dos normalizaciones
+                // Unicode. Devuelve `nil` cuando NINGUNA forma existe:
+                // si el archivo (la copia en Música/Imágenes/Videos, o
+                // el original referenciado sin copiar) ya no esta, el
+                // item se omite en silencio -- no hay nada que
+                // preparar ni sincronizar desde un archivo ausente.
+                guard let sourceURL = SharedCatalogPath.resolve(p.sourceRelativePath, in: root, fileManager: fm)
+                else { return }
 
-            let coverData = SharedCatalogPath
-                .coverURL(recorded: p.coverRelativePath, itemID: p.id, in: libraryRoot, fileManager: fm)
-                .flatMap { try? Data(contentsOf: $0) }
-            let preparedURL = p.preparedRelativePath
-                .flatMap { SharedCatalogPath.resolve($0, in: libraryRoot, fileManager: fm) }
-            let preparedExists = preparedURL != nil
+                let coverData = SharedCatalogPath
+                    .coverURL(recorded: p.coverRelativePath, itemID: p.id, in: root, fileManager: fm)
+                    .flatMap { try? Data(contentsOf: $0) }
+                let preparedURL = p.preparedRelativePath
+                    .flatMap { SharedCatalogPath.resolve($0, in: root, fileManager: fm) }
+                let preparedExists = preparedURL != nil
 
-            var status = LibraryPersistenceMapper.liveStatus(p.status)
-            if status == .ready && !preparedExists {
-                // "Listo" sin su archivo preparado no es listo: se
-                // vuelve a encolar y el proximo procesamiento lo
-                // regenera.
-                status = .queued
+                var status = LibraryPersistenceMapper.liveStatus(p.status)
+                if status == .ready && !preparedExists {
+                    // "Listo" sin su archivo preparado no es listo: se
+                    // vuelve a encolar y el proximo procesamiento lo
+                    // regenera.
+                    status = .queued
+                }
+
+                buffer[index] = LibraryItem(
+                    id: p.id,
+                    sourceURL: sourceURL,
+                    kind: LibraryPersistenceMapper.liveKind(p.kind),
+                    status: status,
+                    metadata: LibraryPersistenceMapper.liveMetadata(p.metadata, coverArtData: coverData),
+                    preparedURL: preparedExists ? preparedURL : nil,
+                    // D-228: catalogos viejos guardaban `MediaCategory.
+                    // rawValue` -- `liveCategory` traduce esos valores
+                    // conocidos al string de display nuevo y deja pasar
+                    // cualquier otro tal cual (ver su doc-comment).
+                    category: p.category.map(LibraryPersistenceMapper.liveCategory),
+                    seriesName: p.seriesName,
+                    season: p.season,
+                    episode: p.episode,
+                    photoAlbum: p.photoAlbum,
+                    metadataEditedByUser: p.metadataEditedByUser ?? false,
+                    addedAt: p.addedAt
+                )
             }
-
-            restored.append(LibraryItem(
-                id: p.id,
-                sourceURL: sourceURL,
-                kind: LibraryPersistenceMapper.liveKind(p.kind),
-                status: status,
-                metadata: LibraryPersistenceMapper.liveMetadata(p.metadata, coverArtData: coverData),
-                preparedURL: preparedExists ? preparedURL : nil,
-                // D-228: catalogos viejos guardaban `MediaCategory.
-                // rawValue` -- `liveCategory` traduce esos valores
-                // conocidos al string de display nuevo y deja pasar
-                // cualquier otro tal cual (ver su doc-comment).
-                category: p.category.map(LibraryPersistenceMapper.liveCategory),
-                seriesName: p.seriesName,
-                season: p.season,
-                episode: p.episode,
-                photoAlbum: p.photoAlbum,
-                metadataEditedByUser: p.metadataEditedByUser ?? false,
-                addedAt: p.addedAt
-            ))
         }
-        items = restored
+        // El orden importa (Library.items se muestra tal cual en
+        // varias vistas sin reordenar) -- `compactMap` sobre el buffer
+        // preserva el orden original del catálogo pese a resolverse
+        // en paralelo.
+        items = resolved.compactMap { $0 }
         playlists = persisted.playlists.map {
             // Igual que `preparedExists` arriba: una imagen que ya no
             // esta en disco (borrada a mano, biblioteca movida a medias)

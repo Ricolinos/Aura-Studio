@@ -5594,3 +5594,62 @@ tocar, hasta que se decida si vale la pena devolverla a `dist\`. El `0.2.1`
 **sí** se verificó intacto en esta misma pasada: mismos SHA-256 de ST-170
 (`db2b6938995b2940022f2262934a8547048e497b9ecadb1c6acedadb9f8e0c84` el arm64,
 `e621e325c6b05f4528b6b042ce1445d096db84429db098445615a6a2bdb31c7d` el x64).
+
+## ST-157 (paso 6/6, cierre) — `loadCatalog()` en paralelo (Fase 5.1)
+
+Último paso: la carga inicial de la biblioteca (`loadCatalog()`,
+corre síncrono dentro de `init()`). `testLoadCatalogCold` (Fase 0) la
+medía en **~1.9 s** en frío con la biblioteca de referencia (12 000
+ítems) -- toda la app congelada antes de que la ventana responda.
+
+**Diagnóstico corregido en el camino**: la hipótesis inicial ("las
+pistas de un álbum comparten carátula, se relee el mismo archivo 13
+veces") era falsa -- cada canción escribe su PROPIA carátula en
+`.portadas/<su-UUID>.jpg` (`CatalogPersister.write`), nunca una ruta
+compartida, aunque el contenido sea idéntico dentro del álbum. No hay
+ninguna lectura repetida de la misma ruta que deduplicar. El costo real
+es ~3 `fileExists` (`SharedCatalogPath.resolve` para `sourceURL`,
+`coverURL`, `preparedURL`) + 1 lectura de ~15 KB por ítem,
+proporcional a los 12 000 ítems -- trabajo genuino, no desperdicio.
+
+**Solución**: `DispatchQueue.concurrentPerform` -- cada ítem del
+catálogo persistido se resuelve en su propio hilo (uno por núcleo),
+escribiendo a un buffer preasignado por índice (`[LibraryItem?]`,
+`withUnsafeMutableBufferPointer`) para que escrituras concurrentes a
+índices distintos nunca choquen. Al final, `compactMap` sobre el
+buffer arma `items` en el mismo orden del catálogo, descartando los
+`nil` (archivo ausente, mismo criterio de siempre). Deliberadamente
+**sin** cambiar la firma de `loadCatalog()`/`init()`: siguen siendo
+síncronas de cara a quien llama -- cero impacto en los 70+ sitios de
+prueba que hoy construyen `LibraryViewModel` y leen `.items` justo
+después, a diferencia de un rediseño async completo (opción
+descartada: exigía tocar esos 70+ sitios y mostrar un estado "cargando
+biblioteca..." en `ContentView`, mucha más superficie de riesgo para
+una ganancia incierta en un SSD).
+
+**Resultado medido**: `testLoadCatalogCold` bajó de ~1.9 s a **~0.97
+s** (promedio de 10 corridas) -- casi la mitad, sin cambiar ningún
+comportamiento observable.
+
+### Pruebas
+
+`LoadCatalogParallelTests.swift` (nuevo, 2 pruebas) -- el riesgo
+específico de este cambio, no cubierto por ninguna prueba existente:
+que el orden se pierda o que un ítem con archivo ausente en el medio
+de la lista corrompa a sus vecinos al escribirse por índice desde
+varios hilos a la vez. 200 pistas conservan su orden exacto tras
+recargar; con 1 de cada 5 archivos borrado DESPUÉS de persistir
+(intercalados, no al final), los 80 sobrevivientes mantienen su propio
+contenido y su orden relativo, sin mezclarse con el vecino borrado.
+
+### Verificación
+
+`swift build`, `xcodegen generate` + `xcodebuild` (Debug, Swift 6
+estricto) y `swift test`: 812/812 (1 se salta por una condición de red
+en vivo preexistente). `scripts/build-app.sh` verificado contra un
+directorio temporal (Release).
+
+Con esto se cierran los 6 pasos de `LibraryFileWorker` (ST-157) y la
+Fase 5.1 del plan. Quedan fuera de esta ronda, anotados como huecos
+reales y separados: las ramas video/foto de `process(itemAt:)` (paso
+5) y concurrencia por tipo en `BackgroundTaskCenter` (Fase 4).
