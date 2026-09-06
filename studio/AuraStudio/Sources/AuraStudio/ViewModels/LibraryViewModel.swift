@@ -189,7 +189,11 @@ final class LibraryViewModel: ObservableObject {
         self.enricher = enricher
         let prefs = preferences ?? .shared
         self.preferences = prefs
-        let root = libraryRoot ?? URL(fileURLWithPath: prefs.libraryFolderPath, isDirectory: true)
+        // ST-188: bajo una prueba de interfaz, la biblioteca es la que
+        // diga el entorno -- y NO se guarda en Ajustes, así que la
+        // carpeta configurada de verdad queda intacta.
+        let configuredPath = UITestEnvironment.libraryPath ?? prefs.libraryFolderPath
+        let root = libraryRoot ?? URL(fileURLWithPath: configuredPath, isDirectory: true)
         self.libraryRoot = root
         self.artistImages = ArtistImageStore(libraryRoot: root)
         ensureLibraryStructure()

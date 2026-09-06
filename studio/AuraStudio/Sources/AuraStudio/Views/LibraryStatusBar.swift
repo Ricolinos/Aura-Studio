@@ -35,6 +35,10 @@ struct LibraryStatusBar: View {
         .overlay(alignment: .top) { Divider() }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Barra de estado")
+        // ST-188: la prueba de interfaz lee acá cuántos hay
+        // seleccionados -- es la forma de comprobar un arrastre sin
+        // meterse en el estado interno de la vista.
+        .accessibilityIdentifier(UITestEnvironment.ID.statusBar)
     }
 }
 

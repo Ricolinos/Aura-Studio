@@ -370,7 +370,7 @@ struct AlbumsView: View {
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 160, maximum: 200), spacing: 24, alignment: .top)],
                               alignment: .leading, spacing: 28) {
-                        ForEach(visibleAlbums) { album in
+                        ForEach(Array(visibleAlbums.enumerated()), id: \.element.id) { index, album in
                             AlbumGridCell(album: album,
                                           isSelected: selection.isSelected(album.id),
                                           anySelected: !selection.selected.isEmpty,
@@ -385,6 +385,10 @@ struct AlbumsView: View {
                                 .draggable(LibrarySelectionTransfer(
                                     itemIDs: effectiveAlbums(for: album).flatMap(\.items).map(\.id)))
                                 .gridMarqueeFrame(id: album.id, in: Self.gridSpace, model: selectionModel)
+                                // ST-188: por posición del orden
+                                // visible -- un arrastre se describe
+                                // como "de la tarjeta 0 a la 5".
+                                .accessibilityIdentifier(UITestEnvironment.ID.albumCard(index))
                         }
                     }
                     // R2-1: mismo margen superior que la cuadrícula de
@@ -415,6 +419,9 @@ struct AlbumsView: View {
                         }
                     }
                     .coordinateSpace(name: Self.gridSpace)
+                    // ST-188: lo que la prueba de interfaz agarra para
+                    // arrastrar desde un hueco.
+                    .accessibilityIdentifier(UITestEnvironment.ID.albumsGrid)
                 }
             }
         }

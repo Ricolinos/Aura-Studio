@@ -8697,3 +8697,86 @@ catálogo.
 
 Lo que **no** se verificó acá: cómo se lee en pantalla. Esta sesión no puede
 abrir la ventana.
+
+## ST-188 — El arrastre de selección se puede verificar sin esperar al dueño
+
+Encargo (1) de la sesión maestra tras cerrar F6. ST-184 dejó un solo
+cabo suelto y estaba bien identificado: de los ocho gestos de §A, el
+**arrastre** es el único que no se puede comprobar sin correr la app. El
+núcleo (`GridMarquee`, `GridSelection`) está probado entero, pero que un
+`NSViewRepresentable` puesto de fondo reciba los eventos del ratón dentro
+de un `ScrollView` con `LazyVGrid` solo se sabe moviendo un mouse.
+
+Esta PARADA no escribe esa prueba: **construye lo que le faltaba a la app
+para que se pueda escribir**. La prueba en sí es de "mecanico sonnet".
+
+### Cómo arranca la app bajo prueba
+
+Dos variables de entorno (`UITestEnvironment`):
+
+- `AURA_UITEST_LIBRARY` — la carpeta de biblioteca a usar. La app la
+  toma tal cual y **no la guarda en Ajustes**, así que la biblioteca real
+  del dueño queda intacta. Es la parte que había que hacer con cuidado:
+  una prueba que redirija la biblioteca escribiendo la preferencia le
+  cambiaría la carpeta al dueño de verdad.
+- `AURA_UITEST_DEFAULTS_SUITE` — una suite de `UserDefaults` aparte, para
+  que abrir la app bajo prueba no reordene columnas ni toque
+  preferencias reales.
+
+Las dos **solo se leen en DEBUG**. En una build de Release no existen, así
+que no hay forma de redirigir la biblioteca de una app instalada por más
+que se la lance con el entorno puesto. Mismo criterio que
+`MainThreadWatchdog`.
+
+### Los nombres que la app promete
+
+Viven en `UITestEnvironment.ID`, no sueltos en cada vista: un
+identificador mal escrito en un XCUITest no falla al compilar, falla al
+no encontrar nada, y eso se busca durante horas.
+
+- `albumes.cuadricula` — el contenedor de la cuadrícula. Es lo que se
+  agarra para arrastrar **desde un hueco**, que es donde empieza un
+  recuadro (desde una tarjeta se arrastra la tarjeta, ST-184).
+- `albumes.tarjeta.<n>` — la tarjeta en la posición `n` del **orden
+  visible**. Por posición y no por id de álbum a propósito: un arrastre
+  se describe como "de la tarjeta 0 a la 5", y la clave de agrupación de
+  un álbum lleva adentro un separador de unidad (0x1F) que no sirve como
+  identificador.
+- `biblioteca.barraEstado` — la barra de estado. Su texto dice cuántos
+  álbumes hay seleccionados, que es la forma de comprobar el resultado de
+  un arrastre **sin espiar el estado interno de la vista**.
+
+### Esquema propio, no una entrada más en el de siempre
+
+`AuraStudioUITests` tiene su propio esquema (`xcodebuild test -scheme
+AuraStudioUITests`), por dos razones:
+
+1. **Compilar el target de pruebas UNITARIAS con `xcodebuild` falla hoy**,
+   por dos líneas de `CoverArtNormalizerTests` que el modo Swift 6 del
+   proyecto rechaza (`reference to captured var 'done' in
+   concurrently-executing code`) y que el modo permisivo de `swift test`
+   solo advierte. Es **preexistente y ajeno a esta PARADA**: esas pruebas
+   siempre se corrieron con `swift test`, nunca con `xcodebuild test`. En
+   un esquema compartido, ese fallo habría impedido correr las de
+   interfaz. Queda anotado para quien mantenga `Tests/`.
+2. Una prueba de interfaz **lanza la app**; no tiene por qué colarse en
+   el `xcodebuild test` de quien solo quiere las unitarias.
+
+### Prerrequisito de la máquina, verificado
+
+`build-for-testing` del esquema nuevo: **TEST BUILD SUCCEEDED**. Correrlo
+de verdad, en cambio, falla con `The test runner failed to initialize for
+UI testing (Timed out while enabling automation mode)`: macOS exige
+autorizar **una vez** el modo de automatización/accesibilidad para el
+runner, y eso es un permiso que se concede a mano, en la Mac, con alguien
+delante. No es un defecto de esta PARADA ni algo que se pueda saltar
+desde una sesión: queda documentado como el único paso manual que separa
+al arrastre de estar verificado automáticamente.
+
+### Verificación
+
+`swift build` limpio, `xcodebuild -configuration Release` **BUILD
+SUCCEEDED**, `xcodebuild build-for-testing -scheme AuraStudioUITests`
+**TEST BUILD SUCCEEDED**, `swift test` completo en verde (SwiftPM no
+compila `Tests/AuraStudioUITests`: `Package.swift` solo declara
+`AuraStudioTests`).

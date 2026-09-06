@@ -133,6 +133,23 @@ targets:
             fi
           done
 
+  # ST-188: pruebas de INTERFAZ, para lo que no se puede verificar sin
+  # correr la app -- hoy, el arrastre de selección de ST-184. No las
+  # compila `swift test` (Package.swift solo declara AuraStudioTests):
+  # viven solo en el proyecto de Xcode, que es donde pueden lanzar la app.
+  AuraStudioUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: Tests/AuraStudioUITests
+    dependencies:
+      - target: AuraStudio
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ricolinos.aurastudio.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: AuraStudio
+
   AuraStudioTests:
     type: bundle.unit-test
     platform: macOS
@@ -154,5 +171,30 @@ schemes:
     test:
       targets:
         - AuraStudioTests
+    run:
+      config: Debug
+
+  # ST-188: esquema propio para las pruebas de interfaz, y no una entrada
+  # más en el de siempre. Dos razones:
+  #
+  # 1. Compilar el target de pruebas UNITARIAS con `xcodebuild` falla hoy
+  #    por dos líneas de `CoverArtNormalizerTests` que el modo Swift 6 del
+  #    proyecto rechaza y el modo permisivo de `swift test` solo advierte
+  #    (es preexistente: esas pruebas se corren con `swift test`, nunca
+  #    con `xcodebuild test`). Metidas en el mismo esquema, ese fallo
+  #    ajeno impediría correr las de interfaz.
+  # 2. Una prueba de interfaz LANZA la app y necesita permisos de
+  #    accesibilidad; no tiene por qué colarse en el `xcodebuild test`
+  #    de quien solo quiere las unitarias.
+  #
+  #   xcodebuild test -project AuraStudio.xcodeproj -scheme AuraStudioUITests
+  AuraStudioUITests:
+    build:
+      targets:
+        AuraStudio: all
+        AuraStudioUITests: [test]
+    test:
+      targets:
+        - AuraStudioUITests
     run:
       config: Debug

@@ -35,7 +35,11 @@ enum CoverArtProvider: String, Codable, CaseIterable, Identifiable {
 /// en el Keychain, no aca.
 @MainActor
 final class AppPreferences: ObservableObject {
-    static let shared = AppPreferences()
+    static let shared = AppPreferences(
+        // ST-188: bajo una prueba de interfaz, los ajustes van a una
+        // suite aparte -- abrir la app bajo prueba no debe reordenar
+        // columnas ni cambiar preferencias de la instalación real.
+        defaults: UITestEnvironment.defaultsSuiteName.flatMap { UserDefaults(suiteName: $0) } ?? .standard)
 
     /// Como se resuelve la caratula de cada cancion al preparar la
     /// biblioteca. No es cosmetico: cambia que archivos terminan en el

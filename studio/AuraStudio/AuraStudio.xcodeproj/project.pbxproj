@@ -41,12 +41,14 @@
 		1B1F489ABC2214542DB2C46F /* VideoArtworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 349E7DDC3F7A98547168FD9A /* VideoArtworkTests.swift */; };
 		1EF7EC20F69C186A9887856B /* MKS5LBootRunnerExecutableBitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD729ADB997C1F381DACBC45 /* MKS5LBootRunnerExecutableBitTests.swift */; };
 		1F8C7964D7763A72A86F1CF1 /* IPodMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117BF63B29CADB076B19CA27 /* IPodMonitor.swift */; };
+		2028C4F706D55CDECBBADDC2 /* AlbumsDragSelectionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DD4D034411A5DB099E89EB4 /* AlbumsDragSelectionUITests.swift */; };
 		203D6E1800BE63DFE89AB1C8 /* AuraStudioApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 849AFADBA825BCE5775C3217 /* AuraStudioApp.swift */; };
 		206225C0AE68BC4EF3EA9CBF /* LibraryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9934433E994EDDAAFB584100 /* LibraryViewModel.swift */; };
 		21A4F6DFD8E57875A558CD78 /* GitHubToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DC029221CE39E8855D1B045 /* GitHubToken.swift */; };
 		21D3647B50D1CDE2C088EC6C /* MusicBrainzClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95D1717F5BE6E99586CBAF44 /* MusicBrainzClientTests.swift */; };
 		229BC6502A44F54DA47121F9 /* DetectDeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EBCF1EF29547CD3B01B5C98 /* DetectDeviceView.swift */; };
 		238917846EFA62670BDB518D /* LibraryGroupingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50C985AB6AA76CE6D4E38242 /* LibraryGroupingTests.swift */; };
+		2677A5C385F719AEDEEE20BE /* UITestEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8756CF52D4BF9A6E37559D4 /* UITestEnvironment.swift */; };
 		2786CE46C1A592072B7EB490 /* MusicTableColumnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F6E9ED56DC79AD9840D940B /* MusicTableColumnTests.swift */; };
 		27EC2439F8BDAB9DD65E1CAA /* MainThreadWatchdog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B586A5B221FF4A7457E9633 /* MainThreadWatchdog.swift */; };
 		2A02246957CFC168BF04F4AE /* LibraryViewModelSharedPreparedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA13795782D45FD63CB5A1FA /* LibraryViewModelSharedPreparedTests.swift */; };
@@ -258,6 +260,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		A7B8B6B19F5F15988F048FE3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AC16FD332100051C2317B27E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A458A7ACC2A617A8909ADE93;
+			remoteInfo = AuraStudio;
+		};
 		A9AB83E7359F54A87BF49D74 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = AC16FD332100051C2317B27E /* Project object */;
@@ -328,6 +337,7 @@
 		3C28EC066606A5AC0A254EB5 /* ImageResizerSquareCropTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageResizerSquareCropTests.swift; sourceTree = "<group>"; };
 		3D93C4B54F192923EAF481E9 /* VideoSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoSettingsView.swift; sourceTree = "<group>"; };
 		3DC865282F8B113716D7C3AF /* ImageResizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageResizer.swift; sourceTree = "<group>"; };
+		3DD4D034411A5DB099E89EB4 /* AlbumsDragSelectionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumsDragSelectionUITests.swift; sourceTree = "<group>"; };
 		3EBEB24F597D3C9B609AC775 /* InstallerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerViewModel.swift; sourceTree = "<group>"; };
 		3F32B696741F0E62A203E7BC /* ClockSyncWriterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockSyncWriterTests.swift; sourceTree = "<group>"; };
 		414CDC551592AE3B57A31C32 /* ThemesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemesView.swift; sourceTree = "<group>"; };
@@ -356,6 +366,7 @@
 		5F7FD7689D1AF6C4178F68DD /* LibrarySyncCancellationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySyncCancellationTests.swift; sourceTree = "<group>"; };
 		5FA85A3E42CB4E67E9DAC4E5 /* DeviceState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceState.swift; sourceTree = "<group>"; };
 		5FCBED0DC8229A8F37142B89 /* moonlit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = moonlit; path = "Vendor/firmware-dist/moonlit"; sourceTree = SOURCE_ROOT; };
+		6122B652C04F6CA7E8222905 /* AuraStudioUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AuraStudioUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		61E13AE080C61D53DD31BC2E /* SharedCatalogInteropTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedCatalogInteropTests.swift; sourceTree = "<group>"; };
 		62E6C2892E84F33B9EF97D15 /* LibraryItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryItem.swift; sourceTree = "<group>"; };
 		6311C9925925969ED5716A25 /* WrongVolumeRegressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WrongVolumeRegressionTests.swift; sourceTree = "<group>"; };
@@ -454,6 +465,7 @@
 		B4B1B446620BF0826DE1BEF2 /* LibraryFolderDropTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryFolderDropTests.swift; sourceTree = "<group>"; };
 		B6A56207E06BF883E789308E /* SyncPlannerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncPlannerTests.swift; sourceTree = "<group>"; };
 		B8464D5E55C66D32740C7289 /* BundledArtifacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledArtifacts.swift; sourceTree = "<group>"; };
+		B8756CF52D4BF9A6E37559D4 /* UITestEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UITestEnvironment.swift; sourceTree = "<group>"; };
 		B8F2C5305438A32C3A01C767 /* ThemePackagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePackagerTests.swift; sourceTree = "<group>"; };
 		B9961D8C11B7031D474CB9BE /* AuraUpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraUpdateChecker.swift; sourceTree = "<group>"; };
 		B9DF8DDA314F0AC41C9B3ECE /* AuraStudioTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AuraStudioTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -581,6 +593,7 @@
 			children = (
 				942969FD7DB3DE501DDCA57C /* AuraStudio.app */,
 				B9DF8DDA314F0AC41C9B3ECE /* AuraStudioTests.xctest */,
+				6122B652C04F6CA7E8222905 /* AuraStudioUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -667,8 +680,17 @@
 				D91D24A2286B684E8FE45C2F /* SharedCatalogPath.swift */,
 				520AF45B2D0C9151B8D3C2BA /* StatusSummaryModel.swift */,
 				D96F62F5D0767305583513FF /* TrackMetadata.swift */,
+				B8756CF52D4BF9A6E37559D4 /* UITestEnvironment.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		8354CE019E7B9A738A290431 /* AuraStudioUITests */ = {
+			isa = PBXGroup;
+			children = (
+				3DD4D034411A5DB099E89EB4 /* AlbumsDragSelectionUITests.swift */,
+			);
+			path = AuraStudioUITests;
 			sourceTree = "<group>";
 		};
 		A5ECE9688B377042A1F744C1 /* AuraStudioTests */ = {
@@ -794,6 +816,7 @@
 			isa = PBXGroup;
 			children = (
 				A5ECE9688B377042A1F744C1 /* AuraStudioTests */,
+				8354CE019E7B9A738A290431 /* AuraStudioUITests */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -884,6 +907,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		577E4B362635CBFCC6C5FB44 /* AuraStudioUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9BB2331597AD3040E1765CBD /* Build configuration list for PBXNativeTarget "AuraStudioUITests" */;
+			buildPhases = (
+				93CB832AC15B8F050B2ECC6D /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				75AD194BA974D07FAAB4CE09 /* PBXTargetDependency */,
+			);
+			name = AuraStudioUITests;
+			packageProductDependencies = (
+			);
+			productName = AuraStudioUITests;
+			productReference = 6122B652C04F6CA7E8222905 /* AuraStudioUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		90960830425E3F5C7DCA1DC5 /* AuraStudioTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = BD221602A2FB5C970DA144B1 /* Build configuration list for PBXNativeTarget "AuraStudioTests" */;
@@ -930,6 +971,11 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					577E4B362635CBFCC6C5FB44 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Manual;
+						TestTargetID = A458A7ACC2A617A8909ADE93;
+					};
 					90960830425E3F5C7DCA1DC5 = {
 						DevelopmentTeam = "";
 						ProvisioningStyle = Manual;
@@ -955,6 +1001,7 @@
 			projectRoot = "";
 			targets = (
 				A458A7ACC2A617A8909ADE93 /* AuraStudio */,
+				577E4B362635CBFCC6C5FB44 /* AuraStudioUITests */,
 				90960830425E3F5C7DCA1DC5 /* AuraStudioTests */,
 			);
 		};
@@ -1105,6 +1152,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		93CB832AC15B8F050B2ECC6D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2028C4F706D55CDECBBADDC2 /* AlbumsDragSelectionUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		C8A58921C82B2359E68F4B94 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1248,6 +1303,7 @@
 				1A5862E9CB13506C27D87CAC /* ThemeValidator.swift in Sources */,
 				40C77AF1FDE67E4379751F22 /* ThemesView.swift in Sources */,
 				04F788FCD4F07563E5750ED9 /* TrackMetadata.swift in Sources */,
+				2677A5C385F719AEDEEE20BE /* UITestEnvironment.swift in Sources */,
 				504431053F83E4A629E97E0C /* USBDeviceIdentity.swift in Sources */,
 				AA5BCB0D068E33D1B6337E39 /* UpdateBootloaderView.swift in Sources */,
 				A77A37B6CF7FECABA28DD45C /* VideoSettingsView.swift in Sources */,
@@ -1258,6 +1314,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		75AD194BA974D07FAAB4CE09 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A458A7ACC2A617A8909ADE93 /* AuraStudio */;
+			targetProxy = A7B8B6B19F5F15988F048FE3 /* PBXContainerItemProxy */;
+		};
 		B6EF60A9622C10CD9E698F9F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = A458A7ACC2A617A8909ADE93 /* AuraStudio */;
@@ -1415,6 +1476,23 @@
 			};
 			name = Release;
 		};
+		4925E849ED8A99A3FC340F9E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ricolinos.aurastudio.uitests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = AuraStudio;
+			};
+			name = Release;
+		};
 		49A0257D58CD9A31C925B2A6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1431,6 +1509,23 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AuraStudio.app/Contents/MacOS/AuraStudio";
 			};
 			name = Release;
+		};
+		537C2D1221753A8AA90AC218 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ricolinos.aurastudio.uitests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = AuraStudio;
+			};
+			name = Debug;
 		};
 		6D88DA6CDBDBB062F4C4EA5D /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -1477,6 +1572,15 @@
 			buildConfigurations = (
 				EA569CBC3AD0F1D5133E0FB0 /* Debug */,
 				153BF5586433A997E0B4A6DA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9BB2331597AD3040E1765CBD /* Build configuration list for PBXNativeTarget "AuraStudioUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				537C2D1221753A8AA90AC218 /* Debug */,
+				4925E849ED8A99A3FC340F9E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
