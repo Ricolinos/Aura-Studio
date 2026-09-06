@@ -20,7 +20,6 @@ struct ArtistsView: View {
     let selectionStore: SelectionStore
     /// ST-032: acción "Buscar fotos de artistas" (nil = sin proveedor).
     var onFetchArtistImages: (([ArtistGroup]) -> Void)?
-    var isFetchingArtistImages = false
 
     @State private var artists: [ArtistGroup] = []
     @State private var searchText = ""
@@ -158,14 +157,14 @@ struct ArtistsView: View {
                     Button {
                         onFetchArtistImages(artists)
                     } label: {
-                        if isFetchingArtistImages {
+                        if viewModel.isFetchingArtistImages {
                             ProgressView().controlSize(.small)
                         } else {
                             Image(systemName: "person.crop.circle.badge.plus")
                         }
                     }
                     .buttonStyle(.plain)
-                    .disabled(isFetchingArtistImages)
+                    .disabled(viewModel.isFetchingArtistImages)
                     .help("Buscar fotos de los artistas en línea (fanart.tv / Deezer)")
                 }
             }

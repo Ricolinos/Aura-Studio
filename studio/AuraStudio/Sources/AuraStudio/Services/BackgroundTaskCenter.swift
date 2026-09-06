@@ -15,6 +15,29 @@ import Foundation
 /// a cualquier operación larga, no solo a esas dos.
 @MainActor
 final class BackgroundTaskCenter: ObservableObject {
+    /// PLAN-studio-rendimiento-2.md Fase 6 (ST-186): de qué TIPO es una
+    /// tarea, para poder decir "de estas, una a la vez".
+    ///
+    /// No es una categoría decorativa: dos operaciones del mismo tipo
+    /// pelean por el mismo recurso. Dos enriquecimientos a la vez
+    /// (pedir "Buscar información en línea" desde Álbumes y desde
+    /// Canciones, que hoy nada impide) se reparten el mismo cupo de 1
+    /// pedido/segundo de MusicBrainz y tardan el doble cada uno, sin que
+    /// nada vaya más rápido. Tipos DISTINTOS sí corren en paralelo:
+    /// enriquecer mientras se sincroniza es perfectamente razonable.
+    enum TaskKind: Sendable, Equatable {
+        /// Metadata en línea (MusicBrainz/LRCLIB): cupo compartido.
+        case enrichment
+        /// Carátulas y pósters en línea (Cover Art Archive, Deezer,
+        /// TMDB, fanart.tv).
+        case artwork
+        /// Trabajo local sobre archivos (importar, editar en lote,
+        /// aplicar una carátula ya elegida).
+        case files
+        /// Lo que no necesita exclusión con nada.
+        case other
+    }
+
     enum Progress: Equatable {
         /// "N de M" -- se conoce el total de antemano (enriquecer,
         /// edición en lote, importar).
@@ -39,6 +62,7 @@ final class BackgroundTaskCenter: ObservableObject {
         /// En español, de cara al usuario -- "Buscando información en
         /// línea…", "Importando 200 archivos…".
         let title: String
+        let kind: TaskKind
         @Published private(set) var progress: Progress
         /// Detalle opcional bajo el título -- "Álbum 12 de 40".
         @Published var statusText: String?
@@ -54,8 +78,10 @@ final class BackgroundTaskCenter: ObservableObject {
         /// pueden interrumpir a medias sin arriesgar corromper algo).
         var isCancellable: Bool { onCancelRequested != nil }
 
-        init(title: String, progress: Progress, onCancelRequested: (@MainActor () -> Void)? = nil) {
+        init(title: String, kind: TaskKind = .other, progress: Progress,
+             onCancelRequested: (@MainActor () -> Void)? = nil) {
             self.title = title
+            self.kind = kind
             self.progress = progress
             self.onCancelRequested = onCancelRequested
         }
@@ -100,11 +126,21 @@ final class BackgroundTaskCenter: ObservableObject {
     /// mitad de camino no deje la tarea pegada en el centro para
     /// siempre.
     @discardableResult
-    func begin(title: String, progress: Progress = .indeterminate,
+    func begin(title: String, kind: TaskKind = .other, progress: Progress = .indeterminate,
               onCancelRequested: (@MainActor () -> Void)? = nil) -> TaskHandle {
-        let handle = TaskHandle(title: title, progress: progress, onCancelRequested: onCancelRequested)
+        let handle = TaskHandle(title: title, kind: kind, progress: progress,
+                                onCancelRequested: onCancelRequested)
         tasks.append(handle)
         return handle
+    }
+
+    /// ¿Hay ya una tarea de este tipo corriendo? (ST-186.) Quien va a
+    /// empezar una que pelea por un recurso compartido pregunta acá en
+    /// vez de llevar su propio booleano suelto -- que es lo que ST-156
+    /// dejó anotado como pendiente: cada operación tenía su interruptor,
+    /// sin un solo lugar donde mirarlos todos.
+    func isRunning(_ kind: TaskKind) -> Bool {
+        tasks.contains { $0.kind == kind && !$0.isCancelled }
     }
 
     func finish(_ handle: TaskHandle) {

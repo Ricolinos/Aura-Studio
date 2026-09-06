@@ -182,7 +182,8 @@ final class CatalogPersister {
                 episode: item.episode,
                 photoAlbum: item.photoAlbum,
                 metadataEditedByUser: item.metadataEditedByUser,
-                addedAt: item.addedAt
+                addedAt: item.addedAt,
+                fileSizeBytes: item.fileSizeBytes
             ))
         }
         newHash = newHash.filter { coverIDsOnDisk.contains($0.key) }

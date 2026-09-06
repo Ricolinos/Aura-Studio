@@ -459,29 +459,30 @@ final class LibraryViewModel: ObservableObject {
                 /// que saltar de vuelta explicitamente para tocar
                 /// `items`, que ObservableObject espera mutar solo desde
                 /// el actor principal.
-                try transcoder.transcode(input: sourceURL, output: output, sourceFrameRate: info?.frameRate) { fraction in
-                    Task { @MainActor [weak self] in
-                        guard let self, index < self.items.count else { return }
-                        self.items[index].status = .transcoding(progress: fraction)
-                    }
-                }
-                items[index].preparedURL = output
-
-                // Fase 24: poster (`<video>.jpg` junto al .mpg, D-066)
-                // para el panel derecho del navegador de video -- si
-                // ffmpeg no puede generarlo (formato raro, sin frames
-                // legibles) no se aborta el item entero por esto, el
-                // video ya quedo listo para sincronizar sin poster.
+                // PLAN-studio-rendimiento-2.md Fase 6 (ST-186): la
+                // transcodificación y el póster se van al worker
+                // (`ffmpeg` corriendo síncrono en el `@MainActor`
+                // congelaba la ventana lo que durara el video). El
+                // progreso sigue llegando por el mismo callback, que
+                // salta de vuelta al actor principal para tocar `items`.
                 let poster = output.deletingPathExtension().appendingPathExtension("jpg")
-                if let downloaded = items[index].metadata?.loadCoverData(),
-                   (try? ImageResizer.resizeToLCDOptimal(data: downloaded, destinationURL: poster,
-                                                         maxDimension: Self.videoPosterMaxDimension)) != nil {
-                    // ST-033: el poster descargado (TMDB / fanart.tv)
-                    // manda sobre el fotograma.
-                } else {
-                    try? transcoder.generatePoster(input: output, output: poster)
-                }
-
+                let itemID = items[index].id
+                try await fileWorker.prepareVideo(
+                    LibraryFileWorker.PrepareVideoRequest(
+                        sourceURL: sourceURL,
+                        destinationURL: output,
+                        sourceFrameRate: info?.frameRate,
+                        posterURL: poster,
+                        downloadedPoster: items[index].metadata?.loadCoverData(),
+                        posterMaxDimension: Self.videoPosterMaxDimension),
+                    onProgress: { fraction in
+                        Task { @MainActor [weak self] in
+                            guard let self,
+                                  let current = self.items.firstIndex(where: { $0.id == itemID }) else { return }
+                            self.items[current].status = .transcoding(progress: fraction)
+                        }
+                    })
+                items[index].preparedURL = output
                 items[index].status = .ready
 
             case .photo:
@@ -496,8 +497,13 @@ final class LibraryViewModel: ObservableObject {
                 let output = resolveNonCollidingStagingDestination(
                     existingPreparedURL: items[index].preparedURL,
                     baseName: sourceURL.deletingPathExtension().lastPathComponent, ext: "jpg")
-                try ImageResizer.resizeToLCDOptimal(sourceURL: sourceURL, destinationURL: output,
-                                                     maxDimension: preferences.photoQuality.maxDimension)
+                // ST-186: redimensionar una foto de cámara es medio
+                // segundo largo por foto -- importar una carpeta
+                // congelaba la ventana una vez por cada una.
+                try await fileWorker.preparePhoto(
+                    LibraryFileWorker.PreparePhotoRequest(
+                        sourceURL: sourceURL, destinationURL: output,
+                        maxDimension: preferences.photoQuality.maxDimension))
                 // ST-183: la miniatura de una foto se cachea por id +
                 // ruta del archivo preparado. Reprocesar suele escribir
                 // en la MISMA ruta (cambiar la calidad de imagen, por
@@ -924,10 +930,26 @@ final class LibraryViewModel: ObservableObject {
         defer { isFetchingVideoPosters = false }
         lastError = nil
         let resolver = resolver ?? VideoArtworkResolver()
+        // PLAN-studio-rendimiento-2.md Fase 6 (ST-186): al centro de
+        // tareas, como el resto de las operaciones largas. Buscar
+        // pósters es una consulta de red POR VIDEO: con veinte
+        // seleccionados, el botón se quedaba gris un rato largo sin
+        // decir cuántos faltaban ni dejar parar (§0.9, pendiente de la
+        // ronda 1 -- ST-156 lo dejó anotado y nadie lo retomó).
+        var cancelled = false
+        let ordered = Array(ids)
+        let handle = taskCenter.begin(
+            title: ordered.count == 1 ? "Buscando póster en línea…" : "Buscando pósters de \(ordered.count) videos…",
+            kind: .artwork,
+            progress: .determinate(completed: 0, total: ordered.count),
+            onCancelRequested: { cancelled = true })
+        defer { taskCenter.finish(handle) }
         var found = 0
         var missing: [String] = []
         var missingKey = false
-        for id in ids {
+        for (completed, id) in ordered.enumerated() {
+            if cancelled { break }
+            handle.update(.determinate(completed: completed, total: ordered.count))
             guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .video else { continue }
             let item = items[index]
             let rawTitle = item.metadata?.title ?? item.sourceURL.deletingPathExtension().lastPathComponent
@@ -1009,10 +1031,24 @@ final class LibraryViewModel: ObservableObject {
         isFetchingArtistImages = true
         defer { isFetchingArtistImages = false }
         let resolver = resolver ?? ArtistImageResolver(deezerEnabled: preferences.deezerEnabled)
+        // ST-186: al centro de tareas. `ArtistImageResolver` va a
+        // MusicBrainz, que está limitado a 1 pedido por segundo: con 250
+        // artistas esto son minutos, y hasta ahora la única señal era un
+        // spinner en un botón.
+        var cancelled = false
+        let handle = taskCenter.begin(
+            title: "Buscando fotos de \(artists.count) \(artists.count == 1 ? "artista" : "artistas")…",
+            kind: .artwork,
+            progress: .determinate(completed: 0, total: artists.count),
+            onCancelRequested: { cancelled = true })
+        defer { taskCenter.finish(handle) }
         var found = 0
         var missing = 0
         var skipped = 0
-        for artist in artists {
+        for (completed, artist) in artists.enumerated() {
+            if cancelled { break }
+            handle.update(.determinate(completed: completed, total: artists.count),
+                          statusText: artist.name)
             if artist.isUnknown || artistImages.hasImage(forArtistKey: artist.id) {
                 skipped += 1
                 continue
@@ -1228,6 +1264,7 @@ final class LibraryViewModel: ObservableObject {
             title: requests.count == 1
                 ? "Buscando carátula recomendada…"
                 : "Buscando carátulas de \(requests.count) álbumes…",
+            kind: .artwork,
             progress: .determinate(completed: 0, total: requests.count),
             onCancelRequested: { cancelled = true })
         defer { taskCenter.finish(handle) }
@@ -1444,6 +1481,12 @@ final class LibraryViewModel: ObservableObject {
     func reenrichOnline(ids: Set<UUID>, fetchAlbumInfo: Bool, fetchLyrics: Bool) async {
         let targets = items.filter { ids.contains($0.id) && $0.kind == .music }
         guard !targets.isEmpty else { return }
+        // PLAN-studio-rendimiento-2.md Fase 6 (ST-186): una búsqueda en
+        // línea a la vez. Nada impedía disparar dos -- desde Álbumes y
+        // desde Canciones, por ejemplo -- y las dos se repartían el mismo
+        // cupo de 1 pedido/segundo de MusicBrainz: el doble de espera
+        // para cada una, sin que nada terminara antes.
+        guard !taskCenter.isRunning(.enrichment) else { return }
 
         var found = 0
         var withoutResult = 0
@@ -1454,7 +1497,7 @@ final class LibraryViewModel: ObservableObject {
         // fijo de siempre. El límite de 1 pedido/segundo de MusicBrainz
         // ya lo aplica `enricher` por dentro; el centro solo muestra el
         // progreso, no lo acelera.
-        let handle = taskCenter.begin(title: "Buscando información en línea…",
+        let handle = taskCenter.begin(title: "Buscando información en línea…", kind: .enrichment,
                                       progress: .determinate(completed: 0, total: targets.count))
         defer { taskCenter.finish(handle) }
 
@@ -2451,7 +2494,8 @@ final class LibraryViewModel: ObservableObject {
                     episode: p.episode,
                     photoAlbum: p.photoAlbum,
                     metadataEditedByUser: p.metadataEditedByUser ?? false,
-                    addedAt: p.addedAt
+                    addedAt: p.addedAt,
+                    fileSizeBytes: p.fileSizeBytes
                 )
             }
         }
@@ -2479,6 +2523,52 @@ final class LibraryViewModel: ObservableObject {
         evaluateLegacyMetadataRereadOffer()
         evaluateCoverContaminationOffer()
         startCoverNormalizationIfNeeded()
+        measureMissingFileSizes()
+    }
+
+    private var fileSizeMeasurementTask: Task<Void, Never>?
+
+    /// PLAN-studio-rendimiento-2.md Fase 6 (ST-186), punto 1.4: rellena
+    /// `fileSizeBytes` de lo que todavía no lo tenga.
+    ///
+    /// Corre **fuera del hilo principal y por lotes**, y publica una sola
+    /// vez al final: medir 12 000 archivos es rápido en un disco local y
+    /// lento en uno de red, y en los dos casos no tiene por qué notarse.
+    /// Nada depende de que termine -- mientras tanto, quien necesite un
+    /// tamaño lo mide con la caché por ruta de `LibraryStats`.
+    ///
+    /// Se guarda **una vez**, al final: es el mismo criterio que Windows
+    /// (ST-201) y evita que el relleno dispare doce mil guardados.
+    func measureMissingFileSizes() {
+        fileSizeMeasurementTask?.cancel()
+        let pending = items.filter { $0.fileSizeBytes == nil }
+            .map { (id: $0.id, path: $0.sourceURL.path) }
+        guard !pending.isEmpty else { return }
+
+        fileSizeMeasurementTask = Task.detached(priority: .utility) { [weak self] in
+            var measured: [UUID: Int] = [:]
+            measured.reserveCapacity(pending.count)
+            for entry in pending {
+                if Task.isCancelled { return }
+                let size = LibraryStats.fileSize(atPath: entry.path)
+                if size > 0 { measured[entry.id] = Int(size) }
+            }
+            guard !Task.isCancelled else { return }
+            await self?.applyMeasuredFileSizes(measured)
+        }
+    }
+
+    private func applyMeasuredFileSizes(_ measured: [UUID: Int]) {
+        guard !measured.isEmpty else { return }
+        var changed = false
+        for index in items.indices {
+            guard items[index].fileSizeBytes == nil,
+                  let size = measured[items[index].id] else { continue }
+            items[index].fileSizeBytes = size
+            changed = true
+        }
+        // Un solo guardado por todo el relleno.
+        if changed { schedulePersistCatalog() }
     }
 
     private func relativePath(of url: URL) -> String {

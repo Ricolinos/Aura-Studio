@@ -22,7 +22,20 @@ struct ContentView: View {
     /// estado en el contenedor raiz, navegar y volver retoma la
     /// pantalla exacta donde iba.
     @StateObject private var installer: InstallerViewModel
-    @StateObject private var library = LibraryViewModel()
+    /// PLAN-studio-rendimiento-2.md Fase 6 (ST-186): en `@State`, no en
+    /// `@StateObject`.
+    ///
+    /// `@StateObject` suscribe a ESTA vista a todos los cambios del
+    /// ViewModel, así que cualquier cambio de `items` -- una estrella,
+    /// una importación, el relleno de tamaños en segundo plano --
+    /// reevaluaba el `body` de la ventana entera: barra lateral, barra
+    /// de herramientas, la sección visible y sus comandos de menú.
+    /// `@State` sostiene la referencia con el mismo ciclo de vida y sin
+    /// suscribir a nadie; quien de verdad necesita enterarse lo observa
+    /// por su cuenta (las secciones ya lo hacen con `@ObservedObject`, y
+    /// las dos piezas de acá abajo que sí dependen de él se movieron a
+    /// vistas propias: `CoverNormalizationBarHost` y `SyncCommandRelay`).
+    @State private var library = LibraryViewModel()
     @StateObject private var preferences = AppPreferences.shared
     /// PLAN-studio-rendimiento.md Fase 1: la selección de la biblioteca
     /// ya no vive en `library` (observado por toda esta vista) -- ver
@@ -95,11 +108,7 @@ struct ContentView: View {
                 // reemplaza: son dos cosas distintas (una resume la
                 // sección, la otra informa un trabajo en curso que se
                 // puede detener).
-                if let normalization = library.coverNormalization {
-                    CoverNormalizationBar(progress: normalization) {
-                        library.cancelCoverNormalization()
-                    }
-                }
+                CoverNormalizationBarHost(library: library)
                 // ST-063: barra de estado estilo Finder, al pie de la
                 // sección; "Visualización › Mostrar barra de estado" la
                 // oculta. Solo aparece donde hay algo que resumir.
@@ -137,10 +146,14 @@ struct ContentView: View {
                 .disabled(isRefreshing)
             }
         }
-        .focusedSceneValue(\.auraSyncCommand, SyncCommandContext(
-            canSync: (deviceMonitor.device?.supportsAuraContract ?? false) && !library.isProcessing && library.syncProgress == nil,
-            action: { Task { await syncNow() } }
-        ))
+        // ST-186: el estado de "se puede sincronizar" depende de
+        // `library.isProcessing`/`syncProgress`, así que leerlo acá
+        // volvería a suscribir toda la ventana. Lo publica una vista de
+        // tamaño cero que sí observa.
+        .background(SyncCommandRelay(
+            library: library,
+            canSyncDevice: deviceMonitor.device?.supportsAuraContract ?? false,
+            action: { Task { await syncNow() } }))
         .focusedSceneValue(\.auraLibraryCommand, LibraryCommandContext(
             currentSection: selection ?? .general,
             navigate: { selection = $0 },
@@ -315,8 +328,7 @@ struct ContentView: View {
                         selectionStore: selectionStore,
                         onFetchArtistImages: { artists in
                             Task { await library.fetchArtistImages(for: artists) }
-                        },
-                        isFetchingArtistImages: library.isFetchingArtistImages)
+                        })
         case .musicAlbums:
             AlbumsView(viewModel: library, device: deviceMonitor.device, preferences: preferences, selectionStore: selectionStore)
         case .musicPlaylists:
@@ -764,5 +776,43 @@ private struct SidebarView: View {
             Text(device?.displayName ?? S.noDevice.text)
                 .lineLimit(1)
         }
+    }
+}
+
+
+/// PLAN-studio-rendimiento-2.md Fase 6 (ST-186): la barra de la
+/// migración de carátulas (ST-141), en su propia vista.
+///
+/// Existe para que `ContentView` no tenga que observar el ViewModel solo
+/// por esto. Mismo patrón que `LibraryStatusBarHost` y
+/// `SelectionStoreObserver`: quien observa es la pieza chica que dibuja,
+/// no la ventana entera.
+struct CoverNormalizationBarHost: View {
+    @ObservedObject var library: LibraryViewModel
+
+    var body: some View {
+        if let normalization = library.coverNormalization {
+            CoverNormalizationBar(progress: normalization) {
+                library.cancelCoverNormalization()
+            }
+        }
+    }
+}
+
+/// ST-186: publica el comando de sincronizar (⇧⌘S) al menú, observando
+/// el ViewModel **en lugar de** `ContentView`. Vista de tamaño cero:
+/// cuando cambia `isProcessing` o el progreso del sync, lo único que se
+/// reevalúa es esto.
+struct SyncCommandRelay: View {
+    @ObservedObject var library: LibraryViewModel
+    let canSyncDevice: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .focusedSceneValue(\.auraSyncCommand, SyncCommandContext(
+                canSync: canSyncDevice && !library.isProcessing && library.syncProgress == nil,
+                action: action))
     }
 }

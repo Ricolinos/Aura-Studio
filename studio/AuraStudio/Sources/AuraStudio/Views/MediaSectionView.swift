@@ -1335,8 +1335,19 @@ struct MediaTableRow: Identifiable {
         return String(repeating: "★", count: rating)
     }
     var fileFormat: String { item.sourceURL.pathExtension.uppercased() }
+    /// PLAN-studio-rendimiento-2.md Fase 6 (ST-186): el tamaño sale del
+    /// catálogo, no de un `stat`. Esta propiedad es la clave de orden de
+    /// la columna "Tamaño": medirla acá significaba decenas de miles de
+    /// `stat` para ordenar 12 000 canciones, y con la biblioteca en un
+    /// disco de red, otros tantos viajes.
+    ///
+    /// Mientras el catálogo todavía no lo sepa (ítem recién agregado, o
+    /// biblioteca guardada antes del campo), cae a la caché por ruta de
+    /// `LibraryStats` -- que mide una vez y recuerda -- para que la
+    /// columna no muestre "--" durante el relleno en segundo plano.
     var fileSizeBytes: Int64 {
-        (try? FileManager.default.attributesOfItem(atPath: item.sourceURL.path)[.size] as? Int64) ?? 0
+        if let known = item.fileSizeBytes { return Int64(known) }
+        return LibraryStats.fileSize(atPath: item.sourceURL.path)
     }
     var fileSizeText: String {
         let bytes = fileSizeBytes

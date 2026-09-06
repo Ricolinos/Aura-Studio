@@ -63,16 +63,24 @@ struct CoverArtView: View {
     /// que cambiar la carátula cambia la miniatura sin necesidad de la
     /// huella O(1) de ST-183; sin hash todavía (catálogo viejo sin
     /// migrar) cae a la ruta.
-    init(coverHash: String?, coverURL: URL?, side: CGFloat = 128,
+    init(coverHash: String?, coverURL: URL?, pendingData: Data? = nil, side: CGFloat = 128,
          cornerRadius: CGFloat = 8, placeholderSymbol: String = "music.note") {
-        self.init(coverHash: coverHash, coverURL: coverURL, width: side, height: side,
+        self.init(coverHash: coverHash, coverURL: coverURL, pendingData: pendingData,
+                  width: side, height: side,
                   cornerRadius: cornerRadius, placeholderSymbol: placeholderSymbol)
     }
 
-    init(coverHash: String?, coverURL: URL?, width: CGFloat, height: CGFloat,
+    /// `pendingData` son los bytes de una carátula recién entrada que
+    /// todavía no se escribió a `.portadas/` (ST-185). La clave de la
+    /// caché es el **hash**, que ya está calculado desde que la carátula
+    /// entró, así que cuando el guardado la escriba y `coverURL` aparezca
+    /// la clave será la MISMA: la miniatura ya decodificada se reusa y la
+    /// tarjeta no parpadea ni muestra el placeholder en el medio.
+    init(coverHash: String?, coverURL: URL?, pendingData: Data? = nil,
+         width: CGFloat, height: CGFloat,
          cornerRadius: CGFloat = 8, placeholderSymbol: String = "music.note") {
         self.init(id: coverHash ?? coverURL.map { "ruta:\($0.path)" } ?? "sin-caratula",
-                  load: { CoverStore.read(coverURL) },
+                  load: { pendingData ?? CoverStore.read(coverURL) },
                   width: width, height: height,
                   cornerRadius: cornerRadius, placeholderSymbol: placeholderSymbol)
     }
@@ -144,9 +152,10 @@ struct ArtistAvatarView: View {
     /// pocas y chicas, una por artista y no una por canción.
     let imageData: Data?
     /// ST-185: el respaldo es la carátula de uno de sus álbumes, que
-    /// vive en disco -- ruta y hash, no bytes.
+    /// vive en disco -- ruta y hash, no bytes (salvo lo recién entrado).
     let fallbackCoverURL: URL?
     let fallbackCoverHash: String?
+    var fallbackCoverPendingData: Data?
     var side: CGFloat = 40
 
     @State private var loaded: NSImage?
@@ -184,8 +193,9 @@ struct ArtistAvatarView: View {
             loaded = nil
             let imageData = self.imageData
             let fallbackURL = self.fallbackCoverURL
+            let pending = self.fallbackCoverPendingData
             let image = await CoverThumbnailCache.shared.thumbnail(id: cacheID, side: side) {
-                imageData ?? CoverStore.read(fallbackURL)
+                imageData ?? pending ?? CoverStore.read(fallbackURL)
             }
             guard !Task.isCancelled else { return }
             loaded = image
@@ -206,6 +216,8 @@ struct MediaCardView: View {
     /// identidad en la caché de miniaturas) y su ruta, nunca los bytes.
     let coverHash: String?
     let coverURL: URL?
+    /// Bytes de una carátula recién entrada, todavía sin escribir (ST-185).
+    var coverPendingData: Data?
     let title: String
     var subtitle: String?
     var badge = false
@@ -225,7 +237,7 @@ struct MediaCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            CoverArtView(coverHash: coverHash, coverURL: coverURL,
+            CoverArtView(coverHash: coverHash, coverURL: coverURL, pendingData: coverPendingData,
                          width: aspect.width, height: aspect.height,
                          placeholderSymbol: placeholderSymbol)
             HStack(alignment: .top, spacing: 4) {
@@ -266,7 +278,8 @@ struct AlbumCardView: View {
         #if DEBUG
         let _ = BodyEvaluationCounter.record("AlbumCardView")
         #endif
-        MediaCardView(coverHash: album.coverHash, coverURL: album.coverURL, title: album.title,
+        MediaCardView(coverHash: album.coverHash, coverURL: album.coverURL,
+                      coverPendingData: album.coverPendingData, title: album.title,
                       subtitle: showsArtist ? album.artist : nil, badge: album.isFavorite,
                       aspect: .square(side))
     }

@@ -85,6 +85,12 @@ struct PersistedLibraryItem: Codable {
     /// "Fecha en que se agregó"). Opcional por la misma razon que
     /// `metadataEditedByUser`: catalogos anteriores no la tienen.
     var addedAt: Date?
+    /// PLAN-studio-rendimiento-2.md Fase 6 (ST-186), punto 1.4: tamaño
+    /// del archivo de origen en bytes. Ausente = "hay que medirlo",
+    /// nunca "cero". Se rellena en segundo plano por lotes y se guarda
+    /// una vez; no se borra al reescribir el JSON. Mismo nombre y misma
+    /// semántica que en Windows (ST-201).
+    var fileSizeBytes: Int?
 }
 
 struct PersistedTrackMetadata: Codable {

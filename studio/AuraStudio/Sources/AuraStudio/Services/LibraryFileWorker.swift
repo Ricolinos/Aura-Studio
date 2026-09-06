@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 
 /// PLAN-studio-rendimiento.md Fase 4 punto 2, paso 1: copiar/
@@ -27,6 +28,57 @@ actor LibraryFileWorker {
         var metadata: TrackMetadata
         var audioQuality: AppPreferences.AudioQuality
         var coverArtPolicy: AppPreferences.CoverArtPolicy
+    }
+
+    // MARK: - Fotos y video (PLAN-studio-rendimiento-2.md Fase 6, ST-186)
+    //
+    // La ronda 1 sacó del actor principal la rama de MÚSICA de
+    // `process(itemAt:)` y dejó anotadas las de video y foto como
+    // pendientes (§0.9). Son las dos que más pesan por elemento:
+    // redimensionar una foto de cámara y, sobre todo, transcodificar un
+    // video con `ffmpeg`. Hasta acá corrían síncronas en el
+    // `@MainActor`, o sea que importar una carpeta de fotos congelaba la
+    // ventana un rato por CADA foto.
+
+    struct PreparePhotoRequest: Sendable {
+        var sourceURL: URL
+        var destinationURL: URL
+        var maxDimension: CGFloat
+    }
+
+    func preparePhoto(_ request: PreparePhotoRequest) throws {
+        try ImageResizer.resizeToLCDOptimal(sourceURL: request.sourceURL,
+                                            destinationURL: request.destinationURL,
+                                            maxDimension: request.maxDimension)
+    }
+
+    struct PrepareVideoRequest: Sendable {
+        var sourceURL: URL
+        var destinationURL: URL
+        var sourceFrameRate: Double?
+        var posterURL: URL
+        /// Póster ya descargado (TMDB/fanart.tv). Si viene, manda sobre
+        /// el fotograma que saca `ffmpeg` (ST-033).
+        var downloadedPoster: Data?
+        var posterMaxDimension: CGFloat
+    }
+
+    /// Transcodifica y deja el póster al lado. `onProgress` se llama
+    /// desde el hilo de lectura del pipe de `ffmpeg`; quien lo pasa se
+    /// encarga de saltar al actor principal si va a tocar la UI.
+    func prepareVideo(_ request: PrepareVideoRequest,
+                      onProgress: @escaping @Sendable (Double) -> Void) throws {
+        let transcoder = try FFmpegTranscoder()
+        try transcoder.transcode(input: request.sourceURL, output: request.destinationURL,
+                                 sourceFrameRate: request.sourceFrameRate, onProgress: onProgress)
+        // Que no se pueda generar el póster NO aborta el video: ya quedó
+        // listo para sincronizar sin él (D-066).
+        if let downloaded = request.downloadedPoster,
+           (try? ImageResizer.resizeToLCDOptimal(data: downloaded, destinationURL: request.posterURL,
+                                                 maxDimension: request.posterMaxDimension)) != nil {
+            return
+        }
+        try? transcoder.generatePoster(input: request.destinationURL, output: request.posterURL)
     }
 
     /// Copia del archivo original a staging, con la tag ID3 (solo MP3,

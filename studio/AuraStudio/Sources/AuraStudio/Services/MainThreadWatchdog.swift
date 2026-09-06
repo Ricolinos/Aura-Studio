@@ -45,6 +45,9 @@ enum MainThreadWatchdog {
     nonisolated(unsafe) private static let frameBuffer = UnsafeMutablePointer<UnsafeMutableRawPointer?>.allocate(capacity: maxFrames)
     nonisolated(unsafe) private static var frameCount: Int32 = -1
     nonisolated(unsafe) private static var started = false
+    /// PLAN-studio-rendimiento-2.md Fase 6 (ST-186): sube cada vez que
+    /// una prueba reinicia la base de medición -- ver `resetForTesting`.
+    nonisolated(unsafe) private static var collectorGeneration = 0
     #endif
 
     /// Se llama una vez al arrancar la app, desde el hilo principal
@@ -84,11 +87,22 @@ enum MainThreadWatchdog {
 
     private static func watch() {
         var hangStartedAt: Date?
+        var seenGeneration = 0
         while true {
             Thread.sleep(forTimeInterval: pollInterval)
             heartbeatLock.lock()
             let sinceLastBeat = Date().timeIntervalSince(lastHeartbeat)
+            let generation = collectorGeneration
             heartbeatLock.unlock()
+
+            // ST-186: alguien reinició la base de medición. Un bloqueo
+            // que venía de antes NO se reporta: pertenece a lo que había
+            // antes del reinicio, no a lo que se está midiendo ahora.
+            if generation != seenGeneration {
+                seenGeneration = generation
+                hangStartedAt = nil
+                continue
+            }
 
             if sinceLastBeat > thresholdSeconds {
                 if hangStartedAt == nil {
@@ -112,6 +126,32 @@ enum MainThreadWatchdog {
     /// por el mismo motivo que el resto del estado de este tipo (ver
     /// arriba). Nunca se usa fuera de pruebas.
     nonisolated(unsafe) static var onHangDetectedForTesting: (@Sendable (Int) -> Void)?
+
+    /// PLAN-studio-rendimiento-2.md Fase 6 (ST-186): reinicia la base de
+    /// medición.
+    ///
+    /// Existe por un defecto real de las pruebas que usan este vigilante:
+    /// `startIfRequested()` tiene un `guard !started`, así que una vez
+    /// arrancado por la PRIMERA prueba que lo pide, no vuelve a
+    /// arrancar -- sigue latiendo para todo el proceso. Una prueba
+    /// posterior que instala su propio colector puede entonces recibir
+    /// un bloqueo que **empezó antes de que ella existiera** (el
+    /// vigilante reporta cuando el bloqueo TERMINA), y culpar de él a lo
+    /// que está midiendo. Eso es lo que hacía fallar de forma
+    /// intermitente a `ApplyAlbumCoverAndSimilarityWorkerTests` cuando la
+    /// máquina estaba ocupada, y lo que no alcanzaba a resolver mover el
+    /// fixture de esa prueba.
+    ///
+    /// Llamar esto justo antes de la operación que se quiere medir deja
+    /// el vigilante mirando SOLO esa operación.
+    static func resetForTesting() {
+        #if DEBUG
+        heartbeatLock.lock()
+        lastHeartbeat = Date()
+        collectorGeneration += 1
+        heartbeatLock.unlock()
+        #endif
+    }
 
     private static func report(durationMs: Int) {
         onHangDetectedForTesting?(durationMs)

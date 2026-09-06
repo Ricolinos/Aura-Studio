@@ -7493,6 +7493,20 @@ pero su clave sale ahora de la huella O(1) en vez de `hashValue`: el
 defecto de hashear 15 KB por consulta está arreglado también por ese
 camino, no solo en el nuevo.
 
+### 7. La regla de modificadores del arrastre, igualada con Windows
+
+La sesión maestra fijó para las dos plataformas (Windows ST-209) qué
+pasa con **Shift y ⌘ a la vez** en un arrastre. `GridMarquee` de ST-184
+resolvía Shift primero; la regla acordada es que mande **⌘ (alternar)**.
+Se cambió el orden de las dos condiciones.
+
+No es una regla obvia -- Shift está primero en cualquier orden de
+lectura -- y por eso valía fijarla en vez de dejar que cada plataforma
+eligiera la suya. Se decide por ⌘ porque alternar es la operación más
+específica de las dos: sumar ya se consigue con Shift solo, mientras que
+"sacar de la selección lo que toque el recuadro" no se consigue de
+ninguna otra forma.
+
 ### Verificación
 
 `swift build` limpio, `xcodebuild -configuration Release` **BUILD
@@ -7951,6 +7965,28 @@ conveniencia `TrackMetadata(coverArtData:)` que calcula el hash y deja
 los bytes en la escala: es lo que usan las pruebas que arman metadata con
 una carátula sin pasar por el guardado del catálogo.
 
+### Addendum (2026-09-06) — la carátula recién importada no parpadea
+
+Corrección pedida por la sesión maestra sobre el efecto colateral que
+esta PARADA había documentado como aceptable: entre importar una carátula
+y que el guardado la escriba (rebote ≤ 500 ms), la tarjeta mostraba el
+placeholder. Aceptarlo era innecesario.
+
+Los grupos (`AlbumGroup`, `VideoCollectionGroup`, y el respaldo de
+`ArtistGroup`) llevan ahora también `coverPendingData` cuando lo hay, y
+la miniatura se decodifica de esos bytes mientras no exista el archivo.
+Lo que hace que esto no cueste una recarga es que **la clave de la caché
+no cambia**: es el `coverHash`, y ese está calculado desde que la
+carátula entró (`setCover` lo calcula en el mismo paso). Cuando el
+guardado escribe el archivo y `coverURL` aparece, la clave sigue siendo
+la misma, así que la miniatura ya decodificada se reusa tal cual.
+
+Esto **no** reintroduce el problema de §0.8: `coverPendingData` es `nil`
+para todo lo que ya está guardado, o sea para la biblioteca entera salvo
+lo que acaba de entrar. Lo que §0.8 medía era que las 12 000 canciones
+llevaran su JPEG para siempre, no que un puñado lo lleve por medio
+segundo.
+
 ## ST-208 (addendum) — La deduplicación de carátulas por álbum no va en esta ronda
 
 **Decisión de la Maestra.** ST-208 dejó anotado que las doce pistas de un álbum
@@ -8126,3 +8162,122 @@ disco ausente lo dice sin romper— y una existente reescrita a mano
 Lo que **no** se verificó acá: cómo se siente la app. Esta sesión no puede abrir
 la ventana; que cerrarla escriba lo pendiente y que la tapa recién elegida
 repinte en el acto los ve quien la tenga delante.
+
+## ST-186 — PLAN-studio-rendimiento-2.md, Fase F6: lo que la ronda 1 dejó pendiente
+
+Séptima PARADA de la ronda 2 (sesión "experto en código opus"). Es la
+lista de deudas del punto **9** del diagnóstico: cosas que la ronda 1
+identificó, anotó como pendientes y nadie retomó.
+
+### 1. `fileSizeBytes` en el catálogo (punto 1.4)
+
+`MediaTableRow.fileSizeBytes` hacía un `stat` **por fila y por acceso**.
+Y esa propiedad no es una celda cualquiera: es la **clave de orden** de
+la columna "Tamaño", así que ordenar 12 000 canciones por tamaño eran
+decenas de miles de `stat` -- con la biblioteca en un disco de red (el
+caso del dueño en Windows), otros tantos viajes.
+
+`LibraryItem.fileSizeBytes` es ahora un campo del catálogo, con **el
+mismo nombre y la misma semántica que en Windows** (ST-201, fijados por
+la sesión maestra): entero opcional hermano de `addedAt`, ausente = "hay
+que medirlo" (nunca "cero"), `Codable` con default `nil` y no se borra al
+reescribir. Se rellena **en segundo plano, por lotes, y se guarda una
+sola vez** al terminar: rellenar 12 000 no puede costar 12 000 guardados.
+Nada depende de que termine -- mientras tanto, quien necesite un tamaño
+lo mide con la caché por ruta de `LibraryStats`, así que la columna nunca
+muestra "--" durante el relleno.
+
+### 2. Video y fotos salen del hilo principal (punto 4, ramas que faltaban)
+
+La ronda 1 movió al `LibraryFileWorker` la rama de MÚSICA de
+`process(itemAt:)` y dejó video y foto anotadas. Son las dos que más
+pesan por elemento: redimensionar una foto de cámara, y sobre todo
+transcodificar un video con `ffmpeg`. Corrían **síncronas en el
+`@MainActor`**, o sea que importar una carpeta de fotos congelaba la
+ventana una vez por cada foto, e importar un video la congelaba lo que
+durara el video.
+
+Las dos pasan al worker. El progreso de `ffmpeg` sigue llegando por el
+mismo callback, que salta al actor principal para tocar `items`; se
+cambió a buscar el ítem **por id** en vez de por índice, porque ahora
+puede llegar cuando el arreglo ya se movió.
+
+### 3. Concurrencia por tipo en el centro de tareas
+
+`BackgroundTaskCenter.TaskKind` no es una etiqueta decorativa: dos tareas
+del mismo tipo pelean por el mismo recurso. Concretamente, **nada impedía
+disparar dos búsquedas de información en línea a la vez** (una desde
+Álbumes y otra desde Canciones): las dos se repartían el mismo cupo de 1
+pedido/segundo de MusicBrainz, así que cada una tardaba el doble y
+ninguna terminaba antes. Ahora `reenrichOnline` pregunta
+`taskCenter.isRunning(.enrichment)` y no arranca una segunda.
+
+Tipos distintos **sí** corren en paralelo: enriquecer mientras se
+sincroniza es perfectamente razonable. Y el centro pasa a ser el único
+lugar donde mirar qué está corriendo, que es lo que ST-156 había dejado
+anotado ("cada operación tenía su interruptor suelto").
+
+### 4. Las dos operaciones largas que no estaban en el centro de tareas
+
+- **"Buscar póster en línea"**: una consulta de red por video. Con veinte
+  seleccionados, el botón se quedaba gris un rato largo sin decir cuántos
+  faltaban ni dejar parar.
+- **"Buscar fotos de artistas"**: `ArtistImageResolver` va a MusicBrainz,
+  limitado a 1 pedido por segundo. Con 250 artistas son minutos, y la
+  única señal era un spinner en un botón.
+
+Las dos pasan al centro, con progreso "N de M" y **cancelación** (§A:
+"todas las operaciones largas con indicador y cancelación").
+
+### 5. `ContentView` deja de observar el ViewModel
+
+`@StateObject` suscribe a la vista a **todos** los cambios del
+ViewModel, así que cualquier cambio de `items` -- una estrella, una
+importación, el relleno de tamaños del punto 1 -- reevaluaba el `body` de
+la ventana entera: barra lateral, barra de herramientas, la sección
+visible y sus comandos de menú.
+
+Pasa a `@State`, que sostiene la referencia con el mismo ciclo de vida y
+sin suscribir a nadie, y las dos piezas que sí dependían del ViewModel se
+mudan a vistas propias que lo observan ellas: `CoverNormalizationBarHost`
+(la barra de la migración de carátulas de ST-141) y `SyncCommandRelay`
+(el estado de ⇧⌘S, que depende de `isProcessing`/`syncProgress`). Es el
+mismo patrón que ST-181 usó para la barra de estado y ST-182 para el
+`SelectionStore`: **observa la pieza que dibuja, no la ventana**.
+
+De paso, `ArtistsView` recibía `isFetchingArtistImages` como parámetro
+desde `ContentView` -- o sea que el spinner de un botón de Artistas
+obligaba a la ventana entera a observar el ViewModel. Lo lee ella, que ya
+lo observa.
+
+### 6. El vigilante deja de acusar al inocente
+
+`ApplyAlbumCoverAndSimilarityWorkerTests.
+testThreeHundredTracksNeverBlockTheMainThreadOverTheWatchdogThreshold`
+fallaba de forma intermitente, y las dos explicaciones anteriores
+—contaminación entre pruebas, y que la prueba midiera su propio fixture—
+eran ciertas pero **ninguna era la causa de fondo**. Lo es esto:
+
+`MainThreadWatchdog.startIfRequested()` tiene un `guard !started`. Una
+vez que la PRIMERA prueba lo arranca, no vuelve a arrancar: sigue
+latiendo para todo el proceso de pruebas. Y el vigilante **reporta cuando
+el bloqueo TERMINA**. Así que una prueba posterior que instala su propio
+colector puede recibir un bloqueo que empezó antes de que ella existiera,
+y culpar de él a lo que está midiendo. Mover el fixture ayudaba (menos
+bloqueo propio) pero no cerraba el agujero.
+
+`resetForTesting()` reinicia la base de medición: sube una generación que
+el hilo vigilante mira en cada sondeo y, al verla cambiar, **descarta el
+bloqueo en curso**. Llamarlo justo antes de la operación que se quiere
+medir deja el vigilante mirando solo esa operación.
+
+Vale decir lo que esto **no** arregla: un umbral de tiempo de pared sigue
+siendo sensible a la carga de la máquina por definición. Lo que se logra
+es que mida lo que dice medir. La garantía estructural de que el trabajo
+pesado no ocurre en el hilo principal la da otra prueba
+(`LibraryFileWorkerEquivalenceTests`), y esa no depende del reloj.
+
+### Verificación
+
+`swift build` limpio, `xcodebuild -configuration Release` **BUILD
+SUCCEEDED**, `swift test` completo en verde.

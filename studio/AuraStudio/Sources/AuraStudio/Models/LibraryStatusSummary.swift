@@ -164,8 +164,13 @@ enum LibraryStats {
     /// Suma de tamaños en disco de los archivos de origen. Se lee del
     /// sistema de archivos, así que las vistas lo llaman solo sobre lo
     /// que ya tienen en memoria (nunca en cada redibujo de una celda).
+    /// PLAN-studio-rendimiento-2.md Fase 6 (ST-186): usa el tamaño que
+    /// ya trae el catálogo y solo mide lo que todavía no lo tiene.
     static func totalSize(of items: [LibraryItem]) -> Int64 {
-        items.reduce(0) { $0 + fileSize(atPath: $1.sourceURL.path) }
+        items.reduce(0) { total, item in
+            if let known = item.fileSizeBytes { return total + Int64(known) }
+            return total + fileSize(atPath: item.sourceURL.path)
+        }
     }
 
     /// Tamaños cacheados por ruta: la barra se recalcula en cada cambio

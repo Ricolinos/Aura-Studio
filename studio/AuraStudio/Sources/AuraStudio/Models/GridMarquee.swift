@@ -102,11 +102,20 @@ enum GridMarquee {
     /// - sin modificadores, el arrastre **reemplaza** la selección;
     /// - con Shift, **suma** a la de partida;
     /// - con ⌘, **alterna** respecto de la de partida (lo que ya estaba
-    ///   y el rectángulo toca, sale).
+    ///   y el rectángulo toca, sale);
+    /// - con Shift y ⌘ **a la vez, manda ⌘** (alternar).
+    ///
+    /// El último caso es la regla que la sesión maestra fijó para las
+    /// dos plataformas (Windows ST-209): no es obvia -- Shift está
+    /// primero en cualquier orden de lectura -- y sin fijarla cada lado
+    /// habría elegido la suya. Se decide por ⌘ porque alternar es la
+    /// operación más específica de las dos: sumar ya se consigue con
+    /// Shift solo, mientras que "sacar de la selección lo que toque el
+    /// recuadro" no se consigue de ninguna otra forma.
     static func selection<ID>(base: Set<ID>, hits: Set<ID>,
                               modifiers: GridSelectionModifiers) -> Set<ID> {
-        if modifiers.contains(.shift) { return base.union(hits) }
         if modifiers.contains(.command) { return base.symmetricDifference(hits) }
+        if modifiers.contains(.shift) { return base.union(hits) }
         return hits
     }
 

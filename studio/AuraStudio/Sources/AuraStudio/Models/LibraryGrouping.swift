@@ -20,10 +20,19 @@ struct AlbumGroup: Identifiable, Equatable {
     /// `coverURL` puede ser `nil` con `coverHash` presente en una
     /// ventana muy corta: una carátula recién importada vive en
     /// `pendingCoverData` hasta que el guardado del catálogo la escribe
-    /// (rebote ≤ 500 ms). En ese rato la tarjeta muestra el placeholder;
-    /// después aparece sola.
+    /// (rebote ≤ 500 ms). Para que en ese rato la tarjeta **no** muestre
+    /// el placeholder, el grupo lleva también esos bytes -- y como la
+    /// clave de la miniatura es el `coverHash` (que ya está calculado
+    /// desde que la carátula entró), al adoptarse la versión escrita la
+    /// clave no cambia y la imagen ya decodificada se reusa: no
+    /// parpadea nada.
+    ///
+    /// Esto NO reintroduce el problema de §0.8: `coverPendingData` es
+    /// `nil` para todo lo que ya está guardado, o sea para la biblioteca
+    /// entera salvo lo que acaba de entrar.
     let coverURL: URL?
     let coverHash: String?
+    let coverPendingData: Data?
     let year: String?
     let genre: String?
     /// `true` para el grupo especial "Sin álbum".
@@ -46,8 +55,10 @@ struct ArtistGroup: Identifiable, Equatable {
     var items: [LibraryItem] { albums.flatMap(\.items) }
     /// Imagen representativa cuando no hay foto de artista: la portada
     /// del primer álbum con carátula.
-    var fallbackCoverURL: URL? { albums.first { $0.coverURL != nil }?.coverURL }
-    var fallbackCoverHash: String? { albums.first { $0.coverURL != nil }?.coverHash }
+    private var fallbackAlbum: AlbumGroup? { albums.first { $0.coverHash != nil } }
+    var fallbackCoverURL: URL? { fallbackAlbum?.coverURL }
+    var fallbackCoverHash: String? { fallbackAlbum?.coverHash }
+    var fallbackCoverPendingData: Data? { fallbackAlbum?.coverPendingData }
 }
 
 enum LibraryGrouping {
@@ -114,6 +125,7 @@ enum LibraryGrouping {
             // pista 1 -- asi un " re " colado no le cambia el nombre.
             let first = buckets[key]![0]
             let bucket = sortedTracks(buckets[key]!)
+            let coverSource = bucket.first { $0.metadata?.hasCover == true }?.metadata
             let albumTitle = first.metadata?.album?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             let isUnknown = albumTitle.isEmpty
             return AlbumGroup(
@@ -121,8 +133,9 @@ enum LibraryGrouping {
                 title: isUnknown ? unknownAlbumTitle : albumTitle,
                 artist: albumArtist(of: first, options: options) ?? unknownArtistName,
                 items: bucket,
-                coverURL: bucket.first { $0.metadata?.hasCover == true }?.metadata?.coverURL,
-                coverHash: bucket.first { $0.metadata?.hasCover == true }?.metadata?.coverHash,
+                coverURL: coverSource?.coverURL,
+                coverHash: coverSource?.coverHash,
+                coverPendingData: coverSource?.pendingCoverData,
                 year: bucket.compactMap { $0.metadata?.year }.first,
                 genre: bucket.compactMap { $0.metadata?.genre }.first,
                 isUnknown: isUnknown
@@ -306,6 +319,8 @@ struct VideoCollectionGroup: Identifiable, Equatable {
     /// ST-185: ruta y hash, no bytes -- ver `AlbumGroup.coverURL`.
     let posterURL: URL?
     let posterHash: String?
+    /// Solo mientras el póster recién entrado no se haya escrito.
+    let posterPendingData: Data?
     let isSeries: Bool
     let items: [LibraryItem]
     /// Vacío para una película. Para una serie, una entrada por número
@@ -357,6 +372,7 @@ extension LibraryGrouping {
         }
         var groups = order.map { key -> VideoCollectionGroup in
             let bucket = buckets[key]!
+            let posterSource = bucket.first { $0.metadata?.hasCover == true }?.metadata
             let first = bucket[0]
             let isSeries = LibrarySync.isSeriesCategory(first.category)
             let title: String = {
@@ -395,8 +411,9 @@ extension LibraryGrouping {
             return VideoCollectionGroup(
                 id: key, title: title,
                 year: bucket.compactMap { $0.metadata?.year }.first,
-                posterURL: bucket.first { $0.metadata?.hasCover == true }?.metadata?.coverURL,
-                posterHash: bucket.first { $0.metadata?.hasCover == true }?.metadata?.coverHash,
+                posterURL: posterSource?.coverURL,
+                posterHash: posterSource?.coverHash,
+                posterPendingData: posterSource?.pendingCoverData,
                 isSeries: isSeries, items: bucket, seasons: seasons
             )
         }

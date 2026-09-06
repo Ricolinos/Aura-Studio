@@ -117,6 +117,15 @@ final class ApplyAlbumCoverAndSimilarityWorkerTests: XCTestCase {
         let hangs = HangCollector()
         MainThreadWatchdog.onHangDetectedForTesting = { durationMs in hangs.add(durationMs) }
         MainThreadWatchdog.startIfRequested()
+        // ST-186: `startIfRequested()` tiene un `guard !started`, así que
+        // si otra prueba ya lo arrancó, este sigue siendo el MISMO
+        // vigilante latiendo desde entonces -- y como reporta cuando el
+        // bloqueo TERMINA, podía entregarle a este colector un bloqueo
+        // que empezó antes de que esta prueba existiera. Mover el
+        // fixture antes del colector (arreglo anterior) ayudaba pero no
+        // alcanzaba. `resetForTesting()` reinicia la base de medición:
+        // de acá en adelante, el vigilante solo mira lo que sigue.
+        MainThreadWatchdog.resetForTesting()
 
         _ = await viewModel.applyAlbumCover(cover, toItems: Set(tracks.map(\.id)))
 

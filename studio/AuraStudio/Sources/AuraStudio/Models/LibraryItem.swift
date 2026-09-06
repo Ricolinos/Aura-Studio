@@ -82,6 +82,23 @@ struct LibraryItem: Identifiable, Equatable {
     /// Cuando se agrego a la biblioteca (ST-030). nil solo para items
     /// restaurados de un catalogo anterior a este campo.
     var addedAt: Date?
+    /// PLAN-studio-rendimiento-2.md Fase 6 (ST-186), punto 1.4 heredado
+    /// de la ronda 1: tamaño del archivo de origen, en bytes.
+    ///
+    /// `nil` significa **hay que medirlo** (ítem recién agregado, o
+    /// catálogo guardado antes de que el campo existiera), nunca "vacío".
+    /// Se rellena en segundo plano por lotes y se guarda una vez.
+    ///
+    /// Existe porque medirlo en el momento sale caro donde más duele:
+    /// `MediaTableRow.fileSizeBytes` hacía un `stat` **por fila y por
+    /// acceso**, y esa propiedad es además la clave de orden de la
+    /// columna "Tamaño" -- ordenar 12 000 canciones por tamaño eran
+    /// decenas de miles de `stat`, y con la biblioteca en un disco de
+    /// red (el caso del dueño en Windows) cada uno cuesta un viaje.
+    ///
+    /// Mismo nombre y misma semántica que en Windows (ST-201), fijados
+    /// por la sesión maestra para las dos plataformas.
+    var fileSizeBytes: Int?
 
     init(sourceURL: URL, addedAt: Date? = Date()) {
         self.id = UUID()
@@ -97,6 +114,7 @@ struct LibraryItem: Identifiable, Equatable {
         self.photoAlbum = nil
         self.metadataEditedByUser = false
         self.addedAt = addedAt
+        self.fileSizeBytes = nil
     }
 
     /// Restauracion desde el catalogo persistido de la biblioteca
@@ -107,7 +125,7 @@ struct LibraryItem: Identifiable, Equatable {
          status: LibraryItemStatus, metadata: TrackMetadata?, preparedURL: URL?,
          category: String? = nil, seriesName: String? = nil, season: Int? = nil,
          episode: Int? = nil, photoAlbum: String? = nil, metadataEditedByUser: Bool = false,
-         addedAt: Date? = nil) {
+         addedAt: Date? = nil, fileSizeBytes: Int? = nil) {
         self.id = id
         self.sourceURL = sourceURL
         self.kind = kind
@@ -121,5 +139,6 @@ struct LibraryItem: Identifiable, Equatable {
         self.photoAlbum = photoAlbum
         self.metadataEditedByUser = metadataEditedByUser
         self.addedAt = addedAt
+        self.fileSizeBytes = fileSizeBytes
     }
 }
