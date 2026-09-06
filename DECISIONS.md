@@ -10208,3 +10208,65 @@ resulta que por ahí sí llega, el arreglo ya está puesto.
 
 Lo verifica W7 con su guion, y lo que decida el siguiente intento saldrá del
 `marquee.log`, no de otra hipótesis.
+
+### Resuelto: el registro lo demuestra, y el negativo era del arnés
+
+Con el instrumento puesto, W7 volvió a medir y **el recuadro funciona**. Las
+líneas que lo prueban, del `marquee.log` de esa corrida:
+
+```
+Attach   grid=sí capa=sí
+Attach   scroll=sí
+Pressed  ruta=scroll handled=False yaArrastrando=False decision=hueco pos=(933,40)
+         origen=Grid cadena=Grid > Border > ScrollViewer > Border > GridView
+Start    captura=True origen=(933,40) seleccionDePartida=0 mods=None
+Pressed  ruta=grid   handled=True  yaArrastrando=True  decision=hueco pos=(933,40)
+Moved  #1  pos=(911,55)  rect=(911,40,23x15)   marcos=60 entran=1 salen=0 marcados=1
+Moved  #20 pos=(547,303) rect=(547,40,387x263) marcos=60 entran=2 salen=0 marcados=6
+Moved  #29 pos=(387,412) rect=(387,40,546x372) marcos=60 entran=0 salen=0 marcados=6
+Released  tras 29 movimientos
+```
+
+Y con capturas: [`w7-recuadro-en-curso.png`](capturas/rendimiento/w7-recuadro-en-curso.png)
+—el recuadro azul a mitad de arrastre, con «4 de 1 000 seleccionados»— y
+[`w7-recuadro-resultado.png`](capturas/rendimiento/w7-recuadro-resultado.png), con
+los seis del final.
+
+**Qué dice el registro, exactamente.** La cadena de padres de un clic en un hueco
+es `Grid > Border > ScrollViewer > Border > GridView`: el blanco del hit-test es
+un elemento **de la plantilla del `GridView`**, no la capa de atrás. Por eso la
+capa nunca recibió nada — no porque el `ScrollViewer` marcara el evento como
+atendido (llega con `handled=False`), sino porque **está encima**: es el que se
+lleva el puntero en los huecos. La segunda línea `Pressed ruta=grid handled=True`
+es el mismo evento burbujeando hasta la cuadrícula, ya atendido por el manejador
+que arrancó el gesto, y el guardia de "ya arrastrando" impide que empiece dos
+veces.
+
+Eso también significa que **el arreglo del commit anterior era el correcto**: el
+evento sí burbujea hasta el `GridView`, así que escuchar ahí bastaba. Lo que
+nunca había funcionado no era la pulsación sino el **movimiento**.
+
+**La trampa estaba en el arnés.** El guion movía el puntero con `SetCursorPos`, y
+bajo captura **eso no genera `PointerMoved` con coordenadas nuevas**: en la
+primera corrida instrumentada se ve `Start captura=True` seguido de cuatro
+`Moved` que traen la posición del origen y `rect` de 0x0. Con
+`mouse_event(MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE)`, que es lo que produce un
+ratón de verdad, llegan los veintinueve movimientos con el rectángulo creciendo.
+Es decir: durante dos rondas se midió un gesto que la app nunca recibió entero, y
+el "no funciona" era del instrumento de medición.
+
+Queda anotado porque **afecta a otras medidas**: cualquier hallazgo de esta ronda
+hecho con arrastre sintético por `SetCursorPos` bajo botón pulsado hay que
+volver a mirarlo — en particular el hallazgo 3 de ST-207 (Mayús+flechas
+inconcluso) puede ser del guion y no de la app.
+
+**La traza se queda.** Está apagada por omisión (`AURA_MARQUEE_TRACE=1`, o
+siempre en `DEBUG`), no escribe nada si no se la pide, nunca lanza, y acaba de
+convertir dos rondas de hipótesis en una respuesta. El día que el gesto vuelva a
+fallar en la máquina de alguien, es la diferencia entre adivinar y leer.
+
+### Lo que sí sigue sin verificarse
+
+Que el arrastre se sienta bien con un ratón de verdad —el autoscroll cerca de los
+bordes, sobre todo— sigue siendo cosa del dueño: el arnés inyecta eventos, no
+manos.
