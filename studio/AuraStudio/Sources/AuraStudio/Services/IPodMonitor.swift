@@ -1,5 +1,6 @@
-import Foundation
+import AppKit
 import Combine
+import Foundation
 
 /// Fuente de verdad unica del estado del iPod, combinando dos vias de
 /// deteccion muy distintas: DiskArbitration (evento-driven, para modo
@@ -52,6 +53,18 @@ final class IPodMonitor: ObservableObject {
     /// disco desaparece de verdad (se desconecto) o cuando un volumen
     /// vuelve a montar por otra via.
     private var ejectRequested = false
+    /// ST-190: cuándo se le escribió la hora por última vez, y a qué
+    /// volumen. Sirve para dos cosas distintas: reintentar si la
+    /// escritura falló, y no reescribir en cada activación de la app.
+    private var lastClockSync: (mountPath: String, at: Date)?
+    private var cancellables: Set<AnyCancellable> = []
+
+    /// Cada cuánto, como mucho, se refresca la hora por el solo hecho de
+    /// volver a la app. Un `aura.cfg` reescrito en cada Cmd+Tab sería
+    /// escribir en el iPod del dueño decenas de veces por sesión para
+    /// nada; cinco minutos es mucho más de lo que el RTC del iPod puede
+    /// desviarse mientras tanto.
+    private static let clockRefreshInterval: TimeInterval = 300
 
     init() {
         do {
@@ -69,6 +82,37 @@ final class IPodMonitor: ObservableObject {
             }
         }
         startDFUPolling()
+        observeAppActivation()
+    }
+
+    /// ST-190: la hora también se refresca al **volver a la app** con el
+    /// iPod ya conectado.
+    ///
+    /// DiskArbitration reproduce los discos ya presentes al registrar la
+    /// sesión, así que abrir la app con el iPod montado sí pasa por
+    /// `handleDiskChange` y sí escribe la hora -- eso ya funcionaba. Lo
+    /// que faltaba es lo que ocurre cuando ese intento **no llega a
+    /// escribir**: el primer acceso a un volumen recién conectado puede
+    /// quedar esperando el diálogo de "acceso a volúmenes removibles" de
+    /// macOS, y `ClockSyncWriter` es deliberadamente silencioso ante
+    /// fallos (es una cortesía en segundo plano, no puede interrumpir a
+    /// nadie). Sin un reintento, esa hora no se escribía nunca más:
+    /// mientras el iPod siguiera montado no había otro evento de
+    /// conexión que lo volviera a intentar.
+    ///
+    /// No es un momento nuevo del contrato (§D.4 v19): sigue siendo
+    /// "al detectar firmware corriendo", solo que ahora se vuelve a
+    /// mirar cuando el usuario vuelve a la app en vez de una sola vez.
+    private func observeAppActivation() {
+        NotificationCenter.default
+            .publisher(for: NSApplication.didBecomeActiveNotification)
+            .sink { [weak self] _ in self?.refreshClockOnActivation() }
+            .store(in: &cancellables)
+    }
+
+    private func refreshClockOnActivation() {
+        guard let device, device.supportsAuraContract else { return }
+        syncClockIfNeeded(mountPath: device.mountPath)
     }
 
     func stop() {
@@ -136,6 +180,9 @@ final class IPodMonitor: ObservableObject {
             device = nil
             mountAttempted.removeAll()
             noFilesystemStreak = 0
+            // ST-190: se desconectó -- volver a conectarlo tiene que
+            // escribir la hora de nuevo, sin esperar el intervalo.
+            lastClockSync = nil
         }
     }
 
@@ -146,10 +193,31 @@ final class IPodMonitor: ObservableObject {
     /// distingue cual), para que el dueño nunca tenga que configurarlas a
     /// mano. Cede el candado sin quejarse si otro flujo (instalacion,
     /// sync) ya lo tiene -- el proximo connect lo vuelve a intentar.
+    ///
+    /// ST-190: dos cambios. La escritura pasa **fuera del hilo
+    /// principal** -- es I/O sobre un volumen removible, exactamente lo
+    /// que el comentario de `handleDiskChange` explica que no puede
+    /// correr en el actor principal (puede quedar esperando el diálogo de
+    /// permiso de macOS y dejar la ventana sin aparecer). Y se recuerda
+    /// si de verdad se escribió: un intento fallido se reintenta al
+    /// volver a la app, en vez de perderse para siempre porque el iPod
+    /// sigue montado y no habrá otro evento de conexión.
     private func syncClockIfNeeded(mountPath: String) {
+        if let last = lastClockSync, last.mountPath == mountPath,
+           Date().timeIntervalSince(last.at) < Self.clockRefreshInterval {
+            return
+        }
         guard InstallerFlowRegistry.shared.beginWriting() else { return }
-        defer { InstallerFlowRegistry.shared.endWriting() }
-        try? ClockSyncWriter.writeToDisk(mountPath: mountPath)
+        Task { @MainActor [weak self] in
+            defer { InstallerFlowRegistry.shared.endWriting() }
+            let written = await Task.detached(priority: .utility) {
+                (try? ClockSyncWriter.writeToDisk(mountPath: mountPath)) != nil
+            }.value
+            // Solo se anota si de verdad quedó escrita: si falló (permiso
+            // todavía no concedido, disco ocupado), el próximo intento
+            // vuelve a entrar.
+            if written { self?.lastClockSync = (mountPath, Date()) }
+        }
     }
 
     /// Vuelve a inspeccionar el volumen montado. Hace falta despues de

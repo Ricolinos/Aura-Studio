@@ -9286,3 +9286,166 @@ mal", y conviene tenerlo presente al leer un rojo.
 Lo que **no** se verificó acá: cómo se ve. Esta sesión no puede montar y
 desmontar un disco ni mirar la ventana; el guion del dueño es el lugar
 para "desconecta el disco con la app abierta y mira qué dice".
+
+## ST-192 — Dos rojos que no eran del proyecto
+
+Encargo corto de la sesión maestra, salido de dos hallazgos de ST-188 y
+ST-189: cosas que hacían fallar la verificación sin que nada estuviera
+mal en el código. Un rojo que no significa nada enseña a ignorar los
+rojos, y eso cuesta caro más adelante.
+
+### 1. El target de pruebas unitarias no compilaba con `xcodebuild`
+
+`CoverNormalizationMigration.run` recibe sus closures como `@Sendable`, y
+el modo **Swift 6** —el que usa el proyecto de Xcode
+(`SWIFT_VERSION: "6.0"`)— rechaza capturar un `var` local en uno de
+ellos. Con `swift test`, que compila en modo permisivo, era solo una
+advertencia; por eso pasó inadvertido durante toda la ronda.
+
+La consecuencia no era cosmética: **`xcodebuild test` no servía para las
+unitarias**, y en ST-188 obligó a darle esquema propio a las pruebas de
+interfaz para que ese fallo ajeno no las arrastrara. Dos capturas de
+`var` reemplazadas por una caja con candado, que además es honesta sobre
+quién escribe (el hilo que corre la migración, no el de la prueba).
+
+### 2. Pruebas que salen a la red y dan rojo por el servicio
+
+`LiveEnrichmentIntegrationTests` pega contra MusicBrainz, Cover Art
+Archive, LRCLIB y Deezer **a propósito** — su encabezado lo explica bien:
+no hay forma honesta de verificar que el parseo funciona contra la forma
+real de una respuesta sin pedirle una respuesta real. El problema no era
+ese, era que solo distinguía **dos** estados: hay red o no hay red.
+
+En dos corridas seguidas de esta ronda fallaron dos pruebas distintas de
+ese archivo: una con `httpError(statusCode: 503)` de Cover Art Archive, y
+otra con un `XCTAssertNotNil` que falló porque MusicBrainz devolvió 200
+sin resultados. Ninguna de las dos decía nada sobre el código.
+
+Tres cambios:
+
+- El preflight ahora mira el **código HTTP**, no solo que la petición no
+  lance: un servicio que contesta 503 ya no pasa el filtro. Y el mensaje
+  distingue "sin acceso a red" de "el servicio contestó 503", que son
+  cosas distintas para quien lee el rojo.
+- Las pruebas que además dependen de Cover Art Archive lo comprueban
+  aparte: que MusicBrainz esté sano no dice nada de CAA.
+- Un fallo HTTP **durante** la prueba (no en el preflight) se convierte
+  en `XCTSkip` en vez de en rojo, diciendo qué servicio y con qué código.
+
+Y una precisión en `testFullEnrichmentPipelineOnRealFilename`:
+`LibraryEnricher.enrich` **no lanza** — se traga los fallos de red y
+devuelve lo que pudo. Así que "MusicBrainz contestó 200 con cero
+resultados" llegaba como `title == nil`, indistinguible de un fallo
+nuestro. Ahora se afirma lo que **sí** depende del código (que el nombre
+del archivo se parseó y salió "Queen") y se salta lo que depende de que
+el servicio haya devuelto datos.
+
+**Lo que esto NO hace**: convertir esas pruebas en offline. Siguen
+pegándole a los servicios reales, que es su razón de existir. Lo que
+cambia es que un servicio caído ahora se salta en vez de acusar al
+código.
+
+### Verificación
+
+`swift build` limpio, `xcodebuild -configuration Release` **BUILD
+SUCCEEDED**, y ahora también `xcodebuild build-for-testing` del esquema
+de siempre, que es lo que antes fallaba.
+
+## ST-190 — La hora del iPod, cuando el intento silencioso no alcanza
+
+Encargo (3) de la sesión maestra. El candidato anotado en el backlog era
+"la hora solo se escribe al montar o al sincronizar, no al abrir la app
+con el iPod ya montado". **Verificado contra el código antes de tocar
+nada, y el candidato no era exacto**: DiskArbitration reproduce los
+discos ya presentes al registrar la sesión (no hay ninguna lógica que
+ignore el primer evento, ver `DiskArbitrationMonitor.handleDiskEvent`),
+así que abrir la app con el iPod montado **sí** pasa por
+`handleDiskChange` y **sí** llama a `ClockSyncWriter`. Eso ya funcionaba.
+
+Lo que no funcionaba es lo que pasa cuando ese intento **no llega a
+escribir**, y hay una razón concreta y documentada para que ocurra: el
+primer acceso a un volumen recién conectado puede quedar esperando el
+diálogo de "acceso a volúmenes removibles" de macOS —el propio
+`handleDiskChange` lo explica y por eso manda el sondeo a un hilo
+aparte—, y `ClockSyncWriter` es deliberadamente silencioso ante fallos
+(es una cortesía en segundo plano, no puede interrumpir a nadie ni
+bloquear otro flujo). Resultado: `try?` se come el error y **esa hora no
+se escribe nunca más**, porque mientras el iPod siga montado no habrá
+otro evento de conexión que lo reintente.
+
+Tres cambios, ninguno de contrato:
+
+1. **La escritura sale del hilo principal.** Es I/O sobre un volumen
+   removible, exactamente lo que el código de al lado ya evitaba hacer en
+   el actor principal por el diálogo de permiso. Estaba en el actor
+   principal desde siempre.
+2. **Se recuerda si de verdad quedó escrita.** Un intento fallido no se
+   anota, así que el siguiente vuelve a entrar. Antes no había forma de
+   distinguir "escrita" de "lo intenté".
+3. **Se reintenta al volver a la app** (`didBecomeActiveNotification`)
+   con el iPod conectado — que es, además, el caso que el backlog quería
+   cubrir. Con un tope: **no más de una vez cada cinco minutos** por
+   volumen. Reescribir `aura.cfg` en cada Cmd+Tab sería escribir en el
+   iPod del dueño decenas de veces por sesión para nada, y cinco minutos
+   es mucho más de lo que el RTC puede desviarse mientras tanto.
+   Desconectar borra la marca: reconectar vuelve a escribir de inmediato.
+
+**Sin cambio de contrato.** §D.4 v19 define tres momentos: al detectar
+cualquier firmware Rockbox corriendo, al terminar cada sincronización, y
+al instalar/actualizar/cambiar de familia. Esto no agrega un cuarto:
+sigue siendo el primero — "al detectar firmware corriendo" —, solo que
+ahora se vuelve a mirar cuando el usuario vuelve a la app, en vez de una
+sola vez y sin saber si funcionó.
+
+### Lo que no se pudo verificar acá
+
+Que la hora llegue de verdad al RTC del iPod exige un iPod. Lo que sí se
+puede afirmar es lo de arriba: dónde corre la escritura, que un fallo se
+reintenta y que no se reescribe más de lo debido.
+
+## ST-191 — Propuesta escrita: "Buscar actualizaciones" de la propia app
+
+Encargo (4) de la sesión maestra, y **es una propuesta, no una
+decisión**: se escribe para fijarla con Windows antes de que exista
+código que dependa de ella. Vive en
+[`docs/propuesta-actualizacion-de-la-app.md`](docs/propuesta-actualizacion-de-la-app.md).
+
+Lo que conviene saber sin abrir el documento:
+
+- **El problema no es solo cosmético.** El firmware que Studio sabe
+  instalar viaja DENTRO de la app (`FIRMWARE_VERSION`, assets
+  embebidos), así que una app vieja es también un firmware viejo: las dos
+  cosas se arrastran juntas. Studio ya sabe avisar de una versión nueva
+  del firmware desde ST-046/ST-074/ST-150, pero no sabe nada de sí misma.
+- **Casi todo ya existe.** `SemVer`, `GitHubReleaseChecker.fetchReleases`,
+  `pickLatest` y `GitHubToken` sirven tal cual; lo único que hace falta
+  en macOS es **generalizar `fetchReleases` para que acepte un repo
+  cualquiera** (hoy toma una `FirmwareFamily`). Windows aporta su
+  `GitHubReleaseChecker`, `FirmwareVersionResolver.LatestPublishedAsync` y
+  el patrón de `FirmwareUpdateDecision`. La única pieza nueva de lógica
+  es `AppUpdateDecision`, que es **pura** y conviene que sea idéntica en
+  las dos plataformas.
+- **El único contrato nuevo es el nombre de los assets del Release**
+  (`AuraStudio-<v>.dmg`, `AuraStudioSetup-<v>-<arch>.exe`, tal como están
+  hoy en v0.2.3). Es lo que hay que congelar antes de escribir nada, y
+  por eso es la primera de las preguntas para Windows.
+- **No se auto-actualiza en macOS**, y la razón está escrita: una app no
+  puede reemplazarse a sí misma mientras corre sin un ayudante externo
+  (el patrón de Sparkle), y eso es un componente nuevo con firma propia
+  que hay que mantener y en el que hay que confiar. No vale la pena para
+  una app fuera de la App Store, con firma ad-hoc, cuyo dueño es una
+  persona. En Windows sí se ejecuta el instalador **porque ya existe** y
+  ya sabe actualizar sobre lo instalado (ST-135, Inno Setup por usuario y
+  sin UAC): no hay componente nuevo que mantener.
+- **Nada modal, y ningún aviso repetido por la misma versión.** El aviso
+  automático es una franja del tipo de `CoverNormalizationBar`, que se
+  puede cerrar y no vuelve. Sin red, el chequeo automático calla; el
+  chequeo a pedido sí dice qué pasó, distinguiendo "sin red" de "sin
+  novedades" -- que es exactamente lo que Windows acaba de arreglar en
+  ST-210 para el chequeo del firmware.
+- Se verifica el **SHA-256** de lo bajado contra el que ya publican las
+  notas del Release; si no coincide, se borra y se dice.
+
+El documento termina con cuatro preguntas concretas para fijar con
+Windows, la primera de las cuales (congelar el patrón de nombres) es
+bloqueante para implementar.

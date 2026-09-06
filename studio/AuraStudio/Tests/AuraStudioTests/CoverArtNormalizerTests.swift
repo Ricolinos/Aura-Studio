@@ -140,15 +140,15 @@ final class CoverArtNormalizerTests: XCTestCase {
         try jpeg(width: 500, height: 500).write(to: alreadyFine)
         files.append(alreadyFine)
 
-        var lastReported = (0, 0)
+        let lastReported = ProgressBox()
         let result = CoverNormalizationMigration.run(files: files,
-                                                     onProgress: { done, total in lastReported = (done, total) })
+                                                     onProgress: { done, total in lastReported.set(done, total) })
 
         XCTAssertEqual(result.normalized, 3)
         XCTAssertEqual(result.visited, 4)
         XCTAssertFalse(result.cancelled)
-        XCTAssertEqual(lastReported.0, 4)
-        XCTAssertEqual(lastReported.1, 4)
+        XCTAssertEqual(lastReported.completed, 4)
+        XCTAssertEqual(lastReported.total, 4)
     }
 
     func testTheMigrationStopsWhenCancelledAndPicksUpWhereItLeftOff() throws {
@@ -160,10 +160,10 @@ final class CoverArtNormalizerTests: XCTestCase {
         }
 
         // Se cancela después del segundo archivo.
-        var done = 0
+        let done = ProgressBox()
         let first = CoverNormalizationMigration.run(files: files,
-                                                    isCancelled: { done >= 2 },
-                                                    onProgress: { completed, _ in done = completed })
+                                                    isCancelled: { done.completed >= 2 },
+                                                    onProgress: { completed, _ in done.set(completed, 0) })
         XCTAssertTrue(first.cancelled)
         XCTAssertEqual(first.normalized, 2)
 
@@ -196,5 +196,39 @@ final class CoverArtNormalizerTests: XCTestCase {
         // tirar la decodificación entera: significa "hay que migrar".
         let legacy = #"{"items":[],"playlists":[]}"#.data(using: .utf8)!
         XCTAssertNil(try JSONDecoder().decode(PersistedLibrary.self, from: legacy).coversNormalized)
+    }
+}
+
+/// ST-192: `CoverNormalizationMigration.run` recibe sus closures como
+/// `@Sendable`, y el modo Swift 6 —el que usa el proyecto de Xcode—
+/// rechaza capturar un `var` local en uno de ellos. Con `swift test`
+/// (modo permisivo) era solo una advertencia, así que pasó inadvertido:
+/// el efecto era que **el target de pruebas unitarias no compilaba con
+/// `xcodebuild`**, y por lo tanto `xcodebuild test` no servía para las
+/// unitarias.
+///
+/// Una caja con candado dice lo mismo que el `var` y además es honesta:
+/// quien la escribe es el hilo que corre la migración, no el de la
+/// prueba.
+private final class ProgressBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value = (completed: 0, total: 0)
+
+    func set(_ completed: Int, _ total: Int) {
+        lock.lock()
+        value = (completed, total)
+        lock.unlock()
+    }
+
+    var completed: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return value.completed
+    }
+
+    var total: Int {
+        lock.lock()
+        defer { lock.unlock() }
+        return value.total
     }
 }
