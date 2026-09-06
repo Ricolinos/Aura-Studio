@@ -65,6 +65,34 @@ final class LibraryCoverMemoryTests: XCTestCase {
         return items
     }
 
+    /// Igual que `makeTracks`, pero con una carátula **realmente única
+    /// por ítem** -- diagnóstico de "Sesión Maestra" sobre el primer
+    /// intento de esta medición: pasar la MISMA instancia de `Data` a
+    /// los 12 000 ítems (`coverArtData: cover` repetido) deja que
+    /// copy-on-write comparta un solo buffer en memoria, y el "antes" no
+    /// representa una biblioteca real (donde cada archivo en
+    /// `.portadas/` se lee de forma INDEPENDIENTE al cargar, incluso si
+    /// el contenido coincide). `base + Data(sufijo)` siempre reserva un
+    /// buffer nuevo (la concatenación copia), así que cada ítem tiene su
+    /// propia asignación de verdad.
+    private func makeTracksWithUniqueCovers(count: Int, musicDir: URL) throws -> [AuraStudio.LibraryItem] {
+        try FileManager.default.createDirectory(at: musicDir, withIntermediateDirectories: true)
+        let base = Self.makeCoverJPEG()
+        var items: [AuraStudio.LibraryItem] = []
+        for i in 0..<count {
+            let fileURL = musicDir.appendingPathComponent("pista-\(i).mp3")
+            try Data([0xFF, 0xFB, 0x90, 0x00]).write(to: fileURL)
+            var item = AuraStudio.LibraryItem(sourceURL: fileURL, addedAt: Date())
+            item.status = .ready
+            item.preparedURL = fileURL
+            let uniqueCover = base + Data("#item-\(i)".utf8)
+            item.metadata = TrackMetadata(title: "Pista \(i)", artist: "Artista", album: "Álbum",
+                                         coverArtData: uniqueCover)
+            items.append(item)
+        }
+        return items
+    }
+
     // MARK: - 1. Cargar un catálogo no trae bytes a memoria
 
     func testLoadingCatalogNeverBringsCoverBytesIntoMemory() throws {
@@ -230,23 +258,32 @@ final class LibraryCoverMemoryTests: XCTestCase {
     /// mayor que la de DESPUÉS de guardar (`adoptStoredCovers` ya los
     /// soltó a todos). Impreso para que quede el número real en la
     /// tabla, no solo la aserción de que bajó.
-    func testResidentMemoryDropsAfterSavingReleasesPendingCoverBytes() throws {
+    /// Addendum (pedido de "Sesión Maestra" tras revisar el primer
+    /// intento): la comparación honesta es la memoria **después de
+    /// cargar el catálogo**, no antes/después de guardarlo -- guardar
+    /// hace trabajo real (codificar JSON, escribir 12 000 archivos) que
+    /// pesa más, en el momento exacto de la muestra, que lo que suelta.
+    /// Con carátulas realmente únicas por ítem (`makeTracksWithUniqueCovers`,
+    /// nunca la misma instancia de `Data` repetida -- eso dejaba que
+    /// copy-on-write compartiera un solo buffer entre los 12 000, y el
+    /// "antes" no representaba una biblioteca real).
+    func testResidentMemoryAfterFreshLoad_withUniqueCoversPerItem() throws {
         let musicDir = libraryRoot.appendingPathComponent("Música", isDirectory: true)
-        let cover = Self.makeCoverJPEG()
-        let tracks = try makeTracks(count: 12_000, musicDir: musicDir, coverArtData: cover)
-        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
-        viewModel.replaceItemsForPerformanceTesting(tracks)
+        let tracks = try makeTracksWithUniqueCovers(count: 12_000, musicDir: musicDir)
+        let writer = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
+        writer.replaceItemsForPerformanceTesting(tracks)
+        writer.persistCatalog() // dejar el catálogo y las 12 000 carátulas escritas en disco
 
-        let beforeSave = Self.currentResidentMemoryBytes()
-        viewModel.persistCatalog()
-        let afterSave = Self.currentResidentMemoryBytes()
+        let before = Self.currentResidentMemoryBytes()
+        let reader = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
+        let after = Self.currentResidentMemoryBytes()
+        let withBytesInMemory = reader.items.filter { $0.metadata?.pendingCoverData != nil }.count
 
-        let deltaMB = (Double(beforeSave) - Double(afterSave)) / 1_048_576
-        print("[F5] Memoria residente con 12 000 ítems: antes de guardar \(beforeSave / 1_048_576) MB, "
-              + "después \(afterSave / 1_048_576) MB (diferencia: \(String(format: "%.1f", deltaMB)) MB)")
-        for item in viewModel.items {
-            XCTAssertNil(item.metadata?.pendingCoverData)
-        }
+        print("[F5-después] RSS antes de cargar: \(before / 1_048_576) MB, después: \(after / 1_048_576) MB "
+              + "(\(reader.items.count) ítems, \(withBytesInMemory) con bytes de carátula en memoria)")
+        XCTAssertEqual(reader.items.count, 12_000)
+        XCTAssertEqual(withBytesInMemory, 0,
+                       "cargar el catálogo (con F5) no debe traer NINGUNA carátula a memoria")
     }
 
     /// Estándar de macOS (`task_info` + `MACH_TASK_BASIC_INFO`), sin

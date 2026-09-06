@@ -7985,6 +7985,57 @@ depender de RSS). La medición de memoria queda documentada tal cual
 salió, sin maquillar el número, pero la evidencia real de que F5 cumple
 su objetivo son las cinco pruebas de corrección de arriba, no esta.
 
+### Addendum -- la medición de RSS, rehecha (pedido de "Sesión Maestra")
+
+El primer intento de RSS de arriba tenía DOS problemas de método, los dos
+señalados por la maestra:
+
+1. **Medía antes/después de `persistCatalog()`**, que hace trabajo real
+   (codificar JSON, escribir 12 000 archivos) -- el momento correcto es
+   antes/después de **cargar** el catálogo, sin guardar nada.
+2. **Los 12 000 ítems compartían la MISMA instancia de `Data`**
+   (`coverArtData: cover`, la misma variable repetida) -- copy-on-write
+   dejaba un solo buffer de ~15 KB en memoria para los 12 000, así que el
+   "antes" (72 MB) nunca representó una biblioteca real. Corregido con
+   `makeTracksWithUniqueCovers` (`base + Data("#item-\(i)")` -- la
+   concatenación siempre reserva un buffer nuevo, nunca comparte con la
+   base).
+
+Remedido con las dos correcciones, comparando el commit de ANTES de F5
+(`3d41bec`, worktree aislado aparte, descartado después de medir -- nunca
+se commiteó nada ahí) contra `93cf3e2` (F5 ya cerrado), los dos con el
+mismo método: persistir 12 000 ítems con carátula única por ítem, y medir
+RSS justo antes y justo después de construir un `LibraryViewModel`
+**nuevo** sobre el mismo `libraryRoot` (`loadCatalog()` fresco, sin
+guardar nada más).
+
+| | Antes de cargar | Después de cargar | Diferencia | Ítems con bytes de carátula en memoria |
+|---|---|---|---|---|
+| **Antes de F5** (`3d41bec`) | 139 MB | 258 MB | **+119 MB** | **12 000 / 12 000** |
+| **Después de F5** (`93cf3e2`) | 230 MB | 243 MB | **+13 MB** | **0 / 12 000** |
+
+(El punto de partida difiere entre las dos filas -- 139 MB vs 230 MB --
+porque son procesos de prueba distintos, con distinto código cargado; lo
+que importa, y lo que sí es comparable entre ambos, es la DIFERENCIA que
+deja cargar el catálogo.)
+
+**Esta sí es la evidencia de memoria que F5 promete.** Cargar 12 000
+canciones con carátula real, antes de esta ronda, agregaba ~119 MB al
+proceso y dejaba las 12 000 con el JPEG completo en `coverArtData` --
+coincide, dentro del orden de magnitud esperado, con los "~180 MB" que
+cita el diagnóstico original (§0.8) para el caso de 12 000/900 álbumes;
+la diferencia (119 vs ~180) es plausible por el tamaño exacto de
+carátula usado acá (~15 KB) y por redondeo de página de memoria. Después
+de F5, la misma carga agrega ~13 MB (probablemente las 12 000 rutas
+`URL`/hashes `String`, no JPEGs) y **cero** ítems terminan con bytes de
+carátula en memoria -- confirmado, no solo con RSS sino con el conteo
+directo de `pendingCoverData != nil`.
+
+Prueba nueva: `LibraryCoverMemoryTests.
+testResidentMemoryAfterFreshLoad_withUniqueCoversPerItem` (reemplaza a
+la de antes/después de guardar, que queda borrada). Verificado con el
+candado de la Mac, en un worktree aislado sobre 93cf3e2, 7/7 en verde.
+
 ## ST-208 (addendum) — La deduplicación de carátulas por álbum no va en esta ronda
 
 **Decisión de la Maestra.** ST-208 dejó anotado que las doce pistas de un álbum
