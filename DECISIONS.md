@@ -8854,16 +8854,54 @@ instalada sigue leyendo ese archivo). Prioridad al fixture sintético;
 la traza contra datos reales del dueño queda para el cierre final, con
 su autorización.
 
-### El arrastre de selección (XCUITest, ST-188)
+**Aviso, tras lo que pasó con el XCUITest del arrastre**: `xcrun
+xctrace record --launch` también LANZA la app -- si esta sesión no tiene
+consola real (confirmado arriba con la captura del arrastre), es
+probable que la traza tampoco muestre una ventana donde el dueño pueda
+interactuar mientras se graba. Se intenta de todas formas -- una traza
+de CPU/tiempo puede seguir siendo útil aunque no haya interacción real
+-- pero si el dueño tampoco ve la ventana al intentarlo, es la misma
+limitación de máquina, no algo para seguir persiguiendo desde acá.
+
+### El arrastre de selección (XCUITest, ST-188) -- resultado final
 
 `Tests/AuraStudioUITests/AlbumsGridMarqueeDragUITests.swift`: el gesto
 real, contra 30 álbumes con carátula JPEG real (JSON escrito a mano,
 sin `@testable import` -- el target de UI testing no tiene acceso a los
 tipos internos del módulo). Arrastra desde un hueco de la cuadrícula
-sobre varias tarjetas y confirma en `biblioteca.barraEstado` que quedó
-algo seleccionado. El dueño autorizó intentar correrla -- en curso al
-momento de escribir esto (esperando el candado de la Mac, que tenía
-"experto en código opus" repitiendo su propia suite).
+(el espacio entre la primera y la segunda tarjeta, nunca un punto cerca
+del borde del contenedor -- un recuadro solo arranca desde un hueco, si
+cae sobre una tarjeta dispara su `.draggable`) sobre varias tarjetas y
+confirma en `biblioteca.barraEstado` que quedó algo seleccionado. El
+dueño autorizó intentar correrla.
+
+**Se necesitan DOS condiciones de máquina, ninguna un defecto de código:**
+
+1. El permiso de automatización/accesibilidad de macOS para el ejecutor
+   de pruebas -- el dueño lo concedió; sin él, `xcodebuild test` falla
+   de plano con "Timed out while enabling automation mode" antes de
+   lanzar nada. **Resuelta.**
+2. **Una sesión gráfica de verdad, con el usuario al frente de la Mac.**
+   Con el permiso ya concedido, la app arranca (`app.state` da
+   `.runningForeground`) pero `app.windows.count` es **0**. Una captura
+   de pantalla tomada justo después de `launch()` lo confirmó sin
+   ambigüedad: la pantalla mostraba las ventanas de terminal de las
+   sesiones de Claude Code que estaban corriendo en ese momento ("mecanico
+   sonnet" y "Sesión Maestra"), sin ninguna ventana de Aura Studio
+   dibujada -- ni pantalla negra ni de bloqueo, simplemente ninguna
+   consola real detrás de estas sesiones para que una `NSWindow`
+   aparezca donde alguien (persona o XCUITest) pueda verla. Diagnóstico
+   de "experto en código opus" (proceso vivo, sin crash en
+   `~/Library/Logs/DiagnosticReports`, geometría degenerada y menú del
+   Finder en el primer volcado de accesibilidad -- todo apuntaba a
+   "sesión gráfica no disponible"), confirmado con la captura. **No
+   resuelta desde estas sesiones -- solo se resuelve con el dueño
+   sentado en su propia sesión de inicio, la única con consola real.**
+
+El gesto queda escrito, compilado y probado hasta donde una sesión sin
+consola puede llegar. Es el único de los ocho gestos de F4/§A que
+termina así -- los otros siete están automatizados y en verde contra el
+núcleo puro (35/35).
 
 ### Guion de verificación interactiva con el dueño
 
