@@ -107,6 +107,19 @@ public sealed class PersistedLibraryItem
     /// campo.</para>
     /// </summary>
     public long? FileSizeBytes { get; set; }
+
+    /// <summary>
+    /// SHA-256 de los bytes del archivo de carátula, en hexadecimal mayúsculas
+    /// sin separadores (ST-208). Definición fijada por la sesión maestra para
+    /// las dos plataformas; la app de macOS lo adopta en su fase F5.
+    ///
+    /// <para><c>null</c> = <b>no se sabe</b>, nunca "sin carátula": eso lo dice
+    /// <see cref="CoverRelativePath"/>. Un catálogo anterior no lo trae, y quien
+    /// lea el archivo lo calcula y lo deja escrito en el siguiente guardado —
+    /// sin recorrer <c>.portadas\</c> al arrancar. <b>Invariante</b>: sin ruta
+    /// tampoco hay hash.</para>
+    /// </summary>
+    public string? CoverHash { get; set; }
 }
 
 public sealed class PersistedTrackMetadata

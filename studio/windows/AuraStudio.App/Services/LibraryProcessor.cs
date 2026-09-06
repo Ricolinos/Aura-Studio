@@ -186,12 +186,16 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
     /// El póster descargado —TMDB, fanart.tv— manda sobre el fotograma: es la
     /// imagen que el usuario espera ver, no un cuadro cualquiera de la película.
     /// </summary>
-    private static async Task WritePosterAsync(FfmpegRunner ffmpeg, LibraryItem item, string videoPath,
+    private async Task WritePosterAsync(FfmpegRunner ffmpeg, LibraryItem item, string videoPath,
         double? duration, CancellationToken ct)
     {
         string poster = Path.ChangeExtension(videoPath, ".jpg");
 
-        if (item.Metadata?.CoverArtData is { Length: > 0 } downloaded)
+        // ST-208: el póster puede venir en la mano —lo acaba de descargar el
+        // enriquecimiento— o estar ya guardado en la biblioteca, y entonces hay
+        // que ir a buscarlo. Leerlo solo de la metadata dejaría sin póster a
+        // todo lo que se reprocese después de reabrir la app.
+        if (new LibraryStore(preferences.LibraryPath).ReadCover(item) is { Length: > 0 } downloaded)
         {
             try
             {

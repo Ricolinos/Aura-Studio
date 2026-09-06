@@ -219,8 +219,14 @@ public sealed partial class MediaGridPage : Page
         {
             var bitmap = new BitmapImage { DecodePixelWidth = 304 };   // 152 pt a 2×
 
-            if (card.CoverData is { Length: > 0 } data)
+            if (card.CoverItem is { } coverItem)
             {
+                // ST-208: la carátula ya no viene en la tarjeta — se lee del
+                // disco, fuera del hilo de interfaz, y solo la de las celdas que
+                // de verdad se ven.
+                byte[]? data = await ViewModel.Library.ReadCoverAsync(coverItem);
+                if (data is not { Length: > 0 }) return;
+
                 using var stream = new InMemoryRandomAccessStream();
                 using (var writer = new DataWriter(stream.GetOutputStreamAt(0)))
                 {

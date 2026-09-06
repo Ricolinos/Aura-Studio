@@ -509,7 +509,7 @@ public static class SimilarItemsDetector
 
         if (item.Kind == LibraryItemKind.Music && LosslessExtensions.Contains(extension)) score += 3;
         if (fileSize > 0 && fileSize == largestSize) score += 1;
-        if (meta?.CoverArtData is not null) score += 1;
+        if (item.HasCover) score += 1;
         if (meta?.SyncedLyrics is not null) score += 1;
         if (item.MetadataEditedByUser) score += 2;
         if (meta?.TrackNumber is not null) score += 0.5;
@@ -604,7 +604,7 @@ public static class SimilarItemsDetector
         var bits = new List<string> { keep.Extension.ToUpperInvariant() };
         if (kind == LibraryItemKind.Music && LosslessExtensions.Contains(keep.Extension))
             bits[0] += " sin pérdida";
-        if (keep.Item.Metadata?.CoverArtData is not null)
+        if (keep.Item.HasCover)
             bits.Add(kind == LibraryItemKind.Music ? "con carátula" : "con póster");
         if (keep.Item.Metadata?.SyncedLyrics is not null) bits.Add("con letra");
         if (keep.Item.MetadataEditedByUser) bits.Add("corregido a mano");

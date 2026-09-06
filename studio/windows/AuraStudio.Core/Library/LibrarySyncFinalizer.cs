@@ -38,6 +38,22 @@ public sealed record SyncFinalizeInput
     public Func<IReadOnlyList<byte[]>, byte[]?>? PlaylistArt { get; init; }
 
     /// <summary>
+    /// De dónde salen los bytes de una carátula (ST-208). Lo pone la app, que es
+    /// la que tiene el almacén de la biblioteca.
+    ///
+    /// <para>Antes se leían de <c>Metadata.CoverArtData</c>, porque cargar la
+    /// biblioteca traía las mil carátulas a memoria. Desde ST-208 no las trae, y
+    /// seguir leyéndolas de ahí habría devuelto <c>null</c> para todas: <b>el
+    /// iPod se habría quedado sin una sola tapa sin que nada fallara</b>. Por eso
+    /// es explícito y no un valor por omisión.</para>
+    ///
+    /// <para>Sin esta función no viaja ninguna carátula, igual que sin
+    /// <see cref="SquareCrop"/>: antes que mandar al iPod algo que incumple el
+    /// contrato, no se manda nada.</para>
+    /// </summary>
+    public Func<LibraryItem, byte[]?>? CoverBytes { get; init; }
+
+    /// <summary>
     /// Con qué criterio se agrupan los artistas al escribir sus fotos (R2-4).
     /// <b>Tiene que ser el mismo que usan las pantallas</b>: si acá se agrupa
     /// distinto, el iPod recibe dos fotos para el mismo artista que en Studio
@@ -176,7 +192,7 @@ public static class LibrarySyncFinalizer
     /// <returns><c>true</c> si alguna carátula se escribió o cambió.</returns>
     private static bool WriteAlbumCovers(string volumeRoot, SyncFinalizeInput input)
     {
-        if (input.SquareCrop is null) return false;
+        if (input.SquareCrop is null || input.CoverBytes is null) return false;
 
         bool changed = false;
         var written = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -184,11 +200,16 @@ public static class LibrarySyncFinalizer
         foreach (LibraryItem item in input.Items)
         {
             if (item.Kind != LibraryItemKind.Music) continue;
-            if (item.Metadata?.CoverArtData is not { Length: > 0 } cover) continue;
+            if (!item.HasCover) continue;
             if (!input.DestinationByItemId.TryGetValue(item.Id, out string? relative)) continue;
 
             string? folder = Path.GetDirectoryName(Path.Combine(volumeRoot, ToNative(relative)));
             if (folder is null || !written.Add(folder)) continue;
+
+            // ST-208: la carátula se lee del disco recién acá — una vez por
+            // CARPETA, no por canción. Las otras once pistas del álbum ni
+            // llegan, porque `written` ya reservó su carpeta.
+            if (input.CoverBytes(item) is not { Length: > 0 } cover) continue;
 
             try
             {
@@ -283,7 +304,7 @@ public static class LibrarySyncFinalizer
         List<byte[]> covers =
         [
             .. playlist.TrackItemIds
-                .Select(id => itemsById.TryGetValue(id, out LibraryItem? item) ? item.Metadata?.CoverArtData : null)
+                .Select(id => itemsById.TryGetValue(id, out LibraryItem? item) ? input.CoverBytes?.Invoke(item) : null)
                 .OfType<byte[]>()
                 .Where(data => data.Length > 0)
         ];
@@ -317,7 +338,7 @@ public static class LibrarySyncFinalizer
         {
             byte[]? poster = season
                 .OrderBy(item => item.Episode ?? int.MaxValue)
-                .Select(item => item.Metadata?.CoverArtData)
+                .Select(item => item.HasCover ? input.CoverBytes?.Invoke(item) : null)
                 .FirstOrDefault(data => data is { Length: > 0 });
 
             if (poster is null) continue;

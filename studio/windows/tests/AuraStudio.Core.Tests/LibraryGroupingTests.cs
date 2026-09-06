@@ -149,7 +149,8 @@ public class LibraryGroupingTests
             Song(@"C:\m\2.mp3", album: "Signos", artist: "X", track: 2, cover: cover)
         ]);
 
-        Assert.Equal(cover, albums[0].CoverArtData);
+        // ST-208: el grupo apunta a la PISTA que tiene la tapa, no a sus bytes.
+        Assert.Equal(cover, albums[0].CoverItem?.Metadata?.CoverArtData);
     }
 
     [Fact]
@@ -278,7 +279,7 @@ public class LibraryGroupingTests
             Song(@"C:\m\2.mp3", album: "B", artist: "X", cover: cover)
         ]);
 
-        Assert.Equal(cover, artists[0].FallbackCoverArtData);
+        Assert.Equal(cover, artists[0].FallbackCoverItem?.Metadata?.CoverArtData);
     }
 
     // MARK: - Películas y series

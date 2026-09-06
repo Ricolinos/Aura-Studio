@@ -420,9 +420,9 @@ public sealed partial class SongsPage : Page
         return new MenuScope(
             items.Count,
             AllFavorite: items.All(item => item.Metadata?.IsFavorite == true),
-            HasCover: items.Any(item => item.Metadata?.CoverArtData is { Length: > 0 }),
-            HasPoster: items.Any(item => item.Kind == LibraryItemKind.Video
-                                         && item.Metadata?.CoverArtData is { Length: > 0 }),
+            // ST-208: lo dice el catálogo, sin abrir el archivo.
+            HasCover: items.Any(item => item.HasCover),
+            HasPoster: items.Any(item => item.Kind == LibraryItemKind.Video && item.HasCover),
             SingleAlbumWithTitle: items.All(item => item.Kind == LibraryItemKind.Music)
                                   && items.Select(item => LibraryGrouping.AlbumKeyOf(item, _preferences.ArtistGrouping)).Distinct().Count() == 1
                                   && first.Metadata?.Album is { Length: > 0 },

@@ -7397,3 +7397,114 @@ una vez). Reemplazado por `waitForWatchdogToCatchUp`: sondea
 `hangs.values` cada 50 ms hasta verlo no vacío o hasta 2 s -- no avanza
 (y no deja que nadie reemplace la clausura) hasta que el reporte, si lo
 hay, ya aterrizó. Vive en `Tests/`, sin tocar `MainThreadWatchdog.swift`.
+## ST-208 — Windows: las carátulas salen de la memoria
+
+Segunda mitad de W3, separada de ST-203 por acuerdo con la sesión maestra. Es la
+gemela de la fase F5 de la Mac.
+
+### Qué había
+
+Abrir la biblioteca leía **las mil carátulas** de `.portadas\` y las dejaba en
+memoria para siempre, una copia por canción: 12 000 elementos con su `byte[]`,
+87 MB de JPEG residentes que nadie volvía a mirar salvo al dibujar doce
+tarjetas.
+
+### Qué hay
+
+El catálogo trae la **referencia** —`coverRelativePath` y `coverHash`— y los
+bytes se piden cuando hay que dibujarlos.
+
+- **`LibraryItem.CoverRelativePath`** (ya era contrato compartido; la Mac lo
+  escribe desde antes) dice **si hay tapa**, sin abrir nada.
+- **`LibraryItem.CoverHash`**: SHA-256 de los bytes del archivo, hexadecimal en
+  mayúsculas sin separadores. **Definición fijada por la sesión maestra** para
+  las dos plataformas: `null` = "no se sabe", nunca "sin carátula"; sin ruta
+  tampoco hay hash; lo escribe quien escribe la carátula, en la misma operación,
+  así que no cuesta ninguna lectura extra; un catálogo viejo lo calcula al leer
+  el archivo y lo deja escrito en el siguiente guardado, sin recorrer
+  `.portadas\` al arrancar. La Mac lo adopta en F5 con esas mismas palabras.
+- **`LibraryStore.ReadCover` / `WriteCover` / `RemoveCover`** son la única puerta:
+  el hash sale siempre de los mismos bytes que se escriben, así que no puede
+  quedar describiendo otra imagen.
+- Las agrupaciones llevan **de dónde sale** la tapa (`AlbumGroup.CoverItem`,
+  `VideoCollectionGroup.PosterItem`, `ArtistGroup.FallbackCoverItem`), no la
+  imagen; las tarjetas y la lista de artistas la piden al dibujar, fuera del hilo
+  de interfaz.
+
+### El peligro, y por qué hay pruebas que lo clavan
+
+Hasta acá, "sin bytes" y "sin carátula" eran lo mismo, y guardar interpretaba el
+`null` como *bórrala*. Desde que cargar ya no trae los bytes, esa regla se
+convierte en **una forma de borrarle las mil carátulas al usuario en el primer
+guardado**: abrir la app y guardar cualquier cosa habría dejado el catálogo sin
+rutas y `.portadas\` vacío. Y como el catálogo es compartido, la app de macOS
+habría abierto después la biblioteca y encontrado que se quedó sin tapas.
+
+Así que los bytes que trae un elemento pasan a significar **carátula pendiente de
+escribir**, y quitarla es una acción explícita (`RemoveCover`). Hay una clase de
+pruebas entera —`CoverArtPreservationTests`— para que eso no pueda volver a
+romperse en silencio: cargar y guardar sin tocar nada no pierde la carátula ni la
+ruta, diez guardados seguidos no borran nada, y dejar los bytes en `null` **no**
+borra el archivo. `RemovingTheCoverDeletesItsFile` se reescribió para pedir el
+borrado en vez de insinuarlo, y se le sumó su reverso.
+
+Lo mismo del lado del iPod: `SyncFinalizeInput.CoverBytes` es **obligatorio** para
+que viaje una tapa. Si no se pone, no viaja ninguna — igual que sin `SquareCrop`.
+No es un descuido de diseño: es que la alternativa era que el finalizador leyera
+`Metadata.CoverArtData`, encontrara `null` en las 12 000 y **dejara al iPod sin
+una sola carátula sin que nada fallara**. Las cinco pruebas del finalizador se
+pusieron rojas al quitarlo, que es exactamente lo que tenían que hacer.
+
+### Una que casi se pierde: ST-087
+
+El catálogo escrito por una versión anterior a ST-087 no anota la ruta, y su
+carátula vive con el nombre viejo. Preguntar por ella con dos `File.Exists` por
+elemento serían 24 000 consultas por red — justo lo que ST-203 quitó. Se resuelve
+con **un solo listado del directorio**, y la que aparece con el nombre viejo se
+renombra al canónico ahí mismo, sin esperar a que alguien guarde: queda bien para
+las dos apps de una vez.
+
+### Números
+
+Arnés de W0, 1 000 álbumes × 12 pistas = 12 000 canciones con carátulas reales.
+"Antes" es `948c01c` medido con la misma sonda de memoria.
+
+| | antes | después |
+|---|---|---|
+| **Memoria residente tras leer el catálogo** | 215 MB | **143 MB** |
+| **Montón administrado** | 113 MB | **33 MB** |
+| Elementos con los bytes de la tapa en memoria | 12 000 | **0** |
+| Leer `biblioteca.json` (`LoadItems`) | 779 ms | **168 ms** |
+| Carga completa de la biblioteca (segundo plano) | 1 024 ms | **281 ms** |
+
+Los 80 MB que baja el montón administrado son exactamente las carátulas: 12 000
+copias de ~7 KB. Y el "después" está **inflado por el propio arnés**, que
+mantiene su fixture de imágenes vivo en `items`; la app no tiene esa segunda
+copia.
+
+De paso, leer el catálogo cuesta cuatro veces y media menos, porque dejó de abrir
+12 000 archivos para hacerlo.
+
+### Lo que NO entra acá
+
+- **La caché de miniaturas sigue sin cablearse.** `CoverThumbnailCache` existe y
+  está probada desde ST-031, y nadie la usa; ST-208 hace que las tarjetas lean su
+  tapa del disco al aparecer, en vez de tenerla en RAM. Para doce tarjetas
+  visibles eso es correcto, pero **al desplazarse se relee**, y esa es
+  exactamente la caché que **W5** tiene que enchufar. Queda dicho porque es una
+  consecuencia directa de este cambio, no un pendiente heredado: antes del ST-208
+  el scroll no tocaba el disco.
+- **La deduplicación por álbum en disco**: hoy las doce pistas de un álbum
+  guardan doce copias del mismo JPEG (87 MB donde alcanzarían 7). El `coverHash`
+  la habilita —mismo hash, mismo archivo— pero es una decisión aparte y el plan
+  la deja como opcional.
+
+### Verificación
+
+`dotnet build` de Core, App y el arnés, sin advertencias. `dotnet test`:
+**1 438 pruebas en verde**, con la clase nueva de preservación y las seis
+existentes que codificaban el contrato anterior reescritas a mano, una por una,
+para decir lo que ahora vale.
+
+Lo que **no** se verificó acá: cómo se ve y cómo se desplaza la cuadrícula
+leyendo del disco. Esta sesión no puede abrir la app.

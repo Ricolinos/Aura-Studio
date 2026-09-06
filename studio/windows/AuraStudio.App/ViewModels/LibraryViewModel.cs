@@ -106,6 +106,35 @@ public sealed partial class LibraryViewModel : ViewModelBase
         };
     }
 
+    // MARK: - Carátulas bajo demanda (ST-208)
+
+    /// <summary>
+    /// Los bytes de la carátula de ese elemento, leídos del disco <b>fuera del
+    /// hilo de interfaz</b> (ST-208).
+    ///
+    /// <para>Desde ST-208 las carátulas no viven en memoria: el catálogo trae la
+    /// ruta y el hash, y la imagen se pide cuando hay que dibujarla. Es la
+    /// diferencia entre 180 MB residentes con la biblioteca del dueño y unas
+    /// pocas miniaturas.</para>
+    ///
+    /// <para><c>null</c> si el elemento no tiene tapa o si el archivo no se pudo
+    /// leer — que en pantalla es lo mismo: la tarjeta muestra su inicial.</para>
+    /// </summary>
+    public Task<byte[]?> ReadCoverAsync(LibraryItem? item)
+    {
+        if (item is null || !item.HasCover) return Task.FromResult<byte[]?>(null);
+
+        LibraryStore store = _store;
+        return Task.Run(() => store.ReadCover(item));
+    }
+
+    /// <summary>
+    /// Igual, pero sincrónico. Solo para quien ya está en un hilo de fondo — la
+    /// sincronización, el enriquecimiento—; desde la interfaz se usa
+    /// <see cref="ReadCoverAsync"/>.
+    /// </summary>
+    public byte[]? ReadCover(LibraryItem item) => _store.ReadCover(item);
+
     // MARK: - Índice del catálogo (ST-201)
 
     /// <summary>
@@ -1221,9 +1250,11 @@ public sealed partial class LibraryViewModel : ViewModelBase
     {
         int removed = 0;
 
-        foreach (LibraryItem item in ItemsWith(ids).Where(item => item.Metadata?.CoverArtData is { Length: > 0 }))
+        // ST-208: quitar la tapa es explícito. Dejar los bytes en null ya no
+        // significa nada, porque cargar la biblioteca tampoco los trae.
+        foreach (LibraryItem item in ItemsWith(ids).Where(item => item.HasCover))
         {
-            item.Metadata!.CoverArtData = null;
+            _store.RemoveCover(item);
             item.MetadataEditedByUser = true;
             removed++;
         }
@@ -1243,9 +1274,14 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
         foreach (LibraryItem item in ItemsWith(ids).Where(item => item.Kind == LibraryItemKind.Video))
         {
-            if (item.Metadata?.CoverArtData is { Length: > 0 })
+            // ST-208: quitar la tapa es una acción EXPLÍCITA. Antes bastaba con
+            // dejar los bytes en null porque guardar interpretaba eso como
+            // "bórrala"; desde que cargar ya no los trae, esa lectura dejó de
+            // valer —si valiera, abrir y guardar borraría todo—, así que quitar
+            // hay que pedirlo.
+            if (item.HasCover)
             {
-                item.Metadata.CoverArtData = null;
+                _store.RemoveCover(item);
                 removed++;
             }
 
@@ -1285,7 +1321,9 @@ public sealed partial class LibraryViewModel : ViewModelBase
             // biblioteca ya lo está (o la migración se encargará de ella).
             if (fresh.CoverArtData is { Length: > 0 } fromFile)
                 fresh.CoverArtData = WicSquareImageEncoder.SharedNormalizer.Normalize(fromFile);
-            fresh.CoverArtData ??= item.Metadata?.CoverArtData;
+            // ST-208: si el archivo no trae tapa, la que ya tenía la biblioteca se
+            // queda como estaba — su ruta y su hash viven en el elemento, no en
+            // la metadata que acá se reemplaza, así que no hay nada que copiar.
             fresh.SyncedLyrics ??= item.Metadata?.SyncedLyrics;
             fresh.IsFavorite = item.Metadata?.IsFavorite ?? false;
             fresh.Rating = item.Metadata?.Rating;

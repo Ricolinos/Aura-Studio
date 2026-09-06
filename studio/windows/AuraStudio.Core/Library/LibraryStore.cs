@@ -138,8 +138,15 @@ public sealed class LibraryStore(string root)
                 SourcePath = ToAbsolutePath(persisted.SourceRelativePath),
                 Kind = LibraryPersistenceMapper.LiveKind(persisted.Kind),
                 Status = LibraryPersistenceMapper.LiveStatus(persisted.Status),
-                Metadata = LibraryPersistenceMapper.ToLive(
-                    persisted.Metadata, ReadCover(persisted)),
+
+                // ST-208: **sin la carátula**. Antes se leían acá los 87 MB de
+                // `.portadas\`, uno por uno, y quedaban en memoria para siempre.
+                // Ahora viaja la referencia; los bytes los pide quien de verdad
+                // los necesita, cuando los necesita.
+                Metadata = LibraryPersistenceMapper.ToLive(persisted.Metadata, null),
+                CoverRelativePath = persisted.CoverRelativePath,
+                CoverHash = persisted.CoverHash,
+
                 PreparedPath = persisted.PreparedRelativePath is null
                     ? null : ToAbsolutePath(persisted.PreparedRelativePath),
                 Category = LibraryPersistenceMapper.LiveCategory(persisted.Category),
@@ -157,8 +164,84 @@ public sealed class LibraryStore(string root)
             if (items.Count % ProgressEvery == 0) onProgress?.Invoke(items.Count, catalog.Items.Count);
         }
 
+        ResolveMissingCoverPaths(items);
+
         onProgress?.Invoke(items.Count, catalog.Items.Count);
         return new LibraryLoad(items, load.Error);
+    }
+
+    /// <summary>
+    /// Recupera las carátulas que están en disco pero que el catálogo no anota
+    /// (ST-087, sostenido en ST-208).
+    ///
+    /// <para>Pasa con lo que escribió una versión de esta app anterior a ST-087,
+    /// que usaba el hexadecimal pelado en minúsculas. Sin esto, esa imagen queda
+    /// ahí al lado e <b>invisible para las dos apps</b>, y desde ST-208 —que ya
+    /// no abre archivo por archivo— quedaría invisible para siempre.</para>
+    ///
+    /// <para>Se resuelve con <b>un solo listado del directorio</b>, no con dos
+    /// consultas por elemento: son 12 000 elementos y mil carátulas, y por red la
+    /// diferencia entre un viaje y veinticuatro mil es la diferencia entre
+    /// abrir la biblioteca y no abrirla.</para>
+    ///
+    /// <para>Y la que aparece con el nombre viejo se <b>renombra</b> al canónico
+    /// ahí mismo: así queda bien para las dos apps sin esperar a que alguien
+    /// guarde. Si el renombrado falla, se anota igual con su nombre viejo — verla
+    /// importa más que verla ordenada.</para>
+    /// </summary>
+    private void ResolveMissingCoverPaths(List<LibraryItem> items)
+    {
+        if (!items.Any(item => item.CoverRelativePath is null)) return;
+
+        HashSet<string> onDisk;
+
+        try
+        {
+            if (!Directory.Exists(CoversDirectory)) return;
+
+            onDisk = [.. Directory.EnumerateFiles(CoversDirectory)
+                .Select(Path.GetFileName)
+                .OfType<string>()];
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return;
+        }
+
+        if (onDisk.Count == 0) return;
+
+        foreach (LibraryItem item in items)
+        {
+            if (item.CoverRelativePath is not null) continue;
+
+            string canonical = CatalogPath.CoverFileName(item.Id);
+
+            if (onDisk.Contains(canonical))
+            {
+                item.CoverRelativePath = CatalogPath.CoverRelative(item.Id);
+                continue;
+            }
+
+            string legacy = item.Id.ToString("N") + ".jpg";
+            if (!onDisk.Contains(legacy)) continue;
+
+            item.CoverRelativePath = TryRenameToCanonical(legacy, canonical)
+                ? CatalogPath.CoverRelative(item.Id)
+                : PersistedLibrary.CoversDirName + "/" + legacy;
+        }
+    }
+
+    private bool TryRenameToCanonical(string legacy, string canonical)
+    {
+        try
+        {
+            File.Move(Path.Combine(CoversDirectory, legacy), Path.Combine(CoversDirectory, canonical));
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
     }
 
     /// <summary>
@@ -218,11 +301,17 @@ public sealed class LibraryStore(string root)
 
         foreach (LibraryItem item in items)
         {
-            // La portada solo se toca cuando el elemento la trae cargada. Un
-            // elemento que se guarda sin haberla leído —porque su archivo no
-            // estaba accesible, por ejemplo— NO puede borrar la carátula que ya
-            // había en disco.
-            if (item.Metadata is not null) WriteCover(item);
+            // ST-208: **los bytes que trae el elemento son una carátula PENDIENTE
+            // DE ESCRIBIR**, no "la carátula que tiene".
+            //
+            // Antes eran lo mismo, porque cargar la biblioteca los traía. Desde
+            // que no los trae, confundirlos sería catastrófico: cargar y guardar
+            // sin tocar nada dejaría a los 12 000 elementos sin ruta en el
+            // catálogo y borraría las mil carátulas del disco — y como el
+            // catálogo es compartido, la app de macOS abriría la biblioteca sin
+            // tapas. Quién tiene carátula lo dice `CoverRelativePath`, y quitarla
+            // es una acción explícita (`RemoveCover`).
+            if (item.Metadata?.CoverArtData is { Length: > 0 } pending) WriteCover(item, pending);
 
             catalog.Items.Add(new PersistedLibraryItem
             {
@@ -232,7 +321,10 @@ public sealed class LibraryStore(string root)
                 Status = LibraryPersistenceMapper.PersistedStatus(item.Status),
                 Metadata = LibraryPersistenceMapper.ToPersisted(item.Metadata),
                 PreparedRelativePath = item.PreparedPath is null ? null : ToStoredPath(item.PreparedPath),
-                CoverRelativePath = item.Metadata?.CoverArtData is null ? null : CatalogPath.CoverRelative(item.Id),
+                CoverRelativePath = item.CoverRelativePath,
+
+                // La invariante que fijó la maestra: sin ruta tampoco hay hash.
+                CoverHash = item.CoverRelativePath is { Length: > 0 } ? item.CoverHash : null,
                 Category = item.Category,
                 SeriesName = item.SeriesName,
                 Season = item.Season,
@@ -257,7 +349,27 @@ public sealed class LibraryStore(string root)
     /// inexistente. Leerla acá la recupera, y el próximo guardado la deja con el
     /// nombre canónico sola.</para>
     /// </summary>
-    private byte[]? ReadCover(PersistedLibraryItem persisted)
+    public byte[]? ReadCover(LibraryItem item)
+    {
+        // Los que todavía no se guardaron ya están en la mano: no hay nada que
+        // ir a buscar, y buscarlo daría el archivo VIEJO.
+        if (item.Metadata?.CoverArtData is { Length: > 0 } pending) return pending;
+
+        if (!item.HasCover) return null;
+
+        byte[]? data = ReadCoverBytes(item.CoverRelativePath, item.Id);
+        if (data is null) return null;
+
+        // Si el catálogo no traía el hash —uno anterior a ST-208, o escrito por
+        // la app de macOS antes de que adopte el campo—, este es el momento
+        // barato de calcularlo: los bytes ya están en la mano. Queda anotado y
+        // el próximo guardado lo escribe.
+        item.CoverHash ??= CoverArtHash.Of(data);
+
+        return data;
+    }
+
+    private byte[]? ReadCoverBytes(string? recorded, Guid id)
     {
         try
         {
@@ -267,16 +379,16 @@ public sealed class LibraryStore(string root)
             // identificador; con la biblioteca compartida eso significa que una
             // carátula anotada en otra forma —otra normalización Unicode, otro
             // separador— quedaba invisible acá aunque el archivo estuviera ahí.
-            if (persisted.CoverRelativePath is { Length: > 0 } recorded)
+            if (recorded is { Length: > 0 })
             {
                 string fromCatalog = ToAbsolutePath(recorded);
                 if (File.Exists(fromCatalog)) return File.ReadAllBytes(fromCatalog);
             }
 
-            string path = CoverPath(persisted.Id);
+            string path = CoverPath(id);
             if (File.Exists(path)) return File.ReadAllBytes(path);
 
-            string legacy = Path.Combine(CoversDirectory, persisted.Id.ToString("N") + ".jpg");
+            string legacy = Path.Combine(CoversDirectory, id.ToString("N") + ".jpg");
             return File.Exists(legacy) ? File.ReadAllBytes(legacy) : null;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
@@ -286,24 +398,82 @@ public sealed class LibraryStore(string root)
         }
     }
 
-    private void WriteCover(LibraryItem item)
+    /// <summary>
+    /// Le pone esta carátula al elemento: la escribe en <c>.portadas\</c> y
+    /// anota su ruta y su hash. <b>Es la única forma de darle una tapa</b> — el
+    /// hash sale de los mismos bytes que se escriben, así que no puede quedar
+    /// describiendo otra imagen.
+    /// </summary>
+    public void WriteCover(LibraryItem item, byte[] data)
     {
-        byte[]? data = item.Metadata?.CoverArtData;
-        string path = CoverPath(item.Id);
+        if (data.Length == 0)
+        {
+            RemoveCover(item);
+            return;
+        }
+
         try
         {
-            if (data is null or { Length: 0 })
-            {
-                if (File.Exists(path)) File.Delete(path);
-                return;
-            }
             Directory.CreateDirectory(CoversDirectory);
-            File.WriteAllBytes(path, data);
+            File.WriteAllBytes(CoverPath(item.Id), data);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            // Sin portada en disco el item sigue siendo válido; se vuelve a
-            // leer de la etiqueta la próxima vez.
+            // Sin portada en disco el item sigue siendo válido; se vuelve a leer
+            // de la etiqueta la próxima vez. Y no se anota nada: decir que tiene
+            // una tapa que no se pudo escribir sería mentirle al catálogo.
+            return;
         }
+
+        item.CoverRelativePath = CatalogPath.CoverRelative(item.Id);
+        item.CoverHash = CoverArtHash.Of(data);
+
+        // Los bytes ya están en disco: dejarlos colgando del elemento es
+        // exactamente el megabyte por canción que ST-208 vino a sacar.
+        if (item.Metadata is not null) item.Metadata.CoverArtData = null;
+    }
+
+    /// <summary>
+    /// Le quita la carátula: borra el archivo y deja el elemento sin ruta ni
+    /// hash. <b>Explícito a propósito</b> (ST-208): guardar un elemento sin
+    /// bytes cargados no quiere decir que haya que quitarle nada.
+    /// </summary>
+    public void RemoveCover(LibraryItem item)
+    {
+        foreach (string path in CoverFilesOf(item))
+        {
+            try
+            {
+                if (File.Exists(path)) File.Delete(path);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // No poder borrarla no puede tumbar nada; el catálogo ya dice
+                // que no la tiene.
+            }
+        }
+
+        item.CoverRelativePath = null;
+        item.CoverHash = null;
+        if (item.Metadata is not null) item.Metadata.CoverArtData = null;
+    }
+
+    /// <summary>
+    /// Todos los archivos que podrían ser la carátula de ese elemento: el
+    /// anotado, el canónico y el del nombre anterior a ST-087. Se borran los
+    /// tres, porque dejar uno haría que la siguiente carga la "encontrara" otra
+    /// vez.
+    /// </summary>
+    private IEnumerable<string> CoverFilesOf(LibraryItem item)
+    {
+        if (item.CoverRelativePath is { Length: > 0 } recorded)
+        {
+            string? resolved = null;
+            try { resolved = ToAbsolutePath(recorded); } catch (ArgumentException) { }
+            if (resolved is not null) yield return resolved;
+        }
+
+        yield return CoverPath(item.Id);
+        yield return Path.Combine(CoversDirectory, item.Id.ToString("N") + ".jpg");
     }
 }
