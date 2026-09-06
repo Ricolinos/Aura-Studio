@@ -40,7 +40,30 @@ struct GridOrder<ID: Hashable>: Equatable where ID: Equatable {
 /// la suya (`@State private var selection = GridSelection<String>()`).
 struct GridSelection<ID: Hashable>: Equatable {
     var selected: Set<ID> = []
-    private var lastTapped: ID?
+
+    /// El elemento con el FOCO: el último que se tocó, y desde el que
+    /// se mueven las flechas. PLAN-studio-rendimiento-2.md Fase 4
+    /// (ST-184) lo expone -- era privado, y sin él no había forma de
+    /// probar Shift+flechas ni de saber desde dónde extender.
+    private(set) var lastTapped: ID?
+
+    /// Dónde EMPIEZA un rango de Shift. No es lo mismo que
+    /// `lastTapped`: el foco se mueve con cada Shift+clic o Shift+flecha,
+    /// el ancla se queda donde estaba hasta que un clic simple (o ⌘+clic,
+    /// o una casilla) la reubica. Es lo que hace que ampliar y reducir un
+    /// rango con Shift sea reversible.
+    private var rangeAnchor: ID?
+
+    /// Lo que agregó el ÚLTIMO rango de Shift, para poder deshacerlo al
+    /// hacer el siguiente.
+    ///
+    /// ST-184: antes, cada Shift+clic hacía `formUnion` sobre lo que
+    /// hubiera, así que un rango nunca se podía achicar -- Shift+clic en
+    /// la pista 20 y después en la 10 dejaba las veinte seleccionadas.
+    /// Finder no hace eso: reemplaza el rango anterior **conservando** lo
+    /// que se hubiera marcado aparte con ⌘. Eso es exactamente lo que
+    /// permite guardar aparte lo que puso el último rango.
+    private var lastRangeIDs: Set<ID> = []
 
     /// Aplica un clic simple sobre `id`, dado el orden visible actual.
     /// PLAN-studio-rendimiento.md Fase 2 punto 2: `order` se construye
@@ -59,16 +82,83 @@ struct GridSelection<ID: Hashable>: Equatable {
     /// simular en una prueba. El camino de producción sigue siendo
     /// exactamente el mismo (`handleTap` de arriba se lo delega).
     mutating func handleTap(_ id: ID, order: GridOrder<ID>, modifierFlags flags: NSEvent.ModifierFlags) {
-        if flags.contains(.shift), let last = lastTapped,
-           let lastIndex = order.index(of: last), let thisIndex = order.index(of: id) {
-            let range = lastIndex <= thisIndex ? lastIndex...thisIndex : thisIndex...lastIndex
-            selected.formUnion(order.ids[range])
-        } else if flags.contains(.command) {
+        handleTap(id, order: order, modifiers: GridSelectionModifiers(flags))
+    }
+
+    /// ST-184: la forma **pura** del gesto, sin AppKit. Es la que usan
+    /// las pruebas y la que llama la de arriba.
+    mutating func handleTap(_ id: ID, order: GridOrder<ID>, modifiers: GridSelectionModifiers) {
+        if modifiers.contains(.shift), let anchor = rangeAnchor ?? lastTapped,
+           let anchorIndex = order.index(of: anchor), let thisIndex = order.index(of: id) {
+            if rangeAnchor == nil { rangeAnchor = anchor }
+            applyRange(from: anchorIndex, to: thisIndex, order: order)
+        } else if modifiers.contains(.command) {
             if selected.contains(id) { selected.remove(id) } else { selected.insert(id) }
+            rangeAnchor = id
+            lastRangeIDs = []
         } else {
             selected = [id]
+            rangeAnchor = id
+            lastRangeIDs = []
         }
         lastTapped = id
+    }
+
+    /// Reemplaza el rango anterior por el nuevo, conservando lo que se
+    /// haya marcado aparte con ⌘ -- ver `lastRangeIDs`.
+    private mutating func applyRange(from anchorIndex: Int, to targetIndex: Int, order: GridOrder<ID>) {
+        let range = anchorIndex <= targetIndex ? anchorIndex...targetIndex : targetIndex...anchorIndex
+        selected.subtract(lastRangeIDs)
+        lastRangeIDs = Set(order.ids[range])
+        selected.formUnion(lastRangeIDs)
+    }
+
+    // MARK: - Teclado y arrastre (ST-184)
+
+    /// Mueve el foco con una flecha y devuelve el elemento que quedó
+    /// enfocado (para que la vista lo desplace a la vista).
+    ///
+    /// - `columnsPerRow` es cuántas tarjetas entran por fila: arriba y
+    ///   abajo saltan una fila entera. En una lista de una columna, `1`.
+    /// - `extending` es Shift: extiende el rango desde el ancla en vez
+    ///   de reemplazar la selección.
+    ///
+    /// Sin foco previo, la primera flecha selecciona el primer elemento
+    /// (o el último, si va hacia atrás) -- como cualquier lista de macOS.
+    @discardableResult
+    mutating func move(_ direction: GridDirection, order: GridOrder<ID>,
+                       columnsPerRow: Int, extending: Bool) -> ID? {
+        guard !order.ids.isEmpty else { return nil }
+        let count = order.ids.count
+        let currentIndex = lastTapped.flatMap { order.index(of: $0) }
+        let targetIndex: Int
+        if let currentIndex {
+            targetIndex = max(0, min(count - 1, currentIndex + direction.step(columnsPerRow: columnsPerRow)))
+        } else {
+            targetIndex = direction.isBackwards ? count - 1 : 0
+        }
+        let id = order.ids[targetIndex]
+
+        if extending {
+            let anchorIndex = rangeAnchor.flatMap { order.index(of: $0) } ?? currentIndex ?? targetIndex
+            rangeAnchor = order.ids[anchorIndex]
+            applyRange(from: anchorIndex, to: targetIndex, order: order)
+        } else {
+            selected = [id]
+            rangeAnchor = id
+            lastRangeIDs = []
+        }
+        lastTapped = id
+        return id
+    }
+
+    /// Aplica un arrastre (marquee). `base` es la selección al EMPEZAR
+    /// el arrastre -- ver `GridMarquee.selection(base:hits:modifiers:)`.
+    mutating func applyMarquee(rect: CGRect, frames: [GridMarquee.Frame<ID>],
+                               base: Set<ID>, modifiers: GridSelectionModifiers) {
+        selected = GridMarquee.selection(rect: rect, frames: frames, base: base, modifiers: modifiers)
+        // Un arrastre no deja un rango de Shift a medio hacer.
+        lastRangeIDs = []
     }
 
     /// Alterna `id` desde su CASILLA de seleccion (ST-103). A
@@ -79,6 +169,8 @@ struct GridSelection<ID: Hashable>: Equatable {
     mutating func toggle(_ id: ID) {
         if selected.contains(id) { selected.remove(id) } else { selected.insert(id) }
         lastTapped = id
+        rangeAnchor = id
+        lastRangeIDs = []
     }
 
     func isSelected(_ id: ID) -> Bool { selected.contains(id) }
@@ -95,6 +187,8 @@ struct GridSelection<ID: Hashable>: Equatable {
     mutating func clear() {
         selected.removeAll()
         lastTapped = nil
+        rangeAnchor = nil
+        lastRangeIDs = []
     }
 
     /// PLAN-studio-rendimiento.md Fase 2 punto 1: Cmd+A -- selecciona
@@ -103,6 +197,8 @@ struct GridSelection<ID: Hashable>: Equatable {
     mutating func selectAll(_ order: GridOrder<ID>) {
         selected = Set(order.ids)
         lastTapped = order.ids.last
+        rangeAnchor = order.ids.first
+        lastRangeIDs = []
     }
 
     /// Quita del set los ids que ya no existen (p. ej. tras borrar
@@ -110,8 +206,12 @@ struct GridSelection<ID: Hashable>: Equatable {
     /// `rebuild()` de la vista.
     mutating func pruneMissing(from validIDs: Set<ID>) {
         selected.formIntersection(validIDs)
+        lastRangeIDs.formIntersection(validIDs)
         if let last = lastTapped, !validIDs.contains(last) {
             lastTapped = nil
+        }
+        if let anchor = rangeAnchor, !validIDs.contains(anchor) {
+            rangeAnchor = nil
         }
     }
 }
@@ -127,6 +227,18 @@ struct LibrarySelectionTransfer: Codable, Transferable {
 
     static var transferRepresentation: some TransferRepresentation {
         CodableRepresentation(contentType: .auraLibrarySelection)
+    }
+}
+
+extension GridSelectionModifiers {
+    /// ST-184: la única traducción entre AppKit y el núcleo puro de la
+    /// selección. `NSEvent.ModifierFlags` no aparece en ningún otro
+    /// lado de la lógica.
+    init(_ flags: NSEvent.ModifierFlags) {
+        var result: GridSelectionModifiers = []
+        if flags.contains(.shift) { result.insert(.shift) }
+        if flags.contains(.command) { result.insert(.command) }
+        self = result
     }
 }
 

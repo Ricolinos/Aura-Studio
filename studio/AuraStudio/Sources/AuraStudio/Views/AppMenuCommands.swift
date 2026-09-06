@@ -27,6 +27,57 @@ extension FocusedValues {
     }
 }
 
+/// PLAN-studio-rendimiento-2.md Fase 4 (ST-184): lo que la sección con
+/// foco expone al menú **Edición**.
+///
+/// "Seleccionar todo" existía solo como un `.onKeyPress(keys: ["a"])`
+/// dentro de cada cuadrícula: funcionaba, pero no aparecía en ningún
+/// menú, así que no era descubrible y no se podía deshabilitar cuando no
+/// tenía sentido. Y "deseleccionar todo" no existía: la única forma era
+/// Escape, que nadie encuentra sin que se lo digan.
+///
+/// Va por `FocusedValue` por lo mismo que `LibraryCommandContext`: el
+/// estado real (la selección) vive en la sección visible, no en
+/// `AuraStudioApp`. Sin sección con selección, los dos comandos quedan
+/// grises, como en cualquier app de macOS.
+struct SelectionCommandContext {
+    let selectAll: () -> Void
+    let deselectAll: () -> Void
+    /// Para deshabilitar "Deseleccionar todo" cuando no hay nada que
+    /// deseleccionar.
+    let hasSelection: Bool
+}
+
+private struct SelectionCommandKey: FocusedValueKey {
+    typealias Value = SelectionCommandContext
+}
+
+extension FocusedValues {
+    var auraSelectionCommand: SelectionCommandContext? {
+        get { self[SelectionCommandKey.self] }
+        set { self[SelectionCommandKey.self] = newValue }
+    }
+}
+
+/// Menú Edición: ⌘A / ⇧⌘A enrutados a la sección con foco.
+struct EditMenuCommands: View {
+    @FocusedValue(\.auraSelectionCommand) private var context
+
+    var body: some View {
+        Button("Seleccionar todo") {
+            context?.selectAll()
+        }
+        .keyboardShortcut("a", modifiers: .command)
+        .disabled(context == nil)
+
+        Button("Deseleccionar todo") {
+            context?.deselectAll()
+        }
+        .keyboardShortcut("a", modifiers: [.command, .shift])
+        .disabled(context?.hasSelection != true)
+    }
+}
+
 /// Menú Archivo: "Agregar a la biblioteca..." (⌘O) -- mismo camino que
 /// soltar archivos sobre la sección visible.
 struct AddToLibraryMenuCommand: View {

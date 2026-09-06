@@ -23,7 +23,30 @@ struct MoviesView: View {
     @State private var searchText = ""
     @State private var selectedMovieID: String?
     /// Selección múltiple estilo Finder (encargo del dueño, 2026-08-19).
-    @State private var selection = GridSelection<String>()
+    /// PLAN-studio-rendimiento-2.md Fase 4 (ST-184): la selección vive
+    /// en un `GridSelectionModel` inyectable, como en Álbumes desde
+    /// ST-181 -- es lo que guarda además los marcos de las tarjetas para
+    /// el arrastre, y lo que deja probar los gestos sin mover un mouse.
+    @StateObject private var selectionModel: GridSelectionModel<String>
+
+    /// El espacio de coordenadas compartido entre los marcos de las
+    /// tarjetas y el rectángulo del arrastre.
+    private static let gridSpace = "peliculas.cuadricula"
+
+    init(viewModel: LibraryViewModel, device: AuraDevice?, preferences: AppPreferences,
+         selectionStore: SelectionStore,
+         selectionModel: GridSelectionModel<String> = GridSelectionModel()) {
+        self.viewModel = viewModel
+        self.device = device
+        self.preferences = preferences
+        self.selectionStore = selectionStore
+        _selectionModel = StateObject(wrappedValue: selectionModel)
+    }
+
+    private var selection: GridSelection<String> {
+        get { selectionModel.selection }
+        nonmutating set { selectionModel.selection = newValue }
+    }
     /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): lo visible (filtro
     /// + orden) y su `GridOrder`, calculados una sola vez por cambio
     /// real de entrada -- ver `GridModel`. Antes era un computed var que
@@ -246,6 +269,7 @@ struct MoviesView: View {
                                 .contextMenu { movieContextMenu(movie) }
                                 .draggable(LibrarySelectionTransfer(itemIDs: effectiveMovies(for: movie).flatMap(\.items).map(\.id)))
                                 .help(movie.title)
+                                .gridMarqueeFrame(id: movie.id, in: Self.gridSpace, model: selectionModel)
                         }
                     }
                     // R2-1: mismo margen superior que la cuadrícula de
@@ -258,6 +282,24 @@ struct MoviesView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
                     .padding(.bottom, 24)
+                    // ST-184: el arrastre va DETRÁS de las tarjetas --
+                    // arrastrar desde una tarjeta la mueve, desde un
+                    // hueco dibuja el recuadro.
+                    .background(
+                        GridMarqueeCapture(
+                            onBegin: { selectionModel.beginMarquee() },
+                            onDrag: { rect, modifiers in
+                                selectionModel.updateMarquee(rect: rect, modifiers: modifiers)
+                            },
+                            onEnd: { selectionModel.endMarquee() },
+                            onClickAway: { _ in selection.clear() })
+                    )
+                    .overlay(alignment: .topLeading) {
+                        if let rect = selectionModel.marqueeRect {
+                            GridMarqueeRectangle(rect: rect)
+                        }
+                    }
+                    .coordinateSpace(name: Self.gridSpace)
                 }
             }
         }
@@ -269,11 +311,29 @@ struct MoviesView: View {
             selection.clear()
             return .handled
         }
-        .onKeyPress(keys: ["a"]) { press in
-            guard press.modifiers.contains(.command) else { return .ignored }
-            selection.selectAll(gridModel.order)
+        // ST-184: flechas mueven el foco, Shift+flechas extienden desde
+        // el ancla. Las columnas por fila salen de los marcos que
+        // reportan las tarjetas.
+        .onKeyPress(keys: [.leftArrow, .rightArrow, .upArrow, .downArrow]) { press in
+            let direction: GridDirection
+            switch press.key {
+            case .leftArrow: direction = .left
+            case .rightArrow: direction = .right
+            case .upArrow: direction = .up
+            default: direction = .down
+            }
+            selection.move(direction, order: gridModel.order,
+                           columnsPerRow: selectionModel.columnsPerRow,
+                           extending: press.modifiers.contains(.shift))
             return .handled
         }
+        // ST-184: ⌘A / ⇧⌘A por el menú Edición. Con una película
+        // abierta manda su tabla embebida, que publica el suyo.
+        .focusedSceneValue(\.auraSelectionCommand, selectedMovieID == nil
+            ? SelectionCommandContext(selectAll: { selection.selectAll(gridModel.order) },
+                                      deselectAll: { selection.clear() },
+                                      hasSelection: !selection.selected.isEmpty)
+            : nil)
     }
 
     private func emptyState(_ title: String, detail: String?) -> some View {

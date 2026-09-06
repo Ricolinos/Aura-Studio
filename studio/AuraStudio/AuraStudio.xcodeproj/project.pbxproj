@@ -80,6 +80,7 @@
 		401404E1D0A6D6FFBB155F2C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14D5A27F7EA14F700832333A /* ContentView.swift */; };
 		40C77AF1FDE67E4379751F22 /* ThemesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 414CDC551592AE3B57A31C32 /* ThemesView.swift */; };
 		439F2B0C5CA093DAF294EA13 /* LibraryFileWorkerEquivalenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4C0B18EAD871AB2CB02A249 /* LibraryFileWorkerEquivalenceTests.swift */; };
+		448126410EB0CE2FA1BC1851 /* GridMarquee.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A12B93EFC865A3AAECC03B /* GridMarquee.swift */; };
 		477047AEFFB6167A3BB0EA65 /* AlbumCoverPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 024CBB3922236478FC2CB4D9 /* AlbumCoverPickerView.swift */; };
 		47CB97EC01FE0D881B00DC5C /* LibrarySyncDeleteAllContentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54210365FABAF87A55C820A6 /* LibrarySyncDeleteAllContentTests.swift */; };
 		4822E27747BE866F4E933C18 /* GitHubTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43B2B93C80B360CA92398D78 /* GitHubTokenTests.swift */; };
@@ -132,6 +133,7 @@
 		808B7D0862DBE45795244B1C /* LoadCatalogParallelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124AB1CEB3AC65F233E89857 /* LoadCatalogParallelTests.swift */; };
 		81CB7D3F4D377EAD5420BF32 /* LibraryCatalogIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95DE93DDB5865C16EB1A1B48 /* LibraryCatalogIndex.swift */; };
 		86FC49E7F66DF426C3ADF9DC /* GitHubTokenSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42BF0B1098835C981433DD68 /* GitHubTokenSettingsView.swift */; };
+		8790C71B6B7CCA4BC7A59692 /* GridMarqueeOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934AEC42CD64458109755A00 /* GridMarqueeOverlay.swift */; };
 		87EB236DAA29660FD987218F /* BackContinueRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E5C06E65D1A04EAD003DE49 /* BackContinueRow.swift */; };
 		8ABEDA445E6B744AD30CE0BC /* FirmwareFamilyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 299EBF5F71B9DAABD15F76F5 /* FirmwareFamilyTests.swift */; };
 		8C2ED0BC3B41CA56C08D20E8 /* LibrarySyncMusicPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2CDF7B36135811140A2B3E /* LibrarySyncMusicPathTests.swift */; };
@@ -343,6 +345,7 @@
 		528818777E4EF0B5EF8F9306 /* PlaylistImporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistImporterTests.swift; sourceTree = "<group>"; };
 		54210365FABAF87A55C820A6 /* LibrarySyncDeleteAllContentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySyncDeleteAllContentTests.swift; sourceTree = "<group>"; };
 		5788BF566829EC16317154CE /* AppPreferencesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferencesTests.swift; sourceTree = "<group>"; };
+		57A12B93EFC865A3AAECC03B /* GridMarquee.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridMarquee.swift; sourceTree = "<group>"; };
 		59650F837F8005FD75204211 /* LibrarySyncSeriesNamingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySyncSeriesNamingTests.swift; sourceTree = "<group>"; };
 		5A7F236B3BC2CD5356A7477E /* ArtistImageResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistImageResolver.swift; sourceTree = "<group>"; };
 		5D2320B965F851A493392022 /* MediaInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaInfoView.swift; sourceTree = "<group>"; };
@@ -405,6 +408,7 @@
 		8FE00D7D78AA24DEB46AF80B /* GridSelectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridSelectionTests.swift; sourceTree = "<group>"; };
 		8FE0ED199852C215C9423943 /* SquareCropPlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SquareCropPlanTests.swift; sourceTree = "<group>"; };
 		925A40A7F39FBE6F9552F0D0 /* DeviceNameField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceNameField.swift; sourceTree = "<group>"; };
+		934AEC42CD64458109755A00 /* GridMarqueeOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridMarqueeOverlay.swift; sourceTree = "<group>"; };
 		942969FD7DB3DE501DDCA57C /* AuraStudio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AuraStudio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		95D1717F5BE6E99586CBAF44 /* MusicBrainzClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicBrainzClientTests.swift; sourceTree = "<group>"; };
 		95DE93DDB5865C16EB1A1B48 /* LibraryCatalogIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryCatalogIndex.swift; sourceTree = "<group>"; };
@@ -536,6 +540,7 @@
 				7D3754C9E29F0BC93B660592 /* EnterDFUView.swift */,
 				78C8C5A2B4594B410D4C51A4 /* ExtrasView.swift */,
 				42BF0B1098835C981433DD68 /* GitHubTokenSettingsView.swift */,
+				934AEC42CD64458109755A00 /* GridMarqueeOverlay.swift */,
 				AC5F915258EC049BFC791B90 /* InstallerHomeView.swift */,
 				1D4862DCA99696DCB66D2012 /* InstallerWizardView.swift */,
 				B1782D4EBAA2C3FC3EBC49F5 /* InstallingView.swift */,
@@ -641,6 +646,7 @@
 				5FA85A3E42CB4E67E9DAC4E5 /* DeviceState.swift */,
 				FE112760998756CFF24E4267 /* DroppedURLExpander.swift */,
 				2BBD482CA333757E5AFA9E26 /* FirmwareFamily.swift */,
+				57A12B93EFC865A3AAECC03B /* GridMarquee.swift */,
 				10802C9C813279C382E9B900 /* GridModel.swift */,
 				1F5CDF0D4B25103661D7A22F /* GridSelection.swift */,
 				43B9358C341DF6C281F2636B /* InstallerStep.swift */,
@@ -1159,6 +1165,8 @@
 				B161B4A60CB2A4A93499C8EA /* GitHubReleaseChecker.swift in Sources */,
 				21A4F6DFD8E57875A558CD78 /* GitHubToken.swift in Sources */,
 				86FC49E7F66DF426C3ADF9DC /* GitHubTokenSettingsView.swift in Sources */,
+				448126410EB0CE2FA1BC1851 /* GridMarquee.swift in Sources */,
+				8790C71B6B7CCA4BC7A59692 /* GridMarqueeOverlay.swift in Sources */,
 				997A65732E30D7DDF4A81570 /* GridModel.swift in Sources */,
 				A5A21D0A2F516081CFFE838E /* GridSelection.swift in Sources */,
 				B9F991F96D02DF1AD4B32042 /* ID3Writer.swift in Sources */,

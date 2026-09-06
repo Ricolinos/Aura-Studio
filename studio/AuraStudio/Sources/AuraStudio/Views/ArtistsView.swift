@@ -91,6 +91,12 @@ struct ArtistsView: View {
             publishSelection()
         }
         .onDisappear { selectionStore.clear(from: publisherID) }
+        // ST-184: la lista de Artistas es un `List(selection:)` nativo,
+        // así que "seleccionar todo" es asignar el conjunto visible.
+        .focusedSceneValue(\.auraSelectionCommand, SelectionCommandContext(
+            selectAll: { selectedArtistIDs = Set(listModel.visible.map(\.id)) },
+            deselectAll: { selectedArtistIDs = [] },
+            hasSelection: !selectedArtistIDs.isEmpty))
         .sheet(item: $reviewingItem) { item in
             MediaInfoView(item: item, availableCategories: nil) { _ in
             } onRatingChanged: { rating in

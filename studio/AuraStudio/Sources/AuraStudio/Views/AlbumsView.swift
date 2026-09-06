@@ -83,6 +83,10 @@ struct AlbumsView: View {
 
     private var sort: AlbumSort { AlbumSort(rawValue: sortRaw) ?? .title }
 
+    /// ST-184: el espacio de coordenadas compartido entre los marcos que
+    /// reportan las tarjetas y el rectángulo del arrastre.
+    private static let gridSpace = "albumes.cuadricula"
+
     private var visibleAlbums: [AlbumGroup] { gridModel.visible }
 
     /// El cálculo en sí. Lo llama `GridModel.recompute`, nunca el
@@ -375,6 +379,12 @@ struct AlbumsView: View {
                                           onToggle: { selection.toggle(album.id) },
                                           menu: { albumContextMenu(album) })
                                 .equatable()
+                                // ST-184: arrastrar una selección de
+                                // álbumes a la barra lateral, como ya se
+                                // podía en Películas y en Fotos.
+                                .draggable(LibrarySelectionTransfer(
+                                    itemIDs: effectiveAlbums(for: album).flatMap(\.items).map(\.id)))
+                                .gridMarqueeFrame(id: album.id, in: Self.gridSpace, model: selectionModel)
                         }
                     }
                     // R2-1: mismo margen superior que la cuadrícula de
@@ -387,6 +397,24 @@ struct AlbumsView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
                     .padding(.bottom, 24)
+                    // ST-184: el arrastre va DETRÁS de las tarjetas --
+                    // arrastrar desde una tarjeta la mueve
+                    // (`.draggable`), desde un hueco dibuja el recuadro.
+                    .background(
+                        GridMarqueeCapture(
+                            onBegin: { selectionModel.beginMarquee() },
+                            onDrag: { rect, modifiers in
+                                selectionModel.updateMarquee(rect: rect, modifiers: modifiers)
+                            },
+                            onEnd: { selectionModel.endMarquee() },
+                            onClickAway: { _ in selection.clear() })
+                    )
+                    .overlay(alignment: .topLeading) {
+                        if let rect = selectionModel.marqueeRect {
+                            GridMarqueeRectangle(rect: rect)
+                        }
+                    }
+                    .coordinateSpace(name: Self.gridSpace)
                 }
             }
         }
@@ -401,11 +429,32 @@ struct AlbumsView: View {
             selection.clear()
             return .handled
         }
-        .onKeyPress(keys: ["a"]) { press in
-            guard press.modifiers.contains(.command) else { return .ignored }
-            selection.selectAll(gridModel.order)
+        // ST-184: flechas mueven el foco, Shift+flechas extienden desde
+        // el ancla. Las columnas por fila salen de los marcos que
+        // reportan las tarjetas -- `LazyVGrid(.adaptive)` las decide por
+        // ancho, así que la vista no las sabe de antemano.
+        .onKeyPress(keys: [.leftArrow, .rightArrow, .upArrow, .downArrow]) { press in
+            let direction: GridDirection
+            switch press.key {
+            case .leftArrow: direction = .left
+            case .rightArrow: direction = .right
+            case .upArrow: direction = .up
+            default: direction = .down
+            }
+            selection.move(direction, order: gridModel.order,
+                           columnsPerRow: selectionModel.columnsPerRow,
+                           extending: press.modifiers.contains(.shift))
             return .handled
         }
+        // ST-184: ⌘A y ⇧⌘A ya no son un `.onKeyPress` de esta vista --
+        // son entradas reales del menú Edición, enrutadas acá.
+        // Con un álbum abierto manda su tabla embebida, que publica el
+        // suyo: acá se retira pasando `nil`.
+        .focusedSceneValue(\.auraSelectionCommand, selectedAlbumID == nil
+            ? SelectionCommandContext(selectAll: { selection.selectAll(gridModel.order) },
+                                      deselectAll: { selection.clear() },
+                                      hasSelection: !selection.selected.isEmpty)
+            : nil)
     }
 
     private func emptyState(_ title: String, detail: String?) -> some View {

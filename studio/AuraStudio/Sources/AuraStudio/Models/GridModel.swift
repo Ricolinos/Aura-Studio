@@ -135,7 +135,75 @@ final class GridStatusModel: ObservableObject {
 final class GridSelectionModel<ID: Hashable>: ObservableObject {
     @Published var selection: GridSelection<ID>
 
+    /// PLAN-studio-rendimiento-2.md Fase 4 (ST-184): el rectángulo del
+    /// arrastre en curso, para dibujarlo. `nil` = no hay arrastre.
+    @Published private(set) var marqueeRect: CGRect?
+
+    /// Marcos de las tarjetas realizadas. **No es `@Published` a
+    /// propósito**: cambia con cada desplazamiento y con cada cambio de
+    /// tamaño de la ventana, y publicarlo repintaría la cuadrícula
+    /// entera por algo que nadie dibuja. Solo lo lee el arrastre.
+    private var frames: [ID: CGRect] = [:]
+
+    /// La selección al EMPEZAR el arrastre -- ver
+    /// `GridMarquee.selection(base:hits:modifiers:)`.
+    private var marqueeBase: Set<ID> = []
+
     init(_ selection: GridSelection<ID> = GridSelection<ID>()) {
         self.selection = selection
+    }
+
+    // MARK: - Marcos de las tarjetas
+
+    /// Cada tarjeta realizada reporta su marco al aparecer y cada vez
+    /// que se mueve, y lo retira al salir de pantalla -- si no, un
+    /// arrastre "tocaría" tarjetas que ya no están donde dice el mapa.
+    ///
+    /// Escribir acá **no publica nada**, así que desplazarse no repinta
+    /// la cuadrícula por esto. Y son solo las celdas realizadas: con
+    /// `LazyVGrid`, las decenas que se ven, no las 1 000.
+    func reportFrame(_ rect: CGRect, for id: ID) {
+        frames[id] = rect
+    }
+
+    func forgetFrame(for id: ID) {
+        frames.removeValue(forKey: id)
+    }
+
+    /// Solo para pruebas del núcleo: sembrar marcos sin hospedar vistas.
+    func setFramesForTesting(_ newFrames: [ID: CGRect]) {
+        frames = newFrames
+    }
+
+    /// Cuántas tarjetas entran por fila, **deducido de los marcos** en
+    /// vez de calculado: `LazyVGrid(.adaptive(minimum:maximum:))` decide
+    /// las columnas según el ancho disponible, así que la vista no sabe
+    /// cuántas hay -- pero los marcos sí lo dicen. Lo usan las flechas
+    /// del teclado, para que arriba/abajo salten una fila entera.
+    ///
+    /// Sin marcos todavía devuelve 1, que degrada a "arriba/abajo se
+    /// comportan como izquierda/derecha": incómodo, nunca incorrecto.
+    var columnsPerRow: Int {
+        guard let topY = frames.values.map(\.minY).min() else { return 1 }
+        return max(1, frames.values.filter { abs($0.minY - topY) < 1 }.count)
+    }
+
+    // MARK: - Arrastre
+
+    func beginMarquee() {
+        marqueeBase = selection.selected
+    }
+
+    func updateMarquee(rect: CGRect, modifiers: GridSelectionModifiers) {
+        marqueeRect = rect
+        selection.applyMarquee(rect: rect,
+                               frames: frames.map { GridMarquee.Frame(id: $0.key, rect: $0.value) },
+                               base: marqueeBase,
+                               modifiers: modifiers)
+    }
+
+    func endMarquee() {
+        marqueeRect = nil
+        marqueeBase = []
     }
 }

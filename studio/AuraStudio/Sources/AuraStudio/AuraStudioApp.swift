@@ -30,6 +30,14 @@ struct AuraStudioApp: App {
             // "Visualización": barra de estado e "Ir a" cada sección,
             // antes del "Ocultar/Mostrar barra lateral" que SwiftUI ya
             // pone solo en ese menú.
+            // ST-184: "Seleccionar todo" (⌘A) y "Deseleccionar todo"
+            // (⇧⌘A) en el menú Edición, enrutados a la sección con foco.
+            // Antes, ⌘A era un `.onKeyPress` dentro de cada cuadrícula:
+            // no aparecía en ningún menú y no se podía deshabilitar.
+            CommandGroup(after: .pasteboard) {
+                Divider()
+                EditMenuCommands()
+            }
             CommandGroup(before: .sidebar) {
                 ViewMenuCommands()
                 Divider()

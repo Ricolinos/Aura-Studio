@@ -7643,3 +7643,131 @@ para decir lo que ahora vale.
 
 Lo que **no** se verificó acá: cómo se ve y cómo se desplaza la cuadrícula
 leyendo del disco. Esta sesión no puede abrir la app.
+
+## ST-184 — PLAN-studio-rendimiento-2.md, Fase F4: selección tipo Finder completa
+
+Quinta PARADA de la ronda 2 (sesión "experto en código opus"). Cierra el
+punto **7** del diagnóstico de §0: la selección de las cuadrículas era
+O(1) desde ST-154, pero le faltaban la mitad de los gestos que cualquiera
+espera de una cuadrícula de macOS. De los ocho de §A, tres no existían
+(arrastre, Shift+flechas, "deseleccionar todo") y uno existía sin estar
+en ningún menú (⌘A).
+
+### El núcleo es puro; AppKit solo traduce
+
+Es la forma que pidió la sesión maestra al abrir F4, y es lo que hace que
+esta PARADA se pueda verificar de verdad: **toda la decisión vive en
+tipos sin vistas**, y la capa de AppKit no decide nada.
+
+- `GridSelectionModifiers` (Shift / ⌘) reemplaza a `NSEvent.ModifierFlags`
+  en la lógica. La única traducción entre AppKit y el núcleo es un
+  inicializador de una línea. La idea ya estaba en ST-152 (`handleTap`
+  con los modificadores por parámetro, porque el estado global del
+  teclado no se puede simular); F4 la vuelve un tipo, porque ahora hay
+  tres gestos más que la necesitan.
+- `GridMarquee` resuelve el arrastre entero como funciones puras:
+  rectángulo entre dos puntos, qué marcos toca, y qué selección resulta
+  de eso. Sin `NSEvent`, sin vistas, sin hilo principal.
+- `GridMarqueeCapture` (`NSViewRepresentable`) solo traduce
+  `mouseDown`/`mouseDragged`/`mouseUp` a un rectángulo y a unos
+  modificadores.
+
+### Ancla, foco y rangos que se pueden achicar
+
+`GridSelection` tenía un solo `lastTapped` privado, y con él **Shift+clic
+no podía achicar un rango**: hacía `formUnion` sobre lo que hubiera, así
+que Shift+clic en la pista 20 y después en la 10 dejaba las veinte
+seleccionadas. Finder no hace eso.
+
+Ahora hay tres cosas distintas: el **foco** (`lastTapped`, ahora público
+—lo pedía F4—, y desde donde se mueven las flechas), el **ancla**
+(`rangeAnchor`, donde empieza un rango de Shift, que se queda quieta
+mientras el foco se mueve) y **lo que puso el último rango**
+(`lastRangeIDs`). Con eso, un Shift+clic reemplaza el rango anterior
+**conservando** lo que se hubiera marcado aparte con ⌘ — que es
+exactamente lo que hace Finder.
+
+Es un **cambio de comportamiento visible** en Shift+clic, no solo una
+función nueva. Se hace acá porque es lo que "selección tipo Finder
+completa" significa, y porque el mismo mecanismo es el que necesitan
+Shift+flechas: tener dos reglas distintas para extender con el mouse y
+con el teclado habría sido peor que el defecto original.
+
+### Los gestos que faltaban
+
+- **Arrastre (marquee)** en las cuatro cuadrículas de tarjetas (Álbumes,
+  Películas, Series, álbumes de Fotos). El capturador va **detrás** de
+  las tarjetas, no encima: en Finder, arrastrar DESDE un elemento lo
+  mueve (eso es `.draggable`) y arrastrar desde un hueco dibuja el
+  recuadro. Poniéndolo de fondo, las tarjetas conservan sus clics y sus
+  arrastres tal cual, y al capturador solo le llega lo que empezó en un
+  hueco. Shift suma a la selección de partida, ⌘ alterna respecto de
+  ella. Hay **autoscroll** cerca de los bordes, sin el cual no se puede
+  seleccionar más de lo que entra en pantalla.
+- **La selección de partida se congela al empezar el arrastre**, y cada
+  posición del mouse se resuelve contra ESA. Sin eso, agrandar y achicar
+  el recuadro no sería reversible: lo que entró no volvería a salir.
+- **Los marcos de las tarjetas** los reportan ellas mismas, al aparecer y
+  al moverse, y los retiran al salir de pantalla (si no, el arrastre
+  "tocaría" tarjetas que ya no están donde dice el mapa). Escribirlos
+  **no publica nada** (`GridSelectionModel.reportFrame` no es
+  `@Published`), así que desplazarse no repinta la cuadrícula por esto, y
+  son solo las celdas realizadas: con `LazyVGrid`, las decenas que se
+  ven, no las 1 000.
+- **Flechas y Shift+flechas.** Arriba y abajo saltan una fila entera, y
+  cuántas tarjetas hay por fila **se deduce de los marcos**, no se
+  calcula: `LazyVGrid(.adaptive(minimum:maximum:))` decide las columnas
+  por ancho disponible, así que la vista no las sabe — pero los marcos sí
+  lo dicen. Sin marcos todavía, degrada a una columna: incómodo, nunca
+  incorrecto.
+- **Menú Edición: "Seleccionar todo" (⌘A) y "Deseleccionar todo"
+  (⇧⌘A)**, enrutados a la sección con foco por `FocusedValue`, igual que
+  los comandos de ST-063. ⌘A existía solo como un `.onKeyPress` dentro de
+  cada cuadrícula: funcionaba, pero no aparecía en ningún menú, así que
+  no era descubrible ni se podía deshabilitar cuando no aplicaba.
+  "Deseleccionar todo" no existía: la única forma era Escape.
+  **`MediaSectionView` publica su contexto aunque `Table` ya resolviera
+  ⌘A de forma nativa**: una entrada de menú con ese atajo lo intercepta,
+  así que sin publicarlo el comando quedaría gris y ⌘A dejaría de
+  funcionar en la tabla — una regresión que habría introducido el propio
+  menú.
+- **Clic en un hueco limpia la selección**, como en Finder (antes no
+  hacía nada). Con Shift o ⌘ apretados no toca nada: ahí el usuario está
+  construyendo una selección.
+- **`.draggable` en Álbumes**, que era la única cuadrícula sin él.
+
+### Seams para el arnés
+
+Las cuatro cuadrículas usan ya `GridSelectionModel` inyectable (antes
+solo Álbumes, desde ST-181), así que los ocho gestos se pueden ejercer
+desde una prueba sin mover un mouse: `handleTap(_:order:modifiers:)`,
+`toggle`, `move(_:order:columnsPerRow:extending:)`, `selectAll`, `clear`
+y `applyMarquee(rect:frames:base:modifiers:)`. `setFramesForTesting` deja
+sembrar marcos sin hospedar vistas. Lo que queda para verificar a mano es
+**solo el gesto físico**: que el mouse llegue al capturador y que el
+autoscroll se sienta bien.
+
+### Lo que NO se pudo verificar acá
+
+Que un `NSViewRepresentable` de fondo reciba los eventos del ratón dentro
+de un `ScrollView` con `LazyVGrid` **no se puede comprobar sin correr la
+app**. La lógica está probada entera; el cableado es lo que el dueño
+verifica en la revisión interactiva de F4, con el guion de
+`docs/guion-verificacion-f4-seleccion.md`. Si el capturador no recibiera
+los eventos, lo que falla es el arrastre y nada más: los otros siete
+gestos no pasan por él.
+
+### Verificación
+
+`swift build` limpio, `swift build -swift-version 6` limpio,
+`xcodebuild -configuration Release` **BUILD SUCCEEDED**.
+
+Nota sobre `ApplyAlbumCoverAndSimilarityWorkerTests.
+testThreeHundredTracksNeverBlockTheMainThreadOverTheWatchdogThreshold`,
+que sigue fallando de forma intermitente: el diagnóstico anterior
+(contaminación entre pruebas) era incompleto. Esa prueba **instala el
+vigilante y recién después crea sus 300 archivos de fixture en el hilo
+principal**, así que lo que mide incluye su propia preparación — 300
+escrituras de archivo pasan de 250 ms en cuanto la máquina tiene algo más
+que hacer. No es un bloqueo de `applyAlbumCover`. El arreglo es crear el
+fixture ANTES de instalar el colector; vive en `Tests/`.

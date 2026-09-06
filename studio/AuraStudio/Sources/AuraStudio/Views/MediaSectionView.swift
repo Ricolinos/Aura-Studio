@@ -231,6 +231,16 @@ struct MediaSectionView: View {
     }
 
     var body: some View {
+        // ST-184: el `body` de esta vista ya estaba al límite de lo que
+        // el type-checker de Swift resuelve en una sola expresión --
+        // agregarle una cláusula más lo hacía fallar con "unable to
+        // type-check this expression in reasonable time". Partirlo en
+        // dos le da dos problemas chicos en vez de uno enorme.
+        sectionContent
+            .focusedSceneValue(\.auraSelectionCommand, selectionCommand)
+    }
+
+    private var sectionContent: some View {
         VStack(spacing: 0) {
             // Con una categoría fija por la barra lateral, la barra de
             // chips ("Todas"/categoría por categoría) sería redundante.
@@ -338,6 +348,11 @@ struct MediaSectionView: View {
         // comportamiento de siempre, solo cambia a dónde se publica.
         .onChange(of: selection) { selectionStore.replace(with: $0, from: publisherID) }
         .onDisappear { selectionStore.clear(from: publisherID) }
+        // ST-184: ⌘A / ⇧⌘A del menú Edición también acá. `Table` ya
+        // resolvía ⌘A de forma nativa, pero una entrada de menú con ese
+        // atajo lo intercepta: si esta vista no publicara su contexto,
+        // el comando quedaría gris y ⌘A dejaría de funcionar en la
+        // tabla -- una regresión introducida por el propio menú.
         .sheet(item: $reviewingItem) { item in
             MediaInfoView(item: item, availableCategories: availableCategories) { category in
                 viewModel.setCategory(category, forItem: item.id)
@@ -881,6 +896,22 @@ struct MediaSectionView: View {
                 .foregroundStyle(.secondary)
                 .help("Se quitó del iPod fuera de Aura Studio -- no se vuelve a copiar solo. Usa \"Sincronizar la selección\" en el menú contextual para volver a copiarlo.")
         }
+    }
+
+    /// ST-184: ⌘A / ⇧⌘A del menú Edición también acá. `Table` ya
+    /// resolvía ⌘A de forma nativa, pero una entrada de menú con ese
+    /// atajo lo intercepta: si esta vista no publicara su contexto, el
+    /// comando quedaría gris y ⌘A dejaría de funcionar en la tabla --
+    /// una regresión que introduciría el propio menú.
+    ///
+    /// Va como propiedad y no en línea en el `body` porque el
+    /// type-checker de Swift no daba abasto con una cláusula más en esa
+    /// cadena (el `body` de esta vista ya era largo antes de F4).
+    private var selectionCommand: SelectionCommandContext {
+        SelectionCommandContext(
+            selectAll: { selection = Set(rows.map(\.id)) },
+            deselectAll: { selection.removeAll() },
+            hasSelection: !selection.isEmpty)
     }
 
     // MARK: - Carátulas (cola del selector, ST-182)

@@ -21,7 +21,30 @@ struct SeriesView: View {
     @State private var selectedSeriesID: String?
     /// Selección múltiple de series en la cuadrícula (encargo del
     /// dueño, 2026-08-19).
-    @State private var selection = GridSelection<String>()
+    /// PLAN-studio-rendimiento-2.md Fase 4 (ST-184): la selección vive
+    /// en un `GridSelectionModel` inyectable, como en Álbumes desde
+    /// ST-181 -- es lo que guarda además los marcos de las tarjetas para
+    /// el arrastre, y lo que deja probar los gestos sin mover un mouse.
+    @StateObject private var selectionModel: GridSelectionModel<String>
+
+    /// El espacio de coordenadas compartido entre los marcos de las
+    /// tarjetas y el rectángulo del arrastre.
+    private static let gridSpace = "series.cuadricula"
+
+    init(viewModel: LibraryViewModel, device: AuraDevice?, preferences: AppPreferences,
+         selectionStore: SelectionStore,
+         selectionModel: GridSelectionModel<String> = GridSelectionModel()) {
+        self.viewModel = viewModel
+        self.device = device
+        self.preferences = preferences
+        self.selectionStore = selectionStore
+        _selectionModel = StateObject(wrappedValue: selectionModel)
+    }
+
+    private var selection: GridSelection<String> {
+        get { selectionModel.selection }
+        nonmutating set { selectionModel.selection = newValue }
+    }
     /// Selección múltiple de episodios dentro de una serie abierta --
     /// se limpia al volver a la cuadrícula (`selectedSeriesID = nil`).
     @State private var episodeSelection = GridSelection<UUID>()
@@ -82,6 +105,16 @@ struct SeriesView: View {
             publishSelection()
         }
         .onDisappear { selectionStore.clear(from: publisherID) }
+        // ST-184: ⌘A / ⇧⌘A por el menú Edición, sobre el nivel visible
+        // -- las series de la cuadrícula, o los episodios de la serie
+        // abierta.
+        .focusedSceneValue(\.auraSelectionCommand, selectedSeries == nil
+            ? SelectionCommandContext(selectAll: { selection.selectAll(gridModel.order) },
+                                      deselectAll: { selection.clear() },
+                                      hasSelection: !selection.selected.isEmpty)
+            : SelectionCommandContext(selectAll: { episodeSelection.selectAll(episodeOrder) },
+                                      deselectAll: { episodeSelection.clear() },
+                                      hasSelection: !episodeSelection.selected.isEmpty))
         .sheet(item: $reviewingItem) { item in
             MediaInfoView(item: item, availableCategories: MediaCategory.videoCategories.map(\.displayName)) { category in
                 viewModel.setCategory(category, forItem: item.id)
@@ -208,6 +241,7 @@ struct SeriesView: View {
                                 .contextMenu { seriesContextMenu(show) }
                                 .draggable(LibrarySelectionTransfer(itemIDs: effectiveSeries(for: show).flatMap(\.items).map(\.id)))
                                 .help(show.title)
+                                .gridMarqueeFrame(id: show.id, in: Self.gridSpace, model: selectionModel)
                         }
                     }
                     // R2-1: mismo margen superior que la cuadrícula de
@@ -220,6 +254,24 @@ struct SeriesView: View {
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
                     .padding(.bottom, 24)
+                    // ST-184: el arrastre va DETRÁS de las tarjetas --
+                    // arrastrar desde una tarjeta la mueve, desde un
+                    // hueco dibuja el recuadro.
+                    .background(
+                        GridMarqueeCapture(
+                            onBegin: { selectionModel.beginMarquee() },
+                            onDrag: { rect, modifiers in
+                                selectionModel.updateMarquee(rect: rect, modifiers: modifiers)
+                            },
+                            onEnd: { selectionModel.endMarquee() },
+                            onClickAway: { _ in selection.clear() })
+                    )
+                    .overlay(alignment: .topLeading) {
+                        if let rect = selectionModel.marqueeRect {
+                            GridMarqueeRectangle(rect: rect)
+                        }
+                    }
+                    .coordinateSpace(name: Self.gridSpace)
                 }
             }
         }
@@ -231,11 +283,23 @@ struct SeriesView: View {
             selection.clear()
             return .handled
         }
-        .onKeyPress(keys: ["a"]) { press in
-            guard press.modifiers.contains(.command) else { return .ignored }
-            selection.selectAll(gridModel.order)
+        // ST-184: flechas mueven el foco, Shift+flechas extienden desde
+        // el ancla. Las columnas por fila salen de los marcos que
+        // reportan las tarjetas.
+        .onKeyPress(keys: [.leftArrow, .rightArrow, .upArrow, .downArrow]) { press in
+            let direction: GridDirection
+            switch press.key {
+            case .leftArrow: direction = .left
+            case .rightArrow: direction = .right
+            case .upArrow: direction = .up
+            default: direction = .down
+            }
+            selection.move(direction, order: gridModel.order,
+                           columnsPerRow: selectionModel.columnsPerRow,
+                           extending: press.modifiers.contains(.shift))
             return .handled
         }
+
     }
 
     private func episodeCountText(_ show: VideoCollectionGroup) -> String {
@@ -300,11 +364,7 @@ struct SeriesView: View {
             episodeSelection.clear()
             return .handled
         }
-        .onKeyPress(keys: ["a"]) { press in
-            guard press.modifiers.contains(.command) else { return .ignored }
-            episodeSelection.selectAll(episodeOrder)
-            return .handled
-        }
+
     }
 
     private func seriesHeader(_ show: VideoCollectionGroup) -> some View {
