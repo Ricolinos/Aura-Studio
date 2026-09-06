@@ -82,6 +82,7 @@ final class AlbumsGridMarqueeDragUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchEnvironment["AURA_UITEST_LIBRARY"] = libraryRoot.path
         app.launchEnvironment["AURA_UITEST_DEFAULTS_SUITE"] = "com.ricolinos.aurastudio.uitest.\(UUID().uuidString)"
+        app.launchEnvironment["AURA_UITEST_MAIN_SCREEN"] = "1"
         app.launch()
         return app
     }
@@ -121,7 +122,10 @@ final class AlbumsGridMarqueeDragUITests: XCTestCase {
         sidebarAlbums.click()
 
         let grid = app.otherElements[UITestEnvironmentIDs.albumsGrid]
-        XCTAssertTrue(grid.waitForExistence(timeout: 15), "no apareció la cuadrícula de Álbumes")
+        if !grid.waitForExistence(timeout: 15) {
+            print("[DIAG] no apareció la cuadrícula -- árbol completo:\n\(app.debugDescription)")
+        }
+        XCTAssertTrue(grid.exists, "no apareció la cuadrícula de Álbumes")
 
         // Confirmado con el árbol de accesibilidad real (2026-09-06): la
         // tarjeta no tiene un contenedor propio con ese identificador --
@@ -159,16 +163,30 @@ final class AlbumsGridMarqueeDragUITests: XCTestCase {
 
         // Diagnóstico de Opus (ST-188): el recuadro SOLO arranca desde un
         // hueco -- si el `press` cae sobre una tarjeta, lo que se
-        // dispara es su `.draggable`, no el marquee. En vez de adivinar
-        // un punto cerca del borde del contenedor, se calcula el hueco
-        // real: el espacio horizontal entre la primera y la segunda
-        // tarjeta (el `spacing` de 24 pt de `LazyVGrid`), que está
-        // garantizado vacío sin importar el tamaño de la ventana.
+        // dispara es su `.draggable`, no el marquee. Con la ventana fija
+        // de 1280x800 (`AURA_UITEST_MAIN_SCREEN`), Opus advirtió que el
+        // hueco horizontal ENTRE COLUMNAS (spacing 24 pt) es angosto --
+        // unos pocos puntos de margen y el punto cae sobre la tarjeta.
+        // La franja ENTRE FILAS (spacing 28 pt) es más segura, así que
+        // se busca la primera tarjeta de la misma columna en la fila de
+        // abajo (en vez de asumir cuántas columnas caben) y se arranca
+        // del hueco vertical entre ambas.
         let firstFrame = firstCard.frame
-        let secondFrame = secondCard.frame
-        XCTAssertGreaterThan(secondFrame.minX, firstFrame.maxX,
-                             "la segunda tarjeta no está a la derecha de la primera -- ¿una sola columna?")
-        let gapPoint = CGPoint(x: (firstFrame.maxX + secondFrame.minX) / 2, y: firstFrame.midY)
+        var rowTwoFrame: CGRect?
+        for i in 1..<Self.albumCount {
+            let candidate = app.images[UITestEnvironmentIDs.albumCard(i)]
+            guard candidate.waitForExistence(timeout: 5) else { break }
+            let frame = candidate.frame
+            if abs(frame.minX - firstFrame.minX) < 1 && frame.minY > firstFrame.maxY {
+                rowTwoFrame = frame
+                break
+            }
+        }
+        guard let rowTwoFrame else {
+            XCTFail("no se encontró una segunda fila -- ¿entran las \(Self.albumCount) en una sola fila?")
+            return
+        }
+        let gapPoint = CGPoint(x: firstFrame.midX, y: (firstFrame.maxY + rowTwoFrame.minY) / 2)
         let origin = app.coordinate(withNormalizedOffset: .zero)
         let start = origin.withOffset(CGVector(dx: gapPoint.x, dy: gapPoint.y))
         // `lastCard.coordinate(withNormalizedOffset:)` revienta la

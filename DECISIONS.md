@@ -8950,6 +8950,27 @@ resolver el bug de XCTest con ventanas en pantalla secundaria. Es el
 único de los ocho gestos de F4/§A que termina así -- los otros siete
 están automatizados y en verde contra el núcleo puro (35/35).
 
+**Con `AURA_UITEST_MAIN_SCREEN=1` (seam de "experto en código opus",
+`MainWindowPlacer`, `origin/main` en `fbd99a5`), el mismo resultado.**
+Se agregó la variable al `launchEnvironment` de la prueba junto con las
+otras dos, y de paso se cambió el punto de arranque del arrastre del
+hueco horizontal (spacing 24 pt, entre columnas) al hueco vertical
+(spacing 28 pt, entre filas) -- más seguro según la advertencia de
+Opus sobre el margen angosto entre columnas con la ventana fija de
+1280×800. Corriendo la prueba real: la barra lateral y la cuadrícula
+SÍ aparecieron (con la variable puesta, algo mejoró -- antes la
+cuadrícula tardaba más o fallaba más seguido), pero el punto calculado
+para el arrastre siguió cayendo en el rango x de la pantalla
+SECUNDARIA (`Press ... -> (3190.0, 515.0) ... drag to ... (3853.0,
+1090.0)`, ambos dentro de 2560-4480, el rango de la 1920×1080) -- la
+ventana no se movió a la principal (0-2560). Mismo
+`point.x/y != INFINITY` de siempre. No se investigó más de acá: el
+porqué (¿`viewDidMoveToWindow` corre antes de que algo más reposicione
+la ventana? ¿este proceso ve un orden de pantallas distinto?) es una
+pregunta de `Sources/`, para "experto en código opus" -- reportado
+así, con los números exactos, en vez de seguir iterando a ciegas sobre
+un seam que no es mío.
+
 ### Incidente: preferencia real sobrescrita (2026-09-06)
 
 Intentando mejorar la traza "antes" de Instruments (que la traza de
