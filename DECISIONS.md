@@ -6819,3 +6819,51 @@ documentación del control para saber qué trae de fábrica. La pasada guionizad
 —abrir Álbumes, Ctrl+A, Mayús+clic 1→500, Escape, clic derecho— con el vigilante
 de ST-200 encendido, y la mirada a si la doble marca de selección molesta, quedan
 para quien pueda tener la app delante.
+
+## ST-202 (addendum) — Una sola marca de seleccionado
+
+Decisión de la sesión maestra al revisar ST-202: con `SelectionMode="Extended"`,
+el contenedor del `GridView` empezó a dibujar **su** marca de seleccionado
+—fondo, borde de 2 px y palomita— encima de la que la tarjeta ya ponía desde
+ST-103. Dos marcas para un mismo estado no son más claras: son dos.
+
+Se conserva **la nuestra** —el borde de acento sobre la portada, que es la del
+sistema de diseño y la misma que muestra la Mac— y se apaga la nativa.
+
+### Cómo
+
+En los recursos de **esa** cuadrícula, no de la app, poniendo en cero justo lo
+que la dibuja. Los nombres y los valores de origen se leyeron del
+`generic.xaml` del Windows App SDK, no se adivinaron: el contenedor es un
+`ListViewItemPresenter` cuyo estilo por omisión ata cada parte de la marca a un
+recurso de tema.
+
+- `GridViewItemSelectionCheckMarkVisualEnabled`: `True` → `False` (la palomita).
+- `GridViewItemSelectedBorderThickness`: `2` → `0` (el borde, con lo que dejan
+  de importar los cinco pinceles de borde seleccionado).
+- `GridViewItemBackgroundSelected`, `…SelectedPressed` y `…SelectedDisabled`:
+  transparentes.
+
+El hover **se conserva**, y se iguala el de una tarjeta marcada al de una sin
+marcar (`GridViewItemBackgroundSelectedPointerOver` pasa a
+`SubtleFillColorSecondaryBrush`, que es el de una tarjeta cualquiera): quién
+está seleccionado lo dice el borde, no el fondo. Y no se toca
+`GridViewItemForegroundSelected`, que es el color del **texto**: transparentarlo
+habría borrado el título de la tarjeta seleccionada.
+
+### En alto contraste no se pisa nada, a propósito
+
+El bloque va en `ThemeDictionaries`, con `Default` y `Light` pisados y
+`HighContrast` **vacío**. En ese modo el fondo de selección del sistema no es
+decoración: es la señal que el modo promete, dibujada con los colores que el
+usuario eligió, y apagarla para dejar solo un borde de acento sería quitarle a
+quien lo necesita la marca que sí está garantizada. Ahí conviven las dos, y está
+bien que así sea.
+
+### Lo que falta
+
+Que alguien lo vea. Esta sesión no puede abrir la app; lo que se comprobó es que
+compila y que los recursos que se pisan son exactamente los que el estilo por
+omisión usa para la marca de selección. Si al mirarlo la tarjeta seleccionada
+quedara demasiado callada, el arreglo inverso es igual de corto: sacar el borde
+de ST-103 del `DataTemplate` y quedarse con el del sistema.

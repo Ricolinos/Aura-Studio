@@ -67,6 +67,55 @@
                   Tapped="Cards_Tapped"
                   SelectionChanged="Cards_SelectionChanged"
                   SelectionMode="Extended">
+
+            <!-- ST-202 (addendum): UNA sola marca de seleccionado.
+
+                 Al pasar a `Extended`, el contenedor empezó a dibujar además la
+                 marca del sistema —fondo, borde de 2 px y palomita— encima de la
+                 que ya pone la tarjeta desde ST-103. Dos marcas para un estado
+                 no son más claras: son dos. Se conserva la nuestra, que es la
+                 del sistema de diseño y la misma que la Mac, y se apaga la
+                 nativa poniendo en cero lo que la dibuja. Los valores de origen
+                 están en `generic.xaml` del Windows App SDK; acá se pisan solo
+                 para ESTA cuadrícula, no para toda la app.
+
+                 El hover se conserva, y se iguala el de una tarjeta marcada al
+                 de una sin marcar: quién está seleccionado lo dice el borde, no
+                 el fondo.
+
+                 En ALTO CONTRASTE no se pisa nada, a propósito: ahí el fondo de
+                 selección del sistema no es decoración sino la señal que el modo
+                 promete, y usa los colores que el usuario eligió. En ese modo
+                 conviven las dos marcas, y está bien que así sea. -->
+            <GridView.Resources>
+                <ResourceDictionary>
+                    <ResourceDictionary.ThemeDictionaries>
+                        <ResourceDictionary x:Key="Default">
+                            <x:Boolean x:Key="GridViewItemSelectionCheckMarkVisualEnabled">False</x:Boolean>
+                            <Thickness x:Key="GridViewItemSelectedBorderThickness">0</Thickness>
+                            <SolidColorBrush x:Key="GridViewItemBackgroundSelected" Color="Transparent" />
+                            <SolidColorBrush x:Key="GridViewItemBackgroundSelectedPressed" Color="Transparent" />
+                            <SolidColorBrush x:Key="GridViewItemBackgroundSelectedDisabled" Color="Transparent" />
+                            <StaticResource x:Key="GridViewItemBackgroundSelectedPointerOver"
+                                            ResourceKey="SubtleFillColorSecondaryBrush" />
+                        </ResourceDictionary>
+
+                        <ResourceDictionary x:Key="Light">
+                            <x:Boolean x:Key="GridViewItemSelectionCheckMarkVisualEnabled">False</x:Boolean>
+                            <Thickness x:Key="GridViewItemSelectedBorderThickness">0</Thickness>
+                            <SolidColorBrush x:Key="GridViewItemBackgroundSelected" Color="Transparent" />
+                            <SolidColorBrush x:Key="GridViewItemBackgroundSelectedPressed" Color="Transparent" />
+                            <SolidColorBrush x:Key="GridViewItemBackgroundSelectedDisabled" Color="Transparent" />
+                            <StaticResource x:Key="GridViewItemBackgroundSelectedPointerOver"
+                                            ResourceKey="SubtleFillColorSecondaryBrush" />
+                        </ResourceDictionary>
+
+                        <!-- Alto contraste: sin pisar nada. -->
+                        <ResourceDictionary x:Key="HighContrast" />
+                    </ResourceDictionary.ThemeDictionaries>
+                </ResourceDictionary>
+            </GridView.Resources>
+
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="vm:MediaCard">
                     <StackPanel Width="168" Margin="0,0,12,16" Spacing="6"
