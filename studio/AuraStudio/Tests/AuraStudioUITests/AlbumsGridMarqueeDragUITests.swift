@@ -59,11 +59,19 @@ final class AlbumsGridMarqueeDragUITests: XCTestCase {
         let app = launchApp()
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 30), "la app no llegó a primer plano")
 
-        // Navegar a Álbumes -- la barra lateral tiene un ítem "Álbumes"
-        // (ver SidebarView); si el nombre visible cambia, esta prueba lo
-        // nota primero que nadie.
-        let sidebarAlbums = app.staticTexts["Álbumes"].firstMatch
-        XCTAssertTrue(sidebarAlbums.waitForExistence(timeout: 15), "no apareció la sección Álbumes en la barra lateral")
+        // Navegar a Álbumes -- la fila de la barra lateral es un
+        // `Label(sub.title, systemImage:)` (ver `SidebarView.groupRow`),
+        // dentro de un `DisclosureGroup`/`List` -- eso puede exponerse
+        // como celda o botón según cómo AppKit arme el árbol de
+        // accesibilidad, no necesariamente como `staticTexts` suelto.
+        // Se busca por predicado sobre CUALQUIER tipo de elemento en vez
+        // de apostar a uno solo.
+        let albumsPredicate = NSPredicate(format: "label == %@", "Álbumes")
+        let sidebarAlbums = app.descendants(matching: .any).matching(albumsPredicate).firstMatch
+        if !sidebarAlbums.waitForExistence(timeout: 20) {
+            print("[DIAG] árbol de accesibilidad completo:\n\(app.debugDescription)")
+        }
+        XCTAssertTrue(sidebarAlbums.exists, "no apareció la sección Álbumes en la barra lateral")
         sidebarAlbums.click()
 
         let grid = app.otherElements[UITestEnvironmentIDs.albumsGrid]
