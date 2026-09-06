@@ -5653,3 +5653,61 @@ Con esto se cierran los 6 pasos de `LibraryFileWorker` (ST-157) y la
 Fase 5.1 del plan. Quedan fuera de esta ronda, anotados como huecos
 reales y separados: las ramas video/foto de `process(itemAt:)` (paso
 5) y concurrencia por tipo en `BackgroundTaskCenter` (Fase 4).
+
+## ST-174 — Instaladores de Windows 0.2.3 (pin Metro v0.7.4 / moonlit v0.2.4 sobre 0.2.2)
+
+Arma los dos instaladores del parche `0.2.3`, desde el commit de versión
+`2278bea` (`main`, `AuraStudio.iss` `AppVersion "0.2.3"` y
+`AuraStudio.App.csproj` `<Version>0.2.3</Version>`, verificados antes de
+compilar). Sin cambios de código en Aura Studio Windows: es solo el pin de
+firmware nuevo.
+
+### Qué trae 0.2.3 que 0.2.2 no tenía
+
+`FIRMWARE_VERSION` sube `metro.tag` de `v0.7.3` a `v0.7.4` y `moonlit.tag` de
+`v0.2.3` a `v0.2.4` — traen la pantalla de progreso al actualizar la
+biblioteca. Aura se queda en `v0.4.6-beta`, sin cambio.
+
+`.\scripts\FirmwareFetch.ps1` (las tres familias) corrido antes de compilar:
+"Checksums OK" por familia, `firmware-version.txt` = `v0.4.6-beta` / `v0.7.4` /
+`v0.2.4`. Los 12 hashes de `FIRMWARE_VERSION` cruzados uno por uno contra
+`Get-FileHash` de `artifacts\`, `artifacts\metro\` y `artifacts\moonlit\`: los
+12 coinciden.
+
+### Verificación
+
+`.\scripts\Make-Installer.ps1 -Architecture both` en `studio\windows`, Release,
+sin advertencias:
+
+- `[arm64] Publish verificado: 553 archivos, 291 MB.`
+- `[x64] Publish verificado: 557 archivos, 276 MB.`
+- `Las dos arquitecturas no dejan huérfanos sin cubrir.`
+- `Listo: ...\dist\AuraStudioSetup-0.2.3-arm64.exe` (94.5 MB)
+- `Listo: ...\dist\AuraStudioSetup-0.2.3-x64.exe` (97 MB)
+
+`(Get-Item ...).VersionInfo` de los dos `AuraStudioSetup-0.2.3-*.exe` declara
+`ProductVersion`/`FileVersion` `0.2.3`; el `AuraStudio.App.exe` de cada publish
+declara `ProductVersion`
+`0.2.3+2278bea152366739c24d76dd6cdd19f95f76ccc2` — el commit exacto grabado en
+el binario. Los tres `firmware-version.txt` de ambos publish dicen
+`v0.4.6-beta` / `v0.7.4` / `v0.2.4`.
+
+SHA-256 de los dos instaladores nuevos:
+
+- `AuraStudioSetup-0.2.3-arm64.exe` (99 042 490 bytes):
+  `1413c9ac53d7506b15b733ad961103bb5f998987b3282ba9f959360c661fc429`
+- `AuraStudioSetup-0.2.3-x64.exe` (101 705 558 bytes):
+  `b53879e4c2015016e460c4fd2ade153fa70613fb4d697b8db8addb84634baefa`
+
+`dist\` sigue ignorado en git: los `.exe` no se commitean, solo esta decisión.
+
+### Estado de `dist\` al compilar
+
+`0.2.1` y `0.2.2` siguen presentes y verificados intactos: mismos SHA-256 de
+siempre (`0.2.1`: `db2b6938995b2940022f2262934a8547048e497b9ecadb1c6acedadb9f8e0c84`
+el arm64, `e621e325c6b05f4528b6b042ce1445d096db84429db098445615a6a2bdb31c7d` el
+x64; `0.2.2`: `abd608241a7fe813a9ff992fc3f9ca44b2e9448dba350e7210716df901616f05`
+el arm64, `4083fa4f2dc730fb7dbbb9189bdf300410f79944058331af8635f21ed00fe769` el
+x64). Nada nuevo que anotar sobre `0.2.0`/`0.1.0` (ST-173): siguen ausentes de
+`dist\`, sin intervención de esta sesión, y la copia canónica de `0.2.0` sigue
+a salvo en su Release de GitHub.
