@@ -16,14 +16,39 @@ struct AlbumsView: View {
     @State private var albums: [AlbumGroup] = []
     @State private var searchText = ""
     @State private var selectedAlbumID: String?
+    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): lo VISIBLE (filtro
+    /// de búsqueda + orden) y su `GridOrder`, calculados una sola vez
+    /// por cambio real de entrada. Antes era un computed var que el
+    /// `body` evaluaba cinco veces por pasada -- ver `GridModel`.
+    @StateObject private var gridModel = GridModel<AlbumGroup>()
+    /// El resumen de la barra de estado, memoizado -- ver
+    /// `GridStatusModel`.
+    @StateObject private var statusModel = GridStatusModel()
+    /// Identidad de esta vista como publicadora de `selectionStore`.
+    @State private var publisherID = UUID()
     /// Selección múltiple estilo Finder (encargo del dueño, 2026-08-19)
     /// -- clic simple selecciona/alterna, doble clic abre el detalle
     /// (como siempre lo hacía el tap único, ahora reservado al gesto de
-    /// doble clic).
-    @State private var selection = GridSelection<String>()
-    /// PLAN-studio-rendimiento.md Fase 2 punto 2: construido una vez por
-    /// cambio de la cuadrícula visible, nunca en el gesto de tap.
-    @State private var visibleOrder = GridOrder<String>.empty
+    /// doble clic). PLAN-studio-rendimiento-2.md Fase 1 (ST-181): vive
+    /// en un `GridSelectionModel` inyectable en vez de un `@State
+    /// private` para que el arnés pueda cambiarla desde afuera y contar
+    /// evaluaciones de `body` por clic -- mismo comportamiento.
+    @StateObject private var selectionModel: GridSelectionModel<String>
+
+    init(viewModel: LibraryViewModel, device: AuraDevice?, preferences: AppPreferences,
+         selectionStore: SelectionStore,
+         selectionModel: GridSelectionModel<String> = GridSelectionModel()) {
+        self.viewModel = viewModel
+        self.device = device
+        self.preferences = preferences
+        self.selectionStore = selectionStore
+        _selectionModel = StateObject(wrappedValue: selectionModel)
+    }
+
+    private var selection: GridSelection<String> {
+        get { selectionModel.selection }
+        nonmutating set { selectionModel.selection = newValue }
+    }
     /// ST-104: álbum cuyo menú pidió "Buscar carátulas del álbum".
     @State private var coverSearch: AlbumCoverRequest?
     @AppStorage("aura.albumsSort") private var sortRaw = AlbumSort.title.rawValue
@@ -43,8 +68,14 @@ struct AlbumsView: View {
 
     private var sort: AlbumSort { AlbumSort(rawValue: sortRaw) ?? .title }
 
-    private var visibleAlbums: [AlbumGroup] {
-        var result = albums.filter { LibrarySearch.album($0, matches: searchText) }
+    private var visibleAlbums: [AlbumGroup] { gridModel.visible }
+
+    /// El cálculo en sí. Lo llama `GridModel.recompute`, nunca el
+    /// `body`; `groups` viene por parámetro porque `rebuild()` lo usa
+    /// con el valor recién calculado, antes de que el `@State` lo
+    /// refleje.
+    private func computeVisible(_ groups: [AlbumGroup]) -> [AlbumGroup] {
+        var result = groups.filter { LibrarySearch.album($0, matches: searchText) }
         switch sort {
         case .title:
             break // orden natural de LibraryGrouping (título, año; "Sin álbum" al final)
@@ -77,6 +108,9 @@ struct AlbumsView: View {
     }
 
     var body: some View {
+        #if DEBUG
+        let _ = BodyEvaluationCounter.record("AlbumsView")
+        #endif
         Group {
             if let album = selectedAlbum {
                 albumDetail(album)
@@ -85,9 +119,29 @@ struct AlbumsView: View {
             }
         }
         .navigationTitle("Álbumes")
-        .libraryStatus(statusSummary)
+        .libraryStatus(statusModel.summary)
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
+        // PLAN-studio-rendimiento-2.md Fase 1 (ST-181): todo lo que
+        // antes se recalculaba dentro del `body` se dispara acá, por la
+        // entrada que de verdad cambió.
+        .onChange(of: searchText) { refreshGrid() }
+        .onChange(of: sortRaw) { refreshGrid() }
+        .onChange(of: preferences.artistGrouping) { rebuild() }
+        .onChange(of: selectedAlbumID) { _, id in
+            refreshStatusTotal()
+            // Al volver del detalle, la cuadrícula vuelve a ser quien
+            // publica la selección; al entrar, la publica su tabla.
+            if id == nil { publishSelection() }
+        }
+        .onChange(of: selection) { _, _ in
+            refreshStatusSelection()
+            if selectedAlbumID == nil { publishSelection() }
+        }
+        .onChange(of: selectionStore.selected) { _, _ in
+            if selectedAlbumID != nil { refreshStatusSelection() }
+        }
+        .onDisappear { selectionStore.clear(from: publisherID) }
         .sheet(item: $coverSearch) { request in
             AlbumCoverPickerView(
                 request: request,
@@ -103,22 +157,75 @@ struct AlbumsView: View {
     /// ST-063: barra de estado. En la cuadrícula, álbumes/artistas/
     /// canciones y lo seleccionado; con un álbum abierto, sus canciones
     /// (la selección de la tabla embebida llega por `selectionStore`).
-    private var statusSummary: LibraryStatusSummary {
+    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): esto vivía en el
+    /// `body` -- `LibraryStats.albums` crudo, o sea `flatMap` de los
+    /// 12 000 ítems más una normalización de artista por ítem, en cada
+    /// clic (diagnóstico §0.1). Ahora el total se recalcula con la
+    /// cuadrícula y la selección aparte, fuera de main cuando es cara.
+    private func refreshStatusTotal() {
+        if let album = selectedAlbum {
+            let items = album.items
+            let title = album.title
+            let options = preferences.artistGrouping
+            statusModel.recomputeTotal {
+                var summary = LibraryStats.music(items: items, selected: [], options: options)
+                summary.total = "«\(title)» · " + summary.total
+                return summary
+            }
+        } else {
+            let visible = gridModel.visible
+            statusModel.recomputeTotal { LibraryStats.albumsTotal(visible) }
+        }
+        refreshStatusSelection()
+    }
+
+    private func refreshStatusSelection() {
         if let album = selectedAlbum {
             let selectedTracks = album.items.filter { selectionStore.selected.contains($0.id) }
-            var summary = LibraryStats.music(items: album.items, selected: selectedTracks, options: preferences.artistGrouping)
-            summary.total = "«\(album.title)» · " + summary.total
-            return summary
+            let totalCount = album.items.count
+            let options = preferences.artistGrouping
+            statusModel.recomputeSelection(cost: selectedTracks.count) {
+                LibraryStats.musicSelectionText(selected: selectedTracks, totalCount: totalCount, options: options)
+            }
+        } else {
+            let visible = gridModel.visible
+            let selected = visible.filter { selection.isSelected($0.id) }
+            let totalCount = visible.count
+            statusModel.recomputeSelection(cost: selected.reduce(0) { $0 + $1.trackCount }) {
+                LibraryStats.albumsSelectionText(selected: selected, totalCount: totalCount)
+            }
         }
-        return LibraryStats.albums(visibleAlbums, selected: visibleAlbums.filter { selection.isSelected($0.id) })
+    }
+
+    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): la selección de la
+    /// CUADRÍCULA también llega a `selectionStore` -- seleccionar tres
+    /// álbumes y pedir "sincronizar solo la selección" tenía que
+    /// sincronizar esas canciones y no sincronizaba nada.
+    private func publishSelection() {
+        let ids = gridModel.visible
+            .filter { selection.isSelected($0.id) }
+            .flatMap { $0.items.map(\.id) }
+        selectionStore.replace(with: Set(ids), from: publisherID)
     }
 
     private func rebuild() {
-        albums = LibraryGrouping.albums(from: viewModel.items, options: preferences.artistGrouping)
-        if let selectedAlbumID, !albums.contains(where: { $0.id == selectedAlbumID }) {
+        let groups = LibraryGrouping.albums(from: viewModel.items, options: preferences.artistGrouping)
+        albums = groups
+        if let selectedAlbumID, !groups.contains(where: { $0.id == selectedAlbumID }) {
             self.selectedAlbumID = nil
         }
-        selection.pruneMissing(from: Set(albums.map(\.id)))
+        selection.pruneMissing(from: Set(groups.map(\.id)))
+        refreshGrid(groups)
+    }
+
+    /// Recalcula lo visible (y con ello la barra de estado). `groups`
+    /// solo se pasa desde `rebuild()`, que tiene el valor nuevo antes
+    /// que el `@State`.
+    private func refreshGrid(_ groups: [AlbumGroup]? = nil) {
+        let source = groups ?? albums
+        gridModel.recompute { computeVisible(source) }
+        refreshStatusTotal()
+        if selectedAlbumID == nil { publishSelection() }
     }
 
     /// El pedido de carátulas para un conjunto de canciones, resuelto
@@ -193,13 +300,12 @@ struct AlbumsView: View {
                               alignment: .leading, spacing: 28) {
                         ForEach(visibleAlbums) { album in
                             AlbumCardView(album: album)
-                                .librarySelectionCheckbox(selection.isSelected(album.id),
-                                                          anySelected: !selection.selected.isEmpty) {
+                                .librarySelectionCheckbox(selection.isSelected(album.id)) {
                                     selection.toggle(album.id)
                                 }
                                 .contentShape(Rectangle())
                                 .onTapGesture(count: 2) { selectedAlbumID = album.id }
-                                .onTapGesture { selection.handleTap(album.id, order: visibleOrder) }
+                                .onTapGesture { selection.handleTap(album.id, order: gridModel.order) }
                                 .contextMenu { albumContextMenu(album) }
                                 .help("\(album.title) — \(album.artist)")
                         }
@@ -217,13 +323,12 @@ struct AlbumsView: View {
                 }
             }
         }
-        // PLAN-studio-rendimiento.md Fase 2: `visibleOrder` se
+        // PLAN-studio-rendimiento.md Fase 2: el orden visible se
         // reconstruye solo cuando cambia el conjunto/orden visible, no
-        // en cada clic (punto 2); Cmd+A selecciona todo lo visible,
-        // Escape deselecciona (punto 1). Pendiente de verificar
-        // interactivo con el dueño (gestos de teclado en macOS).
-        .onAppear { visibleOrder = GridOrder(visibleAlbums.map(\.id)) }
-        .onChange(of: visibleAlbums.map(\.id)) { visibleOrder = GridOrder($0) }
+        // en cada clic (punto 2) -- ahora sale del propio `GridModel`
+        // (ST-181), sin el `onChange(of: visibleAlbums.map(\.id))` que
+        // era, él solo, una de las cinco evaluaciones por pasada.
+        // Cmd+A selecciona todo lo visible, Escape deselecciona.
         .onKeyPress(.escape) {
             guard !selection.selected.isEmpty else { return .ignored }
             selection.clear()
@@ -231,7 +336,7 @@ struct AlbumsView: View {
         }
         .onKeyPress(keys: ["a"]) { press in
             guard press.modifiers.contains(.command) else { return .ignored }
-            selection.selectAll(visibleOrder)
+            selection.selectAll(gridModel.order)
             return .handled
         }
     }

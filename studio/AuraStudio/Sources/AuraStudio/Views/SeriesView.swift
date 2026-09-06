@@ -9,6 +9,9 @@ struct SeriesView: View {
     @ObservedObject var viewModel: LibraryViewModel
     let device: AuraDevice?
     @ObservedObject var preferences: AppPreferences
+    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): las cuadrículas
+    /// también publican su selección -- ver `SelectionStore`.
+    @ObservedObject var selectionStore: SelectionStore
 
     @State private var series: [VideoCollectionGroup] = []
     @State private var searchText = ""
@@ -19,9 +22,15 @@ struct SeriesView: View {
     /// Selección múltiple de episodios dentro de una serie abierta --
     /// se limpia al volver a la cuadrícula (`selectedSeriesID = nil`).
     @State private var episodeSelection = GridSelection<UUID>()
-    /// PLAN-studio-rendimiento.md Fase 2 punto 2: construidos una vez
-    /// por cambio de la cuadrícula/serie visible, nunca en el gesto de tap.
-    @State private var visibleOrder = GridOrder<String>.empty
+    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): lo visible y su
+    /// `GridOrder`, calculados una sola vez por cambio real de entrada.
+    @StateObject private var gridModel = GridModel<VideoCollectionGroup>()
+    /// El resumen de la barra de estado, memoizado.
+    @StateObject private var statusModel = GridStatusModel()
+    /// Identidad de esta vista como publicadora de `selectionStore`.
+    @State private var publisherID = UUID()
+    /// PLAN-studio-rendimiento.md Fase 2 punto 2: construido una vez
+    /// por cambio de la serie visible, nunca en el gesto de tap.
     @State private var episodeOrder = GridOrder<UUID>.empty
     /// R2-1: la casilla de un episodio aparece al pasar el cursor por su
     /// FILA (la casilla oculta no recibe eventos, así que no puede
@@ -29,10 +38,13 @@ struct SeriesView: View {
     @State private var hoveredEpisodeID: UUID?
     @State private var reviewingItem: LibraryItem?
 
-    private var visibleSeries: [VideoCollectionGroup] {
+    private var visibleSeries: [VideoCollectionGroup] { gridModel.visible }
+
+    /// El cálculo en sí -- lo llama `GridModel.recompute`, nunca el `body`.
+    private func computeVisible(_ groups: [VideoCollectionGroup]) -> [VideoCollectionGroup] {
         let needle = searchText.trimmingCharacters(in: .whitespaces)
-        guard !needle.isEmpty else { return series }
-        return series.filter { LibrarySearch.matches($0.title, needle) }
+        guard !needle.isEmpty else { return groups }
+        return groups.filter { LibrarySearch.matches($0.title, needle) }
     }
 
     private var selectedSeries: VideoCollectionGroup? {
@@ -49,9 +61,21 @@ struct SeriesView: View {
             }
         }
         .navigationTitle("Series")
-        .libraryStatus(statusSummary)
+        .libraryStatus(statusModel.summary)
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
+        // PLAN-studio-rendimiento-2.md Fase 1 (ST-181): fuera del `body`.
+        .onChange(of: searchText) { refreshGrid() }
+        .onChange(of: selectedSeriesID) { refreshGrid() }
+        .onChange(of: selection) { _, _ in
+            refreshStatusSelection()
+            publishSelection()
+        }
+        .onChange(of: episodeSelection) { _, _ in
+            refreshStatusSelection()
+            publishSelection()
+        }
+        .onDisappear { selectionStore.clear(from: publisherID) }
         .sheet(item: $reviewingItem) { item in
             MediaInfoView(item: item, availableCategories: MediaCategory.videoCategories.map(\.displayName)) { category in
                 viewModel.setCategory(category, forItem: item.id)
@@ -66,25 +90,70 @@ struct SeriesView: View {
     }
 
     /// ST-063: barra de estado -- series/temporadas/episodios en la
-    /// cuadrícula; con una serie abierta, sus episodios y los seleccionados.
-    private var statusSummary: LibraryStatusSummary {
+    /// cuadrícula; con una serie abierta, sus episodios y los
+    /// seleccionados. PLAN-studio-rendimiento-2.md Fase 1 (ST-181): se
+    /// calcula fuera del `body`, con el total memoizado.
+    private func refreshStatusTotal() {
         if let show = selectedSeries {
-            return LibraryStats.episodes(of: show, selected: show.items.filter { episodeSelection.isSelected($0.id) })
+            statusModel.recomputeTotal { LibraryStats.episodesTotal(of: show) }
+        } else {
+            let visible = gridModel.visible
+            statusModel.recomputeTotal { LibraryStats.seriesTotal(visible) }
         }
-        return LibraryStats.series(visibleSeries, selected: visibleSeries.filter { selection.isSelected($0.id) })
+        refreshStatusSelection()
+    }
+
+    private func refreshStatusSelection() {
+        if let show = selectedSeries {
+            let selected = show.items.filter { episodeSelection.isSelected($0.id) }
+            let totalCount = show.items.count
+            statusModel.recomputeSelection(cost: selected.count) {
+                LibraryStats.episodesSelectionText(selected: selected, totalCount: totalCount)
+            }
+        } else {
+            let visible = gridModel.visible
+            let selected = visible.filter { selection.isSelected($0.id) }
+            let totalCount = visible.count
+            statusModel.recomputeSelection(cost: selected.reduce(0) { $0 + $1.items.count }) {
+                LibraryStats.seriesSelectionText(selected: selected, totalCount: totalCount)
+            }
+        }
+    }
+
+    /// ST-181: lo seleccionado (series completas, o episodios sueltos
+    /// con una serie abierta) llega a `selectionStore`.
+    private func publishSelection() {
+        let ids: [UUID]
+        if let show = selectedSeries {
+            ids = show.items.filter { episodeSelection.isSelected($0.id) }.map(\.id)
+        } else {
+            ids = gridModel.visible
+                .filter { selection.isSelected($0.id) }
+                .flatMap { $0.items.map(\.id) }
+        }
+        selectionStore.replace(with: Set(ids), from: publisherID)
     }
 
     private func rebuild() {
-        series = LibraryGrouping.videoCollections(from: viewModel.items).filter(\.isSeries)
-        if let selectedSeriesID, !series.contains(where: { $0.id == selectedSeriesID }) {
+        let groups = LibraryGrouping.videoCollections(from: viewModel.items).filter(\.isSeries)
+        series = groups
+        if let selectedSeriesID, !groups.contains(where: { $0.id == selectedSeriesID }) {
             self.selectedSeriesID = nil
         }
-        selection.pruneMissing(from: Set(series.map(\.id)))
-        if let show = selectedSeries {
+        selection.pruneMissing(from: Set(groups.map(\.id)))
+        if let id = selectedSeriesID, let show = groups.first(where: { $0.id == id }) {
             episodeSelection.pruneMissing(from: Set(show.items.map(\.id)))
         } else {
             episodeSelection.clear()
         }
+        refreshGrid(groups)
+    }
+
+    private func refreshGrid(_ groups: [VideoCollectionGroup]? = nil) {
+        let source = groups ?? series
+        gridModel.recompute { computeVisible(source) }
+        refreshStatusTotal()
+        publishSelection()
     }
 
     /// Series a las que aplica una acción disparada desde `show`: su
@@ -124,12 +193,11 @@ struct SeriesView: View {
                         ForEach(visibleSeries) { show in
                             MediaCardView(imageData: show.posterData, title: show.title,
                                           subtitle: episodeCountText(show), aspect: .poster(width: 140), placeholderSymbol: "tv")
-                                .librarySelectionCheckbox(selection.isSelected(show.id),
-                                                          anySelected: !selection.selected.isEmpty) {
+                                .librarySelectionCheckbox(selection.isSelected(show.id)) {
                                     selection.toggle(show.id)
                                 }
                                 .onTapGesture(count: 2) { selectedSeriesID = show.id }
-                                .onTapGesture { selection.handleTap(show.id, order: visibleOrder) }
+                                .onTapGesture { selection.handleTap(show.id, order: gridModel.order) }
                                 .contextMenu { seriesContextMenu(show) }
                                 .draggable(LibrarySelectionTransfer(itemIDs: effectiveSeries(for: show).flatMap(\.items).map(\.id)))
                                 .help(show.title)
@@ -151,8 +219,6 @@ struct SeriesView: View {
         // PLAN-studio-rendimiento.md Fase 2: ver el comentario
         // equivalente en AlbumsView.grid -- mismo patrón. Pendiente de
         // verificar interactivo con el dueño.
-        .onAppear { visibleOrder = GridOrder(visibleSeries.map(\.id)) }
-        .onChange(of: visibleSeries.map(\.id)) { visibleOrder = GridOrder($0) }
         .onKeyPress(.escape) {
             guard !selection.selected.isEmpty else { return .ignored }
             selection.clear()
@@ -160,7 +226,7 @@ struct SeriesView: View {
         }
         .onKeyPress(keys: ["a"]) { press in
             guard press.modifiers.contains(.command) else { return .ignored }
-            selection.selectAll(visibleOrder)
+            selection.selectAll(gridModel.order)
             return .handled
         }
     }
@@ -286,7 +352,6 @@ struct SeriesView: View {
             // va al principio de la fila en vez de sobre una portada,
             // pero hace exactamente lo mismo.
             LibraryRowSelectionCheckbox(isSelected: isSelected,
-                                        anySelected: !episodeSelection.selected.isEmpty,
                                         isRowHovered: hoveredEpisodeID == item.id,
                                         toggle: { episodeSelection.toggle(item.id) })
             Text(item.episode.map { "\($0)" } ?? "--")

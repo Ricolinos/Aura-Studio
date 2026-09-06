@@ -19,6 +19,9 @@ struct PhotoAlbumsView: View {
     /// "Fotos" / "Imágenes" / "IA" -- la colección exacta que esta
     /// instancia muestra (una por subsección de la barra lateral).
     let category: String
+    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): las cuadrículas
+    /// también publican su selección -- ver `SelectionStore`.
+    @ObservedObject var selectionStore: SelectionStore
 
     @State private var albums: [PhotoAlbumGroup] = []
     @State private var searchText = ""
@@ -31,9 +34,15 @@ struct PhotoAlbumsView: View {
     /// siempre); con varias, no hace nada (no hay "vista previa
     /// múltiple" con este espacio de nombres de Quick Look).
     @State private var photoSelection = GridSelection<UUID>()
-    /// PLAN-studio-rendimiento.md Fase 2 punto 2: construidos una vez
-    /// por cambio de la cuadrícula/álbum visible, nunca en el gesto de tap.
-    @State private var visibleOrder = GridOrder<String>.empty
+    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): lo visible y su
+    /// `GridOrder`, calculados una sola vez por cambio real de entrada.
+    @StateObject private var gridModel = GridModel<PhotoAlbumGroup>()
+    /// El resumen de la barra de estado, memoizado -- `GridStatusModel`.
+    @StateObject private var statusModel = GridStatusModel()
+    /// Identidad de esta vista como publicadora de `selectionStore`.
+    @State private var publisherID = UUID()
+    /// PLAN-studio-rendimiento.md Fase 2 punto 2: construido una vez
+    /// por cambio del álbum visible, nunca en el gesto de tap.
     @State private var photoOrder = GridOrder<UUID>.empty
     @State private var renamingAlbum: PhotoAlbumGroup?
     @State private var quickLook = QuickLookCoordinator()
@@ -44,10 +53,13 @@ struct PhotoAlbumsView: View {
     /// pregunta nada -- ya se sabe a cuál álbum va.
     @State private var pendingAlbumNameURLs: [URL]?
 
-    private var visibleAlbums: [PhotoAlbumGroup] {
+    private var visibleAlbums: [PhotoAlbumGroup] { gridModel.visible }
+
+    /// El cálculo en sí -- lo llama `GridModel.recompute`, nunca el `body`.
+    private func computeVisible(_ groups: [PhotoAlbumGroup]) -> [PhotoAlbumGroup] {
         let needle = searchText.trimmingCharacters(in: .whitespaces)
-        guard !needle.isEmpty else { return albums }
-        return albums.filter { LibrarySearch.matches($0.title, needle) }
+        guard !needle.isEmpty else { return groups }
+        return groups.filter { LibrarySearch.matches($0.title, needle) }
     }
 
     private var selectedAlbum: PhotoAlbumGroup? {
@@ -64,9 +76,21 @@ struct PhotoAlbumsView: View {
             }
         }
         .navigationTitle(category)
-        .libraryStatus(statusSummary)
+        .libraryStatus(statusModel.summary)
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
+        // PLAN-studio-rendimiento-2.md Fase 1 (ST-181): fuera del `body`.
+        .onChange(of: searchText) { refreshGrid() }
+        .onChange(of: selectedAlbumID) { refreshGrid() }
+        .onChange(of: selection) { _, _ in
+            refreshStatusSelection()
+            publishSelection()
+        }
+        .onChange(of: photoSelection) { _, _ in
+            refreshStatusSelection()
+            publishSelection()
+        }
+        .onDisappear { selectionStore.clear(from: publisherID) }
         .sheet(item: $renamingAlbum) { album in
             AlbumRenameSheet(currentTitle: album.isUnknown ? "" : album.title) { newName in
                 viewModel.renamePhotoAlbum(items: Set(album.items.map(\.id)), to: newName)
@@ -118,24 +142,69 @@ struct PhotoAlbumsView: View {
 
     /// ST-063: barra de estado -- álbumes/fotos en la cuadrícula; con
     /// un álbum abierto, sus fotos y las seleccionadas.
-    private var statusSummary: LibraryStatusSummary {
+    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): se calcula fuera
+    /// del `body`, con el total memoizado -- ver `GridStatusModel`.
+    private func refreshStatusTotal() {
         if let album = selectedAlbum {
-            return LibraryStats.photoAlbum(album, selected: album.items.filter { photoSelection.isSelected($0.id) })
+            statusModel.recomputeTotal { LibraryStats.photoAlbumTotal(album) }
+        } else {
+            let visible = gridModel.visible
+            statusModel.recomputeTotal { LibraryStats.photoAlbumsTotal(visible) }
         }
-        return LibraryStats.photoAlbums(visibleAlbums, selected: visibleAlbums.filter { selection.isSelected($0.id) })
+        refreshStatusSelection()
+    }
+
+    private func refreshStatusSelection() {
+        if let album = selectedAlbum {
+            let selected = album.items.filter { photoSelection.isSelected($0.id) }
+            let totalCount = album.count
+            statusModel.recomputeSelection(cost: selected.count) {
+                LibraryStats.photoSelectionText(selected: selected, totalCount: totalCount)
+            }
+        } else {
+            let visible = gridModel.visible
+            let selected = visible.filter { selection.isSelected($0.id) }
+            let totalCount = visible.count
+            statusModel.recomputeSelection(cost: selected.reduce(0) { $0 + $1.count }) {
+                LibraryStats.photoAlbumsSelectionText(selected: selected, totalCount: totalCount)
+            }
+        }
+    }
+
+    /// ST-181: lo seleccionado (álbumes completos, o fotos sueltas con
+    /// un álbum abierto) llega a `selectionStore`.
+    private func publishSelection() {
+        let ids: [UUID]
+        if let album = selectedAlbum {
+            ids = album.items.filter { photoSelection.isSelected($0.id) }.map(\.id)
+        } else {
+            ids = gridModel.visible
+                .filter { selection.isSelected($0.id) }
+                .flatMap { $0.items.map(\.id) }
+        }
+        selectionStore.replace(with: Set(ids), from: publisherID)
     }
 
     private func rebuild() {
-        albums = LibraryGrouping.photoAlbums(from: viewModel.items, category: category)
-        if let selectedAlbumID, !albums.contains(where: { $0.id == selectedAlbumID }) {
+        let groups = LibraryGrouping.photoAlbums(from: viewModel.items, category: category)
+        albums = groups
+        if let selectedAlbumID, !groups.contains(where: { $0.id == selectedAlbumID }) {
             self.selectedAlbumID = nil
         }
-        selection.pruneMissing(from: Set(albums.map(\.id)))
-        if let album = selectedAlbum {
+        selection.pruneMissing(from: Set(groups.map(\.id)))
+        if let id = selectedAlbumID, let album = groups.first(where: { $0.id == id }) {
             photoSelection.pruneMissing(from: Set(album.items.map(\.id)))
         } else {
             photoSelection.clear()
         }
+        refreshGrid(groups)
+    }
+
+    private func refreshGrid(_ groups: [PhotoAlbumGroup]? = nil) {
+        let source = groups ?? albums
+        gridModel.recompute { computeVisible(source) }
+        refreshStatusTotal()
+        publishSelection()
     }
 
     /// Álbumes a los que aplica una acción disparada desde `album`: su
@@ -180,12 +249,11 @@ struct PhotoAlbumsView: View {
                                   alignment: .leading, spacing: 28) {
                             ForEach(visibleAlbums) { album in
                                 PhotoAlbumCardView(album: album)
-                                    .librarySelectionCheckbox(selection.isSelected(album.id),
-                                                              anySelected: !selection.selected.isEmpty) {
+                                    .librarySelectionCheckbox(selection.isSelected(album.id)) {
                                         selection.toggle(album.id)
                                     }
                                     .onTapGesture(count: 2) { selectedAlbumID = album.id }
-                                    .onTapGesture { selection.handleTap(album.id, order: visibleOrder) }
+                                    .onTapGesture { selection.handleTap(album.id, order: gridModel.order) }
                                     .contextMenu { albumContextMenu(album) }
                                     .draggable(LibrarySelectionTransfer(itemIDs: effectiveAlbums(for: album).flatMap(\.items).map(\.id)))
                                     .help(album.title)
@@ -201,8 +269,6 @@ struct PhotoAlbumsView: View {
         // PLAN-studio-rendimiento.md Fase 2: ver el comentario
         // equivalente en AlbumsView.grid -- mismo patrón. Pendiente de
         // verificar interactivo con el dueño.
-        .onAppear { visibleOrder = GridOrder(visibleAlbums.map(\.id)) }
-        .onChange(of: visibleAlbums.map(\.id)) { visibleOrder = GridOrder($0) }
         .onKeyPress(.escape) {
             guard !selection.selected.isEmpty else { return .ignored }
             selection.clear()
@@ -210,7 +276,7 @@ struct PhotoAlbumsView: View {
         }
         .onKeyPress(keys: ["a"]) { press in
             guard press.modifiers.contains(.command) else { return .ignored }
-            selection.selectAll(visibleOrder)
+            selection.selectAll(gridModel.order)
             return .handled
         }
     }
@@ -353,8 +419,7 @@ struct PhotoAlbumsView: View {
         let isSelected = photoSelection.isSelected(item.id)
         return CoverArtView(data: try? Data(contentsOf: item.preparedURL ?? item.sourceURL), side: 140,
                             cornerRadius: 6, placeholderSymbol: "photo")
-            .librarySelectionCheckbox(isSelected, anySelected: !photoSelection.selected.isEmpty,
-                                      cornerRadius: 6) {
+            .librarySelectionCheckbox(isSelected, cornerRadius: 6) {
                 photoSelection.toggle(item.id)
             }
             .contentShape(Rectangle())

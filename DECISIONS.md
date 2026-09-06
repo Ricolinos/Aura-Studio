@@ -6092,3 +6092,141 @@ tocó ningún archivo de producción fuera de `App.xaml.cs` (dos líneas: captur
 vigilante -- `LibraryPerfCheck` es la única superficie que este W0 reescribe
 de fondo, y es una herramienta de medición, no parte de la app que el dueño
 instala.
+
+## ST-181 — PLAN-studio-rendimiento-2.md, Fase F1: las cuadrículas dejan de trabajar dentro del `body`
+
+Segunda PARADA de la ronda 2 (sesión "experto en código opus"), sobre la
+línea base de [ST-180](#st-180). Ataca los puntos 1, 2, 3, 4 y 7 del
+diagnóstico de §0 del plan: en Álbumes no se podían seleccionar más de dos
+tarjetas sin que la app se trabara, y la causa no era una sola cosa cara
+sino **trabajo caro repetido muchas veces por clic**.
+
+Todo lo de esta PARADA vale para las **cinco** cuadrículas (Álbumes,
+Artistas, Películas, Series, álbumes de Fotos) más Listas, no solo para
+Álbumes: el diagnóstico solo había mirado Álbumes, pero las cinco tenían
+exactamente el mismo patrón copiado.
+
+### Lo que se hizo
+
+1. **`GridModel<Element>`** (`Models/GridModel.swift`), el `RowsModel` de
+   las cuadrículas. `visibleAlbums` era un computed var -- filtro de
+   búsqueda + orden con `localizedStandardCompare` sobre 1 000 álbumes --
+   que el `body` evaluaba **cinco veces por pasada**: dos en la barra de
+   estado, una en el estado vacío, una en el `ForEach` y una en el
+   `onChange(of: visibleAlbums.map(\.id))` que reconstruía el `GridOrder`.
+   Ahora se calcula **una vez por cambio real de entrada** (los grupos, el
+   texto de búsqueda, el criterio de orden) y nunca por selección ni por
+   hover, que no entran en el cálculo. El `GridOrder` (índice id→posición
+   del Shift+clic, ST-154) sale del mismo cómputo, así que esa quinta
+   evaluación desaparece por completo en vez de mudarse a otro lado.
+2. **`GridStatusModel`** (mismo archivo) y `LibraryStats` partido en
+   `xxxTotal(_:)` + `xxxSelectionText(selected:totalCount:)` para álbumes,
+   artistas, películas, series, álbumes de fotos, episodios y listas --
+   el mismo corte que ST-153 ya había hecho para música/video/fotos y que
+   se había aplicado **solo** a `MediaSectionView`. La barra de estado de
+   Álbumes llamaba `LibraryStats.albums` crudo dentro del `body`: 76 ms
+   medidos en ST-180 (b), en **cada clic**. Ahora el total se recalcula
+   con la cuadrícula, y la parte de la selección aparte -- fuera del hilo
+   principal cuando el trabajo supera 2 000 ítems (mismo umbral que
+   `RowsModel`), con cancelación del cálculo anterior, que es un debounce
+   sin latencia fija: arrastrar una selección no encola trabajo viejo.
+   Listas de reproducción entra por el mismo camino: armaba un diccionario
+   de TODAS las canciones de la biblioteca en cada pasada de su `body`.
+3. **Se fue el `onPreferenceChange` de `ContentView`** (§0.3, lo que la
+   ronda 1 pidió y quedó pendiente). Publicar el resumen por
+   `PreferenceKey` obligaba a **dos pasadas completas de `body` de toda la
+   ventana por clic**: una calcula el árbol y sus preferencias, otra
+   vuelve a calcularlo porque cambió un `@State` de la raíz. Ahora hay un
+   `LibraryStatusCenter` chico (`Models/LibraryStatusSummary.swift`) que
+   `ContentView` sostiene en un **`@State`, no en un `@StateObject`** --
+   `@State` guarda la referencia sin suscribir a la vista -- y que observa
+   solo `LibraryStatusBarHost`, la franja de 24 pt del pie. Los sitios de
+   llamada no cambiaron: `.libraryStatus(_:)` sigue siendo el mismo
+   modificador, ahora implementado con `onAppear`/`onChange` (nunca dentro
+   del `body`) contra el centro, que llega por `EnvironmentValues`.
+   La semántica del `reduce` del `PreferenceKey` se conserva con un
+   `owner`: publicar `nil` desde una vista que NO es la dueña no apaga la
+   barra -- así la tabla embebida en un álbum abierto (que publica `nil`
+   a propósito, porque el resumen lo arma la vista contenedora) no borra
+   el resumen de la contenedora.
+4. **`anySelected` fuera de la casilla de selección** (§0.4). Era un dato
+   GLOBAL de la cuadrícula metido en cada tarjeta: al pasar de cero a un
+   elemento seleccionado cambiaba para las 1 000, invalidándolas y
+   disparando la animación de aparición en todas, por un clic. La regla
+   queda: **la casilla se ve si esa tarjeta está seleccionada o si el
+   cursor está encima de ella**, nada global.
+   **Esto es un cambio de comportamiento visible**, no solo de
+   rendimiento: se pierde el "con algo seleccionado se ven TODAS las
+   casillas" que ST-113 (R2-1) había decidido para que el usuario en modo
+   selección viera dónde sumar sin tantear tarjeta por tarjeta. Se acepta
+   porque lo pide F1 del plan explícitamente y porque el hover mantiene
+   descubrible la casilla; **queda para que el dueño lo confirme en la
+   verificación interactiva de F4**, y si lo extraña se revierte esa
+   línea sola (`LibrarySelectionOverlay.showsCheckbox`) sin deshacer nada
+   más de esta PARADA.
+5. **Las cuadrículas publican su selección en `SelectionStore`** (§0.7).
+   `GridSelection` era O(1) desde ST-154 pero su selección **no llegaba a
+   ningún lado**: seleccionar tres álbumes y pedir "sincronizar solo la
+   selección" sincronizaba **nada**. Ahora las cinco cuadrículas expanden
+   su selección a `LibraryItem.id` y la publican. Como el mismo
+   `SelectionStore` lo escriben dos vistas que se relevan (la cuadrícula y
+   la tabla embebida del álbum/película abierto) y SwiftUI **no garantiza**
+   el orden entre el `onAppear` de la que entra y el `onDisappear` de la
+   que sale, `replace`/`clear` llevan ahora un `owner`: **solo el dueño
+   actual puede limpiar**. Sin eso, abrir un álbum borraba la selección
+   que su propia tabla acababa de publicar. `replace` además no publica un
+   valor idéntico al que ya había -- antes, cada clic en una cuadrícula
+   sin selección publicaba un conjunto vacío sobre otro vacío e invalidaba
+   a todos los observadores para nada.
+   `SeriesView`, `ArtistsView` y `PhotoAlbumsView` reciben `selectionStore`
+   por primera vez (antes no lo tenían).
+
+### Seams para el arnés (F0/F7)
+
+- **`Services/BodyEvaluationCounter.swift`**, a pedido de "mecanico
+  sonnet": contador de evaluaciones de `body` en DEBUG (en Release los
+  tres cuerpos quedan vacíos), enganchado como primera línea del `body` de
+  `ContentView`, `AlbumsView` y `AlbumCardView`. Ver ST-180 punto 3.
+- **`GridSelectionModel<ID>`**: la selección de `AlbumsView` deja de ser un
+  `@State private` y pasa a un objeto chico **inyectable por el
+  inicializador** (por omisión, uno nuevo: comportamiento idéntico al de
+  antes). El motivo es de medición, no de arquitectura -- el criterio de
+  cierre de F1 es "un clic reevalúa solo la tarjeta tocada y la barra de
+  estado", y mientras la selección viviera en un `@State private` **nada
+  afuera podía cambiarla**, ni con `@testable import`: es exactamente el
+  hueco que ST-180 documentó al hospedar la vista con `NSHostingController`.
+  Solo `AlbumsView` lo usa por ahora (es la cuadrícula del criterio de
+  cierre); las otras cuatro siguen con `@State` hasta F4, que rehace la
+  selección de todas de fondo (marquee, Shift+flechas, ancla).
+
+### Qué NO cambia
+
+El menú contextual sigue costando lo que costaba (81 s con 1 000 álbumes
+seleccionados, ST-180 (d)): eso es el índice de agrupación de **F3**, no
+esta PARADA. Las miniaturas siguen decodificándose síncronas en el `body`
+y `previewImages` sigue leyendo 4 archivos de disco por tarjeta de álbum
+de fotos: eso es **F2**. `coverArtData` sigue íntegro en RAM: **F5**.
+
+### Verificación
+
+`swift build` limpio (0 errores; las únicas advertencias son
+`onChange(of:perform:)` deprecado en tres sitios preexistentes de
+`ContentView`). `swift test` completo: **824 pruebas, 0 fallas**, incluidas
+las 11 nuevas de ST-180.
+
+Los números de antes/después contra la línea base los levanta "mecanico
+sonnet" contra este commit -- lo que esta PARADA cambia es sobre todo
+**cuántas veces** corre el trabajo caro, y eso se mide con el contador de
+evaluaciones y las pruebas de ST-180 reenganchadas a `GridModel.recompute`
+y a `LibraryStats.albumsTotal`/`albumsSelectionText`, no con una función
+nueva que sea más rápida que la vieja: las funciones puras hacen
+exactamente lo mismo que antes, solo que ahora se llaman cuando cambia su
+entrada y no cinco veces por pasada de dibujo.
+
+Un fallo intermitente de
+`ApplyAlbumCoverAndSimilarityWorkerTests.testThreeHundredTracksNeverBlockTheMainThreadOverTheWatchdogThreshold`
+(bloqueo de ~610-670 ms) durante estas corridas resultó ser **carga de
+máquina**, no una regresión: pasa aislado y en corridas limpias, y las dos
+sesiones de la Mac estaban compilando y corriendo pruebas a la vez en el
+mismo árbol. Con un umbral de 250 ms, ese vigilante es sensible a que la
+máquina esté ocupada -- anotado para que no se persiga de nuevo.

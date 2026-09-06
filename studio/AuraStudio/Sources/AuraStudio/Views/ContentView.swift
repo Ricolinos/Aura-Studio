@@ -30,6 +30,15 @@ struct ContentView: View {
     /// medios y sus vistas de grupo (Álbumes/Películas), igual que hacía
     /// `selectionForSync` antes.
     @StateObject private var selectionStore = SelectionStore()
+    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): a dónde publica la
+    /// sección activa su resumen de barra de estado. Va en `@State` y no
+    /// en `@StateObject` A PROPÓSITO: `@State` solo sostiene la
+    /// referencia, sin suscribir a ESTA vista a sus cambios. Quien lo
+    /// observa es `LibraryStatusBarHost`, la franja de 24 pt del pie
+    /// (antes esto era un `onPreferenceChange` hacia un `@State` de acá,
+    /// y cada clic costaba dos pasadas completas de `body` de toda la
+    /// ventana -- diagnóstico §0.3).
+    @State private var statusCenter = LibraryStatusCenter()
     @State private var selection: SidebarSection? = .general
 
     init() {
@@ -41,9 +50,7 @@ struct ContentView: View {
     /// conectado (hash) -- alimenta el aviso de "Actualizar Aura" en
     /// General. Se recalcula al conectar/desconectar.
     @State private var updateAvailable = false
-    /// ST-063: lo que publica la sección visible para la barra de
-    /// estado (`.libraryStatus`), y la hoja de "Elementos similares".
-    @State private var libraryStatus: LibraryStatusSummary?
+    /// ST-063: la hoja de "Elementos similares".
     @State private var showingSimilarItems = false
     /// ST-046: tag del Release mas nuevo conocido para la familia del
     /// firmware instalado, para poder nombrarlo en General.
@@ -68,6 +75,9 @@ struct ContentView: View {
     }
 
     var body: some View {
+        #if DEBUG
+        let _ = BodyEvaluationCounter.record("ContentView")
+        #endif
         NavigationSplitView {
             SidebarView(selection: $selection,
                         device: deviceMonitor.device,
@@ -80,7 +90,6 @@ struct ContentView: View {
             VStack(spacing: 0) {
                 detail
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .onPreferenceChange(LibraryStatusPreferenceKey.self) { libraryStatus = $0 }
                 // ST-141: la migración única de carátulas, mientras
                 // corre. Va ARRIBA de la barra de estado y no la
                 // reemplaza: son dos cosas distintas (una resume la
@@ -94,11 +103,12 @@ struct ContentView: View {
                 // ST-063: barra de estado estilo Finder, al pie de la
                 // sección; "Visualización › Mostrar barra de estado" la
                 // oculta. Solo aparece donde hay algo que resumir.
-                if preferences.showStatusBar, let libraryStatus {
-                    LibraryStatusBar(summary: libraryStatus)
+                if preferences.showStatusBar {
+                    LibraryStatusBarHost(center: statusCenter)
                 }
             }
         }
+        .environment(\.libraryStatusCenter, statusCenter)
         .tint(AuraColors.light.accent)
         .toolbar {
             // PLAN-studio-rendimiento.md Fase 4 punto 4: centro de
@@ -302,6 +312,7 @@ struct ContentView: View {
         case .musicArtists:
             // ST-031 / ST-032: Artistas con fotos de artista opcionales.
             ArtistsView(viewModel: library, device: deviceMonitor.device, preferences: preferences,
+                        selectionStore: selectionStore,
                         onFetchArtistImages: { artists in
                             Task { await library.fetchArtistImages(for: artists) }
                         },
@@ -322,7 +333,8 @@ struct ContentView: View {
             // usa Videoclips, abajo).
             MoviesView(viewModel: library, device: deviceMonitor.device, preferences: preferences, selectionStore: selectionStore)
         case .videoSeries:
-            SeriesView(viewModel: library, device: deviceMonitor.device, preferences: preferences)
+            SeriesView(viewModel: library, device: deviceMonitor.device, preferences: preferences,
+                       selectionStore: selectionStore)
         case .videoClips:
             // El bucket "Videoclips" de la barra lateral es el MISMO
             // que ya usa la heurística automática (MediaCategory.videos,
@@ -339,11 +351,14 @@ struct ContentView: View {
             // "similar en uso al iPod Classic original" -- reemplaza la
             // tabla plana (que sigue siendo lo que usa "Todas las
             // fotos", arriba).
-            PhotoAlbumsView(viewModel: library, device: deviceMonitor.device, preferences: preferences, category: "Fotos")
+            PhotoAlbumsView(viewModel: library, device: deviceMonitor.device, preferences: preferences, category: "Fotos",
+                            selectionStore: selectionStore)
         case .photosImages:
-            PhotoAlbumsView(viewModel: library, device: deviceMonitor.device, preferences: preferences, category: "Imágenes")
+            PhotoAlbumsView(viewModel: library, device: deviceMonitor.device, preferences: preferences, category: "Imágenes",
+                            selectionStore: selectionStore)
         case .photosAI:
-            PhotoAlbumsView(viewModel: library, device: deviceMonitor.device, preferences: preferences, category: "IA")
+            PhotoAlbumsView(viewModel: library, device: deviceMonitor.device, preferences: preferences, category: "IA",
+                            selectionStore: selectionStore)
         case .extras:
             ExtrasView(device: deviceMonitor.device, preferences: preferences,
                        onSwitchFirmware: { family in await switchFirmware(to: family) },

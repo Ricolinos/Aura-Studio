@@ -74,6 +74,12 @@ struct MediaSectionView: View {
     /// `statusSummary` que no depende de la selección, memoizada -- ver
     /// `StatusSummaryModel`.
     @StateObject private var statusSummaryModel = StatusSummaryModel()
+    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): identidad de esta
+    /// vista como publicadora de `selectionStore`. Ahora las cuadrículas
+    /// también publican ahí, y esta tabla se releva con ellas al abrir/
+    /// cerrar un álbum o una película -- sin dueño, el `onDisappear` de
+    /// la que sale borraba lo que la que entra acababa de publicar.
+    @State private var publisherID = UUID()
     @State private var sortOrder: [KeyPathComparator<MediaTableRow>] = [.init(\.title, order: .forward)]
     @State private var quickLook = QuickLookCoordinator()
     @State private var categoryFilter: String?
@@ -306,7 +312,7 @@ struct MediaSectionView: View {
         .onAppear {
             loadVisibleColumns()
             applySortOrderFromPreferences()
-            selectionStore.replace(with: selection)
+            selectionStore.replace(with: selection, from: publisherID)
             recomputeRowsIfNeeded()
         }
         // PLAN-general-sync.md §6: "Solo la selección" en
@@ -317,8 +323,8 @@ struct MediaSectionView: View {
         // (chico, observado solo por quien consume la selección) en vez
         // de `viewModel` (observado por toda la ventana) -- mismo
         // comportamiento de siempre, solo cambia a dónde se publica.
-        .onChange(of: selection) { selectionStore.replace(with: $0) }
-        .onDisappear { selectionStore.clear() }
+        .onChange(of: selection) { selectionStore.replace(with: $0, from: publisherID) }
+        .onDisappear { selectionStore.clear(from: publisherID) }
         .sheet(item: $reviewingItem) { item in
             MediaInfoView(item: item, availableCategories: availableCategories) { category in
                 viewModel.setCategory(category, forItem: item.id)

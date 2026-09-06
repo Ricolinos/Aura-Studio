@@ -19,9 +19,15 @@ struct MoviesView: View {
     @State private var selectedMovieID: String?
     /// Selección múltiple estilo Finder (encargo del dueño, 2026-08-19).
     @State private var selection = GridSelection<String>()
-    /// PLAN-studio-rendimiento.md Fase 2 punto 2: construido una vez
-    /// por cambio de la cuadrícula visible, nunca en el gesto de tap.
-    @State private var visibleOrder = GridOrder<String>.empty
+    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): lo visible (filtro
+    /// + orden) y su `GridOrder`, calculados una sola vez por cambio
+    /// real de entrada -- ver `GridModel`. Antes era un computed var que
+    /// el `body` evaluaba varias veces por pasada.
+    @StateObject private var gridModel = GridModel<VideoCollectionGroup>()
+    /// El resumen de la barra de estado, memoizado -- `GridStatusModel`.
+    @StateObject private var statusModel = GridStatusModel()
+    /// Identidad de esta vista como publicadora de `selectionStore`.
+    @State private var publisherID = UUID()
     @State private var reviewingItem: LibraryItem?
     @AppStorage("aura.moviesSort") private var sortRaw = MovieSort.title.rawValue
 
@@ -39,8 +45,11 @@ struct MoviesView: View {
 
     private var sort: MovieSort { MovieSort(rawValue: sortRaw) ?? .title }
 
-    private var visibleMovies: [VideoCollectionGroup] {
-        var result = movies.filter { matches($0, searchText) }
+    private var visibleMovies: [VideoCollectionGroup] { gridModel.visible }
+
+    /// El cálculo en sí -- lo llama `GridModel.recompute`, nunca el `body`.
+    private func computeVisible(_ groups: [VideoCollectionGroup]) -> [VideoCollectionGroup] {
+        var result = groups.filter { matches($0, searchText) }
         switch sort {
         case .title:
             break // orden natural de LibraryGrouping (título, artículo inicial ignorado)
@@ -80,9 +89,24 @@ struct MoviesView: View {
             }
         }
         .navigationTitle("Películas")
-        .libraryStatus(statusSummary)
+        .libraryStatus(statusModel.summary)
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
+        // PLAN-studio-rendimiento-2.md Fase 1 (ST-181): fuera del `body`.
+        .onChange(of: searchText) { refreshGrid() }
+        .onChange(of: sortRaw) { refreshGrid() }
+        .onChange(of: selectedMovieID) { _, id in
+            refreshStatusTotal()
+            if id == nil { publishSelection() }
+        }
+        .onChange(of: selection) { _, _ in
+            refreshStatusSelection()
+            if selectedMovieID == nil { publishSelection() }
+        }
+        .onChange(of: selectionStore.selected) { _, _ in
+            if selectedMovieID != nil { refreshStatusSelection() }
+        }
+        .onDisappear { selectionStore.clear(from: publisherID) }
         .sheet(item: $reviewingItem) { item in
             MediaInfoView(item: item, availableCategories: MediaCategory.videoCategories.map(\.displayName)) { category in
                 viewModel.setCategory(category, forItem: item.id)
@@ -98,22 +122,65 @@ struct MoviesView: View {
 
     /// ST-063: barra de estado. Con una película abierta, sus archivos
     /// (la selección de la tabla embebida llega por `selectionStore`).
-    private var statusSummary: LibraryStatusSummary {
+    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): se calcula fuera del
+    /// `body`, con el total memoizado -- ver `GridStatusModel`.
+    private func refreshStatusTotal() {
+        if let movie = selectedMovie {
+            let items = movie.items
+            let title = movie.title
+            statusModel.recomputeTotal {
+                var summary = LibraryStats.videos(items: items, selected: [], breakdown: false)
+                summary.total = "«\(title)» · " + summary.total
+                return summary
+            }
+        } else {
+            let visible = gridModel.visible
+            statusModel.recomputeTotal { LibraryStats.moviesTotal(visible) }
+        }
+        refreshStatusSelection()
+    }
+
+    private func refreshStatusSelection() {
         if let movie = selectedMovie {
             let selected = movie.items.filter { selectionStore.selected.contains($0.id) }
-            var summary = LibraryStats.videos(items: movie.items, selected: selected, breakdown: false)
-            summary.total = "«\(movie.title)» · " + summary.total
-            return summary
+            let totalCount = movie.items.count
+            statusModel.recomputeSelection(cost: selected.count) {
+                LibraryStats.videoSelectionText(selected: selected, totalCount: totalCount)
+            }
+        } else {
+            let visible = gridModel.visible
+            let selected = visible.filter { selection.isSelected($0.id) }
+            let totalCount = visible.count
+            statusModel.recomputeSelection(cost: selected.reduce(0) { $0 + $1.items.count }) {
+                LibraryStats.moviesSelectionText(selected: selected, totalCount: totalCount)
+            }
         }
-        return LibraryStats.movies(visibleMovies, selected: visibleMovies.filter { selection.isSelected($0.id) })
+    }
+
+    /// ST-181: la selección de la cuadrícula también llega a
+    /// `selectionStore` ("sincronizar solo la selección").
+    private func publishSelection() {
+        let ids = gridModel.visible
+            .filter { selection.isSelected($0.id) }
+            .flatMap { $0.items.map(\.id) }
+        selectionStore.replace(with: Set(ids), from: publisherID)
     }
 
     private func rebuild() {
-        movies = LibraryGrouping.videoCollections(from: viewModel.items).filter { !$0.isSeries }
-        if let selectedMovieID, !movies.contains(where: { $0.id == selectedMovieID }) {
+        let groups = LibraryGrouping.videoCollections(from: viewModel.items).filter { !$0.isSeries }
+        movies = groups
+        if let selectedMovieID, !groups.contains(where: { $0.id == selectedMovieID }) {
             self.selectedMovieID = nil
         }
-        selection.pruneMissing(from: Set(movies.map(\.id)))
+        selection.pruneMissing(from: Set(groups.map(\.id)))
+        refreshGrid(groups)
+    }
+
+    private func refreshGrid(_ groups: [VideoCollectionGroup]? = nil) {
+        let source = groups ?? movies
+        gridModel.recompute { computeVisible(source) }
+        refreshStatusTotal()
+        if selectedMovieID == nil { publishSelection() }
     }
 
     /// Películas a las que aplica una acción disparada desde `movie`:
@@ -160,12 +227,11 @@ struct MoviesView: View {
                         ForEach(visibleMovies) { movie in
                             MediaCardView(imageData: movie.posterData, title: movie.title, subtitle: movie.year,
                                           aspect: .poster(width: 140), placeholderSymbol: "film")
-                                .librarySelectionCheckbox(selection.isSelected(movie.id),
-                                                          anySelected: !selection.selected.isEmpty) {
+                                .librarySelectionCheckbox(selection.isSelected(movie.id)) {
                                     selection.toggle(movie.id)
                                 }
                                 .onTapGesture(count: 2) { selectedMovieID = movie.id }
-                                .onTapGesture { selection.handleTap(movie.id, order: visibleOrder) }
+                                .onTapGesture { selection.handleTap(movie.id, order: gridModel.order) }
                                 .contextMenu { movieContextMenu(movie) }
                                 .draggable(LibrarySelectionTransfer(itemIDs: effectiveMovies(for: movie).flatMap(\.items).map(\.id)))
                                 .help(movie.title)
@@ -187,8 +253,6 @@ struct MoviesView: View {
         // PLAN-studio-rendimiento.md Fase 2: ver el comentario
         // equivalente en AlbumsView.grid -- mismo patrón. Pendiente de
         // verificar interactivo con el dueño.
-        .onAppear { visibleOrder = GridOrder(visibleMovies.map(\.id)) }
-        .onChange(of: visibleMovies.map(\.id)) { visibleOrder = GridOrder($0) }
         .onKeyPress(.escape) {
             guard !selection.selected.isEmpty else { return .ignored }
             selection.clear()
@@ -196,7 +260,7 @@ struct MoviesView: View {
         }
         .onKeyPress(keys: ["a"]) { press in
             guard press.modifiers.contains(.command) else { return .ignored }
-            selection.selectAll(visibleOrder)
+            selection.selectAll(gridModel.order)
             return .handled
         }
     }

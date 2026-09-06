@@ -19,6 +19,11 @@ struct PlaylistsView: View {
     @State private var newPlaylistName = ""
     @State private var selectedPlaylistID: UUID?
     @State private var importSummary: String?
+    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): el resumen de la
+    /// barra de estado, memoizado -- antes se armaba en el `body`, y con
+    /// él un diccionario de TODAS las canciones de la biblioteca en cada
+    /// pasada (ver `GridStatusModel`).
+    @StateObject private var statusModel = GridStatusModel()
 
     private var musicItems: [LibraryItem] {
         viewModel.items.filter { $0.kind == .music }
@@ -63,12 +68,24 @@ struct PlaylistsView: View {
         }
         .frame(width: 600, height: 420)
         // ST-063: barra de estado -- listas y canciones; la lista abierta.
-        .libraryStatus(LibraryStats.playlists(viewModel.playlists, musicItems: musicItems,
-                                              selected: viewModel.playlists.first { $0.id == selectedPlaylistID }))
+        .libraryStatus(statusModel.summary)
+        .onAppear(perform: refreshStatus)
+        .onReceive(viewModel.$playlists) { _ in refreshStatus() }
+        .onChange(of: selectedPlaylistID) { refreshStatus() }
         .onChange(of: viewModel.playlists.map(\.id)) { ids in
             if let selectedPlaylistID, !ids.contains(selectedPlaylistID) {
                 self.selectedPlaylistID = nil
             }
+        }
+    }
+
+    private func refreshStatus() {
+        let playlists = viewModel.playlists
+        statusModel.recomputeTotal { LibraryStats.playlistsTotal(playlists) }
+        let selected = playlists.first { $0.id == selectedPlaylistID }
+        let items = musicItems
+        statusModel.recomputeSelection(cost: selected?.trackItemIDs.count ?? 0) {
+            LibraryStats.playlistSelectionText(selected, musicItems: items)
         }
     }
 

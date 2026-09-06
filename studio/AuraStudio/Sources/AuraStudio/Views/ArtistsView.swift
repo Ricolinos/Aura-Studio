@@ -11,12 +11,23 @@ struct ArtistsView: View {
     @ObservedObject var viewModel: LibraryViewModel
     let device: AuraDevice?
     @ObservedObject var preferences: AppPreferences
+    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): la selección de
+    /// artistas también llega a `SelectionStore` ("sincronizar solo la
+    /// selección" con dos artistas marcados sincronizaba nada).
+    @ObservedObject var selectionStore: SelectionStore
     /// ST-032: acción "Buscar fotos de artistas" (nil = sin proveedor).
     var onFetchArtistImages: (([ArtistGroup]) -> Void)?
     var isFetchingArtistImages = false
 
     @State private var artists: [ArtistGroup] = []
     @State private var searchText = ""
+    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): lo visible, una
+    /// sola vez por cambio real de entrada -- ver `GridModel`.
+    @StateObject private var listModel = GridModel<ArtistGroup>()
+    /// El resumen de la barra de estado, memoizado -- `GridStatusModel`.
+    @StateObject private var statusModel = GridStatusModel()
+    /// Identidad de esta vista como publicadora de `selectionStore`.
+    @State private var publisherID = UUID()
     /// `List(selection:)` con `Set` da multi-selección Cmd/Shift-clic
     /// nativa de Finder sin código propio (encargo del dueño,
     /// 2026-08-19) -- a diferencia de las cuadrículas (Álbumes,
@@ -24,8 +35,11 @@ struct ArtistsView: View {
     @State private var selectedArtistIDs: Set<String> = []
     @State private var reviewingItem: LibraryItem?
 
-    private var visibleArtists: [ArtistGroup] {
-        artists.filter { LibrarySearch.artist($0, matches: searchText) }
+    private var visibleArtists: [ArtistGroup] { listModel.visible }
+
+    /// El cálculo en sí -- lo llama `GridModel.recompute`, nunca el `body`.
+    private func computeVisible(_ groups: [ArtistGroup]) -> [ArtistGroup] {
+        groups.filter { LibrarySearch.artist($0, matches: searchText) }
     }
 
     /// Detalle de un solo artista -- `nil` cuando hay 0 o >1
@@ -56,10 +70,21 @@ struct ArtistsView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .navigationTitle("Artistas")
-        // ST-063: barra de estado -- artistas/álbumes/canciones y la selección.
-        .libraryStatus(LibraryStats.artists(visibleArtists, selected: selectedArtists))
+        // ST-063: barra de estado -- artistas/álbumes/canciones y la
+        // selección. PLAN-studio-rendimiento-2.md Fase 1 (ST-181): ya no
+        // se calcula en el `body` (era `LibraryStats.artists` crudo, con
+        // el `flatMap` de todos los ítems y una normalización de álbum
+        // por ítem, en cada clic).
+        .libraryStatus(statusModel.summary)
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
+        .onChange(of: searchText) { refreshList() }
+        .onChange(of: preferences.artistGrouping) { rebuild() }
+        .onChange(of: selectedArtistIDs) { _, _ in
+            refreshStatusSelection()
+            publishSelection()
+        }
+        .onDisappear { selectionStore.clear(from: publisherID) }
         .sheet(item: $reviewingItem) { item in
             MediaInfoView(item: item, availableCategories: nil) { _ in
             } onRatingChanged: { rating in
@@ -74,12 +99,40 @@ struct ArtistsView: View {
     }
 
     private func rebuild() {
-        artists = LibraryGrouping.artists(from: viewModel.items, options: preferences.artistGrouping)
-        let validIDs = Set(artists.map(\.id))
+        let groups = LibraryGrouping.artists(from: viewModel.items, options: preferences.artistGrouping)
+        artists = groups
+        let validIDs = Set(groups.map(\.id))
         selectedArtistIDs.formIntersection(validIDs)
-        if selectedArtistIDs.isEmpty, let first = artists.first {
+        if selectedArtistIDs.isEmpty, let first = groups.first {
             selectedArtistIDs = [first.id]
         }
+        refreshList(groups)
+    }
+
+    private func refreshList(_ groups: [ArtistGroup]? = nil) {
+        let source = groups ?? artists
+        listModel.recompute { computeVisible(source) }
+        let visible = listModel.visible
+        statusModel.recomputeTotal { LibraryStats.artistsTotal(visible) }
+        refreshStatusSelection()
+        publishSelection()
+    }
+
+    private func refreshStatusSelection() {
+        let visible = listModel.visible
+        let selected = artists.filter { selectedArtistIDs.contains($0.id) }
+        let totalCount = visible.count
+        statusModel.recomputeSelection(cost: selected.reduce(0) { $0 + $1.trackCount }) {
+            LibraryStats.artistsSelectionText(selected: selected, totalCount: totalCount)
+        }
+    }
+
+    /// ST-181: lo seleccionado llega a `selectionStore`.
+    private func publishSelection() {
+        let ids = artists
+            .filter { selectedArtistIDs.contains($0.id) }
+            .flatMap { $0.items.map(\.id) }
+        selectionStore.replace(with: Set(ids), from: publisherID)
     }
 
     // MARK: - Maestro

@@ -8,9 +8,9 @@ import SwiftUI
 /// dato extra a la derecha (tamaño en disco, duración total...).
 ///
 /// Cada vista arma el suyo con `LibraryStats` y lo publica hacia
-/// `ContentView` con `.libraryStatus(_:)` (un `PreferenceKey`, así la
-/// barra vive UNA sola vez en la raíz y las vistas no saben nada de
-/// cómo se dibuja ni de si el usuario la ocultó desde el menú
+/// `ContentView` con `.libraryStatus(_:)` (ver `LibraryStatusCenter`,
+/// así la barra vive UNA sola vez en la raíz y las vistas no saben nada
+/// de cómo se dibuja ni de si el usuario la ocultó desde el menú
 /// Visualización).
 struct LibraryStatusSummary: Equatable {
     /// "128 canciones · 12 artistas · 20 álbumes"
@@ -27,17 +27,85 @@ struct LibraryStatusSummary: Equatable {
     }
 }
 
-struct LibraryStatusPreferenceKey: PreferenceKey {
-    static let defaultValue: LibraryStatusSummary? = nil
-    static func reduce(value: inout LibraryStatusSummary?, nextValue: () -> LibraryStatusSummary?) {
-        if let next = nextValue() { value = next }
+/// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): a dónde publica cada
+/// sección su resumen. Antes era un `PreferenceKey` que `ContentView`
+/// recogía con `onPreferenceChange` hacia un `@State` suyo -- y eso
+/// cuesta **dos pasadas completas de `body` por cada clic**: la primera
+/// calcula el árbol y sus preferencias, la segunda vuelve a calcularlo
+/// todo porque el `@State` de la raíz cambió (diagnóstico §0.3, era el
+/// punto que la ronda 1 pidió quitar y quedó pendiente).
+///
+/// Con un objeto chico y aparte, publicar el resumen invalida SOLO a la
+/// barra de estado (`LibraryStatusBarHost`, que es quien lo observa) y
+/// no a la ventana entera: `ContentView` lo guarda en un `@State` --
+/// que sostiene la referencia sin suscribirse -- y se lo pasa a la
+/// barra y al entorno.
+///
+/// `owner` (un id estable por vista publicadora) conserva la semántica
+/// que daba `reduce` del `PreferenceKey`: publicar `nil` desde una vista
+/// que NO es la dueña no borra el resumen de la que sí lo es -- así, la
+/// tabla embebida dentro de un álbum abierto (que publica `nil`, porque
+/// el resumen lo arma la vista contenedora) no apaga la barra.
+@MainActor
+final class LibraryStatusCenter: ObservableObject {
+    @Published private(set) var summary: LibraryStatusSummary?
+
+    private var owner: UUID?
+
+    func publish(_ summary: LibraryStatusSummary?, from owner: UUID) {
+        if let summary {
+            self.owner = owner
+            if self.summary != summary { self.summary = summary }
+        } else if self.owner == owner {
+            withdraw(owner)
+        }
+    }
+
+    /// La vista publicadora se va de pantalla.
+    func withdraw(_ owner: UUID) {
+        guard self.owner == owner else { return }
+        self.owner = nil
+        if summary != nil { summary = nil }
+    }
+}
+
+private struct LibraryStatusCenterKey: EnvironmentKey {
+    /// `nil` a propósito: el centro lo inyecta `ContentView`, uno por
+    /// ventana (`WindowGroup` puede abrir varias y cada una tiene su
+    /// propia biblioteca). Sin centro, `.libraryStatus(_:)` no hace nada
+    /// -- que es justo lo que corresponde en una vista suelta de prueba.
+    static let defaultValue: LibraryStatusCenter? = nil
+}
+
+extension EnvironmentValues {
+    var libraryStatusCenter: LibraryStatusCenter? {
+        get { self[LibraryStatusCenterKey.self] }
+        set { self[LibraryStatusCenterKey.self] = newValue }
     }
 }
 
 extension View {
     /// Publica el resumen de esta sección para la barra de estado.
     func libraryStatus(_ summary: LibraryStatusSummary?) -> some View {
-        preference(key: LibraryStatusPreferenceKey.self, value: summary)
+        modifier(LibraryStatusPublisher(summary: summary))
+    }
+}
+
+/// El puente entre una sección y el centro. Publica **fuera del `body`**
+/// (`onAppear`/`onChange`), así escribir el resumen nunca es un cambio
+/// de estado durante una pasada de dibujo.
+private struct LibraryStatusPublisher: ViewModifier {
+    let summary: LibraryStatusSummary?
+
+    @Environment(\.libraryStatusCenter) private var center
+    /// Identidad estable de ESTA vista mientras viva en pantalla.
+    @State private var id = UUID()
+
+    func body(content: Content) -> some View {
+        content
+            .onAppear { center?.publish(summary, from: id) }
+            .onChange(of: summary) { _, new in center?.publish(new, from: id) }
+            .onDisappear { center?.withdraw(id) }
     }
 }
 
@@ -198,66 +266,97 @@ enum LibraryStats {
                                                     sizeText(bytes: totalSize(of: items))]).nilIfEmpty)
     }
 
-    static func albums(_ albums: [AlbumGroup], selected: [AlbumGroup]) -> LibraryStatusSummary {
+    // MARK: - Cuadrículas: el total y la selección, por separado
+    //
+    // PLAN-studio-rendimiento-2.md Fase 1 (ST-181): mismo corte que ya
+    // tenían música/video/fotos más arriba. Las cinco cuadrículas
+    // llamaban la función completa dentro del `body` (diagnóstico §0.1:
+    // `flatMap` de los 12 000 ítems + una normalización de cadenas por
+    // ítem, en cada clic). Ahora `GridStatusModel` memoiza el `total` --
+    // que solo depende de lo visible -- y recalcula el texto de la
+    // selección aparte, fuera del hilo principal cuando es caro. Las
+    // funciones completas quedan como composición de las dos, para las
+    // pruebas y para quien no necesite el corte.
+
+    static func albumsTotal(_ albums: [AlbumGroup]) -> LibraryStatusSummary {
         let items = albums.flatMap(\.items)
-        let total = join([
-            count(albums.count, "álbum", "álbumes"),
-            count(artistCount(of: items), "artista", "artistas"),
-            count(items.count, "canción", "canciones"),
+        return LibraryStatusSummary(
+            total: join([
+                count(albums.count, "álbum", "álbumes"),
+                count(artistCount(of: items), "artista", "artistas"),
+                count(items.count, "canción", "canciones"),
+            ]),
+            trailing: durationText(seconds: totalDuration(of: items)))
+    }
+
+    static func albumsSelectionText(selected: [AlbumGroup], totalCount: Int) -> String? {
+        guard !selected.isEmpty else { return nil }
+        let selectedItems = selected.flatMap(\.items)
+        return join([
+            "\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados",
+            count(artistCount(of: selectedItems), "artista", "artistas"),
+            count(selectedItems.count, "canción", "canciones"),
+            durationText(seconds: totalDuration(of: selectedItems)),
         ])
-        var selection: String?
-        if !selected.isEmpty {
-            let selectedItems = selected.flatMap(\.items)
-            selection = join([
-                "\(formatted(selected.count)) de \(formatted(albums.count)) seleccionados",
-                count(artistCount(of: selectedItems), "artista", "artistas"),
-                count(selectedItems.count, "canción", "canciones"),
-                durationText(seconds: totalDuration(of: selectedItems)),
-            ])
-        }
-        return LibraryStatusSummary(total: total, selection: selection,
-                                    trailing: durationText(seconds: totalDuration(of: items)))
+    }
+
+    static func albums(_ albums: [AlbumGroup], selected: [AlbumGroup]) -> LibraryStatusSummary {
+        var summary = albumsTotal(albums)
+        summary.selection = albumsSelectionText(selected: selected, totalCount: albums.count)
+        return summary
+    }
+
+    static func artistsTotal(_ artists: [ArtistGroup]) -> LibraryStatusSummary {
+        let items = artists.flatMap(\.items)
+        return LibraryStatusSummary(
+            total: join([
+                count(artists.count, "artista", "artistas"),
+                count(albumCount(of: items), "álbum", "álbumes"),
+                count(items.count, "canción", "canciones"),
+            ]),
+            trailing: durationText(seconds: totalDuration(of: items)))
+    }
+
+    static func artistsSelectionText(selected: [ArtistGroup], totalCount: Int) -> String? {
+        guard !selected.isEmpty else { return nil }
+        let selectedItems = selected.flatMap(\.items)
+        return join([
+            "\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados",
+            count(albumCount(of: selectedItems), "álbum", "álbumes"),
+            count(selectedItems.count, "canción", "canciones"),
+            durationText(seconds: totalDuration(of: selectedItems)),
+        ])
     }
 
     static func artists(_ artists: [ArtistGroup], selected: [ArtistGroup]) -> LibraryStatusSummary {
-        let items = artists.flatMap(\.items)
-        let total = join([
-            count(artists.count, "artista", "artistas"),
-            count(albumCount(of: items), "álbum", "álbumes"),
-            count(items.count, "canción", "canciones"),
+        var summary = artistsTotal(artists)
+        summary.selection = artistsSelectionText(selected: selected, totalCount: artists.count)
+        return summary
+    }
+
+    static func playlistsTotal(_ playlists: [Playlist]) -> LibraryStatusSummary {
+        LibraryStatusSummary(total: join([
+            count(playlists.count, "lista", "listas"),
+            count(playlists.reduce(0) { $0 + $1.trackItemIDs.count }, "canción", "canciones"),
+        ]))
+    }
+
+    static func playlistSelectionText(_ selected: Playlist?, musicItems: [LibraryItem]) -> String? {
+        guard let selected else { return nil }
+        let wanted = Set(selected.trackItemIDs)
+        let tracks = musicItems.filter { wanted.contains($0.id) }
+        return join([
+            "«\(selected.name)»",
+            count(tracks.count, "canción", "canciones"),
+            count(artistCount(of: tracks), "artista", "artistas"),
+            durationText(seconds: totalDuration(of: tracks)),
         ])
-        var selection: String?
-        if !selected.isEmpty {
-            let selectedItems = selected.flatMap(\.items)
-            selection = join([
-                "\(formatted(selected.count)) de \(formatted(artists.count)) seleccionados",
-                count(albumCount(of: selectedItems), "álbum", "álbumes"),
-                count(selectedItems.count, "canción", "canciones"),
-                durationText(seconds: totalDuration(of: selectedItems)),
-            ])
-        }
-        return LibraryStatusSummary(total: total, selection: selection,
-                                    trailing: durationText(seconds: totalDuration(of: items)))
     }
 
     static func playlists(_ playlists: [Playlist], musicItems: [LibraryItem], selected: Playlist?) -> LibraryStatusSummary {
-        let byID = Dictionary(uniqueKeysWithValues: musicItems.map { ($0.id, $0) })
-        let allTrackIDs = playlists.flatMap(\.trackItemIDs)
-        let total = join([
-            count(playlists.count, "lista", "listas"),
-            count(allTrackIDs.count, "canción", "canciones"),
-        ])
-        var selection: String?
-        if let selected {
-            let tracks = selected.trackItemIDs.compactMap { byID[$0] }
-            selection = join([
-                "«\(selected.name)»",
-                count(tracks.count, "canción", "canciones"),
-                count(artistCount(of: tracks), "artista", "artistas"),
-                durationText(seconds: totalDuration(of: tracks)),
-            ])
-        }
-        return LibraryStatusSummary(total: total, selection: selection)
+        var summary = playlistsTotal(playlists)
+        summary.selection = playlistSelectionText(selected, musicItems: musicItems)
+        return summary
     }
 
     /// Todos los videos / Videoclips (tabla plana). Sin `presetCategory`
@@ -285,60 +384,82 @@ enum LibraryStats {
                                                     sizeText(bytes: totalSize(of: items))]).nilIfEmpty)
     }
 
-    static func movies(_ movies: [VideoCollectionGroup], selected: [VideoCollectionGroup]) -> LibraryStatusSummary {
+    static func moviesTotal(_ movies: [VideoCollectionGroup]) -> LibraryStatusSummary {
         let items = movies.flatMap(\.items)
-        var selection: String?
-        if !selected.isEmpty {
-            let selectedItems = selected.flatMap(\.items)
-            selection = join([
-                "\(formatted(selected.count)) de \(formatted(movies.count)) seleccionadas",
-                durationText(seconds: totalDuration(of: selectedItems)),
-                sizeText(bytes: totalSize(of: selectedItems)),
-            ])
-        }
-        return LibraryStatusSummary(total: count(movies.count, "película", "películas"), selection: selection,
-                                    trailing: join([durationText(seconds: totalDuration(of: items)),
-                                                    sizeText(bytes: totalSize(of: items))]).nilIfEmpty)
+        return LibraryStatusSummary(
+            total: count(movies.count, "película", "películas"),
+            trailing: join([durationText(seconds: totalDuration(of: items)),
+                            sizeText(bytes: totalSize(of: items))]).nilIfEmpty)
+    }
+
+    static func moviesSelectionText(selected: [VideoCollectionGroup], totalCount: Int) -> String? {
+        guard !selected.isEmpty else { return nil }
+        let selectedItems = selected.flatMap(\.items)
+        return join([
+            "\(formatted(selected.count)) de \(formatted(totalCount)) seleccionadas",
+            durationText(seconds: totalDuration(of: selectedItems)),
+            sizeText(bytes: totalSize(of: selectedItems)),
+        ])
+    }
+
+    static func movies(_ movies: [VideoCollectionGroup], selected: [VideoCollectionGroup]) -> LibraryStatusSummary {
+        var summary = moviesTotal(movies)
+        summary.selection = moviesSelectionText(selected: selected, totalCount: movies.count)
+        return summary
+    }
+
+    static func seriesTotal(_ series: [VideoCollectionGroup]) -> LibraryStatusSummary {
+        let items = series.flatMap(\.items)
+        let seasons = series.reduce(0) { $0 + $1.seasons.count }
+        return LibraryStatusSummary(
+            total: join([
+                count(series.count, "serie", "series"),
+                count(seasons, "temporada", "temporadas"),
+                count(items.count, "episodio", "episodios"),
+            ]),
+            trailing: durationText(seconds: totalDuration(of: items)))
+    }
+
+    static func seriesSelectionText(selected: [VideoCollectionGroup], totalCount: Int) -> String? {
+        guard !selected.isEmpty else { return nil }
+        let selectedItems = selected.flatMap(\.items)
+        return join([
+            "\(formatted(selected.count)) de \(formatted(totalCount)) seleccionadas",
+            count(selected.reduce(0) { $0 + $1.seasons.count }, "temporada", "temporadas"),
+            count(selectedItems.count, "episodio", "episodios"),
+            durationText(seconds: totalDuration(of: selectedItems)),
+        ])
     }
 
     static func series(_ series: [VideoCollectionGroup], selected: [VideoCollectionGroup]) -> LibraryStatusSummary {
-        let items = series.flatMap(\.items)
-        let seasons = series.reduce(0) { $0 + $1.seasons.count }
-        let total = join([
-            count(series.count, "serie", "series"),
-            count(seasons, "temporada", "temporadas"),
-            count(items.count, "episodio", "episodios"),
-        ])
-        var selection: String?
-        if !selected.isEmpty {
-            let selectedItems = selected.flatMap(\.items)
-            selection = join([
-                "\(formatted(selected.count)) de \(formatted(series.count)) seleccionadas",
-                count(selected.reduce(0) { $0 + $1.seasons.count }, "temporada", "temporadas"),
-                count(selectedItems.count, "episodio", "episodios"),
-                durationText(seconds: totalDuration(of: selectedItems)),
-            ])
-        }
-        return LibraryStatusSummary(total: total, selection: selection,
-                                    trailing: durationText(seconds: totalDuration(of: items)))
+        var summary = seriesTotal(series)
+        summary.selection = seriesSelectionText(selected: selected, totalCount: series.count)
+        return summary
     }
 
     /// Una serie abierta: sus episodios y los seleccionados.
-    static func episodes(of show: VideoCollectionGroup, selected: [LibraryItem]) -> LibraryStatusSummary {
-        let total = join([
-            "«\(show.title)»",
-            count(show.seasons.count, "temporada", "temporadas"),
-            count(show.items.count, "episodio", "episodios"),
+    static func episodesTotal(of show: VideoCollectionGroup) -> LibraryStatusSummary {
+        LibraryStatusSummary(
+            total: join([
+                "«\(show.title)»",
+                count(show.seasons.count, "temporada", "temporadas"),
+                count(show.items.count, "episodio", "episodios"),
+            ]),
+            trailing: durationText(seconds: totalDuration(of: show.items)))
+    }
+
+    static func episodesSelectionText(selected: [LibraryItem], totalCount: Int) -> String? {
+        guard !selected.isEmpty else { return nil }
+        return join([
+            "\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados",
+            durationText(seconds: totalDuration(of: selected)),
         ])
-        var selection: String?
-        if !selected.isEmpty {
-            selection = join([
-                "\(formatted(selected.count)) de \(formatted(show.items.count)) seleccionados",
-                durationText(seconds: totalDuration(of: selected)),
-            ])
-        }
-        return LibraryStatusSummary(total: total, selection: selection,
-                                    trailing: durationText(seconds: totalDuration(of: show.items)))
+    }
+
+    static func episodes(of show: VideoCollectionGroup, selected: [LibraryItem]) -> LibraryStatusSummary {
+        var summary = episodesTotal(of: show)
+        summary.selection = episodesSelectionText(selected: selected, totalCount: show.items.count)
+        return summary
     }
 
     /// Todas las fotos (tabla plana). Con `breakdown` desglosa por
@@ -364,40 +485,46 @@ enum LibraryStats {
                                     trailing: sizeText(bytes: totalSize(of: items)))
     }
 
-    static func photoAlbums(_ albums: [PhotoAlbumGroup], selected: [PhotoAlbumGroup]) -> LibraryStatusSummary {
+    static func photoAlbumsTotal(_ albums: [PhotoAlbumGroup]) -> LibraryStatusSummary {
         let items = albums.flatMap(\.items)
         let named = albums.filter { !$0.isUnknown }.count
         let loose = albums.first { $0.isUnknown }?.count ?? 0
-        let total = join([
-            count(named, "álbum", "álbumes"),
-            count(items.count, "foto", "fotos"),
-            loose > 0 ? "\(formatted(loose)) sin álbum" : nil,
+        return LibraryStatusSummary(
+            total: join([
+                count(named, "álbum", "álbumes"),
+                count(items.count, "foto", "fotos"),
+                loose > 0 ? "\(formatted(loose)) sin álbum" : nil,
+            ]),
+            trailing: sizeText(bytes: totalSize(of: items)))
+    }
+
+    static func photoAlbumsSelectionText(selected: [PhotoAlbumGroup], totalCount: Int) -> String? {
+        guard !selected.isEmpty else { return nil }
+        let selectedItems = selected.flatMap(\.items)
+        return join([
+            "\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados",
+            count(selectedItems.count, "foto", "fotos"),
+            sizeText(bytes: totalSize(of: selectedItems)),
         ])
-        var selection: String?
-        if !selected.isEmpty {
-            let selectedItems = selected.flatMap(\.items)
-            selection = join([
-                "\(formatted(selected.count)) de \(formatted(albums.count)) seleccionados",
-                count(selectedItems.count, "foto", "fotos"),
-                sizeText(bytes: totalSize(of: selectedItems)),
-            ])
-        }
-        return LibraryStatusSummary(total: total, selection: selection,
-                                    trailing: sizeText(bytes: totalSize(of: items)))
+    }
+
+    static func photoAlbums(_ albums: [PhotoAlbumGroup], selected: [PhotoAlbumGroup]) -> LibraryStatusSummary {
+        var summary = photoAlbumsTotal(albums)
+        summary.selection = photoAlbumsSelectionText(selected: selected, totalCount: albums.count)
+        return summary
     }
 
     /// Un álbum de fotos abierto.
+    static func photoAlbumTotal(_ album: PhotoAlbumGroup) -> LibraryStatusSummary {
+        LibraryStatusSummary(
+            total: join(["«\(album.title)»", count(album.count, "foto", "fotos")]),
+            trailing: sizeText(bytes: totalSize(of: album.items)))
+    }
+
     static func photoAlbum(_ album: PhotoAlbumGroup, selected: [LibraryItem]) -> LibraryStatusSummary {
-        let total = join(["«\(album.title)»", count(album.count, "foto", "fotos")])
-        var selection: String?
-        if !selected.isEmpty {
-            selection = join([
-                "\(formatted(selected.count)) de \(formatted(album.count)) seleccionadas",
-                sizeText(bytes: totalSize(of: selected)),
-            ])
-        }
-        return LibraryStatusSummary(total: total, selection: selection,
-                                    trailing: sizeText(bytes: totalSize(of: album.items)))
+        var summary = photoAlbumTotal(album)
+        summary.selection = photoSelectionText(selected: selected, totalCount: album.count)
+        return summary
     }
 }
 
