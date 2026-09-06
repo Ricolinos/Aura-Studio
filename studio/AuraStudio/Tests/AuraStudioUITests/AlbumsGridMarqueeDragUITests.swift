@@ -21,13 +21,27 @@ import XCTest
 /// proceso de prueba de interfaz (mucho más lento que uno de XCTest
 /// normal: cada lanzamiento de la app real cuesta segundos).
 ///
-/// **Requiere un permiso de una sola vez, a mano, en la Mac**: la
-/// primera corrida de `xcodebuild test -scheme AuraStudioUITests` falla
-/// con "The test runner failed to initialize for UI testing (Timed out
-/// while enabling automation mode)" hasta que alguien autoriza el modo
-/// de automatización/accesibilidad para el ejecutor de pruebas -- un
-/// diálogo del sistema, no algo que una sesión pueda conceder por sí
-/// misma (documentado por "experto en código opus" en ST-188).
+/// **Requiere DOS condiciones de máquina, ninguna un defecto de código
+/// (ST-187/ST-188)**:
+///
+/// 1. El permiso de automatización/accesibilidad del sistema para el
+///    ejecutor de pruebas -- el dueño lo concedió una vez (2026-09-06);
+///    sin él, `xcodebuild test` falla con "Timed out while enabling
+///    automation mode" antes de llegar a lanzar nada.
+/// 2. **Una sesión gráfica de verdad, con el usuario al frente de la
+///    Mac.** Con el permiso ya concedido, la app arranca
+///    (`app.state == .runningForeground`) pero `app.windows.count == 0`
+///    -- una captura de pantalla tomada justo después del `launch()`
+///    confirmó que la pantalla mostraba las ventanas de terminal de las
+///    sesiones de Claude Code (esta y "Sesión Maestra"), sin ninguna
+///    ventana de Aura Studio visible. Diagnóstico de "experto en código
+///    opus", confirmado con la captura: estas sesiones no tienen la
+///    consola real de la Mac, así que una `NSWindow` real nunca llega a
+///    dibujarse donde alguien (persona o XCUITest) pueda verla.
+///
+/// Se deja el gesto escrito y listo -- correrlo con el dueño sentado en
+/// la Mac (con su propia sesión de inicio activa, no una remota) es lo
+/// único que falta.
 final class AlbumsGridMarqueeDragUITests: XCTestCase {
     private var libraryRoot: URL!
     private static let albumCount = 30
@@ -58,6 +72,23 @@ final class AlbumsGridMarqueeDragUITests: XCTestCase {
     func testDragFromEmptySpaceSelectsTheCardsItCrosses() throws {
         let app = launchApp()
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 30), "la app no llegó a primer plano")
+
+        // Diagnóstico de Opus (2026-09-06): el volcado de accesibilidad
+        // de un intento anterior mostraba geometría degenerada y el
+        // menú "Ir" de Finder, no el de esta app -- indicio de que la
+        // sesión gráfica no tenía pantalla activa para dibujar (bloqueada
+        // o sin usuario al frente), no un problema del código. Una
+        // captura de pantalla lo confirma barato: si sale negra/con
+        // pantalla de bloqueo, es eso.
+        let screenshotAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshotAttachment.name = "tras-launch"
+        screenshotAttachment.lifetime = .keepAlways
+        add(screenshotAttachment)
+        print("[DIAG] app.state tras launch: \(app.state.rawValue), app.windows.count: \(app.windows.count)")
+        if app.state != .runningForeground {
+            app.activate()
+            print("[DIAG] tras activate(): app.state = \(app.state.rawValue), app.windows.count: \(app.windows.count)")
+        }
 
         // Navegar a Álbumes -- la fila de la barra lateral es un
         // `Label(sub.title, systemImage:)` (ver `SidebarView.groupRow`),
