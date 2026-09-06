@@ -10162,3 +10162,49 @@ arrastre desde el área vacía de la derecha— y con las dos formas que fallaro
 desde el hueco de 8 px entre filas y desde la derecha de la última columna. Junto
 con eso hay que mirar que **no** se hayan roto el clic, el doble clic, el
 arrastre de una tarjeta ni el desplazamiento con la rueda sobre un hueco.
+
+### El segundo intento tampoco alcanzó: se instrumenta
+
+W7 volvió a medir sobre ese commit, con la ventana en `0,0` y la pantalla a
+100 %, y el recuadro **sigue sin recibir el arrastre**: ni desde la franja libre
+a la derecha de la última columna (inicio en 1834,305) ni desde el hueco entre la
+fila 1 y la fila 2 (706,570). Lo demás sí anda —arrastrar desde una tarjeta la
+selecciona y no dibuja recuadro, la rueda desplaza sobre el hueco y sobre la
+franja, el clic y el doble clic funcionan—, y los mismos eventos sintéticos
+producen clics, Mayús+clic y menús, así que tampoco es la inyección.
+
+Así que la explicación de más arriba —"escuchar en la cuadrícula con
+`handledEventsToo` garantiza que el gesto llegue"— **está sin demostrar**: es lo
+que debería pasar según cómo enruta WinUI el puntero, y la medición dice que no
+pasa. Corregir la ST antes que insistir: lo que hay es una hipótesis que ya
+falló una vez.
+
+**Lo que entra ahora no es un tercer arreglo a ciegas, es un instrumento.**
+`MarqueeTrace` escribe en `%LOCALAPPDATA%\Aura Studio\marquee.log`, apagado salvo
+que se lo pida (`AURA_MARQUEE_TRACE=1`, o siempre en `DEBUG`), y anota lo único
+que no se puede deducir sin la ventana:
+
+- que los manejadores se engancharon, y sobre qué;
+- **cada** `PointerPressed` que llega: por qué ruta (capa, cuadrícula o
+  `ScrollViewer`), si venía ya marcado como atendido, el `OriginalSource` y su
+  cadena de padres, y qué se decidió — tarjeta o hueco;
+- si `CapturePointer` devolvió `true`;
+- cuántos `PointerMoved` llegan, con qué rectángulo, cuántos marcos hay y cuántas
+  tarjetas entran y salen;
+- y **`PointerCaptureLost` como línea propia**, separado de soltar: si el gesto
+  muere porque el `ScrollViewer` se lleva el puntero, la traza lo dice en vez de
+  parecer que el usuario soltó.
+
+De paso, dos cosas que la instrumentación dejó a la vista y se corrigen:
+perder la captura ya **no** cuenta como un clic en un hueco (antes podía limpiar
+la selección sin que nadie hubiera soltado en un hueco), y la decisión de
+"tarjeta" mira `SelectorItem` y no solo `GridViewItem`, que es su clase base.
+
+También se engancha el mismo juego de manejadores al `ScrollViewer` interno, en
+cuanto existe. Es enganche de más a propósito —los manejadores ya se defienden de
+recibir el mismo gesto dos veces— y sirve para dos cosas: si el evento se
+atendiera ahí sin burbujear, este es el único sitio donde se lo puede ver; y si
+resulta que por ahí sí llega, el arreglo ya está puesto.
+
+Lo verifica W7 con su guion, y lo que decida el siguiente intento saldrá del
+`marquee.log`, no de otra hipótesis.

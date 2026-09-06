@@ -78,7 +78,7 @@
                 PointerPressed="Marquee_PointerPressed"
                 PointerMoved="Marquee_PointerMoved"
                 PointerReleased="Marquee_PointerReleased"
-                PointerCaptureLost="Marquee_PointerReleased" />
+                PointerCaptureLost="Marquee_PointerCaptureLost" />
 
         <GridView Grid.Row="2"
                   x:Name="CardsView"

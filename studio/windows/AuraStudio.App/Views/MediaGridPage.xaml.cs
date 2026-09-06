@@ -55,20 +55,32 @@ public sealed partial class MediaGridPage : Page
         // el recuadro existiera de verdad.
         //
         // La capa de captura sigue DETRÁS de las tarjetas y sigue siendo la que
-        // define el gesto (solo le llega lo que empezó en un hueco). Lo que se
+        // expresa el diseño (solo le llega lo que empezó en un hueco). Lo que se
         // descubrió al probarlo con la ventana (W7) es que a esa capa **no le
         // llega nada**: el `ScrollViewer` del `GridView` se queda con el puntero
         // en toda su superficie, huecos incluidos, y marca el evento como
-        // manejado. Escuchar acá, sin depender de fondos ni de orden en el árbol,
-        // es lo único que garantiza que el gesto llegue.
-        CardsView.AddHandler(UIElement.PointerPressedEvent,
-            new PointerEventHandler(Marquee_PointerPressed), handledEventsToo: true);
-        CardsView.AddHandler(UIElement.PointerMovedEvent,
-            new PointerEventHandler(Marquee_PointerMoved), handledEventsToo: true);
-        CardsView.AddHandler(UIElement.PointerReleasedEvent,
-            new PointerEventHandler(Marquee_PointerReleased), handledEventsToo: true);
-        CardsView.AddHandler(UIElement.PointerCaptureLostEvent,
-            new PointerEventHandler(Marquee_PointerReleased), handledEventsToo: true);
+        // manejado. Escuchar acá, sin depender de fondos ni de orden en el
+        // árbol, es lo que tiene que garantizar que el gesto llegue.
+        AttachMarqueeHandlers(CardsView);
+
+        // Y sobre el `ScrollViewer` de adentro, en cuanto exista: si el evento
+        // se atendiera ahí y no llegara a burbujear hasta la cuadrícula, este es
+        // el único lugar donde se lo puede ver. Es enganche de más a propósito
+        // —los manejadores se defienden solos de que el mismo gesto llegue dos
+        // veces— y la traza dice por qué ruta entró cada uno.
+        CardsView.Loaded += (_, _) =>
+        {
+            if (FindScrollViewer(CardsView) is not { } scroll) return;
+            if (_marqueeScroll is not null) return;
+
+            _marqueeScroll = scroll;
+            AttachMarqueeHandlers(scroll);
+
+            MarqueeTrace.Write("Attach   scroll=sí");
+        };
+
+        MarqueeTrace.Session($"MediaGridPage {DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss}");
+        MarqueeTrace.Write("Attach   grid=sí capa=sí");
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -220,6 +232,30 @@ public sealed partial class MediaGridPage : Page
     /// </summary>
     private GridMarqueeDrag? _marquee;
 
+    /// <summary>
+    /// El <c>ScrollViewer</c> al que se le engancharon los manejadores, si se
+    /// encontró. Se guarda solo para no engancharlo dos veces.
+    /// </summary>
+    private ScrollViewer? _marqueeScroll;
+
+    /// <summary>
+    /// Los cuatro manejadores del arrastre sobre un elemento, con
+    /// <c>handledEventsToo</c>: es la forma de ver un evento que otro control ya
+    /// marcó como atendido, que es exactamente lo que hace el
+    /// <c>ScrollViewer</c> de la cuadrícula con el puntero.
+    /// </summary>
+    private void AttachMarqueeHandlers(UIElement element)
+    {
+        element.AddHandler(UIElement.PointerPressedEvent,
+            new PointerEventHandler(Marquee_PointerPressed), handledEventsToo: true);
+        element.AddHandler(UIElement.PointerMovedEvent,
+            new PointerEventHandler(Marquee_PointerMoved), handledEventsToo: true);
+        element.AddHandler(UIElement.PointerReleasedEvent,
+            new PointerEventHandler(Marquee_PointerReleased), handledEventsToo: true);
+        element.AddHandler(UIElement.PointerCaptureLostEvent,
+            new PointerEventHandler(Marquee_PointerCaptureLost), handledEventsToo: true);
+    }
+
     private ScrollViewer? _cardsScroll;
 
     /// <summary>
@@ -259,6 +295,25 @@ public sealed partial class MediaGridPage : Page
     }
 
     /// <summary>
+    /// La cadena de padres desde el origen del evento, para la traza. Es lo que
+    /// permite ver <b>por qué</b> se decidió "tarjeta" o "hueco" sin tener la
+    /// ventana delante.
+    /// </summary>
+    private static string ParentChain(object? source)
+    {
+        List<string> chain = [];
+
+        for (var element = source as DependencyObject; element is not null && chain.Count < 12;
+             element = VisualTreeHelper.GetParent(element))
+        {
+            chain.Add(element.GetType().Name);
+            if (element is GridView) break;
+        }
+
+        return chain.Count == 0 ? "(sin árbol)" : string.Join(" > ", chain);
+    }
+
+    /// <summary>
     /// Si ese punto de partida es una tarjeta. Arrastrar DESDE una tarjeta es su
     /// propio gesto —seleccionarla, moverla—; el recuadro es solo lo que empieza
     /// en un hueco.
@@ -273,7 +328,10 @@ public sealed partial class MediaGridPage : Page
         for (var element = source as DependencyObject; element is not null;
              element = VisualTreeHelper.GetParent(element))
         {
-            if (element is GridViewItem) return true;
+            // `SelectorItem` además de `GridViewItem`: es la clase base, y una
+            // plantilla que devolviera otro contenedor seguiría siendo una
+            // tarjeta.
+            if (element is SelectorItem) return true;
             if (element is GridView) return false;
         }
 
@@ -282,14 +340,32 @@ public sealed partial class MediaGridPage : Page
 
     private void Marquee_PointerPressed(object sender, PointerRoutedEventArgs e)
     {
+        string route = ReferenceEquals(sender, CardsView) ? "grid"
+            : ReferenceEquals(sender, MarqueeCapture) ? "capa"
+            : sender is ScrollViewer ? "scroll" : sender?.GetType().Name ?? "?";
+
         // Solo el mouse y el lápiz: con el dedo, arrastrar es desplazar.
         if (e.Pointer.PointerDeviceType == Microsoft.UI.Input.PointerDeviceType.Touch) return;
 
-        // El mismo gesto puede llegar por dos caminos (la capa de atrás y la
-        // cuadrícula): el segundo no puede volver a empezarlo.
+        bool onCard = StartedOnACard(e.OriginalSource);
+
+        if (MarqueeTrace.Enabled)
+        {
+            Point where = CardsView.ItemsPanelRoot is { } p
+                ? e.GetCurrentPoint(p).Position
+                : e.GetCurrentPoint(CardsView).Position;
+
+            MarqueeTrace.Write(
+                $"Pressed  ruta={route} handled={e.Handled} yaArrastrando={_marquee is not null} " +
+                $"decision={(onCard ? "tarjeta" : "hueco")} pos=({where.X:0},{where.Y:0}) " +
+                $"origen={e.OriginalSource?.GetType().Name ?? "null"} cadena={ParentChain(e.OriginalSource)}");
+        }
+
+        // El mismo gesto puede llegar por varios caminos (la capa de atrás, el
+        // ScrollViewer y la cuadrícula): el segundo no puede volver a empezarlo.
         if (_marquee is not null) return;
 
-        if (StartedOnACard(e.OriginalSource)) return;
+        if (onCard) return;
         if (CardsView.ItemsPanelRoot is not { } panel) return;
 
         Point origin = e.GetCurrentPoint(panel).Position;
@@ -305,9 +381,18 @@ public sealed partial class MediaGridPage : Page
         // Se captura sobre la cuadrícula y no sobre la capa de atrás: es la que
         // recibe el gesto, y así los movimientos siguen llegando aunque el
         // puntero salga de la ventana.
-        CardsView.CapturePointer(e.Pointer);
+        bool captured = CardsView.CapturePointer(e.Pointer);
+        _marqueeMoves = 0;
+
+        MarqueeTrace.Write(
+            $"Start    captura={captured} origen=({origin.X:0},{origin.Y:0}) " +
+            $"seleccionDePartida={CardsView.SelectedItems.Count} mods={ModifiersNow()}");
+
         e.Handled = true;
     }
+
+    /// <summary>Cuántos movimientos llegaron en el arrastre en curso, para la traza.</summary>
+    private int _marqueeMoves;
 
     private void Marquee_PointerMoved(object sender, PointerRoutedEventArgs e)
     {
@@ -315,7 +400,19 @@ public sealed partial class MediaGridPage : Page
         if (CardsView.ItemsPanelRoot is not { } panel) return;
 
         Point point = e.GetCurrentPoint(panel).Position;
-        SelectionDelta delta = drag.MoveTo(new GridPoint(point.X, point.Y), RealizedFrames(panel));
+        Dictionary<string, GridRect> frames = RealizedFrames(panel);
+        SelectionDelta delta = drag.MoveTo(new GridPoint(point.X, point.Y), frames);
+
+        _marqueeMoves++;
+
+        if (MarqueeTrace.Enabled)
+        {
+            MarqueeTrace.Write(
+                $"Moved  #{_marqueeMoves} pos=({point.X:0},{point.Y:0}) " +
+                $"rect=({drag.Rect.X:0},{drag.Rect.Y:0},{drag.Rect.Width:0}x{drag.Rect.Height:0}) " +
+                $"marcos={frames.Count} entran={delta.Selected.Count} salen={delta.Deselected.Count} " +
+                $"marcados={drag.Current.Count}");
+        }
 
         ApplyToControl(delta);
         DrawMarquee(drag.Rect, panel);
@@ -324,7 +421,30 @@ public sealed partial class MediaGridPage : Page
         e.Handled = true;
     }
 
+    /// <summary>
+    /// El puntero se fue a otro lado —lo tomó el <c>ScrollViewer</c>, se cerró la
+    /// ventana— en medio del arrastre. Se anota aparte de soltar: si el gesto
+    /// muere por acá, la traza lo dice y no parece que el usuario haya soltado.
+    /// </summary>
+    private void Marquee_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
+    {
+        if (_marquee is null) return;
+
+        MarqueeTrace.Write($"CaptureLost  tras {_marqueeMoves} movimientos");
+        EndMarquee(applyEmptyClick: false);
+    }
+
     private void Marquee_PointerReleased(object sender, PointerRoutedEventArgs e)
+    {
+        if (_marquee is null) return;
+
+        MarqueeTrace.Write($"Released  tras {_marqueeMoves} movimientos");
+        EndMarquee(applyEmptyClick: true);
+
+        e.Handled = true;
+    }
+
+    private void EndMarquee(bool applyEmptyClick)
     {
         if (_marquee is not { } drag) return;
 
@@ -335,9 +455,11 @@ public sealed partial class MediaGridPage : Page
         // Un clic en un hueco, sin arrastre, limpia la selección — como en el
         // Explorador. Con Mayús o Control apretados no toca nada: ahí el usuario
         // está construyendo una selección, no descartándola.
-        if (drag.Rect.IsEmpty && drag.Modifiers == GridSelectionModifiers.None) DeselectAll();
-
-        e.Handled = true;
+        //
+        // Solo al SOLTAR: si el puntero se perdió a mitad de camino, el usuario
+        // no hizo clic en ningún hueco.
+        if (applyEmptyClick && drag.Rect.IsEmpty && drag.Modifiers == GridSelectionModifiers.None)
+            DeselectAll();
     }
 
     /// <summary>
