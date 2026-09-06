@@ -9866,9 +9866,37 @@ Tres precisiones que importan:
   ventana de quien usa la app se abre donde la dejó, como siempre.
 
 Va como `NSViewRepresentable` de fondo (`MainWindowPlacer`) porque es la
-forma de alcanzar la `NSWindow` desde SwiftUI, y se aplica **una sola
-vez**: recolocar la ventana en cada cambio de layout sería pelearse con
-el usuario.
+forma de alcanzar la `NSWindow` desde SwiftUI.
+
+**Segundo intento, porque el primero no funcionó.** Colocar la ventana
+una sola vez en `viewDidMoveToWindow` no surtió efecto: el mecánico corrió
+el XCUITest con la variable puesta y el arrastre siguió saliendo en
+x 3190→3853, o sea la pantalla secundaria. La causa es de orden — SwiftUI
+**restaura el marco guardado** de la ventana (autosave/state restoration)
+*después* de que la vista se adjunta, y pisaba la colocación.
+
+Tres cambios, y el tercero es el que evita que esto vuelva a costar dos
+vueltas:
+
+1. **Se apaga la restauración** (`isRestorable = false`,
+   `setFrameAutosaveName("")`) antes de colocar, para que no haya marco
+   guardado que aplicar.
+2. Se coloca en **varios momentos** —al adjuntarse, al volverse
+   principal, y en el siguiente ciclo del runloop—: no hay un instante
+   único garantizado en el que SwiftUI ya no vaya a tocar la ventana.
+3. Se **registra el marco antes y después** de cada intento, con
+   `fflush` (por lo mismo que `MainThreadWatchdog`: con la salida
+   redirigida, que es como corre `xcodebuild test`, un `print` normal
+   puede no verse nunca). Si vuelve a fallar, se diagnostica leyendo el
+   volcado en vez de adivinando.
+
+Y una corrección de la primera versión: la pantalla se elige como **la
+que tiene el origen del espacio de coordenadas** (`frame.origin == .zero`)
+y no simplemente `screens.first`. Es la misma en la práctica, pero dicho
+así queda explícito **por qué** es ésa: es el origen que XCTest sabe
+apuntar. `NSScreen.main` sigue estando descartada por lo de siempre — es
+la del foco de teclado, que puede ser la secundaria, que es justo el caso
+en el que este seam hace falta.
 
 **La regla de ST-187, matizada** (decisión de la sesión maestra tras
 plantearle esto): las pruebas **sí** escriben en `~/Library/Preferences`,
