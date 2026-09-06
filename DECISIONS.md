@@ -10571,6 +10571,55 @@ carátulas y la tarea "N de M" (no se lanzó ninguna acción que escriba);
 "Buscar actualizaciones" de Dispositivos (sin iPod); la app en alto
 contraste; Fotos con contenido (el fixture no tiene).
 
+## ST-207 (addendum) — La sesión guionizada con el vigilante: cero en el síntoma del dueño, cuatro cotas en Debug para la ronda de ajustes
+
+Con el 5.º addendum de ST-200 (el vigilante ya no cuelga la app), se repitió
+la pasada de gestos de ST-207 en **Debug** con `AURA_WATCHDOG=1` sobre la
+biblioteca sintética (1 000 álbumes / 12 000 canciones), gesto por gesto y
+leyendo el registro del vigilante después de cada uno. Cierra el punto de
+§A que ST-207 dejó sin medir ("bloqueos del hilo principal > 250 ms en la
+sesión guionizada") y el hallazgo 1 de ST-207, que queda cerrado.
+
+| Gesto | Bloqueos > 250 ms |
+|---|---|
+| Arranque | 328 ms + 547 ms (inicialización de WinUI en Debug; en Release la ventana está a 0.9 s, ST-207) |
+| Abrir Álbumes | 0 |
+| Clic en tarjeta + **Ctrl+A en 1 000** | **0** |
+| **Clic derecho con 1 000 seleccionados** | **0** |
+| Escape, Shift+clic 1 → 500, scroll de 50 páginas, recuadro | 0 |
+| Abrir Canciones | 0 |
+| Clic en fila + **Ctrl+A en 12 000** | **0** |
+| Clic derecho en Canciones con 12 000 seleccionadas | 1 de **500 ms** |
+| Abrir Artistas | 1 de **422 ms** |
+| Abrir Todas las fotos | 0 |
+| Volver a Álbumes | 2 de **343 y 344 ms** |
+
+El síntoma del dueño —seleccionar álbumes, Ctrl+A y el menú de Álbumes—
+queda en **cero**, que era el objetivo de la ronda. Los cuatro bloqueos
+restantes son de nuestro código (el menú contextual de Canciones y la
+creación o reentrada de páginas), pero son **cotas medidas en Debug**: sin
+precompilar, el JIT y el XAML inflan cualquier primera construcción, y el
+vigilante no existe en Release (ST-200 lo dejó solo en DEBUG), así que no
+hay número de Release para esos tres gestos; la única referencia es la de
+ST-207 por UI Automation, donde el menú de Canciones apareció a los
+578 ms como cota superior con sondeo incluido.
+
+Decisión de la maestra: se anota y se cierra. Primer punto de la **ronda
+de ajustes** (fuera de este plan, también apuntado en el plan de la carpeta
+padre): (b) habilitar el vigilante también en Release tras la variable,
+para medir el número que ve el dueño; (c) mirar el menú contextual de
+Canciones con toda la biblioteca seleccionada (sospecha: construcción del
+`MenuFlyout` o del resumen con el alcance de 12 000 elementos) y la
+creación de las páginas de Artistas y Álbumes al navegar.
+
+Método, para repetirlo: la app en Debug lanzada con `AURA_WATCHDOG=1`,
+ventana colocada con `MoveWindow`, cada gesto inyectado con
+`mouse_event`/`keybd_event` (movimientos con `MOUSEEVENTF_MOVE|ABSOLUTE`,
+nunca `SetCursorPos`, ver ST-209 2.º addendum) y navegación por UI
+Automation (`SelectionItemPattern.Select()` sobre el ítem de navegación);
+tras cada gesto, cuatro segundos de espera y lectura de las líneas nuevas
+de `%LOCALAPPDATA%\Aura Studio\watchdog.log`.
+
 ## ST-209 (2.º addendum) — El recuadro no recibía el arrastre
 
 Reportado por W7 con la app delante, reproducido dos veces sobre la biblioteca
