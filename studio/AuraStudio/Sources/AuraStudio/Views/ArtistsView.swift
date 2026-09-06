@@ -14,7 +14,10 @@ struct ArtistsView: View {
     /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): la selección de
     /// artistas también llega a `SelectionStore` ("sincronizar solo la
     /// selección" con dos artistas marcados sincronizaba nada).
-    @ObservedObject var selectionStore: SelectionStore
+    /// ST-182: `let`, no `@ObservedObject` -- esta vista solo PUBLICA
+    /// acá; observarlo le costaría una pasada de `body` extra por clic
+    /// como eco de su propia publicación.
+    let selectionStore: SelectionStore
     /// ST-032: acción "Buscar fotos de artistas" (nil = sin proveedor).
     var onFetchArtistImages: (([ArtistGroup]) -> Void)?
     var isFetchingArtistImages = false

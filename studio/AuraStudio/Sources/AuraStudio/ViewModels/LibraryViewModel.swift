@@ -20,7 +20,72 @@ final class LibraryViewModel: ObservableObject {
     /// documentado como pendiente en DECISIONS.md (ST-156).
     let taskCenter = BackgroundTaskCenter()
 
-    @Published private(set) var items: [LibraryItem] = []
+    @Published private(set) var items: [LibraryItem] = [] {
+        didSet { catalogVersion &+= 1 }
+    }
+
+    /// PLAN-studio-rendimiento-2.md Fase 3 (ST-182): sube con cada
+    /// cambio de `items`. Sirve para saber si un índice/derivado
+    /// cacheado sigue valiendo, sin tener que comparar el catálogo
+    /// entero (que compararía los bytes de todas las carátulas).
+    private(set) var catalogVersion = 0
+
+    private var cachedCatalogIndex: LibraryCatalogIndex?
+    private var cachedCatalogIndexVersion = -1
+
+    /// El índice de agrupación del catálogo -- ver `LibraryCatalogIndex`.
+    ///
+    /// **Perezoso a propósito**: construirlo son 12 000 claves
+    /// normalizadas, y una biblioteca que nadie está mirando no tiene
+    /// por qué pagarlas en cada cambio de `items`. Se arma la primera
+    /// vez que alguien lo pide después de un cambio (típicamente, al
+    /// abrir un menú contextual) y a partir de ahí toda consulta es una
+    /// búsqueda en diccionario.
+    var catalogIndex: LibraryCatalogIndex {
+        let options = preferences.artistGrouping
+        if let cachedCatalogIndex, cachedCatalogIndexVersion == catalogVersion,
+           cachedCatalogIndex.options == options {
+            return cachedCatalogIndex
+        }
+        let index = LibraryCatalogIndex(items: items, options: options)
+        cachedCatalogIndex = index
+        cachedCatalogIndexVersion = catalogVersion
+        return index
+    }
+
+    private var catalogIndexWarmup: Task<Void, Never>?
+
+    /// Arma el índice FUERA del hilo principal, si hace falta.
+    ///
+    /// Construirlo son 12 000 claves normalizadas -- del orden de lo que
+    /// ST-180 (b) midió para `LibraryStats.albums` (76 ms). Hacerlo
+    /// perezoso alcanza para que el menú deje de costar 81 s, pero
+    /// dejaría ESA cuenta en el primer clic derecho después de cada
+    /// cambio del catálogo, contra un objetivo de §A de 200 ms para
+    /// abrir el menú. Las secciones que usan el índice lo piden acá
+    /// cuando cambia el catálogo, y así el menú lo encuentra listo.
+    ///
+    /// Si nadie llama esto, no pasa nada: `catalogIndex` lo arma igual,
+    /// en el hilo principal, la primera vez que se lo pide.
+    func warmCatalogIndex() {
+        let version = catalogVersion
+        let options = preferences.artistGrouping
+        if cachedCatalogIndexVersion == version, cachedCatalogIndex?.options == options { return }
+        catalogIndexWarmup?.cancel()
+        let snapshot = items
+        catalogIndexWarmup = Task.detached(priority: .utility) { [weak self] in
+            let index = LibraryCatalogIndex(items: snapshot, options: options)
+            guard !Task.isCancelled else { return }
+            await self?.adoptCatalogIndex(index, version: version)
+        }
+    }
+
+    /// Solo si el catálogo no volvió a cambiar mientras se armaba.
+    private func adoptCatalogIndex(_ index: LibraryCatalogIndex, version: Int) {
+        guard catalogVersion == version else { return }
+        cachedCatalogIndex = index
+        cachedCatalogIndexVersion = version
+    }
 
     /// PLAN-studio-rendimiento.md Fase 0: inyecta un catálogo ya armado
     /// (ítems `.ready`, con metadata) sin pasar por `addDroppedFiles`/
@@ -1140,11 +1205,38 @@ final class LibraryViewModel: ObservableObject {
         defer { isApplyingRecommendedCovers = false }
         lastError = nil
 
+        // PLAN-studio-rendimiento-2.md Fase 3 (ST-182): la acción es
+        // ahora PLURAL de verdad -- puede tocar los 1 000 álbumes de la
+        // biblioteca, con una búsqueda en red por álbum. Eso no puede
+        // ser un botón que se queda gris sin decir nada: va al centro de
+        // tareas con progreso "N de M" y cancelación, como el resto de
+        // las operaciones largas (§A: "todas con indicador y cancelación
+        // en el centro de tareas").
+        var cancelled = false
+        let handle = taskCenter.begin(
+            title: requests.count == 1
+                ? "Buscando carátula recomendada…"
+                : "Buscando carátulas de \(requests.count) álbumes…",
+            progress: .determinate(completed: 0, total: requests.count),
+            onCancelRequested: { cancelled = true })
+        defer { taskCenter.finish(handle) }
+
         var applied = 0
         var needsChoice: [AlbumCoverRequest] = []
         var withoutResults = 0
+        var skippedByCancel = 0
 
-        for request in requests {
+        for (completed, request) in requests.enumerated() {
+            // Cancelar NO deshace lo ya aplicado (cada álbum es una
+            // operación terminada en sí misma): deja de empezar los que
+            // faltan y lo dice en el resumen.
+            if cancelled {
+                skippedByCancel = requests.count - completed
+                break
+            }
+            handle.update(.determinate(completed: completed, total: requests.count),
+                          statusText: "«\(request.albumTitle)» — \(completed + 1) de \(requests.count)")
+
             let candidates = await search.candidates(
                 for: AlbumCoverScoring.AlbumFacts(title: request.albumTitle,
                                                   year: request.albumYear,
@@ -1162,14 +1254,20 @@ final class LibraryViewModel: ObservableObject {
                 needsChoice.append(request)
             }
         }
+        handle.update(.determinate(completed: requests.count - skippedByCancel, total: requests.count))
 
         var parts = ["Carátulas: \(applied) \(applied == 1 ? "aplicada" : "aplicadas")"]
         if !needsChoice.isEmpty {
-            parts.append("\(needsChoice.count) sin una opción lo bastante segura (elígela tú)")
+            parts.append(needsChoice.count == 1
+                         ? "1 sin una opción lo bastante segura (elígela tú)"
+                         : "\(needsChoice.count) sin una opción lo bastante segura (elígelas tú)")
         }
         if withoutResults > 0 { parts.append("\(withoutResults) sin resultados") }
+        if skippedByCancel > 0 { parts.append("\(skippedByCancel) sin revisar (cancelaste)") }
         lastEnrichmentSummary = parts.joined(separator: ", ") + "."
-        return needsChoice
+        // Cancelar tampoco encola pickers de lo que sí alcanzó a
+        // revisarse: si el usuario paró, paró.
+        return cancelled ? [] : needsChoice
     }
 
     /// D-218: aplica `BatchMediaInfoView` sobre varias canciones a la

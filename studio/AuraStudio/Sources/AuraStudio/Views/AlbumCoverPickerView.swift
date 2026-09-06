@@ -18,7 +18,15 @@ import SwiftUI
 struct AlbumCoverPickerView: View {
     let request: AlbumCoverRequest
     var search = AlbumCoverSearch()
+    /// PLAN-studio-rendimiento-2.md Fase 3 (ST-182): posición dentro de
+    /// la COLA de álbumes dudosos, cuando la hoja se abrió desde la
+    /// acción plural ("Álbum 2 de 7"). `nil` = un solo álbum, como
+    /// siempre.
+    var queuePosition: (index: Int, total: Int)?
     let onApply: (Data) -> Void
+    /// Pasar al siguiente de la cola sin tocar este álbum. `nil` cuando
+    /// no hay cola -- ahí "Cancelar" ya dice todo.
+    var onSkip: (() -> Void)?
     let onCancel: () -> Void
 
     @State private var candidates: [AlbumCoverSearch.Candidate] = []
@@ -48,6 +56,15 @@ struct AlbumCoverPickerView: View {
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
+            if let queuePosition {
+                // R2-3/F3: con varios álbumes dudosos, la hoja se abre
+                // una vez por álbum. Decir en cuál va -- y cuántos
+                // faltan -- es lo que separa "una cola" de "una ventana
+                // que reaparece sola".
+                Text("Álbum \(queuePosition.index) de \(queuePosition.total)")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(AuraColors.light.accent)
+            }
             Text("Carátulas para «\(request.albumTitle)»")
                 .font(.headline)
             Text([request.albumArtist, request.albumYear].compactMap { $0 }.joined(separator: " · "))
@@ -131,8 +148,12 @@ struct AlbumCoverPickerView: View {
                 .font(.callout)
                 .foregroundStyle(.secondary)
             Spacer()
-            Button("Cancelar", role: .cancel, action: onCancel)
+            Button(onSkip == nil ? "Cancelar" : "Cancelar el resto", role: .cancel, action: onCancel)
                 .keyboardShortcut(.cancelAction)
+            if let onSkip {
+                Button("Omitir este álbum", action: onSkip)
+                    .help("Deja este álbum como está y pasa al siguiente de la lista")
+            }
             if let recommended, recommended.id != selectedID {
                 Button("Usar recomendada") { apply(recommended) }
             }
@@ -216,5 +237,71 @@ struct AlbumCoverRequest: Identifiable, Equatable {
             albumArtist: group.artist,
             albumYear: group.year,
             trackIDs: Set(resolved.map(\.id)))
+    }
+
+    // MARK: - Por índice (PLAN-studio-rendimiento-2.md Fase 3, ST-182)
+    //
+    // Las tres funciones de abajo hacen lo MISMO que `forAlbum(of:in:
+    // options:)` -- misma definición de "un álbum", mismo criterio de
+    // aplicar al álbum entero y no solo a lo seleccionado -- pero
+    // resolviendo contra `LibraryCatalogIndex` en vez de recorrer el
+    // catálogo. La versión de arriba se queda para quien tenga a mano
+    // los ítems y no un índice (pruebas, llamadas sueltas); las vistas
+    // usan estas, que son las que hacen que abrir el menú con toda la
+    // biblioteca seleccionada cueste milisegundos y no 81 s
+    // (diagnóstico §0.6, línea base ST-180 (d)).
+
+    /// El pedido para un álbum YA identificado -- una tarjeta de la
+    /// cuadrícula de Álbumes. `nil` para "Sin álbum", que no es un disco
+    /// sino el cajón de lo que no tiene uno.
+    static func forAlbum(_ group: AlbumGroup, in index: LibraryCatalogIndex) -> AlbumCoverRequest? {
+        guard !group.isUnknown else { return nil }
+        let songs = index.items(forAlbumKey: group.id)
+        let resolved = songs.isEmpty ? group.items : songs
+        guard !resolved.isEmpty else { return nil }
+        return AlbumCoverRequest(
+            albumTitle: group.title,
+            albumArtist: group.artist,
+            albumYear: group.year,
+            trackIDs: Set(resolved.map(\.id)))
+    }
+
+    /// El pedido para una selección arbitraria de canciones -- la tabla
+    /// de Canciones. R2-2 intacto: hay pedido solo si la selección
+    /// **resuelve a exactamente un álbum**.
+    static func forAlbum(of selection: [LibraryItem], in index: LibraryCatalogIndex) -> AlbumCoverRequest? {
+        let keys = index.albumKeys(of: selection)
+        guard keys.count == 1, let key = keys[0] as String? else { return nil }
+        return forAlbumKey(key, in: index)
+    }
+
+    /// Un pedido por cada álbum de la selección que tenga sentido
+    /// buscar -- la acción plural de F3. Conserva el orden de la
+    /// selección, que es el que va a ver el usuario en la cola del
+    /// selector.
+    static func forAlbums(of selection: [LibraryItem], in index: LibraryCatalogIndex) -> [AlbumCoverRequest] {
+        index.albumKeys(of: selection).compactMap { forAlbumKey($0, in: index) }
+    }
+
+    static func forAlbums(keys: [String], in index: LibraryCatalogIndex) -> [AlbumCoverRequest] {
+        keys.compactMap { forAlbumKey($0, in: index) }
+    }
+
+    /// El pedido de un álbum por su clave. La grafía que se muestra sale
+    /// de la primera pista del grupo, igual que en
+    /// `LibraryGrouping.albums` -- así el nombre del álbum es el mismo
+    /// en el menú, en la cuadrícula y en esta hoja.
+    static func forAlbumKey(_ key: String, in index: LibraryCatalogIndex) -> AlbumCoverRequest? {
+        let songs = index.items(forAlbumKey: key)
+        guard let first = songs.first else { return nil }
+        let title = first.metadata?.album?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        // "Sin álbum" no es un disco: no se le buscan tapas.
+        guard !title.isEmpty else { return nil }
+        return AlbumCoverRequest(
+            albumTitle: title,
+            albumArtist: LibraryGrouping.albumArtist(of: first, options: index.options)
+                ?? LibraryGrouping.unknownArtistName,
+            albumYear: songs.compactMap { $0.metadata?.year }.first,
+            trackIDs: Set(songs.map(\.id)))
     }
 }

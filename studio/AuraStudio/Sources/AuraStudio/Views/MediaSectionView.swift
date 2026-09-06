@@ -41,7 +41,12 @@ struct MediaSectionView: View {
     /// Un solo `SelectionStore` compartido entre la tabla de nivel
     /// superior y cualquier tabla embebida en un álbum/película
     /// expandido, ver el comentario de `SelectionStore`.
-    @ObservedObject var selectionStore: SelectionStore
+    /// PLAN-studio-rendimiento-2.md Fase 3 (ST-182): `let`, no
+    /// `@ObservedObject`. Esta tabla solo PUBLICA acá (nunca lee), y
+    /// observarlo le devolvía el eco de su propia publicación: cada
+    /// cambio de selección en la tabla de Canciones costaba dos pasadas
+    /// de `body` en vez de una.
+    let selectionStore: SelectionStore
     /// ST-031: la misma tabla, acotada a un álbum o a un artista, cuando
     /// se embebe en Álbumes/Artistas. Con `.all` es la sección Canciones
     /// completa (zona de arrastre, banners, título de navegación).
@@ -63,7 +68,11 @@ struct MediaSectionView: View {
     @State private var renamingItem: LibraryItem?
     /// ST-104: álbum cuyo menú contextual pidió "Buscar carátulas del
     /// álbum".
-    @State private var coverSearch: AlbumCoverRequest?
+    /// PLAN-studio-rendimiento-2.md Fase 3 (ST-182): una COLA, no un
+    /// álbum -- la acción plural deja acá los que no tuvieron una opción
+    /// lo bastante segura y el selector los recorre uno por uno.
+    @State private var coverQueue: [AlbumCoverRequest] = []
+    @State private var coverQueueIndex = 0
     @State private var selection: Set<UUID> = []
     /// PLAN-studio-rendimiento.md Fase 1: `rows` memoizado -- ver
     /// `RowsModel`. Uno por instancia de esta vista (la de nivel
@@ -167,6 +176,10 @@ struct MediaSectionView: View {
         rowsModel.recompute(items: items, deviceSyncIndex: viewModel.deviceSyncIndex, sortOrder: sortOrder)
         statusSummaryModel.recompute(items: items, kind: kind, options: preferences.artistGrouping,
                                      presetCategory: presetCategory, photoCollections: preferences.photoCollections)
+        // ST-182: el menú contextual de Canciones resuelve los álbumes
+        // de la selección con `LibraryCatalogIndex`; se arma en segundo
+        // plano al cambiar el catálogo para que abrirlo no lo pague.
+        if kind == .music { viewModel.warmCatalogIndex() }
     }
 
     /// Solo fotos y video se organizan por categoria (D-192) -- musica
@@ -367,16 +380,7 @@ struct MediaSectionView: View {
                 }
             }
         }
-        .sheet(item: $coverSearch) { request in
-            AlbumCoverPickerView(
-                request: request,
-                search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled),
-                onApply: { data in
-                    Task { await viewModel.applyAlbumCover(data, toItems: request.trackIDs) }
-                    coverSearch = nil
-                },
-                onCancel: { coverSearch = nil })
-        }
+        .sheet(isPresented: showingCoverPicker) { coverPicker }
         .sheet(item: $renamingItem) { item in
             RenameSheet(currentTitle: item.metadata?.title ?? item.sourceURL.deletingPathExtension().lastPathComponent) { newTitle in
                 Task { await viewModel.renameItem(id: item.id, title: newTitle) }
@@ -879,6 +883,65 @@ struct MediaSectionView: View {
         }
     }
 
+    // MARK: - Carátulas (cola del selector, ST-182)
+
+    private var showingCoverPicker: Binding<Bool> {
+        Binding(get: { coverQueue.indices.contains(coverQueueIndex) },
+                set: { if !$0 { closeCoverQueue() } })
+    }
+
+    @ViewBuilder
+    private var coverPicker: some View {
+        if coverQueue.indices.contains(coverQueueIndex) {
+            let request = coverQueue[coverQueueIndex]
+            AlbumCoverPickerView(
+                request: request,
+                search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled),
+                queuePosition: coverQueue.count > 1 ? (coverQueueIndex + 1, coverQueue.count) : nil,
+                onApply: { data in
+                    Task { await viewModel.applyAlbumCover(data, toItems: request.trackIDs) }
+                    advanceCoverQueue()
+                },
+                onSkip: coverQueue.count > 1 ? { advanceCoverQueue() } : nil,
+                onCancel: { closeCoverQueue() })
+                // La hoja no se cierra entre álbumes: cambia de
+                // contenido. El `.id` es lo que hace que el siguiente
+                // arranque su búsqueda en vez de mostrar las candidatas
+                // del anterior.
+                .id(request.id)
+        }
+    }
+
+    private func startCoverQueue(_ requests: [AlbumCoverRequest]) {
+        coverQueueIndex = 0
+        coverQueue = requests
+    }
+
+    private func advanceCoverQueue() {
+        if coverQueueIndex + 1 < coverQueue.count {
+            coverQueueIndex += 1
+        } else {
+            closeCoverQueue()
+        }
+    }
+
+    private func closeCoverQueue() {
+        coverQueue = []
+        coverQueueIndex = 0
+    }
+
+    /// R2-3 / F3: aplica la recomendada donde alcanza el umbral y encola
+    /// los dudosos en el selector -- ver `AlbumsView.applyRecommended`,
+    /// que hace exactamente lo mismo desde la cuadrícula.
+    private func applyRecommendedCovers(_ requests: [AlbumCoverRequest]) {
+        Task {
+            let pending = await viewModel.applyRecommendedCovers(
+                for: requests,
+                search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled))
+            startCoverQueue(pending)
+        }
+    }
+
     // MARK: - Menu contextual (D-198)
 
     @ViewBuilder
@@ -895,10 +958,26 @@ struct MediaSectionView: View {
             // la selección RESUELVA a un solo álbum -- tres canciones
             // del mismo disco son un álbum -- y se aplica al álbum
             // completo, no solo a lo seleccionado.
-            if let request = AlbumCoverRequest.forAlbum(of: targetItems, in: viewModel.items,
-                                                       options: preferences.artistGrouping) {
-                Button("Buscar carátulas del álbum...") { coverSearch = request }
+            //
+            // PLAN-studio-rendimiento-2.md Fase 3 (ST-182): con la
+            // selección tocando VARIOS álbumes, la acción existe --
+            // hasta ahora Canciones no tenía la plural que Álbumes sí
+            // (diagnóstico §0.6: "con todo seleccionado no aparece
+            // Buscar carátulas"). Los pedidos salen del índice del
+            // catálogo, así que armar esto con 12 000 canciones
+            // seleccionadas son 12 000 búsquedas en un diccionario, no
+            // 12 millones de claves normalizadas.
+            let coverRequests = AlbumCoverRequest.forAlbums(of: targetItems, in: viewModel.catalogIndex)
+            if coverRequests.count == 1 {
+                Button("Buscar carátulas del álbum...") { startCoverQueue(coverRequests) }
                     .help("Busca varias carátulas en Cover Art Archive y Deezer y aplica la que elijas a todas las canciones del álbum")
+                Button("Aplicar carátula recomendada") { applyRecommendedCovers(coverRequests) }
+                    .disabled(viewModel.isApplyingRecommendedCovers)
+                    .help("Aplica sin preguntar solo la carátula que supere el umbral de confianza; si ninguna lo supera, se abre el selector")
+            } else if coverRequests.count > 1 {
+                Button("Buscar carátulas de \(coverRequests.count) álbumes...") { applyRecommendedCovers(coverRequests) }
+                    .disabled(viewModel.isApplyingRecommendedCovers)
+                    .help("Aplica sin preguntar la carátula que supere el umbral de confianza en cada álbum; los que no tengan una opción segura los eliges tú, uno por uno")
             }
             Button("Buscar letra") {
                 runEnrichment { await viewModel.reenrichOnline(ids: targetIDs, fetchAlbumInfo: false, fetchLyrics: true) }

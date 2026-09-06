@@ -11,7 +11,12 @@ struct AlbumsView: View {
     @ObservedObject var preferences: AppPreferences
     /// PLAN-studio-rendimiento.md Fase 1: la selección de la tabla
     /// embebida (álbum expandido) llega por acá -- ver `SelectionStore`.
-    @ObservedObject var selectionStore: SelectionStore
+    /// PLAN-studio-rendimiento-2.md Fase 3 (ST-182): `let` y no
+    /// `@ObservedObject` -- esta vista PUBLICA acá su selección, así que
+    /// observarlo le devolvía el eco de su propia publicación y le
+    /// costaba una segunda pasada de `body` por clic. Quien observa es
+    /// `SelectionStoreObserver`.
+    let selectionStore: SelectionStore
 
     @State private var albums: [AlbumGroup] = []
     @State private var searchText = ""
@@ -55,7 +60,12 @@ struct AlbumsView: View {
         nonmutating set { selectionModel.selection = newValue }
     }
     /// ST-104: álbum cuyo menú pidió "Buscar carátulas del álbum".
-    @State private var coverSearch: AlbumCoverRequest?
+    /// PLAN-studio-rendimiento-2.md Fase 3 (ST-182): ahora es una COLA
+    /// -- la acción plural deja acá los álbumes que no tuvieron una
+    /// opción lo bastante segura, y el selector los recorre uno por uno
+    /// con "Omitir". Un solo álbum es una cola de uno.
+    @State private var coverQueue: [AlbumCoverRequest] = []
+    @State private var coverQueueIndex = 0
     @AppStorage("aura.albumsSort") private var sortRaw = AlbumSort.title.rawValue
 
     enum AlbumSort: String, CaseIterable, Identifiable {
@@ -143,20 +153,13 @@ struct AlbumsView: View {
             refreshStatusSelection()
             if selectedAlbumID == nil { publishSelection() }
         }
-        .onChange(of: selectionStore.selected) { _, _ in
-            if selectedAlbumID != nil { refreshStatusSelection() }
-        }
         .onDisappear { selectionStore.clear(from: publisherID) }
-        .sheet(item: $coverSearch) { request in
-            AlbumCoverPickerView(
-                request: request,
-                search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled),
-                onApply: { data in
-                    Task { await viewModel.applyAlbumCover(data, toItems: request.trackIDs) }
-                    coverSearch = nil
-                },
-                onCancel: { coverSearch = nil })
-        }
+        .background(SelectionStoreObserver(store: selectionStore) { _ in
+            // Solo importa con un detalle ABIERTO: ahí la selección de
+            // la barra de estado la publica la tabla embebida.
+            if selectedAlbumID != nil { refreshStatusSelection() }
+        })
+        .sheet(isPresented: showingCoverPicker) { coverPicker }
     }
 
     /// ST-063: barra de estado. En la cuadrícula, álbumes/artistas/
@@ -220,6 +223,10 @@ struct AlbumsView: View {
             self.selectedAlbumID = nil
         }
         selection.pruneMissing(from: Set(groups.map(\.id)))
+        // ST-182: el índice de agrupación se arma en segundo plano al
+        // cambiar el catálogo, para que el primer clic derecho no pague
+        // los 12 000 cálculos de clave.
+        viewModel.warmCatalogIndex()
         refreshGrid(groups)
     }
 
@@ -233,30 +240,86 @@ struct AlbumsView: View {
         if selectedAlbumID == nil { publishSelection() }
     }
 
-    /// El pedido de carátulas para un conjunto de canciones, resuelto
-    /// contra la biblioteca completa para que la tapa elegida se aplique
-    /// al álbum ENTERO y no solo a lo que estaba seleccionado.
-    private func coverRequest(for items: [LibraryItem]) -> AlbumCoverRequest? {
-        AlbumCoverRequest.forAlbum(of: items, in: viewModel.items,
-                                   options: preferences.artistGrouping)
+    // MARK: - Carátulas (cola del selector)
+
+    /// El pedido de carátulas de UN álbum, resuelto contra la biblioteca
+    /// completa para que la tapa elegida se aplique al álbum ENTERO y no
+    /// solo a lo que estaba seleccionado.
+    /// PLAN-studio-rendimiento-2.md Fase 3 (ST-182): por el índice del
+    /// catálogo, no recorriendo los 12 000 ítems por álbum.
+    private func coverRequest(for album: AlbumGroup) -> AlbumCoverRequest? {
+        AlbumCoverRequest.forAlbum(album, in: viewModel.catalogIndex)
     }
 
-    /// Un pedido por cada álbum alcanzado que tenga sentido buscar.
+    /// Un pedido por cada álbum alcanzado que tenga sentido buscar. Con
+    /// los 1 000 álbumes seleccionados esto eran 12 millones de claves
+    /// normalizadas (81 s medidos en ST-180 (d)); ahora son 1 000
+    /// búsquedas en un diccionario.
     private func coverRequests(for targets: [AlbumGroup]) -> [AlbumCoverRequest] {
-        targets.compactMap { coverRequest(for: $0.items) }
+        let index = viewModel.catalogIndex
+        return targets.compactMap { AlbumCoverRequest.forAlbum($0, in: index) }
     }
 
-    /// R2-3: aplica la recomendada donde alcanza el umbral. Si quedó
-    /// EXACTAMENTE un álbum sin opción segura, se abre su picker -- que
-    /// es "si no lo supera, cae al picker". Con varios no se abre nada:
-    /// una fila de pickers encadenados no se puede usar, y el resumen ya
-    /// dice cuántos quedaron pendientes.
+    private var showingCoverPicker: Binding<Bool> {
+        Binding(get: { coverQueue.indices.contains(coverQueueIndex) },
+                set: { if !$0 { closeCoverQueue() } })
+    }
+
+    @ViewBuilder
+    private var coverPicker: some View {
+        if coverQueue.indices.contains(coverQueueIndex) {
+            let request = coverQueue[coverQueueIndex]
+            AlbumCoverPickerView(
+                request: request,
+                search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled),
+                queuePosition: coverQueue.count > 1 ? (coverQueueIndex + 1, coverQueue.count) : nil,
+                onApply: { data in
+                    Task { await viewModel.applyAlbumCover(data, toItems: request.trackIDs) }
+                    advanceCoverQueue()
+                },
+                onSkip: coverQueue.count > 1 ? { advanceCoverQueue() } : nil,
+                onCancel: { closeCoverQueue() })
+                // La hoja no se cierra entre álbumes: cambia de
+                // contenido. El `.id` es lo que hace que el siguiente
+                // arranque su búsqueda en vez de mostrar las candidatas
+                // del anterior.
+                .id(request.id)
+        }
+    }
+
+    private func startCoverQueue(_ requests: [AlbumCoverRequest]) {
+        coverQueueIndex = 0
+        coverQueue = requests
+    }
+
+    private func advanceCoverQueue() {
+        if coverQueueIndex + 1 < coverQueue.count {
+            coverQueueIndex += 1
+        } else {
+            closeCoverQueue()
+        }
+    }
+
+    private func closeCoverQueue() {
+        coverQueue = []
+        coverQueueIndex = 0
+    }
+
+    /// R2-3: aplica la recomendada donde alcanza el umbral y deja lo
+    /// dudoso al usuario.
+    ///
+    /// PLAN-studio-rendimiento-2.md Fase 3 (ST-182) cambia qué pasa con
+    /// lo dudoso: antes, con EXACTAMENTE uno se abría su selector y con
+    /// varios no se abría nada -- "una fila de pickers encadenados no se
+    /// puede usar". Ahora sí se puede: los dudosos entran en una cola
+    /// que el selector recorre de a uno, diciendo en cuál va ("Álbum 2
+    /// de 7") y con "Omitir este álbum". Cancelar corta la cola entera.
     private func applyRecommended(_ requests: [AlbumCoverRequest]) {
         Task {
             let pending = await viewModel.applyRecommendedCovers(
                 for: requests,
                 search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled))
-            if pending.count == 1 { coverSearch = pending[0] }
+            startCoverQueue(pending)
         }
     }
 
@@ -404,9 +467,9 @@ struct AlbumsView: View {
                             Task { await viewModel.reenrichOnline(ids: Set(album.items.map(\.id)), fetchAlbumInfo: true, fetchLyrics: false) }
                         }
                         Button("Buscar carátulas del álbum...") {
-                            coverSearch = coverRequest(for: album.items)
+                            if let request = coverRequest(for: album) { startCoverQueue([request]) }
                         }
-                        .disabled(coverRequest(for: album.items) == nil)
+                        .disabled(album.isUnknown)
                         .help("Busca varias carátulas en Cover Art Archive y Deezer y aplica la que elijas a todas las canciones del álbum")
                     }
                 }
@@ -433,46 +496,62 @@ struct AlbumsView: View {
     @ViewBuilder
     private func albumContextMenu(_ album: AlbumGroup) -> some View {
         let targets = effectiveAlbums(for: album)
-        let items = targets.flatMap(\.items)
-        let allFavorite = items.allSatisfy { $0.metadata?.isFavorite == true }
+        // PLAN-studio-rendimiento-2.md Fase 3 (ST-182): el menú se
+        // construye con lo que ya está agrupado, sin materializar las
+        // canciones de la selección. Antes, un `flatMap` de los álbumes
+        // alcanzados armaba un arreglo de 12 000 ítems solo para ABRIR
+        // el menú, y los `coverRequests` recorrían el catálogo entero
+        // una vez por álbum. Todo lo que necesita los ítems de verdad
+        // (marcar favoritos, mostrar en Finder, eliminar) los pide
+        // DENTRO de su closure, o sea al elegir la acción, no al abrir.
+        let requests = coverRequests(for: targets)
+        // `allSatisfy` corta en el primer elemento que no cumple, así
+        // que esto es O(1) en el caso normal, no O(catálogo).
+        let allFavorite = targets.allSatisfy { group in
+            group.items.allSatisfy { $0.metadata?.isFavorite == true }
+        }
 
         if targets.count == 1 {
             Button("Abrir") { selectedAlbumID = album.id }
             Divider()
         }
         Button(allFavorite ? "Quitar favorito" : "Marcar como favorito") {
-            viewModel.setFavorite(!allFavorite, forItems: Set(items.map(\.id)))
+            viewModel.setFavorite(!allFavorite, forItems: itemIDs(of: targets))
         }
         Button("Buscar información en línea") {
-            Task { await viewModel.reenrichOnline(ids: Set(items.map(\.id)), fetchAlbumInfo: true, fetchLyrics: false) }
+            Task { await viewModel.reenrichOnline(ids: itemIDs(of: targets), fetchAlbumInfo: true, fetchLyrics: false) }
         }
-        // R2-2: la condición es que la selección RESUELVA a un solo
-        // álbum, no que se haya hecho clic sobre una sola tarjeta --
-        // `AlbumCoverRequest.forAlbum` es quien lo decide, y decide
-        // igual acá que en la tabla de Canciones.
-        if let request = coverRequest(for: items) {
-            Button("Buscar carátulas del álbum...") { coverSearch = request }
-        }
-        // R2-3: la acción automática SÍ tiene sentido plural -- aplica
-        // la recomendada a cada álbum que tenga una lo bastante segura,
-        // y deja intactos los demás.
-        let recommendable = coverRequests(for: targets)
-        if !recommendable.isEmpty {
-            Button(recommendable.count > 1
-                   ? "Aplicar carátula recomendada a \(recommendable.count) álbumes"
-                   : "Aplicar carátula recomendada") {
-                applyRecommended(recommendable)
-            }
-            .disabled(viewModel.isApplyingRecommendedCovers)
-            .help("Aplica sin preguntar solo la carátula que supere el umbral de confianza; los álbumes sin una opción segura quedan sin tocar")
+        if requests.count == 1 {
+            // R2-2: la condición es que la selección RESUELVA a un solo
+            // álbum, no que se haya hecho clic sobre una sola tarjeta --
+            // `AlbumCoverRequest` es quien lo decide, y decide igual acá
+            // que en la tabla de Canciones.
+            Button("Buscar carátulas del álbum...") { startCoverQueue(requests) }
+            // R2-3: la automática, sin preguntar, solo si supera el umbral.
+            Button("Aplicar carátula recomendada") { applyRecommended(requests) }
+                .disabled(viewModel.isApplyingRecommendedCovers)
+                .help("Aplica sin preguntar solo la carátula que supere el umbral de confianza; si ninguna lo supera, se abre el selector")
+        } else if requests.count > 1 {
+            // F3: la acción plural que faltaba. Aplica la recomendada
+            // donde alcanza el umbral y encola los dudosos en el
+            // selector, uno por uno.
+            Button("Buscar carátulas de \(requests.count) álbumes...") { applyRecommended(requests) }
+                .disabled(viewModel.isApplyingRecommendedCovers)
+                .help("Aplica sin preguntar la carátula que supere el umbral de confianza en cada álbum; los que no tengan una opción segura los eliges tú, uno por uno")
         }
         Divider()
         Button("Mostrar en Finder") {
-            NSWorkspace.shared.activateFileViewerSelecting(items.map(\.sourceURL))
+            NSWorkspace.shared.activateFileViewerSelecting(targets.flatMap(\.items).map(\.sourceURL))
         }
         Button(targets.count > 1 ? "Eliminar álbumes" : "Eliminar álbum", role: .destructive) {
-            viewModel.deleteItems(ids: Set(items.map(\.id)))
+            viewModel.deleteItems(ids: itemIDs(of: targets))
         }
+    }
+
+    private func itemIDs(of groups: [AlbumGroup]) -> Set<UUID> {
+        var ids = Set<UUID>()
+        for group in groups { for item in group.items { ids.insert(item.id) } }
+        return ids
     }
 }
 

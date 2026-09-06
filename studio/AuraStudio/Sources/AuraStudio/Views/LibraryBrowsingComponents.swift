@@ -426,3 +426,30 @@ enum LibrarySearch {
         return matches(artist.name, needle)
     }
 }
+
+/// PLAN-studio-rendimiento-2.md Fase 3 (ST-182): observa un
+/// `SelectionStore` **en lugar de** la vista que lo contiene.
+///
+/// Desde ST-181 las cuadrículas PUBLICAN su selección en el store. Si la
+/// vista además lo observa (`@ObservedObject`), publicar se la invalida
+/// a sí misma: cada clic costaba dos pasadas de `body` -- una por el
+/// cambio de selección y otra por el eco de su propia publicación. Es
+/// exactamente lo que midió el mecánico ("AlbumsView.body sigue en 2 por
+/// clic") después de que el addendum de ST-181 sacara la otra causa.
+///
+/// La vista guarda el store como un `let` normal (referencia, sin
+/// suscripción) y pone esto de fondo: el único que se reevalúa cuando el
+/// store cambia es este `Color.clear`, que llama de vuelta a quien de
+/// verdad necesita enterarse -- la barra de estado de un álbum o una
+/// película ABIERTOS, cuya selección la publica la tabla embebida.
+struct SelectionStoreObserver: View {
+    @ObservedObject var store: SelectionStore
+    let onChange: (Set<UUID>) -> Void
+
+    var body: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .onAppear { onChange(store.selected) }
+            .onChange(of: store.selected) { _, new in onChange(new) }
+    }
+}

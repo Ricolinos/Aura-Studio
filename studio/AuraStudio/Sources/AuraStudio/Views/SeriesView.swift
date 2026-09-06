@@ -11,7 +11,10 @@ struct SeriesView: View {
     @ObservedObject var preferences: AppPreferences
     /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): las cuadrículas
     /// también publican su selección -- ver `SelectionStore`.
-    @ObservedObject var selectionStore: SelectionStore
+    /// ST-182: `let`, no `@ObservedObject` -- esta vista solo PUBLICA
+    /// acá; observarlo le costaría una pasada de `body` extra por clic
+    /// como eco de su propia publicación.
+    let selectionStore: SelectionStore
 
     @State private var series: [VideoCollectionGroup] = []
     @State private var searchText = ""

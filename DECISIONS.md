@@ -7213,3 +7213,133 @@ y mata el proceso a mitad —lo mismo que ya le pasó al mecánico en ST-200—,
 que estas mediciones salieron de corridas que llegaron hasta donde llegaron y de
 una corrida completa con 300 álbumes. No es del código: el arnés mantiene vivas
 dos copias de los 87 MB de carátulas.
+
+## ST-182 — PLAN-studio-rendimiento-2.md, Fase F3: el menú contextual deja de reagrupar la biblioteca, y las carátulas en lote existen en Canciones
+
+Tercera PARADA de la ronda 2 (sesión "experto en código opus"). Ataca el
+punto **6** del diagnóstico de §0 del plan, que es **el número más lejos
+del objetivo de toda la ronda**: abrir el menú contextual con los 1 000
+álbumes seleccionados costaba **81 s** medidos en ST-180 (d), contra un
+objetivo de §A de **200 ms** — unas 406 veces por encima. Y el síntoma
+que el dueño reportó con esas palabras ("en Canciones con todo
+seleccionado no aparece Buscar carátulas") no era lentitud sino una
+acción que **no existía**.
+
+### 1. `LibraryCatalogIndex`: el catálogo se agrupa una vez, no una vez por álbum
+
+`AlbumCoverRequest.forAlbum(of:in:options:)` resolvía "qué canciones son
+de este álbum" con un `filter` sobre los 12 000 ítems de la biblioteca,
+calculando `LibraryGrouping.albumKey` de cada uno — dos normalizaciones
+de cadena por ítem (`folding` sin mayúsculas ni acentos, más el recorte
+de artista principal de R2-4). El menú lo llamaba **una vez por álbum
+alcanzado**: con toda la biblioteca seleccionada, **12 millones de claves
+normalizadas por apertura de menú**.
+
+`Models/LibraryCatalogIndex.swift` guarda las dos direcciones —
+`albumKey → [LibraryItem]` y `LibraryItem.id → albumKey` — calculadas una
+vez. La segunda no es un lujo: resolver "de qué álbumes es esta
+selección" con 12 000 canciones seleccionadas es la diferencia entre
+24 000 `folding` y 12 000 búsquedas en una tabla hash.
+
+Hermano en Windows de `LibraryCatalogIndex` de ST-201 (`ByAlbumKey` /
+`ItemsForKeys` / `GroupCount`): misma idea y misma invalidación por
+versión; las APIs no coinciden y no hace falta que coincidan.
+
+**Cómo se invalida.** `LibraryViewModel.items` gana un `didSet` que sube
+`catalogVersion` (un `&+=`, nada más), y el índice cacheado vale mientras
+coincidan la versión **y** las opciones de agrupación. Comparar versiones
+en vez de catálogos evita justamente lo que este plan viene sacando de
+todos lados: comparar `[LibraryItem]` compara los bytes de todas las
+carátulas.
+
+**Se arma en segundo plano.** Construirlo son 12 000 claves normalizadas,
+del orden de los 76 ms que ST-180 (b) midió para `LibraryStats.albums`.
+Hacerlo solo perezoso alcanzaba para que el menú dejara de costar 81 s,
+pero dejaba ESA cuenta en el primer clic derecho después de cada cambio
+del catálogo — otra vez contra los 200 ms del objetivo. `warmCatalogIndex()`
+lo arma en un `Task.detached(priority: .utility)` cuando cambia el
+catálogo, y descarta el resultado si el catálogo volvió a cambiar
+mientras tanto. Si nadie lo llama no pasa nada: `catalogIndex` lo arma
+igual, en el hilo principal, la primera vez que se lo pide.
+
+### 2. El menú se construye con lo que ya está agrupado
+
+Además de los `coverRequests`, el menú de Álbumes hacía un
+`targets.flatMap(\.items)` — materializar un arreglo de 12 000 ítems solo
+para ABRIR el menú — y sobre eso un `allSatisfy` para decidir el texto de
+"Marcar como favorito". Ahora:
+
+- lo que necesita los ítems de verdad (favoritos, mostrar en Finder,
+  eliminar) los pide **dentro de su closure**, o sea al elegir la acción,
+  no al abrir el menú;
+- `allFavorite` se evalúa por grupo con `allSatisfy` anidado, que corta en
+  el primer elemento que no cumple: O(1) en el caso normal, no
+  O(catálogo).
+
+### 3. "Buscar carátulas de N álbumes…" en Canciones **y** en Álbumes
+
+Lo que faltaba, no lo que era lento. Con la selección tocando varios
+álbumes, las dos vistas ofrecen ahora la misma acción, con el mismo
+criterio de R2-3 (ST-115): aplica sin preguntar **solo** la carátula que
+supere el umbral de confianza, y los álbumes sin una opción segura no se
+tocan.
+
+Lo que cambia es qué pasa con los dudosos. Antes: con EXACTAMENTE uno se
+abría su selector y con varios **no se abría nada** — "una fila de
+pickers encadenados no se puede usar", decía R2-3, y tenía razón tal como
+estaba planteado. Ahora sí se puede, porque la hoja dice dónde está
+parada: los dudosos entran en una **cola** que `AlbumCoverPickerView`
+recorre de a uno, con "Álbum 2 de 7" en el encabezado, **"Omitir este
+álbum"** para dejarlo como está, y "Cancelar el resto" para cortar la
+cola entera. La hoja no se cierra entre álbumes: cambia de contenido (un
+`.id(request.id)` es lo que hace que el siguiente arranque su búsqueda en
+vez de mostrar las candidatas del anterior).
+
+### 4. La búsqueda en lote es una tarea del centro de tareas
+
+`applyRecommendedCovers` puede tocar los 1 000 álbumes, con una búsqueda
+en red por álbum. Eso no puede ser un botón que se queda gris sin decir
+nada: va al `BackgroundTaskCenter` con progreso **"N de M"**, el nombre
+del álbum en curso, y **cancelación** (§A: "todas las operaciones largas
+con indicador y cancelación en el centro de tareas").
+
+Cancelar **no deshace lo ya aplicado** — cada álbum es una operación
+terminada en sí misma — sino que deja de empezar los que faltan, lo dice
+en el resumen ("N sin revisar (cancelaste)") y **no encola pickers**: si
+el usuario paró, paró.
+
+### 5. De paso: el eco de `SelectionStore` (lo que faltaba del criterio de F1)
+
+El mecánico midió, después del addendum de ST-181, que `AlbumsView.body`
+seguía evaluándose **2 veces por clic**. La causa estaba en ST-181 mismo:
+las cuadrículas empezaron a **publicar** su selección en `SelectionStore`
+y además lo **observaban** (`@ObservedObject`), así que publicar se las
+invalidaba a sí mismas — una pasada por el cambio de selección y otra por
+el eco de su propia publicación.
+
+Ahora la vista guarda el store como un `let` (referencia, sin
+suscripción). Las tres que solo publican (Series, Fotos, Artistas) y la
+tabla de Canciones (`MediaSectionView`, que también solo publica) no
+necesitan nada más; Álbumes y Películas, que sí leen la selección para la
+barra de estado de un álbum/película ABIERTOS, la reciben por
+`SelectionStoreObserver` — el mismo patrón de vista de tamaño cero que
+`LibraryStatusRelay`. `DeviceGeneralView` sigue observándolo, que es su
+trabajo.
+
+### Qué NO cambia
+
+La caché de miniaturas sigue decodificando en el `body` (F2, y el
+mecánico ya midió que es barata: 35 ms fría / 1,2 ms caliente para 1 000
+álbumes). `coverArtData` sigue íntegro en RAM (F5).
+
+### Verificación
+
+`swift build` limpio, `xcodebuild -configuration Release` **BUILD
+SUCCEEDED** (la regla que salió del addendum de ST-181), `swift test`
+completo: **830 pruebas, 0 fallas**.
+
+El número de "menú con los 1 000 álbumes seleccionados" contra los 81 s
+de la línea base lo levanta "mecanico sonnet" con la prueba (d) de
+ST-180, que mide `AlbumCoverRequest.forAlbum` en un bucle: la
+equivalente por índice es `AlbumCoverRequest.forAlbums(keys:in:)` sobre
+un `LibraryCatalogIndex` ya armado, más el costo de armarlo una vez.

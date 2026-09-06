@@ -12,7 +12,12 @@ struct MoviesView: View {
     @ObservedObject var preferences: AppPreferences
     /// PLAN-studio-rendimiento.md Fase 1: la selección de la tabla
     /// embebida (película expandida) llega por acá -- ver `SelectionStore`.
-    @ObservedObject var selectionStore: SelectionStore
+    /// PLAN-studio-rendimiento-2.md Fase 3 (ST-182): `let` y no
+    /// `@ObservedObject` -- esta vista PUBLICA acá su selección, así que
+    /// observarlo le devolvía el eco de su propia publicación y le
+    /// costaba una segunda pasada de `body` por clic. Quien observa es
+    /// `SelectionStoreObserver`.
+    let selectionStore: SelectionStore
 
     @State private var movies: [VideoCollectionGroup] = []
     @State private var searchText = ""
@@ -106,10 +111,12 @@ struct MoviesView: View {
             refreshStatusSelection()
             if selectedMovieID == nil { publishSelection() }
         }
-        .onChange(of: selectionStore.selected) { _, _ in
-            if selectedMovieID != nil { refreshStatusSelection() }
-        }
         .onDisappear { selectionStore.clear(from: publisherID) }
+        .background(SelectionStoreObserver(store: selectionStore) { _ in
+            // Solo importa con un detalle ABIERTO: ahí la selección de
+            // la barra de estado la publica la tabla embebida.
+            if selectedMovieID != nil { refreshStatusSelection() }
+        })
         .sheet(item: $reviewingItem) { item in
             MediaInfoView(item: item, availableCategories: MediaCategory.videoCategories.map(\.displayName)) { category in
                 viewModel.setCategory(category, forItem: item.id)
