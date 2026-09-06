@@ -123,7 +123,10 @@ public sealed class LibraryStore(string root)
                 Episode = persisted.Episode,
                 PhotoAlbum = persisted.PhotoAlbum,
                 MetadataEditedByUser = persisted.MetadataEditedByUser ?? false,
-                AddedAt = persisted.AddedAt
+                AddedAt = persisted.AddedAt,
+                // Después de SourcePath a propósito: asignar la ruta olvida el
+                // tamaño (ST-201), así que ponerlo antes lo borraría.
+                FileSizeBytes = persisted.FileSizeBytes
             });
         }
 
@@ -202,7 +205,8 @@ public sealed class LibraryStore(string root)
                 Episode = item.Episode,
                 PhotoAlbum = item.PhotoAlbum,
                 MetadataEditedByUser = item.MetadataEditedByUser ? true : null,
-                AddedAt = item.AddedAt
+                AddedAt = item.AddedAt,
+                FileSizeBytes = item.FileSizeBytes
             });
         }
 

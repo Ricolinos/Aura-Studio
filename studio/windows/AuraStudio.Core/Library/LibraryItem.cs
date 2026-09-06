@@ -63,8 +63,39 @@ public sealed class LibraryItem
     /// Mutable a propósito (D-228): con "copiar medios a la biblioteca" activo,
     /// el archivo se copia al procesarlo —cuando ya se conocen artista, álbum y
     /// categoría—, no al soltarlo, y esto pasa a apuntar a esa copia.
+    ///
+    /// <para>Cambiarlo <b>olvida el tamaño</b> (ST-201): otro archivo pesa otra
+    /// cosa, y un número viejo en la columna "Tamaño" es peor que un guion.</para>
     /// </summary>
-    public string SourcePath { get; set; } = "";
+    public string SourcePath
+    {
+        get => _sourcePath;
+        set
+        {
+            if (string.Equals(_sourcePath, value, StringComparison.Ordinal)) return;
+
+            _sourcePath = value;
+            FileSizeBytes = null;
+        }
+    }
+
+    private string _sourcePath = "";
+
+    /// <summary>
+    /// Cuánto pesa <see cref="SourcePath"/>, guardado en el catálogo (ST-201).
+    /// <c>null</c> = todavía no se midió; lo llena <see cref="FileSizeBackfill"/>
+    /// en segundo plano, por lotes.
+    ///
+    /// <para>Antes se leía con un <c>FileInfo</c> por fila cada vez que se
+    /// armaba la tabla de Canciones. Con la biblioteca en una unidad de red eso
+    /// eran 12 000 consultas al servidor por refresco. <b>Nunca se guarda 0 por
+    /// no haber podido leer</b>: cero es un archivo vacío de verdad; lo que no
+    /// se pudo medir queda en <c>null</c> y se reintenta.</para>
+    ///
+    /// <para>Se asigna <b>después</b> de <see cref="SourcePath"/> al construir un
+    /// elemento: la ruta lo borra al cambiar.</para>
+    /// </summary>
+    public long? FileSizeBytes { get; set; }
 
     public LibraryItemKind Kind { get; init; }
 

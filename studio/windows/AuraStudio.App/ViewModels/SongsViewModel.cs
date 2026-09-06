@@ -74,13 +74,39 @@ public sealed partial class SongsViewModel : ViewModelBase
     public SongsViewModel(LibraryViewModel library)
     {
         _library = library;
-        _library.PropertyChanged += (_, _) => Refresh();
+        _library.PropertyChanged += OnLibraryChanged;
         Headers = [];
         Rows = [];
         Title = AppStrings.NavSongs;
         Subtitle = "";
         Refresh();
     }
+
+    /// <summary>
+    /// La tabla se rehace cuando cambia el <b>contenido</b> de la biblioteca, no
+    /// ante cualquier aviso suyo. Es lo que le faltaba a ST-161 acá (ST-201).
+    ///
+    /// <para>Escucharlos todos era el trabón: cada clic en una tarjeta de Álbumes
+    /// publica la selección, publicar avisa, y ese aviso rearmaba la tabla de
+    /// 12 000 renglones —con un <c>FileInfo</c> por fila, por red— aunque la
+    /// tabla ni siquiera estuviera en pantalla. Al tercer álbum la app quedaba
+    /// colgada.</para>
+    /// </summary>
+    private void OnLibraryChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (ChangesLibraryContent(e.PropertyName)) Refresh();
+    }
+
+    /// <summary>
+    /// Nombre vacío o <c>null</c> significa "cambió todo" en
+    /// <c>INotifyPropertyChanged</c>: eso sí obliga a rehacer. Mismo criterio que
+    /// <c>MediaGridViewModel</c>, y a propósito: dos reglas distintas para "esto
+    /// me obliga a rearmar" es cómo se desincronizan dos vistas del mismo dato.
+    /// </summary>
+    private static bool ChangesLibraryContent(string? propertyName) =>
+        string.IsNullOrEmpty(propertyName)
+        || propertyName == nameof(LibraryViewModel.Items)
+        || propertyName == nameof(LibraryViewModel.AvailableItems);
 
     public LibraryViewModel Library => _library;
 

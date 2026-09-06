@@ -82,9 +82,45 @@ public sealed partial class LibraryViewModel : ViewModelBase
             if (property is nameof(IAppPreferences.GroupCollaborations)
                          or nameof(IAppPreferences.ArtistGroupingExceptions))
             {
+                // El índice guarda las claves de álbum y de artista ya
+                // normalizadas, y este ajuste cambia justamente cómo se arman
+                // (ST-201): sin invalidarlo, la cuadrícula reagruparía y el menú
+                // contextual seguiría contestando con la agrupación anterior.
+                _catalogVersion++;
                 OnPropertyChanged(nameof(Items));
             }
         };
+    }
+
+    // MARK: - Índice del catálogo (ST-201)
+
+    /// <summary>
+    /// Sube con cada cambio del contenido de la biblioteca o del criterio de
+    /// agrupación. Es lo que invalida <see cref="Index"/>: comparar la lista de
+    /// elementos no alcanza, porque los elementos se mutan en su lugar.
+    /// </summary>
+    private int _catalogVersion;
+
+    private LibraryCatalogIndex? _index;
+    private int _indexedVersion = -1;
+
+    /// <summary>
+    /// Las claves de agrupación de <see cref="AvailableItems"/>, calculadas una
+    /// sola vez por versión del catálogo (ST-201).
+    ///
+    /// <para>Lo comparten la cuadrícula, el resumen de estado y el menú
+    /// contextual. <b>Nadie más vuelve a recorrer la biblioteca normalizando
+    /// cadenas</b>: esa era la cuenta que se pagaba en cada clic.</para>
+    /// </summary>
+    public LibraryCatalogIndex Index
+    {
+        get
+        {
+            if (_index is not null && _indexedVersion == _catalogVersion) return _index;
+
+            _indexedVersion = _catalogVersion;
+            return _index = LibraryCatalogIndex.Build(AvailableItems, ArtistGrouping);
+        }
     }
 
     // MARK: - Completar en línea
@@ -298,6 +334,10 @@ public sealed partial class LibraryViewModel : ViewModelBase
     [RelayCommand]
     public void Reload()
     {
+        // Antes de cualquier salida: lo que se estaba midiendo en segundo plano
+        // es de los elementos anteriores (ST-201).
+        CancelFileSizeBackfill();
+
         _store = new LibraryStore(_preferences.LibraryPath);
         Availability = _store.Availability;
 
@@ -359,6 +399,124 @@ public sealed partial class LibraryViewModel : ViewModelBase
         if (pending.Count > 0) _ = ProcessAsync(pending);
 
         StartCoverNormalizationIfNeeded();
+        StartFileSizeBackfillIfNeeded();
+    }
+
+    // --- Tamaño de archivo persistido (ST-201) ---
+
+    private CancellationTokenSource? _fileSizeBackfill;
+
+    /// <summary>
+    /// Mide en segundo plano lo que el catálogo todavía no sabe cuánto pesa.
+    ///
+    /// <para>Es la migración transparente del campo <c>fileSizeBytes</c>: un
+    /// catálogo hecho antes de ST-201 —o guardado por la app de macOS, que
+    /// todavía no lo escribe— no lo trae, y la columna "Tamaño" mostraría un
+    /// guion para siempre. Se mide una vez, por lotes, y se guarda.</para>
+    ///
+    /// <para>Se mide en el pool y se <b>aplica en el hilo de interfaz</b>: son
+    /// los mismos elementos que la tabla está leyendo. No dice nada en la barra
+    /// de estado: es trabajo de fondo que nadie pidió, y anunciarlo taparía el
+    /// mensaje de lo que el usuario sí pidió.</para>
+    ///
+    /// <para><b>Un solo guardado, al final.</b> Guardar por lote serían dos
+    /// docenas de escrituras del catálogo entero —y hoy cada una reescribe
+    /// también todas las carátulas (<c>LibraryStore.SaveItems</c>)—, que es
+    /// justamente lo que W4 va a arreglar con el persistidor con rebote. Hasta
+    /// entonces, la migración se paga una vez: si la app se cierra a mitad, lo
+    /// que falte se mide en la próxima apertura.</para>
+    /// </summary>
+    private void StartFileSizeBackfillIfNeeded()
+    {
+        // ST-171: sin la biblioteca delante no se mide ni —sobre todo— se
+        // guarda. "No pude leer el archivo" no es un tamaño.
+        if (!_store.Availability.IsAvailable) return;
+
+        IReadOnlyList<LibraryItem> catalog = Items;
+        IReadOnlyList<LibraryItem> pending = FileSizeBackfill.Pending(catalog);
+        if (pending.Count == 0) return;
+
+        var cancellation = new CancellationTokenSource();
+        _fileSizeBackfill = cancellation;
+
+        _ = Task.Run(() =>
+        {
+            int applied = 0;
+
+            try
+            {
+                FileSizeBackfill.Run(
+                    pending,
+                    measured => Dispatch(() =>
+                    {
+                        if (!cancellation.IsCancellationRequested)
+                            applied += FileSizeBackfill.Apply(measured);
+                    }),
+                    ct: cancellation.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                // Lo que falte se mide en la próxima apertura: por eso lo que no
+                // se pudo medir queda sin tamaño en vez de quedar en cero.
+            }
+            finally
+            {
+                Dispatch(() =>
+                {
+                    // Solo si el catálogo que se estaba midiendo SIGUE siendo el
+                    // que hay. Si entre medio hubo una recarga, guardar acá
+                    // escribiría lo que sea que haya quedado en memoria a partir
+                    // de una medición que ya no le corresponde — la clase de cosa
+                    // que costó 2408 entradas en ST-087.
+                    if (applied > 0
+                        && !cancellation.IsCancellationRequested
+                        && ReferenceEquals(Items, catalog))
+                    {
+                        SaveCatalogQuietly();
+                    }
+
+                    // Solo si sigue siendo el nuestro: una recarga pudo haber
+                    // arrancado otro, y no se le puede cortar el suyo.
+                    if (ReferenceEquals(_fileSizeBackfill, cancellation)) _fileSizeBackfill = null;
+
+                    cancellation.Dispose();
+                });
+            }
+        }, cancellation.Token);
+    }
+
+    /// <summary>
+    /// Corta la medición de tamaños en curso. Se llama al empezar una recarga:
+    /// esos elementos ya no son los que hay, y seguir midiéndolos es trabajo por
+    /// red que no le sirve a nadie.
+    /// </summary>
+    private void CancelFileSizeBackfill()
+    {
+        _fileSizeBackfill?.Cancel();
+        _fileSizeBackfill = null;
+    }
+
+    /// <summary>
+    /// Guarda el catálogo <b>sin volver a comprobar qué archivos están</b>. Es
+    /// para trabajo de fondo que cambió datos de los elementos pero no cambió
+    /// cuáles se pueden mostrar: rehacer <see cref="RefreshAvailable"/> ahí serían
+    /// otros 12 000 <c>File.Exists</c> por red para llegar a la misma lista.
+    /// </summary>
+    private void SaveCatalogQuietly()
+    {
+        if (!_store.Availability.IsAvailable) return;
+
+        try
+        {
+            _store.SaveItems(Items);
+        }
+        catch (LibraryRootUnavailableException)
+        {
+            // El disco se fue entre la comprobación y la escritura. Es un
+            // estado, no un error que mostrar en un diálogo.
+            Availability = LibraryAvailability.For(_store.Root);
+            WatchForTheRoot(true);
+        }
     }
 
     // --- Migración de carátulas a cuadradas (ST-141) ---
@@ -534,6 +692,12 @@ public sealed partial class LibraryViewModel : ViewModelBase
     {
         AvailableItems = [.. Items.Where(item => File.Exists(item.SourcePath))];
         MissingFileCount = Items.Count - AvailableItems.Count;
+
+        // Lo que se puede mostrar cambió: el índice de ST-201 que lo resume ya
+        // no vale. Se invalida acá y no en cada mutación suelta porque este es
+        // el único punto por el que pasan todas.
+        _catalogVersion++;
+
         UpdateStatus();
     }
 
@@ -768,8 +932,13 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
     /// <summary>
     /// Los renglones de la tabla para un ámbito dado, filtrados y ordenados como
-    /// el usuario los dejó. El tamaño de cada archivo se lee <b>una vez acá</b>,
-    /// no en cada comparación del ordenamiento.
+    /// el usuario los dejó.
+    ///
+    /// <para>El tamaño sale del catálogo (ST-201), no del disco. Antes se leía
+    /// con un <c>FileInfo</c> por fila <b>en cada refresco</b>: con la biblioteca
+    /// del dueño en una unidad de red, 12 000 consultas al servidor cada vez que
+    /// alguien tocaba una tarjeta. Lo que todavía no se midió lo llena
+    /// <see cref="FileSizeBackfill"/> en segundo plano.</para>
     /// </summary>
     public IReadOnlyList<MediaTableRow> Rows(MusicScope scope)
     {
@@ -778,30 +947,26 @@ public sealed partial class LibraryViewModel : ViewModelBase
         if (FavoritesOnly) items = items.Where(item => item.Metadata?.IsFavorite == true);
 
         return items
-            .Select(item => new MediaTableRow(item, SimilarItemsDetector.FileSizeOf(item.SourcePath)))
+            .Select(item => new MediaTableRow(item, item.FileSizeBytes ?? 0))
             .Sorted(SortField, SortAscending);
     }
 
+    // Los ámbitos con clave preguntan al índice (ST-201): son las mismas claves
+    // ya normalizadas, en O(1), en vez de recorrer el catálogo normalizando dos
+    // cadenas por elemento cada vez que se abre un álbum.
     private IEnumerable<LibraryItem> InScope(MusicScope scope) => scope switch
     {
-        MusicScope.Album album => AvailableItems.Where(item =>
-            item.Kind == LibraryItemKind.Music && LibraryGrouping.AlbumKeyOf(item, ArtistGrouping) == album.Key),
+        MusicScope.Album album => Index.ByAlbumKey(album.Key),
 
-        MusicScope.Artist artist => AvailableItems.Where(item =>
-            item.Kind == LibraryItemKind.Music && LibraryGrouping.ArtistKeyOf(item, ArtistGrouping) == artist.Key),
+        MusicScope.Artist artist => Index.ByArtistKey(artist.Key),
 
-        MusicScope.VideoCollection collection => AvailableItems.Where(item =>
-            item.Kind == LibraryItemKind.Video
-            && LibraryGrouping.VideoCollectionKeyOf(item) == collection.Key),
+        MusicScope.VideoCollection collection => Index.ByVideoCollectionKey(collection.Key),
 
-        MusicScope.Season season => AvailableItems.Where(item =>
-            item.Kind == LibraryItemKind.Video
-            && LibraryGrouping.VideoCollectionKeyOf(item) == season.CollectionKey
-            && (item.Season ?? VideoCollectionGroup.NoSeasonNumber) == season.Number),
+        // La temporada se filtra dentro de su serie, no del catálogo entero.
+        MusicScope.Season season => Index.ByVideoCollectionKey(season.CollectionKey)
+            .Where(item => (item.Season ?? VideoCollectionGroup.NoSeasonNumber) == season.Number),
 
-        MusicScope.PhotoAlbum photoAlbum => AvailableItems.Where(item =>
-            item.Kind == LibraryItemKind.Photo
-            && LibraryGrouping.PhotoAlbumKeyOf(item, item.Category ?? "") == photoAlbum.Key),
+        MusicScope.PhotoAlbum photoAlbum => Index.ByPhotoAlbumKey(photoAlbum.Key),
 
         _ => AvailableItems.Where(item => item.Kind == LibraryItemKind.Music)
     };

@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using AuraStudio.App.Resources;
 using AuraStudio.Core;
@@ -23,11 +24,36 @@ public enum MediaGridKind
 }
 
 /// <summary>
+/// Lo que una tarjeta muestra, sin la tarjeta. Es lo que se compara para decidir
+/// si la instancia que ya está en pantalla sirve o hay que hacer una nueva
+/// (ST-201): reconstruir las 1 091 tarjetas en cada refresco obligaba al control
+/// a rehacer todos sus contenedores y a decodificar todas las portadas otra vez.
+/// </summary>
+public readonly record struct MediaCardSpec(
+    string Id, string Title, string Subtitle, byte[]? CoverData, string? ImagePath)
+{
+    /// <summary>
+    /// Si la tarjeta que ya existe muestra exactamente esto. La portada se
+    /// compara <b>por referencia</b> a propósito: comparar 15 KB por álbum en
+    /// cada refresco costaría más que lo que se está ahorrando, y cuando la tapa
+    /// cambia de verdad llega en un arreglo nuevo —lo escribe
+    /// <c>ApplyAlbumCover</c>—, así que la referencia alcanza.
+    /// </summary>
+    public bool Matches(MediaCard card) =>
+        string.Equals(card.Title, Title, StringComparison.Ordinal)
+        && string.Equals(card.Subtitle, Subtitle, StringComparison.Ordinal)
+        && string.Equals(card.ImagePath, ImagePath, StringComparison.Ordinal)
+        && ReferenceEquals(card.CoverData, CoverData);
+
+    public MediaCard ToCard() => new(Id, Title, Subtitle, CoverData, ImagePath);
+}
+
+/// <summary>
 /// Una tarjeta de la cuadrícula. Deliberadamente plana: la cuadrícula no sabe si
 /// atrás hay un álbum, una serie o una carpeta de fotos, solo dibuja tarjetas.
 /// </summary>
-/// <param name="CoverData">Carátula o póster embebido; <c>null</c> si no hay.</param>
-/// <param name="ImagePath">Imagen de archivo, para las tarjetas de fotos.</param>
+/// <param name="coverData">Carátula o póster embebido; <c>null</c> si no hay.</param>
+/// <param name="imagePath">Imagen de archivo, para las tarjetas de fotos.</param>
 public sealed partial class MediaCard(
     string id, string title, string subtitle, byte[]? coverData, string? imagePath) : ObservableObject
 {
@@ -91,8 +117,30 @@ public sealed partial class MediaGridViewModel : ViewModelBase
 {
     private readonly LibraryViewModel _library;
 
-    [ObservableProperty]
-    public partial IReadOnlyList<MediaCard> Cards { get; private set; }
+    /// <summary>Lo marcado, como lógica pura y compartible con la Mac (ST-201).</summary>
+    private readonly GridSelectionModel _selection = new();
+
+    /// <summary>Tarjeta por identificador: la selección toca por id, no por posición.</summary>
+    private readonly Dictionary<string, MediaCard> _byId = new(StringComparer.Ordinal);
+
+    /// <summary>
+    /// Mientras es <c>true</c>, escribir <c>IsSelected</c> en una tarjeta no
+    /// vuelve a entrar al modelo: la orden ya viene de ahí. Es lo que convierte
+    /// "reemplazar la selección" en <b>un</b> aviso en vez de uno por tarjeta.
+    /// </summary>
+    private bool _applyingSelection;
+
+    /// <summary>Lo último que se les empujó a las tarjetas como <c>AnySelection</c>.</summary>
+    private bool _anySelectionPushed;
+
+    private IReadOnlyList<MediaCard>? _selectedCards;
+
+    /// <summary>
+    /// Las tarjetas. Es <b>la misma instancia siempre</b>: los refrescos la
+    /// actualizan en su lugar (ST-201). Reemplazarla obligaría al control a
+    /// rehacer todos sus contenedores, que es de donde salía el trabón.
+    /// </summary>
+    public ObservableCollection<MediaCard> Cards { get; } = [];
 
     [ObservableProperty]
     public partial string Title { get; private set; }
@@ -104,7 +152,6 @@ public sealed partial class MediaGridViewModel : ViewModelBase
     {
         _library = library;
         _library.PropertyChanged += OnLibraryChanged;
-        Cards = [];
         Title = "";
         Subtitle = "";
     }
@@ -138,6 +185,22 @@ public sealed partial class MediaGridViewModel : ViewModelBase
     public LibraryViewModel Library => _library;
 
     public MediaGridKind Kind { get; private set; } = MediaGridKind.Albums;
+
+    /// <summary>
+    /// Cómo pregunta esta cuadrícula por lo que hay detrás de una tarjeta
+    /// (ST-201). Es la traducción de <see cref="MediaGridKind"/> —que es de la
+    /// app— a lo que entiende el índice de Core, y es lo que reutilizan el menú
+    /// contextual y el alcance de sincronización.
+    /// </summary>
+    public LibraryGroupKind GroupKind => Kind switch
+    {
+        MediaGridKind.Albums => LibraryGroupKind.Album,
+        MediaGridKind.Movies or MediaGridKind.Series => LibraryGroupKind.VideoCollection,
+        MediaGridKind.PhotoCollection => LibraryGroupKind.PhotoAlbum,
+
+        // Fotos sueltas y los listados planos: la tarjeta ES el elemento.
+        _ => LibraryGroupKind.Item
+    };
 
     /// <summary>
     /// Los pósters solo tienen sentido donde se ven videos. En Fotos o en
@@ -175,6 +238,18 @@ public sealed partial class MediaGridViewModel : ViewModelBase
 
     public void Show(MediaGridKind kind, string? photoCategory = null)
     {
+        // Entrar a una sección la muestra limpia, como antes de ST-201: el
+        // modelo es único para las cinco cuadrículas, y lo marcado en Álbumes no
+        // significa nada en Fotos —las claves ni siquiera son de la misma clase—.
+        //
+        // Lo que sí sobrevive ahora es un <see cref="Refresh"/>: aplicar tapas en
+        // lote ya no deja al usuario sin la selección con la que las pidió.
+        //
+        // Va por ApplySelection y no por el modelo a secas: si se vuelve a la
+        // misma sección, las tarjetas que se reusan tienen que enterarse de que
+        // ya no están marcadas.
+        ApplySelection(_selection.Clear());
+
         Kind = kind;
         PhotoCategory = photoCategory ?? "";
         Title = TitleFor(kind, PhotoCategory);
@@ -204,80 +279,129 @@ public sealed partial class MediaGridViewModel : ViewModelBase
         _ => "Todos tus videos."
     };
 
+    /// <summary>
+    /// Rehace la cuadrícula <b>por diferencias</b> (ST-201): las tarjetas que
+    /// siguen mostrando lo mismo se quedan tal cual —con su contenedor, su
+    /// portada ya decodificada y su suscripción—, y la colección solo se entera
+    /// de lo que de verdad cambió.
+    ///
+    /// <para>Antes se tiraban las 1 091 tarjetas y se construían 1 091 nuevas en
+    /// cada refresco, aunque no hubiera cambiado nada.</para>
+    /// </summary>
     public void Refresh()
     {
-        Cards = Kind switch
-        {
-            MediaGridKind.Albums =>
-            [
-                .. _library.Albums().Select(album => new MediaCard(
-                    album.Id,
-                    album.Title,
-                    album.IsUnknownArtist ? album.SubtitleDetail : $"{album.Artist} · {album.SubtitleDetail}",
-                    album.CoverArtData, null))
-            ],
+        IReadOnlyList<MediaCard> desired = Reconcile(SpecsFor(Kind));
 
-            MediaGridKind.Movies =>
-            [
-                .. _library.VideoCollections()
-                    .Where(collection => !collection.IsSeries)
-                    .Select(movie => new MediaCard(
-                        movie.Id, movie.Title, movie.Year ?? "", movie.PosterData, null))
-            ],
+        ObservableListSync.Apply(Cards, desired, Subscribe, Unsubscribe);
 
-            MediaGridKind.Series =>
-            [
-                .. _library.VideoCollections()
-                    .Where(collection => collection.IsSeries)
-                    .Select(series => new MediaCard(
-                        series.Id, series.Title,
-                        $"{SeasonsText(series)} · {AppStrings.LibraryEpisodes(series.EpisodeCount)}",
-                        series.PosterData, null))
-            ],
-
-            MediaGridKind.PhotoCollection =>
-            [
-                .. _library.PhotoAlbums(PhotoCategory).Select(album => new MediaCard(
-                    album.Id, album.Title, AppStrings.LibraryPhotos(album.Count),
-                    null, album.PreviewPaths.FirstOrDefault()))
-            ],
-
-            MediaGridKind.AllPhotos =>
-            [
-                .. _library.OfKind(LibraryItemKind.Photo).Select(photo => new MediaCard(
-                    photo.Id.ToString("D"), photo.DisplayTitle, photo.Category ?? "",
-                    null, photo.PreparedPath ?? photo.SourcePath))
-            ],
-
-            MediaGridKind.Clips =>
-            [
-                .. _library.Clips().Select(clip => new MediaCard(
-                    clip.Id.ToString("D"), clip.DisplayTitle, clip.Category ?? "",
-                    clip.Metadata?.CoverArtData, null))
-            ],
-
-            _ =>
-            [
-                .. _library.OfKind(LibraryItemKind.Video).Select(video => new MediaCard(
-                    video.Id.ToString("D"), video.DisplayTitle, video.Category ?? "",
-                    video.Metadata?.CoverArtData, null))
-            ]
-        };
-
-        // La casilla escribe directo en la tarjeta —así también funciona con el
-        // teclado y con un lector de pantalla—, así que los conteos se enteran
-        // escuchándola, no interceptando el clic.
-        foreach (MediaCard card in Cards)
-            card.PropertyChanged += OnCardChanged;
+        // Lo que se había seleccionado y ya no está deja de estar seleccionado:
+        // si no, seguiría alcanzado por «Solo la selección» sin que nadie lo vea.
+        _selection.Retain(_byId.Keys);
 
         OnPropertyChanged(nameof(IsEmpty));
         OnPropertyChanged(nameof(CountText));
         NotifySelectionChanged();
     }
 
+    /// <summary>
+    /// Lo que la cuadrícula debería mostrar, como datos y sin tarjetas. Separar
+    /// las dos cosas es lo que permite reusar las que ya existen.
+    /// </summary>
+    private IEnumerable<MediaCardSpec> SpecsFor(MediaGridKind kind) => kind switch
+    {
+        MediaGridKind.Albums => _library.Albums().Select(album => new MediaCardSpec(
+            album.Id,
+            album.Title,
+            album.IsUnknownArtist ? album.SubtitleDetail : $"{album.Artist} · {album.SubtitleDetail}",
+            album.CoverArtData, null)),
+
+        MediaGridKind.Movies => _library.VideoCollections()
+            .Where(collection => !collection.IsSeries)
+            .Select(movie => new MediaCardSpec(
+                movie.Id, movie.Title, movie.Year ?? "", movie.PosterData, null)),
+
+        MediaGridKind.Series => _library.VideoCollections()
+            .Where(collection => collection.IsSeries)
+            .Select(series => new MediaCardSpec(
+                series.Id, series.Title,
+                $"{SeasonsText(series)} · {AppStrings.LibraryEpisodes(series.EpisodeCount)}",
+                series.PosterData, null)),
+
+        MediaGridKind.PhotoCollection => _library.PhotoAlbums(PhotoCategory).Select(album => new MediaCardSpec(
+            album.Id, album.Title, AppStrings.LibraryPhotos(album.Count),
+            null, album.PreviewPaths.FirstOrDefault())),
+
+        MediaGridKind.AllPhotos => _library.OfKind(LibraryItemKind.Photo).Select(photo => new MediaCardSpec(
+            photo.Id.ToString("D"), photo.DisplayTitle, photo.Category ?? "",
+            null, photo.PreparedPath ?? photo.SourcePath)),
+
+        MediaGridKind.Clips => _library.Clips().Select(clip => new MediaCardSpec(
+            clip.Id.ToString("D"), clip.DisplayTitle, clip.Category ?? "",
+            clip.Metadata?.CoverArtData, null)),
+
+        _ => _library.OfKind(LibraryItemKind.Video).Select(video => new MediaCardSpec(
+            video.Id.ToString("D"), video.DisplayTitle, video.Category ?? "",
+            video.Metadata?.CoverArtData, null))
+    };
+
+    /// <summary>
+    /// La lista de tarjetas que corresponde: la que ya existía cuando muestra lo
+    /// mismo, una nueva cuando no. Una tarjeta nueva nace con el estado de
+    /// selección que le toca — si no, entraría desmarcada aunque su álbum siga
+    /// seleccionado.
+    /// </summary>
+    private IReadOnlyList<MediaCard> Reconcile(IEnumerable<MediaCardSpec> specs)
+    {
+        List<MediaCard> cards = [];
+
+        foreach (MediaCardSpec spec in specs)
+        {
+            if (_byId.TryGetValue(spec.Id, out MediaCard? existing) && spec.Matches(existing))
+            {
+                cards.Add(existing);
+                continue;
+            }
+
+            MediaCard card = spec.ToCard();
+            card.IsSelected = _selection.Contains(spec.Id);
+            card.AnySelection = _anySelectionPushed;
+            cards.Add(card);
+        }
+
+        return cards;
+    }
+
+    private void Subscribe(MediaCard card)
+    {
+        _byId[card.Id] = card;
+        card.PropertyChanged += OnCardChanged;
+    }
+
+    private void Unsubscribe(MediaCard card)
+    {
+        card.PropertyChanged -= OnCardChanged;
+
+        // Solo si sigue siendo la que está en el índice: al reemplazar una
+        // tarjeta por otra con el mismo id, la nueva entra antes de que salga la
+        // vieja, y borrar acá dejaría el índice sin la que sí está en pantalla.
+        if (_byId.TryGetValue(card.Id, out MediaCard? current) && ReferenceEquals(current, card))
+            _byId.Remove(card.Id);
+    }
+
+    /// <summary>
+    /// La casilla escribe directo en la tarjeta —así también funciona con el
+    /// teclado y con un lector de pantalla—, así que el modelo se entera
+    /// escuchándola, no interceptando el clic. Cuando la orden ya viene del
+    /// modelo (<c>_applyingSelection</c>) no hay nada de qué enterarse.
+    /// </summary>
     private void OnCardChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(MediaCard.IsSelected)) NotifySelectionChanged();
+        if (_applyingSelection) return;
+        if (e.PropertyName != nameof(MediaCard.IsSelected)) return;
+        if (sender is not MediaCard card) return;
+
+        _selection.Set(card.Id, card.IsSelected);
+        NotifySelectionChanged();
     }
 
     private static string SeasonsText(VideoCollectionGroup series)
@@ -286,53 +410,94 @@ public sealed partial class MediaGridViewModel : ViewModelBase
         return real == 1 ? "1 temporada" : $"{real} temporadas";
     }
 
-    /// <summary>El ámbito de la tabla al abrir una tarjeta; <c>null</c> si la tarjeta no abre nada.</summary>
     // MARK: - Selección (ST-103)
 
-    /// <summary>Lo que está marcado ahora. Vacío casi siempre, y eso está bien.</summary>
-    public IReadOnlyList<MediaCard> SelectedCards => [.. Cards.Where(card => card.IsSelected)];
+    /// <summary>
+    /// Lo que está marcado ahora, <b>en el orden de la cuadrícula</b> y calculado
+    /// recién cuando alguien pregunta (ST-201): lo consulta el menú contextual,
+    /// que se abre una vez, no en cada clic.
+    /// </summary>
+    public IReadOnlyList<MediaCard> SelectedCards =>
+        _selectedCards ??= _selection.Count == 0
+            ? []
+            : [.. Cards.Where(card => _selection.Contains(card.Id))];
 
-    public int SelectedCount => Cards.Count(card => card.IsSelected);
+    /// <summary>Cuántos hay marcados. O(1): lo sabe el modelo de selección.</summary>
+    public int SelectedCount => _selection.Count;
 
     /// <summary>
     /// La casilla <b>alterna</b> ese elemento sin tocar el resto. Es
     /// acumulativa a propósito: para eso existe, y es lo que la distingue del
     /// clic en la tarjeta.
     /// </summary>
-    public void ToggleSelection(MediaCard card)
-    {
-        card.IsSelected = !card.IsSelected;
-        NotifySelectionChanged();
-    }
+    public void ToggleSelection(MediaCard card) => ApplySelection(_selection.Toggle(card.Id));
 
     /// <summary>
     /// El clic en la tarjeta <b>reemplaza</b> la selección, como en macOS y como
     /// en cualquier cuadrícula del sistema.
+    ///
+    /// <para>Toca solo las tarjetas que cambian —las que estaban marcadas y la
+    /// nueva—, no las 1 091 (ST-201).</para>
     /// </summary>
-    public void SelectOnly(MediaCard card)
-    {
-        foreach (MediaCard other in Cards) other.IsSelected = ReferenceEquals(other, card);
-        NotifySelectionChanged();
-    }
+    public void SelectOnly(MediaCard card) => ApplySelection(_selection.SelectOnly(card.Id));
 
-    public void ClearSelection()
+    public void ClearSelection() => ApplySelection(_selection.Clear());
+
+    /// <summary>Ctrl+A: todo lo que se ve, con un solo aviso al final.</summary>
+    public void SelectAll() => ApplySelection(_selection.SelectAll(Cards.Select(card => card.Id)));
+
+    /// <summary>
+    /// Lleva el cambio a las tarjetas alcanzadas con los avisos suspendidos, y
+    /// avisa <b>una sola vez</b> al final. Sin esto, reemplazar una selección de
+    /// 500 disparaba 500 recuentos, 500 publicaciones y 500 recorridos del
+    /// catálogo.
+    /// </summary>
+    private void ApplySelection(SelectionDelta delta)
     {
-        foreach (MediaCard card in Cards) card.IsSelected = false;
+        if (delta.IsEmpty) return;
+
+        _applyingSelection = true;
+
+        try
+        {
+            foreach (string id in delta.Deselected)
+                if (_byId.TryGetValue(id, out MediaCard? card)) card.IsSelected = false;
+
+            foreach (string id in delta.Selected)
+                if (_byId.TryGetValue(id, out MediaCard? card)) card.IsSelected = true;
+        }
+        finally
+        {
+            _applyingSelection = false;
+        }
+
         NotifySelectionChanged();
     }
 
     private void NotifySelectionChanged()
     {
         // R2-1: en cuanto hay algo seleccionado, TODAS las tarjetas muestran su
-        // casilla. Cada tarjeta necesita saberlo, así que el dato se empuja en
-        // vez de que cada una consulte a la cuadrícula.
-        bool any = SelectedCount > 0;
-        foreach (MediaCard card in Cards) card.AnySelection = any;
+        // casilla. Cada tarjeta necesita saberlo, así que el dato se empuja —
+        // pero solo cuando la respuesta CAMBIA (ST-201). Antes se escribía en
+        // las 1 091 en cada clic para decirles lo que ya sabían; ahora ese
+        // recorrido ocurre a lo sumo dos veces por gesto de selección: al marcar
+        // el primero y al quedarse sin ninguno.
+        bool any = _selection.Any;
+
+        if (any != _anySelectionPushed)
+        {
+            _anySelectionPushed = any;
+            foreach (MediaCard card in Cards) card.AnySelection = any;
+        }
+
+        _selectedCards = null;
 
         // R3-4: lo seleccionado acá es lo que puede alcanzar «Solo la
-        // selección» de General. Una tarjeta es un álbum o un artista, así que
-        // lo que viaja son sus CANCIONES, no la tarjeta.
-        _library.PublishSelectionForSync(SongIdsOf(SelectedCards));
+        // selección» de General. Una tarjeta es un álbum o una serie, así que lo
+        // que viaja son sus CANCIONES, no la tarjeta. Con el índice cuesta lo
+        // que suman los grupos marcados, no lo que mide la biblioteca.
+        _library.PublishSelectionForSync(
+            _library.Index.ItemIdsForKeys(GroupKind, _selection.Ids));
 
         OnPropertyChanged(nameof(SelectedCards));
         OnPropertyChanged(nameof(SelectedCount));
@@ -340,7 +505,7 @@ public sealed partial class MediaGridViewModel : ViewModelBase
         OnPropertyChanged(nameof(SelectionText));
     }
 
-    public bool HasSelection => SelectedCount > 0;
+    public bool HasSelection => _selection.Any;
 
     /// <summary>Cuántos hay marcados, dicho en la barra de estado.</summary>
     public string SelectionText => SelectedCount switch
@@ -352,30 +517,20 @@ public sealed partial class MediaGridViewModel : ViewModelBase
 
     // MARK: - Lo que necesitan los menús contextuales
 
-    /// <summary>Las canciones/videos/fotos que hay detrás de las tarjetas alcanzadas.</summary>
-    public IReadOnlyList<LibraryItem> ItemsOf(IReadOnlyList<MediaCard> cards)
-    {
-        var ids = cards.Select(card => card.Id).ToHashSet(StringComparer.Ordinal);
-
-        return Kind switch
-        {
-            MediaGridKind.Albums =>
-                [.. _library.AvailableItems.Where(item => item.Kind == LibraryItemKind.Music
-                                                          && ids.Contains(LibraryGrouping.AlbumKeyOf(item, _library.ArtistGrouping)))],
-
-            MediaGridKind.Movies or MediaGridKind.Series =>
-                [.. _library.AvailableItems.Where(item => item.Kind == LibraryItemKind.Video
-                                                          && ids.Contains(LibraryGrouping.VideoCollectionKeyOf(item)))],
-
-            // Fotos y los listados planos: la tarjeta ES el elemento.
-            _ => [.. _library.AvailableItems.Where(item => ids.Contains(item.Id.ToString("D")))]
-        };
-    }
+    /// <summary>
+    /// Las canciones/videos/fotos que hay detrás de las tarjetas alcanzadas.
+    ///
+    /// <para>Cuesta lo que suman los grupos alcanzados, no lo que mide el
+    /// catálogo (ST-201). Antes recorría los 12 000 elementos normalizando dos
+    /// cadenas por elemento, una vez por pregunta.</para>
+    /// </summary>
+    public IReadOnlyList<LibraryItem> ItemsOf(IReadOnlyList<MediaCard> cards) =>
+        _library.Index.ItemsForKeys(GroupKind, cards.Select(card => card.Id));
 
     public IReadOnlyList<Guid> SongIdsOf(IReadOnlyList<MediaCard> cards) =>
-        [.. ItemsOf(cards).Select(item => item.Id)];
+        _library.Index.ItemIdsForKeys(GroupKind, cards.Select(card => card.Id));
 
-    /// <summary>El alcance, contado en <b>tarjetas</b> —álbumes, artistas— y no en canciones.</summary>
+    /// <summary>El alcance, contado en <b>tarjetas</b> —álbumes, series— y no en canciones.</summary>
     public MenuScope ScopeOf(IReadOnlyList<MediaCard> cards)
     {
         IReadOnlyList<LibraryItem> items = ItemsOf(cards);
@@ -423,16 +578,22 @@ public sealed partial class MediaGridViewModel : ViewModelBase
     /// <summary>
     /// Los álbumes alcanzados que tienen <b>título propio</b>. "Sin álbum" no es
     /// un disco sino el cajón de lo que no tiene uno: no hay tapa que buscarle.
+    ///
+    /// <para>Una consulta al índice por álbum, en O(1) cada una (ST-201). Antes
+    /// filtraba los 12 000 elementos <b>por cada tarjeta alcanzada</b>: con
+    /// 1 000 álbumes marcados, doce millones de claves normalizadas para armar
+    /// un menú.</para>
     /// </summary>
     public IReadOnlyList<AlbumCoverTarget> AlbumCoverTargets(IReadOnlyList<MediaCard> cards)
     {
         if (Kind != MediaGridKind.Albums) return [];
 
+        LibraryCatalogIndex index = _library.Index;
         List<AlbumCoverTarget> targets = [];
 
         foreach (MediaCard card in cards)
         {
-            IReadOnlyList<LibraryItem> tracks = ItemsOf([card]);
+            IReadOnlyList<LibraryItem> tracks = index.ByAlbumKey(card.Id);
             if (tracks.Count == 0) continue;
 
             LibraryItem first = tracks[0];

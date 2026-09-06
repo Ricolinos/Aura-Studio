@@ -53,7 +53,7 @@
              distintas sin pelearse con la selección propia del control. -->
         <GridView Grid.Row="2"
                   x:Name="CardsView"
-                  ItemsSource="{x:Bind ViewModel.Cards, Mode=OneWay}"
+                  ItemsSource="{x:Bind ViewModel.Cards}"
                   IsItemClickEnabled="True"
                   ItemClick="Cards_ItemClick"
                   ContextRequested="Cards_ContextRequested"
@@ -75,10 +75,17 @@
                                        Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"
                                        Visibility="{x:Bind HasCover, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}" />
+                            <!-- La portada se carga por el DATO de la celda, no
+                                 por su carga inicial: desde ST-201 la cuadrícula
+                                 se actualiza en su lugar, así que un contenedor
+                                 puede pasar a mostrar otra tarjeta sin volver a
+                                 cargarse — y con `Loaded` se quedaría con la
+                                 portada anterior. Es el mismo reciclaje que ya
+                                 se veía al desplazarse. -->
                             <Image Stretch="UniformToFill"
                                    Visibility="{x:Bind HasCover, Converter={StaticResource BoolToVisibility}}"
-                                   Loaded="Cover_Loaded"
-                                   Tag="{x:Bind Id}" />
+                                   DataContextChanged="Cover_DataContextChanged"
+                                   Loaded="Cover_Loaded" />
 
                             <!-- Marca de seleccionado: va encima de la portada,
                                  así que no puede depender del contraste con la

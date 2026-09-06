@@ -43,9 +43,33 @@ public sealed partial class PlaylistsViewModel : ViewModelBase
     public PlaylistsViewModel(LibraryViewModel library)
     {
         _library = library;
-        _library.PropertyChanged += (_, _) => Refresh();
+        _library.PropertyChanged += OnLibraryChanged;
         Reload();
     }
+
+    /// <summary>
+    /// Las filas se rehacen cuando cambia el <b>contenido</b> de la biblioteca,
+    /// no ante cualquier aviso suyo. Es lo que le faltaba a ST-161 acá (ST-201).
+    ///
+    /// <para>Lo único que estas filas leen de la biblioteca es qué canciones
+    /// existen —para decir cuántas de la lista faltan—, y eso solo cambia con
+    /// <c>Items</c>. Escuchar todo hacía que cada clic en una cuadrícula
+    /// recontara todas las listas.</para>
+    /// </summary>
+    private void OnLibraryChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (ChangesLibraryContent(e.PropertyName)) Refresh();
+    }
+
+    /// <summary>
+    /// Mismo criterio que <c>MediaGridViewModel</c> y <c>SongsViewModel</c>:
+    /// nombre vacío o <c>null</c> significa "cambió todo" y eso sí obliga a
+    /// rehacer.
+    /// </summary>
+    private static bool ChangesLibraryContent(string? propertyName) =>
+        string.IsNullOrEmpty(propertyName)
+        || propertyName == nameof(LibraryViewModel.Items)
+        || propertyName == nameof(LibraryViewModel.AvailableItems);
 
     public LibraryViewModel Library => _library;
 

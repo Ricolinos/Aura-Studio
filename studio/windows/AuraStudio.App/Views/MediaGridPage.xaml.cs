@@ -73,13 +73,21 @@ public sealed partial class MediaGridPage : Page
     /// lados: fijar ambos deforma una portada que no sea cuadrada — el mismo
     /// bug que se corrigió en las miniaturas de macOS.</para>
     /// </summary>
-    private async void Cover_Loaded(object sender, RoutedEventArgs e)
-    {
-        if (sender is not Image image) return;
-        if (image.Tag is not string id) return;
+    private void Cover_Loaded(object sender, RoutedEventArgs e) => LoadCover(sender as Image);
 
-        MediaCard? card = ViewModel.Cards.FirstOrDefault(candidate => candidate.Id == id);
-        if (card is null) return;
+    /// <summary>
+    /// Desde ST-201 la cuadrícula se actualiza <b>en su lugar</b>: un contenedor
+    /// que ya existía puede pasar a mostrar otra tarjeta sin volver a cargarse.
+    /// Cargar la portada por el dato de la celda —y no solo por <c>Loaded</c>— es
+    /// lo que evita que quede la portada de la anterior; es el mismo reciclaje
+    /// que ya se veía al desplazarse.
+    /// </summary>
+    private void Cover_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args) =>
+        LoadCover(sender as Image);
+
+    private async void LoadCover(Image? image)
+    {
+        if (image?.DataContext is not MediaCard card) return;
 
         try
         {
@@ -105,6 +113,10 @@ public sealed partial class MediaGridPage : Page
             {
                 return;
             }
+
+            // La celda pudo haber cambiado de tarjeta mientras se decodificaba:
+            // pintar acá sería poner la portada de una en el lugar de otra.
+            if (!ReferenceEquals(image.DataContext, card)) return;
 
             image.Source = bitmap;
         }
@@ -153,14 +165,36 @@ public sealed partial class MediaGridPage : Page
         if (CardFrom(e.OriginalSource) is null) ViewModel.ClearSelection();
     }
 
-    /// <summary>Escape hace lo mismo, para quien no usa el mouse.</summary>
+    /// <summary>
+    /// Escape hace lo mismo, para quien no usa el mouse; Ctrl+A marca todo.
+    ///
+    /// <para>Ctrl+A a mano es provisional: la cuadrícula todavía tiene
+    /// <c>SelectionMode="None"</c> y reimplementa los gestos, y W2 lo cambia por
+    /// la selección nativa —que trae Ctrl+A, Ctrl+clic, Mayús+clic y arrastre
+    /// sin código—. Se pone ahora porque es el gesto con el que se mide ST-201:
+    /// sin él no hay forma de comprobar en la app que marcar los 1 000 álbumes
+    /// tarda menos de 100 ms.</para>
+    /// </summary>
     private void Page_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (e.Key != Windows.System.VirtualKey.Escape) return;
+        switch (e.Key)
+        {
+            case Windows.System.VirtualKey.Escape:
+                ViewModel.ClearSelection();
+                e.Handled = true;
+                break;
 
-        ViewModel.ClearSelection();
-        e.Handled = true;
+            case Windows.System.VirtualKey.A when IsControlDown():
+                ViewModel.SelectAll();
+                e.Handled = true;
+                break;
+        }
     }
+
+    private static bool IsControlDown() =>
+        Microsoft.UI.Input.InputKeyboardSource
+            .GetKeyStateForCurrentThread(Windows.System.VirtualKey.Control)
+            .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
 
     /// <summary>
     /// R2-1: el cursor sobre una tarjeta muestra <b>su</b> casilla. Es lo único

@@ -91,6 +91,22 @@ public sealed class PersistedLibraryItem
     public bool? MetadataEditedByUser { get; set; }
 
     public DateTimeOffset? AddedAt { get; set; }
+
+    /// <summary>
+    /// Cuánto pesa el archivo de origen (ST-201). Anulable por la misma razón
+    /// que <see cref="MetadataEditedByUser"/>: un catálogo guardado antes de este
+    /// campo no lo trae — y ausente significa "hay que medirlo", no "pesa cero".
+    ///
+    /// <para><b>La app de macOS todavía no lo escribe</b> (le toca en su fase F6).
+    /// Mientras tanto la biblioteca compartida es segura en las dos direcciones:
+    /// el <c>Codable</c> sintetizado de Swift ignora las claves que no conoce, así
+    /// que este campo no le rompe nada; y como allá el catálogo se vuelve a
+    /// escribir sin él, acá se mide otra vez en segundo plano la próxima vez que
+    /// se abra. Se llama igual que la propiedad de macOS —<c>fileSizeBytes</c>—
+    /// justamente para que cuando la escriba, las dos apps hablen del mismo
+    /// campo.</para>
+    /// </summary>
+    public long? FileSizeBytes { get; set; }
 }
 
 public sealed class PersistedTrackMetadata

@@ -6230,3 +6230,215 @@ máquina**, no una regresión: pasa aislado y en corridas limpias, y las dos
 sesiones de la Mac estaban compilando y corriendo pruebas a la vez en el
 mismo árbol. Con un umbral de 250 ms, ese vigilante es sensible a que la
 máquina esté ocupada -- anotado para que no se persiga de nuevo.
+
+## ST-201 — Windows: se acabó la cascada de selección (el trabón al tercer álbum)
+
+Ronda 2 de rendimiento, encargo W1 de `docs/plans/PLAN-studio-rendimiento-2.md`.
+Trabajo local sobre `5b81c3a`, sin release y sin tocar la versión.
+
+**El síntoma del dueño**: en Álbumes no se podían seleccionar más de dos sin que
+la app se trabara. No era la cuadrícula: era todo lo que un clic desataba
+detrás.
+
+### Qué había
+
+Un clic en una tarjeta de Álbumes disparaba, en el hilo de interfaz y en este
+orden:
+
+1. `MediaGridViewModel.SelectOnly` escribía `IsSelected` en **las 1 091
+   tarjetas** —una por una, y cada escritura que cambiaba algo llamaba a
+   `NotifySelectionChanged` otra vez—.
+2. `NotifySelectionChanged` escribía `AnySelection` en **las 1 091** para
+   decirles, casi siempre, lo que ya sabían.
+3. `SongIdsOf(SelectedCards)` recorría los **12 000** elementos calculando
+   `AlbumKeyOf` —dos normalizaciones Unicode por elemento— para saber qué
+   canciones había detrás de lo marcado.
+4. Publicar la selección avisaba, y `SongsViewModel` y `PlaylistsViewModel`
+   seguían suscritos a **todo** `PropertyChanged` de la biblioteca (ST-161 se
+   había aplicado solo a `MediaGridViewModel`). Así que ese aviso rearmaba la
+   tabla de Canciones entera —12 000 renglones, con un `new FileInfo` **por
+   fila**, contra `V:` por red— aunque la tabla ni siquiera estuviera en
+   pantalla.
+5. Cualquier refresco de la cuadrícula tiraba las 1 091 tarjetas y construía
+   1 091 nuevas, con lo que el control rehacía todos sus contenedores y volvía a
+   decodificar todas las portadas.
+
+Y abrir el menú contextual con la selección puesta llamaba a
+`AlbumCoverTargets`, que filtraba los 12 000 elementos **una vez por tarjeta
+alcanzada**: con 1 000 álbumes, veinticuatro millones de claves normalizadas
+para dibujar un menú.
+
+### Qué hay
+
+Cuatro piezas nuevas en Core, todas puras y probadas, pensadas para que W2 y W6
+las reutilicen (§ "La API que queda"):
+
+- **`LibraryCatalogIndex`** — las claves de agrupación (álbum, artista,
+  colección de video, álbum de fotos, identificador) calculadas **una sola vez
+  por versión del catálogo**. Responde `ByAlbumKey`, `ByArtistKey`,
+  `ByVideoCollectionKey`, `ByPhotoAlbumKey`, `ById`, `ItemsForKey`,
+  `ItemsForKeys` e `ItemIdsForKeys`. Las claves salen de `LibraryGrouping`, no
+  de una copia de esa lógica: dos formas de armar la misma clave son dos
+  agrupaciones esperando a divergir. `LibraryGroupKind` traduce el
+  `MediaGridKind` de la app —que Core no conoce— a la pregunta que corresponde.
+- **`GridSelectionModel`** — la selección como conjunto de identificadores.
+  Toda operación devuelve un `SelectionDelta` con **solo lo que cambió**:
+  `Toggle`, `Set`, `SelectOnly`, `Clear`, `SelectAll`, `Replace` (para el
+  `SelectedItems` nativo de W2) y `Retain` (lo que sobrevive a un refresco).
+  `Count` y `Contains` son O(1).
+- **`ObservableListSync.Apply`** — deja una `ObservableCollection` igual a una
+  lista deseada tocando solo lo que cambió, y devuelve cuántas operaciones hizo.
+  Identidad por referencia: quien llama ya decidió qué instancia sobrevive.
+- **`FileSizeBackfill`** — mide en segundo plano, por lotes, el tamaño que
+  falte, separando *medir* (toca disco, va en el pool) de *aplicar* (toca
+  elementos que la tabla lee, va en el hilo de interfaz).
+
+Con eso:
+
+- `SongsViewModel` y `PlaylistsViewModel` solo se refrescan ante `Items` /
+  `AvailableItems` (o el aviso vacío que significa "cambió todo"), nunca ante una
+  publicación de selección ni ante un renglón de `StatusMessage`. Es el mismo
+  criterio, escrito igual, en las tres vistas: dos reglas distintas para "esto me
+  obliga a rearmar" es cómo se desincronizan dos vistas del mismo dato.
+- `LibraryItem.FileSizeBytes` (`long?`) vive en el catálogo. `Rows()` lo lee de
+  ahí, no del disco. Cambiar `SourcePath` lo olvida —otro archivo pesa otra
+  cosa—, y **nunca se guarda 0 por no haber podido leer**: cero es un archivo
+  vacío de verdad, y lo que no se pudo medir queda ausente y se reintenta.
+- `MediaGridViewModel` mantiene la **misma** `ObservableCollection` siempre;
+  `Refresh()` compara lo que cada tarjeta muestra (`MediaCardSpec`) y reusa la
+  instancia cuando no cambió. `SelectOnly`/`ToggleSelection`/`ClearSelection`
+  aplican el delta con los avisos suspendidos y avisan **una vez** al final.
+  `AnySelection` se empuja solo en la transición 0↔1. `AlbumCoverTargets`,
+  `ItemsOf`, `SongIdsOf` y `ScopeOf` preguntan al índice.
+- `LibraryViewModel.InScope` (abrir un álbum, un artista, una temporada, un
+  álbum de fotos) también pregunta al índice.
+
+### Números
+
+Medición preliminar propia sobre 1 000 álbumes × 12 pistas = 12 000 canciones
+con carátulas de 15 KB, **en disco local**, midiendo la lógica de Core (la parte
+de WinUI no corre sin ventana). El arnés de W0 todavía no está en `main`; cuando
+llegue se rehace la tabla con él, y con retardo por `File.Exists` la columna
+"antes" empeora bastante — la biblioteca del dueño está en `V:`, por red.
+
+| | antes | después |
+|---|---|---|
+| Clic en 1 álbum: qué canciones alcanza | 9.0 ms | 0.003 ms |
+| Ctrl+A (1 000 álbumes): qué canciones alcanza | 10.0 ms | 1.4 ms |
+| Menú contextual con 1 000 álbumes: destinos de carátula | 1 110 ms | 0.06 ms |
+| Armar y ordenar la tabla de Canciones (12 000 filas) | 113 ms | 10 ms |
+| Construir el índice (una vez por versión del catálogo) | — | 16 ms |
+
+Y los conteos, que no dependen de la máquina:
+
+| | antes | después |
+|---|---|---|
+| Escrituras de `AnySelection` por clic | 1 000 | 0 (solo en la transición 0↔1) |
+| Llamadas a `FileInfo` por refresco de la tabla | 12 000 | 0 |
+| Claves normalizadas por Ctrl+A | 24 000 000 | 0 |
+| Operaciones de colección al refrescar sin cambios | 1 000 | 0 |
+
+El costo real de un clic antes no era ninguna de esas filas por separado: era la
+suma. El alcance (9 ms) **más** la tabla de Canciones que se rearmaba por el
+aviso (113 ms, con 12 000 `FileInfo` por red) más las 1 000 escrituras de
+`AnySelection` más la reconstrucción de las 1 091 tarjetas — bastante por encima
+de los 16 ms del objetivo, y multiplicado por cada clic. Ahora un clic cuesta el
+delta de selección más una consulta al índice.
+
+### La API que queda para W2 y W6
+
+Todo en `AuraStudio.Core/Library/`, sin dependencias de la app:
+
+- `LibraryCatalogIndex` + `LibraryGroupKind`. **W6**: `ScopeOf` y el clic derecho
+  ya no necesitan recalcular `AlbumKeyOf` — `ItemsForKeys(kind, ids)` responde en
+  lo que suman los grupos alcanzados y **no repite** un elemento alcanzado por
+  dos claves. `GroupCount(kind)` da el conteo de grupos en O(1) para el resumen
+  de estado. La app lo cachea en `LibraryViewModel.Index`, invalidado por un
+  contador de versión que sube en `RefreshAvailable()` y al cambiar el criterio
+  de agrupación de artistas (R2-4).
+- `GridSelectionModel` + `SelectionDelta`. **W2**: `Replace(ids)` es el puente
+  con el `SelectedItems` del control —devuelve delta vacío si la selección es la
+  misma, así que sincronizarse con el control no cuesta un aviso por evento—;
+  `SelectAll` y `Retain` ya están. `MediaGridViewModel.SelectAll()` está
+  expuesto y cableado a Ctrl+A en `MediaGridPage` de forma **provisional**: la
+  cuadrícula sigue con `SelectionMode="None"` y W2 lo reemplaza por la selección
+  nativa. Se puso ahora porque sin ese gesto no hay forma de comprobar en la app
+  el criterio de "Ctrl+A en Álbumes < 100 ms".
+- `ObservableListSync.Apply`. Sirve para cualquier colección observable que hoy
+  se reemplace entera; devuelve el número de operaciones, que es lo que conviene
+  medir.
+- `FileSizeBackfill` + `MeasuredFileSize`.
+
+### El campo `fileSizeBytes` del catálogo
+
+Se llama igual que la propiedad de macOS (`MediaTableRow.fileSizeBytes`), que es
+la ST hermana pendiente de la fase F6 de la Mac — en `DECISIONS.md` no hay
+todavía ninguna ST del rango ST-180..199, así que **el campo se define acá y la
+Mac lo copia**: `fileSizeBytes`, entero opcional, hermano de `addedAt` dentro de
+cada elemento de `items`.
+
+La biblioteca compartida es segura en las dos direcciones mientras la Mac no lo
+escriba: el `Codable` sintetizado de Swift ignora las claves que no conoce, así
+que el campo no le rompe nada; y como allá el catálogo se vuelve a escribir sin
+él, acá se mide otra vez en segundo plano la próxima vez que se abra. Ausente no
+es cero: ausente significa "hay que medirlo".
+
+El relleno corre al terminar `Reload()`, en el pool, por lotes de 500, y guarda
+**una sola vez al final** — y solo si el catálogo que estaba midiendo sigue
+siendo el que hay. Guardar por lote serían dos docenas de escrituras del
+catálogo entero, y hoy cada una reescribe también todas las carátulas
+(`LibraryStore.SaveItems`, punto 4 del diagnóstico): es lo que arregla W4 con el
+persistidor con rebote. Si la app se cierra a mitad, lo que falte se mide en la
+próxima apertura.
+
+### Un bug que apareció al verificar el diagnóstico
+
+`ItemsOf` no tenía rama para los **álbumes de fotos**: el identificador de esas
+tarjetas es una clave de agrupación (`categoría` + `nombre de álbum`), pero se lo
+comparaba contra `item.Id.ToString("D")`, un GUID. Nunca coincidía. Es decir que
+en una colección de fotos, "Renombrar álbum", "Disolver álbum" y "Quitar del
+álbum" **no alcanzaban ninguna foto**: no fallaban, no hacían nada. Quedó
+arreglado al pasar por el índice (`LibraryGroupKind.PhotoAlbum`), y hay prueba de
+que la clave del índice es exactamente la que `LibraryGrouping.PhotoAlbums` le
+pone a la tarjeta.
+
+### Otros dos ajustes que arrastró el cambio
+
+- **Reciclaje de portadas.** Como la cuadrícula ahora se actualiza en su lugar,
+  un contenedor puede pasar a mostrar otra tarjeta sin volver a cargarse, y con
+  `Loaded` se habría quedado con la portada anterior. La imagen se carga por
+  `DataContextChanged` y comprueba, después de decodificar, que la celda siga
+  mostrando la misma tarjeta. De paso desaparece la búsqueda lineal por tarjeta
+  (era parte de W5; se adelanta lo mínimo para no dejar una regresión).
+- **La selección sobrevive a un `Refresh()`.** Antes, aplicar tapas en lote
+  dejaba al usuario sin la selección con la que las había pedido, porque las
+  tarjetas se reconstruían. Entrar a una sección sigue mostrándola limpia, como
+  antes.
+
+### Lo que NO se tocó, a propósito
+
+- `LibraryViewModel.ApplyAlbumCover` sigue recorriendo `Items` —el catálogo
+  **entero**, no lo disponible— y sigue haciendo `Save()` + `RefreshAvailable()`
+  por álbum. Usar el índice ahí cambiaría a qué elementos le llega la tapa (los
+  que tienen el archivo ausente dejarían de recibirla), y el guardado por álbum
+  es exactamente el "un guardado por acción de lote" de **W4**. Queda anotado
+  para esa fase.
+- `GridSelection.EffectiveIds` sigue con `Contains` sobre una lista (O(N)): es
+  el `HashSet` de **W6**.
+- `SelectionMode="None"` y los gestos a mano siguen ahí: son **W2**.
+
+### Verificación
+
+`dotnet build` de `AuraStudio.Core` y de `AuraStudio.App` (Debug), sin
+advertencias. `dotnet test` de `AuraStudio.Core.Tests`: **1 363 pruebas en
+verde** (1 303 antes, 60 nuevas). Las nuevas son
+`LibraryCatalogIndexTests` —incluida una que compara el índice contra el filtro
+literal que reemplazó, elemento por elemento—, `GridSelectionModelTests`,
+`ObservableListSyncTests` —con un barrido de 400 combinaciones al azar que
+comprueba que el diferencial nunca deja la colección distinta de lo pedido, y
+que refrescar sin cambios cuesta cero operaciones—, `FileSizeBackfillTests` y
+`FileSizePersistenceTests`.
+
+Falta la verificación interactiva en la VM con la biblioteca real del dueño y la
+tabla del arnés de W0, que se hará al rebasar esta rama sobre `main` cuando W0
+aterrice.
