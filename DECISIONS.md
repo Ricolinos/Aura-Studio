@@ -5711,3 +5711,130 @@ el arm64, `4083fa4f2dc730fb7dbbb9189bdf300410f79944058331af8635f21ed00fe769` el
 x64). Nada nuevo que anotar sobre `0.2.0`/`0.1.0` (ST-173): siguen ausentes de
 `dist\`, sin intervención de esta sesión, y la copia canónica de `0.2.0` sigue
 a salvo en su Release de GitHub.
+
+## ST-180 — PLAN-studio-rendimiento-2.md, Fase F0: línea base de las cuadrículas (Álbumes) antes de tocar nada
+
+Primera PARADA de la ronda 2 (sesión "mecanico sonnet"). Extiende la línea
+base de ST-152 -- que midió la tabla de Canciones -- a la cuadrícula de
+Álbumes, la primera víctima citada en el diagnóstico de §0 de
+`PLAN-studio-rendimiento-2.md` (puntos 1, 2, 4, 5 y 6). "Experto en código
+opus" trabaja en paralelo en F1 sobre el mismo árbol (`Sources/`); esta
+PARADA no toca ni un archivo de `Sources/` -- ver "Seam de `Sources/`" abajo.
+
+### Infraestructura de medición nueva
+
+1. **`Tests/AuraStudioTests/AlbumsGridPerformanceBaselineTests.swift`**:
+   biblioteca sintética de **1 000 álbumes / 250 artistas / 12 000
+   canciones** (12 pistas por álbum) -- la escala de §A del plan, distinta
+   de los 900 álbumes de ST-152 (esa medía Canciones, no la cuadrícula de
+   Álbumes) -- más **un álbum de fotos con 40 fotos**.
+2. **Carátulas e imágenes REALES, no `Data(repeating:)`.** A diferencia de
+   ST-152 (donde el contenido era irrelevante, solo importaba el número de
+   bytes para medir syscalls), acá `CoverThumbnailCache.thumbnail(for:)`
+   decodifica con `CGImageSourceCreateThumbnailAtIndex`, que devuelve `nil`
+   ante bytes basura -- medir su costo real (y el bug del punto 5) exige un
+   JPEG que decodifique de verdad. Solución: una imagen de ruido se genera
+   UNA vez (120×120 calidad 0.7 ≈ 14.7 KB para las carátulas de álbum,
+   sobre el "~15 KB" de §3 punto 2; 320×320 calidad 0.5 ≈ 64 KB para las
+   fotos, el tamaño que deja `ImageResizer.resizeToLCDOptimal` en
+   `preparedURL` con `AppPreferences.PhotoQuality.optimized` por omisión,
+   nunca la foto original de cámara) y cada álbum/foto le agrega un sufijo
+   de pocos bytes -- el decodificador se detiene en el marcador EOI del
+   JPEG y lo ignora (verificado con una prueba de humo aparte antes de
+   escribir el fixture), pero `CoverThumbnailCache` hashea el `Data`
+   completo, así que cada álbum obtiene una clave de caché distinta sin
+   pagar el costo de generar 1 000 imágenes independientes.
+3. **Seam de `Sources/` pedido, no escrito por esta sesión.** El contador de
+   evaluaciones de `body` en DEBUG (`Services/BodyEvaluationCounter.swift`,
+   gancho `record`/`count`/`resetForTesting`, mismo patrón que
+   `MainThreadWatchdog.onHangDetectedForTesting`) lo escribió "experto en
+   código opus" a pedido, y ya está enganchado como primera línea del
+   `body` de `ContentView`, `AlbumsView` y `AlbumCardView`. Un número real
+   de "N evaluaciones por clic" necesita hospedar la jerarquía de vistas de
+   verdad (`NSHostingController` + un ciclo de layout forzado) -- **sigue
+   sin resolverse**, exactamente lo que ST-153 ya había marcado "pendiente"
+   en la ronda 1 y nadie retomó. Se deja así a propósito: la instrumentación
+   ya existe para que F1 (E) la use como criterio de cierre ("un clic = solo
+   la tarjeta tocada se reevalúa") sin tener que resolver el problema de
+   hospedar SwiftUI en una prueba solo para esta PARADA -- lo que sigue
+   mide el TRABAJO por evaluación (que es lo que domina el costo real),
+   no cuántas veces se evalúa.
+
+### Línea base (1 000 álbumes / 12 000 canciones, Mac del dueño, Debug, `swift test`)
+
+| Medición | Resultado | Nota |
+|---|---|---|
+| (a) `visibleAlbums`, filtro solo (orden "Título") | ~0.5 ms | PROXY -- ver abajo |
+| (a) `visibleAlbums`, filtro + orden "Artista" (`localizedStandardCompare`) | ~8 ms | PROXY |
+| (b) `statusSummary` de Álbumes, sin selección | 76 ms | Código real (`LibraryStats.albums`) |
+| (b) `statusSummary` de Álbumes, 50 seleccionados | 79 ms | Código real |
+| (c) `CoverThumbnailCache`, frío (1 000 álbumes, primera vez) | 34,9 ms | Código real, una sola pasada |
+| (c) `CoverThumbnailCache`, caliente repetido (1 000 álbumes) | ~1,2 ms | Código real -- punto 5: hashea 15 KB aunque sea acierto |
+| (d) Menú contextual, 100 álbumes seleccionados | 8 183 ms (~82 ms/álbum) | Código real (`AlbumCoverRequest.forAlbum`) |
+| (d) Menú contextual, **1 000/1 000 álbumes seleccionados** (peor caso real) | **81 167 ms** | Código real, una sola pasada -- "12 millones de claves normalizadas" de §0.6 |
+| (e) Agrupar el álbum de fotos (`LibraryGrouping.photoAlbums`, 40 fotos) | ~0,4 ms | Código real |
+| (e) `previewImages` (4 archivos completos desde disco) | ~0,35 ms | Código real |
+| (f) Sesión guionizada completa (abrir Álbumes → ⌘A → Shift+clic 1→500 → clic derecho con 500 seleccionados → scroll completo → abrir Fotos) | **40 266 ms** de pared; **1 bloqueo** de ~40 439 ms detectado por `MainThreadWatchdog` | Código real -- dominado casi por completo por el paso "clic derecho" |
+
+**Contra los objetivos de §A**: el menú contextual (< 200 ms) queda ~406×
+sobre el objetivo con la biblioteca completa seleccionada, y ~41× sobre el
+objetivo incluso con solo 100 álbumes. La sesión guionizada completa por sí
+sola confirma "bloqueos del hilo principal > 250 ms: 0" como objetivo de §A
+está lejos -- 1 solo bloqueo, pero de 40 segundos.
+
+**Las dos mediciones de "(a)" son PROXY, no código de producción medido
+directo** -- exactamente la misma situación que ST-152 documentó para
+`MediaSectionView.rows` antes de `RowsModel`. `AlbumsView.visibleAlbums`/
+`statusSummary` (AlbumsView.swift:46-114) siguen siendo computed vars
+**privados** de una `View` de SwiftUI; estas pruebas reproducen la MISMA
+operación (`LibrarySearch.album` + el `switch sort` completo) contra la
+biblioteca sintética. Cuando F1 extraiga `GridModel`/`StatusSummaryModel`
+para Álbumes, esa PARADA (ST-181) reengancha estas pruebas a la extracción
+real, igual que ST-153 hizo con `RowsModel`.
+
+**Hallazgo de método, no de producto: `measure{}` no sirve para "(c)
+frío".** Un intento inicial de medir el primer decode con `measure{}`
+(que corre el bloque 10 veces) habría medido "frío" solo en la primera
+vuelta -- `CoverThumbnailCache.shared` es un singleton compartido por todo
+el proceso de pruebas, así que de la segunda vuelta en adelante ya está
+caliente. Se separó en dos pruebas: una pasada manual (`CFAbsoluteTimeGetCurrent`)
+con claves nunca antes vistas para "frío", y `measure{}` sobre las mismas
+claves ya decodificadas para "caliente".
+
+**Segundo hallazgo de método: la sesión guionizada necesitó `async` +
+`Task.sleep`, no `throws` a secas.** El guion (en particular el paso 4,
+~40 s sin ceder el hilo ni una vez) es UN SOLO bloqueo sostenido. Sin un
+punto de suspensión real al final, `DispatchQueue.main` no vuelve a
+despacharse dentro de la propia prueba -- el vigilante recién termina de
+reportar el bloqueo cuando el proceso de pruebas retoma el hilo principal
+entre una prueba y la siguiente, así que el reporte (y su duración, ~40 s)
+aparecía atribuido a la prueba **siguiente** en vez de a esta. Un
+`try await Task.sleep(nanoseconds: 300_000_000)` al final, con la prueba
+marcada `async throws`, le da tiempo real al hilo vigilante (sondea cada
+50 ms) para notar que el corazón volvió y reportar DENTRO de esta misma
+prueba. Sin este ajuste, cualquier prueba futura que combine un guion
+sintético largo y sin `await` con el vigilante real va a tropezar con lo
+mismo.
+
+### Costo de mantener esto
+
+`swift test --filter AlbumsGridPerformanceBaselineTests` completo (11
+pruebas): **~4-5 minutos**, dominado casi por completo por (d) -- el `measure`
+de 100 álbumes seleccionados son 10 corridas de ~8,2 s cada una (~82 s
+solas) y la sesión guionizada agrega otros ~40 s. Aceptado con el mismo
+criterio que ST-152: "nada se da por resuelto sin medirlo" -- si en una
+fase futura esto estorba el ciclo de desarrollo, se decide entonces bajar
+`XCTMeasureOptions.iterationCount` de la prueba de 100 álbumes, no antes
+(y no se toca la prueba de 1 000/1 000, que es de una sola pasada).
+
+### Verificación
+
+`swift build`: en verde (corriendo en paralelo con los cambios de F1 de
+"experto en código opus" en el mismo árbol -- una corrida intermedia falló
+con un error de "input file modified during the build" mientras esa sesión
+guardaba cambios a mitad de una edición; la corrida siguiente, ya
+estabilizado, compiló limpio). `swift test --filter
+AlbumsGridPerformanceBaselineTests`: 11/11 en verde. Pendiente correr
+`swift test` completo y `scripts/build-app.sh` -- se deja para cuando F1
+deje el árbol en un punto estable, para no confundir un fallo transitorio
+de una edición en curso con una regresión real.
