@@ -6162,6 +6162,47 @@ de la biblioteca** (la siguiente apertura ya encuentra `FileSizeBytes` en
 el catálogo), así que no entra en la tabla de estado estable de arriba —
 mezclarla ahí es exactamente lo que este addendum vino a corregir.
 
+### Addendum — el disco lento simulado ahora espera lo que dice, no lo que Windows quiera
+
+La sección (d) usaba `Thread.Sleep(delayMs)` por ítem para simular una
+llamada a un disco de red. En Windows, `Thread.Sleep(N)` **no duerme N
+milisegundos**: duerme lo que permita la resolución del temporizador del
+sistema (~15,6 ms por omisión), redondeado hacia arriba. Medido en la
+corrida de W3 sobre esta misma VM: `Sleep(3)` tardaba ~17-19 ms de verdad
+(228 150 ms / 12 000 llamadas ≈ 19 ms), así que la etiqueta "3 ms/llamada"
+en la salida del arnés mentía por un factor de ~6×.
+
+`SlowDiskReplica.Run` (nuevo, `tools/LibraryPerfCheck/SlowDiskReplica.cs`)
+espera con `Stopwatch` en un giro apretado hasta cumplir los milisegundos
+pedidos, en vez de `Thread.Sleep`, y la salida ahora imprime el retardo
+efectivo medido por llamada junto al pedido -- para que no vuelva a pasar
+desapercibido si algo lo desvía otra vez.
+
+**Un intento inicial con `System.Threading.SpinWait` no sirvió**: el
+retardo efectivo seguía saliendo en ~17-18 ms, igual que `Thread.Sleep`.
+`SpinWait` está pensada para esperar un lock, no para cronometrar: tras un
+puñado de vueltas escala sola a `Thread.Yield()`/`Thread.Sleep(0)`/
+`Thread.Sleep(1)` para no acaparar el núcleo mientras espera algo que puede
+tardar, y ese `Sleep(1)` interno reintroduce exactamente la misma
+resolución del temporizador que esto vino a evitar. El giro que sí funciona
+es uno puro, sin ceder el hilo en ningún punto (`while (watch.Elapsed... <
+milliseconds) { }`), a costa de ocupar un núcleo entero mientras dura --
+aceptable acá porque son pocos milisegundos por ítem, miles de veces, no
+una espera larga.
+
+**Verificado con `-- 200 12 3`** (biblioteca chica a propósito, para no
+repetir el aviso de memoria baja de la VM que ya dejó ST-200): el retardo
+efectivo salió en **3,01 ms/llamada** en las dos filas de la sección (d),
+contra 3 ms pedidos -- error de ~0,3 %. Una corrida anterior contra el mismo
+argumento, todavía con `SpinWait`, había dado 17,27/17,99 ms/llamada -- la
+prueba de que el problema era ese y no otra cosa.
+
+Cambio quirúrgico en `Program.cs`: las dos líneas que llamaban a
+`MeasureSlow` ahora llaman a `SlowDiskReplica.Run` (misma firma), y el
+`MeasureSlow` local que quedó sin uso se borró (una función de 12 líneas) --
+nada del resto del archivo se tocó. `dotnet build` de `tools/LibraryPerfCheck`:
+en verde, 0 advertencias / 0 errores.
+
 ## ST-181 — PLAN-studio-rendimiento-2.md, Fase F1: las cuadrículas dejan de trabajar dentro del `body`
 
 Segunda PARADA de la ronda 2 (sesión "experto en código opus"), sobre la

@@ -284,10 +284,10 @@ try
         Console.WriteLine($"--- d. Disco lento simulado ({diskDelayMs} ms/llamada, réplica calibrada -- ver ST-200) ---");
         Console.WriteLine();
 
-        long refreshMs = MeasureSlow("Réplica de RefreshAvailable (File.Exists por ítem)", loaded, diskDelayMs,
+        long refreshMs = SlowDiskReplica.Run("Réplica de RefreshAvailable (File.Exists por ítem)", loaded, diskDelayMs,
             item => File.Exists(item.SourcePath));
 
-        long loadMs = MeasureSlow("Réplica de ReadCover en LoadItems (File.Exists + ReadAllBytes por ítem con carátula)", loaded, diskDelayMs,
+        long loadMs = SlowDiskReplica.Run("Réplica de ReadCover en LoadItems (File.Exists + ReadAllBytes por ítem con carátula)", loaded, diskDelayMs,
             item => { _ = File.Exists(store.CoverPath(item.Id)); return true; });
 
         Console.WriteLine($"    Arranque estimado a {diskDelayMs} ms/llamada: ~{(refreshMs + loadMs) / 1000.0:0.0} s (RefreshAvailable + ReadCover; no incluye el resto de Reload)");
@@ -370,16 +370,6 @@ static long MeasureVoidTimed(string what, Action action)
     return watch.ElapsedMilliseconds;
 }
 
-static long MeasureSlow(string what, IReadOnlyList<LibraryItem> items, int delayMs, Func<LibraryItem, bool> perItem)
-{
-    var watch = Stopwatch.StartNew();
-    foreach (LibraryItem item in items)
-    {
-        Thread.Sleep(delayMs);
-        _ = perItem(item);
-    }
-    watch.Stop();
-
-    Console.WriteLine($"{watch.ElapsedMilliseconds,6} ms  {what} ({items.Count} ítems x {delayMs} ms)");
-    return watch.ElapsedMilliseconds;
-}
+// La espera precisa (Stopwatch + SpinWait en vez de Thread.Sleep, que en
+// Windows no duerme lo pedido) vive en SlowDiskReplica.cs -- 2.º addendum de
+// ST-200.
