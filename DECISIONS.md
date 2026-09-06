@@ -8463,3 +8463,82 @@ marcos y las cinco del desplazamiento automático.
 
 Lo que **no** se verificó acá: nada del gesto. Esta sesión no puede abrir la
 ventana ni mover un mouse.
+
+## ST-202 (addendum) — La barra de estado completa: Películas, Series y Fotos
+
+ST-202 dejó el resumen al estilo de la barra del Finder (ST-063) funcionando solo
+en **Álbumes**: era donde se medía el criterio y donde el resumen decía algo que
+no estaba ya en la pantalla. Las otras cuadrículas seguían con el conteo de
+siempre ("1 000 álbumes", "5 seleccionados"), que es O(1) y no molestaba a nadie
+pero tampoco decía nada. La Maestra pidió completarlo a paridad con la Mac, y es
+lo que entra acá.
+
+### Lo que ahora dice cada sección
+
+| Sección | Total | Selección |
+|---|---|---|
+| **Películas** | «N películas» | «N de M seleccionadas · duración · tamaño» |
+| **Series** | «N series · T temporadas · E episodios» | «N de M seleccionadas · T temporadas · E episodios · duración» |
+| **Todas las fotos** | «N fotos · N en Fotos · N en Imágenes · … · N álbumes» | «N de M seleccionadas · tamaño» |
+| **Álbumes de fotos** (una colección) | «N álbumes · M fotos · K sin álbum» | «N de M seleccionados · F fotos · tamaño» |
+
+Los textos son los de `LibraryStatusSummary.swift`, incluida la concordancia:
+películas, series y fotos van en **seleccionadas**; álbumes, en
+**seleccionados**.
+
+### Lo que se mantiene del diseño de ST-202
+
+- **El total se memoiza por versión del catálogo** y se apoya en
+  `LibraryCatalogIndex`, que ya tiene los grupos contados. Ninguna de las
+  secciones nuevas vuelve a agrupar la biblioteca para responder.
+- **El tamaño sale de `fileSizeBytes`**, del catálogo, sin tocar el disco
+  (ST-201).
+- **La selección cuesta lo que mide la selección**, no lo que mide el catálogo, y
+  la página la pide con rebote: mantener apretada Mayús+flecha no rearma el texto
+  en cada tecla.
+
+### Tres cosas que hubo que agregar
+
+1. **`LibraryStatusScope`.** Dos secciones no se resuelven con el enum solo: los
+   álbumes de fotos son los de **una** colección, y el desglose de "Todas las
+   fotos" nombra las colecciones **en el orden que configuró el usuario**, que la
+   biblioteca no sabe y los ajustes sí. El ámbito entra en la clave de
+   memoización — si no, abrir Imágenes después de Fotos mostraría el total de
+   Fotos. Una `LibraryStatusSection` sigue valiendo como ámbito por conversión
+   implícita, así que las cinco secciones que no necesitan nada más no cambiaron
+   de llamada.
+2. **`LibraryCatalogIndex.Keys(kind)`.** Películas y series comparten el índice
+   de colecciones de video, y separarlas exige mirar los grupos uno por uno. Se
+   separan por la **categoría de su primer elemento**, no leyendo la forma de la
+   clave: cómo se arma esa clave es asunto de `LibraryGrouping`, y mirarla acá
+   sería copiarla.
+3. **`LibraryStats.SeasonCount` y `PhotoAlbumCount`.** Las temporadas se cuentan
+   como pares serie+temporada distintos —la temporada 1 de dos series son dos, no
+   una— y "Sin temporada" cuenta como una, porque es lo que la vista muestra y la
+   barra no puede decir un número que no esté en pantalla. Los álbumes de fotos
+   cuentan solo los que **tienen nombre**: "Sin álbum" es una tarjeta más en la
+   cuadrícula —por eso sí entra en el denominador de la selección— pero no es un
+   álbum, y contarlo diría uno de más.
+
+### Sin tocar la vista
+
+No hizo falta: `MediaGridPage` ya preguntaba `ShowsStatusSummary` y escribía
+`StatusSummary` con rebote sin saber de qué sección se trataba. El cambio es
+`ShowsStatusSummary` —que ahora incluye Películas, Series, la colección de fotos
+abierta y Todas las fotos— y de qué ámbito se pide el resumen. Los listados
+planos de video (Todos los videos y Clips) siguen con el conteo de siempre: ahí
+la tarjeta ES el elemento y el resumen no agregaría nada que la cuadrícula no
+muestre.
+
+### Verificación
+
+`dotnet build` de Core, App y el arnés: **0 advertencias, 0 errores**.
+`dotnet test`: **1 494 pruebas en verde**, catorce nuevas — los cuatro totales,
+el desglose en el orden configurado, la colección vacía que no se nombra, el
+total de fotos sin desglose, los álbumes de una colección que no cuentan los de
+otra, "sin álbum" que no aparece cuando no hay sueltas, las cuatro selecciones, y
+que cambiar de sección **y de colección** recalcule el total con el mismo
+catálogo.
+
+Lo que **no** se verificó acá: cómo se lee en pantalla. Esta sesión no puede
+abrir la ventana.

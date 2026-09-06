@@ -1379,6 +1379,13 @@ public sealed partial class LibraryViewModel : ViewModelBase
     /// </summary>
     public ArtistGroupingOptions ArtistGrouping => _preferences.ArtistGrouping;
 
+    /// <summary>
+    /// Las colecciones de fotos en el orden que configuró el usuario. La barra
+    /// de estado de "Todas las fotos" las desglosa en ese orden (addendum de
+    /// ST-202), y ese orden no vive en la biblioteca sino en los ajustes.
+    /// </summary>
+    public IReadOnlyList<string> PhotoCollections => _preferences.PhotoCollections;
+
     // Todas las agrupaciones parten de lo DISPONIBLE: una cuadrícula no puede
     // ofrecer un álbum cuyos archivos no están.
     public IReadOnlyList<AlbumGroup> Albums() => LibraryGrouping.Albums(AvailableItems, ArtistGrouping);

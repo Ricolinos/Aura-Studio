@@ -256,15 +256,38 @@ public sealed partial class MediaGridViewModel : ViewModelBase
     public bool ShowsEmptyState => Cards.Count == 0 && !_library.IsLoading;
 
     /// <summary>
-    /// El resumen de la barra de estado (ST-202). Solo Álbumes lo tiene por
-    /// ahora: es la cuadrícula donde el resumen dice algo que no está ya en la
-    /// pantalla —cuántos artistas, cuánto dura lo marcado—, y es donde se mide
-    /// el criterio. Las demás siguen con <see cref="CountText"/> y
-    /// <see cref="SelectionText"/>, que son O(1) y no molestan a nadie.
+    /// El resumen de la barra de estado (ST-202 y su addendum). Lo tienen las
+    /// cuadrículas donde el resumen dice algo que <b>no está ya en la
+    /// pantalla</b>: cuántos artistas hay detrás de los álbumes marcados, cuánto
+    /// dura lo seleccionado, cuánto ocupa.
+    ///
+    /// <para>Los listados planos de video —Todos los videos y Clips— siguen con
+    /// <see cref="CountText"/> y <see cref="SelectionText"/>: ahí la tarjeta ES
+    /// el elemento y el resumen no agregaría nada que la cuadrícula no muestre.</para>
     /// </summary>
-    public bool ShowsStatusSummary => Kind == MediaGridKind.Albums;
+    public bool ShowsStatusSummary => Kind is MediaGridKind.Albums
+        or MediaGridKind.Movies
+        or MediaGridKind.Series
+        or MediaGridKind.PhotoCollection
+        or MediaGridKind.AllPhotos;
 
     private readonly StatusSummaryModel _statusSummary = new();
+
+    /// <summary>
+    /// Qué sección se le pide al modelo de resumen, con lo que esa sección
+    /// necesita saber de más: la colección abierta en los álbumes de fotos, y el
+    /// orden configurado de las colecciones en "Todas las fotos".
+    /// </summary>
+    private LibraryStatusScope StatusScope => Kind switch
+    {
+        MediaGridKind.Movies => LibraryStatusSection.Movies,
+        MediaGridKind.Series => LibraryStatusSection.Series,
+        MediaGridKind.PhotoCollection =>
+            new LibraryStatusScope(LibraryStatusSection.PhotoAlbums, PhotoCategory),
+        MediaGridKind.AllPhotos =>
+            new LibraryStatusScope(LibraryStatusSection.Photos, Collections: _library.PhotoCollections),
+        _ => LibraryStatusSection.Albums
+    };
 
     /// <summary>
     /// El resumen de ahora. El total se recalcula solo cuando cambia el catálogo;
@@ -273,7 +296,7 @@ public sealed partial class MediaGridViewModel : ViewModelBase
     /// rearmar el texto en cada tecla.
     /// </summary>
     public LibraryStatusSummary StatusSummary => _statusSummary.Summary(
-        _library.Index, LibraryStatusSection.Albums, _library.CatalogVersion,
+        _library.Index, StatusScope, _library.CatalogVersion,
         ItemsOf(SelectedCards), _selection.Count);
 
     public string CountText => Kind switch

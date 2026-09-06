@@ -162,6 +162,21 @@ public sealed class LibraryCatalogIndex
         _ => _byId.Count
     };
 
+    /// <summary>
+    /// Las claves de ese tipo, sin orden garantizado (ST-202 addendum). Es lo
+    /// que necesita quien tiene que mirar los grupos <b>uno por uno</b> —contar
+    /// películas aparte de series, o los álbumes de fotos de una colección— sin
+    /// volver a agrupar la biblioteca.
+    /// </summary>
+    public IReadOnlyCollection<string> Keys(LibraryGroupKind kind) => kind switch
+    {
+        LibraryGroupKind.Album => _albums.Keys,
+        LibraryGroupKind.Artist => _artists.Keys,
+        LibraryGroupKind.VideoCollection => _videoCollections.Keys,
+        LibraryGroupKind.PhotoAlbum => _photoAlbums.Keys,
+        _ => []
+    };
+
     public IReadOnlyList<LibraryItem> ByAlbumKey(string key) => Bucket(_albums, key);
 
     public IReadOnlyList<LibraryItem> ByArtistKey(string key) => Bucket(_artists, key);
