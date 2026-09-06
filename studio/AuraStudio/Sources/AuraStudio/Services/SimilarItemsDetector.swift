@@ -485,7 +485,7 @@ enum SimilarItemsDetector {
         let meta = item.metadata
         if item.kind == .music && losslessExtensions.contains(ext) { score += 3 }
         if fileSize > 0 && fileSize == largestSize { score += 1 }
-        if meta?.coverArtData != nil { score += 1 }
+        if meta?.hasCover == true { score += 1 }
         if meta?.syncedLyrics != nil { score += 1 }
         if item.metadataEditedByUser { score += 2 }
         if meta?.trackNumber != nil { score += 0.5 }
@@ -544,7 +544,7 @@ enum SimilarItemsDetector {
         let keepDescription: String = {
             var bits: [String] = [keep.ext.uppercased()]
             if kind == .music && losslessExtensions.contains(keep.ext) { bits[0] += " sin pérdida" }
-            if keep.item.metadata?.coverArtData != nil { bits.append(kind == .music ? "con carátula" : "con póster") }
+            if keep.item.metadata?.hasCover == true { bits.append(kind == .music ? "con carátula" : "con póster") }
             if keep.item.metadata?.syncedLyrics != nil { bits.append("con letra") }
             if keep.item.metadataEditedByUser { bits.append("corregido a mano") }
             if keep.fileSize > 0 && keep.fileSize == largest && prints.contains(where: { $0.fileSize != largest }) { bits.append("el más grande") }

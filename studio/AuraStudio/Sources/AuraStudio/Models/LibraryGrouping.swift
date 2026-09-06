@@ -12,8 +12,18 @@ struct AlbumGroup: Identifiable, Equatable {
     let title: String
     let artist: String
     let items: [LibraryItem]
-    /// Portada del grupo: la primera canción que tenga carátula.
-    let coverArtData: Data?
+    /// Portada del grupo: la de la primera canción que tenga una.
+    /// PLAN-studio-rendimiento-2.md Fase 5 (ST-185): la RUTA y el HASH,
+    /// no los bytes -- un `AlbumGroup` con los bytes adentro convertía
+    /// cada reagrupación en una copia de 1 000 JPEG.
+    ///
+    /// `coverURL` puede ser `nil` con `coverHash` presente en una
+    /// ventana muy corta: una carátula recién importada vive en
+    /// `pendingCoverData` hasta que el guardado del catálogo la escribe
+    /// (rebote ≤ 500 ms). En ese rato la tarjeta muestra el placeholder;
+    /// después aparece sola.
+    let coverURL: URL?
+    let coverHash: String?
     let year: String?
     let genre: String?
     /// `true` para el grupo especial "Sin álbum".
@@ -36,7 +46,8 @@ struct ArtistGroup: Identifiable, Equatable {
     var items: [LibraryItem] { albums.flatMap(\.items) }
     /// Imagen representativa cuando no hay foto de artista: la portada
     /// del primer álbum con carátula.
-    var fallbackCoverArtData: Data? { albums.compactMap(\.coverArtData).first }
+    var fallbackCoverURL: URL? { albums.first { $0.coverURL != nil }?.coverURL }
+    var fallbackCoverHash: String? { albums.first { $0.coverURL != nil }?.coverHash }
 }
 
 enum LibraryGrouping {
@@ -110,7 +121,8 @@ enum LibraryGrouping {
                 title: isUnknown ? unknownAlbumTitle : albumTitle,
                 artist: albumArtist(of: first, options: options) ?? unknownArtistName,
                 items: bucket,
-                coverArtData: bucket.compactMap { $0.metadata?.coverArtData }.first,
+                coverURL: bucket.first { $0.metadata?.hasCover == true }?.metadata?.coverURL,
+                coverHash: bucket.first { $0.metadata?.hasCover == true }?.metadata?.coverHash,
                 year: bucket.compactMap { $0.metadata?.year }.first,
                 genre: bucket.compactMap { $0.metadata?.genre }.first,
                 isUnknown: isUnknown
@@ -291,7 +303,9 @@ struct VideoCollectionGroup: Identifiable, Equatable {
     let id: String
     let title: String
     let year: String?
-    let posterData: Data?
+    /// ST-185: ruta y hash, no bytes -- ver `AlbumGroup.coverURL`.
+    let posterURL: URL?
+    let posterHash: String?
     let isSeries: Bool
     let items: [LibraryItem]
     /// Vacío para una película. Para una serie, una entrada por número
@@ -381,7 +395,8 @@ extension LibraryGrouping {
             return VideoCollectionGroup(
                 id: key, title: title,
                 year: bucket.compactMap { $0.metadata?.year }.first,
-                posterData: bucket.compactMap { $0.metadata?.coverArtData }.first,
+                posterURL: bucket.first { $0.metadata?.hasCover == true }?.metadata?.coverURL,
+                posterHash: bucket.first { $0.metadata?.hasCover == true }?.metadata?.coverHash,
                 isSeries: isSeries, items: bucket, seasons: seasons
             )
         }

@@ -488,7 +488,7 @@ struct AlbumsView: View {
             .padding(.top, 12)
 
             HStack(alignment: .top, spacing: 20) {
-                CoverArtView(id: "album:\(album.id)", data: album.coverArtData, side: 180)
+                CoverArtView(coverHash: album.coverHash, coverURL: album.coverURL, side: 180)
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 8) {
                         Text(album.title)
@@ -659,6 +659,7 @@ private struct AlbumGridCell<Menu: View>: View, Equatable {
             && a.album.artist == b.album.artist
             && a.album.trackCount == b.album.trackCount
             && a.album.isFavorite == b.album.isFavorite
-            && a.album.coverArtData?.count == b.album.coverArtData?.count
+            && a.album.coverHash == b.album.coverHash
+            && a.album.coverURL == b.album.coverURL
     }
 }

@@ -32,8 +32,8 @@ enum LocalTagReader {
         // METADATA_BLOCK_PICTURE de FLAC: AVFoundation no lo expone via
         // `commonKeyArtwork` (verificado) -- unico caso que necesita un
         // parser propio del contenedor.
-        if metadata.coverArtData == nil, url.pathExtension.lowercased() == "flac" {
-            metadata.coverArtData = readFLACPicture(from: url)
+        if !metadata.hasCover, url.pathExtension.lowercased() == "flac" {
+            metadata.setCover(readFLACPicture(from: url))
         }
 
         // ST-012 (contrato SS2): la caratula de CARPETA (`cover.jpg`,
@@ -42,8 +42,8 @@ enum LocalTagReader {
         // pista no trae portada embebida, se toma de ahi. Es lo que hace
         // que un album arrastrado con su cover.jpg conserve la portada
         // aunque el importador ya no lo cuente como foto.
-        if metadata.coverArtData == nil, let cover = CoverArtAssets.folderCover(near: url) {
-            metadata.coverArtData = try? Data(contentsOf: cover)
+        if !metadata.hasCover, let cover = CoverArtAssets.folderCover(near: url) {
+            metadata.setCover(try? Data(contentsOf: cover))
         }
 
         return metadata
@@ -68,7 +68,7 @@ enum LocalTagReader {
             case .commonKeyCreationDate:
                 metadata.year = metadata.year ?? yearPrefix(stringValue(value))
             case .commonKeyArtwork:
-                metadata.coverArtData = metadata.coverArtData ?? (value as? Data)
+                if !metadata.hasCover, let artwork = value as? Data { metadata.setCover(artwork) }
             default:
                 break
             }

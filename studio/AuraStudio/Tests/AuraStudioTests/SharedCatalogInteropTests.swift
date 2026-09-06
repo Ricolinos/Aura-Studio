@@ -172,7 +172,7 @@ final class SharedCatalogInteropTests: XCTestCase {
         let viewModel = LibraryViewModel(libraryRoot: libraryRoot)
         let item = try XCTUnwrap(viewModel.items.first)
 
-        XCTAssertEqual(item.metadata?.coverArtData, Data("portada".utf8))
+        XCTAssertEqual(item.metadata?.loadCoverData(), Data("portada".utf8))
     }
 
     /// La otra mitad del contrato: leer tolerante NO cambia como se

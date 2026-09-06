@@ -909,7 +909,7 @@ struct LibrarySync {
         var written = Set<String>()
 
         for item in items where item.kind == .music {
-            guard let cover = item.metadata?.coverArtData,
+            guard let cover = item.metadata?.loadCoverData(),
                   let relative = destinationByItemID[item.id] else { continue }
 
             // Bug real (encontrado 2026-08-14 comparando simulador vs.
@@ -998,7 +998,7 @@ struct LibrarySync {
             }
         }
 
-        let covers = playlist.trackItemIDs.compactMap { itemsByID[$0]?.metadata?.coverArtData }
+        let covers = playlist.trackItemIDs.compactMap { itemsByID[$0]?.metadata?.loadCoverData() }
         try? PlaylistArtGenerator.generateDefault(coverArtCandidates: covers, destinationURL: imageURL)
     }
 
@@ -1182,7 +1182,7 @@ struct LibrarySync {
         for item in items {
             guard item.kind == .video, Self.isSeriesCategory(item.category),
                   let seriesName = item.seriesName, let season = item.season, let episode = item.episode,
-                  let cover = item.metadata?.coverArtData else { continue }
+                  let cover = item.metadata?.loadCoverData() else { continue }
             let key = "\(seriesName)\u{1}\(season)"
             if let existing = bestByseason[key], existing.episode <= episode { continue }
             bestByseason[key] = (episode, cover)

@@ -94,7 +94,11 @@ final class LibraryGroupingTests: XCTestCase {
         let cover = Data([0xFF, 0xD8])
         let noCover = song("1", artist: "A", album: "X", track: 1)
         let withCover = song("2", artist: "A", album: "X", track: 2, cover: cover)
-        XCTAssertEqual(LibraryGrouping.albums(from: [noCover, withCover])[0].coverArtData, cover)
+        // ST-185: el grupo lleva la RUTA y el HASH de la carátula, no los
+        // bytes. Sin escribir el archivo, `coverURL` de una metadata
+        // recién construida es nil y lo que identifica es el hash.
+        XCTAssertEqual(LibraryGrouping.albums(from: [noCover, withCover])[0].coverHash,
+                       CoverStore.hash(cover))
     }
 
     func testArtistSummaryCounts() {
@@ -184,10 +188,12 @@ final class LibraryGroupingTests: XCTestCase {
         XCTAssertTrue(groups[0].isSeries)
     }
 
+    /// ST-185: el grupo lleva el HASH del póster, no sus bytes.
     func testMoviePosterComesFromCoverArtData() {
         let data = Data("poster".utf8)
         let movie = video("X", category: "Películas", cover: data)
-        XCTAssertEqual(LibraryGrouping.videoCollections(from: [movie])[0].posterData, data)
+        XCTAssertEqual(LibraryGrouping.videoCollections(from: [movie])[0].posterHash,
+                       CoverStore.hash(data))
     }
 
     // MARK: - photoAlbums (encargo del dueño, 2026-08-18: "similar en uso al iPod Classic original")

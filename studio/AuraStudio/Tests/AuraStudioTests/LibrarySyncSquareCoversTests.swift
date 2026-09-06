@@ -127,7 +127,7 @@ final class LibrarySyncSquareCoversTests: XCTestCase {
 
         // Otro COLOR, no solo otro tamaño: dos imágenes lisas del mismo
         // color dan el mismo JPEG de 320 y la prueba no probaría nada.
-        item.metadata?.coverArtData = try jpeg(width: 600, height: 600, red: 20)
+        item.metadata?.setCover(try jpeg(width: 600, height: 600, red: 20))
         _ = try sync.sync(items: [item], coverArtPolicy: .albumOnly)
 
         XCTAssertNotEqual(try Data(contentsOf: coverURL), before)
@@ -154,7 +154,7 @@ final class LibrarySyncSquareCoversTests: XCTestCase {
         let marker = fakeIPod.appendingPathComponent(SyncPendingMarker.relativePath)
         try? FileManager.default.removeItem(at: marker)
 
-        item.metadata?.coverArtData = try jpeg(width: 900, height: 900, red: 30)
+        item.metadata?.setCover(try jpeg(width: 900, height: 900, red: 30))
         _ = try sync.sync(items: [item], coverArtPolicy: .albumOnly)
 
         let data = try XCTUnwrap(try? Data(contentsOf: marker), "el sync debió dejar el marcador")

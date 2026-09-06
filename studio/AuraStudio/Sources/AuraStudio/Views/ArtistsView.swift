@@ -189,7 +189,8 @@ struct ArtistsView: View {
                     HStack(spacing: 12) {
                         ArtistAvatarView(artistID: artist.id,
                                          imageData: viewModel.artistImages.image(forArtistKey: artist.id),
-                                         fallbackCoverData: artist.fallbackCoverArtData,
+                                         fallbackCoverURL: artist.fallbackCoverURL,
+                                         fallbackCoverHash: artist.fallbackCoverHash,
                                          side: 40)
                         Text(artist.name)
                             .lineLimit(1)
@@ -272,7 +273,8 @@ struct ArtistsView: View {
         HStack(alignment: .center, spacing: 20) {
             ArtistAvatarView(artistID: artist.id,
                              imageData: viewModel.artistImages.image(forArtistKey: artist.id),
-                             fallbackCoverData: artist.fallbackCoverArtData,
+                             fallbackCoverURL: artist.fallbackCoverURL,
+                             fallbackCoverHash: artist.fallbackCoverHash,
                              side: 96)
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 10) {
@@ -307,7 +309,7 @@ struct ArtistsView: View {
     private func albumSection(_ album: AlbumGroup, artist: ArtistGroup) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 16) {
-                CoverArtView(id: "album:\(album.id)", data: album.coverArtData, side: 128)
+                CoverArtView(coverHash: album.coverHash, coverURL: album.coverURL, side: 128)
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 8) {
                         Text(album.title)

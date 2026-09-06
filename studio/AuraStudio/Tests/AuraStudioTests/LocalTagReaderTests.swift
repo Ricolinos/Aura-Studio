@@ -90,8 +90,8 @@ final class LocalTagReaderTests: XCTestCase {
         let metadata = await LocalTagReader.readTag(from: url)
 
         XCTAssertEqual(metadata.title, "Con portada")
-        XCTAssertNotNil(metadata.coverArtData, "el frame APIC de ID3v2.4 es synchsafe -- ID3Writer.readTag lo leia como big-endian plano y perdia la portada")
-        XCTAssertGreaterThan(metadata.coverArtData?.count ?? 0, 0)
+        XCTAssertNotNil(metadata.pendingCoverData, "el frame APIC de ID3v2.4 es synchsafe -- ID3Writer.readTag lo leia como big-endian plano y perdia la portada")
+        XCTAssertGreaterThan(metadata.pendingCoverData?.count ?? 0, 0)
     }
 
     // MARK: - MP3 ID3v2.3 (lo que ID3Writer SI produce)
@@ -152,7 +152,7 @@ final class LocalTagReaderTests: XCTestCase {
 
         let metadata = await LocalTagReader.readTag(from: url)
 
-        XCTAssertNotNil(metadata.coverArtData, "METADATA_BLOCK_PICTURE no viene por AVFoundation, hace falta el parser propio")
+        XCTAssertNotNil(metadata.pendingCoverData, "METADATA_BLOCK_PICTURE no viene por AVFoundation, hace falta el parser propio")
     }
 
     // MARK: - M4A (atomos iTunes)

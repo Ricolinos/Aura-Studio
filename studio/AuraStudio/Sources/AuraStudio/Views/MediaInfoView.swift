@@ -112,7 +112,7 @@ struct MediaInfoView: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            if let cover = item.metadata?.coverArtData, let image = NSImage(data: cover) {
+            if let cover = item.metadata?.loadCoverData(), let image = NSImage(data: cover) {
                 Image(nsImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fill)

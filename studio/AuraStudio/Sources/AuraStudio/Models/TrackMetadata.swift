@@ -19,7 +19,33 @@ struct TrackMetadata: Equatable {
     /// Aura Studio para poblarlo.
     var composer: String?
     var trackNumber: Int?
-    var coverArtData: Data?
+
+    // MARK: - Carátula (PLAN-studio-rendimiento-2.md Fase 5, ST-185)
+    //
+    // La carátula ya NO vive en memoria. Antes era un `coverArtData:
+    // Data?` con el JPEG entero por ítem -- unos 180 MB con 12 000
+    // canciones, y repetido por cada pista del mismo álbum (§0.8). Los
+    // archivos ya vivían en `.portadas/<id>.jpg`; lo que sobraba era la
+    // copia en RAM.
+
+    /// Dónde vive la carátula en disco. `nil` = no hay carátula.
+    var coverURL: URL?
+    /// SHA-256 de los bytes del archivo, hexadecimal en MAYÚSCULAS (ver
+    /// `CoverStore`). `nil` = **no se sabe** (catálogo guardado antes de
+    /// que el campo existiera), nunca "no hay". Invariante: sin
+    /// `coverURL` no hay hash.
+    var coverHash: String?
+    /// Bytes recién producidos que TODAVÍA no se escribieron a disco --
+    /// lo que acaba de leer `LocalTagReader`, bajar `LibraryEnricher` o
+    /// elegir el usuario en el selector de carátulas.
+    ///
+    /// Es una escala, no un almacén: `CatalogPersister` los escribe en
+    /// `.portadas/` fuera del hilo principal y `LibraryViewModel` los
+    /// pone en `nil` al aplicar el resultado, dejando `coverURL` y
+    /// `coverHash`. El pico de memoria queda acotado a lo que entre en
+    /// una ventana de guardado (≤ 500 ms de rebote), no a la biblioteca
+    /// entera para siempre.
+    var pendingCoverData: Data?
     /// Letra en formato LRC. Normalmente con marcas `[mm:ss.xx]` (LRCLIB
     /// `syncedLyrics`); puede ser letra plana si solo habia esa (ST-012)
     /// -- el nombre se conserva por compatibilidad con `biblioteca.json`.
@@ -50,7 +76,8 @@ struct TrackMetadata: Equatable {
     init(title: String? = nil, artist: String? = nil, album: String? = nil,
          albumArtist: String? = nil, year: String? = nil, genre: String? = nil,
          composer: String? = nil,
-         trackNumber: Int? = nil, coverArtData: Data? = nil, syncedLyrics: String? = nil,
+         trackNumber: Int? = nil, coverURL: URL? = nil, coverHash: String? = nil,
+         pendingCoverData: Data? = nil, coverArtData: Data? = nil, syncedLyrics: String? = nil,
          musicBrainzRecordingID: String? = nil, musicBrainzReleaseID: String? = nil,
          durationSeconds: Double? = nil, rating: Int? = nil,
          isFavorite: Bool = false, discNumber: Int? = nil) {
@@ -62,7 +89,14 @@ struct TrackMetadata: Equatable {
         self.genre = genre
         self.composer = composer
         self.trackNumber = trackNumber
-        self.coverArtData = coverArtData
+        self.coverURL = coverURL
+        // ST-185: `coverArtData:` es un atajo de conveniencia -- "acá
+        // están los bytes, resuélvelo tú" -- que deja el hash calculado
+        // y los bytes en la escala de `pendingCoverData`. Lo usan sobre
+        // todo las pruebas, que arman metadata con una carátula sin
+        // pasar por el guardado del catálogo.
+        self.coverHash = coverArtData.map(CoverStore.hash) ?? coverHash
+        self.pendingCoverData = coverArtData ?? pendingCoverData
         self.syncedLyrics = syncedLyrics
         self.musicBrainzRecordingID = musicBrainzRecordingID
         self.musicBrainzReleaseID = musicBrainzReleaseID
@@ -74,5 +108,63 @@ struct TrackMetadata: Equatable {
 
     var isComplete: Bool {
         title != nil && artist != nil && album != nil
+    }
+
+    /// Pone (o quita) la carátula. Los bytes quedan en `pendingCoverData`
+    /// hasta que `CatalogPersister` los escriba; el hash se calcula acá
+    /// mismo, para que nadie tenga que recorrer los bytes de nuevo para
+    /// compararlos o para nombrar una miniatura.
+    mutating func setCover(_ data: Data?) {
+        guard let data else {
+            pendingCoverData = nil
+            coverURL = nil
+            coverHash = nil
+            return
+        }
+        pendingCoverData = data
+        coverHash = CoverStore.hash(data)
+    }
+
+    /// ¿Hay carátula? Sin leer nada de disco.
+    var hasCover: Bool { coverURL != nil || pendingCoverData != nil }
+
+    /// Los bytes de la carátula. **Toca el disco** si todavía no están
+    /// en memoria, así que nunca se llama desde el `body` de una vista:
+    /// las vistas piden miniaturas a `CoverThumbnailCache`, que lee en
+    /// segundo plano (ST-183).
+    func loadCoverData() -> Data? {
+        pendingCoverData ?? CoverStore.read(coverURL)
+    }
+
+    /// Identidad de la carátula para la caché de miniaturas. Con hash,
+    /// es el hash; sin él (catálogo viejo todavía sin migrar), la ruta.
+    var coverCacheID: String? {
+        if let coverHash { return coverHash }
+        if let coverURL { return "ruta:\(coverURL.path)" }
+        return nil
+    }
+
+    /// PLAN-studio-rendimiento-2.md Fase 5 (ST-185): `Equatable` a mano.
+    ///
+    /// El sintetizado comparaba los BYTES de la carátula, y esta
+    /// comparación corre en cada `onChange(of: items)`, en cada
+    /// `Equatable` de `LibraryItem` y en cada diffing de SwiftUI: 15 KB
+    /// por ítem por comparación (§0.8). El hash identifica el contenido
+    /// igual de bien en O(1).
+    ///
+    /// `pendingCoverData` se compara solo por presencia: si hay bytes
+    /// sin escribir, `coverHash` ya los describe (quien los pone,
+    /// calcula el hash en el mismo paso).
+    static func == (a: TrackMetadata, b: TrackMetadata) -> Bool {
+        a.title == b.title && a.artist == b.artist && a.album == b.album
+            && a.albumArtist == b.albumArtist && a.year == b.year && a.genre == b.genre
+            && a.composer == b.composer && a.trackNumber == b.trackNumber
+            && a.coverURL == b.coverURL && a.coverHash == b.coverHash
+            && (a.pendingCoverData == nil) == (b.pendingCoverData == nil)
+            && a.syncedLyrics == b.syncedLyrics
+            && a.musicBrainzRecordingID == b.musicBrainzRecordingID
+            && a.musicBrainzReleaseID == b.musicBrainzReleaseID
+            && a.durationSeconds == b.durationSeconds && a.rating == b.rating
+            && a.isFavorite == b.isFavorite && a.discNumber == b.discNumber
     }
 }

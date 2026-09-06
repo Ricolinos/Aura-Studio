@@ -58,8 +58,13 @@ final class PersistCatalogCoalescedTests: XCTestCase {
         XCTAssertEqual(firstWriteDate, secondWriteDate, "una carátula sin cambios no debería reescribirse")
 
         let reloaded = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
-        XCTAssertEqual(reloaded.items.first?.metadata?.coverArtData, cover,
+        // ST-185: la carátula ya no vuelve a RAM al cargar -- el catálogo
+        // guarda dónde está y su hash, y los bytes se leen del archivo.
+        XCTAssertEqual(reloaded.items.first?.metadata?.loadCoverData(), cover,
                        "el catálogo debe seguir sabiendo dónde está la carátula aunque no se haya reescrito")
+        XCTAssertEqual(reloaded.items.first?.metadata?.coverHash, CoverStore.hash(cover))
+        XCTAssertNil(reloaded.items.first?.metadata?.pendingCoverData,
+                     "cargar el catálogo no debe traerse los bytes de la carátula a memoria")
     }
 
     /// Si la carátula SÍ cambia, se reescribe (no se queda pegada al
@@ -71,12 +76,12 @@ final class PersistCatalogCoalescedTests: XCTestCase {
         viewModel.persistCatalog()
 
         var changed = item
-        changed.metadata?.coverArtData = Data(repeating: 0x02, count: 100)
+        changed.metadata?.setCover(Data(repeating: 0x02, count: 100))
         viewModel.replaceItemsForPerformanceTesting([changed])
         viewModel.persistCatalog()
 
         let reloaded = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
-        XCTAssertEqual(reloaded.items.first?.metadata?.coverArtData, Data(repeating: 0x02, count: 100))
+        XCTAssertEqual(reloaded.items.first?.metadata?.loadCoverData(), Data(repeating: 0x02, count: 100))
     }
 
     /// PLAN-studio-rendimiento.md Fase 3 punto 4: `clearCoverArt(ids:)`
@@ -91,12 +96,12 @@ final class PersistCatalogCoalescedTests: XCTestCase {
 
         await viewModel.clearCoverArt(ids: [itemA.id, itemB.id])
 
-        XCTAssertNil(viewModel.items.first { $0.id == itemA.id }?.metadata?.coverArtData)
-        XCTAssertNil(viewModel.items.first { $0.id == itemB.id }?.metadata?.coverArtData)
+        XCTAssertFalse(viewModel.items.first { $0.id == itemA.id }?.metadata?.hasCover == true)
+        XCTAssertFalse(viewModel.items.first { $0.id == itemB.id }?.metadata?.hasCover == true)
 
         let reloaded = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
         XCTAssertEqual(reloaded.items.count, 2)
-        XCTAssertTrue(reloaded.items.allSatisfy { $0.metadata?.coverArtData == nil })
+        XCTAssertTrue(reloaded.items.allSatisfy { $0.metadata?.hasCover != true })
     }
 
     /// `clearCoverArt(id:)` (un solo ítem) sigue funcionando igual que
@@ -109,6 +114,6 @@ final class PersistCatalogCoalescedTests: XCTestCase {
 
         await viewModel.clearCoverArt(id: item.id)
 
-        XCTAssertNil(viewModel.items.first?.metadata?.coverArtData)
+        XCTAssertFalse(viewModel.items.first?.metadata?.hasCover == true)
     }
 }

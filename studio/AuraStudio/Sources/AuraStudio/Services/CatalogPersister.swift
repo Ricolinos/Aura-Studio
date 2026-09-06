@@ -34,7 +34,18 @@ final class CatalogPersister {
 
     struct WriteResult: Sendable {
         var lastWrittenCoverHash: [UUID: Int]
+        /// PLAN-studio-rendimiento-2.md Fase 5 (ST-185): las carátulas
+        /// que este guardado dejó escritas en `.portadas/`, con su hash.
+        /// `LibraryViewModel` las aplica a `items` -- y al hacerlo suelta
+        /// los bytes de `pendingCoverData`, que es lo que saca los JPEG
+        /// de la memoria.
+        var storedCovers: [UUID: StoredCover] = [:]
         var errorDescription: String?
+    }
+
+    struct StoredCover: Sendable {
+        var url: URL
+        var hash: String
     }
 
     /// Para pruebas: si `true`, `schedule(_:apply:)` escribe de
@@ -128,19 +139,33 @@ final class CatalogPersister {
 
         var newHash = snapshot.lastWrittenCoverHash
         var coverIDsOnDisk: Set<UUID> = []
+        var storedCovers: [UUID: StoredCover] = [:]
+        try? FileManager.default.createDirectory(at: coversDirectory, withIntermediateDirectories: true)
         for item in snapshot.items {
             var coverRelative: String?
-            if let cover = item.metadata?.coverArtData {
-                let coverURL = coversDirectory.appendingPathComponent("\(item.id.uuidString).jpg")
-                let hash = cover.hashValue
-                if newHash[item.id] == hash {
-                    coverRelative = "\(PersistedLibrary.coversDirName)/\(item.id.uuidString).jpg"
-                    coverIDsOnDisk.insert(item.id)
-                } else if (try? cover.write(to: coverURL, options: .atomic)) != nil {
-                    coverRelative = "\(PersistedLibrary.coversDirName)/\(item.id.uuidString).jpg"
-                    newHash[item.id] = hash
+            var coverHash: String?
+            // PLAN-studio-rendimiento-2.md Fase 5 (ST-185): hay dos
+            // casos, y el primero es el interesante.
+            if let pending = item.metadata?.pendingCoverData {
+                // Carátula recién entrada (leída del archivo, bajada, o
+                // elegida por el usuario) que todavía vive en RAM. Se
+                // escribe acá -- fuera del hilo principal, que es donde
+                // ya corría este guardado -- y se avisa de vuelta para
+                // que el ViewModel suelte los bytes.
+                if let stored = try? CoverStore.write(pending, forItem: item.id, in: snapshot.libraryRoot) {
+                    coverRelative = CoverStore.relativePath(forItem: item.id)
+                    coverHash = stored.hash
+                    storedCovers[item.id] = StoredCover(url: stored.url, hash: stored.hash)
+                    newHash[item.id] = pending.hashValue
                     coverIDsOnDisk.insert(item.id)
                 }
+            } else if item.metadata?.coverURL != nil {
+                // Ya estaba en disco: no se reescribe nada. Antes, cada
+                // guardado del catálogo reescribía las 1 000 carátulas
+                // aunque no hubiera cambiado ninguna.
+                coverRelative = CoverStore.relativePath(forItem: item.id)
+                coverHash = item.metadata?.coverHash
+                coverIDsOnDisk.insert(item.id)
             }
             persisted.items.append(PersistedLibraryItem(
                 id: item.id,
@@ -150,6 +175,7 @@ final class CatalogPersister {
                 metadata: LibraryPersistenceMapper.persistedMetadata(item.metadata),
                 preparedRelativePath: item.preparedURL.map { relativePath(of: $0, in: snapshot.libraryRoot) },
                 coverRelativePath: coverRelative,
+                coverHash: coverHash,
                 category: item.category,
                 seriesName: item.seriesName,
                 season: item.season,
@@ -169,9 +195,9 @@ final class CatalogPersister {
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.sortedKeys]
             try encoder.encode(persisted).write(to: catalogURL, options: .atomic)
-            return WriteResult(lastWrittenCoverHash: newHash, errorDescription: nil)
+            return WriteResult(lastWrittenCoverHash: newHash, storedCovers: storedCovers, errorDescription: nil)
         } catch {
-            return WriteResult(lastWrittenCoverHash: newHash,
+            return WriteResult(lastWrittenCoverHash: newHash, storedCovers: storedCovers,
                                errorDescription: "No se pudo guardar el catalogo de la biblioteca: \(error.localizedDescription)")
         }
     }

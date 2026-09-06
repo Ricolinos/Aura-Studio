@@ -473,7 +473,7 @@ final class LibraryViewModel: ObservableObject {
                 // legibles) no se aborta el item entero por esto, el
                 // video ya quedo listo para sincronizar sin poster.
                 let poster = output.deletingPathExtension().appendingPathExtension("jpg")
-                if let downloaded = items[index].metadata?.coverArtData,
+                if let downloaded = items[index].metadata?.loadCoverData(),
                    (try? ImageResizer.resizeToLCDOptimal(data: downloaded, destinationURL: poster,
                                                          maxDimension: Self.videoPosterMaxDimension)) != nil {
                     // ST-033: el poster descargado (TMDB / fanart.tv)
@@ -595,7 +595,7 @@ final class LibraryViewModel: ObservableObject {
             // (~1000 px) metía casi un megabyte en cada canción para que
             // el aparato la reescalara a 130 de todos modos.
             let embedCover = preferences.coverArtPolicy == .perTrack
-            let embedded = embedCover ? metadata.coverArtData.flatMap {
+            let embedded = embedCover ? metadata.loadCoverData().flatMap {
                 try? ImageResizer.squareCrop(data: $0, side: LibrarySync.deviceCoverSide,
                                              quality: LibrarySync.deviceCoverQuality)
             } : nil
@@ -940,7 +940,7 @@ final class LibraryViewModel: ObservableObject {
             switch await resolver.resolve(rawTitle: rawTitle, kind: kind) {
             case .success(let result):
                 var metadata = items[index].metadata ?? TrackMetadata()
-                metadata.coverArtData = result.data
+                metadata.setCover(result.data)
                 if metadata.title == nil || metadata.title == rawTitle {
                     // Un titulo limpio de TMDB en vez del nombre de archivo
                     // crudo -- solo si el usuario no lo habia editado.
@@ -967,11 +967,12 @@ final class LibraryViewModel: ObservableObject {
         if found > 0 { persistCatalog() }
     }
 
-    /// Escribe `<preparado>.jpg` desde `coverArtData` (JPEG baseline,
+    /// Escribe `<preparado>.jpg` desde la carátula (JPEG baseline,
     /// lado mayor <= 640) si el video ya esta preparado; si no, se
     /// escribira al procesarlo (`process(itemAt:)`).
     private func writeVideoPoster(forItemAt index: Int) {
-        guard let prepared = items[index].preparedURL, let data = items[index].metadata?.coverArtData else { return }
+        guard let prepared = items[index].preparedURL,
+              let data = items[index].metadata?.loadCoverData() else { return }
         let poster = prepared.deletingPathExtension().appendingPathExtension("jpg")
         do {
             try ImageResizer.resizeToLCDOptimal(data: data, destinationURL: poster, maxDimension: Self.videoPosterMaxDimension)
@@ -985,9 +986,9 @@ final class LibraryViewModel: ObservableObject {
     func clearVideoPoster(id: UUID) {
         guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .video else { return }
         var metadata = items[index].metadata ?? TrackMetadata()
-        metadata.coverArtData = nil
+        metadata.setCover(nil)
         items[index].metadata = metadata
-        try? FileManager.default.removeItem(at: coversDirectory.appendingPathComponent("\(items[index].id.uuidString).jpg"))
+        CoverStore.remove(forItem: items[index].id, in: libraryRoot)
         if let prepared = items[index].preparedURL {
             let poster = prepared.deletingPathExtension().appendingPathExtension("jpg")
             try? FileManager.default.removeItem(at: poster)
@@ -1085,11 +1086,10 @@ final class LibraryViewModel: ObservableObject {
 
         for (completed, item) in targets.enumerated() {
             var metadata = item.metadata ?? TrackMetadata()
-            metadata.coverArtData = nil
+            metadata.setCover(nil)
             let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
             pendingResults[item.id] = (metadata, prepared)
-            let coverURL = coversDirectory.appendingPathComponent("\(item.id.uuidString).jpg")
-            try? FileManager.default.removeItem(at: coverURL)
+            CoverStore.remove(forItem: item.id, in: libraryRoot)
 
             let shouldFlush = pendingResults.count >= Self.batchApplySize
                 || Date().timeIntervalSince(lastFlush) >= Self.batchApplyInterval
@@ -1142,8 +1142,12 @@ final class LibraryViewModel: ObservableObject {
         // UNA vez, no una por cancion: es la misma imagen para todo el
         // album.
         let normalized = CoverArtNormalizer.normalized(data)
+        // ST-185: comparar por hash y no por bytes -- antes, aplicar una
+        // carátula a un álbum comparaba los ~15 KB contra los de cada
+        // una de sus pistas.
+        let normalizedHash = CoverStore.hash(normalized)
         let targets = items.filter {
-            ids.contains($0.id) && $0.kind == .music && $0.metadata?.coverArtData != normalized
+            ids.contains($0.id) && $0.kind == .music && $0.metadata?.coverHash != normalizedHash
         }
         guard !targets.isEmpty else { return 0 }
 
@@ -1156,7 +1160,7 @@ final class LibraryViewModel: ObservableObject {
 
         for (completed, item) in targets.enumerated() {
             var metadata = item.metadata ?? TrackMetadata()
-            metadata.coverArtData = normalized
+            metadata.setCover(normalized)
             let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
             pendingResults[item.id] = (metadata, prepared ?? item.preparedURL)
 
@@ -1580,7 +1584,16 @@ final class LibraryViewModel: ObservableObject {
         merged.trackNumber = fresh.trackNumber ?? current.trackNumber
         // ST-141: la carátula de la etiqueta (o el `cover.jpg` de la
         // carpeta) entra cuadrada, igual que la que baja de la red.
-        merged.coverArtData = fresh.coverArtData.map(CoverArtNormalizer.normalized) ?? current.coverArtData
+        // ST-185: `fresh` viene de leer el archivo, así que su carátula
+        // (si trae) está en `pendingCoverData`; si no trae, se conserva
+        // la que ya está guardada en `.portadas/`.
+        if let freshCover = fresh.pendingCoverData {
+            merged.setCover(CoverArtNormalizer.normalized(freshCover))
+        } else {
+            merged.coverURL = current.coverURL
+            merged.coverHash = current.coverHash
+            merged.pendingCoverData = current.pendingCoverData
+        }
         return merged
     }
 
@@ -2089,12 +2102,20 @@ final class LibraryViewModel: ObservableObject {
         coverNormalization = nil
     }
 
+    /// ST-141: tras la migración de carátulas, los archivos de
+    /// `.portadas/` cambiaron en disco.
+    /// ST-185: ya no hay que recargar bytes a memoria -- lo único que
+    /// cambia es el HASH, que es lo que identifica la miniatura. Se
+    /// recalcula leyendo cada archivo una vez (esto corre una sola vez
+    /// en la vida de la biblioteca, al terminar la migración).
     private func reloadCoversFromDisk() {
         for index in items.indices where items[index].kind == .music {
-            let url = coversDirectory.appendingPathComponent("\(items[index].id.uuidString).jpg")
-            guard let data = try? Data(contentsOf: url), !data.isEmpty,
-                  var metadata = items[index].metadata, metadata.coverArtData != data else { continue }
-            metadata.coverArtData = data
+            let url = CoverStore.url(forItem: items[index].id, in: libraryRoot)
+            guard let hash = CoverStore.hashOfFile(at: url),
+                  var metadata = items[index].metadata, metadata.coverHash != hash else { continue }
+            metadata.coverURL = url
+            metadata.coverHash = hash
+            metadata.pendingCoverData = nil
             items[index].metadata = metadata
         }
     }
@@ -2197,7 +2218,7 @@ final class LibraryViewModel: ObservableObject {
         let category = persistedItem.category.map(LibraryPersistenceMapper.liveCategory)
         let tempItem = LibraryItem(
             id: persistedItem.id, sourceURL: oldURL, kind: kind, status: .queued,
-            metadata: LibraryPersistenceMapper.liveMetadata(persistedItem.metadata, coverArtData: nil),
+            metadata: LibraryPersistenceMapper.liveMetadata(persistedItem.metadata),
             preparedURL: nil, category: category, photoAlbum: persistedItem.photoAlbum)
 
         let relative = LibrarySync.localLibraryRelativePath(
@@ -2274,8 +2295,37 @@ final class LibraryViewModel: ObservableObject {
 
     private func applyCatalogWriteResult(_ result: CatalogPersister.WriteResult) {
         lastWrittenCoverHash = result.lastWrittenCoverHash
+        adoptStoredCovers(result.storedCovers)
         if let error = result.errorDescription {
             lastError = error
+        }
+    }
+
+    /// PLAN-studio-rendimiento-2.md Fase 5 (ST-185): **acá es donde los
+    /// JPEG salen de la memoria.**
+    ///
+    /// El guardado del catálogo escribió estas carátulas en `.portadas/`
+    /// (fuera del hilo principal, que es donde ya corría). Al anotar
+    /// dónde quedaron y con qué hash, `pendingCoverData` deja de hacer
+    /// falta y se suelta: a partir de ahí, quien necesite los bytes los
+    /// lee del archivo, y quien solo necesite identificarlos —las
+    /// miniaturas, el `Equatable`— usa el hash.
+    ///
+    /// Es un `for` sobre `items`, pero solo entra a las que de verdad
+    /// cambiaron: `storedCovers` trae únicamente las que este guardado
+    /// escribió, no las 12 000.
+    private func adoptStoredCovers(_ storedCovers: [UUID: CatalogPersister.StoredCover]) {
+        guard !storedCovers.isEmpty else { return }
+        for index in items.indices {
+            guard let stored = storedCovers[items[index].id],
+                  var metadata = items[index].metadata else { continue }
+            // Si mientras se guardaba entró una carátula MÁS nueva, no
+            // se pisa: el hash de la que está en memoria ya no es el que
+            // se acaba de escribir, y el próximo guardado la escribirá.
+            guard metadata.coverHash == stored.hash else { continue }
+            metadata.coverURL = stored.url
+            metadata.pendingCoverData = nil
+            items[index].metadata = metadata
         }
     }
 
@@ -2357,9 +2407,21 @@ final class LibraryViewModel: ObservableObject {
                 guard let sourceURL = SharedCatalogPath.resolve(p.sourceRelativePath, in: root, fileManager: fm)
                 else { return }
 
-                let coverData = SharedCatalogPath
+                // PLAN-studio-rendimiento-2.md Fase 5 (ST-185): acá se
+                // leía el JPEG ENTERO de cada carátula al catálogo, y de
+                // ahí no salía más -- unos 180 MB con 12 000 canciones
+                // (§0.8). Ahora solo se guarda dónde está y su hash.
+                //
+                // Si el catálogo es viejo y no trae `coverHash`, se
+                // calcula leyendo el archivo UNA vez: es la migración, y
+                // corre acá porque este bucle ya es paralelo y fuera del
+                // hilo principal (ST-157). Nunca se recorre `.portadas/`
+                // -- solo se leen los archivos que el catálogo nombra.
+                let coverURL = SharedCatalogPath
                     .coverURL(recorded: p.coverRelativePath, itemID: p.id, in: root, fileManager: fm)
-                    .flatMap { try? Data(contentsOf: $0) }
+                let coverHash = coverURL.flatMap { url in
+                    p.coverHash ?? CoverStore.hashOfFile(at: url)
+                }
                 let preparedURL = p.preparedRelativePath
                     .flatMap { SharedCatalogPath.resolve($0, in: root, fileManager: fm) }
                 let preparedExists = preparedURL != nil
@@ -2377,7 +2439,7 @@ final class LibraryViewModel: ObservableObject {
                     sourceURL: sourceURL,
                     kind: LibraryPersistenceMapper.liveKind(p.kind),
                     status: status,
-                    metadata: LibraryPersistenceMapper.liveMetadata(p.metadata, coverArtData: coverData),
+                    metadata: LibraryPersistenceMapper.liveMetadata(p.metadata, coverURL: coverURL, coverHash: coverHash),
                     preparedURL: preparedExists ? preparedURL : nil,
                     // D-228: catalogos viejos guardaban `MediaCategory.
                     // rawValue` -- `liveCategory` traduce esos valores

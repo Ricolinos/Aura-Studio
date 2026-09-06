@@ -126,11 +126,11 @@ struct LibraryEnricher {
             metadata.year = metadata.year ?? release.date.map { String($0.prefix(4)) }
             metadata.musicBrainzReleaseID = release.id
 
-            if metadata.coverArtData == nil {
-                metadata.coverArtData = await resolveCoverArt(
+            if !metadata.hasCover {
+                metadata.setCover(await resolveCoverArt(
                     releaseID: release.id, releaseGroupID: release.releaseGroup?.id,
                     title: metadata.title, artist: metadata.artist,
-                    order: coverArtOrder, deezerEnabled: deezerEnabled)
+                    order: coverArtOrder, deezerEnabled: deezerEnabled))
             }
         }
 
@@ -146,9 +146,13 @@ struct LibraryEnricher {
     /// `cover.jpg` de la carpeta) o de la red. Acá está el único punto
     /// por el que pasan las dos.
     private func normalizingCover(_ metadata: TrackMetadata) -> TrackMetadata {
-        guard let cover = metadata.coverArtData else { return metadata }
+        // ST-185: solo normaliza lo que ACABA de entrar (los bytes sin
+        // escribir todavía). Una carátula ya guardada en `.portadas/` ya
+        // pasó por acá cuando entró -- releerla del disco para volver a
+        // normalizarla sería trabajo puro.
+        guard let cover = metadata.pendingCoverData else { return metadata }
         var normalized = metadata
-        normalized.coverArtData = CoverArtNormalizer.normalized(cover)
+        normalized.setCover(CoverArtNormalizer.normalized(cover))
         return normalized
     }
 
@@ -192,11 +196,11 @@ struct LibraryEnricher {
                         metadata.year = metadata.year ?? release.date.map { String($0.prefix(4)) }
                         metadata.musicBrainzReleaseID = metadata.musicBrainzReleaseID ?? release.id
 
-                        if metadata.coverArtData == nil {
-                            metadata.coverArtData = await resolveCoverArt(
+                        if !metadata.hasCover {
+                            metadata.setCover(await resolveCoverArt(
                                 releaseID: release.id, releaseGroupID: release.releaseGroup?.id,
                                 title: metadata.title, artist: metadata.artist,
-                                order: coverArtOrder, deezerEnabled: deezerEnabled)
+                                order: coverArtOrder, deezerEnabled: deezerEnabled))
                         }
                     }
                 }

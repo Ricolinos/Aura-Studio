@@ -143,7 +143,7 @@ final class CoverArtAssetsTests: XCTestCase {
         let coverBytes = Data([0xFF, 0xD8, 0xFF, 0xE0, 0x01, 0x02, 0x03])
         try coverBytes.write(to: root.appendingPathComponent("Album/cover.jpg"))
         let metadata = await LocalTagReader.readTag(from: track)
-        XCTAssertEqual(metadata.coverArtData, coverBytes)
+        XCTAssertEqual(metadata.pendingCoverData, coverBytes)
     }
 
     // MARK: - Migracion con biblioteca mixta

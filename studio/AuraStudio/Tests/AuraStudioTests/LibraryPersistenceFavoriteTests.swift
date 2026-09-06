@@ -9,7 +9,7 @@ final class LibraryPersistenceFavoriteTests: XCTestCase {
         let persisted = LibraryPersistenceMapper.persistedMetadata(live)
         XCTAssertEqual(persisted?.isFavorite, true)
         XCTAssertEqual(persisted?.discNumber, 2)
-        let back = LibraryPersistenceMapper.liveMetadata(persisted, coverArtData: nil)
+        let back = LibraryPersistenceMapper.liveMetadata(persisted)
         XCTAssertEqual(back?.isFavorite, true)
         XCTAssertEqual(back?.discNumber, 2)
     }
@@ -17,7 +17,7 @@ final class LibraryPersistenceFavoriteTests: XCTestCase {
     func testNotFavoriteIsOmittedFromCatalog() {
         let persisted = LibraryPersistenceMapper.persistedMetadata(TrackMetadata(title: "T"))
         XCTAssertNil(persisted?.isFavorite, "false no se escribe: catalogo mas chico y mismo significado que ausente")
-        XCTAssertEqual(LibraryPersistenceMapper.liveMetadata(persisted, coverArtData: nil)?.isFavorite, false)
+        XCTAssertEqual(LibraryPersistenceMapper.liveMetadata(persisted)?.isFavorite, false)
     }
 
     func testCatalogWithoutNewKeysStillDecodes() throws {
@@ -28,7 +28,7 @@ final class LibraryPersistenceFavoriteTests: XCTestCase {
         XCTAssertEqual(library.items.count, 1)
         XCTAssertNil(library.items[0].addedAt)
         XCTAssertNil(library.items[0].metadata?.isFavorite)
-        XCTAssertEqual(LibraryPersistenceMapper.liveMetadata(library.items[0].metadata, coverArtData: nil)?.isFavorite, false)
+        XCTAssertEqual(LibraryPersistenceMapper.liveMetadata(library.items[0].metadata)?.isFavorite, false)
     }
 
     func testNewItemsRecordWhenTheyWereAdded() {

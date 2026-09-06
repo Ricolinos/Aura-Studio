@@ -7771,3 +7771,126 @@ principal**, así que lo que mide incluye su propia preparación — 300
 escrituras de archivo pasan de 250 ms en cuanto la máquina tiene algo más
 que hacer. No es un bloqueo de `applyAlbumCover`. El arreglo es crear el
 fixture ANTES de instalar el colector; vive en `Tests/`.
+
+## ST-185 — PLAN-studio-rendimiento-2.md, Fase F5: las carátulas salen de la memoria
+
+Sexta PARADA de la ronda 2 (sesión "experto en código opus"). Cierra el
+punto **8** del diagnóstico de §0 y el objetivo de memoria de §A ("sin
+JPEG completos en RAM, solo miniaturas cacheadas, tope 64 MB").
+
+`TrackMetadata.coverArtData` guardaba el JPEG **entero** en memoria, por
+ítem: unos 180 MB con 12 000 canciones, y repetido doce veces por álbum
+porque cada pista llevaba su copia de la misma imagen. Los archivos ya
+vivían en `.portadas/<id>.jpg` desde siempre (los escribe
+`CatalogPersister`); lo que sobraba era la copia en RAM.
+
+### El campo, tal como quedó fijado con Windows
+
+`coverHash`: `String?` hermano de `coverRelativePath` en cada elemento de
+`items`. **SHA-256 de los bytes del archivo, hexadecimal en MAYÚSCULAS
+sin separadores** (64 caracteres) -- el mismo formato que ya calcula
+`CoverThumbnailKey` en Windows. La definición la fijó la sesión maestra
+para las dos plataformas (W3/ST-208 lo implementa allá).
+
+- `coverRelativePath == nil` significa **no hay carátula**;
+- `coverHash == nil` significa **no se sabe** (catálogo viejo), nunca
+  "no hay";
+- invariante: sin ruta no hay hash;
+- `Codable` con default `nil`, y no se borra al reescribir el JSON;
+- **el nombre en disco no cambia** (`<id>.jpg`): el hash identifica el
+  contenido, no nombra el archivo. Cambiarlo habría obligado a mover
+  1 000 archivos en la biblioteca del dueño para no ganar nada.
+
+### Cómo se sacan los bytes de la memoria, sin romper a los productores
+
+La parte delicada era que quien PRODUCE una carátula (leerla de la
+etiqueta con `LocalTagReader`, bajarla con `LibraryEnricher`, elegirla en
+el selector) sí tiene bytes en la mano, y no puede escribir archivos
+desde donde está. La solución es una escala explícita:
+
+- `pendingCoverData` -- bytes recién producidos que **todavía** no se
+  escribieron. Es una escala, no un almacén.
+- `CatalogPersister` los escribe en `.portadas/` **fuera del hilo
+  principal, que es donde ya corría el guardado**, y devuelve en su
+  `WriteResult` qué carátulas dejó escritas y con qué hash.
+- `LibraryViewModel.adoptStoredCovers(_:)` anota `coverURL`/`coverHash` y
+  **suelta** `pendingCoverData`. Ahí es donde los JPEG salen de memoria.
+
+El pico queda acotado a lo que entre en una ventana de guardado (rebote
+≤ 500 ms), no a la biblioteca entera para siempre. Y el guardado dejó
+además de reescribir las 1 000 carátulas en cada persistencia: si la
+carátula ya está en disco y no hay bytes nuevos, no se toca el archivo.
+
+Efecto colateral aceptado y documentado: entre que una carátula se
+importa y que el guardado la escribe (≤ 500 ms), `AlbumGroup.coverURL` es
+`nil` y la tarjeta muestra el placeholder. Aparece sola, sin que el
+usuario haga nada.
+
+### `Equatable` por hash, no por bytes
+
+`TrackMetadata` deja de usar el `Equatable` sintetizado, que comparaba
+los **bytes** de la carátula. Esa comparación corre en cada
+`onChange(of: items)`, en cada `Equatable` de `LibraryItem` y en cada
+diffing de SwiftUI: 15 KB por ítem por comparación. El hash identifica el
+contenido igual de bien en O(1). `pendingCoverData` se compara solo por
+presencia -- quien pone los bytes calcula el hash en el mismo paso, así
+que el hash ya los describe.
+
+Por lo mismo, `applyAlbumCover` compara ahora el hash de la carátula
+nueva contra el de cada pista, en vez de los ~15 KB contra los ~15 KB de
+cada una.
+
+### Los grupos llevan identidad, no imágenes
+
+`AlbumGroup.coverArtData` y `VideoCollectionGroup.posterData` pasan a
+`coverURL`/`coverHash` y `posterURL`/`posterHash`. Un `AlbumGroup` con
+los bytes adentro convertía **cada reagrupación** (que ocurre en cada
+cambio del catálogo) en una copia de 1 000 JPEG.
+
+Las vistas ya no reciben bytes: `CoverArtView(coverHash:coverURL:)` usa
+el hash como identidad en la caché de miniaturas -- lo que además vuelve
+innecesaria la huella O(1) que ST-183 tuvo que inventar para detectar
+"cambió la carátula", porque el hash **es** esa detección. La huella se
+queda para las fotos, que no tienen hash persistido.
+
+### Migración
+
+Un catálogo guardado antes de este cambio trae `coverRelativePath` pero
+no `coverHash`. Se calcula **al cargar**, leyendo cada archivo que el
+catálogo nombra -- una sola vez en la vida de la biblioteca, y dentro del
+bucle paralelo y fuera del hilo principal que ST-157 ya había montado. El
+siguiente guardado lo deja escrito. **Nunca se recorre `.portadas/`**:
+solo se leen los archivos que el catálogo menciona.
+
+### Deduplicación por álbum: NO se hace
+
+El plan la dejaba como opcional ("misma carátula, un archivo") y la
+decisión es **no hacerla**. Un archivo por ítem cuesta espacio en disco
+—doce copias de ~15 KB por álbum— pero mantiene una propiedad que vale
+más: **borrar un ítem no le quita la carátula a nadie más**. Con un
+archivo compartido por álbum haría falta contar referencias, y una cuenta
+mal llevada se manifiesta como carátulas que desaparecen solas de la
+biblioteca del dueño. El problema que F5 tenía que resolver era la
+MEMORIA, y ese ya está resuelto sin esto.
+
+### Verificación
+
+`swift build` limpio, `xcodebuild -configuration Release` **BUILD
+SUCCEEDED**, `swift test` completo en verde.
+
+La medición de memoria residente antes/después con 12 000 ítems la
+levanta "mecanico sonnet". Nota de método para esa medición: lo que hay
+que comparar es la memoria **después de cargar el catálogo y navegar**,
+no al arrancar -- antes, los 180 MB entraban al cargar el catálogo y no
+salían nunca; ahora entran solo las miniaturas, con su tope de 64 MB.
+
+### Lo que esta PARADA le dejó a las pruebas
+
+F5 cambia la forma de `TrackMetadata`, así que `Tests/` no compilaba: se
+adaptaron ~20 sitios (lecturas a `loadCoverData()`/`hasCover`/`coverHash`,
+escrituras a `setCover(_:)`). El fixture de la línea base de ST-180
+**escribe ahora la carátula a `.portadas/`** como lo hace la app, para
+que lo que mide siga siendo el camino real. Se conserva un parámetro de
+conveniencia `TrackMetadata(coverArtData:)` que calcula el hash y deja
+los bytes en la escala: es lo que usan las pruebas que arman metadata con
+una carátula sin pasar por el guardado del catálogo.

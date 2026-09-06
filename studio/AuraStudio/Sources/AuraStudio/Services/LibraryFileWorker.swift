@@ -55,7 +55,10 @@ actor LibraryFileWorker {
 
         if destination.pathExtension.lowercased() == "mp3" {
             let embedCover = request.coverArtPolicy == .perTrack
-            let embedded = embedCover ? request.metadata.coverArtData.flatMap {
+            // ST-185: la carátula ya no vive en RAM -- se lee de
+            // `.portadas/` acá, que es donde toca: este worker corre
+            // fuera del actor principal.
+            let embedded = embedCover ? request.metadata.loadCoverData().flatMap {
                 try? ImageResizer.squareCrop(data: $0, side: LibrarySync.deviceCoverSide,
                                              quality: LibrarySync.deviceCoverQuality)
             } : nil

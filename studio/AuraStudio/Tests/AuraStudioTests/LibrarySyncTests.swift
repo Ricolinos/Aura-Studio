@@ -79,7 +79,7 @@ final class LibrarySyncTests: XCTestCase {
         // ST-142: la carátula ya no viaja cruda -- se recorta a 320x320
         // antes de escribirla, así que tiene que ser una imagen de
         // verdad (unos bytes cualesquiera ya no son una carátula).
-        item.metadata?.coverArtData = try solidJPEG(width: 800, height: 600)
+        item.metadata?.setCover(try solidJPEG(width: 800, height: 600))
         let sync = LibrarySync(volumeRoot: fakeIPod)
 
         _ = try sync.sync(items: [item], coverArtPolicy: .albumOnly)

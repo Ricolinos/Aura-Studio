@@ -57,6 +57,26 @@ struct CoverArtView: View {
                   cornerRadius: cornerRadius, placeholderSymbol: placeholderSymbol)
     }
 
+    /// PLAN-studio-rendimiento-2.md Fase 5 (ST-185): la carátula de un
+    /// álbum o el póster de un video, que viven en `.portadas/` y ya no
+    /// en memoria. El id de la caché es el **hash del contenido**, así
+    /// que cambiar la carátula cambia la miniatura sin necesidad de la
+    /// huella O(1) de ST-183; sin hash todavía (catálogo viejo sin
+    /// migrar) cae a la ruta.
+    init(coverHash: String?, coverURL: URL?, side: CGFloat = 128,
+         cornerRadius: CGFloat = 8, placeholderSymbol: String = "music.note") {
+        self.init(coverHash: coverHash, coverURL: coverURL, width: side, height: side,
+                  cornerRadius: cornerRadius, placeholderSymbol: placeholderSymbol)
+    }
+
+    init(coverHash: String?, coverURL: URL?, width: CGFloat, height: CGFloat,
+         cornerRadius: CGFloat = 8, placeholderSymbol: String = "music.note") {
+        self.init(id: coverHash ?? coverURL.map { "ruta:\($0.path)" } ?? "sin-caratula",
+                  load: { CoverStore.read(coverURL) },
+                  width: width, height: height,
+                  cornerRadius: cornerRadius, placeholderSymbol: placeholderSymbol)
+    }
+
     /// Con los bytes en un archivo (fotos): `load` los lee **fuera del
     /// hilo principal** y solo si la miniatura no está en memoria.
     init(id: String, load: @escaping @Sendable () -> Data?,
@@ -120,15 +140,24 @@ struct ArtistAvatarView: View {
     /// ST-183: id del artista, para que la caché no dependa de hashear
     /// los bytes de su foto en cada pasada del `body`.
     let artistID: String
+    /// La foto del artista sí sigue en memoria (`ArtistImageStore`): son
+    /// pocas y chicas, una por artista y no una por canción.
     let imageData: Data?
-    let fallbackCoverData: Data?
+    /// ST-185: el respaldo es la carátula de uno de sus álbumes, que
+    /// vive en disco -- ruta y hash, no bytes.
+    let fallbackCoverURL: URL?
+    let fallbackCoverHash: String?
     var side: CGFloat = 40
 
     @State private var loaded: NSImage?
     @Environment(\.colorScheme) private var colorScheme
 
-    private var data: Data? { imageData ?? fallbackCoverData }
-    private var cacheID: String { "artista:\(artistID)#\(CoverThumbnailCache.fingerprint(data))" }
+    private var cacheID: String {
+        if let imageData { return "artista:\(artistID)#\(CoverThumbnailCache.fingerprint(imageData))" }
+        if let fallbackCoverHash { return fallbackCoverHash }
+        if let fallbackCoverURL { return "ruta:\(fallbackCoverURL.path)" }
+        return "artista:\(artistID)#vacio"
+    }
 
     var body: some View {
         Group {
@@ -153,8 +182,11 @@ struct ArtistAvatarView: View {
                 return
             }
             loaded = nil
-            let data = self.data
-            let image = await CoverThumbnailCache.shared.thumbnail(id: cacheID, side: side) { data }
+            let imageData = self.imageData
+            let fallbackURL = self.fallbackCoverURL
+            let image = await CoverThumbnailCache.shared.thumbnail(id: cacheID, side: side) {
+                imageData ?? CoverStore.read(fallbackURL)
+            }
             guard !Task.isCancelled else { return }
             loaded = image
         }
@@ -170,10 +202,10 @@ struct ArtistAvatarView: View {
 /// cuadrado) para que Películas/Series puedan pedir un póster 2:3 sin
 /// duplicar la vista.
 struct MediaCardView: View {
-    /// ST-183: identidad estable de la portada en la caché (id del
-    /// álbum, de la película o de la serie).
-    let imageID: String
-    let imageData: Data?
+    /// ST-185: la portada vive en `.portadas/`; acá viajan su hash (la
+    /// identidad en la caché de miniaturas) y su ruta, nunca los bytes.
+    let coverHash: String?
+    let coverURL: URL?
     let title: String
     var subtitle: String?
     var badge = false
@@ -193,7 +225,8 @@ struct MediaCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            CoverArtView(id: imageID, data: imageData, width: aspect.width, height: aspect.height,
+            CoverArtView(coverHash: coverHash, coverURL: coverURL,
+                         width: aspect.width, height: aspect.height,
                          placeholderSymbol: placeholderSymbol)
             HStack(alignment: .top, spacing: 4) {
                 Text(title)
@@ -233,7 +266,7 @@ struct AlbumCardView: View {
         #if DEBUG
         let _ = BodyEvaluationCounter.record("AlbumCardView")
         #endif
-        MediaCardView(imageID: "album:\(album.id)", imageData: album.coverArtData, title: album.title,
+        MediaCardView(coverHash: album.coverHash, coverURL: album.coverURL, title: album.title,
                       subtitle: showsArtist ? album.artist : nil, badge: album.isFavorite,
                       aspect: .square(side))
     }

@@ -128,6 +128,10 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
                 var item = AuraStudio.LibraryItem(sourceURL: fileURL, addedAt: Date())
                 item.status = .ready
                 item.preparedURL = fileURL
+                // ST-185: la carátula vive en `.portadas/<id>.jpg`, no en
+                // memoria -- el fixture la escribe igual que lo hace la
+                // app, para que lo que se mide sea el camino real.
+                let stored = try CoverStore.write(cover, forItem: item.id, in: libraryRoot)
                 item.metadata = TrackMetadata(
                     title: "Canción \(track) de \(albumName)",
                     artist: artist,
@@ -136,7 +140,8 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
                     year: "1986",
                     genre: "Rock",
                     trackNumber: track,
-                    coverArtData: cover,
+                    coverURL: stored.url,
+                    coverHash: stored.hash,
                     durationSeconds: Double(180 + track))
                 items.append(item)
             }
@@ -299,7 +304,7 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
     /// corridas) dejaría de medir frío desde la segunda vuelta.
     func testCoverThumbnailCacheColdDecodeAllAlbums() throws {
         let albums = LibraryGrouping.albums(from: musicItems, options: .default)
-        let covers = albums.map(\.coverArtData)
+        let covers = albums.map { CoverStore.read($0.coverURL) }
         let start = CFAbsoluteTimeGetCurrent()
         for cover in covers {
             _ = CoverThumbnailCache.shared.thumbnail(for: cover, side: 160)
@@ -321,7 +326,7 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
     /// no está.
     func testCoverThumbnailCacheWarmRepeatDecodeAllAlbums() throws {
         let albums = LibraryGrouping.albums(from: musicItems, options: .default)
-        let covers = albums.map(\.coverArtData)
+        let covers = albums.map { CoverStore.read($0.coverURL) }
         for cover in covers { _ = CoverThumbnailCache.shared.thumbnail(for: cover, side: 160) }
         measure {
             for cover in covers {
@@ -365,7 +370,7 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
         let albums = LibraryGrouping.albums(from: musicItems, options: .default)
         let albumIDs = albums.map { "album:\($0.id)" }
         for (id, album) in zip(albumIDs, albums) {
-            _ = await CoverThumbnailCache.shared.thumbnail(id: id, side: 160) { album.coverArtData }
+            _ = await CoverThumbnailCache.shared.thumbnail(id: id, side: 160) { CoverStore.read(album.coverURL) }
         }
         let largePhotoAlbum = try Self.makePhotoAlbum(count: 500, subdirName: "FotosF2",
                                                       albumName: "Álbum F2", libraryRoot: libraryRoot)
@@ -403,7 +408,7 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
         let smallCache = CoverThumbnailCache(countLimit: 200, totalCostLimit: 2 * 1024 * 1024)
         let albums = LibraryGrouping.albums(from: musicItems, options: .default)
         for album in albums {
-            _ = await smallCache.thumbnail(id: "album:\(album.id)", side: 160) { album.coverArtData }
+            _ = await smallCache.thumbnail(id: "album:\(album.id)", side: 160) { CoverStore.read(album.coverURL) }
         }
         let stillCached = albums.filter { smallCache.cached(id: "album:\($0.id)", side: 160) != nil }.count
         print("[F2] Tope de memoria chico (2 MB) tras 1000 álbumes: \(stillCached) siguen en caché")
@@ -557,7 +562,7 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
 
         // 1. Abrir Álbumes: agrupar + primera pantalla visible (~30 tarjetas).
         _ = LibraryStats.albums(albums, selected: [])
-        for cover in albums.prefix(30).map(\.coverArtData) {
+        for cover in albums.prefix(30).map({ CoverStore.read($0.coverURL) }) {
             _ = CoverThumbnailCache.shared.thumbnail(for: cover, side: 160)
         }
 
@@ -565,7 +570,7 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
         // completa de `anySelected` (punto 4) sobre las 1 000 tarjetas.
         var selection = GridSelection<String>()
         selection.selectAll(order)
-        for cover in albums.map(\.coverArtData) {
+        for cover in albums.map({ CoverStore.read($0.coverURL) }) {
             _ = CoverThumbnailCache.shared.thumbnail(for: cover, side: 160)
         }
         _ = LibraryStats.albums(albums, selected: albums)
@@ -587,7 +592,7 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
 
         // 5. Scroll completo: el resto de las tarjetas nunca mostradas
         // en el paso 1 entran a la caché por primera vez.
-        for cover in albums.map(\.coverArtData) {
+        for cover in albums.map({ CoverStore.read($0.coverURL) }) {
             _ = CoverThumbnailCache.shared.thumbnail(for: cover, side: 160)
         }
 

@@ -395,7 +395,7 @@ struct SimilarItemsView: View {
             .buttonStyle(.plain)
             .help(isKept ? "Este es el que se conserva" : "Conservar este en lugar del marcado")
 
-            if let cover = meta?.coverArtData, let image = NSImage(data: cover) {
+            if let cover = meta?.loadCoverData(), let image = NSImage(data: cover) {
                 Image(nsImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -442,7 +442,7 @@ struct SimilarItemsView: View {
                     item.sourceURL.pathExtension.uppercased(),
                     (meta?.durationSeconds).flatMap { $0 > 0 ? String(format: "%d:%02d", Int($0.rounded()) / 60, Int($0.rounded()) % 60) : nil },
                     LibraryStats.sizeText(bytes: size),
-                    meta?.coverArtData != nil ? (item.kind == .music ? "carátula" : "póster") : nil,
+                    meta?.hasCover == true ? (item.kind == .music ? "carátula" : "póster") : nil,
                     meta?.syncedLyrics != nil ? "letra" : nil,
                     item.metadataEditedByUser ? "corregido a mano" : nil,
                     meta?.isFavorite == true ? "favorito" : nil,

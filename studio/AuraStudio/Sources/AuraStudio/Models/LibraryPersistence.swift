@@ -56,6 +56,17 @@ struct PersistedLibraryItem: Codable {
     var metadata: PersistedTrackMetadata?
     var preparedRelativePath: String?
     var coverRelativePath: String?
+    /// PLAN-studio-rendimiento-2.md Fase 5 (ST-185), definición fijada
+    /// con la sesión maestra y compartida con Windows (W3/ST-208):
+    /// SHA-256 de los bytes del archivo de carátula, hexadecimal en
+    /// MAYÚSCULAS sin separadores (64 caracteres).
+    ///
+    /// `nil` significa **no se sabe** (catálogo guardado antes de que el
+    /// campo existiera), nunca "no hay carátula" -- eso lo dice
+    /// `coverRelativePath == nil`. Invariante: sin ruta no hay hash. Un
+    /// catálogo viejo lo calcula al cargar y lo deja escrito en el
+    /// siguiente guardado; nunca se recorre `.portadas/` al arrancar.
+    var coverHash: String?
     var category: String?
     /// PLAN-biblioteca-medios-v2.md §3.4/§3.3: opcionales por la misma
     /// razón que el resto de este struct -- catálogos guardados antes
@@ -155,13 +166,14 @@ enum LibraryPersistenceMapper {
             isFavorite: m.isFavorite ? true : nil, discNumber: m.discNumber)
     }
 
-    static func liveMetadata(_ persisted: PersistedTrackMetadata?, coverArtData: Data?) -> TrackMetadata? {
+    static func liveMetadata(_ persisted: PersistedTrackMetadata?,
+                             coverURL: URL? = nil, coverHash: String? = nil) -> TrackMetadata? {
         guard let p = persisted else { return nil }
         return TrackMetadata(
             title: p.title, artist: p.artist, album: p.album,
             albumArtist: p.albumArtist, year: p.year, genre: p.genre,
             composer: p.composer,
-            trackNumber: p.trackNumber, coverArtData: coverArtData,
+            trackNumber: p.trackNumber, coverURL: coverURL, coverHash: coverHash,
             syncedLyrics: p.syncedLyrics,
             musicBrainzRecordingID: p.musicBrainzRecordingID,
             musicBrainzReleaseID: p.musicBrainzReleaseID,

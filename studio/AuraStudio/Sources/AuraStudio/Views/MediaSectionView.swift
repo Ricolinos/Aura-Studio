@@ -1026,7 +1026,7 @@ struct MediaSectionView: View {
                 let ids = Set(targetItems.map(\.id))
                 Task { await viewModel.clearCoverArt(ids: ids) }
             }
-            .disabled(!targetItems.contains { $0.metadata?.coverArtData != nil })
+            .disabled(!targetItems.contains { $0.metadata?.hasCover == true })
 
             Divider()
 
@@ -1071,7 +1071,7 @@ struct MediaSectionView: View {
             Button("Quitar póster") {
                 for item in targetItems { viewModel.clearVideoPoster(id: item.id) }
             }
-            .disabled(!targetItems.contains { $0.metadata?.coverArtData != nil })
+            .disabled(!targetItems.contains { $0.metadata?.hasCover == true })
             Divider()
         }
 
