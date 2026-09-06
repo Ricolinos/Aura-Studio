@@ -150,8 +150,6 @@ internal static class NativeMethods
 /// </summary>
 internal static class StackWalker
 {
-    private static bool _symInitialized;
-    private static readonly object InitLock = new();
     private const uint AddrModeFlat = 3;
 
     /// <param name="context">
@@ -203,22 +201,55 @@ internal static class StackWalker
 
     private static (nint hProcess, nint functionTableAccess, nint getModuleBase) PrepareSymbols()
     {
-        nint hProcess = NativeMethods.GetCurrentProcess();
-        EnsureSymInitialized(hProcess);
-
-        nint dbghelp = NativeMethods.GetModuleHandle("dbghelp.dll");
-        nint functionTableAccess = dbghelp == 0 ? 0 : NativeMethods.GetProcAddress(dbghelp, "SymFunctionTableAccess64");
-        nint getModuleBase = dbghelp == 0 ? 0 : NativeMethods.GetProcAddress(dbghelp, "SymGetModuleBase64");
-
-        return (hProcess, functionTableAccess, getModuleBase);
+        // A propósito NO llama SymInitialize acá: eso corre una sola vez, de
+        // antemano, desde InitializeSymbolsSafely -- ver el porqué exacto en
+        // el addendum de UiThreadWatchdog. Si esa llamada de arranque falló o
+        // todavía no corrió, StackWalk64 simplemente desenrolla peor (menos
+        // cuadros, o ninguno) en vez de arriesgarse a colgar un hilo
+        // suspendido.
+        return (NativeMethods.GetCurrentProcess(), s_functionTableAccess, s_getModuleBase);
     }
 
-    private static void EnsureSymInitialized(nint hProcess)
+    private static nint s_functionTableAccess;
+    private static nint s_getModuleBase;
+
+    /// <summary>
+    /// Inicializa <c>dbghelp.dll</c> para este proceso <b>una sola vez, al
+    /// arrancar el vigilante</b> -- nunca con el hilo de UI suspendido.
+    ///
+    /// <para><c>SymInitialize(..., invadeProcess: true)</c> enumera los
+    /// módulos cargados, y para eso pide el candado del cargador de Windows.
+    /// Llamarla mientras el hilo de UI está suspendido es un interbloqueo en
+    /// potencia: si ese hilo quedó bloqueado <i>cargando un módulo o
+    /// compilando JIT</i> -- el caso más común de un bloqueo al arranque --,
+    /// se lo suspendió con el candado tomado, y nada puede soltarlo hasta que
+    /// ese mismo hilo vuelva a correr. Es exactamente lo que le pasó a la
+    /// build de W7: ventana visible, luego "sin responder" 80+ segundos o
+    /// para siempre, con el vigilante activo pero sin un solo bloqueo
+    /// reportado porque el hilo de UI nunca se reanudaba.</para>
+    ///
+    /// <para>Llamada acá, al arrancar, no hay ningún hilo suspendido
+    /// todavía -- el candado del cargador puede tomarse y soltarse con
+    /// normalidad. Si falla (el proceso está en un estado raro, o
+    /// simplemente no hay símbolos), <see cref="PrepareSymbols"/> nunca lo
+    /// vuelve a intentar: mejor una pila sin símbolos que arriesgar el mismo
+    /// interbloqueo más tarde.</para>
+    /// </summary>
+    public static void InitializeSymbolsSafely()
     {
-        lock (InitLock)
+        try
         {
-            if (_symInitialized) return;
-            _symInitialized = NativeMethods.SymInitialize(hProcess, null, true);
+            nint hProcess = NativeMethods.GetCurrentProcess();
+            NativeMethods.SymInitialize(hProcess, null, true);
+
+            nint dbghelp = NativeMethods.GetModuleHandle("dbghelp.dll");
+            s_functionTableAccess = dbghelp == 0 ? 0 : NativeMethods.GetProcAddress(dbghelp, "SymFunctionTableAccess64");
+            s_getModuleBase = dbghelp == 0 ? 0 : NativeMethods.GetProcAddress(dbghelp, "SymGetModuleBase64");
+        }
+        catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException or SEHException)
+        {
+            // Sin símbolos, StackWalk64 desenrolla peor pero no se cuelga --
+            // ver el comentario de PrepareSymbols.
         }
     }
 }
