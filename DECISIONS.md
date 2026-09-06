@@ -9030,31 +9030,42 @@ Corriendo la prueba real una tercera vez, con el identificador ya
 puesto: **`app.windows.count` volvió a dar 0** -- la misma condición
 degenerada del primer intento de esta PARADA, antes de cualquiera de
 los arreglos de pantalla/lanzamiento. No es un regreso del bug
-original (ese quedó confirmado resuelto en el segundo intento, con la
-ventana en la pantalla principal) -- en esta corrida, además, la barra
+original ni un fallo de `MainWindowPlacer`: en esta corrida la barra
 de menús de la app apareció con origen en x=2560 (la pantalla
-SECUNDARIA), cuando en la corrida anterior había aparecido en la
-principal -- indicio de que qué pantalla "tiene la barra de menús" no
-es estable en esta máquina mientras alguien la usa de verdad al mismo
-tiempo (se confirmó, aparte, que el dueño estaba activamente usando la
-pantalla secundaria durante esta sesión). Con un usuario real
-compartiendo la máquina con las pruebas, la posición de la ventana y
-cuál pantalla es "la principal" para efectos de `NSScreen.screens`
-dejan de ser algo que esta sesión pueda controlar o repetir de forma
-confiable.
+secundaria) en vez de la principal, pero -- precisión de "experto en
+código opus" tras revisarlo -- **eso no es un bug de la colocación**:
+en AppKit, la pantalla que "tiene la barra de menús" ES por definición
+la principal (el origen del espacio de coordenadas se mueve con ella),
+y `primaryScreen` elige por `frame.origin == .zero`, así que sigue a
+esa pantalla sola, sin mirar un índice fijo ni asumir cuál es "la 5K".
+El arreglo de pantalla no se rompió con el cambio; simplemente no
+llegó a importar porque la app nunca dibujó ninguna ventana.
+
+**La causa real, más categórica que "inestabilidad del entorno": un
+XCUITest de macOS no puede correr mientras alguien está usando la
+Mac.** No es que a veces moleste -- una sesión gráfica de macOS es una
+sola, y el ejecutor de pruebas toma el cursor y el foco de teclado
+para sintetizar sus eventos; no se comparte con un usuario real
+tecleando o haciendo clic al mismo tiempo. Se confirmó que el dueño
+estaba usando activamente la pantalla secundaria durante esta corrida.
+Si alguien usa la Mac mientras corre, la prueba falla de una forma
+distinta cada vez -- ventana que no se dibuja, barra de menús que
+salta de pantalla, foco que se lo lleva otra app -- y cada fallo
+parece un bug nuevo cuando no lo es: son la misma condición de
+máquina, tres síntomas.
 
 **Se cierra F7 aquí, definitivamente, con el arrastre como pendiente
 para el dueño**, tal como indicó "Sesión Maestra": la causa raíz de la
 navegación equivocada quedó encontrada y corregida (identificador
 propio en vez de texto ambiguo) -- eso SÍ es un resultado real y queda
-en el código. Lo que no se pudo cerrar en verde es la corrida misma,
-por una inestabilidad del entorno (pantalla principal cambiante con
-uso real concurrente de la máquina) que ninguna de las tres sesiones
-involucradas puede resolver desde aquí. El gesto queda escrito,
-compilado, con su navegación corregida, y solo le falta una corrida
-limpia -- con el dueño frente a la Mac, sin otra ventana disputando
-cuál pantalla es la principal. Los otros siete gestos de F4/§A siguen
-automatizados y en verde (35/35).
+en el código, igual que la colocación de ventana (sin cambios que
+hacerle). Lo que falta es una corrida con la máquina libre -- nadie
+usando el mouse ni el teclado de esta Mac mientras corre (el dueño SÍ
+puede mirar la pantalla) -- condición documentada en
+`docs/guion-verificacion-f7-cierre.md`, junto al permiso de
+automatización, como las dos únicas condiciones de máquina que hacen
+falta. Los otros siete gestos de F4/§A siguen automatizados y en verde
+(35/35).
 
 ### Incidente: preferencia real sobrescrita (2026-09-06)
 

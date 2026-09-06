@@ -42,6 +42,36 @@
    que no quedó verificado automáticamente en esta ronda** (ver
    `docs/guion-verificacion-f4-seleccion.md` y ST-188 en DECISIONS.md) --
    presta más atención acá que en el resto.
+
+   **Antes de este punto, hay una corrida aparte y previa: el XCUITest
+   real del arrastre** (`AlbumsGridMarqueeDragUITests`, ST-187/ST-188),
+   que la sesión de Claude Code corre por su cuenta -- no reemplaza este
+   punto 5 (que sigue siendo la verificación de que el gesto SE SIENTE
+   bien), pero si ese XCUITest queda en verde, el punto 5 solo necesita
+   confirmar la sensación, no la mecánica.
+
+   **Condiciones exactas para esa corrida, ninguna del código** (tres
+   intentos en esta ronda fallaron cada uno por una de estas, nunca por
+   el gesto en sí -- confirmado por "experto en código opus" tras
+   revisar `MainWindowPlacer`):
+   - El permiso de automatización/accesibilidad de macOS para el
+     ejecutor de pruebas, ya concedido una vez por el dueño
+     (2026-09-06) -- si se revocara, hay que concederlo de nuevo antes
+     de intentar.
+   - **Nadie usando la Mac mientras corre.** No es una preferencia, es
+     un límite real: una sesión gráfica de macOS es una sola, y un
+     XCUITest toma el cursor y el foco de teclado para sintetizar sus
+     eventos. Si el dueño (o cualquiera) está trabajando en la Mac al
+     mismo tiempo -- incluso en otra pantalla -- la prueba falla de una
+     forma distinta cada vez (la ventana no llega a dibujarse, la
+     barra de menús salta de pantalla, el foco se lo lleva otra app),
+     y cada fallo parece un bug nuevo cuando no lo es. El dueño puede
+     mirar la pantalla mientras corre -- lo que no puede es usar el
+     mouse o el teclado de esta Mac en ese rato.
+   - La ventana de la app se coloca sola en la pantalla que tenga la
+     barra de menús (`AURA_UITEST_MAIN_SCREEN=1`, seam de DEBUG) -- no
+     hace falta preparar nada de pantallas de antemano, solo que nadie
+     esté usando la máquina durante la corrida.
 6. Con varios álbumes seleccionados, clic derecho → "Buscar carátulas de
    N álbumes..." -- el menú debe aparecer sin demora perceptible (< 200
    ms), y la acción en lote debe mostrar progreso "N de M" en el centro
