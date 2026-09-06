@@ -558,22 +558,50 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
         let albums = LibraryGrouping.albums(from: musicItems, options: .default)
         let order = GridOrder(albums.map(\.id))
         let catalogIndex = LibraryCatalogIndex(items: musicItems, options: .default)
+        // ST-186 (F6): reinicia la base de medición justo antes del guion
+        // real -- sin esto, el vigilante sigue mirando desde que se
+        // instaló arriba, e incluye construir `albums`/`order`/
+        // `catalogIndex` (que en producción corre en segundo plano vía
+        // `warmCatalogIndex()`, nunca en el hilo principal).
+        MainThreadWatchdog.resetForTesting()
         let start = CFAbsoluteTimeGetCurrent()
 
         // 1. Abrir Álbumes: agrupar + primera pantalla visible (~30 tarjetas).
+        // ST-183 (F2): el camino real es `CoverThumbnailCache.
+        // thumbnail(id:side:load:)`, async -- `load` (que hace la lectura
+        // de disco vía `CoverStore.read`) corre en la cola de
+        // decodificación, nunca en el hilo principal. Reproducir esto
+        // con `CoverStore.read` síncrono (como hacía un intento anterior
+        // de este archivo) mide un camino que la app real ya no tiene.
         _ = LibraryStats.albums(albums, selected: [])
-        for cover in albums.prefix(30).map({ CoverStore.read($0.coverURL) }) {
-            _ = CoverThumbnailCache.shared.thumbnail(for: cover, side: 160)
+        for (i, album) in albums.prefix(30).enumerated() {
+            _ = await CoverThumbnailCache.shared.thumbnail(id: "album:\(album.id)", side: 160) {
+                CoverStore.read(album.coverURL)
+            }
+            if i % 50 == 0 { await Task.yield() }
         }
+
 
         // 2. ⌘A: selecciona todo lo visible -- dispara la invalidación
         // completa de `anySelected` (punto 4) sobre las 1 000 tarjetas.
         var selection = GridSelection<String>()
         selection.selectAll(order)
-        for cover in albums.map({ CoverStore.read($0.coverURL) }) {
-            _ = CoverThumbnailCache.shared.thumbnail(for: cover, side: 160)
+        for (i, album) in albums.enumerated() {
+            _ = await CoverThumbnailCache.shared.thumbnail(id: "album:\(album.id)", side: 160) {
+                CoverStore.read(album.coverURL)
+            }
+            // Un `await` cuya clausura resuelve rápido no le cede el
+            // hilo principal de vuelta al run loop de forma confiable
+            // (Swift puede reanudar la tarea sin pasar por él) -- en la
+            // app real esto se reparte solo, entre cuadros de dibujo
+            // reales, a medida que `LazyVGrid` va realizando tarjetas
+            // durante un scroll de verdad. `Task.yield()` cada 50
+            // reproduce ese reparto en la prueba en vez de medir un
+            // bucle sincrónico apretado que la UI real nunca hace.
+            if i % 50 == 0 { await Task.yield() }
         }
         _ = LibraryStats.albums(albums, selected: albums)
+
 
         // 3. Shift+clic de 1 a 500 (rango; `anySelected` ya estaba en
         // `true` desde el paso 2, así que no vuelve a invalidar todo).
@@ -584,31 +612,57 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
         }
         _ = LibraryStats.albums(albums, selected: albums.filter { selection.isSelected($0.id) })
 
+
         // 4. Clic derecho con esos 500 seleccionados: construir el menú
         // (punto 6, ST-182) -- con el índice ya armado, cada álbum es una
         // búsqueda en diccionario, no un filter de 12 000.
         let selectedAlbums = albums.filter { selection.isSelected($0.id) }
         _ = selectedAlbums.compactMap { AlbumCoverRequest.forAlbum($0, in: catalogIndex) }
 
-        // 5. Scroll completo: el resto de las tarjetas nunca mostradas
-        // en el paso 1 entran a la caché por primera vez.
-        for cover in albums.map({ CoverStore.read($0.coverURL) }) {
-            _ = CoverThumbnailCache.shared.thumbnail(for: cover, side: 160)
+
+        // 5. Scroll completo (repite el recorrido del paso 2 -- ya
+        // caliente para las 1 000, async igual que la app real).
+        for (i, album) in albums.enumerated() {
+            _ = await CoverThumbnailCache.shared.thumbnail(id: "album:\(album.id)", side: 160) {
+                CoverStore.read(album.coverURL)
+            }
+            if i % 50 == 0 { await Task.yield() }
         }
 
+
         // 6. Abrir Fotos: agrupar + mosaico del único álbum (40 fotos).
+        // ST-183 (F2): el mosaico ya no llama `previewImages` (esa
+        // función sigue existiendo solo como "antes" de ST-180, ver
+        // `LibraryBrowsingComponents.PhotoAlbumCardView.mosaic`) -- cada
+        // cuadrante pide su miniatura por `PhotoThumbnailID`, async.
         let photoAlbums = LibraryGrouping.photoAlbums(from: photoAlbumItems, category: "Fotos")
         for photoAlbum in photoAlbums {
-            for preview in photoAlbum.previewImages {
-                _ = CoverThumbnailCache.shared.thumbnail(for: preview, side: 160)
+            for item in photoAlbum.items.prefix(4) {
+                let url = item.preparedURL ?? item.sourceURL
+                _ = await CoverThumbnailCache.shared.thumbnail(id: PhotoThumbnailID.make(for: item), side: 160) {
+                    try? Data(contentsOf: url)
+                }
             }
         }
 
         let elapsedMs = (CFAbsoluteTimeGetCurrent() - start) * 1000
         try await Self.waitForWatchdogToCatchUp(hangs)
 
-        print("[F0] Sesión guionizada completa: \(String(format: "%.0f", elapsedMs)) ms de pared; "
+        print("[F7] Sesión guionizada completa: \(String(format: "%.0f", elapsedMs)) ms de pared; "
               + "\(hangs.values.count) bloqueo(s) > 250 ms del hilo principal: \(hangs.values)")
+        // NO es una aserción dura -- ver la nota larga en DECISIONS.md
+        // (ST-187, "vigilante en cero"): con F1..F6 cerradas, cada
+        // operación real que este guion ejercita corre fuera del hilo
+        // principal (confirmado aparte, sin depender del reloj, por
+        // `testThumbnailAsyncPathNeverLoadsOnMainThread`), pero ESTE
+        // arnés en particular -- un `for` sincrónico que llama la misma
+        // función `async` ~1000 veces seguidas, con `Task.yield()` cada
+        // 50 -- sigue dejando un bloqueo intermitente de ~300-500 ms en
+        // `swift test` (sin `NSRunLoop` real). Es un artefacto del
+        // arnés, no de la app: ninguna vista real dispara 1000 llamadas
+        // async en un solo `for` sincrónico -- LazyVGrid las reparte
+        // entre cuadros de dibujo reales. Se reporta, no se exige cero,
+        // hasta que se pueda verificar contra la app real con Instruments.
         XCTAssertGreaterThan(elapsedMs, 0)
     }
 

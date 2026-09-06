@@ -143,6 +143,30 @@ final class LibraryPerformanceBaselineTests: XCTestCase {
         }
     }
 
+    /// PLAN-studio-rendimiento-2.md Fase 6 (ST-186), punto 1.4 heredado
+    /// de la ronda 1: `fileSizeBytes` persistido en el catálogo, relleno
+    /// en segundo plano (`measureMissingFileSizes`), en vez de un `stat`
+    /// por fila y por acceso. La prueba de arriba (`...SortedBySize`)
+    /// sigue reproduciendo el "antes" tal cual -- el fixture no trae
+    /// `fileSizeBytes`, así que sigue cayendo a `LibraryStats.
+    /// fileSize(atPath:)` (con caché por ruta, pero un `stat` real la
+    /// primera vez). Esta mide el "después": el mismo fixture, con
+    /// `fileSizeBytes` YA relleno en todos los ítems -- el escenario
+    /// real tras que `measureMissingFileSizes()` corrió una vez.
+    func testRecomputeRowsSortedBySize_withFileSizeBytesPrepopulated() throws {
+        var itemsWithSize = syntheticItems!
+        for i in itemsWithSize.indices { itemsWithSize[i].fileSizeBytes = 256 }
+        let sortOrder: [KeyPathComparator<MediaTableRow>] = [.init(\.fileSizeBytes, order: .forward)]
+        measure {
+            let rowsModel = RowsModel()
+            let done = expectation(description: "rows computed")
+            let cancellable = rowsModel.$rows.dropFirst().sink { _ in done.fulfill() }
+            rowsModel.recompute(items: itemsWithSize, deviceSyncIndex: nil, sortOrder: sortOrder)
+            wait(for: [done], timeout: 10)
+            cancellable.cancel()
+        }
+    }
+
     // MARK: - (b) Cambiar la selección 100 veces
 
     /// PLAN-studio-rendimiento.md Fase 1 (ST-153): `selectionForSync`

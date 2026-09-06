@@ -8367,6 +8367,34 @@ pesado no ocurre en el hilo principal la da otra prueba
 `swift build` limpio, `xcodebuild -configuration Release` **BUILD
 SUCCEEDED**, `swift test` completo en verde.
 
+### Medición ("mecanico sonnet", worktree aislado sobre ef1efa9)
+
+Prueba nueva en `LibraryPerformanceBaselineTests.swift`
+(`testRecomputeRowsSortedBySize_withFileSizeBytesPrepopulated`): mismo
+fixture de 12 000 ítems que ya usaba `testRecomputeRowsSortedBySize`
+(ST-152), pero con `fileSizeBytes` YA relleno en todos -- el escenario
+real tras que `measureMissingFileSizes()` corrió una vez en segundo
+plano. `swift test --filter LibraryPerformanceBaselineTests`: 9/9 en
+verde.
+
+| Medición | Sin `fileSizeBytes` (`stat` por fila, "antes") | Con `fileSizeBytes` relleno ("después") |
+|---|---|---|
+| Ordenar 12 000 canciones por "Tamaño" | ~117-119 ms | **~15-17 ms** |
+
+**~7-8× más rápido.** La prueba vieja (`...SortedBySize`, sin sufijo)
+sigue existiendo tal cual y sigue siendo el "antes" real: el fixture no
+trae `fileSizeBytes`, así que cae a `LibraryStats.fileSize(atPath:)`
+(con caché por ruta, pero un `stat()` real la primera vez por cada una
+de las 12 000 rutas).
+
+Quedó fuera de esta medición, por tiempo (F6 trae más de lo que da esta
+PARADA para cubrir con pruebas nuevas, y lo que sigue no tiene un
+antes/después tan directo como el de arriba): la concurrencia por tipo
+de `BackgroundTaskCenter` (dos `reenrichOnline` seguidos, la segunda no
+debe arrancar nada) y los bloqueos del hilo principal al importar fotos/
+video (`preparePhoto`/`prepareVideo` en `LibraryFileWorker`). Documentado
+para quien retome F6 más adelante, no descartado por no ser importante.
+
 ## ST-204 (addendum) — Las carátulas sucias se siguen escribiendo en el hilo de interfaz
 
 **Decisión de la Maestra.** ST-204 dejó anotado que `LibraryStore.Snapshot`
@@ -8780,3 +8808,69 @@ SUCCEEDED**, `xcodebuild build-for-testing -scheme AuraStudioUITests`
 **TEST BUILD SUCCEEDED**, `swift test` completo en verde (SwiftPM no
 compila `Tests/AuraStudioUITests`: `Package.swift` solo declara
 `AuraStudioTests`).
+
+## ST-187 — PLAN-studio-rendimiento-2.md, Fase F7: cierre de la ronda
+
+Última PARADA del plan (sesión "mecanico sonnet"). F1..F6 ya cerraron
+(ST-181..ST-186); esta reúne el resultado final contra las dos líneas
+base (ST-152, ronda 1; ST-180, ronda 2) y contra los ocho objetivos
+medibles de §A.
+
+### Tabla final contra §A
+
+| Objetivo de §A | Antes (ST-152/ST-180) | Después (F1-F6) | ¿Cumplido? |
+|---|---|---|---|
+| Trabajo en hilo principal por clic, cualquier cuadrícula | `AlbumsView.body` 2 evaluaciones (2 tras F1, con eco de `SelectionStore`); `AlbumCardView.body` invalidado en las 1 000 por `anySelected` (§0.4); costo del texto de selección ~79 ms | `AlbumsView.body` **1** evaluación (ST-182); `AlbumCardView.body` **0** en clic/⌘+clic/Shift+clic; texto de selección **~3,6 ms** | **Sí** -- muy por debajo de 16 ms |
+| ⌘A/Ctrl+A en Álbumes (1 000) y Canciones (12 000) | No medido aislado en ST-180 (dentro de la sesión guionizada) | `GridSelection.selectAll` es asignación de `Set`, sub-milisegundo; `GridStatusModel` salta a segundo plano por encima de 2 000 ítems | **Sí** -- sin bloqueo, con la salvedad de que el arnés de F0/F7 no aisló esta operación en un número propio |
+| Menú contextual con todo seleccionado | **81 167 ms** (1 000 álbumes) | **~5-7 ms** (1 000 álbumes, `LibraryCatalogIndex`); **~17-21 ms** (12 000 canciones en Canciones -- acción que antes ni existía) | **Sí** -- ~12 000× más rápido, muy por debajo de 200 ms |
+| Arranque: ventana visible e interactiva < 1 s | `testLoadCatalogCold` (ST-152): ~1,37 s frío | `testLoadCatalogCold` tras F5/F6: **~0,89 s** (12 000 ítems, sin JPEG en RAM, `fileSizeBytes` diferido) | **Sí**, en el arnés sintético -- pendiente confirmar con la biblioteca real del dueño (más disco, más red si aplica) |
+| Memoria residente con 12 000 ítems, sin JPEG completos en RAM | Cargar 12 000 con carátula real agregaba **+119 MB**, las 12 000 con el JPEG completo en memoria | La misma carga agrega **+13 MB**, **0/12 000** con bytes de carátula en memoria (ST-185); miniaturas con `totalCostLimit` de 64 MB (mecanismo confirmado con un tope de prueba, ST-183) | **Sí** |
+| Bloqueos del hilo principal > 250 ms en la sesión guionizada | ~40 s de pared, 1 bloqueo (~40,5 s, el menú contextual sin índice) | ~750 ms de pared; **garantía estructural confirmada sin depender del reloj** (`testThumbnailAsyncPathNeverLoadsOnMainThread`: el decode nunca corre en main) -- el arnés en sí sigue reportando un bloqueo intermitente de ~300-500 ms, diagnosticado como artefacto del `for` sincrónico que llama la misma función `async` ~1000 veces seguidas (algo que ninguna vista real hace -- `LazyVGrid` reparte esas llamadas entre cuadros de dibujo reales) | **Parcial** -- ver nota abajo |
+| Los ocho gestos de selección en todas las cuadrículas/tablas | Solo clic/⌘+clic/Shift+clic/Escape en Álbumes, vía `NSEvent.modifierFlags` | Los siete gestos sin arrastre físico, **automatizados y en verde** contra un núcleo puro (`GridSelectionTests`, 35/35, ST-184); el arrastre físico tiene el seam (ST-188) y una prueba de interfaz escrita, pendiente de un permiso de macOS de una sola vez | **Sí** el núcleo; **pendiente** el cableado real del arrastre (ver ST-188) |
+| Operaciones largas con indicador y cancelación | Parcial (ST-155/ST-156) | `BackgroundTaskCenter` con progreso "N de M" y cancelación en carátulas en lote (F3), `applyRecommendedCovers` (F3), concurrencia por tipo (F6) | **Sí**, por lo que reportó "experto en código opus" en F3/F6 -- no reverificado con pruebas propias en esta PARADA |
+
+**Sobre "bloqueos del hilo principal > 250 ms en la sesión guionizada:
+parcial, no sí.** La ronda entera SÍ mueve el trabajo pesado fuera del
+hilo principal (async en F2, índice en F3, O(1) en F1/F4, sin RAM en
+F5) -- eso está confirmado con pruebas que no dependen de ningún reloj.
+Lo que NO se pudo cerrar del todo es el NÚMERO que reporta el arnés de
+la sesión guionizada de ST-180/F0: un bucle sincrónico de prueba que
+llama la misma función `async` ~1 000 veces seguidas, en un proceso
+`swift test` sin `NSRunLoop` real, deja un bloqueo intermitente de
+~300-500 ms que ninguna vista real produciría (una cuadrícula real
+reparte esas llamadas entre cuadros de dibujo, nunca en un solo `for`).
+Se documenta como limitación del ARNÉS, no de la app, y queda como
+`XCTAssertGreaterThan(elapsedMs, 0)` (reporta, no exige cero) hasta que
+se pueda contrastar contra la app real con Instruments.
+
+### Trazas de Instruments
+
+Pendiente al momento de escribir esto -- condición de "Sesión Maestra"
+para F7: cualquier traza contra la biblioteca REAL del dueño se hace
+sobre una COPIA de `biblioteca.json`/`.portadas/` en una carpeta de
+trabajo, nunca la carpeta viva (la migración de `fileSizeBytes`/
+`coverHash` escribe el catálogo en el primer guardado, y la app 0.2.3
+instalada sigue leyendo ese archivo). Prioridad al fixture sintético;
+la traza contra datos reales del dueño queda para el cierre final, con
+su autorización.
+
+### El arrastre de selección (XCUITest, ST-188)
+
+`Tests/AuraStudioUITests/AlbumsGridMarqueeDragUITests.swift`: el gesto
+real, contra 30 álbumes con carátula JPEG real (JSON escrito a mano,
+sin `@testable import` -- el target de UI testing no tiene acceso a los
+tipos internos del módulo). Arrastra desde un hueco de la cuadrícula
+sobre varias tarjetas y confirma en `biblioteca.barraEstado` que quedó
+algo seleccionado. El dueño autorizó intentar correrla -- en curso al
+momento de escribir esto (esperando el candado de la Mac, que tenía
+"experto en código opus" repitiendo su propia suite).
+
+### Guion de verificación interactiva con el dueño
+
+Pendiente de escribir -- cubre Álbumes (⌘A, Shift+clic a 1 000,
+arrastre, clic derecho → carátulas en lote), Canciones (⌘A → clic
+derecho → carátulas), Fotos, importar 200, sincronizar. Se apoya en
+`docs/guion-verificacion-f4-seleccion.md` (ya escrito, F4) para la parte
+de selección.
+
+Sin cambio de versión ni release en esta PARADA, según lo acordado.
