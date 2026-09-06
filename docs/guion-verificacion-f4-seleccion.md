@@ -1,81 +1,108 @@
 # Guion de verificación — F4: selección tipo Finder completa
 
-> PLAN-studio-rendimiento-2.md §B, Fase F4 (ST-184). Criterio de cierre:
-> "(M) guion XCUITest o manual documentado de los ocho gestos en Álbumes
-> y Canciones". Este archivo es ese guion — se llena de verdad (con qué
-> se automatizó y qué quedó solo manual) cuando "experto en código opus"
-> cierre F4; por ahora es la preparación que pidió "Sesión Maestra"
-> mientras esa PARADA no existe todavía.
+> PLAN-studio-rendimiento-2.md §B, Fase F4 (ST-184, commit 57e6ca6).
+> Criterio de cierre: "(M) guion XCUITest o manual documentado de los
+> ocho gestos en Álbumes y Canciones". F4 ya cerró -- este documento
+> refleja el estado final: qué quedó automatizado (la mayoría, contra el
+> núcleo puro de `GridSelection`/`GridMarquee`/`GridSelectionModel`) y qué
+> sigue siendo **solo verificable a mano**.
 
 ## Los ocho gestos (§A del plan)
 
 Clic, ⌘/Ctrl+clic, Shift+clic, Shift+flechas, casilla, arrastre
 (marquee), ⌘A/Ctrl+A (y ⇧⌘A para deseleccionar) por menú Edición, Escape.
 
-## Estado de cada uno, hoy (antes de F4)
+## Lo único NO verificado automáticamente: el arrastre (marquee) real
 
-| Gesto | Álbumes | Canciones |
+**El arrastre es el único de los ocho gestos que no se pudo probar sin
+mover un mouse de verdad, y es exactamente donde termina lo que se puede
+verificar sin la app corriendo.** Toda la LÓGICA del arrastre —qué
+tarjetas toca un rectángulo, qué selección resulta, que agrandar y
+achicar sea reversible, que `base` (la selección al empezar) no cambie a
+mitad de camino— está probada entera y en verde (`GridSelectionTests.
+swift`, ver más abajo). Lo que **no** se pudo verificar es el CABLEADO:
+que el `NSViewRepresentable` de fondo (dentro del `ScrollView` con
+`LazyVGrid`) de verdad reciba los eventos `mouseDown`/`mouseDragged` de
+AppKit y los traduzca en el rectángulo correcto.
+
+Se intentó un XCUITest de macOS para cerrar esto del todo (pedido de
+"Sesión Maestra", con tope de una hora) y **no fue viable en ese tiempo**,
+por una razón concreta y no solo de esfuerzo: el proyecto no tiene hoy
+ningún target de UI testing (`project.yml` solo declara `AuraStudio` y
+`AuraStudioTests`), la app no tiene forma de arrancar apuntando a una
+biblioteca sintética (no hay ninguna variable de entorno ni argumento de
+lanzamiento que reemplace `libraryRoot`/`AppPreferences.shared` -- se
+comprobó con un `grep` de `ProcessInfo.processInfo.environment`/
+`CommandLine.arguments` en todo `Sources/`, y no hay nada), y ninguna
+vista tiene `accessibilityIdentifier` para que XCUITest encuentre una
+tarjeta o la barra de estado por nombre. Armar esto de cero --agregar el
+target, un modo de arranque de prueba, e identificadores de
+accesibilidad-- son cambios de `Sources/`/`project.yml` que no le tocan a
+esta sesión sin coordinarlos primero, y por su tamaño no entran en el
+tope de una hora. Queda pendiente como una posibilidad real para el
+futuro (F7, o una PARADA aparte), no descartada por imposible.
+
+**Por qué esto no bloquea nada de los otros siete gestos**: cada uno de
+los otros siete llama directo a una función pura de `GridSelection`
+(`handleTap`, `move`, `toggle`, `selectAll`, `clear`) que no pasa por
+ningún `NSViewRepresentable` -- si el capturador de eventos del arrastre
+tuviera un bug de cableado, sería un problema AISLADO al arrastre, y no
+afectaría a ningún otro gesto. El guion manual de abajo lo separa
+explícitamente por esa razón.
+
+## Estado final de los ocho gestos
+
+| Gesto | Álbumes/Películas/Series/Fotos | Canciones |
 |---|---|---|
-| Clic (reemplaza selección) | Automatizado — `GridSelectionModel.selection.handleTap(_:order:modifierFlags:[])`, ver `AlbumsGridPerformanceBaselineTests` | Manual (tabla nativa, sin seam inyectable todavía) |
-| ⌘/Ctrl+clic (alterna) | Automatizado — `handleTap(_:order:modifierFlags:[.command])` | Manual |
-| Shift+clic (rango) | Automatizado — `handleTap(_:order:modifierFlags:[.shift])` | Manual |
-| Shift+flechas (mueve el ancla) | **Pendiente de F4** — `GridSelection` no tiene hoy un método para esto (`lastTapped` es privado); F4 lo expone | Manual |
-| Casilla | Automatizado — `GridSelectionModel.selection.toggle(_:)` | Manual |
-| Arrastre (marquee) | **Pendiente de F4** — no existe ningún mecanismo hoy, ni manual (no hay nada que probar) | **Pendiente de F4** |
-| ⌘A/Ctrl+A por menú Edición | Parcial — `GridSelection.selectAll(_:)` ya existe y se prueba (`.onKeyPress` en `AlbumsView`), pero el atajo hoy es un `.onKeyPress` de la vista, no una entrada real del menú Edición — F4 lo enruta ahí | Manual |
-| ⇧⌘A (deseleccionar) | No existe todavía como atajo — hoy es `Escape` el que limpia | Manual |
-| Escape (limpia selección) | Automatizado — `GridSelection.clear()` | Manual |
+| Clic (reemplaza selección) | **Automatizado** -- `GridSelection.handleTap(_:order:modifiers:)`, forma pura sin AppKit | Manual (`MediaSectionView`/`Table`, sin seam inyectable) |
+| ⌘/Ctrl+clic (alterna) | **Automatizado** | Manual |
+| Shift+clic (rango, YA NO acumula -- reemplaza el rango anterior conservando lo marcado con ⌘) | **Automatizado**, incluido el caso que reduce un rango (`testShiftClickReplacesThePreviousRangeButKeepsCommandClickedItems`) | Manual |
+| Shift+flechas (extiende desde el ancla, reversible) | **Automatizado** -- `GridSelection.move(_:order:columnsPerRow:extending:)` | Manual |
+| Casilla | **Automatizado** -- `GridSelection.toggle(_:)` | Manual |
+| Arrastre (marquee) | **Lógica automatizada** (`GridMarquee`); **cableado de eventos NO verificado automáticamente** -- ver arriba | **Pendiente** -- Canciones no tiene el seam de selección todavía |
+| ⌘A/Ctrl+A por menú Edición | **Automatizado** el mecanismo (`GridSelection.selectAll(_:)`); el enrutamiento real del ítem de menú a la sección con foco es cableado de vista, no verificado por esta sesión | Manual |
+| ⇧⌘A (deseleccionar) | **Automatizado** el mecanismo (`GridSelection.clear()`); mismo comentario sobre el cableado del menú | Manual |
+| Escape (limpia selección) | **Automatizado** -- `GridSelection.clear()` | Manual |
 
-## Qué se puede automatizar con `GridSelectionModel` inyectable (Álbumes)
+## Dónde vive lo automatizado
 
-Los cinco gestos ya cubiertos arriba usan el mismo arnés que ST-181/ST-182
-(`NSHostingController` + `GridSelectionModel<String>` inyectado en
-`AlbumsView.init`, ver `AlbumsGridPerformanceBaselineTests.
-hostAlbumsView`). Cuando F4 agregue Shift+flechas y el menú Edición, la
-forma más directa de seguir automatizando es la misma: exponer el
-mecanismo (ancla + dirección, o la acción del menú) como un método
-público de `GridSelection`/`GridSelectionModel` que la prueba pueda
-llamar directo, igual que `handleTap(_:order:modifierFlags:)` ya separó
-el gesto de leer `NSEvent.modifierFlags` real (ST-152).
+`Tests/AuraStudioTests/GridSelectionTests.swift` -- el núcleo puro
+completo: `GridSelection` (tap con los tres modificadores, `move` con las
+cuatro direcciones y extensión con Shift, `applyMarquee`, `lastTapped`
+público), `GridMarquee` (rect/hits/selection, reversibilidad de agrandar
+y achicar), `GridDirection` (step por columna, degradado a 1 columna sin
+marcos), y `GridSelectionModel` (`columnsPerRow` deducido de los marcos,
+ciclo de vida del arrastre con `setFramesForTesting`).
 
-**El arrastre (marquee) es la excepción real.** Por diseño traduce
-`mouseDragged` a un rectángulo que cruza con los marcos de las tarjetas
-vía `anchorPreference` (`NSViewRepresentable`, patrón de
-`TableHeaderMenu.swift`) — no hay un método puro equivalente a
-"simular un arrastre" sin simular eventos de mouse reales sobre una
-ventana real. Esto queda **solo manual** (o XCUITest de verdad, con el
-costo de infraestructura que eso implica) incluso después de que F4 lo
-implemente.
+`Tests/AuraStudioTests/AlbumsGridPerformanceBaselineTests.swift` --
+`AlbumsView` hospedada de verdad con `NSHostingController` +
+`GridSelectionModel` inyectado, para el costo de `body` por gesto (ver
+ST-181/ST-184 en DECISIONS.md). `MoviesView`, `SeriesView` y
+`PhotoAlbumsView` ya aceptan el mismo `selectionModel:` inyectable --
+queda como trabajo futuro extender el mismo arnés de hosting a esas tres
+si hace falta para F7.
 
-## Canciones: por qué todo sigue manual
+## Guion manual (verificación con el dueño, F7)
 
-`MediaSectionView` (la tabla de Canciones) no tiene hoy un seam
-inyectable equivalente a `GridSelectionModel` — su selección vive en el
-mecanismo nativo de `Table`/`SelectionStore`, no en un objeto que una
-prueba pueda mutar desde afuera sin hospedar la vista completa con datos
-reales de tabla. F4 "rehace la selección de todas [las cuadrículas] de
-fondo" según el experto — si de paso expone un seam parecido para
-Canciones, este documento se actualiza para automatizar esa columna
-también.
-
-## Guion manual (para cuando F4 cierre, verificación con el dueño)
-
-En Álbumes y en Canciones, por separado:
+En Álbumes, Películas, Series y Fotos (todas ya con `GridSelectionModel`)
+y en Canciones (todo manual, sin seam):
 
 1. Clic sobre un elemento — selecciona solo ese, se ve resaltado.
 2. ⌘/Ctrl+clic sobre otro — se suma a la selección, sin perder el primero.
 3. ⌘/Ctrl+clic de nuevo sobre el mismo — se quita, el resto queda igual.
 4. Clic sobre un tercero, después Shift+clic sobre uno lejano — selecciona
-   el rango completo entre ambos.
+   el rango completo entre ambos; un segundo Shift+clic más cerca debe
+   ACHICAR el rango (no dejar seleccionado lo que ya no toca).
 5. Con algo seleccionado, Shift+flecha derecha/abajo — extiende la
    selección elemento por elemento en esa dirección; Shift+flecha
    izquierda/arriba la recorta.
 6. Casilla de un elemento no seleccionado — lo selecciona sin afectar al
    resto; de uno seleccionado — lo quita.
-7. Clic y arrastre desde un punto vacío de la cuadrícula sobre varios
-   elementos — los selecciona a todos los que toca el rectángulo;
-   soltar cerca del borde de la ventana debe desplazar el scroll
-   (autoscroll).
+7. **(El gesto no verificado automáticamente.)** Clic y arrastre desde un
+   punto vacío de la cuadrícula sobre varios elementos — los selecciona a
+   todos los que toca el rectángulo; soltar cerca del borde de la ventana
+   debe desplazar el scroll (autoscroll); agrandar y achicar el
+   rectángulo antes de soltar debe ser reversible.
 8. Menú Edición → "Seleccionar todo" (⌘A) — selecciona todo lo visible
    (respeta el filtro/búsqueda activos); "Deseleccionar" (⇧⌘A) — limpia.
 9. Escape — limpia la selección completa, sin importar cómo se armó.

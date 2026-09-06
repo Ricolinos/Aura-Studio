@@ -7771,3 +7771,59 @@ principal**, así que lo que mide incluye su propia preparación — 300
 escrituras de archivo pasan de 250 ms en cuanto la máquina tiene algo más
 que hacer. No es un bloqueo de `applyAlbumCover`. El arreglo es crear el
 fixture ANTES de instalar el colector; vive en `Tests/`.
+
+### Medición del núcleo puro ("mac/medicion", worktree aislado, commit por confirmar)
+
+Verificado con el candado de la Mac, en el mismo worktree aislado usado
+para ST-181/ST-182/ST-183 (nunca en el árbol compartido, donde el
+experto ya seguía con F5 al momento de esta medición).
+
+`Tests/AuraStudioTests/GridSelectionTests.swift`: **35/35 en verde** --
+el núcleo puro completo de F4: `GridSelection.handleTap(_:order:
+modifiers:)` (clic, ⌘+clic, Shift+clic con el reemplazo de rango nuevo),
+`move` (las cuatro flechas, extensión con Shift, reversibilidad, casos
+límite sin foco previo y en los bordes del orden), `applyMarquee`,
+`lastTapped` público, `GridMarquee` (rect/hits/selection para los tres
+modificadores, reversibilidad de agrandar y achicar el rectángulo),
+`GridDirection` (paso por columna, degradado a 1 columna sin marcos), y
+`GridSelectionModel` (`columnsPerRow` deducido de los marcos reportados,
+ciclo de vida completo del arrastre con `setFramesForTesting`).
+
+**El caso que señaló "experto en código opus" como el más valioso**
+(⌘+clic en tres sueltos, ⌘+clic en el 10 para fijar el ancla sin
+reemplazar la selección, Shift+clic en el 20, Shift+clic en el 15) se
+verificó exactamente como lo describió: el segundo Shift+clic ACHICA el
+rango (quedan los tres sueltos más 10-15), en vez de acumular hasta el
+20 como hacía el código antes de F4.
+
+**XCUITest del arrastre real, intentado y no viable (tope de una hora,
+pedido de "Sesión Maestra")**: el proyecto no tiene un target de UI
+testing (`project.yml` solo declara `AuraStudio` y `AuraStudioTests`),
+la app no tiene ninguna forma de arrancar apuntando a una biblioteca
+sintética (sin variable de entorno ni argumento de lanzamiento --
+verificado con `grep` de `ProcessInfo`/`CommandLine` en todo `Sources/`),
+y ninguna vista tiene `accessibilityIdentifier`. Los tres son cambios de
+`Sources/`/`project.yml`, fuera del alcance de una sesión que no toca
+`Sources/` y, por su tamaño, del tope de una hora. Documentado en
+`docs/guion-verificacion-f4-seleccion.md`, que ahora dice explícitamente
+que el arrastre es el ÚNICO de los ocho gestos sin verificación
+automática, y que los otros siete no dependen de él (cada uno llama
+directo a una función pura de `GridSelection`, sin pasar por el
+`NSViewRepresentable`).
+
+**El vigilante que volvió a fallar una vez más (684 ms) pese al arreglo
+de orden**: queda para que el experto lo cierre en **F6**, según acordó
+"Sesión Maestra" -- no se investiga más de este lado por ahora.
+
+### Nota de proceso: por qué este commit vive en una rama aparte
+
+F5 (CoverStore/`coverURL`/`coverHash`) ya estaba en curso, sin commitear,
+directo en el árbol compartido al momento de esta medición -- y tocaba
+los mismos tres archivos de prueba que esta PARADA modificó (adaptando
+`AlbumsGridPerformanceBaselineTests.swift`, entre otros, a la API nueva).
+Para no commitear una mezcla de dos sesiones en el mismo archivo, esta
+medición se hizo y se commiteó en un **worktree aislado, rama
+`mac/medicion`**, con SOLO los archivos de esta PARADA -- nada del WIP de
+F5. "Sesión Maestra" lo fusiona a `origin/main`; el experto fusiona
+`origin/main` sobre su F5 en curso antes de commitearla, resolviendo ahí
+cualquier conflicto en los archivos de prueba compartidos.

@@ -91,19 +91,31 @@ final class ApplyAlbumCoverAndSimilarityWorkerTests: XCTestCase {
     /// Criterio de cierre del paso: cero bloqueos > 250 ms, ahora con
     /// una "compilación" de 300 pistas (un caso real y no descabellado
     /// para este camino).
+    /// Diagnóstico de "experto en código opus" (2026-09-06, ronda F2/F4):
+    /// esta prueba fallaba de forma intermitente bajo carga de máquina, y
+    /// la causa real NO era contaminación entre pruebas (el
+    /// `waitForWatchdogToCatchUp` de `AlbumsGridPerformanceBaselineTests`
+    /// sigue siendo necesario para SU propio caso, pero no es esto). El
+    /// vigilante se instalaba ANTES de crear los 300 archivos del fixture
+    /// (`makeTracks`, en el hilo principal) -- lo que medía incluía su
+    /// propia preparación, y 300 escrituras de archivo pasan de 250 ms en
+    /// cuanto la máquina tiene algo más que hacer. El bloqueo reportado
+    /// nunca fue de `applyAlbumCover`. Arreglo: armar el fixture COMPLETO
+    /// antes de instalar el colector, para medir solo lo que la prueba
+    /// dice que mide.
     func testThreeHundredTracksNeverBlockTheMainThreadOverTheWatchdogThreshold() async throws {
-        setenv("AURA_WATCHDOG", "1", 1)
-        let hangs = HangCollector()
-        MainThreadWatchdog.onHangDetectedForTesting = { durationMs in hangs.add(durationMs) }
-        MainThreadWatchdog.startIfRequested()
-
         let musicDir = libraryRoot.appendingPathComponent("Música", isDirectory: true)
         let tracks = try makeTracks(count: 300, musicDir: musicDir)
         let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
         viewModel.replaceItemsForPerformanceTesting(tracks)
         viewModel.makePersistenceSynchronousForTesting()
-
         let cover = Data([0xFF, 0xD8, 0xFF, 0xE0]) + Data(repeating: 0x9, count: 300)
+
+        setenv("AURA_WATCHDOG", "1", 1)
+        let hangs = HangCollector()
+        MainThreadWatchdog.onHangDetectedForTesting = { durationMs in hangs.add(durationMs) }
+        MainThreadWatchdog.startIfRequested()
+
         _ = await viewModel.applyAlbumCover(cover, toItems: Set(tracks.map(\.id)))
 
         XCTAssertTrue(hangs.values.isEmpty, "bloqueos del hilo principal > 250 ms aplicando carátula: \(hangs.values)")
