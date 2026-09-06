@@ -112,13 +112,19 @@ struct MainWindowPlacer: NSViewRepresentable {
             "(\(Int(rect.origin.x)), \(Int(rect.origin.y)) \(Int(rect.width))×\(Int(rect.height)))"
         }
 
-        /// `print` con `fflush`, por lo mismo que `MainThreadWatchdog`:
-        /// con la salida redirigida (que es como corre `xcodebuild
-        /// test`), un `print` normal puede quedarse en el buffer y no
-        /// verse nunca.
+        /// ST-188 (2.º addendum): además de `print`, al archivo.
+        ///
+        /// El `print` de la app bajo prueba **no llega** a la salida de
+        /// `xcodebuild test` -- se buscó en el log capturado, en
+        /// `log show` acotado al pid y en el `.xcresult`, y en ninguno
+        /// aparecía. Lo que sí aparece son los `print` del proceso de
+        /// PRUEBA, que es otro proceso. Por eso el diagnóstico se
+        /// escribe también donde la prueba puede ir a buscarlo
+        /// (`<AURA_UITEST_LIBRARY>/uitest.log`).
         private func log(_ message: String) {
             print(message)
             fflush(stdout)
+            UITestLog.write(message)
         }
     }
 }

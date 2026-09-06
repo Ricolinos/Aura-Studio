@@ -10567,3 +10567,49 @@ fallar en la máquina de alguien, es la diferencia entre adivinar y leer.
 Que el arrastre se sienta bien con un ratón de verdad —el autoscroll cerca de los
 bordes, sobre todo— sigue siendo cosa del dueño: el arnés inyecta eventos, no
 manos.
+
+## ST-188 (2.º addendum) — La fila de la barra lateral tiene nombre, y el diagnóstico se puede leer
+
+La colocación de la ventana funcionó (el volcado del mecánico la muestra
+en `{{640, 293}, {1280, 800}}`, o sea dentro de la pantalla principal),
+pero aparecieron dos cosas nuevas.
+
+### 1. Buscar "Álbumes" por texto daba con el menú, no con la fila
+
+La prueba buscaba con
+`descendants(matching: .any).matching(label == "Álbumes").firstMatch`, y
+eso recorre **todo** el árbol. "Álbumes" no aparece solo en la barra
+lateral: también es una entrada del menú Visualización ("Ir a › Álbumes",
+⌘2, desde ST-063). Un `firstMatch` puede resolver a ésa, y activarla no
+navega a ningún lado — la prueba se quedaba mirando la placa de "Conecta
+tu iPod" bajo General, **sin ningún error**. Ese es el peor modo de
+fallo: no falla, engaña.
+
+Cada fila de la barra lateral lleva ahora un identificador estable,
+`biblioteca.barraLateral.<clave>`, con la clave por sección y no por
+texto (`albumes`, `canciones`, `artistas`, `listas`, `peliculas`,
+`series`, `videoclips`, `fotos`, `imagenes`, `ia`, `general`, `extras`,
+`instalador`, `ajustes`, más los rótulos de grupo). Están todas porque
+ponerlas fue una línea por sitio y porque la próxima prueba que necesite
+otra no debería tener que volver a pedirla.
+
+### 2. El `print` de la app no llega a ninguna parte
+
+El log que se agregó en el intento anterior para poder diagnosticar
+**no se pudo leer**. El mecánico lo buscó por tres vías —la salida
+capturada de `xcodebuild test`, `log show` acotado al pid, y el
+`.xcresult`— y no aparecía en ninguna. La explicación es simple y vale
+anotarla: los `print` que sí se ven en `xcodebuild test` son los del
+proceso de **prueba**; la app bajo prueba es **otro proceso**, y su
+salida estándar no va al mismo sitio.
+
+`UITestLog.write` escribe a `<AURA_UITEST_LIBRARY>/uitest.log` — una ruta
+que la prueba **eligió ella misma**, así que sabe dónde buscarla y puede
+adjuntarla al resultado. Solo escribe bajo prueba: sin esa variable no
+hay dónde, y no se inventa ninguna ruta.
+
+Es la lección que deja este addendum más que el arreglo en sí: **un log
+de diagnóstico que el diagnosticador no puede leer no es un log**. El
+primer intento agregó `print` + `fflush` creyendo que alcanzaba, por
+analogía con `MainThreadWatchdog` — que sí se ve, porque corre dentro del
+proceso de pruebas.

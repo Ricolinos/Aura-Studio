@@ -622,6 +622,33 @@ enum SidebarSection: Hashable, CaseIterable {
     case installer
     case settings
 
+    /// ST-188 (2.º addendum): el identificador de accesibilidad de su
+    /// fila en la barra lateral. Estable y por sección, no por texto:
+    /// ver `UITestEnvironment.ID.sidebarRow`.
+    var accessibilityKey: String {
+        switch self {
+        case .general:        return "general"
+        case .music:          return "canciones"
+        case .musicGroup:     return "musica"
+        case .musicArtists:   return "artistas"
+        case .musicAlbums:    return "albumes"
+        case .musicPlaylists: return "listas"
+        case .videoGroup:     return "video"
+        case .video:          return "videoTodos"
+        case .videoMovies:    return "peliculas"
+        case .videoSeries:    return "series"
+        case .videoClips:     return "videoclips"
+        case .photosGroup:    return "fotos"
+        case .photos:         return "fotosTodas"
+        case .photosPhotos:   return "fotosFotos"
+        case .photosImages:   return "imagenes"
+        case .photosAI:       return "ia"
+        case .extras:         return "extras"
+        case .installer:      return "instalador"
+        case .settings:       return "ajustes"
+        }
+    }
+
     /// ST-189: ¿esta sección necesita la biblioteca para servir de algo?
     ///
     /// Las que NO -- General, Instalador, Extras y Ajustes -- siguen
@@ -775,6 +802,7 @@ private struct SidebarView: View {
             ForEach(subsections, id: \.self) { sub in
                 Label(sub.title, systemImage: sub.symbol)
                     .tag(sub)
+                    .accessibilityIdentifier(UITestEnvironment.ID.sidebarRow(sub.accessibilityKey))
                     .disabled(libraryLocked)
                     .dropDestination(for: LibrarySelectionTransfer.self) { payloads, _ in
                         guard let category = dropCategory(for: sub) else { return false }
@@ -787,6 +815,7 @@ private struct SidebarView: View {
         } label: {
             Label(group.title, systemImage: group.symbol)
                 .tag(group)
+                .accessibilityIdentifier(UITestEnvironment.ID.sidebarRow(group.accessibilityKey))
                 .disabled(libraryLocked)
         }
         .tag(group)
@@ -813,6 +842,7 @@ private struct SidebarView: View {
                     default:
                         Label(section.title, systemImage: section.symbol)
                             .tag(section)
+                            .accessibilityIdentifier(UITestEnvironment.ID.sidebarRow(section.accessibilityKey))
                             // General queda siempre accesible: es donde se
                             // explica QUE firmware hay y que hacer con el.
                             // ST-047: Extras queda FUERA del candado de
@@ -826,7 +856,9 @@ private struct SidebarView: View {
             }
             Section("Aura Studio") {
                 ForEach(SidebarSection.appSections, id: \.self) { section in
-                    Label(section.title, systemImage: section.symbol).tag(section)
+                    Label(section.title, systemImage: section.symbol)
+                        .tag(section)
+                        .accessibilityIdentifier(UITestEnvironment.ID.sidebarRow(section.accessibilityKey))
                 }
             }
         }

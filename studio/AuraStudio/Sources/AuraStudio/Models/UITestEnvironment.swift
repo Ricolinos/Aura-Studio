@@ -78,6 +78,15 @@ enum UITestEnvironment {
         static let albumsGrid = "albumes.cuadricula"
         static let statusBar = "biblioteca.barraEstado"
 
+        /// ST-188 (2.º addendum): la fila de la barra lateral. Buscar
+        /// por TEXTO no sirve: "Álbumes" aparece también en el menú
+        /// Visualización ("Ir a › Álbumes", ⌘2, ST-063), y un
+        /// `firstMatch` sobre todo el árbol puede resolver a ése —
+        /// activarlo no navega a ningún lado y la prueba se queda
+        /// mirando la sección equivocada sin ningún error. Fue
+        /// exactamente lo que pasó.
+        static func sidebarRow(_ key: String) -> String { "biblioteca.barraLateral.\(key)" }
+
         /// La tarjeta en la posición `index` del orden VISIBLE (el mismo
         /// que ve el usuario, ya filtrado y ordenado). Por posición y no
         /// por id de álbum a propósito: un arrastre se describe como
@@ -85,5 +94,39 @@ enum UITestEnvironment {
         /// álbum lleva adentro un separador de unidad (0x1F) que no
         /// sirve como identificador.
         static func albumCard(_ index: Int) -> String { "albumes.tarjeta.\(index)" }
+    }
+}
+
+/// ST-188 (2.º addendum): un archivo de diagnóstico que la prueba SÍ
+/// puede leer.
+///
+/// `print` desde el proceso de la app bajo prueba **no llega** a la
+/// salida de `xcodebuild test` -- se comprobó buscándolo en el log
+/// capturado, en `log show` acotado al pid, y en el `.xcresult`: en
+/// ninguno aparecía. Lo que sí aparece son los `print` del proceso de
+/// PRUEBA, que es otro proceso.
+///
+/// Así que el diagnóstico se escribe donde la prueba puede ir a
+/// buscarlo: `<AURA_UITEST_LIBRARY>/uitest.log`. La prueba ya conoce esa
+/// ruta —la eligió ella— y puede adjuntarla al resultado.
+///
+/// Solo escribe bajo prueba: sin `AURA_UITEST_LIBRARY` no hay dónde, y
+/// no se inventa ninguna ruta.
+enum UITestLog {
+    static func write(_ message: String) {
+        #if DEBUG
+        guard let path = UITestEnvironment.libraryPath else { return }
+        let url = URL(fileURLWithPath: path, isDirectory: true)
+            .appendingPathComponent("uitest.log")
+        let line = "\(ISO8601DateFormatter().string(from: Date()))  \(message)\n"
+        guard let data = line.data(using: .utf8) else { return }
+        if let handle = try? FileHandle(forWritingTo: url) {
+            defer { try? handle.close() }
+            _ = try? handle.seekToEnd()
+            try? handle.write(contentsOf: data)
+        } else {
+            try? data.write(to: url)
+        }
+        #endif
     }
 }
