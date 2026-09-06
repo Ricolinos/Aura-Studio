@@ -49,6 +49,26 @@ public sealed partial class MediaGridPage : Page
             timer.IsRepeating = false;
             timer.Tick += (_, _) => UpdateStatusSummary();
         }
+
+        // Addendum de ST-209: el arrastre se escucha TAMBIÉN sobre la propia
+        // cuadrícula, y con `handledEventsToo` — es la parte que faltaba para que
+        // el recuadro existiera de verdad.
+        //
+        // La capa de captura sigue DETRÁS de las tarjetas y sigue siendo la que
+        // define el gesto (solo le llega lo que empezó en un hueco). Lo que se
+        // descubrió al probarlo con la ventana (W7) es que a esa capa **no le
+        // llega nada**: el `ScrollViewer` del `GridView` se queda con el puntero
+        // en toda su superficie, huecos incluidos, y marca el evento como
+        // manejado. Escuchar acá, sin depender de fondos ni de orden en el árbol,
+        // es lo único que garantiza que el gesto llegue.
+        CardsView.AddHandler(UIElement.PointerPressedEvent,
+            new PointerEventHandler(Marquee_PointerPressed), handledEventsToo: true);
+        CardsView.AddHandler(UIElement.PointerMovedEvent,
+            new PointerEventHandler(Marquee_PointerMoved), handledEventsToo: true);
+        CardsView.AddHandler(UIElement.PointerReleasedEvent,
+            new PointerEventHandler(Marquee_PointerReleased), handledEventsToo: true);
+        CardsView.AddHandler(UIElement.PointerCaptureLostEvent,
+            new PointerEventHandler(Marquee_PointerReleased), handledEventsToo: true);
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
@@ -238,10 +258,38 @@ public sealed partial class MediaGridPage : Page
                 .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
     }
 
+    /// <summary>
+    /// Si ese punto de partida es una tarjeta. Arrastrar DESDE una tarjeta es su
+    /// propio gesto —seleccionarla, moverla—; el recuadro es solo lo que empieza
+    /// en un hueco.
+    ///
+    /// <para>Se mira el árbol visual desde el origen del evento hacia arriba
+    /// hasta el contenedor: es lo mismo que hace el menú contextual para saber a
+    /// qué fila pertenece un clic, y no depende de fondos ni de qué elemento
+    /// quedó encima.</para>
+    /// </summary>
+    private static bool StartedOnACard(object? source)
+    {
+        for (var element = source as DependencyObject; element is not null;
+             element = VisualTreeHelper.GetParent(element))
+        {
+            if (element is GridViewItem) return true;
+            if (element is GridView) return false;
+        }
+
+        return false;
+    }
+
     private void Marquee_PointerPressed(object sender, PointerRoutedEventArgs e)
     {
         // Solo el mouse y el lápiz: con el dedo, arrastrar es desplazar.
         if (e.Pointer.PointerDeviceType == Microsoft.UI.Input.PointerDeviceType.Touch) return;
+
+        // El mismo gesto puede llegar por dos caminos (la capa de atrás y la
+        // cuadrícula): el segundo no puede volver a empezarlo.
+        if (_marquee is not null) return;
+
+        if (StartedOnACard(e.OriginalSource)) return;
         if (CardsView.ItemsPanelRoot is not { } panel) return;
 
         Point origin = e.GetCurrentPoint(panel).Position;
@@ -254,7 +302,10 @@ public sealed partial class MediaGridPage : Page
             [.. CardsView.SelectedItems.OfType<MediaCard>().Select(card => card.Id)],
             ModifiersNow());
 
-        MarqueeCapture.CapturePointer(e.Pointer);
+        // Se captura sobre la cuadrícula y no sobre la capa de atrás: es la que
+        // recibe el gesto, y así los movimientos siguen llegando aunque el
+        // puntero salga de la ventana.
+        CardsView.CapturePointer(e.Pointer);
         e.Handled = true;
     }
 
@@ -268,7 +319,7 @@ public sealed partial class MediaGridPage : Page
 
         ApplyToControl(delta);
         DrawMarquee(drag.Rect, panel);
-        AutoScroll(e.GetCurrentPoint(MarqueeCapture).Position.Y);
+        AutoScroll(e.GetCurrentPoint(CardsView).Position.Y);
 
         e.Handled = true;
     }
@@ -279,7 +330,7 @@ public sealed partial class MediaGridPage : Page
 
         _marquee = null;
         MarqueeBox.Visibility = Visibility.Collapsed;
-        MarqueeCapture.ReleasePointerCaptures();
+        CardsView.ReleasePointerCaptures();
 
         // Un clic en un hueco, sin arrastre, limpia la selección — como en el
         // Explorador. Con Mayús o Control apretados no toca nada: ahí el usuario
@@ -378,7 +429,7 @@ public sealed partial class MediaGridPage : Page
             return;
         }
 
-        Point corner = panel.TransformToVisual(MarqueeCapture)
+        Point corner = panel.TransformToVisual(MarqueeLayer)
             .TransformPoint(new Point(rect.X, rect.Y));
 
         Canvas.SetLeft(MarqueeBox, corner.X);
@@ -396,7 +447,7 @@ public sealed partial class MediaGridPage : Page
     {
         if (CardsScroll is not { } scroll) return;
 
-        double speed = GridAutoScroll.SpeedFor(pointerY, MarqueeCapture.ActualHeight);
+        double speed = GridAutoScroll.SpeedFor(pointerY, CardsView.ActualHeight);
         if (speed == 0) return;
 
         scroll.ChangeView(null, scroll.VerticalOffset + speed, null, disableAnimation: true);

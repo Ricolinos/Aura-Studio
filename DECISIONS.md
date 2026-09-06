@@ -10097,3 +10097,68 @@ biblioteca por red (solo copia local del catálogo); la cola del selector de
 carátulas y la tarea "N de M" (no se lanzó ninguna acción que escriba);
 "Buscar actualizaciones" de Dispositivos (sin iPod); la app en alto
 contraste; Fotos con contenido (el fixture no tiene).
+
+## ST-209 (2.º addendum) — El recuadro no recibía el arrastre
+
+Reportado por W7 con la app delante, reproducido dos veces sobre la biblioteca
+sintética de 1 000 álbumes: arrastrar desde el hueco entre dos filas o desde el
+área vacía a la derecha de la última columna **no dibujaba nada y no cambiaba la
+selección**. Los mismos eventos sintéticos sí producían clic, Ctrl+A, Mayús+clic,
+menús y doble clic, así que no era la inyección: era el cableado.
+
+Es exactamente el riesgo que el addendum anterior dejó anotado como lo único que
+no se podía comprobar sin ventana. Quedó comprobado, y estaba mal.
+
+### Por qué
+
+La capa de captura va **detrás** de las tarjetas —que es el diseño de ST-184 en
+la Mac y sigue siendo el correcto— con fondo transparente y visible al
+hit-testing. Lo que no se cumple en WinUI es la premisa: **al `ScrollViewer` del
+`GridView` le llega el puntero en toda su superficie**, huecos incluidos, y lo
+marca como manejado. La capa de atrás no recibe nada, no porque esté mal
+configurada sino porque nunca le llega el turno.
+
+### Qué se hizo
+
+Los mismos manejadores se enganchan **también sobre la propia cuadrícula**, con
+`AddHandler(..., handledEventsToo: true)` — que es la forma de ver un evento que
+otro ya marcó como atendido. Y el gesto decide por **origen**, no por capas: si
+el punto de partida está dentro de un `GridViewItem`, no es un recuadro y no se
+hace nada; el clic, el doble clic y el arrastre de la tarjeta siguen siendo
+suyos. Se comprueba subiendo por el árbol visual desde el origen del evento hasta
+el contenedor, que es lo mismo que ya hace el menú contextual para saber a qué
+fila pertenece un clic.
+
+El puntero se captura sobre la cuadrícula y no sobre la capa de atrás, así que
+los movimientos siguen llegando aunque el puntero salga de la ventana; y como el
+mismo gesto puede llegar ahora por dos caminos, el segundo no puede volver a
+empezarlo.
+
+**La capa se queda.** Es la que expresa el diseño —solo lo que empieza en un
+hueco—, no estorba, y si en alguna versión de WinUI el `ScrollViewer` dejara
+pasar el puntero, funcionaría por ahí. Su fondo sigue siendo transparente y no
+nulo: un fondo nulo la sacaría del árbol de hit-testing.
+
+### Lo que NO se hizo, y por qué
+
+**No se le quitó el fondo al `GridView`.** Era la otra forma de que los huecos
+dejaran pasar el puntero, y es la que sugiere el diseño de la Mac, pero en WinUI
+ese mismo fondo es lo que hace que la rueda del ratón desplace **sobre un hueco**:
+quitarlo arreglaría el arrastre y rompería el scroll en las zonas vacías, que es
+justo lo que este arreglo no puede romper. La ruta por `handledEventsToo` no
+depende de fondos ni del orden en el árbol, así que no hace falta elegir entre
+las dos cosas.
+
+### Verificación
+
+`dotnet build` de Core, App y los dos arneses: **0 advertencias, 0 errores**.
+`dotnet test`: **1 550 pruebas en verde** — el núcleo del recuadro ya estaba
+probado entero desde ST-209 y no cambió; lo que cambió es de dónde le llegan los
+eventos, que es precisamente lo que no tiene prueba automática.
+
+Lo que **no** se verificó acá, y es lo mismo que destapó el fallo: el gesto. Esta
+sesión no abre la ventana. Lo vuelve a correr W7 con su guion —`w7-pasada5.ps1`,
+arrastre desde el área vacía de la derecha— y con las dos formas que fallaron:
+desde el hueco de 8 px entre filas y desde la derecha de la última columna. Junto
+con eso hay que mirar que **no** se hayan roto el clic, el doble clic, el
+arrastre de una tarjeta ni el desplazamiento con la rueda sobre un hueco.
