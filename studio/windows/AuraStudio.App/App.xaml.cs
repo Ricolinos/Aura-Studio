@@ -118,6 +118,7 @@ public sealed partial class App : Application
         // suscripción y el estado de la pantalla sobrevive al ir y volver.
         services.AddSingleton<ViewModels.ShellViewModel>();
         services.AddSingleton<ViewModels.DeviceListViewModel>();
+        services.AddSingleton<Services.AppUpdateService>();
         services.AddSingleton<ViewModels.SettingsViewModel>();
         services.AddTransient<ViewModels.LicensesViewModel>();
         services.AddSingleton<ViewModels.InstallerViewModel>();

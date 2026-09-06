@@ -6,6 +6,98 @@
 > nada — todo compila desde la sesión del 2026-08-31 en la VM — por eso se
 > renombró en la Fase 0. Entradas nuevas van **arriba** de las viejas.
 
+## Ronda de rendimiento 2, W7 — Cierre: tabla final, pasada con ventana y guion del dueño (2026-09-06)
+
+Decisión ST-207 (`DECISIONS.md`: tabla final completa contra ST-200, nota
+de método y lo que no se verificó). Cierra la ronda 2 de Windows:
+ST-200 (arnés real + vigilante), ST-201 (cascada de selección), ST-202
+(selección nativa, una sola marca, barra de estado en todas las
+secciones), ST-203 (arranque fuera del hilo de UI con centro de tareas),
+ST-204 (`CatalogPersister`: un guardado por ráfaga, fuera de UI), ST-205
+(caché de miniaturas), ST-206 (menú por índice, carátulas en lote y cola
+del selector), ST-208 (carátulas fuera de RAM, `coverHash`), ST-209
+(recuadro de selección) y ST-210 ("Buscar actualizaciones" con red).
+
+**Lo que cambió para el dueño, en una línea cada uno**: la ventana aparece
+enseguida y la biblioteca carga detrás con "Cargando biblioteca… N de M";
+seleccionar álbumes ya no traba (0 ms por clic donde había 350-900);
+Ctrl+A, Shift+clic, Shift+flechas, casilla, recuadro y Escape en todas las
+cuadrículas; clic derecho con todo seleccionado abre en 5 ms e incluye
+"Buscar carátulas de N álbumes…" también en Canciones; guardar el catálogo
+ya no bloquea ni reescribe las carátulas; la memoria baja de 215 a 146 MB
+con 12 000 canciones; "Buscar actualizaciones" de Dispositivos pregunta de
+verdad a GitHub.
+
+**Números clave (mediana de 3 corridas del arnés, `-- 1000 12 0`)**:
+constructor de la biblioteca 2 300 → 61 ms; clic con cascada 352-765 → 0 ms;
+Ctrl+A real 12 ms; menú con 12 000 seleccionadas 5 ms; guardado por lote
+209 ms × N → 71 ms; `LoadItems` 1 700 → 257 ms; montón 113 → 47 MB;
+miniaturas en caliente 1 ms con tope de 64 MB. Disco lento calibrado a
+3 ms por llamada: 74 s de trabajo que antes congelaban la ventana y ahora
+corren en segundo plano. Comando: `dotnet run --project
+studio/windows/tools/LibraryPerfCheck -- 1000 12 0` (tercer argumento = ms
+de disco lento; con 0 se omite esa sección).
+
+**Pasada con ventana** (detalle y tabla en ST-207, capturas `w7-*.png` en
+`docs/capturas/rendimiento/`): arranque del dueño en frío 16.8 s → 2.4 s
+hasta navegación utilizable (ventana a 0.9 s); Ctrl+A en 1 000 álbumes con
+estado y marcas en 285-372 ms; menú con todo seleccionado en ~0.6 s con la
+acción plural, también en Canciones; Escape, Shift+clic 1 → 500, clic en
+hueco, scroll y doble clic verificados. **Hallazgos**: el vigilante de W0
+cuelga la app en ARM64 (4.º addendum de ST-200, mecánico) y el recuadro de
+ST-209 no recibe el arrastre (addendum, experto); la semántica de Shift
+tras Ctrl y el resaltado de filas en Canciones quedan para el dueño.
+
+### Guion de verificación interactiva para el dueño (VM, biblioteca real)
+
+Con un build local de `main` (la maestra lo instala; sin release) y la
+biblioteca de siempre en `V:`. Cada paso dice qué mirar; si algo no
+coincide, es hallazgo.
+
+1. **Arranque.** Abrir Aura Studio con `V:` montada. La ventana debe
+   aparecer y responder en menos de un segundo; abajo, la franja "Cargando
+   biblioteca… N de M" con "Detener". Mientras carga NO debe salir el
+   cartel "todavía no hay música". Al terminar, Canciones muestra el
+   catálogo completo. (Antes: 9-15 s en blanco.)
+2. **Álbumes: selección.** Clic en un álbum, luego en otro, luego en un
+   tercero: sin trabarse (antes se trababa al tercero). Ctrl+A: todas las
+   tarjetas marcadas al instante, una sola marca por tarjeta (el borde de
+   acento; sin la palomita del sistema). Shift+clic del 1.º al 500.º: rango
+   marcado sin espera. Escape: se limpia todo.
+3. **Álbumes: recuadro.** Arrastrar desde un hueco entre tarjetas: aparece
+   el recuadro y va marcando lo que toca; con Shift suma, con Ctrl alterna;
+   arrastrar hasta el borde inferior hace scroll solo. Clic en un hueco sin
+   modificadores: limpia. Un segundo Shift+clic reemplaza el rango anterior
+   pero conserva lo marcado aparte con Ctrl.
+4. **Álbumes: menú.** Con todo seleccionado, clic derecho: el menú abre al
+   instante y ofrece "Aplicar carátula recomendada a N álbumes" y "Buscar
+   carátulas de N álbumes…". La segunda arranca una tarea con "N de M",
+   el álbum en curso y Cancelar; los álbumes dudosos aparecen en el
+   selector de a uno con "Álbum 2 de 7", "Omitir este álbum" y "Cancelar
+   el resto". Cancelar no deshace lo ya aplicado y lo dice en el resumen.
+5. **Álbumes: desplazamiento.** Scroll rápido de arriba abajo y vuelta:
+   carátulas correctas en cada tarjeta (ninguna con la de otro álbum), sin
+   tirones.
+6. **Canciones.** Ctrl+A (12 000 filas al instante) → clic derecho: el
+   menú abre enseguida e incluye "Buscar carátulas de N álbumes…".
+7. **Artistas y Fotos.** Scroll fluido; en Fotos, la barra de estado dice
+   "N fotos · N en Fotos · … · N álbumes".
+8. **Guardar.** Cambiar la categoría de varias canciones o aplicar una
+   carátula a varios álbumes: la app no se congela; al cerrar la ventana
+   el catálogo queda guardado (reabrir y comprobar).
+9. **Disco desconectado.** Desmontar `V:` con la app abierta: estado
+   "biblioteca desconectada" (ST-171), sin error; volver a montar y
+   Recargar.
+10. **Dispositivos.** Con el iPod conectado, "Buscar actualizaciones":
+    "Buscando…" con Cancelar, y al terminar el texto según el caso (al
+    día / hay una publicada que esta copia trae / hay una más nueva que
+    esta copia: "Actualiza Aura Studio"). Sin red: "no se pudo comprobar",
+    nunca "al día".
+
+Sesión guionizada del vigilante (solo en Debug): con `AURA_WATCHDOG=1`,
+los pasos 1-7 no deben dejar ningún bloqueo > 250 ms en
+`%LOCALAPPDATA%\Aura Studio\watchdog.log`.
+
 ## Ronda de rendimiento 2, W0 — Arnés real y vigilante del hilo de UI (2026-09-06)
 
 Decisión ST-200 (`DECISIONS.md`, tabla "antes" completa ahí). `LibraryPerfCheck`

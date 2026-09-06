@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using AuraStudio.Core;
@@ -93,6 +94,27 @@ public sealed class AppPreferences : IAppPreferences
     {
         get => _values.FfmpegPath ?? "";
         set => Set(value, FfmpegPath, v => _values = _values with { FfmpegPath = v });
+    }
+
+    /// <summary>
+    /// Cuándo se consultó por última vez si hay una versión nueva de Aura Studio
+    /// (ST-211). <c>null</c> = nunca.
+    /// </summary>
+    public DateTimeOffset? AppUpdateLastCheck
+    {
+        get => DateTimeOffset.TryParse(_values.AppUpdateLastCheck, CultureInfo.InvariantCulture,
+                                       DateTimeStyles.RoundtripKind, out DateTimeOffset stored)
+            ? stored
+            : null;
+        set => Set(value?.ToString("o", CultureInfo.InvariantCulture), _values.AppUpdateLastCheck,
+                   v => _values = _values with { AppUpdateLastCheck = v });
+    }
+
+    /// <summary>De qué versión de Aura Studio ya se avisó (ST-211).</summary>
+    public string AppUpdateAnnouncedVersion
+    {
+        get => _values.AppUpdateAnnouncedVersion ?? "";
+        set => Set(value, AppUpdateAnnouncedVersion, v => _values = _values with { AppUpdateAnnouncedVersion = v });
     }
 
     public IReadOnlyList<string> LinkedLibraryFolders
@@ -498,5 +520,18 @@ public sealed class AppPreferences : IAppPreferences
         /// no sea un hash se lee como <c>"unknown"</c>, nunca como ausente.
         /// </summary>
         public Dictionary<string, string?>? BootloaderVerifiedDisks { get; init; }
+
+        /// <summary>
+        /// ST-211: cuándo se consultó por última vez si hay una versión nueva de
+        /// Aura Studio, en ISO-8601. El chequeo automático mira esto para no
+        /// preguntar más de una vez cada 24 h; el manual lo ignora.
+        /// </summary>
+        public string? AppUpdateLastCheck { get; init; }
+
+        /// <summary>
+        /// ST-211: de qué versión ya se avisó. Un aviso por versión — cerrar la
+        /// franja no puede significar que vuelva a aparecer al rato con lo mismo.
+        /// </summary>
+        public string? AppUpdateAnnouncedVersion { get; init; }
     }
 }

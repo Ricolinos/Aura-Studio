@@ -84,6 +84,32 @@
                                     Click="OpenLicenses_Click" VerticalAlignment="Center" />
                         </Grid>
                     </Border>
+
+                    <!-- ST-211: buscar una versión nueva de la app, donde ya se
+                         habla de versiones. Siempre dice algo, incluso "ya
+                         tienes la más nueva": preguntar y que no pase nada
+                         visible es lo mismo que un botón roto. -->
+                    <Border Style="{StaticResource AuraCardStyle}">
+                        <StackPanel Spacing="8">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                                <TextBlock Grid.Column="0" VerticalAlignment="Center"
+                                           Text="{x:Bind ViewModel.Updates.StatusMessage, Mode=OneWay}"
+                                           Style="{StaticResource AuraSecondaryTextStyle}"
+                                           TextWrapping="Wrap" />
+                                <Button Grid.Column="1" VerticalAlignment="Center"
+                                        Content="Buscar actualizaciones"
+                                        Click="CheckAppUpdates_Click"
+                                        IsEnabled="{x:Bind ViewModel.Updates.IsChecking, Mode=OneWay, Converter={StaticResource InvertBool}}" />
+                            </Grid>
+
+                            <ProgressBar IsIndeterminate="True"
+                                         Visibility="{x:Bind ViewModel.Updates.IsChecking, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+
+                            <ProgressBar Maximum="1"
+                                         Value="{x:Bind ViewModel.Updates.DownloadProgress, Mode=OneWay}"
+                                         Visibility="{x:Bind ViewModel.Updates.IsDownloading, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <!-- ===================== Biblioteca ===================== -->

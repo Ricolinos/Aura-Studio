@@ -105,10 +105,21 @@ try
     Measure("Guardar biblioteca.json (SaveItems, con carátulas)", () => { store.SaveItems(items); return 0; });
 
     long catalogBytes = new FileInfo(Path.Combine(root, "biblioteca.json")).Length;
-    long coversBytes = Directory.Exists(store.CoversDirectory)
-        ? Directory.EnumerateFiles(store.CoversDirectory).Sum(f => new FileInfo(f).Length)
-        : 0;
-    Console.WriteLine($"    biblioteca.json: {catalogBytes / 1024.0 / 1024.0:0.0} MB -- .portadas/: {coversBytes / 1024.0 / 1024.0:0.0} MB ({albums} archivos)");
+
+    // Addendum de ST-200: el conteo sale de CONTAR los archivos, no de `albums`.
+    // Decía "1000 archivos" al lado de "87.0 MB", que son doce mil de 7 KB: hay
+    // una carátula por ELEMENTO, no por álbum (las doce pistas de un disco
+    // guardan doce copias del mismo JPEG, ver ST-208). El número inventado ya
+    // hizo leer mal una medición.
+    string[] coverFiles = Directory.Exists(store.CoversDirectory)
+        ? Directory.GetFiles(store.CoversDirectory)
+        : [];
+
+    long coversBytes = coverFiles.Sum(file => new FileInfo(file).Length);
+
+    Console.WriteLine($"    biblioteca.json: {catalogBytes / 1024.0 / 1024.0:0.0} MB"
+                      + $" -- .portadas/: {coversBytes / 1024.0 / 1024.0:0.0} MB"
+                      + $" en {coverFiles.Length} archivos");
 
     // ST-204: cuánto costaba la sangría. Se mide sobre el archivo ya escrito,
     // reindentándolo tal cual: el mismo contenido exacto, con espacios.

@@ -8854,14 +8854,36 @@ instalada sigue leyendo ese archivo). Prioridad al fixture sintético;
 la traza contra datos reales del dueño queda para el cierre final, con
 su autorización.
 
-**Aviso, tras lo que pasó con el XCUITest del arrastre**: `xcrun
-xctrace record --launch` también LANZA la app -- si esta sesión no tiene
-consola real (confirmado arriba con la captura del arrastre), es
-probable que la traza tampoco muestre una ventana donde el dueño pueda
-interactuar mientras se graba. Se intenta de todas formas -- una traza
-de CPU/tiempo puede seguir siendo útil aunque no haya interacción real
--- pero si el dueño tampoco ve la ventana al intentarlo, es la misma
-limitación de máquina, no algo para seguir persiguiendo desde acá.
+**Corrección (2026-09-06, la misma sesión "mecanico sonnet"): el
+diagnóstico de abajo sobre "sesión gráfica no disponible" era
+INCORRECTO.** Instrucciones diferenciales de "Sesión Maestra" (lanzar
+el binario directo, sin `open`, y comparar con `sample`) mostraron que
+SÍ hay consola real -- un lanzamiento directo del ejecutable mostraba la
+ventana perfectamente (44,9M de huella). El proceso lanzado por `open
+--env`/XCUITest se quedaba colgado en `_dyld_start` (96K, nunca llega a
+`main()`): el problema era el lanzamiento CON variables de entorno
+inyectadas pasando por LaunchServices, no la ausencia de pantalla.
+Reintentar el mismo lanzamiento (`open -n --env`) lo destrabó -- efecto
+consistente con la hipótesis de "experto en código opus": Gatekeeper
+evaluando una app firmada ad-hoc en un disco externo (`/Volumes/…`) en
+su primer arranque por ese camino, colgada en `syspolicyd` hasta que el
+reintento la deja pasar. `xattr -dr com.apple.quarantine` se aplicó
+también pero no encontró nada que quitar (`No such xattr`) -- no fue lo
+que lo resolvió; el reintento sí. Detalle completo, con la corrida real
+del XCUITest, en "El arrastre de selección" más abajo.
+
+**Traza de CPU/Tiempo capturada** (`xctrace record --attach <pid>`,
+lanzando el ejecutable directo por shell y adjuntando después --
+esquiva el mismo lanzamiento por LaunchServices que colgaba con
+variables de entorno), antes (5b81c3a) y después (HEAD), contra el
+fixture sintético -- nunca la biblioteca del dueño. Detalle completo,
+incluida la limitación de la traza "antes" (el seam de biblioteca de
+prueba no existía en ese commit), en
+`docs/capturas/rendimiento/instruments-f7-attach.md`. Los `.trace` en
+sí no se commitean (bundles binarios que además incluyen el entorno
+completo del proceso en su tabla de contenidos); quedan en el scratch
+de la sesión, disponibles para el dueño si los quiere abrir en
+Instruments.app.
 
 ### El arrastre de selección (XCUITest, ST-188) -- resultado final
 
@@ -8875,33 +8897,99 @@ cae sobre una tarjeta dispara su `.draggable`) sobre varias tarjetas y
 confirma en `biblioteca.barraEstado` que quedó algo seleccionado. El
 dueño autorizó intentar correrla.
 
-**Se necesitan DOS condiciones de máquina, ninguna un defecto de código:**
+**Solo se necesitaba UNA condición de máquina, no dos:** el permiso de
+automatización/accesibilidad de macOS para el ejecutor de pruebas -- el
+dueño lo concedió; sin él, `xcodebuild test` falla de plano con "Timed
+out while enabling automation mode" antes de lanzar nada. **Resuelta.**
 
-1. El permiso de automatización/accesibilidad de macOS para el ejecutor
-   de pruebas -- el dueño lo concedió; sin él, `xcodebuild test` falla
-   de plano con "Timed out while enabling automation mode" antes de
-   lanzar nada. **Resuelta.**
-2. **Una sesión gráfica de verdad, con el usuario al frente de la Mac.**
-   Con el permiso ya concedido, la app arranca (`app.state` da
-   `.runningForeground`) pero `app.windows.count` es **0**. Una captura
-   de pantalla tomada justo después de `launch()` lo confirmó sin
-   ambigüedad: la pantalla mostraba las ventanas de terminal de las
-   sesiones de Claude Code que estaban corriendo en ese momento ("mecanico
-   sonnet" y "Sesión Maestra"), sin ninguna ventana de Aura Studio
-   dibujada -- ni pantalla negra ni de bloqueo, simplemente ninguna
-   consola real detrás de estas sesiones para que una `NSWindow`
-   aparezca donde alguien (persona o XCUITest) pueda verla. Diagnóstico
-   de "experto en código opus" (proceso vivo, sin crash en
-   `~/Library/Logs/DiagnosticReports`, geometría degenerada y menú del
-   Finder en el primer volcado de accesibilidad -- todo apuntaba a
-   "sesión gráfica no disponible"), confirmado con la captura. **No
-   resuelta desde estas sesiones -- solo se resuelve con el dueño
-   sentado en su propia sesión de inicio, la única con consola real.**
+La otra condición que se creyó necesaria ("una sesión gráfica de
+verdad, con el usuario al frente de la Mac") **se descartó** -- ver la
+corrección arriba, en "Trazas de Instruments". Con eso corregido, la
+prueba real sí llegó a lanzar la app, encontrar su ventana
+(`app.windows.count == 1`) y navegar la barra lateral. Lo que salió
+después ya no era un problema de máquina sino tres bugs reales de LA
+PRUEBA (nunca de la app), corregidos en el mismo archivo:
 
-El gesto queda escrito, compilado y probado hasta donde una sesión sin
-consola puede llegar. Es el único de los ocho gestos de F4/§A que
-termina así -- los otros siete están automatizados y en verde contra el
-núcleo puro (35/35).
+1. El predicado de "Álbumes" en la barra lateral buscaba `label`; el
+   árbol de accesibilidad real mostró que esas filas (ítems
+   seleccionables de un `List`/`Outline` en macOS) exponen su texto
+   como `value` -- a diferencia de los encabezados de sección ("Musica",
+   "Video"), que sí usan `label`. Corregido con un predicado que acepta
+   ambos.
+2. `otherElements[identificador]` nunca encontraba una tarjeta: el
+   identificador lo comparten la `Image` de la carátula y sus dos
+   `StaticText` (título, artista), directo bajo la cuadrícula -- ninguno
+   es de tipo `Other`. Corregido usando `app.images[...]`.
+3. La tarjeta 29 (la última) SÍ existe en el árbol de accesibilidad
+   (`LazyVGrid` la reporta aunque nunca se dibujó), pero pedirle una
+   coordenada ahí revienta la síntesis de eventos de macOS con
+   "point.x/y != INFINITY" -- un arrastre real solo puede terminar en un
+   punto que de verdad esté en pantalla. Corregido buscando la última
+   tarjeta que además sea `isHittable`.
+
+**Lo que queda abierto, y esta vez SÍ es de la máquina, no del
+código**: esta Mac tiene dos pantallas (5K principal + 1920x1080
+secundaria, confirmado con `system_profiler SPDisplaysDataType`) y la
+ventana de la app aparece en la secundaria. Ahí, `press(forDuration:
+thenDragTo:)` revienta la síntesis de eventos con "point.x/y !=
+INFINITY" para CUALQUIER punto final probado -- esquina de tarjeta,
+centro de tarjeta, incluso una tarjeta ya confirmada `isHittable` --
+consistente con un bug conocido de XCTest al sintetizar eventos de
+mouse contra ventanas que no están en la pantalla principal. Intentar
+reposicionar la ventana a la pantalla principal por Accessibility
+(`System Events`, que no sintetiza mouse y por eso no debería toparse
+con el mismo bug) **no funcionó**: el proceso que lanza `xcodebuild
+test` no se registra como "application process" ante `System Events`
+("-600, la aplicación no está abierta").
+
+El gesto llega escrito, compilado, y verificado hasta el arrastre en
+sí -- la barra lateral, la cuadrícula y las 30 tarjetas se encuentran y
+clickean bien, con la app real, con su propia ventana. Falta correrlo
+con la ventana en la pantalla principal (con el dueño sentado ahí) o
+resolver el bug de XCTest con ventanas en pantalla secundaria. Es el
+único de los ocho gestos de F4/§A que termina así -- los otros siete
+están automatizados y en verde contra el núcleo puro (35/35).
+
+### Incidente: preferencia real sobrescrita (2026-09-06)
+
+Intentando mejorar la traza "antes" de Instruments (que la traza de
+5b81c3a cargara la misma biblioteca sintética de 200 álbumes que la de
+"después", en vez de arrancar sin biblioteca -- ver
+`docs/capturas/rendimiento/instruments-f7-attach.md`), se corrió:
+
+```
+env HOME="<scratch>/fake-home-antes" defaults write com.ricolinos.aurastudio \
+    aura.libraryFolderPath "<scratch>/instruments-fixture-antes"
+```
+
+La intención era que el `$HOME` alterno aislara el write a un dominio
+de preferencias de scratch (5b81c3a no tiene ningún seam de prueba --
+`UITestEnvironment` es de esta misma ronda). **No fue así**: `defaults`/
+`cfprefsd` no respetan un `$HOME` reexportado por el proceso que llama
+-- el write aterrizó en el plist REAL del usuario
+(`~/Library/Preferences/com.ricolinos.aurastudio.plist`), que es el
+mismo dominio que usa la app 0.2.3 instalada del dueño
+(`/Applications/AuraStudio.app`, mismo bundle ID
+`com.ricolinos.aurastudio`).
+
+**Lo que cambió**: solo la clave `aura.libraryFolderPath`, de su valor
+real -- **`/Volumes/Mac/Mac Externo/Documents/Aura Library`** -- a la
+ruta de scratch de esta sesión. Ninguna otra clave del plist se tocó.
+**Lo que NO se tocó**: los archivos reales de la biblioteca en
+`/Volumes/Mac/Mac Externo/Documents/Aura Library` -- nunca se leyó ni
+se escribió nada ahí, solo cambió el puntero de preferencia. La app
+instalada 0.2.3 no estaba corriendo en ese momento.
+
+Un intento de revertir solo esa clave (`defaults delete
+com.ricolinos.aurastudio aura.libraryFolderPath`, para dejarla en "sin
+configurar" en vez de adivinar un reemplazo) fue bloqueado por el
+clasificador de seguridad de Claude Code antes de completarse. **El
+dueño restaura el valor correcto él mismo** -- ninguna sesión de Claude
+Code vuelve a tocar `~/Library/Preferences`, `~/Library/Application
+Support` ni el dominio del bundle real, con o sin `$HOME` alterno, de
+aquí en adelante (regla fijada por "Sesión Maestra" tras el incidente).
+La traza "antes" mejorada se cancela por esto -- documentado en
+`instruments-f7-attach.md`.
 
 ### Guion de verificación interactiva con el dueño
 
@@ -9793,3 +9881,537 @@ del todo exigiría que `AppPreferences` aceptara un almacén no persistente
 (un protocolo en vez de `UserDefaults`), que es un cambio de diseño en
 `Sources/` con su propio costo y ningún otro beneficio. Queda anotado, no
 hecho.
+
+## ST-200 (3.er addendum) — El arnés contaba las carátulas con un número inventado
+
+La línea de tamaños del arnés decía:
+
+```
+    biblioteca.json: 6.2 MB -- .portadas/: 87.0 MB (1000 archivos)
+```
+
+Los MB eran reales —sumados de los archivos— pero el **conteo** no: imprimía la
+variable `albums`. Y no son mil archivos sino **doce mil**: hay una carátula por
+**elemento**, no por álbum, porque las doce pistas de un disco guardan doce
+copias del mismo JPEG (anotado en ST-208 como la deduplicación que no entró en
+esta ronda). Los propios 87 MB lo delataban: mil carátulas de ~7 KB son 7 MB.
+
+No es cosmético. Ese número hizo leer mal una medición: el primer
+`Guardar biblioteca.json` tarda lo que tarda **crear doce mil archivos chicos**,
+y con la etiqueta diciendo "1000" el renglón parecía diez veces más lento de lo
+que debía y se buscó la causa en ST-204/ST-208. No estaba ahí — el
+`WriteCover` anterior a la ronda (`3de9cc5`) también escribía uno por elemento, y
+lo único que ST-208 agregó a ese camino es un SHA-256 por carátula, medido en
+**67 ms** para las doce mil.
+
+Ahora el conteo sale de contar los archivos, en la misma pasada de la que ya
+salían los bytes.
+
+## ST-208 (2.º addendum) — El resumen de una carátula se calcula una vez por arreglo
+
+`CoverArtHash.Of` resumía los bytes cada vez que se lo llamaba. Las doce pistas
+de un álbum comparten la **misma instancia** de bytes, así que guardar una
+biblioteca de 12 000 canciones resumía mil imágenes doce mil veces.
+
+Son **67 ms** medidos para las doce mil, así que esto es higiene y no
+rendimiento: se hace porque el repo ya tenía resuelta exactamente esa trampa —
+`CoverThumbnailKey` memoiza su resumen en una `ConditionalWeakTable` desde
+ST-031— y tener el mismo problema resuelto de dos formas distintas es lo que hace
+que una de las dos se olvide. Ahora las dos usan la misma tabla débil, que no
+impide que el arreglo se libere: cuando la carátula se va, su entrada se va con
+ella.
+
+La memoización es **por instancia, no por contenido**: la tabla no puede comparar
+megabytes para buscar. Dos copias iguales de la misma carátula siguen dando el
+mismo resumen —eso es del algoritmo, y hay prueba— pero cada una tiene su
+entrada.
+
+### Verificación
+
+`dotnet test`: **1 531 pruebas en verde**, seis nuevas — el formato exacto que
+fijó la maestra (64 caracteres, hexadecimal en mayúsculas, sin separadores), que
+los mismos bytes en otro arreglo den el mismo resumen, que bytes distintos den
+resúmenes distintos, que **la misma instancia no se resuma dos veces**, que dos
+arreglos iguales no compartan entrada, y que un arreglo vacío no lance desde el
+camino de guardado.
+
+## ST-211 — Windows: "Buscar actualizaciones de Aura Studio"
+
+Encargo del dueño, sobre la propuesta de **ST-191** y con la decisión de
+**ST-193**, que es la referencia: se escribió primero en Swift y acá se porta
+citándola.
+
+### Qué había
+
+Nada. Studio sabía avisar de una versión nueva **del firmware** desde ST-046, y
+ST-210 acaba de arreglar que ese aviso consultara de verdad la red; pero la app
+no sabía nada **de sí misma**. Quien tuviera la 0.2.1 no se enteraba de la 0.2.3
+salvo yendo a mirar el repositorio. Y como el firmware que la app instala viaja
+**dentro** de la app (`FIRMWARE_VERSION`, artefactos embebidos), una app vieja es
+también un firmware viejo: las dos cosas se arrastran juntas.
+
+### La decisión, portada literal
+
+`AppUpdateDecision` y `AppUpdatePlatform` son el port de **ST-193**. Las reglas,
+en el mismo orden que allá: un draft nunca cuenta; una prerelease solo si se
+pide; un tag que no parsea se ignora sin romper el resto; gana el **mayor**, no
+el primero; solo hay novedad si es **estrictamente mayor**; si la versión
+instalada no parsea **se calla** —sin saber qué hay instalado no se puede afirmar
+que algo sea más nuevo—; y si falta el asset se anuncia igual la versión pero
+**sin botón de descarga**, con el enlace a la página del Release.
+
+Las **trece pruebas** de allá están portadas una por una, con las mismas entradas
+y los mismos nombres traducidos: son la especificación ejecutable, y si las dos
+plataformas se comportan distinto en cualquiera de ellas, una de las dos está
+mal. Entre ellas el **candado del patrón de nombres**, que es el único contrato
+nuevo de esta funcionalidad:
+
+```
+tag:  v<versión>
+mac:  AuraStudio-<versión>.dmg
+win:  AuraStudioSetup-<versión>-arm64.exe
+      AuraStudioSetup-<versión>-x64.exe
+```
+
+`SemVer` gana `ReleaseString` (la versión como aparece en el nombre del asset,
+sin la `v`), y `GitHubRelease`/`GitHubReleaseAsset` ganan los campos que la
+decisión necesita y que hasta ahora no se leían: `html_url`,
+`browser_download_url` y `digest`.
+
+### Lo que es de Windows
+
+- **`GitHubReleaseChecker` pregunta por repositorio**, no solo por familia de
+  firmware. Es el mismo `GET /repos/…/releases` con las mismas reglas de token y
+  de fallo; las dos formas comparten el cuerpo, porque dos copias serían dos
+  criterios de cuándo un rechazo del token es "sin información".
+- **Cuándo pregunta**: al arrancar, en segundo plano, como mucho **una vez cada
+  24 h** —fijas, iguales en las dos plataformas—; y a pedido desde Ajustes ›
+  Acerca de, que **ignora el intervalo y el descarte**. La fecha del último
+  chequeo se anota **solo si la consulta salió bien**: anotarla tras un fallo
+  dejaría a la app sin volver a preguntar durante un día por un rato sin
+  conexión.
+- **Sin red**: el automático **calla** —el usuario no preguntó nada— y el manual
+  distingue "no se pudo preguntar" de "no hay novedades", que es exactamente el
+  defecto que ST-210 arregló para el firmware.
+- **Nada modal**: una `InfoBar` en el armazón, del tipo que la app ya usa, con el
+  mismo texto que la franja de macOS. Se puede cerrar, y **cerrada no vuelve por
+  esa misma versión** (se persiste el tag). Haber callado la 0.3.0 no calla la
+  0.3.1.
+- **"Descargar" baja el instalador de la arquitectura del PROCESO** (ST-135) y lo
+  ejecuta. La arquitectura es la del proceso y no la de la máquina: un Aura
+  Studio x64 bajo emulación en un Windows ARM tiene que ofrecerse su propio
+  instalador. Al arrancar el instalador se **cierra la ventana**, no se mata el
+  proceso, para que el guardado pendiente del catálogo salga primero (ST-204).
+
+### La diferencia con macOS, y por qué
+
+En macOS solo se abre la URL: el usuario baja el DMG y arrastra. Acá el
+instalador **se ejecuta**, así que **se verifica antes**:
+
+1. el **SHA-256 que publica la propia API** en el asset (`digest: "sha256:…"`);
+2. si esa respuesta no lo trae —una vieja, una recortada—, el **tamaño exacto**,
+   que no es una firma pero sí atrapa una descarga cortada, que es el fallo
+   frecuente.
+
+Si no coincide, el archivo **se borra y no se abre nada**. Lo que no se hace
+nunca es ejecutar algo sin haber comprobado nada. Solo se baja de la URL de asset
+que devolvió la propia API, nunca de una construida a mano.
+
+### Lo que NO entra acá
+
+- **Auto-actualización.** Se baja y se ejecuta el instalador que ya existe; no
+  hay componente nuevo que mantener ni en el que confiar.
+- **Canales estable/beta.** Hoy todo lo publicado es beta, así que las
+  prereleases cuentan siempre. El interruptor importa el día que exista un canal
+  estable, y la decisión ya lo tiene como parámetro.
+- **Notas dentro de la app**: se enlaza la página del Release, que ya las tiene y
+  no hay que mantener por duplicado.
+
+### Verificación
+
+`dotnet build` de Core, App y los dos arneses: **0 advertencias, 0 errores**.
+`dotnet test`: **1 550 pruebas en verde**, diecinueve nuevas — las trece de
+ST-193 portadas y seis de cuándo se pregunta y cuándo se avisa (el intervalo de
+24 h, el reloj que fue hacia atrás, no avisar dos veces de lo mismo, que callar
+una versión no calle la siguiente).
+
+Lo que **no** se verificó acá, y hace falta con la ventana y el dueño delante:
+
+- **La consulta real a GitHub y la descarga**: esta sesión no le pega a la API.
+- **La ejecución del Setup**: por instrucción de la Maestra no se ejecuta ningún
+  instalador en esta VM — instalaría encima de la 0.2.3 y no hay vuelta atrás.
+  Queda para la verificación del dueño, junto con el cierre de la ventana al
+  arrancar el instalador.
+- **Cómo se ve la franja**: que aparezca, que se pueda cerrar y que no vuelva.
+
+## ST-207 — Windows: cierre de la ronda 2 de rendimiento (W7): la tabla final contra ST-200, y lo que se vio con la ventana delante
+
+Ronda 2 de rendimiento, encargo W7 de `docs/plans/PLAN-studio-rendimiento-2.md`
+(carpeta padre). Cierra las decisiones Windows ST-200..ST-206, ST-208, ST-209
+y sus addenda, más ST-210. Sin release ni pin: saldrá como 0.3.0 cuando la
+maestra lo decida. Esta decisión la escribió el coordinador de Windows; la
+pasada con ventana la ejecutó el mecánico con el mismo binario (sección
+"Pasada con ventana").
+
+### Cómo se midió
+
+Arnés `tools/LibraryPerfCheck` de ST-200 (con sus tres addenda: fixture con
+`fileSizeBytes`, escenario de migración aparte y disco lento calibrado),
+compilado en Debug en un worktree limpio de `85cb9a4` (todo el código de la
+ronda) y corrido **tres veces completas** con `-- 1000 12 0` y una con
+`-- 1000 12 3`, en la VM ARM64 de siempre, sin otra compilación en marcha.
+La celda "después" es la **mediana de las tres corridas** y entre paréntesis
+va el rango cuando la VM hizo ruido. La celda "antes" es la de ST-200 (y su
+addendum de estado estable donde aplica). Ninguna corrida murió por memoria:
+el arnés ya no mantiene las carátulas en RAM (ST-208).
+
+Como control de la máquina, el arnés **del propio commit de ST-200**
+(`3de9cc5`, compilado tal cual en un worktree temporal) se corrió dos veces
+en la misma tanda: ver la fila de `SaveItems` y la nota de abajo.
+
+Control de la máquina, hoy, con el arnés de `3de9cc5` (dos corridas), para
+leer la columna "antes" con la lentitud de la VM de esta tarde y no con la
+de la mañana:
+
+| Fila (código de ST-200, sin la ronda) | ST-200 (mañana) | Hoy, misma tanda |
+|---|---|---|
+| `LibraryViewModel` ctor (`Reload()` en UI) | ~2 300 ms | 942 / 2 181 ms |
+| `LoadItems` (`ReadCover` por ítem) | ~1 700 ms | 791 / 1 290 ms |
+| `SongsViewModel` ctor | ~293 ms | 374 / 623 ms |
+| `MediaGridViewModel.Show(Albums)` | ~61 ms | 66 / 258 ms |
+| `SaveItems` inicial con carátulas | ~2 300 ms | 5 324 / 6 688 ms |
+
+### Tabla final (1 000 álbumes / 12 000 canciones, carátulas JPEG reales de ~15 KB)
+
+| Medición | Antes (ST-200) | Después (`85cb9a4`) | Objetivo §A | |
+|---|---|---|---|---|
+| **Arranque: `LibraryViewModel` ctor** | ~2 300 ms (`Reload()` completo en el hilo de UI) | **61 ms** (32-95), vuelve enseguida | ventana interactiva < 1 s | ✔ en el arnés; con ventana, ver abajo |
+| Carga completa de la biblioteca | (era el arranque) | 636 ms (368-1 282), **en segundo plano** con progreso | — | ✔ |
+| Disco lento (réplica calibrada): `RefreshAvailable` + `ReadCover` | 213 s + 231 s a ~19 ms/llamada | 37.6 s + 36.6 s a **3.0 ms/llamada efectivos**; ya no está en el hilo de UI | — | ✔ (ST-203) |
+| **Selección CON la cascada real, álbum 1/2/3/4** | ~352 / ~765 / ~648 ms | **0 / 0 / 0-1 / 0 ms** | < 16 ms por cambio | ✔ |
+| Selección aislada, álbum 1/2/3 | ~28 / ~35 / ~35 ms | 1 / 0-4 / 0 ms | < 16 ms | ✔ |
+| **Ctrl+A en Álbumes, gesto real (un `SelectAll`, un aviso)** | no existía (réplica: ~21 s) | **12 ms** (5-15) | < 100 ms | ✔ (que todas las tarjetas muestren su estado: ventana) |
+| 1 000 Ctrl+clic seguidos (la fila de ST-200) | ~21 000 ms | 3 ms (2-13) | — | ✔ |
+| Álbumes: menú contextual con 1 000 seleccionados | ~9 ms | 4 ms (2-11) | < 200 ms | ✔ |
+| **Canciones: abrir el menú con 12 000 seleccionadas** | no medido (alcance 24 ms O(N²) + `ScopeOf` 9.5 ms) | **5 ms** (3-6) con el índice ya armado; réplicas viejas en la misma corrida: 48 + 49 ms | < 200 ms; incluye "Buscar carátulas de N álbumes…" | ✔ |
+| Armar `LibraryCatalogIndex` (una vez por versión del catálogo) | — | 51 ms (44-170), calentado en segundo plano | — | ✔ |
+| `SongsViewModel` ctor (12 000 filas) | ~293 ms (71 en estado estable) | 103 ms (87-248), sin `FileInfo` por fila | — | ✔ |
+| `PlaylistsViewModel` ctor | ~95 ms (157 estable) | 10 ms (6-10) | — | ✔ |
+| `MediaGridViewModel.Show(Albums)` | ~61 ms | 80 ms (76-320) | — | = (misma máquina, más ruido) |
+| Guardado del catálogo: N álbumes con carátula en lote | 1 guardado completo **por álbum**, en el hilo que pide (~209 ms × N; 20 álbumes = 4 171 ms) | **1 guardado**, fuera del hilo de UI: 71 ms (69-107) | un guardado por acción de lote | ✔ (ST-204) |
+| Migración única `fileSizeBytes` (biblioteca vieja) | 220 ms medir + 4 240 ms guardar | 354 ms medir + 261 ms guardar (el guardado ya no reescribe carátulas) | — | ✔ |
+| `LoadItems` | ~1 700 ms (`ReadCover` por ítem) | **257 ms** (244-489), sin abrir 12 000 archivos | — | ✔ (ST-208) |
+| Memoria residente tras leer el catálogo / montón administrado | 215 MB / 113 MB (medido en ST-208 sobre `948c01c`) | **146 MB / 47 MB** | sin JPEG completos en RAM | ✔ |
+| Miniaturas: pasada en frío, 1 000 pedidos | sin caché (decodificación en UI por tarjeta) | 1 005 ms (856-1 148), 1 000 decodificaciones fuera de UI | — | ✔ (ST-205) |
+| Miniaturas: volver sobre lo último visto (186) | — | **1 ms** (0-2), 0 decodificaciones | — | ✔ |
+| Caché de miniaturas llena | — | 186 miniaturas, 63.9 MB; residente 230 MB / montón 60 MB | tope 64 MB | ✔ |
+| `biblioteca.json` | 6.8 MB con sangría | 6.2 MB compacto (con sangría serían 8.2) | — | ✔ |
+| `SaveItems` inicial con las 12 000 carátulas pendientes | ~2 300 ms | 12 334 ms (8 109-13 447) — **ver nota** | — | ruido de máquina, no regresión |
+
+Objetivos de §A que el arnés no puede cerrar y quedan en la pasada con
+ventana: bloqueos del hilo principal > 250 ms en la sesión guionizada (0),
+modos de selección (clic, Ctrl/Shift+clic, Shift+flechas, casilla, recuadro,
+Ctrl+A, Escape) y "todas las tarjetas muestran su estado" tras Ctrl+A.
+"Arrastrar la selección a la barra lateral" quedó fuera de la ronda por
+decisión de la maestra (ST-202); las operaciones largas con indicador y
+cancelación las cubre el centro de tareas de ST-203 (carga, normalización,
+relleno de tamaños, carátulas en lote de ST-206).
+
+### Nota sobre `SaveItems` inicial: por qué no es una regresión
+
+La primera fila de guardado del arnés escribe **12 000 archivos** de
+carátula, no 1 000: el fixture da la misma carátula a las doce pistas de
+cada álbum y `WriteCover` escribe un `<id>.jpg` por elemento, igual que antes
+de la ronda (la etiqueta "(1000 archivos)" mentía; corregida en el addendum
+de ST-200). Medido hoy en la misma tanda y la misma VM, el arnés de
+`3de9cc5` (código de ST-200 sin ningún cambio de la ronda) dio **5 324 y
+6 688 ms** para esa fila, que a la mañana había dado 2 300; el de `85cb9a4`
+dio 8 109-13 447 en tres corridas y 8 687-18 915 en las seis del experto.
+La línea base no se reproduce ni con el código viejo, la variación entre
+corridas del mismo código es 2× y la diferencia entre ambos cae dentro de
+ese ruido. Lo único que ST-208 sumó a esa escritura es un SHA-256 por
+carátula: 67 ms sobre 82 MB, medido; y desde ST-208 los guardados
+siguientes ya no reescriben ninguna carátula (107-261 ms contra 209 ms × N
+antes), que es lo que la ronda vino a conseguir. Se anota, no se abre como
+hallazgo.
+
+### Qué NO cubre esta decisión
+
+- ST-211 (actualizaciones de la propia app): espera la propuesta ST-191 de
+  la Mac, que la maestra fijará para ambas.
+- Deduplicación de carátulas por álbum: fuera de la ronda por decisión de
+  la maestra (addendum de ST-208), `coverHash` queda como habilitador.
+- Carátulas sucias escritas dentro de la instantánea en el hilo de UI:
+  fuera de la ronda (addendum de ST-204).
+- Arrastrar la selección a la barra lateral: backlog.
+
+### Pasada con ventana
+
+La hizo el coordinador desde su sesión de consola de la VM (los jobs en
+segundo plano de las ejecutoras no tienen estación de ventanas: la app
+arranca pero nunca muestra ventana ahí). Binario **Release** del worktree
+de `85cb9a4`, lanzado con `AURA_STUDIO_PREFERENCES` apuntando a un archivo
+de preferencias propio (nunca el del dueño) y sin el vigilante (ver el
+hallazgo 1). Gestos inyectados con `mouse_event`/`keybd_event`, lectura por
+UI Automation y capturas de pantalla reales en `docs/capturas/rendimiento/`
+(`w7-*.png`, a media resolución) con el registro completo en
+`w7-pasada-log.txt`. Dos bibliotecas:
+
+- **La sintética del arnés** (1 000 álbumes / 12 000 canciones, carátulas
+  JPEG reales, audio vacío, disco local): la escala de §A. Es la de todos
+  los gestos.
+- **La del dueño**, copiada del volumen de red (2 804 elementos, 2 209
+  carátulas, 204 MB): solo para el arranque. El catálogo guarda las rutas
+  relativas a la raíz (`Música/…`) y una copia sin esas carpetas queda
+  vacía; enlazarlas exige privilegios que esta sesión no tiene, así que la
+  pasada de gestos con la biblioteca real queda para el dueño (o para una
+  carpeta hermana con enlaces creados desde la Mac, pedida a la maestra).
+
+**Arranque, el número del dueño** (tiempo desde el lanzamiento; "ventana"
+= visible; "navegación" = UI Automation encuentra "Álbumes"):
+
+| | 0.2.3 instalado (antes) | `85cb9a4` Release (después) |
+|---|---|---|
+| Biblioteca del dueño, en frío | ventana 1 441 ms, **navegación 16 751 ms** | ventana **918 ms**, navegación 2 411 ms |
+| Biblioteca del dueño, en caliente | ventana 758 ms, navegación 3 768 ms | ventana 1 050 ms, navegación 2 790 ms |
+| Sintética (12 000), en caliente | — | ventana 461-620 ms; "Álbumes" con las 1 000 tarjetas y el estado "1,000 álbumes · 40 artistas · 12,000 canciones" a **1 158-2 035 ms** |
+
+Los 9-15 s en blanco de ST-172 son exactamente la fila "en frío" del
+0.2.3: la ventana salía y se congelaba con `Reload()` dentro. Con ST-203 el
+proceso responde a los 150-200 ms y la ventana está a menos de un segundo;
+la franja "Cargando biblioteca… N de M" no se llegó a ver porque la carga
+de 12 000 en disco local termina antes de que el sondeo la alcance
+(< 1 s); queda para el dueño verla con la biblioteca por red.
+
+**Gestos verificados en pantalla** (sintética, tres corridas coherentes;
+los tiempos incluyen el rebote de 120 ms de la barra de estado y el sondeo
+de UI Automation, así que son cotas superiores):
+
+| Gesto | Resultado |
+|---|---|
+| Clic en una tarjeta | "1 de 1,000 seleccionados · 1 artista · 12 canciones · 43 min" a los 201-223 ms |
+| **Ctrl+A** en Álbumes | "1,000 de 1,000 seleccionados …" a los **285-372 ms**; las 95 tarjetas realizadas marcadas, casilla y un solo borde (`w7-albumes-ctrl-a.png`) |
+| Clic derecho con 1 000 seleccionados | menú a los 546-627 ms con "Buscar carátulas de 1000 álbumes…" y "Aplicar carátula recomendada a 1000 álbumes" (`w7-albumes-menu-1000.png`) |
+| Escape | vuelve a "1,000 álbumes …" a los 215-247 ms; 0 seleccionadas |
+| Shift+clic tras desplazar al 50 % (1 → 500) | "501 de 1,000 seleccionados" a los 228-232 ms (`w7-albumes-shift-501.png`) |
+| Clic en un hueco | limpia la selección (221-240 ms) |
+| Scroll completo (50 PageDown/PageUp) | 6.1-6.3 s, la app respondiendo todo el tiempo; sin tarjeta en blanco ni carátula visiblemente repetida (`w7-albumes-scroll.png`) |
+| Doble clic en una tarjeta | abre el álbum (`w7-doble-clic-abre-album.png`) |
+| **Canciones: Ctrl+A → clic derecho** | menú de 11 ítems a los 578 ms, con "Buscar carátulas de 1000 álbumes…" (`w7-canciones-menu-12000.png`) |
+| Artistas | 10 PageDown en 1.3 s, respondiendo |
+| `Process.Responding` | verdadero en todos los muestreos de la pasada |
+
+**Hallazgos** (los dos primeros ya asignados):
+
+1. **El vigilante del hilo de UI cuelga la app en esta VM ARM64.** Con
+   `AURA_WATCHDOG=1` (Debug) la ventana aparece y se queda en blanco y "sin
+   responder" 80 s o para siempre, con CPU cero; sin la variable, el mismo
+   binario responde desde los 677 ms. Causa leída en el código: suspende el
+   hilo de UI y, suspendido, inicializa dbghelp invadiendo el proceso, que
+   necesita el candado del cargador que ese hilo tiene tomado cuando el
+   bloqueo es una carga de módulo o JIT (el caso del arranque); y solo
+   escribe un bloqueo cuando termina, así que el cuelgue no queda en el
+   log. Consecuencia: "0 bloqueos > 250 ms" **no se pudo medir** con el
+   vigilante; se sustituyó por `Process.Responding` (que solo ve cuelgues
+   > 5 s) y por las latencias de arriba. 4.º addendum de ST-200, al
+   mecánico.
+2. **El recuadro de selección (ST-209) no recibe el arrastre.** Arrastrando
+   desde el hueco entre dos filas y desde el área vacía a la derecha de la
+   última columna, con 20-24 pasos de 50 ms, no se dibuja nada ni cambia la
+   selección (`w7-recuadro-sin-efecto.png`); los mismos eventos sintéticos
+   sí producen clics, Shift+clic y menús. Es el punto que ST-209 dejó como
+   único riesgo: la capa va detrás de la cuadrícula y el fondo del
+   `GridView` se queda con el puntero. Addendum de ST-209, al experto;
+   se vuelve a medir con este mismo guion.
+3. **Shift tras Ctrl, no concluyente.** Clic en 0000, Ctrl+clic en 0002,
+   Shift+clic en 0004 y luego Shift+clic en 0001 dejó, en una corrida,
+   {0001, 0002} y, en otra, solo el último tocado, y Shift+flecha no
+   extendió; en cambio el Shift+clic 1 → 500 funcionó en tres corridas. Lo
+   más probable es que la inyección de modificadores de este guion sea
+   inestable, no la app; queda para el dueño con el teclado de verdad
+   (`w7-shift-tras-ctrl-inconcluso.png`).
+4. **Resaltado de fila en Canciones.** Tras clic en una fila y Ctrl+A el
+   menú demuestra que la selección es completa, pero en la captura las
+   filas no muestran resaltado y la barra de Canciones no dice "N de M
+   seleccionadas" (solo Álbumes, Películas, Series y Fotos llevan resumen
+   de selección). Para el dueño: si la tabla no marca visiblemente lo
+   seleccionado, es hallazgo de ST-202.
+
+**No verificado en esta pasada**: la franja de carga y el arranque con la
+biblioteca por red (solo copia local del catálogo); la cola del selector de
+carátulas y la tarea "N de M" (no se lanzó ninguna acción que escriba);
+"Buscar actualizaciones" de Dispositivos (sin iPod); la app en alto
+contraste; Fotos con contenido (el fixture no tiene).
+
+## ST-209 (2.º addendum) — El recuadro no recibía el arrastre
+
+Reportado por W7 con la app delante, reproducido dos veces sobre la biblioteca
+sintética de 1 000 álbumes: arrastrar desde el hueco entre dos filas o desde el
+área vacía a la derecha de la última columna **no dibujaba nada y no cambiaba la
+selección**. Los mismos eventos sintéticos sí producían clic, Ctrl+A, Mayús+clic,
+menús y doble clic, así que no era la inyección: era el cableado.
+
+Es exactamente el riesgo que el addendum anterior dejó anotado como lo único que
+no se podía comprobar sin ventana. Quedó comprobado, y estaba mal.
+
+### Por qué
+
+La capa de captura va **detrás** de las tarjetas —que es el diseño de ST-184 en
+la Mac y sigue siendo el correcto— con fondo transparente y visible al
+hit-testing. Lo que no se cumple en WinUI es la premisa: **al `ScrollViewer` del
+`GridView` le llega el puntero en toda su superficie**, huecos incluidos, y lo
+marca como manejado. La capa de atrás no recibe nada, no porque esté mal
+configurada sino porque nunca le llega el turno.
+
+### Qué se hizo
+
+Los mismos manejadores se enganchan **también sobre la propia cuadrícula**, con
+`AddHandler(..., handledEventsToo: true)` — que es la forma de ver un evento que
+otro ya marcó como atendido. Y el gesto decide por **origen**, no por capas: si
+el punto de partida está dentro de un `GridViewItem`, no es un recuadro y no se
+hace nada; el clic, el doble clic y el arrastre de la tarjeta siguen siendo
+suyos. Se comprueba subiendo por el árbol visual desde el origen del evento hasta
+el contenedor, que es lo mismo que ya hace el menú contextual para saber a qué
+fila pertenece un clic.
+
+El puntero se captura sobre la cuadrícula y no sobre la capa de atrás, así que
+los movimientos siguen llegando aunque el puntero salga de la ventana; y como el
+mismo gesto puede llegar ahora por dos caminos, el segundo no puede volver a
+empezarlo.
+
+**La capa se queda.** Es la que expresa el diseño —solo lo que empieza en un
+hueco—, no estorba, y si en alguna versión de WinUI el `ScrollViewer` dejara
+pasar el puntero, funcionaría por ahí. Su fondo sigue siendo transparente y no
+nulo: un fondo nulo la sacaría del árbol de hit-testing.
+
+### Lo que NO se hizo, y por qué
+
+**No se le quitó el fondo al `GridView`.** Era la otra forma de que los huecos
+dejaran pasar el puntero, y es la que sugiere el diseño de la Mac, pero en WinUI
+ese mismo fondo es lo que hace que la rueda del ratón desplace **sobre un hueco**:
+quitarlo arreglaría el arrastre y rompería el scroll en las zonas vacías, que es
+justo lo que este arreglo no puede romper. La ruta por `handledEventsToo` no
+depende de fondos ni del orden en el árbol, así que no hace falta elegir entre
+las dos cosas.
+
+### Verificación
+
+`dotnet build` de Core, App y los dos arneses: **0 advertencias, 0 errores**.
+`dotnet test`: **1 550 pruebas en verde** — el núcleo del recuadro ya estaba
+probado entero desde ST-209 y no cambió; lo que cambió es de dónde le llegan los
+eventos, que es precisamente lo que no tiene prueba automática.
+
+Lo que **no** se verificó acá, y es lo mismo que destapó el fallo: el gesto. Esta
+sesión no abre la ventana. Lo vuelve a correr W7 con su guion —`w7-pasada5.ps1`,
+arrastre desde el área vacía de la derecha— y con las dos formas que fallaron:
+desde el hueco de 8 px entre filas y desde la derecha de la última columna. Junto
+con eso hay que mirar que **no** se hayan roto el clic, el doble clic, el
+arrastre de una tarjeta ni el desplazamiento con la rueda sobre un hueco.
+
+### El segundo intento tampoco alcanzó: se instrumenta
+
+W7 volvió a medir sobre ese commit, con la ventana en `0,0` y la pantalla a
+100 %, y el recuadro **sigue sin recibir el arrastre**: ni desde la franja libre
+a la derecha de la última columna (inicio en 1834,305) ni desde el hueco entre la
+fila 1 y la fila 2 (706,570). Lo demás sí anda —arrastrar desde una tarjeta la
+selecciona y no dibuja recuadro, la rueda desplaza sobre el hueco y sobre la
+franja, el clic y el doble clic funcionan—, y los mismos eventos sintéticos
+producen clics, Mayús+clic y menús, así que tampoco es la inyección.
+
+Así que la explicación de más arriba —"escuchar en la cuadrícula con
+`handledEventsToo` garantiza que el gesto llegue"— **está sin demostrar**: es lo
+que debería pasar según cómo enruta WinUI el puntero, y la medición dice que no
+pasa. Corregir la ST antes que insistir: lo que hay es una hipótesis que ya
+falló una vez.
+
+**Lo que entra ahora no es un tercer arreglo a ciegas, es un instrumento.**
+`MarqueeTrace` escribe en `%LOCALAPPDATA%\Aura Studio\marquee.log`, apagado salvo
+que se lo pida (`AURA_MARQUEE_TRACE=1`, o siempre en `DEBUG`), y anota lo único
+que no se puede deducir sin la ventana:
+
+- que los manejadores se engancharon, y sobre qué;
+- **cada** `PointerPressed` que llega: por qué ruta (capa, cuadrícula o
+  `ScrollViewer`), si venía ya marcado como atendido, el `OriginalSource` y su
+  cadena de padres, y qué se decidió — tarjeta o hueco;
+- si `CapturePointer` devolvió `true`;
+- cuántos `PointerMoved` llegan, con qué rectángulo, cuántos marcos hay y cuántas
+  tarjetas entran y salen;
+- y **`PointerCaptureLost` como línea propia**, separado de soltar: si el gesto
+  muere porque el `ScrollViewer` se lleva el puntero, la traza lo dice en vez de
+  parecer que el usuario soltó.
+
+De paso, dos cosas que la instrumentación dejó a la vista y se corrigen:
+perder la captura ya **no** cuenta como un clic en un hueco (antes podía limpiar
+la selección sin que nadie hubiera soltado en un hueco), y la decisión de
+"tarjeta" mira `SelectorItem` y no solo `GridViewItem`, que es su clase base.
+
+También se engancha el mismo juego de manejadores al `ScrollViewer` interno, en
+cuanto existe. Es enganche de más a propósito —los manejadores ya se defienden de
+recibir el mismo gesto dos veces— y sirve para dos cosas: si el evento se
+atendiera ahí sin burbujear, este es el único sitio donde se lo puede ver; y si
+resulta que por ahí sí llega, el arreglo ya está puesto.
+
+Lo verifica W7 con su guion, y lo que decida el siguiente intento saldrá del
+`marquee.log`, no de otra hipótesis.
+
+### Resuelto: el registro lo demuestra, y el negativo era del arnés
+
+Con el instrumento puesto, W7 volvió a medir y **el recuadro funciona**. Las
+líneas que lo prueban, del `marquee.log` de esa corrida:
+
+```
+Attach   grid=sí capa=sí
+Attach   scroll=sí
+Pressed  ruta=scroll handled=False yaArrastrando=False decision=hueco pos=(933,40)
+         origen=Grid cadena=Grid > Border > ScrollViewer > Border > GridView
+Start    captura=True origen=(933,40) seleccionDePartida=0 mods=None
+Pressed  ruta=grid   handled=True  yaArrastrando=True  decision=hueco pos=(933,40)
+Moved  #1  pos=(911,55)  rect=(911,40,23x15)   marcos=60 entran=1 salen=0 marcados=1
+Moved  #20 pos=(547,303) rect=(547,40,387x263) marcos=60 entran=2 salen=0 marcados=6
+Moved  #29 pos=(387,412) rect=(387,40,546x372) marcos=60 entran=0 salen=0 marcados=6
+Released  tras 29 movimientos
+```
+
+Y con capturas: [`w7-recuadro-en-curso.png`](capturas/rendimiento/w7-recuadro-en-curso.png)
+—el recuadro azul a mitad de arrastre, con «4 de 1 000 seleccionados»— y
+[`w7-recuadro-resultado.png`](capturas/rendimiento/w7-recuadro-resultado.png), con
+los seis del final.
+
+**Qué dice el registro, exactamente.** La cadena de padres de un clic en un hueco
+es `Grid > Border > ScrollViewer > Border > GridView`: el blanco del hit-test es
+un elemento **de la plantilla del `GridView`**, no la capa de atrás. Por eso la
+capa nunca recibió nada — no porque el `ScrollViewer` marcara el evento como
+atendido (llega con `handled=False`), sino porque **está encima**: es el que se
+lleva el puntero en los huecos. La segunda línea `Pressed ruta=grid handled=True`
+es el mismo evento burbujeando hasta la cuadrícula, ya atendido por el manejador
+que arrancó el gesto, y el guardia de "ya arrastrando" impide que empiece dos
+veces.
+
+Eso también significa que **el arreglo del commit anterior era el correcto**: el
+evento sí burbujea hasta el `GridView`, así que escuchar ahí bastaba. Lo que
+nunca había funcionado no era la pulsación sino el **movimiento**.
+
+**La trampa estaba en el arnés.** El guion movía el puntero con `SetCursorPos`, y
+bajo captura **eso no genera `PointerMoved` con coordenadas nuevas**: en la
+primera corrida instrumentada se ve `Start captura=True` seguido de cuatro
+`Moved` que traen la posición del origen y `rect` de 0x0. Con
+`mouse_event(MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE)`, que es lo que produce un
+ratón de verdad, llegan los veintinueve movimientos con el rectángulo creciendo.
+Es decir: durante dos rondas se midió un gesto que la app nunca recibió entero, y
+el "no funciona" era del instrumento de medición.
+
+Queda anotado porque **afecta a otras medidas**: cualquier hallazgo de esta ronda
+hecho con arrastre sintético por `SetCursorPos` bajo botón pulsado hay que
+volver a mirarlo — en particular el hallazgo 3 de ST-207 (Mayús+flechas
+inconcluso) puede ser del guion y no de la app.
+
+**La traza se queda.** Está apagada por omisión (`AURA_MARQUEE_TRACE=1`, o
+siempre en `DEBUG`), no escribe nada si no se la pide, nunca lanza, y acaba de
+convertir dos rondas de hipótesis en una respuesta. El día que el gesto vuelva a
+fallar en la máquina de alguien, es la diferencia entre adivinar y leer.
+
+### Lo que sí sigue sin verificarse
+
+Que el arrastre se sienta bien con un ratón de verdad —el autoscroll cerca de los
+bordes, sobre todo— sigue siendo cosa del dueño: el arnés inyecta eventos, no
+manos.

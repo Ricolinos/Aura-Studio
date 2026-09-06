@@ -54,6 +54,24 @@ public static class GitHubReleaseChecker
     public static readonly HashSet<int> AuthFailureStatusCodes = new() { 401, 403, 404 };
 
     /// <summary>
+    /// Los Releases de <b>cualquier repositorio</b>, en <c>owner/repo</c>
+    /// (ST-211). El firmware pregunta por familia; Aura Studio pregunta por sí
+    /// misma, y es el mismo <c>GET /repos/…/releases</c> con las mismas reglas
+    /// de token y de fallo.
+    /// </summary>
+    public static async Task<List<GitHubRelease>> FetchReleasesAsync(
+        HttpClient http,
+        string repository,
+        string? token,
+        CancellationToken ct = default)
+    {
+        if (repository.Length == 0) throw GitHubReleaseCheckerError.UnknownFamily;
+
+        return await FetchAsync(http, $"https://api.github.com/repos/{repository}/releases", token, ct)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Con token, un rechazo de autenticación NO lanza: devuelve una lista
     /// vacía ("sin información") y deja <see cref="LastAuthFailure"/> en
     /// <c>true</c>. El chequeo automático así calla en vez de fallar. Sin
@@ -68,6 +86,12 @@ public static class GitHubReleaseChecker
     {
         var url = ApiURLFor(family) ?? throw GitHubReleaseCheckerError.UnknownFamily;
 
+        return await FetchAsync(http, url, token, ct).ConfigureAwait(false);
+    }
+
+    private static async Task<List<GitHubRelease>> FetchAsync(
+        HttpClient http, string url, string? token, CancellationToken ct)
+    {
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.TryAddWithoutValidation("User-Agent", "AuraStudio");
         if (token != null)

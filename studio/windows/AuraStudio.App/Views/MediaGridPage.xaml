@@ -64,12 +64,21 @@
              encima. Arrastrar DESDE una tarjeta la mueve —eso es el arrastre de
              la tarjeta— y arrastrar desde un hueco dibuja el recuadro. Puesta de
              fondo, las tarjetas conservan sus clics y sus arrastres tal cual, y
-             acá solo llega lo que empezó en un hueco. -->
+             acá solo llega lo que empezó en un hueco.
+
+             Addendum: con la ventana delante (W7) se comprobó que a esta capa
+             **no le llega nada** — el `ScrollViewer` del `GridView` se queda con
+             el puntero en toda su superficie, huecos incluidos. La capa se queda
+             porque es la que define el gesto y porque no estorba; lo que
+             garantiza que el arrastre exista son los manejadores que el
+             code-behind engancha sobre la propia cuadrícula con
+             `handledEventsToo`. Fondo transparente y no nulo a propósito: un
+             fondo nulo la sacaría del árbol de hit-testing. -->
         <Border Grid.Row="2" x:Name="MarqueeCapture" Background="Transparent"
                 PointerPressed="Marquee_PointerPressed"
                 PointerMoved="Marquee_PointerMoved"
                 PointerReleased="Marquee_PointerReleased"
-                PointerCaptureLost="Marquee_PointerReleased" />
+                PointerCaptureLost="Marquee_PointerCaptureLost" />
 
         <GridView Grid.Row="2"
                   x:Name="CardsView"

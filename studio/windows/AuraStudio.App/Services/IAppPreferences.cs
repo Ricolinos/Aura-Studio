@@ -45,6 +45,12 @@ public interface IAppPreferences
     /// </summary>
     string LibraryPath { get; set; }
 
+    /// <summary>ST-211: cuándo se consultó por última vez si hay versión nueva de la app.</summary>
+    DateTimeOffset? AppUpdateLastCheck { get; set; }
+
+    /// <summary>ST-211: de qué versión de la app ya se avisó, para no repetir el aviso.</summary>
+    string AppUpdateAnnouncedVersion { get; set; }
+
     /// <summary>
     /// Con esto activo, lo que se suelta en la app se <b>copia</b> a la carpeta
     /// de la biblioteca; el archivo del usuario nunca se toca, pero queda una
