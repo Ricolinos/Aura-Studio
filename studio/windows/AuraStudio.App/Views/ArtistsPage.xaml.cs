@@ -81,6 +81,46 @@ public sealed partial class ArtistsPage : Page
         ArtistList.SelectionChanged += ArtistList_SelectionChanged;
     }
 
+    /// <summary>
+    /// Ctrl+A marca todos los artistas y Escape los desmarca (ST-202). Con
+    /// <c>SelectionMode="Extended"</c> el control ya traía clic, Ctrl+clic,
+    /// Mayús+clic, flechas y Mayús+flechas; estos dos no vienen.
+    ///
+    /// <para>El buscador de arriba es un <c>TextBox</c>, que atiende Ctrl+A por
+    /// su cuenta —seleccionar SU texto— y marca el evento como atendido. Este
+    /// manejador está en la página, así que solo ve lo que el control dejó
+    /// pasar: escribiendo en el buscador, Ctrl+A sigue siendo "todo el
+    /// texto".</para>
+    ///
+    /// <para>Van por rango (<c>SelectAll</c>/<c>DeselectRange</c>): avisan una
+    /// sola vez, en vez de una por artista.</para>
+    /// </summary>
+    private void Page_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case Windows.System.VirtualKey.Escape:
+                if (ArtistList.SelectedItems.Count > 0)
+                {
+                    ArtistList.DeselectRange(
+                        new Microsoft.UI.Xaml.Data.ItemIndexRange(0, (uint)ViewModel.VisibleArtists.Count));
+                }
+
+                e.Handled = true;
+                break;
+
+            case Windows.System.VirtualKey.A when IsControlDown():
+                ArtistList.SelectAll();
+                e.Handled = true;
+                break;
+        }
+    }
+
+    private static bool IsControlDown() =>
+        Microsoft.UI.Input.InputKeyboardSource
+            .GetKeyStateForCurrentThread(Windows.System.VirtualKey.Control)
+            .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+
     // MARK: - Cabecera de la ficha
 
     /// <summary>

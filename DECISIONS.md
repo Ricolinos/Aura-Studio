@@ -6629,3 +6629,276 @@ Dos cosas para W0 y W4 que salen de acá:
 - **W4**: esos 7-9 s son `LibraryStore.SaveItems` reescribiendo las 1 000
   carátulas para guardar un campo numérico. Es el punto 4 del diagnóstico y lo
   arregla el persistidor con rebote y carátulas sucias.
+
+## ST-202 — Windows: la selección la lleva el control, no el código
+
+Ronda 2 de rendimiento, encargo W2 de `docs/plans/PLAN-studio-rendimiento-2.md`,
+apilado sobre ST-201. Trabajo local, sin release y sin tocar la versión.
+
+### Qué había
+
+La cuadrícula tenía `SelectionMode="None"`: renunciaba a la selección del
+control y la reimplementaba a mano. Y de los ocho gestos del §A del plan,
+reimplementaba **uno**: el clic simple. No había Ctrl+clic, ni Mayús+clic, ni
+Mayús+flechas, ni Ctrl+A. La única forma de marcar más de un álbum era la
+casilla de la tarjeta, de a uno.
+
+`ArtistsPage` ya usaba `SelectionMode="Extended"` desde ST-121 y `SongsPage`
+desde ST-030, así que la cuadrícula era la excepción, no la regla.
+
+Además, la selección se publicaba por `PropertyChanged` de `LibraryViewModel` —el
+modelo que escuchan todas las vistas de la biblioteca—, así que cada cambio de
+selección le llegaba a todas y cada una tenía que decidir si le tocaba. ST-201
+las enseñó a filtrarlo; ST-202 saca el aviso de ahí.
+
+### Qué hay
+
+**La cuadrícula usa la selección del control** (`SelectionMode="Extended"`), y el
+modelo solo anota lo que el control decide. Se fue `IsItemClickEnabled` con
+`ItemClick`: con una selección de verdad, `ItemClick` se dispara *antes* que
+`SelectionChanged` y hay casos en que la selección ni siquiera llega a ocurrir.
+Abrir sigue siendo doble clic.
+
+`MediaGridViewModel.SyncFromControl(added, removed)` recibe el **delta**, no la
+selección entera: con 1 000 álbumes marcados, releer `SelectedItems` en cada
+cambio sería volver a pagar por tecla lo que ST-201 sacó del camino.
+
+Dos piezas nuevas en Core, puras y probadas:
+
+- **`SelectionStore`** — lo seleccionado en la vista activa, fuera del modelo
+  grande (paridad con `SelectionStore.swift` de ST-153). Avisa por su propio
+  evento y **solo cuando el contenido cambió**, comparado como conjunto.
+  `Apply(added, removed)` suma y quita sin rearmar: es lo que convierte en lineal
+  lo que era cuadrático (ver los números).
+- **`StatusSummaryModel`** + **`LibraryStatusSummary`**/**`LibraryStats`** — la
+  barra de estado partida en dos por costo (paridad con `StatusSummaryModel.swift`,
+  ST-153): el total —cuántos álbumes, cuántos artistas, cuánto dura todo— se
+  calcula **una vez por versión del catálogo** y se apoya en
+  `LibraryCatalogIndex.GroupCount`, que lo sabe en O(1); la parte que depende de
+  la selección se calcula en el momento y cuesta lo que mide la selección. El
+  tamaño sale de `fileSizeBytes` (ST-201) y **no toca el disco** — en macOS eso
+  necesita una caché de `stat` por ruta justamente porque allá la barra se
+  recalcula en cada clic.
+
+`LibraryViewModel.SelectionForSync` pasó a ser una vista del almacén;
+`SyncViewModel` —el único consumidor real, confirmado por lectura de código— se
+suscribe al almacén en vez de al modelo grande.
+
+### Los gestos, uno por uno
+
+Verificado contra la tabla "Item selection and interaction" de la documentación
+de `ListView`/`GridView` del Windows App SDK, no supuesto.
+
+**De fábrica con `Extended`** (los cinco que el control atiende solo):
+
+| Gesto | Qué hace |
+|---|---|
+| Clic | Reemplaza la selección por ese elemento |
+| Ctrl+clic | Suma o quita ese elemento, sin tocar el resto |
+| Mayús+clic | Selecciona el rango desde el último tocado |
+| Flechas / Ctrl+flechas | Mueven el foco (con Ctrl, sin arrastrar la selección) |
+| Mayús+flechas | Extienden el rango desde donde se apretó Mayús |
+| Barra espaciadora | Marca el que tiene el foco |
+
+**Puestos a mano, porque el control no los trae** — la tabla de la documentación
+cubre modificadores de ratón y flechas, y nada más:
+
+| Gesto | Cómo |
+|---|---|
+| Ctrl+A | `SelectAll()` |
+| Escape | `DeselectRange(0..N)` |
+| Clic en el espacio vacío | Vacía la selección; para el control, el fondo no es nada |
+| Casilla de la tarjeta | Alterna ESA tarjeta dentro de `SelectedItems` (ST-103) |
+| Doble clic | Abre |
+
+Los dos primeros van por las operaciones **de rango** y no por `SelectedItems`
+elemento por elemento: la documentación es explícita en que cada agregado o
+quite suelto dispara su propio `SelectionChanged` y materializa lo que está
+virtualizado, mientras que `SelectAll`/`DeselectRange` avisan **una sola vez**.
+Con 12 000 renglones eso es la diferencia entre un aviso y doce mil. Y los dos
+manejadores viven en la **página**, así que solo ven lo que el control dejó
+pasar: si alguna versión llegara a atender Ctrl+A por su cuenta, el resultado
+sería el mismo y esto no correría. Es lo mismo que hace que Ctrl+A dentro del
+buscador de Artistas siga siendo "seleccionar todo el texto": el `TextBox` lo
+atiende y lo marca como atendido.
+
+**Los dos que NO quedan cubiertos**, con el motivo:
+
+- **Marquee (arrastrar un rectángulo para seleccionar).** `ListView` y `GridView`
+  **no lo tienen**, en ningún modo de selección: no aparece en la tabla de
+  gestos, y la sección de arrastre de esos controles es sobre *mover* elementos,
+  no sobre seleccionar con un rectángulo. Ponerlo exige o rehacer la cuadrícula
+  sobre `ItemsRepeater` —que es lo que la propia documentación propone cuando el
+  control no alcanza, y que costaría la virtualización y el reciclaje que hoy
+  vienen resueltos—, o una capa transparente encima que traduzca el arrastre a
+  un rectángulo y lo cruce con los marcos de las tarjetas, que es la vía que la
+  Mac toma en su fase F4 con un `NSViewRepresentable`. Las dos son un encargo
+  aparte, no un ajuste de selección: **queda anotado, no hecho**.
+- **Arrastrar la selección a la barra lateral.** El lado del origen sí lo daría
+  el control (`CanDragItems` + `DragItemsStarting` arrastran una selección
+  múltiple), pero del lado del destino hace falta que los elementos de la barra
+  de navegación acepten soltar y sepan a qué categoría o álbum mueven lo que
+  cae. Eso es una función nueva —con su propia pregunta de qué significa soltar
+  música sobre "Películas"—, no selección. **Queda anotado, no hecho.**
+
+### Números
+
+Arnés de W0 (`LibraryPerfCheck -- 1000 12 0`), 1 000 álbumes × 12 pistas =
+12 000 canciones con carátula real. "Antes de todo" es `3de9cc5`; "tras W1" son
+las dos corridas de ST-201; "tras W2" son tres corridas de esta rama, la última
+ya sobre el fixture arreglado del addendum de ST-200 —el que trae los tamaños
+puestos, así que mide **estado estable** y no la migración única.
+
+| Escenario | antes de todo | tras W1 | tras W2 |
+|---|---|---|---|
+| **Ctrl+A en Álbumes: el gesto real, un solo aviso** | no existía el gesto | no existía | **9, 10 y 11 ms** |
+| 1 000 Ctrl+clic seguidos (la fila con la que compara W0) | 9 487 ms | 3 227 y 3 918 ms | **2, 5 y 22 ms** |
+| lo mismo, por gesto | 9.5 ms | 3.2 y 3.9 ms | **0.002 a 0.022 ms** |
+| Clic CON cascada: álbum 1 / 2 / 3 | 346 / 589 / 702 ms | 0 / 0 / 0-4 ms | **0 / 0 / 0 ms** |
+| Clic aislado: álbum 1 / 2 / 3 | 25 / 40 / 33 ms | 3 / 1-2 / 0 ms | 1-2 / 0 / 0 ms |
+| Menú contextual con 1 000 seleccionados | 8 ms | 4 y 10 ms | 1, 2 y 5 ms |
+
+**Los dos criterios de W2, cumplidos**: Ctrl+A en Álbumes entre 9 y 11 ms (el
+objetivo era < 100 ms) y ningún cambio de selección por encima de 16 ms.
+
+Lo que hizo la diferencia en la fila de los 1 000 Ctrl+clic —de 3.9 s a decenas
+de milisegundos, dos órdenes de magnitud— no fue el control: fue
+**`SelectionStore.Apply`**. Hasta W1, cada cambio de selección publicaba la
+lista COMPLETA de canciones alcanzadas, así que
+sumar el álbum número 1 000 volvía a armar los 12 000 identificadores; sumado
+sobre mil gestos, seis millones. Ahora se publican solo los identificadores de lo
+que entró y lo que salió.
+
+Con `SelectAll()` el mismo Ctrl+A es además **un** `SelectionChanged` en vez de
+mil, que es la otra mitad.
+
+### Lo que el fixture arreglado aclaró
+
+El addendum de ST-200 —que le pone los tamaños al fixture— confirma lo que
+ST-201 sospechaba de sus cuatro filas empeoradas: **era la migración única
+corriendo en segundo plano**, no una regresión. Con el fixture arreglado, en la
+misma máquina:
+
+| Fila | línea base | ST-201 (fixture viejo) | ST-202 (estado estable) |
+|---|---|---|---|
+| `SongsViewModel` ctor (12 000 filas) | 271 ms | 306 y 365 ms | **60 ms** |
+| `PlaylistsViewModel` ctor | 93 ms | 224 y 355 ms | **74 ms** |
+| Canciones: clic derecho tras Ctrl+A | 23 ms | 74 y 79 ms | **23 ms** |
+| Canciones: `ScopeOf` tras Ctrl+A | 5 ms | 66 y 73 ms | **23 ms** |
+
+Los 60 ms del constructor de Canciones son el número de verdad de lo que hizo
+ST-201 al sacar los 12 000 `FileInfo` de cada refresco: **4.5 veces**, y en
+disco local — por red la diferencia es de otro orden. Y el clic derecho tras
+Ctrl+A vuelve clavado a su línea base, que es la prueba de que aquellas filas
+medían ruido.
+
+Queda **una** que no vuelve del todo: `ScopeOf tras Ctrl+A`, 23 ms contra 5 ms.
+No es de ST-201 ni de ST-202 —es una réplica que el arnés calcula con tipos de
+Core (`LibraryGrouping.AlbumKeyOf` sobre `library.Items`), y el `git diff` de
+`LibraryGrouping.cs`, `SimilarItemsDetector.cs` y `MediaTableRow.cs` entre la
+línea base y esta rama está **vacío**—. La explicación más probable es presión
+de recolección: esa réplica asigna una `ArtistGroupingOptions` y varias cadenas
+normalizadas **por elemento**, doce mil veces, y ahora hay mucho más vivo en el
+montón mientras corre (el índice del catálogo con sus mil listas). No está
+comprobado con un perfilador y no se afirma como causa.
+
+Lo que sí es seguro es que **la fila desaparece con W6**: recalcular
+`AlbumKeyOf` doce mil veces para armar un menú es exactamente lo que el índice de
+ST-201 vino a hacer innecesario.
+
+El escenario de migración que agregó el addendum lo deja medido aparte: **95 ms**
+para medir los 12 000 archivos, y **5 590 ms** para el único guardado del final
+—que es `SaveItems` reescribiendo las 1 000 carátulas por un campo numérico, y
+es de W4—.
+
+### Lo que NO se tocó, a propósito
+
+- **La marca de seleccionado de la tarjeta.** La cuadrícula ahora dibuja además
+  la suya propia (la del control) alrededor del contenedor. Se dejaron las dos:
+  la nuestra es un borde de acento sobre la portada, probada contra carátulas
+  reales, y la del sistema es un realce suave alrededor de la tarjeta entera —
+  anidan y se leen como una sola selección. Es lo primero que conviene mirar en
+  la verificación con el dueño; si molesta, sacar la nuestra es una línea.
+- **La barra de estado nueva, solo en Álbumes.** Es la cuadrícula donde el
+  resumen dice algo que no está ya en pantalla —cuántos artistas, cuánto dura lo
+  marcado— y donde se mide el criterio. Películas, Series, Fotos y los listados
+  planos siguen con su conteo y su "N seleccionados", que son O(1) y no molestan
+  a nadie. `LibraryStatusSection` tiene las tres secciones que hoy se usan
+  (Canciones, Álbumes, Artistas) y crece agregando un caso.
+- **`SongsPage` y `ArtistsPage` siguen con sus tablas como estaban.** Ya eran
+  nativas; lo que se les agregó es Ctrl+A y Escape, y que la publicación de la
+  selección vaya por delta (`SongsPage` recorría los 12 000 de `SelectedItems`
+  —cruzando la frontera del control por cada uno— en cada Mayús+flecha).
+- **`GridSelection.EffectiveIds`** sigue con `Contains` sobre una lista: es el
+  `HashSet` de W6.
+
+### El arnés de W0
+
+`tools/LibraryPerfCheck/Program.cs` llamaba a `MediaGridViewModel.SelectOnly` y
+`ToggleSelection`, que se fueron con los gestos a mano. Se reemplazaron por tres
+funciones locales que replican **el aviso que manda el control** —`Click`,
+`CtrlClick`, `CtrlA`—, que es lo que el modelo recibe ahora. Se agregó la fila del
+Ctrl+A real y **se conservó** la de los 1 000 Ctrl+clic, para poder seguir
+comparando contra la línea base de W0.
+
+### Verificación
+
+`dotnet build` de `AuraStudio.Core`, `AuraStudio.App` y el arnés, sin
+advertencias. `dotnet test`: **1 404 pruebas en verde** (1 363 antes, 41 nuevas:
+`SelectionStoreTests`, `StatusSummaryModelTests` y `LibraryStatsTests`).
+
+**Lo que no se verificó acá**: los gestos, apretados a mano. Esta sesión no
+puede usar la app, así que lo que se comprobó es lo que se puede comprobar sin
+ventana —que el modelo recibe lo que el control manda, y cuánto cuesta—, más la
+documentación del control para saber qué trae de fábrica. La pasada guionizada
+—abrir Álbumes, Ctrl+A, Mayús+clic 1→500, Escape, clic derecho— con el vigilante
+de ST-200 encendido, y la mirada a si la doble marca de selección molesta, quedan
+para quien pueda tener la app delante.
+
+## ST-202 (addendum) — Una sola marca de seleccionado
+
+Decisión de la sesión maestra al revisar ST-202: con `SelectionMode="Extended"`,
+el contenedor del `GridView` empezó a dibujar **su** marca de seleccionado
+—fondo, borde de 2 px y palomita— encima de la que la tarjeta ya ponía desde
+ST-103. Dos marcas para un mismo estado no son más claras: son dos.
+
+Se conserva **la nuestra** —el borde de acento sobre la portada, que es la del
+sistema de diseño y la misma que muestra la Mac— y se apaga la nativa.
+
+### Cómo
+
+En los recursos de **esa** cuadrícula, no de la app, poniendo en cero justo lo
+que la dibuja. Los nombres y los valores de origen se leyeron del
+`generic.xaml` del Windows App SDK, no se adivinaron: el contenedor es un
+`ListViewItemPresenter` cuyo estilo por omisión ata cada parte de la marca a un
+recurso de tema.
+
+- `GridViewItemSelectionCheckMarkVisualEnabled`: `True` → `False` (la palomita).
+- `GridViewItemSelectedBorderThickness`: `2` → `0` (el borde, con lo que dejan
+  de importar los cinco pinceles de borde seleccionado).
+- `GridViewItemBackgroundSelected`, `…SelectedPressed` y `…SelectedDisabled`:
+  transparentes.
+
+El hover **se conserva**, y se iguala el de una tarjeta marcada al de una sin
+marcar (`GridViewItemBackgroundSelectedPointerOver` pasa a
+`SubtleFillColorSecondaryBrush`, que es el de una tarjeta cualquiera): quién
+está seleccionado lo dice el borde, no el fondo. Y no se toca
+`GridViewItemForegroundSelected`, que es el color del **texto**: transparentarlo
+habría borrado el título de la tarjeta seleccionada.
+
+### En alto contraste no se pisa nada, a propósito
+
+El bloque va en `ThemeDictionaries`, con `Default` y `Light` pisados y
+`HighContrast` **vacío**. En ese modo el fondo de selección del sistema no es
+decoración: es la señal que el modo promete, dibujada con los colores que el
+usuario eligió, y apagarla para dejar solo un borde de acento sería quitarle a
+quien lo necesita la marca que sí está garantizada. Ahí conviven las dos, y está
+bien que así sea.
+
+### Lo que falta
+
+Que alguien lo vea. Esta sesión no puede abrir la app; lo que se comprobó es que
+compila y que los recursos que se pisan son exactamente los que el estilo por
+omisión usa para la marca de selección. Si al mirarlo la tarjeta seleccionada
+quedara demasiado callada, el arreglo inverso es igual de corto: sacar el borde
+de ST-103 del `DataTemplate` y quedarse con el del sistema.

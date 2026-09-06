@@ -8,7 +8,8 @@
     xmlns:vm="using:AuraStudio.App.ViewModels"
     AllowDrop="True"
     DragOver="Page_DragOver"
-    Drop="Page_Drop">
+    Drop="Page_Drop"
+    KeyDown="Page_KeyDown">
 
     <Page.Resources>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />

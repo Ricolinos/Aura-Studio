@@ -65,6 +65,11 @@ public sealed partial class SyncViewModel : ViewModelBase
         FailureMessage = "";
         _syncService.ProgressChanged += OnProgressChanged;
         _library.PropertyChanged += OnLibraryChanged;
+
+        // ST-202: la selección ya no viaja por PropertyChanged del modelo
+        // grande. Esta ficha es hoy el único consumidor real, y ahora es el
+        // único que se entera.
+        _library.Selection.Changed += OnSelectionChanged;
     }
 
     public string DeviceMessage => _session.Device is { } device
@@ -281,16 +286,23 @@ public sealed partial class SyncViewModel : ViewModelBase
         return false;
     }
 
-    /// <summary>Lo que cambia cuando cambia la selección de la vista activa.</summary>
+    /// <summary>
+    /// Lo que cambia cuando cambia el contenido de la biblioteca.
+    ///
+    /// <para>La <b>selección</b> ya no llega por acá (ST-202): la avisa el
+    /// <see cref="SelectionStore"/>, y solo lo escucha quien la consume.</para>
+    /// </summary>
     private void OnLibraryChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is not (nameof(LibraryViewModel.SelectionForSync)
-                                or nameof(LibraryViewModel.SelectionForSyncCount)
-                                or nameof(LibraryViewModel.Items)))
-        {
-            return;
-        }
+        if (e.PropertyName != nameof(LibraryViewModel.Items)) return;
 
+        SelectionOrLibraryChanged();
+    }
+
+    private void OnSelectionChanged(object? sender, EventArgs e) => SelectionOrLibraryChanged();
+
+    private void SelectionOrLibraryChanged()
+    {
         // Con la selección vacía, el alcance vuelve a "toda la biblioteca": un
         // alcance que apunta a nada no es un estado en el que dejar al usuario.
         if (ScopeIsSelection && !HasSelection) ScopeIsSelection = false;
