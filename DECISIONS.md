@@ -9673,3 +9673,31 @@ lo único que ST-208 agregó a ese camino es un SHA-256 por carátula, medido en
 
 Ahora el conteo sale de contar los archivos, en la misma pasada de la que ya
 salían los bytes.
+
+## ST-208 (2.º addendum) — El resumen de una carátula se calcula una vez por arreglo
+
+`CoverArtHash.Of` resumía los bytes cada vez que se lo llamaba. Las doce pistas
+de un álbum comparten la **misma instancia** de bytes, así que guardar una
+biblioteca de 12 000 canciones resumía mil imágenes doce mil veces.
+
+Son **67 ms** medidos para las doce mil, así que esto es higiene y no
+rendimiento: se hace porque el repo ya tenía resuelta exactamente esa trampa —
+`CoverThumbnailKey` memoiza su resumen en una `ConditionalWeakTable` desde
+ST-031— y tener el mismo problema resuelto de dos formas distintas es lo que hace
+que una de las dos se olvide. Ahora las dos usan la misma tabla débil, que no
+impide que el arreglo se libere: cuando la carátula se va, su entrada se va con
+ella.
+
+La memoización es **por instancia, no por contenido**: la tabla no puede comparar
+megabytes para buscar. Dos copias iguales de la misma carátula siguen dando el
+mismo resumen —eso es del algoritmo, y hay prueba— pero cada una tiene su
+entrada.
+
+### Verificación
+
+`dotnet test`: **1 531 pruebas en verde**, seis nuevas — el formato exacto que
+fijó la maestra (64 caracteres, hexadecimal en mayúsculas, sin separadores), que
+los mismos bytes en otro arreglo den el mismo resumen, que bytes distintos den
+resúmenes distintos, que **la misma instancia no se resuma dos veces**, que dos
+arreglos iguales no compartan entrada, y que un arreglo vacío no lance desde el
+camino de guardado.
