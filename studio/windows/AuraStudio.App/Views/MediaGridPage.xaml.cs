@@ -39,16 +39,33 @@ public sealed partial class MediaGridPage : Page
         InitializeComponent();
         ViewModel = App.Services.GetRequiredService<MediaGridViewModel>();
         _preferences = App.Services.GetRequiredService<Services.IAppPreferences>();
+
+        if (_statusSummaryTimer is { } timer)
+        {
+            timer.Interval = StatusSummaryDelay;
+            timer.IsRepeating = false;
+            timer.Tick += (_, _) => UpdateStatusSummary();
+        }
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
 
+        // La suscripción va por navegación, no por constructor: el modelo es
+        // único y la página se crea de nuevo cada vez que se entra. Suscribirse
+        // en el constructor dejaría a las páginas anteriores escuchando y
+        // tocando su propio control, que ya no está en pantalla.
+        ViewModel.SelectionSyncRequested += OnSelectionSyncRequested;
+
         if (e.Parameter is MediaGridRequest request)
             ViewModel.Show(request.Kind, request.PhotoCategory);
         else
             ViewModel.Refresh();
+
+        // Al entrar se escribe de una vez, sin rebote: el rebote es para las
+        // ráfagas de selección, no para el primer dibujo.
+        UpdateStatusSummary();
     }
 
     /// <summary>
@@ -59,7 +76,116 @@ public sealed partial class MediaGridPage : Page
     protected override void OnNavigatedFrom(NavigationEventArgs e)
     {
         base.OnNavigatedFrom(e);
+        ViewModel.SelectionSyncRequested -= OnSelectionSyncRequested;
         ViewModel.Library.ClearSelectionForSync();
+    }
+
+    // MARK: - Selección (ST-202)
+
+    /// <summary>
+    /// Lo que el control decidió, al modelo. Llega el <b>delta</b>: con 1 000
+    /// álbumes marcados, releer <c>SelectedItems</c> entero en cada cambio sería
+    /// volver a pagar por tecla lo que ST-201 sacó del camino.
+    /// </summary>
+    private void Cards_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        ViewModel.SyncFromControl(
+            [.. e.AddedItems.OfType<MediaCard>()],
+            [.. e.RemovedItems.OfType<MediaCard>()]);
+
+        ScheduleStatusSummary();
+    }
+
+    // MARK: - Barra de estado (ST-202)
+
+    /// <summary>
+    /// El resumen se reescribe <b>con rebote</b>: mantener apretada Mayús+flecha
+    /// manda un aviso por tecla, y la parte del texto que depende de la selección
+    /// cuesta proporcional a lo marcado. Con 1 000 álbumes eso es trabajo real
+    /// que nadie alcanza a leer mientras la selección todavía se mueve.
+    ///
+    /// <para>El total no entra en esa cuenta: lo tiene guardado
+    /// <c>StatusSummaryModel</c> por versión del catálogo.</para>
+    /// </summary>
+    private readonly Microsoft.UI.Dispatching.DispatcherQueueTimer? _statusSummaryTimer =
+        Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread()?.CreateTimer();
+
+    /// <summary>Cuánto se espera a que la selección se quede quieta.</summary>
+    private static readonly TimeSpan StatusSummaryDelay = TimeSpan.FromMilliseconds(120);
+
+    private void ScheduleStatusSummary()
+    {
+        if (!ViewModel.ShowsStatusSummary) return;
+
+        // Sin despachador —no debería pasar en la app— se escribe al instante:
+        // degradar es mejor que no mostrar nada.
+        if (_statusSummaryTimer is null)
+        {
+            UpdateStatusSummary();
+            return;
+        }
+
+        // Reiniciar el temporizador en cada aviso es el rebote: mientras las
+        // teclas sigan llegando, el texto no se rearma.
+        _statusSummaryTimer.Stop();
+        _statusSummaryTimer.Start();
+    }
+
+    private void UpdateStatusSummary()
+    {
+        if (!ViewModel.ShowsStatusSummary)
+        {
+            StatusTotal.Text = "";
+            StatusSelection.Text = "";
+            return;
+        }
+
+        LibraryStatusSummary summary = ViewModel.StatusSummary;
+        StatusTotal.Text = summary.Total;
+        StatusSelection.Text = summary.Selection;
+    }
+
+    /// <summary>
+    /// Después de un refresco, el control vuelve a marcar lo que dice el modelo:
+    /// las tarjetas que cambiaron de contenido son instancias nuevas, y para él
+    /// son otras.
+    ///
+    /// <para>Se hace con el aviso desconectado —el mismo patrón que
+    /// <c>ArtistsPage</c>—: si no, restaurar la selección se leería como si el
+    /// usuario la hubiera cambiado.</para>
+    /// </summary>
+    private void OnSelectionSyncRequested(object? sender, IReadOnlyList<MediaCard> selected)
+    {
+        // El catálogo pudo haber cambiado: el resumen tiene que enterarse aunque
+        // la selección haya quedado igual.
+        ScheduleStatusSummary();
+
+        if (selected.Count == 0 && CardsView.SelectedItems.Count == 0) return;
+
+        CardsView.SelectionChanged -= Cards_SelectionChanged;
+
+        try
+        {
+            CardsView.SelectedItems.Clear();
+            foreach (MediaCard card in selected) CardsView.SelectedItems.Add(card);
+        }
+        finally
+        {
+            CardsView.SelectionChanged += Cards_SelectionChanged;
+        }
+    }
+
+    /// <summary>
+    /// Vaciar la selección <b>sin</b> quitar los elementos uno por uno: cada
+    /// quite suelto dispara su propio aviso, y con 1 000 marcados eso son 1 000
+    /// vueltas por el modelo. <c>DeselectRange</c> avisa una sola vez y no
+    /// necesita materializar los elementos virtualizados.
+    /// </summary>
+    private void DeselectAll()
+    {
+        if (CardsView.SelectedItems.Count == 0) return;
+
+        CardsView.DeselectRange(new Microsoft.UI.Xaml.Data.ItemIndexRange(0, (uint)ViewModel.Cards.Count));
     }
 
     // MARK: - Portadas
@@ -129,12 +255,7 @@ public sealed partial class MediaGridPage : Page
 
     // MARK: - Abrir una tarjeta
 
-    /// <summary>Un clic <b>reemplaza</b> la selección (ST-103). Abrir son dos.</summary>
-    private void Cards_ItemClick(object sender, ItemClickEventArgs e)
-    {
-        if (e.ClickedItem is MediaCard card) ViewModel.SelectOnly(card);
-    }
-
+    /// <summary>Un clic selecciona —eso lo hace el control—; abrir son dos.</summary>
     private void Card_DoubleTapped(object sender, DoubleTappedRoutedEventArgs e)
     {
         if (sender is not FrameworkElement { DataContext: MediaCard card }) return;
@@ -144,48 +265,64 @@ public sealed partial class MediaGridPage : Page
     }
 
     /// <summary>
-    /// La casilla ya alterna sola —está enlazada en dos sentidos, así que
-    /// también funciona con el teclado y con un lector de pantalla—; lo único
-    /// que hace falta acá es <b>comerse el toque</b> para que no llegue a la
-    /// tarjeta, que reemplazaría justo lo que se acaba de sumar.
+    /// La casilla <b>alterna esa tarjeta</b> dentro de la selección del control,
+    /// sin tocar el resto (ST-103): es acumulativa a propósito, y es lo que la
+    /// distingue del clic en la tarjeta, que reemplaza.
+    ///
+    /// <para><c>Click</c> y no <c>Tapped</c> porque también sale con la barra
+    /// espaciadora: la casilla tiene que servir con el teclado y con un lector de
+    /// pantalla, que es de donde salió ST-103.</para>
+    /// </summary>
+    private void SelectionBox_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { DataContext: MediaCard card }) return;
+
+        if (CardsView.SelectedItems.Contains(card)) CardsView.SelectedItems.Remove(card);
+        else CardsView.SelectedItems.Add(card);
+    }
+
+    /// <summary>
+    /// El toque en la casilla no llega a la tarjeta: si llegara, el control
+    /// reemplazaría la selección entera justo con lo que se acaba de sumar.
     /// </summary>
     private void SelectionBox_Tapped(object sender, TappedRoutedEventArgs e) => e.Handled = true;
 
     /// <summary>
     /// Un clic en el espacio vacío de la cuadrícula <b>vacía la selección</b>,
-    /// como en el Explorador y como en el Finder.
-    ///
-    /// <para>Hace falta desde R2-1: el clic en una tarjeta <i>reemplaza</i>, así
-    /// que nunca deja cero seleccionados, y sin esto no había ningún gesto para
-    /// volver al estado limpio —el que la regla nueva describe como el normal—
-    /// una vez que se seleccionó algo.</para>
+    /// como en el Explorador y como en el Finder. El control no lo trae: para él
+    /// un clic fuera de un elemento no es nada.
     /// </summary>
     private void Cards_Tapped(object sender, TappedRoutedEventArgs e)
     {
-        if (CardFrom(e.OriginalSource) is null) ViewModel.ClearSelection();
+        if (CardFrom(e.OriginalSource) is null) DeselectAll();
     }
 
     /// <summary>
-    /// Escape hace lo mismo, para quien no usa el mouse; Ctrl+A marca todo.
+    /// Escape vacía la selección y Ctrl+A la llena. Ninguno de los dos viene de
+    /// fábrica: la tabla de gestos de <c>Extended</c> cubre clic, Ctrl+clic,
+    /// Mayús+clic, flechas y Mayús+flechas, y nada más.
     ///
-    /// <para>Ctrl+A a mano es provisional: la cuadrícula todavía tiene
-    /// <c>SelectionMode="None"</c> y reimplementa los gestos, y W2 lo cambia por
-    /// la selección nativa —que trae Ctrl+A, Ctrl+clic, Mayús+clic y arrastre
-    /// sin código—. Se pone ahora porque es el gesto con el que se mide ST-201:
-    /// sin él no hay forma de comprobar en la app que marcar los 1 000 álbumes
-    /// tarda menos de 100 ms.</para>
+    /// <para>Este manejador está en la <b>página</b>, así que solo ve lo que el
+    /// control dejó pasar: si alguna versión del control llegara a atender
+    /// Ctrl+A por su cuenta, el resultado sería el mismo y esto no correría.</para>
+    ///
+    /// <para>Los dos usan las operaciones por RANGO
+    /// (<c>SelectAll</c>/<c>DeselectRange</c>) y no <c>SelectedItems</c> elemento
+    /// por elemento: cada quite o agregado suelto dispara su propio
+    /// <c>SelectionChanged</c>, y con 1 000 álbumes eso son 1 000 vueltas por el
+    /// modelo en vez de una.</para>
     /// </summary>
     private void Page_KeyDown(object sender, KeyRoutedEventArgs e)
     {
         switch (e.Key)
         {
             case Windows.System.VirtualKey.Escape:
-                ViewModel.ClearSelection();
+                DeselectAll();
                 e.Handled = true;
                 break;
 
             case Windows.System.VirtualKey.A when IsControlDown():
-                ViewModel.SelectAll();
+                CardsView.SelectAll();
                 e.Handled = true;
                 break;
         }

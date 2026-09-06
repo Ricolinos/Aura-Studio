@@ -56,6 +56,11 @@ public sealed partial class SongsPage : Page
     {
         BuildColumnOptions();
 
+        // Antes del refresco: rehacer la tabla suelta la selección del control,
+        // y lo anotado acá tiene que soltarse con ella (ST-202).
+        ViewModel.PropertyChanged -= OnViewModelChanged;
+        ViewModel.PropertyChanged += OnViewModelChanged;
+
         ViewModel.Refresh();
     }
 
@@ -226,15 +231,73 @@ public sealed partial class SongsPage : Page
     /// la vista <b>activa</b> manda, y se limpia al salir: sin eso, el alcance
     /// seguiría apuntando a lo que había seleccionado dos pantallas atrás.
     /// </summary>
-    private void Rows_SelectionChanged(object sender, SelectionChangedEventArgs e) =>
-        ViewModel.Library.PublishSelectionForSync(
-            [.. RowsList.SelectedItems.OfType<SongRowViewModel>().Select(row => row.Id)]);
+    private void Rows_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        // ST-202: por DELTA, no releyendo `SelectedItems`. Con 12 000 renglones
+        // y la tabla entera marcada, cada Mayús+flecha recorría los 12 000
+        // —cruzando la frontera del control por cada uno— para publicar una
+        // selección que solo había cambiado en un elemento.
+        foreach (SongRowViewModel row in e.RemovedItems.OfType<SongRowViewModel>()) _selectedIds.Remove(row.Id);
+        foreach (SongRowViewModel row in e.AddedItems.OfType<SongRowViewModel>()) _selectedIds.Add(row.Id);
+
+        ViewModel.Library.PublishSelectionForSync([.. _selectedIds]);
+    }
+
+    /// <summary>
+    /// Lo marcado, que se lleva sumando y restando lo que avisa el control. Se
+    /// vacía cuando la tabla se rehace: sus renglones son objetos nuevos, así
+    /// que el control suelta la selección, y quedarse con la anterior sería
+    /// publicar canciones que ya nadie ve marcadas.
+    /// </summary>
+    private readonly HashSet<Guid> _selectedIds = [];
+
+    private void OnViewModelChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(SongsViewModel.Rows)) _selectedIds.Clear();
+    }
 
     protected override void OnNavigatedFrom(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
     {
         base.OnNavigatedFrom(e);
+        ViewModel.PropertyChanged -= OnViewModelChanged;
         ViewModel.Library.ClearSelectionForSync();
     }
+
+    /// <summary>
+    /// Ctrl+A marca toda la tabla y Escape la desmarca. Ninguno de los dos viene
+    /// de fábrica con <c>SelectionMode="Extended"</c>, que cubre clic,
+    /// Ctrl+clic, Mayús+clic, flechas y Mayús+flechas, y nada más.
+    ///
+    /// <para>Van por las operaciones de RANGO: <c>SelectAll</c> y
+    /// <c>DeselectRange</c> avisan <b>una sola vez</b> y no materializan lo que
+    /// está virtualizado, mientras que agregar o quitar de <c>SelectedItems</c>
+    /// uno por uno serían 12 000 avisos.</para>
+    /// </summary>
+    private void Page_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case Windows.System.VirtualKey.Escape:
+                if (RowsList.SelectedItems.Count > 0)
+                {
+                    RowsList.DeselectRange(
+                        new Microsoft.UI.Xaml.Data.ItemIndexRange(0, (uint)ViewModel.Rows.Count));
+                }
+
+                e.Handled = true;
+                break;
+
+            case Windows.System.VirtualKey.A when IsControlDown():
+                RowsList.SelectAll();
+                e.Handled = true;
+                break;
+        }
+    }
+
+    private static bool IsControlDown() =>
+        Microsoft.UI.Input.InputKeyboardSource
+            .GetKeyStateForCurrentThread(Windows.System.VirtualKey.Control)
+            .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
 
     private async void Enrich_Click(object sender, RoutedEventArgs e)
     {

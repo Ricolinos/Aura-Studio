@@ -124,11 +124,11 @@ public sealed partial class MediaGridViewModel : ViewModelBase
     private readonly Dictionary<string, MediaCard> _byId = new(StringComparer.Ordinal);
 
     /// <summary>
-    /// Mientras es <c>true</c>, escribir <c>IsSelected</c> en una tarjeta no
-    /// vuelve a entrar al modelo: la orden ya viene de ahí. Es lo que convierte
-    /// "reemplazar la selección" en <b>un</b> aviso en vez de uno por tarjeta.
+    /// Mientras es <c>true</c>, lo que avise el control sobre su selección no se
+    /// le hace caso: la colección se está reacomodando y esos avisos son su
+    /// contabilidad interna, no una decisión del usuario (ST-202).
     /// </summary>
-    private bool _applyingSelection;
+    private bool _refreshing;
 
     /// <summary>Lo último que se les empujó a las tarjetas como <c>AnySelection</c>.</summary>
     private bool _anySelectionPushed;
@@ -226,6 +226,27 @@ public sealed partial class MediaGridViewModel : ViewModelBase
 
     public bool IsEmpty => Cards.Count == 0;
 
+    /// <summary>
+    /// El resumen de la barra de estado (ST-202). Solo Álbumes lo tiene por
+    /// ahora: es la cuadrícula donde el resumen dice algo que no está ya en la
+    /// pantalla —cuántos artistas, cuánto dura lo marcado—, y es donde se mide
+    /// el criterio. Las demás siguen con <see cref="CountText"/> y
+    /// <see cref="SelectionText"/>, que son O(1) y no molestan a nadie.
+    /// </summary>
+    public bool ShowsStatusSummary => Kind == MediaGridKind.Albums;
+
+    private readonly StatusSummaryModel _statusSummary = new();
+
+    /// <summary>
+    /// El resumen de ahora. El total se recalcula solo cuando cambia el catálogo;
+    /// la parte de la selección cuesta lo que mide la selección. Quien lo pide
+    /// con rebote es la página: mantener apretada Mayús+flecha no tiene por qué
+    /// rearmar el texto en cada tecla.
+    /// </summary>
+    public LibraryStatusSummary StatusSummary => _statusSummary.Summary(
+        _library.Index, LibraryStatusSection.Albums, _library.CatalogVersion,
+        ItemsOf(SelectedCards), _selection.Count);
+
     public string CountText => Kind switch
     {
         MediaGridKind.Albums => Cards.Count == 1 ? "1 álbum" : $"{Cards.Count} álbumes",
@@ -244,11 +265,7 @@ public sealed partial class MediaGridViewModel : ViewModelBase
         //
         // Lo que sí sobrevive ahora es un <see cref="Refresh"/>: aplicar tapas en
         // lote ya no deja al usuario sin la selección con la que las pidió.
-        //
-        // Va por ApplySelection y no por el modelo a secas: si se vuelve a la
-        // misma sección, las tarjetas que se reusan tienen que enterarse de que
-        // ya no están marcadas.
-        ApplySelection(_selection.Clear());
+        ClearSelection();
 
         Kind = kind;
         PhotoCategory = photoCategory ?? "";
@@ -292,7 +309,21 @@ public sealed partial class MediaGridViewModel : ViewModelBase
     {
         IReadOnlyList<MediaCard> desired = Reconcile(SpecsFor(Kind));
 
-        ObservableListSync.Apply(Cards, desired, Subscribe, Unsubscribe);
+        // Mientras la colección se reacomoda, el control avisa por su cuenta que
+        // dejó de tener seleccionado lo que sacó (ST-202). Esos avisos no son
+        // una decisión del usuario: si se le hiciera caso, reemplazar la tarjeta
+        // de un álbum al que se le acaba de aplicar una tapa lo sacaría de la
+        // selección con la que el usuario la pidió.
+        _refreshing = true;
+
+        try
+        {
+            ObservableListSync.Apply(Cards, desired, Subscribe, Unsubscribe);
+        }
+        finally
+        {
+            _refreshing = false;
+        }
 
         // Lo que se había seleccionado y ya no está deja de estar seleccionado:
         // si no, seguiría alcanzado por «Solo la selección» sin que nadie lo vea.
@@ -301,6 +332,11 @@ public sealed partial class MediaGridViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsEmpty));
         OnPropertyChanged(nameof(CountText));
         NotifySelectionChanged();
+
+        // Y ahora sí, que el control vuelva a marcar lo que corresponde: las
+        // tarjetas que se reemplazaron son instancias nuevas, y para él son
+        // otras.
+        SelectionSyncRequested?.Invoke(this, SelectedCards);
     }
 
     /// <summary>
@@ -371,37 +407,15 @@ public sealed partial class MediaGridViewModel : ViewModelBase
         return cards;
     }
 
-    private void Subscribe(MediaCard card)
-    {
-        _byId[card.Id] = card;
-        card.PropertyChanged += OnCardChanged;
-    }
+    private void Subscribe(MediaCard card) => _byId[card.Id] = card;
 
     private void Unsubscribe(MediaCard card)
     {
-        card.PropertyChanged -= OnCardChanged;
-
         // Solo si sigue siendo la que está en el índice: al reemplazar una
         // tarjeta por otra con el mismo id, la nueva entra antes de que salga la
         // vieja, y borrar acá dejaría el índice sin la que sí está en pantalla.
         if (_byId.TryGetValue(card.Id, out MediaCard? current) && ReferenceEquals(current, card))
             _byId.Remove(card.Id);
-    }
-
-    /// <summary>
-    /// La casilla escribe directo en la tarjeta —así también funciona con el
-    /// teclado y con un lector de pantalla—, así que el modelo se entera
-    /// escuchándola, no interceptando el clic. Cuando la orden ya viene del
-    /// modelo (<c>_applyingSelection</c>) no hay nada de qué enterarse.
-    /// </summary>
-    private void OnCardChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
-    {
-        if (_applyingSelection) return;
-        if (e.PropertyName != nameof(MediaCard.IsSelected)) return;
-        if (sender is not MediaCard card) return;
-
-        _selection.Set(card.Id, card.IsSelected);
-        NotifySelectionChanged();
     }
 
     private static string SeasonsText(VideoCollectionGroup series)
@@ -426,55 +440,76 @@ public sealed partial class MediaGridViewModel : ViewModelBase
     public int SelectedCount => _selection.Count;
 
     /// <summary>
-    /// La casilla <b>alterna</b> ese elemento sin tocar el resto. Es
-    /// acumulativa a propósito: para eso existe, y es lo que la distingue del
-    /// clic en la tarjeta.
+    /// Pide que el control vuelva a marcar lo que dice el modelo. Sale después
+    /// de cada <see cref="Refresh"/>, con las tarjetas que tienen que quedar
+    /// seleccionadas (ST-202).
     /// </summary>
-    public void ToggleSelection(MediaCard card) => ApplySelection(_selection.Toggle(card.Id));
+    public event EventHandler<IReadOnlyList<MediaCard>>? SelectionSyncRequested;
 
     /// <summary>
-    /// El clic en la tarjeta <b>reemplaza</b> la selección, como en macOS y como
-    /// en cualquier cuadrícula del sistema.
+    /// <b>La selección la lleva el control</b> (ST-202): acá solo se anota lo
+    /// que decidió. Es lo que hace que un clic, Ctrl+clic, Mayús+clic,
+    /// Mayús+flechas y Ctrl+A funcionen sin una línea de lógica de selección
+    /// propia — antes estaban reimplementados a mano, y solo el clic simple.
     ///
-    /// <para>Toca solo las tarjetas que cambian —las que estaban marcadas y la
-    /// nueva—, no las 1 091 (ST-201).</para>
+    /// <para>Llega el <b>delta</b>, no la selección entera: con 1 000 álbumes
+    /// marcados, releer la lista completa del control en cada cambio sería
+    /// volver a pagar por tecla lo que ST-201 sacó del camino.</para>
     /// </summary>
-    public void SelectOnly(MediaCard card) => ApplySelection(_selection.SelectOnly(card.Id));
+    public void SyncFromControl(IReadOnlyList<MediaCard> added, IReadOnlyList<MediaCard> removed)
+    {
+        // Durante un refresco, el control avisa que soltó lo que se le sacó de
+        // la colección. Eso no es una decisión del usuario.
+        if (_refreshing) return;
 
-    public void ClearSelection() => ApplySelection(_selection.Clear());
+        bool changed = false;
 
-    /// <summary>Ctrl+A: todo lo que se ve, con un solo aviso al final.</summary>
-    public void SelectAll() => ApplySelection(_selection.SelectAll(Cards.Select(card => card.Id)));
+        foreach (MediaCard card in removed)
+        {
+            if (!_selection.Set(card.Id, false).IsEmpty) changed = true;
+            card.IsSelected = false;
+        }
+
+        foreach (MediaCard card in added)
+        {
+            if (!_selection.Set(card.Id, true).IsEmpty) changed = true;
+            card.IsSelected = true;
+        }
+
+        if (!changed) return;
+
+        // El alcance de sincronización se corrige con lo que cambió, no
+        // rearmándolo entero: sumar el álbum 1 000 tiene que costar lo que ese
+        // álbum trae, no los 12 000 identificadores de toda la selección.
+        LibraryCatalogIndex index = _library.Index;
+
+        _library.Selection.Apply(
+            index.ItemIdsForKeys(GroupKind, added.Select(card => card.Id)),
+            index.ItemIdsForKeys(GroupKind, removed.Select(card => card.Id)));
+
+        NotifySelectionChanged(publishSelection: false);
+    }
 
     /// <summary>
-    /// Lleva el cambio a las tarjetas alcanzadas con los avisos suspendidos, y
-    /// avisa <b>una sola vez</b> al final. Sin esto, reemplazar una selección de
-    /// 500 disparaba 500 recuentos, 500 publicaciones y 500 recorridos del
-    /// catálogo.
+    /// Deja el modelo sin selección. Al control se lo dice la página, que es la
+    /// que lo tiene.
     /// </summary>
-    private void ApplySelection(SelectionDelta delta)
+    public void ClearSelection()
     {
+        SelectionDelta delta = _selection.Clear();
         if (delta.IsEmpty) return;
 
-        _applyingSelection = true;
-
-        try
-        {
-            foreach (string id in delta.Deselected)
-                if (_byId.TryGetValue(id, out MediaCard? card)) card.IsSelected = false;
-
-            foreach (string id in delta.Selected)
-                if (_byId.TryGetValue(id, out MediaCard? card)) card.IsSelected = true;
-        }
-        finally
-        {
-            _applyingSelection = false;
-        }
+        foreach (string id in delta.Deselected)
+            if (_byId.TryGetValue(id, out MediaCard? card)) card.IsSelected = false;
 
         NotifySelectionChanged();
     }
 
-    private void NotifySelectionChanged()
+    /// <param name="publishSelection">
+    /// <c>false</c> cuando quien llama ya corrigió el alcance de sincronización
+    /// con el delta, que es más barato que rearmarlo entero (ST-202).
+    /// </param>
+    private void NotifySelectionChanged(bool publishSelection = true)
     {
         // R2-1: en cuanto hay algo seleccionado, TODAS las tarjetas muestran su
         // casilla. Cada tarjeta necesita saberlo, así que el dato se empuja —
@@ -496,8 +531,11 @@ public sealed partial class MediaGridViewModel : ViewModelBase
         // selección» de General. Una tarjeta es un álbum o una serie, así que lo
         // que viaja son sus CANCIONES, no la tarjeta. Con el índice cuesta lo
         // que suman los grupos marcados, no lo que mide la biblioteca.
-        _library.PublishSelectionForSync(
-            _library.Index.ItemIdsForKeys(GroupKind, _selection.Ids));
+        if (publishSelection)
+        {
+            _library.PublishSelectionForSync(
+                _library.Index.ItemIdsForKeys(GroupKind, _selection.Ids));
+        }
 
         OnPropertyChanged(nameof(SelectedCards));
         OnPropertyChanged(nameof(SelectedCount));

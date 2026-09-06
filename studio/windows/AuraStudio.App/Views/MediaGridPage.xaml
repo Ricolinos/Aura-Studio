@@ -48,17 +48,25 @@
                  Margin="0,0,0,12" />
 
         <!-- Un clic selecciona, dos abren (ST-103, y es lo que hace cualquier
-             cuadrícula del sistema). La selección la lleva el modelo, no el
-             GridView: así la casilla y el clic pueden significar cosas
-             distintas sin pelearse con la selección propia del control. -->
+             cuadrícula del sistema).
+
+             ST-202: la selección la lleva el CONTROL. Con `Extended`, el
+             GridView trae de fábrica clic, Ctrl+clic, Mayús+clic, Mayús+flechas
+             y navegación con flechas — todo lo que antes estaba reimplementado
+             a mano, y solo el clic simple lo estaba. La casilla sigue viviendo
+             en la tarjeta (ST-103) y se sincroniza con `SelectedItems`.
+
+             `IsItemClickEnabled` se fue con ella: con una selección de verdad,
+             `ItemClick` se dispara ANTES de `SelectionChanged` y en algunos
+             casos la selección ni siquiera llega a ocurrir. Abrir es doble clic,
+             que es lo que era. -->
         <GridView Grid.Row="2"
                   x:Name="CardsView"
                   ItemsSource="{x:Bind ViewModel.Cards}"
-                  IsItemClickEnabled="True"
-                  ItemClick="Cards_ItemClick"
                   ContextRequested="Cards_ContextRequested"
                   Tapped="Cards_Tapped"
-                  SelectionMode="None">
+                  SelectionChanged="Cards_SelectionChanged"
+                  SelectionMode="Extended">
             <GridView.ItemTemplate>
                 <DataTemplate x:DataType="vm:MediaCard">
                     <StackPanel Width="168" Margin="0,0,12,16" Spacing="6"
@@ -107,8 +115,16 @@
                                     Opacity="{x:Bind ShowsSelectionBox, Mode=OneWay, Converter={StaticResource BoolToOpacity}}"
                                     IsHitTestVisible="{x:Bind ShowsSelectionBox, Mode=OneWay}"
                                     Background="{ThemeResource AcrylicBackgroundFillColorDefaultBrush}">
+                                <!-- ST-202: la casilla ya no escribe en la
+                                     tarjeta, porque la selección la lleva el
+                                     control. `Click` (que también sale con la
+                                     barra espaciadora, así que el teclado y el
+                                     lector de pantalla siguen sirviendo) alterna
+                                     ESA tarjeta dentro de `SelectedItems`, y de
+                                     ahí vuelve `IsSelected`. -->
                                 <CheckBox MinWidth="0" Padding="0"
-                                          IsChecked="{x:Bind IsSelected, Mode=TwoWay}"
+                                          IsChecked="{x:Bind IsSelected, Mode=OneWay}"
+                                          Click="SelectionBox_Click"
                                           Tapped="SelectionBox_Tapped"
                                           AutomationProperties.Name="{x:Bind Title}" />
                             </Border>
@@ -138,9 +154,22 @@
                 BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
                 Padding="12,8,12,0" Margin="0,8,0,0">
             <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="12">
+                <!-- ST-202: en Álbumes, el resumen al estilo de la barra del
+                     Finder (ST-063), armado por `StatusSummaryModel` y escrito
+                     con rebote desde la página. En las demás cuadrículas siguen
+                     el conteo y el "N seleccionados" de siempre. -->
+                <TextBlock x:Name="StatusTotal"
+                           Visibility="{x:Bind ViewModel.ShowsStatusSummary, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
+                           Style="{StaticResource AuraCaptionTextStyle}" />
                 <TextBlock Text="{x:Bind ViewModel.CountText, Mode=OneWay}"
+                           Visibility="{x:Bind ViewModel.ShowsStatusSummary, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}"
+                           Style="{StaticResource AuraCaptionTextStyle}" />
+
+                <TextBlock x:Name="StatusSelection" Grid.Column="1"
+                           Visibility="{x:Bind ViewModel.ShowsStatusSummary, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
                            Style="{StaticResource AuraCaptionTextStyle}" />
                 <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.SelectionText, Mode=OneWay}"
+                           Visibility="{x:Bind ViewModel.ShowsStatusSummary, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}"
                            Style="{StaticResource AuraCaptionTextStyle}" />
                 <controls:LibraryStatusStrip Grid.Column="2" HorizontalAlignment="Right"
                                              Library="{x:Bind ViewModel.Library, Mode=OneWay}" />

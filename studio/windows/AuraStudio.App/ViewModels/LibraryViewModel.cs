@@ -101,6 +101,12 @@ public sealed partial class LibraryViewModel : ViewModelBase
     /// </summary>
     private int _catalogVersion;
 
+    /// <summary>
+    /// La versión del catálogo, para quien memoize algo derivado de él y necesite
+    /// saber cuándo tirarlo (ST-202: el resumen de la barra de estado).
+    /// </summary>
+    public int CatalogVersion => _catalogVersion;
+
     private LibraryCatalogIndex? _index;
     private int _indexedVersion = -1;
 
@@ -827,30 +833,31 @@ public sealed partial class LibraryViewModel : ViewModelBase
     /// limpieza, "solo la selección" seguiría apuntando a lo que había
     /// seleccionado dos pantallas atrás, que es la clase de cosa que hace copiar
     /// lo que no era.</para>
+    ///
+    /// <para><b>Vive fuera de este modelo</b> (ST-202): publicarla acá avisaba
+    /// por <c>PropertyChanged</c> del modelo que escuchan TODAS las vistas de la
+    /// biblioteca, y cada una tenía que decidir si ese aviso le tocaba. Ahora la
+    /// guarda un <see cref="SelectionStore"/> chico, que solo observa quien de
+    /// verdad la consume — hoy, la ficha de General.</para>
     /// </summary>
-    public IReadOnlyCollection<Guid> SelectionForSync { get; private set; } = [];
+    public SelectionStore Selection { get; } = new();
 
-    public int SelectionForSyncCount => SelectionForSync.Count;
+    public IReadOnlyCollection<Guid> SelectionForSync => Selection.Selected;
+
+    public int SelectionForSyncCount => Selection.Count;
 
     /// <summary>
-    /// Publica lo seleccionado, y <b>avisa solo si de verdad cambió</b>
-    /// (ST-161). La comparación es por contenido: cada refresco de una
-    /// cuadrícula arma una lista nueva con los mismos ids, así que comparar
-    /// referencias diría "cambió" siempre — y ese aviso de más era el que
-    /// cerraba el ciclo que colgaba la app (refrescar publica la selección,
-    /// publicar avisa, el aviso vuelve a refrescar).
+    /// Publica lo seleccionado. Avisa <b>solo si de verdad cambió</b> (ST-161),
+    /// y por el evento del almacén, no por <c>PropertyChanged</c> de este modelo.
+    /// La comparación es por contenido: cada refresco de una cuadrícula arma una
+    /// lista nueva con los mismos identificadores, así que comparar referencias
+    /// diría "cambió" siempre — y ese aviso de más era el que cerraba el ciclo
+    /// que colgaba la app.
     /// </summary>
-    public void PublishSelectionForSync(IReadOnlyCollection<Guid> ids)
-    {
-        if (SelectionPublication.SameSelection(SelectionForSync, ids)) return;
-
-        SelectionForSync = ids;
-        OnPropertyChanged(nameof(SelectionForSync));
-        OnPropertyChanged(nameof(SelectionForSyncCount));
-    }
+    public void PublishSelectionForSync(IReadOnlyCollection<Guid> ids) => Selection.Replace(ids);
 
     /// <summary>Se llama al dejar una vista: lo de la anterior no puede sobrevivirla.</summary>
-    public void ClearSelectionForSync() => PublishSelectionForSync([]);
+    public void ClearSelectionForSync() => Selection.Clear();
 
     /// <summary>
     /// Cuántos elementos están listos para viajar. Es una <b>aproximación</b>
