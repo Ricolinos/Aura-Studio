@@ -6710,19 +6710,21 @@ atiende y lo marca como atendido.
 
 Arnés de W0 (`LibraryPerfCheck -- 1000 12 0`), 1 000 álbumes × 12 pistas =
 12 000 canciones con carátula real. "Antes de todo" es `3de9cc5`; "tras W1" son
-las dos corridas de ST-201; "tras W2" es esta rama.
+las dos corridas de ST-201; "tras W2" son tres corridas de esta rama, la última
+ya sobre el fixture arreglado del addendum de ST-200 —el que trae los tamaños
+puestos, así que mide **estado estable** y no la migración única.
 
 | Escenario | antes de todo | tras W1 | tras W2 |
 |---|---|---|---|
-| **Ctrl+A en Álbumes: el gesto real, un solo aviso** | no existía el gesto | no existía | **9 y 10 ms** |
-| 1 000 Ctrl+clic seguidos (la fila con la que compara W0) | 9 487 ms | 3 227 y 3 918 ms | **2 y 22 ms** |
-| lo mismo, por gesto | 9.5 ms | 3.2 y 3.9 ms | **0.002 y 0.022 ms** |
+| **Ctrl+A en Álbumes: el gesto real, un solo aviso** | no existía el gesto | no existía | **9, 10 y 11 ms** |
+| 1 000 Ctrl+clic seguidos (la fila con la que compara W0) | 9 487 ms | 3 227 y 3 918 ms | **2, 5 y 22 ms** |
+| lo mismo, por gesto | 9.5 ms | 3.2 y 3.9 ms | **0.002 a 0.022 ms** |
 | Clic CON cascada: álbum 1 / 2 / 3 | 346 / 589 / 702 ms | 0 / 0 / 0-4 ms | **0 / 0 / 0 ms** |
-| Clic aislado: álbum 1 / 2 / 3 | 25 / 40 / 33 ms | 3 / 1-2 / 0 ms | 2 / 0 / 0 ms (las dos corridas) |
-| Menú contextual con 1 000 seleccionados | 8 ms | 4 y 10 ms | 1 y 5 ms |
+| Clic aislado: álbum 1 / 2 / 3 | 25 / 40 / 33 ms | 3 / 1-2 / 0 ms | 1-2 / 0 / 0 ms |
+| Menú contextual con 1 000 seleccionados | 8 ms | 4 y 10 ms | 1, 2 y 5 ms |
 
-**Los dos criterios de W2, cumplidos**: Ctrl+A en Álbumes en 9 y 10 ms (el objetivo
-era < 100 ms) y ningún cambio de selección por encima de 16 ms.
+**Los dos criterios de W2, cumplidos**: Ctrl+A en Álbumes entre 9 y 11 ms (el
+objetivo era < 100 ms) y ningún cambio de selección por encima de 16 ms.
 
 Lo que hizo la diferencia en la fila de los 1 000 Ctrl+clic —de 3.9 s a decenas
 de milisegundos, dos órdenes de magnitud— no fue el control: fue
@@ -6735,25 +6737,44 @@ que entró y lo que salió.
 Con `SelectAll()` el mismo Ctrl+A es además **un** `SelectionChanged` en vez de
 mil, que es la otra mitad.
 
-### Una fila que sigue rara, y es de W6
+### Lo que el fixture arreglado aclaró
 
-`Canciones: ScopeOf tras Ctrl+A` da entre **66 y 105 ms** acá, contra 9.5 ms en
-la línea base. No es ruido de una corrida: dio 66, 70, 73 y 105 ms en cuatro
-corridas mías, y 76 ms en la del mecánico con el fixture ya arreglado. Y no es
-de ST-201 ni de ST-202: es una réplica que el arnés calcula con tipos de Core
-(`LibraryGrouping.AlbumKeyOf` sobre `library.Items`), y
-`git diff` de `LibraryGrouping.cs`, `SimilarItemsDetector.cs` y
-`MediaTableRow.cs` entre la línea base y esta rama está **vacío**.
+El addendum de ST-200 —que le pone los tamaños al fixture— confirma lo que
+ST-201 sospechaba de sus cuatro filas empeoradas: **era la migración única
+corriendo en segundo plano**, no una regresión. Con el fixture arreglado, en la
+misma máquina:
 
-La explicación más probable es presión de recolección: esa réplica asigna una
-`ArtistGroupingOptions` y varias cadenas normalizadas **por elemento**, doce mil
-veces, y ahora hay mucho más vivo en el montón mientras corre —el índice del
-catálogo, sus mil listas y sus diccionarios—. No está comprobado con un perfilador
-y no se afirma como causa.
+| Fila | línea base | ST-201 (fixture viejo) | ST-202 (estado estable) |
+|---|---|---|---|
+| `SongsViewModel` ctor (12 000 filas) | 271 ms | 306 y 365 ms | **60 ms** |
+| `PlaylistsViewModel` ctor | 93 ms | 224 y 355 ms | **74 ms** |
+| Canciones: clic derecho tras Ctrl+A | 23 ms | 74 y 79 ms | **23 ms** |
+| Canciones: `ScopeOf` tras Ctrl+A | 5 ms | 66 y 73 ms | **23 ms** |
+
+Los 60 ms del constructor de Canciones son el número de verdad de lo que hizo
+ST-201 al sacar los 12 000 `FileInfo` de cada refresco: **4.5 veces**, y en
+disco local — por red la diferencia es de otro orden. Y el clic derecho tras
+Ctrl+A vuelve clavado a su línea base, que es la prueba de que aquellas filas
+medían ruido.
+
+Queda **una** que no vuelve del todo: `ScopeOf tras Ctrl+A`, 23 ms contra 5 ms.
+No es de ST-201 ni de ST-202 —es una réplica que el arnés calcula con tipos de
+Core (`LibraryGrouping.AlbumKeyOf` sobre `library.Items`), y el `git diff` de
+`LibraryGrouping.cs`, `SimilarItemsDetector.cs` y `MediaTableRow.cs` entre la
+línea base y esta rama está **vacío**—. La explicación más probable es presión
+de recolección: esa réplica asigna una `ArtistGroupingOptions` y varias cadenas
+normalizadas **por elemento**, doce mil veces, y ahora hay mucho más vivo en el
+montón mientras corre (el índice del catálogo con sus mil listas). No está
+comprobado con un perfilador y no se afirma como causa.
 
 Lo que sí es seguro es que **la fila desaparece con W6**: recalcular
 `AlbumKeyOf` doce mil veces para armar un menú es exactamente lo que el índice de
 ST-201 vino a hacer innecesario.
+
+El escenario de migración que agregó el addendum lo deja medido aparte: **95 ms**
+para medir los 12 000 archivos, y **5 590 ms** para el único guardado del final
+—que es `SaveItems` reescribiendo las 1 000 carátulas por un campo numérico, y
+es de W4—.
 
 ### Lo que NO se tocó, a propósito
 

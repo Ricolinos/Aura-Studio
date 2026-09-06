@@ -163,17 +163,27 @@ try
     Measure("MediaGridViewModel.Show(Albums): Refresh() completo, 1000 álbumes (aislado)",
         () => { isolatedGrid.Show(MediaGridKind.Albums); return isolatedGrid.Cards.Count; });
 
-    MeasureVoid("Selección aislada: SelectOnly álbum 1 (sin Canciones/Listas suscritas)",
-        () => isolatedGrid.SelectOnly(isolatedGrid.Cards[0]));
-    MeasureVoid("Selección aislada: SelectOnly álbum 2 (sin Canciones/Listas suscritas)",
-        () => isolatedGrid.SelectOnly(isolatedGrid.Cards[1]));
-    MeasureVoid("Selección aislada: SelectOnly álbum 3 (sin Canciones/Listas suscritas)",
-        () => isolatedGrid.SelectOnly(isolatedGrid.Cards[2]));
+    MeasureVoid("Selección aislada: clic en álbum 1 (sin Canciones/Listas suscritas)",
+        () => Click(isolatedGrid, isolatedGrid.Cards[0]));
+    MeasureVoid("Selección aislada: clic en álbum 2 (sin Canciones/Listas suscritas)",
+        () => Click(isolatedGrid, isolatedGrid.Cards[1]));
+    MeasureVoid("Selección aislada: clic en álbum 3 (sin Canciones/Listas suscritas)",
+        () => Click(isolatedGrid, isolatedGrid.Cards[2]));
 
+    // ST-202: Ctrl+A es UN gesto. `GridView.SelectAll()` manda un solo
+    // `SelectionChanged` con todo lo que faltaba, no mil avisos.
+    ClearSelection(isolatedGrid);
+    MeasureVoid($"Ctrl+A en Álbumes: el gesto real, un solo aviso ({isolatedGrid.Cards.Count} álbumes, aislado)",
+        () => CtrlA(isolatedGrid));
+
+    // Y la misma fila que medía W0 —mil Ctrl+clic seguidos—, para poder comparar
+    // contra su línea base. No es lo que hace un Ctrl+A ni lo que hace una
+    // persona: es el peor caso de sumar de a uno.
+    ClearSelection(isolatedGrid);
     var ctrlAWatch = Stopwatch.StartNew();
-    foreach (MediaCard card in isolatedGrid.Cards) isolatedGrid.ToggleSelection(card);
+    foreach (MediaCard card in isolatedGrid.Cards) CtrlClick(isolatedGrid, card);
     ctrlAWatch.Stop();
-    Console.WriteLine($"{ctrlAWatch.ElapsedMilliseconds,6} ms  Ctrl+A en Álbumes, réplica con la API pública de hoy (ToggleSelection x {isolatedGrid.Cards.Count}, aislado)");
+    Console.WriteLine($"{ctrlAWatch.ElapsedMilliseconds,6} ms  Álbumes: {isolatedGrid.Cards.Count} Ctrl+clic seguidos (la fila con la que compara W0, aislado)");
     Console.WriteLine($"    promedio por álbum: {ctrlAWatch.ElapsedMilliseconds / (double)isolatedGrid.Cards.Count:0.000} ms (sin Canciones/Listas suscritas)");
 
     Measure("Álbumes: abrir menú contextual con 1000 seleccionados (ScopeOf)",
@@ -192,14 +202,14 @@ try
     PlaylistsViewModel playlists = Measure("PlaylistsViewModel ctor (Reload + Refresh inicial)",
         () => new PlaylistsViewModel(library));
 
-    MeasureVoid("Selección CON cascada: SelectOnly álbum 1 (dispara Songs.Refresh + Playlists.Refresh)",
-        () => grid.SelectOnly(grid.Cards[0]));
-    MeasureVoid("Selección CON cascada: SelectOnly álbum 2 (dispara Songs.Refresh + Playlists.Refresh)",
-        () => grid.SelectOnly(grid.Cards[1]));
-    MeasureVoid("Selección CON cascada: SelectOnly álbum 3 -- el clic que hoy traba la app",
-        () => grid.SelectOnly(grid.Cards[2]));
-    MeasureVoid("Selección CON cascada: ToggleSelection álbum 4",
-        () => grid.ToggleSelection(grid.Cards[3]));
+    MeasureVoid("Selección CON cascada: clic en álbum 1 (dispara Songs.Refresh + Playlists.Refresh)",
+        () => Click(grid, grid.Cards[0]));
+    MeasureVoid("Selección CON cascada: clic en álbum 2 (dispara Songs.Refresh + Playlists.Refresh)",
+        () => Click(grid, grid.Cards[1]));
+    MeasureVoid("Selección CON cascada: clic en álbum 3 -- el clic que hoy traba la app",
+        () => Click(grid, grid.Cards[2]));
+    MeasureVoid("Selección CON cascada: Ctrl+clic en álbum 4",
+        () => CtrlClick(grid, grid.Cards[3]));
 
     Console.WriteLine($"    (para comparar: cada clic de arriba paga un SongsViewModel.Refresh() completo -- ver la fila de más arriba con su costo aislado)");
 
@@ -282,6 +292,34 @@ finally
 {
     try { Directory.Delete(root, recursive: true); } catch (IOException) { }
 }
+
+// --- Réplica de lo que manda el GridView (ST-202) ---
+//
+// Desde ST-202 la selección de la cuadrícula la lleva el CONTROL
+// (`SelectionMode="Extended"`), y el modelo solo anota lo que él avisa. Acá no
+// hay control —esto corre sin ventana—, así que se replica exactamente el aviso
+// que mandaría: `SelectionChanged` con lo que entró y lo que salió.
+//
+// Es la razón por la que estas filas ya no llaman a `SelectOnly`/
+// `ToggleSelection`: esos envoltorios se fueron con los gestos a mano.
+
+/// <summary>Clic simple: reemplaza la selección por esa tarjeta.</summary>
+static void Click(MediaGridViewModel grid, MediaCard card) =>
+    grid.SyncFromControl([card], [.. grid.SelectedCards.Where(other => !ReferenceEquals(other, card))]);
+
+/// <summary>Ctrl+clic: suma o quita esa tarjeta, sin tocar el resto.</summary>
+static void CtrlClick(MediaGridViewModel grid, MediaCard card) =>
+    grid.SyncFromControl(card.IsSelected ? [] : [card], card.IsSelected ? [card] : []);
+
+/// <summary>
+/// Ctrl+A: <b>un</b> aviso con todo lo que faltaba, que es lo que hace
+/// <c>GridView.SelectAll()</c>.
+/// </summary>
+static void CtrlA(MediaGridViewModel grid) =>
+    grid.SyncFromControl([.. grid.Cards.Where(card => !card.IsSelected)], []);
+
+static void ClearSelection(MediaGridViewModel grid) =>
+    grid.SyncFromControl([], [.. grid.SelectedCards]);
 
 static T Measure<T>(string what, Func<T> action)
 {
