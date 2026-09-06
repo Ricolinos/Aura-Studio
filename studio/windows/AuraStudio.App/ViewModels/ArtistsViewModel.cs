@@ -134,7 +134,16 @@ public sealed partial class ArtistsViewModel : ViewModelBase
     /// </summary>
     private void OnLibraryChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (ChangesLibraryContent(e.PropertyName)) Refresh();
+        if (ChangesLibraryContent(e.PropertyName))
+        {
+            Refresh();
+            return;
+        }
+
+        // ST-203: mientras carga la lista está vacía, y eso no es "no hay
+        // música en la biblioteca".
+        if (e.PropertyName == nameof(LibraryViewModel.IsLoading))
+            OnPropertyChanged(nameof(ShowsEmptyState));
     }
 
     /// <summary>Nombre vacío o <c>null</c> es "cambió todo": eso sí obliga a rehacer.</summary>
@@ -212,6 +221,13 @@ public sealed partial class ArtistsViewModel : ViewModelBase
     public bool IsEmpty => Artists.Count == 0;
 
     /// <summary>
+    /// Cuándo sale el cartel de "todavía no hay música" (ST-203): <b>no mientras
+    /// carga</b>. El avance se ve en la franja de estado, que es lo que de verdad
+    /// está pasando.
+    /// </summary>
+    public bool ShowsEmptyState => Artists.Count == 0 && !_library.IsLoading;
+
+    /// <summary>
     /// Artistas, álbumes y canciones de lo que se está viendo, más la selección
     /// (ST-063). Cuenta lo <b>visible</b>: con un filtro escrito, decir el total
     /// de la biblioteca sería mentir sobre lo que hay en pantalla.
@@ -253,6 +269,7 @@ public sealed partial class ArtistsViewModel : ViewModelBase
         SetSelection(restored.Count > 0 ? restored : Artists.Count > 0 ? [Artists[0]] : []);
 
         OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(ShowsEmptyState));
     }
 
     /// <summary>

@@ -151,8 +151,18 @@ try
     string prefsPath = Path.Combine(root, "prefs.json");
     var preferences = new AppPreferences(prefsPath) { LibraryPath = root };
 
-    LibraryViewModel library = Measure("Arranque: LibraryViewModel ctor (Reload real)",
-        () => new LibraryViewModel(preferences, new NoOpLibraryProcessor(), new NoOpEnrichmentService()));
+    // ST-203: el constructor ya no espera a que la biblioteca esté. Esta fila
+    // mide el criterio —lo que tarda en poder verse la pantalla— y la de abajo,
+    // lo que tarda la carga completa, que ahora ocurre en segundo plano.
+    LibraryViewModel library = Measure("Arranque: LibraryViewModel ctor (vuelve enseguida)",
+        () => new LibraryViewModel(preferences, new NoOpLibraryProcessor(), new NoOpEnrichmentService(),
+            new AuraStudio.App.Services.BackgroundTaskCenter()));
+
+    await MeasureAsync("Carga completa de la biblioteca (en segundo plano)", async () =>
+    {
+        await library.LoadingTask;
+        return library.AvailableItems.Count;
+    });
 
     Console.WriteLine($"    ítems disponibles: {library.AvailableItems.Count}");
 

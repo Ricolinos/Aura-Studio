@@ -1,6 +1,17 @@
 namespace AuraStudio.Core.Library;
 
 /// <summary>
+/// Lo que salió de leer el catálogo (ST-203).
+/// </summary>
+/// <param name="Items">Lo que se pudo leer; vacío si no se pudo.</param>
+/// <param name="Error">
+/// Por qué no se pudo, o <c>null</c> si todo salió bien. <b>Una biblioteca
+/// vacía y un catálogo ilegible no son lo mismo</b>, y en pantalla se veían
+/// idénticos hasta que esto existió.
+/// </param>
+public readonly record struct LibraryLoad(IReadOnlyList<LibraryItem> Items, string? Error);
+
+/// <summary>
 /// La biblioteca en disco: traduce entre los <see cref="LibraryItem"/> vivos y
 /// el catálogo persistido, y guarda las portadas como archivos aparte.
 ///
@@ -98,8 +109,20 @@ public sealed class LibraryStore(string root)
     /// </summary>
     public IReadOnlyList<LibraryItem> LoadItems(out string? error)
     {
-        LibraryCatalogStore.CatalogLoad load = LibraryCatalogStore.TryLoad(Root);
+        LibraryLoad load = Load();
         error = load.Error;
+        return load.Items;
+    }
+
+    /// <summary>
+    /// La carga con <b>avance y cancelación</b> (ST-203): se llama desde una
+    /// tarea de fondo, así que hace falta poder decir por dónde va y poder
+    /// pararla si el usuario cambia de carpeta de biblioteca a mitad.
+    /// </summary>
+    /// <param name="onProgress">Cuántos van y cuántos son.</param>
+    public LibraryLoad Load(Action<int, int>? onProgress = null, CancellationToken ct = default)
+    {
+        LibraryCatalogStore.CatalogLoad load = LibraryCatalogStore.TryLoad(Root);
 
         PersistedLibrary catalog = load.Catalog;
         CoversNormalized = catalog.CoversNormalized;
@@ -107,6 +130,8 @@ public sealed class LibraryStore(string root)
 
         foreach (PersistedLibraryItem persisted in catalog.Items)
         {
+            ct.ThrowIfCancellationRequested();
+
             items.Add(new LibraryItem
             {
                 Id = persisted.Id,
@@ -114,7 +139,7 @@ public sealed class LibraryStore(string root)
                 Kind = LibraryPersistenceMapper.LiveKind(persisted.Kind),
                 Status = LibraryPersistenceMapper.LiveStatus(persisted.Status),
                 Metadata = LibraryPersistenceMapper.ToLive(
-                    persisted.Metadata, ReadCover(persisted.Id)),
+                    persisted.Metadata, ReadCover(persisted)),
                 PreparedPath = persisted.PreparedRelativePath is null
                     ? null : ToAbsolutePath(persisted.PreparedRelativePath),
                 Category = LibraryPersistenceMapper.LiveCategory(persisted.Category),
@@ -128,10 +153,19 @@ public sealed class LibraryStore(string root)
                 // tamaño (ST-201), así que ponerlo antes lo borraría.
                 FileSizeBytes = persisted.FileSizeBytes
             });
+
+            if (items.Count % ProgressEvery == 0) onProgress?.Invoke(items.Count, catalog.Items.Count);
         }
 
-        return items;
+        onProgress?.Invoke(items.Count, catalog.Items.Count);
+        return new LibraryLoad(items, load.Error);
     }
+
+    /// <summary>
+    /// Cada cuántos elementos se avisa del avance. Avisar por elemento sería un
+    /// salto al hilo de interfaz por canción.
+    /// </summary>
+    private const int ProgressEvery = 250;
 
     /// <summary>Las listas del catálogo, como objetos vivos.</summary>
     public IReadOnlyList<Playlist> LoadPlaylists() =>
@@ -223,17 +257,29 @@ public sealed class LibraryStore(string root)
     /// inexistente. Leerla acá la recupera, y el próximo guardado la deja con el
     /// nombre canónico sola.</para>
     /// </summary>
-    private byte[]? ReadCover(Guid id)
+    private byte[]? ReadCover(PersistedLibraryItem persisted)
     {
         try
         {
-            string path = CoverPath(id);
+            // ST-203: primero LA RUTA ANOTADA, como ya hace la app de macOS
+            // (`SharedCatalogPath.coverURL(recorded:itemID:)`). Windows la
+            // escribía y la ignoraba al leer, derivándola siempre del
+            // identificador; con la biblioteca compartida eso significa que una
+            // carátula anotada en otra forma —otra normalización Unicode, otro
+            // separador— quedaba invisible acá aunque el archivo estuviera ahí.
+            if (persisted.CoverRelativePath is { Length: > 0 } recorded)
+            {
+                string fromCatalog = ToAbsolutePath(recorded);
+                if (File.Exists(fromCatalog)) return File.ReadAllBytes(fromCatalog);
+            }
+
+            string path = CoverPath(persisted.Id);
             if (File.Exists(path)) return File.ReadAllBytes(path);
 
-            string legacy = Path.Combine(CoversDirectory, id.ToString("N") + ".jpg");
+            string legacy = Path.Combine(CoversDirectory, persisted.Id.ToString("N") + ".jpg");
             return File.Exists(legacy) ? File.ReadAllBytes(legacy) : null;
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
         {
             // Una portada ilegible no puede impedir que el item cargue.
             return null;

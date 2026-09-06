@@ -205,7 +205,7 @@
         <!-- Vacío: se explica POR QUÉ está vacío -->
         <StackPanel Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center"
                     Spacing="8" MaxWidth="420"
-                    Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                    Visibility="{x:Bind ViewModel.ShowsEmptyState, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
             <TextBlock Text="{x:Bind ViewModel.EmptyMessage, Mode=OneWay}"
                        Style="{StaticResource AuraSecondaryTextStyle}"
                        TextWrapping="Wrap" TextAlignment="Center" />

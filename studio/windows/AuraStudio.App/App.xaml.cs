@@ -123,6 +123,12 @@ public sealed partial class App : Application
         services.AddSingleton<ViewModels.InstallerViewModel>();
         services.AddSingleton<ViewModels.SyncViewModel>();
         services.AddSingleton<Services.ILibraryProcessor, Services.LibraryProcessor>();
+
+        // ST-203: uno solo para toda la app. Lo que la app hace por su cuenta se
+        // anuncia en un único lugar, y la franja de estado de cualquier sección
+        // muestra el mismo.
+        services.AddSingleton<Services.BackgroundTaskCenter>();
+
         services.AddSingleton<ViewModels.LibraryViewModel>();
         services.AddSingleton<ViewModels.SongsViewModel>();
         services.AddSingleton<ViewModels.MediaGridViewModel>();

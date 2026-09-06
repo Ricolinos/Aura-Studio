@@ -39,7 +39,7 @@
 
                 <!-- Vacío: se dice qué falta, no se deja un panel en blanco. -->
                 <StackPanel Grid.Row="1" Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Center"
-                            Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
+                            Visibility="{x:Bind ViewModel.ShowsEmptyState, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
                     <FontIcon Glyph="&#xE720;" FontSize="32"
                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
                     <TextBlock Text="Todavía no hay música en la biblioteca."

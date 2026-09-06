@@ -168,7 +168,16 @@ public sealed partial class MediaGridViewModel : ViewModelBase
     /// </summary>
     private void OnLibraryChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (ChangesLibraryContent(e.PropertyName)) Refresh();
+        if (ChangesLibraryContent(e.PropertyName))
+        {
+            Refresh();
+            return;
+        }
+
+        // ST-203: mientras carga no hay tarjetas, pero eso no es "no tienes
+        // música".
+        if (e.PropertyName == nameof(LibraryViewModel.IsLoading))
+            OnPropertyChanged(nameof(ShowsEmptyState));
     }
 
     /// <summary>
@@ -225,6 +234,18 @@ public sealed partial class MediaGridViewModel : ViewModelBase
     public string SectionRule => AppStrings.LibrarySectionOnlyItsType(DropKind);
 
     public bool IsEmpty => Cards.Count == 0;
+
+    /// <summary>
+    /// Cuándo sale el cartel de "arrastra tu música aquí" (ST-203).
+    ///
+    /// <para><b>No mientras carga.</b> Desde que la biblioteca se lee en segundo
+    /// plano, la cuadrícula está vacía durante el primer segundo por una razón
+    /// que no es la que ese cartel dice: decirle a alguien que no tiene música
+    /// mientras se le está leyendo su música es la peor forma de contestar.
+    /// Durante la carga se ve el avance en la franja de estado, que es lo que de
+    /// verdad está pasando.</para>
+    /// </summary>
+    public bool ShowsEmptyState => Cards.Count == 0 && !_library.IsLoading;
 
     /// <summary>
     /// El resumen de la barra de estado (ST-202). Solo Álbumes lo tiene por
@@ -330,6 +351,7 @@ public sealed partial class MediaGridViewModel : ViewModelBase
         _selection.Retain(_byId.Keys);
 
         OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(ShowsEmptyState));
         OnPropertyChanged(nameof(CountText));
         NotifySelectionChanged();
 

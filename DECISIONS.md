@@ -7011,3 +7011,164 @@ compila y que los recursos que se pisan son exactamente los que el estilo por
 omisión usa para la marca de selección. Si al mirarlo la tarjeta seleccionada
 quedara demasiado callada, el arreglo inverso es igual de corto: sacar el borde
 de ST-103 del `DataTemplate` y quedarse con el del sistema.
+## ST-203 — Windows: la biblioteca carga en segundo plano y se ve cargando
+
+Ronda 2 de rendimiento, encargo W3 de `docs/plans/PLAN-studio-rendimiento-2.md`,
+primera mitad. La segunda —sacar las carátulas de la memoria— sale como ST-208,
+por acuerdo con la sesión maestra: son dos cosas distintas y la primera es la que
+tiene criterio medible.
+
+### Qué había
+
+El constructor de `LibraryViewModel` llamaba a `Reload()` de corrido, **en el
+hilo de interfaz**. Y la inyección de dependencias lo construye la primera vez
+que alguien pide la biblioteca, o sea al entrar a Canciones, Álbumes, Artistas o
+Listas. Así que entrar a una sección significaba, antes de dibujar nada:
+
+1. leer y parsear `biblioteca.json` (7 MB);
+2. leer **las 1 000 carátulas** de `.portadas\` (87 MB) una por una;
+3. preguntar por los **12 000 archivos**, uno por uno, con `File.Exists`.
+
+Con la biblioteca del dueño en una unidad de red, eso es la pantalla en blanco de
+9 a 15 segundos del diagnóstico (punto 3 de §0 Windows).
+
+Y el paso 3 no era solo del arranque: `RefreshAvailable` se llamaba después de
+**cada** guardado, de cada edición de metadata, de cada cambio de categoría y de
+cada tapa aplicada. Doce mil viajes al servidor cada vez que el usuario tocaba
+algo.
+
+### Qué hay
+
+**`ReloadAsync`**: leer el catálogo y comprobar los archivos ocurre en una tarea
+de fondo, y el resultado se publica **una sola vez** al final. Publicar por lotes
+haría que cada vista se rearmara una decena de veces mientras carga, que es
+cambiar una espera larga por muchas cortas. Se puede detener, y una recarga
+cancela la anterior — cambiar la carpeta de biblioteca a mitad de una carga ya no
+deja dos leyendo contra la misma lista.
+
+El constructor **vuelve enseguida**. La pantalla aparece vacía y diciendo qué
+está pasando, en vez de no aparecer.
+
+**El centro de tareas** (`BackgroundTaskCenter`, paridad con ST-156 de la Mac):
+lo que la app hace por su cuenta se anuncia en un solo lugar y se ve en la franja
+de estado que ya comparten las cinco secciones — "Cargando biblioteca… 3 000 de
+12 000", con su botón para detenerla. `BackgroundTaskProgress` vive en Core, es
+puro y distingue lo determinado de lo indeterminado: **un anillo que gira es
+honesto; una barra que finge saber cuánto falta, no**.
+
+Ahí se mudaron también las otras dos tareas de fondo que ya existían: la
+normalización de carátulas (ST-141), que hasta ahora escribía su avance pisando
+`StatusMessage`, y el relleno de tamaños (ST-201), que era **mudo**. Ninguna de
+las dos podía estar donde estaba: `StatusMessage` es el renglón donde el usuario
+lee la respuesta a lo que **acaba de pedir**, y una tarea que nadie pidió no
+puede taparla; y trabajo por red que no se ve ni se puede detener no debería
+existir. Con eso se fue también el botón suelto de "Cancelar" de la franja: la
+normalización se detiene con el mismo "Detener" que cualquier otra tarea, y dos
+botones de cancelar al lado, para dos cosas distintas, son una pregunta que el
+usuario no debería tener que contestar.
+
+**`FileAvailability`** (Core, puro): la barrida de archivos va por lotes, fuera
+del hilo de interfaz, y **deja anotado** lo que encontró. `RefreshAvailable`
+pasa a responder con eso, sin tocar el disco; lo que no esté anotado —los que
+acaban de entrar a la biblioteca, un puñado— sí se pregunta en el momento.
+
+**`LibraryStore.Load(onProgress, ct)`** reemplaza al `LoadItems(out error)` en el
+camino nuevo (el viejo sigue, delegando), y devuelve un `LibraryLoad` en vez de
+un `out`: en un camino asíncrono, un `out` no se puede usar.
+
+**La carátula se lee por la ruta anotada**, con respaldo al nombre canónico por
+identificador — que es exactamente lo que la app de macOS ya hacía
+(`SharedCatalogPath.coverURL(recorded:itemID:)`) y Windows no. Windows escribía
+`coverRelativePath` y lo **ignoraba** al leer, derivando siempre la ruta del
+identificador; con la biblioteca compartida eso significa que una carátula
+anotada en otra forma —otra normalización Unicode, otro separador— quedaba
+invisible acá aunque el archivo estuviera ahí al lado. No es un campo nuevo: es
+alinear a Windows con un contrato que ya existía.
+
+### Lo que se cede, dicho claro
+
+Un archivo que **desaparezca del disco mientras la app está abierta** se sigue
+mostrando hasta la próxima recarga, en vez de desaparecer en el siguiente
+guardado. Es deliberado, y el intercambio es: doce mil consultas por red cada vez
+que el usuario toca algo, contra una lista que puede quedar un rato desactualizada
+en un caso que hoy tampoco se detecta en el momento (nadie estaba mirando el
+disco: se enteraba de casualidad, al guardar otra cosa).
+
+Lo corrigen «Recargar» y volver a abrir. Y lo que de verdad importa —no copiar al
+iPod algo que no existe— no depende de esta lista: lo comprueba la
+sincronización cuando corre.
+
+### Números
+
+Arnés de W0 (`LibraryPerfCheck -- 1000 12 0`), 1 000 álbumes × 12 pistas =
+12 000 canciones con carátulas reales, en disco local.
+
+| | antes | después |
+|---|---|---|
+| **Arranque: constructor de `LibraryViewModel`** | 887 y 991 ms | **27 y 39 ms** |
+| Carga completa de la biblioteca | (era el arranque) | 901 y 1 050 ms, **en segundo plano** |
+
+El criterio de W3 es "ventana interactiva < 1 s", y esos 27-39 ms lo cumplen con
+dos órdenes de magnitud de margen — pero el número importante no es ese: es que
+**el constructor ya no toca el disco**. Arma un `LibraryStore` (que no lee nada),
+pregunta si el volumen está montado (una consulta, no doce mil) y lanza una
+tarea. Su costo no depende de lo lento que esté el disco, **por construcción y no
+por medición**, que es la única forma de prometer un arranque rápido sobre una
+unidad de red cuya latencia nadie controla.
+
+**Y con disco lento, que es de lo que se trata.** El mismo arnés con el tercer
+argumento en 3 (`-- 1000 12 3`) replica lo que costaba el arranque viejo cuando
+cada consulta al disco no es gratis:
+
+| Réplica del camino que estaba en el hilo de interfaz | |
+|---|---|
+| `RefreshAvailable` (un `File.Exists` por elemento, 12 000) | 228 150 ms |
+| `ReadCover` dentro de `LoadItems` (12 000) | 231 050 ms |
+| **Arranque estimado** | **~459 s** |
+
+Siete minutos y medio de trabajo **en el hilo de interfaz**, que es la ventana
+congelada sin dibujar nada. Después de ST-203 ese trabajo sigue costando lo
+mismo, pero ocurre en una tarea de fondo con su avance a la vista y su botón para
+detenerla, y el hilo de interfaz paga los 27-39 ms del constructor.
+
+Una precisión sobre esa simulación, para que nadie lea el "3 ms/llamada" como si
+fuera exacto: la réplica usa `Thread.Sleep(3)`, y en Windows eso no duerme 3 ms
+sino lo que permita la resolución del temporizador. Los 228 150 ms sobre 12 000
+llamadas dan **19 ms por llamada**, no 3. Si esa era la intención al calibrarla
+—19 ms por llamada es perfectamente creíble para `V:` por red— entonces el número
+es el bueno; si se buscaban 3 ms, la constante está simulando un disco seis veces
+más lento de lo que dice la etiqueta. Queda para quien mantiene el arnés (ST-200);
+para ST-203 no cambia nada, porque lo que se afirma no es una constante sino que
+ese costo **salió del hilo de interfaz**.
+
+El segundo de la carga completa sigue siendo el mismo segundo de trabajo; lo
+que cambió es dónde se pagan. Bajarlos es ST-208: de esos, la mayor parte son las
+1 000 carátulas (87 MB) que todavía se leen enteras al abrir.
+
+### Lo que NO entra acá, y por qué
+
+Las carátulas **siguen cargándose en memoria al arrancar**. Sacarlas toca 44 usos
+de `CoverArtData` en 15 archivos —sincronización, enriquecimiento, el selector de
+tapas, el lector de etiquetas, la agrupación— y es la gemela de la F5 de la Mac.
+Va como **ST-208**, con el campo `coverHash` que la sesión maestra ya fijó para
+las dos plataformas: cadena opcional hermana de `coverRelativePath`, SHA-256 de
+los bytes del archivo en hexadecimal mayúsculas sin separadores, `null` = "no se
+sabe" y nunca "sin carátula", con la invariante de que si no hay ruta tampoco hay
+hash, escrito por quien escribe la carátula en la misma operación.
+
+### Verificación
+
+`dotnet build` de Core, App y el arnés, sin advertencias. `dotnet test`:
+**1 426 pruebas en verde** (1 404 antes, 22 nuevas: `FileAvailabilityTests`,
+`BackgroundTaskProgressTests` y `LibraryLoadTests`, que cubren la barrida por
+lotes, el mapa anotado, el avance, la cancelación y las tres formas de encontrar
+—o no— una carátula).
+
+Lo que **no** se verificó acá: cómo se ve la franja mientras carga. Esta sesión
+no puede abrir la app; queda para la pasada guionizada con el vigilante.
+
+Una nota para quien corra el arnés: con 1 000 álbumes la VM se queda sin memoria
+y mata el proceso a mitad —lo mismo que ya le pasó al mecánico en ST-200—, así
+que estas mediciones salieron de corridas que llegaron hasta donde llegaron y de
+una corrida completa con 300 álbumes. No es del código: el arnés mantiene vivas
+dos copias de los 87 MB de carátulas.

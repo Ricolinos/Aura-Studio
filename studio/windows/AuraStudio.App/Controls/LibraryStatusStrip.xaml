@@ -20,11 +20,38 @@
     </UserControl.Resources>
 
     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+
+        <!-- ST-203: lo que la app hace por su cuenta —cargar la biblioteca,
+             medir tamaños— sale del centro de tareas y se muestra ACÁ, a la
+             izquierda del mensaje. Antes ese trabajo o no se veía, o se
+             anunciaba pisando StatusMessage, que es el renglón donde se
+             contesta lo que el usuario acaba de pedir: una tarea que nadie pidió
+             no puede tapar la respuesta a lo que sí se pidió.
+
+             El bloque queda Collapsed cuando no hay ninguna tarea, así que en el
+             caso normal el layout no cambia nada. -->
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                    Visibility="{x:Bind Tasks.IsEmpty, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}">
+            <!-- Gira sin fingir un porcentaje: la precisión la da el "N de M"
+                 de al lado, que sí se sabe. -->
+            <ProgressRing Width="16" Height="16" IsActive="True" IsIndeterminate="True" />
+            <TextBlock Text="{x:Bind Tasks.Current.Title, Mode=OneWay}"
+                       Style="{StaticResource AuraCaptionTextStyle}" />
+            <TextBlock Text="{x:Bind Tasks.Current.Detail, Mode=OneWay}"
+                       Style="{StaticResource AuraCaptionTextStyle}"
+                       Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+            <Button Content="Detener"
+                    Visibility="{x:Bind Tasks.Current.IsCancellable, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
+                    Click="CancelTask_Click"
+                    AutomationProperties.Name="Detener la tarea en curso" />
+        </StackPanel>
+
+        <!-- El botón suelto de ST-141 se fue con ST-203: la normalización de
+             carátulas ahora es una tarea del centro, y se detiene con el mismo
+             "Detener" que cualquier otra. Dos botones de cancelar al lado, para
+             dos cosas distintas, es una pregunta que el usuario no debería
+             tener que contestar. -->
         <TextBlock Text="{x:Bind Library.StatusMessage, Mode=OneWay}"
                    Style="{StaticResource AuraCaptionTextStyle}" />
-        <Button Content="Cancelar"
-                Visibility="{x:Bind Library.IsNormalizingCovers, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
-                Click="Cancel_Click"
-                AutomationProperties.Name="Cancelar la normalización de carátulas" />
     </StackPanel>
 </UserControl>

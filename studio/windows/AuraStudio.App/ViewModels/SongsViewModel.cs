@@ -94,7 +94,16 @@ public sealed partial class SongsViewModel : ViewModelBase
     /// </summary>
     private void OnLibraryChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (ChangesLibraryContent(e.PropertyName)) Refresh();
+        if (ChangesLibraryContent(e.PropertyName))
+        {
+            Refresh();
+            return;
+        }
+
+        // ST-203: mientras carga la tabla está vacía, pero no porque falte
+        // música.
+        if (e.PropertyName == nameof(LibraryViewModel.IsLoading))
+            OnPropertyChanged(nameof(ShowsEmptyState));
     }
 
     /// <summary>
@@ -216,12 +225,20 @@ public sealed partial class SongsViewModel : ViewModelBase
         OnPropertyChanged(nameof(TitleSortGlyph));
         OnPropertyChanged(nameof(FavoritesOnly));
         OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(ShowsEmptyState));
         OnPropertyChanged(nameof(EmptyMessage));
         OnPropertyChanged(nameof(CountText));
         OnPropertyChanged(nameof(TotalWidth));
     }
 
     public bool IsEmpty => Rows.Count == 0;
+
+    /// <summary>
+    /// Cuándo sale el cartel de vacío (ST-203): <b>no mientras carga</b>. Decirle
+    /// a alguien que no tiene música mientras se le está leyendo su música es la
+    /// peor forma de contestar; el avance se ve en la franja de estado.
+    /// </summary>
+    public bool ShowsEmptyState => Rows.Count == 0 && !_library.IsLoading;
 
     /// <summary>
     /// Vacío por no tener nada y vacío por el filtro no son lo mismo: si el

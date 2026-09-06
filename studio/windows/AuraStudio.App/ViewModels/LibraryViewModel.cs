@@ -24,6 +24,10 @@ public sealed partial class LibraryViewModel : ViewModelBase
     private readonly IAppPreferences _preferences;
     private readonly ILibraryProcessor _processor;
     private readonly IEnrichmentService _enrichment;
+
+    /// <summary>Donde se anuncia lo que la app hace por su cuenta (ST-203).</summary>
+    private readonly BackgroundTaskCenter _tasks;
+
     private LibraryStore _store;
 
     /// <summary>
@@ -63,15 +67,25 @@ public sealed partial class LibraryViewModel : ViewModelBase
     [ObservableProperty]
     public partial int MissingFileCount { get; private set; }
 
-    public LibraryViewModel(IAppPreferences preferences, ILibraryProcessor processor, IEnrichmentService enrichment)
+    public LibraryViewModel(
+        IAppPreferences preferences,
+        ILibraryProcessor processor,
+        IEnrichmentService enrichment,
+        BackgroundTaskCenter tasks)
     {
         _preferences = preferences;
         _processor = processor;
         _enrichment = enrichment;
+        _tasks = tasks;
         _store = new LibraryStore(preferences.LibraryPath);
         Items = [];
         AvailableItems = [];
         StatusMessage = "";
+
+        // ST-203: **no espera**. La inyección de dependencias construye este
+        // modelo la primera vez que alguien entra a una sección de la
+        // biblioteca, y hasta acá eso significaba que la pantalla no aparecía
+        // hasta terminar de leer el catálogo entero. Ahora aparece y se llena.
         Reload();
 
         // R2-4: cambiar cómo se agrupan las colaboraciones reagrupa la
@@ -337,15 +351,58 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
     // MARK: - Carga y guardado
 
+    /// <summary>
+    /// Recarga la biblioteca. <b>Vuelve enseguida</b> (ST-203): lo que cuesta
+    /// —leer el catálogo, sus carátulas y comprobar 12 000 archivos— corre en
+    /// segundo plano y se publica de una sola vez al terminar.
+    /// </summary>
     [RelayCommand]
-    public void Reload()
+    public void Reload() => LoadingTask = ReloadAsync();
+
+    /// <summary>
+    /// La carga en curso. <b>La app no la espera nunca</b> —ese es el punto de
+    /// ST-203—; existe para que se pueda medir y probar sin adivinar cuándo
+    /// terminó.
+    /// </summary>
+    public Task LoadingTask { get; private set; } = Task.CompletedTask;
+
+    /// <summary>
+    /// El estado de "todavía no está toda". Mientras es <c>true</c>, las vistas
+    /// muestran lo que ya hay —nada, la primera vez— sin fingir que la
+    /// biblioteca está vacía.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsLoading { get; private set; }
+
+    private CancellationTokenSource? _loading;
+
+    /// <summary>
+    /// La carga, fuera del hilo de interfaz.
+    ///
+    /// <para><b>Qué había</b>: el constructor —que la inyección de dependencias
+    /// llama la primera vez que alguien pide la biblioteca, o sea al entrar a
+    /// una sección— hacía todo esto de corrido en el hilo de interfaz: leer el
+    /// JSON, leer las 1 000 carátulas de <c>.portadas\</c> y preguntar por los
+    /// 12 000 archivos, uno por uno. Con la biblioteca del dueño en una unidad
+    /// de red eso era la pantalla en blanco de 9 a 15 segundos del
+    /// diagnóstico.</para>
+    ///
+    /// <para>Ahora la pantalla aparece de inmediato y dice qué está pasando. Y
+    /// se publica <b>una sola vez</b>, al final: publicar por lotes haría que
+    /// cada vista se rearmara una decena de veces mientras carga.</para>
+    /// </summary>
+    public async Task ReloadAsync()
     {
-        // Antes de cualquier salida: lo que se estaba midiendo en segundo plano
-        // es de los elementos anteriores (ST-201).
+        // Antes de cualquier salida: lo que se estaba midiendo o cargando en
+        // segundo plano es de los elementos anteriores (ST-201, ST-203).
         CancelFileSizeBackfill();
+        _loading?.Cancel();
 
         _store = new LibraryStore(_preferences.LibraryPath);
         Availability = _store.Availability;
+
+        // Lo anotado sobre qué archivos están es de la carpeta anterior.
+        _availability.Clear();
 
         // ST-171: con la carpeta ausente no se carga, no se normaliza, no se
         // comprueban archivos, no se enriquece y —sobre todo— NO SE GUARDA. Un
@@ -365,17 +422,77 @@ public sealed partial class LibraryViewModel : ViewModelBase
             MissingFileCount = 0;
             LoadError = null;
             StatusMessage = "";
+            IsLoading = false;
             WatchForTheRoot(true);
             return;
         }
 
         WatchForTheRoot(false);
 
-        // Un archivo que el usuario borró del disco desde afuera deja de estar
-        // en la biblioteca: mostrarlo sería ofrecer sincronizar algo que no
-        // existe.
-        IReadOnlyList<LibraryItem> loaded = _store.LoadItems(out string? error);
-        LoadError = error;
+        var cancellation = new CancellationTokenSource();
+        _loading = cancellation;
+        LibraryStore store = _store;
+
+        IsLoading = true;
+
+        BackgroundTaskHandle task = _tasks.Begin(
+            "Cargando biblioteca…", BackgroundTaskProgress.Indeterminate, cancellation.Cancel);
+
+        LibraryLoad load;
+        Dictionary<string, bool> availability = [];
+
+        try
+        {
+            load = await Task.Run(() =>
+            {
+                // Leer el catálogo y sus carátulas.
+                LibraryLoad read = store.Load(
+                    (done, total) => Dispatch(() =>
+                        task.Update(BackgroundTaskProgress.Of(done, total), $"{done} de {total} elementos")),
+                    cancellation.Token);
+
+                // Y comprobar qué archivos están, por lotes, sin volver al hilo
+                // de interfaz por cada uno.
+                FileAvailability.Sweep(
+                    read.Items, availability,
+                    onProgress: (done, total) => Dispatch(() =>
+                        task.Update(BackgroundTaskProgress.Of(done, total), $"Comprobando archivos… {done} de {total}")),
+                    ct: cancellation.Token);
+
+                return read;
+            }, cancellation.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            // Otra recarga la reemplazó, o el usuario cambió de carpeta.
+            return;
+        }
+        catch (Exception ex)
+        {
+            // Lo que falle acá ya no tiene a nadie esperándolo: la carga corre
+            // sola, así que una excepción se perdería en silencio y la
+            // biblioteca se vería vacía sin ninguna explicación. **Se dice.**
+            LoadError = $"No se pudo leer la biblioteca: {ex.Message}";
+            return;
+        }
+        finally
+        {
+            _tasks.Finish(task);
+
+            if (ReferenceEquals(_loading, cancellation))
+            {
+                _loading = null;
+                IsLoading = false;
+            }
+
+            cancellation.Dispose();
+        }
+
+        // De acá en adelante, otra vez en el hilo de interfaz: se publica todo
+        // junto, una sola vez.
+        LoadError = load.Error;
+
+        foreach ((string path, bool exists) in availability) _availability[path] = exists;
 
         // **El catálogo se conserva completo, incluso lo que no se puede ver.**
         //
@@ -389,7 +506,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
         // pero **nunca se pierde**: sigue en `Items` y se vuelve a escribir tal
         // cual. Si el archivo reaparece —otra computadora, un disco que se
         // vuelve a montar—, el elemento vuelve con toda su metadata.
-        Items = loaded;
+        Items = load.Items;
         RefreshAvailable();
 
         // Lo que quedó en cola —porque la app se cerró a media importación, o
@@ -445,6 +562,13 @@ public sealed partial class LibraryViewModel : ViewModelBase
         var cancellation = new CancellationTokenSource();
         _fileSizeBackfill = cancellation;
 
+        // ST-203: se anuncia. Antes era mudo a propósito —para no tapar
+        // StatusMessage—, y el resultado es que la primera apertura de una
+        // biblioteca grande hacía trabajo por red que nadie veía ni podía
+        // detener. En el centro de tareas se ve, y se detiene.
+        BackgroundTaskHandle task = _tasks.Begin(
+            "Midiendo archivos…", BackgroundTaskProgress.Of(0, pending.Count), cancellation.Cancel);
+
         _ = Task.Run(() =>
         {
             int applied = 0;
@@ -455,8 +579,10 @@ public sealed partial class LibraryViewModel : ViewModelBase
                     pending,
                     measured => Dispatch(() =>
                     {
-                        if (!cancellation.IsCancellationRequested)
-                            applied += FileSizeBackfill.Apply(measured);
+                        if (cancellation.IsCancellationRequested) return;
+
+                        applied += FileSizeBackfill.Apply(measured);
+                        task.Update(BackgroundTaskProgress.Of(applied, pending.Count));
                     }),
                     ct: cancellation.Token);
             }
@@ -469,6 +595,8 @@ public sealed partial class LibraryViewModel : ViewModelBase
             {
                 Dispatch(() =>
                 {
+                    _tasks.Finish(task);
+
                     // Solo si el catálogo que se estaba midiendo SIGUE siendo el
                     // que hay. Si entre medio hubo una recarga, guardar acá
                     // escribiría lo que sea que haya quedado en memoria a partir
@@ -551,18 +679,11 @@ public sealed partial class LibraryViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// <c>true</c> mientras la pasada única de carátulas corre. La interfaz lo
-    /// usa para mostrar el botón de detenerla.
-    /// </summary>
-    [ObservableProperty]
-    public partial bool IsNormalizingCovers { get; private set; }
-
-    /// <summary>
     /// Deja cuadradas las carátulas de una biblioteca hecha antes de ST-141.
     /// Corre <b>una sola vez</b> por biblioteca (la marca vive en
     /// <c>biblioteca.json</c>), en segundo plano y sin bloquear nada.
     ///
-    /// <para>Se puede detener (<see cref="CancelCoverNormalization"/>) y se
+    /// <para>Se puede detener desde el centro de tareas (ST-203) y se
     /// retoma sola: lo que ya está cuadrado se salta, así que la próxima
     /// apertura termina lo que falte. La marca se escribe <b>solo</b> si la
     /// pasada llegó al final.</para>
@@ -590,25 +711,30 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
         var cancellation = new CancellationTokenSource();
         _coverNormalization = cancellation;
-        IsNormalizingCovers = true;
-        StatusMessage = $"Normalizando carátulas… 0 de {files.Count}";
+
+        // ST-203: se anuncia en el centro de tareas, no pisando StatusMessage.
+        // Esta pasada escribe decenas de veces "Normalizando carátulas… N de M",
+        // y ese renglón es donde el usuario lee la respuesta a lo que ACABA de
+        // pedir.
+        BackgroundTaskHandle task = _tasks.Begin(
+            "Normalizando carátulas…", BackgroundTaskProgress.Of(0, files.Count), cancellation.Cancel);
 
         _ = Task.Run(() =>
         {
             CoverNormalizationMigration.Result result = CoverNormalizationMigration.Run(
                 files, WicSquareImageEncoder.SharedNormalizer, cancellation.Token,
                 onProgress: (done, total) =>
-                    Dispatch(() => StatusMessage = $"Normalizando carátulas… {done} de {total}"));
+                    Dispatch(() => task.Update(BackgroundTaskProgress.Of(done, total))));
 
-            Dispatch(() => FinishCoverNormalization(result));
+            Dispatch(() => FinishCoverNormalization(result, task));
         }, cancellation.Token);
     }
 
-    private void FinishCoverNormalization(CoverNormalizationMigration.Result result)
+    private void FinishCoverNormalization(CoverNormalizationMigration.Result result, BackgroundTaskHandle task)
     {
+        _tasks.Finish(task);
         _coverNormalization?.Dispose();
         _coverNormalization = null;
-        IsNormalizingCovers = false;
 
         if (result.Cancelled)
         {
@@ -637,12 +763,6 @@ public sealed partial class LibraryViewModel : ViewModelBase
         _store.CoversNormalized = CoverArtNormalization.NormalizedVersion;
         Save();
     }
-
-    /// <summary>
-    /// Detiene la pasada. Lo hecho queda hecho; lo que falta se retoma la
-    /// próxima vez que se abra la biblioteca.
-    /// </summary>
-    public void CancelCoverNormalization() => _coverNormalization?.Cancel();
 
     /// <summary>
     /// Guarda y vuelve a publicar la biblioteca. Lo usan las acciones que mutan
@@ -694,9 +814,31 @@ public sealed partial class LibraryViewModel : ViewModelBase
     /// de `Items`: si las dos listas se desincronizan, la interfaz muestra algo
     /// que el catálogo ya no dice, o al revés.
     /// </summary>
+    /// <summary>
+    /// Qué archivos están, anotado por la barrida de la carga (ST-203). La clave
+    /// es la ruta y no el identificador porque dos elementos pueden apuntar al
+    /// mismo archivo, y porque lo que se pregunta es por el archivo.
+    /// </summary>
+    private readonly Dictionary<string, bool> _availability = new(StringComparer.OrdinalIgnoreCase);
+
     private void RefreshAvailable()
     {
-        AvailableItems = [.. Items.Where(item => File.Exists(item.SourcePath))];
+        // ST-203: se responde con lo ya anotado. Esto se llamaba después de CADA
+        // guardado, de cada edición de metadata y de cada cambio de categoría, y
+        // cada vez preguntaba por los 12 000 archivos uno por uno **en el hilo
+        // de interfaz** — con la biblioteca en una unidad de red, doce mil
+        // viajes al servidor por cada cosa que el usuario tocaba.
+        //
+        // Lo que todavía no esté anotado sí se pregunta, en el momento: son los
+        // que acaban de entrar a la biblioteca, un puñado.
+        //
+        // Lo que se cede: un archivo que desaparezca del disco **mientras la app
+        // está abierta** se sigue mostrando hasta la próxima recarga, en vez de
+        // desaparecer al siguiente guardado. Es un cambio de comportamiento
+        // deliberado — «Recargar» y volver a abrir la app lo corrigen, y lo que
+        // de verdad importa (no copiar al iPod algo que no existe) lo comprueba
+        // la sincronización cuando corre, no esta lista.
+        AvailableItems = FileAvailability.Available(Items, _availability);
         MissingFileCount = Items.Count - AvailableItems.Count;
 
         // Lo que se puede mostrar cambió: el índice de ST-201 que lo resume ya
