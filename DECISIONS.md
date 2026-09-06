@@ -8365,3 +8365,101 @@ sin duplicarse en Álbumes.
 Lo que **no** se verificó acá: cómo se ve. Esta sesión no puede abrir la ventana;
 que el ítem aparezca en plural, que la tarea muestre "N de M" con el álbum en
 curso y que cancelar corte el lote los ve quien la tenga delante.
+
+## ST-209 — Windows: el núcleo del arrastre de selección (recuadro), sin vistas
+
+Ronda 2 de rendimiento, encargo W2b de `docs/plans/PLAN-studio-rendimiento-2.md`.
+Hermano de **ST-184** en la Mac (F4), con el diseño que fijó la Maestra desde
+ahí.
+
+ST-202 le pasó la selección al control: `SelectionMode="Extended"` da clic,
+Ctrl+clic, Mayús+clic, flechas y Ctrl+A de fábrica. Lo que **no** da —y quedó
+anotado ahí, comprobado contra la documentación, no supuesto— es el **arrastre
+con recuadro**. Esa es la pieza que falta, y esta ST trae su mitad decidible.
+
+### Qué entra: la decisión, no el gesto
+
+Todo lo que decide el recuadro vive en tipos sin vistas, en Core, y por eso se
+ejerce entero sin mover un mouse:
+
+- **`GridRect` / `GridPoint`** — el rectángulo entre dos puntos, en cualquiera de
+  las cuatro direcciones. Un rectángulo sin superficie (un clic sin arrastre) no
+  toca nada, y **tocarse de canto no cuenta**: el recuadro que apenas roza el
+  borde de una tarjeta no la marca, que es lo que hace que arrastrar por el hueco
+  entre dos columnas no marque las dos.
+- **`GridSelectionModifiers`** (Mayús / Control) como **valor**, no como estado
+  global del teclado — por la misma razón de ST-152: lo que se consulta del
+  teclado no se puede simular en una prueba, así que un núcleo que lo mire solo
+  se verifica a mano.
+- **`GridMarquee.Hits`** — qué tarjetas toca, en el orden en que se ven (de
+  arriba abajo, de izquierda a derecha), no en el del diccionario, que no promete
+  ninguno.
+- **`GridMarquee.Selection`** — qué selección resulta: sin modificadores
+  reemplaza, con Mayús suma a la de partida, con Control alterna respecto de
+  ella. Con las dos manda Control, que es la más específica: un gesto que alterna
+  y suma a la vez no significa nada.
+- **`GridMarqueeDrag`** — el arrastre en curso. **Congela la selección de partida**
+  y resuelve cada posición del puntero contra ESA. Sin eso, agrandar y achicar el
+  recuadro no sería reversible: lo que entró no volvería a salir, se iría
+  acumulando. Devuelve `SelectionDelta` en cada movimiento, no la selección
+  entera: mover el puntero un píxel no puede costar escribir mil propiedades
+  (ST-201).
+- **`GridFrameMap`** — los marcos de las tarjetas **realizadas**, que ellas
+  reportan al aparecer y al moverse y retiran al salir de pantalla; si no, el
+  arrastre "tocaría" tarjetas que ya no están donde dice el mapa. Con la
+  virtualización de la cuadrícula son las decenas que se ven, no las mil que hay,
+  y escribir ahí **no avisa a nadie**: desplazarse no puede repintar la
+  cuadrícula por esto.
+- **`GridAutoScroll`** — cuánto desplazar cerca de los bordes, como función pura
+  del puntero y del alto visible. Sin desplazamiento automático no se puede
+  seleccionar más de lo que entra en pantalla. Crece con la cercanía al borde en
+  vez de ser un escalón, y con una ventana más chica que los dos márgenes sigue
+  habiendo zona quieta — si no, cualquier posición desplazaría.
+
+### Lo que el control da de fábrica, comprobado
+
+De la tabla de `ListViewBase.SelectionMode` en la documentación de Microsoft, para
+`Extended`:
+
+- **sin modificadores**, igual que `Single`: el clic reemplaza la selección;
+- **con Control**, alterna el elemento con foco (clic, toque o barra espaciadora);
+- **con Mayús**, selecciona contiguos haciendo clic en el primero y después en el
+  último, y las flechas extienden desde el elemento que estaba seleccionado al
+  apretar Mayús.
+
+Y lo que esa tabla **no** dice, así que no se da por cierto:
+
+- si un segundo Mayús+clic **reemplaza** el rango anterior conservando lo marcado
+  aparte con Control —los tres conceptos separados que ST-184 tuvo que introducir
+  en la Mac: foco, ancla y último rango—, o si hace unión;
+- si un clic en un **hueco** limpia la selección.
+
+Las dos se ven en un segundo con la ventana delante y no se pueden concluir de la
+documentación. Quedan como lo único a verificar a mano de este encargo, junto con
+el gesto físico. Si alguna no viniera de fábrica, el núcleo de acá ya tiene con
+qué implementarla.
+
+### Lo que NO entra acá
+
+**El cableado con la vista.** La capa que captura el arrastre va **detrás** de las
+tarjetas y no encima —así las tarjetas conservan sus clics y sus arrastres, y al
+capturador solo le llega lo que empezó en un hueco—, y eso vive en
+`MediaGridPage.xaml`, que en este momento lo está tocando W5. Se deja sin hacer
+en vez de a medias: media captura de eventos es peor que ninguna. El núcleo está
+completo y probado; lo que falta es traducir pulsar/mover/soltar a puntos y
+modificadores, dibujar el recuadro y aplicar el resultado con `SelectRange` /
+`DeselectRange` sobre `SelectedRanges` — que es como se aplica una selección
+grande sin desvirtualizar la cuadrícula (ST-202).
+
+### Verificación
+
+`dotnet build` de Core, App y el arnés: **0 advertencias, 0 errores**.
+`dotnet test`: **1 480 pruebas en verde**, veintidós nuevas para el núcleo del
+recuadro — las cuatro direcciones, el clic sin arrastre, el canto que no cuenta,
+el orden de lo alcanzado, los tres modificadores, la reversibilidad de agrandar y
+achicar, que la de partida quede congelada, que cada movimiento diga solo lo que
+cambió, que las tarjetas que aparecen durante el arrastre cuenten, el mapa de
+marcos y las cinco del desplazamiento automático.
+
+Lo que **no** se verificó acá: nada del gesto. Esta sesión no puede abrir la
+ventana ni mover un mouse.
