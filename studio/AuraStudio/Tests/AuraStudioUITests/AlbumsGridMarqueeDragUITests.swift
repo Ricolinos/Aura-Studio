@@ -70,16 +70,28 @@ final class AlbumsGridMarqueeDragUITests: XCTestCase {
         XCTAssertTrue(grid.waitForExistence(timeout: 15), "no apareció la cuadrícula de Álbumes")
 
         let firstCard = app.otherElements[UITestEnvironmentIDs.albumCard(0)]
+        let secondCard = app.otherElements[UITestEnvironmentIDs.albumCard(1)]
         let lastCard = app.otherElements[UITestEnvironmentIDs.albumCard(Self.albumCount - 1)]
         XCTAssertTrue(firstCard.waitForExistence(timeout: 15), "no apareció la primera tarjeta")
+        XCTAssertTrue(secondCard.waitForExistence(timeout: 5), "no apareció la segunda tarjeta")
         XCTAssertTrue(lastCard.waitForExistence(timeout: 5), "no apareció la última tarjeta -- ¿entran las 30 sin scroll?")
 
-        // Arrastre desde un punto DENTRO de la cuadrícula pero fuera de
-        // cualquier tarjeta (justo arriba de la primera fila) hasta más
-        // allá de la última tarjeta -- debe cruzar todas.
-        let start = grid.coordinate(withNormalizedOffset: CGVector(dx: 0.02, dy: 0.02))
+        // Diagnóstico de Opus (ST-188): el recuadro SOLO arranca desde un
+        // hueco -- si el `press` cae sobre una tarjeta, lo que se
+        // dispara es su `.draggable`, no el marquee. En vez de adivinar
+        // un punto cerca del borde del contenedor, se calcula el hueco
+        // real: el espacio horizontal entre la primera y la segunda
+        // tarjeta (el `spacing` de 24 pt de `LazyVGrid`), que está
+        // garantizado vacío sin importar el tamaño de la ventana.
+        let firstFrame = firstCard.frame
+        let secondFrame = secondCard.frame
+        XCTAssertGreaterThan(secondFrame.minX, firstFrame.maxX,
+                             "la segunda tarjeta no está a la derecha de la primera -- ¿una sola columna?")
+        let gapPoint = CGPoint(x: (firstFrame.maxX + secondFrame.minX) / 2, y: firstFrame.midY)
+        let origin = app.coordinate(withNormalizedOffset: .zero)
+        let start = origin.withOffset(CGVector(dx: gapPoint.x, dy: gapPoint.y))
         let end = lastCard.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.9))
-        start.press(forDuration: 0.2, thenDragTo: end)
+        start.press(forDuration: 0.3, thenDragTo: end)
 
         let statusBar = app.staticTexts[UITestEnvironmentIDs.statusBar]
         XCTAssertTrue(statusBar.waitForExistence(timeout: 10), "no apareció la barra de estado")
