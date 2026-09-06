@@ -10106,6 +10106,86 @@ sin un repro con `cl.exe` para x64 armado en esta sesión) ni el caso de un
 en el código, `try/catch` alrededor, pero no se forzó la falla en una
 prueba).
 
+## ST-200 (5.º addendum) — El vigilante colgaba la app que venía a vigilar
+
+Decisión de la Maestra después de que W7 verificara con ventana que el 4.º
+addendum **mejora pero no cierra**: en Debug con `AURA_WATCHDOG=1` la app mostraba
+ventana a 1,6 s y quedaba en blanco y sin responder a los 10 y a los 30 s;
+`watchdog.log` decía "bloqueo de ~375 ms" y después nada, ni siquiera "en curso".
+Sin la variable, **la misma compilación pintaba y respondía**.
+
+Esa última frase es la que resuelve el caso: si con la variable se cuelga y sin
+ella no, lo que cuelga no es el arranque — es el vigilante.
+
+### La causa que faltaba: el latido dormía EN el hilo de UI
+
+```csharp
+_dispatcher?.TryEnqueue(DispatcherQueuePriority.Normal, () =>
+{
+    Thread.Sleep(PollIntervalMs);   // ← en el hilo de UI
+    BeatHeartbeat();
+});
+```
+
+Cada latido se encolaba a sí mismo con un `Thread.Sleep(50)` **dentro** del
+trabajo encolado. O sea que el hilo de UI pasaba cincuenta milisegundos dormido
+de cada cincuenta: no le quedaba tiempo para pintar ni para responder, y por eso
+la ventana salía en blanco. Y como el latido igual se registraba puntualmente, el
+vigilante **no veía ningún bloqueo que reportar**: la app congelada y el log en
+silencio, que es exactamente lo que se midió.
+
+Ahora el latido es un `DispatcherQueueTimer`: **espera el temporizador, no el
+hilo**. Si el hilo de UI se bloquea, el tick no corre y la marca de tiempo deja
+de moverse —que es justo lo que hay que detectar—; si no se bloquea, no le cuesta
+nada.
+
+### Lo que queda encendido por omisión, y lo que no
+
+- **`AURA_WATCHDOG=1` mide solo duraciones.** "bloqueo de N ms" al terminar y
+  "bloqueo en curso desde hace N ms" cada cinco segundos mientras dura. No
+  suspende ningún hilo, no toca `dbghelp`, no captura pilas. Es lo que hace falta
+  para responder "¿se bloqueó, y cuánto?", que es la pregunta de esta ronda.
+- **`AURA_WATCHDOG_STACKS=1`**, además de la anterior, enciende la captura de
+  pila con el mecanismo del 4.º addendum. Queda documentado en el código y acá:
+  **puede colgar la app en ARM64**, es para un diagnóstico puntual y no para
+  dejarlo puesto.
+- **El latido nunca espera al vigilante.** Lo único que hace en el hilo de UI es
+  escribir una marca de tiempo con `Volatile.Write`: no toma candados, no escribe
+  a disco y no comparte nada con el hilo que registra. La primera línea del log y
+  la preparación de símbolos se mudaron al hilo vigilante — arrancar el
+  diagnóstico no puede costarle tiempo al arranque que se quiere medir.
+- Sin `AURA_WATCHDOG_STACKS`, un bloqueo ya **no** anota "(no se alcanzó a
+  capturar la pila…)": sería ruido sobre algo que nadie pidió.
+
+### Por qué la captura sigue siendo peligrosa (y por qué no se arregla acá)
+
+Diagnóstico del mecánico, que comparto: `StackWalk64` llama a
+`SymFunctionTableAccess64` y `SymGetModuleBase64` en **cada cuadro**, con el hilo
+de UI todavía suspendido. Si el desenrollado topa con un módulo que `dbghelp`
+aún no tiene registrado —muy probable justo cuando el bloqueo **es** un módulo
+cargándose— esas llamadas pueden volver a pedir el candado del cargador que el
+hilo suspendido tiene tomado. El 4.º addendum sacó `SymInitialize` de esa ventana
+y puso un centinela de 200 ms; eso tapa el caso frecuente, no el peor.
+
+Arreglarlo de verdad significa sacar **todo** el desenrollado de la ventana de
+suspensión —capturar solo direcciones crudas siguiendo la cadena de marcos, y
+dejar `StackWalk64`/`SymFromAddr` para después de reanudar—, que es trabajo con
+su propio riesgo. No entra acá: la Maestra pidió la alternativa mínima, y la
+alternativa mínima ya devuelve lo que la ronda necesitaba medir.
+
+### Verificación
+
+`dotnet build` en **Debug y en Release**: 0 advertencias, 0 errores. `dotnet
+test`: **1 550 pruebas en verde**.
+
+Lo que **no** se verificó acá y es el criterio de aceptación: que en Debug con
+`AURA_WATCHDOG=1` la app renderice y responda treinta segundos seguidos con la
+biblioteca sintética, y que `watchdog.log` muestre el bloqueo del arranque y siga
+vivo. Esta sesión no abre la ventana; lo corre W7. El repro sintético del
+mecánico (una DLL con `DllMain` dormido) no reproduce el caso real —una espera
+de kernel no es lo mismo que cargar un módulo con el candado tomado—, así que la
+única comprobación válida es con la app de verdad.
+
 ## ST-208 (2.º addendum) — El resumen de una carátula se calcula una vez por arreglo
 
 `CoverArtHash.Of` resumía los bytes cada vez que se lo llamaba. Las doce pistas

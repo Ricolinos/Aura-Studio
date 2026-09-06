@@ -9,42 +9,57 @@ namespace AuraStudio.App.Services;
 /// diagnóstico en desarrollo (<c>DEBUG</c> + variable de entorno
 /// <c>AURA_WATCHDOG=1</c>). Paridad conceptual con
 /// <c>MainThreadWatchdog.swift</c> de la Mac: un "corazón" late en el hilo de
-/// UI cada <see cref="PollIntervalMs"/> ms (acá, redondeando viajes por el
-/// <see cref="DispatcherQueue"/> en vez de una señal Unix — Windows no tiene
-/// el equivalente de <c>SIGUSR2</c> hacia un hilo administrado); un hilo
-/// aparte lo vigila y, si pasan más de <see cref="ThresholdMs"/> ms sin uno
-/// nuevo, asume que el hilo de UI está bloqueado.
+/// UI cada <see cref="PollIntervalMs"/> ms; un hilo aparte lo vigila y, si
+/// pasan más de <see cref="ThresholdMs"/> ms sin uno nuevo, asume que el hilo
+/// de UI está bloqueado.
 ///
-/// <para>La pila se captura en dos tiempos, igual que en Mac: primero se
-/// suspende el hilo de UI lo mínimo posible (<see cref="NativeMethods.SuspendThread"/>
-/// + <c>StackWalk64</c> sobre las direcciones nada más) y se lo reanuda de
-/// inmediato; symbolizar (<c>SymFromAddr</c>, que sí puede tardar) pasa a
-/// después, ya con el hilo de UI corriendo de nuevo.</para>
+/// <para><b>5.º addendum de ST-200: el vigilante colgaba la app que venía a
+/// vigilar.</b> W7 midió con ventana que, con <c>AURA_WATCHDOG=1</c>, la app
+/// mostraba ventana a 1.6 s y quedaba en blanco y sin responder a los 10 y a
+/// los 30 s; sin la variable, la misma compilación pintaba y respondía. Había
+/// dos causas, y la primera es la que explica el síntoma entero:</para>
 ///
-/// <para>Es deliberadamente best-effort: la captura de pila usa structs
-/// nativos (<c>CONTEXT</c>, <c>STACKFRAME64</c>) copiados de <c>winnt.h</c> /
-/// <c>dbghelp.h</c>, con una variante por arquitectura (x64 y ARM64 — la VM de
-/// Windows del dueño resultó ser ARM64, así que esta segunda no es opcional).
-/// Si algo falla — arquitectura no reconocida, el hilo ya no existe,
-/// <c>dbghelp.dll</c> no puede symbolizar — se registra la duración igual y
-/// se dice explícitamente que la pila no se pudo capturar, nunca se lanza.
-/// Nunca corre fuera de <c>DEBUG</c> ni sin la variable de entorno: no es
-/// parte de lo que ve el usuario.</para>
+/// <list type="number">
+/// <item><b>El latido dormía EN el hilo de UI.</b> Cada latido se encolaba a
+/// sí mismo con un <c>Thread.Sleep(50)</c> <i>dentro</i> del trabajo encolado,
+/// así que el hilo de UI pasaba cincuenta milisegundos dormido de cada
+/// cincuenta: no le quedaba tiempo para pintar ni para responder. Y como el
+/// latido igual se registraba a tiempo, el vigilante no veía ningún bloqueo
+/// que reportar — la app estaba congelada y el log, en silencio. Ahora el
+/// latido es un <see cref="DispatcherQueueTimer"/>: el temporizador espera,
+/// no el hilo.</item>
+/// <item><b>La captura de pila podía colgarse en ARM64.</b>
+/// <c>StackWalk64</c> llama a <c>SymFunctionTableAccess64</c> y
+/// <c>SymGetModuleBase64</c> en <b>cada cuadro</b>, con el hilo de UI todavía
+/// suspendido; si el desenrollado topa con un módulo que <c>dbghelp</c> aún no
+/// tiene registrado —muy probable justo cuando el bloqueo <i>es</i> un módulo
+/// cargándose— esas llamadas pueden volver a pedir el candado del cargador que
+/// el hilo suspendido tiene tomado. El 4.º addendum sacó
+/// <c>SymInitialize</c> de esa ventana y agregó un centinela, y con eso mejoró
+/// pero no cerró.</item>
+/// </list>
 ///
-/// <para><b>4.º addendum de ST-200 (hallazgo de W7): la captura podía
-/// dejar el hilo de UI suspendido para siempre.</b> <c>StackWalker</c>
-/// llamaba <c>SymInitialize(..., invadeProcess: true)</c> la primera vez que
-/// hacía falta, <b>con el hilo de UI ya suspendido</b>: invadir el proceso
-/// enumera módulos, lo que pide el candado del cargador de Windows -- y si el
-/// hilo de UI estaba bloqueado justo <i>cargando un módulo o compilando JIT</i>
-/// (el caso más común de un bloqueo al arranque), lo suspendimos con ese
-/// candado tomado. Nadie podía soltarlo -- interbloqueo, el hilo de UI nunca
-/// vuelve. Dos cambios lo cierran: <see cref="StackWalker.InitializeSymbolsSafely"/>
-/// corre una sola vez, al arrancar el vigilante, mucho antes de que exista
-/// ningún hilo suspendido; y como red de seguridad (por si algo más bajo
-/// <c>dbghelp.dll</c> volviera a tocar el candado), un hilo centinela aparte
-/// reanuda el hilo de UI a la fuerza si la captura entera tarda más de
-/// <see cref="CaptureGuardMs"/> ms, pase lo que pase adentro.</para>
+/// <para><b>Cómo queda</b> (decisión de la Maestra, alternativa mínima):</para>
+///
+/// <list type="bullet">
+/// <item><c>AURA_WATCHDOG=1</c> mide <b>solo duraciones</b>. Escribe "bloqueo
+/// de N ms" al terminar y "bloqueo en curso desde hace N ms" cada cinco
+/// segundos mientras dura. No suspende nada, no toca <c>dbghelp</c>, no
+/// captura pilas. Es lo que hace falta para responder "¿se bloqueó, cuánto?",
+/// que es la pregunta de la ronda.</item>
+/// <item><c>AURA_WATCHDOG_STACKS=1</c> —además de la primera— enciende la
+/// captura de pila con el mecanismo del 4.º addendum. <b>Puede colgar la app
+/// en ARM64</b>: úsese para un diagnóstico puntual y sabiendo eso, nunca de
+/// forma habitual.</item>
+/// <item><b>El latido nunca espera al vigilante.</b> Lo único que hace en el
+/// hilo de UI es escribir una marca de tiempo con
+/// <see cref="Volatile.Write(ref long, long)"/>; no toma candados, no escribe
+/// a disco y no comparte nada con el hilo que registra. Un vigilante que puede
+/// hacer esperar a lo que vigila mide su propia sombra.</item>
+/// </list>
+///
+/// <para>Nunca corre fuera de <c>DEBUG</c> ni sin la variable: no es parte de
+/// lo que ve el usuario.</para>
 /// </summary>
 public static class UiThreadWatchdog
 {
@@ -66,10 +81,18 @@ public static class UiThreadWatchdog
     private const int StillHangingLogIntervalMs = 5000;
 
     private static long _lastHeartbeatTicks;
-    private static DispatcherQueue? _dispatcher;
     private static uint _uiThreadId;
     private static bool _started;
+    private static bool _stacksEnabled;
     private static readonly object StartLock = new();
+
+    /// <summary>
+    /// El temporizador del latido. Se guarda porque un
+    /// <see cref="DispatcherQueueTimer"/> sin referencias vivas se puede
+    /// recolectar y dejar de latir — y un vigilante que deja de latir reporta
+    /// un bloqueo eterno que no existe.
+    /// </summary>
+    private static DispatcherQueueTimer? _heartbeat;
 #endif
 
     /// <summary>
@@ -82,6 +105,13 @@ public static class UiThreadWatchdog
     /// <summary>
     /// Se llama una vez al arrancar la app, desde el hilo de UI. No hace nada
     /// fuera de <c>DEBUG</c> o sin <c>AURA_WATCHDOG=1</c>.
+    ///
+    /// <para>Lo único que corre acá, en el hilo de UI, es armar el
+    /// temporizador del latido y lanzar el hilo vigilante. Todo lo demás
+    /// —incluido escribir la primera línea del log y, si se pidieron pilas,
+    /// preparar los símbolos— pasa en el hilo vigilante: arrancar el
+    /// diagnóstico no puede costarle tiempo al arranque que se quiere
+    /// medir.</para>
     /// </summary>
     public static void StartIfRequested(DispatcherQueue uiDispatcher)
     {
@@ -94,40 +124,40 @@ public static class UiThreadWatchdog
             _started = true;
         }
 
-        _dispatcher = uiDispatcher;
+        _stacksEnabled = Environment.GetEnvironmentVariable("AURA_WATCHDOG_STACKS") == "1";
         _uiThreadId = NativeMethods.GetCurrentThreadId();
         _lastHeartbeatTicks = Environment.TickCount64;
 
-        // Acá, y solo acá: mucho antes de que exista ningún hilo suspendido.
-        // Ver el addendum de la clase para el porqué exacto.
-        StackWalker.InitializeSymbolsSafely();
-
-        BeatHeartbeat();
+        // El latido: un temporizador que ESPERA en vez de un trabajo encolado
+        // que duerme. Si el hilo de UI se bloquea, el tick no corre y la marca
+        // de tiempo deja de moverse, que es exactamente lo que hay que
+        // detectar; si no se bloquea, no le cuesta nada.
+        _heartbeat = uiDispatcher.CreateTimer();
+        _heartbeat.Interval = TimeSpan.FromMilliseconds(PollIntervalMs);
+        _heartbeat.IsRepeating = true;
+        _heartbeat.Tick += (_, _) => Volatile.Write(ref _lastHeartbeatTicks, Environment.TickCount64);
+        _heartbeat.Start();
 
         var thread = new Thread(Watch) { IsBackground = true, Name = "AuraStudio.UiThreadWatchdog" };
         thread.Start();
-
-        Log($"[UiThreadWatchdog] activo -- avisa de bloqueos del hilo de UI > {ThresholdMs} ms");
 #endif
     }
 
 #if DEBUG
-    private static void BeatHeartbeat()
-    {
-        Volatile.Write(ref _lastHeartbeatTicks, Environment.TickCount64);
-
-        // Autorrearme: el próximo latido se encola recién cuando este corrió,
-        // así que un hilo de UI bloqueado deja de latir en vez de acumular
-        // latidos atrasados en la cola.
-        _dispatcher?.TryEnqueue(DispatcherQueuePriority.Normal, () =>
-        {
-            Thread.Sleep(PollIntervalMs);
-            BeatHeartbeat();
-        });
-    }
-
     private static void Watch()
     {
+        Log($"[UiThreadWatchdog] activo -- avisa de bloqueos del hilo de UI > {ThresholdMs} ms");
+
+        if (_stacksEnabled)
+        {
+            Log("[UiThreadWatchdog] AURA_WATCHDOG_STACKS=1: se capturarán pilas. " +
+                "Puede colgar la app en ARM64 -- solo para diagnóstico puntual.");
+
+            // Acá, y solo acá: mucho antes de que exista ningún hilo
+            // suspendido, y fuera del hilo de UI. Ver el 4.º addendum.
+            StackWalker.InitializeSymbolsSafely();
+        }
+
         long? hangStartedTicks = null;
         long lastStillHangingLogTicks = 0;
 
@@ -144,19 +174,13 @@ public static class UiThreadWatchdog
                 {
                     hangStartedTicks = now - sinceLastBeat;
                     lastStillHangingLogTicks = now;
-                    StartCaptureAsync();
+                    if (_stacksEnabled) StartCaptureAsync();
                 }
                 else if (now - lastStillHangingLogTicks >= StillHangingLogIntervalMs)
                 {
                     // Un bloqueo indefinido nunca llega a "Report": sin esto
                     // no queda NADA en el log más que el "activo" inicial,
-                    // que es justo lo que pasó en el hallazgo de W7. Nota de
-                    // cobertura: si el propio hilo de Watch() se queda sin
-                    // CPU durante el bloqueo (ver "Lo no cubierto" del
-                    // addendum), este aviso puede no alcanzar a imprimirse a
-                    // tiempo -- el reporte final, que usa marcas de tiempo
-                    // reales y no cuántas vueltas dio este bucle, sigue
-                    // siendo preciso de todos modos.
+                    // que es justo lo que pasó en el hallazgo de W7.
                     Log($"[UiThreadWatchdog] bloqueo en curso desde hace {now - hangStartedTicks.Value} ms");
                     lastStillHangingLogTicks = now;
                 }
@@ -204,6 +228,10 @@ public static class UiThreadWatchdog
         OnHangDetectedForTesting?.Invoke(durationMs);
         Log($"[UiThreadWatchdog] bloqueo de ~{durationMs} ms en el hilo de UI");
 
+        // Sin AURA_WATCHDOG_STACKS no hay pila que echar en falta: decir que no
+        // se capturó sería ruido sobre algo que nadie pidió.
+        if (!_stacksEnabled) return;
+
         if (frames is null || frames.Addresses.Count == 0)
         {
             Log("    (no se alcanzó a capturar la pila -- el bloqueo terminó antes de que se pudiera suspender el hilo, la captura tardó demasiado, o la arquitectura no está soportada)");
@@ -219,6 +247,15 @@ public static class UiThreadWatchdog
     /// Suspende el hilo de UI lo mínimo posible: solo lo que tarda leer su
     /// contexto y desenrollar las direcciones de retorno con
     /// <c>StackWalk64</c>. Symbolizar viene después, con el hilo ya corriendo.
+    ///
+    /// <para><b>Solo bajo <c>AURA_WATCHDOG_STACKS=1</c>, y puede colgar la app en
+    /// ARM64</b> (5.º addendum de ST-200): <c>StackWalk64</c> llama a
+    /// <c>SymFunctionTableAccess64</c> y <c>SymGetModuleBase64</c> en cada
+    /// cuadro, con el hilo de UI todavía suspendido, y esas llamadas pueden
+    /// volver a pedir el candado del cargador que ese mismo hilo tiene tomado
+    /// si el bloqueo es justo un módulo cargándose. El centinela de
+    /// <see cref="CaptureGuardMs"/> ms tapa el caso frecuente, no el peor. Es
+    /// para un diagnóstico puntual, nunca para dejarlo puesto.</para>
     ///
     /// <para>Un hilo centinela aparte garantiza que el hilo de UI se reanuda
     /// pase lo que pase adentro, en <see cref="CaptureGuardMs"/> ms como
