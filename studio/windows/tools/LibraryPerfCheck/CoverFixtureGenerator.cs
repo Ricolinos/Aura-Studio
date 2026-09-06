@@ -28,6 +28,22 @@ internal static class CoverFixtureGenerator
     }
 
     /// <summary>
+    /// Addendum de ST-200 (pedido del coordinador): sin esto, la biblioteca del
+    /// arnés nace con <c>LibraryItem.FileSizeBytes</c> en <c>null</c> en las
+    /// 12 000 canciones, y <c>FileSizeBackfill</c> (ST-201) dispara su medición
+    /// en segundo plano + un guardado justo mientras el resto del arnés mide --
+    /// cuatro filas salían infladas con código de Core idéntico. No se mide de
+    /// un archivo real (la fixture no trae audio real): es un tamaño plausible
+    /// de MP3 (~192 kbps), determinista por álbum y pista para que dos corridas
+    /// den el mismo número.
+    /// </summary>
+    public static long DeterministicFileSizeBytes(int album, int track)
+    {
+        var random = new Random(album * 1000 + track);
+        return 3_000_000 + random.Next(0, 5_000_000);
+    }
+
+    /// <summary>
     /// Un lienzo con manchas de color pseudoaleatorias (semilla = índice de
     /// álbum): suficiente entropía para que JPEG no lo comprima a nada, sin
     /// llegar al ruido puro que sí lo haría (una carátula real tampoco es

@@ -60,6 +60,9 @@ try
             {
                 generated.Add(new LibraryItem
                 {
+                    // SourcePath primero: su setter borra FileSizeBytes al
+                    // cambiar (ST-201), así que FileSizeBytes tiene que ir
+                    // DESPUÉS en este inicializador o quedaría en null.
                     SourcePath = Path.Combine(root, "Música", artist, albumName, $"{track:00} Canción.mp3"),
                     Kind = LibraryItemKind.Music,
                     Status = LibraryItemStatus.Ready,
@@ -74,7 +77,12 @@ try
                         TrackNumber = track,
                         DurationSeconds = 210 + track,
                         CoverArtData = cover
-                    }
+                    },
+                    // Addendum de ST-200: la biblioteca del arnés nace con el
+                    // tamaño ya conocido -- estado estable, la migración de
+                    // ST-201 se mide aparte, más abajo, con FileSizeBytes en
+                    // null a propósito.
+                    FileSizeBytes = CoverFixtureGenerator.DeterministicFileSizeBytes(album, track)
                 });
             }
         }
@@ -216,6 +224,40 @@ try
     Measure("Canciones: ScopeOf tras Ctrl+A -- AlbumKeyOf recalculado 12000 veces, réplica de SongsPage.xaml.cs:353-370",
         () => rightClickItems.Select(item => LibraryGrouping.AlbumKeyOf(item, library.ArtistGrouping)).Distinct().Count());
 
+    Console.WriteLine();
+    Console.WriteLine("--- Migración única de fileSizeBytes (biblioteca vieja, ST-201) ---");
+    Console.WriteLine();
+
+    // Réplica de abrir una biblioteca guardada ANTES de ST-201: los mismos
+    // 12000 archivos en disco (los ya creados arriba), pero el catálogo sin
+    // fileSizeBytes -- lo que dispara FileSizeBackfill en segundo plano al
+    // arrancar (ViewModels/LibraryViewModel.cs:429-486). Se llama al mismo
+    // Core que usa esa ruta (FileSizeBackfill.Run/Apply), directo y sin
+    // Task.Run/Dispatch: acá no hace falta medir la vuelta al hilo de UI,
+    // solo el trabajo real -- medir cada archivo y el guardado final.
+    List<LibraryItem> migrationItems =
+    [
+        .. loaded.Select(item => new LibraryItem
+        {
+            SourcePath = item.SourcePath,
+            Kind = item.Kind,
+            Status = item.Status,
+            Metadata = item.Metadata
+            // FileSizeBytes queda en null a propósito -- es lo que dispara la migración.
+        })
+    ];
+
+    long measureMs = MeasureVoidTimed("Migración: medir 12000 archivos en segundo plano (FileSizeBackfill.Run)", () =>
+    {
+        int applied = 0;
+        FileSizeBackfill.Run(migrationItems, batch => applied += FileSizeBackfill.Apply(batch));
+    });
+
+    long saveMs = MeasureVoidTimed("Migración: guardado final (SaveItems, una vez, no por lote)",
+        () => store.SaveItems(migrationItems));
+
+    Console.WriteLine($"    Migración única, total: {measureMs + saveMs} ms (medir + guardar; la próxima apertura ya no la paga)");
+
     if (diskDelayMs > 0)
     {
         Console.WriteLine();
@@ -268,6 +310,16 @@ static void MeasureVoid(string what, Action action)
     watch.Stop();
 
     Console.WriteLine($"{watch.ElapsedMilliseconds,6} ms  {what}");
+}
+
+static long MeasureVoidTimed(string what, Action action)
+{
+    var watch = Stopwatch.StartNew();
+    action();
+    watch.Stop();
+
+    Console.WriteLine($"{watch.ElapsedMilliseconds,6} ms  {what}");
+    return watch.ElapsedMilliseconds;
 }
 
 static long MeasureSlow(string what, IReadOnlyList<LibraryItem> items, int delayMs, Func<LibraryItem, bool> perItem)

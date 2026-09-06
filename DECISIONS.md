@@ -6093,6 +6093,75 @@ vigilante -- `LibraryPerfCheck` es la única superficie que este W0 reescribe
 de fondo, y es una herramienta de medición, no parte de la app que el dueño
 instala.
 
+### Addendum — el fixture ya trae `FileSizeBytes` (contra la migración de ST-201)
+
+W1 (ST-201) agregó `LibraryItem.FileSizeBytes` (`long?`, `null` = sin medir) y
+`FileSizeBackfill`: un catálogo sin ese campo dispara, al abrir, una medición
+en segundo plano de todo lo pendiente + **un guardado al final** (`LibraryViewModel.cs:429-486`).
+El fixture de este arnés nacía sin `FileSizeBytes` en sus 12 000 ítems, así
+que **cada corrida pagaba esa migración justo mientras medía el resto** —
+cuatro filas salían infladas con código de Core idéntico a los dos lados, tal
+como quedó anotado en ST-201.
+
+`CoverFixtureGenerator.DeterministicFileSizeBytes(album, track)` (un tamaño
+plausible de MP3, determinista, no medido de disco real) se asigna ahora a
+cada `LibraryItem` que arma el fixture -- **después** de `SourcePath` en el
+inicializador, porque el setter de `SourcePath` borra `FileSizeBytes` al
+cambiar (`LibraryItem.cs:70-80`) y los inicializadores de C# corren en el
+orden escrito, no en el de declaración de la clase. Con eso, `LoadItems()`
+devuelve el catálogo ya con tamaño en las 12 000 filas y
+`FileSizeBackfill.Pending` sale vacío: ninguna corrida futura del arnés
+paga la migración por accidente.
+
+**Las cuatro filas, remedidas en estado estable** (1 corrida, `-- 1000 12 0`):
+
+| Medición | Con la migración corriendo (ST-201, sin el fixture arreglado) | Estado estable (este addendum) |
+|---|---|---|
+| `SongsViewModel` ctor (`Refresh()` inicial) | 306-365 ms | **71 ms** |
+| `PlaylistsViewModel` ctor | 224-355 ms | **157 ms** |
+| Canciones: clic derecho tras Ctrl+A (réplica `:311-314`) | 74-79 ms | **29 ms** |
+| Canciones: `ScopeOf` tras Ctrl+A (réplica `:353-370`) | 66-73 ms | **76 ms** -- ver nota |
+
+Tres de las cuatro vuelven a su orden de magnitud original (~10-30 ms,
+línea base pre-ST-201). **La de `ScopeOf` no bajó** pese a que esta corrida
+confirmó `FileSizeBackfill.Pending` vacío (cero trabajo en segundo plano
+disparado) -- es una función pura sobre `LibraryGrouping.AlbumKeyOf`, sin
+E/S, que en la línea base original medía ~9,5 ms con el mismo cómputo
+exacto. No se investigó a fondo por qué esta corrida puntual la dejó en
+76 ms: el proceso terminó matado por el supervisor de la sesión por memoria
+baja de la VM apenas después de imprimir sus últimas líneas (ver "Costo de
+mantener esto" más arriba, ya documentado como sensible a memoria), así que
+la sospecha más simple es presión de memoria/GC hacia el final de esta
+corrida puntual, no una causa nueva relacionada con `FileSizeBytes`. Con una
+sola corrida pedida esta vez no se puede distinguir ruido de causa real;
+queda anotado para quien la vuelva a correr.
+
+### Addendum — el escenario de migración, aparte (pedido de la Maestra)
+
+Para no perder el número de lo que SÍ le pasa a una biblioteca vieja al
+abrirse por primera vez tras ST-201 (que es real y hay que arreglarlo en
+W4, no borrarlo), el arnés agregó una sección aparte, siempre activa, que
+no se mezcla con las filas de estado estable de arriba: reconstruye el
+catálogo cargado con `FileSizeBytes` puesto en `null` a propósito (misma
+ruta de archivo, mismos metadatos) y llama directo al mismo Core que usa
+`LibraryViewModel` (`FileSizeBackfill.Run`/`Apply`, sin `Task.Run` ni
+`Dispatch` -- acá no hace falta medir la vuelta al hilo de UI, solo el
+trabajo real) y después `LibraryStore.SaveItems` una vez:
+
+| Medición | Resultado |
+|---|---|
+| Migración: medir 12 000 archivos (`FileSizeBackfill.Run`) | 220 ms |
+| Migración: guardado final (`SaveItems`, una vez) | 4 240 ms |
+| **Total de la migración única** | **~4,5 s** |
+
+El guardado (4,2 s de los 4,5 s) es el costo dominante, y confirma lo que
+ST-201 ya anotó para W4: `SaveItems` reescribe las 1 000 carátulas (87 MB)
+para persistir un campo numérico, porque no distingue carátula sucia de
+limpia (punto 4 del diagnóstico de §0). Se paga **una sola vez en la vida
+de la biblioteca** (la siguiente apertura ya encuentra `FileSizeBytes` en
+el catálogo), así que no entra en la tabla de estado estable de arriba —
+mezclarla ahí es exactamente lo que este addendum vino a corregir.
+
 ## ST-181 — PLAN-studio-rendimiento-2.md, Fase F1: las cuadrículas dejan de trabajar dentro del `body`
 
 Segunda PARADA de la ronda 2 (sesión "experto en código opus"), sobre la
