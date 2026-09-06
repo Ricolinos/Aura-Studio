@@ -101,7 +101,17 @@ struct ContentView: View {
                 .navigationSplitViewColumnWidth(min: 200, ideal: 220, max: 280)
         } detail: {
             VStack(spacing: 0) {
-                detail
+                // ST-189: con el disco de la biblioteca desconectado, las
+                // secciones que la necesitan lo DICEN en vez de mostrarse
+                // vacías. La de abajo se sigue construyendo: al volver el
+                // disco solo hay que dejar de taparla.
+                LibraryAvailabilityGate(library: library,
+                                        needsLibrary: (selection ?? .general).needsLibrary,
+                                        libraryPath: preferences.libraryFolderPath,
+                                        onChooseAnother: { chooseLibraryFolder() },
+                                        onCreateNew: { createNewLibrary() }) {
+                    detail
+                }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 // ST-141: la migración única de carátulas, mientras
                 // corre. Va ARRIBA de la barra de estado y no la
@@ -382,6 +392,31 @@ struct ContentView: View {
         }
     }
 
+    /// ST-189: "Elegir otra biblioteca..." de la pantalla de disco
+    /// desconectado -- el mismo selector que Ajustes, para no tener dos
+    /// formas distintas de hacer lo mismo.
+    private func chooseLibraryFolder() {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.canCreateDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.prompt = "Usar esta carpeta"
+        panel.message = "Elige (o crea) la carpeta donde vivira tu biblioteca Aura."
+        if panel.runModal() == .OK, let url = panel.url {
+            preferences.libraryFolderPath = url.path
+        }
+    }
+
+    /// ST-189: "Crear una nueva" -- sin selector, a propósito (misma
+    /// decisión que Windows en ST-171): quien aprieta eso no quiere
+    /// elegir, quiere seguir trabajando. Va a la carpeta por omisión, y
+    /// si ahí ya había una biblioteca **se abre esa**: crear no puede
+    /// significar perder.
+    private func createNewLibrary() {
+        preferences.libraryFolderPath = AppPreferences.defaultLibraryFolderPath
+    }
+
     /// ST-063: "Archivo › Agregar a la biblioteca..." (⌘O). Mismo camino
     /// que soltar archivos sobre la sección visible: el tipo lo decide
     /// la sección (Canciones → música, Video → video, Fotos → foto);
@@ -570,6 +605,23 @@ enum SidebarSection: Hashable, CaseIterable {
     case extras
     case installer
     case settings
+
+    /// ST-189: ¿esta sección necesita la biblioteca para servir de algo?
+    ///
+    /// Las que NO -- General, Instalador, Extras y Ajustes -- siguen
+    /// funcionando con el disco de la biblioteca desconectado, y eso es
+    /// deliberado: son justamente lo que alguien puede querer usar en ese
+    /// momento (instalar el firmware, o ir a Ajustes a elegir otra
+    /// carpeta). Es lo que evita que un disco ausente convierta la app en
+    /// un cartel.
+    var needsLibrary: Bool {
+        switch self {
+        case .general, .extras, .installer, .settings:
+            return false
+        default:
+            return true
+        }
+    }
 
     var title: String {
         switch self {
@@ -814,5 +866,33 @@ struct SyncCommandRelay: View {
             .focusedSceneValue(\.auraSyncCommand, SyncCommandContext(
                 canSync: canSyncDevice && !library.isProcessing && library.syncProgress == nil,
                 action: action))
+    }
+}
+
+
+/// ST-189: tapa a su contenido mientras falte el disco de la biblioteca.
+///
+/// Observa **solo** `libraryAvailability` con `onReceive`, no el
+/// ViewModel entero: si tuviera un `@ObservedObject`, cualquier cambio de
+/// `items` volvería a construir el `detail` y perderíamos lo que ST-186
+/// acaba de arreglar.
+struct LibraryAvailabilityGate<Content: View>: View {
+    let library: LibraryViewModel
+    let needsLibrary: Bool
+    let libraryPath: String
+    let onChooseAnother: () -> Void
+    let onCreateNew: () -> Void
+    @ViewBuilder let content: () -> Content
+
+    @State private var availability: LibraryAvailability = .available
+
+    var body: some View {
+        content()
+            .libraryUnavailableOverlay(needsLibrary ? availability : .available,
+                                       libraryPath: libraryPath,
+                                       onRetry: { library.refreshLibraryAvailability() },
+                                       onChooseAnother: onChooseAnother,
+                                       onCreateNew: onCreateNew)
+            .onReceive(library.$libraryAvailability) { availability = $0 }
     }
 }

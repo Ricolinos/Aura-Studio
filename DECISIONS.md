@@ -9175,3 +9175,114 @@ informe—.
 Lo que **no** se verificó acá: la consulta contra GitHub de verdad. Esta sesión no
 abre la ventana ni tiene por qué pegarle a la API; lo que se prueba es la decisión
 —que es donde estaba el error— y el cableado se ve en pantalla.
+
+## ST-189 — macOS: un disco de biblioteca desconectado es un estado, no una biblioteca vacía
+
+Encargo (2) de la sesión maestra: llevar a macOS lo que Windows resolvió
+en [ST-171](#st-171). El síntoma que reportó el dueño era de Windows —un
+diálogo de "Algo salió mal" al abrir con su disco externo sin montar—,
+pero el problema existe en las dos plataformas y en macOS es **peor,
+porque es callado**.
+
+### Qué pasaba en macOS
+
+Con la biblioteca en `/Volumes/Mac Externo/…` y ese volumen desmontado,
+no salta ningún diálogo. Lo que pasa es que
+`ensureLibraryStructure()` hace
+`createDirectory(withIntermediateDirectories: true)` sobre esa ruta —y
+**macOS la crea igual**, como carpetas comunes dentro de `/Volumes`—.
+El resultado son tres cosas encadenadas, ninguna visible:
+
+1. una biblioteca vacía recién inventada, **tapando el punto de montaje**
+   del disco de verdad (cuando el disco vuelva, macOS lo montará en
+   `/Volumes/Mac Externo 1`);
+2. un catálogo vacío guardado encima, que al usuario le parece "no tenías
+   nada";
+3. la migración de carátulas (ST-141) concluyendo que **ya está todo
+   normalizado** —porque no encontró nada que normalizar— y guardando esa
+   conclusión. Es exactamente el fallo callado que en Windows quedó tapado
+   por el fallo ruidoso.
+
+### La regla: decide el volumen, no la carpeta
+
+`LibraryRoot.volumeIsMounted` gobierna todo, igual que en Windows. Sin el
+volumen no se lee, no se escribe y **no se concluye nada**. Con el volumen
+presente, una carpeta que todavía no existe es una biblioteca **nueva** y
+se comporta como siempre.
+
+Esa distinción no es un detalle: Windows tuvo que corregirse sobre sí
+mismo antes de commitear porque su primer intento ató la regla a que la
+**carpeta** existiera, y eso rompía el primer arranque — a quien abría la
+app por primera vez le decía "la biblioteca está en un disco que no está
+conectado" señalando su propia carpeta de Documentos. Acá se implementó
+directamente sobre el volumen para no repetirlo.
+
+**Cómo se resuelve el volumen en macOS**: por el punto de montaje más
+largo que sea prefijo de la ruta. Si el único que califica es `/` pero la
+ruta cuelga de `/Volumes/`, ese volumen **no está** — y lo que hubiera (o
+lo que se crearía) ahí son carpetas comunes, no el disco. Una ruta que no
+cuelga de `/Volumes/` vive en el volumen de arranque, que por definición
+está montado: eso es lo que deja intacto el primer arranque.
+
+`volumeIsMounted` recibe la lista de volúmenes montados por parámetro,
+así que se puede probar entera sin depender de qué haya conectado en la
+Mac.
+
+### Dónde se cortó
+
+| Dónde | Qué cambió |
+|---|---|
+| `init` | Evalúa el volumen **antes** de tocar el disco |
+| `ensureLibraryStructure` | No crea nada sin volumen (era el que inventaba la biblioteca en `/Volumes`) |
+| `loadCatalog` (vía `prepareLibraryIfAvailable`) | No corre; el catálogo queda vacío y el estado publicado |
+| `startCoverNormalizationIfNeeded` | No corre: "no encontré nada que normalizar" **no** es "ya está" |
+| `persistCatalog` / `schedulePersistCatalog` / `flushPendingPersistence` | No escriben sin volumen |
+| `switchLibraryFolder` | La carpeta nueva puede estar en un disco ausente: se evalúa antes de tocarla |
+
+### Montar y desmontar son eventos, no algo que preguntar
+
+Windows sondea cada 5 s porque una unidad de red puede tardar en
+responder. En macOS `NSWorkspace` **avisa**
+(`didMountNotification`/`didUnmountNotification`), así que no hay ninguna
+barrida periódica: se reevalúa cuando algo cambia y punto. Al volver el
+disco, se recarga sola. El botón "Reintentar" llama a lo mismo, para
+quien no quiera esperar.
+
+### En pantalla
+
+`LibraryUnavailableView` va **encima** de la sección, no en su lugar:
+cuando el disco vuelve se apaga y debajo está todo intacto. Dice el
+nombre del disco y la ruta completa (para reconocer **cuál** biblioteca
+falta), responde de entrada la pregunta que se hace cualquiera al ver una
+biblioteca vacía —no se perdió nada— y ofrece las mismas tres salidas que
+Windows: **reintentar**, **elegir otra biblioteca** (el mismo selector de
+Ajustes, para no tener dos formas de hacer lo mismo) y **crear una
+nueva** (sin selector: quien aprieta eso quiere seguir trabajando, no
+elegir; y si en la carpeta por omisión ya había una, se abre esa —crear
+no puede significar perder).
+
+**General, Instalador, Extras y Ajustes no lo llevan**, a propósito
+(`SidebarSection.needsLibrary`): son justamente lo que alguien puede
+querer usar con el disco desconectado. Es lo que evita que un disco
+ausente convierta la app en un cartel.
+
+La pantalla se decide en `LibraryAvailabilityGate`, que observa **solo**
+`libraryAvailability` con `onReceive` y no el ViewModel entero: con un
+`@ObservedObject`, cualquier cambio de `items` volvería a construir el
+`detail` y se perdería lo que ST-186 acaba de arreglar.
+
+### Verificación
+
+`swift build` limpio, `xcodebuild -configuration Release` **BUILD
+SUCCEEDED**, `swift test`: 869 pruebas con **una** falla,
+`LiveEnrichmentIntegrationTests.testFullEnrichmentPipelineOnRealFilename`
+— una de las pruebas que **pegan contra las APIs reales** de MusicBrainz
+y Cover Art Archive (el propio archivo lo dice en su encabezado). En la
+corrida anterior había fallado otra de la misma familia con un HTTP 503
+de Cover Art Archive. Es el servicio externo, no el código: esas pruebas
+se saltean sin red, pero no distinguen "sin red" de "el servicio contestó
+mal", y conviene tenerlo presente al leer un rojo.
+
+Lo que **no** se verificó acá: cómo se ve. Esta sesión no puede montar y
+desmontar un disco ni mirar la ventana; el guion del dueño es el lugar
+para "desconecta el disco con la app abierta y mira qué dice".

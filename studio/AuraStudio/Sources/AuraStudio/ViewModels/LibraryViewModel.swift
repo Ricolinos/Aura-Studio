@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import Combine
 
@@ -196,9 +197,13 @@ final class LibraryViewModel: ObservableObject {
         let root = libraryRoot ?? URL(fileURLWithPath: configuredPath, isDirectory: true)
         self.libraryRoot = root
         self.artistImages = ArtistImageStore(libraryRoot: root)
-        ensureLibraryStructure()
-        migrateLegacyLibraryLayoutIfNeeded()
-        loadCatalog()
+        // ST-189: **antes** de tocar el disco. Con el volumen ausente,
+        // `ensureLibraryStructure()` crearía la biblioteca entera como
+        // carpetas comunes dentro de `/Volumes`, tapando el punto de
+        // montaje del disco de verdad -- ver `LibraryRoot`.
+        self.libraryAvailability = LibraryRoot.availability(of: root)
+        prepareLibraryIfAvailable()
+        observeVolumeChanges()
 
         // Cambiar la carpeta en Ajustes recarga la biblioteca desde el
         // catalogo de la carpeta nueva (o arranca vacia si no hay uno).
@@ -2016,7 +2021,55 @@ final class LibraryViewModel: ObservableObject {
 
     // MARK: - Persistencia de la biblioteca (D-180)
 
+    /// ST-189: el estado del volumen de la biblioteca.
+    @Published private(set) var libraryAvailability: LibraryAvailability = .available
+
+    /// Lo que se hace al arrancar, al cambiar de carpeta y al volver el
+    /// disco. Con el volumen ausente **no se toca nada**: ni se crea la
+    /// estructura, ni se lee el catálogo, ni se saca ninguna conclusión
+    /// sobre una biblioteca que no se pudo leer.
+    private func prepareLibraryIfAvailable() {
+        guard libraryAvailability == .available else {
+            items = []
+            playlists = []
+            return
+        }
+        ensureLibraryStructure()
+        migrateLegacyLibraryLayoutIfNeeded()
+        loadCatalog()
+    }
+
+    /// ST-189: montar y desmontar son EVENTOS, no algo que haya que ir a
+    /// preguntar. Windows (ST-171) sondea cada 5 s porque una unidad de
+    /// red puede tardar en responder; en macOS `NSWorkspace` avisa, así
+    /// que no hace falta ninguna barrida periódica.
+    private func observeVolumeChanges() {
+        let center = NSWorkspace.shared.notificationCenter
+        for name in [NSWorkspace.didMountNotification, NSWorkspace.didUnmountNotification] {
+            center.publisher(for: name)
+                .sink { [weak self] _ in self?.refreshLibraryAvailability() }
+                .store(in: &cancellables)
+        }
+    }
+
+    /// Vuelve a mirar si el volumen está, y recarga si acaba de volver.
+    /// También es lo que hace el botón "Reintentar" de la pantalla.
+    func refreshLibraryAvailability() {
+        let now = LibraryRoot.availability(of: libraryRoot)
+        guard now != libraryAvailability else { return }
+        libraryAvailability = now
+        if now == .available {
+            prepareLibraryIfAvailable()
+        } else {
+            // Se fue el disco con la app abierta: no se borra nada de lo
+            // que ya estaba en pantalla por las malas, pero tampoco se
+            // sigue escribiendo (ver las guardias de abajo).
+            cancelCoverNormalization()
+        }
+    }
+
     private func ensureLibraryStructure() {
+        guard libraryAvailability == .available else { return }
         let fm = FileManager.default
         for dir in [libraryRoot, musicDirectory, imagesDirectory, videosDirectory, stagingDirectory, coversDirectory] {
             try? fm.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -2030,14 +2083,15 @@ final class LibraryViewModel: ObservableObject {
         // el catálogo equivocado). `loadCatalog` arranca la de la nueva.
         cancelCoverNormalization()
         libraryRoot = URL(fileURLWithPath: newPath, isDirectory: true)
-        ensureLibraryStructure()
-        migrateLegacyLibraryLayoutIfNeeded()
         items = []
         playlists = []
         // La carpeta cambió: el hash de la última carátula escrita era
         // de la carpeta anterior, ya no dice nada de ésta.
         lastWrittenCoverHash = [:]
-        loadCatalog()
+        // ST-189: la carpeta nueva puede estar en un disco que no está
+        // conectado -- se evalúa antes de tocarla, igual que al arrancar.
+        libraryAvailability = LibraryRoot.availability(of: libraryRoot)
+        prepareLibraryIfAvailable()
     }
 
     // MARK: - Migracion de caratulas a cuadradas (ST-141)
@@ -2077,6 +2131,11 @@ final class LibraryViewModel: ObservableObject {
     /// Corre en segundo plano y a prioridad baja: la app se usa
     /// normalmente mientras tanto.
     private func startCoverNormalizationIfNeeded() {
+        // ST-189: con el volumen ausente, "no encontré carátulas que
+        // normalizar" NO significa "ya está todo normalizado" -- es
+        // exactamente el camino por el que Windows terminaba escribiendo
+        // esa conclusión sobre una biblioteca que no pudo leer.
+        guard libraryAvailability == .available else { return }
         guard coverNormalizationTask == nil,
               coversNormalizedVersion != CoverArtNormalizer.normalizedVersion else { return }
 
@@ -2383,6 +2442,11 @@ final class LibraryViewModel: ObservableObject {
     /// inmediato de siempre (acciones en lote, y cualquier sitio que
     /// necesite la garantía de que ya quedó en disco al volver).
     func schedulePersistCatalog() {
+        // ST-189: sin el volumen no se escribe. Con la biblioteca en un
+        // disco desmontado, escribir el catálogo crearía la carpeta como
+        // carpeta común dentro de `/Volumes` y dejaría ahí un catálogo
+        // que no es el del usuario.
+        guard libraryAvailability == .available else { return }
         catalogPersister.schedule(makeCatalogSnapshot()) { [weak self] result in
             self?.applyCatalogWriteResult(result)
         }
@@ -2393,6 +2457,11 @@ final class LibraryViewModel: ObservableObject {
     /// quedó escrito antes de que el proceso pueda morir (un guardado
     /// programado que sigue corriendo por detrás no sirve ahí).
     func flushPendingPersistence() {
+        // ST-189: sin el volumen no se escribe. Con la biblioteca en un
+        // disco desmontado, escribir el catálogo crearía la carpeta como
+        // carpeta común dentro de `/Volumes` y dejaría ahí un catálogo
+        // que no es el del usuario.
+        guard libraryAvailability == .available else { return }
         catalogPersister.flushSynchronously { [weak self] result in
             self?.applyCatalogWriteResult(result)
         }
@@ -2415,6 +2484,8 @@ final class LibraryViewModel: ObservableObject {
     /// sin cambiar su comportamiento observable: sigue siendo síncrono,
     /// en el actor principal, exactamente como antes de esta ronda.
     func persistCatalog() {
+        // ST-189: ver la nota en `schedulePersistCatalog()`.
+        guard libraryAvailability == .available else { return }
         applyCatalogWriteResult(catalogPersister.writeNow(makeCatalogSnapshot()))
     }
 
