@@ -8875,8 +8875,15 @@ del XCUITest, en "El arrastre de selección" más abajo.
 **Traza de CPU/Tiempo capturada** (`xctrace record --attach <pid>`,
 lanzando el ejecutable directo por shell y adjuntando después --
 esquiva el mismo lanzamiento por LaunchServices que colgaba con
-variables de entorno) contra el fixture sintético, nunca la biblioteca
-del dueño. Ver `docs/capturas/rendimiento/` para los archivos.
+variables de entorno), antes (5b81c3a) y después (HEAD), contra el
+fixture sintético -- nunca la biblioteca del dueño. Detalle completo,
+incluida la limitación de la traza "antes" (el seam de biblioteca de
+prueba no existía en ese commit), en
+`docs/capturas/rendimiento/instruments-f7-attach.md`. Los `.trace` en
+sí no se commitean (bundles binarios que además incluyen el entorno
+completo del proceso en su tabla de contenidos); quedan en el scratch
+de la sesión, disponibles para el dueño si los quiere abrir en
+Instruments.app.
 
 ### El arrastre de selección (XCUITest, ST-188) -- resultado final
 
