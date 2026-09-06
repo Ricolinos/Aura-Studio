@@ -6442,3 +6442,86 @@ que refrescar sin cambios cuesta cero operaciones—, `FileSizeBackfillTests` y
 Falta la verificación interactiva en la VM con la biblioteca real del dueño y la
 tabla del arnés de W0, que se hará al rebasar esta rama sobre `main` cuando W0
 aterrice.
+
+### Números del arnés de W0 (ST-200), antes y después
+
+Corrido en la VM con `dotnet run -c Release --project tools/LibraryPerfCheck --
+1000 12 0`: 1 000 álbumes × 12 pistas = 12 000 canciones con carátula JPEG real
+por álbum, sin la sección de disco lento. "Antes" es `3de9cc5` (el arnés recién
+aterrizado, sin W1); "después" es esta rama rebasada encima. Del "después" van
+dos corridas, porque la VM da bastante variación.
+
+**El trabón, que es de lo que se trataba.** El escenario que reproduce el clic
+del dueño —`MediaGridViewModel` + `SongsViewModel` + `PlaylistsViewModel` vivos
+y suscritos, como los arma `ConfigureServices`—:
+
+| Escenario | antes | después |
+|---|---|---|
+| Selección CON cascada: álbum 1 | 346 ms | **0 ms** |
+| Selección CON cascada: álbum 2 | 589 ms | **0 ms** |
+| Selección CON cascada: álbum 3 — el clic que trababa la app | 702 ms | **0 y 4 ms** |
+| Selección CON cascada: alternar álbum 4 | 279 ms | **0 ms** |
+| Selección aislada (sin Canciones/Listas suscritas): álbum 1 / 2 / 3 | 25 / 40 / 33 ms | 3 / 1 y 2 / 0 ms |
+| Álbumes: abrir menú contextual con 1 000 seleccionados (`ScopeOf`) | 8 ms | 4 y 10 ms |
+| `Show(Albums)`: refresco completo de 1 000 álbumes | 109 ms | 83 y 183 ms |
+
+**Criterio de W1 cumplido**: el objetivo era < 16 ms de hilo de interfaz por
+clic, y el clic que costaba 702 ms cuesta 0. Que la selección aislada y la
+selección con cascada midan ahora lo mismo es el punto entero de ST-201: la
+cascada dejó de existir, no se hizo más barata.
+
+**Ctrl+A: mejor, y falta W2.** La fila del arnés no mide un Ctrl+A: replica
+1 000 Ctrl+clic seguidos con `ToggleSelection`, uno por álbum.
+
+| | antes | después |
+|---|---|---|
+| 1 000 `ToggleSelection` seguidos en Álbumes | 9 487 ms | 3 227 y 3 918 ms |
+| lo mismo, por gesto | 9.5 ms | 3.2 y 3.9 ms |
+
+Cada gesto suelto entra holgado en los 16 ms, pero el total no entra en los
+100 ms del criterio de Ctrl+A — y no va a entrar por este camino, porque **lo
+que queda es cuadrático**: cada cambio de selección publica la lista COMPLETA de
+canciones alcanzadas, así que sumar el álbum 1 000 vuelve a armar los 12 000
+identificadores. Sumado sobre 1 000 gestos son seis millones de identificadores.
+
+Las dos mitades de eso son de W2 y quedan anotadas ahí: el Ctrl+A de verdad es
+**un** gesto (`GridView.SelectAll()`, un solo `SelectionChanged`), y la
+publicación de la selección tiene que pasar a ser incremental.
+
+**Cuatro filas que empeoraron, y por qué.** No son una regresión del código: son
+la **migración única** de `fileSizeBytes` corriendo en segundo plano justo
+mientras se miden. El arnés arma una biblioteca nueva en cada corrida, así que su
+catálogo nunca trae tamaños; al abrirla, `FileSizeBackfill` mide los 12 000
+archivos y al terminar guarda el catálogo una vez — y en este arnés guardar
+cuesta 7-9 s porque reescribe también las 1 000 carátulas (87 MB). Todo lo que se
+mide después cae dentro de esa ventana.
+
+| Fila | antes | después |
+|---|---|---|
+| `SongsViewModel` ctor (12 000 filas) | 271 ms | 306 y 365 ms |
+| `PlaylistsViewModel` ctor | 93 ms | 224 y 355 ms |
+| Canciones: clic derecho tras Ctrl+A | 23 ms | 74 y 79 ms |
+| Canciones: `ScopeOf` tras Ctrl+A | 5 ms | 66 y 73 ms |
+
+Las dos últimas lo dejan claro: son réplicas que el arnés calcula con tipos de
+Core (`LibraryGrouping.AlbumKeyOf` sobre `library.Items`), y
+`git diff 3de9cc5 187fba9 -- LibraryGrouping.cs SimilarItemsDetector.cs
+MediaTableRow.cs` está **vacío**. El código que ejecutan esas dos filas es
+idéntico byte a byte en los dos lados; lo único distinto es lo que corre al mismo
+tiempo. (Y son, además, el objetivo de W6: el `List.Contains` en un `Where` es
+O(N²) y `ScopeOf` recalcula la clave de álbum 12 000 veces.)
+
+El costo real de `SongsViewModel.Refresh` sin ese ruido —los 12 000 `FileInfo`
+por red que ST-201 sacó— se midió aparte, sobre lógica de Core y sin nada en
+segundo plano: **113 ms → 10 ms**.
+
+Dos cosas para W0 y W4 que salen de acá:
+
+- **W0**: si el generador del fixture le pusiera `FileSizeBytes` a los elementos
+  que crea en memoria (una línea), el arnés mediría el estado estable en vez de
+  la migración única, y estas cuatro filas dejarían de mentir. Como está, cada
+  corrida paga una migración que en la app del dueño se paga **una sola vez en la
+  vida de la biblioteca**.
+- **W4**: esos 7-9 s son `LibraryStore.SaveItems` reescribiendo las 1 000
+  carátulas para guardar un campo numérico. Es el punto 4 del diagnóstico y lo
+  arregla el persistidor con rebote y carátulas sucias.
