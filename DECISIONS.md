@@ -6403,6 +6403,46 @@ y de hecho el mecánico verificó 9a6f9a8 en verde -- pero sí a quien abra
 acá; conviene regenerar y commitear el proyecto en el mismo commit que
 agrega un archivo a `Sources/`.
 
+### Verificación del addendum ("mecanico sonnet", commit 4c63056)
+
+Pedido de "Sesión Maestra": confirmar con el contador que un clic
+intermedio (con la selección ya no vacía, p. ej. de {álbum A} a {álbum A,
+álbum B}) evalúa 0 tarjetas y como máximo 1 pasada de `AlbumsView.body`, y
+que la transición vacío↔no vacío es la única que invalida las tarjetas.
+Prueba nueva, `testIntermediateClickDoesNotInvalidateOtherAlbumCards`
+(10 álbumes hospedados con `NSHostingController`):
+
+| Momento | `AlbumsView.body` | `AlbumCardView.body` |
+|---|---|---|
+| Primer render | 2 | -- |
+| Transición vacío→no vacío (1.er clic) | 2 | 0 |
+| **Clic intermedio** (no vacío→no vacío, 2.º clic) | **2** | **0** |
+
+**Se cumple:** `AlbumCardView.body` -- la tarjeta -- da **0** en los tres
+momentos, incluida la transición. La cascada de `anySelected` que F1
+quería eliminar (mil tarjetas invalidadas por un solo clic, §0.4 del
+diagnóstico) sigue sin aparecer, ni siquiera en la transición donde
+`anySelected` sí cambia de valor -- `.equatable()` en `AlbumGridCell` la
+absorbe sin tocar `AlbumCardView`.
+
+**No se cumple:** `AlbumsView.body` sigue en **2**, no en el máximo de 1
+que pidió la maestra -- y **sin cambio** contra la medición de ST-181
+antes de este addendum, pese a que el punto 2 del addendum (arriba)
+saca `GridStatusModel` de la observación de la vista **específicamente**
+para atacar esto ("el mecánico midió 2 evaluaciones... ahora lo guarda en
+un `@State`... y lo observa `LibraryStatusRelay`"). El número no bajó. No
+se convierte en una aserción dura en la prueba (rompería el suite por
+algo que no es una regresión NUEVA -- ya estaba en 2 desde antes del
+addendum) -- queda como dato abierto para Opus/la maestra: o el ajuste de
+`GridStatusModel` no alcanza para bajarlo a 1, o el "2" es un artefacto
+de medir con `NSHostingController` sin pantalla real (ya lo era el primer
+render, ANTES de tocar nada) y no algo que el código de producción pueda
+cambiar -- solo se resuelve verificando contra la app real con Instruments
+o `Self._printChanges()`, pendiente para F7.
+
+`swift test --filter AlbumsGridPerformanceBaselineTests`: 18/18 en verde
+contra el commit 4c63056, en el worktree aislado de "mecanico sonnet" con
+el candado de la Mac.
 
 ## ST-201 — Windows: se acabó la cascada de selección (el trabón al tercer álbum)
 

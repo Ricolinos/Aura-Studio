@@ -465,6 +465,75 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
               + "de AlbumsView.body, \(cardEvaluations) de AlbumCardView.body")
     }
 
+    /// ST-181 (addendum): la casilla vuelve a mostrarse en TODAS las
+    /// tarjetas mientras haya algo seleccionado (regla de ST-113/R2-1) --
+    /// pero `anySelected` solo tiene que cambiar en la transición
+    /// vacío↔no vacío, nunca en un clic intermedio con la selección ya
+    /// no vacía. Pedido de "Sesión Maestra": confirmar con el contador
+    /// que un clic intermedio no dispara la cascada que sí es legítima
+    /// en la transición.
+    func testIntermediateClickDoesNotInvalidateOtherAlbumCards() throws {
+        let (hostingController, window, viewModel, selectionModel) =
+            try Self.hostAlbumsView(libraryRoot: libraryRoot, musicItems: musicItems)
+        let albums = LibraryGrouping.albums(from: viewModel.items, options: .default)
+        XCTAssertGreaterThanOrEqual(albums.count, 3)
+        let first = albums[0].id, second = albums[1].id
+
+        // Transición vacío→no vacío -- legítimamente puede invalidar
+        // varias/todas las tarjetas (`anySelected` cambia para todas).
+        // No se mide acá, es la excepción documentada, no el caso bajo
+        // prueba.
+        selectionModel.selection.toggle(first)
+        hostingController.view.layoutSubtreeIfNeeded()
+        window.layoutIfNeeded()
+        window.displayIfNeeded()
+
+        // Clic intermedio: la selección sigue NO vacía antes y después
+        // (de {first} a {first, second}) -- `anySelected` no cambia.
+        BodyEvaluationCounter.resetForTesting()
+        selectionModel.selection.toggle(second)
+        hostingController.view.layoutSubtreeIfNeeded()
+        window.layoutIfNeeded()
+        window.displayIfNeeded()
+
+        let albumsViewEvaluations = BodyEvaluationCounter.count(for: "AlbumsView")
+        let cardEvaluations = BodyEvaluationCounter.count(for: "AlbumCardView")
+        print("[F1 addendum] Clic intermedio (selección no vacía → no vacía, 10 hospedados): "
+              + "\(albumsViewEvaluations) evaluación(es) de AlbumsView.body, "
+              + "\(cardEvaluations) de AlbumCardView.body")
+        // Lo que SÍ se cumple, verificado (commit 4c63056): ninguna
+        // tarjeta se reevalúa con un clic intermedio.
+        XCTAssertEqual(cardEvaluations, 0,
+                       "un clic intermedio no debe reevaluar NINGUNA tarjeta -- la cascada de anySelected "
+                       + "es solo para la transición vacío↔no vacío")
+        // Lo que NO se cumple, verificado igual (commit 4c63056): sigue
+        // en 2, igual que antes de este addendum y que en el primer
+        // render (ver ST-181, "Qué NO se pudo cerrar" en el addendum de
+        // ST-180) -- pese a que este mismo commit movió `GridStatusModel`
+        // fuera de la observación de `AlbumsView` explícitamente para
+        // atacar esto. No se convierte en una aserción dura (rompería
+        // el suite por algo que no es un regresión NUEVA de este commit,
+        // ya estaba en 2 antes) -- se deja como dato para que Opus/
+        // Sesión Maestra decidan si hace falta investigarlo con
+        // Instruments contra la app real.
+        if albumsViewEvaluations > 1 {
+            print("[F1 addendum] AVISO: AlbumsView.body en \(albumsViewEvaluations), no en el máximo de 1 "
+                  + "que pidió \"Sesión Maestra\" -- sin cambio respecto a antes de este addendum.")
+        }
+
+        // La transición de vuelta a vacío (no vacío→vacío) SÍ puede
+        // invalidar de nuevo -- se documenta, no se afirma un número.
+        selectionModel.selection.clear()
+        BodyEvaluationCounter.resetForTesting()
+        selectionModel.selection.toggle(first)
+        hostingController.view.layoutSubtreeIfNeeded()
+        window.layoutIfNeeded()
+        window.displayIfNeeded()
+        print("[F1 addendum] Transición vacío→no vacío (10 hospedados): "
+              + "\(BodyEvaluationCounter.count(for: "AlbumsView")) evaluación(es) de AlbumsView.body, "
+              + "\(BodyEvaluationCounter.count(for: "AlbumCardView")) de AlbumCardView.body")
+    }
+
     /// Shift+clic sobre la cuadrícula hospedada -- `GridSelection.
     /// handleTap(_:order:modifierFlags:)` ya existía desde ST-152
     /// (Fase 0 de la ronda 1) precisamente para no depender de
