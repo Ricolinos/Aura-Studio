@@ -60,6 +60,17 @@
              `ItemClick` se dispara ANTES de `SelectionChanged` y en algunos
              casos la selección ni siquiera llega a ocurrir. Abrir es doble clic,
              que es lo que era. -->
+        <!-- ST-209: la capa que captura el arrastre va DETRÁS de las tarjetas, no
+             encima. Arrastrar DESDE una tarjeta la mueve —eso es el arrastre de
+             la tarjeta— y arrastrar desde un hueco dibuja el recuadro. Puesta de
+             fondo, las tarjetas conservan sus clics y sus arrastres tal cual, y
+             acá solo llega lo que empezó en un hueco. -->
+        <Border Grid.Row="2" x:Name="MarqueeCapture" Background="Transparent"
+                PointerPressed="Marquee_PointerPressed"
+                PointerMoved="Marquee_PointerMoved"
+                PointerReleased="Marquee_PointerReleased"
+                PointerCaptureLost="Marquee_PointerReleased" />
+
         <GridView Grid.Row="2"
                   x:Name="CardsView"
                   ItemsSource="{x:Bind ViewModel.Cards}"
@@ -142,7 +153,8 @@
                             <Image Stretch="UniformToFill"
                                    Visibility="{x:Bind HasCover, Converter={StaticResource BoolToVisibility}}"
                                    DataContextChanged="Cover_DataContextChanged"
-                                   Loaded="Cover_Loaded" />
+                                   Loaded="Cover_Loaded"
+                                   Unloaded="Cover_Unloaded" />
 
                             <!-- Marca de seleccionado: va encima de la portada,
                                  así que no puede depender del contraste con la
@@ -187,6 +199,15 @@
                 </DataTemplate>
             </GridView.ItemTemplate>
         </GridView>
+
+        <!-- El recuadro que se dibuja. Encima de todo y sin recibir eventos: es
+             una marca, no un control. -->
+        <Canvas Grid.Row="2" x:Name="MarqueeLayer" IsHitTestVisible="False">
+            <Rectangle x:Name="MarqueeBox" Visibility="Collapsed" Opacity="0.35"
+                       Fill="{ThemeResource AccentFillColorSecondaryBrush}"
+                       Stroke="{ThemeResource AccentFillColorDefaultBrush}"
+                       StrokeThickness="1" />
+        </Canvas>
 
         <StackPanel Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center"
                     Spacing="8" MaxWidth="440"

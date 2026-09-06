@@ -625,17 +625,30 @@ public sealed partial class SongsPage : Page
     /// Los álbumes que el lote dejó sin una opción segura se revisan <b>de a
     /// uno</b> (ST-206).
     ///
-    /// <para><b>Todavía solo con uno.</b> La cola de varias hojas —"Álbum 2 de
-    /// 7", "Omitir este álbum", "Cancelar el resto"— vive en
-    /// <c>AlbumCoverPicker</c>, que en este momento lo está tocando W5; hasta
-    /// que aterrice, con varios dudosos no se abre ninguna hoja y el resumen
-    /// dice cuántos quedaron, que es exactamente lo que hacía antes. Encadenar
-    /// hojas sin decir dónde está parada la revisión es lo que R2-3 descartó
-    /// con razón.</para>
+    /// <para>Con uno solo es su hoja de siempre. Con varios es la COLA de
+    /// ST-205: la misma hoja, que dice "Álbum 2 de 7" y ofrece omitir ese o
+    /// cancelar el resto. Encadenar hojas sin decir dónde está parada la
+    /// revisión es lo que R2-3 descartó, con razón.</para>
     /// </summary>
     private async Task ReviewPendingCoversAsync(IReadOnlyList<AlbumCoverJob> pending)
     {
-        if (pending is [{ } only]) await ShowAlbumCoverPickerAsync(only);
+        if (pending.Count == 0) return;
+
+        if (pending is [{ } only])
+        {
+            await ShowAlbumCoverPickerAsync(only);
+            return;
+        }
+
+        int applied = await AlbumCoverPicker.ReviewQueueAsync(
+            XamlRoot, pending, _preferences.DeezerEnabled,
+            // Elegida a mano: esta sí queda marcada como editada por el usuario.
+            (job, chosen) => ViewModel.Library.ApplyAlbumCover(job.AlbumKey, chosen.Data, inBatch: true));
+
+        if (applied == 0) return;
+
+        ViewModel.Library.FinishAlbumCoverBatch();
+        ViewModel.Refresh();
     }
 
     /// <summary>

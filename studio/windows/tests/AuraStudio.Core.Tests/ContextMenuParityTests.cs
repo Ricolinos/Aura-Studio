@@ -648,15 +648,17 @@ public class SongsHeaderMenuTests
     }
 
     [Fact]
-    public void ElMenuDeAlbumesNoDuplicaLaAccionEnLote()
+    public void EnAlbumesLasDosAccionesEnLoteConviven()
     {
-        // En Álbumes el lote ya se ofrece como "Aplicar carátula recomendada a N
-        // álbumes" (R2-3): dos ítems que hacen lo mismo en el mismo menú son
-        // peor que uno.
+        // Decisión de la maestra (addendum de ST-206): NO son la misma acción.
+        // "Aplicar recomendada a N" no pregunta nunca; "Buscar carátulas de N"
+        // aplica lo seguro y encola los dudosos en el selector. La Mac tiene la
+        // segunda en las dos pantallas.
         IReadOnlyList<MenuEntry> menu = LibraryContextMenus.ForAlbums(
             new MenuScope(7, AnyNamedAlbum: true, AlbumCount: 7));
 
-        Assert.DoesNotContain(menu, item => item.Id == "album.covers");
+        Assert.Contains(menu, item => item.Id == "album.covers"
+                                      && item.Text == "Buscar carátulas de 7 álbumes...");
         Assert.Contains(menu, item => item.Id == "album.cover.recommended"
                                       && item.Text == "Aplicar carátula recomendada a 7 álbumes");
     }

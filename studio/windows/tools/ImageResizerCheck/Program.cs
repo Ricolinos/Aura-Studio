@@ -124,6 +124,32 @@ Check("cada tamaño su miniatura", chicaMini is { PixelWidth: 48 } && !Reference
 Check("carátula ilegible -> null", await CoverThumbnailCache.Shared.ThumbnailAsync([1, 2, 3, 4], 96) is null);
 Check("sin carátula -> null", await CoverThumbnailCache.Shared.ThumbnailAsync(null, 96) is null);
 
+// 14) ST-205: el tope es de MEMORIA. Una caché chica expulsa lo más viejo, y lo
+//     expulsado se vuelve a decodificar de verdad — no se devuelve la miniatura
+//     vieja, que a esa altura ya está liberada.
+var cacheChica = new CoverThumbnailCache(costLimit: 96 * 96 * 4 * 2);   // dos miniaturas de 96
+
+byte[] uno = await MakePngWithAlpha(400, 400);
+byte[] dos = await MakePngWithAlpha(401, 400);
+byte[] tres = await MakePngWithAlpha(402, 400);
+
+var primera = await cacheChica.ThumbnailAsync(uno, 96);
+await cacheChica.ThumbnailAsync(dos, 96);
+await cacheChica.ThumbnailAsync(tres, 96);      // expulsa a la primera
+
+Check("el tope de la caché es de memoria", cacheChica.Cost <= 96 * 96 * 4 * 2,
+      $"({cacheChica.Cost} bytes)");
+
+var reDecodificada = await cacheChica.ThumbnailAsync(uno, 96);
+
+Check("lo expulsado se vuelve a decodificar", !ReferenceEquals(primera, reDecodificada));
+Check("y sigue sirviendo", reDecodificada is { PixelWidth: 96 });
+
+// 15) Y lo que sigue en la caché se responde sin decodificar otra vez.
+int antes = cacheChica.Misses;
+await cacheChica.ThumbnailAsync(uno, 96);
+Check("lo que está en caché no se vuelve a decodificar", cacheChica.Misses == antes);
+
 
 // --- Imagen por omision de una lista (PlaylistArtGenerator) ---
 

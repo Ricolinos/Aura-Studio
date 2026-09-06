@@ -41,7 +41,13 @@ public enum LibraryStatusSection
     Photos,
 
     /// <summary>Los álbumes de fotos de UNA colección (Fotos, Imágenes o IA).</summary>
-    PhotoAlbums
+    PhotoAlbums,
+
+    /// <summary>
+    /// Un listado plano de videos: todos, o solo los clips. La tarjeta ES el
+    /// elemento, así que no hay grupos que contar.
+    /// </summary>
+    Videos
 }
 
 /// <summary>

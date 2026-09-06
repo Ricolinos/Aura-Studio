@@ -69,7 +69,8 @@
                                                Visibility="{x:Bind HasAvatar, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}" />
                                     <Image Stretch="UniformToFill"
                                            Visibility="{x:Bind HasAvatar, Converter={StaticResource BoolToVisibility}}"
-                                           Loaded="Avatar_Loaded" Tag="{x:Bind Id}" />
+                                           Loaded="Avatar_Loaded" Unloaded="Image_Unloaded"
+                                           DataContextChanged="Avatar_DataContextChanged" />
                                 </Grid>
                                 <TextBlock Grid.Column="1" Text="{x:Bind Name}"
                                            VerticalAlignment="Center"
@@ -151,7 +152,8 @@
                                                   Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
                                                 <Image Stretch="UniformToFill"
                                                        Visibility="{x:Bind HasCover, Converter={StaticResource BoolToVisibility}}"
-                                                       Loaded="AlbumCover_Loaded" Tag="{x:Bind Album.Id}" />
+                                                       Loaded="AlbumCover_Loaded" Unloaded="Image_Unloaded"
+                                                       DataContextChanged="AlbumCover_DataContextChanged" />
                                             </Grid>
 
                                             <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Top">

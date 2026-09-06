@@ -36,4 +36,30 @@ public static class CoverThumbnailKey
             // equivocada en la cuadrícula, así que no se recorta el resumen ni
             // se resume solo una parte del archivo.
             Convert.ToHexString(SHA256.HashData(bytes)));
+
+    /// <summary>
+    /// La misma clave, pero desde el <b>hash que ya está en el catálogo</b>
+    /// (ST-205, con el <c>coverHash</c> de ST-208): si el elemento lo trae, no
+    /// hace falta leer el archivo ni resumirlo para saber qué miniatura pedir —
+    /// que es lo que permite responder desde la caché <b>sin tocar el
+    /// disco</b>.
+    ///
+    /// <para><c>null</c> si no se sabe el hash: entonces hay que leer los bytes,
+    /// y de ahí sale con la otra sobrecarga.</para>
+    /// </summary>
+    public static string? ForHash(string? coverHash, int side) =>
+        coverHash is { Length: > 0 } && side > 0 ? $"{coverHash}-{side}" : null;
+
+    /// <summary>
+    /// La clave de una imagen que se identifica por su <b>ruta</b> y no por su
+    /// contenido: las fotos y las portadas de lista, que no tienen
+    /// <c>coverHash</c> porque no son carátulas del catálogo.
+    ///
+    /// <para>Lo que se acepta a cambio: si alguien reemplaza ese archivo por
+    /// fuera sin que cambie la ruta, la miniatura vieja sigue hasta que se
+    /// recargue la biblioteca —que vacía la caché—. Preguntarle al disco por
+    /// cada tarjeta para descartarlo sería justo el trabajo que esto evita.</para>
+    /// </summary>
+    public static string? ForPath(string? path, int side) =>
+        path is { Length: > 0 } && side > 0 ? $"ruta:{path}-{side}" : null;
 }

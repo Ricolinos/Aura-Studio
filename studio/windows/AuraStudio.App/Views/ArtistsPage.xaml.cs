@@ -3,9 +3,10 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using Windows.Storage.Streams;
+using Windows.Graphics.Imaging;
+using AuraStudio.App.Platform;
 using AuraStudio.App.ViewModels;
 using AuraStudio.Core.Library;
 
@@ -136,34 +137,88 @@ public sealed partial class ArtistsPage : Page
         HeaderSummary.Text = artist.Group.Summary;
         HeaderInitial.Text = artist.Initial;
         HeaderInitial.Visibility = artist.HasAvatar ? Visibility.Collapsed : Visibility.Visible;
-        HeaderAvatar.Source = await AvatarBitmapAsync(artist, 192);
+        // La ficha no se recicla: lo que importa es que no quede el avatar del
+        // artista anterior si el nuevo tarda o no tiene.
+        HeaderAvatar.Source = null;
+        HeaderAvatar.Source = await AvatarSourceAsync(
+            artist, HeaderAvatarSide, CoverThumbnails.Restart(HeaderAvatar),
+            () => ReferenceEquals(ViewModel.SelectedArtist, artist));
     }
 
     // MARK: - Imágenes
 
-    private async void Avatar_Loaded(object sender, RoutedEventArgs e)
+    /// <summary>El avatar de la lista: 40 px a 2×.</summary>
+    private const int AvatarSide = 80;
+
+    /// <summary>El avatar grande de la ficha.</summary>
+    private const int HeaderAvatarSide = 192;
+
+    /// <summary>La tapa de cada álbum en la ficha: 128 px a 2×.</summary>
+    private const int AlbumCoverSide = 256;
+
+    private void Avatar_Loaded(object sender, RoutedEventArgs e) => LoadAvatar(sender as Image);
+
+    /// <summary>
+    /// La lista recicla sus filas al desplazarse: sin cargar también por el dato
+    /// de la fila, un artista queda con el avatar del que ocupaba ese renglón
+    /// antes (ST-205).
+    /// </summary>
+    private void Avatar_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args) =>
+        LoadAvatar(sender as Image);
+
+    private void Image_Unloaded(object sender, RoutedEventArgs e)
     {
-        if (sender is not Image image) return;
-        if (image.Tag is not string id) return;
-
-        ArtistRow? row = ViewModel.Artists.FirstOrDefault(candidate => candidate.Id == id);
-        if (row is null) return;
-
-        image.Source = await AvatarBitmapAsync(row, 80);   // 40 px a 2×
+        if (sender is FrameworkElement element) CoverThumbnails.Cancel(element);
     }
 
-    private async void AlbumCover_Loaded(object sender, RoutedEventArgs e)
+    private async void LoadAvatar(Image? image)
     {
-        if (sender is not Image image) return;
-        if (image.Tag is not string id) return;
+        if (image is null) return;
 
-        ArtistAlbumRow? row = ViewModel.SelectedAlbums.FirstOrDefault(candidate => candidate.Album.Id == id);
-        if (row?.CoverItem is not { } cover) return;
+        // Cortar lo anterior y limpiar ANTES de cualquier espera: si no, mientras
+        // llega el avatar nuevo se sigue viendo el del artista anterior.
+        CancellationToken ct = CoverThumbnails.Restart(image);
+        image.Source = null;
 
-        // ST-208: la tapa se lee del disco al dibujar, no vive en memoria.
-        if (await ViewModel.Library.ReadCoverAsync(cover) is not { Length: > 0 } data) return;
+        if (image.DataContext is not ArtistRow row) return;
 
-        image.Source = await DecodeAsync(data, 256);  // 128 px a 2×
+        image.Source = await AvatarSourceAsync(row, AvatarSide, ct, () => image.DataContext == row);
+    }
+
+    private void AlbumCover_Loaded(object sender, RoutedEventArgs e) => LoadAlbumCover(sender as Image);
+
+    private void AlbumCover_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args) =>
+        LoadAlbumCover(sender as Image);
+
+    private async void LoadAlbumCover(Image? image)
+    {
+        if (image is null) return;
+
+        CancellationToken ct = CoverThumbnails.Restart(image);
+        image.Source = null;
+
+        if (image.DataContext is not ArtistAlbumRow row || row.CoverItem is not { } cover) return;
+
+        try
+        {
+            // ST-208: la tapa se lee del disco al dibujar, no vive en memoria.
+            // ST-205: y solo la primera vez — después sale de la caché.
+            SoftwareBitmap? thumbnail =
+                await CoverThumbnails.ForItemAsync(ViewModel.Library, cover, AlbumCoverSide, ct);
+
+            if (thumbnail is null || ct.IsCancellationRequested) return;
+            if (image.DataContext != row) return;
+
+            ImageSource? source = await CoverThumbnails.SourceAsync(thumbnail);
+            if (source is null || ct.IsCancellationRequested) return;
+            if (image.DataContext != row) return;
+
+            image.Source = source;
+        }
+        catch (OperationCanceledException)
+        {
+            // La ficha cambió de artista mientras se leía. No es un error.
+        }
     }
 
     /// <summary>
@@ -171,40 +226,32 @@ public sealed partial class ArtistsPage : Page
     /// alguno de sus álbumes — que desde ST-208 se lee del disco al dibujar, no
     /// vive en memoria.
     /// </summary>
-    private async Task<BitmapImage?> AvatarBitmapAsync(ArtistRow row, int width)
-    {
-        if (row.PhotoData is { Length: > 0 } photo) return await DecodeAsync(photo, width);
-
-        if (await ViewModel.Library.ReadCoverAsync(row.FallbackCoverItem) is { Length: > 0 } cover)
-            return await DecodeAsync(cover, width);
-
-        return null;
-    }
-
-    /// <summary>
-    /// <c>DecodePixelWidth</c> va solo en el ancho, nunca en los dos lados:
-    /// fijar ambos deforma una portada que no sea cuadrada.
-    /// </summary>
-    private static async Task<BitmapImage?> DecodeAsync(byte[] data, int width)
+    /// <param name="stillWanted">
+    /// Si lo que se pidió sigue siendo lo que ese control tiene que mostrar. Se
+    /// pregunta <b>después</b> de la espera: la fila pudo reciclarse mientras se
+    /// leía, y pintar entonces sería poner la cara de un artista sobre el nombre
+    /// de otro.
+    /// </param>
+    private async Task<ImageSource?> AvatarSourceAsync(
+        ArtistRow row, int side, CancellationToken ct, Func<bool> stillWanted)
     {
         try
         {
-            var bitmap = new BitmapImage { DecodePixelWidth = width };
-            using var stream = new InMemoryRandomAccessStream();
+            SoftwareBitmap? thumbnail = row.PhotoData is { Length: > 0 } photo
+                ? await CoverThumbnailCache.Shared.ThumbnailAsync(photo, side)
+                : row.FallbackCoverItem is { } fallback
+                    ? await CoverThumbnails.ForItemAsync(ViewModel.Library, fallback, side, ct)
+                    : null;
 
-            using (var writer = new DataWriter(stream.GetOutputStreamAt(0)))
-            {
-                writer.WriteBytes(data);
-                await writer.StoreAsync();
-            }
+            if (thumbnail is null || ct.IsCancellationRequested || !stillWanted()) return null;
 
-            await bitmap.SetSourceAsync(stream);
-            return bitmap;
+            ImageSource? source = await CoverThumbnails.SourceAsync(thumbnail);
+
+            return ct.IsCancellationRequested || !stillWanted() ? null : source;
         }
-        catch (Exception)
+        catch (OperationCanceledException)
         {
-            // Una imagen ilegible deja la inicial, que es lo mismo que se ve
-            // cuando no hay ninguna.
+            // La fila se recicló mientras se leía. No es un error.
             return null;
         }
     }

@@ -2,12 +2,15 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Input;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Foundation;
 using Windows.Storage;
-using Windows.Storage.Streams;
+using AuraStudio.App.Platform;
+using Windows.Graphics.Imaging;
 using AuraStudio.App.Resources;
 using AuraStudio.App.ViewModels;
 using AuraStudio.Core;
@@ -188,17 +191,227 @@ public sealed partial class MediaGridPage : Page
         CardsView.DeselectRange(new Microsoft.UI.Xaml.Data.ItemIndexRange(0, (uint)ViewModel.Cards.Count));
     }
 
+    // MARK: - Arrastre de selección (ST-209)
+
+    /// <summary>
+    /// El arrastre en curso, o <c>null</c> si no hay ninguno. Toda la decisión
+    /// —qué toca el recuadro, qué selección resulta— vive en Core; acá solo se
+    /// traduce pulsar/mover/soltar a puntos y modificadores.
+    /// </summary>
+    private GridMarqueeDrag? _marquee;
+
+    private ScrollViewer? _cardsScroll;
+
+    /// <summary>
+    /// El desplazamiento del contenido, para el autoscroll de los bordes. Se
+    /// busca una vez: está adentro de la plantilla del control y no cambia.
+    /// </summary>
+    private ScrollViewer? CardsScroll => _cardsScroll ??= FindScrollViewer(CardsView);
+
+    private static ScrollViewer? FindScrollViewer(DependencyObject root)
+    {
+        int children = VisualTreeHelper.GetChildrenCount(root);
+
+        for (int index = 0; index < children; index++)
+        {
+            DependencyObject child = VisualTreeHelper.GetChild(root, index);
+
+            if (child is ScrollViewer found) return found;
+            if (FindScrollViewer(child) is { } deeper) return deeper;
+        }
+
+        return null;
+    }
+
+    private static GridSelectionModifiers ModifiersNow()
+    {
+        GridSelectionModifiers modifiers = GridSelectionModifiers.None;
+
+        if (IsDown(Windows.System.VirtualKey.Shift)) modifiers |= GridSelectionModifiers.Extend;
+        if (IsDown(Windows.System.VirtualKey.Control)) modifiers |= GridSelectionModifiers.Toggle;
+
+        return modifiers;
+
+        static bool IsDown(Windows.System.VirtualKey key) =>
+            Microsoft.UI.Input.InputKeyboardSource
+                .GetKeyStateForCurrentThread(key)
+                .HasFlag(Windows.UI.Core.CoreVirtualKeyStates.Down);
+    }
+
+    private void Marquee_PointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        // Solo el mouse y el lápiz: con el dedo, arrastrar es desplazar.
+        if (e.Pointer.PointerDeviceType == Microsoft.UI.Input.PointerDeviceType.Touch) return;
+        if (CardsView.ItemsPanelRoot is not { } panel) return;
+
+        Point origin = e.GetCurrentPoint(panel).Position;
+
+        // La selección de partida se congela ACÁ: cada posición del puntero se
+        // resuelve contra ESA. Si no, agrandar y achicar el recuadro no sería
+        // reversible — lo que entró no volvería a salir.
+        _marquee = new GridMarqueeDrag(
+            new GridPoint(origin.X, origin.Y),
+            [.. CardsView.SelectedItems.OfType<MediaCard>().Select(card => card.Id)],
+            ModifiersNow());
+
+        MarqueeCapture.CapturePointer(e.Pointer);
+        e.Handled = true;
+    }
+
+    private void Marquee_PointerMoved(object sender, PointerRoutedEventArgs e)
+    {
+        if (_marquee is not { } drag) return;
+        if (CardsView.ItemsPanelRoot is not { } panel) return;
+
+        Point point = e.GetCurrentPoint(panel).Position;
+        SelectionDelta delta = drag.MoveTo(new GridPoint(point.X, point.Y), RealizedFrames(panel));
+
+        ApplyToControl(delta);
+        DrawMarquee(drag.Rect, panel);
+        AutoScroll(e.GetCurrentPoint(MarqueeCapture).Position.Y);
+
+        e.Handled = true;
+    }
+
+    private void Marquee_PointerReleased(object sender, PointerRoutedEventArgs e)
+    {
+        if (_marquee is not { } drag) return;
+
+        _marquee = null;
+        MarqueeBox.Visibility = Visibility.Collapsed;
+        MarqueeCapture.ReleasePointerCaptures();
+
+        // Un clic en un hueco, sin arrastre, limpia la selección — como en el
+        // Explorador. Con Mayús o Control apretados no toca nada: ahí el usuario
+        // está construyendo una selección, no descartándola.
+        if (drag.Rect.IsEmpty && drag.Modifiers == GridSelectionModifiers.None) DeselectAll();
+
+        e.Handled = true;
+    }
+
+    /// <summary>
+    /// Los marcos de las tarjetas <b>realizadas</b>, en coordenadas del
+    /// contenido. Se arman en cada movimiento y no se van anotando: con la
+    /// virtualización son las decenas que se ven —no las mil que hay—, y
+    /// recalcularlas es más barato que mantener al día un mapa que se desactualiza
+    /// justo cuando la cuadrícula se desplaza sola.
+    /// </summary>
+    private static Dictionary<string, GridRect> RealizedFrames(Panel panel)
+    {
+        var frames = new Dictionary<string, GridRect>(StringComparer.Ordinal);
+
+        foreach (UIElement child in panel.Children)
+        {
+            if (child is not GridViewItem { Content: MediaCard card } container) continue;
+
+            Point origin = container.TransformToVisual(panel).TransformPoint(new Point(0, 0));
+
+            frames[card.Id] = new GridRect(
+                origin.X, origin.Y, container.ActualWidth, container.ActualHeight);
+        }
+
+        return frames;
+    }
+
+    /// <summary>
+    /// Lo que cambió, aplicado <b>por rangos</b>: <c>SelectRange</c> y
+    /// <c>DeselectRange</c> no desvirtualizan la cuadrícula, y son un aviso de
+    /// selección en vez de uno por tarjeta (ST-202).
+    /// </summary>
+    private void ApplyToControl(SelectionDelta delta)
+    {
+        if (delta.IsEmpty) return;
+
+        var indexOf = new Dictionary<string, int>(ViewModel.Cards.Count, StringComparer.Ordinal);
+        for (int index = 0; index < ViewModel.Cards.Count; index++) indexOf[ViewModel.Cards[index].Id] = index;
+
+        foreach (ItemIndexRange range in RangesOf(delta.Selected, indexOf)) CardsView.SelectRange(range);
+        foreach (ItemIndexRange range in RangesOf(delta.Deselected, indexOf)) CardsView.DeselectRange(range);
+    }
+
+    /// <summary>
+    /// Los índices de esas tarjetas, agrupados en tramos contiguos: una tarjeta
+    /// suelta es un rango de uno, y una fila entera es un rango de cinco.
+    /// </summary>
+    private static IEnumerable<ItemIndexRange> RangesOf(
+        IReadOnlyList<string> ids, Dictionary<string, int> indexOf)
+    {
+        List<int> indexes = [];
+        foreach (string id in ids)
+        {
+            if (indexOf.TryGetValue(id, out int index)) indexes.Add(index);
+        }
+
+        if (indexes.Count == 0) yield break;
+
+        indexes.Sort();
+
+        int start = indexes[0];
+        int length = 1;
+
+        for (int position = 1; position < indexes.Count; position++)
+        {
+            if (indexes[position] == start + length)
+            {
+                length++;
+                continue;
+            }
+
+            yield return new ItemIndexRange(start, (uint)length);
+            start = indexes[position];
+            length = 1;
+        }
+
+        yield return new ItemIndexRange(start, (uint)length);
+    }
+
+    /// <summary>
+    /// El recuadro se dibuja en coordenadas de la ventana, así que se traduce
+    /// desde las del contenido en cada movimiento: durante el autoscroll el
+    /// contenido se mueve debajo del puntero.
+    /// </summary>
+    private void DrawMarquee(GridRect rect, Panel panel)
+    {
+        if (rect.IsEmpty)
+        {
+            MarqueeBox.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        Point corner = panel.TransformToVisual(MarqueeCapture)
+            .TransformPoint(new Point(rect.X, rect.Y));
+
+        Canvas.SetLeft(MarqueeBox, corner.X);
+        Canvas.SetTop(MarqueeBox, corner.Y);
+        MarqueeBox.Width = rect.Width;
+        MarqueeBox.Height = rect.Height;
+        MarqueeBox.Visibility = Visibility.Visible;
+    }
+
+    /// <summary>
+    /// Cerca de los bordes la cuadrícula se desplaza sola: sin esto no se puede
+    /// seleccionar más de lo que entra en pantalla. Cuánto, lo decide Core.
+    /// </summary>
+    private void AutoScroll(double pointerY)
+    {
+        if (CardsScroll is not { } scroll) return;
+
+        double speed = GridAutoScroll.SpeedFor(pointerY, MarqueeCapture.ActualHeight);
+        if (speed == 0) return;
+
+        scroll.ChangeView(null, scroll.VerticalOffset + speed, null, disableAnimation: true);
+    }
+
     // MARK: - Portadas
 
     /// <summary>
-    /// La imagen se carga al aparecer la tarjeta y no al armar la lista: en una
-    /// biblioteca de cientos de álbumes, decodificarlas todas de golpe bloquea
-    /// la interfaz aunque solo se vean doce.
-    ///
-    /// <para><c>DecodePixelWidth</c> va solo en el ancho, nunca en los dos
-    /// lados: fijar ambos deforma una portada que no sea cuadrada — el mismo
-    /// bug que se corrigió en las miniaturas de macOS.</para>
+    /// El lado al que se decodifica la miniatura: 152 pt de tarjeta a 2×. Va en
+    /// el <b>lado mayor</b>, nunca en los dos: fijar ambos deforma una portada
+    /// que no sea cuadrada — el mismo bug que se corrigió en las miniaturas de
+    /// macOS.
     /// </summary>
+    private const int CoverSide = 304;
+
     private void Cover_Loaded(object sender, RoutedEventArgs e) => LoadCover(sender as Image);
 
     /// <summary>
@@ -211,46 +424,60 @@ public sealed partial class MediaGridPage : Page
     private void Cover_DataContextChanged(FrameworkElement sender, DataContextChangedEventArgs args) =>
         LoadCover(sender as Image);
 
+    /// <summary>
+    /// El contenedor se fue de pantalla: lo que estuviera cargando ya no le
+    /// sirve a nadie (ST-205).
+    /// </summary>
+    private void Cover_Unloaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is FrameworkElement element) CoverThumbnails.Cancel(element);
+    }
+
+    /// <summary>
+    /// La imagen se carga al aparecer la tarjeta y no al armar la lista: en una
+    /// biblioteca de cientos de álbumes, decodificarlas todas de golpe bloquea
+    /// la interfaz aunque solo se vean doce.
+    ///
+    /// <para>Desde ST-205 pasa por <see cref="CoverThumbnailCache"/>: la primera
+    /// vez se lee el archivo y se decodifica <b>ya reducido</b>, fuera del hilo
+    /// de interfaz; las siguientes —desplazarse y volver— se responden desde
+    /// memoria sin tocar el disco.</para>
+    /// </summary>
     private async void LoadCover(Image? image)
     {
-        if (image?.DataContext is not MediaCard card) return;
+        if (image is null) return;
+
+        // Lo primero, antes de cualquier espera: cortar lo que este contenedor
+        // estuviera cargando y borrar lo que muestre. Si no, mientras llega la
+        // nueva se sigue viendo la portada del álbum anterior.
+        CancellationToken ct = CoverThumbnails.Restart(image);
+        image.Source = null;
+
+        if (image.DataContext is not MediaCard card) return;
 
         try
         {
-            var bitmap = new BitmapImage { DecodePixelWidth = 304 };   // 152 pt a 2×
+            SoftwareBitmap? thumbnail = card.CoverItem is { } coverItem
+                ? await CoverThumbnails.ForItemAsync(ViewModel.Library, coverItem, CoverSide, ct)
+                : card.ImagePath is { Length: > 0 } path
+                    ? await CoverThumbnails.ForPathAsync(path, CoverSide, ct)
+                    : null;
 
-            if (card.CoverItem is { } coverItem)
-            {
-                // ST-208: la carátula ya no viene en la tarjeta — se lee del
-                // disco, fuera del hilo de interfaz, y solo la de las celdas que
-                // de verdad se ven.
-                byte[]? data = await ViewModel.Library.ReadCoverAsync(coverItem);
-                if (data is not { Length: > 0 }) return;
-
-                using var stream = new InMemoryRandomAccessStream();
-                using (var writer = new DataWriter(stream.GetOutputStreamAt(0)))
-                {
-                    writer.WriteBytes(data);
-                    await writer.StoreAsync();
-                }
-                await bitmap.SetSourceAsync(stream);
-            }
-            else if (card.ImagePath is { Length: > 0 } path && File.Exists(path))
-            {
-                var file = await StorageFile.GetFileFromPathAsync(path);
-                using IRandomAccessStream stream = await file.OpenReadAsync();
-                await bitmap.SetSourceAsync(stream);
-            }
-            else
-            {
-                return;
-            }
+            if (thumbnail is null || ct.IsCancellationRequested) return;
 
             // La celda pudo haber cambiado de tarjeta mientras se decodificaba:
             // pintar acá sería poner la portada de una en el lugar de otra.
             if (!ReferenceEquals(image.DataContext, card)) return;
 
-            image.Source = bitmap;
+            ImageSource? source = await CoverThumbnails.SourceAsync(thumbnail);
+            if (source is null || ct.IsCancellationRequested) return;
+            if (!ReferenceEquals(image.DataContext, card)) return;
+
+            image.Source = source;
+        }
+        catch (OperationCanceledException)
+        {
+            // El contenedor se recicló mientras se leía. No es un error.
         }
         catch (Exception)
         {
@@ -419,20 +646,52 @@ public sealed partial class MediaGridPage : Page
     // MARK: - Carátulas del álbum (§1 ítems 4 y 5)
 
     /// <summary>
-    /// La hoja de tapas desde la cuadrícula de Álbumes. El ítem se ofrece solo
-    /// cuando el alcance resuelve a UN álbum con título, así que acá hay uno.
+    /// "Buscar carátulas del álbum..." con uno solo, "Buscar carátulas de N
+    /// álbumes..." con varios (ST-104, ST-206 y su addendum).
+    ///
+    /// <para>Con un álbum se abre su hoja y <b>no se aplica nada solo</b>: dos
+    /// ediciones de un disco tienen tapas distintas y las dos son correctas. Con
+    /// varios eso no se puede preguntar mil veces, así que corre el lote de
+    /// R2-3 —que aplica sola la que supere el umbral— y los dudosos se revisan
+    /// de a uno en la cola.</para>
+    ///
+    /// <para>No es lo mismo que "Aplicar carátula recomendada a N álbumes", que
+    /// no pregunta nunca: esta sí.</para>
     /// </summary>
-    private async Task ShowAlbumCoverPickerAsync(IReadOnlyList<MediaCard> reached)
+    private async Task SearchAlbumCoversAsync(IReadOnlyList<MediaCard> reached)
     {
-        if (ViewModel.AlbumCoverTargets(reached) is not [{ } target, ..]) return;
+        LibraryViewModel library = ViewModel.Library;
 
+        IReadOnlyList<AlbumCoverJob> jobs = library.AlbumCoverJobsFor(
+            ViewModel.AlbumCoverTargets(reached).Select(target => target.AlbumKey));
+
+        if (jobs.Count == 0) return;
+
+        if (jobs is [{ } only])
+        {
+            await ShowAlbumCoverPickerAsync(only);
+            return;
+        }
+
+        AlbumCoverBatchResult result =
+            await library.ApplyRecommendedCoversAsync(jobs, _preferences.DeezerEnabled);
+
+        library.StatusMessage = result.Summary();
+        ViewModel.Refresh();
+
+        await ReviewPendingCoversAsync(result.Pending);
+    }
+
+    /// <summary>La hoja de tapas de un álbum: <b>ofrece, no aplica</b>.</summary>
+    private async Task ShowAlbumCoverPickerAsync(AlbumCoverJob job)
+    {
         AlbumCoverCandidate? chosen = await AlbumCoverPicker.ShowAsync(
-            XamlRoot, target.Title, target.Artist, target.Facts, _preferences.DeezerEnabled);
+            XamlRoot, job.Title, job.Artist, job.Facts, _preferences.DeezerEnabled);
 
         if (chosen is null) return;
 
         // La eligió a mano: esta sí queda marcada como editada por el usuario.
-        ViewModel.Library.ApplyAlbumCover(target.AlbumKey, chosen.Data);
+        ViewModel.Library.ApplyAlbumCover(job.AlbumKey, chosen.Data);
         ViewModel.Refresh();
     }
 
@@ -441,39 +700,55 @@ public sealed partial class MediaGridPage : Page
     /// pendiente</b>: un resumen que no cuenta lo que no se hizo es peor que no
     /// tener resumen.
     ///
-    /// <para>Si queda <b>exactamente un</b> álbum sin opción segura, se abre su
-    /// hoja. Con varios no se abre ninguna: una fila de hojas encadenadas no se
-    /// puede usar, y el resumen ya dice cuántos quedaron.</para>
+    /// <para>Los que quedaron sin una opción segura se revisan de a uno, en la
+    /// cola de ST-205: antes, con más de uno, no se abría ninguna hoja.</para>
     /// </summary>
     private async Task ApplyRecommendedCoversAsync(IReadOnlyList<MediaCard> reached)
     {
-        (int applied, IReadOnlyList<MediaGridViewModel.AlbumCoverTarget> pending) =
-            await ViewModel.ApplyRecommendedCoversAsync(reached, _preferences.DeezerEnabled);
+        LibraryViewModel library = ViewModel.Library;
 
-        ViewModel.Library.StatusMessage = Summary(applied, pending.Count);
+        IReadOnlyList<AlbumCoverJob> jobs = library.AlbumCoverJobsFor(
+            ViewModel.AlbumCoverTargets(reached).Select(target => target.AlbumKey));
+
+        if (jobs.Count == 0)
+        {
+            library.StatusMessage = new AlbumCoverBatchResult(0, [], false).Summary();
+            return;
+        }
+
+        AlbumCoverBatchResult result =
+            await library.ApplyRecommendedCoversAsync(jobs, _preferences.DeezerEnabled);
+
+        library.StatusMessage = result.Summary();
+        ViewModel.Refresh();
+
+        await ReviewPendingCoversAsync(result.Pending);
+    }
+
+    /// <summary>
+    /// Los álbumes que el lote dejó sin una opción segura se revisan <b>de a
+    /// uno</b>: con uno, su hoja de siempre; con varios, la cola que dice
+    /// "Álbum 2 de 7" y ofrece omitir ese o cancelar el resto (ST-205).
+    /// </summary>
+    private async Task ReviewPendingCoversAsync(IReadOnlyList<AlbumCoverJob> pending)
+    {
+        if (pending.Count == 0) return;
 
         if (pending is [{ } only])
         {
-            AlbumCoverCandidate? chosen = await AlbumCoverPicker.ShowAsync(
-                XamlRoot, only.Title, only.Artist, only.Facts, _preferences.DeezerEnabled);
-
-            if (chosen is null) return;
-
-            ViewModel.Library.ApplyAlbumCover(only.AlbumKey, chosen.Data);
-            ViewModel.Refresh();
+            await ShowAlbumCoverPickerAsync(only);
+            return;
         }
-    }
 
-    private static string Summary(int applied, int pending) => (applied, pending) switch
-    {
-        (0, 0) => "No había ningún álbum con título al que aplicarle una tapa.",
-        (0, 1) => "No se encontró una tapa segura para ese álbum.",
-        (0, _) => $"No se encontró una tapa segura para {pending} álbumes.",
-        (1, 0) => "Se aplicó la tapa recomendada a 1 álbum.",
-        (_, 0) => $"Se aplicó la tapa recomendada a {applied} álbumes.",
-        (1, _) => $"Se aplicó la tapa recomendada a 1 álbum; {pending} quedaron sin una opción segura.",
-        _ => $"Se aplicó la tapa recomendada a {applied} álbumes; {pending} quedaron sin una opción segura."
-    };
+        int applied = await AlbumCoverPicker.ReviewQueueAsync(
+            XamlRoot, pending, _preferences.DeezerEnabled,
+            (job, chosen) => ViewModel.Library.ApplyAlbumCover(job.AlbumKey, chosen.Data, inBatch: true));
+
+        if (applied == 0) return;
+
+        ViewModel.Library.FinishAlbumCoverBatch();
+        ViewModel.Refresh();
+    }
 
     /// <summary>
     /// Renombrar un álbum de fotos. Es una etiqueta de la biblioteca: en el
@@ -535,7 +810,7 @@ public sealed partial class MediaGridPage : Page
 
             // §13.2: la misma hoja que la tabla de Canciones. Estaba en el menú
             // y no tenía caso acá, así que el ítem no hacía nada.
-            case "album.covers": await ShowAlbumCoverPickerAsync(reached); break;
+            case "album.covers": await SearchAlbumCoversAsync(reached); break;
 
             // R2-3: aplica la recomendada SIN preguntar solo donde el puntaje
             // supera el umbral; lo que no lo supera no se toca.
