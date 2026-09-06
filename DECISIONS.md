@@ -5827,14 +5827,68 @@ fase futura esto estorba el ciclo de desarrollo, se decide entonces bajar
 `XCTMeasureOptions.iterationCount` de la prueba de 100 álbumes, no antes
 (y no se toca la prueba de 1 000/1 000, que es de una sola pasada).
 
+### Addendum -- `NSHostingController` real (pedido de "Sesión Maestra", 2026-09-06)
+
+Un intento adicional, con tope de una hora: hospedar `AlbumsView` de
+verdad (`NSHostingController` + `layoutSubtreeIfNeeded`/`layoutIfNeeded`/
+`displayIfNeeded` sobre una `NSWindow` sin pantalla) para conseguir un
+número real de "N evaluaciones de `body` por clic", en vez de solo la
+infraestructura del punto 3 de arriba. Prueba nueva
+(`testHostedAlbumsViewRecordsBodyEvaluations`, sin commitear -- ver nota
+al final de esta sección):
+
+- **Sí confirma** que el gancho de Opus se dispara con SwiftUI real, sin
+  simular nada: 2 evaluaciones de `AlbumsView.body` en el primer render
+  hospedado; 1 de `AlbumsView` + 1 de `AlbumCardView` (10 álbumes
+  hospedados) al reasignar `viewModel.items` sin tocar selección.
+- **No llega** a medir "evaluaciones por CLIC": `AlbumsView.selection`
+  (`GridSelection<String>`, lo que cambia con un tap) es `@State`
+  **privado** de la vista -- nada afuera puede mutarlo, ni con
+  `@testable import`. `selectionStore` sí es externo, pero hoy solo
+  alimenta la tabla del álbum expandido, no la cuadrícula (eso es
+  justamente lo que F1 conecta). Sin un seam nuevo en `Sources/` (fuera
+  del alcance de esta sesión) o automatización real de clic (XCUITest),
+  esto sigue bloqueado -- lo mismo que ST-153 ya había dejado pendiente
+  en la ronda 1 y nadie retomó.
+- **Los dos números de arriba NO son "antes"**, y por eso no están en la
+  tabla principal: `BodyEvaluationCounter` es infraestructura nueva de
+  esta ronda (la escribió Opus a pedido de esta sesión, ver punto 3), así
+  que no existe ningún "antes" que reproducir. Verificado corriendo la
+  misma prueba contra un worktree limpio en el commit `5b81c3a` (el que
+  "experto en código opus" dejó preparado para medir el "antes" de F1,
+  con el archivo del contador copiado a mano encima): `AlbumsView.body`
+  de ESE commit no tiene el gancho todavía -- 0 evaluaciones, lo
+  esperable, no un dato. Lo que SÍ importa: los dos números de arriba se
+  midieron contra el árbol de trabajo COMPARTIDO con F1 en curso (sin
+  commitear todavía) -- van a cambiar de una corrida a otra según en qué
+  punto de F1 esté el árbol en ese momento, así que quedan documentados
+  como una foto de referencia, no como una medición estable.
+
+Queda para F1 (o para quien cierre esa PARADA) verificar "un clic = solo
+la tarjeta tocada" de forma interactiva (correr la app real, clic, leer
+la consola) o pedir el seam si hace falta un criterio automatizado.
+
 ### Verificación
 
 `swift build`: en verde (corriendo en paralelo con los cambios de F1 de
 "experto en código opus" en el mismo árbol -- una corrida intermedia falló
 con un error de "input file modified during the build" mientras esa sesión
 guardaba cambios a mitad de una edición; la corrida siguiente, ya
-estabilizado, compiló limpio). `swift test --filter
-AlbumsGridPerformanceBaselineTests`: 11/11 en verde. Pendiente correr
-`swift test` completo y `scripts/build-app.sh` -- se deja para cuando F1
-deje el árbol en un punto estable, para no confundir un fallo transitorio
-de una edición en curso con una regresión real.
+estabilizado, compiló limpio; una corrida posterior, mientras se escribía
+este addendum, volvió a fallar por el mismo motivo -- Opus sigue metiendo
+F1 en el mismo árbol). `swift test --filter
+AlbumsGridPerformanceBaselineTests`: 11/11 en verde (10 pruebas de la
+tabla + `testHostedAlbumsViewRecordsBodyEvaluations` del addendum, sin
+commitear todavía -- se commitea junto con el resto cuando el árbol de F1
+se estabilice, para no mezclar un commit de "mecanico sonnet" con
+`Sources/` a medio guardar de otra sesión). Pendiente correr `swift test`
+completo y `scripts/build-app.sh` -- se deja para cuando F1 deje el árbol
+en un punto estable, para no confundir un fallo transitorio de una
+edición en curso con una regresión real. Aparte: "experto en código opus"
+reportó una falla intermitente en
+`ApplyAlbumCoverAndSimilarityWorkerTests` (vigilante, ~610-670 ms, umbral
+250 ms) corriendo el suite completo -- coincide con varias corridas
+seguidas de `swift build`/`swift test` de esta sesión en el mismo árbol
+compartido (incluida la sesión guionizada de ~40 s de este mismo ST-180,
+dos veces); queda anotado como sospechoso de carga de máquina, no como
+regresión real, hasta que Opus lo confirme contra su worktree limpio.
