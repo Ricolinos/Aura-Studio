@@ -75,6 +75,22 @@ final class AlbumsGridMarqueeDragUITests: XCTestCase {
     }
 
     override func tearDownWithError() throws {
+        // ST-188 (2.º addendum): el log de la app bajo prueba -- otro
+        // proceso, su `print()` no llega a la salida de `xcodebuild
+        // test` -- ahora se escribe dentro del propio fixture. Se
+        // adjunta acá (no al final del cuerpo de la prueba) para que
+        // aparezca aunque una aserción anterior haya cortado la
+        // ejecución (`continueAfterFailure = false`).
+        let log = libraryRoot.appendingPathComponent("uitest.log")
+        if let texto = try? String(contentsOf: log, encoding: .utf8) {
+            print("[DIAG] uitest.log de la app:\n\(texto)")
+            let adjunto = XCTAttachment(string: texto)
+            adjunto.name = "uitest.log"
+            adjunto.lifetime = .keepAlways
+            add(adjunto)
+        } else {
+            print("[DIAG] uitest.log no existe en \(log.path)")
+        }
         try? FileManager.default.removeItem(at: libraryRoot)
     }
 
@@ -105,16 +121,17 @@ final class AlbumsGridMarqueeDragUITests: XCTestCase {
             print("[DIAG] tras activate(): app.state = \(app.state.rawValue), app.windows.count: \(app.windows.count)")
         }
 
-        // Navegar a Álbumes -- confirmado con el árbol de accesibilidad
-        // real (2026-09-06): las filas de la barra lateral que son
-        // ítems seleccionables de un `List`/`Outline` en macOS exponen
-        // su texto como `value`, no como `label` -- a diferencia de los
-        // encabezados de sección ("Musica", "Video"), que sí usan
-        // `label`. Se busca por predicado sobre CUALQUIER tipo de
-        // elemento, aceptando ambos atributos, en vez de apostar a uno
-        // solo.
-        let albumsPredicate = NSPredicate(format: "label == %@ OR value == %@", "Álbumes", "Álbumes")
-        let sidebarAlbums = app.descendants(matching: .any).matching(albumsPredicate).firstMatch
+        // Navegar a Álbumes -- confirmado con la app real (2026-09-06):
+        // buscar por el TEXTO "Álbumes" en cualquier tipo de elemento
+        // era ambiguo -- también existe como entrada del menú
+        // Visualización ("Ir a › Álbumes", ⌘2, ST-063), y `.firstMatch`
+        // podía resolver a esa en vez de la fila de la barra lateral.
+        // Activar un ítem de menú que no está abierto no navega a
+        // ningún lado, así que la prueba se quedaba en la placa de
+        // "Conecta tu iPod" SIN ningún error -- el peor modo de fallo,
+        // uno que no falla, engaña. Se usa el identificador propio de
+        // la fila (ST-188, 2.º addendum) en vez de su texto.
+        let sidebarAlbums = app.descendants(matching: .any)[UITestEnvironmentIDs.sidebarAlbumsRow]
         if !sidebarAlbums.waitForExistence(timeout: 20) {
             print("[DIAG] árbol de accesibilidad completo:\n\(app.debugDescription)")
         }
@@ -300,5 +317,6 @@ final class AlbumsGridMarqueeDragUITests: XCTestCase {
 enum UITestEnvironmentIDs {
     static let albumsGrid = "albumes.cuadricula"
     static let statusBar = "biblioteca.barraEstado"
+    static let sidebarAlbumsRow = "biblioteca.barraLateral.albumes"
     static func albumCard(_ index: Int) -> String { "albumes.tarjeta.\(index)" }
 }

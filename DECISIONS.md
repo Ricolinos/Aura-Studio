@@ -8826,7 +8826,7 @@ medibles de §A.
 | Arranque: ventana visible e interactiva < 1 s | `testLoadCatalogCold` (ST-152): ~1,37 s frío | `testLoadCatalogCold` tras F5/F6: **~0,89 s** (12 000 ítems, sin JPEG en RAM, `fileSizeBytes` diferido) | **Sí**, en el arnés sintético -- pendiente confirmar con la biblioteca real del dueño (más disco, más red si aplica) |
 | Memoria residente con 12 000 ítems, sin JPEG completos en RAM | Cargar 12 000 con carátula real agregaba **+119 MB**, las 12 000 con el JPEG completo en memoria | La misma carga agrega **+13 MB**, **0/12 000** con bytes de carátula en memoria (ST-185); miniaturas con `totalCostLimit` de 64 MB (mecanismo confirmado con un tope de prueba, ST-183) | **Sí** |
 | Bloqueos del hilo principal > 250 ms en la sesión guionizada | ~40 s de pared, 1 bloqueo (~40,5 s, el menú contextual sin índice) | ~750 ms de pared; **garantía estructural confirmada sin depender del reloj** (`testThumbnailAsyncPathNeverLoadsOnMainThread`: el decode nunca corre en main) -- el arnés en sí sigue reportando un bloqueo intermitente de ~300-500 ms, diagnosticado como artefacto del `for` sincrónico que llama la misma función `async` ~1000 veces seguidas (algo que ninguna vista real hace -- `LazyVGrid` reparte esas llamadas entre cuadros de dibujo reales) | **Parcial** -- ver nota abajo |
-| Los ocho gestos de selección en todas las cuadrículas/tablas | Solo clic/⌘+clic/Shift+clic/Escape en Álbumes, vía `NSEvent.modifierFlags` | Los siete gestos sin arrastre físico, **automatizados y en verde** contra un núcleo puro (`GridSelectionTests`, 35/35, ST-184); el arrastre físico tiene el seam (ST-188) y una prueba de interfaz escrita, pendiente de un permiso de macOS de una sola vez | **Sí** el núcleo; **pendiente** el cableado real del arrastre (ver ST-188) |
+| Los ocho gestos de selección en todas las cuadrículas/tablas | Solo clic/⌘+clic/Shift+clic/Escape en Álbumes, vía `NSEvent.modifierFlags` | Los siete gestos sin arrastre físico, **automatizados y en verde** contra un núcleo puro (`GridSelectionTests`, 35/35, ST-184); el arrastre físico tiene un XCUITest real, verificado hasta cerca del gesto en sí pero sin una corrida en verde -- ver "El arrastre de selección" abajo, categoría **"prueba que engaña"**: un fallo que en vez de reventar con un error se queda en silencio en la pantalla equivocada (el clic resolvía al ítem homónimo del menú Visualización, no a la fila de la barra lateral -- corregido con un identificador propio, ST-188 2.º addendum, pero una corrida final con un tercer entorno inestable -- ver abajo -- no llegó a confirmarlo en verde) | **Sí** el núcleo; **pendiente para el dueño** el arrastre físico (ver ST-188) |
 | Operaciones largas con indicador y cancelación | Parcial (ST-155/ST-156) | `BackgroundTaskCenter` con progreso "N de M" y cancelación en carátulas en lote (F3), `applyRecommendedCovers` (F3), concurrencia por tipo (F6) | **Sí**, por lo que reportó "experto en código opus" en F3/F6 -- no reverificado con pruebas propias en esta PARADA |
 
 **Sobre "bloqueos del hilo principal > 250 ms en la sesión guionizada:
@@ -9009,14 +9009,52 @@ con `fflush`). Corriendo la prueba real de nuevo, con el mismo
   s) -- los tres intentos de colocación probablemente añaden tiempo de
   espera real.
 
-**Se cierra F7 con el arrastre como pendiente para el dueño**, tal como
-indicó "Sesión Maestra": el bloqueo original (ventana fuera de
-pantalla) parece resuelto, pero surgió uno nuevo (navegación de la
-barra lateral) que necesita seguirse investigando -- no es un arreglo
-de minutos que se pueda resolver leyendo el log tal cual quedó, así que
-no se intenta una tercera vuelta desde acá. El gesto sigue escrito,
-compilado, y más cerca que nunca de un resultado real; los otros siete
-gestos de F4/§A siguen automatizados y en verde (35/35).
+El bloqueo original (ventana fuera de pantalla) parece resuelto, pero
+surgió uno nuevo -- navegación de la barra lateral -- que se investiga
+en el tercer intento, abajo.
+
+**Tercer intento -- la causa real, encontrada** (`4222833`, "experto en
+código opus"): el diagnóstico de la prueba era correcto. "Álbumes"
+también existe como entrada del menú Visualización ("Ir a › Álbumes",
+⌘2, ST-063) -- el predicado de texto de la prueba, buscando en
+CUALQUIER tipo de elemento de todo el árbol, podía resolver a esa
+entrada de menú en vez de a la fila de la barra lateral. Activar un
+ítem de menú que no está abierto no navega a ningún lado, y **no lanza
+ningún error** -- es la categoría de fallo más engañosa que hay: una
+prueba que no revienta, sino que se queda mirando la pantalla
+equivocada en silencio. Se corrigió usando el identificador propio de
+la fila (`biblioteca.barraLateral.albumes`, agregado por Opus a las
+filas de la barra lateral) en vez de su texto.
+
+Corriendo la prueba real una tercera vez, con el identificador ya
+puesto: **`app.windows.count` volvió a dar 0** -- la misma condición
+degenerada del primer intento de esta PARADA, antes de cualquiera de
+los arreglos de pantalla/lanzamiento. No es un regreso del bug
+original (ese quedó confirmado resuelto en el segundo intento, con la
+ventana en la pantalla principal) -- en esta corrida, además, la barra
+de menús de la app apareció con origen en x=2560 (la pantalla
+SECUNDARIA), cuando en la corrida anterior había aparecido en la
+principal -- indicio de que qué pantalla "tiene la barra de menús" no
+es estable en esta máquina mientras alguien la usa de verdad al mismo
+tiempo (se confirmó, aparte, que el dueño estaba activamente usando la
+pantalla secundaria durante esta sesión). Con un usuario real
+compartiendo la máquina con las pruebas, la posición de la ventana y
+cuál pantalla es "la principal" para efectos de `NSScreen.screens`
+dejan de ser algo que esta sesión pueda controlar o repetir de forma
+confiable.
+
+**Se cierra F7 aquí, definitivamente, con el arrastre como pendiente
+para el dueño**, tal como indicó "Sesión Maestra": la causa raíz de la
+navegación equivocada quedó encontrada y corregida (identificador
+propio en vez de texto ambiguo) -- eso SÍ es un resultado real y queda
+en el código. Lo que no se pudo cerrar en verde es la corrida misma,
+por una inestabilidad del entorno (pantalla principal cambiante con
+uso real concurrente de la máquina) que ninguna de las tres sesiones
+involucradas puede resolver desde aquí. El gesto queda escrito,
+compilado, con su navegación corregida, y solo le falta una corrida
+limpia -- con el dueño frente a la Mac, sin otra ventana disputando
+cuál pantalla es la principal. Los otros siete gestos de F4/§A siguen
+automatizados y en verde (35/35).
 
 ### Incidente: preferencia real sobrescrita (2026-09-06)
 
