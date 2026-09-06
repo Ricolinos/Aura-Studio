@@ -6300,6 +6300,41 @@ sesiones de la Mac estaban compilando y corriendo pruebas a la vez en el
 mismo árbol. Con un umbral de 250 ms, ese vigilante es sensible a que la
 máquina esté ocupada -- anotado para que no se persiga de nuevo.
 
+### Medición antes/después contra ST-180 ("mecanico sonnet", commit 9a6f9a8)
+
+Reenganchadas las pruebas de proxy/estático de ST-180 a lo que describe
+Opus arriba, más tres pruebas nuevas con el seam de `GridSelectionModel`
+(clic de casilla, ⌘+clic, Shift+clic) hospedando `AlbumsView` de verdad
+con `NSHostingController` -- el "seam de F1" que había quedado pendiente
+en el addendum de ST-180.
+
+| Medición | Antes (ST-180) | Después (9a6f9a8) | Nota |
+|---|---|---|---|
+| Costo del texto de selección por clic (50 de 1 000 seleccionados) | ~79 ms (`LibraryStats.albums`, recálculo completo) | **~3,6 ms** (`LibraryStats.albumsSelectionText` sola) | **~21× menos** -- el total (~75 ms) ya no corre por clic, solo por cambio de cuadrícula (`albumsTotal`, medido aparte: ~75 ms, sin cambio, porque sigue siendo el mismo trabajo real de 12 000 ítems) |
+| `AlbumsView.body` por clic de casilla (10 álbumes hospedados) | no medible (`selection` era `@State` privado, ST-180 lo dejó como prueba de humo) | 2 evaluaciones | ver nota "qué NO se pudo cerrar" abajo |
+| `AlbumCardView.body` por clic de casilla | no medible | **0 evaluaciones** | ninguna tarjeta se reevalúa -- coincide con el objetivo de F1 |
+| `AlbumsView.body` / `AlbumCardView.body` por ⌘+clic (suma un álbum) | no medible | 2 / **0** | igual que la casilla |
+| `AlbumsView.body` / `AlbumCardView.body` por Shift+clic (extiende 1→5) | no medible | 2 / **0** | igual que la casilla |
+| Menú contextual, 1 000/1 000 álbumes seleccionados | 81 167 ms | 80 162 ms | **sin cambio** -- es F3 (índice de agrupación), no F1; queda como criterio de cierre de esa PARADA (< 200 ms) |
+| `visibleAlbums`/`computeVisible` (proxy), filtro + orden "Artista" | ~8 ms por llamada | ~5-7 ms por llamada | código **idéntico**, movido a `computeVisible` sin cambiarlo -- lo que bajó es la FRECUENCIA (5×/pasada de `body` → 1× por cambio real de entrada, 0× por clic), no el costo de una llamada suelta |
+| `CoverThumbnailCache` frío, 1 000 álbumes | 34,9 ms | 2,0 ms | **no es un efecto de F1** (miniaturas = F2, sin tocar) -- variación de máquina entre corridas, anotado para no confundirlo con una mejora real |
+
+**Qué NO se pudo cerrar del todo con este seam: por qué `AlbumsView.body`
+sigue en 2, no en 1.** El criterio de F1 es "un clic = solo la tarjeta
+tocada [0, confirmado] y la barra de estado se reevalúan" -- no dice
+"`AlbumsView.body` mismo evalúa exactamente una vez". Las tres pruebas
+(casilla, ⌘+clic, Shift+clic) dan 2 evaluaciones del CONTENEDOR de forma
+consistente entre sí y también en el primer render (mismo número), lo que
+sugiere que es un patrón normal de `NSHostingController`/SwiftUI en este
+entorno sin pantalla real (dos pasadas de asentamiento) y no una regresión
+específica de un gesto -- pero no se descarta sin verificarlo interactivo
+con Instruments/`Self._printChanges()` contra la app real, que es
+justamente lo que falta para el cierre de F7. Lo que SÍ es un dato
+limpio y no ambiguo: `AlbumCardView.body` -- la tarjeta -- nunca se
+reevalúa con ningún gesto de selección, que es la parte cara del
+diagnóstico original (§0.4/§0.5, mil tarjetas invalidadas por
+`anySelected`).
+
 ## ST-201 — Windows: se acabó la cascada de selección (el trabón al tercer álbum)
 
 Ronda 2 de rendimiento, encargo W1 de `docs/plans/PLAN-studio-rendimiento-2.md`.

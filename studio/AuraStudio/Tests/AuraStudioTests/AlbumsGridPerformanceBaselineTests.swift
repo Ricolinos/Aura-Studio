@@ -1,4 +1,6 @@
+import AppKit
 import CoreGraphics
+import SwiftUI
 import XCTest
 @testable import AuraStudio
 
@@ -197,6 +199,15 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
     }
 
     // MARK: - (b) `statusSummary` de Álbumes -- real (`LibraryStats.albums`)
+    //
+    // ST-181 (F1) partió esto en dos: `albumsTotal(_:)` (solo por cambio
+    // de cuadrícula) y `albumsSelectionText(selected:totalCount:)` (lo
+    // único que sigue corriendo por clic). `LibraryStats.albums(_:
+    // selected:)` sigue existiendo con la misma firma/resultado --
+    // ahora es composición de las dos mitades, así que estas dos
+    // pruebas siguen midiendo código real y siguen siendo válidas para
+    // comparar contra ST-180. Las dos de abajo miden las mitades nuevas
+    // por separado -- la segunda es la que de verdad importa por clic.
 
     func testStatusSummaryAlbumsNoSelection() throws {
         let albums = LibraryGrouping.albums(from: musicItems, options: .default)
@@ -210,6 +221,24 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
         let selected = Array(albums.prefix(50))
         measure {
             _ = LibraryStats.albums(albums, selected: selected)
+        }
+    }
+
+    func testAlbumsTotalOnly() throws {
+        let albums = LibraryGrouping.albums(from: musicItems, options: .default)
+        measure {
+            _ = LibraryStats.albumsTotal(albums)
+        }
+    }
+
+    /// El único cálculo que ST-181 deja corriendo por clic -- comparar
+    /// esto contra `testStatusSummaryAlbumsWithFiftySelected` (ST-180)
+    /// es la comparación antes/después real de "cuánto cuesta un clic".
+    func testAlbumsSelectionTextOnlyWithFiftySelected() throws {
+        let albums = LibraryGrouping.albums(from: musicItems, options: .default)
+        let selected = Array(albums.prefix(50))
+        measure {
+            _ = LibraryStats.albumsSelectionText(selected: selected, totalCount: albums.count)
         }
     }
 
@@ -389,5 +418,135 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
         print("[F0] Sesión guionizada completa: \(String(format: "%.0f", elapsedMs)) ms de pared; "
               + "\(hangs.values.count) bloqueo(s) > 250 ms del hilo principal: \(hangs.values)")
         XCTAssertGreaterThan(elapsedMs, 0)
+    }
+
+    // MARK: - (g) `AlbumsView` hospedada de verdad -- pedido de "Sesión
+    // Maestra" (2026-09-06), cerrado con el seam de F1 (ST-181,
+    // `GridSelectionModel<String>` inyectable en el init de `AlbumsView`).
+    //
+    // Hasta ANTES de F1 esta prueba era solo una prueba de humo (ver
+    // ST-180): no había forma de simular el clic porque la selección
+    // vivía en un `@State private` -- ver el commit 24d5f9b/bd79cd9 para
+    // esa versión. Con `GridSelectionModel` inyectado, ahora SÍ mide
+    // "evaluaciones de body por clic" real, de punta a punta, sin
+    // simular nada -- el criterio de cierre de F1 ("un clic = solo la
+    // tarjeta tocada y la barra de estado se reevalúan").
+    func testHostedAlbumsViewRecordsBodyEvaluationsOnInitialRender() throws {
+        let (hostingController, window, _, _) = try Self.hostAlbumsView(libraryRoot: libraryRoot, musicItems: musicItems)
+        let evaluations = BodyEvaluationCounter.count(for: "AlbumsView")
+        print("[F1] AlbumsView hospedada (NSHostingController): \(evaluations) evaluación(es) de body "
+              + "en el primer render")
+        XCTAssertGreaterThan(evaluations, 0,
+                              "AlbumsView.body nunca se evaluó -- el hosting headless no disparó el render real")
+        _ = (hostingController, window) // mantiene vivas las referencias hasta el final del scope
+    }
+
+    /// El caso real que cuenta para F1: tocar la casilla de UN álbum
+    /// (`GridSelection.toggle`, el mismo camino que usa
+    /// `librarySelectionCheckbox`) y medir cuántas veces se reevalúan
+    /// `AlbumsView.body` y `AlbumCardView.body` -- antes de F1 (§0.4 del
+    /// diagnóstico) esto invalidaba las 1 000 tarjetas por `anySelected`;
+    /// el criterio de F1 es "solo la tocada [y la barra de estado]".
+    func testTogglingOneAlbumCheckboxRecordsBodyEvaluations() throws {
+        let (hostingController, window, viewModel, selectionModel) =
+            try Self.hostAlbumsView(libraryRoot: libraryRoot, musicItems: musicItems)
+        let albums = LibraryGrouping.albums(from: viewModel.items, options: .default)
+        let targetID = try XCTUnwrap(albums.first?.id)
+
+        BodyEvaluationCounter.resetForTesting()
+        selectionModel.selection.toggle(targetID)
+        hostingController.view.layoutSubtreeIfNeeded()
+        window.layoutIfNeeded()
+        window.displayIfNeeded()
+
+        let albumsViewEvaluations = BodyEvaluationCounter.count(for: "AlbumsView")
+        let cardEvaluations = BodyEvaluationCounter.count(for: "AlbumCardView")
+        print("[F1] Tocar la casilla de 1 álbum (10 hospedados): \(albumsViewEvaluations) evaluación(es) "
+              + "de AlbumsView.body, \(cardEvaluations) de AlbumCardView.body")
+    }
+
+    /// Shift+clic sobre la cuadrícula hospedada -- `GridSelection.
+    /// handleTap(_:order:modifierFlags:)` ya existía desde ST-152
+    /// (Fase 0 de la ronda 1) precisamente para no depender de
+    /// `NSEvent.modifierFlags` real.
+    func testShiftClickOnHostedAlbumsViewRecordsBodyEvaluations() throws {
+        let (hostingController, window, viewModel, selectionModel) =
+            try Self.hostAlbumsView(libraryRoot: libraryRoot, musicItems: musicItems)
+        let albums = LibraryGrouping.albums(from: viewModel.items, options: .default)
+        let order = GridOrder(albums.map(\.id))
+        XCTAssertGreaterThanOrEqual(order.ids.count, 5)
+
+        // El tap ancla (clic simple sobre el primer álbum) queda FUERA
+        // de la medición -- lo que se mide es solo el Shift+clic que lo
+        // extiende, no los dos gestos juntos.
+        selectionModel.selection.handleTap(order.ids[0], order: order, modifierFlags: [])
+        hostingController.view.layoutSubtreeIfNeeded()
+        window.layoutIfNeeded()
+        window.displayIfNeeded()
+
+        BodyEvaluationCounter.resetForTesting()
+        selectionModel.selection.handleTap(order.ids[4], order: order, modifierFlags: [.shift])
+        hostingController.view.layoutSubtreeIfNeeded()
+        window.layoutIfNeeded()
+        window.displayIfNeeded()
+
+        let albumsViewEvaluations = BodyEvaluationCounter.count(for: "AlbumsView")
+        let cardEvaluations = BodyEvaluationCounter.count(for: "AlbumCardView")
+        print("[F1] Shift+clic que extiende 1→5 (10 hospedados): \(albumsViewEvaluations) evaluación(es) de "
+              + "AlbumsView.body, \(cardEvaluations) de AlbumCardView.body")
+    }
+
+    /// ⌘+clic: alterna un álbum SIN reemplazar la selección -- el otro
+    /// gesto que pidió "Sesión Maestra" además del Shift+clic.
+    func testCommandClickOnHostedAlbumsViewRecordsBodyEvaluations() throws {
+        let (hostingController, window, viewModel, selectionModel) =
+            try Self.hostAlbumsView(libraryRoot: libraryRoot, musicItems: musicItems)
+        let albums = LibraryGrouping.albums(from: viewModel.items, options: .default)
+        let order = GridOrder(albums.map(\.id))
+        XCTAssertGreaterThanOrEqual(order.ids.count, 2)
+
+        selectionModel.selection.handleTap(order.ids[0], order: order, modifierFlags: [])
+        hostingController.view.layoutSubtreeIfNeeded()
+        window.layoutIfNeeded()
+        window.displayIfNeeded()
+
+        BodyEvaluationCounter.resetForTesting()
+        selectionModel.selection.handleTap(order.ids[1], order: order, modifierFlags: [.command])
+        hostingController.view.layoutSubtreeIfNeeded()
+        window.layoutIfNeeded()
+        window.displayIfNeeded()
+
+        let albumsViewEvaluations = BodyEvaluationCounter.count(for: "AlbumsView")
+        let cardEvaluations = BodyEvaluationCounter.count(for: "AlbumCardView")
+        print("[F1] ⌘+clic que suma un segundo álbum (10 hospedados): \(albumsViewEvaluations) evaluación(es) "
+              + "de AlbumsView.body, \(cardEvaluations) de AlbumCardView.body")
+    }
+
+    /// Fábrica compartida por las tres pruebas de esta sección: hospeda
+    /// `AlbumsView` con 10 álbumes (120 canciones) reales -- no hace
+    /// falta hospedar los 1 000 para medir CUÁNTAS VECES se evalúa
+    /// `body`, solo que haya más de una tarjeta.
+    private static func hostAlbumsView(libraryRoot: URL, musicItems: [AuraStudio.LibraryItem]) throws
+        -> (NSHostingController<AlbumsView>, NSWindow, LibraryViewModel, GridSelectionModel<String>) {
+        BodyEvaluationCounter.resetForTesting()
+        let preferences = AppPreferences(defaults: UserDefaults(suiteName: "HostedAlbumsView-\(UUID().uuidString)")!)
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: preferences)
+        viewModel.replaceItemsForPerformanceTesting(Array(musicItems.prefix(120)))
+        let selectionStore = SelectionStore()
+        let selectionModel = GridSelectionModel<String>()
+
+        let hostingController = NSHostingController(
+            rootView: AlbumsView(viewModel: viewModel, device: nil, preferences: preferences,
+                                  selectionStore: selectionStore, selectionModel: selectionModel))
+        let window = NSWindow(contentViewController: hostingController)
+        window.setFrame(NSRect(x: 0, y: 0, width: 900, height: 700), display: true)
+        // Sin pantalla real (`swift test` en CI/consola) `display:true`
+        // en el `setFrame` de arriba no alcanza por sí solo -- forzar
+        // layout explícitamente es lo que de verdad dispara el primer
+        // `body` de SwiftUI en un host sin ventana visible.
+        hostingController.view.layoutSubtreeIfNeeded()
+        window.layoutIfNeeded()
+        window.displayIfNeeded()
+        return (hostingController, window, viewModel, selectionModel)
     }
 }
