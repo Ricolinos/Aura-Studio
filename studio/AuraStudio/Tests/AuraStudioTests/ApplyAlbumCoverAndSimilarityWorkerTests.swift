@@ -17,7 +17,7 @@ final class ApplyAlbumCoverAndSimilarityWorkerTests: XCTestCase {
     }
 
     private func freshPreferences() -> AppPreferences {
-        AppPreferences(defaults: UserDefaults(suiteName: "AlbumCoverSimilarityTests-\(UUID().uuidString)")!)
+        AppPreferences(defaults: makeIsolatedDefaults("AlbumCoverSimilarityTests"))
     }
 
     private func makeTracks(count: Int, musicDir: URL, kind: LibraryItemKind = .music) throws -> [AuraStudio.LibraryItem] {

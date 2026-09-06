@@ -287,7 +287,7 @@ final class FirmwareFamilyTests: XCTestCase {
     /// con Metro y luego uno con Aura le habria mostrado al segundo los
     /// tags del primero durante las 24h del TTL.
     func testReleaseCacheIsPerFamily() throws {
-        let defaults = try XCTUnwrap(UserDefaults(suiteName: "ST046-\(UUID().uuidString)"))
+        let defaults = try XCTUnwrap(makeIsolatedDefaults("ST046"))
         let auraReleases = [GitHubRelease(tagName: "v0.3.1-beta", draft: false, prerelease: true)]
         let metroReleases = [GitHubRelease(tagName: "v0.4.0", draft: false, prerelease: false)]
 
@@ -307,7 +307,7 @@ final class FirmwareFamilyTests: XCTestCase {
     }
 
     func testLatestKnownTagReadsTheRightFamily() throws {
-        let defaults = try XCTUnwrap(UserDefaults(suiteName: "ST046-\(UUID().uuidString)"))
+        let defaults = try XCTUnwrap(makeIsolatedDefaults("ST046"))
         ReleaseCache.store([GitHubRelease(tagName: "v0.3.1-beta", draft: false, prerelease: true)],
                            defaults: defaults, family: .aura)
         ReleaseCache.store([GitHubRelease(tagName: "v0.4.0", draft: false, prerelease: false)],

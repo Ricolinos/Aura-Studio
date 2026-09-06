@@ -37,7 +37,7 @@ final class ApplyBatchEditWorkerTests: XCTestCase {
     }
 
     private func freshPreferences() -> AppPreferences {
-        AppPreferences(defaults: UserDefaults(suiteName: "BatchEditWorkerTests-\(UUID().uuidString)")!)
+        AppPreferences(defaults: makeIsolatedDefaults("BatchEditWorkerTests"))
     }
 
     private func makeTracks(count: Int, musicDir: URL) throws -> [AuraStudio.LibraryItem] {

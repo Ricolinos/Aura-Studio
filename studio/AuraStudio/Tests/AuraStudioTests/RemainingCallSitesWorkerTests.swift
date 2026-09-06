@@ -30,7 +30,7 @@ final class RemainingCallSitesWorkerTests: XCTestCase {
     /// `processAll()` intentaría pegarle a MusicBrainz/Deezer de
     /// verdad con estas pistas sintéticas.
     private func offlinePreferences() -> AppPreferences {
-        let prefs = AppPreferences(defaults: UserDefaults(suiteName: "RemainingCallSitesTests-\(UUID().uuidString)")!)
+        let prefs = AppPreferences(defaults: makeIsolatedDefaults("RemainingCallSitesTests"))
         prefs.enrichOnline = false
         prefs.copyMediaIntoLibrary = false
         return prefs

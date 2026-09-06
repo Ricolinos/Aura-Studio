@@ -9648,3 +9648,148 @@ en **13/13**.
 Lo que **no** se pudo verificar acá: cómo se ve la franja y si el menú
 aparece donde debe. Requiere abrir la app, y esta sesión no tiene sesión
 gráfica (ver el hallazgo de ST-187). Va al guion del dueño.
+
+## ST-194 — Las pruebas dejaban de basura diez mil archivos de preferencias
+
+Nota de la sesión maestra: `~/Library/Preferences` de la Mac del dueño
+tenía cientos de `AuraUpdateCheckerTests-<UUID>.plist`. Al mirarlo, eran
+**10 882** archivos, de **25 familias** de pruebas distintas.
+
+### De dónde salían
+
+Las pruebas aíslan sus preferencias creando una suite de `UserDefaults`
+con nombre único (`PerfBaselineTests-<UUID>`), y eso está **bien**: sin
+ello, correr el suite le cambiaría los ajustes reales a quien lo corra.
+Lo que faltaba era el otro extremo — nadie las borraba, y cada suite deja
+un archivo. Con 25 familias, cada corrida completa dejaba cientos.
+
+### El detalle que importa: `removePersistentDomain` no alcanza
+
+Dos de esas familias (`AuraUpdateCheckerTests`, `ReleaseCacheTests`)
+**ya llamaban** `removePersistentDomain(forName:)` en su `tearDown`
+desde siempre. Y aun así habían dejado 735 y 390 archivos
+respectivamente. Vacía el dominio; `cfprefsd` conserva el `.plist`.
+
+Se comprobó midiendo, no razonando: con solo `removePersistentDomain` +
+`removeSuite`, correr `AppPreferencesTests` (10 pruebas) dejaba **8
+archivos nuevos**. Borrando además el archivo, la misma corrida deja
+**cero**.
+
+### El arreglo
+
+`XCTestCase.makeIsolatedDefaults(_:)` (`Tests/AuraStudioTests/TestDefaults.swift`)
+crea la suite y registra su borrado con `addTeardownBlock`, que corre al
+terminar **esa** prueba, pase o falle — así la limpieza no depende de que
+nadie se acuerde de llamarla ni de que el proceso termine bien. Borra el
+dominio, la suite **y el archivo**.
+
+El borrado del archivo está acotado a nombres con forma
+`<Familia>-<UUID>`: ni por un error de programación ni por un nombre
+venido de otro lado se puede apuntar eso a un `.plist` de verdad del
+usuario. Un `com.apple.finder` no pasa el filtro.
+
+Aplicado a las 25 familias. Tres casos necesitaron algo más que un
+reemplazo:
+
+- `AlbumsGridPerformanceBaselineTests.hostAlbumsView` es `static`, y
+  `addTeardownBlock` necesita la instancia de la prueba: la suite pasa
+  por parámetro.
+- `BootloaderVerifiedDisksTests` construye **dos** `AppPreferences` sobre
+  la **misma** suite a propósito (de eso se trata la prueba): una sola
+  suite compartida y una sola limpieza.
+- `AuraUpdateCheckerTests`/`ReleaseCacheTests` guardaban el nombre para
+  usarlo después; para eso está la variante `makeIsolatedDefaults(named:)`.
+
+### La limpieza de lo ya acumulado NO se ejecuta sola
+
+`tools/limpiar-preferencias-de-pruebas.sh`, y el modo por omisión es
+**simulación**: lista qué coincide y no borra nada. Hay que pasar
+`--borrar`.
+
+Es deliberado y vale decir por qué: borra archivos de la carpeta de
+preferencias del usuario, y eso no lo decide un script que corre por su
+cuenta dentro de un build o de una corrida de pruebas — lo corre una
+persona, mirando primero qué va a pasar. Meterlo en un `postBuildScript`
+habría sido más cómodo y bastante peor.
+
+Solo borra archivos cuyo nombre completo sea `<Familia>-<UUID>.plist` con
+`<Familia>` en una lista blanca explícita, comparando la **ruta
+completa** con `find -E -regex` (sin `-E`, los intervalos `{8}` del UUID
+no se interpretan en macOS y el filtro no coincide con nada — pasó en el
+primer intento y por eso el script se probó en seco antes de dárselo a
+nadie).
+
+### Verificación
+
+Medido, no supuesto, y con una corrección por el camino que vale contar
+porque es el tipo de cosa que se da por hecha sin comprobarla:
+
+| Momento | Archivos que deja `swift test` completo |
+|---|---|
+| Antes de ST-194 | ~800 por corrida |
+| Con borrado por prueba | **108** |
+| Con borrado por prueba **+ barrida final** | **2** |
+
+La primera medición del borrado por prueba dio **cero** con
+`AppPreferencesTests` corriendo aislado, y eso invitaba a declararlo
+resuelto. El suite completo dijo otra cosa: 108. La diferencia es que
+`cfprefsd` escribe cuando le conviene, y en una corrida larga alcanza a
+reescribir el archivo que se acaba de borrar. De ahí la segunda pasada.
+
+**No es cero, son 2**, y no se persigue más: lo que queda es
+`cfprefsd` escribiendo *después* de que el proceso de pruebas terminó, y
+nada dentro del proceso puede impedirlo. Dos archivos por corrida contra
+ochocientos es la diferencia entre un goteo y el problema que había. El
+script cubre el resto.
+
+El script en seco encuentra los 10 882 que ya estaban, sin tocarlos.
+
+Para correrlo, cuando el dueño o la maestra quieran:
+
+```
+tools/limpiar-preferencias-de-pruebas.sh            # solo muestra
+tools/limpiar-preferencias-de-pruebas.sh --borrar   # borra
+```
+
+## ST-188 (addendum) — La ventana, en la pantalla principal, cuando lo pide una prueba
+
+El XCUITest del arrastre ya lanza la app y encuentra todo, pero
+`XCUIElement.press(forDuration:thenDragTo:)` **revienta** con
+`point.x/y != INFINITY` cuando la ventana está en una pantalla
+secundaria. Es un defecto conocido de XCTest, no del código de la app; y
+en la Mac del dueño (una 5K principal más una 1920×1080) la ventana caía
+justo ahí, así que el gesto de arrastre —lo único que ST-188 existe para
+poder verificar— no se podía ejercer.
+
+`AURA_UITEST_MAIN_SCREEN=1` coloca la ventana centrada en
+`NSScreen.screens.first` con un tamaño fijo de 1280×800, ignorando dónde
+quedó la última vez.
+
+Tres precisiones que importan:
+
+- **`NSScreen.screens.first`, no `NSScreen.main`.** No son lo mismo: la
+  primera es la que tiene la barra de menús (la "principal" en el sentido
+  que le importa a XCTest), `main` es la que tiene el foco de teclado —
+  que puede ser la secundaria justamente cuando el problema ocurre.
+- **Tamaño fijo a propósito.** Una prueba que calcula coordenadas para
+  arrastrar de un hueco a otro necesita una ventana del mismo tamaño en
+  cada corrida.
+- **Sin la variable no pasa nada**, y fuera de DEBUG ni se lee. La
+  ventana de quien usa la app se abre donde la dejó, como siempre.
+
+Va como `NSViewRepresentable` de fondo (`MainWindowPlacer`) porque es la
+forma de alcanzar la `NSWindow` desde SwiftUI, y se aplica **una sola
+vez**: recolocar la ventana en cada cambio de layout sería pelearse con
+el usuario.
+
+**Nota sobre la regla de ST-187** ("ninguna sesión escribe en
+`~/Library/Preferences`"): las pruebas unitarias no pueden cumplirla al
+pie de la letra, y conviene decirlo en vez de dejarlo como una
+contradicción silenciosa. `UserDefaults(suiteName:)` **escribe ahí por
+definición** — es dónde vive una suite —, y `AppPreferences` recibe un
+`UserDefaults`, así que probar sus valores exige uno. Lo que ST-194
+consigue es que lo que escriben **se borre**, no que no escriban. Dejarlo
+del todo exigiría que `AppPreferences` aceptara un almacén no persistente
+(un protocolo en vez de `UserDefaults`), que es un cambio de diseño en
+`Sources/` con su propio costo y ningún otro beneficio. Queda anotado, no
+hecho.

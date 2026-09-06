@@ -20,7 +20,7 @@ final class SetRatingWorkerTests: XCTestCase {
     }
 
     private func freshPreferences() -> AppPreferences {
-        AppPreferences(defaults: UserDefaults(suiteName: "SetRatingTests-\(UUID().uuidString)")!)
+        AppPreferences(defaults: makeIsolatedDefaults("SetRatingTests"))
     }
 
     private func makeTracks(count: Int, musicDir: URL) throws -> [AuraStudio.LibraryItem] {

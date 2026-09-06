@@ -23,7 +23,7 @@ final class LibraryViewModelLocalTagRereadTests: XCTestCase {
     }
 
     private func freshPreferences() -> AppPreferences {
-        AppPreferences(defaults: UserDefaults(suiteName: "LocalTagRereadTests-\(UUID().uuidString)")!)
+        AppPreferences(defaults: makeIsolatedDefaults("LocalTagRereadTests"))
     }
 
     /// Genera un mp3 real con tags ID3v2.4 (title/artist/album) en una

@@ -47,12 +47,10 @@ final class ReleaseCacheTests: XCTestCase {
     private var suiteName: String!
 
     override func setUp() {
+        // ST-194: `removePersistentDomain` NO borraba el archivo -- esta
+        // prueba ya lo llamaba y aun así había dejado 390 `.plist`.
         suiteName = "ReleaseCacheTests-\(UUID().uuidString)"
-        defaults = UserDefaults(suiteName: suiteName)
-    }
-
-    override func tearDown() {
-        defaults.removePersistentDomain(forName: suiteName)
+        defaults = makeIsolatedDefaults(named: suiteName)
     }
 
     func testStoreThenLoadRoundTrips() {
@@ -83,13 +81,14 @@ final class AuraUpdateCheckerCheckForUpdateTests: XCTestCase {
     override func setUpWithError() throws {
         fakeIPod = FileManager.default.temporaryDirectory.appendingPathComponent("FakeIPod-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: fakeIPod, withIntermediateDirectories: true)
+        // ST-194: ver la nota de `ReleaseCacheTests` -- el archivo se
+        // borra en el teardown que registra `makeIsolatedDefaults`.
         suiteName = "AuraUpdateCheckerTests-\(UUID().uuidString)"
-        defaults = UserDefaults(suiteName: suiteName)
+        defaults = makeIsolatedDefaults(named: suiteName)
     }
 
     override func tearDownWithError() throws {
         try? FileManager.default.removeItem(at: fakeIPod)
-        defaults.removePersistentDomain(forName: suiteName)
         MockURLProtocol.handler = nil
     }
 

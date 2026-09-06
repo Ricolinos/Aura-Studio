@@ -8,8 +8,8 @@ import XCTest
 @MainActor
 final class AppPreferencesTests: XCTestCase {
     private func freshDefaults() -> UserDefaults {
-        let suiteName = "AppPreferencesTests-\(UUID().uuidString)"
-        return UserDefaults(suiteName: suiteName)!
+        // ST-194: la suite se borra al terminar la prueba.
+        makeIsolatedDefaults("AppPreferencesTests")
     }
 
     func testDefaultLibraryFolderPathIsUnderDocuments() {

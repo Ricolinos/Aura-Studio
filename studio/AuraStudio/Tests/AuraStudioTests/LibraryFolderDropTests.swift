@@ -49,8 +49,7 @@ final class LibraryFolderDropTests: XCTestCase {
     }
 
     private func freshPreferences(copyMediaIntoLibrary: Bool) -> AppPreferences {
-        let suiteName = "LibraryFolderDropTests-\(UUID().uuidString)"
-        let prefs = AppPreferences(defaults: UserDefaults(suiteName: suiteName)!)
+        let prefs = AppPreferences(defaults: makeIsolatedDefaults("LibraryFolderDropTests"))
         prefs.copyMediaIntoLibrary = copyMediaIntoLibrary
         return prefs
     }

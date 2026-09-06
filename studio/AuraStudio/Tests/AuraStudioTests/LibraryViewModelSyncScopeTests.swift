@@ -21,7 +21,7 @@ final class LibraryViewModelSyncScopeTests: XCTestCase {
     }
 
     private func freshPreferences() -> AppPreferences {
-        AppPreferences(defaults: UserDefaults(suiteName: "SyncScopeTests-\(UUID().uuidString)")!)
+        AppPreferences(defaults: makeIsolatedDefaults("SyncScopeTests"))
     }
 
     func testEmptySelectionScopeDoesNotTouchTheDevice() async throws {

@@ -31,7 +31,7 @@ final class LibraryViewModelSharedPreparedTests: XCTestCase {
     }
 
     func testDeletingOneDuplicateKeepsTheSurvivorsPreparedFile() async throws {
-        let prefs = AppPreferences(defaults: UserDefaults(suiteName: "SharedPrepared-\(UUID().uuidString)")!)
+        let prefs = AppPreferences(defaults: makeIsolatedDefaults("SharedPrepared"))
         prefs.copyMediaIntoLibrary = false
         let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: prefs)
         viewModel.addDroppedFiles([sourceA, sourceB])

@@ -698,7 +698,8 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
     // simular nada -- el criterio de cierre de F1 ("un clic = solo la
     // tarjeta tocada y la barra de estado se reevalúan").
     func testHostedAlbumsViewRecordsBodyEvaluationsOnInitialRender() throws {
-        let (hostingController, window, _, _) = try Self.hostAlbumsView(libraryRoot: libraryRoot, musicItems: musicItems)
+        let (hostingController, window, _, _) = try Self.hostAlbumsView(libraryRoot: libraryRoot, musicItems: musicItems,
+                                    defaults: makeIsolatedDefaults("HostedAlbumsView"))
         let evaluations = BodyEvaluationCounter.count(for: "AlbumsView")
         print("[F1] AlbumsView hospedada (NSHostingController): \(evaluations) evaluación(es) de body "
               + "en el primer render")
@@ -715,7 +716,8 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
     /// el criterio de F1 es "solo la tocada [y la barra de estado]".
     func testTogglingOneAlbumCheckboxRecordsBodyEvaluations() throws {
         let (hostingController, window, viewModel, selectionModel) =
-            try Self.hostAlbumsView(libraryRoot: libraryRoot, musicItems: musicItems)
+            try Self.hostAlbumsView(libraryRoot: libraryRoot, musicItems: musicItems,
+                                    defaults: makeIsolatedDefaults("HostedAlbumsView"))
         let albums = LibraryGrouping.albums(from: viewModel.items, options: .default)
         let targetID = try XCTUnwrap(albums.first?.id)
 
@@ -740,7 +742,8 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
     /// en la transición.
     func testIntermediateClickDoesNotInvalidateOtherAlbumCards() throws {
         let (hostingController, window, viewModel, selectionModel) =
-            try Self.hostAlbumsView(libraryRoot: libraryRoot, musicItems: musicItems)
+            try Self.hostAlbumsView(libraryRoot: libraryRoot, musicItems: musicItems,
+                                    defaults: makeIsolatedDefaults("HostedAlbumsView"))
         let albums = LibraryGrouping.albums(from: viewModel.items, options: .default)
         XCTAssertGreaterThanOrEqual(albums.count, 3)
         let first = albums[0].id, second = albums[1].id
@@ -806,7 +809,8 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
     /// `NSEvent.modifierFlags` real.
     func testShiftClickOnHostedAlbumsViewRecordsBodyEvaluations() throws {
         let (hostingController, window, viewModel, selectionModel) =
-            try Self.hostAlbumsView(libraryRoot: libraryRoot, musicItems: musicItems)
+            try Self.hostAlbumsView(libraryRoot: libraryRoot, musicItems: musicItems,
+                                    defaults: makeIsolatedDefaults("HostedAlbumsView"))
         let albums = LibraryGrouping.albums(from: viewModel.items, options: .default)
         let order = GridOrder(albums.map(\.id))
         XCTAssertGreaterThanOrEqual(order.ids.count, 5)
@@ -835,7 +839,8 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
     /// gesto que pidió "Sesión Maestra" además del Shift+clic.
     func testCommandClickOnHostedAlbumsViewRecordsBodyEvaluations() throws {
         let (hostingController, window, viewModel, selectionModel) =
-            try Self.hostAlbumsView(libraryRoot: libraryRoot, musicItems: musicItems)
+            try Self.hostAlbumsView(libraryRoot: libraryRoot, musicItems: musicItems,
+                                    defaults: makeIsolatedDefaults("HostedAlbumsView"))
         let albums = LibraryGrouping.albums(from: viewModel.items, options: .default)
         let order = GridOrder(albums.map(\.id))
         XCTAssertGreaterThanOrEqual(order.ids.count, 2)
@@ -861,10 +866,14 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
     /// `AlbumsView` con 10 álbumes (120 canciones) reales -- no hace
     /// falta hospedar los 1 000 para medir CUÁNTAS VECES se evalúa
     /// `body`, solo que haya más de una tarjeta.
-    private static func hostAlbumsView(libraryRoot: URL, musicItems: [AuraStudio.LibraryItem]) throws
+    /// ST-194: `defaults` viene por parámetro porque esta fábrica es
+    /// `static` y la limpieza de la suite se registra con
+    /// `addTeardownBlock`, que necesita la instancia de la prueba.
+    private static func hostAlbumsView(libraryRoot: URL, musicItems: [AuraStudio.LibraryItem],
+                                       defaults: UserDefaults) throws
         -> (NSHostingController<AlbumsView>, NSWindow, LibraryViewModel, GridSelectionModel<String>) {
         BodyEvaluationCounter.resetForTesting()
-        let preferences = AppPreferences(defaults: UserDefaults(suiteName: "HostedAlbumsView-\(UUID().uuidString)")!)
+        let preferences = AppPreferences(defaults: defaults)
         let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: preferences)
         viewModel.replaceItemsForPerformanceTesting(Array(musicItems.prefix(120)))
         let selectionStore = SelectionStore()

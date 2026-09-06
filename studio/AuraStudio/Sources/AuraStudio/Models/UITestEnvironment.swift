@@ -27,6 +27,17 @@ enum UITestEnvironment {
     static let libraryPathKey = "AURA_UITEST_LIBRARY"
     /// Nombre de la suite de `UserDefaults` a usar en vez de la estándar.
     static let defaultsSuiteKey = "AURA_UITEST_DEFAULTS_SUITE"
+    /// ST-188 (addendum): poner la ventana en la pantalla PRINCIPAL, con
+    /// un tamaño fijo, ignorando dónde quedó la última vez.
+    ///
+    /// No es una preferencia estética: `XCUIElement.press(forDuration:
+    /// thenDragTo:)` **revienta** (`point.x/y != INFINITY`) cuando la
+    /// ventana está en una pantalla secundaria. Es un defecto conocido de
+    /// XCTest, no del código de la app, y sin esto el gesto de arrastre
+    /// —lo único que ST-188 existe para poder verificar— no se puede
+    /// ejercer en una Mac con dos pantallas, que es justamente la del
+    /// dueño.
+    static let mainScreenKey = "AURA_UITEST_MAIN_SCREEN"
 
     #if DEBUG
     static var libraryPath: String? {
@@ -40,10 +51,21 @@ enum UITestEnvironment {
               !suite.isEmpty else { return nil }
         return suite
     }
+
+    static var forcesMainScreenWindow: Bool {
+        ProcessInfo.processInfo.environment[mainScreenKey] == "1"
+    }
     #else
     static var libraryPath: String? { nil }
     static var defaultsSuiteName: String? { nil }
+    static var forcesMainScreenWindow: Bool { false }
     #endif
+
+    /// Tamaño con el que se coloca la ventana bajo
+    /// `AURA_UITEST_MAIN_SCREEN`. Fijo a propósito: una prueba que
+    /// calcula coordenadas necesita una ventana del mismo tamaño en cada
+    /// corrida, y 1280×800 entra en cualquier pantalla razonable.
+    static let mainScreenWindowSize = CGSize(width: 1280, height: 800)
 
     /// `true` cuando la app corre bajo una prueba de interfaz.
     static var isActive: Bool { libraryPath != nil }

@@ -17,7 +17,7 @@ final class PersistCatalogCoalescedTests: XCTestCase {
     }
 
     private func freshPreferences() -> AppPreferences {
-        AppPreferences(defaults: UserDefaults(suiteName: "PersistCoalescedTests-\(UUID().uuidString)")!)
+        AppPreferences(defaults: makeIsolatedDefaults("PersistCoalescedTests"))
     }
 
     private func makeReadyMusicItem(cover: Data?) throws -> AuraStudio.LibraryItem {

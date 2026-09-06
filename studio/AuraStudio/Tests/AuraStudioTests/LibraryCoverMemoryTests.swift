@@ -25,7 +25,7 @@ final class LibraryCoverMemoryTests: XCTestCase {
     }
 
     private func freshPreferences() -> AppPreferences {
-        AppPreferences(defaults: UserDefaults(suiteName: "LibraryCoverMemoryTests-\(UUID().uuidString)")!)
+        AppPreferences(defaults: makeIsolatedDefaults("LibraryCoverMemoryTests"))
     }
 
     /// Ruido JPEG real (decodifica), ~15 KB -- mismo generador que

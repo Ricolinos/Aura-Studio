@@ -88,7 +88,7 @@ final class FirmwareFamilyPackagingTests: XCTestCase {
 
     @MainActor
     func testPreferencePersistsAndDefaultsToAura() throws {
-        let defaults = try XCTUnwrap(UserDefaults(suiteName: "ST047-\(UUID().uuidString)"))
+        let defaults = try XCTUnwrap(makeIsolatedDefaults("ST047"))
         let prefs = AppPreferences(defaults: defaults)
         XCTAssertEqual(prefs.firmwareFamilyToInstall, .aura)
 
@@ -104,7 +104,7 @@ final class FirmwareFamilyPackagingTests: XCTestCase {
     /// instalar.
     @MainActor
     func testPreferenceWithUnknownStoredValueFallsBackToAura() throws {
-        let defaults = try XCTUnwrap(UserDefaults(suiteName: "ST047-\(UUID().uuidString)"))
+        let defaults = try XCTUnwrap(makeIsolatedDefaults("ST047"))
         defaults.set("zeta", forKey: "aura.firmwareFamilyToInstall")
         XCTAssertEqual(AppPreferences(defaults: defaults).firmwareFamilyToInstall, .aura)
     }

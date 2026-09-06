@@ -26,7 +26,7 @@ final class PhotoStagingCollisionTests: XCTestCase {
     }
 
     private func freshPreferences() -> AppPreferences {
-        let prefs = AppPreferences(defaults: UserDefaults(suiteName: "PhotoStagingTests-\(UUID().uuidString)")!)
+        let prefs = AppPreferences(defaults: makeIsolatedDefaults("PhotoStagingTests"))
         prefs.copyMediaIntoLibrary = false
         return prefs
     }

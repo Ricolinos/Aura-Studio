@@ -22,7 +22,7 @@ final class LibraryFileWorkerEquivalenceTests: XCTestCase {
 
     private func freshPreferences(audioQuality: AppPreferences.AudioQuality,
                                   coverArtPolicy: AppPreferences.CoverArtPolicy) -> AppPreferences {
-        let prefs = AppPreferences(defaults: UserDefaults(suiteName: "FileWorkerEquivTests-\(UUID().uuidString)")!)
+        let prefs = AppPreferences(defaults: makeIsolatedDefaults("FileWorkerEquivTests"))
         prefs.audioQuality = audioQuality
         prefs.coverArtPolicy = coverArtPolicy
         return prefs

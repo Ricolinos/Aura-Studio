@@ -6,7 +6,7 @@ import XCTest
 @MainActor
 final class MusicTableColumnTests: XCTestCase {
     private func freshDefaults() -> UserDefaults {
-        UserDefaults(suiteName: "MusicTableColumnTests-\(UUID().uuidString)")!
+        makeIsolatedDefaults("MusicTableColumnTests")
     }
 
     // MARK: - Modelo

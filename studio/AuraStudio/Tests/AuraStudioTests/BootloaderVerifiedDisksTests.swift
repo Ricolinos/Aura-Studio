@@ -7,7 +7,7 @@ import XCTest
 @MainActor
 final class BootloaderVerifiedDisksTests: XCTestCase {
     private func makePreferences() -> AppPreferences {
-        AppPreferences(defaults: UserDefaults(suiteName: "BootloaderVerified-\(UUID().uuidString)")!)
+        AppPreferences(defaults: makeIsolatedDefaults("BootloaderVerified"))
     }
 
     func testStartsEmpty() {
@@ -34,11 +34,13 @@ final class BootloaderVerifiedDisksTests: XCTestCase {
     }
 
     func testPersistsAcrossInstances() {
-        let suite = "BootloaderVerified-\(UUID().uuidString)"
-        let first = AppPreferences(defaults: UserDefaults(suiteName: suite)!)
+        // ST-194: dos instancias sobre la MISMA suite -- de eso se
+        // trata la prueba -- y una sola limpieza al final.
+        let defaults = makeIsolatedDefaults("BootloaderVerified")
+        let first = AppPreferences(defaults: defaults)
         first.recordBootloaderVerified(diskKey: "VOL-9")
 
-        let second = AppPreferences(defaults: UserDefaults(suiteName: suite)!)
+        let second = AppPreferences(defaults: defaults)
         XCTAssertTrue(second.isBootloaderVerified(diskKey: "VOL-9"))
     }
 }
@@ -48,8 +50,8 @@ final class BootloaderVerifiedDisksTests: XCTestCase {
 /// Los mismos casos que `BootloaderUpdateTests.cs` en el port.
 @MainActor
 final class BootloaderUpdateTests: XCTestCase {
-    private func makePreferences(suite: String = "BootloaderUpdate-\(UUID().uuidString)") -> AppPreferences {
-        AppPreferences(defaults: UserDefaults(suiteName: suite)!)
+    private func makePreferences(defaults: UserDefaults? = nil) -> AppPreferences {
+        AppPreferences(defaults: defaults ?? makeIsolatedDefaults("BootloaderUpdate"))
     }
 
     // MARK: - El registro
@@ -72,11 +74,10 @@ final class BootloaderUpdateTests: XCTestCase {
     func testARecordFromBeforeThisChangeMigratesToUnknown() {
         // Antes de ST-143 el valor era una fecha. Perder esas entradas
         // obligaría a un DFU innecesario en cada iPod ya instalado.
-        let suite = "BootloaderUpdate-\(UUID().uuidString)"
-        let defaults = UserDefaults(suiteName: suite)!
+        let defaults = makeIsolatedDefaults("BootloaderUpdate")
         defaults.set(["VOL-VIEJO": Date()], forKey: "aura.bootloaderVerifiedDisks")
 
-        let prefs = makePreferences(suite: suite)
+        let prefs = makePreferences(defaults: defaults)
         XCTAssertTrue(prefs.isBootloaderVerified(diskKey: "VOL-VIEJO"))
         XCTAssertEqual(prefs.bootloaderHash(diskKey: "VOL-VIEJO"), BootloaderUpdate.unknownBootloader)
     }

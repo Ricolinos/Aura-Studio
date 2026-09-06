@@ -29,7 +29,7 @@ final class CoverArtAssetsTests: XCTestCase {
     }
 
     private func freshPreferences() -> AppPreferences {
-        AppPreferences(defaults: UserDefaults(suiteName: "CoverArtAssetsTests-\(UUID().uuidString)")!)
+        AppPreferences(defaults: makeIsolatedDefaults("CoverArtAssetsTests"))
     }
 
 

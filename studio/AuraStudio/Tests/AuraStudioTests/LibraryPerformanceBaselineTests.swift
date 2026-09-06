@@ -48,7 +48,7 @@ final class LibraryPerformanceBaselineTests: XCTestCase {
     }
 
     private func freshPreferences() -> AppPreferences {
-        AppPreferences(defaults: UserDefaults(suiteName: "PerfBaselineTests-\(UUID().uuidString)")!)
+        AppPreferences(defaults: makeIsolatedDefaults("PerfBaselineTests"))
     }
 
     /// Archivos "diminutos" a propósito (Fase 0 §2): lo que cuesta medir

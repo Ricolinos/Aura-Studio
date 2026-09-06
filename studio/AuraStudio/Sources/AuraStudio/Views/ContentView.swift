@@ -141,6 +141,8 @@ struct ContentView: View {
         // ST-193: el chequeo automático, una vez cada 24 h. Sale a la red
         // en segundo plano; sin red, calla.
         .onAppear { appUpdates.checkAutomaticallyIfDue() }
+        // ST-188 (addendum): solo hace algo con AURA_UITEST_MAIN_SCREEN=1.
+        .background(MainWindowPlacer())
         .background(AppUpdateCommandRelay(checker: appUpdates))
         .tint(AuraColors.light.accent)
         .toolbar {

@@ -20,7 +20,7 @@ final class LoadCatalogParallelTests: XCTestCase {
     }
 
     private func freshPreferences() -> AppPreferences {
-        AppPreferences(defaults: UserDefaults(suiteName: "LoadCatalogParallelTests-\(UUID().uuidString)")!)
+        AppPreferences(defaults: makeIsolatedDefaults("LoadCatalogParallelTests"))
     }
 
     /// 200 pistas, todas presentes -- el orden en `items` tiene que
