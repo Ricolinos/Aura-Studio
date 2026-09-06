@@ -32,6 +32,11 @@ public sealed partial class App : Application
         // se construyó.
         UiDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
 
+        // ST-200 (PLAN-studio-rendimiento-2.md W0): vigilante de bloqueos del
+        // hilo de UI, solo con AURA_WATCHDOG=1 y solo en DEBUG -- no hace
+        // nada en Release ni sin la variable.
+        if (UiDispatcher is not null) AuraStudio.App.Services.UiThreadWatchdog.StartIfRequested(UiDispatcher);
+
         var window = new MainWindow();
         MainWindow = window;
         MainWindowHandle = WinRT.Interop.WindowNative.GetWindowHandle(window);

@@ -6,6 +6,40 @@
 > nada — todo compila desde la sesión del 2026-08-31 en la VM — por eso se
 > renombró en la Fase 0. Entradas nuevas van **arriba** de las viejas.
 
+## Ronda de rendimiento 2, W0 — Arnés real y vigilante del hilo de UI (2026-09-06)
+
+Decisión ST-200 (`DECISIONS.md`, tabla "antes" completa ahí). `LibraryPerfCheck`
+dejó de ser un arnés que "no mide lo que duele" (Fase 7 de esta bitácora,
+más abajo, ya lo decía) y ahora instancia `LibraryViewModel`/
+`MediaGridViewModel`/`SongsViewModel`/`PlaylistsViewModel` **de verdad**,
+suscritos entre sí como los arma `App.ConfigureServices`, contra 1 000
+álbumes / 12 000 canciones con carátulas JPEG reales (~15 KB, WIC).
+
+**El síntoma del dueño, cuantificado**: seleccionar un álbum con Canciones y
+Listas ya construidas (como pasa siempre que la app está abierta) cuesta
+~350-900 ms por clic — 22×-54× el objetivo de 16 ms — porque cada clic
+dispara `SongsViewModel.Refresh()` completo (12 000 `FileInfo`) y
+`PlaylistsViewModel.Refresh()` encima. Sin esa cascada (cuadrícula sola),
+el mismo clic cuesta ~30 ms. Ese es el trabón al 3.er álbum, medido.
+
+Ctrl+A en Álbumes con la API pública de hoy (no existe un método nativo:
+`SelectionMode="None"`, §0.7) sale en ~21 s para las 1 000 tarjetas —
+`SongIdsOf` escanea las 12 000 canciones por clic, 1 000 veces.
+
+**Vigilante de hilo de UI nuevo** (`UiThreadWatchdog`, DEBUG +
+`AURA_WATCHDOG=1`), paridad conceptual con `MainThreadWatchdog` de la Mac.
+Hallazgo de plataforma: **esta VM corre ARM64 nativo**, no x64 emulado como
+asumía el `Platforms x64;ARM64` del `.csproj` sin verificarlo en runtime —
+`RuntimeInformation.ProcessArchitecture` lo confirma. El vigilante
+implementa la captura de pila (`SuspendThread` + `StackWalk64`) para las
+dos arquitecturas; sin la de ARM64 no hubiera funcionado en esta máquina.
+Probado de punta a punta con un `DispatcherQueueController` de hilo
+dedicado (sin ventana real) contra un bloqueo simulado de 800 ms: lo
+detectó con pila symbolizada real.
+
+`dotnet test` Core.Tests: **1303/1303**. Comando de reproducción del arnés
+y tabla completa: ver ST-200 en `DECISIONS.md`.
+
 ## Ronda 7 — La variante x64, probada emulada en el propio aparato (2026-09-01)
 
 Decisión ST-139. Build **0/0**, Core **1099/1099**. El Setup x64 se instaló,

@@ -5892,3 +5892,203 @@ seguidas de `swift build`/`swift test` de esta sesión en el mismo árbol
 compartido (incluida la sesión guionizada de ~40 s de este mismo ST-180,
 dos veces); queda anotado como sospechoso de carga de máquina, no como
 regresión real, hasta que Opus lo confirme contra su worktree limpio.
+
+## ST-200 — PLAN-studio-rendimiento-2.md, W0: arnés real y vigilante del hilo de UI (Windows)
+
+Primera PARADA de la ronda 2 en Windows (sesión "Sonnet"). `LibraryPerfCheck`
+dejó de medir una biblioteca sin carátulas, sin selección y sobre disco local
+(§0.10: "su conclusión 'nada necesita optimización' es falsa") y pasó a
+instanciar `LibraryViewModel`/`MediaGridViewModel`/`SongsViewModel`/
+`PlaylistsViewModel` **de verdad**, suscritos entre sí exactamente como los
+arma `App.ConfigureServices` (todo singleton, todo vivo a la vez), contra
+una biblioteca de 1 000 álbumes / 12 000 canciones con una carátula JPEG
+real (~15 KB, WIC, no bytes al azar) por álbum. Vigilante del hilo de UI
+nuevo en DEBUG, paridad conceptual con `MainThreadWatchdog` de la Mac.
+
+### Verificación de §0 contra el código de HEAD 5b81c3a
+
+Ningún punto resultó falso. Dos matices para que quede escrito:
+
+- **Punto 1**: confirmado que `SongsViewModel.cs:77` y `PlaylistsViewModel.cs:46`
+  se suscriben a **todo** `PropertyChanged` sin filtrar. Pero el "`new
+  FileInfo` por canción" no vive en `SongsViewModel.cs`: vive en
+  `LibraryViewModel.Rows()` (`ViewModels/LibraryViewModel.cs:781`, vía
+  `SimilarItemsDetector.FileSizeOf`, `Core/Library/SimilarItemsDetector.cs:146`),
+  que `SongsViewModel.Refresh()` llama en `ViewModels/SongsViewModel.cs:183`.
+  Mismo efecto (un `FileInfo` por canción, por red en `V:`, ante cualquier
+  aviso de `LibraryViewModel`), archivo/línea distinto.
+- El archivo `Core/Library/ContextMenu.cs` sí existe (contiene
+  `LibraryContextMenus`/`MediaTableContextMenu`/`MenuScope`, no una clase
+  literal `ContextMenu`); el punto 5/6 del encargo se confirmó exacto contra
+  él: `SongsPage.xaml.cs:311-314` es un `List<Guid>.Contains` dentro de un
+  `Where` (O(N²)), y `ContextMenu.cs:378` gatea "Buscar carátulas del
+  álbum..." solo con `SingleAlbumWithTitle`, sin el equivalente plural que
+  Álbumes sí tiene (`album.cover.recommended`).
+
+### Qué mide el arnés ahora
+
+`tools/LibraryPerfCheck` se reapuntó a `net10.0-windows10.0.26100.0` con
+`ProjectReference` a `AuraStudio.App` además de a `AuraStudio.Core` --
+instanciar los ViewModels de la app desde una consola sin WinUI arrancado
+funciona sin problema (`Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread()`
+devuelve `null` fuera de un hilo de UI real, que es justamente lo que
+`LibraryViewModel` ya maneja). Se probó primero con un programa mínimo antes
+de construir el arnés completo, así que esto no es una suposición.
+
+- **(a) SaveItems/LoadItems reales** de `LibraryStore`, con `ReadCover` real
+  por ítem, contra 1 000 carátulas JPEG generadas con WIC
+  (`SoftwareBitmap` + `BitmapEncoder`, mismo camino que `PlaylistArtGenerator`,
+  sin depender de `System.Drawing`), semilla fija por álbum.
+- **(b) La cascada de selección real**: `MediaGridViewModel.SelectOnly`/
+  `ToggleSelection` medidos DOS veces -- una vez con `MediaGridViewModel`
+  aislado (sin `SongsViewModel`/`PlaylistsViewModel` construidos) y otra con
+  los tres vivos y suscritos, para separar "cuesta la cuadrícula" de "cuesta
+  la cascada". `Ctrl+A` en Álbumes no existe como método hoy (§0.7: sin
+  `SelectionMode` nativo), así que se replicó con la única API pública de
+  hoy (`ToggleSelection` en bucle sobre las 1 000 tarjetas) -- que es
+  exactamente lo que un "Seleccionar todo" ingenuo haría con el código
+  actual.
+- **(c) Ctrl+A en Canciones (12 000) + clic derecho**: réplica exacta del
+  cómputo de `SongsPage.xaml.cs:311-314` (`Where(reached.Contains(id))`) y
+  de `:353-370` (`ScopeOf`, `AlbumKeyOf` recalculado para toda la
+  selección) con tipos de Core -- `SongsPage` es una `Page` de WinUI y no se
+  puede instanciar fuera de una ventana real, así que se aisló la lógica
+  medible en vez de instanciarla (documentado como pide el encargo).
+- **(d) Disco lento simulado**: sin abstracción inyectable en
+  `LibraryStore`/`LibraryViewModel` hoy (agregar una es de W3, no de esta
+  PARADA), así que es una **réplica calibrada**: mismo recuento exacto de
+  llamadas que hacen `RefreshAvailable` y `ReadCover` (una por ítem), con un
+  `Thread.Sleep` configurable insertado antes de cada una. Hallazgo de
+  método: `Thread.Sleep(3)` en esta VM tarda ~17-19 ms de verdad, no 3 --
+  la granularidad del temporizador de Windows por omisión (~15,6 ms) pone un
+  piso que un `Sleep` corto no puede bajar. No se corrigió con
+  `timeBeginPeriod`: el número que salió (disco a ~18 ms/llamada) es de
+  todos modos un proxy razonable de una IOP por SMB, así que se dejó y se
+  documenta el porqué en vez de perseguir el 3 ms literal.
+- Activa `AURA_WATCHDOG=1` sobre `AuraStudio.App` en DEBUG (ver más abajo)
+  antes de arrancar, para que la sesión guionizada de W7 pueda apoyarse en
+  el mismo mecanismo.
+
+### Línea base (1 000 álbumes / 12 000 canciones, VM Windows del dueño, Debug)
+
+Mediana de 2 corridas limpias (una 3.ª se detuvo por memoria baja de la VM
+al repetir la corrida completa una cuarta vez -- ver "Costo de mantener
+esto"; sus filas ya completadas antes de detenerse coinciden con estas dos
+dentro de ±15%, así que no se descartan por outliers, solo faltó tiempo
+para una 3.ª completa).
+
+| Medición | Resultado | Nota |
+|---|---|---|
+| Generar 1 000 carátulas JPEG reales (WIC) | ~1,1 s | Fixture, no es costo de la app |
+| `SaveItems` (12 000 ítems, con carátulas) | ~2,3 s | Código real |
+| `biblioteca.json` / `.portadas/` | 6,8 MB / 87,0 MB (1 000 archivos) | |
+| `LoadItems` (`ReadCover` por ítem) | ~1,7 s | Código real |
+| `RefreshAvailable`-equivalente (disco local) | ~68 ms | Código real, 12 000 `File.Exists` |
+| **Arranque: `LibraryViewModel` ctor (`Reload()` real)** | **~2,3 s** (1 968 / 2 707 ms en las 2 corridas) | Código real -- incluye `LoadItems` + `RefreshAvailable` + chequeo de normalización |
+| `MediaGridViewModel.Show(Albums)`, `Refresh()` (aislado) | ~61 ms | Código real, 1 000 álbumes |
+| Selección aislada, `SelectOnly` álbum 1/2/3 (sin cascada) | ~28 / ~35 / ~35 ms | Código real |
+| **Selección CON la cascada real, álbum 1/2/3** | **~352 / ~765 / ~648 ms** | Código real -- cada clic paga `SongsViewModel.Refresh()` + `PlaylistsViewModel.Refresh()` completos encima de la cuadrícula |
+| `SongsViewModel` ctor (`Refresh()` inicial, 12 000 filas) | ~293 ms | Código real -- `FileSizeOf` por canción |
+| `PlaylistsViewModel` ctor (`Reload()` + `Refresh()`) | ~95 ms | Código real |
+| Ctrl+A en Álbumes, réplica con la API de hoy (`ToggleSelection` × 1 000, aislado) | **~21 s** (~21 ms/álbum de promedio) | Código real -- `SongIdsOf` escanea 12 000 ítems por clic, × 1 000 |
+| Álbumes: menú contextual con 1 000 seleccionados (`ScopeOf`) | ~9 ms | Código real |
+| Canciones: clic derecho tras Ctrl+A (réplica de `:311-314`) | ~24 ms | A N=12 000: rápido hoy, pero sigue siendo O(N²) -- empeora con una biblioteca más grande, no es un "no aplica" |
+| Canciones: `ScopeOf` tras Ctrl+A (réplica de `:353-370`) | ~9,5 ms | |
+| Disco lento simulado, réplica de `RefreshAvailable` (~18 ms/llamada real, ver nota de método) | 213,0 s | 1 corrida (ver nota de contaminación abajo) |
+| Disco lento simulado, réplica de `ReadCover` en `LoadItems` (~19 ms/llamada) | 230,6 s | 1 corrida |
+
+**Contra los objetivos de §A**: "trabajo en el hilo principal por cambio de
+selección < 16 ms" queda entre 22× y 54× por encima con la cascada real
+encendida (352-765 ms contra 16 ms), y eso es solo hasta el 3.º álbum --
+exactamente el síntoma del dueño. "Seleccionar todo < 100 ms" en Álbumes
+queda ~210× por encima incluso SIN la cascada (Songs/Playlists), solo con
+el costo propio de la cuadrícula. El menú contextual con todo seleccionado
+sí cumple hoy (< 200 ms) en ambas cuadrículas -- ese objetivo no está en
+riesgo, al menos a este tamaño de biblioteca.
+
+**La corrida de disco lento (213,0 s / 230,6 s) se ejecutó en paralelo con
+`dotnet test` de Core.Tests** (una decisión de esta sesión para no perder
+tiempo de pared esperando en serie) y por eso no se promedia con las otras
+dos corridas del resto de la tabla, que sí son limpias. Como esa sección
+está dominada por `Thread.Sleep`, no por CPU, la contaminación por CPU
+compartida no debería desviarla mucho, pero se anota la salvedad en vez de
+callarla.
+
+### Vigilante del hilo de UI (`UiThreadWatchdog`, DEBUG + `AURA_WATCHDOG=1`)
+
+Paridad conceptual con `MainThreadWatchdog.swift`: late un latido en el
+hilo de UI cada 50 ms (acá, redondeando viajes por el `DispatcherQueue` --
+Windows no tiene el equivalente de una señal Unix hacia un hilo
+administrado) y un hilo aparte avisa si pasan más de 250 ms sin uno nuevo.
+La pila se captura en dos tiempos, igual que en Mac: se suspende el hilo de
+UI lo mínimo posible (`SuspendThread` + `StackWalk64` sobre las
+direcciones nada más) y se lo reanuda de inmediato; symbolizar
+(`SymFromAddr`, que sí puede tardar) pasa después, con el hilo ya
+corriendo.
+
+**Hallazgo que cambió el diseño a mitad de camino: esta VM es ARM64, no
+x64** (`RuntimeInformation.ProcessArchitecture` = `Arm64`, aunque
+`PROCESSOR_ARCHITECTURE` diga `AMD64` -- eso es lo que reporta un proceso
+x64 emulado, y el proceso de este arnés/app corre nativo). `CONTEXT` de
+Windows es distinto por arquitectura (`Rip`/`Rsp`/`Rbp` en x64;
+`Pc`/`Sp`/`X[29]` en ARM64), así que el vigilante implementa las dos --
+sin la de ARM64 nunca hubiera capturado nada en esta máquina, que es
+justamente donde corre el dueño.
+
+**Segundo hallazgo de método: `GetThreadContext` devolvía
+`ERROR_NOACCESS` (998) con un struct administrado pasado por `ref`.**
+`CONTEXT` es `DECLSPEC_ALIGN(16)` y un local de C# pasado por `ref` no
+garantiza esa alineación. Se resolvió reservando el contexto con
+`Marshal.AllocHGlobal` (el heap nativo de 64 bits ya alinea a 16) y
+leyendo/escribiendo por offset fijo con `Marshal.Read/WriteInt64` en vez de
+declarar el struct `CONTEXT` entero -- de los más de 900-1200 bytes que
+trae, esto solo necesita tres campos por arquitectura.
+
+**Probado de punta a punta sin necesitar una ventana real**: un
+`DispatcherQueueController.CreateOnDedicatedThread()` (WinAppSDK) da un
+`DispatcherQueue` de verdad en un hilo dedicado sin arrancar WinUI/XAML --
+se usó como "hilo de UI" de prueba, se le pidió un `Thread.Sleep(800)` y el
+vigilante lo detectó (~890-922 ms, con el sobrecosto propio del sondeo de
+50 ms) con pila symbolizada real (frames de `coreclr`/CLR, ej.
+`...DelayExecution+0x4`). Nunca se probó dentro de la app real con una
+ventana abierta -- queda para la sesión guionizada de W7/el dueño.
+
+### Costo de mantener esto
+
+Una corrida completa (sin disco lento): ~35-40 s de pared, dominada por el
+`Ctrl+A` de Álbumes (~21-24 s) y el arranque/selección con la cascada real
+(~5 s). Con disco lento (3.er argumento > 0): +7-8 minutos, ver arriba por
+qué. **La VM es sensible a memoria**: repetir la corrida completa una
+cuarta vez seguida (para tener una mediana de 3 en vez de 2) hizo que el
+supervisor de la sesión matara el proceso por memoria baja del sistema, a
+mitad del bucle de `Ctrl+A` -- que es justo el paso que más asigna (1 000
+iteraciones, cada una escaneando 12 000 ítems con `Normalize` × 2). No se
+investigó más a fondo porque no bloquea esta PARADA (dos corridas limpias
+alcanzan y coinciden entre sí), pero **W1..W7 deberían evitar lanzar el
+arnés completo repetidas veces seguidas en esta VM** hasta que se sepa si
+es la VM en general o específicamente este bucle sin optimizar.
+
+### Cómo reproducir
+
+```
+dotnet run --project studio/windows/tools/LibraryPerfCheck -- 1000 12 0
+```
+
+(`álbumes` `pistas por álbum` `ms de disco lento` -- todos opcionales, esos
+son los valores por omisión salvo el último; pasar p. ej. `3` en el tercero
+corre también la sección (d), que tarda varios minutos.)
+
+Para el vigilante del hilo de UI dentro de la app real: `$env:AURA_WATCHDOG=1`
+antes de lanzar `AuraStudio.App` compilada en Debug; el log queda en
+`%LOCALAPPDATA%\Aura Studio\watchdog.log` además de la ventana de Output.
+
+### Verificación
+
+`dotnet build` de `AuraStudio.Core.Tests`, `AuraStudio.App` y
+`tools/LibraryPerfCheck`: los tres en verde, 0 advertencias / 0 errores.
+`dotnet test` de `AuraStudio.Core.Tests`: **1303/1303** en verde. No se
+tocó ningún archivo de producción fuera de `App.xaml.cs` (dos líneas: capturar
+`UiDispatcher` y arrancar el vigilante) y los dos archivos nuevos del
+vigilante -- `LibraryPerfCheck` es la única superficie que este W0 reescribe
+de fondo, y es una herramienta de medición, no parte de la app que el dueño
+instala.
