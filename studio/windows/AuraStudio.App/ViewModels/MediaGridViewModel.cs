@@ -30,7 +30,7 @@ public enum MediaGridKind
 /// a rehacer todos sus contenedores y a decodificar todas las portadas otra vez.
 /// </summary>
 public readonly record struct MediaCardSpec(
-    string Id, string Title, string Subtitle, byte[]? CoverData, string? ImagePath)
+    string Id, string Title, string Subtitle, LibraryItem? CoverItem, string? ImagePath)
 {
     /// <summary>
     /// Si la tarjeta que ya existe muestra exactamente esto. La portada se
@@ -43,27 +43,28 @@ public readonly record struct MediaCardSpec(
         string.Equals(card.Title, Title, StringComparison.Ordinal)
         && string.Equals(card.Subtitle, Subtitle, StringComparison.Ordinal)
         && string.Equals(card.ImagePath, ImagePath, StringComparison.Ordinal)
-        && ReferenceEquals(card.CoverData, CoverData);
+        && ReferenceEquals(card.CoverItem, CoverItem)
+        && string.Equals(card.CoverItem?.CoverHash, CoverItem?.CoverHash, StringComparison.Ordinal);
 
-    public MediaCard ToCard() => new(Id, Title, Subtitle, CoverData, ImagePath);
+    public MediaCard ToCard() => new(Id, Title, Subtitle, CoverItem, ImagePath);
 }
 
 /// <summary>
 /// Una tarjeta de la cuadrícula. Deliberadamente plana: la cuadrícula no sabe si
 /// atrás hay un álbum, una serie o una carpeta de fotos, solo dibuja tarjetas.
 /// </summary>
-/// <param name="coverData">Carátula o póster embebido; <c>null</c> si no hay.</param>
+/// <param name="coverItem">De dónde sale la tapa (ST-208); <c>null</c> si no hay.</param>
 /// <param name="imagePath">Imagen de archivo, para las tarjetas de fotos.</param>
 public sealed partial class MediaCard(
-    string id, string title, string subtitle, byte[]? coverData, string? imagePath) : ObservableObject
+    string id, string title, string subtitle, LibraryItem? coverItem, string? imagePath) : ObservableObject
 {
     public string Id { get; } = id;
     public string Title { get; } = title;
     public string Subtitle { get; } = subtitle;
-    public byte[]? CoverData { get; } = coverData;
+    public LibraryItem? CoverItem { get; } = coverItem;
     public string? ImagePath { get; } = imagePath;
 
-    public bool HasCover => CoverData is { Length: > 0 } || ImagePath is { Length: > 0 };
+    public bool HasCover => CoverItem is not null || ImagePath is { Length: > 0 };
 
     /// <summary>La inicial que se dibuja cuando no hay imagen; nunca un cuadro vacío.</summary>
     public string Initial => Title.Length > 0 ? Title[..1].ToUpperInvariant() : "?";
@@ -371,19 +372,19 @@ public sealed partial class MediaGridViewModel : ViewModelBase
             album.Id,
             album.Title,
             album.IsUnknownArtist ? album.SubtitleDetail : $"{album.Artist} · {album.SubtitleDetail}",
-            album.CoverArtData, null)),
+            album.CoverItem, null)),
 
         MediaGridKind.Movies => _library.VideoCollections()
             .Where(collection => !collection.IsSeries)
             .Select(movie => new MediaCardSpec(
-                movie.Id, movie.Title, movie.Year ?? "", movie.PosterData, null)),
+                movie.Id, movie.Title, movie.Year ?? "", movie.PosterItem, null)),
 
         MediaGridKind.Series => _library.VideoCollections()
             .Where(collection => collection.IsSeries)
             .Select(series => new MediaCardSpec(
                 series.Id, series.Title,
                 $"{SeasonsText(series)} · {AppStrings.LibraryEpisodes(series.EpisodeCount)}",
-                series.PosterData, null)),
+                series.PosterItem, null)),
 
         MediaGridKind.PhotoCollection => _library.PhotoAlbums(PhotoCategory).Select(album => new MediaCardSpec(
             album.Id, album.Title, AppStrings.LibraryPhotos(album.Count),
@@ -395,11 +396,11 @@ public sealed partial class MediaGridViewModel : ViewModelBase
 
         MediaGridKind.Clips => _library.Clips().Select(clip => new MediaCardSpec(
             clip.Id.ToString("D"), clip.DisplayTitle, clip.Category ?? "",
-            clip.Metadata?.CoverArtData, null)),
+            clip.HasCover ? clip : null, null)),
 
         _ => _library.OfKind(LibraryItemKind.Video).Select(video => new MediaCardSpec(
             video.Id.ToString("D"), video.DisplayTitle, video.Category ?? "",
-            video.Metadata?.CoverArtData, null))
+            video.HasCover ? video : null, null))
     };
 
     /// <summary>

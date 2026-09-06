@@ -12,12 +12,19 @@ namespace AuraStudio.Core.Library;
 /// Clave estable (álbum + artista del álbum, normalizados): permite seleccionar
 /// el mismo grupo después de un cambio de metadata que no toque esos dos campos.
 /// </param>
-/// <param name="CoverArtData">La primera canción del grupo que tenga carátula.</param>
+/// <param name="CoverItem">
+/// La primera canción del grupo que tenga carátula, o <c>null</c> si ninguna la
+/// tiene. <b>Es de dónde sale la tapa, no la tapa</b> (ST-208): desde que las
+/// carátulas no viven en memoria, lo que viaja es la referencia y la vista pide
+/// la miniatura por el hash.
+/// </param>
 /// <param name="IsUnknown"><c>true</c> para el grupo especial "Sin álbum".</param>
 public sealed record AlbumGroup(
     string Id, string Title, string Artist, IReadOnlyList<LibraryItem> Items,
-    byte[]? CoverArtData, string? Year, string? Genre, bool IsUnknown)
+    LibraryItem? CoverItem, string? Year, string? Genre, bool IsUnknown)
 {
+    public bool HasCover => CoverItem is not null;
+
     public int TrackCount => Items.Count;
 
     public bool IsFavorite => Items.Any(item => item.Metadata?.IsFavorite == true);
@@ -49,8 +56,8 @@ public sealed record ArtistGroup(string Id, string Name, IReadOnlyList<AlbumGrou
     public IReadOnlyList<LibraryItem> Items => [.. Albums.SelectMany(album => album.Items)];
 
     /// <summary>Cuando no hay foto de artista: la portada del primer álbum que tenga.</summary>
-    public byte[]? FallbackCoverArtData =>
-        Albums.Select(album => album.CoverArtData).FirstOrDefault(cover => cover is not null);
+    public LibraryItem? FallbackCoverItem =>
+        Albums.Select(album => album.CoverItem).FirstOrDefault(cover => cover is not null);
 
     /// <summary>"31 álbumes, 321 canciones", como la cabecera de Music.app.</summary>
     public string Summary
@@ -108,7 +115,7 @@ public sealed record SeasonGroup(int Number, IReadOnlyList<LibraryItem> Items)
 /// (incluida "Sin temporada", siempre al final).
 /// </param>
 public sealed record VideoCollectionGroup(
-    string Id, string Title, string? Year, byte[]? PosterData, bool IsSeries,
+    string Id, string Title, string? Year, LibraryItem? PosterItem, bool IsSeries,
     IReadOnlyList<LibraryItem> Items, IReadOnlyList<SeasonGroup> Seasons)
 {
     public const int NoSeasonNumber = -1;
@@ -263,7 +270,7 @@ public static class LibraryGrouping
                 Title: isUnknown ? UnknownAlbumTitle : albumTitle,
                 Artist: GroupingArtistOf(first, options) ?? UnknownArtistName,
                 Items: tracks,
-                CoverArtData: tracks.Select(t => t.Metadata?.CoverArtData).FirstOrDefault(c => c is not null),
+                CoverItem: tracks.FirstOrDefault(track => track.HasCover),
                 Year: tracks.Select(t => t.Metadata?.Year).FirstOrDefault(y => !string.IsNullOrEmpty(y)),
                 Genre: tracks.Select(t => t.Metadata?.Genre).FirstOrDefault(g => !string.IsNullOrEmpty(g)),
                 IsUnknown: isUnknown));
@@ -387,7 +394,7 @@ public static class LibraryGrouping
                 Id: key,
                 Title: title,
                 Year: bucket.Select(v => v.Metadata?.Year).FirstOrDefault(y => !string.IsNullOrEmpty(y)),
-                PosterData: bucket.Select(v => v.Metadata?.CoverArtData).FirstOrDefault(c => c is not null),
+                PosterItem: bucket.FirstOrDefault(video => video.HasCover),
                 IsSeries: isSeries,
                 Items: bucket,
                 Seasons: isSeries ? Seasons(bucket) : []));

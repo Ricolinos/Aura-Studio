@@ -97,7 +97,9 @@ public class LibraryLoadTests : IDisposable
         catalog.Items[0].CoverRelativePath = PersistedLibrary.CoversDirName + "/otra.jpg";
         LibraryCatalogStore.Save(_root, catalog);
 
-        Assert.Equal([1, 2, 3], _store.LoadItems().Single().Metadata?.CoverArtData);
+        LibraryItem loaded = _store.LoadItems().Single();
+        Assert.True(loaded.HasCover);
+        Assert.Equal([1, 2, 3], _store.ReadCover(loaded));
     }
 
     [Fact]
@@ -113,7 +115,9 @@ public class LibraryLoadTests : IDisposable
         catalog.Items[0].CoverRelativePath = null;
         LibraryCatalogStore.Save(_root, catalog);
 
-        Assert.Equal([9, 9], _store.LoadItems().Single().Metadata?.CoverArtData);
+        LibraryItem loaded = _store.LoadItems().Single();
+        Assert.True(loaded.HasCover);
+        Assert.Equal([9, 9], _store.ReadCover(loaded));
     }
 
     [Fact]
@@ -126,7 +130,9 @@ public class LibraryLoadTests : IDisposable
         catalog.Items[0].CoverRelativePath = PersistedLibrary.CoversDirName + "/no-existe.jpg";
         LibraryCatalogStore.Save(_root, catalog);
 
-        Assert.Equal([7], _store.LoadItems().Single().Metadata?.CoverArtData);
+        LibraryItem loaded = _store.LoadItems().Single();
+        Assert.True(loaded.HasCover);
+        Assert.Equal([7], _store.ReadCover(loaded));
     }
 
     [Fact]
@@ -136,7 +142,8 @@ public class LibraryLoadTests : IDisposable
 
         LibraryItem loaded = _store.LoadItems().Single();
 
-        Assert.Null(loaded.Metadata?.CoverArtData);
+        Assert.False(loaded.HasCover);
+        Assert.Null(_store.ReadCover(loaded));
         Assert.Equal("Canción", loaded.Metadata?.Title);
     }
 }

@@ -93,7 +93,13 @@ public sealed class LibrarySyncFinalizerTests : IDisposable
             LibraryRoot = _library,
             Downscale = downscale,
             PlaylistArt = playlistArt,
-            SquareCrop = squareCrop ?? Squared
+            SquareCrop = squareCrop ?? Squared,
+
+            // ST-208: la carátula ya no viaja dentro del elemento; el
+            // finalizador la pide. Acá los elementos de prueba la llevan en la
+            // metadata, así que se la devuelve de ahí — en la app sale del
+            // almacén de la biblioteca.
+            CoverBytes = item => item.Metadata?.CoverArtData
         });
 
     // MARK: - Letras (contrato §3)

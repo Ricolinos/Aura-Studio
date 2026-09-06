@@ -157,7 +157,12 @@ public class LibraryStoreTests : IDisposable
         string json = File.ReadAllText(LibraryCatalogStore.CatalogPath(_root));
         Assert.DoesNotContain("coverArtData", json, StringComparison.OrdinalIgnoreCase);
 
-        Assert.Equal(cover, _store.LoadItems()[0].Metadata!.CoverArtData);
+        // ST-208: al cargar viaja la REFERENCIA, no los bytes. Los bytes se
+        // piden cuando de verdad hacen falta.
+        LibraryItem loaded = _store.LoadItems()[0];
+        Assert.Null(loaded.Metadata!.CoverArtData);
+        Assert.True(loaded.HasCover);
+        Assert.Equal(cover, _store.ReadCover(loaded));
     }
 
     [Fact]
@@ -171,11 +176,34 @@ public class LibraryStoreTests : IDisposable
         };
         _store.SaveItems([item]);
 
-        item.Metadata!.CoverArtData = null;
+        // ST-208: quitar la tapa es una acción EXPLÍCITA. Antes bastaba con
+        // dejar los bytes en null, y eso dejó de poder significar eso el día que
+        // cargar la biblioteca ya no los trae — si siguiera valiendo, abrir y
+        // guardar borraría las mil carátulas del usuario.
+        _store.RemoveCover(item);
         _store.SaveItems([item]);
 
         Assert.False(File.Exists(_store.CoverPath(item.Id)));
-        Assert.Null(_store.LoadItems()[0].Metadata!.CoverArtData);
+        Assert.False(_store.LoadItems()[0].HasCover);
+    }
+
+    [Fact]
+    public void DejarLosBytesEnNullNoBorraLaCaratula()
+    {
+        // El reverso de la prueba de arriba, y la razón por la que existe.
+        var item = new LibraryItem
+        {
+            SourcePath = TouchInsideLibrary("a.mp3"),
+            Kind = LibraryItemKind.Music,
+            Metadata = new TrackMetadata { Title = "x", CoverArtData = [1, 2, 3] }
+        };
+        _store.SaveItems([item]);
+
+        item.Metadata!.CoverArtData = null;
+        _store.SaveItems([item]);
+
+        Assert.True(File.Exists(_store.CoverPath(item.Id)));
+        Assert.True(_store.LoadItems()[0].HasCover);
     }
 
     [Fact]

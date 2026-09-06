@@ -192,10 +192,13 @@ public sealed class CatalogPathTests : IDisposable
         var store = new LibraryStore(_root);
         LibraryItem item = Assert.Single(store.LoadItems());
 
-        Assert.Equal<byte[]>([7, 7, 7], item.Metadata!.CoverArtData!);
+        // ST-208: la carátula viaja por referencia, y los bytes se piden.
+        Assert.True(item.HasCover);
+        Assert.Equal<byte[]>([7, 7, 7], store.ReadCover(item)!);
 
-        // Y al guardar queda con el nombre canónico, sin que nadie migre nada.
-        store.SaveItems([item]);
+        // Y queda con el nombre canónico ya al cargar, sin esperar a que nadie
+        // guarde: el listado que la recupera la renombra ahí mismo, para que las
+        // dos apps la vean bien.
         Assert.True(File.Exists(store.CoverPath(id)));
     }
 

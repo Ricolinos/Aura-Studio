@@ -136,7 +136,7 @@ public sealed partial class ArtistsPage : Page
         HeaderSummary.Text = artist.Group.Summary;
         HeaderInitial.Text = artist.Initial;
         HeaderInitial.Visibility = artist.HasAvatar ? Visibility.Collapsed : Visibility.Visible;
-        HeaderAvatar.Source = artist.HasAvatar ? await DecodeAsync(artist.AvatarData!, 192) : null;
+        HeaderAvatar.Source = await AvatarBitmapAsync(artist, 192);
     }
 
     // MARK: - Imágenes
@@ -147,9 +147,9 @@ public sealed partial class ArtistsPage : Page
         if (image.Tag is not string id) return;
 
         ArtistRow? row = ViewModel.Artists.FirstOrDefault(candidate => candidate.Id == id);
-        if (row?.AvatarData is not { Length: > 0 } data) return;
+        if (row is null) return;
 
-        image.Source = await DecodeAsync(data, 80);   // 40 px a 2×
+        image.Source = await AvatarBitmapAsync(row, 80);   // 40 px a 2×
     }
 
     private async void AlbumCover_Loaded(object sender, RoutedEventArgs e)
@@ -158,9 +158,27 @@ public sealed partial class ArtistsPage : Page
         if (image.Tag is not string id) return;
 
         ArtistAlbumRow? row = ViewModel.SelectedAlbums.FirstOrDefault(candidate => candidate.Album.Id == id);
-        if (row?.CoverData is not { Length: > 0 } data) return;
+        if (row?.CoverItem is not { } cover) return;
+
+        // ST-208: la tapa se lee del disco al dibujar, no vive en memoria.
+        if (await ViewModel.Library.ReadCoverAsync(cover) is not { Length: > 0 } data) return;
 
         image.Source = await DecodeAsync(data, 256);  // 128 px a 2×
+    }
+
+    /// <summary>
+    /// El avatar de un artista: su foto si la tiene y, si no, la portada de
+    /// alguno de sus álbumes — que desde ST-208 se lee del disco al dibujar, no
+    /// vive en memoria.
+    /// </summary>
+    private async Task<BitmapImage?> AvatarBitmapAsync(ArtistRow row, int width)
+    {
+        if (row.PhotoData is { Length: > 0 } photo) return await DecodeAsync(photo, width);
+
+        if (await ViewModel.Library.ReadCoverAsync(row.FallbackCoverItem) is { Length: > 0 } cover)
+            return await DecodeAsync(cover, width);
+
+        return null;
     }
 
     /// <summary>

@@ -129,6 +129,12 @@ public sealed class SyncService : ISyncService
             SquareCrop = SquareCrop,
             PlaylistArt = ComposePlaylistArt,
 
+            // ST-208: las carátulas ya no viven en memoria, así que el
+            // finalizador necesita de dónde sacarlas. Salen del mismo almacén de
+            // la biblioteca que se está sincronizando, y se lee <b>una por
+            // carpeta de álbum</b>, no una por canción.
+            CoverBytes = new LibraryStore(scan.LibraryRoot).ReadCover,
+
             // El MISMO criterio que usan las pantallas (R2-4): si acá se
             // agrupara distinto, el iPod recibiría dos fotos para el artista
             // que en Studio se ve como uno solo.

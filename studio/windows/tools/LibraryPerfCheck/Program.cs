@@ -110,7 +110,9 @@ try
     Console.WriteLine($"    biblioteca.json: {catalogBytes / 1024.0 / 1024.0:0.0} MB -- .portadas/: {coversBytes / 1024.0 / 1024.0:0.0} MB ({albums} archivos)");
 
     IReadOnlyList<LibraryItem> loaded = Measure("Leer biblioteca.json (LoadItems, ReadCover por ítem)", () => store.LoadItems());
-    Console.WriteLine($"    elementos leídos: {loaded.Count}, con carátula: {loaded.Count(i => i.Metadata?.CoverArtData is { Length: > 0 })}");
+    Console.WriteLine($"    elementos leídos: {loaded.Count}, con carátula: {loaded.Count(i => i.HasCover)}");
+    Console.WriteLine($"    con los BYTES de la carátula en memoria: {loaded.Count(i => i.Metadata?.CoverArtData is { Length: > 0 })} (ST-208: debe ser 0)");
+    ReportMemory("tras leer el catálogo");
 
     Measure("Comprobar que los archivos estén (disco local, como RefreshAvailable)", () =>
         loaded.Count(item => File.Exists(item.SourcePath)));
@@ -330,6 +332,24 @@ static void CtrlA(MediaGridViewModel grid) =>
 
 static void ClearSelection(MediaGridViewModel grid) =>
     grid.SyncFromControl([], [.. grid.SelectedCards]);
+
+/// <summary>
+/// Memoria residente del proceso, para el criterio de ST-208 —"sin JPEG
+/// completos en RAM"—. Se fuerza una recolección antes: sin eso, lo que se mide
+/// incluye basura que el recolector todavía no tocó y el número no dice nada.
+/// </summary>
+static void ReportMemory(string what)
+{
+    GC.Collect();
+    GC.WaitForPendingFinalizers();
+    GC.Collect();
+
+    using var process = System.Diagnostics.Process.GetCurrentProcess();
+    process.Refresh();
+
+    Console.WriteLine($"    memoria residente {what}: {process.WorkingSet64 / 1024.0 / 1024.0:0} MB"
+                      + $" (montón administrado: {GC.GetTotalMemory(false) / 1024.0 / 1024.0:0} MB)");
+}
 
 static T Measure<T>(string what, Func<T> action)
 {

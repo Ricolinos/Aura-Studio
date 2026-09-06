@@ -4,7 +4,7 @@ using AuraStudio.Core.Library;
 namespace AuraStudio.App.ViewModels;
 
 /// <summary>Una fila de la lista de artistas: avatar y nombre, nada más.</summary>
-public sealed partial class ArtistRow(ArtistGroup group, byte[]? avatar) : ObservableObject
+public sealed partial class ArtistRow(ArtistGroup group, byte[]? photo, LibraryItem? fallbackCover) : ObservableObject
 {
     public ArtistGroup Group { get; } = group;
 
@@ -17,9 +17,16 @@ public sealed partial class ArtistRow(ArtistGroup group, byte[]? avatar) : Obser
     /// sus álbumes. Sin ninguna de las dos, la vista dibuja la inicial: nunca
     /// un cuadro vacío.
     /// </summary>
-    public byte[]? AvatarData { get; } = avatar;
+    /// <summary>La foto del artista (ST-032), si la hay. Es chica y se lee al armar la lista.</summary>
+    public byte[]? PhotoData { get; } = photo;
 
-    public bool HasAvatar => AvatarData is { Length: > 0 };
+    /// <summary>
+    /// A falta de foto, de dónde sacar la portada de alguno de sus álbumes
+    /// (ST-208): una REFERENCIA, no la imagen — la pide la vista al dibujar.
+    /// </summary>
+    public LibraryItem? FallbackCoverItem { get; } = fallbackCover;
+
+    public bool HasAvatar => PhotoData is { Length: > 0 } || FallbackCoverItem is not null;
 
     public string Initial => Name.Length > 0 ? Name[..1].ToUpperInvariant() : "?";
 }
@@ -87,9 +94,10 @@ public sealed partial class ArtistAlbumRow(AlbumGroup album, string artistKey) :
 
     public bool IsFavorite => Album.IsFavorite;
 
-    public byte[]? CoverData => Album.CoverArtData;
+    /// <summary>De dónde sale la tapa del álbum (ST-208); la imagen se pide al dibujar.</summary>
+    public LibraryItem? CoverItem => Album.CoverItem;
 
-    public bool HasCover => CoverData is { Length: > 0 };
+    public bool HasCover => CoverItem is not null;
 
     public IReadOnlyList<ArtistTrackRow> Tracks { get; } =
         [.. album.Items.Select((item, index) => new ArtistTrackRow(item, index + 1, artistKey))];
@@ -255,7 +263,7 @@ public sealed partial class ArtistsViewModel : ViewModelBase
         Artists =
         [
             .. _library.Artists().Select(group =>
-                new ArtistRow(group, store.Image(group.Id) ?? group.FallbackCoverArtData))
+                new ArtistRow(group, store.Image(group.Id), group.FallbackCoverItem))
         ];
 
         ApplyFilter();

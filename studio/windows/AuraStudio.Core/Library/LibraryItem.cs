@@ -97,6 +97,50 @@ public sealed class LibraryItem
     /// </summary>
     public long? FileSizeBytes { get; set; }
 
+    /// <summary>
+    /// Dónde vive la carátula, relativa a la carpeta de biblioteca (ST-208).
+    /// <c>null</c> significa <b>que no hay carátula</b> — no "no se sabe".
+    ///
+    /// <para>Es la respuesta a "¿tiene tapa?" sin abrir el archivo, y por eso
+    /// existe: desde ST-208 la carátula ya <b>no se carga al abrir</b>, así que
+    /// preguntarle a los bytes dejó de ser una pregunta que se pueda hacer
+    /// gratis. Lo escriben las dos apps —la de macOS lo hace desde antes— y es
+    /// contrato compartido del catálogo.</para>
+    /// </summary>
+    public string? CoverRelativePath { get; set; }
+
+    /// <summary>
+    /// SHA-256 de los bytes del archivo de carátula, en hexadecimal mayúsculas
+    /// y sin separadores (ST-208; definición fijada por la sesión maestra para
+    /// las dos plataformas).
+    ///
+    /// <para><c>null</c> = <b>no se sabe</b>, nunca "sin carátula": eso lo dice
+    /// <see cref="CoverRelativePath"/>. Un catálogo anterior a este campo no lo
+    /// trae; se calcula al leer el archivo y queda escrito en el siguiente
+    /// guardado. Lo escribe quien escribe la carátula, en la misma operación —
+    /// ya tiene los bytes en la mano, así que no cuesta ninguna lectura
+    /// extra.</para>
+    ///
+    /// <para>Para qué sirve: es la clave de la miniatura. Sin él no habría forma
+    /// de saber qué miniatura corresponde sin volver a leer el JPEG, que es
+    /// justamente lo que ST-208 quitó.</para>
+    /// </summary>
+    public string? CoverHash { get; set; }
+
+    /// <summary>
+    /// Si tiene carátula. Se contesta con lo que hay en memoria, <b>sin tocar el
+    /// disco</b>.
+    ///
+    /// <para>Cuentan las dos formas: la que ya está guardada
+    /// (<see cref="CoverRelativePath"/>) y la que todavía no
+    /// (<c>Metadata.CoverArtData</c>, los bytes que acaba de sacar el lector de
+    /// etiquetas o el enriquecimiento y que se escribirán en el próximo
+    /// guardado). Mirar solo la primera dejaría a una canción recién importada
+    /// mostrándose sin tapa hasta que alguien guarde.</para>
+    /// </summary>
+    public bool HasCover =>
+        CoverRelativePath is { Length: > 0 } || Metadata?.CoverArtData is { Length: > 0 };
+
     public LibraryItemKind Kind { get; init; }
 
     public LibraryItemStatus Status { get; set; } = LibraryItemStatus.Queued;
