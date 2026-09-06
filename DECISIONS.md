@@ -7987,6 +7987,91 @@ lo que acaba de entrar. Lo que §0.8 medía era que las 12 000 canciones
 llevaran su JPEG para siempre, no que un puñado lo lleve por medio
 segundo.
 
+### Medición ("mecanico sonnet", worktree aislado sobre 72489fb)
+
+Nuevo archivo `Tests/AuraStudioTests/LibraryCoverMemoryTests.swift`,
+**7/7 en verde**. Siguiendo el consejo de Opus, la mayoría son pruebas de
+CORRECCIÓN (lo que importa de verdad: que el pico quede acotado, no un
+porcentaje de RSS), con una sola medición de memoria al final.
+
+| Prueba | Resultado |
+|---|---|
+| Cargar el catálogo nunca trae bytes a memoria (50 ítems con carátula real) | **Cumplido** -- `pendingCoverData` nil en las 50; `loadCoverData()` sigue devolviendo los bytes correctos, leídos de disco |
+| Migración: `coverHash` ausente se calcula al cargar, sin recorrer `.portadas/` | **Cumplido** -- un `biblioteca.json` con el esquema viejo (`coverRelativePath` sin `coverHash`) calcula el hash correcto al construir el `LibraryViewModel`, y el guardado siguiente lo deja escrito en el JSON |
+| Estado estable tras guardar (`pendingCoverData` nil, `coverURL`/`coverHash` puestos) ≠ "sin carátula" | **Cumplido** -- `hasCover` sigue en `true`, la Mac no tiene el hueco de Windows ST-208 |
+| "Quitar carátula" (`clearCoverArt(ids:)`) es explícito | **Cumplido** -- deja `coverURL` Y `coverHash` en `nil` a la vez (nunca uno solo) y borra el archivo de `.portadas/` |
+| Guardar sin bytes nuevos no reescribe ninguna carátula (20 ítems, mtime antes/después) | **Cumplido** -- ninguna de las 20 cambió de fecha de modificación en el segundo guardado |
+| Memoria residente, 12 000 ítems, antes/después de `persistCatalog()` | 72 MB → **91 MB** (subió, no bajó) -- ver nota abajo |
+
+**Por qué la memoria SUBIÓ en vez de bajar, y por qué no es una señal en
+contra de F5.** El propio diseño de la prueba (y el consejo de Opus)
+avisaba que RSS es ruidoso; el resultado lo confirma. `persistCatalog()`
+hace trabajo real que consume memoria TEMPORALMENTE mientras corre --
+arma un `PersistedLibrary` completo (12 000 `PersistedLibraryItem`),
+codifica JSON, y escribe 12 000 archivos a `.portadas/` -- y ese costo
+de la operación en sí (buffers de codificación, E/S) pesa más, en el
+momento exacto en que se toma la muestra, que los ~180 MB de
+`pendingCoverData` que sí se soltaron. Además, memoria liberada por ARC
+no vuelve necesariamente al sistema operativo de inmediato (el
+`allocator` la puede retener para reusarla), así que un RSS que no baja
+no prueba que los bytes sigan vivos -- lo que sí lo prueba, y es lo que
+esta PARADA verificó de verdad, es que **las 12 000 metadata tienen
+`pendingCoverData == nil`** después de guardar (aserción directa, sin
+depender de RSS). La medición de memoria queda documentada tal cual
+salió, sin maquillar el número, pero la evidencia real de que F5 cumple
+su objetivo son las cinco pruebas de corrección de arriba, no esta.
+
+### Addendum -- la medición de RSS, rehecha (pedido de "Sesión Maestra")
+
+El primer intento de RSS de arriba tenía DOS problemas de método, los dos
+señalados por la maestra:
+
+1. **Medía antes/después de `persistCatalog()`**, que hace trabajo real
+   (codificar JSON, escribir 12 000 archivos) -- el momento correcto es
+   antes/después de **cargar** el catálogo, sin guardar nada.
+2. **Los 12 000 ítems compartían la MISMA instancia de `Data`**
+   (`coverArtData: cover`, la misma variable repetida) -- copy-on-write
+   dejaba un solo buffer de ~15 KB en memoria para los 12 000, así que el
+   "antes" (72 MB) nunca representó una biblioteca real. Corregido con
+   `makeTracksWithUniqueCovers` (`base + Data("#item-\(i)")` -- la
+   concatenación siempre reserva un buffer nuevo, nunca comparte con la
+   base).
+
+Remedido con las dos correcciones, comparando el commit de ANTES de F5
+(`3d41bec`, worktree aislado aparte, descartado después de medir -- nunca
+se commiteó nada ahí) contra `93cf3e2` (F5 ya cerrado), los dos con el
+mismo método: persistir 12 000 ítems con carátula única por ítem, y medir
+RSS justo antes y justo después de construir un `LibraryViewModel`
+**nuevo** sobre el mismo `libraryRoot` (`loadCatalog()` fresco, sin
+guardar nada más).
+
+| | Antes de cargar | Después de cargar | Diferencia | Ítems con bytes de carátula en memoria |
+|---|---|---|---|---|
+| **Antes de F5** (`3d41bec`) | 139 MB | 258 MB | **+119 MB** | **12 000 / 12 000** |
+| **Después de F5** (`93cf3e2`) | 230 MB | 243 MB | **+13 MB** | **0 / 12 000** |
+
+(El punto de partida difiere entre las dos filas -- 139 MB vs 230 MB --
+porque son procesos de prueba distintos, con distinto código cargado; lo
+que importa, y lo que sí es comparable entre ambos, es la DIFERENCIA que
+deja cargar el catálogo.)
+
+**Esta sí es la evidencia de memoria que F5 promete.** Cargar 12 000
+canciones con carátula real, antes de esta ronda, agregaba ~119 MB al
+proceso y dejaba las 12 000 con el JPEG completo en `coverArtData` --
+coincide, dentro del orden de magnitud esperado, con los "~180 MB" que
+cita el diagnóstico original (§0.8) para el caso de 12 000/900 álbumes;
+la diferencia (119 vs ~180) es plausible por el tamaño exacto de
+carátula usado acá (~15 KB) y por redondeo de página de memoria. Después
+de F5, la misma carga agrega ~13 MB (probablemente las 12 000 rutas
+`URL`/hashes `String`, no JPEGs) y **cero** ítems terminan con bytes de
+carátula en memoria -- confirmado, no solo con RSS sino con el conteo
+directo de `pendingCoverData != nil`.
+
+Prueba nueva: `LibraryCoverMemoryTests.
+testResidentMemoryAfterFreshLoad_withUniqueCoversPerItem` (reemplaza a
+la de antes/después de guardar, que queda borrada). Verificado con el
+candado de la Mac, en un worktree aislado sobre 93cf3e2, 7/7 en verde.
+
 ## ST-208 (addendum) — La deduplicación de carátulas por álbum no va en esta ronda
 
 **Decisión de la Maestra.** ST-208 dejó anotado que las doce pistas de un álbum
@@ -8281,3 +8366,334 @@ pesado no ocurre en el hilo principal la da otra prueba
 
 `swift build` limpio, `xcodebuild -configuration Release` **BUILD
 SUCCEEDED**, `swift test` completo en verde.
+
+## ST-204 (addendum) — Las carátulas sucias se siguen escribiendo en el hilo de interfaz
+
+**Decisión de la Maestra.** ST-204 dejó anotado que `LibraryStore.Snapshot`
+—que corre en el hilo de interfaz, porque es el único lugar donde los elementos
+vivos se pueden leer sin carreras— escribe ahí mismo las carátulas **pendientes**
+antes de armar el catálogo. Bajarlas al segundo plano queda **fuera de esta
+ronda**, por dos razones:
+
+- **El catálogo no puede anunciar una tapa que no se escribió.** Anotar la ruta y
+  el hash primero y escribir el archivo después obliga a corregir el elemento
+  desde el hilo de fondo si la escritura falla, que es exactamente la carrera que
+  ST-204 vino a quitar. La propiedad actual —"decir que tiene una tapa que no se
+  pudo escribir sería mentirle al catálogo", de `WriteCover`— vale más que los
+  milisegundos.
+- **Con un guardado por lote ya no es un problema de volumen.** Solo se escriben
+  las **sucias**, y son las que el usuario acaba de cambiar: unos 15 KB por tapa.
+  Lo que dolía era escribir el catálogo entero doscientas veces, no escribir
+  doscientos JPEG una vez.
+
+Queda dicho, no hecho: si algún día una biblioteca en red lo vuelve visible, el
+diseño tiene que empezar por cómo deshacer la anotación sin tocar el elemento
+desde el hilo equivocado.
+
+## ST-206 — Windows: el menú deja de recorrer la biblioteca, y buscar carátulas en lote existe en Canciones
+
+Ronda 2 de rendimiento, encargo W6 de `docs/plans/PLAN-studio-rendimiento-2.md`.
+Hermano de **ST-182** en la Mac, con el diseño que fijó la Maestra desde ahí.
+
+Ataca dos cosas a la vez, y la segunda no es lentitud: el dueño reportó que **en
+Canciones con todo seleccionado no aparece «Buscar carátulas»**. No aparecía
+porque el ítem se escondía cuando la selección tocaba más de un disco — "¿la tapa
+de cuál?" —, así que era una acción que **no existía**, no una que tardaba.
+
+### 1. El clic derecho deja de ser cuadrático
+
+`SongsPage.Rows_ContextRequested` resolvía el alcance así:
+
+```csharp
+List<LibraryItem> items = [.. ViewModel.Library.Items.Where(item => reached.Contains(item.Id))];
+```
+
+`reached` es una `List<Guid>`, y `List.Contains` es una pasada lineal. Con toda
+la biblioteca seleccionada eso es 12 000 × 12 000: **ciento cuarenta y cuatro
+millones de comparaciones para ABRIR un menú**. Ahora es una búsqueda en el
+índice por elemento alcanzado —`LibraryCatalogIndex.ById`—, y de paso conserva el
+orden de la selección, que el `Where` sobre el catálogo perdía.
+
+### 2. `ScopeOf` pregunta al índice en vez de reagrupar
+
+De los diez datos que el menú necesita, el caro era uno: `SingleAlbumWithTitle`
+recalculaba `LibraryGrouping.AlbumKeyOf` de **cada canción alcanzada** —dos
+normalizaciones de cadena por canción, sin acentos ni mayúsculas, más el recorte
+de artista principal de R2-4— y encima hacía `Distinct().Count()` sobre todas
+ellas.
+
+`LibraryCatalogIndex` gana la **dirección contraria** (ST-201 solo tenía
+`albumKey → elementos`): `AlbumKeyOf(id)` y `AlbumKeysOf(selección)`, la clave
+guardada al pasar, sin calcularla dos veces. Responder "de qué álbumes es esta
+selección" con 12 000 canciones marcadas pasa de 24 000 normalizaciones a 12 000
+búsquedas en una tabla hash.
+
+**Se calienta en segundo plano.** Armar el índice son 12 000 claves. Hacerlo solo
+perezoso alcanza para que el menú deje de costar decenas de milisegundos, pero
+deja **esa** cuenta en el primer clic derecho después de cada cambio del
+catálogo. `WarmCatalogIndex()` lo arma en el grupo de hilos cuando cambia el
+catálogo y descarta el resultado si el catálogo volvió a cambiar mientras tanto;
+si nadie lo llama no pasa nada, porque `Index` lo arma igual —en el hilo de
+interfaz— la primera vez que se lo pidan. Calentarlo es una optimización, nunca
+un requisito.
+
+Lleva un candado de **uno a la vez**: un lote de tapas sube la versión del
+catálogo una vez por álbum, y sin él serían doscientas construcciones para tirar
+ciento noventa y nueve.
+
+### 3. «Buscar carátulas de N álbumes...» en Canciones
+
+Lo que faltaba, no lo que era lento. Con la selección tocando varios discos, el
+ítem ahora aparece en plural y dice cuántos. La acción es la de R2-3 (ST-115):
+aplica **sin preguntar solo** la tapa que supere el umbral de
+`docs/caratula-recomendada.md`, y los álbumes sin una opción segura no se tocan.
+
+**En Álbumes no se duplica.** Ese menú ya ofrece la misma operación como
+«Aplicar carátula recomendada a N álbumes» (§1 punto 5 del documento de paridad),
+y dos ítems que hacen lo mismo en el mismo menú son peor que uno. Con **un solo**
+álbum, las dos vistas siguen abriendo su selector como siempre. Queda anotado en
+`docs/paridad-menus-contextuales.md` §13 punto 7, y la fila §4.1 punto 2 quedó
+actualizada con el plural.
+
+### 4. El lote es una tarea del centro de tareas, y vive en la biblioteca
+
+`ApplyRecommendedCoversAsync` se mudó de `MediaGridViewModel` a
+`LibraryViewModel`: el mismo lote se pide desde dos pantallas, y tenerlo dos
+veces sería tener dos criterios de "tapa segura" esperando a divergir — con solo
+uno de los dos apareciendo en el centro de tareas. La cuadrícula conserva su
+firma y su tipo (`MediaGridViewModel.AlbumCoverTarget`) y delega.
+
+Puede tocar mil álbumes con una búsqueda en red por cada uno, así que va al
+`BackgroundTaskCenter` con avance **"N de M"**, el nombre del álbum en curso y
+**cancelación** — §A del plan: "todas las operaciones largas con indicador y
+cancelación en el centro de tareas".
+
+**Cancelar no deshace lo ya aplicado** —cada álbum es una operación terminada en
+sí misma— sino que deja de empezar los que faltan, y lo dice en el resumen
+("N quedaron sin revisar (cancelaste)"). Los que quedaron sin empezar **no**
+entran en la lista de dudosos: si el usuario paró, paró, y encolarle selectores
+sería no haber parado.
+
+El guardado es **uno solo** para todo el lote, por el persistidor de ST-204, y el
+aviso a las vistas también.
+
+### Lo que NO entra acá
+
+- **La cola de dudosos del selector.** "Álbum 2 de 7", "Omitir este álbum" y
+  "Cancelar el resto" viven en `AlbumCoverPicker`, que en este momento lo está
+  tocando W5 (miniaturas con caché). Hasta que aterrice, con **un** álbum dudoso
+  se abre su hoja como siempre y con varios no se abre ninguna: el resumen dice
+  cuántos quedaron, que es exactamente lo que hacía antes. Encadenar hojas sin
+  decir dónde está parada la revisión es lo que R2-3 descartó con razón, así que
+  se deja sin hacer en vez de a medias.
+- **El resumen de `MediaGridPage`** sigue siendo el suyo, sin la parte de
+  "cancelaste": ese archivo es de W5 en esta ronda. `AlbumCoverBatchResult.Summary()`
+  ya lo dice y está listo para que ese llamador lo use cuando se pueda tocar.
+
+### Números
+
+Arnés de ST-200, 12 000 canciones en 1 000 álbumes
+(`dotnet run --project tools/LibraryPerfCheck -c Release -- 1000 12 0`). Las dos
+filas "antes" siguen en el arnés a propósito, para el contraste directo en la
+misma corrida.
+
+| Medición (12 000 canciones seleccionadas) | antes | después | objetivo §A |
+|---|---|---|---|
+| Alcance del clic derecho (`reached.Contains` dentro de un `Where`) | 23 ms | **1 ms** | — |
+| `ScopeOf` (claves de álbum de la selección) | 22 ms | **5 ms** | ~5 ms — **cumplido** |
+| **Abrir el menú entero** (alcance + `ScopeOf`) | 45 ms | **4 ms** | < 200 ms — **cumplido** |
+| Armar `LibraryCatalogIndex` (una vez) | — | 16 ms | se paga en segundo plano (`WarmCatalogIndex`) |
+
+Los "antes" de esta corrida son más bajos que los de ST-200 —la VM va por rachas—
+pero se midieron **en la misma corrida** que los "después", que es lo único que
+hace comparables a dos números acá.
+
+### Verificación
+
+`dotnet build` de Core, App y el arnés: **0 advertencias, 0 errores**.
+`dotnet test`: **1 458 pruebas en verde**, once nuevas — seis para la dirección
+contraria del índice (la misma clave que la agrupación, `null` para lo que no es
+música, sin repetir y en orden, las dos direcciones cerrando entre sí) y cinco
+para el ítem del menú en singular, en plural, ausente sin álbumes con título, y
+sin duplicarse en Álbumes.
+
+Lo que **no** se verificó acá: cómo se ve. Esta sesión no puede abrir la ventana;
+que el ítem aparezca en plural, que la tarea muestre "N de M" con el álbum en
+curso y que cancelar corte el lote los ve quien la tenga delante.
+
+## ST-209 — Windows: el núcleo del arrastre de selección (recuadro), sin vistas
+
+Ronda 2 de rendimiento, encargo W2b de `docs/plans/PLAN-studio-rendimiento-2.md`.
+Hermano de **ST-184** en la Mac (F4), con el diseño que fijó la Maestra desde
+ahí.
+
+ST-202 le pasó la selección al control: `SelectionMode="Extended"` da clic,
+Ctrl+clic, Mayús+clic, flechas y Ctrl+A de fábrica. Lo que **no** da —y quedó
+anotado ahí, comprobado contra la documentación, no supuesto— es el **arrastre
+con recuadro**. Esa es la pieza que falta, y esta ST trae su mitad decidible.
+
+### Qué entra: la decisión, no el gesto
+
+Todo lo que decide el recuadro vive en tipos sin vistas, en Core, y por eso se
+ejerce entero sin mover un mouse:
+
+- **`GridRect` / `GridPoint`** — el rectángulo entre dos puntos, en cualquiera de
+  las cuatro direcciones. Un rectángulo sin superficie (un clic sin arrastre) no
+  toca nada, y **tocarse de canto no cuenta**: el recuadro que apenas roza el
+  borde de una tarjeta no la marca, que es lo que hace que arrastrar por el hueco
+  entre dos columnas no marque las dos.
+- **`GridSelectionModifiers`** (Mayús / Control) como **valor**, no como estado
+  global del teclado — por la misma razón de ST-152: lo que se consulta del
+  teclado no se puede simular en una prueba, así que un núcleo que lo mire solo
+  se verifica a mano.
+- **`GridMarquee.Hits`** — qué tarjetas toca, en el orden en que se ven (de
+  arriba abajo, de izquierda a derecha), no en el del diccionario, que no promete
+  ninguno.
+- **`GridMarquee.Selection`** — qué selección resulta: sin modificadores
+  reemplaza, con Mayús suma a la de partida, con Control alterna respecto de
+  ella. Con las dos manda Control, que es la más específica: un gesto que alterna
+  y suma a la vez no significa nada.
+- **`GridMarqueeDrag`** — el arrastre en curso. **Congela la selección de partida**
+  y resuelve cada posición del puntero contra ESA. Sin eso, agrandar y achicar el
+  recuadro no sería reversible: lo que entró no volvería a salir, se iría
+  acumulando. Devuelve `SelectionDelta` en cada movimiento, no la selección
+  entera: mover el puntero un píxel no puede costar escribir mil propiedades
+  (ST-201).
+- **`GridFrameMap`** — los marcos de las tarjetas **realizadas**, que ellas
+  reportan al aparecer y al moverse y retiran al salir de pantalla; si no, el
+  arrastre "tocaría" tarjetas que ya no están donde dice el mapa. Con la
+  virtualización de la cuadrícula son las decenas que se ven, no las mil que hay,
+  y escribir ahí **no avisa a nadie**: desplazarse no puede repintar la
+  cuadrícula por esto.
+- **`GridAutoScroll`** — cuánto desplazar cerca de los bordes, como función pura
+  del puntero y del alto visible. Sin desplazamiento automático no se puede
+  seleccionar más de lo que entra en pantalla. Crece con la cercanía al borde en
+  vez de ser un escalón, y con una ventana más chica que los dos márgenes sigue
+  habiendo zona quieta — si no, cualquier posición desplazaría.
+
+### Lo que el control da de fábrica, comprobado
+
+De la tabla de `ListViewBase.SelectionMode` en la documentación de Microsoft, para
+`Extended`:
+
+- **sin modificadores**, igual que `Single`: el clic reemplaza la selección;
+- **con Control**, alterna el elemento con foco (clic, toque o barra espaciadora);
+- **con Mayús**, selecciona contiguos haciendo clic en el primero y después en el
+  último, y las flechas extienden desde el elemento que estaba seleccionado al
+  apretar Mayús.
+
+Y lo que esa tabla **no** dice, así que no se da por cierto:
+
+- si un segundo Mayús+clic **reemplaza** el rango anterior conservando lo marcado
+  aparte con Control —los tres conceptos separados que ST-184 tuvo que introducir
+  en la Mac: foco, ancla y último rango—, o si hace unión;
+- si un clic en un **hueco** limpia la selección.
+
+Las dos se ven en un segundo con la ventana delante y no se pueden concluir de la
+documentación. Quedan como lo único a verificar a mano de este encargo, junto con
+el gesto físico. Si alguna no viniera de fábrica, el núcleo de acá ya tiene con
+qué implementarla.
+
+### Lo que NO entra acá
+
+**El cableado con la vista.** La capa que captura el arrastre va **detrás** de las
+tarjetas y no encima —así las tarjetas conservan sus clics y sus arrastres, y al
+capturador solo le llega lo que empezó en un hueco—, y eso vive en
+`MediaGridPage.xaml`, que en este momento lo está tocando W5. Se deja sin hacer
+en vez de a medias: media captura de eventos es peor que ninguna. El núcleo está
+completo y probado; lo que falta es traducir pulsar/mover/soltar a puntos y
+modificadores, dibujar el recuadro y aplicar el resultado con `SelectRange` /
+`DeselectRange` sobre `SelectedRanges` — que es como se aplica una selección
+grande sin desvirtualizar la cuadrícula (ST-202).
+
+### Verificación
+
+`dotnet build` de Core, App y el arnés: **0 advertencias, 0 errores**.
+`dotnet test`: **1 480 pruebas en verde**, veintidós nuevas para el núcleo del
+recuadro — las cuatro direcciones, el clic sin arrastre, el canto que no cuenta,
+el orden de lo alcanzado, los tres modificadores, la reversibilidad de agrandar y
+achicar, que la de partida quede congelada, que cada movimiento diga solo lo que
+cambió, que las tarjetas que aparecen durante el arrastre cuenten, el mapa de
+marcos y las cinco del desplazamiento automático.
+
+Lo que **no** se verificó acá: nada del gesto. Esta sesión no puede abrir la
+ventana ni mover un mouse.
+
+## ST-202 (addendum) — La barra de estado completa: Películas, Series y Fotos
+
+ST-202 dejó el resumen al estilo de la barra del Finder (ST-063) funcionando solo
+en **Álbumes**: era donde se medía el criterio y donde el resumen decía algo que
+no estaba ya en la pantalla. Las otras cuadrículas seguían con el conteo de
+siempre ("1 000 álbumes", "5 seleccionados"), que es O(1) y no molestaba a nadie
+pero tampoco decía nada. La Maestra pidió completarlo a paridad con la Mac, y es
+lo que entra acá.
+
+### Lo que ahora dice cada sección
+
+| Sección | Total | Selección |
+|---|---|---|
+| **Películas** | «N películas» | «N de M seleccionadas · duración · tamaño» |
+| **Series** | «N series · T temporadas · E episodios» | «N de M seleccionadas · T temporadas · E episodios · duración» |
+| **Todas las fotos** | «N fotos · N en Fotos · N en Imágenes · … · N álbumes» | «N de M seleccionadas · tamaño» |
+| **Álbumes de fotos** (una colección) | «N álbumes · M fotos · K sin álbum» | «N de M seleccionados · F fotos · tamaño» |
+
+Los textos son los de `LibraryStatusSummary.swift`, incluida la concordancia:
+películas, series y fotos van en **seleccionadas**; álbumes, en
+**seleccionados**.
+
+### Lo que se mantiene del diseño de ST-202
+
+- **El total se memoiza por versión del catálogo** y se apoya en
+  `LibraryCatalogIndex`, que ya tiene los grupos contados. Ninguna de las
+  secciones nuevas vuelve a agrupar la biblioteca para responder.
+- **El tamaño sale de `fileSizeBytes`**, del catálogo, sin tocar el disco
+  (ST-201).
+- **La selección cuesta lo que mide la selección**, no lo que mide el catálogo, y
+  la página la pide con rebote: mantener apretada Mayús+flecha no rearma el texto
+  en cada tecla.
+
+### Tres cosas que hubo que agregar
+
+1. **`LibraryStatusScope`.** Dos secciones no se resuelven con el enum solo: los
+   álbumes de fotos son los de **una** colección, y el desglose de "Todas las
+   fotos" nombra las colecciones **en el orden que configuró el usuario**, que la
+   biblioteca no sabe y los ajustes sí. El ámbito entra en la clave de
+   memoización — si no, abrir Imágenes después de Fotos mostraría el total de
+   Fotos. Una `LibraryStatusSection` sigue valiendo como ámbito por conversión
+   implícita, así que las cinco secciones que no necesitan nada más no cambiaron
+   de llamada.
+2. **`LibraryCatalogIndex.Keys(kind)`.** Películas y series comparten el índice
+   de colecciones de video, y separarlas exige mirar los grupos uno por uno. Se
+   separan por la **categoría de su primer elemento**, no leyendo la forma de la
+   clave: cómo se arma esa clave es asunto de `LibraryGrouping`, y mirarla acá
+   sería copiarla.
+3. **`LibraryStats.SeasonCount` y `PhotoAlbumCount`.** Las temporadas se cuentan
+   como pares serie+temporada distintos —la temporada 1 de dos series son dos, no
+   una— y "Sin temporada" cuenta como una, porque es lo que la vista muestra y la
+   barra no puede decir un número que no esté en pantalla. Los álbumes de fotos
+   cuentan solo los que **tienen nombre**: "Sin álbum" es una tarjeta más en la
+   cuadrícula —por eso sí entra en el denominador de la selección— pero no es un
+   álbum, y contarlo diría uno de más.
+
+### Sin tocar la vista
+
+No hizo falta: `MediaGridPage` ya preguntaba `ShowsStatusSummary` y escribía
+`StatusSummary` con rebote sin saber de qué sección se trataba. El cambio es
+`ShowsStatusSummary` —que ahora incluye Películas, Series, la colección de fotos
+abierta y Todas las fotos— y de qué ámbito se pide el resumen. Los listados
+planos de video (Todos los videos y Clips) siguen con el conteo de siempre: ahí
+la tarjeta ES el elemento y el resumen no agregaría nada que la cuadrícula no
+muestre.
+
+### Verificación
+
+`dotnet build` de Core, App y el arnés: **0 advertencias, 0 errores**.
+`dotnet test`: **1 494 pruebas en verde**, catorce nuevas — los cuatro totales,
+el desglose en el orden configurado, la colección vacía que no se nombra, el
+total de fotos sin desglose, los álbumes de una colección que no cuentan los de
+otra, "sin álbum" que no aparece cuando no hay sueltas, las cuatro selecciones, y
+que cambiar de sección **y de colección** recalcule el total con el mismo
+catálogo.
+
+Lo que **no** se verificó acá: cómo se lee en pantalla. Esta sesión no puede
+abrir la ventana.

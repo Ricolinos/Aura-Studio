@@ -29,7 +29,19 @@ public enum LibraryStatusSection
     Albums,
 
     /// <summary>La lista de Artistas.</summary>
-    Artists
+    Artists,
+
+    /// <summary>La cuadrícula de Películas.</summary>
+    Movies,
+
+    /// <summary>La cuadrícula de Series.</summary>
+    Series,
+
+    /// <summary>Todas las fotos, sin agrupar.</summary>
+    Photos,
+
+    /// <summary>Los álbumes de fotos de UNA colección (Fotos, Imágenes o IA).</summary>
+    PhotoAlbums
 }
 
 /// <summary>
@@ -129,4 +141,32 @@ public static class LibraryStats
              .Select(item => LibraryGrouping.AlbumKeyOf(item, options))
              .Distinct(StringComparer.Ordinal)
              .Count();
+
+    /// <summary>
+    /// Cuántas temporadas hay entre esos episodios (addendum de ST-202). Se
+    /// cuentan pares serie+temporada distintos: la temporada 1 de dos series son
+    /// dos, no una.
+    ///
+    /// <para>"Sin temporada" cuenta como una: es lo que la vista muestra, y la
+    /// barra no puede decir un número que no esté en pantalla.</para>
+    /// </summary>
+    public static int SeasonCount(IEnumerable<LibraryItem> episodes) =>
+        episodes.Where(item => item.Kind == LibraryItemKind.Video
+                               && MediaCategoryNames.IsSeriesCategory(item.Category))
+                .Select(item => (LibraryGrouping.VideoCollectionKeyOf(item),
+                                 item.Season ?? VideoCollectionGroup.NoSeasonNumber))
+                .Distinct()
+                .Count();
+
+    /// <summary>
+    /// Cuántos álbumes de fotos <b>con nombre</b> hay entre esas fotos. Las
+    /// sueltas no forman un álbum: "Sin álbum" es el cajón de lo que no tiene
+    /// uno, y contarlo diría un álbum de más.
+    /// </summary>
+    public static int PhotoAlbumCount(IEnumerable<LibraryItem> photos) =>
+        photos.Where(item => item.Kind == LibraryItemKind.Photo
+                             && (item.PhotoAlbum ?? "").Trim().Length > 0)
+              .Select(item => LibraryGrouping.PhotoAlbumKeyOf(item, item.Category ?? ""))
+              .Distinct(StringComparer.Ordinal)
+              .Count();
 }

@@ -143,7 +143,7 @@ enteros, con su separador.
 | # | Ítem | Condición |
 |---|------|-----------|
 | 1 | **Buscar información en línea** | siempre en este bloque |
-| 2 | **Buscar carátulas del álbum...** | si el alcance **resuelve a UN álbum** con título — **también con varias canciones seleccionadas**, que es el caso que R2-2 vino a corregir. La tapa elegida se aplica al álbum COMPLETO, no solo a las canciones seleccionadas |
+| 2 | **Buscar carátulas del álbum...** / **Buscar carátulas de N álbumes...** | si el alcance **resuelve a UN álbum** con título — **también con varias canciones seleccionadas**, que es el caso que R2-2 vino a corregir. La tapa elegida se aplica al álbum COMPLETO, no solo a las canciones seleccionadas. **Con la selección tocando varios discos va en plural** (ST-182 en macOS, ST-206 en Windows): antes desaparecía, y era el caso que el dueño reportó. Entonces aplica sola la que supere el umbral de `docs/caratula-recomendada.md` y las dudosas se revisan de a una |
 | 3 | **Buscar letra** | siempre en este bloque |
 | 4 | **Volver a leer etiquetas del archivo** | siempre en este bloque |
 | 5 | **Eliminar carátula** | siempre visible; **deshabilitado** si ninguna canción alcanzada tiene carátula |
@@ -368,3 +368,11 @@ Lo que el Paquete B tiene que resolver, anotado desde el lado macOS:
    la ficha es el mismo trío que macOS —favorito, buscar en línea y
    mostrar en el Explorador—; no está numerado en este documento porque
    del lado macOS es un `Menu` de la vista, no un menú contextual.
+
+7. **En Álbumes, el plural de «Buscar carátulas» no se repite** (ST-206,
+   Windows). El §4.1 punto 2 lleva la forma plural a la tabla de
+   Canciones; el menú de Álbumes (§1) **no** la lleva, porque ahí la
+   misma operación ya se ofrece como «Aplicar carátula recomendada a N
+   álbumes» (§1 punto 5, R2-3). Dos ítems que hacen lo mismo en el mismo
+   menú son peor que uno. Con **un solo** álbum, §1 punto 4 sigue igual
+   que en macOS: abre su selector.

@@ -56,6 +56,15 @@ public sealed class LibraryCatalogIndex
     private readonly Dictionary<string, List<LibraryItem>> _photoAlbums;
     private readonly Dictionary<Guid, LibraryItem> _byId;
 
+    /// <summary>
+    /// La dirección contraria (ST-206, hermana de ST-182 en la Mac): de una
+    /// canción a la clave de su álbum. No es un lujo — responder "de qué
+    /// álbumes es esta selección" con 12 000 canciones marcadas es la
+    /// diferencia entre 24 000 normalizaciones de cadena y 12 000 búsquedas en
+    /// una tabla hash.
+    /// </summary>
+    private readonly Dictionary<Guid, string> _albumKeyById;
+
     private LibraryCatalogIndex(
         IReadOnlyList<LibraryItem> items,
         ArtistGroupingOptions? grouping,
@@ -63,7 +72,8 @@ public sealed class LibraryCatalogIndex
         Dictionary<string, List<LibraryItem>> artists,
         Dictionary<string, List<LibraryItem>> videoCollections,
         Dictionary<string, List<LibraryItem>> photoAlbums,
-        Dictionary<Guid, LibraryItem> byId)
+        Dictionary<Guid, LibraryItem> byId,
+        Dictionary<Guid, string> albumKeyById)
     {
         Items = items;
         Grouping = grouping;
@@ -72,6 +82,7 @@ public sealed class LibraryCatalogIndex
         _videoCollections = videoCollections;
         _photoAlbums = photoAlbums;
         _byId = byId;
+        _albumKeyById = albumKeyById;
     }
 
     /// <summary>Los elementos que se indexaron, en el orden en que venían.</summary>
@@ -96,6 +107,7 @@ public sealed class LibraryCatalogIndex
         var videoCollections = new Dictionary<string, List<LibraryItem>>(StringComparer.Ordinal);
         var photoAlbums = new Dictionary<string, List<LibraryItem>>(StringComparer.Ordinal);
         var byId = new Dictionary<Guid, LibraryItem>(items.Count);
+        var albumKeyById = new Dictionary<Guid, string>(items.Count);
 
         foreach (LibraryItem item in items)
         {
@@ -106,8 +118,15 @@ public sealed class LibraryCatalogIndex
             switch (item.Kind)
             {
                 case LibraryItemKind.Music:
-                    Add(albums, LibraryGrouping.AlbumKeyOf(item, grouping), item);
+                    string albumKey = LibraryGrouping.AlbumKeyOf(item, grouping);
+
+                    Add(albums, albumKey, item);
                     Add(artists, LibraryGrouping.ArtistKeyOf(item, grouping), item);
+
+                    // La misma clave que se acaba de calcular, guardada al
+                    // revés: calcularla dos veces sería el gasto que este
+                    // índice existe para no pagar.
+                    albumKeyById.TryAdd(item.Id, albumKey);
                     break;
 
                 // TODO el video, no solo películas y series: es lo que responde
@@ -123,7 +142,8 @@ public sealed class LibraryCatalogIndex
             }
         }
 
-        return new LibraryCatalogIndex(items, grouping, albums, artists, videoCollections, photoAlbums, byId);
+        return new LibraryCatalogIndex(
+            items, grouping, albums, artists, videoCollections, photoAlbums, byId, albumKeyById);
     }
 
     private static void Add(Dictionary<string, List<LibraryItem>> buckets, string key, LibraryItem item)
@@ -142,6 +162,21 @@ public sealed class LibraryCatalogIndex
         _ => _byId.Count
     };
 
+    /// <summary>
+    /// Las claves de ese tipo, sin orden garantizado (ST-202 addendum). Es lo
+    /// que necesita quien tiene que mirar los grupos <b>uno por uno</b> —contar
+    /// películas aparte de series, o los álbumes de fotos de una colección— sin
+    /// volver a agrupar la biblioteca.
+    /// </summary>
+    public IReadOnlyCollection<string> Keys(LibraryGroupKind kind) => kind switch
+    {
+        LibraryGroupKind.Album => _albums.Keys,
+        LibraryGroupKind.Artist => _artists.Keys,
+        LibraryGroupKind.VideoCollection => _videoCollections.Keys,
+        LibraryGroupKind.PhotoAlbum => _photoAlbums.Keys,
+        _ => []
+    };
+
     public IReadOnlyList<LibraryItem> ByAlbumKey(string key) => Bucket(_albums, key);
 
     public IReadOnlyList<LibraryItem> ByArtistKey(string key) => Bucket(_artists, key);
@@ -158,6 +193,42 @@ public sealed class LibraryCatalogIndex
     /// intenta interpretarlo de otra forma.
     /// </summary>
     public LibraryItem? ById(string id) => Guid.TryParse(id, out Guid parsed) ? ById(parsed) : null;
+
+    /// <summary>
+    /// La clave del álbum de <b>una</b> canción, en O(1) (ST-206). <c>null</c>
+    /// para lo que no es música: un video no tiene álbum, y devolver "" lo
+    /// metería en el mismo cajón que las canciones sin disco.
+    /// </summary>
+    public string? AlbumKeyOf(Guid id) => _albumKeyById.GetValueOrDefault(id);
+
+    /// <summary>
+    /// De qué álbumes es esta selección, sin repetir y <b>en el orden en que
+    /// aparecen</b> — que es el orden en que el usuario los ve.
+    ///
+    /// <para>Es la pregunta del menú contextual de Canciones con toda la
+    /// biblioteca marcada. Antes había que normalizar dos cadenas por canción
+    /// para responderla; acá son 12 000 búsquedas en una tabla hash.</para>
+    /// </summary>
+    public IReadOnlyList<string> AlbumKeysOf(IEnumerable<Guid> ids)
+    {
+        List<string> keys = [];
+        HashSet<string> seen = new(StringComparer.Ordinal);
+
+        foreach (Guid id in ids)
+        {
+            if (AlbumKeyOf(id) is { } key && seen.Add(key)) keys.Add(key);
+        }
+
+        return keys;
+    }
+
+    /// <summary>
+    /// Igual, pero desde los elementos. Se resuelve por identificador y no
+    /// recalculando la clave: dos formas de armarla son dos agrupaciones
+    /// esperando a divergir.
+    /// </summary>
+    public IReadOnlyList<string> AlbumKeysOf(IEnumerable<LibraryItem> items) =>
+        AlbumKeysOf(items.Select(item => item.Id));
 
     /// <summary>Lo que hay detrás de <b>una</b> clave, en O(1).</summary>
     public IReadOnlyList<LibraryItem> ItemsForKey(LibraryGroupKind kind, string key) => kind switch

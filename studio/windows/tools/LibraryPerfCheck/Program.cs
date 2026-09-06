@@ -265,6 +265,54 @@ try
     Measure("Canciones: ScopeOf tras Ctrl+A -- AlbumKeyOf recalculado 12000 veces, réplica de SongsPage.xaml.cs:353-370",
         () => rightClickItems.Select(item => LibraryGrouping.AlbumKeyOf(item, library.ArtistGrouping)).Distinct().Count());
 
+    // --- Lo mismo, como quedó en ST-206: por índice. Las dos filas de arriba se
+    // conservan a propósito para el contraste directo. ---
+
+    LibraryCatalogIndex catalogIndex = Measure(
+        "Armar LibraryCatalogIndex de 12 000 elementos (una vez; en la app lo calienta el fondo)",
+        () => LibraryCatalogIndex.Build(library.AvailableItems, library.ArtistGrouping));
+
+    List<LibraryItem> byIndex = Measure(
+        "Canciones: clic derecho tras Ctrl+A -- por índice (ST-206)",
+        () =>
+        {
+            List<LibraryItem> reached = [];
+            foreach (Guid id in reachedAfterSelectAll)
+            {
+                if (catalogIndex.ById(id) is { } item) reached.Add(item);
+            }
+
+            return reached;
+        });
+
+    Measure("Canciones: ScopeOf tras Ctrl+A -- por índice (ST-206)",
+        () =>
+        {
+            IReadOnlyList<string> keys = catalogIndex.AlbumKeysOf(byIndex);
+
+            return keys.Count(
+                key => catalogIndex.ByAlbumKey(key).FirstOrDefault()?.Metadata?.Album is { Length: > 0 });
+        });
+
+    long menuMs = MeasureVoidTimed(
+        "Canciones: ABRIR el menú con 12 000 seleccionadas (alcance + ScopeOf, índice ya armado)",
+        () =>
+        {
+            List<LibraryItem> reached = [];
+            foreach (Guid id in reachedAfterSelectAll)
+            {
+                if (catalogIndex.ById(id) is { } item) reached.Add(item);
+            }
+
+            IReadOnlyList<string> keys = catalogIndex.AlbumKeysOf(reached);
+            _ = keys.Count(
+                key => catalogIndex.ByAlbumKey(key).FirstOrDefault()?.Metadata?.Album is { Length: > 0 });
+            _ = reached.All(item => item.Metadata?.IsFavorite == true);
+            _ = reached.Any(item => item.HasCover);
+        });
+
+    Console.WriteLine($"    objetivo del plan: < 200 ms -- {(menuMs < 200 ? "cumplido" : "NO CUMPLIDO")}");
+
     Console.WriteLine();
     Console.WriteLine("--- Migración única de fileSizeBytes (biblioteca vieja, ST-201) ---");
     Console.WriteLine();

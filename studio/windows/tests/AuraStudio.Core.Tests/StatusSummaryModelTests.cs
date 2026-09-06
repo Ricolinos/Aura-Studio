@@ -253,4 +253,236 @@ public class LibraryStatsTests
 
         Assert.Equal(3000, LibraryStats.TotalSize(items));
     }
+
+    // MARK: - Películas, Series y Fotos (addendum de ST-202)
+
+    private static LibraryItem Movie(string path, string title, double seconds = 5400, long? size = null) => new()
+    {
+        SourcePath = path,
+        Kind = LibraryItemKind.Video,
+        Category = MediaCategory.Movies.DisplayName(),
+        Metadata = new TrackMetadata { Title = title, DurationSeconds = seconds },
+        FileSizeBytes = size
+    };
+
+    private static LibraryItem Episode(
+        string path, string series, int season, int episode, double seconds = 2400) => new()
+    {
+        SourcePath = path,
+        Kind = LibraryItemKind.Video,
+        Category = MediaCategory.Series.DisplayName(),
+        SeriesName = series,
+        Season = season,
+        Episode = episode,
+        Metadata = new TrackMetadata { Title = $"{series} {season}x{episode}", DurationSeconds = seconds }
+    };
+
+    private static LibraryItem Photo(string path, string category, string? album = null, long? size = null) => new()
+    {
+        SourcePath = path,
+        Kind = LibraryItemKind.Photo,
+        Category = category,
+        PhotoAlbum = album,
+        FileSizeBytes = size
+    };
+
+    /// <summary>Dos películas, dos series (una de dos temporadas) y seis fotos.</summary>
+    private static LibraryCatalogIndex Media() => LibraryCatalogIndex.Build(
+        [
+            Movie(@"C:\a.mp4", "Amélie", 7200, 1024),
+            Movie(@"C:\b.mp4", "Brazil", 7200, 1024),
+
+            Episode(@"C:\s1.mkv", "Twin Peaks", 1, 1),
+            Episode(@"C:\s2.mkv", "Twin Peaks", 1, 2),
+            Episode(@"C:\s3.mkv", "Twin Peaks", 2, 1),
+            Episode(@"C:\o1.mkv", "Fargo", 1, 1),
+
+            Photo(@"C:\p1.jpg", "Fotos", "Viaje", 100),
+            Photo(@"C:\p2.jpg", "Fotos", "Viaje", 100),
+            Photo(@"C:\p3.jpg", "Fotos", null, 100),
+            Photo(@"C:\p4.jpg", "Imágenes", "Memes", 100),
+            Photo(@"C:\p5.jpg", "Imágenes", null, 100),
+            Photo(@"C:\p6.jpg", "IA", null, 100)
+        ],
+        ArtistGroupingOptions.Default);
+
+    [Fact]
+    public void ElTotalDePeliculasCuentaPeliculasNoArchivos()
+    {
+        var model = new StatusSummaryModel();
+
+        LibraryStatusSummary summary = model.Total(Media(), LibraryStatusSection.Movies, 1);
+
+        Assert.Equal("2 películas", summary.Total);
+        Assert.True(summary.HasTrailing);
+    }
+
+    [Fact]
+    public void ElTotalDeSeriesCuentaSeriesTemporadasYEpisodios()
+    {
+        var model = new StatusSummaryModel();
+
+        // Twin Peaks tiene dos temporadas y Fargo una: tres, no dos. La
+        // temporada 1 de dos series distintas son dos temporadas.
+        Assert.Equal(
+            "2 series · 3 temporadas · 4 episodios",
+            model.Total(Media(), LibraryStatusSection.Series, 1).Total);
+    }
+
+    [Fact]
+    public void LasPeliculasNoSeCuelanEnSeriesNiAlReves()
+    {
+        var model = new StatusSummaryModel();
+
+        Assert.StartsWith("2 películas", model.Total(Media(), LibraryStatusSection.Movies, 1).Total);
+        Assert.StartsWith("2 series", new StatusSummaryModel().Total(Media(), LibraryStatusSection.Series, 1).Total);
+    }
+
+    [Fact]
+    public void ElTotalDeFotosDesglosaPorColeccionEnElOrdenConfigurado()
+    {
+        var model = new StatusSummaryModel();
+        var scope = new LibraryStatusScope(
+            LibraryStatusSection.Photos, Collections: ["Fotos", "Imágenes", "IA"]);
+
+        LibraryStatusSummary summary = model.Total(Media(), scope, 1);
+
+        Assert.Equal("6 fotos · 3 en Fotos · 2 en Imágenes · 1 en IA · 2 álbumes", summary.Total);
+    }
+
+    [Fact]
+    public void UnaColeccionVaciaNoSeNombra()
+    {
+        var model = new StatusSummaryModel();
+        var scope = new LibraryStatusScope(
+            LibraryStatusSection.Photos, Collections: ["Fotos", "Imágenes", "IA", "Escaneos"]);
+
+        // "0 en Escaneos" no le dice nada a nadie.
+        Assert.DoesNotContain("Escaneos", model.Total(Media(), scope, 1).Total);
+    }
+
+    [Fact]
+    public void SinColeccionesElTotalDeFotosSigueSiendoCorrecto()
+    {
+        var model = new StatusSummaryModel();
+
+        // Sin el orden configurado no hay desglose, que es peor pero nunca
+        // incorrecto.
+        Assert.Equal("6 fotos · 2 álbumes", model.Total(Media(), LibraryStatusSection.Photos, 1).Total);
+    }
+
+    [Fact]
+    public void LosAlbumesDeUnaColeccionNoCuentanLosDeOtra()
+    {
+        var model = new StatusSummaryModel();
+        var scope = new LibraryStatusScope(LibraryStatusSection.PhotoAlbums, "Fotos");
+
+        // "Viaje" con dos fotos, más una suelta. "Memes" es de Imágenes y no
+        // entra: la categoría es parte de la clave a propósito.
+        Assert.Equal("1 álbum · 3 fotos · 1 sin álbum", model.Total(Media(), scope, 1).Total);
+    }
+
+    [Fact]
+    public void SinFotosSueltasNoSeDiceSinAlbum()
+    {
+        var index = LibraryCatalogIndex.Build(
+            [Photo(@"C:\p1.jpg", "Fotos", "Viaje", 100)], ArtistGroupingOptions.Default);
+
+        var model = new StatusSummaryModel();
+        var scope = new LibraryStatusScope(LibraryStatusSection.PhotoAlbums, "Fotos");
+
+        Assert.Equal("1 álbum · 1 foto", model.Total(index, scope, 1).Total);
+    }
+
+    [Fact]
+    public void LaSeleccionDePeliculasSeCuentaEnPeliculas()
+    {
+        LibraryCatalogIndex index = Media();
+        var model = new StatusSummaryModel();
+
+        IReadOnlyList<LibraryItem> selected =
+            index.ByVideoCollectionKey(LibraryGrouping.VideoCollectionKeyOf(
+                index.Items.First(item => item.Metadata?.Title == "Amélie")));
+
+        LibraryStatusSummary summary =
+            model.Summary(index, LibraryStatusSection.Movies, 1, selected, 1);
+
+        Assert.StartsWith("1 de 2 seleccionadas", summary.Selection);
+    }
+
+    [Fact]
+    public void LaSeleccionDeSeriesDiceTemporadasYEpisodios()
+    {
+        LibraryCatalogIndex index = Media();
+        var model = new StatusSummaryModel();
+
+        IReadOnlyList<LibraryItem> selected =
+            index.ByVideoCollectionKey(LibraryGrouping.VideoCollectionKeyOf(
+                index.Items.First(item => item.SeriesName == "Twin Peaks")));
+
+        LibraryStatusSummary summary =
+            model.Summary(index, LibraryStatusSection.Series, 1, selected, 1);
+
+        Assert.StartsWith("1 de 2 seleccionadas · 2 temporadas · 3 episodios", summary.Selection);
+    }
+
+    [Fact]
+    public void LaSeleccionDeAlbumesDeFotosCuentaAlbumesYFotos()
+    {
+        LibraryCatalogIndex index = Media();
+        var model = new StatusSummaryModel();
+        var scope = new LibraryStatusScope(LibraryStatusSection.PhotoAlbums, "Fotos");
+
+        IReadOnlyList<LibraryItem> selected = index.ByPhotoAlbumKey(
+            LibraryGrouping.PhotoAlbumKeyOf(
+                index.Items.First(item => item.PhotoAlbum == "Viaje"), "Fotos"));
+
+        // Dos tarjetas en esa colección: "Viaje" y "Sin álbum". El denominador
+        // las cuenta a las dos, aunque el total diga "1 álbum".
+        LibraryStatusSummary summary = model.Summary(index, scope, 1, selected, 1);
+
+        Assert.StartsWith("1 de 2 seleccionados · 2 fotos", summary.Selection);
+    }
+
+    [Fact]
+    public void EnTodasLasFotosLaTarjetaEsLaFoto()
+    {
+        LibraryCatalogIndex index = Media();
+        var model = new StatusSummaryModel();
+
+        IReadOnlyList<LibraryItem> selected =
+            [.. index.Items.Where(item => item.Kind == LibraryItemKind.Photo).Take(2)];
+
+        LibraryStatusSummary summary =
+            model.Summary(index, LibraryStatusSection.Photos, 1, selected, 2);
+
+        Assert.StartsWith("2 de 6 seleccionadas", summary.Selection);
+    }
+
+    [Fact]
+    public void CambiarDeSeccionRecalculaElTotalAunqueNoCambieElCatalogo()
+    {
+        LibraryCatalogIndex index = Media();
+        var model = new StatusSummaryModel();
+
+        Assert.Equal("2 películas", model.Total(index, LibraryStatusSection.Movies, 7).Total);
+        Assert.StartsWith("2 series", model.Total(index, LibraryStatusSection.Series, 7).Total);
+        Assert.Equal("2 películas", model.Total(index, LibraryStatusSection.Movies, 7).Total);
+    }
+
+    [Fact]
+    public void CambiarDeColeccionRecalculaElTotalAunqueSeaLaMismaSeccion()
+    {
+        LibraryCatalogIndex index = Media();
+        var model = new StatusSummaryModel();
+
+        // El ámbito es más que la sección: dos colecciones de fotos son dos
+        // totales distintos, y memoizar solo por sección devolvería el de la
+        // anterior.
+        Assert.Equal("1 álbum · 3 fotos · 1 sin álbum",
+            model.Total(index, new LibraryStatusScope(LibraryStatusSection.PhotoAlbums, "Fotos"), 7).Total);
+
+        Assert.Equal("1 álbum · 2 fotos · 1 sin álbum",
+            model.Total(index, new LibraryStatusScope(LibraryStatusSection.PhotoAlbums, "Imágenes"), 7).Total);
+    }
 }

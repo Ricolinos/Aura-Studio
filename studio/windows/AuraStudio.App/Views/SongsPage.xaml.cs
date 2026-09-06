@@ -374,7 +374,19 @@ public sealed partial class SongsPage : Page
         IReadOnlyList<Guid> reached = GridSelection.EffectiveIds(
             row.Id, [.. RowsList.SelectedItems.OfType<SongRowViewModel>().Select(selected => selected.Id)]);
 
-        List<LibraryItem> items = [.. ViewModel.Library.Items.Where(item => reached.Contains(item.Id))];
+        // ST-206: por índice, no filtrando el catálogo. `reached.Contains` dentro
+        // de un `Where` sobre los 12 000 elementos es O(N x M): con todo
+        // seleccionado, ciento cuarenta y cuatro millones de comparaciones para
+        // ABRIR un menú. Acá es una búsqueda en tabla hash por elemento
+        // alcanzado, y además conserva el orden de la selección.
+        LibraryCatalogIndex index = ViewModel.Library.Index;
+        List<LibraryItem> items = [];
+
+        foreach (Guid id in reached)
+        {
+            if (index.ById(id) is { } item) items.Add(item);
+        }
+
         if (items.Count == 0) return;
 
         MenuFlyout? menu = ContextMenuBuilder.Build(
@@ -416,6 +428,21 @@ public sealed partial class SongsPage : Page
     private MenuScope ScopeOf(IReadOnlyList<LibraryItem> items)
     {
         LibraryItem first = items[0];
+        LibraryCatalogIndex index = ViewModel.Library.Index;
+
+        // ST-206: de qué álbumes es esta selección lo responde el índice, en una
+        // búsqueda por canción. Antes se calculaba `AlbumKeyOf` de cada elemento
+        // alcanzado —dos normalizaciones de cadena por canción, sin acentos ni
+        // mayúsculas, más el recorte de artista principal de R2-4— y encima se
+        // hacía con `Distinct().Count()` sobre todas ellas.
+        bool allMusic = items.All(item => item.Kind == LibraryItemKind.Music);
+        IReadOnlyList<string> albumKeys = allMusic ? index.AlbumKeysOf(items) : [];
+
+        // "Sin álbum" no es un disco: es el cajón de lo que no tiene uno, y no
+        // hay tapa que buscarle. Se pregunta por el título de la primera pista
+        // de cada álbum, no de cada canción alcanzada.
+        int namedAlbums = albumKeys.Count(
+            key => index.ByAlbumKey(key).FirstOrDefault()?.Metadata?.Album is { Length: > 0 });
 
         return new MenuScope(
             items.Count,
@@ -423,13 +450,12 @@ public sealed partial class SongsPage : Page
             // ST-208: lo dice el catálogo, sin abrir el archivo.
             HasCover: items.Any(item => item.HasCover),
             HasPoster: items.Any(item => item.Kind == LibraryItemKind.Video && item.HasCover),
-            SingleAlbumWithTitle: items.All(item => item.Kind == LibraryItemKind.Music)
-                                  && items.Select(item => LibraryGrouping.AlbumKeyOf(item, _preferences.ArtistGrouping)).Distinct().Count() == 1
-                                  && first.Metadata?.Album is { Length: > 0 },
+            SingleAlbumWithTitle: albumKeys.Count == 1 && first.Metadata?.Album is { Length: > 0 },
             HasAlbum: first.Metadata?.Album is { Length: > 0 },
             HasArtist: first.Metadata?.Artist is { Length: > 0 },
             AnyReady: items.Any(item => item.Status.State == LibraryItemState.Ready),
-            DeviceConnected: _session.Device is { SupportsAuraContract: true });
+            DeviceConnected: _session.Device is { SupportsAuraContract: true },
+            AlbumCount: namedAlbums);
     }
 
     private IReadOnlyList<string>? CategoriesFor(LibraryItemKind kind) => kind switch
@@ -451,7 +477,7 @@ public sealed partial class SongsPage : Page
             case "cover.remove": ViewModel.Library.RemoveCover(ids); break;
             case "poster": await ViewModel.Library.FetchVideoPostersAsync(); break;
             case "poster.remove": ViewModel.Library.RemovePoster(ids); break;
-            case "album.covers": await ShowAlbumCoverPickerAsync(items); break;
+            case "album.covers": await SearchAlbumCoversAsync(items); break;
 
             case "favorite.add": ViewModel.Library.SetFavorite(ids, true); break;
             case "favorite.remove": ViewModel.Library.SetFavorite(ids, false); break;
@@ -543,30 +569,73 @@ public sealed partial class SongsPage : Page
     }
 
     /// <summary>
+    /// "Buscar carátulas del álbum..." con uno solo, "Buscar carátulas de N
+    /// álbumes..." con varios (ST-104, ST-206).
+    ///
+    /// <para>Con un álbum se abre su hoja y <b>no se aplica nada solo</b>: dos
+    /// ediciones de un disco tienen tapas distintas y las dos son correctas. Con
+    /// varios eso no se puede preguntar mil veces, así que corre el lote de
+    /// R2-3: se aplica sola la que supere el umbral y las dudosas se revisan de
+    /// a una.</para>
+    /// </summary>
+    private async Task SearchAlbumCoversAsync(IReadOnlyList<LibraryItem> items)
+    {
+        LibraryViewModel library = ViewModel.Library;
+
+        // Por índice: las claves de álbum de la selección ya están calculadas
+        // (ST-206), y de ahí salen los álbumes con título propio.
+        IReadOnlyList<AlbumCoverJob> jobs =
+            library.AlbumCoverJobsFor(library.Index.AlbumKeysOf(items));
+
+        if (jobs.Count == 0) return;
+
+        if (jobs is [{ } only])
+        {
+            await ShowAlbumCoverPickerAsync(only);
+            return;
+        }
+
+        AlbumCoverBatchResult result =
+            await library.ApplyRecommendedCoversAsync(jobs, _preferences.DeezerEnabled);
+
+        library.StatusMessage = result.Summary();
+        ViewModel.Refresh();
+
+        await ReviewPendingCoversAsync(result.Pending);
+    }
+
+    /// <summary>
     /// La hoja de tapas del álbum (ST-104): <b>ofrece, no aplica</b>. Ni
     /// siquiera cuando encuentra una sola — dos ediciones de un disco tienen
     /// tapas distintas y las dos son correctas.
     /// </summary>
-    private async Task ShowAlbumCoverPickerAsync(IReadOnlyList<LibraryItem> items)
+    private async Task ShowAlbumCoverPickerAsync(AlbumCoverJob job)
     {
-        LibraryItem first = items[0];
-        string album = first.Metadata?.Album ?? "";
-        string albumKey = LibraryGrouping.AlbumKeyOf(first, _preferences.ArtistGrouping);
-
-        // El número de pistas que se puntúa es el del ÁLBUM en la biblioteca,
-        // no el de lo que esté seleccionado: si no, elegir tres canciones de un
-        // disco de doce haría fallar el criterio contra todas las ediciones.
-        var facts = new AlbumFacts(album, first.Metadata?.Year,
-            ViewModel.Library.SameAlbumAs(first.Id).Count);
-
         AlbumCoverCandidate? chosen = await AlbumCoverPicker.ShowAsync(
-            XamlRoot, album, first.Metadata?.Artist, facts, _preferences.DeezerEnabled);
+            XamlRoot, job.Title, job.Artist, job.Facts, _preferences.DeezerEnabled);
 
         if (chosen is null) return;
 
         // La eligió el usuario a mano, así que sí queda marcada como editada.
-        ViewModel.Library.ApplyAlbumCover(albumKey, chosen.Data);
+        ViewModel.Library.ApplyAlbumCover(job.AlbumKey, chosen.Data);
         ViewModel.Refresh();
+    }
+
+    /// <summary>
+    /// Los álbumes que el lote dejó sin una opción segura se revisan <b>de a
+    /// uno</b> (ST-206).
+    ///
+    /// <para><b>Todavía solo con uno.</b> La cola de varias hojas —"Álbum 2 de
+    /// 7", "Omitir este álbum", "Cancelar el resto"— vive en
+    /// <c>AlbumCoverPicker</c>, que en este momento lo está tocando W5; hasta
+    /// que aterrice, con varios dudosos no se abre ninguna hoja y el resumen
+    /// dice cuántos quedaron, que es exactamente lo que hacía antes. Encadenar
+    /// hojas sin decir dónde está parada la revisión es lo que R2-3 descartó
+    /// con razón.</para>
+    /// </summary>
+    private async Task ReviewPendingCoversAsync(IReadOnlyList<AlbumCoverJob> pending)
+    {
+        if (pending is [{ } only]) await ShowAlbumCoverPickerAsync(only);
     }
 
     /// <summary>
