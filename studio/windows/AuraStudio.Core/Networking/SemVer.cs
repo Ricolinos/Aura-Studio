@@ -55,6 +55,14 @@ public readonly struct SemVer : IEquatable<SemVer>, IComparable<SemVer>
         return new SemVer(major, minor, patch, prerelease);
     }
 
+    /// <summary>
+    /// La versión como aparece en el <b>nombre</b> de un asset y en el tag, sin
+    /// la <c>v</c>: <c>0.3.0</c>, o <c>0.3.0-beta</c> si tiene sufijo (ST-193,
+    /// <c>releaseString</c> de Swift).
+    /// </summary>
+    public string ReleaseString =>
+        Prerelease is { Length: > 0 } suffix ? $"{Major}.{Minor}.{Patch}-{suffix}" : $"{Major}.{Minor}.{Patch}";
+
     public int CompareTo(SemVer other)
     {
         if (Major != other.Major) return Major.CompareTo(other.Major);

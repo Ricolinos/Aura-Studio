@@ -92,6 +92,11 @@ public sealed partial class MainWindow : Window
     {
         this.Activated -= MainWindow_FirstActivated;
         _session.StartInitialScan();
+
+        // ST-211: si hay una versión nueva de la app. En segundo plano y como
+        // mucho una vez cada 24 h; sin red no dice nada. Nunca bloquea el
+        // arranque: se lanza y no se espera.
+        _ = App.Services.GetRequiredService<Services.AppUpdateService>().CheckOnLaunchAsync();
     }
 
     // MARK: - Presentación

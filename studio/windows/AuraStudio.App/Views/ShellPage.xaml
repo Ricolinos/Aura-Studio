@@ -3,7 +3,13 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:res="using:AuraStudio.App.Resources"
+    xmlns:conv="using:AuraStudio.App.Converters"
     Background="Transparent">
+
+    <Page.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+        <conv:InvertBoolConverter x:Key="InvertBool" />
+    </Page.Resources>
 
     <!--
         Fondo transparente a propósito: el Mica de la ventana tiene que
@@ -133,6 +139,7 @@
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
@@ -145,7 +152,29 @@
                      Severity="Informational"
                      Message="{x:Bind ViewModel.LibraryLockedReason}" />
 
-            <Frame x:Name="ContentFrame" Grid.Row="1" />
+            <!-- ST-211: el aviso de versión nueva de la app. Franja, NO diálogo:
+                 la app no es un canal de marketing y no interrumpe. Se puede
+                 cerrar, y cerrada no vuelve por esa misma versión. -->
+            <InfoBar Grid.Row="1"
+                     Margin="24,12,24,0"
+                     IsOpen="{x:Bind ViewModel.Updates.IsAnnouncing, Mode=TwoWay}"
+                     Severity="Informational"
+                     Title="Actualización de Aura Studio"
+                     Message="{x:Bind ViewModel.Updates.AnnouncementMessage, Mode=OneWay}"
+                     CloseButtonClick="AppUpdate_Dismissed">
+                <InfoBar.ActionButton>
+                    <Button Content="Descargar" Click="AppUpdateDownload_Click"
+                            Visibility="{x:Bind ViewModel.Updates.CanDownload, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
+                            IsEnabled="{x:Bind ViewModel.Updates.IsDownloading, Mode=OneWay, Converter={StaticResource InvertBool}}" />
+                </InfoBar.ActionButton>
+
+                <!-- Las notas viven en la página del Release y no se duplican
+                     dentro de la app: ya están escritas y mantenidas ahí. -->
+                <HyperlinkButton Content="Ver qué hay de nuevo" Click="AppUpdateNotes_Click"
+                                 Margin="0,0,0,8" />
+            </InfoBar>
+
+            <Frame x:Name="ContentFrame" Grid.Row="2" />
         </Grid>
 
     </NavigationView>

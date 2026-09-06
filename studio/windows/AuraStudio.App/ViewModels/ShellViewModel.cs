@@ -37,15 +37,23 @@ public sealed partial class ShellViewModel : ViewModelBase
 
     public string LibraryLockedReason => AppStrings.LibraryLockedReason;
 
-    public ShellViewModel(IDeviceSessionService session)
+    public ShellViewModel(IDeviceSessionService session, AppUpdateService updates)
     {
         _session = session;
         _session.Changed += OnSessionChanged;
+        Updates = updates;
 
         DeviceTitle = AppStrings.NoDevice;
         LibraryEnabled = true;
         Apply();
     }
+
+    /// <summary>
+    /// El aviso de que hay una versión nueva de Aura Studio (ST-211). Vive en el
+    /// armazón porque la franja es de la ventana entera, no de una pantalla, y
+    /// el mismo estado se ve además en Ajustes › Acerca de.
+    /// </summary>
+    public AppUpdateService Updates { get; }
 
     private void OnSessionChanged(object? sender, DeviceSessionChangedEventArgs e) => Apply();
 

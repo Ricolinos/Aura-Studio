@@ -19,6 +19,22 @@ public sealed record GitHubRelease
     public bool Prerelease { get; init; }
 
     /// <summary>
+    /// Las notas del Release (ST-211). De ahí sale el SHA-256 publicado del
+    /// instalador, que es lo que se verifica antes de ejecutarlo. Ausente en el
+    /// caché viejo: se decodifica como cadena vacía, y sin notas simplemente no
+    /// hay resumen que comparar.
+    /// </summary>
+    [JsonPropertyName("body")]
+    public string Body { get; init; } = "";
+
+    /// <summary>
+    /// La página del Release en github.com (ST-193). Se prefiere esta a armarla
+    /// a mano; ausente en respuestas recortadas o en caché viejo.
+    /// </summary>
+    [JsonPropertyName("html_url")]
+    public string? HtmlUrl { get; init; }
+
+    /// <summary>
     /// Ausente en el cache viejo (anterior a ST-077) y en cualquier
     /// respuesta recortada: se decodifica como lista vacia en vez de
     /// hacer fallar el Release entero, que dejaria sin aviso de version

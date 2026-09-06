@@ -57,6 +57,13 @@ public sealed partial class SettingsPage : Page
     private void OpenLicenses_Click(object sender, RoutedEventArgs e)
         => Frame.Navigate(typeof(LicensesPage), null, new DrillInNavigationTransitionInfo());
 
+    /// <summary>
+    /// "Buscar actualizaciones" de la app (ST-211). Ignora el intervalo de 24 h:
+    /// una revisión que el usuario pide a mano tiene que preguntar de verdad.
+    /// </summary>
+    private async void CheckAppUpdates_Click(object sender, RoutedEventArgs e) =>
+        await ViewModel.Updates.CheckNowAsync();
+
     // MARK: - Biblioteca
 
     /// <summary>

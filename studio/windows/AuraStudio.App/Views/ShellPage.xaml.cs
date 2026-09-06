@@ -176,4 +176,23 @@ public sealed partial class ShellPage : Page
         if (ContentFrame.CurrentSourcePageType == pageType && parameter is null) return;
         ContentFrame.Navigate(pageType, parameter, new EntranceNavigationTransitionInfo());
     }
+
+    // MARK: - Aviso de versión nueva de la app (ST-211)
+
+    /// <summary>
+    /// Cerrar la franja no la calla para siempre: calla <b>esa versión</b>. La
+    /// siguiente vuelve a avisar.
+    /// </summary>
+    private void AppUpdate_Dismissed(InfoBar sender, object args) =>
+        ViewModel.Updates.DismissAnnouncement();
+
+    private async void AppUpdateNotes_Click(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel.Updates.PageUrl is not { Length: > 0 } url) return;
+
+        await Windows.System.Launcher.LaunchUriAsync(new Uri(url));
+    }
+
+    private async void AppUpdateDownload_Click(object sender, RoutedEventArgs e) =>
+        await ViewModel.Updates.DownloadAndInstallAsync();
 }

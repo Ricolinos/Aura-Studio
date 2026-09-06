@@ -36,10 +36,11 @@ public sealed partial class SettingsViewModel : ViewModelBase
     private readonly CredentialStore _credentials;
     private readonly LibraryViewModel _library;
 
-    public SettingsViewModel(IAppPreferences preferences, LibraryViewModel library)
+    public SettingsViewModel(IAppPreferences preferences, LibraryViewModel library, AppUpdateService updates)
     {
         _preferences = preferences;
         _library = library;
+        Updates = updates;
         _credentials = new CredentialStore();
         SelectedTheme = ThemeOptions.First(option => option.Theme == preferences.Theme);
         RefreshCoverProviders();
@@ -67,6 +68,13 @@ public sealed partial class SettingsViewModel : ViewModelBase
     /// <summary>Versión del ensamblado, para "Acerca de".</summary>
     public string AppVersion =>
         Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "—";
+
+    /// <summary>
+    /// El estado de "¿hay una versión nueva de Aura Studio?" (ST-211). Vive en
+    /// un servicio y no acá porque el aviso también sale en el armazón, y el
+    /// mismo estado tiene que valer en los dos lugares.
+    /// </summary>
+    public AppUpdateService Updates { get; }
 
     // MARK: - Video
 

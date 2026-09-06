@@ -9701,3 +9701,112 @@ los mismos bytes en otro arreglo den el mismo resumen, que bytes distintos den
 resúmenes distintos, que **la misma instancia no se resuma dos veces**, que dos
 arreglos iguales no compartan entrada, y que un arreglo vacío no lance desde el
 camino de guardado.
+
+## ST-211 — Windows: "Buscar actualizaciones de Aura Studio"
+
+Encargo del dueño, sobre la propuesta de **ST-191** y con la decisión de
+**ST-193**, que es la referencia: se escribió primero en Swift y acá se porta
+citándola.
+
+### Qué había
+
+Nada. Studio sabía avisar de una versión nueva **del firmware** desde ST-046, y
+ST-210 acaba de arreglar que ese aviso consultara de verdad la red; pero la app
+no sabía nada **de sí misma**. Quien tuviera la 0.2.1 no se enteraba de la 0.2.3
+salvo yendo a mirar el repositorio. Y como el firmware que la app instala viaja
+**dentro** de la app (`FIRMWARE_VERSION`, artefactos embebidos), una app vieja es
+también un firmware viejo: las dos cosas se arrastran juntas.
+
+### La decisión, portada literal
+
+`AppUpdateDecision` y `AppUpdatePlatform` son el port de **ST-193**. Las reglas,
+en el mismo orden que allá: un draft nunca cuenta; una prerelease solo si se
+pide; un tag que no parsea se ignora sin romper el resto; gana el **mayor**, no
+el primero; solo hay novedad si es **estrictamente mayor**; si la versión
+instalada no parsea **se calla** —sin saber qué hay instalado no se puede afirmar
+que algo sea más nuevo—; y si falta el asset se anuncia igual la versión pero
+**sin botón de descarga**, con el enlace a la página del Release.
+
+Las **trece pruebas** de allá están portadas una por una, con las mismas entradas
+y los mismos nombres traducidos: son la especificación ejecutable, y si las dos
+plataformas se comportan distinto en cualquiera de ellas, una de las dos está
+mal. Entre ellas el **candado del patrón de nombres**, que es el único contrato
+nuevo de esta funcionalidad:
+
+```
+tag:  v<versión>
+mac:  AuraStudio-<versión>.dmg
+win:  AuraStudioSetup-<versión>-arm64.exe
+      AuraStudioSetup-<versión>-x64.exe
+```
+
+`SemVer` gana `ReleaseString` (la versión como aparece en el nombre del asset,
+sin la `v`), y `GitHubRelease`/`GitHubReleaseAsset` ganan los campos que la
+decisión necesita y que hasta ahora no se leían: `html_url`,
+`browser_download_url` y `digest`.
+
+### Lo que es de Windows
+
+- **`GitHubReleaseChecker` pregunta por repositorio**, no solo por familia de
+  firmware. Es el mismo `GET /repos/…/releases` con las mismas reglas de token y
+  de fallo; las dos formas comparten el cuerpo, porque dos copias serían dos
+  criterios de cuándo un rechazo del token es "sin información".
+- **Cuándo pregunta**: al arrancar, en segundo plano, como mucho **una vez cada
+  24 h** —fijas, iguales en las dos plataformas—; y a pedido desde Ajustes ›
+  Acerca de, que **ignora el intervalo y el descarte**. La fecha del último
+  chequeo se anota **solo si la consulta salió bien**: anotarla tras un fallo
+  dejaría a la app sin volver a preguntar durante un día por un rato sin
+  conexión.
+- **Sin red**: el automático **calla** —el usuario no preguntó nada— y el manual
+  distingue "no se pudo preguntar" de "no hay novedades", que es exactamente el
+  defecto que ST-210 arregló para el firmware.
+- **Nada modal**: una `InfoBar` en el armazón, del tipo que la app ya usa, con el
+  mismo texto que la franja de macOS. Se puede cerrar, y **cerrada no vuelve por
+  esa misma versión** (se persiste el tag). Haber callado la 0.3.0 no calla la
+  0.3.1.
+- **"Descargar" baja el instalador de la arquitectura del PROCESO** (ST-135) y lo
+  ejecuta. La arquitectura es la del proceso y no la de la máquina: un Aura
+  Studio x64 bajo emulación en un Windows ARM tiene que ofrecerse su propio
+  instalador. Al arrancar el instalador se **cierra la ventana**, no se mata el
+  proceso, para que el guardado pendiente del catálogo salga primero (ST-204).
+
+### La diferencia con macOS, y por qué
+
+En macOS solo se abre la URL: el usuario baja el DMG y arrastra. Acá el
+instalador **se ejecuta**, así que **se verifica antes**:
+
+1. el **SHA-256 que publica la propia API** en el asset (`digest: "sha256:…"`);
+2. si esa respuesta no lo trae —una vieja, una recortada—, el **tamaño exacto**,
+   que no es una firma pero sí atrapa una descarga cortada, que es el fallo
+   frecuente.
+
+Si no coincide, el archivo **se borra y no se abre nada**. Lo que no se hace
+nunca es ejecutar algo sin haber comprobado nada. Solo se baja de la URL de asset
+que devolvió la propia API, nunca de una construida a mano.
+
+### Lo que NO entra acá
+
+- **Auto-actualización.** Se baja y se ejecuta el instalador que ya existe; no
+  hay componente nuevo que mantener ni en el que confiar.
+- **Canales estable/beta.** Hoy todo lo publicado es beta, así que las
+  prereleases cuentan siempre. El interruptor importa el día que exista un canal
+  estable, y la decisión ya lo tiene como parámetro.
+- **Notas dentro de la app**: se enlaza la página del Release, que ya las tiene y
+  no hay que mantener por duplicado.
+
+### Verificación
+
+`dotnet build` de Core, App y los dos arneses: **0 advertencias, 0 errores**.
+`dotnet test`: **1 550 pruebas en verde**, diecinueve nuevas — las trece de
+ST-193 portadas y seis de cuándo se pregunta y cuándo se avisa (el intervalo de
+24 h, el reloj que fue hacia atrás, no avisar dos veces de lo mismo, que callar
+una versión no calle la siguiente).
+
+Lo que **no** se verificó acá, y hace falta con la ventana y el dueño delante:
+
+- **La consulta real a GitHub y la descarga**: esta sesión no le pega a la API.
+- **La ejecución del Setup**: por instrucción de la Maestra no se ejecuta ningún
+  instalador en esta VM — instalaría encima de la 0.2.3 y no hay vuelta atrás.
+  Queda para la verificación del dueño, junto con el cierre de la ventana al
+  arrancar el instalador.
+- **Cómo se ve la franja**: que aparezca, que se pueda cerrar y que no vuelva.
