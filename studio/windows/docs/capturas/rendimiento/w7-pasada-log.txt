@@ -1,0 +1,294 @@
+﻿=== PARTE 1 (13:34:50)
+ventana a los 544 ms
+clic en Albumes a los 1365 ms
+franja de carga: no vista
+biblioteca cargada: 1662 ms: '1,000 álbumes · 40 artistas · 12,000 canciones'
+foreground=True responding=True
+Albumes: cuadricula lista a los 1333 ms; responding=True
+estado: '1,000 álbumes · 40 artistas · 12,000 canciones'
+  captura w7f-02-albumes
+clic tarjeta 1: '1 de 1,000 seleccionados · 1 artista · 12 canciones · 43 min' a los 201 ms; seleccionadas realizadas=1
+  captura w7f-03-una-seleccionada
+Ctrl+A: '1,000 de 1,000 seleccionados · 40 artistas · 12,000 canciones · 30 días 1 h' a los 285 ms; seleccionadas realizadas=95 de 95; responding=True
+  captura w7f-04-ctrl-a
+menu con 1000 seleccionados: 6 items a los 559 ms: 
+  captura w7f-05-menu-1000
+Escape: '1,000 álbumes · 40 artistas · 12,000 canciones' a los 215 ms; seleccionadas realizadas=0
+fin parte 1
+=== PARTE 2 (13:35:00)
+ventana a los 476 ms
+clic en Albumes a los 928 ms
+franja de carga: no vista
+biblioteca cargada: 1169 ms: '1,000 álbumes · 40 artistas · 12,000 canciones'
+foreground=True responding=True
+Albumes: cuadricula lista a los 885 ms; responding=True
+estado: '1,000 álbumes · 40 artistas · 12,000 canciones'
+  captura w7f-02-albumes
+clic tarjeta 1: '1 de 1,000 seleccionados · 1 artista · 12 canciones · 43 min' a los 207 ms; seleccionadas realizadas=1
+  captura w7f-03-una-seleccionada
+Ctrl+A: '1,000 de 1,000 seleccionados · 40 artistas · 12,000 canciones · 30 días 1 h' a los 331 ms; seleccionadas realizadas=95 de 95; responding=True
+  captura w7f-04-ctrl-a
+menu con 1000 seleccionados: 6 items a los 627 ms: 
+  captura w7f-05-menu-1000
+Escape: '1,000 álbumes · 40 artistas · 12,000 canciones' a los 247 ms; seleccionadas realizadas=0
+scroll al 50%: vertical=50
+Shift+clic tras desplazar (hasta 'Álbum 0500'): '501 de 1,000 seleccionados · 40 artistas · 6,012 canciones · 15 días 1 h' a los 228 ms; responding=True
+  captura w7f-06-shift-clic-rango
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+columnas visibles: 5; hueco en (2187,539)
+recuadro desde hueco: '(sin coincidencia; textos: Álbumes || Los álbumes de tu biblioteca, armados con la metadata de cada canción. || Artista 000 · 12 canciones · 1986 || Artista 001 · 12 canciones · 1986 || Artista 002 · 12 canciones · 1986 || Artista 003 · 12 canciones · 1986 || Artista 004 · 12 canciones · 1986 || Artista 005 · 12 canciones · 1986 || Artista 006 · 12 canciones · 1986 || Artista 007 · 12 canciones · 1986 || Artista 008 · 12 canciones · 1986 || Artista 009 · 12 canciones · 1986 || Artista 010 · 12 canciones · 1986 || Artista 011 · 12 canciones · 1986 || Artista 012 · 12 canciones · 1986 || Artista 013 · 12 canciones · 1986 || Artista 014 · 12 canciones · 1986 || Artista 015 · 12 canciones · 1986 || Artista 016 · 12 canciones · 1986 || Artista 017 · 12 canciones · 1986 || Artista 018 · 12 canciones · 1986 || Artista 019 · 12 canciones · 1986 || Artista 020 · 12 canciones · 1986 || Artista 021 · 12 canciones · 1986 || Artista 022 · 12 canciones · 1986 || Artista 023 · 12 canciones · 1986 || Artista 024 · 12 canciones · 1986 || Artista 025 · 12 canciones · 1986 || Artista 026 · 12 canciones · 1986 || Artista 027 · 12 canciones · 1986 || Artista 028 · 12 canciones · 1986 || Artista 029 · 12 canciones · 1986 || Artista 030 · 12 canciones · 1986 || Artista 031 · 12 canciones · 1986 || Artista 032 · 12 canciones · 1986 || Artista 033 · 12 canciones · 1986 || Artista 034 · 12 canciones · 1986 || Artista 035 · 12 canciones · 1986 || Artista 036 · 12 canciones · 1986 || Artista 037 · 12 canciones · 1986 || Artista 038 · 12 canciones · 1986 || Artista 039 · 12 canciones · 1986 || Artista 000 · 12 canciones · 1986 || Artista 001 · 12 canciones · 1986 || Artista 002 · 12 canciones · 1986 || Artista 003 · 12 canciones · 1986 || Artista 004 · 12 canciones · 1986 || Artista 005 · 12 canciones · 1986 || Artista 006 · 12 canciones · 1986 || Artista 007 · 12 canciones · 1986 || Artista 008 · 12 canciones · 1986 || Artista 009 · 12 canciones · 1986 || Artista 010 · 12 canciones · 1986 || Artista 011 · 12 canciones · 1986 || Artista 012 · 12 canciones · 1986 || Artista 013 · 12 canciones · 1986 || Artista 014 · 12 canciones · 1986 || Artista 015 · 12 canciones · 1986 || Artista 016 · 12 canciones · 1986 || Artista 017 · 12 canciones · 1986 || Artista 018 · 12 canciones · 1986 || Artista 019 · 12 canciones · 1986 || Artista 020 · 12 canciones · 1986 || Artista 021 · 12 canciones · 1986 || Artista 022 · 12 canciones · 1986 || Artista 023 · 12 canciones · 1986 || Artista 024 · 12 canciones · 1986 || Artista 025 · 12 canciones · 1986 || Artista 026 · 12 canciones · 1986 || Artista 027 · 12 canciones · 1986 || Artista 028 · 12 canciones · 1986 || Artista 029 · 12 canciones · 1986 || Artista 030 · 12 canciones · 1986 || Artista 031 · 12 canciones · 1986 || Artista 032 · 12 canciones · 1986 || Artista 033 · 12 canciones · 1986 || Artista 034 · 12 canciones · 1986 || Artista 035 · 12 canciones · 1986 || Artista 036 · 12 canciones · 1986 || Artista 037 · 12 canciones · 1986 || Artista 038 · 12 canciones · 1986 || Artista 039 · 12 canciones · 1986 || Artista 000 · 12 canciones · 1986 || Artista 001 · 12 canciones · 1986 || Artista 002 · 12 canciones · 1986 || Artista 003 · 12 canciones · 1986 || Artista 004 · 12 canciones · 1986 || Artista 005 · 12 canciones · 1986 || Artista 006 · 12 canciones · 1986 || Artista 007 · 12 canciones · 1986 || Artista 008 · 12 canciones · 1986 || Artista 009 · 12 canciones · 1986 || Artista 010 · 12 canciones · 1986 || Artista 011 · 12 canciones · 1986 || Artista 012 · 12 canciones · 1986 || Artista 013 · 12 canciones · 1986 || Artista 014 · 12 canciones · 1986 || 1,000 álbumes · 40 artistas · 12,000 canciones || 12000 canciones)'; seleccionadas realizadas=0: 
+  captura w7f-07-recuadro
+clic en hueco: '1,000 álbumes · 40 artistas · 12,000 canciones' a los 225 ms; seleccionadas=0
+clic1 + Ctrl3 + Shift5 -> 
+luego Shift2 -> 
+  captura w7f-08-shift-semantica
+  captura w7f-09-scroll-fondo
+scroll completo ida y vuelta (50 PageDown/Up): 6283 ms; responding=True
+  captura w7f-10-scroll-vuelta
+fin parte 2
+=== PARTE 3 (13:35:29)
+ventana a los 461 ms
+clic en Albumes a los 932 ms
+franja de carga: no vista
+biblioteca cargada: 1158 ms: '1,000 álbumes · 40 artistas · 12,000 canciones'
+foreground=True responding=True
+Albumes: cuadricula lista a los 898 ms; responding=True
+estado: '1,000 álbumes · 40 artistas · 12,000 canciones'
+  captura w7f-02-albumes
+clic tarjeta 1: '1 de 1,000 seleccionados · 1 artista · 12 canciones · 43 min' a los 223 ms; seleccionadas realizadas=1
+  captura w7f-03-una-seleccionada
+Ctrl+A: '1,000 de 1,000 seleccionados · 40 artistas · 12,000 canciones · 30 días 1 h' a los 372 ms; seleccionadas realizadas=95 de 95; responding=True
+  captura w7f-04-ctrl-a
+menu con 1000 seleccionados: 6 items a los 546 ms: 
+  captura w7f-05-menu-1000
+Escape: '1,000 álbumes · 40 artistas · 12,000 canciones' a los 219 ms; seleccionadas realizadas=0
+scroll al 50%: vertical=50
+Shift+clic tras desplazar (hasta 'Álbum 0500'): '501 de 1,000 seleccionados · 40 artistas · 6,012 canciones · 15 días 1 h' a los 232 ms; responding=True
+  captura w7f-06-shift-clic-rango
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+ERROR: No se puede convertir el valor "∞" al tipo "System.Int32". Error: "Valor demasiado grande o demasiado pequeño para Int32." @ linea 79
+columnas visibles: 5; hueco en (2187,539)
+recuadro desde hueco: '(sin coincidencia; textos: Álbumes || Los álbumes de tu biblioteca, armados con la metadata de cada canción. || Artista 000 · 12 canciones · 1986 || Artista 001 · 12 canciones · 1986 || Artista 002 · 12 canciones · 1986 || Artista 003 · 12 canciones · 1986 || Artista 004 · 12 canciones · 1986 || Artista 005 · 12 canciones · 1986 || Artista 006 · 12 canciones · 1986 || Artista 007 · 12 canciones · 1986 || Artista 008 · 12 canciones · 1986 || Artista 009 · 12 canciones · 1986 || Artista 010 · 12 canciones · 1986 || Artista 011 · 12 canciones · 1986 || Artista 012 · 12 canciones · 1986 || Artista 013 · 12 canciones · 1986 || Artista 014 · 12 canciones · 1986 || Artista 015 · 12 canciones · 1986 || Artista 016 · 12 canciones · 1986 || Artista 017 · 12 canciones · 1986 || Artista 018 · 12 canciones · 1986 || Artista 019 · 12 canciones · 1986 || Artista 020 · 12 canciones · 1986 || Artista 021 · 12 canciones · 1986 || Artista 022 · 12 canciones · 1986 || Artista 023 · 12 canciones · 1986 || Artista 024 · 12 canciones · 1986 || Artista 025 · 12 canciones · 1986 || Artista 026 · 12 canciones · 1986 || Artista 027 · 12 canciones · 1986 || Artista 028 · 12 canciones · 1986 || Artista 029 · 12 canciones · 1986 || Artista 030 · 12 canciones · 1986 || Artista 031 · 12 canciones · 1986 || Artista 032 · 12 canciones · 1986 || Artista 033 · 12 canciones · 1986 || Artista 034 · 12 canciones · 1986 || Artista 035 · 12 canciones · 1986 || Artista 036 · 12 canciones · 1986 || Artista 037 · 12 canciones · 1986 || Artista 038 · 12 canciones · 1986 || Artista 039 · 12 canciones · 1986 || Artista 000 · 12 canciones · 1986 || Artista 001 · 12 canciones · 1986 || Artista 002 · 12 canciones · 1986 || Artista 003 · 12 canciones · 1986 || Artista 004 · 12 canciones · 1986 || Artista 005 · 12 canciones · 1986 || Artista 006 · 12 canciones · 1986 || Artista 007 · 12 canciones · 1986 || Artista 008 · 12 canciones · 1986 || Artista 009 · 12 canciones · 1986 || Artista 010 · 12 canciones · 1986 || Artista 011 · 12 canciones · 1986 || Artista 012 · 12 canciones · 1986 || Artista 013 · 12 canciones · 1986 || Artista 014 · 12 canciones · 1986 || Artista 015 · 12 canciones · 1986 || Artista 016 · 12 canciones · 1986 || Artista 017 · 12 canciones · 1986 || Artista 018 · 12 canciones · 1986 || Artista 019 · 12 canciones · 1986 || Artista 020 · 12 canciones · 1986 || Artista 021 · 12 canciones · 1986 || Artista 022 · 12 canciones · 1986 || Artista 023 · 12 canciones · 1986 || Artista 024 · 12 canciones · 1986 || Artista 025 · 12 canciones · 1986 || Artista 026 · 12 canciones · 1986 || Artista 027 · 12 canciones · 1986 || Artista 028 · 12 canciones · 1986 || Artista 029 · 12 canciones · 1986 || Artista 030 · 12 canciones · 1986 || Artista 031 · 12 canciones · 1986 || Artista 032 · 12 canciones · 1986 || Artista 033 · 12 canciones · 1986 || Artista 034 · 12 canciones · 1986 || Artista 035 · 12 canciones · 1986 || Artista 036 · 12 canciones · 1986 || Artista 037 · 12 canciones · 1986 || Artista 038 · 12 canciones · 1986 || Artista 039 · 12 canciones · 1986 || Artista 000 · 12 canciones · 1986 || Artista 001 · 12 canciones · 1986 || Artista 002 · 12 canciones · 1986 || Artista 003 · 12 canciones · 1986 || Artista 004 · 12 canciones · 1986 || Artista 005 · 12 canciones · 1986 || Artista 006 · 12 canciones · 1986 || Artista 007 · 12 canciones · 1986 || Artista 008 · 12 canciones · 1986 || Artista 009 · 12 canciones · 1986 || Artista 010 · 12 canciones · 1986 || Artista 011 · 12 canciones · 1986 || Artista 012 · 12 canciones · 1986 || Artista 013 · 12 canciones · 1986 || Artista 014 · 12 canciones · 1986 || 1,000 álbumes · 40 artistas · 12,000 canciones || 12000 canciones)'; seleccionadas realizadas=0: 
+  captura w7f-07-recuadro
+clic en hueco: '1,000 álbumes · 40 artistas · 12,000 canciones' a los 240 ms; seleccionadas=0
+clic1 + Ctrl3 + Shift5 -> 
+luego Shift2 -> 
+  captura w7f-08-shift-semantica
+  captura w7f-09-scroll-fondo
+scroll completo ida y vuelta (50 PageDown/Up): 6099 ms; responding=True
+  captura w7f-10-scroll-vuelta
+Canciones abierto (~3308 ms incl. espera): '12000 canciones'; responding=True
+  filas realizadas: 118
+Canciones Ctrl+A: '(sin coincidencia; textos: )' a los -1 ms; responding=True
+  captura w7f-11-canciones-ctrl-a
+Canciones menu con 12000: 0 items a los 8624 ms: 
+  captura w7f-12-canciones-menu
+Artistas: responding=True
+  captura w7f-13-artistas
+  captura w7f-14-artistas-scroll
+  captura w7f-15-fotos
+Fotos: '0 fotos'
+responding final=True
+app cerrada
+=== PARTE 4 (13:38:48)
+Albumes: 20 tarjetas visibles; responding=True
+columnas=5; hueco entre filas en (2187,979); fila1 bottom=975 fila2 top=983
+arrastre desde (2187,979) hasta (2899,1461)
+  captura w7f-16-recuadro-en-curso
+recuadro: '(sin coincidencia; textos: Álbumes || Los álbumes de tu biblioteca, armados con la metadata de cada canción. || Artista 000 · 12 canciones · 1986 || Artista 001 · 12 canciones · 1986 || Artista 002 · 12 canciones · 1986 || Artista 003 · 12 canciones · 1986 || Artista 004 · 12 canciones · 1986 || Artista 005 · 12 canciones · 1986 || Artista 006 · 12 canciones · 1986 || Artista 007 · 12 canciones · 1986 || Artista 008 · 12 canciones · 1986 || Artista 009 · 12 canciones · 1986 || Artista 010 · 12 canciones · 1986 || Artista 011 · 12 canciones · 1986 || Artista 012 · 12 canciones · 1986 || Artista 013 · 12 canciones · 1986 || Artista 014 · 12 canciones · 1986 || Artista 015 · 12 canciones · 1986 || Artista 016 · 12 canciones · 1986 || Artista 017 · 12 canciones · 1986 || Artista 018 · 12 canciones · 1986 || Artista 019 · 12 canciones · 1986 || Artista 020 · 12 canciones · 1986 || Artista 021 · 12 canciones · 1986 || Artista 022 · 12 canciones · 1986 || Artista 023 · 12 canciones · 1986 || Artista 024 · 12 canciones · 1986 || Artista 025 · 12 canciones · 1986 || Artista 026 · 12 canciones · 1986 || Artista 027 · 12 canciones · 1986 || Artista 028 · 12 canciones · 1986 || Artista 029 · 12 canciones · 1986 || Artista 030 · 12 canciones · 1986 || Artista 031 · 12 canciones · 1986 || Artista 032 · 12 canciones · 1986 || Artista 033 · 12 canciones · 1986 || Artista 034 · 12 canciones · 1986 || Artista 035 · 12 canciones · 1986 || Artista 036 · 12 canciones · 1986 || Artista 037 · 12 canciones · 1986 || Artista 038 · 12 canciones · 1986 || Artista 039 · 12 canciones · 1986 || Artista 000 · 12 canciones · 1986 || Artista 001 · 12 canciones · 1986 || Artista 002 · 12 canciones · 1986 || Artista 003 · 12 canciones · 1986 || Artista 004 · 12 canciones · 1986 || Artista 005 · 12 canciones · 1986 || Artista 006 · 12 canciones · 1986 || Artista 007 · 12 canciones · 1986 || Artista 008 · 12 canciones · 1986 || Artista 009 · 12 canciones · 1986 || Artista 010 · 12 canciones · 1986 || Artista 011 · 12 canciones · 1986 || Artista 012 · 12 canciones · 1986 || Artista 013 · 12 canciones · 1986 || Artista 014 · 12 canciones · 1986 || Artista 015 · 12 canciones · 1986 || Artista 016 · 12 canciones · 1986 || Artista 017 · 12 canciones · 1986 || Artista 018 · 12 canciones · 1986 || Artista 019 · 12 canciones · 1986 || Artista 020 · 12 canciones · 1986 || Artista 021 · 12 canciones · 1986 || Artista 022 · 12 canciones · 1986 || Artista 023 · 12 canciones · 1986 || Artista 024 · 12 canciones · 1986 || Artista 025 · 12 canciones · 1986 || Artista 026 · 12 canciones · 1986 || Artista 027 · 12 canciones · 1986 || Artista 028 · 12 canciones · 1986 || Artista 029 · 12 canciones · 1986 || Artista 030 · 12 canciones · 1986 || Artista 031 · 12 canciones · 1986 || Artista 032 · 12 canciones · 1986 || Artista 033 · 12 canciones · 1986 || Artista 034 · 12 canciones · 1986 || Artista 035 · 12 canciones · 1986 || Artista 036 · 12 canciones · 1986 || Artista 037 · 12 canciones · 1986 || Artista 038 · 12 canciones · 1986 || Artista 039 · 12 canciones · 1986 || Artista 000 · 12 canciones · 1986 || Artista 001 · 12 canciones · 1986 || Artista 002 · 12 canciones · 1986 || Artista 003 · 12 canciones · 1986 || Artista 004 · 12 canciones · 1986 || Artista 005 · 12 canciones · 1986 || Artista 006 · 12 canciones · 1986 || Artista 007 · 12 canciones · 1986 || Artista 008 · 12 canciones · 1986 || Artista 009 · 12 canciones · 1986 || Artista 010 · 12 canciones · 1986 || Artista 011 · 12 canciones · 1986 || Artista 012 · 12 canciones · 1986 || Artista 013 · 12 canciones · 1986 || Artista 014 · 12 canciones · 1986 || 1,000 álbumes · 40 artistas · 12,000 canciones || 12000 canciones)' ; seleccionadas visibles: 
+  captura w7f-17-recuadro-resultado
+clic en hueco tras recuadro: '1,000 álbumes · 40 artistas · 12,000 canciones' a los 221 ms; seleccionadas=0
+recuadro con Shift tras clic en tarjeta 1: 
+clic 1 -> 
+Ctrl+clic 3 -> 
+Shift+clic 5 -> 
+Shift+clic 2 -> 
+  captura w7f-18-shift-semantica
+Shift+Derecha x2 -> 
+  captura w7f-19-doble-clic
+doble clic en tarjeta 1: textos nuevos: 
+  captura w7f-20-canciones
+Canciones: estado cerca de '12000 canciones': 
+  DataItem realizados: 0
+  fila: 'Canción 01 de Álbum 0000, Artista: Artista 000, Álbum: Álbum 0000, Género: Rock, Duración: 3:31, Estado: Listo' en 2797,649
+  tras clic: 
+  Ctrl+A: 'Álbum 0000 || Artista 000 · 12 canciones · 1986 || 12 canciones || 12000 canciones' a los 10233 ms; responding=True
+  captura w7f-21-canciones-ctrl-a
+  menu con 12000: 0 items a los 8785 ms: 
+  captura w7f-22-canciones-menu
+  captura w7f-23-artistas
+Artistas: 10 PageDown en 1286 ms; responding=True
+  captura w7f-24-artistas-scroll
+responding final=True
+fin parte 4
+=== PARTE 5 (13:41:21)
+  captura w7f-30-canciones
+Canciones: responding=True
+  filas visibles: 20; primera: 'Canción 01 de Álbum 0000, Artista: Artista 000, Álbum: Álbum 0000, Género: Rock, Duración: 3:31, Estado: Listo' rect=1823,609,1948,80
+  clic en fila 1 (titulo): 
+  captura w7f-31-canciones-fila
+  Ctrl+A: '' visto a los 26749 ms (sondeo 100 ms); responding=True
+  captura w7f-32-canciones-ctrl-a
+  menu: 11 items a los 578 ms: 
+  captura w7f-33-canciones-menu
+recuadro desde area vacia derecha (3832,585) hasta (2589,1383); ultima columna right=3655 ventana right=4008
+  captura w7f-34-recuadro-derecha-en-curso
+recuadro: 
+  captura w7f-35-recuadro-derecha-resultado
+clic 0000: 
+Ctrl+clic 0002: 
+Shift+clic 0004: 
+  captura w7f-36-shift-0004
+Shift+clic 0001: 
+  captura w7f-37-shift-0001
+Shift+Derecha x2 desde 0000: 
+  captura w7f-38-shift-flechas
+responding final=True
+fin parte 5

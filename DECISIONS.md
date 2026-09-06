@@ -9810,3 +9810,202 @@ Lo que **no** se verificó acá, y hace falta con la ventana y el dueño delante
   Queda para la verificación del dueño, junto con el cierre de la ventana al
   arrancar el instalador.
 - **Cómo se ve la franja**: que aparezca, que se pueda cerrar y que no vuelva.
+
+## ST-207 — Windows: cierre de la ronda 2 de rendimiento (W7): la tabla final contra ST-200, y lo que se vio con la ventana delante
+
+Ronda 2 de rendimiento, encargo W7 de `docs/plans/PLAN-studio-rendimiento-2.md`
+(carpeta padre). Cierra las decisiones Windows ST-200..ST-206, ST-208, ST-209
+y sus addenda, más ST-210. Sin release ni pin: saldrá como 0.3.0 cuando la
+maestra lo decida. Esta decisión la escribió el coordinador de Windows; la
+pasada con ventana la ejecutó el mecánico con el mismo binario (sección
+"Pasada con ventana").
+
+### Cómo se midió
+
+Arnés `tools/LibraryPerfCheck` de ST-200 (con sus tres addenda: fixture con
+`fileSizeBytes`, escenario de migración aparte y disco lento calibrado),
+compilado en Debug en un worktree limpio de `85cb9a4` (todo el código de la
+ronda) y corrido **tres veces completas** con `-- 1000 12 0` y una con
+`-- 1000 12 3`, en la VM ARM64 de siempre, sin otra compilación en marcha.
+La celda "después" es la **mediana de las tres corridas** y entre paréntesis
+va el rango cuando la VM hizo ruido. La celda "antes" es la de ST-200 (y su
+addendum de estado estable donde aplica). Ninguna corrida murió por memoria:
+el arnés ya no mantiene las carátulas en RAM (ST-208).
+
+Como control de la máquina, el arnés **del propio commit de ST-200**
+(`3de9cc5`, compilado tal cual en un worktree temporal) se corrió dos veces
+en la misma tanda: ver la fila de `SaveItems` y la nota de abajo.
+
+Control de la máquina, hoy, con el arnés de `3de9cc5` (dos corridas), para
+leer la columna "antes" con la lentitud de la VM de esta tarde y no con la
+de la mañana:
+
+| Fila (código de ST-200, sin la ronda) | ST-200 (mañana) | Hoy, misma tanda |
+|---|---|---|
+| `LibraryViewModel` ctor (`Reload()` en UI) | ~2 300 ms | 942 / 2 181 ms |
+| `LoadItems` (`ReadCover` por ítem) | ~1 700 ms | 791 / 1 290 ms |
+| `SongsViewModel` ctor | ~293 ms | 374 / 623 ms |
+| `MediaGridViewModel.Show(Albums)` | ~61 ms | 66 / 258 ms |
+| `SaveItems` inicial con carátulas | ~2 300 ms | 5 324 / 6 688 ms |
+
+### Tabla final (1 000 álbumes / 12 000 canciones, carátulas JPEG reales de ~15 KB)
+
+| Medición | Antes (ST-200) | Después (`85cb9a4`) | Objetivo §A | |
+|---|---|---|---|---|
+| **Arranque: `LibraryViewModel` ctor** | ~2 300 ms (`Reload()` completo en el hilo de UI) | **61 ms** (32-95), vuelve enseguida | ventana interactiva < 1 s | ✔ en el arnés; con ventana, ver abajo |
+| Carga completa de la biblioteca | (era el arranque) | 636 ms (368-1 282), **en segundo plano** con progreso | — | ✔ |
+| Disco lento (réplica calibrada): `RefreshAvailable` + `ReadCover` | 213 s + 231 s a ~19 ms/llamada | 37.6 s + 36.6 s a **3.0 ms/llamada efectivos**; ya no está en el hilo de UI | — | ✔ (ST-203) |
+| **Selección CON la cascada real, álbum 1/2/3/4** | ~352 / ~765 / ~648 ms | **0 / 0 / 0-1 / 0 ms** | < 16 ms por cambio | ✔ |
+| Selección aislada, álbum 1/2/3 | ~28 / ~35 / ~35 ms | 1 / 0-4 / 0 ms | < 16 ms | ✔ |
+| **Ctrl+A en Álbumes, gesto real (un `SelectAll`, un aviso)** | no existía (réplica: ~21 s) | **12 ms** (5-15) | < 100 ms | ✔ (que todas las tarjetas muestren su estado: ventana) |
+| 1 000 Ctrl+clic seguidos (la fila de ST-200) | ~21 000 ms | 3 ms (2-13) | — | ✔ |
+| Álbumes: menú contextual con 1 000 seleccionados | ~9 ms | 4 ms (2-11) | < 200 ms | ✔ |
+| **Canciones: abrir el menú con 12 000 seleccionadas** | no medido (alcance 24 ms O(N²) + `ScopeOf` 9.5 ms) | **5 ms** (3-6) con el índice ya armado; réplicas viejas en la misma corrida: 48 + 49 ms | < 200 ms; incluye "Buscar carátulas de N álbumes…" | ✔ |
+| Armar `LibraryCatalogIndex` (una vez por versión del catálogo) | — | 51 ms (44-170), calentado en segundo plano | — | ✔ |
+| `SongsViewModel` ctor (12 000 filas) | ~293 ms (71 en estado estable) | 103 ms (87-248), sin `FileInfo` por fila | — | ✔ |
+| `PlaylistsViewModel` ctor | ~95 ms (157 estable) | 10 ms (6-10) | — | ✔ |
+| `MediaGridViewModel.Show(Albums)` | ~61 ms | 80 ms (76-320) | — | = (misma máquina, más ruido) |
+| Guardado del catálogo: N álbumes con carátula en lote | 1 guardado completo **por álbum**, en el hilo que pide (~209 ms × N; 20 álbumes = 4 171 ms) | **1 guardado**, fuera del hilo de UI: 71 ms (69-107) | un guardado por acción de lote | ✔ (ST-204) |
+| Migración única `fileSizeBytes` (biblioteca vieja) | 220 ms medir + 4 240 ms guardar | 354 ms medir + 261 ms guardar (el guardado ya no reescribe carátulas) | — | ✔ |
+| `LoadItems` | ~1 700 ms (`ReadCover` por ítem) | **257 ms** (244-489), sin abrir 12 000 archivos | — | ✔ (ST-208) |
+| Memoria residente tras leer el catálogo / montón administrado | 215 MB / 113 MB (medido en ST-208 sobre `948c01c`) | **146 MB / 47 MB** | sin JPEG completos en RAM | ✔ |
+| Miniaturas: pasada en frío, 1 000 pedidos | sin caché (decodificación en UI por tarjeta) | 1 005 ms (856-1 148), 1 000 decodificaciones fuera de UI | — | ✔ (ST-205) |
+| Miniaturas: volver sobre lo último visto (186) | — | **1 ms** (0-2), 0 decodificaciones | — | ✔ |
+| Caché de miniaturas llena | — | 186 miniaturas, 63.9 MB; residente 230 MB / montón 60 MB | tope 64 MB | ✔ |
+| `biblioteca.json` | 6.8 MB con sangría | 6.2 MB compacto (con sangría serían 8.2) | — | ✔ |
+| `SaveItems` inicial con las 12 000 carátulas pendientes | ~2 300 ms | 12 334 ms (8 109-13 447) — **ver nota** | — | ruido de máquina, no regresión |
+
+Objetivos de §A que el arnés no puede cerrar y quedan en la pasada con
+ventana: bloqueos del hilo principal > 250 ms en la sesión guionizada (0),
+modos de selección (clic, Ctrl/Shift+clic, Shift+flechas, casilla, recuadro,
+Ctrl+A, Escape) y "todas las tarjetas muestran su estado" tras Ctrl+A.
+"Arrastrar la selección a la barra lateral" quedó fuera de la ronda por
+decisión de la maestra (ST-202); las operaciones largas con indicador y
+cancelación las cubre el centro de tareas de ST-203 (carga, normalización,
+relleno de tamaños, carátulas en lote de ST-206).
+
+### Nota sobre `SaveItems` inicial: por qué no es una regresión
+
+La primera fila de guardado del arnés escribe **12 000 archivos** de
+carátula, no 1 000: el fixture da la misma carátula a las doce pistas de
+cada álbum y `WriteCover` escribe un `<id>.jpg` por elemento, igual que antes
+de la ronda (la etiqueta "(1000 archivos)" mentía; corregida en el addendum
+de ST-200). Medido hoy en la misma tanda y la misma VM, el arnés de
+`3de9cc5` (código de ST-200 sin ningún cambio de la ronda) dio **5 324 y
+6 688 ms** para esa fila, que a la mañana había dado 2 300; el de `85cb9a4`
+dio 8 109-13 447 en tres corridas y 8 687-18 915 en las seis del experto.
+La línea base no se reproduce ni con el código viejo, la variación entre
+corridas del mismo código es 2× y la diferencia entre ambos cae dentro de
+ese ruido. Lo único que ST-208 sumó a esa escritura es un SHA-256 por
+carátula: 67 ms sobre 82 MB, medido; y desde ST-208 los guardados
+siguientes ya no reescriben ninguna carátula (107-261 ms contra 209 ms × N
+antes), que es lo que la ronda vino a conseguir. Se anota, no se abre como
+hallazgo.
+
+### Qué NO cubre esta decisión
+
+- ST-211 (actualizaciones de la propia app): espera la propuesta ST-191 de
+  la Mac, que la maestra fijará para ambas.
+- Deduplicación de carátulas por álbum: fuera de la ronda por decisión de
+  la maestra (addendum de ST-208), `coverHash` queda como habilitador.
+- Carátulas sucias escritas dentro de la instantánea en el hilo de UI:
+  fuera de la ronda (addendum de ST-204).
+- Arrastrar la selección a la barra lateral: backlog.
+
+### Pasada con ventana
+
+La hizo el coordinador desde su sesión de consola de la VM (los jobs en
+segundo plano de las ejecutoras no tienen estación de ventanas: la app
+arranca pero nunca muestra ventana ahí). Binario **Release** del worktree
+de `85cb9a4`, lanzado con `AURA_STUDIO_PREFERENCES` apuntando a un archivo
+de preferencias propio (nunca el del dueño) y sin el vigilante (ver el
+hallazgo 1). Gestos inyectados con `mouse_event`/`keybd_event`, lectura por
+UI Automation y capturas de pantalla reales en `docs/capturas/rendimiento/`
+(`w7-*.png`, a media resolución) con el registro completo en
+`w7-pasada-log.txt`. Dos bibliotecas:
+
+- **La sintética del arnés** (1 000 álbumes / 12 000 canciones, carátulas
+  JPEG reales, audio vacío, disco local): la escala de §A. Es la de todos
+  los gestos.
+- **La del dueño**, copiada del volumen de red (2 804 elementos, 2 209
+  carátulas, 204 MB): solo para el arranque. El catálogo guarda las rutas
+  relativas a la raíz (`Música/…`) y una copia sin esas carpetas queda
+  vacía; enlazarlas exige privilegios que esta sesión no tiene, así que la
+  pasada de gestos con la biblioteca real queda para el dueño (o para una
+  carpeta hermana con enlaces creados desde la Mac, pedida a la maestra).
+
+**Arranque, el número del dueño** (tiempo desde el lanzamiento; "ventana"
+= visible; "navegación" = UI Automation encuentra "Álbumes"):
+
+| | 0.2.3 instalado (antes) | `85cb9a4` Release (después) |
+|---|---|---|
+| Biblioteca del dueño, en frío | ventana 1 441 ms, **navegación 16 751 ms** | ventana **918 ms**, navegación 2 411 ms |
+| Biblioteca del dueño, en caliente | ventana 758 ms, navegación 3 768 ms | ventana 1 050 ms, navegación 2 790 ms |
+| Sintética (12 000), en caliente | — | ventana 461-620 ms; "Álbumes" con las 1 000 tarjetas y el estado "1,000 álbumes · 40 artistas · 12,000 canciones" a **1 158-2 035 ms** |
+
+Los 9-15 s en blanco de ST-172 son exactamente la fila "en frío" del
+0.2.3: la ventana salía y se congelaba con `Reload()` dentro. Con ST-203 el
+proceso responde a los 150-200 ms y la ventana está a menos de un segundo;
+la franja "Cargando biblioteca… N de M" no se llegó a ver porque la carga
+de 12 000 en disco local termina antes de que el sondeo la alcance
+(< 1 s); queda para el dueño verla con la biblioteca por red.
+
+**Gestos verificados en pantalla** (sintética, tres corridas coherentes;
+los tiempos incluyen el rebote de 120 ms de la barra de estado y el sondeo
+de UI Automation, así que son cotas superiores):
+
+| Gesto | Resultado |
+|---|---|
+| Clic en una tarjeta | "1 de 1,000 seleccionados · 1 artista · 12 canciones · 43 min" a los 201-223 ms |
+| **Ctrl+A** en Álbumes | "1,000 de 1,000 seleccionados …" a los **285-372 ms**; las 95 tarjetas realizadas marcadas, casilla y un solo borde (`w7-albumes-ctrl-a.png`) |
+| Clic derecho con 1 000 seleccionados | menú a los 546-627 ms con "Buscar carátulas de 1000 álbumes…" y "Aplicar carátula recomendada a 1000 álbumes" (`w7-albumes-menu-1000.png`) |
+| Escape | vuelve a "1,000 álbumes …" a los 215-247 ms; 0 seleccionadas |
+| Shift+clic tras desplazar al 50 % (1 → 500) | "501 de 1,000 seleccionados" a los 228-232 ms (`w7-albumes-shift-501.png`) |
+| Clic en un hueco | limpia la selección (221-240 ms) |
+| Scroll completo (50 PageDown/PageUp) | 6.1-6.3 s, la app respondiendo todo el tiempo; sin tarjeta en blanco ni carátula visiblemente repetida (`w7-albumes-scroll.png`) |
+| Doble clic en una tarjeta | abre el álbum (`w7-doble-clic-abre-album.png`) |
+| **Canciones: Ctrl+A → clic derecho** | menú de 11 ítems a los 578 ms, con "Buscar carátulas de 1000 álbumes…" (`w7-canciones-menu-12000.png`) |
+| Artistas | 10 PageDown en 1.3 s, respondiendo |
+| `Process.Responding` | verdadero en todos los muestreos de la pasada |
+
+**Hallazgos** (los dos primeros ya asignados):
+
+1. **El vigilante del hilo de UI cuelga la app en esta VM ARM64.** Con
+   `AURA_WATCHDOG=1` (Debug) la ventana aparece y se queda en blanco y "sin
+   responder" 80 s o para siempre, con CPU cero; sin la variable, el mismo
+   binario responde desde los 677 ms. Causa leída en el código: suspende el
+   hilo de UI y, suspendido, inicializa dbghelp invadiendo el proceso, que
+   necesita el candado del cargador que ese hilo tiene tomado cuando el
+   bloqueo es una carga de módulo o JIT (el caso del arranque); y solo
+   escribe un bloqueo cuando termina, así que el cuelgue no queda en el
+   log. Consecuencia: "0 bloqueos > 250 ms" **no se pudo medir** con el
+   vigilante; se sustituyó por `Process.Responding` (que solo ve cuelgues
+   > 5 s) y por las latencias de arriba. 4.º addendum de ST-200, al
+   mecánico.
+2. **El recuadro de selección (ST-209) no recibe el arrastre.** Arrastrando
+   desde el hueco entre dos filas y desde el área vacía a la derecha de la
+   última columna, con 20-24 pasos de 50 ms, no se dibuja nada ni cambia la
+   selección (`w7-recuadro-sin-efecto.png`); los mismos eventos sintéticos
+   sí producen clics, Shift+clic y menús. Es el punto que ST-209 dejó como
+   único riesgo: la capa va detrás de la cuadrícula y el fondo del
+   `GridView` se queda con el puntero. Addendum de ST-209, al experto;
+   se vuelve a medir con este mismo guion.
+3. **Shift tras Ctrl, no concluyente.** Clic en 0000, Ctrl+clic en 0002,
+   Shift+clic en 0004 y luego Shift+clic en 0001 dejó, en una corrida,
+   {0001, 0002} y, en otra, solo el último tocado, y Shift+flecha no
+   extendió; en cambio el Shift+clic 1 → 500 funcionó en tres corridas. Lo
+   más probable es que la inyección de modificadores de este guion sea
+   inestable, no la app; queda para el dueño con el teclado de verdad
+   (`w7-shift-tras-ctrl-inconcluso.png`).
+4. **Resaltado de fila en Canciones.** Tras clic en una fila y Ctrl+A el
+   menú demuestra que la selección es completa, pero en la captura las
+   filas no muestran resaltado y la barra de Canciones no dice "N de M
+   seleccionadas" (solo Álbumes, Películas, Series y Fotos llevan resumen
+   de selección). Para el dueño: si la tabla no marca visiblemente lo
+   seleccionado, es hallazgo de ST-202.
+
+**No verificado en esta pasada**: la franja de carga y el arranque con la
+biblioteca por red (solo copia local del catálogo); la cola del selector de
+carátulas y la tarea "N de M" (no se lanzó ninguna acción que escriba);
+"Buscar actualizaciones" de Dispositivos (sin iPod); la app en alto
+contraste; Fotos con contenido (el fixture no tiene).
