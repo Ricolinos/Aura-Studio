@@ -123,7 +123,8 @@ public class TolerantInt32ConverterTests : IDisposable
         });
 
         string json = File.ReadAllText(LibraryCatalogStore.CatalogPath(_root));
-        Assert.Contains("\"trackNumber\": 3", json);
+        // ST-204: sin sangría — el archivo lo leen dos apps, no personas.
+        Assert.Contains("\"trackNumber\":3", json);
         Assert.Equal(3, LibraryCatalogStore.Load(_root).Items[0].Metadata!.TrackNumber);
     }
 }

@@ -103,7 +103,7 @@ public class FileSizePersistenceTests : IDisposable
 
         string json = File.ReadAllText(LibraryCatalogStore.CatalogPath(_root));
 
-        Assert.Contains("\"fileSizeBytes\": 777", json);
+        Assert.Contains("\"fileSizeBytes\":777", json);
     }
 
     [Fact]

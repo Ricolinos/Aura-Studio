@@ -109,6 +109,25 @@ try
         : 0;
     Console.WriteLine($"    biblioteca.json: {catalogBytes / 1024.0 / 1024.0:0.0} MB -- .portadas/: {coversBytes / 1024.0 / 1024.0:0.0} MB ({albums} archivos)");
 
+    // ST-204: cuánto costaba la sangría. Se mide sobre el archivo ya escrito,
+    // reindentándolo tal cual: el mismo contenido exacto, con espacios.
+    long indentedBytes;
+    {
+        using var document = System.Text.Json.JsonDocument.Parse(
+            File.ReadAllBytes(Path.Combine(root, "biblioteca.json")));
+        using var buffer = new MemoryStream();
+        using (var writer = new System.Text.Json.Utf8JsonWriter(
+            buffer, new System.Text.Json.JsonWriterOptions { Indented = true }))
+        {
+            document.WriteTo(writer);
+        }
+
+        indentedBytes = buffer.Length;
+    }
+
+    Console.WriteLine($"    con sangría, el mismo catálogo ocuparía {indentedBytes / 1024.0 / 1024.0:0.0} MB"
+                      + $" ({(indentedBytes - catalogBytes) / 1024.0 / 1024.0:0.0} MB de espacios, +{(indentedBytes - catalogBytes) * 100.0 / catalogBytes:0}%)");
+
     IReadOnlyList<LibraryItem> loaded = Measure("Leer biblioteca.json (LoadItems, ReadCover por ítem)", () => store.LoadItems());
     Console.WriteLine($"    elementos leídos: {loaded.Count}, con carátula: {loaded.Count(i => i.HasCover)}");
     Console.WriteLine($"    con los BYTES de la carátula en memoria: {loaded.Count(i => i.Metadata?.CoverArtData is { Length: > 0 })} (ST-208: debe ser 0)");
@@ -279,6 +298,51 @@ try
         () => store.SaveItems(migrationItems));
 
     Console.WriteLine($"    Migración única, total: {measureMs + saveMs} ms (medir + guardar; la próxima apertura ya no la paga)");
+
+    // --- c-bis. Guardado del catálogo: coalescencia (ST-204) ---
+    //
+    // "Aplicar la tapa recomendada a N álbumes" llama a ApplyAlbumCover en
+    // bucle, un álbum por vuelta. Antes de ST-204 cada vuelta escribía el
+    // catálogo ENTERO, de inmediato y en el hilo de interfaz. Acá se mide el
+    // antes con un N chico —con el N de verdad la corrida tardaría minutos— y
+    // el después con el número completo de pedidos.
+
+    Console.WriteLine();
+    Console.WriteLine("--- c-bis. Guardado del catálogo: una ráfaga, un guardado (ST-204) ---");
+    Console.WriteLine();
+
+    int coverBatch = Math.Min(20, albums);
+
+    long beforeMs = MeasureVoidTimed(
+        $"Antes: {coverBatch} álbumes = {coverBatch} guardados completos, en el hilo que los pide",
+        () =>
+        {
+            for (int i = 0; i < coverBatch; i++) store.SaveItems(items);
+        });
+
+    Console.WriteLine($"    proyectado a {albums} álbumes: ~{beforeMs / (double)coverBatch * albums / 1000.0:0.0} s solo de guardado");
+
+    var persisterHost = new PersisterHarnessHost();
+    var persister = new CatalogPersister(
+        persisterHost,
+        () => new CatalogSnapshotRequest(false, store.Root, () => store.Snapshot(items, [])));
+
+    int callerThread = Environment.CurrentManagedThreadId;
+
+    long afterMs = MeasureVoidTimed(
+        $"Después: {albums} pedidos seguidos + el temporizador = UN guardado",
+        () =>
+        {
+            // Un pedido por álbum, como el bucle de verdad.
+            for (int i = 0; i < albums; i++) persister.Schedule();
+
+            persisterHost.Fire();
+        });
+
+    Console.WriteLine($"    pedidos: {persisterHost.ScheduleCount} -- escrituras de verdad: {persister.WriteCount} (debe ser 1)");
+    Console.WriteLine($"    hilo que pidió: {callerThread} -- hilo que escribió: {persisterHost.LastWriteThreadId}"
+                      + $" ({(persisterHost.LastWriteThreadId != callerThread ? "fuera del de interfaz, correcto" : "MISMO HILO: mal")})");
+    Console.WriteLine($"    un guardado suelto: {afterMs} ms (antes eran {beforeMs / (double)coverBatch:0} ms x {albums} álbumes)");
 
     if (diskDelayMs > 0)
     {

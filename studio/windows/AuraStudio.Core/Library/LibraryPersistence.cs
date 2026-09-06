@@ -286,7 +286,10 @@ public static class LibraryCatalogStore
 {
     private static readonly JsonSerializerOptions Options = new()
     {
-        WriteIndented = true,
+        // ST-204: compacto. Con 12 000 elementos, la sangría son megabytes de
+        // espacios que se escriben en cada guardado y viajan por la red en cada
+        // lectura. El archivo lo leen dos apps, no personas.
+        WriteIndented = false,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,

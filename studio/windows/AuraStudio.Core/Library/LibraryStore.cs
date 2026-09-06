@@ -9,7 +9,8 @@ namespace AuraStudio.Core.Library;
 /// vacía y un catálogo ilegible no son lo mismo</b>, y en pantalla se veían
 /// idénticos hasta que esto existió.
 /// </param>
-public readonly record struct LibraryLoad(IReadOnlyList<LibraryItem> Items, string? Error);
+public readonly record struct LibraryLoad(
+    IReadOnlyList<LibraryItem> Items, IReadOnlyList<Playlist> Playlists, string? Error);
 
 /// <summary>
 /// La biblioteca en disco: traduce entre los <see cref="LibraryItem"/> vivos y
@@ -166,8 +167,11 @@ public sealed class LibraryStore(string root)
 
         ResolveMissingCoverPaths(items);
 
+        // Las listas salen de la MISMA lectura (ST-204): pedirlas aparte volvía
+        // a parsear los 7 MB del catálogo por segunda vez, y era lo que costaba
+        // el constructor de la pantalla de Listas.
         onProgress?.Invoke(items.Count, catalog.Items.Count);
-        return new LibraryLoad(items, load.Error);
+        return new LibraryLoad(items, ToLive(catalog.Playlists), load.Error);
     }
 
     /// <summary>
@@ -251,9 +255,11 @@ public sealed class LibraryStore(string root)
     private const int ProgressEvery = 250;
 
     /// <summary>Las listas del catálogo, como objetos vivos.</summary>
-    public IReadOnlyList<Playlist> LoadPlaylists() =>
+    public IReadOnlyList<Playlist> LoadPlaylists() => ToLive(LibraryCatalogStore.TryLoad(Root).Catalog.Playlists);
+
+    private static IReadOnlyList<Playlist> ToLive(IEnumerable<PersistedPlaylist> playlists) =>
     [
-        .. LibraryCatalogStore.TryLoad(Root).Catalog.Playlists.Select(persisted => new Playlist
+        .. playlists.Select(persisted => new Playlist
         {
             Id = persisted.Id,
             Name = persisted.Name,
@@ -271,28 +277,55 @@ public sealed class LibraryStore(string root)
     {
         PersistedLibrary catalog = LibraryCatalogStore.TryLoad(Root).Catalog;
 
-        catalog.Playlists =
-        [
-            .. playlists.Select(playlist => new PersistedPlaylist
-            {
-                Id = playlist.Id,
-                Name = playlist.Name,
-                TrackItemIds = [.. playlist.TrackItemIds],
-                ImageRelativePath = playlist.ImageRelativePath is null
-                    ? null
-                    : CatalogPath.Canonical(playlist.ImageRelativePath)
-            })
-        ];
+        catalog.Playlists = [.. ToPersisted(playlists)];
 
         LibraryCatalogStore.Save(Root, catalog);
     }
+
+    /// <summary>
+    /// Las listas en su forma persistida (ST-204). Se saca aparte porque la app
+    /// las conserva en memoria entre guardados: pasarlas al guardar es lo que
+    /// evita releer el catálogo entero cada vez.
+    /// </summary>
+    public static IReadOnlyList<PersistedPlaylist> ToPersisted(IEnumerable<Playlist> playlists) =>
+    [
+        .. playlists.Select(playlist => new PersistedPlaylist
+        {
+            Id = playlist.Id,
+            Name = playlist.Name,
+            TrackItemIds = [.. playlist.TrackItemIds],
+            ImageRelativePath = playlist.ImageRelativePath is null
+                ? null
+                : CatalogPath.Canonical(playlist.ImageRelativePath)
+        })
+    ];
 
     /// <summary>
     /// Guarda los items. Las playlists que ya estaban en el catálogo se
     /// conservan tal cual: guardar la biblioteca no puede borrar lo que otra
     /// parte de la app escribió.
     /// </summary>
-    public void SaveItems(IEnumerable<LibraryItem> items, IReadOnlyList<PersistedPlaylist>? playlists = null)
+    public void SaveItems(IEnumerable<LibraryItem> items, IReadOnlyList<PersistedPlaylist>? playlists = null) =>
+        LibraryCatalogStore.Save(Root, Snapshot(items, playlists));
+
+    /// <summary>
+    /// El catálogo <b>como valor</b>, listo para escribir (ST-204): escribe las
+    /// carátulas pendientes y copia todo lo demás.
+    ///
+    /// <para>Existe separado de la escritura porque son dos cosas con dos
+    /// lugares: esto se arma en el hilo de interfaz —es donde se pueden leer los
+    /// elementos vivos sin carreras— y la escritura, que es lo lento, se hace en
+    /// segundo plano. Serializar los elementos vivos desde otro hilo podría
+    /// escribir un estado que nunca existió.</para>
+    ///
+    /// <para><b>Las playlists se pasan.</b> Sin ellas hay que releer el catálogo
+    /// entero del disco solo para no perderlas (7 MB por guardado), que es lo
+    /// que hacía hasta ST-204. El respaldo sigue ahí para quien guarde sin
+    /// tenerlas a mano: guardar la biblioteca <b>nunca</b> puede borrar lo que
+    /// otra parte de la app escribió (ST-087).</para>
+    /// </summary>
+    public PersistedLibrary Snapshot(
+        IEnumerable<LibraryItem> items, IReadOnlyList<PersistedPlaylist>? playlists = null)
     {
         List<PersistedPlaylist> keptPlaylists =
             playlists?.ToList() ?? LibraryCatalogStore.Load(Root).Playlists;
@@ -336,7 +369,7 @@ public sealed class LibraryStore(string root)
             });
         }
 
-        LibraryCatalogStore.Save(Root, catalog);
+        return catalog;
     }
 
     /// <summary>
