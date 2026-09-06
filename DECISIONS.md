@@ -8950,6 +8950,47 @@ resolver el bug de XCTest con ventanas en pantalla secundaria. Es el
 único de los ocho gestos de F4/§A que termina así -- los otros siete
 están automatizados y en verde contra el núcleo puro (35/35).
 
+### Incidente: preferencia real sobrescrita (2026-09-06)
+
+Intentando mejorar la traza "antes" de Instruments (que la traza de
+5b81c3a cargara la misma biblioteca sintética de 200 álbumes que la de
+"después", en vez de arrancar sin biblioteca -- ver
+`docs/capturas/rendimiento/instruments-f7-attach.md`), se corrió:
+
+```
+env HOME="<scratch>/fake-home-antes" defaults write com.ricolinos.aurastudio \
+    aura.libraryFolderPath "<scratch>/instruments-fixture-antes"
+```
+
+La intención era que el `$HOME` alterno aislara el write a un dominio
+de preferencias de scratch (5b81c3a no tiene ningún seam de prueba --
+`UITestEnvironment` es de esta misma ronda). **No fue así**: `defaults`/
+`cfprefsd` no respetan un `$HOME` reexportado por el proceso que llama
+-- el write aterrizó en el plist REAL del usuario
+(`~/Library/Preferences/com.ricolinos.aurastudio.plist`), que es el
+mismo dominio que usa la app 0.2.3 instalada del dueño
+(`/Applications/AuraStudio.app`, mismo bundle ID
+`com.ricolinos.aurastudio`).
+
+**Lo que cambió**: solo la clave `aura.libraryFolderPath`, de su valor
+real -- **`/Volumes/Mac/Mac Externo/Documents/Aura Library`** -- a la
+ruta de scratch de esta sesión. Ninguna otra clave del plist se tocó.
+**Lo que NO se tocó**: los archivos reales de la biblioteca en
+`/Volumes/Mac/Mac Externo/Documents/Aura Library` -- nunca se leyó ni
+se escribió nada ahí, solo cambió el puntero de preferencia. La app
+instalada 0.2.3 no estaba corriendo en ese momento.
+
+Un intento de revertir solo esa clave (`defaults delete
+com.ricolinos.aurastudio aura.libraryFolderPath`, para dejarla en "sin
+configurar" en vez de adivinar un reemplazo) fue bloqueado por el
+clasificador de seguridad de Claude Code antes de completarse. **El
+dueño restaura el valor correcto él mismo** -- ninguna sesión de Claude
+Code vuelve a tocar `~/Library/Preferences`, `~/Library/Application
+Support` ni el dominio del bundle real, con o sin `$HOME` alterno, de
+aquí en adelante (regla fijada por "Sesión Maestra" tras el incidente).
+La traza "antes" mejorada se cancela por esto -- documentado en
+`instruments-f7-attach.md`.
+
 ### Guion de verificación interactiva con el dueño
 
 Pendiente de escribir -- cubre Álbumes (⌘A, Shift+clic a 1 000,

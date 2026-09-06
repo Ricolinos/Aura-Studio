@@ -38,6 +38,18 @@ dueño aparte si los quiere ver en Instruments.app.
   frío, sin biblioteca configurada, nunca el estado real.
 - PID 88533, huella ~125 MB al arrancar.
 
+**Se descartó mejorar la traza "antes" para que cargara la misma
+biblioteca sintética que "después".** El intento (`defaults write` con
+un `$HOME` alterno, para que la preferencia cayera en un dominio de
+scratch) causó un incidente real -- ver "Incidente: preferencia real
+sobrescrita" en `DECISIONS.md` (ST-187). El build 5b81c3a no tiene
+ningún seam de prueba (`UITestEnvironment` es de esta misma ronda), así
+que no hay forma segura de darle una biblioteca sin tocar
+`UserDefaults` del dominio real (`com.ricolinos.aurastudio`, compartido
+con la app 0.2.3 instalada del dueño sin importar el `DerivedData` o el
+`$HOME` del proceso que lanza el build). El "antes" se queda como
+arranque en frío sin biblioteca, con esa limitación anotada arriba.
+
 ## Lectura
 
 Las dos trazas capturan arranque/inicialización, no un recorrido
