@@ -9648,3 +9648,28 @@ en **13/13**.
 Lo que **no** se pudo verificar acá: cómo se ve la franja y si el menú
 aparece donde debe. Requiere abrir la app, y esta sesión no tiene sesión
 gráfica (ver el hallazgo de ST-187). Va al guion del dueño.
+
+## ST-200 (3.er addendum) — El arnés contaba las carátulas con un número inventado
+
+La línea de tamaños del arnés decía:
+
+```
+    biblioteca.json: 6.2 MB -- .portadas/: 87.0 MB (1000 archivos)
+```
+
+Los MB eran reales —sumados de los archivos— pero el **conteo** no: imprimía la
+variable `albums`. Y no son mil archivos sino **doce mil**: hay una carátula por
+**elemento**, no por álbum, porque las doce pistas de un disco guardan doce
+copias del mismo JPEG (anotado en ST-208 como la deduplicación que no entró en
+esta ronda). Los propios 87 MB lo delataban: mil carátulas de ~7 KB son 7 MB.
+
+No es cosmético. Ese número hizo leer mal una medición: el primer
+`Guardar biblioteca.json` tarda lo que tarda **crear doce mil archivos chicos**,
+y con la etiqueta diciendo "1000" el renglón parecía diez veces más lento de lo
+que debía y se buscó la causa en ST-204/ST-208. No estaba ahí — el
+`WriteCover` anterior a la ronda (`3de9cc5`) también escribía uno por elemento, y
+lo único que ST-208 agregó a ese camino es un SHA-256 por carátula, medido en
+**67 ms** para las doce mil.
+
+Ahora el conteo sale de contar los archivos, en la misma pasada de la que ya
+salían los bytes.
