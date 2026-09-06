@@ -7951,6 +7951,40 @@ conveniencia `TrackMetadata(coverArtData:)` que calcula el hash y deja
 los bytes en la escala: es lo que usan las pruebas que arman metadata con
 una carátula sin pasar por el guardado del catálogo.
 
+### Medición ("mecanico sonnet", worktree aislado sobre 72489fb)
+
+Nuevo archivo `Tests/AuraStudioTests/LibraryCoverMemoryTests.swift`,
+**7/7 en verde**. Siguiendo el consejo de Opus, la mayoría son pruebas de
+CORRECCIÓN (lo que importa de verdad: que el pico quede acotado, no un
+porcentaje de RSS), con una sola medición de memoria al final.
+
+| Prueba | Resultado |
+|---|---|
+| Cargar el catálogo nunca trae bytes a memoria (50 ítems con carátula real) | **Cumplido** -- `pendingCoverData` nil en las 50; `loadCoverData()` sigue devolviendo los bytes correctos, leídos de disco |
+| Migración: `coverHash` ausente se calcula al cargar, sin recorrer `.portadas/` | **Cumplido** -- un `biblioteca.json` con el esquema viejo (`coverRelativePath` sin `coverHash`) calcula el hash correcto al construir el `LibraryViewModel`, y el guardado siguiente lo deja escrito en el JSON |
+| Estado estable tras guardar (`pendingCoverData` nil, `coverURL`/`coverHash` puestos) ≠ "sin carátula" | **Cumplido** -- `hasCover` sigue en `true`, la Mac no tiene el hueco de Windows ST-208 |
+| "Quitar carátula" (`clearCoverArt(ids:)`) es explícito | **Cumplido** -- deja `coverURL` Y `coverHash` en `nil` a la vez (nunca uno solo) y borra el archivo de `.portadas/` |
+| Guardar sin bytes nuevos no reescribe ninguna carátula (20 ítems, mtime antes/después) | **Cumplido** -- ninguna de las 20 cambió de fecha de modificación en el segundo guardado |
+| Memoria residente, 12 000 ítems, antes/después de `persistCatalog()` | 72 MB → **91 MB** (subió, no bajó) -- ver nota abajo |
+
+**Por qué la memoria SUBIÓ en vez de bajar, y por qué no es una señal en
+contra de F5.** El propio diseño de la prueba (y el consejo de Opus)
+avisaba que RSS es ruidoso; el resultado lo confirma. `persistCatalog()`
+hace trabajo real que consume memoria TEMPORALMENTE mientras corre --
+arma un `PersistedLibrary` completo (12 000 `PersistedLibraryItem`),
+codifica JSON, y escribe 12 000 archivos a `.portadas/` -- y ese costo
+de la operación en sí (buffers de codificación, E/S) pesa más, en el
+momento exacto en que se toma la muestra, que los ~180 MB de
+`pendingCoverData` que sí se soltaron. Además, memoria liberada por ARC
+no vuelve necesariamente al sistema operativo de inmediato (el
+`allocator` la puede retener para reusarla), así que un RSS que no baja
+no prueba que los bytes sigan vivos -- lo que sí lo prueba, y es lo que
+esta PARADA verificó de verdad, es que **las 12 000 metadata tienen
+`pendingCoverData == nil`** después de guardar (aserción directa, sin
+depender de RSS). La medición de memoria queda documentada tal cual
+salió, sin maquillar el número, pero la evidencia real de que F5 cumple
+su objetivo son las cinco pruebas de corrección de arriba, no esta.
+
 ## ST-208 (addendum) — La deduplicación de carátulas por álbum no va en esta ronda
 
 **Decisión de la Maestra.** ST-208 dejó anotado que las doce pistas de un álbum
