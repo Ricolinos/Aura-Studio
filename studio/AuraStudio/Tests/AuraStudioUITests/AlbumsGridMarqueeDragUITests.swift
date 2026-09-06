@@ -21,27 +21,48 @@ import XCTest
 /// proceso de prueba de interfaz (mucho más lento que uno de XCTest
 /// normal: cada lanzamiento de la app real cuesta segundos).
 ///
-/// **Requiere DOS condiciones de máquina, ninguna un defecto de código
-/// (ST-187/ST-188)**:
+/// **Requiere UNA condición de máquina, no un defecto de código
+/// (ST-187/ST-188)**: el permiso de automatización/accesibilidad del
+/// sistema para el ejecutor de pruebas -- el dueño lo concedió una vez
+/// (2026-09-06); sin él, `xcodebuild test` falla con "Timed out while
+/// enabling automation mode" antes de llegar a lanzar nada.
 ///
-/// 1. El permiso de automatización/accesibilidad del sistema para el
-///    ejecutor de pruebas -- el dueño lo concedió una vez (2026-09-06);
-///    sin él, `xcodebuild test` falla con "Timed out while enabling
-///    automation mode" antes de llegar a lanzar nada.
-/// 2. **Una sesión gráfica de verdad, con el usuario al frente de la
-///    Mac.** Con el permiso ya concedido, la app arranca
-///    (`app.state == .runningForeground`) pero `app.windows.count == 0`
-///    -- una captura de pantalla tomada justo después del `launch()`
-///    confirmó que la pantalla mostraba las ventanas de terminal de las
-///    sesiones de Claude Code (esta y "Sesión Maestra"), sin ninguna
-///    ventana de Aura Studio visible. Diagnóstico de "experto en código
-///    opus", confirmado con la captura: estas sesiones no tienen la
-///    consola real de la Mac, así que una `NSWindow` real nunca llega a
-///    dibujarse donde alguien (persona o XCUITest) pueda verla.
+/// La otra hipótesis que se manejó (que estas sesiones de Claude Code no
+/// tienen consola gráfica real y por eso `app.windows.count` daba 0) SE
+/// DESCARTÓ (2026-09-06): un lanzamiento directo del binario (sin pasar
+/// por LaunchServices) mostró la ventana perfectamente, con `sample`
+/// confirmando que el proceso lanzado vía `open --env`/XCUITest se
+/// quedaba colgado en `_dyld_start` (96K de huella, nunca llega a
+/// `main()`) mientras que el binario directo arrancaba normal (44,9M).
+/// Es decir: sí hay consola real, el problema era el propio lanzamiento
+/// con variables de entorno inyectadas pasando por LaunchServices. Tras
+/// reintentar el mismo lanzamiento (posible efecto Gatekeeper de
+/// reintento en primer arranque de una app firmada ad-hoc en un disco
+/// externo, según hipótesis de "experto en código opus" -- ver
+/// DECISIONS.md ST-187), el proceso arrancó con ventana real
+/// (`app.windows.count == 1`). Tras eso salieron tres bugs reales de
+/// ESTA prueba, ya corregidos: el predicado de "Álbumes" asumía
+/// `label` cuando el árbol real usa `value`; `otherElements` nunca
+/// encontraba las tarjetas porque el identificador lo llevan una
+/// `Image` y dos `StaticText`, ninguno de tipo `Other`; y pedir una
+/// tarjeta fuera de pantalla (existe en el árbol de `LazyVGrid` aunque
+/// nunca se dibujó) revienta `press(forDuration:thenDragTo:)`.
 ///
-/// Se deja el gesto escrito y listo -- correrlo con el dueño sentado en
-/// la Mac (con su propia sesión de inicio activa, no una remota) es lo
-/// único que falta.
+/// **Lo que queda abierto, y SÍ es de la máquina, no del código**: esta
+/// Mac tiene dos pantallas (5K principal + 1920x1080 secundaria) y la
+/// ventana nueva aparece en la secundaria. Ahí, `press(forDuration:
+/// thenDragTo:)` revienta la síntesis de eventos con "point.x/y !=
+/// INFINITY" para CUALQUIER punto final probado (esquina de tarjeta,
+/// centro de tarjeta, tarjeta ya `isHittable`) -- documentado como bug
+/// conocido de XCTest con ventanas fuera de la pantalla principal.
+/// Reposicionar la ventana por Accessibility (`System Events`, sin
+/// sintetizar mouse) para sortearlo NO funcionó: el proceso lanzado por
+/// `xcodebuild test` no aparece como "application process" para
+/// `System Events` ("-600, la aplicación no está abierta"). El gesto
+/// llega escrito, compilado, y verificado hasta el arrastre en sí --
+/// sidebar, cuadrícula y las 30 tarjetas se encuentran y clickean bien;
+/// falta correrlo con la ventana en la pantalla principal (con el
+/// dueño sentado ahí) o resolver el bug de XCTest.
 final class AlbumsGridMarqueeDragUITests: XCTestCase {
     private var libraryRoot: URL!
     private static let albumCount = 30
@@ -73,13 +94,6 @@ final class AlbumsGridMarqueeDragUITests: XCTestCase {
         let app = launchApp()
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 30), "la app no llegó a primer plano")
 
-        // Diagnóstico de Opus (2026-09-06): el volcado de accesibilidad
-        // de un intento anterior mostraba geometría degenerada y el
-        // menú "Ir" de Finder, no el de esta app -- indicio de que la
-        // sesión gráfica no tenía pantalla activa para dibujar (bloqueada
-        // o sin usuario al frente), no un problema del código. Una
-        // captura de pantalla lo confirma barato: si sale negra/con
-        // pantalla de bloqueo, es eso.
         let screenshotAttachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         screenshotAttachment.name = "tras-launch"
         screenshotAttachment.lifetime = .keepAlways
@@ -90,14 +104,15 @@ final class AlbumsGridMarqueeDragUITests: XCTestCase {
             print("[DIAG] tras activate(): app.state = \(app.state.rawValue), app.windows.count: \(app.windows.count)")
         }
 
-        // Navegar a Álbumes -- la fila de la barra lateral es un
-        // `Label(sub.title, systemImage:)` (ver `SidebarView.groupRow`),
-        // dentro de un `DisclosureGroup`/`List` -- eso puede exponerse
-        // como celda o botón según cómo AppKit arme el árbol de
-        // accesibilidad, no necesariamente como `staticTexts` suelto.
-        // Se busca por predicado sobre CUALQUIER tipo de elemento en vez
-        // de apostar a uno solo.
-        let albumsPredicate = NSPredicate(format: "label == %@", "Álbumes")
+        // Navegar a Álbumes -- confirmado con el árbol de accesibilidad
+        // real (2026-09-06): las filas de la barra lateral que son
+        // ítems seleccionables de un `List`/`Outline` en macOS exponen
+        // su texto como `value`, no como `label` -- a diferencia de los
+        // encabezados de sección ("Musica", "Video"), que sí usan
+        // `label`. Se busca por predicado sobre CUALQUIER tipo de
+        // elemento, aceptando ambos atributos, en vez de apostar a uno
+        // solo.
+        let albumsPredicate = NSPredicate(format: "label == %@ OR value == %@", "Álbumes", "Álbumes")
         let sidebarAlbums = app.descendants(matching: .any).matching(albumsPredicate).firstMatch
         if !sidebarAlbums.waitForExistence(timeout: 20) {
             print("[DIAG] árbol de accesibilidad completo:\n\(app.debugDescription)")
@@ -108,12 +123,39 @@ final class AlbumsGridMarqueeDragUITests: XCTestCase {
         let grid = app.otherElements[UITestEnvironmentIDs.albumsGrid]
         XCTAssertTrue(grid.waitForExistence(timeout: 15), "no apareció la cuadrícula de Álbumes")
 
-        let firstCard = app.otherElements[UITestEnvironmentIDs.albumCard(0)]
-        let secondCard = app.otherElements[UITestEnvironmentIDs.albumCard(1)]
-        let lastCard = app.otherElements[UITestEnvironmentIDs.albumCard(Self.albumCount - 1)]
-        XCTAssertTrue(firstCard.waitForExistence(timeout: 15), "no apareció la primera tarjeta")
+        // Confirmado con el árbol de accesibilidad real (2026-09-06): la
+        // tarjeta no tiene un contenedor propio con ese identificador --
+        // el mismo identificador lo comparten la `Image` de la carátula
+        // y sus dos `StaticText` (título, artista), directo bajo la
+        // cuadrícula. `otherElements` nunca los encuentra porque ninguno
+        // es de tipo `Other`. Se usa la imagen de la carátula como ancla
+        // -- es la única de los tres nodos con un tamaño (160x160) útil
+        // para calcular el hueco y el punto de arrastre.
+        let firstCard = app.images[UITestEnvironmentIDs.albumCard(0)]
+        let secondCard = app.images[UITestEnvironmentIDs.albumCard(1)]
+        if !firstCard.waitForExistence(timeout: 15) {
+            print("[DIAG] cuadrícula sin tarjetas -- árbol bajo la cuadrícula:\n\(grid.debugDescription)")
+        }
+        XCTAssertTrue(firstCard.exists, "no apareció la primera tarjeta")
         XCTAssertTrue(secondCard.waitForExistence(timeout: 5), "no apareció la segunda tarjeta")
-        XCTAssertTrue(lastCard.waitForExistence(timeout: 5), "no apareció la última tarjeta -- ¿entran las 30 sin scroll?")
+
+        // La última tarjeta (29) SÍ existe en el árbol de accesibilidad
+        // (`LazyVGrid` la reporta aunque nunca se haya dibujado), pero su
+        // posición lógica cae fuera de la pantalla física real -- pedirle
+        // una coordenada normalizada ahí revienta la síntesis de eventos
+        // de macOS ("point.x != INFINITY"), confirmado corriendo la
+        // prueba real (2026-09-06). Un arrastre real solo puede terminar
+        // en un punto que de verdad esté en pantalla, así que se busca la
+        // última tarjeta que además sea `isHittable` -- sigue cruzando
+        // varias filas/columnas sin necesitar que quepan las 30 sin
+        // scroll (algo que el tamaño real de la ventana no garantiza).
+        var endIndex = Self.albumCount - 1
+        var lastCard = app.images[UITestEnvironmentIDs.albumCard(endIndex)]
+        while !lastCard.exists || !lastCard.isHittable, endIndex > 1 {
+            endIndex -= 1
+            lastCard = app.images[UITestEnvironmentIDs.albumCard(endIndex)]
+        }
+        XCTAssertGreaterThan(endIndex, 1, "no se encontró ninguna tarjeta visible en pantalla para terminar el arrastre")
 
         // Diagnóstico de Opus (ST-188): el recuadro SOLO arranca desde un
         // hueco -- si el `press` cae sobre una tarjeta, lo que se
@@ -129,7 +171,22 @@ final class AlbumsGridMarqueeDragUITests: XCTestCase {
         let gapPoint = CGPoint(x: (firstFrame.maxX + secondFrame.minX) / 2, y: firstFrame.midY)
         let origin = app.coordinate(withNormalizedOffset: .zero)
         let start = origin.withOffset(CGVector(dx: gapPoint.x, dy: gapPoint.y))
-        let end = lastCard.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.9))
+        // `lastCard.coordinate(withNormalizedOffset:)` revienta la
+        // síntesis de eventos con "point.x/y != INFINITY" -- confirmado
+        // corriendo la prueba real (2026-09-06), incluso armando el
+        // punto absoluto igual que `start` arriba. Esta Mac tiene dos
+        // pantallas (5K principal + 1920x1080 secundaria, `system_profiler
+        // SPDisplaysDataType`); la ventana de la app vive en la
+        // secundaria y su borde inferior lógico cae más abajo que el
+        // borde físico real de esa pantalla -- un punto ahí no
+        // corresponde a ningún píxel real, y CGEvent no puede
+        // sintetizar un clic fuera de toda pantalla. El CENTRO de la
+        // tarjeta (0.5, 0.5) -- ya garantizado real por `isHittable` --
+        // en vez de cerca de su esquina (0.9, 0.9), se mantiene lejos de
+        // ese borde.
+        let lastFrame = lastCard.frame
+        let endPoint = CGPoint(x: lastFrame.midX, y: lastFrame.midY)
+        let end = origin.withOffset(CGVector(dx: endPoint.x, dy: endPoint.y))
         start.press(forDuration: 0.3, thenDragTo: end)
 
         let statusBar = app.staticTexts[UITestEnvironmentIDs.statusBar]

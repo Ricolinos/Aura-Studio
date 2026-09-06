@@ -8854,14 +8854,29 @@ instalada sigue leyendo ese archivo). Prioridad al fixture sintético;
 la traza contra datos reales del dueño queda para el cierre final, con
 su autorización.
 
-**Aviso, tras lo que pasó con el XCUITest del arrastre**: `xcrun
-xctrace record --launch` también LANZA la app -- si esta sesión no tiene
-consola real (confirmado arriba con la captura del arrastre), es
-probable que la traza tampoco muestre una ventana donde el dueño pueda
-interactuar mientras se graba. Se intenta de todas formas -- una traza
-de CPU/tiempo puede seguir siendo útil aunque no haya interacción real
--- pero si el dueño tampoco ve la ventana al intentarlo, es la misma
-limitación de máquina, no algo para seguir persiguiendo desde acá.
+**Corrección (2026-09-06, la misma sesión "mecanico sonnet"): el
+diagnóstico de abajo sobre "sesión gráfica no disponible" era
+INCORRECTO.** Instrucciones diferenciales de "Sesión Maestra" (lanzar
+el binario directo, sin `open`, y comparar con `sample`) mostraron que
+SÍ hay consola real -- un lanzamiento directo del ejecutable mostraba la
+ventana perfectamente (44,9M de huella). El proceso lanzado por `open
+--env`/XCUITest se quedaba colgado en `_dyld_start` (96K, nunca llega a
+`main()`): el problema era el lanzamiento CON variables de entorno
+inyectadas pasando por LaunchServices, no la ausencia de pantalla.
+Reintentar el mismo lanzamiento (`open -n --env`) lo destrabó -- efecto
+consistente con la hipótesis de "experto en código opus": Gatekeeper
+evaluando una app firmada ad-hoc en un disco externo (`/Volumes/…`) en
+su primer arranque por ese camino, colgada en `syspolicyd` hasta que el
+reintento la deja pasar. `xattr -dr com.apple.quarantine` se aplicó
+también pero no encontró nada que quitar (`No such xattr`) -- no fue lo
+que lo resolvió; el reintento sí. Detalle completo, con la corrida real
+del XCUITest, en "El arrastre de selección" más abajo.
+
+**Traza de CPU/Tiempo capturada** (`xctrace record --attach <pid>`,
+lanzando el ejecutable directo por shell y adjuntando después --
+esquiva el mismo lanzamiento por LaunchServices que colgaba con
+variables de entorno) contra el fixture sintético, nunca la biblioteca
+del dueño. Ver `docs/capturas/rendimiento/` para los archivos.
 
 ### El arrastre de selección (XCUITest, ST-188) -- resultado final
 
@@ -8875,33 +8890,58 @@ cae sobre una tarjeta dispara su `.draggable`) sobre varias tarjetas y
 confirma en `biblioteca.barraEstado` que quedó algo seleccionado. El
 dueño autorizó intentar correrla.
 
-**Se necesitan DOS condiciones de máquina, ninguna un defecto de código:**
+**Solo se necesitaba UNA condición de máquina, no dos:** el permiso de
+automatización/accesibilidad de macOS para el ejecutor de pruebas -- el
+dueño lo concedió; sin él, `xcodebuild test` falla de plano con "Timed
+out while enabling automation mode" antes de lanzar nada. **Resuelta.**
 
-1. El permiso de automatización/accesibilidad de macOS para el ejecutor
-   de pruebas -- el dueño lo concedió; sin él, `xcodebuild test` falla
-   de plano con "Timed out while enabling automation mode" antes de
-   lanzar nada. **Resuelta.**
-2. **Una sesión gráfica de verdad, con el usuario al frente de la Mac.**
-   Con el permiso ya concedido, la app arranca (`app.state` da
-   `.runningForeground`) pero `app.windows.count` es **0**. Una captura
-   de pantalla tomada justo después de `launch()` lo confirmó sin
-   ambigüedad: la pantalla mostraba las ventanas de terminal de las
-   sesiones de Claude Code que estaban corriendo en ese momento ("mecanico
-   sonnet" y "Sesión Maestra"), sin ninguna ventana de Aura Studio
-   dibujada -- ni pantalla negra ni de bloqueo, simplemente ninguna
-   consola real detrás de estas sesiones para que una `NSWindow`
-   aparezca donde alguien (persona o XCUITest) pueda verla. Diagnóstico
-   de "experto en código opus" (proceso vivo, sin crash en
-   `~/Library/Logs/DiagnosticReports`, geometría degenerada y menú del
-   Finder en el primer volcado de accesibilidad -- todo apuntaba a
-   "sesión gráfica no disponible"), confirmado con la captura. **No
-   resuelta desde estas sesiones -- solo se resuelve con el dueño
-   sentado en su propia sesión de inicio, la única con consola real.**
+La otra condición que se creyó necesaria ("una sesión gráfica de
+verdad, con el usuario al frente de la Mac") **se descartó** -- ver la
+corrección arriba, en "Trazas de Instruments". Con eso corregido, la
+prueba real sí llegó a lanzar la app, encontrar su ventana
+(`app.windows.count == 1`) y navegar la barra lateral. Lo que salió
+después ya no era un problema de máquina sino tres bugs reales de LA
+PRUEBA (nunca de la app), corregidos en el mismo archivo:
 
-El gesto queda escrito, compilado y probado hasta donde una sesión sin
-consola puede llegar. Es el único de los ocho gestos de F4/§A que
-termina así -- los otros siete están automatizados y en verde contra el
-núcleo puro (35/35).
+1. El predicado de "Álbumes" en la barra lateral buscaba `label`; el
+   árbol de accesibilidad real mostró que esas filas (ítems
+   seleccionables de un `List`/`Outline` en macOS) exponen su texto
+   como `value` -- a diferencia de los encabezados de sección ("Musica",
+   "Video"), que sí usan `label`. Corregido con un predicado que acepta
+   ambos.
+2. `otherElements[identificador]` nunca encontraba una tarjeta: el
+   identificador lo comparten la `Image` de la carátula y sus dos
+   `StaticText` (título, artista), directo bajo la cuadrícula -- ninguno
+   es de tipo `Other`. Corregido usando `app.images[...]`.
+3. La tarjeta 29 (la última) SÍ existe en el árbol de accesibilidad
+   (`LazyVGrid` la reporta aunque nunca se dibujó), pero pedirle una
+   coordenada ahí revienta la síntesis de eventos de macOS con
+   "point.x/y != INFINITY" -- un arrastre real solo puede terminar en un
+   punto que de verdad esté en pantalla. Corregido buscando la última
+   tarjeta que además sea `isHittable`.
+
+**Lo que queda abierto, y esta vez SÍ es de la máquina, no del
+código**: esta Mac tiene dos pantallas (5K principal + 1920x1080
+secundaria, confirmado con `system_profiler SPDisplaysDataType`) y la
+ventana de la app aparece en la secundaria. Ahí, `press(forDuration:
+thenDragTo:)` revienta la síntesis de eventos con "point.x/y !=
+INFINITY" para CUALQUIER punto final probado -- esquina de tarjeta,
+centro de tarjeta, incluso una tarjeta ya confirmada `isHittable` --
+consistente con un bug conocido de XCTest al sintetizar eventos de
+mouse contra ventanas que no están en la pantalla principal. Intentar
+reposicionar la ventana a la pantalla principal por Accessibility
+(`System Events`, que no sintetiza mouse y por eso no debería toparse
+con el mismo bug) **no funcionó**: el proceso que lanza `xcodebuild
+test` no se registra como "application process" ante `System Events`
+("-600, la aplicación no está abierta").
+
+El gesto llega escrito, compilado, y verificado hasta el arrastre en
+sí -- la barra lateral, la cuadrícula y las 30 tarjetas se encuentran y
+clickean bien, con la app real, con su propia ventana. Falta correrlo
+con la ventana en la pantalla principal (con el dueño sentado ahí) o
+resolver el bug de XCTest con ventanas en pantalla secundaria. Es el
+único de los ocho gestos de F4/§A que termina así -- los otros siete
+están automatizados y en verde contra el núcleo puro (35/35).
 
 ### Guion de verificación interactiva con el dueño
 
