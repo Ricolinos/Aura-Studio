@@ -150,24 +150,71 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
     /// (`previewImages`/`photoThumb` leyendo archivos completos en el
     /// `body`) y para la sesión guionizada del vigilante ("abrir Fotos").
     private static func makeSyntheticPhotoAlbum(libraryRoot: URL) throws -> [AuraStudio.LibraryItem] {
+        try makePhotoAlbum(count: photoCount, subdirName: "FotosF0", albumName: "Álbum de prueba",
+                           libraryRoot: libraryRoot)
+    }
+
+    /// Generalización reusable -- F2 (ST-182 PARADA F2, "scroll de 1 000
+    /// álbumes y 500 fotos") necesita un álbum más grande que los 40 de
+    /// F0/ST-180 sin duplicar el generador de JPEG sintético. `%04d`
+    /// alcanza para cualquier tamaño razonable de fixture (hasta 9 999).
+    private static func makePhotoAlbum(count: Int, subdirName: String, albumName: String,
+                                       libraryRoot: URL) throws -> [AuraStudio.LibraryItem] {
         let fm = FileManager.default
-        let photosDir = libraryRoot.appendingPathComponent("FotosF0", isDirectory: true)
+        let photosDir = libraryRoot.appendingPathComponent(subdirName, isDirectory: true)
         try fm.createDirectory(at: photosDir, withIntermediateDirectories: true)
         let basePhoto = makeBasePhotoJPEG()
 
         var items: [AuraStudio.LibraryItem] = []
-        for i in 0..<photoCount {
-            let fileURL = photosDir.appendingPathComponent(String(format: "foto-%02d.jpg", i))
-            try uniqueVariant(basePhoto, tag: "foto-\(i)").write(to: fileURL)
+        for i in 0..<count {
+            let fileURL = photosDir.appendingPathComponent(String(format: "foto-%04d.jpg", i))
+            try uniqueVariant(basePhoto, tag: "\(subdirName)-\(i)").write(to: fileURL)
             var item = AuraStudio.LibraryItem(sourceURL: fileURL, addedAt: Date())
             item.status = .ready
             item.preparedURL = fileURL
             item.category = "Fotos"
-            item.photoAlbum = "Álbum de prueba"
+            item.photoAlbum = albumName
             items.append(item)
         }
         return items
     }
+
+    // MARK: - Preparación de F2 (pedido de "Sesión Maestra", 2026-09-06)
+    //
+    // F2 (miniaturas asíncronas) todavía no cierra -- nada de lo de
+    // abajo se escribe como prueba todavía porque dependería de una API
+    // que no existe (una `CoverThumbnailCache` async con `.task(id:)`,
+    // según §B del plan). Lo que SÍ se dejó listo, sin correr nada
+    // pesado mientras tanto:
+    //
+    // - `makePhotoAlbum(count:subdirName:albumName:libraryRoot:)` de
+    //   arriba ya admite 500 fotos (criterio de F2: "scroll de 1 000
+    //   álbumes y 500 fotos sin bloqueos > 16 ms") sin duplicar el
+    //   generador de JPEG sintético -- basta con
+    //   `Self.makePhotoAlbum(count: 500, subdirName: "FotosF2",
+    //   albumName: "Álbum F2", libraryRoot: libraryRoot)` en un `setUp`
+    //   propio de esas pruebas (NO en el `setUpWithError` de esta clase
+    //   -- generar 500 fotos en cada una de las ~20 pruebas existentes
+    //   sería puro costo sin beneficio).
+    // - Lo que hace falta medir, tres cosas distintas (ver §A del plan):
+    //   1. Bloqueos del hilo principal > 16 ms durante un scroll
+    //      simulado de las 1 000 tarjetas de álbum + las 500 fotos --
+    //      NO con `MainThreadWatchdog` (su umbral está fijo en 250 ms en
+    //      `Services/MainThreadWatchdog.swift`, no es el de esta
+    //      Fase) -- medición manual por celda con
+    //      `CFAbsoluteTimeGetCurrent()`, igual que (c)/(d) de arriba.
+    //   2. Memoria de la caché bajo el tope de 64 MB -- pedirle a Opus
+    //      el nombre real de la propiedad (`totalCostLimit` de
+    //      `NSCache`, si es lo que expone) para poder leerlo desde una
+    //      prueba sin necesitar `@testable` de más.
+    //   3. Que ninguna miniatura se decodifique en el hilo principal --
+    //      necesita que la API async exista primero; probable patrón:
+    //      un gancho de prueba (`onDecodeForTesting`/similar, mismo
+    //      espíritu que `onHangDetectedForTesting`) que registre en qué
+    //      hilo corrió cada decode.
+    // Apenas Opus avise la PARADA F2, pedirle la firma real de la caché
+    // nueva (mismo protocolo que con `LibraryCatalogIndex` en F3) y
+    // llenar esto.
 
     // MARK: - (a) `visibleAlbums` -- PROXY (AlbumsView.swift:46-72, aún no
     // extraído a un modelo; ver el comentario de cabecera del archivo)
@@ -264,10 +311,14 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
     }
 
     /// Con la caché ya caliente (decodificada dentro de este mismo
-    /// método, sin depender del orden de ejecución de las pruebas), el
-    /// costo que sigue pagando cada evaluación de `body` -- el hash de
-    /// `Data.hashValue` sobre 15 KB por tarjeta, aunque el resultado sea
-    /// un acierto y no haya decodificación real de por medio.
+    /// método, sin depender del orden de ejecución de las pruebas): antes
+    /// de ST-183 esto medía el hash de `Data.hashValue` sobre 15 KB por
+    /// tarjeta en cada acierto -- el bug del punto 5. `thumbnail(for:
+    /// side:)` sigue existiendo ("compatibilidad", ver
+    /// `CoverThumbnailCache.swift`) pero ahora arma la clave con
+    /// `fingerprint` (huella O(1): tamaño + 4 bytes fijos, nunca recorre
+    /// el blob), así que esta prueba pasó de medir el bug a medir que ya
+    /// no está.
     func testCoverThumbnailCacheWarmRepeatDecodeAllAlbums() throws {
         let albums = LibraryGrouping.albums(from: musicItems, options: .default)
         let covers = albums.map(\.coverArtData)
@@ -277,6 +328,106 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
                 _ = CoverThumbnailCache.shared.thumbnail(for: cover, side: 160)
             }
         }
+    }
+
+    // MARK: - (c, continuación) F2 (ST-183): decodifica fuera del hilo
+    // principal, `totalCostLimit` de memoria, y el costo real de un
+    // "scroll" ahora que el `body` solo consulta `cached(id:side:)`.
+
+    /// El cambio central de F2: `thumbnail(id:side:load:)` es `async` y
+    /// decodifica en `decodeQueue` (una cola `.utility` aparte, ver
+    /// `CoverThumbnailCache.swift`) -- `load` (que es donde ocurre la
+    /// lectura/decodificación real) nunca debe correr en el hilo
+    /// principal. `ThreadFlag` (abajo) es el mismo patrón que
+    /// `HangCollector`: un `@Sendable` con candado, porque `load` es
+    /// `@escaping @Sendable` y puede correr en cualquier hilo.
+    func testThumbnailAsyncPathNeverLoadsOnMainThread() async throws {
+        let flag = ThreadFlag()
+        let cover = Self.uniqueVariant(Self.makeBaseCoverJPEG(), tag: "f2-offmain-\(UUID().uuidString)")
+        let image = await CoverThumbnailCache.shared.thumbnail(
+            id: "f2-test-\(UUID().uuidString)", side: 160) {
+            flag.set(Thread.isMainThread)
+            return cover
+        }
+        XCTAssertNotNil(image, "una carátula real (JPEG válido) debe decodificar")
+        XCTAssertFalse(flag.currentValue,
+                       "load()/decodeThumbnail no deben correr en el hilo principal (ST-183)")
+    }
+
+    /// Criterio de F2 (§A): "scroll de 1 000 álbumes y 500 fotos sin
+    /// bloqueos > 16 ms". Con la caché ya caliente (async, fuera de lo
+    /// medido), lo único que corre en el hilo principal por celda visible
+    /// es `cached(id:side:)` -- una consulta a `NSCache`, sin decodificar
+    /// ni tocar disco. Se mide la pasada COMPLETA (1 500 consultas) Y el
+    /// peor caso de una sola consulta -- el objetivo de 16 ms es por
+    /// CELDA, no por scroll completo.
+    func testMainThreadCostOfScrollWithWarmCache() async throws {
+        let albums = LibraryGrouping.albums(from: musicItems, options: .default)
+        let albumIDs = albums.map { "album:\($0.id)" }
+        for (id, album) in zip(albumIDs, albums) {
+            _ = await CoverThumbnailCache.shared.thumbnail(id: id, side: 160) { album.coverArtData }
+        }
+        let largePhotoAlbum = try Self.makePhotoAlbum(count: 500, subdirName: "FotosF2",
+                                                      albumName: "Álbum F2", libraryRoot: libraryRoot)
+        let photoIDs = largePhotoAlbum.map { PhotoThumbnailID.make(for: $0) }
+        for (id, item) in zip(photoIDs, largePhotoAlbum) {
+            let url = item.preparedURL ?? item.sourceURL
+            _ = await CoverThumbnailCache.shared.thumbnail(id: id, side: 160) { try? Data(contentsOf: url) }
+        }
+
+        var worstSingleLookupMs = 0.0
+        let start = CFAbsoluteTimeGetCurrent()
+        for id in albumIDs + photoIDs {
+            let lookupStart = CFAbsoluteTimeGetCurrent()
+            _ = CoverThumbnailCache.shared.cached(id: id, side: 160)
+            worstSingleLookupMs = max(worstSingleLookupMs, (CFAbsoluteTimeGetCurrent() - lookupStart) * 1000)
+        }
+        let totalMs = (CFAbsoluteTimeGetCurrent() - start) * 1000
+        print("[F2] Scroll con caché caliente, \(albumIDs.count) álbumes + \(photoIDs.count) fotos: "
+              + "\(String(format: "%.2f", totalMs)) ms en total, "
+              + "peor consulta individual \(String(format: "%.3f", worstSingleLookupMs)) ms")
+        XCTAssertLessThan(worstSingleLookupMs, 16,
+                          "una sola consulta cached(id:side:) no debe acercarse a 16 ms")
+    }
+
+    /// `totalCostLimit` (§A: "tope 64 MB"): en vez de intentar llenar
+    /// 64 MB de verdad (lento y no aporta nada más que confirmar el
+    /// mecanismo), se prueba el MECANISMO con una instancia propia y un
+    /// tope chico -- `NSCache` es quien decide qué desaloja, así que no
+    /// se afirma CUÁL entrada sobrevive, solo que el total cacheado no
+    /// puede crecer sin límite. El valor real de producción
+    /// (`CoverThumbnailCache.shared`, `totalCostLimit: 64 * 1024 * 1024`)
+    /// se confirma leyendo `Services/CoverThumbnailCache.swift:47`, no
+    /// hay un accesor de prueba para el `NSCache` interno del singleton.
+    func testTotalCostLimitBoundsMemory() async throws {
+        let smallCache = CoverThumbnailCache(countLimit: 200, totalCostLimit: 2 * 1024 * 1024)
+        let albums = LibraryGrouping.albums(from: musicItems, options: .default)
+        for album in albums {
+            _ = await smallCache.thumbnail(id: "album:\(album.id)", side: 160) { album.coverArtData }
+        }
+        let stillCached = albums.filter { smallCache.cached(id: "album:\($0.id)", side: 160) != nil }.count
+        print("[F2] Tope de memoria chico (2 MB) tras 1000 álbumes: \(stillCached) siguen en caché")
+        XCTAssertLessThan(stillCached, albums.count,
+                          "con un totalCostLimit chico, NSCache debe desalojar -- no puede seguir "
+                          + "todo en memoria")
+    }
+
+    /// La prueba que "experto en código opus" señaló como la más
+    /// valiosa de F2 (más que cualquier número de rendimiento): la clave
+    /// de caché ahora es el id del álbum/foto, no el contenido -- sin la
+    /// huella (`fingerprint`) pegada al id, cambiarle la carátula a un
+    /// álbum seguiría mostrando la miniatura VIEJA (la nueva pediría la
+    /// misma clave `"album:\(id)"` y `cached(id:side:)` la encontraría
+    /// en memoria sin decodificar nada). `fingerprint` es lo que hace
+    /// que eso no pase.
+    func testFingerprintChangesWithContentAndOnlyWithContent() {
+        let coverA = Self.uniqueVariant(Self.makeBaseCoverJPEG(), tag: "fingerprint-a")
+        let coverB = Self.uniqueVariant(Self.makeBaseCoverJPEG(), tag: "fingerprint-b")
+        XCTAssertEqual(CoverThumbnailCache.fingerprint(coverA), CoverThumbnailCache.fingerprint(coverA),
+                       "el mismo blob debe dar siempre la misma huella")
+        XCTAssertNotEqual(CoverThumbnailCache.fingerprint(coverA), CoverThumbnailCache.fingerprint(coverB),
+                          "dos carátulas distintas deben dar huellas distintas")
+        XCTAssertNotEqual(CoverThumbnailCache.fingerprint(nil), CoverThumbnailCache.fingerprint(coverA))
     }
 
     // MARK: - (d) Menú contextual con selección múltiple -- punto 6
@@ -673,5 +824,24 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
         window.layoutIfNeeded()
         window.displayIfNeeded()
         return (hostingController, window, viewModel, selectionModel)
+    }
+}
+
+/// Mismo patrón que `HangCollector` (`ApplyBatchEditWorkerTests.swift`):
+/// un valor leído/escrito desde clausuras `@Sendable` que pueden correr
+/// en cualquier hilo (acá, `CoverThumbnailCache.thumbnail(id:side:load:)`
+/// llama `load` desde su cola de decodificación) necesita candado, no un
+/// `var` capturado a secas -- eso no compila en modo Swift 6.
+final class ThreadFlag: @unchecked Sendable {
+    private let lock = NSLock()
+    private var value = false
+
+    func set(_ newValue: Bool) {
+        lock.lock(); value = newValue; lock.unlock()
+    }
+
+    var currentValue: Bool {
+        lock.lock(); defer { lock.unlock() }
+        return value
     }
 }

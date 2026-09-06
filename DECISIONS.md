@@ -7505,7 +7505,34 @@ medir no es cuánto tarda `CoverThumbnailCache` —eso ya se sabe: 35 ms
 frío, y ahora sin hashear nada en los aciertos— sino cuánto trabajo queda
 en el hilo principal durante un scroll completo.
 
-## ST-208 — Windows: las carátulas salen de la memoria
+### Medición del criterio de cierre ("mecanico sonnet", commit 70c1309 -- el merge con ST-208 de Windows)
+
+Verificado en worktree aislado (candado de la Mac): `swift build` limpio,
+25/25 en `AlbumsGridPerformanceBaselineTests` (4 pruebas nuevas: decode
+fuera del hilo principal, costo de scroll con caché caliente,
+`totalCostLimit`, y `fingerprint`).
+
+| Medición | Resultado | Objetivo §A |
+|---|---|---|
+| `load()`/decodificación durante `thumbnail(id:side:load:)` corre en el hilo principal | **Nunca** (`Thread.isMainThread == false` dentro de `load`, confirmado con un `ThreadFlag` tipo `HangCollector`) | Fuera del hilo principal -- **cumplido** |
+| Scroll con caché caliente, 1 000 álbumes + 500 fotos (`cached(id:side:)`, sin decodificar) | **0,47 ms en total**; peor consulta individual **0,001 ms** | < 16 ms por celda -- **cumplido con enorme margen** |
+| `totalCostLimit` acota la memoria (instancia aislada, tope de 2 MB, 1 000 álbumes de ~15 KB c/u) | Solo **36/1 000** siguen en caché (el resto, desalojado por `NSCache`) | Confirma el mecanismo -- el valor real de producción (64 MB) se lee del código, no hay accesor de prueba para el `NSCache` del singleton |
+| `fingerprint`: mismo blob → misma clave; blobs distintos → claves distintas | Confirmado | La prueba que Opus señaló como la más valiosa de F2 -- sin esto, cambiarle la carátula a un álbum seguiría mostrando la vieja |
+| Acierto de caché caliente (`thumbnail(for:side:)`, 1 000 álbumes de ~15 KB c/u) | ~2 ms (bajando de 3,8 a 0,8 ms entre corridas de `measure`, ruido de medición) | Ver nota abajo -- **no** es una mejora de orden de magnitud a ESTE tamaño |
+
+**Por qué el "acierto de caché caliente" no bajó de orden de magnitud a
+15 KB**, y por qué eso no contradice el arreglo: `Data.hashValue` sobre
+15 KB × 1 000 álbumes es ~15 MB recorridos, y a la velocidad de memoria
+de una Mac moderna eso ya caía en el rango de 1-2 ms -- el mismo orden
+que mide `fingerprint` ahora. La ganancia real de F2 acá es de
+**complejidad, no de constante**: `fingerprint` es O(1) en el tamaño del
+blob, `hashValue` es O(n). Con una carátula sintética de 15 KB la
+diferencia no se nota; con una carátula REAL de fanart.tv (cientos de KB
+a varios MB, bien por encima de los ~15 KB del fixture) `hashValue`
+escalaría linealmente con eso y `fingerprint` seguiría costando lo mismo
+-- el fixture de ST-180/ST-183 (15 KB, elegido para parecerse a una
+carátula de verdad) no alcanza a mostrar la diferencia completa, y se
+deja anotado para no leer el número como "F2 no mejoró nada acá".
 
 Segunda mitad de W3, separada de ST-203 por acuerdo con la sesión maestra. Es la
 gemela de la fase F5 de la Mac.
