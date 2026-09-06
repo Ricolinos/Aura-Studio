@@ -253,11 +253,18 @@ struct PhotoAlbumGroup: Identifiable, Equatable {
     let isUnknown: Bool
 
     var count: Int { items.count }
-    /// Hasta 4, para el mosaico 2×2 de la tarjeta (una sola foto si hay
-    /// menos de 4). A diferencia de música/video, una foto NUNCA
-    /// completa `item.metadata` (`LibraryViewModel.process(itemAt:)`,
-    /// caso `.photo`) -- la imagen en sí es el contenido, se lee del
-    /// archivo preparado (o el original si todavía no se procesó).
+    /// Hasta 4 fotos completas, leídas del disco.
+    ///
+    /// **Ninguna vista lo usa desde ST-183.** Era lo que
+    /// `PhotoAlbumCardView` llamaba dentro de su `body` para armar el
+    /// mosaico 2×2: cuatro `Data(contentsOf:)` de fotos ENTERAS -- no
+    /// miniaturas -- por tarjeta y por pasada de dibujo (diagnóstico
+    /// §0.5). Ahora el mosaico arma un `CoverArtView` por cuadrante, que
+    /// pide su miniatura a `CoverThumbnailCache` y lee el archivo, si
+    /// hace falta, fuera del hilo principal.
+    ///
+    /// Se queda porque la línea base de ST-180 lo mide: es el "antes"
+    /// contra el que se compara el "después". No agregar usos nuevos.
     var previewImages: [Data] {
         items.prefix(4).compactMap { item in
             try? Data(contentsOf: item.preparedURL ?? item.sourceURL)

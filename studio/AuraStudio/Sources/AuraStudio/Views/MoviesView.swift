@@ -235,7 +235,7 @@ struct MoviesView: View {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 140, maximum: 180), spacing: 24, alignment: .top)],
                               alignment: .leading, spacing: 28) {
                         ForEach(visibleMovies) { movie in
-                            MediaCardView(imageData: movie.posterData, title: movie.title, subtitle: movie.year,
+                            MediaCardView(imageID: "video:\(movie.id)", imageData: movie.posterData, title: movie.title, subtitle: movie.year,
                                           aspect: .poster(width: 140), placeholderSymbol: "film")
                                 .librarySelectionCheckbox(selection.isSelected(movie.id),
                                                           anySelected: !selection.selected.isEmpty) {
@@ -307,7 +307,7 @@ struct MoviesView: View {
             .padding(.top, 12)
 
             HStack(alignment: .top, spacing: 20) {
-                CoverArtView(data: movie.posterData, width: 180, height: 270, placeholderSymbol: "film")
+                CoverArtView(id: "video:\(movie.id)", data: movie.posterData, width: 180, height: 270, placeholderSymbol: "film")
                 VStack(alignment: .leading, spacing: 6) {
                     Text(movie.title)
                         .font(.title.bold())

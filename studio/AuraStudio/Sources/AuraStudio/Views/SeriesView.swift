@@ -197,7 +197,7 @@ struct SeriesView: View {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 140, maximum: 180), spacing: 24, alignment: .top)],
                               alignment: .leading, spacing: 28) {
                         ForEach(visibleSeries) { show in
-                            MediaCardView(imageData: show.posterData, title: show.title,
+                            MediaCardView(imageID: "video:\(show.id)", imageData: show.posterData, title: show.title,
                                           subtitle: episodeCountText(show), aspect: .poster(width: 140), placeholderSymbol: "tv")
                                 .librarySelectionCheckbox(selection.isSelected(show.id),
                                                           anySelected: !selection.selected.isEmpty) {
@@ -309,7 +309,7 @@ struct SeriesView: View {
 
     private func seriesHeader(_ show: VideoCollectionGroup) -> some View {
         HStack(alignment: .top, spacing: 20) {
-            CoverArtView(data: show.posterData, width: 180, height: 270, placeholderSymbol: "tv")
+            CoverArtView(id: "video:\(show.id)", data: show.posterData, width: 180, height: 270, placeholderSymbol: "tv")
             VStack(alignment: .leading, spacing: 6) {
                 Text(show.title)
                     .font(.title.bold())

@@ -498,7 +498,14 @@ final class LibraryViewModel: ObservableObject {
                     baseName: sourceURL.deletingPathExtension().lastPathComponent, ext: "jpg")
                 try ImageResizer.resizeToLCDOptimal(sourceURL: sourceURL, destinationURL: output,
                                                      maxDimension: preferences.photoQuality.maxDimension)
+                // ST-183: la miniatura de una foto se cachea por id +
+                // ruta del archivo preparado. Reprocesar suele escribir
+                // en la MISMA ruta (cambiar la calidad de imagen, por
+                // ejemplo), así que la clave no cambiaría sola y la
+                // cuadrícula seguiría mostrando la versión anterior.
+                CoverThumbnailCache.shared.remove(id: PhotoThumbnailID.make(for: items[index]))
                 items[index].preparedURL = output
+                CoverThumbnailCache.shared.remove(id: PhotoThumbnailID.make(for: items[index]))
                 items[index].status = .ready
 
             case .unsupported:

@@ -12,6 +12,13 @@ import AppKit
 /// `AMPAgentsGuard` confirma que ya no hay nada pendiente por
 /// reactivar.
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    /// PLAN-studio-rendimiento-2.md Fase 2 (ST-183): la escala de
+    /// pantalla se lee UNA vez, acá, porque `NSScreen.main` no se puede
+    /// tocar desde la cola en la que la caché decodifica miniaturas.
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        CoverThumbnailCache.shared.captureScreenScale()
+    }
+
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         guard AMPAgentsGuard.shared.isPaused else { return .terminateNow }
 

@@ -7397,3 +7397,110 @@ una vez). Reemplazado por `waitForWatchdogToCatchUp`: sondea
 `hangs.values` cada 50 ms hasta verlo no vacío o hasta 2 s -- no avanza
 (y no deja que nadie reemplace la clausura) hasta que el reporte, si lo
 hay, ya aterrizó. Vive en `Tests/`, sin tocar `MainThreadWatchdog.swift`.
+
+## ST-183 — PLAN-studio-rendimiento-2.md, Fase F2: las miniaturas salen del `body`
+
+Cuarta PARADA de la ronda 2 (sesión "experto en código opus"). Cierra el
+punto **5** del diagnóstico de §0 del plan, que era además la Fase 6
+heredada de la ronda 1 y nunca ejecutada.
+
+Vale la pena decir de entrada lo que la línea base ya dejó claro: **la
+decodificación en sí no es cara**. ST-180 (c) midió la caché de
+miniaturas en 35 ms en frío y 1,2 ms en caliente para los 1 000 álbumes.
+Lo que esta PARADA arregla no es la velocidad del decodificador sino
+**dónde y cuántas veces corre**: en el hilo principal, dentro del `body`,
+por celda y por pasada de dibujo.
+
+### 1. La clave deja de ser `Data.hashValue`
+
+`thumbnail(for:side:)` armaba su clave con `data.hashValue`. Hashear un
+`Data` **recorre sus bytes**: con carátulas de ~15 KB, cada consulta
+—incluidos los aciertos— recorría 15 KB *antes* de poder decir "esta ya
+está en memoria". Los 1,2 ms de "caché caliente" de ST-180 (c) son
+exactamente eso: 1 000 hashes de 15 KB para no decodificar nada.
+
+Ahora la clave la pone quien pide: `album:<clave del álbum>`,
+`video:<id>`, `artista:<id>`, `foto:<id>#<ruta>` — la identidad estable
+que ya existía. Que la clave sea el id trae un problema nuevo, y hay que
+resolverlo o el arreglo introduce un bug: **cambiarle la carátula a un
+álbum no cambiaría su id**, así que la cuadrícula seguiría mostrando la
+tapa vieja. Por eso, cuando los bytes están a mano, el id lleva pegada
+una **huella O(1)** del blob (`CoverThumbnailCache.fingerprint`): su
+tamaño más cuatro bytes tomados de posiciones relativas fijas. No es
+criptográfica y no pretende serlo — lo único que tiene que hacer es
+cambiar cuando cambia la imagen. F5 la vuelve innecesaria: ahí llega
+`coverHash` (SHA-256 persistido, definido con Windows para W3) y la
+clave pasa a ser el hash.
+
+Las fotos son el caso que no se resuelve con una huella: sus bytes **no
+están en RAM**, viven en su archivo preparado, y sacarles una huella
+obligaría a leer el archivo — que es justo lo que se quiere evitar. Su
+identidad es id + ruta del archivo preparado, y `LibraryViewModel`
+invalida la entrada a mano al reprocesar una foto, porque reprocesar
+suele escribir en la MISMA ruta (cambiar la calidad de imagen, por
+ejemplo) y la clave no cambiaría sola.
+
+### 2. Se decodifica fuera del hilo principal, con cancelación
+
+`CoverArtView` ya no decodifica en el `body`. El `body` solo consulta lo
+que está en memoria (`cached(id:side:)`, una búsqueda en `NSCache` con
+una clave que se arma en O(1), sin tocar bytes) y, si no está, un
+`.task(id:)` la pide a la caché, que decodifica en una cola concurrente
+de utilidad. `.task(id:)` es lo que hace que desplazarse rápido no
+acumule trabajo: al salir la celda de pantalla, o al cambiar de imagen,
+SwiftUI cancela la tarea anterior.
+
+De paso queda cubierto el **bug de reciclaje** que el informe de Windows
+documenta en su §0.8 y que acá podía darse igual: al empezar a cargar una
+imagen distinta, la celda **limpia la anterior**. Mostrar la portada del
+álbum anterior mientras carga la nueva es peor que mostrar el
+placeholder.
+
+La escala de pantalla se captura **una vez**, en
+`applicationDidFinishLaunching`: `NSScreen.main` no se puede tocar desde
+la cola de decodificación, y antes se leía en cada decodificación.
+
+### 3. `totalCostLimit`, no solo `countLimit`
+
+`countLimit = 600` no dice nada sobre cuánta memoria son esas 600
+miniaturas. El tope que interesa es el de §A ("sin JPEG completos en RAM,
+solo miniaturas cacheadas, tope 64 MB"), así que la caché declara
+`totalCostLimit` de 64 MB y cada entrada informa su costo real en píxeles
+× 4 bytes. `countLimit` sube a 1 200 porque con el tope de memoria puesto
+ya no es él quien tiene que proteger nada.
+
+### 4. Fotos: se acabó leer archivos completos en el `body`
+
+Dos sitios, los dos del diagnóstico §0.5:
+
+- `PhotoAlbumGroup.previewImages` leía del disco las **cuatro primeras
+  fotos completas** del álbum —archivos enteros, no miniaturas— y
+  `PhotoAlbumCardView` lo llamaba dentro de su `body`: por tarjeta y por
+  pasada de dibujo. El mosaico 2×2 arma ahora un `CoverArtView` por
+  cuadrante, cada uno con su miniatura por id.
+- `PhotoAlbumsView.photoThumb` hacía un `Data(contentsOf:)` de la foto
+  completa por miniatura, también en el `body`.
+
+`previewImages` **se queda en el código aunque ninguna vista lo use**:
+es lo que mide la línea base de ST-180, o sea el "antes" contra el que se
+compara el "después". Está marcado para no agregarle usos nuevos.
+
+### Compatibilidad
+
+`thumbnail(for:side:)` (la forma vieja, sin id) sigue existiendo para las
+pruebas y para quien tenga los bytes y ninguna identidad estable a mano,
+pero su clave sale ahora de la huella O(1) en vez de `hashValue`: el
+defecto de hashear 15 KB por consulta está arreglado también por ese
+camino, no solo en el nuevo.
+
+### Verificación
+
+`swift build` limpio, `xcodebuild -configuration Release` **BUILD
+SUCCEEDED**, `swift test` completo en verde.
+
+Los números de scroll ("1 000 álbumes y 500 fotos sin bloqueos > 16 ms",
+criterio de F2) los levanta "mecanico sonnet" contra este commit. Lo que
+esta PARADA cambia es dónde corre el trabajo, así que lo que hay que
+medir no es cuánto tarda `CoverThumbnailCache` —eso ya se sabe: 35 ms
+frío, y ahora sin hashear nada en los aciertos— sino cuánto trabajo queda
+en el hilo principal durante un scroll completo.

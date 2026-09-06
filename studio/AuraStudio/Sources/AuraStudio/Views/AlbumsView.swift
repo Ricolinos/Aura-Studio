@@ -439,7 +439,7 @@ struct AlbumsView: View {
             .padding(.top, 12)
 
             HStack(alignment: .top, spacing: 20) {
-                CoverArtView(data: album.coverArtData, side: 180)
+                CoverArtView(id: "album:\(album.id)", data: album.coverArtData, side: 180)
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 8) {
                         Text(album.title)

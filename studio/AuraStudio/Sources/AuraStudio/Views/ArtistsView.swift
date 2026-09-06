@@ -181,7 +181,8 @@ struct ArtistsView: View {
             } else {
                 List(visibleArtists, selection: $selectedArtistIDs) { artist in
                     HStack(spacing: 12) {
-                        ArtistAvatarView(imageData: viewModel.artistImages.image(forArtistKey: artist.id),
+                        ArtistAvatarView(artistID: artist.id,
+                                         imageData: viewModel.artistImages.image(forArtistKey: artist.id),
                                          fallbackCoverData: artist.fallbackCoverArtData,
                                          side: 40)
                         Text(artist.name)
@@ -263,7 +264,8 @@ struct ArtistsView: View {
 
     private func artistHeader(_ artist: ArtistGroup) -> some View {
         HStack(alignment: .center, spacing: 20) {
-            ArtistAvatarView(imageData: viewModel.artistImages.image(forArtistKey: artist.id),
+            ArtistAvatarView(artistID: artist.id,
+                             imageData: viewModel.artistImages.image(forArtistKey: artist.id),
                              fallbackCoverData: artist.fallbackCoverArtData,
                              side: 96)
             VStack(alignment: .leading, spacing: 6) {
@@ -299,7 +301,7 @@ struct ArtistsView: View {
     private func albumSection(_ album: AlbumGroup, artist: ArtistGroup) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .top, spacing: 16) {
-                CoverArtView(data: album.coverArtData, side: 128)
+                CoverArtView(id: "album:\(album.id)", data: album.coverArtData, side: 128)
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 8) {
                         Text(album.title)

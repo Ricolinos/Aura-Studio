@@ -113,7 +113,7 @@ struct AlbumCoverPickerView: View {
 
     private func candidateCell(_ candidate: AlbumCoverSearch.Candidate) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            CoverArtView(data: candidate.data, side: 140)
+            CoverArtView(id: "candidata:\(candidate.id)", data: candidate.data, side: 140)
                 .librarySelectionBorder(candidate.id == selectedID)
             if candidate.id == recommended?.id {
                 Text("Recomendada")

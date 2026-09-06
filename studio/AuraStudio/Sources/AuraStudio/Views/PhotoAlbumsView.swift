@@ -424,8 +424,16 @@ struct PhotoAlbumsView: View {
 
     private func photoThumb(_ item: LibraryItem, album: PhotoAlbumGroup) -> some View {
         let isSelected = photoSelection.isSelected(item.id)
-        return CoverArtView(data: try? Data(contentsOf: item.preparedURL ?? item.sourceURL), side: 140,
-                            cornerRadius: 6, placeholderSymbol: "photo")
+        // PLAN-studio-rendimiento-2.md Fase 2 (ST-183): esto era un
+        // `Data(contentsOf:)` de la foto COMPLETA dentro del `body`, por
+        // miniatura y por pasada de dibujo (diagnóstico §0.5). Ahora la
+        // lectura ocurre en la cola de la caché, solo si la miniatura no
+        // está ya en memoria, y `.task(id:)` la cancela al salir de
+        // pantalla.
+        let url = item.preparedURL ?? item.sourceURL
+        return CoverArtView(id: PhotoThumbnailID.make(for: item),
+                            load: { try? Data(contentsOf: url) },
+                            side: 140, cornerRadius: 6, placeholderSymbol: "photo")
             .librarySelectionCheckbox(isSelected, anySelected: !photoSelection.selected.isEmpty,
                                       cornerRadius: 6) {
                 photoSelection.toggle(item.id)

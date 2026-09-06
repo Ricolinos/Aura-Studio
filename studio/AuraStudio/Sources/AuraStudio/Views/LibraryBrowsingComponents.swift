@@ -12,30 +12,76 @@ import SwiftUI
 /// del lado mayor (recortado por `aspectRatio(.fill)` al encajar en el
 /// marco rectangular), no vale la pena una variante rectangular de la
 /// caché solo por esto.
+///
+/// PLAN-studio-rendimiento-2.md Fase 2 (ST-183): la miniatura ya **no se
+/// decodifica en el `body`** (diagnóstico §0.5). El `body` solo consulta
+/// lo que ya está en memoria -- una búsqueda en `NSCache`, sin tocar los
+/// bytes -- y si no está, un `.task(id:)` la pide fuera del hilo
+/// principal. `.task(id:)` es lo que hace que desplazarse rápido no
+/// acumule trabajo: al salir la celda de pantalla, o al cambiar de
+/// imagen, SwiftUI cancela la tarea anterior.
+///
+/// `load` se llama SOLO si hace falta decodificar, y desde la cola de la
+/// caché. Por eso una foto puede pasar `{ try? Data(contentsOf: url) }`
+/// sin leer nada de disco en el `body`: la lectura ocurre en segundo
+/// plano, si de verdad hace falta.
 struct CoverArtView: View {
-    let data: Data?
+    /// Identidad estable de esta imagen en la caché: el id del álbum,
+    /// del video, del artista o de la foto, **más la huella del
+    /// contenido** cuando los bytes están a mano (`CoverThumbnailCache.
+    /// fingerprint`), para que cambiarle la carátula a un álbum no siga
+    /// mostrando la vieja.
+    let cacheID: String
+    let load: @Sendable () -> Data?
     var width: CGFloat
     var height: CGFloat
     var cornerRadius: CGFloat = 8
     var placeholderSymbol: String = "music.note"
 
+    @State private var loaded: NSImage?
     @Environment(\.colorScheme) private var colorScheme
 
-    init(data: Data?, side: CGFloat = 128, cornerRadius: CGFloat = 8, placeholderSymbol: String = "music.note") {
-        self.init(data: data, width: side, height: side, cornerRadius: cornerRadius, placeholderSymbol: placeholderSymbol)
+    /// Con los bytes ya en memoria (carátulas de álbum, pósters): el id
+    /// lleva la huella del blob, así que no hace falta pasarla aparte.
+    init(id: String, data: Data?, side: CGFloat = 128,
+         cornerRadius: CGFloat = 8, placeholderSymbol: String = "music.note") {
+        self.init(id: id, data: data, width: side, height: side,
+                  cornerRadius: cornerRadius, placeholderSymbol: placeholderSymbol)
     }
 
-    init(data: Data?, width: CGFloat, height: CGFloat, cornerRadius: CGFloat = 8, placeholderSymbol: String = "music.note") {
-        self.data = data
+    init(id: String, data: Data?, width: CGFloat, height: CGFloat,
+         cornerRadius: CGFloat = 8, placeholderSymbol: String = "music.note") {
+        self.init(id: "\(id)#\(CoverThumbnailCache.fingerprint(data))",
+                  load: { data },
+                  width: width, height: height,
+                  cornerRadius: cornerRadius, placeholderSymbol: placeholderSymbol)
+    }
+
+    /// Con los bytes en un archivo (fotos): `load` los lee **fuera del
+    /// hilo principal** y solo si la miniatura no está en memoria.
+    init(id: String, load: @escaping @Sendable () -> Data?,
+         side: CGFloat = 128, cornerRadius: CGFloat = 8,
+         placeholderSymbol: String = "music.note") {
+        self.init(id: id, load: load, width: side, height: side,
+                  cornerRadius: cornerRadius, placeholderSymbol: placeholderSymbol)
+    }
+
+    init(id: String, load: @escaping @Sendable () -> Data?,
+         width: CGFloat, height: CGFloat, cornerRadius: CGFloat = 8,
+         placeholderSymbol: String = "music.note") {
+        self.cacheID = id
+        self.load = load
         self.width = width
         self.height = height
         self.cornerRadius = cornerRadius
         self.placeholderSymbol = placeholderSymbol
     }
 
+    private var side: CGFloat { max(width, height) }
+
     var body: some View {
         Group {
-            if let image = CoverThumbnailCache.shared.thumbnail(for: data, side: max(width, height)) {
+            if let image = loaded ?? CoverThumbnailCache.shared.cached(id: cacheID, side: side) {
                 Image(nsImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -50,6 +96,19 @@ struct CoverArtView: View {
         }
         .frame(width: width, height: height)
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+        .task(id: "\(cacheID)@\(Int(side))") {
+            if let hit = CoverThumbnailCache.shared.cached(id: cacheID, side: side) {
+                if loaded !== hit { loaded = hit }
+                return
+            }
+            // Se limpia primero: si la celda se recicló para otra imagen,
+            // mostrar la anterior mientras carga la nueva es el bug de
+            // reciclaje que Windows tiene documentado en §0.8.
+            loaded = nil
+            let image = await CoverThumbnailCache.shared.thumbnail(id: cacheID, side: side, load: load)
+            guard !Task.isCancelled else { return }
+            loaded = image
+        }
     }
 
     private var palette: AuraColors { colorScheme == .dark ? .dark : .light }
@@ -58,15 +117,22 @@ struct CoverArtView: View {
 /// Avatar circular de artista: foto si hay, si no la portada de un
 /// álbum, si no un micrófono sobre relleno sólido (como Music.app).
 struct ArtistAvatarView: View {
+    /// ST-183: id del artista, para que la caché no dependa de hashear
+    /// los bytes de su foto en cada pasada del `body`.
+    let artistID: String
     let imageData: Data?
     let fallbackCoverData: Data?
     var side: CGFloat = 40
 
+    @State private var loaded: NSImage?
     @Environment(\.colorScheme) private var colorScheme
+
+    private var data: Data? { imageData ?? fallbackCoverData }
+    private var cacheID: String { "artista:\(artistID)#\(CoverThumbnailCache.fingerprint(data))" }
 
     var body: some View {
         Group {
-            if let image = CoverThumbnailCache.shared.thumbnail(for: imageData ?? fallbackCoverData, side: side) {
+            if let image = loaded ?? CoverThumbnailCache.shared.cached(id: cacheID, side: side) {
                 Image(nsImage: image)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
@@ -81,6 +147,17 @@ struct ArtistAvatarView: View {
         }
         .frame(width: side, height: side)
         .clipShape(Circle())
+        .task(id: "\(cacheID)@\(Int(side))") {
+            if let hit = CoverThumbnailCache.shared.cached(id: cacheID, side: side) {
+                if loaded !== hit { loaded = hit }
+                return
+            }
+            loaded = nil
+            let data = self.data
+            let image = await CoverThumbnailCache.shared.thumbnail(id: cacheID, side: side) { data }
+            guard !Task.isCancelled else { return }
+            loaded = image
+        }
     }
 
     private var palette: AuraColors { colorScheme == .dark ? .dark : .light }
@@ -93,6 +170,9 @@ struct ArtistAvatarView: View {
 /// cuadrado) para que Películas/Series puedan pedir un póster 2:3 sin
 /// duplicar la vista.
 struct MediaCardView: View {
+    /// ST-183: identidad estable de la portada en la caché (id del
+    /// álbum, de la película o de la serie).
+    let imageID: String
     let imageData: Data?
     let title: String
     var subtitle: String?
@@ -113,7 +193,8 @@ struct MediaCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            CoverArtView(data: imageData, width: aspect.width, height: aspect.height, placeholderSymbol: placeholderSymbol)
+            CoverArtView(id: imageID, data: imageData, width: aspect.width, height: aspect.height,
+                         placeholderSymbol: placeholderSymbol)
             HStack(alignment: .top, spacing: 4) {
                 Text(title)
                     .font(.callout.weight(.medium))
@@ -152,7 +233,7 @@ struct AlbumCardView: View {
         #if DEBUG
         let _ = BodyEvaluationCounter.record("AlbumCardView")
         #endif
-        MediaCardView(imageData: album.coverArtData, title: album.title,
+        MediaCardView(imageID: "album:\(album.id)", imageData: album.coverArtData, title: album.title,
                       subtitle: showsArtist ? album.artist : nil, badge: album.isFavorite,
                       aspect: .square(side))
     }
@@ -182,26 +263,62 @@ struct PhotoAlbumCardView: View {
         .contentShape(Rectangle())
     }
 
+    /// PLAN-studio-rendimiento-2.md Fase 2 (ST-183): el mosaico ya no
+    /// lee archivos en el `body`. `PhotoAlbumGroup.previewImages` hacía
+    /// cuatro `Data(contentsOf:)` COMPLETOS -- fotos enteras, no
+    /// miniaturas -- por tarjeta y por pasada de dibujo (diagnóstico
+    /// §0.5). Ahora cada cuadrante es un `CoverArtView` que pide su
+    /// miniatura por id y lee el archivo, si hace falta, fuera del hilo
+    /// principal.
     @ViewBuilder
     private var mosaic: some View {
-        let previews = album.previewImages
+        let previews = Array(album.items.prefix(4))
         if previews.count >= 4 {
             let half = ((side - 2) / 2).rounded(.down)
             VStack(spacing: 2) {
                 HStack(spacing: 2) {
-                    CoverArtView(data: previews[0], side: half, cornerRadius: 0, placeholderSymbol: "photo")
-                    CoverArtView(data: previews[1], side: half, cornerRadius: 0, placeholderSymbol: "photo")
+                    photoTile(previews[0], side: half)
+                    photoTile(previews[1], side: half)
                 }
                 HStack(spacing: 2) {
-                    CoverArtView(data: previews[2], side: half, cornerRadius: 0, placeholderSymbol: "photo")
-                    CoverArtView(data: previews[3], side: half, cornerRadius: 0, placeholderSymbol: "photo")
+                    photoTile(previews[2], side: half)
+                    photoTile(previews[3], side: half)
                 }
             }
             .frame(width: side, height: side)
             .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        } else if let first = previews.first {
+            photoTile(first, side: side, cornerRadius: 8,
+                      placeholderSymbol: "photo.on.rectangle")
         } else {
-            CoverArtView(data: previews.first, side: side, placeholderSymbol: "photo.on.rectangle")
+            CoverArtView(id: "albumFotos:\(album.id)", load: { nil }, side: side,
+                         placeholderSymbol: "photo.on.rectangle")
         }
+    }
+
+    private func photoTile(_ item: LibraryItem, side: CGFloat,
+                           cornerRadius: CGFloat = 0,
+                           placeholderSymbol: String = "photo") -> some View {
+        let url = item.preparedURL ?? item.sourceURL
+        return CoverArtView(id: PhotoThumbnailID.make(for: item),
+                            load: { try? Data(contentsOf: url) },
+                            side: side, cornerRadius: cornerRadius,
+                            placeholderSymbol: placeholderSymbol)
+    }
+}
+
+/// ST-183: la identidad de la miniatura de una foto en la caché.
+///
+/// A diferencia de una carátula, los bytes de una foto **no están en
+/// memoria** -- viven en su archivo preparado -- así que no se les puede
+/// sacar una huella sin leerlos, que es justo lo que se quiere evitar en
+/// el `body`. La identidad es entonces el id del ítem más la ruta que se
+/// va a leer: cambia si la foto se reprocesa a otra ruta, y
+/// `LibraryViewModel` invalida la entrada a mano cuando reescribe el
+/// archivo preparado en el mismo lugar.
+enum PhotoThumbnailID {
+    static func make(for item: LibraryItem) -> String {
+        "foto:\(item.id.uuidString)#\((item.preparedURL ?? item.sourceURL).path)"
     }
 }
 
