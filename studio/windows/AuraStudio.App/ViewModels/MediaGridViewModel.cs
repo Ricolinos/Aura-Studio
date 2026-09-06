@@ -44,7 +44,14 @@ public readonly record struct MediaCardSpec(
         && string.Equals(card.Subtitle, Subtitle, StringComparison.Ordinal)
         && string.Equals(card.ImagePath, ImagePath, StringComparison.Ordinal)
         && ReferenceEquals(card.CoverItem, CoverItem)
-        && string.Equals(card.CoverItem?.CoverHash, CoverItem?.CoverHash, StringComparison.Ordinal);
+        && string.Equals(card.CoverItem?.CoverHash, CoverItem?.CoverHash, StringComparison.Ordinal)
+
+        // ST-204: y la tapa que TODAVÍA no se guardó. Desde que el guardado se
+        // difiere, el hash de una tapa recién elegida sigue siendo el viejo
+        // hasta que el persistidor escriba —medio segundo después—, así que
+        // mirar solo el hash dejaría la tarjeta con la tapa anterior justo
+        // después de cambiarla.
+        && ReferenceEquals(card.CoverItem?.Metadata?.CoverArtData, CoverItem?.Metadata?.CoverArtData);
 
     public MediaCard ToCard() => new(Id, Title, Subtitle, CoverItem, ImagePath);
 }
@@ -713,7 +720,8 @@ public sealed partial class MediaGridViewModel : ViewModelBase
 
                 if (best is { CanApplyWithoutAsking: true })
                 {
-                    _library.ApplyAlbumCover(target.AlbumKey, best.Data, markEditedByUser: false);
+                    _library.ApplyAlbumCover(
+                        target.AlbumKey, best.Data, markEditedByUser: false, inBatch: true);
                     applied++;
                 }
                 else
@@ -727,7 +735,16 @@ public sealed partial class MediaGridViewModel : ViewModelBase
             IsApplyingRecommendedCover = false;
         }
 
-        Refresh();
+        // ST-204: un solo aviso y un solo guardado para todo el lote. Adentro del
+        // bucle eran doscientas reconstrucciones de la cuadrícula y doscientas
+        // escrituras del catálogo entero.
+        //
+        // El aviso de la biblioteca ya rehace ESTA cuadrícula (OnLibraryChanged):
+        // llamar además a Refresh() sería reconstruir las mil tarjetas dos veces
+        // seguidas para dejarlas igual.
+        if (applied > 0) _library.FinishAlbumCoverBatch();
+        else Refresh();
+
         return (applied, pending);
     }
 

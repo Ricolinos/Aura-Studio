@@ -243,6 +243,12 @@ public sealed partial class MainWindow : Window
     {
         SavePlacement();
 
+        // ST-204: el guardado del catálogo se difiere medio segundo para juntar
+        // la ráfaga; si el usuario cierra la ventana dentro de esa ventana de
+        // tiempo, lo pendiente se escribe ahora —en este hilo y sin volver—,
+        // porque después de esto ya no hay a dónde volver.
+        App.Services.GetRequiredService<ViewModels.LibraryViewModel>().FlushPendingSave();
+
         // ST-169: si esta app detuvo el servicio de Apple, se reanuda al
         // cerrar. Es el camino rápido, no la garantía — cerrar bien es
         // justamente lo que no pasa en un cuelgue, y para eso está la tarea

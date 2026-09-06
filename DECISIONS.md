@@ -7772,6 +7772,62 @@ escrituras de archivo pasan de 250 ms en cuanto la máquina tiene algo más
 que hacer. No es un bloqueo de `applyAlbumCover`. El arreglo es crear el
 fixture ANTES de instalar el colector; vive en `Tests/`.
 
+### Medición del núcleo puro ("mac/medicion", worktree aislado, commit por confirmar)
+
+Verificado con el candado de la Mac, en el mismo worktree aislado usado
+para ST-181/ST-182/ST-183 (nunca en el árbol compartido, donde el
+experto ya seguía con F5 al momento de esta medición).
+
+`Tests/AuraStudioTests/GridSelectionTests.swift`: **35/35 en verde** --
+el núcleo puro completo de F4: `GridSelection.handleTap(_:order:
+modifiers:)` (clic, ⌘+clic, Shift+clic con el reemplazo de rango nuevo),
+`move` (las cuatro flechas, extensión con Shift, reversibilidad, casos
+límite sin foco previo y en los bordes del orden), `applyMarquee`,
+`lastTapped` público, `GridMarquee` (rect/hits/selection para los tres
+modificadores, reversibilidad de agrandar y achicar el rectángulo),
+`GridDirection` (paso por columna, degradado a 1 columna sin marcos), y
+`GridSelectionModel` (`columnsPerRow` deducido de los marcos reportados,
+ciclo de vida completo del arrastre con `setFramesForTesting`).
+
+**El caso que señaló "experto en código opus" como el más valioso**
+(⌘+clic en tres sueltos, ⌘+clic en el 10 para fijar el ancla sin
+reemplazar la selección, Shift+clic en el 20, Shift+clic en el 15) se
+verificó exactamente como lo describió: el segundo Shift+clic ACHICA el
+rango (quedan los tres sueltos más 10-15), en vez de acumular hasta el
+20 como hacía el código antes de F4.
+
+**XCUITest del arrastre real, intentado y no viable (tope de una hora,
+pedido de "Sesión Maestra")**: el proyecto no tiene un target de UI
+testing (`project.yml` solo declara `AuraStudio` y `AuraStudioTests`),
+la app no tiene ninguna forma de arrancar apuntando a una biblioteca
+sintética (sin variable de entorno ni argumento de lanzamiento --
+verificado con `grep` de `ProcessInfo`/`CommandLine` en todo `Sources/`),
+y ninguna vista tiene `accessibilityIdentifier`. Los tres son cambios de
+`Sources/`/`project.yml`, fuera del alcance de una sesión que no toca
+`Sources/` y, por su tamaño, del tope de una hora. Documentado en
+`docs/guion-verificacion-f4-seleccion.md`, que ahora dice explícitamente
+que el arrastre es el ÚNICO de los ocho gestos sin verificación
+automática, y que los otros siete no dependen de él (cada uno llama
+directo a una función pura de `GridSelection`, sin pasar por el
+`NSViewRepresentable`).
+
+**El vigilante que volvió a fallar una vez más (684 ms) pese al arreglo
+de orden**: queda para que el experto lo cierre en **F6**, según acordó
+"Sesión Maestra" -- no se investiga más de este lado por ahora.
+
+### Nota de proceso: por qué este commit vive en una rama aparte
+
+F5 (CoverStore/`coverURL`/`coverHash`) ya estaba en curso, sin commitear,
+directo en el árbol compartido al momento de esta medición -- y tocaba
+los mismos tres archivos de prueba que esta PARADA modificó (adaptando
+`AlbumsGridPerformanceBaselineTests.swift`, entre otros, a la API nueva).
+Para no commitear una mezcla de dos sesiones en el mismo archivo, esta
+medición se hizo y se commiteó en un **worktree aislado, rama
+`mac/medicion`**, con SOLO los archivos de esta PARADA -- nada del WIP de
+F5. "Sesión Maestra" lo fusiona a `origin/main`; el experto fusiona
+`origin/main` sobre su F5 en curso antes de commitearla, resolviendo ahí
+cualquier conflicto en los archivos de prueba compartidos.
+
 ## ST-185 — PLAN-studio-rendimiento-2.md, Fase F5: las carátulas salen de la memoria
 
 Sexta PARADA de la ronda 2 (sesión "experto en código opus"). Cierra el
@@ -7894,3 +7950,179 @@ que lo que mide siga siendo el camino real. Se conserva un parámetro de
 conveniencia `TrackMetadata(coverArtData:)` que calcula el hash y deja
 los bytes en la escala: es lo que usan las pruebas que arman metadata con
 una carátula sin pasar por el guardado del catálogo.
+
+## ST-208 (addendum) — La deduplicación de carátulas por álbum no va en esta ronda
+
+**Decisión de la Maestra.** ST-208 dejó anotado que las doce pistas de un álbum
+guardan hoy doce copias del mismo JPEG en `.portadas/` —87 MB donde alcanzarían
+7— y que `coverHash` habilita compartir el archivo entre las pistas que tienen la
+misma imagen. La Maestra decidió que **eso no entra en la ronda 2**.
+
+Lo que queda en pie, entonces:
+
+- **Un archivo `<ID>.jpg` por elemento**, como hasta ahora. `CoverRelativePath`
+  sigue apuntando al archivo propio de cada elemento y `WriteCover`/`RemoveCover`
+  siguen siendo dueños de un archivo cada uno. Nada de lo que hizo ST-208 —leer
+  la tapa del disco cuando se necesita, en vez de tenerla en RAM— depende de
+  compartir archivos.
+- **`coverHash` se escribe igual**, con la semántica que fijó la Maestra para
+  ambas plataformas (SHA-256 en mayúsculas, `null` = "no se sabe", `null` de ruta
+  ⇒ `null` de hash). Es el habilitador de la deduplicación cuando se decida
+  hacerla, y mientras tanto ya sirve para saber si dos tapas son la misma sin
+  abrir los dos archivos.
+- **La deduplicación queda en la lista de pendientes**, no en esta ronda ni en
+  ninguna ST abierta. Cuando se retome, lo que hay que resolver es el borrado:
+  con archivos compartidos, `RemoveCover` de una pista no puede borrar el archivo
+  si otra lo sigue usando, y eso es exactamente el tipo de recuento que ST-087
+  enseñó a no improvisar.
+
+## ST-204 — Windows: el catálogo se guarda una vez por ráfaga, y no en el hilo de interfaz
+
+Ronda 2 de rendimiento, encargo W4 de `docs/plans/PLAN-studio-rendimiento-2.md`.
+Es la paridad con `CatalogPersister.swift` de la Mac (ST-155), que resolvió lo
+mismo allá.
+
+### Qué había
+
+`LibraryViewModel.Save()` era, literalmente, escribir el catálogo entero:
+
+```
+Save() → store.SaveItems(Items) → LibraryCatalogStore.Save(...)  ← File.WriteAllText
+       → RefreshAvailable()
+```
+
+De inmediato, sincrónico, **en el hilo de interfaz**, y desde diecisiete lugares
+distintos del modelo. Con la biblioteca del dueño eso son 7 MB de JSON serializado
+y escrito antes de que la interfaz vuelva a responder. Tres consecuencias:
+
+1. **Un lote era N escrituras completas.** «Aplicar la tapa recomendada» a los
+   álbumes seleccionados llama a `ApplyAlbumCover` en bucle, un álbum por vuelta,
+   y cada vuelta guardaba: doscientos álbumes eran doscientas escrituras del
+   catálogo entero, más doscientas pasadas de `RefreshAvailable` sobre los 12 000
+   elementos. El resultado final era idéntico al de guardar una sola vez.
+2. **`SaveItems` releía el catálogo del disco para poder escribirlo.** Las
+   playlists no viven en `Items`, y para no borrarlas al guardar la biblioteca
+   —regla de ST-087, guardar una cosa no puede borrar otra— el almacén volvía a
+   **leer y parsear los 7 MB** en cada guardado, solo para copiar de ahí la lista
+   de playlists. Un guardado costaba una lectura completa.
+3. **La escritura congelaba la ventana.** No hay nada asincrónico en
+   `File.WriteAllText` de 7 MB sobre una unidad de red.
+
+### Qué se hizo
+
+**`CatalogPersister` (Core).** Pedir un guardado (`Schedule()`) arma un
+temporizador corto; pedirlo otra vez antes de que salte lo reemplaza. Cuando
+salta, se arma la **instantánea** en el hilo de interfaz y la **escritura** —lo
+lento— se hace en segundo plano.
+
+La espera es de **medio segundo**, que es lo que pide el plan: suficiente para
+juntar un lote entero, poco para que alguien alcance a cerrar la app en el medio
+— y si lo hace, `Flush()` lo escribe antes de salir. `MainWindow_Closed` y
+`ReloadAsync` (cambiar de carpeta de biblioteca) lo llaman: un guardado que
+todavía no salió no puede perderse porque el usuario cerró la ventana.
+
+**Por qué la instantánea y no serializar los elementos vivos.** Serializar
+`Items` desde un hilo de fondo sería leerlos mientras la interfaz los muta. No
+corrompería el archivo —`LibraryCatalogStore.Save` escribe a un temporal y hace
+`File.Move` atómico desde ST-087—, pero sí podría escribir en el catálogo del
+usuario **un estado que nunca existió**: media edición. `LibraryStore.Snapshot`
+existe justamente para separar las dos mitades: armar el valor (hilo de interfaz,
+donde los elementos vivos se pueden leer sin carreras) y escribirlo (segundo
+plano).
+
+**El temporizador se inyecta.** `ICatalogPersisterHost` tiene las tres cosas que
+el persistidor necesita de la plataforma —programar, cancelar, correr en segundo
+plano— y `DispatcherPersisterHost` las ata a la cola de despacho de WinUI. Core
+no depende de WinUI, y la coalescencia se prueba sin esperar medio segundo de
+reloj real. Sin cola de despacho —una prueba, el arnés— lo programado corre al
+instante y en el mismo hilo: degrada, no rompe.
+
+**`SaveItems` ya no relee el catálogo.** Las playlists salen ahora de la **misma**
+lectura que los elementos (`LibraryLoad` las trae) y la app las conserva en
+memoria; el guardado las recibe como parámetro. El respaldo de releerlas sigue
+ahí para quien guarde sin tenerlas a mano: la regla de ST-087 no se toca, solo
+deja de pagarse en cada guardado.
+
+**`ApplyAlbumCover` sin guardado ni `RefreshAvailable` por álbum.** Sube la
+versión del catálogo, pide el guardado —que se junta con los otros ciento noventa
+y nueve— y ya. `RefreshAvailable` no tiene nada que hacer ahí: aplicar una tapa
+no cambia qué archivos están en el disco, y reconstruir la lista de disponibles
+por álbum era recorrer 12 000 elementos doscientas veces para llegar a la misma
+lista. El aviso a las vistas lo da `FinishAlbumCoverBatch()`, **una vez** al
+terminar el lote; aplicada suelta —«elegí esta tapa» para un álbum— sigue
+avisando en el acto, que es lo que hace que la tarjeta cambie ya.
+
+**JSON compacto.** `WriteIndented = false`. Con 12 000 elementos la sangría son
+megabytes de espacios que se escriben en cada guardado y se vuelven a parsear en
+cada lectura, en las dos apps. El archivo lo leen dos programas, no personas.
+
+**El guardado de la migración de tamaños también pasa por el persistidor.**
+`SaveCatalogQuietly` escribía los 7 MB directo, y corre despachado al hilo de
+interfaz a propósito —es donde se puede mirar `Items` sin carreras—: era el
+guardado de segundos con la ventana congelada que medía el arnés al abrir una
+biblioteca vieja. Ahora pide y vuelve; lo que la distingue de `Save()` sigue
+siendo lo mismo, que no rehace la lista de disponibles.
+
+**Un efecto colateral que había que atender.** Las listas de reproducción ya no
+se releen del disco: `LoadPlaylists()` devuelve las de memoria. Así que
+`SavePlaylists` tiene que actualizar **las dos formas** —la viva y la
+persistida—; si no, recargar la pantalla de Listas revertía lo que el usuario
+acababa de guardar.
+
+### Un detalle que se veía mal
+
+Desde que el guardado se difiere, `CoverHash` sigue siendo el viejo hasta que el
+persistidor escriba. `MediaCardSpec.Matches` lo usa para decidir si una tarjeta
+cambió, así que una tapa recién elegida no habría repintado la tarjeta hasta
+medio segundo después. `Matches` compara además los bytes **pendientes de
+escribir**, que es lo que hay en el elemento en ese instante.
+
+### Lo que NO entra acá
+
+- **Las carátulas pendientes se siguen escribiendo en el hilo de interfaz**,
+  dentro de `Snapshot`. Son solo las **sucias** —las que el usuario acaba de
+  cambiar—, y bajarlas al segundo plano choca con una propiedad deliberada de
+  ST-208: el catálogo no anuncia una tapa que no se pudo escribir. Anotar la ruta
+  primero y escribir después obliga a corregir el elemento desde el hilo de
+  fondo, que es exactamente la carrera que este cambio vino a quitar. Queda
+  dicho, no hecho.
+- **La versión del catálogo y `RefreshAvailable` siguen atados a `Save()`.** Para
+  las acciones de lote que ya recorren su selección adentro (`SetFavorite`,
+  `Remove`, `ApplyCategory`…) eso es una pasada por acción, no por elemento, y no
+  hacía falta tocarlas.
+
+### Números
+
+Arnés de ST-200, 1 000 álbumes x 12 pistas = 12 000 canciones con carátula real
+(`dotnet run --project tools/LibraryPerfCheck -c Release -- 1000 12 0`), sección
+`c-bis` nueva. La VM es ruidosa: van las dos corridas.
+
+| | antes | después |
+|---|---|---|
+| **«Aplicar la tapa recomendada» a 1 000 álbumes** | 1 000 escrituras completas: **~201 s** (~137 s en la 2.ª corrida) | **1 escritura: 74 ms** (27 ms) |
+| **Un guardado del catálogo de 12 000 elementos** | 201 ms (137 ms), en el hilo de interfaz | **74 ms (27 ms), en un hilo de fondo** |
+| **Pedidos de guardado por lote** | 1 000 | **1** |
+| **`biblioteca.json`** | 8.2 MB | **6.2 MB** (2.1 MB eran espacios, +33 %) |
+
+El guardado suelto baja de 201 ms a 74 ms **además** de mudarse de hilo, y eso es
+la relectura del catálogo que ya no ocurre: antes, escribir obligaba a leer.
+
+El arnés comprueba las dos cosas que importan y las imprime: `escrituras de
+verdad: 1 (debe ser 1)` y `hilo que pidió: 5 -- hilo que escribió: 7 (fuera del
+de interfaz, correcto)`. Lo segundo se espera con un evento y no con
+`Task.Wait()`: esperar la tarea deja que el planificador la ejecute en el hilo
+que espera, y la comprobación habría dicho "mismo hilo" por culpa de la
+medición.
+
+### Verificación
+
+`dotnet build` de Core, App y el arnés: **0 advertencias, 0 errores**.
+`dotnet test`: **1 447 pruebas en verde**, nueve nuevas para el persistidor —una
+ráfaga es un guardado, la instantánea se arma al guardar y no al pedirlo, cerrar
+con algo pendiente lo escribe, sin biblioteca delante no se escribe nada, el
+disco ausente lo dice sin romper— y una existente reescrita a mano
+(`WhatIsWrittenBackIsANormalNumber`, que esperaba la sangría).
+
+Lo que **no** se verificó acá: cómo se siente la app. Esta sesión no puede abrir
+la ventana; que cerrarla escriba lo pendiente y que la tapa recién elegida
+repinte en el acto los ve quien la tenga delante.

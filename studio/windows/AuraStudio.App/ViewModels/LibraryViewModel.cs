@@ -28,6 +28,9 @@ public sealed partial class LibraryViewModel : ViewModelBase
     /// <summary>Donde se anuncia lo que la app hace por su cuenta (ST-203).</summary>
     private readonly BackgroundTaskCenter _tasks;
 
+    /// <summary>Quien escribe el catálogo, una vez por ráfaga y fuera del hilo de UI (ST-204).</summary>
+    private readonly CatalogPersister _persister;
+
     private LibraryStore _store;
 
     /// <summary>
@@ -81,6 +84,9 @@ public sealed partial class LibraryViewModel : ViewModelBase
         Items = [];
         AvailableItems = [];
         StatusMessage = "";
+
+        _persister = new CatalogPersister(new DispatcherPersisterHost(_dispatcher), SnapshotForSave);
+        _persister.Failed += OnSaveFailed;
 
         // ST-203: **no espera**. La inyección de dependencias construye este
         // modelo la primera vez que alguien entra a una sección de la
@@ -227,7 +233,13 @@ public sealed partial class LibraryViewModel : ViewModelBase
     /// no "algo lo escribió", y blindar una tapa que nadie miró dejaría al
     /// álbum con ella para siempre, incluso cuando después aparezca una mejor.
     /// </param>
-    public int ApplyAlbumCover(string albumKey, byte[] cover, bool markEditedByUser = true)
+    /// <param name="inBatch">
+    /// Cuando esto corre en bucle, un álbum por vuelta (ST-204). Entonces el
+    /// aviso a las vistas lo da <see cref="FinishAlbumCoverBatch"/> una sola vez
+    /// al final, en vez de rehacer la cuadrícula doscientas veces.
+    /// </param>
+    public int ApplyAlbumCover(
+        string albumKey, byte[] cover, bool markEditedByUser = true, bool inBatch = false)
     {
         if (cover.Length == 0) return 0;
 
@@ -248,9 +260,21 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
         if (applied == 0) return 0;
 
-        Save();
-        RefreshAvailable();
-        OnPropertyChanged(nameof(Items));
+        // ST-204: **ni guardado ni recuento acá**. Esto se llama en bucle, un
+        // álbum por vuelta, desde "aplicar la tapa recomendada a N álbumes": el
+        // guardado lo junta el persistidor en uno solo, y rehacer la lista de lo
+        // disponible por álbum era reconstruir 12 000 elementos mil veces para
+        // llegar a la misma lista — aplicar una tapa no cambia qué archivos
+        // están.
+        //
+        // Sí sube la versión del catálogo: el índice y el resumen de estado
+        // guardan cosas derivadas de estos elementos, y acaban de cambiar.
+        _catalogVersion++;
+        _persister.Schedule();
+
+        // Suelto, sí avisa: la mayoría de las veces esto es "elegí esta tapa"
+        // para un álbum, y la tarjeta tiene que cambiar ya.
+        if (!inBatch) FinishAlbumCoverBatch();
 
         StatusMessage = applied == 1
             ? "Se cambió la tapa de 1 canción."
@@ -258,6 +282,13 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
         return applied;
     }
+
+    /// <summary>
+    /// Lo que hay que hacer <b>una vez</b> al terminar un lote de
+    /// <see cref="ApplyAlbumCover"/> (ST-204): avisar a las vistas. El guardado
+    /// ya lo junta el persistidor solo.
+    /// </summary>
+    public void FinishAlbumCoverBatch() => OnPropertyChanged(nameof(Items));
 
     /// <summary>Los pósters de video que falten. Viajan pegados a su video.</summary>
     public async Task FetchVideoPostersAsync(CancellationToken ct = default)
@@ -424,6 +455,10 @@ public sealed partial class LibraryViewModel : ViewModelBase
     {
         // Antes de cualquier salida: lo que se estaba midiendo o cargando en
         // segundo plano es de los elementos anteriores (ST-201, ST-203).
+        // ST-204: lo que estuviera esperando para guardarse es de la carpeta
+        // que estamos por dejar. Se escribe AHORA o se pierde.
+        _persister.Flush();
+
         CancelFileSizeBackfill();
         _loading?.Cancel();
 
@@ -520,6 +555,11 @@ public sealed partial class LibraryViewModel : ViewModelBase
         // De acá en adelante, otra vez en el hilo de interfaz: se publica todo
         // junto, una sola vez.
         LoadError = load.Error;
+
+        // Las listas salieron de la misma lectura (ST-204) y se conservan: cada
+        // guardado las necesita, y releerlas costaba otro parseo de 7 MB.
+        Playlists = load.Playlists;
+        _playlists = LibraryStore.ToPersisted(load.Playlists);
 
         foreach ((string path, bool exists) in availability) _availability[path] = exists;
 
@@ -664,23 +704,15 @@ public sealed partial class LibraryViewModel : ViewModelBase
     /// para trabajo de fondo que cambió datos de los elementos pero no cambió
     /// cuáles se pueden mostrar: rehacer <see cref="RefreshAvailable"/> ahí serían
     /// otros 12 000 <c>File.Exists</c> por red para llegar a la misma lista.
+    ///
+    /// <para>ST-204: pasa por el persistidor como todo lo demás. Esto corre en
+    /// el hilo de interfaz —lo despacha ahí el fondo de la migración de tamaños
+    /// para poder mirar <c>Items</c> sin carreras— y escribir los 7 MB acá
+    /// mismo era el guardado de cuatro a cinco segundos con la ventana
+    /// congelada que medía el arnés. El disco ausente y el error de escritura
+    /// los atiende el persistidor.</para>
     /// </summary>
-    private void SaveCatalogQuietly()
-    {
-        if (!_store.Availability.IsAvailable) return;
-
-        try
-        {
-            _store.SaveItems(Items);
-        }
-        catch (LibraryRootUnavailableException)
-        {
-            // El disco se fue entre la comprobación y la escritura. Es un
-            // estado, no un error que mostrar en un diálogo.
-            Availability = LibraryAvailability.For(_store.Root);
-            WatchForTheRoot(true);
-        }
-    }
+    private void SaveCatalogQuietly() => _persister.Schedule();
 
     // --- Migración de carátulas a cuadradas (ST-141) ---
 
@@ -801,42 +833,69 @@ public sealed partial class LibraryViewModel : ViewModelBase
     /// </summary>
     public void SaveAndRefresh()
     {
+        // Save() ya rehace la lista de disponibles (ST-204): repetirlo acá era
+        // recorrer los 12 000 elementos dos veces para el mismo resultado.
         Save();
-        RefreshAvailable();
         OnPropertyChanged(nameof(Items));
     }
 
+    /// <summary>
+    /// Pide guardar (ST-204). <b>No escribe acá</b>: arma el guardado y vuelve.
+    ///
+    /// <para>Antes, cada una de las diecisiete llamadas de este modelo escribía
+    /// el catálogo entero, de inmediato y en el hilo de interfaz. Aplicar la tapa
+    /// recomendada a doscientos álbumes eran doscientas escrituras completas.
+    /// Ahora una ráfaga es <b>un</b> guardado, y ocurre en segundo plano.</para>
+    /// </summary>
     private void Save()
     {
-        // ST-171: sin la biblioteca delante no se escribe. Lo que hay en
-        // memoria entonces no es el catálogo del usuario —es lo que quedó de no
-        // haber podido leerlo—, y guardarlo lo reemplazaría por eso. El
-        // catálogo también se defiende solo (`LibraryCatalogStore.Save` exige
-        // el volumen montado), pero acá se sabe además que la carpeta está.
+        _persister.Schedule();
+        RefreshAvailable();
+    }
+
+    /// <summary>
+    /// Escribe lo que esté pendiente ahora mismo y espera. Antes de cerrar la
+    /// app y antes de cambiar de carpeta de biblioteca: un guardado que todavía
+    /// no salió no puede perderse porque el usuario cerró la ventana.
+    /// </summary>
+    public void FlushPendingSave() => _persister.Flush();
+
+    /// <summary>
+    /// Lo que hay que guardar, resuelto en el momento del guardado. Corre en el
+    /// hilo de interfaz.
+    /// </summary>
+    private CatalogSnapshotRequest SnapshotForSave()
+    {
+        // ST-171: sin la biblioteca delante no se escribe. Lo que hay en memoria
+        // entonces no es el catálogo del usuario —es lo que quedó de no haber
+        // podido leerlo—, y guardarlo lo reemplazaría por eso.
         if (!_store.Availability.IsAvailable)
         {
             Availability = _store.Availability;
             WatchForTheRoot(true);
-            return;
+            return CatalogSnapshotRequest.None;
         }
 
-        try
-        {
-            // SIEMPRE el catálogo entero. Guardar cualquier lista más chica —la
-            // filtrada por archivos presentes, por ejemplo— borra datos del usuario.
-            _store.SaveItems(Items);
-        }
-        catch (LibraryRootUnavailableException)
-        {
-            // El disco se fue entre la comprobación y la escritura. Es un
-            // estado, no un error que mostrar en un diálogo.
-            Availability = LibraryAvailability.For(_store.Root);
-            WatchForTheRoot(true);
-            return;
-        }
+        LibraryStore store = _store;
+        IReadOnlyList<LibraryItem> items = Items;
+        IReadOnlyList<PersistedPlaylist> playlists = _playlists;
 
-        RefreshAvailable();
+        // SIEMPRE el catálogo entero. Guardar cualquier lista más chica —la
+        // filtrada por archivos presentes, por ejemplo— borra datos del usuario.
+        //
+        // Y las playlists se pasan: sin ellas, el almacén tiene que releer el
+        // catálogo del disco solo para no perderlas (ST-204).
+        return new CatalogSnapshotRequest(false, store.Root, () => store.Snapshot(items, playlists));
     }
+
+    private void OnSaveFailed(object? sender, string message) => Dispatch(() =>
+    {
+        // El disco se fue entre que se pidió el guardado y que se escribió. Es un
+        // estado, no un error que mostrar en un diálogo.
+        Availability = LibraryAvailability.For(_store.Root);
+        WatchForTheRoot(true);
+        StatusMessage = message;
+    });
 
     /// <summary>
     /// Vuelve a calcular qué se puede mostrar. Se llama después de CADA cambio
@@ -989,9 +1048,33 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
     // MARK: - Listas de reproducción
 
-    public IReadOnlyList<Playlist> LoadPlaylists() => _store.LoadPlaylists();
+    /// <summary>
+    /// Las listas, tal como están en el catálogo (ST-204). Se cargan con la
+    /// biblioteca y se conservan acá porque <b>cada guardado las necesita</b>:
+    /// sin tenerlas, el almacén tiene que releer los 7 MB del catálogo del disco
+    /// solo para no borrarlas.
+    /// </summary>
+    private IReadOnlyList<PersistedPlaylist> _playlists = [];
 
-    public void SavePlaylists(IEnumerable<Playlist> playlists) => _store.SavePlaylists(playlists);
+    /// <summary>
+    /// Las listas, ya en memoria (ST-204). Salieron de la misma lectura del
+    /// catálogo que los elementos: pedirlas al disco era parsear los 7 MB por
+    /// segunda vez, y era lo que costaba abrir la pantalla de Listas.
+    /// </summary>
+    public IReadOnlyList<Playlist> Playlists { get; private set; } = [];
+
+    public IReadOnlyList<Playlist> LoadPlaylists() => Playlists;
+
+    public void SavePlaylists(IEnumerable<Playlist> playlists)
+    {
+        // Las dos formas a la vez: la viva es la que devuelve LoadPlaylists —y
+        // desde ST-204 sale de memoria, no del disco—, así que dejarla sin
+        // actualizar haría que recargar la pantalla de Listas revirtiera lo que
+        // el usuario acaba de guardar.
+        Playlists = [.. playlists];
+        _playlists = LibraryStore.ToPersisted(Playlists);
+        Save();
+    }
 
     // MARK: - Agrupaciones para las cuadrículas
 

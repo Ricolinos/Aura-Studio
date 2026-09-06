@@ -190,7 +190,7 @@ public class CoverArtPreservationTests : IDisposable
 
         Assert.Equal(64, hash.Length);
         Assert.Equal(hash.ToUpperInvariant(), hash);
-        Assert.Contains($"\"coverHash\": \"{hash}\"", json);
+        Assert.Contains($"\"coverHash\":\"{hash}\"", json);
     }
 
     [Fact]
