@@ -30,6 +30,21 @@ namespace AuraStudio.App.Services;
 /// se dice explícitamente que la pila no se pudo capturar, nunca se lanza.
 /// Nunca corre fuera de <c>DEBUG</c> ni sin la variable de entorno: no es
 /// parte de lo que ve el usuario.</para>
+///
+/// <para><b>4.º addendum de ST-200 (hallazgo de W7): la captura podía
+/// dejar el hilo de UI suspendido para siempre.</b> <c>StackWalker</c>
+/// llamaba <c>SymInitialize(..., invadeProcess: true)</c> la primera vez que
+/// hacía falta, <b>con el hilo de UI ya suspendido</b>: invadir el proceso
+/// enumera módulos, lo que pide el candado del cargador de Windows -- y si el
+/// hilo de UI estaba bloqueado justo <i>cargando un módulo o compilando JIT</i>
+/// (el caso más común de un bloqueo al arranque), lo suspendimos con ese
+/// candado tomado. Nadie podía soltarlo -- interbloqueo, el hilo de UI nunca
+/// vuelve. Dos cambios lo cierran: <see cref="StackWalker.InitializeSymbolsSafely"/>
+/// corre una sola vez, al arrancar el vigilante, mucho antes de que exista
+/// ningún hilo suspendido; y como red de seguridad (por si algo más bajo
+/// <c>dbghelp.dll</c> volviera a tocar el candado), un hilo centinela aparte
+/// reanuda el hilo de UI a la fuerza si la captura entera tarda más de
+/// <see cref="CaptureGuardMs"/> ms, pase lo que pase adentro.</para>
 /// </summary>
 public static class UiThreadWatchdog
 {
@@ -37,6 +52,18 @@ public static class UiThreadWatchdog
     private const int ThresholdMs = 250;
     private const int PollIntervalMs = 50;
     private const int MaxFrames = 64;
+
+    /// <summary>
+    /// Si la captura (contexto + desenrollado) no terminó en este tiempo
+    /// desde que se suspendió el hilo de UI, el centinela lo reanuda a la
+    /// fuerza. 200 ms: bastante para un desenrollado sano (que tarda
+    /// microsegundos-milisegundos, medido), muy por debajo de los varios
+    /// segundos que costaría dejar al usuario con la app congelada.
+    /// </summary>
+    private const int CaptureGuardMs = 200;
+
+    /// <summary>Cada cuánto se anota "sigue bloqueado" mientras un bloqueo no termina.</summary>
+    private const int StillHangingLogIntervalMs = 5000;
 
     private static long _lastHeartbeatTicks;
     private static DispatcherQueue? _dispatcher;
@@ -71,6 +98,10 @@ public static class UiThreadWatchdog
         _uiThreadId = NativeMethods.GetCurrentThreadId();
         _lastHeartbeatTicks = Environment.TickCount64;
 
+        // Acá, y solo acá: mucho antes de que exista ningún hilo suspendido.
+        // Ver el addendum de la clase para el porqué exacto.
+        StackWalker.InitializeSymbolsSafely();
+
         BeatHeartbeat();
 
         var thread = new Thread(Watch) { IsBackground = true, Name = "AuraStudio.UiThreadWatchdog" };
@@ -98,25 +129,41 @@ public static class UiThreadWatchdog
     private static void Watch()
     {
         long? hangStartedTicks = null;
+        long lastStillHangingLogTicks = 0;
 
         while (true)
         {
             Thread.Sleep(PollIntervalMs);
 
-            long sinceLastBeat = Environment.TickCount64 - Volatile.Read(ref _lastHeartbeatTicks);
+            long now = Environment.TickCount64;
+            long sinceLastBeat = now - Volatile.Read(ref _lastHeartbeatTicks);
 
             if (sinceLastBeat > ThresholdMs)
             {
                 if (hangStartedTicks is null)
                 {
-                    hangStartedTicks = Environment.TickCount64 - sinceLastBeat;
-                    CapturedFrames? frames = TryCaptureUiThreadFrames();
-                    _pendingFrames = frames;
+                    hangStartedTicks = now - sinceLastBeat;
+                    lastStillHangingLogTicks = now;
+                    StartCaptureAsync();
+                }
+                else if (now - lastStillHangingLogTicks >= StillHangingLogIntervalMs)
+                {
+                    // Un bloqueo indefinido nunca llega a "Report": sin esto
+                    // no queda NADA en el log más que el "activo" inicial,
+                    // que es justo lo que pasó en el hallazgo de W7. Nota de
+                    // cobertura: si el propio hilo de Watch() se queda sin
+                    // CPU durante el bloqueo (ver "Lo no cubierto" del
+                    // addendum), este aviso puede no alcanzar a imprimirse a
+                    // tiempo -- el reporte final, que usa marcas de tiempo
+                    // reales y no cuántas vueltas dio este bucle, sigue
+                    // siendo preciso de todos modos.
+                    Log($"[UiThreadWatchdog] bloqueo en curso desde hace {now - hangStartedTicks.Value} ms");
+                    lastStillHangingLogTicks = now;
                 }
             }
             else if (hangStartedTicks is { } startedAt)
             {
-                int durationMs = (int)(Environment.TickCount64 - startedAt);
+                int durationMs = (int)(now - startedAt);
                 Report(durationMs, _pendingFrames);
                 _pendingFrames = null;
                 hangStartedTicks = null;
@@ -125,6 +172,32 @@ public static class UiThreadWatchdog
     }
 
     private static CapturedFrames? _pendingFrames;
+    private static long _captureGeneration;
+
+    /// <summary>
+    /// La captura corre en su <b>propio hilo</b>, nunca en el de <see cref="Watch"/>:
+    /// si queda atascada (el centinela de <see cref="TryCaptureUiThreadFrames"/>
+    /// no alcanza a salvarla, o algo nuevo y no previsto la cuelga de verdad),
+    /// el vigilante sigue vivo y detecta el próximo bloqueo igual -- antes,
+    /// una captura atascada se llevaba consigo al vigilante entero.
+    ///
+    /// <para>La "generación" descarta una captura vieja que termina tarde,
+    /// después de que ya arrancó un bloqueo nuevo: sin esto, un resultado
+    /// atrasado podría pisarle la pila al bloqueo equivocado.</para>
+    /// </summary>
+    private static void StartCaptureAsync()
+    {
+        long generation = Interlocked.Increment(ref _captureGeneration);
+        _pendingFrames = null;
+
+        var thread = new Thread(() =>
+        {
+            CapturedFrames? frames = TryCaptureUiThreadFrames();
+            if (Interlocked.Read(ref _captureGeneration) == generation) _pendingFrames = frames;
+        })
+        { IsBackground = true, Name = "AuraStudio.UiThreadWatchdog.Capture" };
+        thread.Start();
+    }
 
     private static void Report(int durationMs, CapturedFrames? frames)
     {
@@ -133,7 +206,7 @@ public static class UiThreadWatchdog
 
         if (frames is null || frames.Addresses.Count == 0)
         {
-            Log("    (no se alcanzó a capturar la pila -- el bloqueo terminó antes de que se pudiera suspender el hilo, o la arquitectura no está soportada)");
+            Log("    (no se alcanzó a capturar la pila -- el bloqueo terminó antes de que se pudiera suspender el hilo, la captura tardó demasiado, o la arquitectura no está soportada)");
             return;
         }
 
@@ -146,6 +219,15 @@ public static class UiThreadWatchdog
     /// Suspende el hilo de UI lo mínimo posible: solo lo que tarda leer su
     /// contexto y desenrollar las direcciones de retorno con
     /// <c>StackWalk64</c>. Symbolizar viene después, con el hilo ya corriendo.
+    ///
+    /// <para>Un hilo centinela aparte garantiza que el hilo de UI se reanuda
+    /// pase lo que pase adentro, en <see cref="CaptureGuardMs"/> ms como
+    /// mucho -- ver el addendum de la clase. Si la captura de verdad se
+    /// queda pegada más allá de eso (no debería, ya con
+    /// <see cref="StackWalker.InitializeSymbolsSafely"/> corrida de
+    /// antemano), el hilo de UI ya está libre y el único costo es que esta
+    /// llamada (que corre en su propio hilo, ver <see cref="StartCaptureAsync"/>)
+    /// puede tardar en volver o no volver nunca -- sin llevarse la app.</para>
     /// </summary>
     private static CapturedFrames? TryCaptureUiThreadFrames()
     {
@@ -175,6 +257,26 @@ public static class UiThreadWatchdog
                 return null;
             }
 
+            int resumed = 0; // 0 = pendiente, 1 = ya se reanudó (por cualquiera de los dos caminos, ver ResumeOnce)
+
+            void ResumeOnce()
+            {
+                if (Interlocked.Exchange(ref resumed, 1) == 0) NativeMethods.ResumeThread(hThread);
+            }
+
+            using var captureDone = new ManualResetEventSlim(false);
+
+            var guard = new Thread(() =>
+            {
+                if (!captureDone.Wait(CaptureGuardMs) && Interlocked.CompareExchange(ref resumed, 1, 0) == 0)
+                {
+                    NativeMethods.ResumeThread(hThread);
+                    Log($"    (pila no capturada: la captura tardó más de {CaptureGuardMs} ms -- se reanudó el hilo de UI a la fuerza para no colgar la app)");
+                }
+            })
+            { IsBackground = true, Name = "AuraStudio.UiThreadWatchdog.CaptureGuard" };
+            guard.Start();
+
             try
             {
                 IReadOnlyList<ulong> addresses = arch == Architecture.X64
@@ -186,7 +288,8 @@ public static class UiThreadWatchdog
             }
             finally
             {
-                NativeMethods.ResumeThread(hThread);
+                captureDone.Set();
+                ResumeOnce();
             }
         }
         finally

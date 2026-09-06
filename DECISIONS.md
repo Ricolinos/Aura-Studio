@@ -9907,6 +9907,103 @@ lo único que ST-208 agregó a ese camino es un SHA-256 por carátula, medido en
 Ahora el conteo sale de contar los archivos, en la misma pasada de la que ya
 salían los bytes.
 
+## ST-200 (4.º addendum) — La captura del vigilante podía dejar el hilo de UI suspendido para siempre
+
+Hallazgo de W7: con `AURA_WATCHDOG=1`, la app en Debug mostraba la ventana
+(0,7-1,3 s) y se quedaba en blanco y **sin responder** 80+ s o para siempre,
+con CPU casi cero. `watchdog.log` anotaba un bloqueo de ~985 ms al arranque
+(dentro de `clr_execute_assembly`, es decir, carga de módulos/JIT) y después
+nada — porque el vigilante solo escribe un bloqueo cuando **termina**, y uno
+indefinido nunca termina.
+
+### La causa
+
+`StackWalker` llamaba `SymInitialize(..., invadeProcess: true)` la primera
+vez que hacía falta, **con el hilo de UI ya suspendido**
+(`UiThreadWatchdogNative.cs:207-221` de la versión de W0/ST-200). Invadir el
+proceso enumera los módulos cargados, y para eso pide el candado del
+cargador de Windows. Si el hilo de UI estaba bloqueado justo *cargando un
+módulo o compilando JIT* —el caso más común de un bloqueo al arranque, y
+justo lo que decía el único bloqueo que sí quedó anotado—, se lo suspendió
+con ese candado tomado. Nadie podía soltarlo: interbloqueo, el hilo de UI
+nunca vuelve.
+
+### El arreglo
+
+1. `StackWalker.InitializeSymbolsSafely()` (antes `EnsureSymInitialized`,
+   perezoso) corre **una sola vez, al arrancar el vigilante**
+   (`UiThreadWatchdog.StartIfRequested`), mucho antes de que exista ningún
+   hilo suspendido. `PrepareSymbols()` ya no llama `SymInitialize` nunca —
+   si esa llamada de arranque falló, `StackWalk64` desenrolla peor (menos
+   cuadros, o ninguno) en vez de arriesgar el mismo interbloqueo más tarde.
+2. Un hilo centinela aparte (`TryCaptureUiThreadFrames`) garantiza que el
+   hilo de UI se reanuda a más tardar 200 ms después de suspenderlo, **pase
+   lo que pase** en la captura — con `Interlocked.CompareExchange` para que
+   el centinela y el camino normal nunca reanuden dos veces.
+3. La captura ahora corre en su **propio hilo** (`StartCaptureAsync`), no en
+   el de `Watch()`: si queda atascada, el vigilante mismo sigue vivo y
+   detecta el próximo bloqueo igual — antes, una captura atascada se llevaba
+   consigo al vigilante entero. Una "generación" (`_captureGeneration`)
+   descarta una captura vieja que termina tarde, después de que ya arrancó
+   un bloqueo nuevo.
+4. `Watch()` anota "bloqueo en curso desde hace N ms" cada 5 s mientras un
+   bloqueo no termina, para que uno indefinido sí quede en el log en vez de
+   desaparecer después del "activo" inicial — que es exactamente lo que le
+   pasó a W7.
+
+### Verificado con un candado del cargador de verdad, no solo leyendo el código
+
+Se armó un repro fuera del repo (no se commitea: necesita `cl.exe` de MSVC
+para compilar una DLL nativa, frágil como prueba automatizada de CI) con un
+`DispatcherQueueController` de hilo dedicado (sin ventana real, mismo
+patrón que la prueba original de ST-200) como "hilo de UI", que hace
+`LoadLibrary` de una DLL cuyo `DllMain` duerme unos segundos —
+`DllMain` corre con el candado del cargador tomado por el hilo que llamó
+`LoadLibrary`, así que esto reproduce el escenario exacto del hallazgo.
+
+- **Con el código de ANTES de este addendum** (`SymInitialize` perezoso,
+  bajo suspensión): `LoadLibrary` nunca vuelve en 15 s -- el hilo "de UI"
+  queda colgado. `watchdog.log` solo tiene la línea "activo", nunca un
+  "bloqueo" -- idéntico a lo que reportó W7.
+- **Con el arreglo**: probado con bloqueos de 3, 5, 7 y 12 s, y con dos
+  bloqueos seguidos en el mismo proceso (para descartar que fuera solo un
+  costo de la primera vez) -- en los cinco casos `LoadLibrary` vuelve sola,
+  el proceso no se cuelga, y el vigilante reporta el bloqueo con pila
+  symbolizada real.
+
+`dotnet build` de `AuraStudio.App`: verde, 0/0. `dotnet test` de
+`AuraStudio.Core.Tests`: **1550/1550**.
+
+### Lo no cubierto
+
+**El aviso "bloqueo en curso cada 5 s" no se alcanzó a ver disparar en
+ninguna de las pruebas de arriba**, ni siquiera con un bloqueo de 12 s
+(> 2 veces el intervalo). Investigando por qué, con trazas temporales
+(no commiteadas): el hilo de `Watch()` deja de avanzar casi por completo
+apenas arranca la captura, y vuelve a avanzar con normalidad recién cuando
+el bloqueo termina — con una prueba de aislamiento (capturar deshabilitado)
+se confirmó que el freno es específicamente la captura, no ruido de la VM.
+Pero el centinela de 200 ms **nunca se disparó** en ninguna corrida (su
+mensaje "tardó más de 200 ms" no aparece en ningún log), lo que dice que la
+suspensión+captura en sí misma vuelve rápido — el freno está en otro lado,
+probablemente en algo específico de suspender un hilo **mientras está
+bloqueado dentro de una espera del kernel** (`Sleep`/`NtDelayExecution`) que
+esta prueba usa para bloquear `DllMain`, y no en el escenario real
+(carga de módulo/JIT, que no es una espera de temporizador). No se llegó a
+la causa exacta ni se armó la variante de la prueba con una espera activa
+(sin llamada al kernel) que la habría distinguido con certeza — se anota
+como pendiente en vez de darlo por cerrado sin haberlo visto. **No cambia
+la conclusión principal**: en las cinco corridas, la app nunca quedó
+colgada para siempre, que es el bloqueo real que este addendum vino a
+cerrar; lo que falta es la garantía más fina de "el aviso periódico sí sale
+siempre".
+
+Tampoco se probó la variante x64 del arreglo (mismo camino de código, pero
+sin un repro con `cl.exe` para x64 armado en esta sesión) ni el caso de un
+`SymInitialize` que falla de verdad en `InitializeSymbolsSafely` (se maneja
+en el código, `try/catch` alrededor, pero no se forzó la falla en una
+prueba).
+
 ## ST-208 (2.º addendum) — El resumen de una carátula se calcula una vez por arreglo
 
 `CoverArtHash.Of` resumía los bytes cada vez que se lo llamaba. Las doce pistas
