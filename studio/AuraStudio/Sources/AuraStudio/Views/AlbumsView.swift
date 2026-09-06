@@ -22,8 +22,13 @@ struct AlbumsView: View {
     /// `body` evaluaba cinco veces por pasada -- ver `GridModel`.
     @StateObject private var gridModel = GridModel<AlbumGroup>()
     /// El resumen de la barra de estado, memoizado -- ver
-    /// `GridStatusModel`.
-    @StateObject private var statusModel = GridStatusModel()
+    /// `GridStatusModel`. En `@State` y no en `@StateObject` A
+    /// PROPÓSITO (mismo criterio que `ContentView.statusCenter`):
+    /// `@State` sostiene la referencia sin suscribir a esta vista. Si
+    /// `AlbumsView` lo observara, cada clic costaría DOS pasadas de su
+    /// `body` -- una por la selección y otra por el resumen nuevo. Quien
+    /// lo observa es `LibraryStatusRelay`, una vista de tamaño cero.
+    @State private var statusModel = GridStatusModel()
     /// Identidad de esta vista como publicadora de `selectionStore`.
     @State private var publisherID = UUID()
     /// Selección múltiple estilo Finder (encargo del dueño, 2026-08-19)
@@ -119,7 +124,7 @@ struct AlbumsView: View {
             }
         }
         .navigationTitle("Álbumes")
-        .libraryStatus(statusModel.summary)
+        .background(LibraryStatusRelay(model: statusModel))
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
         // PLAN-studio-rendimiento-2.md Fase 1 (ST-181): todo lo que
@@ -299,15 +304,14 @@ struct AlbumsView: View {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 160, maximum: 200), spacing: 24, alignment: .top)],
                               alignment: .leading, spacing: 28) {
                         ForEach(visibleAlbums) { album in
-                            AlbumCardView(album: album)
-                                .librarySelectionCheckbox(selection.isSelected(album.id)) {
-                                    selection.toggle(album.id)
-                                }
-                                .contentShape(Rectangle())
-                                .onTapGesture(count: 2) { selectedAlbumID = album.id }
-                                .onTapGesture { selection.handleTap(album.id, order: gridModel.order) }
-                                .contextMenu { albumContextMenu(album) }
-                                .help("\(album.title) — \(album.artist)")
+                            AlbumGridCell(album: album,
+                                          isSelected: selection.isSelected(album.id),
+                                          anySelected: !selection.selected.isEmpty,
+                                          onOpen: { selectedAlbumID = album.id },
+                                          onTap: { selection.handleTap(album.id, order: gridModel.order) },
+                                          onToggle: { selection.toggle(album.id) },
+                                          menu: { albumContextMenu(album) })
+                                .equatable()
                         }
                     }
                     // R2-1: mismo margen superior que la cuadrícula de
@@ -469,5 +473,64 @@ struct AlbumsView: View {
         Button(targets.count > 1 ? "Eliminar álbumes" : "Eliminar álbum", role: .destructive) {
             viewModel.deleteItems(ids: Set(items.map(\.id)))
         }
+    }
+}
+
+/// PLAN-studio-rendimiento-2.md Fase 1, addendum (ST-181): la celda de
+/// la cuadrícula, como vista **`Equatable`** aparte.
+///
+/// Sin esto, el criterio de cierre de F1 ("un clic reevalúa solo la
+/// tarjeta tocada") no se puede cumplir por más que se saque trabajo del
+/// `body` de `AlbumsView`: cada pasada reconstruye las cláusulas de
+/// todas las celdas realizadas, y los closures de gesto y de menú no se
+/// pueden comparar -- SwiftUI las da por distintas SIEMPRE y vuelve a
+/// evaluar su `body`. Con `==` explícito y `.equatable()`, la celda se
+/// redibuja solo si cambió algo que ella DIBUJA.
+///
+/// La comparación es O(1) a propósito: nunca `AlbumGroup` entero, que
+/// arrastra los bytes de la carátula (`Equatable` sintetizado los
+/// compararía byte a byte, 15 KB por tarjeta por pasada). Se comparan
+/// los campos que se ven, más el tamaño del blob de la portada como
+/// huella barata de "cambió la carátula".
+///
+/// Capturar `self` en los closures es seguro tras ST-181: la selección
+/// y el orden viven en objetos (`GridSelectionModel`, `GridModel`), así
+/// que un closure "viejo" igual lee el valor actual a través de la
+/// referencia -- y `selectedAlbumID` es `@State`, cuya caja también es
+/// estable.
+private struct AlbumGridCell<Menu: View>: View, Equatable {
+    let album: AlbumGroup
+    let isSelected: Bool
+    let anySelected: Bool
+    let onOpen: () -> Void
+    let onTap: () -> Void
+    let onToggle: () -> Void
+    @ViewBuilder let menu: () -> Menu
+
+    var body: some View {
+        AlbumCardView(album: album)
+            .librarySelectionCheckbox(isSelected, anySelected: anySelected, toggle: onToggle)
+            .contentShape(Rectangle())
+            .onTapGesture(count: 2, perform: onOpen)
+            .onTapGesture(perform: onTap)
+            .contextMenu(menuItems: menu)
+            .help("\(album.title) — \(album.artist)")
+    }
+
+    /// `nonisolated` obligatorio: `View` es `@MainActor`, así que la
+    /// celda también lo es, y `Equatable.==` es un requisito sin
+    /// aislamiento -- en modo Swift 6 (el que usa el proyecto de Xcode,
+    /// `SWIFT_VERSION: "6.0"`; `swift build` del paquete es más
+    /// permisivo y no lo señalaba) la conformidad no compila sin esto.
+    /// Solo lee `let` de tipos `Sendable`, que es lo que lo hace seguro.
+    nonisolated static func == (a: AlbumGridCell, b: AlbumGridCell) -> Bool {
+        a.isSelected == b.isSelected
+            && a.anySelected == b.anySelected
+            && a.album.id == b.album.id
+            && a.album.title == b.album.title
+            && a.album.artist == b.album.artist
+            && a.album.trackCount == b.album.trackCount
+            && a.album.isFavorite == b.album.isFavorite
+            && a.album.coverArtData?.count == b.album.coverArtData?.count
     }
 }

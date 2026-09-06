@@ -23,7 +23,10 @@ struct PlaylistsView: View {
     /// barra de estado, memoizado -- antes se armaba en el `body`, y con
     /// él un diccionario de TODAS las canciones de la biblioteca en cada
     /// pasada (ver `GridStatusModel`).
-    @StateObject private var statusModel = GridStatusModel()
+    /// En `@State` y no en `@StateObject` a propósito -- ver la nota
+    /// larga en `AlbumsView.statusModel`: observarlo costaría una
+    /// segunda pasada de `body` por clic.
+    @State private var statusModel = GridStatusModel()
 
     private var musicItems: [LibraryItem] {
         viewModel.items.filter { $0.kind == .music }
@@ -68,7 +71,7 @@ struct PlaylistsView: View {
         }
         .frame(width: 600, height: 420)
         // ST-063: barra de estado -- listas y canciones; la lista abierta.
-        .libraryStatus(statusModel.summary)
+        .background(LibraryStatusRelay(model: statusModel))
         .onAppear(perform: refreshStatus)
         .onReceive(viewModel.$playlists) { _ in refreshStatus() }
         .onChange(of: selectedPlaylistID) { refreshStatus() }

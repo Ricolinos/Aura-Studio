@@ -25,7 +25,10 @@ struct ArtistsView: View {
     /// sola vez por cambio real de entrada -- ver `GridModel`.
     @StateObject private var listModel = GridModel<ArtistGroup>()
     /// El resumen de la barra de estado, memoizado -- `GridStatusModel`.
-    @StateObject private var statusModel = GridStatusModel()
+    /// En `@State` y no en `@StateObject` a propósito -- ver la nota
+    /// larga en `AlbumsView.statusModel`: observarlo costaría una
+    /// segunda pasada de `body` por clic.
+    @State private var statusModel = GridStatusModel()
     /// Identidad de esta vista como publicadora de `selectionStore`.
     @State private var publisherID = UUID()
     /// `List(selection:)` con `Set` da multi-selección Cmd/Shift-clic
@@ -75,7 +78,7 @@ struct ArtistsView: View {
         // se calcula en el `body` (era `LibraryStats.artists` crudo, con
         // el `flatMap` de todos los ítems y una normalización de álbum
         // por ítem, en cada clic).
-        .libraryStatus(statusModel.summary)
+        .background(LibraryStatusRelay(model: statusModel))
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
         .onChange(of: searchText) { refreshList() }

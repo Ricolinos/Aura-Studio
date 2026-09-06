@@ -53,3 +53,24 @@ struct LibraryStatusBarHost: View {
         }
     }
 }
+
+/// PLAN-studio-rendimiento-2.md Fase 1, addendum (ST-181): el puente
+/// entre un `GridStatusModel` y `.libraryStatus(_:)`, en una vista de
+/// tamaño cero.
+///
+/// Existe por el mismo motivo que `LibraryStatusBarHost`: si la vista de
+/// sección observara su propio modelo de resumen (`@StateObject`),
+/// publicar el resumen la invalidaría entera, y cada clic costaría DOS
+/// pasadas de `body` -- una por el cambio de selección y otra por el
+/// resumen que ese cambio produce. La sección guarda el modelo en un
+/// `@State` (que no suscribe) y pone esto de fondo: el único que se
+/// reevalúa al cambiar el resumen es este `Color.clear`.
+struct LibraryStatusRelay: View {
+    @ObservedObject var model: GridStatusModel
+
+    var body: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .libraryStatus(model.summary)
+    }
+}

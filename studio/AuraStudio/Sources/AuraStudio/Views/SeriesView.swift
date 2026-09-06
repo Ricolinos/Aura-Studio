@@ -26,7 +26,10 @@ struct SeriesView: View {
     /// `GridOrder`, calculados una sola vez por cambio real de entrada.
     @StateObject private var gridModel = GridModel<VideoCollectionGroup>()
     /// El resumen de la barra de estado, memoizado.
-    @StateObject private var statusModel = GridStatusModel()
+    /// En `@State` y no en `@StateObject` a propósito -- ver la nota
+    /// larga en `AlbumsView.statusModel`: observarlo costaría una
+    /// segunda pasada de `body` por clic.
+    @State private var statusModel = GridStatusModel()
     /// Identidad de esta vista como publicadora de `selectionStore`.
     @State private var publisherID = UUID()
     /// PLAN-studio-rendimiento.md Fase 2 punto 2: construido una vez
@@ -61,7 +64,7 @@ struct SeriesView: View {
             }
         }
         .navigationTitle("Series")
-        .libraryStatus(statusModel.summary)
+        .background(LibraryStatusRelay(model: statusModel))
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
         // PLAN-studio-rendimiento-2.md Fase 1 (ST-181): fuera del `body`.
@@ -193,7 +196,8 @@ struct SeriesView: View {
                         ForEach(visibleSeries) { show in
                             MediaCardView(imageData: show.posterData, title: show.title,
                                           subtitle: episodeCountText(show), aspect: .poster(width: 140), placeholderSymbol: "tv")
-                                .librarySelectionCheckbox(selection.isSelected(show.id)) {
+                                .librarySelectionCheckbox(selection.isSelected(show.id),
+                                                          anySelected: !selection.selected.isEmpty) {
                                     selection.toggle(show.id)
                                 }
                                 .onTapGesture(count: 2) { selectedSeriesID = show.id }
@@ -352,6 +356,7 @@ struct SeriesView: View {
             // va al principio de la fila en vez de sobre una portada,
             // pero hace exactamente lo mismo.
             LibraryRowSelectionCheckbox(isSelected: isSelected,
+                                        anySelected: !episodeSelection.selected.isEmpty,
                                         isRowHovered: hoveredEpisodeID == item.id,
                                         toggle: { episodeSelection.toggle(item.id) })
             Text(item.episode.map { "\($0)" } ?? "--")

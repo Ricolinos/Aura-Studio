@@ -231,24 +231,30 @@ extension View {
     ///   que hace descubrible la selección múltiple sin ensuciar nada:
     ///   ST-103 la puso siempre visible justo porque el gesto Cmd+clic
     ///   no se veía, y el hover resuelve lo mismo sin el costo visual.
-    /// - Una tarjeta seleccionada muestra la suya siempre.
+    /// - Con 1 o más elementos seleccionados aparecen TODAS: ahí el
+    ///   usuario ya está en modo selección y necesita ver dónde puede
+    ///   sumar o quitar sin ir tanteando tarjeta por tarjeta.
     ///
-    /// PLAN-studio-rendimiento-2.md Fase 1 (ST-181): la regla ya NO
-    /// incluye "con algo seleccionado se ven todas". Ese `anySelected`
-    /// era un dato GLOBAL de la cuadrícula metido en cada tarjeta: al
-    /// pasar de cero a un elemento seleccionado cambiaba para las 1 000,
-    /// invalidándolas todas y disparando la animación de aparición en
-    /// cada una, por un clic (diagnóstico §0.4). Ahora cada tarjeta
-    /// depende solo de lo suyo -- su propia selección y su propio hover
-    /// -- así que un clic toca la tarjeta tocada y nada más.
+    /// PLAN-studio-rendimiento-2.md Fase 1, addendum (ST-181): esta
+    /// tercera regla se mantiene -- la decidió ST-113/R2-1 porque la
+    /// casilla es un modo de selección que el dueño pidió expresamente y
+    /// es esa visibilidad la que lo hace descubrible. Lo que se quitó es
+    /// su COSTO, no su conducta: `anySelected` es un `Bool` que solo
+    /// cambia en la transición vacío↔no vacío (una invalidación de las
+    /// tarjetas en cada transición, cero en los clics intermedios), y la
+    /// animación de aparición ya NO se dispara con él -- solo con el
+    /// hover de la propia tarjeta. Antes, el primer clic hacía aparecer
+    /// la casilla ANIMADA en las 1 000 tarjetas de golpe (§0.4).
     ///
     /// La semántica no cambia: la casilla ALTERNA ese elemento
     /// (`GridSelection.toggle`), el clic en la tarjeta REEMPLAZA la
     /// selección.
     func librarySelectionCheckbox(_ isSelected: Bool,
+                                  anySelected: Bool,
                                   cornerRadius: CGFloat = 10,
                                   toggle: @escaping () -> Void) -> some View {
         modifier(LibrarySelectionOverlay(isSelected: isSelected,
+                                         anySelected: anySelected,
                                          cornerRadius: cornerRadius,
                                          toggle: toggle))
     }
@@ -259,14 +265,16 @@ extension View {
 /// cada tarjeta recuerda si el cursor está encima de ELLA.
 private struct LibrarySelectionOverlay: ViewModifier {
     let isSelected: Bool
+    let anySelected: Bool
     let cornerRadius: CGFloat
     let toggle: () -> Void
 
     @State private var isHovering = false
 
-    /// Solo datos de ESTA tarjeta: "seleccionada y sin casilla" sería
-    /// una contradicción en pantalla, y el hover la hace descubrible.
-    private var showsCheckbox: Bool { isSelected || isHovering }
+    /// Una tarjeta seleccionada muestra su casilla aunque `anySelected`
+    /// llegara en `false` por un desfase de estado: "seleccionada y sin
+    /// casilla" sería una contradicción en pantalla.
+    private var showsCheckbox: Bool { isSelected || anySelected || isHovering }
 
     func body(content: Content) -> some View {
         content
@@ -279,7 +287,15 @@ private struct LibrarySelectionOverlay: ViewModifier {
                     // casilla y la cuadrícula no da un salto.
                     .opacity(showsCheckbox ? 1 : 0)
                     .allowsHitTesting(showsCheckbox)
-                    .animation(.easeOut(duration: 0.12), value: showsCheckbox)
+                    // ST-181 (addendum): se anima el HOVER, no
+                    // `showsCheckbox`. Animar el compuesto hacía que el
+                    // primer clic -- el que voltea `anySelected` -- le
+                    // disparara una animación a cada tarjeta realizada
+                    // de la cuadrícula a la vez. Entrar en modo
+                    // selección ahora es instantáneo; el descubrimiento
+                    // por hover, que es donde la animación se agradece,
+                    // sigue igual.
+                    .animation(.easeOut(duration: 0.12), value: isHovering)
             }
             .onHover { isHovering = $0 }
     }
@@ -292,19 +308,21 @@ private struct LibrarySelectionOverlay: ViewModifier {
 /// pasar el mouse.
 struct LibraryRowSelectionCheckbox: View {
     let isSelected: Bool
+    let anySelected: Bool
     /// El hover lo detecta la FILA, no la casilla: una casilla invisible
     /// no recibe eventos, así que no podría descubrirse sola.
     let isRowHovered: Bool
     let toggle: () -> Void
 
-    /// Misma regla que las tarjetas tras ST-181: nada global.
-    private var showsCheckbox: Bool { isSelected || isRowHovered }
+    private var showsCheckbox: Bool { isSelected || anySelected || isRowHovered }
 
     var body: some View {
         LibrarySelectionCheckbox(isSelected: isSelected, toggle: toggle, side: 18)
             .opacity(showsCheckbox ? 1 : 0)
             .allowsHitTesting(showsCheckbox)
-            .animation(.easeOut(duration: 0.12), value: showsCheckbox)
+            // ST-181 (addendum): igual que en las tarjetas, se anima el
+            // hover y no el compuesto.
+            .animation(.easeOut(duration: 0.12), value: isRowHovered)
     }
 }
 

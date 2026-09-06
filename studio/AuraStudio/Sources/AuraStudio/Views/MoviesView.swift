@@ -25,7 +25,10 @@ struct MoviesView: View {
     /// el `body` evaluaba varias veces por pasada.
     @StateObject private var gridModel = GridModel<VideoCollectionGroup>()
     /// El resumen de la barra de estado, memoizado -- `GridStatusModel`.
-    @StateObject private var statusModel = GridStatusModel()
+    /// En `@State` y no en `@StateObject` a propósito -- ver la nota
+    /// larga en `AlbumsView.statusModel`: observarlo costaría una
+    /// segunda pasada de `body` por clic.
+    @State private var statusModel = GridStatusModel()
     /// Identidad de esta vista como publicadora de `selectionStore`.
     @State private var publisherID = UUID()
     @State private var reviewingItem: LibraryItem?
@@ -89,7 +92,7 @@ struct MoviesView: View {
             }
         }
         .navigationTitle("Películas")
-        .libraryStatus(statusModel.summary)
+        .background(LibraryStatusRelay(model: statusModel))
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
         // PLAN-studio-rendimiento-2.md Fase 1 (ST-181): fuera del `body`.
@@ -227,7 +230,8 @@ struct MoviesView: View {
                         ForEach(visibleMovies) { movie in
                             MediaCardView(imageData: movie.posterData, title: movie.title, subtitle: movie.year,
                                           aspect: .poster(width: 140), placeholderSymbol: "film")
-                                .librarySelectionCheckbox(selection.isSelected(movie.id)) {
+                                .librarySelectionCheckbox(selection.isSelected(movie.id),
+                                                          anySelected: !selection.selected.isEmpty) {
                                     selection.toggle(movie.id)
                                 }
                                 .onTapGesture(count: 2) { selectedMovieID = movie.id }

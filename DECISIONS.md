@@ -6335,6 +6335,75 @@ reevalúa con ningún gesto de selección, que es la parte cara del
 diagnóstico original (§0.4/§0.5, mil tarjetas invalidadas por
 `anySelected`).
 
+### Addendum (2026-09-06) — la casilla vuelve a la regla de ST-113, y la celda pasa a ser `Equatable`
+
+Decisión de "Sesión Maestra" sobre el punto 4 de arriba: **se conserva la
+conducta de ST-113/R2-1** (con 1 o más elementos seleccionados se ven
+TODAS las casillas). El dueño pidió expresamente la casilla como modo de
+selección y es esa visibilidad la que la hace descubrible; lo que F1
+quería quitar era el COSTO, no la conducta. Corregido así:
+
+- `anySelected` vuelve, como el `Bool` que ya era: **solo cambia en la
+  transición vacío↔no vacío** -- una invalidación de las tarjetas
+  realizadas en cada transición, cero en los clics intermedios.
+- Lo que sí se fue es la **animación global**: la aparición de la casilla
+  se anima con `value: isHovering`, no con `value: showsCheckbox`. Antes,
+  el primer clic -- el que voltea `anySelected` -- le disparaba una
+  animación a cada tarjeta realizada de golpe. Entrar en modo selección
+  ahora es instantáneo; el descubrimiento por hover, que es donde la
+  animación se agradece, sigue igual. Misma corrección en la casilla de
+  fila (`LibraryRowSelectionCheckbox`, los episodios de una serie).
+
+Con eso solo, el criterio de cierre de F1 ("un clic reevalúa solo la
+tarjeta tocada") **seguía sin cumplirse**, y no por trabajo en el `body`:
+cada pasada de `AlbumsView` reconstruye las cláusulas de todas las celdas
+realizadas, y los closures de gesto y de menú **no se pueden comparar**,
+así que SwiftUI las da por distintas siempre y vuelve a evaluar su `body`.
+Dos cambios más:
+
+1. **`AlbumGridCell`, vista `Equatable`** (`.equatable()`): se redibuja
+   solo si cambió algo que ella dibuja. La comparación es O(1) a
+   propósito -- nunca `AlbumGroup` entero, cuyo `Equatable` sintetizado
+   compararía los ~15 KB de la carátula byte a byte, por tarjeta y por
+   pasada. Capturar `self` en sus closures es seguro justamente porque
+   ST-181 movió la selección y el orden a objetos
+   (`GridSelectionModel`/`GridModel`): un closure "viejo" lee igual el
+   valor actual por la referencia.
+   El `==` va marcado **`nonisolated`**: `View` es `@MainActor`, así que
+   la celda también, y `Equatable.==` es un requisito sin aislamiento.
+   En modo Swift 6 -- el del proyecto de Xcode (`SWIFT_VERSION: "6.0"`),
+   no el de `swift build`, que es más permisivo y no lo señalaba -- la
+   conformidad no compila sin eso. **De acá sale una regla para el resto
+   de la ronda: `swift build` NO alcanza como verificación; hay que
+   compilar Release con `xcodebuild` antes de cada commit.**
+2. **`GridStatusModel` sale del camino de observación de la vista.** El
+   mecánico midió 2 evaluaciones de `AlbumsView.body` por clic: una por
+   la selección y **otra por el resumen que esa selección produce**,
+   porque la vista observaba su propio `statusModel` (`@StateObject`).
+   Ahora lo guarda en un `@State` -- que sostiene la referencia sin
+   suscribir -- y lo observa `LibraryStatusRelay`, una vista de tamaño
+   cero puesta de fondo. Mismo criterio que `ContentView.statusCenter`
+   en el punto 3. Aplicado a las cinco cuadrículas y a Listas.
+
+De paso, `RowsModel` (ST-153) publicaba su resultado con un
+`MainActor.run { guard let self … }` que captura `self` como var en
+código concurrente: la **única advertencia viva del paquete**, y un error
+en modo Swift 6. Pasa a un método aislado aparte, igual que
+`GridStatusModel`.
+
+**Verificación**: `swift build` limpio, `swift build -swift-version 6`
+limpio, y `xcodebuild -configuration Release` **BUILD SUCCEEDED** (que es
+lo que falló primero y motivó la regla de arriba). El
+`AuraStudio.xcodeproj` regenerado con `xcodegen` va en este commit: el
+commit anterior (9a6f9a8) dejó el `.pbxproj` versionado sin
+`GridModel.swift` ni `BodyEvaluationCounter.swift`. No rompía
+`scripts/build-app.sh` -- ese corre `xcodegen generate` antes de compilar,
+y de hecho el mecánico verificó 9a6f9a8 en verde -- pero sí a quien abra
+`AuraStudio.xcodeproj` directamente en Xcode sin regenerar. Se corrige
+acá; conviene regenerar y commitear el proyecto en el mismo commit que
+agrega un archivo a `Sources/`.
+
+
 ## ST-201 — Windows: se acabó la cascada de selección (el trabón al tercer álbum)
 
 Ronda 2 de rendimiento, encargo W1 de `docs/plans/PLAN-studio-rendimiento-2.md`.

@@ -43,11 +43,18 @@ final class RowsModel: ObservableObject {
         recomputeTask = Task.detached(priority: .userInitiated) { [weak self] in
             let computed = Self.buildRows(items: items, deviceSyncIndex: deviceSyncIndex, sortOrder: sortOrder)
             guard !Task.isCancelled else { return }
-            await MainActor.run {
-                guard let self, self.generation == thisGeneration else { return }
-                self.rows = computed
-            }
+            await self?.apply(rows: computed, generation: thisGeneration)
         }
+    }
+
+    /// Publica el resultado, salvo que mientras corría haya arrancado
+    /// una recomputación más nueva. Método aparte y no un `MainActor.run`
+    /// con `guard let self` adentro: esa forma captura `self` como var
+    /// en código concurrente, que el modo Swift 6 rechaza (era la única
+    /// advertencia viva del paquete).
+    private func apply(rows computed: [MediaTableRow], generation: Int) {
+        guard self.generation == generation else { return }
+        rows = computed
     }
 
     private nonisolated static func buildRows(items: [LibraryItem], deviceSyncIndex: DeviceSyncIndex?,

@@ -38,7 +38,10 @@ struct PhotoAlbumsView: View {
     /// `GridOrder`, calculados una sola vez por cambio real de entrada.
     @StateObject private var gridModel = GridModel<PhotoAlbumGroup>()
     /// El resumen de la barra de estado, memoizado -- `GridStatusModel`.
-    @StateObject private var statusModel = GridStatusModel()
+    /// En `@State` y no en `@StateObject` a propósito -- ver la nota
+    /// larga en `AlbumsView.statusModel`: observarlo costaría una
+    /// segunda pasada de `body` por clic.
+    @State private var statusModel = GridStatusModel()
     /// Identidad de esta vista como publicadora de `selectionStore`.
     @State private var publisherID = UUID()
     /// PLAN-studio-rendimiento.md Fase 2 punto 2: construido una vez
@@ -76,7 +79,7 @@ struct PhotoAlbumsView: View {
             }
         }
         .navigationTitle(category)
-        .libraryStatus(statusModel.summary)
+        .background(LibraryStatusRelay(model: statusModel))
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
         // PLAN-studio-rendimiento-2.md Fase 1 (ST-181): fuera del `body`.
@@ -249,7 +252,8 @@ struct PhotoAlbumsView: View {
                                   alignment: .leading, spacing: 28) {
                             ForEach(visibleAlbums) { album in
                                 PhotoAlbumCardView(album: album)
-                                    .librarySelectionCheckbox(selection.isSelected(album.id)) {
+                                    .librarySelectionCheckbox(selection.isSelected(album.id),
+                                                              anySelected: !selection.selected.isEmpty) {
                                         selection.toggle(album.id)
                                     }
                                     .onTapGesture(count: 2) { selectedAlbumID = album.id }
@@ -419,7 +423,8 @@ struct PhotoAlbumsView: View {
         let isSelected = photoSelection.isSelected(item.id)
         return CoverArtView(data: try? Data(contentsOf: item.preparedURL ?? item.sourceURL), side: 140,
                             cornerRadius: 6, placeholderSymbol: "photo")
-            .librarySelectionCheckbox(isSelected, cornerRadius: 6) {
+            .librarySelectionCheckbox(isSelected, anySelected: !photoSelection.selected.isEmpty,
+                                      cornerRadius: 6) {
                 photoSelection.toggle(item.id)
             }
             .contentShape(Rectangle())
