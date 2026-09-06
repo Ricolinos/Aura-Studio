@@ -280,13 +280,19 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
     }
 
     // MARK: - (d) Menú contextual con selección múltiple -- punto 6
+    //
+    // Las dos pruebas de abajo (sufijo `_beforeIndex`) siguen usando
+    // `AlbumCoverRequest.forAlbum(of:in:options:)`, el camino SIN índice
+    // -- sigue existiendo tras ST-182, así que el número "antes" de
+    // ST-180 se puede seguir reproduciendo tal cual. Las nuevas (sufijo
+    // `_withCatalogIndex`) miden el camino real desde F3 (ST-182).
 
     /// Selección de 100 álbumes (no 1 000) para que las 10 repeticiones
     /// de `measure` sigan siendo razonables -- el costo escala lineal
     /// con cuántos álbumes hay en la selección (cada uno hace un
     /// `filter` completo de los 12 000 ítems, ver `AlbumCoverRequest.
     /// forAlbum`), así que 100 ya es representativo del costo POR ÁLBUM.
-    func testCoverRequestsForOneHundredSelectedAlbums() throws {
+    func testCoverRequestsForOneHundredSelectedAlbums_beforeIndex() throws {
         let albums = LibraryGrouping.albums(from: musicItems, options: .default)
         let targets = Array(albums.prefix(100))
         measure {
@@ -296,22 +302,59 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
         }
     }
 
-    /// El caso real que motiva el punto 6: clic derecho con TODOS los
+    /// El caso real que motivó el punto 6: clic derecho con TODOS los
     /// álbumes seleccionados -- "12 millones de claves normalizadas"
     /// (1 000 álbumes × 12 000 ítems). Una sola pasada: 10 repeticiones
     /// de esto son varios segundos cada una, no vale la pena pagarlo en
     /// cada corrida de `swift test` -- el número real queda anotado en
-    /// ST-180.
-    func testCoverRequestsForAllOneThousandAlbumsSelected_worstCase() throws {
+    /// ST-180 (81 s) y sigue siendo reproducible acá para contraste.
+    func testCoverRequestsForAllOneThousandAlbumsSelected_beforeIndex() throws {
         let albums = LibraryGrouping.albums(from: musicItems, options: .default)
         let start = CFAbsoluteTimeGetCurrent()
         _ = albums.compactMap {
             AlbumCoverRequest.forAlbum(of: $0.items, in: musicItems, options: .default)
         }
         let elapsedMs = (CFAbsoluteTimeGetCurrent() - start) * 1000
-        print("[F0] Menú contextual, \(Self.albumCount)/\(Self.albumCount) álbumes seleccionados: "
+        print("[F0] Menú contextual (sin índice), \(Self.albumCount)/\(Self.albumCount) álbumes seleccionados: "
               + "\(String(format: "%.0f", elapsedMs)) ms")
         XCTAssertGreaterThan(elapsedMs, 0)
+    }
+
+    /// Costo de armar `LibraryCatalogIndex` una vez -- el techo del
+    /// costo de F3, pagado una vez por versión del catálogo (en
+    /// producción, en segundo plano vía `warmCatalogIndex()`, nunca en
+    /// el clic). Del mismo orden que (b) -- son las mismas 12 000
+    /// normalizaciones, ahora hechas una sola vez en vez de una vez POR
+    /// ÁLBUM abierto.
+    func testCatalogIndexBuildCost() throws {
+        measure {
+            _ = LibraryCatalogIndex(items: musicItems, options: .default)
+        }
+    }
+
+    /// Criterio de cierre de F3 (ST-182, §A): menú con los 1 000/1 000
+    /// álbumes seleccionados en < 200 ms, con el índice YA armado (como
+    /// en producción -- `warmCatalogIndex()` corrió antes del clic).
+    func testCoverRequestsForAllOneThousandAlbumsSelected_withCatalogIndex() throws {
+        let albums = LibraryGrouping.albums(from: musicItems, options: .default)
+        let index = LibraryCatalogIndex(items: musicItems, options: .default)
+        measure {
+            _ = albums.compactMap { AlbumCoverRequest.forAlbum($0, in: index) }
+        }
+    }
+
+    /// El caso concreto que reportó el dueño ("en Canciones con todo
+    /// seleccionado no aparece Buscar carátulas"): ST-182 agrega esta
+    /// acción a Canciones. Acá se mide con los 12 000 ítems
+    /// seleccionados -- el caso literal de §B.F3 del plan, distinto del
+    /// de arriba (ese resuelve por ÁLBUM ya agrupado; este resuelve
+    /// directo desde una selección de CANCIONES sueltas, el camino real
+    /// de `AlbumCoverRequest.forAlbums(of:in:)`).
+    func testCoverRequestsForAllTwelveThousandSongsSelected_Canciones_withCatalogIndex() throws {
+        let index = LibraryCatalogIndex(items: musicItems, options: .default)
+        measure {
+            _ = AlbumCoverRequest.forAlbums(of: musicItems, in: index)
+        }
     }
 
     // MARK: - (e) Álbum de Fotos con 40 fotos -- punto 5
@@ -338,21 +381,18 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
     //
     // A diferencia de `ApplyBatchEditWorkerTests.
     // testFiveHundredItemsNeverBlockTheMainThreadOverTheWatchdogThreshold`
-    // (que ya arregló su fase y exige cero bloqueos), esta es la línea
-    // base "ANTES" -- no afirma nada sobre el número de bloqueos, los
-    // REPORTA para la tabla de ST-180. F1..F6 vuelven a correr el mismo
-    // guion contra el código ya arreglado, y esas PARADAS sí pueden
-    // exigir cero (como ya lo hace `ApplyBatchEditWorkerTests` para su
-    // propia fase).
-    ///
-    /// `async` a propósito, con un `Task.sleep` al final antes de leer
-    /// `hangs` -- descubierto corriendo esta prueba: el guion entero
-    /// (en particular el paso 4, ~40 s sin ceder el hilo ni una vez) es
-    /// UN SOLO bloqueo sostenido; el vigilante solo termina de
-    /// reportarlo cuando `DispatchQueue.main` vuelve a despacharse tras
-    /// el bloqueo, y sin este `sleep` ese reporte llega DESPUÉS de que
-    /// esta prueba ya leyó `hangs.values` -- aparecía (falsamente) como
-    /// un bloqueo de la prueba siguiente en vez de esta.
+    // (que ya arregló su fase y exige cero bloqueos), esta sigue sin
+    // afirmar nada sobre el número de bloqueos -- los REPORTA. F2/F4/F5/F6
+    // todavía no cerraron (miniaturas síncronas, `coverArtData` completo
+    // en RAM), así que "cero bloqueos" no es un criterio con el que esta
+    // prueba pueda comprometerse todavía.
+    //
+    // ST-182 (F3): el paso 4 (clic derecho) ya NO usa el camino viejo de
+    // `AlbumCoverRequest.forAlbum(of:in:options:)` (el que barre los
+    // 12 000 ítems por álbum) -- usa `LibraryCatalogIndex`, como la app
+    // real desde este commit. El índice se arma ANTES de `start`, fuera
+    // de lo medido: en producción lo arma `warmCatalogIndex()` en
+    // segundo plano al cambiar el catálogo, no en el clic.
     func testScriptedAlbumsSessionUnderWatchdogReportsBaseline() async throws {
         setenv("AURA_WATCHDOG", "1", 1)
         let hangs = HangCollector()
@@ -361,6 +401,7 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
 
         let albums = LibraryGrouping.albums(from: musicItems, options: .default)
         let order = GridOrder(albums.map(\.id))
+        let catalogIndex = LibraryCatalogIndex(items: musicItems, options: .default)
         let start = CFAbsoluteTimeGetCurrent()
 
         // 1. Abrir Álbumes: agrupar + primera pantalla visible (~30 tarjetas).
@@ -388,11 +429,10 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
         _ = LibraryStats.albums(albums, selected: albums.filter { selection.isSelected($0.id) })
 
         // 4. Clic derecho con esos 500 seleccionados: construir el menú
-        // (punto 6 -- un `filter` de 12 000 ítems por álbum seleccionado).
+        // (punto 6, ST-182) -- con el índice ya armado, cada álbum es una
+        // búsqueda en diccionario, no un filter de 12 000.
         let selectedAlbums = albums.filter { selection.isSelected($0.id) }
-        _ = selectedAlbums.compactMap {
-            AlbumCoverRequest.forAlbum(of: $0.items, in: musicItems, options: .default)
-        }
+        _ = selectedAlbums.compactMap { AlbumCoverRequest.forAlbum($0, in: catalogIndex) }
 
         // 5. Scroll completo: el resto de las tarjetas nunca mostradas
         // en el paso 1 entran a la caché por primera vez.
@@ -409,15 +449,31 @@ final class AlbumsGridPerformanceBaselineTests: XCTestCase {
         }
 
         let elapsedMs = (CFAbsoluteTimeGetCurrent() - start) * 1000
-
-        // Deja que `DispatchQueue.main` despache de nuevo -- ver el
-        // comentario de cabecera del método. 300 ms le sobra al vigilante
-        // (sondea cada 50 ms) para notar que el corazón volvió y reportar.
-        try await Task.sleep(nanoseconds: 300_000_000)
+        try await Self.waitForWatchdogToCatchUp(hangs)
 
         print("[F0] Sesión guionizada completa: \(String(format: "%.0f", elapsedMs)) ms de pared; "
               + "\(hangs.values.count) bloqueo(s) > 250 ms del hilo principal: \(hangs.values)")
         XCTAssertGreaterThan(elapsedMs, 0)
+    }
+
+    /// Diagnóstico de "experto en código opus" (2026-09-06): un `Task.
+    /// sleep` de duración fija (lo que había acá antes) no cierra la
+    /// carrera de verdad -- si el vigilante tarda más que eso en
+    /// despachar `DispatchQueue.main` de nuevo (p. ej. la máquina bajo
+    /// carga), el reporte diferido llega DESPUÉS de que esta prueba ya
+    /// leyó `hangs.values`, y como `onHangDetectedForTesting` es un
+    /// `static var` GLOBAL, el reporte le llega a la clausura que sea
+    /// que la prueba SIGUIENTE ya haya instalado -- exactamente el
+    /// "bloqueo fantasma" que contaminó
+    /// `ApplyAlbumCoverAndSimilarityWorkerTests` (ver ST-181/ST-182). En
+    /// vez de una espera ciega, esto SONDEA hasta ver que `hangs` recibió
+    /// algo (o hasta 2 s) -- no avanza (y no deja que nadie más reemplace
+    /// la clausura) hasta que el reporte, si lo hay, ya aterrizó.
+    private static func waitForWatchdogToCatchUp(_ hangs: HangCollector, timeout: TimeInterval = 2.0) async throws {
+        let deadline = Date().addingTimeInterval(timeout)
+        while hangs.values.isEmpty && Date() < deadline {
+            try await Task.sleep(nanoseconds: 50_000_000)
+        }
     }
 
     // MARK: - (g) `AlbumsView` hospedada de verdad -- pedido de "Sesión

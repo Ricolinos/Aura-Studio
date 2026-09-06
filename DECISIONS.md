@@ -7343,3 +7343,57 @@ de la línea base lo levanta "mecanico sonnet" con la prueba (d) de
 ST-180, que mide `AlbumCoverRequest.forAlbum` en un bucle: la
 equivalente por índice es `AlbumCoverRequest.forAlbums(keys:in:)` sobre
 un `LibraryCatalogIndex` ya armado, más el costo de armarlo una vez.
+
+### Medición del criterio de cierre ("mecanico sonnet", commit cfe4bbf)
+
+Verificado en worktree aislado (candado de la Mac): `swift build` limpio,
+21/21 en `AlbumsGridPerformanceBaselineTests`. Cuatro pruebas nuevas
+(sufijo `_withCatalogIndex`), las dos viejas (`_beforeIndex`) siguen
+reproduciendo el número de ST-180 para contraste directo:
+
+| Medición | Antes (ST-180, sin índice) | Después (cfe4bbf, con índice) | Objetivo §A |
+|---|---|---|---|
+| Armar `LibraryCatalogIndex` (12 000 ítems, una vez) | -- (no existía) | ~90 ms | -- (se paga en segundo plano, `warmCatalogIndex()`) |
+| Menú, 1 000/1 000 álbumes seleccionados (Álbumes) | 81 167 ms | **~5-7 ms** | < 200 ms -- **cumplido, ~12 000× más rápido** |
+| Menú, 12 000/12 000 canciones seleccionadas (Canciones, `AlbumCoverRequest.forAlbums(of:in:)`) | no existía la acción (encargo del dueño) | **~17-21 ms** | < 200 ms -- **cumplido** |
+
+**El caso concreto que reportó el dueño** ("en Canciones con todo
+seleccionado no aparece Buscar carátulas") ya no es "lento", la acción
+EXISTE y además corre en ~20 ms con las 12 000 canciones seleccionadas.
+
+**Reenganche de ST-181, confirmado corregido:** el eco de `SelectionStore`
+que ST-182 diagnosticó (la cuadrícula publicaba Y observaba, invalidando
+su propio clic) ya no aparece -- `AlbumsView.body` por clic (casilla,
+⌘+clic, Shift+clic) bajó de **2 a 1**, en los tres gestos, contra el
+mismo arnés de `NSHostingController`/`GridSelectionModel` de ST-181. El
+"dato abierto" que quedó anotado en el addendum de ST-181 (por qué seguía
+en 2 pese a que ese mismo commit ya sacaba `GridStatusModel` de la
+observación) queda resuelto: la causa real era otra (el eco de
+`SelectionStore`), no un artefacto de medir con `NSHostingController` sin
+pantalla real como se sospechaba.
+
+**Corrección al arnés de la sesión guionizada (ST-180 (f)):** el paso 4
+(clic derecho) pasó de `AlbumCoverRequest.forAlbum(of:in:options:)` (el
+camino sin índice) a resolver con `LibraryCatalogIndex` ya armado, como
+hace la app real desde este commit -- el guion completo bajó de ~40 s a
+**334 ms** de pared. El vigilante SÍ reportó un bloqueo (~575 ms) dentro de
+esta corrida, pero NO del guion en sí: viene de construir
+`LibraryGrouping.albums`/`GridOrder`/`LibraryCatalogIndex` de los 12 000
+ítems ANTES de arrancar el cronómetro de la prueba -- en producción eso
+lo hace `warmCatalogIndex()` en segundo plano (nunca en el hilo
+principal), así que este bloqueo es un artefacto de que la prueba lo
+arma sincrónico, no algo que un usuario real vería. Documentado, no
+oculto.
+
+**Arreglo del "bloqueo fantasma" entre archivos de prueba** (diagnóstico
+de Opus): la espera fija (`Task.sleep` de 300 ms) que ST-180 había puesto
+al final de la sesión guionizada para dejar que el vigilante reportara no
+cerraba la carrera de verdad -- bajo carga de máquina, el reporte diferido
+podía llegar DESPUÉS de que la prueba ya leyó `hangs.values`, y como
+`onHangDetectedForTesting` es un `static var` global, el reporte
+tardío le llegaba a la clausura que la prueba SIGUIENTE ya hubiera
+instalado (contaminó `ApplyAlbumCoverAndSimilarityWorkerTests` más de
+una vez). Reemplazado por `waitForWatchdogToCatchUp`: sondea
+`hangs.values` cada 50 ms hasta verlo no vacío o hasta 2 s -- no avanza
+(y no deja que nadie reemplace la clausura) hasta que el reporte, si lo
+hay, ya aterrizó. Vive en `Tests/`, sin tocar `MainThreadWatchdog.swift`.
