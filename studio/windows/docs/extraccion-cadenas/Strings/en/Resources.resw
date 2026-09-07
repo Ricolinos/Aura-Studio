@@ -1924,6 +1924,14 @@
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
+  <data name="settings-page.migrar-biblioteca" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.migrar-version-anterior" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
   <data name="settings-page.musica" xml:space="preserve">
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
@@ -2061,6 +2069,14 @@
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
   <data name="shell-page.descargar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="shell-page.esta-biblioteca-viene-version-anterior" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="shell-page.migrar-biblioteca" xml:space="preserve">
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>

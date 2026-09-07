@@ -3,14 +3,21 @@ import CryptoKit
 import XCTest
 @testable import AuraStudio
 
-/// PLAN-studio-ajustes-3.md, Fase A0 (ST-220): línea base "antes" --
-/// contra bd57116, antes de que "experto en código opus" empiece a
-/// tocar el contrato de almacenamiento (A1+). Mide, para cada formato
-/// (MP3/FLAC/M4A/WAV) y cada modo (copia/referencia), lo que dice el
-/// diagnóstico del plan (§1) pero con números, no con la lectura del
-/// código: cuántos bytes se escriben y en qué archivo al editar
-/// campos, y qué archivo viaja al sincronizar. Sirve de contraste para
-/// A2/A3 (escritores nativos FLAC/M4A, modo copia real).
+/// PLAN-studio-ajustes-3.md, Fase A0 (ST-220): arnés de línea base --
+/// mide, para cada formato (MP3/FLAC/M4A/WAV) y cada modo (copia/
+/// referencia), lo que dice el diagnóstico del plan (§1/§2) pero con
+/// números, no con la lectura del código: cuántos bytes se escriben y
+/// en qué archivo al editar campos, y qué archivo viaja al
+/// sincronizar.
+///
+/// **"Antes" (ST-220, contra `bd57116`) queda fijo en DECISIONS.md** --
+/// ese número no se vuelve a medir acá. Lo que sigue en este archivo
+/// se actualiza para seguir midiendo la realidad ACTUAL de cada fase:
+/// tras A3 (ST-223, `bb164dd`), el modo copia ya no pasa por
+/// `LibraryFileWorker.prepareMusic`/`.preparados/` -- usa `importMusic`
+/// al importar y `rewriteTags` al editar, directo sobre el archivo de
+/// `Música/`. El modo referencia sigue sin cambios (A4/ST-224 todavía
+/// no cerró): mismo camino de `prepareMusic` que medía ST-220.
 @MainActor
 final class MediaStorageBaselineTests: XCTestCase {
     private var libraryRoot: URL!
@@ -29,6 +36,10 @@ final class MediaStorageBaselineTests: XCTestCase {
 
     private func fileSize(_ url: URL) throws -> Int {
         (try FileManager.default.attributesOfItem(atPath: url.path)[.size] as? Int) ?? -1
+    }
+
+    private func modificationDate(_ url: URL) throws -> Date {
+        (try FileManager.default.attributesOfItem(atPath: url.path)[.modificationDate] as? Date) ?? .distantPast
     }
 
     // MARK: - Fixture por formato
@@ -78,71 +89,88 @@ final class MediaStorageBaselineTests: XCTestCase {
     private struct EditResult {
         let format: String
         let mode: String
-        let originalChanged: Bool
-        let originalBytesWritten: Int
+        /// `Música/<Artista>/<Álbum>/` en copia; el original fuera de la
+        /// biblioteca en referencia. 0 si no cambió.
+        let libraryFileBytesWritten: Int
+        /// `.preparados/<ID>.ext`. 0 si no existe o no cambió.
         let preparedBytesWritten: Int
-        let preparedIsByteIdenticalToOriginal: Bool
     }
 
-    /// El camino real de producción: `LibraryFileWorker.prepareMusic`
-    /// (la misma copia deliberada de `LibraryViewModel.prepareMusic`
-    /// que ya prueba `LibraryFileWorkerEquivalenceTests`), con
-    /// `audioQuality: .originalLossless` -- sin esto, un `.compressed`
-    /// dispara un transcode real que no hace falta para medir "qué
-    /// archivo se toca", y que dependería de que el formato de origen
-    /// sea decodificable de verdad (nuestro FLAC/M4A sintéticos no lo
-    /// son al 100%, aunque sus etiquetas sí se lean).
+    private let originalMetadata = TrackMetadata(
+        title: "Original", artist: "Artista Original", album: "Álbum Original",
+        albumArtist: "Artista Original", year: "2020", genre: "Rock",
+        trackNumber: 1, durationSeconds: 0)
+
+    /// "Editar N campos": título, artista, álbum, año, género -- todos
+    /// los que la producción sabe escribir hoy (D-037/ST-222).
+    private let editedMetadata = TrackMetadata(
+        title: "Editado", artist: "Artista Editado", album: "Álbum Editado",
+        albumArtist: "Artista Editado", year: "2026", genre: "Jazz",
+        trackNumber: 1, durationSeconds: 0)
+
+    /// Modo copia (ST-223): el camino real es `LibraryFileWorker.
+    /// importMusic` al importar y `rewriteTags` al editar, directo sobre
+    /// el archivo de `Música/` -- `.preparados/` no interviene. Modo
+    /// referencia: sin cambios desde ST-220, sigue siendo `prepareMusic`
+    /// hacia `.preparados/` (A4 todavía no cerró).
     private func measureEdit(_ testCase: FormatCase, mode: String) async throws -> EditResult {
         let caseDir = libraryRoot.appendingPathComponent("\(testCase.name)-\(mode)-\(UUID().uuidString)")
         let musicaDir = caseDir.appendingPathComponent("Música", isDirectory: true)
         let preparadosDir = caseDir.appendingPathComponent(".preparados", isDirectory: true)
         try FileManager.default.createDirectory(at: musicaDir, withIntermediateDirectories: true)
         try FileManager.default.createDirectory(at: preparadosDir, withIntermediateDirectories: true)
-
-        // Modo copia: el original YA vive dentro de la biblioteca
-        // (Música/). Modo referencia: vive afuera -- una carpeta que
-        // simula el disco del usuario, nunca tocada por la app.
-        let sourceDir = mode == "copia" ? musicaDir : caseDir.appendingPathComponent("FueraDeLaBiblioteca", isDirectory: true)
-        try FileManager.default.createDirectory(at: sourceDir, withIntermediateDirectories: true)
-        let sourceURL = sourceDir.appendingPathComponent("pista.\(testCase.ext)")
-        try testCase.originalData.write(to: sourceURL)
-        let originalHashBefore = try sha256(sourceURL)
-        let originalSizeBefore = try fileSize(sourceURL)
-
-        // "Editar N campos": título, artista, álbum, año, género --
-        // todos los que la producción sabe escribir hoy en MP3 (D-037).
-        let editedMetadata = TrackMetadata(
-            title: "Editado", artist: "Artista Editado", album: "Álbum Editado",
-            albumArtist: "Artista Editado", year: "2026", genre: "Jazz",
-            trackNumber: 1, durationSeconds: 0)
-
-        // ST-221: el derivado se nombra por el id del elemento. Acá no
-        // hay un `LibraryItem` de por medio -- lo que se mide es el
-        // worker -- así que basta un id propio.
-        let request = LibraryFileWorker.PrepareMusicRequest(
-            sourceURL: sourceURL, stagingDirectory: preparadosDir,
-            metadata: editedMetadata, audioQuality: .originalLossless, coverArtPolicy: .albumOnly,
-            itemID: UUID())
         let worker = LibraryFileWorker()
-        let preparedURL = try await worker.prepareMusic(request)
 
-        let originalHashAfter = try sha256(sourceURL)
-        let originalSizeAfter = try fileSize(sourceURL)
-        let preparedSize = try fileSize(preparedURL)
-        let preparedHash = try sha256(preparedURL)
+        if mode == "copia" {
+            let sourceDir = caseDir.appendingPathComponent("SoltadoParaImportar", isDirectory: true)
+            try FileManager.default.createDirectory(at: sourceDir, withIntermediateDirectories: true)
+            let droppedURL = sourceDir.appendingPathComponent("pista.\(testCase.ext)")
+            try testCase.originalData.write(to: droppedURL)
 
-        return EditResult(
-            format: testCase.name, mode: mode,
-            originalChanged: originalHashBefore != originalHashAfter,
-            originalBytesWritten: originalSizeAfter == originalSizeBefore && originalHashBefore == originalHashAfter ? 0 : originalSizeAfter,
-            preparedBytesWritten: preparedSize,
-            preparedIsByteIdenticalToOriginal: preparedHash == originalHashBefore)
+            let decision = AudioConversionRule.decide(sourceExtension: testCase.ext, audioQuality: .originalLossless)
+            let destExt = AudioConversionRule.destinationExtension(sourceExtension: testCase.ext, audioQuality: .originalLossless)
+            let destinationURL = musicaDir.appendingPathComponent("pista.\(destExt)")
+            let imported = try await worker.importMusic(LibraryFileWorker.ImportMusicRequest(
+                sourceURL: droppedURL, destinationURL: destinationURL, decision: decision,
+                metadata: originalMetadata, coverArtPolicy: .albumOnly))
+
+            let hashBeforeEdit = try sha256(imported.url)
+            _ = await worker.rewriteTags(metadata: editedMetadata, coverArtPolicy: .albumOnly, at: imported.url)
+            let hashAfterEdit = try sha256(imported.url)
+            let sizeAfterEdit = try fileSize(imported.url)
+
+            let preparedEntries = (try? FileManager.default.contentsOfDirectory(atPath: preparadosDir.path)) ?? []
+            XCTAssertTrue(preparedEntries.isEmpty, "\(testCase.name)/copia: .preparados/ debería seguir vacío tras editar")
+
+            return EditResult(format: testCase.name, mode: mode,
+                              libraryFileBytesWritten: hashAfterEdit == hashBeforeEdit ? 0 : sizeAfterEdit,
+                              preparedBytesWritten: 0)
+        } else {
+            let sourceDir = caseDir.appendingPathComponent("FueraDeLaBiblioteca", isDirectory: true)
+            try FileManager.default.createDirectory(at: sourceDir, withIntermediateDirectories: true)
+            let sourceURL = sourceDir.appendingPathComponent("pista.\(testCase.ext)")
+            try testCase.originalData.write(to: sourceURL)
+            let originalHashBefore = try sha256(sourceURL)
+
+            let request = LibraryFileWorker.PrepareMusicRequest(
+                sourceURL: sourceURL, stagingDirectory: preparadosDir,
+                metadata: editedMetadata, audioQuality: .originalLossless, coverArtPolicy: .albumOnly,
+                itemID: UUID())
+            let preparedURL = try await worker.prepareMusic(request)
+
+            let originalHashAfter = try sha256(sourceURL)
+            let preparedSize = try fileSize(preparedURL)
+
+            return EditResult(format: testCase.name, mode: mode,
+                              libraryFileBytesWritten: originalHashAfter == originalHashBefore ? 0 : (try fileSize(sourceURL)),
+                              preparedBytesWritten: preparedSize)
+        }
     }
 
     /// Una sola prueba, todas las combinaciones -- para poder imprimir
-    /// la tabla completa de una vez (ver `DECISIONS.md`, tabla "antes"
-    /// de A0) en vez de reconstruirla leyendo ocho resultados sueltos.
-    func testEditingFieldsAcrossFormatsAndModes_printsBeforeTable() async throws {
+    /// la tabla completa de una vez (ver `DECISIONS.md`, tabla "después
+    /// de A3") en vez de reconstruirla leyendo ocho resultados sueltos.
+    func testEditingFieldsAcrossFormatsAndModes_printsAfterA3Table() async throws {
         try FileManager.default.createDirectory(at: libraryRoot, withIntermediateDirectories: true)
         var results: [EditResult] = []
         for testCase in try await allFormatCases() {
@@ -151,35 +179,143 @@ final class MediaStorageBaselineTests: XCTestCase {
             }
         }
 
-        print("[A0] Tabla \"antes\" -- editar 5 campos (título/artista/álbum/año/género), bd57116:")
-        print("[A0] formato | modo | original cambió | bytes escritos en .preparados | .preparados == copia byte a byte del original")
+        print("[A3] Tabla \"después de A3\" -- editar 5 campos (título/artista/álbum/año/género), bb164dd:")
+        print("[A3] formato | modo | bytes escritos en Música/ | bytes escritos en .preparados")
         for result in results {
-            print("[A0] \(result.format) | \(result.mode) | \(result.originalChanged) | \(result.preparedBytesWritten) | \(result.preparedIsByteIdenticalToOriginal)")
+            print("[A3] \(result.format) | \(result.mode) | \(result.libraryFileBytesWritten) | \(result.preparedBytesWritten)")
         }
 
-        for result in results {
-            // El original NUNCA se toca, en ningún modo -- ni copia ni
-            // referencia. Es el hecho central que A3/A4 van a cambiar
-            // (modo copia: el archivo de Música/ SÍ se editará).
-            XCTAssertFalse(result.originalChanged, "\(result.format)/\(result.mode): el original no debería cambiar en bd57116")
-            // Siempre se escribe un .preparados/ completo, del tamaño
-            // del original (o del original + delta de tag para MP3).
-            XCTAssertGreaterThan(result.preparedBytesWritten, 0, "\(result.format)/\(result.mode): no se escribió ningún .preparados/")
+        for result in results where result.mode == "copia" {
+            // ST-223: modo copia -- el archivo de Música/ SÍ se edita
+            // (para los tres formatos etiquetables) y .preparados/ nunca
+            // interviene.
+            XCTAssertEqual(result.preparedBytesWritten, 0, "\(result.format)/copia: .preparados/ no debería tener nada")
+            XCTAssertGreaterThan(result.libraryFileBytesWritten, 0,
+                                 "\(result.format)/copia: el archivo de Música/ debería reflejar los 5 campos editados")
+        }
+        for result in results where result.mode == "referencia" {
+            // Sin cambios desde ST-220: el original nunca se toca, todo
+            // pasa por .preparados/ (A4 todavía no cerró).
+            XCTAssertEqual(result.libraryFileBytesWritten, 0, "\(result.format)/referencia: el original no debería cambiar")
+            XCTAssertGreaterThan(result.preparedBytesWritten, 0, "\(result.format)/referencia: no se escribió ningún .preparados/")
+        }
+    }
+
+    // MARK: - Edición idempotente (ST-223): mismos campos, sin tocar el archivo
+
+    /// Los tres escritores nativos (ID3/FLAC/MP4) comparan los bytes que
+    /// van a escribir contra los que ya hay y se saltan la escritura si
+    /// son iguales (`guard updated != original else { return }`, ver
+    /// `ID3Writer`/`FLACTagWriter`/`MP4TagWriter`). Reescribir con la
+    /// MISMA metadata que ya está en el archivo -- el caso real de
+    /// guardar sin haber cambiado nada -- no debería tocar el archivo en
+    /// absoluto: 0 bytes, misma fecha de modificación. Solo tiene
+    /// sentido en modo copia (el único camino con esta idempotencia hoy
+    /// -- referencia sigue recopiando siempre, eso es A4).
+    func testIdempotentEditWritesNothingAndKeepsTheModificationDate() async throws {
+        try FileManager.default.createDirectory(at: libraryRoot, withIntermediateDirectories: true)
+        var rows: [(format: String, bytesWritten: Int, dateChanged: Bool)] = []
+
+        for testCase in try await allFormatCases() {
+            let caseDir = libraryRoot.appendingPathComponent("Idempotent-\(testCase.name)-\(UUID().uuidString)")
+            let musicaDir = caseDir.appendingPathComponent("Música", isDirectory: true)
+            let sourceDir = caseDir.appendingPathComponent("SoltadoParaImportar", isDirectory: true)
+            try FileManager.default.createDirectory(at: musicaDir, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(at: sourceDir, withIntermediateDirectories: true)
+            let droppedURL = sourceDir.appendingPathComponent("pista.\(testCase.ext)")
+            try testCase.originalData.write(to: droppedURL)
+
+            let decision = AudioConversionRule.decide(sourceExtension: testCase.ext, audioQuality: .originalLossless)
+            let destExt = AudioConversionRule.destinationExtension(sourceExtension: testCase.ext, audioQuality: .originalLossless)
+            let destinationURL = musicaDir.appendingPathComponent("pista.\(destExt)")
+            let worker = LibraryFileWorker()
+            let imported = try await worker.importMusic(LibraryFileWorker.ImportMusicRequest(
+                sourceURL: droppedURL, destinationURL: destinationURL, decision: decision,
+                metadata: originalMetadata, coverArtPolicy: .albumOnly))
+
+            // Primera edición real -- deja al archivo con `editedMetadata`.
+            _ = await worker.rewriteTags(metadata: editedMetadata, coverArtPolicy: .albumOnly, at: imported.url)
+            let hashBefore = try sha256(imported.url)
+            let dateBefore = try modificationDate(imported.url)
+
+            // Un pequeño respiro: si el sistema de archivos redondea la
+            // fecha de modificación al segundo, escribir "de nuevo" en el
+            // mismo segundo podría no distinguirse de no haber escrito --
+            // sin esto, la prueba podría pasar por casualidad de reloj,
+            // no porque el escritor de verdad se salteó la escritura.
+            try await Task.sleep(nanoseconds: 1_100_000_000)
+
+            // Segunda edición: LA MISMA metadata -- nada cambió.
+            _ = await worker.rewriteTags(metadata: editedMetadata, coverArtPolicy: .albumOnly, at: imported.url)
+            let hashAfter = try sha256(imported.url)
+            let dateAfter = try modificationDate(imported.url)
+
+            rows.append((format: testCase.name,
+                        bytesWritten: hashAfter == hashBefore ? 0 : (try fileSize(imported.url)),
+                        dateChanged: dateAfter != dateBefore))
         }
 
-        // El hecho que el plan diagnostica y que esta prueba confirma
-        // con bytes reales: MP3 SÍ cambia (ID3Writer reescribe la tag);
-        // FLAC/M4A/WAV NO -- el .preparados/ es una copia idéntica del
-        // original, byte a byte, así que los 5 campos editados NUNCA
-        // llegan al archivo que de verdad viaja al iPod.
-        for result in results where result.format == "MP3" {
-            XCTAssertFalse(result.preparedIsByteIdenticalToOriginal,
-                          "MP3/\(result.mode): ID3Writer debería reescribir la tag en .preparados/")
+        print("[A3] Tabla \"edición sin cambios\" -- reescribir con la misma metadata, bb164dd:")
+        print("[A3] formato | bytes escritos | fecha de modificación cambió")
+        for row in rows {
+            print("[A3] \(row.format) | \(row.bytesWritten) | \(row.dateChanged)")
         }
-        for result in results where result.format != "MP3" {
-            XCTAssertTrue(result.preparedIsByteIdenticalToOriginal,
-                         "\(result.format)/\(result.mode): antes de A2, .preparados/ debe ser copia idéntica -- si esto falla, algo ya empezó a escribir etiquetas nativas")
+        for row in rows {
+            XCTAssertEqual(row.bytesWritten, 0, "\(row.format): reescribir con la misma metadata no debería escribir nada")
+            XCTAssertFalse(row.dateChanged, "\(row.format): reescribir con la misma metadata no debería moverle la fecha al archivo")
         }
+    }
+
+    // MARK: - Rating (ST-223): nunca toca el archivo de música
+
+    /// `LibraryViewModel.setRating` (verificado leyendo el código: solo
+    /// muta `metadata.rating` en memoria y agenda `persistCatalog()`) --
+    /// acá se mide de punta a punta, a través del ViewModel real, no del
+    /// worker: importar en copia, calificar, confirmar que el archivo de
+    /// `Música/` no cambió ni un byte ni de fecha. Representa también a
+    /// favorito/categoría (mismo patrón: mutan el catálogo, nunca llaman
+    /// a `refreshMusicFile`) -- no remedidos cada uno por separado esta
+    /// ronda; letra (`.lrc`) tampoco, por el mismo motivo, pero no se
+    /// afirma acá con un número propio.
+    @MainActor
+    func testRatingNeverTouchesTheMusicFile() async throws {
+        try FileManager.default.createDirectory(at: libraryRoot, withIntermediateDirectories: true)
+        let musicaDir = libraryRoot.appendingPathComponent("Música", isDirectory: true)
+        let sourceDir = libraryRoot.appendingPathComponent("SoltadoParaImportar", isDirectory: true)
+        try FileManager.default.createDirectory(at: musicaDir, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: sourceDir, withIntermediateDirectories: true)
+        let droppedURL = sourceDir.appendingPathComponent("pista.mp3")
+        try MediaFixture.mp3Data(title: "Original", artist: "Artista", album: "Álbum",
+                                 albumArtist: "Artista", year: "2020", genre: "Rock", trackNumber: 1).write(to: droppedURL)
+
+        let worker = LibraryFileWorker()
+        let imported = try await worker.importMusic(LibraryFileWorker.ImportMusicRequest(
+            sourceURL: droppedURL, destinationURL: musicaDir.appendingPathComponent("pista.mp3"),
+            decision: .copyAsIs, metadata: originalMetadata, coverArtPolicy: .albumOnly))
+
+        var item = AuraStudio.LibraryItem(sourceURL: imported.url, addedAt: Date())
+        item.status = .ready
+        item.storage = .copy
+        item.preparedURL = imported.url
+        item.metadata = originalMetadata
+
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot,
+                                         preferences: AppPreferences(defaults: makeIsolatedDefaults("MediaStorageBaseline")))
+        viewModel.replaceItemsForPerformanceTesting([item])
+        viewModel.makePersistenceSynchronousForTesting()
+
+        let hashBefore = try sha256(imported.url)
+        let dateBefore = try modificationDate(imported.url)
+
+        await viewModel.setRating(4, forItem: item.id)
+
+        let hashAfter = try sha256(imported.url)
+        let dateAfter = try modificationDate(imported.url)
+
+        print("[A3] rating: bytes escritos en el archivo de música = \(hashAfter == hashBefore ? 0 : (try fileSize(imported.url))), fecha cambió = \(dateAfter != dateBefore)")
+        XCTAssertEqual(hashBefore, hashAfter, "calificar no debería tocar el archivo de música")
+        XCTAssertEqual(dateBefore, dateAfter, "calificar no debería moverle la fecha al archivo de música")
+        XCTAssertEqual(viewModel.items.first?.metadata?.rating, 4, "la calificación sí debe quedar en el catálogo")
     }
 
     // MARK: - "Sincronizar -> qué archivo viaja"

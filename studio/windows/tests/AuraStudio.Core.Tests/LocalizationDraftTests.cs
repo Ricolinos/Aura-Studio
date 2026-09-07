@@ -124,6 +124,36 @@ public class LocalizationDraftTests
         Assert.True(missing.Count == 0, "claves del CSV ausentes en el .resw: " + string.Join(", ", missing.Take(10)));
     }
 
+    /// <summary>
+    /// ST-247 (addendum): cotejo clave por clave contra el borrador de la
+    /// Mac. Toda fila de <c>claves-compartidas.csv</c> marcada
+    /// <c>"igual"</c> —la clave ya coincide entre las dos plataformas— tiene
+    /// que existir de verdad en el <c>.resw</c> de Windows; si no, la fila
+    /// miente sobre el estado. Hoy no hay ninguna fila así (los dos
+    /// borradores nombran claves por archivo/miembro de forma independiente,
+    /// así que ninguna coincide todavía sin alinearlas a mano) — la prueba
+    /// pasa vacía, y empieza a verificar de verdad en cuanto B7a/A7a alineen
+    /// la primera.
+    /// </summary>
+    [Fact]
+    public void TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows()
+    {
+        Dictionary<string, string> resw = ReadResw(RequireFile(Path.Combine("Strings", "es", "Resources.resw")));
+        string sharedPath = RequireFile("claves-compartidas.csv");
+
+        List<string> igualKeys = [.. File.ReadAllLines(sharedPath)
+            .Skip(1)
+            .Where(line => line.Length > 0)
+            .Select(ParseCsvLine)
+            .Where(fields => fields[^1] == "igual")
+            .Select(fields => fields[0])];
+
+        List<string> missing = [.. igualKeys.Where(key => !resw.ContainsKey(key)).Distinct(StringComparer.Ordinal)];
+        Assert.True(missing.Count == 0,
+            "claves-compartidas.csv marca 'igual' una clave que no está en el .resw de Windows: " +
+            string.Join(", ", missing.Take(10)));
+    }
+
     // MARK: - Los 9+ plurales por ternario tienen dos formas distintas
 
     /// <summary>

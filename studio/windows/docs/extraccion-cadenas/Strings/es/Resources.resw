@@ -1446,6 +1446,12 @@
   <data name="settings-page.mantener-formato-original-recomendado" xml:space="preserve">
     <value>Mantener el formato original (recomendado)</value>
   </data>
+  <data name="settings-page.migrar-biblioteca" xml:space="preserve">
+    <value>Migrar biblioteca</value>
+  </data>
+  <data name="settings-page.migrar-version-anterior" xml:space="preserve">
+    <value>Migrar de una versión anterior</value>
+  </data>
   <data name="settings-page.musica" xml:space="preserve">
     <value>Música</value>
   </data>
@@ -1550,6 +1556,12 @@
   </data>
   <data name="shell-page.descargar" xml:space="preserve">
     <value>Descargar</value>
+  </data>
+  <data name="shell-page.esta-biblioteca-viene-version-anterior" xml:space="preserve">
+    <value>Esta biblioteca viene de una versión anterior</value>
+  </data>
+  <data name="shell-page.migrar-biblioteca" xml:space="preserve">
+    <value>Migrar biblioteca</value>
   </data>
   <data name="shell-page.ver-hay-nuevo" xml:space="preserve">
     <value>Ver qué hay de nuevo</value>

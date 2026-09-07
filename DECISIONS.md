@@ -13353,6 +13353,91 @@ ningún lado" como respuesta legítima.
 **pasó sin tocar una sola línea**, que era exactamente para lo que se
 escribió así.
 
+## ST-220 (addendum, mecánico) — arnés A0 contra A3, primera diferencia real; fuga de `staged-*.mpg`
+
+Encargo de "Sesión Maestra" tras la fusión de A3 (`bb164dd`). Dos cosas.
+
+### Arnés A0 actualizado para medir el camino real de A3
+
+`MediaStorageBaselineTests.measureEdit` llamaba a `LibraryFileWorker.
+prepareMusic` para los dos modos -- correcto contra `bd57116`/`fdc614e`,
+pero ST-223 cambió el camino REAL de modo copia (`LibraryViewModel.
+refreshMusicFile`: `storage == .copy` → `importMusic`/`rewriteTags`
+directo sobre `Música/`, nunca `.preparados/`). Seguir midiendo
+`prepareMusic` en copia habría medido un camino que producción ya no
+usa. Reescrito: copia ahora pasa por `importMusic` (import) +
+`rewriteTags` (edición), con la decisión de conversión sacada de
+`AudioConversionRule.decide`/`destinationExtension` -- la misma regla
+que usa producción, no una copia. Referencia queda intacta (sigue
+siendo `prepareMusic`, A4 no cerró).
+
+**Tabla "después de A3" (editar 5 campos, `bb164dd`)**, contra la tabla
+"antes" de ST-220 más arriba:
+
+| Formato | Modo | Bytes escritos en `Música/` | Bytes escritos en `.preparados/` |
+|---|---|---|---|
+| MP3  | copia      | 8 573 | 0 |
+| MP3  | referencia | 0     | 8 573 (sin cambios vs. ST-220) |
+| FLAC | copia      | 210   | 0 |
+| FLAC | referencia | 0     | 214 (sin cambios vs. ST-220) |
+| M4A  | copia      | 1 167 | 0 |
+| M4A  | referencia | 0     | 1 043 (sin cambios vs. ST-220) |
+| WAV  | copia      | 1 158 | 0 |
+| WAV  | referencia | 0     | 17 684 (sin cambios vs. ST-220) |
+
+Lo que cambió, con números reales: **modo copia ahora edita `Música/`
+para los tres formatos etiquetables** (antes solo MP3 cambiaba, y solo
+en `.preparados/`) -- `.preparados/` queda vacío en copia, siempre.
+**WAV copiado bajó de 17 684 a 1 158 bytes**: ya no es una copia PCM sin
+comprimir, es ALAC dentro de `.m4a` (§0.2 corregido) -- confirma con
+bytes que la conversión de verdad ocurre y que el archivo queda
+etiquetado (1 158 > el silencio PCM crudo comprimido a nada sería
+mucho menor; el tamaño real refleja el contenedor MPEG-4 + átomos
+`ilst`). Modo referencia: **idéntico byte a byte a ST-220**, confirmado
+-- A4 todavía no tocó ese camino.
+
+**Dos filas nuevas, pedidas por la maestra:**
+
+- **Edición sin cambios** (`testIdempotentEditWritesNothingAndKeepsTheModificationDate`,
+  solo copia -- es el único camino con esta idempotencia hoy):
+  reescribir con la MISMA metadata que ya está en el archivo, para los
+  cuatro formatos. **0 bytes escritos, fecha de modificación intacta**,
+  los cuatro -- confirma con bytes que el `guard updated != original
+  else { return }` de `ID3Writer`/`FLACTagWriter`/`MP4TagWriter` (ST-222)
+  funciona de verdad, no solo que existe en el código. Con un
+  `Task.sleep` de 1.1 s entre la primera y la segunda escritura, para
+  que la prueba no pudiera pasar por casualidad de que el sistema de
+  archivos redondee la fecha al segundo.
+- **Rating** (`testRatingNeverTouchesTheMusicFile`, a través del
+  `LibraryViewModel` real, no del worker -- `setRating` ni siquiera
+  llama al worker): **0 bytes, fecha intacta** en el archivo de música;
+  la calificación sí queda en el catálogo. Representa también a
+  favorito/categoría (mismo patrón leído en el código: mutan el
+  catálogo, nunca `refreshMusicFile`) -- **no remedidos cada uno por
+  separado esta ronda**, y letra (`.lrc`) tampoco tiene un número
+  propio acá (se sabe que no toca el audio por el mismo motivo, pero no
+  se afirma con bytes medidos).
+
+### Fuga: `LibrarySyncDeleteAllContentTests.videoItem()`
+
+Reportada por "experto en código opus": `videoItem()` escribía su
+`staged-<uuid>.mpg` directo en `FileManager.default.temporaryDirectory`
+(el temporal del SISTEMA), sin registrar la ruta en ningún lado para
+borrarla después -- 79 archivos acumulados en la Mac del dueño, uno por
+corrida de la suite. Arreglado: `videoStagingDir`, una carpeta propia
+de la prueba (mismo patrón que `fakeIPod`), creada en `setUpWithError`
+y borrada entera en `tearDownWithError`. Verificado: 0 archivos
+`staged-*.mpg` bajo `/tmp`/`/var/folders` tras correr la suite
+completa. **No se tocaron los 79 ya acumulados** -- el dueño limpia su
+propio temporal, como pidió la maestra.
+
+### Verificación
+
+`swift test` completo: **950 pruebas, 0 fallas, 10 saltadas** (bajó de
+15 a 10 -- A3 ya resolvió algunas de las `XCTSkip` de A3/A4 que estaban
+pendientes, no algo de este commit). `xcodebuild -configuration Release`:
+**BUILD SUCCEEDED** (candado tomado y liberado por esta sesión, esperado
+mientras lo tenía "experto A4 verificacion"). Nada en `Sources/`.
 ## ST-247 — Windows: ensayo en seco de B7a (extracción de cadenas)
 
 Encargo de la Maestra, plan §3: preparar la extracción de cadenas de
@@ -13853,3 +13938,151 @@ conversión a copias con un original ausente contado aparte. La regla de
 regeneración tiene además su prueba en seco, con los seis casos y la
 holgura de 2 segundos, porque con archivos de verdad habría que fabricar
 fechas a mano.
+## ST-247 (addendum) — Cotejo clave por clave contra el borrador de la Mac
+
+Encargo corto de la Maestra, antes de que el Experto aplique B7a real:
+comparar las cadenas que el plan (§0.4, §2) y la auditoría marcan como
+**compartidas** —"Cómo guardar tu música", calidad de audio/conversión,
+avisos de actualización de la app y del firmware, migración,
+confirmaciones de Eliminar, "Limpiar huérfanos", biblioteca desconectada—
+contra `docs/extraccion-cadenas/revision.csv` y
+`borrador.Localizable.xcstrings` de la Mac (raíz del repo), clave por
+clave, y listar dónde no coinciden. Corrido sobre `eb8cad5` (con B6 —
+ST-246, migración — ya integrado): se volvió a correr
+`ExtraerCadenasWindows` antes de escribir una sola fila, porque B6 agregó
+texto nuevo ("Migrar biblioteca") después del commit de ST-247 y un cotejo
+contra el borrador viejo hubiera reportado "no existe en ningún lado" para
+algo que en ese momento ya existía en Windows.
+
+### El hallazgo de fondo, antes que cualquier fila: la Mac todavía no tiene la mayoría de este texto
+
+Verificado contra el `revision.csv` real de la Mac, no asumido: **ninguna**
+cadena de "Cómo guardar tu música" existe en su borrador (cero resultados
+buscando "guardar tu música", "Copiar a la Biblioteca", "Referenciar en su
+lugar" — A5 sigue con `XCTSkip`, ST-225/226 addendum). Tampoco existe
+"huérfano" ni una sola vez. Y tampoco existe "Migrar biblioteca" ni nada
+parecido —grep sobre `Sources/AuraStudio/` completo: los únicos cuatro
+archivos que mencionan "Migrar" lo hacen en comentarios o nombres de
+función, ni una sola vez como texto de interfaz— porque A6 (la migración
+del lado Mac) todavía no está construido, mientras que B6 (ST-246) ya se
+integró a `origin/main` para Windows. Es la asimetría real de esta ronda:
+las dos plataformas avanzan en paralelo y no al mismo ritmo en cada fase.
+
+Esto cambia lo que "cotejar" puede significar hoy: la mayoría de las filas
+no son "clave distinta para el mismo texto" —son simplemente **texto que
+solo existe de un lado**, porque la funcionalidad solo existe de ese lado.
+Es un hallazgo real y útil por su cuenta, no un resultado nulo.
+
+### Los 38 casos reales, en `docs/extraccion-cadenas/claves-compartidas.csv`
+
+| Estado | Cuántos |
+|---|---|
+| `clave distinta` (mismo concepto, texto igual o casi igual, clave distinta) | 12 |
+| `solo Mac` | 7 |
+| `solo Windows` | 19 |
+| `igual` | 0 |
+| **Total** | **38** |
+
+**Cero `igual`**, y es lo esperable: los dos borradores nombran claves por
+archivo/miembro de origen, de forma completamente independiente uno del
+otro (`music-settings-view.calidad-audio` en Swift,
+`settings-page.calidad-audio` en C#) — que coincidieran por accidente
+sería la sorpresa, no lo contrario.
+
+Los 12 `clave distinta` son el corazón del encargo — mismo texto (o una
+variación mínima de redacción, anotada en la nota de cada fila) con clave
+distinta. Los más claros:
+
+- **Botones genéricos, no del área que se estaba cotejando, pero que SÍ
+  aparecen en la confirmación de Eliminar de Windows**: "Eliminar"
+  (`artists-view.eliminar` en la Mac, 7 sitios) y "Cancelar"
+  (`background-task-center-indicator.cancelar`, 16 sitios) — la Mac ya
+  tiene un lugar canónico para los dos; Windows los repite bajo
+  `app-strings.delete-confirm-primary`/`-cancel` (y, para "Cancelar", bajo
+  media docena de claves más fuera del alcance de este cotejo — no se
+  tocaron, quedan anotadas para cuando alguien decida consolidar los
+  genéricos de la app entera, que es otra ronda).
+- **Calidad de audio**: "Calidad de audio" y "Comprimir a MP3 de buena
+  calidad" existen textualmente iguales en las dos plataformas.
+- **Biblioteca desconectada**: cuatro pares con texto casi idéntico
+  (`library-unavailable-view.no-se-perdio-nada-tu-catalogo` ↔
+  `app-strings.library-root-missing-detail-*`; `elegir-otra-biblioteca` ↔
+  `library-root-choose`; `crear-nueva` ↔ `library-root-create`;
+  `done-view.reintentar` ↔ `library-root-retry`, este último con más
+  variación real: Mac dice solo "Reintentar", Windows "Conectar el disco y
+  reintentar") y uno más largo, la explicación de qué es la carpeta de
+  biblioteca (`settings-section-view.aqui-vive-catalogo-tu-biblioteca-funcion`
+  ↔ `settings-page.aqui-vive-catalogo-biblioteca-funciona-a`) — casi
+  palabra por palabra, con una diferencia de gramática ("copie"/"se
+  copien") que vale la pena unificar cuando se junten.
+- **Actualizaciones**: "Buscar actualizaciones" (botón) coincide en texto;
+  "Actualizaciones de Aura Studio" (Mac, título de sección) contra
+  "Actualización de Aura Studio" (Windows, singular) casi coincide;
+  "Instalar actualización de %@" (Mac, con el nombre del firmware) contra
+  "Instalar la actualización" (Windows, sin nombre) coincide en concepto
+  pero no en texto — anotado en la fila, no forzado a "igual".
+
+Los 19 `solo Windows` incluyen las ocho de "Cómo guardar tu música", las
+siete de huérfanos, las cuatro de actualizaciones de la app (flujo de
+descarga automática, sin equivalente Mac) y las **dos de migración**
+recién descubiertas al re-correr el extractor sobre B6: "Migrar de una
+versión anterior" (título de sección) y "Migrar biblioteca" (el botón, en
+dos sitios: Ajustes y el aviso del armazón).
+
+**Regla aplicada donde la clave difiere**: manda la de la Mac (su borrador
+salió primero, ST-227) — el CSV lo dice en la columna "clave" (la
+recomendada) y dónde vive hoy cada lado. **No se tocó el `.resw` ni el
+`revision.csv` de Windows para alinear claves** —si se regeneraron es solo
+porque B6 agregó texto nuevo que el borrador anterior no tenía, no para
+mover ninguna clave existente—: alinear las claves compartidas es trabajo
+de quien aplique B7a/A7a de verdad.
+
+### Lo que queda anotado para A7a/A7c y B7a/B7c
+
+- **La Mac deberá respetar este CSV al aplicar A7a real**: para las 12
+  filas de `clave distinta`, adoptar la clave de Windows sería duplicar
+  trabajo de traducción — A7c/B7c traducen una vez por clave compartida, y
+  hoy hay dos candidatas por cada una de esas 12.
+- **`Cómo guardar tu música`, huérfanos y migración**: cuando A5/A6 se
+  construyan en Swift, usar las claves de Windows tal como están (no hay
+  ninguna Mac con la que competir) — es la oportunidad de que nazcan
+  compartidas desde el commit inicial, en vez de reconciliarse después
+  como esta ronda. La propia migración de Windows (B6, recién integrada)
+  es el ejemplo fresco: si A6 sale mañana con su propia clave para "Migrar
+  biblioteca", este mismo cotejo hay que volver a correrlo.
+- **El `InfoBar`/detalle de conversión de audio** (parte del alcance del
+  encargo) no aparece en ninguno de los dos `revision.csv`: en Windows
+  vive en `SettingsViewModel.AudioConversionDetail`/`AudioQualityDetail` y
+  el nuevo `MigrationDetail` de B6 —las tres, propiedades de C# calculadas
+  con lógica condicional, leídas por XAML vía `{x:Bind}`— fuera de los
+  cuatro patrones que `ExtraerCadenasWindows` reconoce hoy (ninguno cubre
+  "cualquier propiedad de ViewModel enlazada por `{x:Bind}` que devuelva
+  string"). No se amplió el extractor para este addendum —es una
+  ampliación real del alcance de la herramienta, no un cotejo—; queda
+  anotado como hueco conocido, y ahora con tres ejemplos concretos en vez
+  de uno, para quien cierre B7a.
+
+### Verificación
+
+Prueba nueva, `TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows`
+(`LocalizationDraftTests.cs`): toda fila de `claves-compartidas.csv`
+marcada `"igual"` tiene que existir en `Strings/es/Resources.resw` de
+Windows. Pasa vacía hoy —cero filas `"igual"`— y empieza a verificar de
+verdad en cuanto la primera clave se alinee.
+
+El borrador se regeneró completo sobre `eb8cad5` (antes estaba sobre
+`950d55d`, previo a B6): 555 sitios (antes 551; +4 de migración/otros
+cambios de XAML), 51 ternarios de plural (antes 48), 4 sitios de cultura
+fija (sin cambio). Mismos criterios y el mismo comportamiento verificado
+en ST-247 — no hubo que tocar la herramienta, solo volver a correrla.
+
+`dotnet build`: 0 errores. `dotnet test`: **1 744 pruebas en verde** (1
+nueva sobre la base actual). Sin cambios en `AppStrings.cs`, el XAML ni
+ningún C# de la app — ni en este addendum ni en el anterior.
+
+Repro:
+
+```
+dotnet run --project studio/windows/tools/ExtraerCadenasWindows
+dotnet test studio/windows/tests/AuraStudio.Core.Tests/AuraStudio.Core.Tests.csproj --filter FullyQualifiedName~LocalizationDraftTests
+```
