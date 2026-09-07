@@ -43,7 +43,12 @@ public static class PluralRules
             // excepción de los terminados en 11-14, que van a "muchos".
             PluralFamily.Slavic => SlavicSuffix(absolute),
 
-            // Español, inglés, y la mayoría: uno y el resto.
+            // Francés: el CERO va en singular ("0 chanson"), a diferencia del
+            // español ("0 canciones"). Es la trampa de suponer que dos formas
+            // significan la misma regla en todos los idiomas.
+            PluralFamily.FrenchLike => absolute is 0 or 1 ? OneSuffix : OtherSuffix,
+
+            // Español, inglés, alemán y la mayoría: uno y el resto.
             _ => absolute == 1 ? OneSuffix : OtherSuffix
         };
     }
@@ -57,6 +62,7 @@ public static class PluralRules
     {
         PluralFamily.Single => [OtherSuffix],
         PluralFamily.Slavic => [OneSuffix, FewSuffix, ManySuffix],
+        PluralFamily.FrenchLike => [OneSuffix, OtherSuffix],
         _ => [OneSuffix, OtherSuffix]
     };
 
@@ -72,7 +78,7 @@ public static class PluralRules
         return ManySuffix;
     }
 
-    private enum PluralFamily { TwoForms, Slavic, Single }
+    private enum PluralFamily { TwoForms, FrenchLike, Slavic, Single }
 
     /// <summary>
     /// A qué familia pertenece la cultura. Se mira el idioma de dos letras y no
@@ -83,6 +89,7 @@ public static class PluralRules
         culture.TwoLetterISOLanguageName switch
         {
             "ja" or "zh" or "ko" or "vi" or "th" => PluralFamily.Single,
+            "fr" or "pt" => PluralFamily.FrenchLike,
             "ru" or "uk" or "pl" or "cs" or "sk" => PluralFamily.Slavic,
             _ => PluralFamily.TwoForms
         };

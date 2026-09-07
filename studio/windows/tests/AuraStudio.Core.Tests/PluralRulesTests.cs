@@ -97,6 +97,23 @@ public class PluralRulesTests
         Assert.Equal(SuffixFor(3, "es-MX"), SuffixFor(3, "es-419"));
     }
 
+
+    // MARK: - Francés: el cero va en singular
+
+    /// <summary>
+    /// La trampa de suponer que "dos formas" significa la misma regla en todos
+    /// los idiomas: en francés el <b>cero</b> va en singular ("0 chanson"),
+    /// mientras que en español va en plural ("0 canciones").
+    /// </summary>
+    [Theory]
+    [InlineData(0, ".one")]
+    [InlineData(1, ".one")]
+    [InlineData(2, ".other")]
+    public void ElFrancesPoneElCeroEnSingular(int count, string expected) =>
+        Assert.Equal(expected, SuffixFor(count, "fr-FR"));
+
+    [Fact]
+    public void YEspanolNo() => Assert.Equal(".other", SuffixFor(0, "es-MX"));
     // MARK: - La misma tabla que la app
 
     private static string SuffixFor(int count, string culture)
@@ -106,6 +123,7 @@ public class PluralRulesTests
         return new CultureInfo(culture).TwoLetterISOLanguageName switch
         {
             "ja" or "zh" or "ko" or "vi" or "th" => ".other",
+            "fr" or "pt" => absolute is 0 or 1 ? ".one" : ".other",
             "ru" or "uk" or "pl" or "cs" or "sk" => Slavic(absolute),
             _ => absolute == 1 ? ".one" : ".other"
         };
