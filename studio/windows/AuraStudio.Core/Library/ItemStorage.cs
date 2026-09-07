@@ -1,5 +1,3 @@
-using System.Text;
-
 namespace AuraStudio.Core.Library;
 
 /// <summary>
@@ -137,17 +135,10 @@ public static class ItemStorageRules
         return cut < 0 ? stored : stored[..cut];
     }
 
-    private static string Normalize(string value)
-    {
-        try
-        {
-            return value.Normalize(NormalizationForm.FormC);
-        }
-        catch (ArgumentException)
-        {
-            // Cadena con sustitutos inválidos: se compara como vino. Un nombre
-            // roto no puede tumbar la carga de la biblioteca.
-            return value;
-        }
-    }
+    /// <summary>
+    /// La misma normalización que usa el resto del catálogo (addendum de
+    /// ST-241): una sola implementación, para que escribir y comparar no puedan
+    /// discrepar.
+    /// </summary>
+    private static string Normalize(string value) => CatalogPath.Normalize(value);
 }

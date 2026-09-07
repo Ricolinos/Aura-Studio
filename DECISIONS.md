@@ -11638,3 +11638,129 @@ Las nuevas se reparten en dos:
   renombre un preparado con nombre viejo; y que un original que falta
   quede fuera de lo que se muestra pero siga en el catálogo después de
   guardar y recargar.
+
+## ST-240 (addendum) — El ffmpeg de winget que estaba instalado y Studio no encontraba
+
+Cabo suelto que salió del arnés de B0. `FfmpegLocator` buscaba el atajo
+que winget deja en `%LOCALAPPDATA%\Microsoft\WinGet\Links`, y con eso
+alcanza casi siempre. Casi.
+
+Ese atajo **no siempre aparece**: el paquete puede no declarar alias, la
+instalación puede haber sido de máquina y no de usuario, o el `Links` del
+usuario puede haber quedado fuera del PATH. Cuando pasa, el ffmpeg
+**está instalado** —desempaquetado, funcionando, a un `cd` de distancia—
+y Studio decía que no hay ninguno y mandaba al usuario a instalar con
+winget algo que winget ya le había instalado. Ese es el defecto: no que
+falte una ruta, sino que la app le diga al usuario una cosa falsa sobre
+su propia computadora.
+
+Ahora también se mira dentro del paquete desempaquetado:
+
+```
+%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_…\ffmpeg-7.1-full_build\bin\ffmpeg.exe
+```
+
+Una carpeta por paquete y adentro una por versión, con el nombre que trae
+el zip — así que hay que **listar**, no adivinar la ruta. Detalles que no
+son de adorno:
+
+- **Se listan de más nueva a más vieja, comparando los números como
+  números.** Alfabéticamente `ffmpeg-10.0` va antes que `ffmpeg-7.1`, y
+  quien tenga las dos instaladas terminaría usando la vieja.
+- **Vale cualquier paquete cuyo nombre mencione ffmpeg**, no solo
+  `Gyan.FFmpeg`: hay más de un publicador. Un falso positivo no cuesta
+  nada, porque solo se devuelve la ruta si el ejecutable existe de
+  verdad.
+- **El atajo de `Links` sigue ganando**: es más barato de comprobar y es
+  el que winget mantiene apuntando a la versión vigente. El listado va
+  después de los atajos y antes del PATH.
+- **Una carpeta que no existe no es un error.** En una máquina sin winget
+  no hay nada que ver, y la búsqueda sigue con el PATH sin decir nada.
+
+Esto **solo afecta a video**: desde ST-243 el audio se convierte con el
+codificador que trae Windows, y ffmpeg queda para lo que siempre fue
+suyo.
+
+**Verificación**: cinco pruebas nuevas contra un árbol de carpetas
+simulado —el ffmpeg de winget sin atajo en `Links`; que con dos versiones
+gane la de verdad más nueva; que `Links` le siga ganando al paquete; que
+no se proponga nada de un paquete ajeno; y que sin carpeta de paquetes no
+pase nada y la búsqueda siga—. Sin tocar disco: el listado se inyecta.
+
+## ST-241 (addendum) — Las rutas del catálogo se escriben en NFC, no solo se comparan
+
+Ampliación del contrato de ST-221, fijada por la Maestra para **las dos
+plataformas** a partir de lo que apareció al implementar B1.
+
+"Música" se puede escribir de dos maneras que en pantalla se ven
+idénticas: **compuesta**, con una sola letra acentuada, o
+**descompuesta**, con la letra y el acento como dos caracteres. La Mac
+escribe la descompuesta y Windows la compuesta. Para el catálogo son dos
+rutas distintas, y el modo de falla es el peor que hay: silencioso. Toda
+la biblioteca copiada del dueño se leería como referenciada y nadie vería
+un error.
+
+B1 ya comparaba en NFC al inferir `storage`. Faltaba la otra mitad, que
+es la que evita que el problema se siga produciendo:
+
+- **Se escriben en NFC** las tres rutas relativas del catálogo:
+  `sourceRelativePath`, `preparedRelativePath` y `coverRelativePath`.
+  Todas pasan por `CatalogPath.Canonical`, que era ya el único embudo de
+  escritura. La de carátula hoy es un identificador sin acentos, y se
+  normaliza igual: la excepción de una es como se vuelve a colar la forma
+  descompuesta.
+- **Toda comparación normaliza antes de comparar**
+  (`CatalogPath.SameStoredPath`, y `ItemStorageRules` que ahora usa la
+  misma implementación en vez de la suya). Una sola normalización, para
+  que escribir y comparar no puedan discrepar.
+- **Una ruta absoluta no se normaliza, a propósito.** En Windows el
+  nombre en disco es la secuencia exacta de caracteres con la que se
+  creó: cambiarle la forma a la ruta de un archivo del usuario sería no
+  encontrarlo. Lo que se normaliza es lo que Studio escribe adentro de su
+  propia biblioteca.
+
+### La carpeta que ya está se reusa
+
+Consecuencia directa, y la parte con consecuencias visibles:
+`MediaRoots.Directory` **lista** la raíz de la biblioteca y busca una
+carpeta que se llame igual en cualquiera de las dos formas, en vez de
+armar la ruta a ciegas con `Path.Combine`. Si no hay ninguna, propone el
+nombre canónico.
+
+Sin eso, Windows crearía una segunda `Música` al lado de la que creó la
+Mac —dos carpetas que se ven iguales, la biblioteca partida en dos y
+nadie entendiendo por qué—. Es un listado por tipo de medio, tres en
+total, no uno por archivo: no es lo que ST-203 sacó de la carga.
+
+### Y `storage` se resuelve también al guardar
+
+Al escribir la prueba de ida y vuelta apareció que la inferencia solo
+corría **al cargar**. Un elemento que acaba de entrar a la biblioteca
+nunca pasó por una carga, así que todo lo que importara Windows saldría
+al catálogo compartido **sin el campo**, y la Mac tendría que adivinarlo
+por su cuenta — que es justo lo que el contrato vino a evitar. Ahora
+`Snapshot` resuelve igual que la carga: conserva lo que ya venía —aunque
+no lo entienda— e infiere lo que falta.
+
+**Verificación**: `dotnet build` de `AuraStudio.Core` y de
+`AuraStudio.App`, 0 errores y 0 advertencias; `dotnet test`, **1 634
+pruebas en verde** (13 nuevas entre este addendum y el de ST-240).
+
+Las ocho de este addendum, con las dos formas escritas como escapes
+explícitos —si el archivo de prueba las guardara iguales, no se probaría
+nada, y hay una prueba de que son distintas como texto—: que una ruta
+relativa se escriba compuesta; la **ida y vuelta completa** con un nombre
+descompuesto, mirando lo que quedó ESCRITO en el catálogo y no lo que
+devuelve la carga (si solo se mirara la carga, una normalización al leer
+taparía el defecto y la Mac seguiría recibiendo la forma descompuesta);
+que una ruta absoluta se guarde sin tocar; que dos rutas iguales en
+distinta forma se comparen como la misma; que se reuse la carpeta
+existente aunque venga descompuesta; que sin carpeta se proponga el
+nombre canónico; y que lo no soportado no tenga carpeta ninguna.
+
+**Lo que queda dicho y no resuelto**: si una carpeta de la biblioteca
+está físicamente en disco con la forma descompuesta y algo arma la ruta
+sin pasar por `MediaRoots`, en Windows no la va a encontrar. La defensa
+es que Studio crea esas carpetas él mismo y ahora las busca antes de
+crearlas; el camino que no pase por ahí es un defecto, y por eso el
+resolvedor es un lugar solo.

@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace AuraStudio.Core.Library;
 
 /// <summary>
@@ -51,8 +53,23 @@ public static class CatalogPath
         : Path.GetFullPath(Path.Combine(libraryRoot, ToNative(storedPath)));
 
     /// <summary>
-    /// Una ruta relativa con el separador del catálogo. Idempotente, y deja
-    /// intacta una ruta absoluta.
+    /// Una ruta relativa con el separador del catálogo y en <b>NFC</b>.
+    /// Idempotente, y deja intacta una ruta absoluta.
+    ///
+    /// <para><b>Por qué NFC</b> (addendum de ST-241, contrato ampliado para las
+    /// dos plataformas): "Música" se puede escribir de dos maneras que se ven
+    /// idénticas —compuesta, con una sola letra acentuada, o descompuesta, con
+    /// la letra y el acento por separado—. La Mac escribe la descompuesta y
+    /// Windows la compuesta, y para el catálogo son dos rutas distintas: la
+    /// biblioteca copiada del dueño se leería como referenciada, y en silencio.
+    /// Así que <b>se escribe siempre en la forma compuesta</b>, y toda
+    /// comparación normaliza antes de comparar.</para>
+    ///
+    /// <para>Una ruta <b>absoluta</b> no se normaliza, a propósito: en Windows el
+    /// nombre en disco es la secuencia exacta de caracteres con la que se creó, y
+    /// cambiarle la forma a la ruta de un archivo del usuario sería no
+    /// encontrarlo. Lo que se normaliza es lo que Studio escribe adentro de su
+    /// propia biblioteca.</para>
     /// </summary>
     public static string Canonical(string? relativePath)
     {
@@ -60,8 +77,36 @@ public static class CatalogPath
 
         return Path.IsPathRooted(relativePath)
             ? relativePath
-            : relativePath.Replace('\\', Separator);
+            : Normalize(relativePath.Replace('\\', Separator));
     }
+
+    /// <summary>
+    /// Un texto en la forma compuesta (NFC), que es como se guardan y se
+    /// comparan los nombres del catálogo. <b>Nunca lanza</b>: un nombre con
+    /// sustitutos inválidos se devuelve como vino — un nombre roto no puede
+    /// tumbar la carga de la biblioteca.
+    /// </summary>
+    public static string Normalize(string value)
+    {
+        try
+        {
+            return value.IsNormalized(NormalizationForm.FormC)
+                ? value
+                : value.Normalize(NormalizationForm.FormC);
+        }
+        catch (ArgumentException)
+        {
+            return value;
+        }
+    }
+
+    /// <summary>
+    /// Si dos rutas del catálogo nombran lo mismo: misma forma Unicode, mismo
+    /// separador, y sin distinguir mayúsculas —que es como se comportan los
+    /// sistemas de archivos de las dos plataformas—.
+    /// </summary>
+    public static bool SameStoredPath(string? left, string? right) =>
+        string.Equals(Canonical(left), Canonical(right), StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// El nombre del archivo de carátula: <b>el identificador en mayúsculas y

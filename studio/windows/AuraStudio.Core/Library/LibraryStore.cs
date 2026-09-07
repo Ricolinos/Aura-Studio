@@ -380,22 +380,37 @@ public sealed class LibraryStore(string root)
             // es una acción explícita (`RemoveCover`).
             if (item.Metadata?.CoverArtData is { Length: > 0 } pending) WriteCover(item, pending);
 
+            string storedSource = ToStoredPath(item.SourcePath);
+
             catalog.Items.Add(new PersistedLibraryItem
             {
                 Id = item.Id,
-                SourceRelativePath = ToStoredPath(item.SourcePath),
+                SourceRelativePath = storedSource,
                 Kind = LibraryPersistenceMapper.PersistedKind(item.Kind),
                 Status = LibraryPersistenceMapper.PersistedStatus(item.Status),
                 Metadata = LibraryPersistenceMapper.ToPersisted(item.Metadata),
                 PreparedRelativePath = item.PreparedPath is null ? null : ToStoredPath(item.PreparedPath),
-                CoverRelativePath = item.CoverRelativePath,
+
+                // Addendum de ST-241: también en NFC. Hoy es un identificador y
+                // no tiene acentos, pero es una ruta relativa del catálogo y las
+                // rutas relativas del catálogo se escriben todas igual — la
+                // excepción de una es como se vuelve a colar la forma
+                // descompuesta.
+                CoverRelativePath = item.CoverRelativePath is null
+                    ? null : CatalogPath.Canonical(item.CoverRelativePath),
 
                 // La invariante que fijó la maestra: sin ruta tampoco hay hash.
                 CoverHash = item.CoverRelativePath is { Length: > 0 } ? item.CoverHash : null,
 
-                // ST-242: se conserva tal cual vino. Le da semántica ST-241; acá
-                // lo único que importa es que un guardado no lo borre.
-                Storage = item.Storage,
+                // ST-241: lo que ya venía se conserva tal cual —aunque esta build
+                // no lo entienda— y lo que falta se infiere de la ruta guardada.
+                //
+                // Se resuelve también acá, y no solo al cargar, porque un
+                // elemento que acaba de entrar a la biblioteca nunca pasó por una
+                // carga: sin esto, todo lo que importe Windows saldría al
+                // catálogo compartido sin el campo, y la Mac tendría que
+                // adivinarlo por su cuenta.
+                Storage = ItemStorageRules.Resolve(item.Storage, storedSource),
                 Category = item.Category,
                 SeriesName = item.SeriesName,
                 Season = item.Season,
