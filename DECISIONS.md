@@ -13438,6 +13438,55 @@ propio temporal, como pidió la maestra.
 pendientes, no algo de este commit). `xcodebuild -configuration Release`:
 **BUILD SUCCEEDED** (candado tomado y liberado por esta sesión, esperado
 mientras lo tenía "experto A4 verificacion"). Nada en `Sources/`.
+## ST-244 (addendum) — "Sin preparado" es un estado válido: los tres sitios de A4, comprobados
+
+Recibido de ST-224. La primera corrida de A4 en la Mac destapó tres
+lugares donde la regla de ST-244 —una canción referenciada cuyo archivo ya
+coincide con el catálogo no necesita preparado, y `preparedPath` queda
+**ausente**— rompía algo. Windows no los tiene, y acá está la comprobación
+en vez de la afirmación.
+
+1. **La sincronización la lleva.** La Mac omitía en silencio todo elemento
+   sin preparado. En Windows viaja `PreparedPath ?? SourcePath`, y —lo que
+   había que revisar— **ningún filtro previo la descarta**: el barrido
+   filtra por estado, por tipo de medio y por la selección explícita del
+   usuario, y ni el planificador ni el manifiesto miran `PreparedPath`.
+   Medido: el elemento llega con su archivo de origen y su destino sale
+   bien armado desde la metadata.
+2. **Cargar no encola nada.** La Mac re-encolaba para preparar todo
+   "Listo" sin derivado, lo que con A4 encolaría casi la biblioteca entera
+   al abrir. En Windows el re-encolado filtra estrictamente por estado "en
+   cola", y `ProcessAsync` además se planta salvo en "en cola" o "falló".
+   Medido: **cero trabajos encolados y cero archivos creados** al cargar
+   un catálogo con una referencia lista sin preparado.
+3. **Aplicar carátula no inventa un preparado.** La Mac guardaba
+   `prepared ?? item.preparedURL` y dejaba el catálogo apuntando a un
+   derivado que ya no correspondía. En Windows el único sitio que asigna
+   `PreparedPath` fuera del procesador es `RefreshPreparedFile` (ST-244),
+   y solo cuando `PreparedMusicBuilder` devolvió una ruta de verdad;
+   `ApplyAlbumCover` no lo toca. Medido: se aplica la carátula y
+   `preparedPath` sigue ausente.
+
+**Dónde vive la comprobación.** En el arnés (`tools/CopyModeCheck`) y no
+en `Core.Tests`: los tres caminos —el barrido del sync, la carga de la
+biblioteca y aplicar carátula— están en el proyecto de la app, que es
+`net10.0-windows` con WinUI y no se puede referenciar desde un proyecto de
+pruebas `net10.0`. Es la misma razón por la que el modo copia se mide ahí
+desde ST-243.
+
+```
+  1. preparedPath del catálogo:  (ausente, como debe)
+     lo que viajaría al iPod:    Ingrata.mp3
+     ¿la descarta algún filtro?  no
+     destino en el iPod:         Music/Café Tacvba/Ré/Ingrata.mp3
+
+  2. trabajos encolados al cargar: 0 (esperado 0)
+     archivos en .preparados/:     0 → 0 (esperado sin cambio)
+
+  3. carátulas aplicadas:        1
+     preparedPath después:       (sigue ausente, como debe)
+```
+
 ## ST-247 — Windows: ensayo en seco de B7a (extracción de cadenas)
 
 Encargo de la Maestra, plan §3: preparar la extracción de cadenas de

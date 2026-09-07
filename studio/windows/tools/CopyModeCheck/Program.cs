@@ -570,4 +570,6 @@ Console.WriteLine($"  Segunda corrida: {again.Touched} archivos tocados "
                   + $"(árbol idéntico: {TreeOf(oldLibrary) == treeAfterFirst})");
 Console.WriteLine();
 
+await PreparedAbsentChecks.RunAsync(root);
+
 Console.WriteLine($"Listo. Para borrar todo: rmdir /s /q \"{root}\"");
