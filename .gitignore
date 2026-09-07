@@ -28,6 +28,7 @@ studio/**/build/
 *.tmp
 *.swp
 .serena/
+__pycache__/
 
 # Paquetes armados por scripts/package-dmg.sh
 dist/

@@ -15001,3 +15001,76 @@ Rockbox). Las 31 filas del cotejo compartido que tienen texto en la Mac
 llevan ahora su inglés en la columna `texto en`, para que Windows lo use
 en B7b y el inglés también se escriba una sola vez. Las 7 restantes son
 "solo Windows": su inglés no es mío.
+
+## ST-227 (addendum, mecánico) — el tramo calculado que desaparecía sin marcador, y la prueba de deriva catálogo↔.lproj
+
+Dos encargos de "Sesión Maestra" tras la fusión de A7a.
+
+### El defecto real: un tramo calculado entre dos `+` desaparecía sin dejar rastro
+
+"Experto en código opus" cazó, al aplicar mi borrador, que
+`music-settings-view.separadores-que-agrupan-vs-versus-nunca` había
+perdido el tramo CALCULADO de en medio (`ArtistNameNormalizer.
+collaborationSeparators.joined(separator: ", ")`) -- mi
+`extend_with_concatenation` (ST-247 addendum anterior) sabía saltarse
+lo que no era un literal para seguir buscando el SIGUIENTE fragmento,
+pero no dejaba ningún rastro de que ahí había algo. Aplicar esa clave
+tal cual habría borrado la lista de separadores de la pantalla, en
+silencio -- exactamente la clase de defecto que todo este encargo
+existe para atrapar, y esta vez en mi propia herramienta.
+
+Arreglado con `marker_for_computed_expression`: el tramo calculado
+ahora SIEMPRE deja un marcador -- `%lld` si el nombre huele a conteo
+(mismo criterio que `convert_interpolations`), `%@` si es un
+identificador simple, o `{n}` genérico cuando no se puede afirmar el
+tipo (una cadena de llamadas, como el caso real) -- nunca `%@` a
+ciegas: un marcador de forma distinta es una señal visible de "esto
+necesita ojos humanos", no un `%@` que se ve normal pero puede estar
+mal. `tools/test_extraer_cadenas.py` (nuevo, `unittest` de la
+biblioteca estándar -- no hay ninguna dependencia Python en este repo
+todavía) prueba las dos funciones directo, sin necesitar Sources/.
+
+### Auditoría: revisado TODO el `revision.csv` real, no solo el caso encontrado
+
+Con Sources/ ya convertido por A7a (los 513 literales pasaron a
+`LSf(...)`/`String(localized:)`), volver a correr el extractor contra
+el árbol actual ya no sirve para esta auditoría -- encuentra 8 sitios,
+no 513, porque no queda casi nada por extraer. Lo que sí sirve, y lo
+que se hizo: extraer con `git archive` el Sources/ de ANTES de A7a
+(`4a5f533`, el commit justo antes de A7a) a un directorio temporal, y
+correr ahí la herramienta YA ARREGLADA. Resultado: **3 frases unidas
+en total, la misma cantidad que antes del arreglo** --
+`LibraryUnavailableView.swift:40` y `SettingsSectionView.swift:258`
+(literal + literal, nunca tuvieron un tramo calculado de por medio,
+así que nunca les tocó este defecto) y
+`MusicSettingsView.swift:84` (la que Opus ya corrigió a mano, ahora
+con `{n}` en vez de desaparecer). **Ningún otro sitio en todo
+`revision.csv` tenía este defecto** -- confirmado, no supuesto.
+
+### Prueba de deriva: catálogo↔`.lproj`
+
+`tools/compilar-catalogo.py` ahora acepta `--output-root` (lee
+siempre el `Localizable.xcstrings` real; solo redirige DÓNDE escribe
+los `.lproj` generados) para poder invocarse contra un directorio
+temporal desde una prueba, sin tocar el repo real.
+`LocalizationCatalogTests.testGeneratedLprojFilesMatchTheCatalog`
+corre el script real así, y compara byte a byte contra lo commiteado
+en `Sources/AuraStudio/Resources/<idioma>.lproj/` -- si alguien edita
+el catálogo y no vuelve a correr el script (o edita un `.lproj` a
+mano), esta prueba dice CUÁLES claves de CUÁL idioma quedaron
+distintas, no solo "algo cambió". Hoy: 0 diferencias (es/, 411
+cadenas, 27 plurales).
+
+### Verificación
+
+`swift test --filter LocalizationCatalogTests`: 6/6 en verde (las
+cuatro de siempre + la de deriva nueva). `python3 tools/
+test_extraer_cadenas.py`: 6/6 en verde. `revision.csv`/
+`fragmentos-unidos.csv`/`plurales-ternario.csv`/`borrador.
+Localizable.xcstrings` **no se regeneraron ni se tocaron** -- son la
+foto histórica que de verdad usó Opus para la extracción real
+(`LocalizationCatalogTests.testTheSpanishInTheCatalogIsWhatTheSourcesSaidBefore`
+depende exactamente de ese contenido); regenerarlos contra el
+Sources/ ya convertido los habría dejado casi vacíos y habría roto esa
+prueba. Solo `tools/` y dos archivos de `Tests/` -- nada en
+`Sources/`.

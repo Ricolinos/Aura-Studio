@@ -109,6 +109,32 @@ TERNARY_STRING_BRANCHES = re.compile(r'^\(?\s*[^()"]*\?\s*"((?:[^"\\]|\\.)*)"\s*
 LEADING_PLUS = re.compile(r'^\s*\+\s*')
 
 
+def marker_for_computed_expression(expr):
+    """Heurística para el tramo CALCULADO entre dos `+`
+    (`ArtistNameNormalizer.collaborationSeparators.joined(...)`,
+    MusicSettingsView.swift:84) -- mismo criterio de tipo que
+    `convert_interpolations` (¿parece un conteo? -> `%lld`; si no,
+    `%@`), pero acá el expr puede no reconocerse en absoluto (llamadas
+    encadenadas, closures) y en ESE caso NO se asume `%@` a ciegas:
+    Opus cazó a mano el defecto real (ST-227, "separadores-que-
+    agrupan"): esta misma función, antes de existir, dejaba
+    desaparecer el tramo del todo, sin ningún marcador -- aplicar esa
+    clave tal cual habría borrado la lista de separadores de la
+    pantalla. Un marcador `{n}` genérico, de forma distinta a `%@`,
+    es una señal VISIBLE de "esto necesita ojos humanos" -- nunca
+    desaparecer en silencio es la prioridad, aunque el marcador quede
+    sin poder afirmar el tipo.
+    """
+    stripped = expr.strip()
+    if not stripped:
+        return None
+    if re.search(r"\.count\b", stripped) or (re.fullmatch(r"[a-zA-Z_][a-zA-Z0-9_.]*", stripped) and "count" in stripped.lower()):
+        return "%lld"
+    if re.fullmatch(r"[a-zA-Z_][a-zA-Z0-9_.]*", stripped):
+        return "%@"
+    return "{n}"
+
+
 def _parens_balanced(fragment):
     """El caso real que esto existe para atrapar
     (ExtrasView.swift:173): una interpolación con una coma adentro,
@@ -190,11 +216,21 @@ def extend_with_concatenation(lines, line_idx, after_pos, first_raw, max_lookahe
             cursor += plain.end()
         else:
             # Después del `+` no hay ni un literal plano ni un ternario
-            # reconocible en lo que queda de la ventana -- probable
-            # tramo calculado (`ArtistNameNormalizer....joined(...)`).
-            # Buscar el próximo `+` más adelante en la ventana, sin
-            # inventar nada de lo que hay en el medio.
+            # reconocible en lo que queda de la ventana -- tramo
+            # CALCULADO (`ArtistNameNormalizer....joined(...)`,
+            # MusicSettingsView.swift:84). El defecto real que Opus
+            # cazó al aplicar el borrador: saltarse este tramo SIN
+            # dejar ningún marcador hace que el texto final no diga
+            # que ahí faltaba algo -- aplicarlo tal cual borra la
+            # lista de separadores de la pantalla, en silencio. Un
+            # marcador (`%@`/`%lld`/`{n}`) reemplaza el tramo, nunca
+            # desaparece sin dejar rastro.
             next_plus = re.search(r'\+', rest)
+            expr = rest[:next_plus.start()] if next_plus else rest
+            marker = marker_for_computed_expression(expr)
+            if marker:
+                combined += marker
+                status = "unido"
             if not next_plus:
                 break
             cursor += next_plus.start()

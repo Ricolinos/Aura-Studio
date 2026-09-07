@@ -13,8 +13,14 @@ Este script rellena ese hueco: escribe `<idioma>.lproj/Localizable.strings`
 generados NO se editan a mano -- misma regla que `Generated/AuraPalette.swift`
 (ver CLAUDE.md) -- y hay una prueba que falla si se apartan del catálogo.
 
-Uso: python3 tools/compilar-catalogo.py
+Uso: python3 tools/compilar-catalogo.py [--output-root RUTA]
+
+`--output-root`: escribe los `.lproj` ahí en vez de en el repo real --
+SIEMPRE lee el mismo `Localizable.xcstrings` real (nunca se genera
+contra un catálogo de prueba, sería probar otra cosa). Existe para la
+prueba de deriva (ST-227 addendum, `LocalizationCatalogTests`).
 """
+import argparse
 import json
 import pathlib
 import sys
@@ -76,6 +82,13 @@ def stringsdict(plurals: dict) -> str:
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output-root", default=None,
+                        help="escribir los .lproj acá en vez de en el repo real "
+                             "(el catálogo que se lee sigue siendo siempre el real)")
+    args = parser.parse_args()
+    output_resources = pathlib.Path(args.output_root) if args.output_root else RESOURCES
+
     catalog = json.loads(CATALOG.read_text())
     strings = catalog.get("strings", {})
     languages = sorted({language
@@ -83,7 +96,7 @@ def main() -> int:
                         for language in entry.get("localizations", {})})
     for language in languages:
         content, plurals = build(language, strings)
-        folder = RESOURCES / f"{language}.lproj"
+        folder = output_resources / f"{language}.lproj"
         folder.mkdir(parents=True, exist_ok=True)
         (folder / "Localizable.strings").write_text(content)
         target = folder / "Localizable.stringsdict"
