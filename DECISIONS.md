@@ -13352,3 +13352,89 @@ ningún lado" como respuesta legítima.
 `LibraryDiskPathResolverTests` estaba escrita contra el comportamiento y
 **pasó sin tocar una sola línea**, que era exactamente para lo que se
 escribió así.
+
+## ST-220 (addendum, mecánico) — arnés A0 contra A3, primera diferencia real; fuga de `staged-*.mpg`
+
+Encargo de "Sesión Maestra" tras la fusión de A3 (`bb164dd`). Dos cosas.
+
+### Arnés A0 actualizado para medir el camino real de A3
+
+`MediaStorageBaselineTests.measureEdit` llamaba a `LibraryFileWorker.
+prepareMusic` para los dos modos -- correcto contra `bd57116`/`fdc614e`,
+pero ST-223 cambió el camino REAL de modo copia (`LibraryViewModel.
+refreshMusicFile`: `storage == .copy` → `importMusic`/`rewriteTags`
+directo sobre `Música/`, nunca `.preparados/`). Seguir midiendo
+`prepareMusic` en copia habría medido un camino que producción ya no
+usa. Reescrito: copia ahora pasa por `importMusic` (import) +
+`rewriteTags` (edición), con la decisión de conversión sacada de
+`AudioConversionRule.decide`/`destinationExtension` -- la misma regla
+que usa producción, no una copia. Referencia queda intacta (sigue
+siendo `prepareMusic`, A4 no cerró).
+
+**Tabla "después de A3" (editar 5 campos, `bb164dd`)**, contra la tabla
+"antes" de ST-220 más arriba:
+
+| Formato | Modo | Bytes escritos en `Música/` | Bytes escritos en `.preparados/` |
+|---|---|---|---|
+| MP3  | copia      | 8 573 | 0 |
+| MP3  | referencia | 0     | 8 573 (sin cambios vs. ST-220) |
+| FLAC | copia      | 210   | 0 |
+| FLAC | referencia | 0     | 214 (sin cambios vs. ST-220) |
+| M4A  | copia      | 1 167 | 0 |
+| M4A  | referencia | 0     | 1 043 (sin cambios vs. ST-220) |
+| WAV  | copia      | 1 158 | 0 |
+| WAV  | referencia | 0     | 17 684 (sin cambios vs. ST-220) |
+
+Lo que cambió, con números reales: **modo copia ahora edita `Música/`
+para los tres formatos etiquetables** (antes solo MP3 cambiaba, y solo
+en `.preparados/`) -- `.preparados/` queda vacío en copia, siempre.
+**WAV copiado bajó de 17 684 a 1 158 bytes**: ya no es una copia PCM sin
+comprimir, es ALAC dentro de `.m4a` (§0.2 corregido) -- confirma con
+bytes que la conversión de verdad ocurre y que el archivo queda
+etiquetado (1 158 > el silencio PCM crudo comprimido a nada sería
+mucho menor; el tamaño real refleja el contenedor MPEG-4 + átomos
+`ilst`). Modo referencia: **idéntico byte a byte a ST-220**, confirmado
+-- A4 todavía no tocó ese camino.
+
+**Dos filas nuevas, pedidas por la maestra:**
+
+- **Edición sin cambios** (`testIdempotentEditWritesNothingAndKeepsTheModificationDate`,
+  solo copia -- es el único camino con esta idempotencia hoy):
+  reescribir con la MISMA metadata que ya está en el archivo, para los
+  cuatro formatos. **0 bytes escritos, fecha de modificación intacta**,
+  los cuatro -- confirma con bytes que el `guard updated != original
+  else { return }` de `ID3Writer`/`FLACTagWriter`/`MP4TagWriter` (ST-222)
+  funciona de verdad, no solo que existe en el código. Con un
+  `Task.sleep` de 1.1 s entre la primera y la segunda escritura, para
+  que la prueba no pudiera pasar por casualidad de que el sistema de
+  archivos redondee la fecha al segundo.
+- **Rating** (`testRatingNeverTouchesTheMusicFile`, a través del
+  `LibraryViewModel` real, no del worker -- `setRating` ni siquiera
+  llama al worker): **0 bytes, fecha intacta** en el archivo de música;
+  la calificación sí queda en el catálogo. Representa también a
+  favorito/categoría (mismo patrón leído en el código: mutan el
+  catálogo, nunca `refreshMusicFile`) -- **no remedidos cada uno por
+  separado esta ronda**, y letra (`.lrc`) tampoco tiene un número
+  propio acá (se sabe que no toca el audio por el mismo motivo, pero no
+  se afirma con bytes medidos).
+
+### Fuga: `LibrarySyncDeleteAllContentTests.videoItem()`
+
+Reportada por "experto en código opus": `videoItem()` escribía su
+`staged-<uuid>.mpg` directo en `FileManager.default.temporaryDirectory`
+(el temporal del SISTEMA), sin registrar la ruta en ningún lado para
+borrarla después -- 79 archivos acumulados en la Mac del dueño, uno por
+corrida de la suite. Arreglado: `videoStagingDir`, una carpeta propia
+de la prueba (mismo patrón que `fakeIPod`), creada en `setUpWithError`
+y borrada entera en `tearDownWithError`. Verificado: 0 archivos
+`staged-*.mpg` bajo `/tmp`/`/var/folders` tras correr la suite
+completa. **No se tocaron los 79 ya acumulados** -- el dueño limpia su
+propio temporal, como pidió la maestra.
+
+### Verificación
+
+`swift test` completo: **950 pruebas, 0 fallas, 10 saltadas** (bajó de
+15 a 10 -- A3 ya resolvió algunas de las `XCTSkip` de A3/A4 que estaban
+pendientes, no algo de este commit). `xcodebuild -configuration Release`:
+**BUILD SUCCEEDED** (candado tomado y liberado por esta sesión, esperado
+mientras lo tenía "experto A4 verificacion"). Nada en `Sources/`.

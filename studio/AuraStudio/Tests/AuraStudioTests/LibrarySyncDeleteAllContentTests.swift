@@ -9,6 +9,7 @@ final class LibrarySyncDeleteAllContentTests: XCTestCase {
     private var fakeIPod: URL!
     private var musicStaging: URL!
     private var photoStaging: URL!
+    private var videoStagingDir: URL!
 
     override func setUpWithError() throws {
         fakeIPod = FileManager.default.temporaryDirectory.appendingPathComponent("FakeIPod-\(UUID().uuidString)")
@@ -17,12 +18,20 @@ final class LibrarySyncDeleteAllContentTests: XCTestCase {
         try Data("fake mp3 bytes".utf8).write(to: musicStaging)
         photoStaging = FileManager.default.temporaryDirectory.appendingPathComponent("staged-\(UUID().uuidString).jpg")
         try Data("fake jpg bytes".utf8).write(to: photoStaging)
+        // `videoItem()` escribía su `staged-<uuid>.mpg` directo en el
+        // temporal del SISTEMA (no en un directorio propio de la
+        // prueba, y sin nada que lo borrara) -- 79 archivos acumulados
+        // en la Mac del dueño, uno por corrida. Carpeta propia, borrada
+        // entera al terminar.
+        videoStagingDir = FileManager.default.temporaryDirectory.appendingPathComponent("VideoStaging-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: videoStagingDir, withIntermediateDirectories: true)
     }
 
     override func tearDownWithError() throws {
         try? FileManager.default.removeItem(at: fakeIPod)
         try? FileManager.default.removeItem(at: musicStaging)
         try? FileManager.default.removeItem(at: photoStaging)
+        try? FileManager.default.removeItem(at: videoStagingDir)
     }
 
     private func musicItem() -> AuraStudio.LibraryItem {
@@ -44,7 +53,7 @@ final class LibrarySyncDeleteAllContentTests: XCTestCase {
     private func videoItem(category: String = "Películas") -> AuraStudio.LibraryItem {
         var item = AuraStudio.LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/source-\(UUID().uuidString).mkv"))
         item.category = category
-        item.preparedURL = FileManager.default.temporaryDirectory.appendingPathComponent("staged-\(UUID().uuidString).mpg")
+        item.preparedURL = videoStagingDir.appendingPathComponent("staged-\(UUID().uuidString).mpg")
         try? Data("fake mpg bytes".utf8).write(to: item.preparedURL!)
         item.status = .ready
         return item
