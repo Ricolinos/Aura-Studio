@@ -15168,3 +15168,22 @@ lugar) con mis tres líneas corregidas, nunca las suyas desactualizadas.
 `claves-compartidas.csv` queda byte a byte idéntico (0 citas
 actualizadas) -- confirma que las tres líneas ya están correctas y que la
 columna `texto en` sobrevive intacta.
+
+## ST-247 (addendum, mecánico) — `orphans-confirm-message` se queda "igual" sin excepción, roja a propósito
+
+Decisión de la Maestra sobre el hallazgo de más arriba: `orphans-confirm-message`
+NO lleva excepción. Windows compone la oración desde dos recursos (el
+conteo aparte, `app-strings.orphans-confirm-message` idéntico a la Mac) --
+lo hace el Experto al cerrar las compartidas de B7a, no Windows (ni "sitio
+Windows" ni "texto es" de esa fila son de Windows). Quitado
+`KnownIgualSuffixExceptions` de `TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows`:
+la fila vuelve al mismo camino que las otras nueve (paréntesis +
+comparación EXACTA), y hoy falla ahí de verdad -- roja de forma explícita,
+con el nombre de la fila en el mensaje, hasta que el Experto componga el
+recurso. Una prueba roja y clara sobre un hallazgo ya avisado es mejor que
+una excepción que tapa el estado real.
+
+`dotnet build`: 0 errores. `dotnet test AuraStudio.Core.Tests`: **1 749 en
+verde, 1 en rojo** (`TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows`,
+a propósito, ver arriba) -- el resto de la corrida (1 750 - 1 = 1 749) sin
+cambio.

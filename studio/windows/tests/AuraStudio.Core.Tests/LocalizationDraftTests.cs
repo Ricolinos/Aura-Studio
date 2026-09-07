@@ -268,21 +268,19 @@ public class LocalizationDraftTests
     /// del CSV (si el texto no coincide, la fila quedó desalineada de verdad,
     /// no es solo un nombre distinto).</para>
     ///
-    /// <para><b>Hallazgo real, no un ajuste de la prueba:</b> <c>orphans-confirm-message</c>
-    /// falla la comparación exacta -- <c>AppStrings.OrphansConfirmMessage</c>
+    /// <para><b>Hallazgo real, decisión de la Maestra:</b> <c>orphans-confirm-message</c>
+    /// falla hoy la comparación exacta -- <c>AppStrings.OrphansConfirmMessage</c>
     /// (AppStrings.cs:324-326) antepone <c>{OrphansFound(scan)}</c> (el conteo
     /// dinámico de huérfanos) al texto compartido, así que el valor real del
-    /// <c>.resw</c> es <c>"{0} " + texto de la Mac</c>, nunca el texto solo.
-    /// "sitio Windows" y "texto es" no son de Windows (la Mac los edita), así
-    /// que esto NO se corrige acá con una reescritura silenciosa: se deja
-    /// como excepción explícita, documentada, y se avisa en el addendum para
-    /// que la Mac decida si el estado real es "clave distinta".</para>
+    /// <c>.resw</c> es <c>"{0} " + texto de la Mac</c>, nunca el texto solo. La
+    /// fila SIGUE marcada "igual": el Experto va a componer
+    /// <c>OrphansConfirmMessage</c> desde dos recursos (uno con el conteo,
+    /// aparte, y <c>app-strings.orphans-confirm-message</c> idéntico a la Mac)
+    /// al cerrar las compartidas de B7a -- así que esta prueba se deja SIN
+    /// excepción, roja de forma explícita mientras tanto, con el nombre de la
+    /// fila en el mensaje: mejor una prueba roja y clara sobre un hallazgo ya
+    /// avisado que una excepción que tapa el estado real.</para>
     /// </summary>
-    private static readonly HashSet<string> KnownIgualSuffixExceptions = new(StringComparer.Ordinal)
-    {
-        "orphans-confirm-message",
-    };
-
     [Fact]
     public void TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows()
     {
@@ -302,16 +300,11 @@ public class LocalizationDraftTests
         {
             if (resw.ContainsKey(csvKey)) continue; // camino 1: la clave del CSV coincide tal cual
 
-            bool esSufijoConocido = KnownIgualSuffixExceptions.Contains(csvKey);
-
             // camino 2: alguna clave entre paréntesis de "sitio Windows" existe
-            // en el .resw con el mismo texto que "texto es" -- o, para una
-            // excepción conocida y documentada arriba, con "texto es" como
-            // cola del valor real (un prefijo interpolado que Windows antepone).
+            // en el .resw con el mismo texto que "texto es"
             bool matched = windowsKeyInParens.Matches(sitioWindows)
                 .Select(m => m.Groups["key"].Value)
-                .Any(windowsKey => resw.TryGetValue(windowsKey, out string? value) &&
-                    (value == textoEs || (esSufijoConocido && value.EndsWith(textoEs, StringComparison.Ordinal))));
+                .Any(windowsKey => resw.TryGetValue(windowsKey, out string? value) && value == textoEs);
 
             if (!matched) sinCorrespondencia.Add(csvKey);
         }
