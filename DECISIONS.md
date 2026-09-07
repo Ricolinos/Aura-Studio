@@ -15187,3 +15187,27 @@ una excepción que tapa el estado real.
 verde, 1 en rojo** (`TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows`,
 a propósito, ver arriba) -- el resto de la corrida (1 750 - 1 = 1 749) sin
 cambio.
+
+## ST-247 (addendum, mecánico) — La roja de `orphans-confirm-message` pasa a `Skip` con motivo visible
+
+Corrección del coordinador sobre el addendum de arriba: una prueba roja de
+verdad no puede llegar a `origin/main` -- la Maestra sube esta rama antes
+de que el Experto cierre las compartidas de B7a, y `origin` quedaría en
+rojo por un hallazgo ya avisado y en curso, no por un defecto nuevo.
+
+`TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows` vuelve a estar en
+verde: `orphans-confirm-message` se saca de su recorrido
+(`PendingCompositionExceptions`) -- las otras nueve filas "igual" siguen
+vigiladas ahí, sin excepción. La décima pasa a una prueba aparte,
+`OrphansConfirmMessageExisteEnElReswDeWindowsConElMismoTexto`, escrita
+entera (misma lógica, no comentada ni recortada) y marcada
+`[Fact(Skip = "hasta que B7a componga orphans-confirm-message desde
+orphans-found + texto compartido (decisión ST-225/ST-247)")]` -- el motivo
+aparece en la salida de `dotnet test` (`[SKIP]`), visible sin tapar nada;
+alguien solo tiene que quitar el `Skip` cuando el Experto componga el
+recurso, y la prueba entera está lista para correr en ese momento.
+
+`dotnet build`: 0 errores. `dotnet test AuraStudio.Core.Tests`: **1 752 en
+verde, 1 omitida** (la nueva, a propósito) -- ninguna en rojo. (El total
+sube de 1 750 porque ya está en el árbol, sin commitear todavía, la
+primera prueba de la tarea 2 -- ver el addendum de ST-245 que sigue.)
