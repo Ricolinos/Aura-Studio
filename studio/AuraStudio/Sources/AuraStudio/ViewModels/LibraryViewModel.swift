@@ -174,9 +174,14 @@ final class LibraryViewModel: ObservableObject {
     private var coverNormalizationTask: Task<Void, Never>?
     private var stagingDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.preparedDirName, isDirectory: true) }
     private var coversDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.coversDirName, isDirectory: true) }
-    private var musicDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.musicDirName, isDirectory: true) }
-    private var imagesDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.imagesDirName, isDirectory: true) }
-    private var videosDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.videosDirName, isDirectory: true) }
+    // ST-221: las tres carpetas que la app CREA se resuelven contra lo
+    // que ya haya en disco, comparando en NFC -- ver
+    // `SharedCatalogPath.managedDirectory`. Solo se leen al armar el
+    // esqueleto de la biblioteca y al copiar, así que el listado del
+    // directorio no está en ningún camino caliente.
+    private var musicDirectory: URL { SharedCatalogPath.managedDirectory(PersistedLibrary.musicDirName, in: libraryRoot) }
+    private var imagesDirectory: URL { SharedCatalogPath.managedDirectory(PersistedLibrary.imagesDirName, in: libraryRoot) }
+    private var videosDirectory: URL { SharedCatalogPath.managedDirectory(PersistedLibrary.videosDirName, in: libraryRoot) }
     private var catalogURL: URL { libraryRoot.appendingPathComponent(PersistedLibrary.catalogFileName) }
 
     /// `preferences` es opcional y no `= .shared` como default: un valor
@@ -291,7 +296,7 @@ final class LibraryViewModel: ObservableObject {
     /// compartida por toda la biblioteca.
     private func resolveNonCollidingDestination(relativePath: String) throws -> URL {
         let fm = FileManager.default
-        let destinationURL = libraryRoot.appendingPathComponent(relativePath)
+        let destinationURL = destinationURL(forRelativePath: relativePath)
         let destinationDir = destinationURL.deletingLastPathComponent()
         try fm.createDirectory(at: destinationDir, withIntermediateDirectories: true)
 
@@ -320,19 +325,45 @@ final class LibraryViewModel: ObservableObject {
     /// calidad de foto y volver a soltar) tiene que sobrescribir su
     /// propio preparado en el mismo lugar, no acumular " 2", " 3" cada
     /// vez que se reprocesa.
-    private func resolveNonCollidingStagingDestination(existingPreparedURL: URL?, baseName: String, ext: String) -> URL {
-        let fm = FileManager.default
-        if let existingPreparedURL, fm.fileExists(atPath: existingPreparedURL.path) {
+    /// ST-221: el derivado de `.preparados/` se llama **por el id del
+    /// elemento**, no por el nombre del archivo original.
+    ///
+    /// El nombre por nombre base obligaba a un sufijo (`Canción 2.mp3`)
+    /// para dos canciones homónimas de álbumes distintos, y ese sufijo
+    /// se decidía en la primera creación y quedaba guardado en el
+    /// catálogo para siempre: el nombre no identificaba nada y las
+    /// colisiones eran estructurales. Con el id no hay colisión posible,
+    /// y `.preparados/` queda alineado con `.portadas/`, que ya nombraba
+    /// así (`<ID>.jpg`).
+    ///
+    /// **No se renombra nada al cargar**: el catálogo guarda
+    /// `preparedRelativePath`, así que un derivado viejo con nombre base
+    /// se sigue resolviendo tal cual. El nombre nuevo llega cuando el
+    /// derivado se regenera, y en bloque en la migración de §0.3.
+    /// Renombrar miles de archivos al abrir la app sería justo el
+    /// trabajo silencioso al arrancar que esta ronda quiere quitar.
+    private func stagingDestination(forItem id: UUID, existingPreparedURL: URL?, ext: String) -> URL {
+        if let existingPreparedURL, FileManager.default.fileExists(atPath: existingPreparedURL.path) {
             return existingPreparedURL
         }
-        var candidate = stagingDirectory.appendingPathComponent(ext.isEmpty ? baseName : "\(baseName).\(ext)")
-        var counter = 2
-        while fm.fileExists(atPath: candidate.path) {
-            let name = ext.isEmpty ? "\(baseName) \(counter)" : "\(baseName) \(counter).\(ext)"
-            candidate = stagingDirectory.appendingPathComponent(name)
-            counter += 1
-        }
-        return candidate
+        let name = ext.isEmpty ? id.uuidString : "\(id.uuidString).\(ext)"
+        return stagingDirectory.appendingPathComponent(name)
+    }
+
+    /// ST-221: `relativePath` empieza por una de las tres carpetas
+    /// gestionadas (`Música/…`), y ese primer componente se resuelve
+    /// contra lo que ya haya en disco comparando en NFC -- si no, una
+    /// biblioteca en exFAT o en red que ya tenga `Música` descompuesta
+    /// recibiría una segunda `Música` compuesta al lado, idéntica a la
+    /// vista. Los componentes siguientes (artista, álbum) los crea esta
+    /// app y no vienen del otro lado, así que se dejan como están.
+    private func destinationURL(forRelativePath relativePath: String) -> URL {
+        var components = relativePath.split(separator: "/", omittingEmptySubsequences: false).map(String.init)
+        guard components.count > 1 else { return libraryRoot.appendingPathComponent(relativePath) }
+        let first = components.removeFirst()
+        var url = SharedCatalogPath.managedDirectory(first, in: libraryRoot)
+        for component in components { url = url.appendingPathComponent(component) }
+        return url
     }
 
     /// Copia `url` a su carpeta final en la biblioteca (D-228) --
@@ -366,7 +397,16 @@ final class LibraryViewModel: ObservableObject {
     /// solo se queda sin copia local (mismo estilo de mensaje que el
     /// `catch` que tenia `addDroppedFiles` antes de este cambio).
     private func copyIntoLibraryIfNeeded(itemAt index: Int) {
-        guard preferences.copyMediaIntoLibrary, !isInsideLibrary(items[index].sourceURL) else { return }
+        guard preferences.copyMediaIntoLibrary else { return }
+        guard !isInsideLibrary(items[index].sourceURL) else {
+            // Ya estaba dentro: no hay nada que copiar, pero SÍ hay que
+            // dejar dicho el modo (ST-221) -- antes esto salía sin
+            // registrar nada y el modo quedaba a merced de la
+            // inferencia por ruta en cada arranque.
+            items[index].storage = LibraryStorageMode.infer(
+                sourceURL: items[index].sourceURL, libraryRoot: libraryRoot)
+            return
+        }
         let item = items[index]
         let fileName = item.sourceURL.lastPathComponent
         let relativePath = LibrarySync.localLibraryRelativePath(
@@ -375,15 +415,19 @@ final class LibraryViewModel: ObservableObject {
             organizeVideosByCategory: preferences.organizeVideosByCategory)
         do {
             items[index].sourceURL = try copyIntoLibrary(item.sourceURL, relativePath: relativePath)
+            // ST-221: el modo lo fija QUIEN COPIA, en el momento de
+            // copiar. Es la única forma de que sea un hecho y no una
+            // deducción -- a partir de acá nadie mira la forma de la
+            // ruta para saberlo.
+            items[index].storage = .copy
         } catch {
             lastError = "No se pudo copiar \(fileName) a la biblioteca: \(error.localizedDescription)"
         }
     }
 
     private func isInsideLibrary(_ url: URL) -> Bool {
-        let rootPath = libraryRoot.standardizedFileURL.path
-        let path = url.standardizedFileURL.path
-        return path.hasPrefix(rootPath + "/")
+        // ST-221: compara en NFC -- ver `SharedCatalogPath.catalogNormalized`.
+        SharedCatalogPath.isInside(url, root: libraryRoot)
     }
 
     func processAll() async {
@@ -391,7 +435,12 @@ final class LibraryViewModel: ObservableObject {
         isProcessing = true
         defer { isProcessing = false }
 
-        for index in items.indices where items[index].status == .queued {
+        // ST-221: un elemento no disponible (su archivo está en un disco
+        // que no está conectado) no se procesa -- no hay de dónde leer.
+        // No se toca su estado: cuando el archivo vuelva, vuelve a estar
+        // en cola como estaba.
+        for index in items.indices
+        where items[index].status == .queued && items[index].isAvailable {
             await process(itemAt: index)
         }
         persistCatalog()
@@ -460,9 +509,9 @@ final class LibraryViewModel: ObservableObject {
                 // apagado) antes de transcodificar.
                 copyIntoLibraryIfNeeded(itemAt: index)
                 let sourceURL = items[index].sourceURL
-                let output = resolveNonCollidingStagingDestination(
-                    existingPreparedURL: items[index].preparedURL,
-                    baseName: sourceURL.deletingPathExtension().lastPathComponent, ext: "mpg")
+                let output = stagingDestination(
+                    forItem: items[index].id,
+                    existingPreparedURL: items[index].preparedURL, ext: "mpg")
                 /// El callback de ffmpeg corre en el hilo de lectura del
                 /// pipe (readabilityHandler), no en el MainActor -- hay
                 /// que saltar de vuelta explicitamente para tocar
@@ -503,9 +552,9 @@ final class LibraryViewModel: ObservableObject {
                 // esta apagado) antes de redimensionar.
                 copyIntoLibraryIfNeeded(itemAt: index)
                 let sourceURL = items[index].sourceURL
-                let output = resolveNonCollidingStagingDestination(
-                    existingPreparedURL: items[index].preparedURL,
-                    baseName: sourceURL.deletingPathExtension().lastPathComponent, ext: "jpg")
+                let output = stagingDestination(
+                    forItem: items[index].id,
+                    existingPreparedURL: items[index].preparedURL, ext: "jpg")
                 // ST-186: redimensionar una foto de cámara es medio
                 // segundo largo por foto -- importar una carpeta
                 // congelaba la ventana una vez por cada una.
@@ -2380,7 +2429,8 @@ final class LibraryViewModel: ObservableObject {
     private func makePrepareMusicRequest(for item: LibraryItem, metadata: TrackMetadata) -> LibraryFileWorker.PrepareMusicRequest {
         LibraryFileWorker.PrepareMusicRequest(
             sourceURL: item.sourceURL, stagingDirectory: stagingDirectory, metadata: metadata,
-            audioQuality: preferences.audioQuality, coverArtPolicy: preferences.coverArtPolicy)
+            audioQuality: preferences.audioQuality, coverArtPolicy: preferences.coverArtPolicy,
+            itemID: item.id, previousPreparedURL: item.preparedURL)
     }
 
     /// Solo para pruebas: `schedulePersistCatalog()` escribe de
@@ -2517,13 +2567,22 @@ final class LibraryViewModel: ObservableObject {
                 // "sin copiar medios", D-192), separadores `\` de un
                 // catalogo escrito por Aura Studio en Windows
                 // (biblioteca COMPARTIDA), y las dos normalizaciones
-                // Unicode. Devuelve `nil` cuando NINGUNA forma existe:
-                // si el archivo (la copia en Música/Imágenes/Videos, o
-                // el original referenciado sin copiar) ya no esta, el
-                // item se omite en silencio -- no hay nada que
-                // preparar ni sincronizar desde un archivo ausente.
-                guard let sourceURL = SharedCatalogPath.resolve(p.sourceRelativePath, in: root, fileManager: fm)
+                // Unicode. Devuelve `nil` cuando NINGUNA forma existe.
+                //
+                // ST-221 (paridad con Windows): que no exista **ya no
+                // borra el elemento**. Hasta acá se omitía en silencio y
+                // el siguiente guardado lo perdía para siempre: bastaba
+                // abrir la app con el disco de los originales
+                // desconectado para que la biblioteca se vaciara sola.
+                // Ahora se conserva con la ruta que el catálogo nombra y
+                // marcado como **no disponible**; no se puede preparar ni
+                // sincronizar, pero sigue existiendo y vuelve solo cuando
+                // el archivo vuelve.
+                let existingURL = SharedCatalogPath.resolve(p.sourceRelativePath, in: root, fileManager: fm)
+                guard let sourceURL = existingURL
+                        ?? SharedCatalogPath.recordedURL(p.sourceRelativePath, in: root)
                 else { return }
+                let isAvailable = existingURL != nil
 
                 // PLAN-studio-rendimiento-2.md Fase 5 (ST-185): acá se
                 // leía el JPEG ENTERO de cada carátula al catálogo, y de
@@ -2570,7 +2629,13 @@ final class LibraryViewModel: ObservableObject {
                     photoAlbum: p.photoAlbum,
                     metadataEditedByUser: p.metadataEditedByUser ?? false,
                     addedAt: p.addedAt,
-                    fileSizeBytes: p.fileSizeBytes
+                    fileSizeBytes: p.fileSizeBytes,
+                    // ST-221: el modo viene del catálogo; si no está
+                    // (biblioteca anterior a 0.4.0) se infiere UNA vez y
+                    // el siguiente guardado lo deja escrito.
+                    storage: LibraryStorageMode.fromPersisted(p.storage)
+                        ?? LibraryStorageMode.infer(sourceURL: sourceURL, libraryRoot: root),
+                    isAvailable: isAvailable
                 )
             }
         }
@@ -2647,11 +2712,6 @@ final class LibraryViewModel: ObservableObject {
     }
 
     private func relativePath(of url: URL) -> String {
-        let rootPath = libraryRoot.standardizedFileURL.path
-        let fullPath = url.standardizedFileURL.path
-        if fullPath.hasPrefix(rootPath + "/") {
-            return String(fullPath.dropFirst(rootPath.count + 1))
-        }
-        return fullPath
+        SharedCatalogPath.relativePath(of: url, in: libraryRoot)
     }
 }

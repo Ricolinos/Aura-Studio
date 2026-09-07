@@ -160,6 +160,7 @@
 		982F00F48C834DC4C0F57A3A /* MusicBrainzRateLimiterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E14855D7F760E14EB547DE /* MusicBrainzRateLimiterTests.swift */; };
 		983F3D503FD3C67F03884D83 /* MediaCategoryClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFA40682BAFE0828DAA2B507 /* MediaCategoryClassifier.swift */; };
 		997A65732E30D7DDF4A81570 /* GridModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10802C9C813279C382E9B900 /* GridModel.swift */; };
+		9A5C03D344EED69325120580 /* CatalogPathNormalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9694CDFCA77952CEBEACA946 /* CatalogPathNormalizationTests.swift */; };
 		9A5D2523F9B12745D1230020 /* BackgroundTaskCenterIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8463CF21C20FCEBFE47FF6FE /* BackgroundTaskCenterIndicator.swift */; };
 		9C53C3873A4C5F484CCC3858 /* InstallerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EBEB24F597D3C9B609AC775 /* InstallerViewModel.swift */; };
 		9CEBAACAA11BE3313233D7ED /* InstallerWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4862DCA99696DCB66D2012 /* InstallerWizardView.swift */; };
@@ -445,6 +446,7 @@
 		95D1717F5BE6E99586CBAF44 /* MusicBrainzClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicBrainzClientTests.swift; sourceTree = "<group>"; };
 		95DE93DDB5865C16EB1A1B48 /* LibraryCatalogIndex.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryCatalogIndex.swift; sourceTree = "<group>"; };
 		963456BE314435186349AFAE /* CoverContaminationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverContaminationSheet.swift; sourceTree = "<group>"; };
+		9694CDFCA77952CEBEACA946 /* CatalogPathNormalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogPathNormalizationTests.swift; sourceTree = "<group>"; };
 		9934433E994EDDAAFB584100 /* LibraryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModel.swift; sourceTree = "<group>"; };
 		9E6590F1AE04D1389AC44A9E /* MusicTableColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicTableColumn.swift; sourceTree = "<group>"; };
 		9EBCF1EF29547CD3B01B5C98 /* DetectDeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetectDeviceView.swift; sourceTree = "<group>"; };
@@ -739,6 +741,7 @@
 				CB93A2C8B722FEC1F407E017 /* BackgroundTaskCenterTests.swift */,
 				476586878B17D64E6EB2F3BC /* BootloaderVerifiedDisksTests.swift */,
 				D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */,
+				9694CDFCA77952CEBEACA946 /* CatalogPathNormalizationTests.swift */,
 				AC0636DEF76695EC784AFCE2 /* CatalogSummaryWriterTests.swift */,
 				D921E701B695E44C62DF9A38 /* CategoryIndexWriterTests.swift */,
 				3F32B696741F0E62A203E7BC /* ClockSyncWriterTests.swift */,
@@ -1101,6 +1104,7 @@
 				5341B9F27C6473EF41B8E875 /* BackgroundTaskCenterTests.swift in Sources */,
 				7723B2E0BF669AA642A666D6 /* BootloaderVerifiedDisksTests.swift in Sources */,
 				C3AD25FC7C3C2CE8C2F3AD6F /* BundledArtifactsTests.swift in Sources */,
+				9A5C03D344EED69325120580 /* CatalogPathNormalizationTests.swift in Sources */,
 				A97401AE31F2CC10AB44DDCD /* CatalogSummaryWriterTests.swift in Sources */,
 				C695524FFC68AD87BB044B1A /* CategoryIndexWriterTests.swift in Sources */,
 				741C227ABE979EE55749B07D /* ClockSyncWriterTests.swift in Sources */,
@@ -1381,7 +1385,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.2.3;
+				MARKETING_VERSION = 0.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ricolinos.aurastudio;
 				SDKROOT = macosx;
 			};
@@ -1598,7 +1602,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.2.3;
+				MARKETING_VERSION = 0.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ricolinos.aurastudio;
 				SDKROOT = macosx;
 			};

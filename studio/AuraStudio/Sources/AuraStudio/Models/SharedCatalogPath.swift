@@ -118,6 +118,121 @@ enum SharedCatalogPath {
 }
 
 extension SharedCatalogPath {
+    /// ST-221: la ruta que el catálogo NOMBRA, exista el archivo o no.
+    ///
+    /// `resolve` devuelve `nil` cuando el archivo no está, y eso es lo
+    /// correcto para decidir si algo se puede sincronizar. Pero para
+    /// **conservar** el elemento en el catálogo hace falta saber a qué
+    /// apuntaba, aunque ahora mismo no esté: un disco desconectado no
+    /// puede significar perder las entradas.
+    ///
+    /// No comprueba existencia y no inventa nada: solo traduce los
+    /// separadores de Windows.
+    ///
+    /// Y ahí está la diferencia con `resolve`, que prueba **primero la
+    /// ruta literal**. Esa preferencia por lo literal tiene sentido
+    /// mientras haya un disco que consultar: si el archivo con la barra
+    /// invertida en el nombre de verdad existe (en macOS `\` es un
+    /// carácter válido), gana él. Sin esa comprobación la preferencia se
+    /// da vuelta y hace daño: `Música\Fatboy Slim\Signos\01 x.m4a`
+    /// quedaría como **un solo componente** de nombre absurdo, y como
+    /// esta ruta es la que se conserva y se vuelve a guardar, el
+    /// catálogo compartido saldría corrupto para Windows. Entre las dos
+    /// lecturas posibles de algo que no se puede comprobar, la que
+    /// preserva el significado es la de separadores.
+    static func recordedURL(_ relative: String, in root: URL) -> URL? {
+        guard !relative.isEmpty, !isForeignAbsolute(relative) else { return nil }
+        if relative.hasPrefix("/") { return URL(fileURLWithPath: catalogNormalized(relative)) }
+        return root.appendingPathComponent(catalogNormalized(withUnixSeparators(relative)))
+    }
+}
+
+extension SharedCatalogPath {
+    /// ST-221, añadido por el hallazgo de Windows en B1: **las rutas
+    /// relativas del catálogo se escriben en NFC, y toda comparación
+    /// de rutas normaliza los dos lados antes de comparar.**
+    ///
+    /// macOS entrega los acentos descompuestos (NFD: `u` + acento
+    /// combinante) y Windows los escribe compuestos (NFC). Los dos son
+    /// "Música" en pantalla y ninguna de las dos apps nota la
+    /// diferencia... hasta que algo COMPARA las cadenas. Y ST-221
+    /// agregó justo eso: `LibraryStorageMode.infer` pregunta si la ruta
+    /// cuelga de `Música/`. Sin normalizar, una biblioteca copiada
+    /// escrita por la Mac se leería entera como **referenciada** en
+    /// Windows -- en silencio, y con el efecto de que la app se
+    /// creería sin permiso para escribir etiquetas en archivos que sí
+    /// son suyos. El error no se ve por ningún lado: se ve al final,
+    /// como "las ediciones no llegan al iPod".
+    ///
+    /// Esto es aparte de la tolerancia de lectura de `resolve`, que
+    /// sigue igual: contra el disco se prueban las dos formas, porque
+    /// ahí manda lo que el sistema de archivos conserve.
+    static func catalogNormalized(_ path: String) -> String {
+        path.precomposedStringWithCanonicalMapping
+    }
+
+    /// La ruta de `url` relativa a `root`, **en NFC**; o la absoluta
+    /// **tal como viene**, sin normalizar, si no cuelga de ahí. Es lo
+    /// que se guarda en el catálogo.
+    ///
+    /// La asimetría es del contrato y es deliberada: una ruta relativa
+    /// la interpretan las dos apps contra su propia raíz, así que su
+    /// forma es parte del formato y se fija en NFC. Una ruta absoluta es
+    /// un dato del sistema donde vive el archivo -- se compara
+    /// normalizada, pero se escribe como vino.
+    static func relativePath(of url: URL, in root: URL) -> String {
+        let rawFullPath = url.standardizedFileURL.path
+        let rootPath = catalogNormalized(root.standardizedFileURL.path)
+        let fullPath = catalogNormalized(rawFullPath)
+        if fullPath.hasPrefix(rootPath + "/") {
+            return String(fullPath.dropFirst(rootPath.count + 1))
+        }
+        return rawFullPath
+    }
+
+    /// ST-221: la carpeta gestionada `name` (`Música`, `Imágenes`,
+    /// `Videos`) dentro de `root`, **reusando la que ya exista aunque en
+    /// disco su nombre esté descompuesto**.
+    ///
+    /// En APFS da igual -- compara sin distinguir las dos formas -- pero
+    /// en exFAT o en un recurso de red no, y ahí crear `Música` en NFC
+    /// junto a la `Música` en NFD que dejó otra instalación parte la
+    /// biblioteca en dos carpetas que se ven idénticas. Windows hace lo
+    /// mismo de su lado (`MediaRoots.Directory`, ST-241).
+    ///
+    /// Si no hay ninguna, se crea con el nombre en NFC.
+    /// Lo que esto **no** puede hacer, y conviene saberlo antes de
+    /// intentarlo: crear la carpeta con el nombre compuesto. En macOS,
+    /// Foundation descompone al bajar al sistema de archivos -- lo hacen
+    /// `appendingPathComponent`, `createDirectory` y también
+    /// `URL(fileURLWithPath:)` con una cadena compuesta. Una carpeta
+    /// creada desde la Mac se lee descompuesta, se pida como se pida
+    /// (hay una prueba que lo deja escrito).
+    ///
+    /// Que es exactamente por qué el contrato normaliza **las cadenas
+    /// del catálogo** y no los nombres de archivo: lo primero está en
+    /// nuestras manos, lo segundo no. Y por qué la mitad que sirve de
+    /// esta función es la otra: **reusar** lo que ya haya.
+    static func managedDirectory(_ name: String, in root: URL,
+                                 fileManager: FileManager = .default) -> URL {
+        let wanted = catalogNormalized(name)
+        let chosen: String
+        if let entries = try? fileManager.contentsOfDirectory(atPath: root.path),
+           let existing = entries.first(where: { catalogNormalized($0) == wanted }) {
+            chosen = existing
+        } else {
+            chosen = wanted
+        }
+        return URL(fileURLWithPath: root.standardizedFileURL.path + "/" + chosen, isDirectory: true)
+    }
+
+    /// `true` si `url` está dentro de `root`, comparando en NFC.
+    static func isInside(_ url: URL, root: URL) -> Bool {
+        let rootPath = catalogNormalized(root.standardizedFileURL.path)
+        let path = catalogNormalized(url.standardizedFileURL.path)
+        return path.hasPrefix(rootPath + "/")
+    }
+
     /// La ruta relativa -- en la forma exacta que SI existe en disco --
     /// o `nil` si ninguna existe. Sirve para dejar guardada la forma
     /// buena en vez de la que venia del otro sistema.

@@ -198,14 +198,26 @@ final class SharedCatalogInteropTests: XCTestCase {
         XCTAssertEqual(saved.preparedRelativePath, ".preparados/01 Right Here.m4a")
     }
 
-    /// Un archivo que de verdad ya no esta sigue omitiendose -- la
-    /// tolerancia no puede convertirse en "inventar rutas".
-    func testAnItemWhoseFileIsGoneIsStillSkipped() throws {
+    /// Un archivo que de verdad ya no está se conserva como **no
+    /// disponible** (ST-221, paridad con Windows), con la ruta que el
+    /// catálogo nombra y ninguna otra: la tolerancia al separador de
+    /// Windows no puede convertirse en "inventar rutas", y el archivo
+    /// ausente tampoco puede convertirse en "borrar el elemento" -- eso
+    /// vaciaba la biblioteca sola al abrir la app con el disco de los
+    /// originales desconectado.
+    func testAnItemWhoseFileIsGoneIsKeptAsUnavailable() throws {
         let itemID = UUID()
         try writeWindowsCatalog(itemID: itemID)
 
-        let viewModel = LibraryViewModel(libraryRoot: libraryRoot)
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot,
+                                         preferences: AppPreferences(defaults: makeIsolatedDefaults("SharedCatalogInterop")))
 
-        XCTAssertTrue(viewModel.items.isEmpty)
+        XCTAssertEqual(viewModel.items.count, 1)
+        let item = try XCTUnwrap(viewModel.items.first)
+        XCTAssertEqual(item.id, itemID)
+        XCTAssertFalse(item.isAvailable, "el archivo no está: el elemento se conserva, marcado no disponible")
+        XCTAssertEqual(item.sourceURL.path,
+                       libraryRoot.appendingPathComponent("Música/Fatboy Slim/Signos/01 Right Here.m4a").path,
+                       "la ruta es la que el catálogo nombra, no una inventada")
     }
 }

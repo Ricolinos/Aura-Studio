@@ -29,12 +29,74 @@ enum LibraryItemStatus: Equatable {
     case failed(String)
 }
 
+/// ST-221 (PLAN-studio-ajustes-3.md §2): cómo guarda la biblioteca este
+/// archivo. **Es la única fuente de verdad del modo** -- hasta acá se
+/// deducía mirando la forma de la ruta, cada vez y en cada sitio.
+///
+/// La asimetría entre los dos valores es lo que importa: `copy` autoriza
+/// a **escribir etiquetas dentro del archivo**, `reference` no autoriza
+/// nada. Por eso un valor desconocido en el catálogo (una versión más
+/// nueva, un error de escritura) se lee como `reference`: ante la duda,
+/// el modo que no toca nada del usuario.
+enum LibraryStorageMode: String, Equatable, Sendable {
+    /// El archivo vive dentro de la biblioteca y Aura lo controla: le
+    /// escribe las etiquetas y lo sincroniza directo.
+    case copy
+    /// El archivo es del usuario y está donde él lo dejó. **Nunca se
+    /// toca.** Lo que viaja al iPod es un derivado en `.preparados/`.
+    case reference
+
+    /// Lo que se lee del catálogo. `nil` = el campo no venía (catálogo
+    /// anterior a 0.4.0): hay que inferirlo. Un valor desconocido NO es
+    /// `nil` -- es `reference`, y no se vuelve a inferir.
+    static func fromPersisted(_ raw: String?) -> LibraryStorageMode? {
+        guard let raw else { return nil }
+        return LibraryStorageMode(rawValue: raw) ?? .reference
+    }
+
+    /// ST-221: cómo se deduce el modo de un catálogo que no lo trae.
+    /// Se hace **una sola vez**, al cargar, y el resultado se persiste.
+    ///
+    /// La regla no es "está dentro de la carpeta de biblioteca" sino
+    /// "está dentro de una de las tres carpetas que la app CREA".
+    /// La diferencia importa y es la que evita un daño real: alguien que
+    /// haya apuntado la biblioteca a su propia carpeta de música y use
+    /// modo referencia -- un caso razonable, que hoy funciona -- vería
+    /// todos sus originales marcados como copias, y a partir de ahí la
+    /// app se creería con permiso de escribirles etiquetas adentro.
+    ///
+    /// Y el segundo candado, que es el que de verdad protege: **inferir
+    /// no autoriza a escribir nada**. Lo único que escribe etiquetas en
+    /// copias ya existentes es la migración explícita de §0.3, con su
+    /// botón. Si esta inferencia se equivocara, el peor efecto es una
+    /// etiqueta de modo mal puesta -- visible y corregible -- y no un
+    /// archivo del usuario modificado a sus espaldas.
+    /// Las tres comparaciones van en NFC (ver
+    /// `SharedCatalogPath.catalogNormalized`): macOS entrega los acentos
+    /// descompuestos y `PersistedLibrary.musicDirName` es un literal
+    /// compuesto, así que sin normalizar `Música/` **nunca** empareja y
+    /// toda biblioteca copiada se leería como referenciada.
+    static func infer(sourceURL: URL, libraryRoot: URL) -> LibraryStorageMode {
+        let root = SharedCatalogPath.catalogNormalized(libraryRoot.standardizedFileURL.path)
+        let path = SharedCatalogPath.catalogNormalized(sourceURL.standardizedFileURL.path)
+        for managed in [PersistedLibrary.musicDirName,
+                        PersistedLibrary.imagesDirName,
+                        PersistedLibrary.videosDirName] {
+            let prefix = SharedCatalogPath.catalogNormalized(root + "/" + managed + "/")
+            if path.hasPrefix(prefix) { return .copy }
+        }
+        return .reference
+    }
+}
+
 /// Un archivo que el usuario solto en Aura Studio, en algun punto de su
 /// camino hacia el iPod: musica nativa que solo necesita metadata,
 /// video que hay que transcodificar, o una foto que hay que
 /// redimensionar. `sourceURL` es el archivo original del usuario;
-/// `preparedURL` es el resultado final listo para copiar al dispositivo
-/// (el mismo archivo para musica nativa, o la salida de ffmpeg/resize).
+/// `preparedURL` es **el archivo que viaja al iPod** (ST-221): con
+/// `storage == .copy` en música es el archivo de la biblioteca mismo
+/// (`preparedURL == sourceURL`); en video, foto y modo referencia es el
+/// derivado de `.preparados/<ID>`.
 struct LibraryItem: Identifiable, Equatable {
     let id: UUID
     /// D-228: ya no es `let`. Con "copiar medios a la biblioteca"
@@ -99,6 +161,19 @@ struct LibraryItem: Identifiable, Equatable {
     /// Mismo nombre y misma semántica que en Windows (ST-201), fijados
     /// por la sesión maestra para las dos plataformas.
     var fileSizeBytes: Int?
+    /// ST-221: copiado a la biblioteca o referenciado en su lugar. Ver
+    /// `LibraryStorageMode`.
+    var storage: LibraryStorageMode
+    /// ST-221 (paridad con Windows): ¿existe el archivo de origen ahora
+    /// mismo?
+    ///
+    /// **No se persiste**: se recalcula al cargar y al refrescar. Un
+    /// original referenciado en un disco desconectado es un elemento
+    /// *no disponible*, **no un elemento que haya que borrar** -- hasta
+    /// acá `loadCatalog` lo omitía en silencio y el siguiente guardado
+    /// lo perdía para siempre, que es exactamente lo que le pasaría al
+    /// dueño por desconectar un disco externo con la app abierta.
+    var isAvailable: Bool
 
     init(sourceURL: URL, addedAt: Date? = Date()) {
         self.id = UUID()
@@ -115,6 +190,10 @@ struct LibraryItem: Identifiable, Equatable {
         self.metadataEditedByUser = false
         self.addedAt = addedAt
         self.fileSizeBytes = nil
+        // Lo que se acaba de soltar todavía no se copió a ningún lado:
+        // el modo real lo fija `process(itemAt:)` según el ajuste.
+        self.storage = .reference
+        self.isAvailable = true
     }
 
     /// Restauracion desde el catalogo persistido de la biblioteca
@@ -125,7 +204,8 @@ struct LibraryItem: Identifiable, Equatable {
          status: LibraryItemStatus, metadata: TrackMetadata?, preparedURL: URL?,
          category: String? = nil, seriesName: String? = nil, season: Int? = nil,
          episode: Int? = nil, photoAlbum: String? = nil, metadataEditedByUser: Bool = false,
-         addedAt: Date? = nil, fileSizeBytes: Int? = nil) {
+         addedAt: Date? = nil, fileSizeBytes: Int? = nil,
+         storage: LibraryStorageMode = .reference, isAvailable: Bool = true) {
         self.id = id
         self.sourceURL = sourceURL
         self.kind = kind
@@ -140,5 +220,7 @@ struct LibraryItem: Identifiable, Equatable {
         self.metadataEditedByUser = metadataEditedByUser
         self.addedAt = addedAt
         self.fileSizeBytes = fileSizeBytes
+        self.storage = storage
+        self.isAvailable = isAvailable
     }
 }

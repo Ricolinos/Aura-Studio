@@ -91,6 +91,20 @@ struct PersistedLibraryItem: Codable {
     /// una vez; no se borra al reescribir el JSON. Mismo nombre y misma
     /// semántica que en Windows (ST-201).
     var fileSizeBytes: Int?
+    /// ST-221 (PLAN-studio-ajustes-3.md §2), definición fijada con la
+    /// sesión maestra y compartida con Windows (B1/ST-241):
+    /// `"copy"` | `"reference"`.
+    ///
+    /// **Ausente = "no se sabe"**, no "referencia": se infiere UNA vez
+    /// al cargar (ver `LibraryStorageMode.infer`) y se persiste en el
+    /// siguiente guardado; nunca se vuelve a inferir. Un valor
+    /// **desconocido** se lee como `reference` -- ante la duda, el modo
+    /// que no autoriza a escribir en el archivo del usuario.
+    ///
+    /// `Codable` con default nil, y **no se borra al reescribir**: el
+    /// catálogo es compartido con Windows, y una versión que todavía no
+    /// lo use tiene que conservarlo igual.
+    var storage: String?
 }
 
 struct PersistedTrackMetadata: Codable {

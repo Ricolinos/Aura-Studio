@@ -54,7 +54,7 @@ final class LibrarySyncSeriesNamingTests: XCTestCase {
         // temporada/episodio.
         var item = AuraStudio.LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/Capitulo suelto.mkv"))
         item.category = "Series"
-        item.preparedURL = URL(fileURLWithPath: "/tmp/Capitulo suelto.mpg")
+        item.preparedURL = URL(fileURLWithPath: "/tmp/.preparados/\(item.id.uuidString).mpg")
 
         let relative = LibrarySync.destinationRelativePath(for: item, musicOrganization: .artistAlbum, musicFilenameFormat: .titleOnly)
 
@@ -62,12 +62,16 @@ final class LibrarySyncSeriesNamingTests: XCTestCase {
     }
 
     func testDestinationRelativePathIgnoresSeriesFieldsWhenCategoryIsNotSeries() {
-        var item = AuraStudio.LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/x.mkv"))
+        var item = AuraStudio.LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/pelicula.mkv"))
         item.category = "Películas"
         item.seriesName = "Mi Serie"
         item.season = 1
         item.episode = 2
-        item.preparedURL = URL(fileURLWithPath: "/tmp/pelicula.mpg")
+        // ST-221: el derivado se llama por el id del elemento, así que
+        // el nombre que ve el usuario en el iPod sale del archivo que él
+        // soltó; del derivado solo se toma la EXTENSIÓN, que es la del
+        // archivo que de verdad viaja (`.mkv` viaja como `.mpg`).
+        item.preparedURL = URL(fileURLWithPath: "/tmp/.preparados/\(item.id.uuidString).mpg")
 
         let relative = LibrarySync.destinationRelativePath(for: item, musicOrganization: .artistAlbum, musicFilenameFormat: .titleOnly)
 

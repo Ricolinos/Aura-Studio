@@ -30,6 +30,11 @@ final class LibraryViewModelSharedPreparedTests: XCTestCase {
         try? FileManager.default.removeItem(at: sourceB.deletingLastPathComponent())
     }
 
+    /// ST-221 desarmó el problema en vez de resolverlo: con el derivado
+    /// nombrado por el id del elemento, dos duplicados **ya no comparten
+    /// preparado**, así que borrar uno no puede dejar al otro "Listo"
+    /// sin archivo. Lo que se verifica ahora es justamente eso -- que
+    /// cada uno tenga el suyo y que borrar uno no toque el del otro.
     func testDeletingOneDuplicateKeepsTheSurvivorsPreparedFile() async throws {
         let prefs = AppPreferences(defaults: makeIsolatedDefaults("SharedPrepared"))
         prefs.copyMediaIntoLibrary = false
@@ -40,17 +45,21 @@ final class LibraryViewModelSharedPreparedTests: XCTestCase {
         let metadata = TrackMetadata(title: "Ain't No Sunshine", artist: "Bill Withers", album: "Just As I Am")
         for id in ids { await viewModel.applyReview(id: id, metadata: metadata) }
 
-        let prepared = try XCTUnwrap(viewModel.items[1].preparedURL)
-        XCTAssertEqual(viewModel.items[0].preparedURL?.path, prepared.path, "mismo nombre => mismo preparado")
-        XCTAssertTrue(FileManager.default.fileExists(atPath: prepared.path))
+        let preparedA = try XCTUnwrap(viewModel.items[0].preparedURL)
+        let preparedB = try XCTUnwrap(viewModel.items[1].preparedURL)
+        XCTAssertNotEqual(preparedA.path, preparedB.path, "ST-221: mismo nombre ya NO significa mismo preparado")
+        XCTAssertEqual(preparedA.lastPathComponent, "\(ids[0].uuidString).mp3")
+        XCTAssertEqual(preparedB.lastPathComponent, "\(ids[1].uuidString).mp3")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: preparedA.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: preparedB.path))
 
         viewModel.deleteItems(ids: [ids[0]])
 
         XCTAssertEqual(viewModel.items.count, 1)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: prepared.path), "el preparado del sobreviviente sigue en disco")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: preparedB.path), "el preparado del sobreviviente sigue en disco")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: preparedA.path), "el del borrado sí se va")
 
-        // Sin sobrevivientes que lo compartan, sí se borra.
         viewModel.deleteItems(ids: [ids[1]])
-        XCTAssertFalse(FileManager.default.fileExists(atPath: prepared.path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: preparedB.path))
     }
 }

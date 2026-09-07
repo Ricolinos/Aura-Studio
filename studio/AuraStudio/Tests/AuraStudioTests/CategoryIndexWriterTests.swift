@@ -19,9 +19,15 @@ final class CategoryIndexWriterTests: XCTestCase {
         for url in stagedFiles { try? FileManager.default.removeItem(at: url) }
     }
 
-    /// El nombre de destino sale de `item.preparedURL.lastPathComponent`
-    /// (no de `sourceURL`) -- cada item necesita su propio archivo
-    /// preparado, con el nombre que se quiere ver en el índice.
+    /// ST-221 dio vuelta de dónde sale el nombre de destino: la BASE es
+    /// la de `sourceURL` (el archivo que soltó el usuario) y solo la
+    /// EXTENSIÓN es la del preparado. Por eso `videoItem`/`photoItem`
+    /// arman el origen a partir del nombre pedido -- el índice tiene que
+    /// nombrar el archivo **tal como queda en el iPod**, que es lo único
+    /// que el firmware puede emparejar.
+    ///
+    /// Cada ítem necesita igual su propio archivo preparado en disco:
+    /// `sync()` lo lee para el tamaño y la fecha.
     private func stage(named name: String, contents: String = "fake bytes") throws -> URL {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(UUID().uuidString)-\(name)")
         try Data(contents.utf8).write(to: url)
@@ -30,7 +36,8 @@ final class CategoryIndexWriterTests: XCTestCase {
     }
 
     private func videoItem(category: String?, preparedName: String) throws -> AuraStudio.LibraryItem {
-        var item = AuraStudio.LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/\(UUID().uuidString).mkv"))
+        let base = (preparedName as NSString).deletingPathExtension
+        var item = AuraStudio.LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/\(base).mkv"))
         item.category = category
         item.preparedURL = try stage(named: preparedName)
         item.status = .ready
@@ -38,7 +45,8 @@ final class CategoryIndexWriterTests: XCTestCase {
     }
 
     private func photoItem(category: String?, preparedName: String) throws -> AuraStudio.LibraryItem {
-        var item = AuraStudio.LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/\(UUID().uuidString).jpg"))
+        let base = (preparedName as NSString).deletingPathExtension
+        var item = AuraStudio.LibraryItem(sourceURL: URL(fileURLWithPath: "/tmp/\(base).jpg"))
         item.category = category
         item.preparedURL = try stage(named: preparedName)
         item.status = .ready
@@ -58,9 +66,9 @@ final class CategoryIndexWriterTests: XCTestCase {
 
         let text = try String(contentsOf: videoCategoriesURL, encoding: .utf8)
         XCTAssertTrue(text.hasPrefix("# aura-video-categories v1\n"))
-        XCTAssertTrue(text.contains("\(movie.preparedURL!.lastPathComponent): movie"))
-        XCTAssertTrue(text.contains("\(series.preparedURL!.lastPathComponent): series"))
-        XCTAssertTrue(text.contains("\(clip.preparedURL!.lastPathComponent): clip"))
+        XCTAssertTrue(text.contains("movie.mpg: movie"))
+        XCTAssertTrue(text.contains("series.mpg: series"))
+        XCTAssertTrue(text.contains("clip.mpg: clip"))
     }
 
     func testVideoCategoryAcceptsEnglishDisplayName() throws {
@@ -74,8 +82,8 @@ final class CategoryIndexWriterTests: XCTestCase {
         _ = try sync.sync(items: [movie, series])
 
         let text = try String(contentsOf: videoCategoriesURL, encoding: .utf8)
-        XCTAssertTrue(text.contains("\(movie.preparedURL!.lastPathComponent): movie"))
-        XCTAssertTrue(text.contains("\(series.preparedURL!.lastPathComponent): series"))
+        XCTAssertTrue(text.contains("movie-en.mpg: movie"))
+        XCTAssertTrue(text.contains("series-en.mpg: series"))
     }
 
     func testPhotoCategoriesMapPhotosImagesAIAndCustomCollectionToImage() throws {
@@ -88,9 +96,9 @@ final class CategoryIndexWriterTests: XCTestCase {
 
         let text = try String(contentsOf: photoCategoriesURL, encoding: .utf8)
         XCTAssertTrue(text.hasPrefix("# aura-photo-categories v1\n"))
-        XCTAssertTrue(text.contains("\(photo.preparedURL!.lastPathComponent): photo"))
-        XCTAssertTrue(text.contains("\(ai.preparedURL!.lastPathComponent): ai"))
-        XCTAssertTrue(text.contains("\(custom.preparedURL!.lastPathComponent): image"),
+        XCTAssertTrue(text.contains("photo.jpg: photo"))
+        XCTAssertTrue(text.contains("ai.jpg: ai"))
+        XCTAssertTrue(text.contains("custom.jpg: image"),
                       "una colección personalizada (ni Fotos ni IA) exporta como 'image'")
     }
 

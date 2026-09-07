@@ -71,12 +71,21 @@ final class LibraryFileWorkerEquivalenceTests: XCTestCase {
 
             let request = LibraryFileWorker.PrepareMusicRequest(
                 sourceURL: track.sourceURL, stagingDirectory: oldResult.deletingLastPathComponent(),
-                metadata: track.metadata!, audioQuality: .originalLossless, coverArtPolicy: .perTrack)
+                metadata: track.metadata!, audioQuality: .originalLossless, coverArtPolicy: .perTrack,
+                // ST-221: el derivado se nombra por el id del elemento.
+                itemID: track.id, previousPreparedURL: nil)
             let newResult = try await worker.prepareMusic(request)
             let newData = try Data(contentsOf: newResult)
 
             XCTAssertEqual(oldData, newData, "\(track.metadata?.title ?? "?"): el worker nuevo debe producir bytes idénticos al camino viejo")
-            XCTAssertEqual(oldResult.lastPathComponent, newResult.lastPathComponent)
+            // ST-221: el nombre YA NO coincide con el del camino viejo,
+            // a propósito -- `LibraryViewModel.prepareMusic` es la
+            // implementación anterior, conservada solo como referencia
+            // de bytes, y sigue nombrando por el nombre base del origen.
+            // Lo que se verifica acá es que el derivado nuevo se llame
+            // por el id del elemento, que es el contrato de esta ronda.
+            XCTAssertEqual(newResult.lastPathComponent, "\(track.id.uuidString).mp3",
+                           "el derivado se nombra por el id del elemento")
         }
     }
 
@@ -97,7 +106,8 @@ final class LibraryFileWorkerEquivalenceTests: XCTestCase {
 
             let request = LibraryFileWorker.PrepareMusicRequest(
                 sourceURL: track.sourceURL, stagingDirectory: oldResult.deletingLastPathComponent(),
-                metadata: track.metadata!, audioQuality: .originalLossless, coverArtPolicy: .albumOnly)
+                metadata: track.metadata!, audioQuality: .originalLossless, coverArtPolicy: .albumOnly,
+                itemID: track.id, previousPreparedURL: nil)
             let newResult = try await worker.prepareMusic(request)
             let newData = try Data(contentsOf: newResult)
 
@@ -126,7 +136,8 @@ final class LibraryFileWorkerEquivalenceTests: XCTestCase {
 
             let request = LibraryFileWorker.PrepareMusicRequest(
                 sourceURL: track.sourceURL, stagingDirectory: oldResult.deletingLastPathComponent(),
-                metadata: track.metadata!, audioQuality: .originalLossless, coverArtPolicy: .albumOnly)
+                metadata: track.metadata!, audioQuality: .originalLossless, coverArtPolicy: .albumOnly,
+                itemID: track.id, previousPreparedURL: nil)
             let newResult = try await worker.prepareMusic(request)
             let newLRC = newResult.deletingPathExtension().appendingPathExtension("lrc")
 

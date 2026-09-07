@@ -71,10 +71,30 @@ final class PhotoStagingCollisionTests: XCTestCase {
         XCTAssertNotEqual(preparedA.path, preparedB.path, "dos IMG_1.jpg de carpetas distintas no deben terminar en el mismo preparado")
         XCTAssertTrue(FileManager.default.fileExists(atPath: preparedA.path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: preparedB.path))
-        // El segundo procesado gana el sufijo -- confirma que no se
-        // trata de una colision resuelta al azar por orden de proceso.
-        XCTAssertTrue(preparedB.lastPathComponent.hasPrefix("IMG_1 2") || preparedA.lastPathComponent.hasPrefix("IMG_1 2"),
-                      "uno de los dos debe llevar el sufijo de colision \"IMG_1 2.jpg\"")
+        // ST-221: ya no hay sufijo de colision que ganar -- el derivado
+        // se llama por el id del elemento, así que dos archivos del
+        // mismo nombre no pueden chocar, sin importar en qué orden se
+        // procesen.
+        XCTAssertEqual(preparedA.lastPathComponent, "\(itemA.id.uuidString).jpg")
+        XCTAssertEqual(preparedB.lastPathComponent, "\(itemB.id.uuidString).jpg")
+
+        // Y la otra mitad, que es la que de verdad le importa al
+        // usuario: /Photos/ del iPod es una carpeta PLANA, así que los
+        // dos tienen que llegar con nombres distintos y LEGIBLES -- no
+        // con el id, que es una clave interna.
+        var used: Set<String> = []
+        var deviceNames: [String] = []
+        for item in viewModel.items {
+            var path = LibrarySync.destinationRelativePath(for: item, musicOrganization: .artistAlbum,
+                                                           musicFilenameFormat: .titleOnly)
+            if !used.insert(path).inserted {
+                path = LibrarySync.disambiguatedDestination(path, taken: used, kind: item.kind, itemID: item.id)
+                used.insert(path)
+            }
+            deviceNames.append(path)
+        }
+        XCTAssertEqual(Set(deviceNames).count, 2, "dos fotos distintas no pueden compartir ruta en el iPod")
+        XCTAssertEqual(Set(deviceNames), ["Photos/IMG_1.jpg", "Photos/IMG_1 2.jpg"])
 
         // Contenido realmente distinto -- no es solo que las rutas
         // difieran, el archivo B no piso los bytes del archivo A.

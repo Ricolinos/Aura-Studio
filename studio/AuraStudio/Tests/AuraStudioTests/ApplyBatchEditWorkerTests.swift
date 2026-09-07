@@ -103,6 +103,18 @@ final class ApplyBatchEditWorkerTests: XCTestCase {
         viewModel.replaceItemsForPerformanceTesting(tracks)
         viewModel.makePersistenceSynchronousForTesting()
 
+        // ST-186: reiniciar la base de medición JUSTO antes de lo que se
+        // quiere medir. Dos cosas se colaban si no: el vigilante ya
+        // podía venir corriendo de otra prueba (`startIfRequested` tiene
+        // `guard !started`, así que el comentario de arriba -- "nunca
+        // corrió antes en este proceso" -- no es cierto cuando la suite
+        // completa lo arrancó antes), y sobre todo, crear los 500
+        // archivos del fixture pasa acá, entre instalar el colector y la
+        // operación medida: ese bloqueo es del andamio, no de
+        // `applyBatchEdit`. Es lo que hacía fallar esta prueba de forma
+        // intermitente (visto: 345 ms).
+        MainThreadWatchdog.resetForTesting()
+
         await viewModel.applyBatchEdit(ids: Set(tracks.map(\.id)), changes: BatchMetadataChanges(year: "2000"))
 
         XCTAssertTrue(hangs.values.isEmpty, "bloqueos del hilo principal > 250 ms durante la edición en lote: \(hangs.values)")

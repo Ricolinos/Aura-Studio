@@ -28,6 +28,17 @@ actor LibraryFileWorker {
         var metadata: TrackMetadata
         var audioQuality: AppPreferences.AudioQuality
         var coverArtPolicy: AppPreferences.CoverArtPolicy
+        /// ST-221: el derivado se llama por el id del elemento, no por
+        /// el nombre del archivo original -- ver
+        /// `LibraryViewModel.stagingDestination`.
+        var itemID: UUID
+        /// El derivado anterior, si lo había. Si el nombre cambió (es el
+        /// caso al pasar del nombrado viejo por nombre base al nuevo por
+        /// id), el anterior se borra en cuanto el nuevo quedó escrito:
+        /// dejarlo sería un huérfano, y dejar huérfanos a propósito
+        /// mientras existe una acción de "limpiar huérfanos" es
+        /// exactamente la clase de basura que esta ronda viene a quitar.
+        var previousPreparedURL: URL?
     }
 
     // MARK: - Fotos y video (PLAN-studio-rendimiento-2.md Fase 6, ST-186)
@@ -90,7 +101,7 @@ actor LibraryFileWorker {
         let destination: URL
         if request.audioQuality == .compressed {
             destination = request.stagingDirectory
-                .appendingPathComponent(request.sourceURL.deletingPathExtension().lastPathComponent)
+                .appendingPathComponent(request.itemID.uuidString)
                 .appendingPathExtension("mp3")
             if fileManager.fileExists(atPath: destination.path) {
                 try fileManager.removeItem(at: destination)
@@ -98,7 +109,9 @@ actor LibraryFileWorker {
             let transcoder = try AudioTranscoder()
             try transcoder.transcodeToMP3(input: request.sourceURL, output: destination)
         } else {
-            destination = request.stagingDirectory.appendingPathComponent(request.sourceURL.lastPathComponent)
+            destination = request.stagingDirectory
+                .appendingPathComponent(request.itemID.uuidString)
+                .appendingPathExtension(request.sourceURL.pathExtension)
             if fileManager.fileExists(atPath: destination.path) {
                 try fileManager.removeItem(at: destination)
             }
@@ -127,6 +140,19 @@ actor LibraryFileWorker {
         if let lyrics = request.metadata.syncedLyrics {
             let lrcURL = destination.deletingPathExtension().appendingPathExtension("lrc")
             try lyrics.write(to: lrcURL, atomically: true, encoding: .utf8)
+        }
+
+        // ST-221: el derivado anterior queda huérfano si cambió de
+        // nombre. Se borra ACÁ, con el nuevo ya escrito, y solo si estaba
+        // dentro de `.preparados/` -- nunca se borra nada de fuera de la
+        // carpeta de derivados, pase lo que pase con el catálogo.
+        if let previous = request.previousPreparedURL,
+           previous.standardizedFileURL != destination.standardizedFileURL,
+           previous.standardizedFileURL.deletingLastPathComponent().path
+             == request.stagingDirectory.standardizedFileURL.path {
+            try? fileManager.removeItem(at: previous)
+            let previousLRC = previous.deletingPathExtension().appendingPathExtension("lrc")
+            try? fileManager.removeItem(at: previousLRC)
         }
 
         return destination

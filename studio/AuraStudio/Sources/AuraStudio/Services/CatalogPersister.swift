@@ -167,9 +167,10 @@ final class CatalogPersister {
                 coverHash = item.metadata?.coverHash
                 coverIDsOnDisk.insert(item.id)
             }
+            let sourceRelative = relativePath(of: item.sourceURL, in: snapshot.libraryRoot)
             persisted.items.append(PersistedLibraryItem(
                 id: item.id,
-                sourceRelativePath: relativePath(of: item.sourceURL, in: snapshot.libraryRoot),
+                sourceRelativePath: sourceRelative,
                 kind: LibraryPersistenceMapper.persistedKind(item.kind),
                 status: LibraryPersistenceMapper.persistedStatus(item.status),
                 metadata: LibraryPersistenceMapper.persistedMetadata(item.metadata),
@@ -183,13 +184,21 @@ final class CatalogPersister {
                 photoAlbum: item.photoAlbum,
                 metadataEditedByUser: item.metadataEditedByUser,
                 addedAt: item.addedAt,
-                fileSizeBytes: item.fileSizeBytes
+                fileSizeBytes: item.fileSizeBytes,
+                // ST-221: siempre explícito a partir de 0.4.0 -- un
+                // catálogo que esta app guarda deja de tener elementos
+                // "sin modo", para que Windows nunca tenga que adivinar.
+                storage: Self.persistedStorage(for: item, sourceRelativePath: sourceRelative)
             ))
         }
         newHash = newHash.filter { coverIDsOnDisk.contains($0.key) }
         persisted.playlists = snapshot.playlists.map {
             PersistedPlaylist(id: $0.id, name: $0.name, trackItemIDs: $0.trackItemIDs,
-                               imageRelativePath: $0.imageRelativePath)
+                               // ST-221: `existingRelative` la resolvió
+                               // con la forma que hay en disco (que en
+                               // la Mac puede ser NFD); al catálogo va
+                               // siempre en NFC.
+                               imageRelativePath: $0.imageRelativePath.map(SharedCatalogPath.catalogNormalized))
         }
 
         do {
@@ -203,15 +212,44 @@ final class CatalogPersister {
         }
     }
 
-    /// Copia exacta de `LibraryViewModel.relativePath(of:)` -- tiene que
-    /// ser `nonisolated`/estática para poder correr en el `Task.detached`,
-    /// así que no puede seguir siendo un método de instancia del VM.
-    nonisolated private static func relativePath(of url: URL, in libraryRoot: URL) -> String {
-        let rootPath = libraryRoot.standardizedFileURL.path
-        let fullPath = url.standardizedFileURL.path
-        if fullPath.hasPrefix(rootPath + "/") {
-            return String(fullPath.dropFirst(rootPath.count + 1))
+    /// ST-221 (addendum de Windows, ST-241): el modo se resuelve también
+    /// **al guardar**, no solo al cargar.
+    ///
+    /// Un elemento recién importado nunca pasa por una carga, así que si
+    /// la inferencia viviera solo ahí, un archivo que está dentro de las
+    /// carpetas de la app podría escribirse al catálogo compartido como
+    /// `reference` -- y Windows lo leería como referenciado, que es
+    /// justo lo que el contrato existe para evitar.
+    ///
+    /// La regla es la misma de `LibraryStorageMode.infer` y con los
+    /// mismos dos candados: solo cuenta una ruta **relativa** (una
+    /// absoluta no está dentro de la biblioteca, por definición) y solo
+    /// bajo una de las tres carpetas que la app crea. Lo que ya viene
+    /// como `copy` se conserva; lo demás queda en `reference`, que es el
+    /// modo que no autoriza a tocar nada del usuario.
+    nonisolated private static func persistedStorage(for item: LibraryItem, sourceRelativePath: String) -> String {
+        if item.storage == .copy { return LibraryStorageMode.copy.rawValue }
+        guard !sourceRelativePath.hasPrefix("/"),
+              let first = sourceRelativePath.split(separator: "/", omittingEmptySubsequences: false).first else {
+            return item.storage.rawValue
         }
-        return fullPath
+        let managed = [PersistedLibrary.musicDirName,
+                       PersistedLibrary.imagesDirName,
+                       PersistedLibrary.videosDirName].map(SharedCatalogPath.catalogNormalized)
+        if managed.contains(SharedCatalogPath.catalogNormalized(String(first))) {
+            return LibraryStorageMode.copy.rawValue
+        }
+        return item.storage.rawValue
+    }
+
+    /// ST-221: la única definición de "ruta relativa del catálogo" vive
+    /// en `SharedCatalogPath` -- y escribe en NFC, que es lo que hace
+    /// que Windows lea las mismas rutas que la Mac (ver
+    /// `catalogNormalized`). Antes esto era una copia exacta de
+    /// `LibraryViewModel.relativePath(of:)`: dos definiciones de lo
+    /// mismo, que es exactamente como una regla nueva se aplica en un
+    /// lado y no en el otro.
+    nonisolated private static func relativePath(of url: URL, in libraryRoot: URL) -> String {
+        SharedCatalogPath.relativePath(of: url, in: libraryRoot)
     }
 }

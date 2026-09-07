@@ -49,9 +49,16 @@ final class LoadCatalogParallelTests: XCTestCase {
                        "el orden de carga debe coincidir con el orden guardado, pese a resolverse en paralelo")
     }
 
-    /// Ítems con archivo fuente ausente INTERCALADOS con presentes: los
-    /// ausentes se omiten sin correr ni duplicar a sus vecinos.
-    func testMissingFilesInterspersedAreSkippedWithoutCorruptingNeighbors() throws {
+    /// Ítems con archivo fuente ausente INTERCALADOS con presentes.
+    ///
+    /// ST-221 cambió lo que se espera acá: los ausentes ya **no se
+    /// omiten** -- se conservan marcados como no disponibles, porque
+    /// omitirlos los perdía para siempre en el siguiente guardado (basta
+    /// abrir la app con el disco de los originales desconectado). Lo que
+    /// esta prueba sigue vigilando es lo de siempre y ahora sobre 100
+    /// elementos en vez de 80: que resolver en paralelo no corra, ni
+    /// duplique, ni mezcle el contenido de un ítem con el de su vecino.
+    func testMissingFilesInterspersedKeepTheirPlaceWithoutCorruptingNeighbors() throws {
         let musicDir = libraryRoot.appendingPathComponent("Música", isDirectory: true)
         try FileManager.default.createDirectory(at: musicDir, withIntermediateDirectories: true)
         var seedItems: [AuraStudio.LibraryItem] = []
@@ -72,19 +79,19 @@ final class LoadCatalogParallelTests: XCTestCase {
 
         // Borra 1 de cada 5 archivos DESPUES de persistir el catálogo
         // -- exactamente como "el usuario movió/borró el archivo a
-        // mano" -- para que `loadCatalog()` los omita al recargar.
-        var expectedRemainingTitles: [String] = []
-        for (i, item) in seedItems.enumerated() {
-            if i % 5 == 0 {
-                try FileManager.default.removeItem(at: fileURLs[i])
-            } else {
-                expectedRemainingTitles.append(item.metadata!.title!)
-            }
+        // mano", o como un disco externo desconectado.
+        var expectedUnavailable: Set<Int> = []
+        for i in seedItems.indices where i % 5 == 0 {
+            try FileManager.default.removeItem(at: fileURLs[i])
+            expectedUnavailable.insert(i)
         }
 
         let reloaded = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
-        XCTAssertEqual(reloaded.items.count, 80, "20 de 100 tenían su archivo borrado")
-        XCTAssertEqual(reloaded.items.map { $0.metadata?.title ?? "" }, expectedRemainingTitles,
-                       "los sobrevivientes deben mantener su orden y su propio contenido, sin mezclarse con el vecino borrado")
+        XCTAssertEqual(reloaded.items.count, 100, "ST-221: un archivo ausente no se borra del catálogo")
+        XCTAssertEqual(reloaded.items.map { $0.metadata?.title ?? "" }, seedItems.map { $0.metadata!.title! },
+                       "cada ítem conserva su orden y su propio contenido, sin mezclarse con el vecino ausente")
+        let unavailable = Set(reloaded.items.indices.filter { !reloaded.items[$0].isAvailable })
+        XCTAssertEqual(unavailable, expectedUnavailable,
+                       "no disponibles deben ser exactamente los 20 cuyo archivo se borró")
     }
 }

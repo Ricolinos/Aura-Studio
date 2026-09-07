@@ -487,6 +487,9 @@ struct LibrarySync {
         var wasCancelled = false
         var failures: [SyncFailure] = []
         var destinationByItemID: [UUID: String] = [:]
+        /// ST-221: nombres de destino ya tomados, para que dos elementos
+        /// distintos no se pisen dentro de la misma carpeta del iPod.
+        var usedDestinations: Set<String> = []
         var summary = CatalogSummary()
         // ST-012: que secciones del iPod toco ESTE sync (copias,
         // reemplazos, reubicaciones y borrados) -- va al marcador de
@@ -511,8 +514,17 @@ struct LibrarySync {
             let attrs = try fileManager.attributesOfItem(atPath: prepared.path)
             let size = (attrs[.size] as? Int64) ?? 0
             let modified = (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
-            let destRelative = Self.destinationRelativePath(for: item, musicOrganization: musicOrganization,
+            var destRelative = Self.destinationRelativePath(for: item, musicOrganization: musicOrganization,
                                                               musicFilenameFormat: musicFilenameFormat)
+            // ST-221: dos elementos que caen en el mismo nombre dentro
+            // de la misma carpeta del iPod. Ver
+            // `disambiguatedDestination` -- hasta acá esto se resolvía
+            // de rebote, por el sufijo que llevaba el derivado.
+            if !usedDestinations.insert(destRelative).inserted {
+                destRelative = Self.disambiguatedDestination(destRelative, taken: usedDestinations,
+                                                             kind: item.kind, itemID: item.id)
+                usedDestinations.insert(destRelative)
+            }
             destinationByItemID[item.id] = destRelative
 
             switch item.kind {
@@ -1313,7 +1325,19 @@ struct LibrarySync {
         musicOrganization: AppPreferences.MusicOrganization,
         musicFilenameFormat: AppPreferences.MusicFilenameFormat
     ) -> String {
-        let filename = item.preparedURL?.lastPathComponent ?? item.sourceURL.lastPathComponent
+        // ST-221: el nombre que ve el usuario en el iPod sale del
+        // archivo QUE ÉL SOLTÓ, no del derivado de `.preparados/`.
+        //
+        // Hasta acá eran el mismo nombre, así que daba igual de dónde
+        // se tomara. Con los derivados nombrados por id, tomarlo del
+        // derivado dejaría "A1B2C3D4-....mpg" en la pantalla del iPod:
+        // el id es una clave interna, nunca un nombre de cara al
+        // usuario. La EXTENSIÓN, en cambio, sí es la del derivado --
+        // es el archivo que de verdad viaja (un `.heic` viaja como
+        // `.jpg`, un `.mp4` como `.mpg`).
+        let deviceBaseName = item.sourceURL.deletingPathExtension().lastPathComponent
+        let deviceExt = (item.preparedURL ?? item.sourceURL).pathExtension
+        let filename = deviceExt.isEmpty ? deviceBaseName : "\(deviceBaseName).\(deviceExt)"
         switch item.kind {
         case .music: return Self.musicDestinationRelativePath(for: item, organization: musicOrganization,
                                                                 filenameFormat: musicFilenameFormat)
@@ -1339,6 +1363,57 @@ struct LibrarySync {
         case .photo: return "Photos/\(PathSanitizer.sanitizeFilename(filename, maxBytes: Self.deviceFilenameMaxBytes))"
         case .unsupported: return "Unsupported/\(filename)"
         }
+    }
+
+    /// ST-221: dos elementos distintos que caen en el MISMO nombre
+    /// dentro de la misma carpeta del iPod -- dos cámaras que numeran
+    /// "IMG_1.jpg" desde cero, el caso real que arregló
+    /// PLAN-sync-media-hardening.md PARTE 2A.
+    ///
+    /// Hasta acá se resolvía de rebote: el derivado de `.preparados/`
+    /// llevaba el sufijo " 2" y ese nombre viajaba tal cual. Con los
+    /// derivados nombrados por id (que es una clave interna y no un
+    /// nombre de cara al usuario), la colisión hay que resolverla donde
+    /// de verdad ocurre, que es la carpeta plana del dispositivo.
+    ///
+    /// El primero en el orden del catálogo se queda el nombre limpio y
+    /// los siguientes reciben " 2", " 3"... Es estable porque el orden
+    /// del catálogo lo es. Si el usuario borra el primero, el
+    /// sobreviviente pasa a llamarse como él: el sync diferencial lo
+    /// copia con el nombre nuevo y el viejo queda como sobrante -- lo
+    /// mismo que ya pasaba al regenerar un derivado.
+    static func disambiguatedDestination(_ relative: String, taken: Set<String>,
+                                          kind: LibraryItemKind, itemID: UUID) -> String {
+        let directory = (relative as NSString).deletingLastPathComponent
+        let name = (relative as NSString).lastPathComponent
+        let base = (name as NSString).deletingPathExtension
+        let ext = (name as NSString).pathExtension
+        let dotExt = ext.isEmpty ? "" : ".\(ext)"
+
+        func compose(_ marker: String) -> String {
+            var trimmed = base
+            if kind != .music {
+                // El límite del firmware (VIDEO_NAME_LEN/PHOTO_NAME_LEN)
+                // es del nombre COMPLETO, así que el sufijo tiene que
+                // caber: se recorta la base ANTES de pegarlo. Al revés
+                // -- recortar después, con `sanitizeFilename` -- se
+                // comería justo el sufijo, y dos nombres ya largos
+                // volverían a chocar sin que nadie se entere.
+                let budget = Self.deviceFilenameMaxBytes - (marker.utf8.count + dotExt.utf8.count)
+                while trimmed.utf8.count > max(budget, 1), !trimmed.isEmpty { trimmed.removeLast() }
+                while let last = trimmed.last, last == "." || last == " " { trimmed.removeLast() }
+            }
+            let candidateName = trimmed + marker + dotExt
+            return directory.isEmpty ? candidateName : "\(directory)/\(candidateName)"
+        }
+
+        for suffix in 2...99 {
+            let candidate = compose(" \(suffix)")
+            if !taken.contains(candidate) { return candidate }
+        }
+        // Cien archivos con el mismo nombre en la misma carpeta. El id
+        // no choca nunca: feo de leer, pero nadie pierde un archivo.
+        return compose(" \(itemID.uuidString.prefix(8))")
     }
 
     /// D-283: `item.category` para video se guarda como el displayName

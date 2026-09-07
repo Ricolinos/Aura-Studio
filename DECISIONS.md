@@ -10923,3 +10923,325 @@ PRUEBA de `3e55186` que el dueño usó para verificar antes del release
 (versión 0.2.3, no son de release y no van a GitHub). `0.2.2` y
 anteriores siguen sin copia local (ST-173): la copia canónica vive en los
 Releases de GitHub.
+
+## ST-221 — El contrato de almacenamiento: `storage`, `.preparados/<ID>`, y un elemento ausente deja de borrarse solo
+
+Primera PARADA de la ronda "ajustes 3" (A1 de
+`PLAN-studio-ajustes-3.md`). Fija el contrato compartido con Windows
+(B1/ST-241) antes de que exista código que dependa de él, como se hizo
+con `coverHash` en ST-185.
+
+### Lo que se verificó antes de tocar nada
+
+Los nueve puntos del diagnóstico de Mac son ciertos. Tres precisiones que
+salieron de comprobarlos y que cambian el alcance de lo que sigue:
+
+1. **"Cualquier edición recopia el archivo entero" se queda corto.**
+   `setRating` llama `prepareMusic`, que copia el audio completo y
+   reescribe el ID3 — pero `ID3Writer.Tag` **no tiene campo de rating**:
+   escribe título, artista, álbum, artista del álbum, año, género,
+   compositor, pista y carátula. Poner una estrella copia el archivo
+   entero **para escribir exactamente los mismos bytes de etiqueta que ya
+   tenía**. Igual con favorito, letra y categoría. No es trabajo de más:
+   es trabajo enteramente inútil. (Va a ST-223 como justificación.)
+2. **`.preparados/` reusa el derivado existente si está**, así que el
+   sufijo `" 2"` no se recalcula: se decide en la primera creación y
+   queda guardado en el catálogo para siempre. El nombre nunca
+   identificó nada.
+3. **El póster de video es `<preparado>.jpg` hermano**, así que el
+   nombrado por id se propaga solo.
+
+### `storage`
+
+`String?` en el JSON, hermano de `addedAt`/`fileSizeBytes`. Valores
+`"copy"` | `"reference"`. En memoria, un enum **no opcional**: el resto
+del código nunca ve un "no se sabe".
+
+- **Ausente** = "no se sabe" (catálogo anterior a 0.4.0): se infiere una
+  vez al cargar y se persiste en el siguiente guardado. Nunca se vuelve a
+  inferir.
+- **Valor desconocido** = `reference`. La asimetría es lo que importa:
+  `copy` **autoriza a escribir etiquetas dentro del archivo** y
+  `reference` no autoriza nada. Ante la duda, el modo que no toca nada
+  del usuario.
+- `Codable` con default nil y **no se borra al reescribir**: el catálogo
+  es compartido con Windows, y una versión que todavía no lo use tiene
+  que conservarlo igual.
+
+**La inferencia, y por qué no es "está dentro de la carpeta de
+biblioteca".** Esa regla obvia puede hacer daño real: alguien que haya
+apuntado la biblioteca a su propia carpeta de música y use modo
+referencia —un caso razonable, que hoy funciona— vería **todos sus
+originales marcados como copias**, y a partir de ahí la app se creería
+con permiso de escribirles etiquetas adentro. Dos candados:
+
+- Se infiere `copy` solo si la ruta cuelga de una de las **tres carpetas
+  que la app crea** (`Música/`, `Imágenes/`, `Videos/`). Cualquier otra
+  cosa, incluido "dentro de la raíz pero fuera de esas tres", es
+  `reference`.
+- **Inferir no autoriza a escribir nada.** Lo único que escribe etiquetas
+  en copias ya existentes es la migración explícita de §0.3, con su
+  botón. Si la inferencia se equivocara, el peor efecto es una etiqueta
+  de modo mal puesta —visible y corregible— y no un archivo del usuario
+  modificado a sus espaldas.
+
+A partir de acá, **el modo lo fija quien copia, en el momento de
+copiar** (`copyIntoLibraryIfNeeded`), no quien mira la ruta después.
+
+### `.preparados/<ID>`
+
+`<UUID en MAYÚSCULAS>.<ext>`, y el póster de video `<ID>.jpg` hermano.
+Alinea `.preparados/` con `.portadas/`, que ya nombraba así. Las
+colisiones desaparecen por construcción; el sufijo `" 2"` se queda solo
+para **leer** catálogos viejos.
+
+**No se renombra nada al cargar.** El catálogo guarda
+`preparedRelativePath`, así que un derivado viejo se sigue resolviendo
+tal cual: el nombre es un dato, no una convención. El nombre nuevo llega
+cuando el derivado se regenera —y ahí **el anterior se borra**, con el
+nuevo ya escrito y solo si estaba dentro de `.preparados/`—, y en bloque
+en la migración de §0.3. Renombrar miles de archivos al abrir la app
+sería justo el trabajo silencioso al arrancar que las rondas anteriores
+vinieron a quitar.
+
+### `preparedURL` cambia de significado
+
+Decisión de la sesión maestra entre las dos formas que propuse: en modo
+copia, para música, **`preparedURL == sourceURL`**. Todo lo que hoy
+pregunta "¿tiene preparado?" para decidir si un elemento está listo y qué
+sincronizar sigue funcionando sin tocarse.
+
+Lo que cambia es el **nombre del concepto**: `preparedURL` ya no
+significa "archivo derivado" sino **"el archivo que viaja al iPod"**.
+Está renombrado así en los comentarios. `storage` es la única fuente de
+verdad del modo.
+
+### Un elemento ausente ya no se borra
+
+Hasta acá, `loadCatalog` **omitía en silencio** cualquier elemento cuyo
+archivo no se pudiera resolver, y el siguiente guardado lo perdía **para
+siempre**. Bastaba abrir la app con el disco de los originales
+desconectado para que la biblioteca se vaciara sola — el mismo tipo de
+daño callado que ST-189 arregló para la biblioteca entera, pero por
+elemento.
+
+Ahora se conserva con la ruta que el catálogo nombra
+(`SharedCatalogPath.recordedURL`, que **no comprueba existencia y no
+inventa nada**) y marcado como **no disponible**. `isAvailable` no se
+persiste: se recalcula al cargar, porque un disco conectado o no es un
+hecho del momento, no del catálogo. Un elemento no disponible no se
+procesa —no hay de dónde leer— pero **conserva su estado**: cuando el
+archivo vuelve, vuelve como estaba.
+
+Nota: no disponible **no** significa "no sincronizable". En modo
+referencia el derivado de `.preparados/` puede seguir ahí, y entonces la
+canción sí viaja al iPod aunque el original esté en un disco
+desconectado. Es precisamente para lo que existe ese derivado.
+
+### Lo que salió al probarlo, y que el plan no había visto
+
+Tres cosas que no estaban en el diagnóstico y que aparecieron recién al
+correr la suite. Las tres tienen la misma forma: **`.preparados/<ID>`
+resuelve una colisión moviéndola de lugar, no eliminándola.**
+
+**1. El nombre en el iPod salía del derivado.** `/Videos/` y `/Photos/`
+son carpetas planas y su nombre de archivo se tomaba de
+`item.preparedURL`. Con los derivados nombrados por id, al usuario le
+habría aparecido `A1B2C3D4-E5F6-....mpg` en la pantalla del iPod. El id
+es una clave interna; nunca un nombre de cara al usuario.
+
+Ahora el nombre sale del **archivo que el usuario soltó**
+(`item.sourceURL`) y solo la **extensión** del derivado — que es la del
+archivo que de verdad viaja (`.heic` viaja como `.jpg`, `.mp4` como
+`.mpg`). La música no estaba afectada: su ruta de destino se arma desde
+la metadata, no desde el nombre del archivo.
+
+**2. Y con eso volvía la colisión que PARTE 2A había arreglado.** Dos
+`IMG_1.jpg` de dos cámaras distintas se resolvían *de rebote*: el
+derivado llevaba el sufijo `" 2"` y ese nombre viajaba tal cual. Quitado
+el sufijo del derivado, los dos volvían a caer en `Photos/IMG_1.jpg` y
+uno pisaba al otro en silencio.
+
+La colisión se resuelve ahora **donde de verdad ocurre**, que es la
+carpeta plana del dispositivo (`LibrarySync.disambiguatedDestination`):
+el primero en el orden del catálogo se queda el nombre limpio y los
+siguientes reciben `" 2"`, `" 3"`… Es estable porque el orden del
+catálogo lo es. El sufijo se pega **después** de recortar la base al
+límite del firmware, no antes: al revés, `sanitizeFilename` se comería
+justo el sufijo y dos nombres largos volverían a chocar sin que nadie se
+entere. Con más de 99 iguales entra el id — feo de leer, pero nadie
+pierde un archivo. Esto también cubre música con artista/álbum/título
+idénticos, que hasta acá se pisaba callada.
+
+Diferencia con lo anterior, dicha completa: el sufijo ya no queda
+guardado en el catálogo, así que si el usuario borra el primero, el
+sobreviviente pasa a llamarse como él. El sync diferencial lo copia con
+el nombre nuevo y el viejo queda como sobrante — lo mismo que ya pasaba
+al regenerar un derivado.
+
+**3. `recordedURL` conservaba los separadores de Windows.** El error más
+grave de los tres, y el que solo se ve cuando las dos cosas nuevas se
+cruzan. `resolve` prueba **primero la ruta literal**, lo cual es correcto
+mientras haya disco que consultar: en macOS `\` es un carácter válido, y
+si ese archivo existe de verdad, gana él. `recordedURL` no comprueba
+existencia — y heredar esa preferencia dejaba
+`Música\Fatboy Slim\Signos\01 x.m4a` como **un solo componente** de
+nombre absurdo. Como esa ruta es justamente la que ahora se conserva y se
+vuelve a guardar, el catálogo compartido salía corrupto para Windows: la
+tolerancia de ST-102 convertida en su contrario. `recordedURL` traduce
+los separadores siempre. Entre dos lecturas de algo que no se puede
+comprobar, la que preserva el significado.
+
+### Pruebas: seis cambiadas, y por qué ninguna se "arregló"
+
+Seis pruebas fallaron. Ninguna por un error de implementación — las seis
+afirmaban el contrato viejo. Quedan escritas contra el nuevo, no
+borradas:
+
+- `LoadCatalogParallelTests` — «los ausentes se omiten» pasa a «los
+  ausentes conservan su lugar, marcados no disponibles». Lo que la prueba
+  vigila (que resolver en paralelo no corra, duplique ni mezcle vecinos)
+  sigue igual y ahora sobre 100 elementos en vez de 80.
+- `SharedCatalogInteropTests` — «se omite» pasa a «se conserva no
+  disponible», y afirma **la ruta exacta**: es la prueba de regresión del
+  punto 3.
+- `PhotoStagingCollisionTests` — el sufijo `" 2"` ya no existe en el
+  derivado; afirma en su lugar los dos nombres por id **y** que las dos
+  fotos siguen llegando al iPod con nombres distintos y legibles.
+- `LibraryViewModelSharedPreparedTests` (ST-064) — el problema quedó
+  desarmado, no resuelto: dos duplicados ya no comparten derivado, así
+  que borrar uno no puede dejar al otro "Listo" sin archivo. Afirma eso.
+- `LibraryFileWorkerEquivalenceTests` — la igualdad de nombres contra el
+  camino viejo ya no aplica (ese camino es la implementación anterior,
+  conservada solo como referencia de bytes). La igualdad **de bytes**,
+  que es lo que la prueba existe para vigilar, sigue intacta.
+- `LibrarySyncSeriesNamingTests` — el fixture daba al derivado un nombre
+  sin relación con el origen, algo que ya no ocurre; ajustado a
+  `.preparados/<ID>.mpg`.
+
+**Y dos más que aparecieron al arreglar lo anterior.** Ambas del mismo
+tipo: fixtures que le daban al derivado un nombre humano, algo que ya no
+puede pasar.
+
+- `CategoryIndexWriterTests` y `LibrarySyncDeleteAllContentTests`
+  afirmaban contra `preparedURL.lastPathComponent`. El código de
+  producción siempre estuvo bien —`writeCategoryIndexes` nombra desde
+  `destinationByItemID`, que es la ruta real en el iPod, lo único que el
+  firmware puede emparejar—, pero las pruebas leían el nombre del
+  derivado, que hasta acá era el mismo. Ahora afirman el nombre de
+  destino, que es lo que siempre quisieron afirmar.
+- `ApplyBatchEditWorkerTests` falló con un bloqueo de 345 ms, y **no era
+  de esta ronda**: es el defecto que ST-186 diagnosticó y arregló en
+  otra prueba, sin que nadie revisara si había más. Su comentario dice
+  «`AURA_WATCHDOG` nunca corrió antes en este proceso», y con la suite
+  completa eso es falso (`startIfRequested` tiene `guard !started`).
+  Peor: los 500 archivos del fixture se crean **entre** instalar el
+  colector y la operación medida, así que el bloqueo del andamio se le
+  cobraba a `applyBatchEdit`. Un `resetForTesting()` justo antes de lo
+  que se mide cubre las dos cosas.
+
+### Deuda que queda anotada, sin tocar
+
+Once pruebas construyen `LibraryViewModel(libraryRoot:)` sin preferencias
+aisladas, y ese `AppPreferences()` por omisión escribe en el dominio real
+del bundle — justo lo que la regla de esta ronda prohíbe
+(`LibraryLegacyMigrationTests` ×5, `LibraryPipelineIntegrationTests` ×2,
+`SharedCatalogInteropTests` ×4, de las cuales arreglé la que ya estaba
+tocando). Es del mecánico, que trabaja en su propio worktree: se le
+reporta en vez de arreglarlo acá, para no chocar con lo suyo.
+
+### Añadido al contrato: las rutas del catálogo se escriben en NFC
+
+Lo encontró Windows en B1 y la sesión maestra lo fijó para las dos
+plataformas. Va acá porque es parte de ST-221: **lo introdujo ST-221**.
+
+macOS entrega los acentos **descompuestos** (NFD: `u` + acento
+combinante) y Windows los escribe **compuestos** (NFC). Los dos dicen
+"Música" en pantalla, ninguna de las dos apps notó nunca la diferencia
+—porque nadie comparaba esas cadenas— y APFS resuelve las dos formas
+contra el disco. Hasta que ST-221 agregó justo eso: `infer` pregunta si
+la ruta cuelga de `Música/`. Sin normalizar, una biblioteca copiada
+escrita por la Mac se leería entera como **referenciada** del lado de
+Windows, en silencio, y la app se creería sin permiso para escribir
+etiquetas en archivos que sí son suyos. El síntoma no aparecería cerca
+de la causa: aparecería mucho después, como "las ediciones no llegan al
+iPod".
+
+La regla, igual en Mac y en Windows:
+
+- Las rutas relativas del catálogo (`sourceRelativePath`,
+  `preparedRelativePath`, `coverRelativePath`, y la imagen de una lista)
+  se **escriben en NFC**.
+- Toda comparación de rutas normaliza **los dos lados** antes de
+  comparar: la inferencia de `storage`, `isInsideLibrary`, el cálculo de
+  la ruta relativa.
+- La **lectura contra el disco no cambia**: `SharedCatalogPath.resolve`
+  sigue probando las dos formas, porque ahí manda lo que el sistema de
+  archivos conserve.
+
+Dos cosas que salieron de implementarlo:
+
+1. **Había dos definiciones de "ruta relativa del catálogo"** --
+   `CatalogPersister.relativePath` y `LibraryViewModel.relativePath`,
+   copia exacta una de la otra por una restricción de aislamiento. Eso
+   es precisamente cómo una regla nueva se aplica en un lado y no en el
+   otro. Ahora las dos delegan en `SharedCatalogPath.relativePath`.
+2. **`appendingPathComponent` vuelve a descomponer** lo que se le pase,
+   así que la forma interna de un `URL` no es algo sobre lo que se pueda
+   tener contrato. La normalización va en la **cadena al escribir**, que
+   es donde sí se sostiene. La prueba lo dice explícitamente para que
+   nadie "arregle" el `URL` más adelante.
+
+Y una consecuencia que no era del hallazgo de Windows pero se arregla
+con lo mismo: sin normalizar, una raíz de biblioteca descompuesta con
+rutas compuestas hacía fallar el `hasPrefix` y se guardaba la **ruta
+absoluta** — peor que el bug de Windows, porque convierte una biblioteca
+portátil en una atada a esta Mac. Tiene prueba propia.
+
+### Tres precisiones más del contrato (addendum ST-241, desde Windows)
+
+**`storage` se resuelve también al GUARDAR.** Un elemento recién
+importado nunca pasa por una carga, así que si la inferencia viviera
+solo ahí, la Mac podría escribir al catálogo compartido un archivo que
+está dentro de sus propias carpetas marcado como referenciado. En Swift
+el campo nunca falta —`LibraryItem.storage` no es opcional, así que
+todo elemento sale con valor explícito— pero eso garantizaba la
+*presencia*, no el *acierto*. `CatalogPersister.persistedStorage` aplica
+ahora la misma regla del contrato al persistir, con los mismos dos
+candados: solo cuenta una ruta **relativa** (una absoluta no está dentro
+de la biblioteca, por definición) y solo bajo una de las tres carpetas
+que la app crea. Lo que ya viene como `copy` se conserva.
+
+**Las rutas absolutas se escriben como vienen.** Es la otra mitad de la
+regla NFC y estaba mal implementada de mi lado: yo normalizaba también
+la absoluta. Una ruta relativa la interpretan las dos apps contra su
+propia raíz —su forma es parte del formato y se fija en NFC—; una
+absoluta es un dato del sistema donde vive el archivo: se compara
+normalizada, se escribe como vino.
+
+**La prueba de NFC mira el JSON escrito, no lo que devuelve la carga.**
+La distinción no es un tecnicismo: una normalización aplicada al leer
+dejaría la prueba en verde y el defecto intacto, porque lo que viaja
+entre las dos apps es el archivo, no nuestra carga. La prueba importa un
+archivo con nombre descompuesto, lee `biblioteca.json` y comprueba las
+tres rutas (fuente, preparado, carátula) más los bytes crudos del JSON.
+
+**Y una corrección al contrato, que va de vuelta a Windows.** El pedido
+era que la Mac creara `Música`/`Imágenes`/`Videos` con el nombre en NFC.
+**No se puede.** En macOS, Foundation descompone al bajar al sistema de
+archivos: lo hacen `appendingPathComponent`, `createDirectory` y
+también `URL(fileURLWithPath:)` con una cadena ya compuesta. Una carpeta
+creada desde la Mac se lee descompuesta, se pida como se pida. Está
+comprobado en una prueba que lo deja escrito para que nadie vuelva a
+intentarlo.
+
+Lo cual no rompe nada, y de hecho explica el diseño: por eso el contrato
+normaliza **las cadenas del catálogo** y no los nombres de archivo — lo
+primero está en nuestras manos, lo segundo no. La mitad que sí se
+implementó, y que es la que evitaba el daño real, es **reusar** la
+carpeta que ya exista comparando en NFC
+(`SharedCatalogPath.managedDirectory`), para no dejar una `Música`
+compuesta al lado de una descompuesta en exFAT o en un recurso de red.
+Windows debe conservar su `MediaRoots.Directory` por la misma razón, y
+ahora con un motivo más firme: **las carpetas que crea la Mac van a
+estar en NFD siempre**, no ocasionalmente.

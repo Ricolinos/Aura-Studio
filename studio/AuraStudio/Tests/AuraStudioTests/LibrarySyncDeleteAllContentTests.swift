@@ -57,7 +57,11 @@ final class LibrarySyncDeleteAllContentTests: XCTestCase {
         _ = try sync.sync(items: [music, photo])
 
         let musicDestination = fakeIPod.appendingPathComponent("Music/Artist/Album/Song.mp3")
-        let photoDestination = fakeIPod.appendingPathComponent("Photos/\(photoStaging.lastPathComponent)")
+        // ST-221: el nombre en el iPod sale del archivo que soltó el
+        // usuario (`sourceURL`), no del derivado de `.preparados/` --
+        // que ahora se llama por el id del elemento.
+        let photoDestination = fakeIPod.appendingPathComponent(
+            "Photos/\(photo.sourceURL.deletingPathExtension().lastPathComponent).\(photoStaging.pathExtension)")
         XCTAssertTrue(FileManager.default.fileExists(atPath: musicDestination.path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: photoDestination.path))
 
