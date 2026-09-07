@@ -241,7 +241,7 @@
     <value>Нет прошивки, доступной для установки: папка артефактов не заполнена.</value>
   </data>
   <data name="app-strings.installer-dfu-not-found" xml:space="preserve">
-    <value>iPod в режиме DFU пока не виден. Повторите сочетание кнопок и выполните поиск снова. Не забывайте продолжать удерживать после того, как экран погаснет.</value>
+    <value>iPod в режиме DFU пока не виден. Повторите сочетание кнопок и выполните поиск снова. Не забывайте продолжать удерживать после того, как экран станет чёрным.</value>
   </data>
   <data name="app-strings.installer-dfu-not-seen-by-windows" xml:space="preserve">
     <value>Драйвер Apple установлен, но Windows не видит ни одного устройства Apple. Если вы уже выполнили сочетание кнопок и экран iPod чёрный, он, скорее всего, в режиме DFU, а его USB-подключение сюда не доходит. На виртуальной машине проверьте, что iPod в режиме DFU перенаправлен в Windows: при переходе в DFU он меняет USB-идентификатор, и его может потребоваться разрешить заново.</value>
@@ -253,7 +253,7 @@
     <value>Удерживайте SELECT + MENU одновременно.</value>
   </data>
   <data name="app-strings.installer-dfu-step3" xml:space="preserve">
-    <value>Продолжайте удерживать обе кнопки около 12 секунд, до момента после того, как экран погаснет.</value>
+    <value>Продолжайте удерживать обе кнопки около 12 секунд, до момента после того, как экран станет чёрным.</value>
   </data>
   <data name="app-strings.installer-dfu-step4" xml:space="preserve">
     <value>Отпустите. Aura Studio определит режим DFU автоматически.</value>
@@ -694,31 +694,31 @@
     <value>Недоступно</value>
   </data>
   <data name="app-strings.orphans-cleaned.few" xml:space="preserve">
-    <value>Удалено {0} потерянных файла.</value>
+    <value>Удалено {0} неиспользуемых файла.</value>
   </data>
   <data name="app-strings.orphans-cleaned.many" xml:space="preserve">
-    <value>Удалено {0} потерянных файлов.</value>
+    <value>Удалено {0} неиспользуемых файлов.</value>
   </data>
   <data name="app-strings.orphans-cleaned.one" xml:space="preserve">
-    <value>Удалён {0} потерянный файл.</value>
+    <value>Удалён {0} неиспользуемый файл.</value>
   </data>
   <data name="app-strings.orphans-confirm-title.few" xml:space="preserve">
-    <value>Удалить {0} потерянных файла?</value>
+    <value>Удалить {0} неиспользуемых файла?</value>
   </data>
   <data name="app-strings.orphans-confirm-title.many" xml:space="preserve">
-    <value>Удалить {0} потерянных файлов?</value>
+    <value>Удалить {0} неиспользуемых файлов?</value>
   </data>
   <data name="app-strings.orphans-confirm-title.one" xml:space="preserve">
-    <value>Удалить {0} потерянный файл?</value>
+    <value>Удалить {0} неиспользуемый файл?</value>
   </data>
   <data name="app-strings.orphans-found.few" xml:space="preserve">
-    <value>{0} потерянных файла ({1}).</value>
+    <value>{0} неиспользуемых файла ({1}).</value>
   </data>
   <data name="app-strings.orphans-found.many" xml:space="preserve">
-    <value>{0} потерянных файлов ({1}).</value>
+    <value>{0} неиспользуемых файлов ({1}).</value>
   </data>
   <data name="app-strings.orphans-found.one" xml:space="preserve">
-    <value>{0} потерянный файл ({1}).</value>
+    <value>{0} неиспользуемый файл ({1}).</value>
   </data>
   <data name="app-strings.section-content" xml:space="preserve">
     <value>Содержимое на iPod</value>
@@ -850,13 +850,13 @@
     <value>{0} исполнитель</value>
   </data>
   <data name="conteo.canciones.few" xml:space="preserve">
-    <value>{0} композиции</value>
+    <value>{0} трека</value>
   </data>
   <data name="conteo.canciones.many" xml:space="preserve">
-    <value>{0} композиций</value>
+    <value>{0} треков</value>
   </data>
   <data name="conteo.canciones.one" xml:space="preserve">
-    <value>{0} композиция</value>
+    <value>{0} трек</value>
   </data>
   <data name="conteo.dias.few" xml:space="preserve">
     <value>{0} дня</value>
@@ -1108,10 +1108,10 @@
     <value>Найти постер в интернете</value>
   </data>
   <data name="context-menu.seleccionar-canciones-mismo-album" xml:space="preserve">
-    <value>Выбрать композиции того же альбома</value>
+    <value>Выбрать треки того же альбома</value>
   </data>
   <data name="context-menu.seleccionar-canciones-mismo-artista" xml:space="preserve">
-    <value>Выбрать композиции того же исполнителя</value>
+    <value>Выбрать треки того же исполнителя</value>
   </data>
   <data name="context-menu.sincronizar-seleccion" xml:space="preserve">
     <value>Синхронизировать выбранное</value>
@@ -1120,7 +1120,7 @@
     <value>Только избранное</value>
   </data>
   <data name="context-menu.todas-canciones" xml:space="preserve">
-    <value>Все композиции</value>
+    <value>Все треки</value>
   </data>
   <data name="context-menu.vista-previa" xml:space="preserve">
     <value>Предпросмотр</value>
@@ -1342,13 +1342,13 @@
     <value>изменений не было</value>
   </data>
   <data name="library-migration.orphans-deleted.few" xml:space="preserve">
-    <value>удалено {0} потерянных файла</value>
+    <value>удалено {0} неиспользуемых файла</value>
   </data>
   <data name="library-migration.orphans-deleted.many" xml:space="preserve">
-    <value>удалено {0} потерянных файлов</value>
+    <value>удалено {0} неиспользуемых файлов</value>
   </data>
   <data name="library-migration.orphans-deleted.one" xml:space="preserve">
-    <value>удалён {0} потерянный файл</value>
+    <value>удалён {0} неиспользуемый файл</value>
   </data>
   <data name="library-migration.prepared-built.few" xml:space="preserve">
     <value>собрано {0} подготовленных файла</value>
@@ -1393,13 +1393,13 @@
     <value>Ничего не потеряно: каталог и ваши файлы по-прежнему на этом диске. Подключите его, и медиатека вернётся сама.</value>
   </data>
   <data name="library-view-model.album-cover-applied.few" xml:space="preserve">
-    <value>Обложка изменена у {0} композиций.</value>
+    <value>Обложка изменена у {0} треков.</value>
   </data>
   <data name="library-view-model.album-cover-applied.many" xml:space="preserve">
-    <value>Обложка изменена у {0} композиций.</value>
+    <value>Обложка изменена у {0} треков.</value>
   </data>
   <data name="library-view-model.album-cover-applied.one" xml:space="preserve">
-    <value>Обложка изменена у {0} композиции.</value>
+    <value>Обложка изменена у {0} трека.</value>
   </data>
   <data name="library-view-model.buscando-fotos-artista" xml:space="preserve">
     <value>Поиск фото исполнителей…</value>
@@ -1483,13 +1483,13 @@
     <value>{0} подготовленный файл использует старое имя</value>
   </data>
   <data name="library-view-model.migration-tagged.few" xml:space="preserve">
-    <value>записаны теги {0} композиций</value>
+    <value>записаны теги {0} треков</value>
   </data>
   <data name="library-view-model.migration-tagged.many" xml:space="preserve">
-    <value>записаны теги {0} композиций</value>
+    <value>записаны теги {0} треков</value>
   </data>
   <data name="library-view-model.migration-tagged.one" xml:space="preserve">
-    <value>записаны теги {0} композиции</value>
+    <value>записаны теги {0} трека</value>
   </data>
   <data name="library-view-model.migration-without-storage.few" xml:space="preserve">
     <value>{0} элемента пока не сообщают, их файлы — копии Aura или ваши</value>
@@ -1537,13 +1537,13 @@
     <value>Поиск обложки…</value>
   </data>
   <data name="library-view-model.tags-reread.few" xml:space="preserve">
-    <value>Перечитаны теги {0} композиций.</value>
+    <value>Перечитаны теги {0} треков.</value>
   </data>
   <data name="library-view-model.tags-reread.many" xml:space="preserve">
-    <value>Перечитаны теги {0} композиций.</value>
+    <value>Перечитаны теги {0} треков.</value>
   </data>
   <data name="library-view-model.tags-reread.one" xml:space="preserve">
-    <value>Перечитаны теги {0} композиции.</value>
+    <value>Перечитаны теги {0} трека.</value>
   </data>
   <data name="main-window.aura-studio" xml:space="preserve">
     <value>Aura Studio</value>
@@ -1597,22 +1597,22 @@
     <value>Сжимать в MP3 хорошего качества</value>
   </data>
   <data name="orphans-button" xml:space="preserve">
-    <value>Найти потерянные файлы</value>
+    <value>Найти неиспользуемые файлы</value>
   </data>
   <data name="orphans-clean-button" xml:space="preserve">
-    <value>Очистить потерянные файлы</value>
+    <value>Очистить неиспользуемые файлы</value>
   </data>
   <data name="orphans-confirm-message" xml:space="preserve">
-    <value>Они не связаны ни с одним элементом вашей медиатеки; их удаление не затронет ни одной композиции, ни одного фото и ни одного видео из ваших.</value>
+    <value>Они не связаны ни с одним элементом вашей медиатеки; их удаление не затронет ни одного трека, ни одного фото и ни одного видео из ваших.</value>
   </data>
   <data name="orphans-detail" xml:space="preserve">
     <value>Подготовленные файлы и обложки, которые больше не принадлежат ни одному элементу вашей медиатеки — от элементов, удалённых до этой версии, или от повторной обработки. Это не ваши исходные файлы: это технические копии, которые Aura делает сама и может сделать заново, если понадобится.</value>
   </data>
   <data name="orphans-none-found" xml:space="preserve">
-    <value>Потерянных файлов нет: очищать нечего.</value>
+    <value>Неиспользуемых файлов нет: очищать нечего.</value>
   </data>
   <data name="orphans-title" xml:space="preserve">
-    <value>Потерянные файлы</value>
+    <value>Неиспользуемые файлы</value>
   </data>
   <data name="playlists-page.crea-nueva-o-importa-archivo-m3u" xml:space="preserve">
     <value>Создайте новый или импортируйте файл .m3u/.m3u8 из другой программы. Композиции, которых нет в вашей медиатеке, считаются отдельно, а не теряются молча.</value>
@@ -1627,7 +1627,7 @@
     <value>Импортировать M3U…</value>
   </data>
   <data name="playlists-page.listas-armadas-con-canciones-biblioteca" xml:space="preserve">
-    <value>Плейлисты, собранные из композиций вашей медиатеки. При синхронизации они копируются на iPod.</value>
+    <value>Плейлисты, собранные из треков вашей медиатеки. При синхронизации они копируются на iPod.</value>
   </data>
   <data name="playlists-page.nueva-lista" xml:space="preserve">
     <value>Новый плейлист</value>
@@ -1666,7 +1666,7 @@
     <value>Выключено: при импорте Aura Studio не обращается к сети. Она использует только теги файла и то, что можно угадать из его имени.</value>
   </data>
   <data name="settings-page.archivos-huerfanos" xml:space="preserve">
-    <value>Потерянные файлы</value>
+    <value>Неиспользуемые файлы</value>
   </data>
   <data name="settings-page.artista-album-recomendado" xml:space="preserve">
     <value>Исполнитель / Альбом (рекомендуется)</value>
@@ -1699,7 +1699,7 @@
     <value>Одна обложка на альбом (рекомендуется)</value>
   </data>
   <data name="settings-page.caratula-por-cancion" xml:space="preserve">
-    <value>Одна обложка на композицию</value>
+    <value>Одна обложка на трек</value>
   </data>
   <data name="settings-page.caratulas" xml:space="preserve">
     <value>Обложки</value>
@@ -1738,7 +1738,7 @@
     <value>Копировать медиафайлы в папку медиатеки</value>
   </data>
   <data name="settings-page.cuando-cancion-le-falta-caratula-se" xml:space="preserve">
-    <value>Когда у композиции нет обложки, эти службы опрашиваются по порядку и берётся первое найденное изображение.</value>
+    <value>Когда у трека нет обложки, эти службы опрашиваются по порядку и берётся первое найденное изображение.</value>
   </data>
   <data name="settings-page.deezer" xml:space="preserve">
     <value>Deezer</value>
@@ -1906,7 +1906,7 @@
     <value>Посмотреть, что нового</value>
   </data>
   <data name="similar-items-page.aura-studio-busca-canciones-fotos-videos" xml:space="preserve">
-    <value>Aura Studio ищет композиции, фото и видео, которые выглядят как повторы. Она ничего не удаляет и не меняет сама: здесь вы видите, почему она их объединила, и решаете вы.</value>
+    <value>Aura Studio ищет треки, фото и видео, которые выглядят как повторы. Она ничего не удаляет и не меняет сама: здесь вы видите, почему она их объединила, и решаете вы.</value>
   </data>
   <data name="similar-items-page.buscar" xml:space="preserve">
     <value>Искать</value>
@@ -1948,7 +1948,7 @@
     <value>Ищет альбом, год, обложку и текст песни для всего, что заполнено не полностью</value>
   </data>
   <data name="songs-page.busca-canciones-fotos-videos-parezcan-re" xml:space="preserve">
-    <value>Ищет композиции, фото и видео, которые выглядят как повторы</value>
+    <value>ищет треки, фото и видео, которые выглядят как повторы</value>
   </data>
   <data name="songs-page.completar-linea" xml:space="preserve">
     <value>Дополнить через интернет</value>
@@ -1972,7 +1972,7 @@
     <value>Копировать в медиатеку Aura: Aura управляет файлами, правит их теги и синхронизирует напрямую; занимает место на диске (одна копия); свои оригиналы вы можете удалить потом.</value>
   </data>
   <data name="storage-reference-explainer" xml:space="preserve">
-    <value>Ссылаться на месте: не занимает лишнего места и не трогает ваши файлы; Aura держит подготовленную версию рядом (.preparados/), правки живут только в Aura и на iPod, а если исходного диска нет, эти композиции нельзя синхронизировать.</value>
+    <value>Ссылаться на месте: не занимает лишнего места и не трогает ваши файлы; Aura держит подготовленную версию рядом (.preparados/), правки живут только в Aura и на iPod, а если исходного диска нет, эти треки нельзя синхронизировать.</value>
   </data>
   <data name="storage-section-title" xml:space="preserve">
     <value>Как хранить вашу музыку</value>

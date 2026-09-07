@@ -18,7 +18,7 @@ tema,theme,テーマ,Design,тема,thème,"nombre oficial de Windows (de: ""De
 biblioteca,library,ライブラリ,Mediathek,медиатека,bibliothèque,"convención de reproductores de medios (de/ru: mediateca, no biblioteca de libros)"
 sincronizar,sync,同期,synchronisieren,синхронизировать,synchroniser,convención de reproductores de medios
 lista de reproducción,playlist,プレイリスト,Wiedergabeliste,плейлист,liste de lecture,convención de reproductores de medios
-canción,song,曲,Titel,песня,morceau,convención de reproductores de medios
+canción,song,曲,Titel,трек,morceau,"ru: ""трек"" es el término dominante en reproductores (contrastado con Яндекс.Музыка); ""песня"" es la canción como obra, no la pista"
 álbum,album,アルバム,Album,альбом,album,convención de reproductores de medios
 carátula,cover art,アルバムアート,Albumcover,обложка,pochette,convención de reproductores de medios
 firmware,firmware,ファームウェア,Firmware,прошивка,microprogramme,"fr: es lo que usa Microsoft hoy en support.microsoft.com/fr-fr (título y cuerpo); ""micrologiciel"" aparece una sola vez en una nota menor. ru: uso corriente"
@@ -33,4 +33,5 @@ Eliminar,Delete,削除,Löschen,Удалить,Supprimer,botón estándar de Win
 Quitar,Remove,取り除く,Entfernen,Убрать,Retirer,"distinto de Eliminar: saca de una lista, no borra"
 Abrir,Open,開く,Öffnen,Открыть,Ouvrir,botón estándar de Windows
 volumen,volume,ボリューム,Volume,том,volume,"volumen LÓGICO; distinto de disco/Datenträger, que es el físico (verificado en la retro alemana)"
-ensayar,rehearse,リハーサル,proben,репетиция,simuler,"fr: NO ""répéter"" -- se lee primero como ""repetir"", y un botón que parezca Repetir junto a operaciones de firmware es peligroso (hallazgo de la retro francesa)"
+ensayar,rehearse,確認,proben,проверка,simuler,"fr: NO ""répéter"" -- se lee primero como ""repetir"", y un botón que parezca Repetir junto a operaciones de firmware es peligroso (hallazgo de la retro francesa)"
+huérfano,orphaned,孤立,verwaist,неиспользуемый,orphelin,"ru: NO ""потерянный"" (perdido) -- sugiere pérdida de datos, justo lo contrario de lo que la propia frase explica: son copias técnicas que Aura rehace (hallazgo de la retro rusa)"
