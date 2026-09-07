@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using AuraStudio.Core.Library;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App.ViewModels;
 
@@ -13,7 +14,7 @@ public sealed record PlaylistRow(Playlist Playlist, int TrackCount, int MissingC
     {
         get
         {
-            string tracks = TrackCount == 1 ? "1 canción" : $"{TrackCount} canciones";
+            string tracks = Strings.Plural("conteo.canciones", TrackCount);
 
             // Una lista importada de otro programa suele traer pistas que no
             // están en la biblioteca. Decirlo evita que el usuario crea que la

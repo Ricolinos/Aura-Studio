@@ -163,8 +163,8 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
         VideoTitleParser.Parsed parsed = VideoTitleParser.Parse(Path.GetFileNameWithoutExtension(item.SourcePath));
 
         item.Category ??= parsed.IsEpisode
-            ? MediaCategory.Series.DisplayName()
-            : MediaCategoryHeuristics.ClassifyVideo(info.Duration).DisplayName();
+            ? MediaCategory.Series.CatalogName()
+            : MediaCategoryHeuristics.ClassifyVideo(info.Duration).CatalogName();
 
         if (MediaCategoryNames.IsSeriesCategory(item.Category) && parsed.IsEpisode)
         {

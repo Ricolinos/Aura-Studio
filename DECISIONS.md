@@ -13438,6 +13438,55 @@ propio temporal, como pidió la maestra.
 pendientes, no algo de este commit). `xcodebuild -configuration Release`:
 **BUILD SUCCEEDED** (candado tomado y liberado por esta sesión, esperado
 mientras lo tenía "experto A4 verificacion"). Nada en `Sources/`.
+## ST-244 (addendum) — "Sin preparado" es un estado válido: los tres sitios de A4, comprobados
+
+Recibido de ST-224. La primera corrida de A4 en la Mac destapó tres
+lugares donde la regla de ST-244 —una canción referenciada cuyo archivo ya
+coincide con el catálogo no necesita preparado, y `preparedPath` queda
+**ausente**— rompía algo. Windows no los tiene, y acá está la comprobación
+en vez de la afirmación.
+
+1. **La sincronización la lleva.** La Mac omitía en silencio todo elemento
+   sin preparado. En Windows viaja `PreparedPath ?? SourcePath`, y —lo que
+   había que revisar— **ningún filtro previo la descarta**: el barrido
+   filtra por estado, por tipo de medio y por la selección explícita del
+   usuario, y ni el planificador ni el manifiesto miran `PreparedPath`.
+   Medido: el elemento llega con su archivo de origen y su destino sale
+   bien armado desde la metadata.
+2. **Cargar no encola nada.** La Mac re-encolaba para preparar todo
+   "Listo" sin derivado, lo que con A4 encolaría casi la biblioteca entera
+   al abrir. En Windows el re-encolado filtra estrictamente por estado "en
+   cola", y `ProcessAsync` además se planta salvo en "en cola" o "falló".
+   Medido: **cero trabajos encolados y cero archivos creados** al cargar
+   un catálogo con una referencia lista sin preparado.
+3. **Aplicar carátula no inventa un preparado.** La Mac guardaba
+   `prepared ?? item.preparedURL` y dejaba el catálogo apuntando a un
+   derivado que ya no correspondía. En Windows el único sitio que asigna
+   `PreparedPath` fuera del procesador es `RefreshPreparedFile` (ST-244),
+   y solo cuando `PreparedMusicBuilder` devolvió una ruta de verdad;
+   `ApplyAlbumCover` no lo toca. Medido: se aplica la carátula y
+   `preparedPath` sigue ausente.
+
+**Dónde vive la comprobación.** En el arnés (`tools/CopyModeCheck`) y no
+en `Core.Tests`: los tres caminos —el barrido del sync, la carga de la
+biblioteca y aplicar carátula— están en el proyecto de la app, que es
+`net10.0-windows` con WinUI y no se puede referenciar desde un proyecto de
+pruebas `net10.0`. Es la misma razón por la que el modo copia se mide ahí
+desde ST-243.
+
+```
+  1. preparedPath del catálogo:  (ausente, como debe)
+     lo que viajaría al iPod:    Ingrata.mp3
+     ¿la descarta algún filtro?  no
+     destino en el iPod:         Music/Café Tacvba/Ré/Ingrata.mp3
+
+  2. trabajos encolados al cargar: 0 (esperado 0)
+     archivos en .preparados/:     0 → 0 (esperado sin cambio)
+
+  3. carátulas aplicadas:        1
+     preparedPath después:       (sigue ausente, como debe)
+```
+
 ## ST-247 — Windows: ensayo en seco de B7a (extracción de cadenas)
 
 Encargo de la Maestra, plan §3: preparar la extracción de cadenas de
@@ -15814,3 +15863,509 @@ porque `testTheSpanishInTheCatalogIsWhatTheSourcesSaidBefore` compara el
 español letra por letra contra `revision.csv` -- esa prueba existe
 justamente para que el idioma fuente no cambie de contrabando. Los cuatro
 idiomas nuevos ya usan `…` en todos los casos.
+## ST-247 — Windows: los textos salen del código (B7a, infraestructura)
+
+B7a de la ronda "ajustes 3", aplicando lo que el ensayo en seco del
+mecánico dejó preparado. Se entrega por grupos; este es el primero:
+**infraestructura, reglas de plural y las culturas fijas**. Mover, no
+redactar — el español que ve el usuario no cambia ni una letra.
+
+### `.resx` y no `.resw` con el sistema de recursos de WinUI
+
+El plan pedía `Strings/<cultura>/Resources.resw` con `ResourceLoader`. Se
+implementó con `.resx` y `ResourceManager`, que es el equivalente que el
+coordinador dejó a mi criterio, y por cuatro razones:
+
+1. **Se conserva la verificación que ST-079 defendía.** Esa decisión eligió
+   una tabla estática de C# en vez de recursos, y su argumento principal
+   sigue en pie: con claves de texto, una mal escrita devuelve cadena vacía
+   y el usuario ve un hueco. Acá el acceso sigue pasando por `AppStrings`
+   —propiedades, no cadenas— y hay una prueba que comprueba que toda clave
+   usada existe en el archivo. Lo que dejó de valer de ST-079 es su tercer
+   argumento, "esta app tiene un solo idioma"; los otros dos se respetan.
+2. **La app no está empaquetada** (`WindowsPackageType=None`). El camino de
+   WinUI depende de encontrar un `resources.pri` junto al ejecutable, y
+   cuando no lo encuentra la app abre **con todos los textos en blanco**.
+   Un `.resx` se compila dentro del ensamblado y no puede faltar.
+3. **El español no puede desaparecer.** Va como cultura **neutra**, o sea
+   dentro del ensamblado principal: si mañana falta el satélite de otro
+   idioma, la app cae en español, nunca en blanco.
+4. **Las vistas no cambian de forma.** El XAML ya usa
+   `{x:Bind res:AppStrings.Algo}`; con `x:Uid` habría que rehacer cada
+   elemento, y con esto solo cambia de dónde saca el texto `AppStrings`.
+
+Una clave que falte **se ve**: devuelve `⟦la.clave⟧` en vez de vacío. Un
+hueco en la pantalla no dice qué falta y puede pasar meses sin que nadie
+lo note.
+
+### Las reglas de plural salen del código
+
+Había cincuenta y un ternarios `count == 1 ? "1 canción" : "…canciones"`.
+Eso no es una condición: es **la regla del plural del español escrita a
+mano**, cincuenta y una veces. En ruso hacen falta tres formas y en
+japonés una sola, así que cada ternario sería un texto mal escrito en
+cuanto la app hable otro idioma — y no un error de compilación, sino algo
+que alguien lee mal en su pantalla.
+
+`PluralRules` decide **cuál** forma pedir; las formas viven en el archivo
+de recursos como `<clave>.one`, `.few`, `.many` y `.other`. Tres familias:
+dos formas (español, inglés y la mayoría), tres (ruso y eslavas) y una
+sola (japonés, chino, coreano). Se mira el idioma de dos letras y no la
+cultura completa: `es-MX` y `es-ES` pluralizan igual, y enumerar países
+sería una lista que envejece sola.
+
+La prueba cubre la trampa clásica del ruso: **11, 12, 13 y 14 no siguen a
+1, 2, 3 y 4** — van todos a "muchos". Es el error de quien mira solo el
+último dígito.
+
+### Las tres culturas fijas
+
+`MediaTableRow` (el orden natural y el formato de fecha) y `LibraryStats`
+(el formato de números) usaban `es-MX` fijo, con un comentario que decía
+"pase lo que pase, aunque Windows esté en otro idioma: es una regla del
+repo". Con la app hablando dos idiomas eso deja de ser una regla y pasa a
+ser **una fecha y un número que el usuario lee mal** — "1.234" es mil
+doscientos treinta y cuatro en un idioma y uno coma algo en otro. Ahora
+los tres usan la cultura de la interfaz.
+
+Y pasan a ser **propiedades, no campos guardados**: la cultura puede
+cambiar mientras la app está abierta (el selector es B7b), y un comparador
+construido una vez al cargar el tipo se quedaría con la de entonces. El
+comparador se consulta una vez por ordenación, no por comparación.
+
+### Verificación
+
+`dotnet build` de Core, App y arnés: **0 errores**. `dotnet test`: **1 772
+pruebas en verde** (29 nuevas).
+
+Que el `.resx` quedó embebido con el nombre que espera el
+`ResourceManager` no se puede comprobar desde Core —el proyecto de pruebas
+es `net10.0` y la app `net10.0-windows` con WinUI, así que no se puede
+referenciar—, y se comprueba en el arnés, que es el único lugar que corre
+código de la app:
+
+```
+  app-strings.app-name     → Aura Studio
+  una clave que no existe  → ⟦no.existe⟧
+```
+
+Las reglas de plural se prueban desde Core reimplementando **la tabla**,
+que es lo que hay que acertar y lo único que un humano puede revisar
+leyendo. Si las dos se separaran, la prueba de claves lo delata: pediría
+formas que no existen en el archivo.
+
+**Lo que falta de B7a**, en el orden que fijó la Maestra: migrar lo no
+compartido (menús, tablas, diálogos, estado), y al final las cadenas
+compartidas con la clave definitiva de `claves-compartidas.csv`.
+
+## ST-247 — Windows: los textos salen del código (B7a, cierre)
+
+Cierre de B7a. La entrada de infraestructura, más arriba, dejó decidido de
+dónde salen los textos (`.resx` con `ResourceManager`, español como cultura
+neutra dentro del ensamblado, `AppStrings` como fachada de propiedades) y
+por qué. Esto es lo que faltaba: **mover las quinientas cincuenta cadenas**,
+en el orden que fijó la Maestra —infraestructura, lo no compartido, y las
+compartidas al final con el CSV—, sin que el español que ve el usuario
+cambie ni una letra.
+
+### Cómo se movieron, y por qué eso importa más que cuántas
+
+Ninguna frase se copió a mano. Cada cambio se hizo por **coincidencia exacta
+de texto** contra el archivo de recursos: si una frase no estaba ahí, no se
+tocó. Eso es lo que sostiene la promesa de que el español no cambia — no una
+revisión a ojo de quinientas frases, que es exactamente el trabajo donde una
+persona (o un modelo) se cansa a la mitad.
+
+Las excepciones son tres, y las tres están declaradas y comprobadas, no
+sueltas:
+
+1. **Comillas doblemente escapadas.** El borrador guardaba `&amp;quot;` donde
+   el usuario ve una comilla. Copiarlo al pie de la letra habría puesto
+   `&quot;Simon + Garfunkel&quot;` en pantalla, con las entidades a la vista.
+   Es el único caso donde ser fiel al borrador **cambiaba** lo que el usuario
+   lee. La prueba comprueba que el recurso sea exactamente el borrador
+   desescapado.
+2. **Una clave duplicada de más.** El borrador traía "Marcar como favorito"
+   tres veces y el código tiene dos sitios. Se quitó la tercera, y la prueba
+   exige que su texto siga dicho desde otra clave: si no, no era un duplicado
+   sino una frase perdida.
+3. **`orphans-confirm-message`**, abajo.
+
+### Los plurales: el número va DENTRO de la frase
+
+Los cincuenta y un `count == 1 ? "…" : "…"` no eran condiciones: eran la
+regla del plural del español escrita a mano, cincuenta y una veces. Salen a
+`Strings.Plural`, que elige la forma según la cultura activa.
+
+Dos detalles que no son obvios y que costaría caro descubrir tarde:
+
+- **La forma `.one` lleva el hueco `{0}`, no un "1" escrito.** En ruso `.one`
+  también le toca al 21 y al 101; un "1" fijo diría "21 archivo" en la mitad
+  de los casos.
+- **El sustantivo nunca va suelto.** `LibraryStats.Count(n, "álbum",
+  "álbumes")` recibía dos sustantivos y los pegaba al número por fuera, en
+  treinta sitios. Eso no se puede traducir: en ruso la concordancia depende
+  del número *y* del caso, en árabe hay seis formas, y en varios idiomas el
+  número ni siquiera va delante — quien traduce recibe media frase y ningún
+  lugar donde acomodar la otra mitad. Ahora recibe una clave de plural.
+  (Lección de A7a en la Mac, aplicada acá antes de que costara lo mismo.)
+
+Apareció `Strings.PluralCount` al lado de `Strings.Plural` porque **no son lo
+mismo en todos lados**: la barra de estado dice "1,234 canciones" con
+separador de miles y un mensaje de operación dice "1234 archivos copiados".
+Ya había una prueba que fijaba ese separador; unificarlos habría cambiado lo
+que el usuario lee en uno de los dos.
+
+Y **un solo texto por cosa contada**: "3 canciones" tenía su propio ternario
+en cinco archivos. Ahora sale de `conteo.canciones` y se traduce una vez.
+Igual con álbumes, fotos, videos, episodios, películas, series, temporadas,
+artistas, videoclips, seleccionados y días.
+
+Tres cosas que **parecían** plurales y no lo son, y quedaron como dos claves
+cada una: "Sin temporada" / "Temporada 3", las dos ramas de la biblioteca
+ausente, y el título del selector de tapas ("Álbum 2 de 5 · tapas de X" no es
+el plural de "Tapas de X": una habla de una tanda y la otra no). Las elige un
+centinela o una condición de flujo, no una cantidad.
+
+Una que **sí** lo es y **no** se arregló: `installer-copied-files` dice
+"1 archivos escritos en el iPod" con uno solo. Arreglarlo es cambiar lo que
+el usuario lee, y B7a mueve, no redacta. Queda anotado como defecto aparte.
+
+### El XAML
+
+Los ciento cuarenta y ocho literales de las vistas pasan a un enlace a
+función (`x:Bind` sobre `Strings.Get` con la clave literal), que el generador
+de WinUI resuelve en compilación a una llamada estática — se comprobó en el
+`.g.cs` generado, no se supuso. Las vistas no cambian de forma y la clave se
+lee al lado del control. El prefijo de espacio de nombres es `str` porque
+`res` ya estaba tomado por `AuraStudio.App.Resources`.
+
+**Nueve textos que el extractor no cubría**: `AutomationProperties.Name`,
+`ToolTipService.ToolTip` y `PlaceholderText`. Un nombre de lector de pantalla
+en español dentro de una app en alemán es exactamente el defecto que B7b
+viene a evitar, y son nueve, así que entraron.
+
+### La categoría de un video es dato, no texto de pantalla
+
+Lección de A7a. La app de macOS guardaba en `item.Category` el nombre en el
+idioma activo. Con un solo idioma no se nota; con seis, el mismo video queda
+como "Series" en una máquina y "Serien" en otra, el catálogo que viaja entre
+las dos deja de coincidir consigo mismo, la agrupación parte una categoría en
+dos y el firmware arma los índices con lo que le llegue. Es de los defectos
+que no se ven hasta que hay dos máquinas, y para entonces el dato ya está
+escrito en el disco del usuario.
+
+`MediaCategoryNames` ahora dice cuál es cuál por su nombre: `CatalogName()`
+es el dato (español siempre, lo que se guarda y lo que se compara — antes se
+llamaba `DisplayName`, que era justamente la confusión), `LegacyEnglishName()`
+es lo que escribía la app de macOS cuando guardaba en inglés (se reconoce al
+leer, nunca se escribe), y `LocalizedName()` es la etiqueta. El menú de
+categoría ya llevaba el dato en su identificador, así que lo único que cambió
+es que la etiqueta sale del recurso.
+
+Lo que el usuario escribió —el nombre de su colección de fotos (D-228)—
+vuelve tal cual: es un dato suyo, no texto de la app. Ajustes lo dice de
+frente, con una línea nueva.
+
+### Las claves compartidas con la Mac
+
+El CSV es la **autoridad del renombre**: la herramienta del mecánico sigue
+emitiendo nombres de Windows y el paréntesis de la columna "sitio Windows"
+declara el mapeo. Veintidós claves toman el nombre que declara el CSV — diez
+"igual" (mismo concepto, mismo texto, ahora el mismo nombre, y se traducen
+una sola vez para las dos apps) y doce "clave distinta" (mismo concepto, el
+texto un poco diferente en cada plataforma; el nombre se alinea para que
+quien traduzca vea que son la misma cosa).
+
+`orphans-confirm-message` se arma con **dos** recursos, no con uno (decisión
+de la Maestra). La Mac dice esa oración tal cual; Windows le antepone el
+conteo, que es otra oración con su propio número. Mientras el hueco vivía
+dentro de la clave compartida, el texto no era idéntico al de la Mac y no se
+podía compartir de verdad — parecía una excepción cuando en realidad eran dos
+frases pegadas.
+
+### Las pruebas, que son la mitad del trabajo
+
+- **`SpanishUnchangedTests`** dejó de ser una igualdad plana. A una clave le
+  pueden pasar tres cosas y las tres se comprueban: queda igual, se renombra
+  (declarado, con el texto intacto), o es nueva (declarada **una por una** —
+  no un patrón, no un prefijo — porque una clave nueva es texto que nadie
+  comparó contra nada, y la lista es lo que obliga a mirarla).
+- **`PluralFormsTests`**: toda forma de plural lleva su número adentro, con
+  tres excepciones declaradas donde la frase nunca lo dijo; toda clave con
+  formas tiene `.other`, que es el respaldo; y ninguna existe a la vez con
+  formas y suelta.
+- **`HardcodedSpanishTests`**: cero texto en español en las vistas y en la
+  fachada. Fuera de eso queda una parte del programa que B7a no alcanzó
+  —mensajes de excepción, de registro y errores de plataforma—, y ahí lo que
+  se comprueba es que **no crezca**: hay un tope de 392, que no es una meta
+  cumplida sino una puerta cerrada mientras se decide qué hacer con eso
+  (candidato natural a B7c).
+- **`MediaCategoryDataTests`**: la que de verdad sostiene el contrato de la
+  categoría no es la que mira el valor. Sin los satélites de B7b, pedir el
+  texto en inglés devuelve el español y esa prueba pasaría igual con el
+  código mal escrito. La que sirve mira el **código** y falla si aparece un
+  `Category` que se asigna o se compara contra `LocalizedName`.
+- **La cultura se fija** en `es-MX` en las pruebas de Core (inicializador de
+  módulo) y en `CopyModeCheck`. Antes daba igual porque todo estaba clavado
+  al español; ahora una máquina configurada en inglés haría fallar pruebas
+  que comparan texto, y el fallo diría "esperaba 'canciones', obtuve 'songs'",
+  que parece un defecto y no lo es. Una prueba que depende de cómo está
+  configurada la máquina no es una prueba, es una encuesta.
+
+### Lo que esta ronda enseñó sobre las pruebas
+
+Dos veces, en B7a, una prueba dio confianza falsa y las dos veces por el
+mismo motivo: **calculaba lo esperado con la misma lógica que el código que
+vigilaba**. La primera reunía fragmentos con el mismo criterio que la
+migración, y por eso no vio que cuatro de esos pares no eran fragmentos sino
+las dos ramas de un ternario, o sea dos mensajes distintos pegados. La
+segunda fue una heurística para distinguir un fragmento de una rama: cazaba
+dos de los cuatro y marcaba diez párrafos legítimos, así que se borró en vez
+de dejarla dando una señal que nadie iba a poder creer. Una prueba que
+reimplementa el defecto no puede detectarlo, y una que acierta a medias es
+peor que ninguna.
+
+Lo que quedó en su lugar es igualdad más **listas declaradas**: datos que un
+humano puede leer, no lógica que puede equivocarse igual que lo que vigila.
+
+### Lo que queda
+
+- La prueba `LocalizationDraftTests` del mecánico sigue en rojo, igual que en
+  `origin/main`: lee el borrador `.resw`, que es suyo, y su criterio nuevo
+  —aceptar el paréntesis como mapeo— está en su rama sin fusionar. No se toca
+  desde acá.
+- `installer-family-change` vuelve a sincronizarse cuando llegue el reuso de
+  índice de huecos de la herramienta (`{2}` → `{0}` en la segunda aparición).
+- **B7b**: los satélites (en, ja, de, ru, fr), el selector de idioma que fija
+  la cultura antes de crear las vistas, `SatelliteResourceLanguages` en el
+  csproj de **Core** (no en el de App: los recursos viven ahí), y el
+  instalador tiene que llevar las carpetas de cultura. El CSV ya trae la
+  columna "texto en" con el inglés de las filas de la Mac: se toma de ahí sin
+  traducir dos veces, y el inglés de las filas "solo Windows" lo escribe
+  Windows en esa misma columna.
+
+## ST-247 (addendum) — B7a: los seis encargos que llegaron con la PARADA del mecánico
+
+Seis cosas pedidas sobre B7a ya cerrado, más una que apareció al rebasar.
+
+**1. Las seis formas "plurales" sin hueco adentro** ya estaban arregladas antes
+de que llegara el encargo, y por el mismo motivo que las encontró el mecánico:
+`ArtistsViewModel.cs:251/252/253` y `LibraryGrouping.cs:41` (`artista`,
+`álbum`, `canción` ×2) y `LibraryStatusSummary.cs:93` (`día`) eran piezas
+sueltas que el código pegaba al número por fuera, y salen a `conteo.artistas`,
+`conteo.albumes`, `conteo.canciones` y `conteo.dias`, con el `{0}` dentro de la
+frase. La sexta, `ContextMenu.cs:210`, es la que él mismo dice que no es un
+plural de verdad: dos etiquetas de menú sin número. Esa queda como forma de
+plural —el ruso y el árabe también eligen bien por ahí— y está declarada en
+`PluralFormsTests.WithoutNumber` con su razón.
+
+**2. `installer-family-change`** vuelve al `{0}` repetido, y el llamador pasa
+`installed` una sola vez. Reusar el índice para la misma expresión es lo normal
+en `string.Format` y además le dice a quien traduce que ese hueco es el mismo
+que el primero.
+
+**3. Los patrones nuevos del extractor** (517 sitios) traen dieciséis sitios más.
+Once de XAML —`AutomationProperties.Name` y `ToolTipService.ToolTip`— ya
+estaban migrados: los había encontrado el detector de esta rama antes de que
+el extractor los cubriera, y lo único que cambió ahora es que ocho toman el
+nombre que emite la herramienta en vez del que yo les había puesto, y salen de
+la lista de "claves nuevas" para compararse contra el borrador como cualquier
+otra. Uno queda declarado como nuevo porque su extractor todavía no lo ve. Los
+cinco de C# —`DeviceSafetyValidator`, por el ayudante propio
+`DeviceSafetyResult.Safe`/`Unsafe`— se migraron ahora, incluido el ternario de
+dos mensajes, que son dos claves porque son dos mensajes.
+
+Un detalle que la herramienta vio y yo no: el `AutomationProperties.Name` de la
+caja de búsqueda de Artistas dice lo mismo que su `PlaceholderText`, y yo había
+reusado la clave. Son **dos sitios**: el mismo texto hoy, no necesariamente
+mañana, y quien traduce tiene que poder decidirlo por separado.
+
+**4. Las categorías de video** ya están como dato aparte del texto —es la
+entrada anterior—, y ninguna de las seis filas "Dato, no traducir" del
+`revision.csv` se migró: `CatalogName()` es el literal español que se guarda y
+se compara, y `LocalizedName()` es un mapeo aparte que solo se muestra.
+
+**5. `orphans-confirm-message`: la composición está hecha, y el `Skip` se
+queda.** Y el motivo cambió, que es lo que importa: ya no espera trabajo del
+Experto. La prueba lee el **borrador** `.resw`, que es la foto del código de
+*antes* de B7a, y ahí esa clave todavía tiene el `{0} ` adelante. Para que
+calce habría que regenerar el borrador — y eso ya no se puede: con las
+quinientas cincuenta cadenas fuera del código el extractor no encontraría casi
+nada y la foto quedaría vacía, y esa foto es contra lo que
+`SpanishUnchangedTests` comprueba que el español no cambió ni una letra.
+Regenerarla sería tirar la única prueba de eso.
+
+O sea que **la premisa de esa prueba se vence al terminar B7a**: comparaba el
+CSV contra un borrador que era el mejor retrato disponible del texto de
+Windows, y desde ahora el retrato de verdad es `Resources.resx`, donde la fila
+calza hoy. Es decisión de quien es dueño del borrador, no mía, así que el
+`Skip` queda con el nudo escrito adentro en vez de una prueba roja o un
+arreglo unilateral en un archivo ajeno.
+
+**6. Una línea que se corrió.** `DeleteEntryPointsTests` cita
+`SimilarItemsViewModel.cs:119` como hallazgo conocido, y sacar el ternario de
+plural a recurso lo movió a la 120. Es la cita, no el hallazgo: actualizada,
+con la nota de por qué se movió.
+
+### Verificación
+
+`dotnet build AuraStudio.Windows.slnx`: 0 errores. `dotnet test`: **1 810 en
+verde, 1 omitida** (la de arriba, con su motivo a la vista), ninguna en rojo.
+`dotnet test tests/ExtraerCadenasWindows.Tests`: 14 en verde. El tope de texto
+fuera de alcance baja de 396 a 392 al migrar `DeviceSafetyValidator`; es un
+trinquete, así que se baja cuando baja.
+
+### Siete archivos accidentales, y por qué ninguna prueba los vio
+
+Al cerrar B7a entraron al commit del grupo 2 **siete archivos con nombres
+absurdos** en la raíz de `studio/windows/` — trozos de frases en español, con
+líneas de código adentro: `"indows releyó la tabla de particionesp"`,
+`"AV y AIFF sí se convierten, a ALAC, … Tu p"`, y cinco más. Se quitaron.
+
+La causa es fea y vale escribirla entera: un bucle que clasificaba los
+literales que quedaban hacía `sed -n "${l}p" "$f"` con `$l` sacado de partir
+una línea por `:`. Cuando la ruta traía dos puntos, el corte salió mal y `$l`
+dejó de ser un número para ser **texto de la app**; `sed` lo leyó como guion, y
+donde ese texto traía una `w` la tomó como su comando de escribir y guardó el
+resto de la frase como nombre de archivo. De ahí que los nombres empiecen a
+media palabra —"indows…", "ithoutStorage}…"— y terminen en `p`.
+
+El error de programación es pasar texto sin comillas a algo que lo interpreta,
+y eso se arregla escribiendo mejor. Pero la lección que sobrevive es otra:
+**nadie miró la lista de archivos del commit**. `git add` sobre un directorio
+no distingue lo que uno escribió de lo que una herramienta dejó tirado, y con
+setenta archivos cambiados esa lista no la va a leer nadie la próxima vez
+tampoco.
+
+Así que la lee una prueba (`RepositoryLayoutTests`): la raíz de
+`studio/windows/` tiene lo que declara una **lista explícita** y nada más.
+Explícita a propósito — un patrón ("nada con espacios", "nada sin extensión")
+habría dejado pasar seis de los siete y encima habría dado la sensación de
+estar cubierto. Agregar algo legítimo a la raíz es un renglón, y ese renglón es
+justamente la revisión que faltó. Comprobado que falla con uno de los nombres
+de verdad y pasa con el árbol limpio; y verificado que ninguno de los siete se
+coló en un `.csproj` ni en el `.slnx`.
+
+## ST-247 (addendum, cierre de B7a) — Windows: el borrador queda congelado, las pruebas de estado actual pasan a `Resources.resx`
+
+Encargo del coordinador, para cuando B7a llegara a `origin`. Con las
+cadenas ya movidas a `AuraStudio.Core/Strings/Resources.resx`,
+`tools/ExtraerCadenasWindows` no tiene nada que extraer de la app: correrlo
+ahora dejaría `docs/extraccion-cadenas/` vacío en vez de "al día", borrando
+la única foto de cómo era el texto ANTES de moverlo -- la foto contra la
+que se comprueba que el español no cambió ni una letra al migrar.
+
+**Congelado**: nota en `README.md` de la carpeta explicando por qué no se
+regenera. `Program.cs` ahora se detiene solo si `AuraStudio.Core/Strings/Resources.resx`
+ya existe -- avisa y no toca nada, en vez de sobrescribir en silencio;
+`--force` es la única forma de seguir de todos modos.
+
+**Pruebas redirigidas al recurso real** (`Resources.resx`, no el borrador):
+`TodaClaveCompartidaExisteEnResourcesResx` reemplaza a
+`TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows` -- ahora también
+cubre "clave distinta" (antes solo "igual"), y compara el texto completo
+contra "texto es" siempre que el estado sea "igual" (antes la comparación
+de texto solo pasaba por el camino del paréntesis; ahora aplica incluso
+cuando la clave del CSV calza tal cual, para que un nombre coincidente por
+casualidad no tape un texto que cambió). `orphans-confirm-message` deja de
+ser un caso aparte: B7a la compuso de verdad
+(`app-strings.orphans-found.{one,other}` + `orphans-confirm-message`
+idéntico a la Mac) y pasa por el camino normal -- **el `Skip` sale**, tal
+como pedía el encargo. `NingunaClaveEstaVaciaEnResourcesResx`/
+`NingunValorEstaVacioEnResourcesResx` y
+`TodaFormaPluralEnResourcesResxTraeUnHuecoAdentroSalvoExcepcionesConocidas`
+(esta última con tres excepciones reales, verificadas a mano: el par
+"Quitar foto(s) del/de los artista(s)" no es un plural de cantidad, y la
+forma `.one` de "Buscando carátula…" no necesita decir "1") hacen lo mismo
+que sus análogas históricas, contra el recurso real.
+
+Las pruebas que documentan la foto histórica (unicidad de claves, sin
+letras sueltas, frases no cortadas, huecos sin duplicar, plurales del CSV)
+se quedan tal cual, contra `docs/extraccion-cadenas/` -- el archivo de la
+clase ahora dice explícitamente cuáles son cuáles.
+
+### Verificación
+
+Corrido a propósito SOLO contra proyectos sin referencia a `AuraStudio.App`
+(el coordinador estaba compilando el instalador en la misma VM):
+`dotnet test tests/AuraStudio.Core.Tests`: **1 816 en verde, 0 omitidas**
+(el `Skip` ya no existe). `dotnet test tests/ExtraerCadenasWindows.Tests`:
+**14 en verde**, sin cambio. Probado a mano que `dotnet run --project
+tools/ExtraerCadenasWindows` (sin `--force`) se detiene con el aviso y no
+toca ningún archivo de `docs/extraccion-cadenas/` -- confirmado con `git
+status` antes y después.
+
+## ST-245 (addendum) — Windows: "Conservar solo este" pasa por la misma confirmación que todo lo demás
+
+La pantalla de Similares era la única que eliminaba **sin preguntar**.
+`KeepOnly_Click` resolvía el `Guid` del botón y llamaba derecho al ViewModel,
+que hacía `_library.Remove(doomed)`. Y desde B5 eso no es "quitar del
+catálogo": en modo copia los archivos se van a la Papelera de reciclaje. El
+botón dice "Conservar solo este" y no menciona en ningún lado que a los otros
+dos del grupo se los lleve la Papelera.
+
+Peor era el aviso de después: *"Se quitaron 2 elementos de la biblioteca. Los
+archivos siguen en tu computadora."* Cierto en modo referencia, **falso** en
+modo copia. Un mensaje que tranquiliza sobre algo que no pasó es peor que no
+decir nada: el usuario deja de buscar el archivo justo cuando todavía podría
+recuperarlo de la Papelera.
+
+### El arreglo es enrutar, no escribir
+
+`KeepOnly_Click` pasa por `DeleteConfirmation.ConfirmAndRemoveAsync`, el mismo
+camino que Canciones, la cuadrícula y Artistas. Ese diálogo ya hacía todo lo
+que hacía falta y nadie tuvo que redactar nada: `PreviewRemoval` da el conteo y
+el tamaño, y `DeleteConfirmMessage` **ya dice la verdad por modo** —los que van
+a la Papelera con sus bytes, los que solo salen del catálogo con su original
+intacto—, incluso mezclados en un mismo lote, que es exactamente lo que puede
+traer un grupo de parecidos. El texto veraz no había que inventarlo: había que
+dejar de esquivarlo.
+
+`KeepOnly` se partió en dos: `IdsToRemoveKeeping` dice **quiénes se van** y no
+elimina, y `ConfirmKeptOnly` hace lo que queda cuando el usuario ya confirmó
+—olvidar el grupo y avisar—. Eliminar se lo lleva el camino compartido.
+
+### El diálogo compartido no se toca, y el aviso posterior pierde una oración
+
+Se evaluó si el diálogo debía decir que **se conserva uno**. No: el botón ya lo
+dijo, el diálogo dice qué se va, y el conteo es comprobable contra el grupo que
+el usuario tiene delante. Meter esa frase en un diálogo que usan cuatro
+pantallas la haría falsa en las otras tres, que es justo lo que ese archivo
+existe para evitar.
+
+Y el aviso posterior queda en *"Se quitaron {0} elementos de la biblioteca."*,
+cierto en los dos modos. **Se borró la segunda oración en vez de reemplazarla
+por una versión por modo**, y la razón no es economía: el usuario acaba de leer
+y confirmar un diálogo que le dijo adónde iban esos archivos y cuánto pesaban.
+Repetirlo en la barra de estado no agrega nada, y el dato veraz llega donde
+sirve —**antes** de la acción, no después, cuando ya no puede hacer nada con
+él—. La única razón por la que esa oración existía era tranquilizar sobre algo
+que resultó no ser verdad.
+
+### Las pruebas
+
+La línea de `KnownUnconfirmedBypasses` se **borró**, que es lo que corresponde
+cuando el hallazgo se arregla: una excepción que ya no aplica esconde el estado
+real igual que un bypass sin documentar, y la prueba hermana obliga a venir a
+borrarla.
+
+Y se agregó la afirmación que faltaba. Las dos pruebas que había son negativas
+—"nadie elimina por fuera del diálogo"—, y una afirmación negativa se cumple
+sola si alguien borra la funcionalidad o si una pantalla elimina por un camino
+que el escaneo no reconoce. `CadaPantallaQueEliminaLlamaAlDialogoDeConfirmacion`
+comprueba lo positivo: las cuatro pantallas que ofrecen eliminar **llaman** al
+diálogo. Es la que se habría puesto roja el día que Similares se lo saltó.
+Verificado que falla de verdad: quitando la llamada de `SimilarItemsPage`, se
+pone en rojo nombrando esa pantalla; restaurada, verde.
+
+Un comentario que también se corrigió, porque era la creencia que causó todo:
+la clase `SimilarItemsPage` decía que quitar de la biblioteca "ni siquiera
+borra archivos — se dice en el aviso que queda después, no en un diálogo que se
+despacha sin leer". Era verdad cuando se escribió y dejó de serlo en B5, y
+nadie volvió a leerlo.
+
+### Verificación
+
+`dotnet build AuraStudio.Windows.slnx`: 0 errores. `dotnet test`: **1 820 en
+verde, ninguna omitida, ninguna en rojo**.

@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:res="using:AuraStudio.App.Resources"
     xmlns:conv="using:AuraStudio.App.Converters"
+    xmlns:str="using:AuraStudio.Core.Resources"
     Background="Transparent">
 
     <Page.Resources>
@@ -160,18 +161,18 @@
                      Margin="24,12,24,0"
                      IsOpen="{x:Bind ViewModel.Updates.IsAnnouncing, Mode=TwoWay}"
                      Severity="Informational"
-                     Title="Actualización de Aura Studio"
+                     Title="{x:Bind str:Strings.Get('settings-section-view.actualizaciones-aura-studio')}"
                      Message="{x:Bind ViewModel.Updates.AnnouncementMessage, Mode=OneWay}"
                      CloseButtonClick="AppUpdate_Dismissed">
                 <InfoBar.ActionButton>
-                    <Button Content="Descargar" Click="AppUpdateDownload_Click"
+                    <Button Content="{x:Bind str:Strings.Get('shell-page.descargar')}" Click="AppUpdateDownload_Click"
                             Visibility="{x:Bind ViewModel.Updates.CanDownload, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
                             IsEnabled="{x:Bind ViewModel.Updates.IsDownloading, Mode=OneWay, Converter={StaticResource InvertBool}}" />
                 </InfoBar.ActionButton>
 
                 <!-- Las notas viven en la página del Release y no se duplican
                      dentro de la app: ya están escritas y mantenidas ahí. -->
-                <HyperlinkButton Content="Ver qué hay de nuevo" Click="AppUpdateNotes_Click"
+                <HyperlinkButton Content="{x:Bind str:Strings.Get('shell-page.ver-hay-nuevo')}" Click="AppUpdateNotes_Click"
                                  Margin="0,0,0,8" />
             </InfoBar>
 
@@ -187,10 +188,10 @@
                      IsOpen="{x:Bind ViewModel.Library.NeedsMigration, Mode=OneWay}"
                      IsClosable="False"
                      Severity="Informational"
-                     Title="Esta biblioteca viene de una versión anterior"
+                     Title="{x:Bind str:Strings.Get('shell-page.esta-biblioteca-viene-version-anterior')}"
                      Message="{x:Bind ViewModel.Library.MigrationMessage, Mode=OneWay}">
                 <InfoBar.ActionButton>
-                    <Button Content="Migrar biblioteca"
+                    <Button Content="{x:Bind str:Strings.Get('shell-page.migrar-biblioteca')}"
                             Command="{x:Bind ViewModel.Library.MigrateLibraryCommand}" />
                 </InfoBar.ActionButton>
             </InfoBar>

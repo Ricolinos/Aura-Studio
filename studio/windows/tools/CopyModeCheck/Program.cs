@@ -12,6 +12,13 @@ using AuraStudio.Tools.CopyModeCheck;
 //
 // El fixture se sintetiza acá: nada sale de la biblioteca del dueño.
 
+// ST-247: la cultura se fija a propósito. Los textos salen de recursos por
+// CurrentUICulture y los números y fechas por CurrentCulture; sin esto, en
+// cuanto existan los satélites de B7b este arnés imprimiría en el idioma de la
+// máquina y sus números medidos cambiarían de separador, que es justo lo que no
+// se quiere de una medición.
+System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("es-MX");
+System.Globalization.CultureInfo.CurrentUICulture = System.Globalization.CultureInfo.CurrentCulture;
 string root = Path.Combine(Path.GetTempPath(), "AuraCopyMode-" + Guid.NewGuid().ToString("N"));
 string incoming = Path.Combine(root, "entrada");
 string library = Path.Combine(root, "biblioteca");
@@ -19,6 +26,19 @@ string library = Path.Combine(root, "biblioteca");
 Directory.CreateDirectory(library);
 
 Console.WriteLine($"Raíz del arnés: {root}");
+Console.WriteLine();
+
+// --- 0. Los textos salen del archivo de recursos -------------------------
+//
+// ST-247: que el `.resx` quedó embebido con el nombre que espera el
+// `ResourceManager` no se puede comprobar con una prueba de Core —el proyecto
+// de pruebas no puede referenciar la app de WinUI—, así que se comprueba acá,
+// que es el único lugar que corre código de la app. Si esto imprimiera
+// ⟦clave⟧ en la primera línea, la app abriría con los textos rotos.
+
+Console.WriteLine("--- Textos desde recursos ---");
+Console.WriteLine($"  app-strings.app-name     → {AuraStudio.Core.Resources.Strings.Get("app-strings.app-name")}");
+Console.WriteLine($"  una clave que no existe  → {AuraStudio.Core.Resources.Strings.Get("no.existe")}");
 Console.WriteLine();
 
 // --- El fixture ---------------------------------------------------------
@@ -556,5 +576,7 @@ LibraryMigrationSummary again = await LibraryMigrator.RunAsync(
 Console.WriteLine($"  Segunda corrida: {again.Touched} archivos tocados "
                   + $"(árbol idéntico: {TreeOf(oldLibrary) == treeAfterFirst})");
 Console.WriteLine();
+
+await PreparedAbsentChecks.RunAsync(root);
 
 Console.WriteLine($"Listo. Para borrar todo: rmdir /s /q \"{root}\"");

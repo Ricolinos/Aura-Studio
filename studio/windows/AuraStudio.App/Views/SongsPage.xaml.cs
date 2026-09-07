@@ -1,3 +1,4 @@
+using AuraStudio.Core.Resources;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -538,7 +539,7 @@ public sealed partial class SongsPage : Page
         var dialog = new ContentDialog
         {
             XamlRoot = XamlRoot,
-            Title = "Cambiar nombre",
+            Title = Strings.Get("songs-page.xaml.cambiar-nombre"),
             Content = new StackPanel
             {
                 Spacing = 8,
@@ -553,8 +554,8 @@ public sealed partial class SongsPage : Page
                     }
                 }
             },
-            PrimaryButtonText = "Guardar",
-            CloseButtonText = "Cancelar",
+            PrimaryButtonText = Strings.Get("songs-page.xaml.guardar"),
+            CloseButtonText = Strings.Get("songs-page.xaml.cancelar"),
             DefaultButton = ContentDialogButton.Primary
         };
 

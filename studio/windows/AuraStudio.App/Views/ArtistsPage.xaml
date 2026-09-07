@@ -5,6 +5,7 @@
     xmlns:conv="using:AuraStudio.App.Converters"
     xmlns:controls="using:AuraStudio.App.Controls"
     xmlns:vm="using:AuraStudio.App.ViewModels"
+    xmlns:str="using:AuraStudio.Core.Resources"
     KeyDown="Page_KeyDown">
 
     <Page.Resources>
@@ -27,12 +28,12 @@
             <!-- ===================== Maestro ===================== -->
             <Grid RowDefinitions="Auto,*" Padding="12,10,12,0">
                 <Grid ColumnSpacing="8" ColumnDefinitions="*,Auto">
-                    <TextBox PlaceholderText="Buscar artistas"
+                    <TextBox PlaceholderText="{x:Bind str:Strings.Get('artists-page.buscar-artistas')}"
                              Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             AutomationProperties.Name="Buscar artistas" />
+                             AutomationProperties.Name="{x:Bind str:Strings.Get('artists-page.buscar-artistas-2')}" />
                     <Button Grid.Column="1" Click="FetchPhotos_Click"
                             IsEnabled="{x:Bind ViewModel.Library.IsEnriching, Mode=OneWay, Converter={StaticResource InvertBool}}"
-                            ToolTipService.ToolTip="Buscar las fotos de los artistas en línea (fanart.tv / Deezer)">
+                            ToolTipService.ToolTip="{x:Bind str:Strings.Get('artists-page.buscar-fotos-artistas-linea-fanart-tv')}">
                         <FontIcon Glyph="&#xE8D4;" FontSize="14" />
                     </Button>
                 </Grid>
@@ -42,7 +43,7 @@
                             Visibility="{x:Bind ViewModel.ShowsEmptyState, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
                     <FontIcon Glyph="&#xE720;" FontSize="32"
                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                    <TextBlock Text="Todavía no hay música en la biblioteca."
+                    <TextBlock Text="{x:Bind str:Strings.Get('artists-page.todavia-hay-musica-biblioteca')}"
                                Style="{StaticResource AuraSecondaryTextStyle}"
                                TextWrapping="Wrap" TextAlignment="Center" />
                 </StackPanel>
@@ -92,7 +93,7 @@
                             Visibility="{x:Bind ViewModel.ShowsEmptyDetail, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
                     <FontIcon Glyph="&#xE720;" FontSize="36"
                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                    <TextBlock Text="Elige un artista de la lista."
+                    <TextBlock Text="{x:Bind str:Strings.Get('artists-page.elige-artista-lista')}"
                                Style="{StaticResource AuraSecondaryTextStyle}" />
                 </StackPanel>
 
@@ -107,10 +108,10 @@
                                HorizontalAlignment="Center" />
                     <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
                         <Button Content="{x:Bind ViewModel.FavoriteButtonText, Mode=OneWay}" Click="BulkFavorite_Click" />
-                        <Button Content="Buscar información en línea" Click="BulkEnrich_Click" />
-                        <Button Content="Buscar fotos" Click="FetchPhotos_Click" />
-                        <Button Content="Mostrar en el Explorador" Click="BulkReveal_Click" />
-                        <Button Content="Eliminar" Click="BulkDelete_Click" />
+                        <Button Content="{x:Bind str:Strings.Get('artists-page.buscar-informacion-linea')}" Click="BulkEnrich_Click" />
+                        <Button Content="{x:Bind str:Strings.Get('artists-page.buscar-fotos')}" Click="FetchPhotos_Click" />
+                        <Button Content="{x:Bind str:Strings.Get('artists-page.mostrar-explorador')}" Click="BulkReveal_Click" />
+                        <Button Content="{x:Bind str:Strings.Get('artists-page.eliminar')}" Click="BulkDelete_Click" />
                     </StackPanel>
                 </StackPanel>
 
@@ -134,9 +135,9 @@
                                 <TextBlock x:Name="HeaderSummary"
                                            Style="{StaticResource AuraSecondaryTextStyle}" />
                                 <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
-                                    <Button Content="Buscar información en línea" Click="ArtistEnrich_Click" />
+                                    <Button Content="{x:Bind str:Strings.Get('artists-page.buscar-informacion-linea-2')}" Click="ArtistEnrich_Click" />
                                     <Button Click="ArtistMenu_Click"
-                                            ToolTipService.ToolTip="Más acciones">
+                                            ToolTipService.ToolTip="{x:Bind str:Strings.Get('artists-page.mas-acciones')}">
                                         <FontIcon Glyph="&#xE712;" FontSize="14" />
                                     </Button>
                                 </StackPanel>
@@ -173,7 +174,7 @@
 
                                             <Button Grid.Column="2" VerticalAlignment="Top"
                                                     Click="AlbumMenu_Click" Tag="{x:Bind Album.Id}"
-                                                    ToolTipService.ToolTip="Más acciones">
+                                                    ToolTipService.ToolTip="{x:Bind str:Strings.Get('artists-page.mas-acciones-2')}">
                                                 <FontIcon Glyph="&#xE712;" FontSize="14" />
                                             </Button>
                                         </Grid>

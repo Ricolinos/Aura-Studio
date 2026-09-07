@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using AuraStudio.Core.Resources;
 using AuraStudio.Core;
 using AuraStudio.Core.Installer;
 using AuraStudio.App.Resources;
@@ -127,7 +128,8 @@ public sealed partial class DeviceListViewModel : ViewModelBase
         string volume = device.VolumePath;
 
         IsCheckingUpdates = true;
-        StatusMessage = $"Buscando actualizaciones de {family.DisplayName}…";
+        StatusMessage = Strings.Format(
+            "device-list-view-model.buscando-actualizaciones-family-displayn", family.DisplayName);
 
         try
         {
@@ -152,7 +154,7 @@ public sealed partial class DeviceListViewModel : ViewModelBase
         catch (OperationCanceledException)
         {
             // Lo que había en pantalla sigue valiendo: cancelar no concluye nada.
-            StatusMessage = "Se detuvo la búsqueda de actualizaciones.";
+            StatusMessage = Strings.Get("device-list-view-model.se-detuvo-busqueda-actualizaciones");
         }
         finally
         {
@@ -369,7 +371,7 @@ public sealed partial class DeviceListViewModel : ViewModelBase
         // el resultado, no lo que escribió.
         DeviceName = saved.Name ?? "";
         CanEditDeviceName = DeviceNameStore.CanEdit(saved, _preferences.InstallationId);
-        StatusMessage = $"El iPod se llama \"{DeviceName}\".";
+        StatusMessage = Strings.Format("device-list-view-model.ipod-se-llama-devicename", DeviceName);
         OnPropertyChanged(nameof(DeviceNameExplanation));
     }
 

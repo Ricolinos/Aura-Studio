@@ -1,3 +1,4 @@
+using AuraStudio.Core.Resources;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -935,10 +936,10 @@ public sealed partial class MediaGridPage : Page
         var dialog = new ContentDialog
         {
             XamlRoot = XamlRoot,
-            Title = "Renombrar álbum",
+            Title = Strings.Get("media-grid-page.xaml.renombrar-album"),
             Content = box,
-            PrimaryButtonText = "Guardar",
-            CloseButtonText = "Cancelar",
+            PrimaryButtonText = Strings.Get("media-grid-page.xaml.guardar"),
+            CloseButtonText = Strings.Get("media-grid-page.xaml.cancelar"),
             DefaultButton = ContentDialogButton.Primary
         };
 

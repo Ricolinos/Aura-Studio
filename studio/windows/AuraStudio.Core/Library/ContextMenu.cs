@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Library;
 
 public enum MenuRole
@@ -109,16 +111,21 @@ public static class LibraryContextMenus
     // Windows dice "Explorador" donde macOS dice "Finder". Es la ÚNICA
     // excepción de texto del documento (§13.1), y está acá sola para que no se
     // convierta en licencia para reescribir el resto.
-    public const string Reveal = "Mostrar en el Explorador";
+    public static string Reveal => Strings.Get("context-menu.reveal");
 
-    private const string SearchOnline = "Buscar información en línea";
-    private const string SearchAlbumCovers = "Buscar carátulas del álbum...";
-    private const string SearchPoster = "Buscar póster en línea";
-    private const string ChangeCategory = "Cambiar categoría";
+    private static string SearchOnline => Strings.Get("context-menu.search-online");
+    private static string SearchAlbumCovers => Strings.Get("context-menu.search-album-covers");
+    private static string SearchPoster => Strings.Get("context-menu.search-poster");
+    private static string ChangeCategory => Strings.Get("context-menu.change-category");
 
-    private static MenuEntry Favorite(bool allFavorite, string removeText = "Quitar favorito") =>
+    // El texto de quitar llega por parámetro porque hay pantallas que lo
+    // dicen en plural; su valor por omisión ya no puede ser una constante,
+    // así que se resuelve adentro.
+    private static MenuEntry Favorite(bool allFavorite, string? removeText = null) =>
         new(allFavorite ? "favorite.remove" : "favorite.add",
-            allFavorite ? removeText : "Marcar como favorito");
+            allFavorite
+                ? removeText ?? Strings.Get("context-menu.quitar-favorito")
+                : Strings.Get("context-menu.marcar-como-favorito"));
 
     /// <summary>
     /// El ítem de buscar tapas, en singular o en plural según a cuántos álbumes
@@ -137,7 +144,7 @@ public static class LibraryContextMenus
         // "Sin álbum" no cuenta: no es un disco sino el cajón de lo que no tiene
         // uno, y no hay tapa que buscarle.
         if (scope.AlbumCount > 1)
-            return new MenuEntry("album.covers", $"Buscar carátulas de {scope.AlbumCount} álbumes...");
+            return new MenuEntry("album.covers", Strings.Format("context-menu.buscar-caratulas-scope-albumcount-albume", scope.AlbumCount));
 
         return null;
     }
@@ -150,7 +157,7 @@ public static class LibraryContextMenus
 
         if (scope.IsSingle)
         {
-            items.Add(new MenuEntry("open", "Abrir"));
+            items.Add(new MenuEntry("open", Strings.Get("context-menu.abrir")));
             items.Add(MenuEntry.Separator);
         }
 
@@ -172,14 +179,14 @@ public static class LibraryContextMenus
         {
             items.Add(new MenuEntry("album.cover.recommended",
                 scope.IsSingle
-                    ? "Aplicar carátula recomendada"
-                    : $"Aplicar carátula recomendada a {scope.Count} álbumes",
+                    ? Strings.Get("context-menu.aplicar-caratula-recomendada")
+                    : Strings.Format("context-menu.aplicar-caratula-recomendada-scope-count", scope.Count),
                 Enabled: !scope.ApplyingRecommendedCover));
         }
 
         items.Add(MenuEntry.Separator);
         items.Add(new MenuEntry("reveal", Reveal));
-        items.Add(new MenuEntry("delete", scope.IsSingle ? "Eliminar álbum" : "Eliminar álbumes",
+        items.Add(new MenuEntry("delete", scope.IsSingle ? Strings.Get("context-menu.eliminar-album") : Strings.Get("context-menu.eliminar-albumes"),
             Role: MenuRole.Destructive));
 
         return items;
@@ -198,7 +205,7 @@ public static class LibraryContextMenus
         if (canFetchPhotos)
         {
             items.Add(new MenuEntry("artist.photo",
-                scope.IsSingle ? "Buscar foto del artista" : "Buscar fotos de los artistas"));
+                scope.IsSingle ? Strings.Get("context-menu.buscar-foto-artista") : Strings.Get("context-menu.buscar-fotos-artistas")));
         }
 
         // R2-2: si ALGUNO de los alcanzados tiene foto. Antes se ofrecía solo
@@ -206,13 +213,20 @@ public static class LibraryContextMenus
         // cinco pasadas — y la acción tiene todo el sentido en plural.
         if (scope.HasArtistPhoto)
         {
+            // Cuántos tienen foto es opcional en el alcance: cero significa "no
+            // lo dijeron", no "ninguno" —el `if` de arriba ya garantiza que hay
+            // al menos uno—. Sin ese piso, el plural del español manda el cero
+            // a la forma de muchos y el menú diría "Quitar fotos de los
+            // artistas" con un solo artista.
+            int withPhoto = Math.Max(scope.ArtistsWithPhotoCount, 1);
+
             items.Add(new MenuEntry("artist.photo.remove",
-                scope.ArtistsWithPhotoCount > 1 ? "Quitar fotos de los artistas" : "Quitar foto del artista"));
+                Strings.Plural("context-menu.quitar-foto-artista", withPhoto)));
         }
 
         items.Add(MenuEntry.Separator);
         items.Add(new MenuEntry("reveal", Reveal));
-        items.Add(new MenuEntry("delete", scope.IsSingle ? "Eliminar artista" : "Eliminar artistas",
+        items.Add(new MenuEntry("delete", scope.IsSingle ? Strings.Get("context-menu.eliminar-artista") : Strings.Get("context-menu.eliminar-artistas"),
             Role: MenuRole.Destructive));
 
         return items;
@@ -223,9 +237,9 @@ public static class LibraryContextMenus
     /// <summary>Alcance: siempre esa sola canción — esta lista no tiene selección múltiple.</summary>
     public static IReadOnlyList<MenuEntry> ForArtistSong(bool isFavorite) =>
     [
-        new MenuEntry("info", "Más información..."),
+        new MenuEntry("info", Strings.Get("context-menu.mas-informacion")),
         new MenuEntry(isFavorite ? "favorite.remove" : "favorite.add",
-            isFavorite ? "Quitar de favoritos" : "Marcar como favorito"),
+            isFavorite ? Strings.Get("context-menu.quitar-favoritos") : Strings.Get("context-menu.marcar-como-favorito")),
         MenuEntry.Separator,
         new MenuEntry("reveal", Reveal)
     ];
@@ -233,10 +247,10 @@ public static class LibraryContextMenus
     // MARK: - 5 y 6. Películas y series
 
     public static IReadOnlyList<MenuEntry> ForMovies(MenuScope scope, IReadOnlyList<string> categories) =>
-        ForVideoCollection(scope, categories, "Eliminar película", "Eliminar películas");
+        ForVideoCollection(scope, categories, Strings.Get("context-menu.eliminar-pelicula"), Strings.Get("context-menu.eliminar-peliculas"));
 
     public static IReadOnlyList<MenuEntry> ForSeries(MenuScope scope, IReadOnlyList<string> categories) =>
-        ForVideoCollection(scope, categories, "Eliminar serie", "Eliminar series");
+        ForVideoCollection(scope, categories, Strings.Get("context-menu.eliminar-serie"), Strings.Get("context-menu.eliminar-series"));
 
     private static IReadOnlyList<MenuEntry> ForVideoCollection(
         MenuScope scope, IReadOnlyList<string> categories, string deleteOne, string deleteMany)
@@ -245,7 +259,7 @@ public static class LibraryContextMenus
 
         if (scope.IsSingle)
         {
-            items.Add(new MenuEntry("open", "Abrir"));
+            items.Add(new MenuEntry("open", Strings.Get("context-menu.abrir-2")));
             items.Add(MenuEntry.Separator);
         }
 
@@ -267,7 +281,7 @@ public static class LibraryContextMenus
 
         if (scope.IsSingle)
         {
-            items.Add(new MenuEntry("info", "Más información..."));
+            items.Add(new MenuEntry("info", Strings.Get("context-menu.mas-informacion-2")));
             items.Add(MenuEntry.Separator);
         }
 
@@ -275,7 +289,7 @@ public static class LibraryContextMenus
         items.Add(CategorySubmenu(categories));
         items.Add(MenuEntry.Separator);
         items.Add(new MenuEntry("reveal", Reveal));
-        items.Add(new MenuEntry("delete", scope.IsSingle ? "Eliminar episodio" : "Eliminar episodios",
+        items.Add(new MenuEntry("delete", scope.IsSingle ? Strings.Get("context-menu.eliminar-episodio") : Strings.Get("context-menu.eliminar-episodios"),
             Role: MenuRole.Destructive));
 
         return items;
@@ -290,7 +304,7 @@ public static class LibraryContextMenus
 
         if (scope.IsSingle)
         {
-            items.Add(new MenuEntry("open", "Abrir"));
+            items.Add(new MenuEntry("open", Strings.Get("context-menu.abrir-3")));
             items.Add(MenuEntry.Separator);
         }
 
@@ -302,9 +316,9 @@ public static class LibraryContextMenus
         {
             items.Add(MenuEntry.Separator);
 
-            if (scope.IsSingle) items.Add(new MenuEntry("album.rename", "Renombrar álbum..."));
+            if (scope.IsSingle) items.Add(new MenuEntry("album.rename", Strings.Get("context-menu.renombrar-album")));
 
-            items.Add(new MenuEntry("album.dissolve", scope.IsSingle ? "Disolver álbum" : "Disolver álbumes",
+            items.Add(new MenuEntry("album.dissolve", scope.IsSingle ? Strings.Get("context-menu.disolver-album") : Strings.Get("context-menu.disolver-albumes"),
                 Role: MenuRole.Destructive));
         }
 
@@ -313,7 +327,7 @@ public static class LibraryContextMenus
 
         // Sin variante en plural, a propósito: es la misma frase con una foto o
         // con doscientas.
-        items.Add(new MenuEntry("delete", "Eliminar fotos de la biblioteca", Role: MenuRole.Destructive));
+        items.Add(new MenuEntry("delete", Strings.Get("context-menu.eliminar-fotos-biblioteca"), Role: MenuRole.Destructive));
 
         return items;
     }
@@ -326,15 +340,15 @@ public static class LibraryContextMenus
 
         if (scope.IsSingle)
         {
-            items.Add(new MenuEntry("preview", "Vista previa"));
+            items.Add(new MenuEntry("preview", Strings.Get("context-menu.vista-previa")));
             items.Add(MenuEntry.Separator);
         }
 
         items.Add(CategorySubmenu(collections));
-        items.Add(new MenuEntry("photo.removeFromAlbum", "Quitar del álbum"));
+        items.Add(new MenuEntry("photo.removeFromAlbum", Strings.Get("context-menu.quitar-album")));
         items.Add(new MenuEntry("reveal", Reveal));
         items.Add(MenuEntry.Separator);
-        items.Add(new MenuEntry("delete", "Eliminar de la biblioteca", Role: MenuRole.Destructive));
+        items.Add(new MenuEntry("delete", Strings.Get("context-menu.eliminar-biblioteca"), Role: MenuRole.Destructive));
 
         return items;
     }
@@ -346,11 +360,12 @@ public static class LibraryContextMenus
     /// ninguno, y un menú con un solo ítem deshabilitado no es lo mismo.
     /// </summary>
     public static IReadOnlyList<MenuEntry> ForTheme(bool isDefaultTheme) =>
-        isDefaultTheme ? [] : [new MenuEntry("delete", "Eliminar", Role: MenuRole.Destructive)];
+        isDefaultTheme ? [] : [new MenuEntry("delete", Strings.Get("context-menu.eliminar"), Role: MenuRole.Destructive)];
 
     private static MenuEntry CategorySubmenu(IReadOnlyList<string> categories) =>
         MenuEntry.Sub("category", ChangeCategory,
-            [.. categories.Select(category => new MenuEntry("category:" + category, category))]);
+            [.. categories.Select(category =>
+                new MenuEntry("category:" + category, MediaCategoryNames.LocalizedNameOf(category)))]);
 }
 
 /// <summary>
@@ -402,36 +417,36 @@ public static class MediaTableContextMenu
     /// </summary>
     private static List<MenuEntry> MusicBlock(MenuScope scope)
     {
-        List<MenuEntry> items = [new MenuEntry("enrich", "Buscar información en línea")];
+        List<MenuEntry> items = [new MenuEntry("enrich", Strings.Get("context-menu.buscar-informacion-linea"))];
 
         // ST-104: si TODAS las alcanzadas son del MISMO álbum con título; desde
         // ST-206, también en plural cuando la selección toca varios discos.
         if (LibraryContextMenus.AlbumCovers(scope) is { } covers) items.Add(covers);
 
-        items.Add(new MenuEntry("lyrics", "Buscar letra"));
-        items.Add(new MenuEntry("retag", "Volver a leer etiquetas del archivo"));
+        items.Add(new MenuEntry("lyrics", Strings.Get("context-menu.buscar-letra")));
+        items.Add(new MenuEntry("retag", Strings.Get("context-menu.volver-leer-etiquetas-archivo")));
 
         // Visible siempre; deshabilitado si no hay ninguna carátula que quitar.
-        items.Add(new MenuEntry("cover.remove", "Eliminar carátula", Enabled: scope.HasCover));
+        items.Add(new MenuEntry("cover.remove", Strings.Get("context-menu.eliminar-caratula"), Enabled: scope.HasCover));
 
         items.Add(MenuEntry.Separator);
         items.Add(new MenuEntry(scope.AllFavorite ? "favorite.remove" : "favorite.add",
-            scope.AllFavorite ? "Quitar de favoritos" : "Marcar como favorito"));
+            scope.AllFavorite ? Strings.Get("context-menu.quitar-favoritos-2") : Strings.Get("context-menu.marcar-como-favorito-2")));
 
         if (!scope.HasAlbum && !scope.HasArtist) return items;
 
         items.Add(MenuEntry.Separator);
 
-        if (scope.HasAlbum) items.Add(new MenuEntry("select.album", "Seleccionar canciones del mismo álbum"));
-        if (scope.HasArtist) items.Add(new MenuEntry("select.artist", "Seleccionar canciones del mismo artista"));
+        if (scope.HasAlbum) items.Add(new MenuEntry("select.album", Strings.Get("context-menu.seleccionar-canciones-mismo-album")));
+        if (scope.HasArtist) items.Add(new MenuEntry("select.artist", Strings.Get("context-menu.seleccionar-canciones-mismo-artista")));
 
         return items;
     }
 
     private static List<MenuEntry> VideoBlock(MenuScope scope) =>
     [
-        new MenuEntry("poster", "Buscar póster en línea"),
-        new MenuEntry("poster.remove", "Quitar póster", Enabled: scope.HasPoster)
+        new MenuEntry("poster", Strings.Get("context-menu.buscar-poster-linea")),
+        new MenuEntry("poster.remove", Strings.Get("context-menu.quitar-poster"), Enabled: scope.HasPoster)
     ];
 
     /// <summary>
@@ -445,8 +460,9 @@ public static class MediaTableContextMenu
 
         return
         [
-            MenuEntry.Sub("category", "Cambiar categoría",
-                [.. categories.Select(category => new MenuEntry("category:" + category, category))])
+            MenuEntry.Sub("category", Strings.Get("context-menu.cambiar-categoria"),
+                [.. categories.Select(category =>
+                new MenuEntry("category:" + category, MediaCategoryNames.LocalizedNameOf(category)))])
         ];
     }
 
@@ -456,36 +472,36 @@ public static class MediaTableContextMenu
         {
             return
             [
-                new MenuEntry("rename", "Cambiar nombre..."),
-                new MenuEntry("info", "Más información...")
+                new MenuEntry("rename", Strings.Get("context-menu.cambiar-nombre")),
+                new MenuEntry("info", Strings.Get("context-menu.mas-informacion-3"))
             ];
         }
 
         // Edición en lote (D-218): solo tiene sentido con música y con más de un
         // elemento.
         return kind == LibraryItemKind.Music && scope.Count > 1
-            ? [new MenuEntry("info.batch", "Obtener información...")]
+            ? [new MenuEntry("info.batch", Strings.Get("context-menu.obtener-informacion"))]
             : [];
     }
 
     /// <summary>Sin un iPod con Aura no hay a dónde sincronizar: el ítem no aparece.</summary>
     private static List<MenuEntry> SyncBlock(MenuScope scope) =>
         scope.DeviceConnected
-            ? [new MenuEntry("sync.selection", "Sincronizar la selección", Enabled: scope.AnyReady)]
+            ? [new MenuEntry("sync.selection", Strings.Get("context-menu.sincronizar-seleccion"), Enabled: scope.AnyReady)]
             : [];
 
     private static List<MenuEntry> FinalBlock(MenuScope scope)
     {
         // "Eliminar" es visible siempre, deshabilitado con alcance vacío; el
         // resto del bloque necesita algo alcanzado.
-        if (scope.IsEmpty) return [new MenuEntry("delete", "Eliminar", Enabled: false, Role: MenuRole.Destructive)];
+        if (scope.IsEmpty) return [new MenuEntry("delete", Strings.Get("context-menu.eliminar-2"), Enabled: false, Role: MenuRole.Destructive)];
 
         return
         [
             new MenuEntry("reveal", LibraryContextMenus.Reveal),
-            new MenuEntry("similar", "Buscar elementos similares..."),
+            new MenuEntry("similar", Strings.Get("context-menu.buscar-elementos-similares")),
             MenuEntry.Separator,
-            new MenuEntry("delete", "Eliminar", Role: MenuRole.Destructive)
+            new MenuEntry("delete", Strings.Get("context-menu.eliminar-3"), Role: MenuRole.Destructive)
         ];
     }
 }
@@ -504,12 +520,12 @@ public static class SongsHeaderMenu
     public static IReadOnlyList<MenuEntry> Build(
         bool favoritesOnly, MusicSortField sortField, bool ascending) =>
     [
-        new MenuEntry("filter.all", "Todas las canciones", Checked: !favoritesOnly),
-        new MenuEntry("filter.favorites", "Solo favoritos", Checked: favoritesOnly),
+        new MenuEntry("filter.all", Strings.Get("context-menu.todas-canciones"), Checked: !favoritesOnly),
+        new MenuEntry("filter.favorites", Strings.Get("context-menu.solo-favoritos"), Checked: favoritesOnly),
         MenuEntry.Separator,
-        MenuEntry.Sub("sort", "Opciones para ordenar", SortItems(sortField, ascending)),
+        MenuEntry.Sub("sort", Strings.Get("context-menu.opciones-para-ordenar"), SortItems(sortField, ascending)),
         MenuEntry.Separator,
-        new MenuEntry("view.options", "Mostrar opciones de visualización")
+        new MenuEntry("view.options", Strings.Get("context-menu.mostrar-opciones-visualizacion"))
     ];
 
     private static IReadOnlyList<MenuEntry> SortItems(MusicSortField sortField, bool ascending)
@@ -521,8 +537,8 @@ public static class SongsHeaderMenu
         ];
 
         items.Add(MenuEntry.Separator);
-        items.Add(new MenuEntry("sort.ascending", "Ascendente", Checked: ascending));
-        items.Add(new MenuEntry("sort.descending", "Descendente", Checked: !ascending));
+        items.Add(new MenuEntry("sort.ascending", Strings.Get("context-menu.ascendente"), Checked: ascending));
+        items.Add(new MenuEntry("sort.descending", Strings.Get("context-menu.descendente"), Checked: !ascending));
 
         return items;
     }

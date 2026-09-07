@@ -20,4 +20,20 @@
     <PackageReference Include="TagLibSharp" Version="2.3.0" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <!-- ST-247: los textos de cara al usuario. Viven en Core y no en la app
+         porque Core también los produce —el resumen de lo que se arrastró, el
+         conteo de álbumes, la barra de estado— y no puede referenciar a la app.
+         Dejarlos allá habría condenado esas pantallas a un solo idioma.
+
+         Español como cultura NEUTRA, o sea compilado dentro del ensamblado: si
+         mañana falta el satélite de otro idioma, la app cae en español y nunca
+         en blanco. `.resx` y no `.resw` con el sistema de recursos de WinUI:
+         ver Resources\Strings.cs para el motivo completo. -->
+    <EmbeddedResource Update="Strings\Resources.resx">
+      <LogicalName>AuraStudio.Core.Strings.Resources.resources</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

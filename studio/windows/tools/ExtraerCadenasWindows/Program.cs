@@ -14,6 +14,24 @@ string windowsRoot = Path.Combine(repoRoot, "studio", "windows");
 string appDir = Path.Combine(windowsRoot, "AuraStudio.App");
 string coreDir = Path.Combine(windowsRoot, "AuraStudio.Core");
 string outDir = Path.Combine(windowsRoot, "docs", "extraccion-cadenas");
+
+// ST-247 (addendum, cierre de B7a): docs/extraccion-cadenas/ quedó
+// CONGELADO como foto de antes de B7a (ver README.md de la carpeta) en
+// cuanto el texto se movió de verdad a AuraStudio.Core/Strings/Resources.resx.
+// Si ese .resx ya existe, correr esta herramienta sin querer dejaría el
+// borrador vacío o casi vacío (ya no hay literales que extraer del
+// código) -- se detiene antes de tocar nada, en vez de sobrescribir en
+// silencio. `--force` es la única forma de seguir de todos modos.
+string coreResxPath = Path.Combine(coreDir, "Strings", "Resources.resx");
+if (File.Exists(coreResxPath) && !args.Contains("--force"))
+{
+    Console.WriteLine($"ATENCIÓN: {coreResxPath} ya existe -- B7a ya movió el texto ahí.");
+    Console.WriteLine($"{outDir} quedó congelado como foto de antes de B7a (ver su README.md): correr esto ahora");
+    Console.WriteLine("lo dejaría vacío o casi vacío, no un borrador útil. Nada se tocó.");
+    Console.WriteLine("Si de verdad hace falta regenerarlo, corré de nuevo con --force.");
+    return;
+}
+
 Directory.CreateDirectory(outDir);
 
 var keys = new KeyRegistry();

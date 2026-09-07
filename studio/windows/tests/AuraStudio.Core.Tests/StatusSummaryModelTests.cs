@@ -204,7 +204,7 @@ public class LibraryStatsTests
     [InlineData(2, "2 canciones")]
     [InlineData(12000, "12,000 canciones")]
     public void PluralizaYSeparaLosMiles(int value, string expected) =>
-        Assert.Equal(expected, LibraryStats.Count(value, "canción", "canciones"));
+        Assert.Equal(expected, LibraryStats.Count(value, "conteo.canciones"));
 
     [Theory]
     [InlineData(0, "")]
@@ -260,7 +260,7 @@ public class LibraryStatsTests
     {
         SourcePath = path,
         Kind = LibraryItemKind.Video,
-        Category = MediaCategory.Movies.DisplayName(),
+        Category = MediaCategory.Movies.CatalogName(),
         Metadata = new TrackMetadata { Title = title, DurationSeconds = seconds },
         FileSizeBytes = size
     };
@@ -270,7 +270,7 @@ public class LibraryStatsTests
     {
         SourcePath = path,
         Kind = LibraryItemKind.Video,
-        Category = MediaCategory.Series.DisplayName(),
+        Category = MediaCategory.Series.CatalogName(),
         SeriesName = series,
         Season = season,
         Episode = episode,

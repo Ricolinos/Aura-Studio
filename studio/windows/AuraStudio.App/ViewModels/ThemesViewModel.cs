@@ -1,3 +1,4 @@
+using AuraStudio.Core.Resources;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -174,7 +175,7 @@ public sealed partial class ThemesViewModel : ViewModelBase
         {
             await _themes.ActivateAsync(volume, row.Id);
             foreach (ThemeRow other in Themes) other.IsActive = other.Id == row.Id;
-            StatusMessage = $"\"{row.Name}\" se va a aplicar la próxima vez que enciendas el iPod.";
+            StatusMessage = Strings.Format("themes-view-model.row-name-se-va-aplicar-proxima", row.Name);
         });
     }
 
@@ -191,7 +192,7 @@ public sealed partial class ThemesViewModel : ViewModelBase
 
             if (await _themes.UninstallAsync(volume, row.Id))
             {
-                StatusMessage = $"Se quitó \"{row.Name}\" del iPod.";
+                StatusMessage = Strings.Format("themes-view-model.se-quito-row-name-ipod", row.Name);
                 await RefreshAsync();
             }
             else
@@ -209,7 +210,7 @@ public sealed partial class ThemesViewModel : ViewModelBase
         await RunAsync(async () =>
         {
             string path = await _themes.ExportAsync(volume, row.Id, destinationFolder);
-            StatusMessage = $"Se guardó la copia en {path}";
+            StatusMessage = Strings.Format("themes-view-model.se-guardo-copia-path", path);
         });
     }
 
@@ -237,7 +238,8 @@ public sealed partial class ThemesViewModel : ViewModelBase
 
             AuraThemeManifest installed = await _themes.BuildAndInstallAsync(volume, NewThemeSourceFolder, manifest);
 
-            StatusMessage = $"Se instaló \"{installed.Name}\". Actívalo para verlo en el iPod.";
+            StatusMessage = Strings.Format(
+                "themes-view-model.se-instalo-installed-name-activalo-para", installed.Name);
             NewThemeName = "";
             NewThemeSourceFolder = "";
 

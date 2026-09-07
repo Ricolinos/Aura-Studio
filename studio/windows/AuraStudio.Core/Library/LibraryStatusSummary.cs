@@ -1,4 +1,5 @@
 using System.Globalization;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.Core.Library;
 
@@ -63,16 +64,30 @@ public enum LibraryStatusSection
 public static class LibraryStats
 {
     /// <summary>
-    /// Los números se escriben en español de México pase lo que pase, aunque
-    /// Windows esté en otro idioma: es una regla del repo, no del sistema.
+    /// Los números se escriben con el formato de la cultura de la interfaz
+    /// (ST-247). Antes eran siempre los de español de México, aunque Windows
+    /// estuviera en otro idioma: con la app hablando dos idiomas eso deja de
+    /// ser una regla del repo y pasa a ser un número que el usuario lee mal —
+    /// "1.234" es mil doscientos treinta y cuatro en un idioma y uno coma algo
+    /// en otro.
+    ///
+    /// <para>Propiedad y no campo guardado: la cultura puede cambiar mientras
+    /// la app está abierta (el selector es B7b).</para>
     /// </summary>
-    private static readonly CultureInfo DisplayCulture = CultureInfo.GetCultureInfo("es-MX");
+    private static CultureInfo DisplayCulture => CultureInfo.CurrentCulture;
 
     public static string Formatted(int value) => value.ToString("N0", DisplayCulture);
 
-    /// <summary>"1 canción" / "3 canciones".</summary>
-    public static string Count(int value, string singular, string plural) =>
-        $"{Formatted(value)} {(value == 1 ? singular : plural)}";
+    /// <summary>
+    /// "1 canción" / "1,234 canciones", con el número escrito como lo escribe
+    /// la cultura activa.
+    ///
+    /// <para>Recibe una <b>clave</b> de plural, no un sustantivo en singular y
+    /// otro en plural (ST-247). Un sustantivo suelto que la app pega al número
+    /// por fuera es intraducible: en ruso la concordancia depende del número y
+    /// del caso, y en otros idiomas el número ni siquiera va delante.</para>
+    /// </summary>
+    public static string Count(int value, string key) => Strings.PluralCount(key, value);
 
     /// <summary>Une con el separador de la barra, saltando lo vacío.</summary>
     public static string Join(params string?[] parts) =>
@@ -90,7 +105,8 @@ public static class LibraryStats
         if (hours >= 24)
         {
             int days = hours / 24;
-            return $"{days} {(days == 1 ? "día" : "días")} {hours % 24} h";
+            return Strings.Format("library-status-summary.days-and-hours",
+                Strings.Plural("conteo.dias", days), hours % 24);
         }
 
         if (hours > 0) return $"{hours} h {minutes} min";

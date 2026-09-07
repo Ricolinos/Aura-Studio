@@ -1,70 +1,72 @@
+using System.Globalization;
 using AuraStudio.Core.Library;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App.Resources;
 
 /// <summary>
-/// Tabla de cadenas de cara al usuario, centralizada — equivalente de
-/// <c>AppStrings.swift</c> (macOS) y con el mismo criterio que la del firmware
-/// (`aura_lang.c`, D-013): una tabla chica y explícita en vez del mecanismo de
-/// recursos de la plataforma.
+/// Los textos de cara al usuario, uno por propiedad — equivalente de
+/// <c>AppStrings.swift</c> (macOS).
 ///
-/// **Por qué una clase estática y no `.resw`** (decisión de la Fase 1, ST-079):
-/// esta app tiene un solo idioma por regla del repo (español de México), así
-/// que lo que aporta MRT — resolución por idioma del sistema, `x:Uid` por
-/// elemento — no se usa, y a cambio cobra: sin verificación en tiempo de
-/// compilación (una clave mal escrita en un `x:Uid` falla en silencio, dejando
-/// el texto vacío en pantalla), un archivo XML aparte por cada string, y
-/// nombres de recurso acoplados a la propiedad del control
-/// (`MiBoton.Content`). Con una clase estática, cada cadena es una propiedad:
-/// el compilador atrapa el error, se puede componer con interpolación y se
-/// lee junto al código que la usa. Es además lo que ya hace la app de macOS,
-/// que decidió lo mismo frente a los `.strings` de Apple.
+/// <para><b>Qué era y qué es ahora.</b> Hasta ST-247 esta clase <i>era</i> la
+/// tabla: cada propiedad devolvía su literal en español. ST-079 lo había
+/// decidido así con tres argumentos, y el que dejó de valer es el tercero —
+/// "esta app tiene un solo idioma". La ronda "ajustes 3" trae los demás
+/// idiomas, y quinientas cadenas con un <c>if</c> por cadena no es una tabla,
+/// es un problema. Los textos se mudaron a un <c>.resx</c> en Core; el porqué
+/// de <c>.resx</c> y no <c>.resw</c> está en <see cref="Strings"/>.</para>
 ///
-/// **Si algún día hace falta un segundo idioma** (macOS ya tiene ES/EN con un
-/// selector en Ajustes): se agrega acá el mismo patrón del Swift — un
-/// resolvedor de idioma activo y una segunda tabla — sin migrar a `.resw`. No
-/// se agregó ahora porque no hay selector de idioma en la app de Windows y una
-/// tabla bilingüe sin quién la consuma es código muerto.
+/// <para><b>Y por qué la clase sigue existiendo.</b> Los otros dos argumentos
+/// de ST-079 siguen siendo buenos y no se pierden: cada texto es una
+/// <b>propiedad</b>, así que una clave mal escrita es un error de compilación y
+/// no un hueco en la pantalla; y el XAML sigue diciendo
+/// <c>{x:Bind res:AppStrings.NavGeneral}</c> sin cambiar de forma. Lo único que
+/// cambió es de dónde sale el texto.</para>
 ///
-/// **Uso desde XAML**: `Text="{x:Bind res:AppStrings.NavGeneral}"` (x:Bind
-/// resuelve propiedades estáticas; su modo por omisión, OneTime, es justo lo
-/// que corresponde a una constante).
+/// <para><b>Cero literales acá.</b> Un texto escrito en este archivo no llega
+/// nunca a traducirse: no está en el <c>.resx</c> y nadie lo va a extrañar
+/// hasta verlo en español en una pantalla en alemán. Lo comprueba una prueba
+/// (<c>NoHayTextoEnEspanolEnElCodigo</c>), no la disciplina.</para>
+///
+/// <para><b>Plurales.</b> Nunca <c>count == 1 ? … : …</c>: eso es la regla del
+/// español escrita a mano, y en ruso hacen falta tres formas y en japonés una.
+/// Va por <see cref="Strings.Plural"/>, que elige la forma según la cultura
+/// activa.</para>
 /// </summary>
 public static class AppStrings
 {
     // MARK: - Identidad de la app
 
-    public static string AppName => "Aura Studio";
+    public static string AppName => Strings.Get("app-strings.app-name");
 
     // MARK: - Barra de navegación (equivalente al sidebar de macOS)
 
-    public static string NavGeneral => "General";
-    public static string NavMusic => "Música";
-    public static string NavArtists => "Artistas";
-    public static string NavAlbums => "Álbumes";
-    public static string NavSongs => "Canciones";
-    public static string NavPlaylists => "Listas";
-    public static string NavVideo => "Video";
-    public static string NavMovies => "Películas";
-    public static string NavSeries => "Series";
-    public static string NavClips => "Videoclips";
-    public static string NavAllVideos => "Todos los videos";
-    public static string NavPhotos => "Fotos";
-    public static string NavPhotosPhotos => "Fotos";
-    public static string NavPhotosImages => "Imágenes";
-    public static string NavPhotosAI => "IA";
-    public static string NavAllPhotos => "Todas las fotos";
-    public static string NavExtras => "Extras";
-    public static string NavInstaller => "Instalador";
-    public static string NavThemes => "Temas";
-    public static string NavSettings => "Ajustes";
+    public static string NavGeneral => Strings.Get("app-strings.nav-general");
+    public static string NavMusic => Strings.Get("app-strings.nav-music");
+    public static string NavArtists => Strings.Get("app-strings.nav-artists");
+    public static string NavAlbums => Strings.Get("app-strings.nav-albums");
+    public static string NavSongs => Strings.Get("app-strings.nav-songs");
+    public static string NavPlaylists => Strings.Get("app-strings.nav-playlists");
+    public static string NavVideo => Strings.Get("app-strings.nav-video");
+    public static string NavMovies => Strings.Get("app-strings.nav-movies");
+    public static string NavSeries => Strings.Get("app-strings.nav-series");
+    public static string NavClips => Strings.Get("app-strings.nav-clips");
+    public static string NavAllVideos => Strings.Get("app-strings.nav-all-videos");
+    public static string NavPhotos => Strings.Get("app-strings.nav-photos");
+    public static string NavPhotosPhotos => Strings.Get("app-strings.nav-photos-photos");
+    public static string NavPhotosImages => Strings.Get("app-strings.nav-photos-images");
+    public static string NavPhotosAI => Strings.Get("app-strings.nav-photos-ai");
+    public static string NavAllPhotos => Strings.Get("app-strings.nav-all-photos");
+    public static string NavExtras => Strings.Get("app-strings.nav-extras");
+    public static string NavInstaller => Strings.Get("app-strings.nav-installer");
+    public static string NavThemes => Strings.Get("app-strings.nav-themes");
+    public static string NavSettings => Strings.Get("app-strings.nav-settings");
 
     // MARK: - Estado del dispositivo
 
-    public static string NoDevice => "Sin dispositivo";
-    public static string DeviceDetecting => "Buscando tu iPod…";
-    public static string DeviceNotConnected =>
-        "No hay ningún iPod conectado. Conecta tu iPod Classic por USB.";
+    public static string NoDevice => Strings.Get("app-strings.no-device");
+    public static string DeviceDetecting => Strings.Get("app-strings.device-detecting");
+    public static string DeviceNotConnected => Strings.Get("app-strings.device-not-connected");
 
     /// <summary>
     /// Regla de seguridad del repo: con dos discos que califican no se elige
@@ -72,26 +74,23 @@ public static class AppStrings
     /// muestran los candidatos como seleccionables.
     /// </summary>
     public static string DeviceAmbiguous(int count) =>
-        $"Se encontraron {count} discos que podrían ser tu iPod. Por seguridad, " +
-        "Aura Studio no elige uno solo — desconecta los demás discos externos y vuelve a intentar.";
+        Strings.Format("app-strings.device-ambiguous", count);
 
-    public static string DeviceConnected(string name) => $"Conectado: {name}";
+    public static string DeviceConnected(string name) =>
+        Strings.Format("app-strings.device-connected", name);
 
     /// <summary>
     /// Mismo criterio que macOS: la biblioteca se bloquea cuando hay un iPod
     /// conectado cuyo firmware NO habla el contrato de Aura. General y Extras
     /// quedan siempre accesibles (ahí se explica qué firmware hay y qué hacer).
     /// </summary>
-    public static string LibraryLockedReason =>
-        "El iPod conectado no tiene un firmware de la familia Aura corriendo. " +
-        "Instálalo desde el Instalador para administrar y sincronizar tu biblioteca.";
+    public static string LibraryLockedReason => Strings.Get("app-strings.library-locked-reason");
 
-    public static string LibraryAvailableWithoutDevice =>
-        "Puedes armar tu biblioteca sin el iPod conectado; se sincroniza cuando lo conectes.";
+    public static string LibraryAvailableWithoutDevice => Strings.Get("app-strings.library-available-without-device");
 
     // MARK: - Biblioteca
 
-    public static string LibraryEmpty => "Tu biblioteca está vacía.";
+    public static string LibraryEmpty => Strings.Get("app-strings.library-empty");
 
     // La biblioteca no está donde dice (ST-171). Un disco externo desconectado
     // es un estado normal, no un error: se cuenta en la ventana, con la ruta
@@ -100,23 +99,21 @@ public static class AppStrings
 
     public static string LibraryRootMissing(string root) =>
         string.IsNullOrWhiteSpace(root)
-            ? "No hay ninguna carpeta de biblioteca configurada."
-            : $"La biblioteca está en un disco que no está conectado: {root}";
+            ? Strings.Get("app-strings.library-root-missing-1")
+            : Strings.Format("app-strings.library-root-missing-2", root);
 
-    public static string LibraryRootMissingDetail =>
-        "No se perdió nada: el catálogo y tus archivos siguen en ese disco. Conéctalo y la " +
-        "biblioteca vuelve sola.";
+    public static string LibraryRootMissingDetail => Strings.Get("library-unavailable-view.no-se-perdio-nada-tu-catalogo");
 
-    public static string LibraryRootRetry => "Conectar el disco y reintentar";
-    public static string LibraryRootChoose => "Elegir otra biblioteca";
-    public static string LibraryRootCreate => "Crear una nueva";
+    public static string LibraryRootRetry => Strings.Get("done-view.reintentar");
+    public static string LibraryRootChoose => Strings.Get("library-unavailable-view.elegir-otra-biblioteca");
+    public static string LibraryRootCreate => Strings.Get("library-unavailable-view.crear-nueva");
 
     public static string LibraryDropHint(LibraryItemKind kind) => kind switch
     {
-        LibraryItemKind.Music => "Arrastra aquí tu música o una carpeta de álbumes.",
-        LibraryItemKind.Video => "Arrastra aquí tus películas, series o videos.",
-        LibraryItemKind.Photo => "Arrastra aquí tus fotos o una carpeta de imágenes.",
-        _ => "Arrastra aquí tus archivos."
+        LibraryItemKind.Music => Strings.Get("app-strings.library-drop-hint-libraryitemkind-music"),
+        LibraryItemKind.Video => Strings.Get("app-strings.library-drop-hint-libraryitemkind-video"),
+        LibraryItemKind.Photo => Strings.Get("app-strings.library-drop-hint-libraryitemkind-photo"),
+        _ => Strings.Get("app-strings.library-drop-hint-texto")
     };
 
     /// <summary>
@@ -125,9 +122,9 @@ public static class AppStrings
     /// </summary>
     public static string LibrarySectionOnlyItsType(LibraryItemKind kind) => kind switch
     {
-        LibraryItemKind.Music => "Esta sección solo acepta música. Las carátulas que vengan junto a un álbum se guardan como portada, no como fotos.",
-        LibraryItemKind.Video => "Esta sección solo acepta video. Una imagen con el mismo nombre que un video se guarda como su póster.",
-        LibraryItemKind.Photo => "Esta sección solo acepta imágenes.",
+        LibraryItemKind.Music => Strings.Get("app-strings.library-section-only-its-type-libraryitemkind-music"),
+        LibraryItemKind.Video => Strings.Get("app-strings.library-section-only-its-type-libraryitemkind-video"),
+        LibraryItemKind.Photo => Strings.Get("app-strings.library-section-only-its-type-libraryitemkind-photo"),
         _ => ""
     };
 
@@ -136,12 +133,12 @@ public static class AppStrings
     public static string LibrarySectionOnlyItsTypeVideo => LibrarySectionOnlyItsType(LibraryItemKind.Video);
     public static string LibrarySectionOnlyItsTypePhoto => LibrarySectionOnlyItsType(LibraryItemKind.Photo);
 
-    public static string LibraryNothingHereYet => "Todavía no hay nada en esta sección.";
+    public static string LibraryNothingHereYet => Strings.Get("app-strings.library-nothing-here-yet");
 
-    public static string LibraryOpenFolder => "Abrir la carpeta de la biblioteca";
-    public static string LibraryAddFiles => "Agregar archivos";
-    public static string LibraryAddFolder => "Agregar carpeta";
-    public static string LibraryRemove => "Quitar de la biblioteca";
+    public static string LibraryOpenFolder => Strings.Get("app-strings.library-open-folder");
+    public static string LibraryAddFiles => Strings.Get("app-strings.library-add-files");
+    public static string LibraryAddFolder => Strings.Get("app-strings.library-add-folder");
+    public static string LibraryRemove => Strings.Get("app-strings.library-remove");
 
     // MARK: - Eliminar, con confirmación (ST-245)
 
@@ -150,7 +147,7 @@ public static class AppStrings
     /// puede deshacer" —para lo que sí va a la Papelera, se puede—.
     /// </summary>
     public static string DeleteConfirmTitle(int totalCount) =>
-        totalCount == 1 ? "¿Eliminar 1 elemento?" : $"¿Eliminar {totalCount} elementos?";
+        Strings.Plural("app-strings.delete-confirm-title", totalCount);
 
     /// <summary>
     /// El cuerpo del diálogo (§0.4 del plan): cuántos archivos van a la
@@ -165,23 +162,19 @@ public static class AppStrings
         if (preview.CopyCount > 0)
         {
             string bytes = SimilarityText.FormatBytes(preview.CopyBytes);
-            parts.Add(preview.CopyCount == 1
-                ? $"1 archivo ({bytes}) va a la Papelera de reciclaje."
-                : $"{preview.CopyCount} archivos ({bytes}) van a la Papelera de reciclaje.");
+            parts.Add(Strings.Plural("app-strings.delete-confirm-copy", preview.CopyCount, bytes));
         }
 
         if (preview.ReferenceCount > 0)
         {
-            parts.Add(preview.ReferenceCount == 1
-                ? "1 elemento se quita de tu biblioteca; su archivo original no se toca."
-                : $"{preview.ReferenceCount} elementos se quitan de tu biblioteca; sus archivos originales no se tocan.");
+            parts.Add(Strings.Plural("app-strings.delete-confirm-reference", preview.ReferenceCount));
         }
 
         return string.Join(" ", parts);
     }
 
-    public static string DeleteConfirmPrimary => "Eliminar";
-    public static string DeleteConfirmCancel => "Cancelar";
+    public static string DeleteConfirmPrimary => Strings.Get("artists-view.eliminar");
+    public static string DeleteConfirmCancel => Strings.Get("background-task-center-indicator.cancelar");
 
     /// <summary>
     /// El aviso de duplicados por parecido, al terminar de soltar archivos
@@ -189,27 +182,32 @@ public static class AppStrings
     /// apunta a la que ya existe.
     /// </summary>
     public static string LibrarySimilarFoundOnDrop(string summary) =>
-        $"{summary} Encontramos elementos parecidos entre lo que agregaste — revísalos en Similares.";
-    public static string LibraryFavoritesOnly => "Solo favoritos";
-    public static string LibraryColumns => "Columnas";
-    public static string LibraryColumnsDetail =>
-        "Elige qué columnas ver. Título siempre está y va primero.";
-    public static string LibrarySortBy => "Ordenar por";
-    public static string LibrarySortAscending => "Ascendente";
+        Strings.Format("app-strings.library-similar-found-on-drop", summary);
+    public static string LibraryFavoritesOnly => Strings.Get("app-strings.library-favorites-only");
+    public static string LibraryColumns => Strings.Get("app-strings.library-columns");
+    public static string LibraryColumnsDetail => Strings.Get("app-strings.library-columns-detail");
+    public static string LibrarySortBy => Strings.Get("app-strings.library-sort-by");
+    public static string LibrarySortAscending => Strings.Get("app-strings.library-sort-ascending");
     public static string LibraryUnknownArtist => LibraryGrouping.UnknownArtistName;
 
-    public static string LibraryTracks(int count) => count == 1 ? "1 canción" : $"{count} canciones";
-    public static string LibraryEpisodes(int count) => count == 1 ? "1 episodio" : $"{count} episodios";
-    public static string LibraryPhotos(int count) => count == 1 ? "1 foto" : $"{count} fotos";
+    public static string LibraryTracks(int count) => Strings.Plural("conteo.canciones", count);
+    public static string LibraryEpisodes(int count) => Strings.Plural("conteo.episodios", count);
+    public static string LibraryPhotos(int count) => Strings.Plural("conteo.fotos", count);
+
+    // "Sin temporada" y "Temporada 3" no son el singular y el plural de lo
+    // mismo: son dos mensajes distintos que elige un centinela, no una
+    // cantidad. Por eso van como dos claves y no como formas de plural.
     public static string LibrarySeason(int number) =>
-        number == VideoCollectionGroup.NoSeasonNumber ? "Sin temporada" : $"Temporada {number}";
+        number == VideoCollectionGroup.NoSeasonNumber
+            ? Strings.Get("app-strings.library-season-1")
+            : Strings.Format("app-strings.library-season-2", number);
 
     public static string LibraryKind(LibraryItemKind kind) => kind switch
     {
-        LibraryItemKind.Music => "Música",
-        LibraryItemKind.Video => "Video",
-        LibraryItemKind.Photo => "Imagen",
-        _ => "No compatible"
+        LibraryItemKind.Music => Strings.Get("app-strings.library-kind-libraryitemkind-music"),
+        LibraryItemKind.Video => Strings.Get("app-strings.library-kind-libraryitemkind-video"),
+        LibraryItemKind.Photo => Strings.Get("app-strings.library-kind-libraryitemkind-photo"),
+        _ => Strings.Get("app-strings.library-kind-texto")
     };
 
     /// <summary>
@@ -219,277 +217,238 @@ public static class AppStrings
     /// </summary>
     public static string LibraryStatus(LibraryItemStatus status) => status.State switch
     {
-        LibraryItemState.Queued => "En cola",
-        LibraryItemState.Enriching => "Buscando información",
-        LibraryItemState.Transcoding => $"Convirtiendo… {status.Progress * 100:0}%",
-        LibraryItemState.Ready => "Listo",
-        LibraryItemState.NeedsReview => "Necesita revisión",
-        _ => status.Error is { Length: > 0 } error ? $"Error: {error}" : "Error"
+        LibraryItemState.Queued => Strings.Get("app-strings.library-status-libraryitemstate-queued"),
+        LibraryItemState.Enriching => Strings.Get("app-strings.library-status-libraryitemstate-enrichi"),
+        LibraryItemState.Transcoding => Strings.Format(
+            "app-strings.library-status-libraryitemstate-transco",
+            (status.Progress * 100).ToString("0", CultureInfo.CurrentCulture)),
+        LibraryItemState.Ready => Strings.Get("app-strings.library-status-libraryitemstate-ready"),
+        LibraryItemState.NeedsReview => Strings.Get("app-strings.library-status-libraryitemstate-needsre"),
+        _ => status.Error is { Length: > 0 } error
+            ? Strings.Format("app-strings.library-status-6", error)
+            : Strings.Get("app-strings.library-status-7")
     };
 
     // MARK: - General (vista del dispositivo)
 
-    public static string GeneralTitle => "General";
-    public static string GeneralSubtitle => "Administra tu iPod y revisa su estado";
-    public static string SectionStorage => "Almacenamiento";
-    public static string SectionContent => "Contenido en el iPod";
-    public static string LabelCapacity => "Capacidad";
-    public static string LabelUsed => "Usado";
-    public static string LabelFree => "Disponible";
-    public static string LabelFileSystem => "Sistema de archivos";
-    public static string LabelMusic => "Música";
-    public static string LabelVideo => "Video";
-    public static string LabelPhotos => "Fotos";
-    public static string LabelPlaylists => "Listas";
-    public static string ActionRefresh => "Actualizar";
-    public static string ActionRefreshHelp =>
-        "Vuelve a leer el estado del iPod y de tu biblioteca. No copia ni borra nada.";
-    public static string ActionOpenInExplorer => "Abrir en el Explorador";
-    public static string ActionEject => "Expulsar";
-    public static string EjectRequested =>
-        "Se solicitó la expulsión. Ya puedes desconectar el iPod cuando Windows lo indique.";
-    public static string EjectFailed =>
-        "No se pudo expulsar el iPod. Cierra las aplicaciones que estén usando la unidad y vuelve a intentarlo.";
-    public static string NeverSynced => "Este iPod todavía no se ha sincronizado con Aura Studio.";
-    public static string LastSyncSummary => "Resumen de la última sincronización";
-    public static string DeclaredFamilyLabel => "Familia declarada";
-    public static string NotAvailable => "No disponible";
+    public static string GeneralTitle => Strings.Get("app-strings.general-title");
+    public static string GeneralSubtitle => Strings.Get("app-strings.general-subtitle");
+    public static string SectionStorage => Strings.Get("app-strings.section-storage");
+    public static string SectionContent => Strings.Get("app-strings.section-content");
+    public static string LabelCapacity => Strings.Get("app-strings.label-capacity");
+    public static string LabelUsed => Strings.Get("app-strings.label-used");
+    public static string LabelFree => Strings.Get("app-strings.label-free");
+    public static string LabelFileSystem => Strings.Get("app-strings.label-file-system");
+    public static string LabelMusic => Strings.Get("app-strings.label-music");
+    public static string LabelVideo => Strings.Get("app-strings.label-video");
+    public static string LabelPhotos => Strings.Get("app-strings.label-photos");
+    public static string LabelPlaylists => Strings.Get("app-strings.label-playlists");
+    public static string ActionRefresh => Strings.Get("app-strings.action-refresh");
+    public static string ActionRefreshHelp => Strings.Get("app-strings.action-refresh-help");
+    public static string ActionOpenInExplorer => Strings.Get("app-strings.action-open-in-explorer");
+    public static string ActionEject => Strings.Get("app-strings.action-eject");
+    public static string EjectRequested => Strings.Get("app-strings.eject-requested");
+    public static string EjectFailed => Strings.Get("app-strings.eject-failed");
+    public static string NeverSynced => Strings.Get("app-strings.never-synced");
+    public static string LastSyncSummary => Strings.Get("app-strings.last-sync-summary");
+    public static string DeclaredFamilyLabel => Strings.Get("app-strings.declared-family-label");
+    public static string NotAvailable => Strings.Get("app-strings.not-available");
 
     // MARK: - Ajustes
 
-    public static string SettingsTitle => "Ajustes";
-    public static string SettingsSubtitle => "Preferencias de Aura Studio";
-    public static string SettingsAppearance => "Apariencia";
-    public static string SettingsTheme => "Tema";
-    public static string SettingsThemeDetail =>
-        "Aura Studio sigue el tema de Windows. Puedes fijarlo en claro u oscuro solo para esta app.";
+    public static string SettingsTitle => Strings.Get("app-strings.settings-title");
+    public static string SettingsSubtitle => Strings.Get("app-strings.settings-subtitle");
+    public static string SettingsAppearance => Strings.Get("app-strings.settings-appearance");
+    public static string SettingsTheme => Strings.Get("app-strings.settings-theme");
+    public static string SettingsThemeDetail => Strings.Get("app-strings.settings-theme-detail");
     /// <summary>
     /// macOS tiene selector de idioma (español/inglés). Windows no: por regla
     /// del repo esta app es de un solo idioma, y se decidió no traer el
     /// mecanismo de macOS sin quién lo consuma (ST-079). Se dice acá en vez de
     /// dejar la sección ausente sin explicación.
     /// </summary>
-    public static string SettingsLanguageDetail =>
-        "Aura Studio para Windows está en español de México. No hay selector de idioma: " +
-        "a diferencia de la versión para Mac, esta app se hizo en un solo idioma.";
+    public static string SettingsLanguageDetail => Strings.Get("app-strings.settings-language-detail");
 
-    public static string ThemeSystem => "Igual que el sistema";
-    public static string ThemeLight => "Claro";
-    public static string ThemeDark => "Oscuro";
-    public static string SettingsAbout => "Acerca de";
+    public static string ThemeSystem => Strings.Get("app-strings.theme-system");
+    public static string ThemeLight => Strings.Get("app-strings.theme-light");
+    public static string ThemeDark => Strings.Get("app-strings.theme-dark");
+    public static string SettingsAbout => Strings.Get("app-strings.settings-about");
 
     // MARK: - Cómo guardar tu música (ST-245, plan §2 — texto compartido con la Mac)
 
-    public static string StorageSectionTitle => "Cómo guardar tu música";
+    public static string StorageSectionTitle => Strings.Get("storage-section-title");
 
     /// <summary>
     /// Beneficios y desventajas de "Copiar a la Biblioteca de Aura" — texto
     /// fijado por la Maestra en el plan §2, el mismo en las dos plataformas.
     /// No es una decisión de Windows: si cambia, cambia en el plan primero.
     /// </summary>
-    public static string StorageCopyExplainer =>
-        "Copiar a la Biblioteca de Aura: Aura controla los archivos, edita sus etiquetas y los " +
-        "sincroniza directo; ocupa espacio en disco (una copia); puedes borrar tus originales después.";
+    public static string StorageCopyExplainer => Strings.Get("storage-copy-explainer");
 
     /// <summary>Igual que <see cref="StorageCopyExplainer"/>, para "Referenciar en su lugar".</summary>
-    public static string StorageReferenceExplainer =>
-        "Referenciar en su lugar: no ocupa espacio extra ni toca tus archivos; Aura mantiene una " +
-        "versión preparada aparte (.preparados/), las ediciones viven solo en Aura y en el iPod, y si " +
-        "el disco original no está, esas canciones no se pueden sincronizar.";
+    public static string StorageReferenceExplainer => Strings.Get("storage-reference-explainer");
 
-    public static string StorageChangeOnlyAffectsFuture =>
-        "Cambiar este ajuste solo afecta lo que importes de ahora en adelante: lo que ya está en tu " +
-        "biblioteca se queda como está.";
+    public static string StorageChangeOnlyAffectsFuture => Strings.Get("storage-change-only-affects-future");
 
     // MARK: - Limpiar archivos huérfanos (ST-245)
 
-    public static string OrphansTitle => "Archivos huérfanos";
-    public static string OrphansDetail =>
-        "Preparados y carátulas que ya no le pertenecen a ningún elemento de tu biblioteca — de " +
-        "elementos eliminados antes de esta versión, o de un reprocesamiento. No son tus archivos " +
-        "originales: son copias técnicas que Aura arma sola y puede volver a armar si hicieran falta.";
+    public static string OrphansTitle => Strings.Get("orphans-title");
+    public static string OrphansDetail => Strings.Get("orphans-detail");
 
-    public static string OrphansButton => "Buscar huérfanos";
-    public static string OrphansCleanButton => "Limpiar archivos huérfanos";
+    public static string OrphansButton => Strings.Get("orphans-button");
+    public static string OrphansCleanButton => Strings.Get("orphans-clean-button");
 
-    public static string OrphansNoneFound => "No hay archivos huérfanos: no hace falta limpiar nada.";
+    public static string OrphansNoneFound => Strings.Get("orphans-none-found");
 
-    public static string OrphansFound(OrphanScanResult scan) => scan.Count == 1
-        ? $"1 archivo huérfano ({SimilarityText.FormatBytes(scan.TotalBytes)})."
-        : $"{scan.Count} archivos huérfanos ({SimilarityText.FormatBytes(scan.TotalBytes)}).";
+    public static string OrphansFound(OrphanScanResult scan) =>
+        Strings.Plural("app-strings.orphans-found", scan.Count, SimilarityText.FormatBytes(scan.TotalBytes));
 
     public static string OrphansConfirmTitle(int count) =>
-        count == 1 ? "¿Borrar 1 archivo huérfano?" : $"¿Borrar {count} archivos huérfanos?";
+        Strings.Plural("app-strings.orphans-confirm-title", count);
 
+    /// <summary>
+    /// Se arma con DOS recursos y no con uno (decisión de la Maestra, ST-247).
+    ///
+    /// <para>La segunda oración es la misma que dice la Mac, palabra por
+    /// palabra, así que es una clave compartida y se traduce una sola vez.
+    /// Windows además antepone el conteo, que es una oración propia con su
+    /// número. Metiendo el hueco dentro de la clave compartida el texto dejaba
+    /// de ser idéntico al de la Mac y la comparación exacta no calzaba; unidas
+    /// acá con un espacio, calza y cada mitad vive donde le toca.</para>
+    /// </summary>
     public static string OrphansConfirmMessage(OrphanScanResult scan) =>
-        $"{OrphansFound(scan)} No están ligados a ningún elemento de tu biblioteca; borrarlos no " +
-        "afecta ninguna canción, foto ni video que tengas.";
+        OrphansFound(scan) + " " + Strings.Get("orphans-confirm-message");
 
     public static string OrphansCleaned(int count) =>
-        count == 1 ? "Se borró 1 archivo huérfano." : $"Se borraron {count} archivos huérfanos.";
+        Strings.Plural("app-strings.orphans-cleaned", count);
 
     // MARK: - Instalador
 
-    public static string InstallerTitle => "Instalador";
-    public static string InstallerSubtitle => "Instala el firmware en tu iPod, paso a paso";
+    public static string InstallerTitle => Strings.Get("app-strings.installer-title");
+    public static string InstallerSubtitle => Strings.Get("app-strings.installer-subtitle");
 
-    public static string InstallerWelcomeTitle => "Vamos a instalar el firmware en tu iPod";
-    public static string InstallerWelcomeDetail =>
-        "Aura Studio va a preparar el disco de tu iPod, grabar el arranque y copiar el firmware. " +
-        "Te va a ir explicando cada paso antes de hacerlo, y no toca nada hasta que confirmes.";
-    public static string InstallerWelcomeWarning =>
-        "Instalar borra todo lo que haya en el iPod y reemplaza su arranque original de Apple. " +
-        "Si tienes música solo ahí, cópiala antes.";
-    public static string InstallerBegin => "Comenzar";
-    public static string InstallerFamilyLabel => "Firmware que se va a instalar";
+    public static string InstallerWelcomeTitle => Strings.Get("app-strings.installer-welcome-title");
+    public static string InstallerWelcomeDetail => Strings.Get("app-strings.installer-welcome-detail");
+    public static string InstallerWelcomeWarning => Strings.Get("app-strings.installer-welcome-warning");
+    public static string InstallerBegin => Strings.Get("app-strings.installer-begin");
+    public static string InstallerFamilyLabel => Strings.Get("app-strings.installer-family-label");
 
-    public static string InstallerPermissionsTitle => "Permisos que hacen falta";
-    public static string InstallerPermissionsDetail =>
-        "Para preparar el disco del iPod, Windows te va a pedir permiso de administrador con su propio " +
-        "aviso. Aura Studio hace todo desde aquí: nunca vas a tener que abrir una consola ni escribir un " +
-        "comando. El permiso se pide solo para dos cosas concretas — dar formato al disco del iPod y, " +
-        "durante el grabado, pausar el servicio de Apple que podría quedarse con el puerto USB. " +
-        "Cada vez que se use queda anotado en la bitácora de la aplicación.";
-    public static string InstallerPermissionsContinue => "Entendido, continuar";
+    public static string InstallerPermissionsTitle => Strings.Get("app-strings.installer-permissions-title");
+    public static string InstallerPermissionsDetail => Strings.Get("app-strings.installer-permissions-detail");
+    public static string InstallerPermissionsContinue => Strings.Get("app-strings.installer-permissions-continue");
 
-    public static string InstallerDetectTitle => "Confirma que este es tu iPod";
-    public static string InstallerDetectDetail =>
-        "Revisa estos datos con cuidado. Lo que sigue borra el contenido del disco que aparece aquí.";
-    public static string InstallerNoDevice =>
-        "No hay ningún iPod conectado. Conéctalo por USB y espera a que Windows lo reconozca.";
-    public static string InstallerNeedsMountedVolume =>
-        "El iPod no tiene un volumen que Windows pueda leer. Prepara el disco antes de copiar los archivos.";
+    public static string InstallerDetectTitle => Strings.Get("app-strings.installer-detect-title");
+    public static string InstallerDetectDetail => Strings.Get("app-strings.installer-detect-detail");
+    public static string InstallerNoDevice => Strings.Get("app-strings.installer-no-device");
+    public static string InstallerNeedsMountedVolume => Strings.Get("app-strings.installer-needs-mounted-volume");
 
-    public static string LabelDevice => "Dispositivo";
-    public static string LabelUnit => "Unidad";
-    public static string LabelBus => "Conexión";
-    public static string LabelFirmware => "Firmware detectado";
+    public static string LabelDevice => Strings.Get("app-strings.label-device");
+    public static string LabelUnit => Strings.Get("app-strings.label-unit");
+    public static string LabelBus => Strings.Get("app-strings.label-bus");
+    public static string LabelFirmware => Strings.Get("app-strings.label-firmware");
 
     /// <summary>
     /// Cambiar de familia no es un error (el árbol saliente se guarda entero y
     /// se puede volver a él), pero nunca puede pasar en silencio.
     /// </summary>
     public static string InstallerFamilyChange(string installed, string target) =>
-        $"Este iPod tiene {installed} instalado y vas a instalar {target}. " +
-        $"{installed} se guarda completo, con sus ajustes, y puedes volver a él desde Extras cuando quieras.";
+        Strings.Format("app-strings.installer-family-change", installed, target);
 
-    public static string InstallerPrepareDisk => "Preparar el disco";
-    public static string InstallerDryRun => "Ensayar sin escribir";
-    public static string InstallerDryRunRunning => "Ensayando la preparación del disco…";
-    public static string InstallerDryRunOk =>
-        "El ensayo salió bien: el disco se volvió a verificar con permisos de administrador y el plan de " +
-        "formateo es válido. No se escribió nada todavía.";
-    public static string InstallerFormatRunning => "Dando formato al disco del iPod…";
-    public static string InstallerFormatNeedsDryRun =>
-        "Primero hay que ensayar la preparación del disco. Así se comprueba todo sin escribir nada.";
+    public static string InstallerPrepareDisk => Strings.Get("app-strings.installer-prepare-disk");
+    public static string InstallerDryRun => Strings.Get("app-strings.installer-dry-run");
+    public static string InstallerDryRunRunning => Strings.Get("app-strings.installer-dry-run-running");
+    public static string InstallerDryRunOk => Strings.Get("app-strings.installer-dry-run-ok");
+    public static string InstallerFormatRunning => Strings.Get("app-strings.installer-format-running");
+    public static string InstallerFormatNeedsDryRun => Strings.Get("app-strings.installer-format-needs-dry-run");
     /// <summary>
     /// El botón destructivo **nombra el disco**. Un botón que dice "Dar formato
     /// ahora" a secas, con el estilo de acento y solo en la pantalla, tiene la
     /// forma de un "Continuar" — y el dueño formateó dos veces creyendo que solo
     /// estaba probando el software.
     /// </summary>
-    public static string InstallerFormatNowOn(string target) => $"Borrar y formatear {target}";
+    public static string InstallerFormatNowOn(string target) =>
+        Strings.Format("app-strings.installer-format-now-on", target);
 
-    public static string InstallerFormatDangerHeading => "Esto sí borra el iPod";
+    public static string InstallerFormatDangerHeading => Strings.Get("app-strings.installer-format-danger-heading");
 
-    public static string InstallerFormatDangerDetail =>
-        "El ensayo de arriba no tocó nada. Lo que sigue borra todo el contenido del disco y no se " +
-        "puede deshacer. Revisa que sea el iPod correcto antes de continuar.";
+    public static string InstallerFormatDangerDetail => Strings.Get("app-strings.installer-format-danger-detail");
 
     public static string InstallerFormatConfirm(string target) =>
-        $"Entiendo que se va a borrar todo el contenido de {target}.";
+        Strings.Format("app-strings.installer-format-confirm", target);
 
-    public static string InstallerFormatNeedsConfirmation =>
-        "Falta tu confirmación para borrar el iPod. Aura Studio no formatea nada sin que confirmes antes " +
-        "sobre qué disco va a actuar.";
+    public static string InstallerFormatNeedsConfirmation => Strings.Get("app-strings.installer-format-needs-confirmation");
 
-    public static string InstallerDryRunHeading => "Ensayo terminado — no se tocó el disco";
-    public static string InstallerPrivilegedLogHeading => "Lo que hizo la operación con permisos";
+    public static string InstallerDryRunHeading => Strings.Get("app-strings.installer-dry-run-heading");
+    public static string InstallerPrivilegedLogHeading => Strings.Get("app-strings.installer-privileged-log-heading");
 
     public static string InstallerSafetyAbort(string reason) =>
-        $"Aura Studio se detuvo por seguridad antes de tocar el disco: {reason}.";
+        Strings.Format("app-strings.installer-safety-abort", reason);
 
     public static string InstallerUnknownDisk(string path) =>
-        $"No se pudo identificar el número de disco de «{path}», así que no se toca nada.";
+        Strings.Format("app-strings.installer-unknown-disk", path);
 
-    public static string InstallerCopyingTitle => "Copiando el firmware al iPod…";
-    public static string InstallerCopyFiles => "Copiar el firmware";
-    public static string InstallerCopyFailed => "No se pudo copiar el firmware al iPod.";
-    public static string InstallerCopiedFiles(int count) => $"{count} archivos escritos en el iPod.";
+    public static string InstallerCopyingTitle => Strings.Get("app-strings.installer-copying-title");
+    public static string InstallerCopyFiles => Strings.Get("app-strings.installer-copy-files");
+    public static string InstallerCopyFailed => Strings.Get("app-strings.installer-copy-failed");
+    // Sin formas de plural a propósito: la frase de hoy dice "archivos
+    // escritos" con cualquier cantidad, y con 1 queda mal. Arreglarlo es
+    // cambiar lo que el usuario lee, y B7a es mover, no redactar; queda
+    // anotado como defecto aparte.
+    public static string InstallerCopiedFiles(int count) =>
+        Strings.Format("app-strings.installer-copied-files", count);
 
     // Los pasos son los mismos de `EnterDFUView.swift` (macOS), que a su vez
     // sale del README de mks5lboot y de la guía de flasheo del firmware —
     // ninguno se inventa acá. Solo cambia el español: el original está en
     // voseo y el repo pide español de México sin voseo.
-    public static string InstallerEnterDfuTitle => "Ahora pon el iPod en modo DFU";
+    public static string InstallerEnterDfuTitle => Strings.Get("app-strings.installer-enter-dfu-title");
 
-    public static string InstallerEnterDfuWhen =>
-        "Este es el momento: el disco ya está listo y lo que sigue es grabar el arranque. " +
-        "El iPod tiene que estar conectado por USB mientras lo haces.";
+    public static string InstallerEnterDfuWhen => Strings.Get("app-strings.installer-enter-dfu-when");
 
-    public static string InstallerDfuStep1 => "Si tu iPod está reproduciendo música, detén la reproducción.";
-    public static string InstallerDfuStep2 => "Mantén presionados SELECT + MENU al mismo tiempo.";
-    public static string InstallerDfuStep3 =>
-        "Sigue presionando ambos botones unos 12 segundos, hasta después de que la pantalla se ponga negra.";
-    public static string InstallerDfuStep4 =>
-        "Suéltalos. Aura Studio va a detectar el modo DFU automáticamente.";
+    public static string InstallerDfuStep1 => Strings.Get("app-strings.installer-dfu-step1");
+    public static string InstallerDfuStep2 => Strings.Get("app-strings.installer-dfu-step2");
+    public static string InstallerDfuStep3 => Strings.Get("app-strings.installer-dfu-step3");
+    public static string InstallerDfuStep4 => Strings.Get("app-strings.installer-dfu-step4");
 
     /// <summary>El error más común: soltar en cuanto la pantalla se apaga.</summary>
-    public static string InstallerDfuTimingWarning =>
-        "Si sueltas los botones antes de unos 12 segundos, el iPod se reinicia normalmente y NO entra en " +
-        "modo DFU. Que la pantalla se ponga negra no es la señal de soltar: sigue presionando después de eso.";
+    public static string InstallerDfuTimingWarning => Strings.Get("app-strings.installer-dfu-timing-warning");
 
-    public static string InstallerDfuGuideLink => "Guía de flasheo y restauración (repositorio del firmware)";
-    public static string InstallerDfuGuideUrl =>
-        "https://github.com/Ricolinos/Aura-Firmware/blob/main/docs/guia-flasheo-restauracion.md";
+    public static string InstallerDfuGuideLink => Strings.Get("app-strings.installer-dfu-guide-link");
+    public static string InstallerDfuGuideUrl => Strings.Get("app-strings.installer-dfu-guide-url");
 
-    public static string InstallerDfuWaiting => "Esperando el modo DFU…";
+    public static string InstallerDfuWaiting => Strings.Get("app-strings.installer-dfu-waiting");
 
     // MARK: - Reconocimiento automático de DFU
 
-    public static string InstallerDfuDetectedTitle => "Tu iPod está en modo DFU";
-    public static string InstallerDfuDetectedDetail =>
-        "Aura Studio lo reconoció al conectarlo. ¿Quieres instalarle un firmware? " +
-        "No se hace nada hasta que elijas.";
-    public static string InstallerDfuDetectedInstall => "Sí, instalar";
-    public static string InstallerDfuDetectedDismiss => "Ahora no";
-    public static string InstallerDfuNoFamilies =>
-        "No hay ningún firmware disponible para instalar: falta poblar la carpeta de artefactos.";
-    public static string InstallerScanDfu => "Buscar el iPod en DFU";
-    public static string InstallerScanningDfu => "Buscando el iPod en modo DFU…";
+    public static string InstallerDfuDetectedTitle => Strings.Get("app-strings.installer-dfu-detected-title");
+    public static string InstallerDfuDetectedDetail => Strings.Get("app-strings.installer-dfu-detected-detail");
+    public static string InstallerDfuDetectedInstall => Strings.Get("app-strings.installer-dfu-detected-install");
+    public static string InstallerDfuDetectedDismiss => Strings.Get("app-strings.installer-dfu-detected-dismiss");
+    public static string InstallerDfuNoFamilies => Strings.Get("app-strings.installer-dfu-no-families");
+    public static string InstallerScanDfu => Strings.Get("app-strings.installer-scan-dfu");
+    public static string InstallerScanningDfu => Strings.Get("app-strings.installer-scanning-dfu");
     public static string InstallerDfuFound(int? state) =>
-        state is null ? "iPod detectado en modo DFU." : $"iPod detectado en modo DFU (estado {state}).";
-    public static string InstallerDfuNotFound =>
-        "No se ve ningún iPod en modo DFU todavía. Repite la combinación de botones y vuelve a buscar. " +
-        "Recuerda seguir presionando después de que la pantalla se ponga negra.";
+        state is null
+            ? Strings.Get("app-strings.installer-dfu-found-1")
+            : Strings.Format("app-strings.installer-dfu-found-2", state);
+    public static string InstallerDfuNotFound => Strings.Get("app-strings.installer-dfu-not-found");
 
     /// <summary>
     /// El controlador está y aun así Windows no ve ningún aparato de Apple. Muy
     /// probablemente el iPod sí entró en DFU pero su USB no llega hasta acá —
     /// el caso típico de una máquina virtual sin el dispositivo redirigido.
     /// </summary>
-    public static string InstallerDfuNotSeenByWindows =>
-        "El controlador de Apple está instalado, pero Windows no ve ningún dispositivo de Apple. " +
-        "Si ya hiciste la combinación de botones y la pantalla del iPod está en negro, es probable que " +
-        "esté en modo DFU y que su conexión USB no esté llegando hasta aquí. En una máquina virtual, " +
-        "revisa que el iPod en modo DFU esté redirigido a Windows: al entrar en DFU cambia de " +
-        "identificador USB y puede hacer falta autorizarlo de nuevo.";
-    public static string InstallerDfuUnreadable =>
-        "No se pudo leer el estado del iPod. Revisa abajo si falta el controlador de Apple.";
+    public static string InstallerDfuNotSeenByWindows => Strings.Get("app-strings.installer-dfu-not-seen-by-windows");
+    public static string InstallerDfuUnreadable => Strings.Get("app-strings.installer-dfu-unreadable");
 
-    public static string InstallerFlash => "Grabar el arranque";
-    public static string InstallerFlashing => "Grabando el arranque en el iPod…";
-    public static string InstallerFlashConfirm =>
-        "Entiendo que esto reemplaza el arranque original de Apple y no se puede deshacer sin restaurarlo.";
-    public static string InstallerFlashNeedsConfirmation =>
-        "Falta tu confirmación para grabar el arranque. Aura Studio no graba nada sin que confirmes antes.";
-    public static string InstallerFlashFailed => "No se pudo grabar el arranque.";
-    public static string InstallerAwaitingReboot =>
-        "Grabado. Esperando a que el iPod se reinicie y vuelva a aparecer…";
-    public static string InstallerRebooted =>
-        "El iPod salió de modo DFU. Ya puedes copiar el firmware.";
-    public static string InstallerStuckInDfu =>
-        "El iPod sigue en modo DFU y no se confirmó la instalación. No desconectes: vuelve a buscarlo.";
+    public static string InstallerFlash => Strings.Get("app-strings.installer-flash");
+    public static string InstallerFlashing => Strings.Get("app-strings.installer-flashing");
+    public static string InstallerFlashConfirm => Strings.Get("app-strings.installer-flash-confirm");
+    public static string InstallerFlashNeedsConfirmation => Strings.Get("app-strings.installer-flash-needs-confirmation");
+    public static string InstallerFlashFailed => Strings.Get("app-strings.installer-flash-failed");
+    public static string InstallerAwaitingReboot => Strings.Get("app-strings.installer-awaiting-reboot");
+    public static string InstallerRebooted => Strings.Get("app-strings.installer-rebooted");
+    public static string InstallerStuckInDfu => Strings.Get("app-strings.installer-stuck-in-dfu");
 
     // MARK: - Actualizar el arranque (ST-143, ST-168)
     //
@@ -498,44 +457,29 @@ public static class AppStrings
     // DFU, qué NO se toca y —la que evita una llamada de soporte— que no es
     // obligatorio.
 
-    public static string BootloaderUpdateOffer => "Actualizar el arranque de este iPod";
+    public static string BootloaderUpdateOffer => Strings.Get("app-strings.bootloader-update-offer");
 
-    public static string BootloaderUpdateOfferDifferent =>
-        "Esta versión trae un arranque más nuevo que el que tiene tu iPod.";
+    public static string BootloaderUpdateOfferDifferent => Strings.Get("app-strings.bootloader-update-offer-different");
 
-    public static string BootloaderUpdateOfferUnknown =>
-        "No sabemos qué arranque tiene tu iPod: lo instaló otra computadora, o una versión " +
-        "anterior de la app.";
+    public static string BootloaderUpdateOfferUnknown => Strings.Get("app-strings.bootloader-update-offer-unknown");
 
-    public static string BootloaderUpdateTitle => "Actualizar el arranque";
+    public static string BootloaderUpdateTitle => Strings.Get("app-strings.bootloader-update-title");
 
-    public static string BootloaderUpdateWhatItIs =>
-        "El arranque es el programa que corre antes del firmware, en un chip aparte del disco. " +
-        "Esta versión trae uno nuevo, con otra pantalla de encendido.";
+    public static string BootloaderUpdateWhatItIs => Strings.Get("app-strings.bootloader-update-what-it-is");
 
-    public static string BootloaderUpdateWhyDfu =>
-        "Hace falta modo DFU porque ese chip no se puede escribir de ninguna otra forma.";
+    public static string BootloaderUpdateWhyDfu => Strings.Get("app-strings.bootloader-update-why-dfu");
 
-    public static string BootloaderUpdateNothingTouched =>
-        "No se toca nada del disco. Tu música, tus fotos, tus listas y tus ajustes se quedan " +
-        "exactamente como están.";
+    public static string BootloaderUpdateNothingTouched => Strings.Get("app-strings.bootloader-update-nothing-touched");
 
-    public static string BootloaderUpdateNotRequired =>
-        "No es obligatorio. El firmware nuevo funciona igual con el arranque que ya tienes; " +
-        "lo único que cambia es la pantalla de encendido.";
+    public static string BootloaderUpdateNotRequired => Strings.Get("app-strings.bootloader-update-not-required");
 
-    public static string BootloaderUpdateNoPassword =>
-        "No te pide tu contraseña de administrador ni una sola vez.";
+    public static string BootloaderUpdateNoPassword => Strings.Get("app-strings.bootloader-update-no-password");
 
-    public static string BootloaderUpdateContinue => "Continuar";
+    public static string BootloaderUpdateContinue => Strings.Get("app-strings.bootloader-update-continue");
 
-    public static string BootloaderUpdateEnterDfuWhen =>
-        "El iPod tiene que estar conectado por USB mientras lo haces. No se toca su disco: " +
-        "solo se regraba el arranque.";
+    public static string BootloaderUpdateEnterDfuWhen => Strings.Get("app-strings.bootloader-update-enter-dfu-when");
 
-    public static string BootloaderUpdateFlashConfirm =>
-        "Entiendo que esto regraba el arranque del iPod. No borra su disco ni quita el arranque " +
-        "de Apple.";
+    public static string BootloaderUpdateFlashConfirm => Strings.Get("app-strings.bootloader-update-flash-confirm");
 
     /// <summary>
     /// El nombre de la familia va adentro: se está regrabando SU arranque, no
@@ -543,105 +487,80 @@ public static class AppStrings
     /// </summary>
     public static string BootloaderUpdateFlashing(string? family) =>
         string.IsNullOrWhiteSpace(family)
-            ? "Actualizando el arranque del iPod…"
-            : $"Actualizando el arranque de {family}…";
+            ? Strings.Get("app-strings.bootloader-update-flashing-1")
+            : Strings.Format("app-strings.bootloader-update-flashing-2", family);
 
-    public static string BootloaderUpdateAwaitingReboot =>
-        "Arranque enviado. Esperando a que el iPod confirme y reinicie…";
+    public static string BootloaderUpdateAwaitingReboot => Strings.Get("app-strings.bootloader-update-awaiting-reboot");
 
-    public static string BootloaderUpdateDoneTitle => "Listo: el arranque quedó actualizado";
+    public static string BootloaderUpdateDoneTitle => Strings.Get("app-strings.bootloader-update-done-title");
 
-    public static string BootloaderUpdateDoneDetail =>
-        "Tu música y tus ajustes siguen intactos. La próxima vez que enciendas el iPod vas a ver " +
-        "la pantalla de arranque nueva.";
+    public static string BootloaderUpdateDoneDetail => Strings.Get("app-strings.bootloader-update-done-detail");
 
     // MARK: - La salida cuando el DFU no aparece (ST-169)
 
-    public static string ServicePauseTitle => "¿No aparece?";
+    public static string ServicePauseTitle => Strings.Get("app-strings.service-pause-title");
 
-    public static string ServicePauseDetail =>
-        "Windows puede tener el servicio de Apple ocupando el iPod. Podemos detenerlo mientras dura " +
-        "esto y lo volvemos a encender al terminar.";
+    public static string ServicePauseDetail => Strings.Get("app-strings.service-pause-detail");
 
     /// <summary>Se dice antes de apretar, no después: es el único permiso de este flujo.</summary>
-    public static string ServicePauseAsksForPermission =>
-        "Esto sí te va a pedir permiso de administrador.";
+    public static string ServicePauseAsksForPermission => Strings.Get("app-strings.service-pause-asks-for-permission");
 
-    public static string ServicePauseButton => "Pausar los servicios de Apple";
+    public static string ServicePauseButton => Strings.Get("app-strings.service-pause-button");
 
-    public static string ServicePauseNotRunning =>
-        "El servicio de Apple no está corriendo, así que no es lo que está estorbando.";
+    public static string ServicePauseNotRunning => Strings.Get("app-strings.service-pause-not-running");
 
-    public static string InstallerDoneTitle => "Listo";
-    public static string InstallerDoneDetail =>
-        "El firmware quedó instalado. Expulsa el iPod desde General antes de desconectarlo.";
-    public static string InstallerFailedTitle => "No se pudo continuar";
-    public static string InstallerRestart => "Empezar de nuevo";
-    public static string InstallerCancelled => "Operación cancelada.";
-    public static string InstallerAlreadyWriting =>
-        "Ya hay una operación escribiendo en el iPod. Espera a que termine antes de empezar otra.";
-    public static string InstallerArtifactsInvalid =>
-        "Los archivos del firmware no se pudieron verificar, así que no se instala nada.";
+    public static string InstallerDoneTitle => Strings.Get("app-strings.installer-done-title");
+    public static string InstallerDoneDetail => Strings.Get("app-strings.installer-done-detail");
+    public static string InstallerFailedTitle => Strings.Get("app-strings.installer-failed-title");
+    public static string InstallerRestart => Strings.Get("app-strings.installer-restart");
+    public static string InstallerCancelled => Strings.Get("app-strings.installer-cancelled");
+    public static string InstallerAlreadyWriting => Strings.Get("app-strings.installer-already-writing");
+    public static string InstallerArtifactsInvalid => Strings.Get("app-strings.installer-artifacts-invalid");
 
     // MARK: - Controlador de DFU
 
-    public static string DfuDriverHeading => "Controlador para el modo DFU";
+    public static string DfuDriverHeading => Strings.Get("app-strings.dfu-driver-heading");
 
     public static string DfuDriverReady(string device) =>
-        $"Windows reconoce «{device}» y tiene su controlador funcionando.";
-    public static string DfuDriverMissing =>
-        "Windows ve el iPod pero no tiene controlador para él. Instala «Dispositivos Apple» desde la " +
-        "Microsoft Store (o iTunes de Apple) y vuelve a conectarlo: Aura Studio necesita ese controlador " +
-        "para hablarle al iPod en modo DFU.";
-    public static string DfuDriverInstalledNoDevice =>
-        "El controlador de Apple está instalado. Todavía no se ve ningún iPod en modo DFU.";
-    public static string DfuDriverPackageMissing =>
-        "No se encontró el controlador de dispositivos de Apple. Instala «Dispositivos Apple» desde la " +
-        "Microsoft Store (o iTunes) antes de continuar: sin él, Windows no puede hablarle al iPod en " +
-        "modo DFU.";
-    public static string DfuDriverUnknown =>
-        "No se pudo consultar el estado del controlador.";
+        Strings.Format("app-strings.dfu-driver-ready", device);
+    public static string DfuDriverMissing => Strings.Get("app-strings.dfu-driver-missing");
+    public static string DfuDriverInstalledNoDevice => Strings.Get("app-strings.dfu-driver-installed-no-device");
+    public static string DfuDriverPackageMissing => Strings.Get("app-strings.dfu-driver-package-missing");
+    public static string DfuDriverUnknown => Strings.Get("app-strings.dfu-driver-unknown");
 
     // MARK: - Licencias (contrato §B, GPL v2)
 
-    public static string LicensesTitle => "Licencias";
-    public static string LicensesSubtitle => "Software libre incluido en Aura Studio";
-    public static string LicensesOpen => "Ver licencias";
+    public static string LicensesTitle => Strings.Get("app-strings.licenses-title");
+    public static string LicensesSubtitle => Strings.Get("app-strings.licenses-subtitle");
+    public static string LicensesOpen => Strings.Get("app-strings.licenses-open");
 
-    public static string LicensesIntro =>
-        "mks5lboot, bootloader-ipod6g.ipod, rockbox.ipod y rockbox.zip son obras derivadas de " +
-        "Rockbox y se distribuyen bajo la Licencia Pública General de GNU, versión 2. " +
-        "Aura Studio los incluye como agregación y no los modifica de ninguna forma. " +
-        "Para cada firmware incluido puedes obtener su código fuente completo en el repositorio " +
-        "y la versión exacta que se listan abajo.";
+    public static string LicensesIntro => Strings.Get("app-strings.licenses-intro");
 
-    public static string LicensesFamiliesHeading => "Firmware incluido";
-    public static string LicensesRepositoryLabel => "Código fuente";
-    public static string LicensesTagLabel => "Versión incluida";
+    public static string LicensesFamiliesHeading => Strings.Get("app-strings.licenses-families-heading");
+    public static string LicensesRepositoryLabel => Strings.Get("app-strings.licenses-repository-label");
+    public static string LicensesTagLabel => Strings.Get("app-strings.licenses-tag-label");
 
-    public static string LicensesUnknownTag => "No se conoce";
+    public static string LicensesUnknownTag => Strings.Get("app-strings.licenses-unknown-tag");
 
-    public static string LicensesUnknownTagDetail =>
-        "Estos archivos se copiaron sin registrar de qué Release salieron. " +
-        "Vuelve a poblarlos con scripts/FirmwareFetch.ps1 para que la versión quede anotada.";
+    public static string LicensesUnknownTagDetail => Strings.Get("app-strings.licenses-unknown-tag-detail");
 
-    public static string LicensesDocumentPresent(string name) => $"{name}: incluido";
-    public static string LicensesDocumentMissing(string name) => $"{name}: no incluido en estos archivos";
+    public static string LicensesDocumentPresent(string name) =>
+        Strings.Format("app-strings.licenses-document-present", name);
 
-    public static string LicensesToolHeading => "Herramienta de grabado (mks5lboot.exe)";
+    public static string LicensesDocumentMissing(string name) =>
+        Strings.Format("app-strings.licenses-document-missing", name);
+
+    public static string LicensesToolHeading => Strings.Get("app-strings.licenses-tool-heading");
 
     public static string LicensesToolFromRelease(string tag) =>
-        $"Publicada en el Release {tag} y verificada contra su checksums.txt.";
+        Strings.Format("app-strings.licenses-tool-from-release", tag);
 
     public static string LicensesToolLocalPin(string tag) =>
-        "Compilada aparte para Windows: el Release publica la versión de Unix. " +
-        $"Coincide con el hash fijado en el propio Aura Studio (origen declarado: {tag}). " +
-        "Su código fuente es el del repositorio del firmware que se indica arriba.";
+        Strings.Format("app-strings.licenses-tool-local-pin", tag);
 
-    public static string LicensesToolUnverified =>
-        "No se pudo comprobar contra ningún hash. Aura Studio no la ejecutará hasta poder verificarla.";
+    public static string LicensesToolUnverified => Strings.Get("app-strings.licenses-tool-unverified");
 
-    public static string LicensesToolMissing => "No está incluida en esta copia.";
+    public static string LicensesToolMissing => Strings.Get("app-strings.licenses-tool-missing");
 
     // MARK: - Licencias: bibliotecas de terceros
 
@@ -651,20 +570,15 @@ public static class AppStrings
     /// compatible su uso con una app cerrada — y esa forma de enlace es
     /// justamente lo que la licencia obliga a decir.
     /// </summary>
-    public static string LicensesLibrariesHeading => "Bibliotecas incluidas";
+    public static string LicensesLibrariesHeading => Strings.Get("app-strings.licenses-libraries-heading");
 
-    public static string LicensesLibrariesIntro =>
-        "Aura Studio incluye bibliotecas de software libre. Se distribuyen como archivos " +
-        "aparte junto al programa, sin modificar, y puedes reemplazarlas por otra versión " +
-        "compatible.";
+    public static string LicensesLibrariesIntro => Strings.Get("app-strings.licenses-libraries-intro");
 
-    public static string LicensesTagLibName => "TagLib# 2.3.0 — LGPL v2.1";
+    public static string LicensesTagLibName => Strings.Get("app-strings.licenses-tag-lib-name");
 
-    public static string LicensesTagLibDetail =>
-        "Lee las etiquetas y las carátulas de tus archivos de música (MP3, FLAC, M4A). " +
-        "En Aura Studio para Mac ese trabajo lo hace AVFoundation, que no existe en Windows.";
+    public static string LicensesTagLibDetail => Strings.Get("app-strings.licenses-tag-lib-detail");
 
-    public static string LicensesTagLibSource => "https://github.com/mono/taglib-sharp";
+    public static string LicensesTagLibSource => Strings.Get("app-strings.licenses-tag-lib-source");
 
     // MARK: - Secciones todavía no construidas
 
@@ -673,9 +587,8 @@ public static class AppStrings
     /// pantalla vacía (mismo criterio que `ExtrasView` de macOS: no mostrar
     /// filas que el producto no tiene).
     /// </summary>
-    public static string SectionPendingTitle => "Todavía no está lista";
+    public static string SectionPendingTitle => Strings.Get("app-strings.section-pending-title");
 
     public static string SectionPendingDetail(string phase) =>
-        $"Esta sección llega en la {phase} del port a Windows. " +
-        "La navegación ya está en su lugar para que nada cambie cuando el contenido aparezca.";
+        Strings.Format("app-strings.section-pending-detail", phase);
 }

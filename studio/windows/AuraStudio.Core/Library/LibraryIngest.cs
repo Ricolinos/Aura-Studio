@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Library;
 
 /// <summary>
@@ -111,38 +113,33 @@ public static class LibraryIngest
         var parts = new List<string>();
 
         if (result.Added.Count > 0)
-            parts.Add(result.Added.Count == 1
-                ? "Se agregó 1 elemento."
-                : $"Se agregaron {result.Added.Count} elementos.");
+            parts.Add(Strings.Plural("library-ingest.added", result.Added.Count));
 
         if (result.CoverAssets.Count > 0)
-            parts.Add(result.CoverAssets.Count == 1
-                ? "1 imagen se tomó como carátula, no como foto."
-                : $"{result.CoverAssets.Count} imágenes se tomaron como carátulas, no como fotos.");
+            parts.Add(Strings.Plural("library-ingest.cover-assets", result.CoverAssets.Count));
 
         if (result.AlreadyInLibrary.Count > 0)
-            parts.Add(result.AlreadyInLibrary.Count == 1
-                ? "1 ya estaba en tu biblioteca."
-                : $"{result.AlreadyInLibrary.Count} ya estaban en tu biblioteca.");
+            parts.Add(Strings.Plural("library-ingest.already-in-library", result.AlreadyInLibrary.Count));
 
         if (result.WrongSection.Count > 0)
-            parts.Add(result.WrongSection.Count == 1
-                ? $"1 archivo no es {SectionNoun(section)} y no se agregó acá."
-                : $"{result.WrongSection.Count} archivos no son {SectionNoun(section)} y no se agregaron acá.");
+            parts.Add(Strings.Plural("library-ingest.wrong-section",
+                result.WrongSection.Count, SectionNoun(section)));
 
         if (result.Unsupported.Count > 0)
-            parts.Add(result.Unsupported.Count == 1
-                ? "1 archivo no es compatible."
-                : $"{result.Unsupported.Count} archivos no son compatibles.");
+            parts.Add(Strings.Plural("library-ingest.unsupported", result.Unsupported.Count));
 
-        return parts.Count == 0 ? "No había nada que agregar." : string.Join(" ", parts);
+        return parts.Count == 0 ? Strings.Get("library-ingest.nothing-to-add") : string.Join(" ", parts);
     }
 
+    // El sustantivo entra a media frase ("1 archivo no es {} y no se agregó
+    // acá"), así que arrastra su artículo y su género. Se mueve tal cual: si
+    // en otro idioma no compone, se parte la frase entera, no el sustantivo —
+    // pero eso es redactar, y B7a solo mueve.
     private static string SectionNoun(LibraryItemKind section) => section switch
     {
-        LibraryItemKind.Music => "música",
-        LibraryItemKind.Video => "video",
-        LibraryItemKind.Photo => "una imagen",
-        _ => "compatible"
+        LibraryItemKind.Music => Strings.Get("library-ingest.section-noun-music"),
+        LibraryItemKind.Video => Strings.Get("library-ingest.section-noun-video"),
+        LibraryItemKind.Photo => Strings.Get("library-ingest.section-noun-photo"),
+        _ => Strings.Get("library-ingest.section-noun-other")
     };
 }

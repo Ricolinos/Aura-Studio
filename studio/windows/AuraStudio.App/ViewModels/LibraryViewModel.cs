@@ -6,6 +6,7 @@ using AuraStudio.App.Services;
 using AuraStudio.Core;
 using AuraStudio.Core.Library;
 using AuraStudio.Core.Networking;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App.ViewModels;
 
@@ -57,9 +58,7 @@ public sealed record AlbumCoverBatchResult(
         // es lo que separa "se hizo todo" de "lo paraste a la mitad".
         if (!Cancelled || NotStarted == 0) return done;
 
-        return NotStarted == 1
-            ? $"{done} 1 quedó sin revisar (cancelaste)."
-            : $"{done} {NotStarted} quedaron sin revisar (cancelaste).";
+        return Strings.Plural("library-view-model.not-started", NotStarted, done);
     }
 }
 
@@ -306,17 +305,21 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
         if (targets.Count == 0)
         {
-            StatusMessage = "No hay nada que completar: todo tiene título, artista y álbum.";
+            StatusMessage = Strings.Get("library-view-model.hay-nada-completar-todo-tiene-titulo");
             return;
         }
 
         IsEnriching = true;
-        StatusMessage = $"Completando {targets.Count} elemento(s)…";
+        StatusMessage = Strings.Format(
+            "library-view-model.completando-targets-count-elemento-s", targets.Count);
 
         try
         {
             EnrichmentReport report = await _enrichment.EnrichAsync(
-                targets, new Progress<string>(title => StatusMessage = $"Completando {title}…"), ct);
+                targets,
+                new Progress<string>(title =>
+                    StatusMessage = Strings.Format("library-view-model.completando-title", title)),
+                ct);
 
             Save();
             RefreshAvailable();
@@ -324,7 +327,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
             StatusMessage = report.Summary;
         }
-        catch (OperationCanceledException) { StatusMessage = "Se detuvo la búsqueda en línea."; }
+        catch (OperationCanceledException) { StatusMessage = Strings.Get("library-view-model.se-detuvo-busqueda-linea"); }
         finally { IsEnriching = false; }
     }
 
@@ -387,9 +390,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
         // para un álbum, y la tarjeta tiene que cambiar ya.
         if (!inBatch) FinishAlbumCoverBatch();
 
-        StatusMessage = applied == 1
-            ? "Se cambió la tapa de 1 canción."
-            : $"Se cambió la tapa de {applied} canciones.";
+        StatusMessage = Strings.Plural("library-view-model.album-cover-applied", applied);
 
         return applied;
     }
@@ -474,7 +475,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(ct);
 
         BackgroundTaskHandle task = _tasks.Begin(
-            jobs.Count == 1 ? "Buscando carátula…" : $"Buscando carátulas de {jobs.Count} álbumes…",
+            Strings.Plural("library-view-model.searching-covers", jobs.Count),
             BackgroundTaskProgress.Of(0, jobs.Count),
             cancellation.Cancel);
 
@@ -540,7 +541,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
     public async Task FetchVideoPostersAsync(CancellationToken ct = default)
     {
         IsEnriching = true;
-        StatusMessage = "Buscando pósters de video…";
+        StatusMessage = Strings.Get("library-view-model.buscando-posters-video");
 
         try
         {
@@ -553,7 +554,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
                 ? "No se consiguió ningún póster nuevo."
                 : $"Se consiguieron {found} póster(s).";
         }
-        catch (OperationCanceledException) { StatusMessage = "Se detuvo la búsqueda de pósters."; }
+        catch (OperationCanceledException) { StatusMessage = Strings.Get("library-view-model.se-detuvo-busqueda-posters"); }
         finally { IsEnriching = false; }
     }
 
@@ -561,7 +562,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
     public async Task FetchArtistImagesAsync(CancellationToken ct = default)
     {
         IsEnriching = true;
-        StatusMessage = "Buscando fotos de artista…";
+        StatusMessage = Strings.Get("library-view-model.buscando-fotos-artista");
 
         try
         {
@@ -574,7 +575,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
             // distintas.
             StatusMessage = batch.Summary;
         }
-        catch (OperationCanceledException) { StatusMessage = "Se detuvo la búsqueda de fotos."; }
+        catch (OperationCanceledException) { StatusMessage = Strings.Get("library-view-model.se-detuvo-busqueda-fotos"); }
         finally { IsEnriching = false; }
     }
 
@@ -1052,7 +1053,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
         if (result.Cancelled)
         {
-            StatusMessage = "Se detuvo la normalización de carátulas. Lo que falte sigue la próxima vez.";
+            StatusMessage = Strings.Get("library-view-model.se-detuvo-normalizacion-caratulas-lo-fal");
             return;
         }
 
@@ -1067,9 +1068,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
         // Lo que quedó en memoria es la versión vieja (rectangular): se relee de
         // disco para que la app muestre lo mismo que se va a sincronizar.
         Reload();
-        StatusMessage = result.Normalized == 1
-            ? "Se normalizó 1 carátula: ahora es cuadrada."
-            : $"Se normalizaron {result.Normalized} carátulas: ahora son cuadradas.";
+        StatusMessage = Strings.Plural("library-view-model.covers-normalized", result.Normalized);
     }
 
     private void MarkCoversNormalized()
@@ -1214,9 +1213,9 @@ public sealed partial class LibraryViewModel : ViewModelBase
         int videos = items.Count(item => item.Kind == LibraryItemKind.Video);
         int photos = items.Count(item => item.Kind == LibraryItemKind.Photo);
 
-        if (songs > 0) parts.Add(songs == 1 ? "1 canción" : $"{songs} canciones");
-        if (videos > 0) parts.Add(videos == 1 ? "1 video" : $"{videos} videos");
-        if (photos > 0) parts.Add(photos == 1 ? "1 foto" : $"{photos} fotos");
+        if (songs > 0) parts.Add(Strings.Plural("conteo.canciones", songs));
+        if (videos > 0) parts.Add(Strings.Plural("conteo.videos", videos));
+        if (photos > 0) parts.Add(Strings.Plural("conteo.fotos", photos));
 
         return string.Join(" · ", parts);
     }
@@ -1661,16 +1660,13 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
             if (MigrationNeed.ItemsWithoutStorage is > 0 and var withoutStorage)
             {
-                parts.Add(withoutStorage == 1
-                    ? "1 elemento no dice todavía si su archivo es una copia de Aura o tuyo"
-                    : $"{withoutStorage} elementos no dicen todavía si sus archivos son copias de Aura o tuyos");
+                parts.Add(Strings.Plural(
+                    "library-view-model.migration-without-storage", withoutStorage));
             }
 
             if (MigrationNeed.LegacyPrepared is > 0 and var legacy)
             {
-                parts.Add(legacy == 1
-                    ? "1 archivo preparado usa el nombre viejo"
-                    : $"{legacy} archivos preparados usan el nombre viejo");
+                parts.Add(Strings.Plural("library-view-model.migration-legacy-prepared", legacy));
             }
 
             return parts.Count == 0
@@ -1748,9 +1744,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
         if (summary.Tagged > 0)
         {
-            parts.Add(summary.Tagged == 1
-                ? "se escribieron las etiquetas de 1 canción"
-                : $"se escribieron las etiquetas de {summary.Tagged} canciones");
+            parts.Add(Strings.Plural("library-view-model.migration-tagged", summary.Tagged));
         }
 
         if (summary.PreparedRenamed > 0) parts.Add($"se ordenaron {summary.PreparedRenamed} preparados");
@@ -1793,9 +1787,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
         if (pending.Count == 0) return;
 
         BackgroundTaskHandle task = _tasks.Begin(
-            pending.Count == 1
-                ? "Copiando 1 archivo a la biblioteca…"
-                : $"Copiando {pending.Count} archivos a la biblioteca…",
+            Strings.Plural("library-view-model.copying-files", pending.Count),
             BackgroundTaskProgress.Of(0, pending.Count));
 
         int copied = 0;
@@ -1846,17 +1838,15 @@ public sealed partial class LibraryViewModel : ViewModelBase
     {
         var parts = new List<string>
         {
-            copied == 1 ? "Se copió 1 archivo a la biblioteca." : $"Se copiaron {copied} archivos a la biblioteca."
+            Strings.Plural("library-view-model.copied-files", copied)
         };
 
         if (missing > 0)
         {
-            parts.Add(missing == 1
-                ? "1 se saltó porque su archivo no está; sigue en el catálogo."
-                : $"{missing} se saltaron porque sus archivos no están; siguen en el catálogo.");
+            parts.Add(Strings.Plural("library-view-model.copy-skipped", missing));
         }
 
-        if (failed > 0) parts.Add(failed == 1 ? "1 no se pudo copiar." : $"{failed} no se pudieron copiar.");
+        if (failed > 0) parts.Add(Strings.Plural("library-view-model.copy-failed", failed));
 
         return string.Join(" ", parts);
     }
@@ -2028,7 +2018,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
         Save();
         RefreshAvailable();
         OnPropertyChanged(nameof(Items));
-        StatusMessage = removed == 1 ? "Se quitó 1 carátula." : $"Se quitaron {removed} carátulas.";
+        StatusMessage = Strings.Plural("library-view-model.covers-removed", removed);
     }
 
     /// <summary>El póster de un video vive junto al preparado, así que quitarlo es borrar ese archivo.</summary>
@@ -2102,14 +2092,14 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
         if (read == 0)
         {
-            StatusMessage = "No se pudo leer ninguna etiqueta: los archivos no están disponibles.";
+            StatusMessage = Strings.Get("library-view-model.se-pudo-leer-ninguna-etiqueta-archivos");
             return;
         }
 
         Save();
         RefreshAvailable();
         OnPropertyChanged(nameof(Items));
-        StatusMessage = read == 1 ? "Se releyeron las etiquetas de 1 canción." : $"Se releyeron las etiquetas de {read} canciones.";
+        StatusMessage = Strings.Plural("library-view-model.tags-reread", read);
     }
 
     /// <summary>Solo la letra, sin tocar el resto de la metadata.</summary>
@@ -2119,7 +2109,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
         if (targets.Count == 0) return;
 
         IsEnriching = true;
-        StatusMessage = "Buscando letra…";
+        StatusMessage = Strings.Get("library-view-model.buscando-letra");
 
         try
         {
@@ -2133,7 +2123,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
                 ? "No se encontró letra para lo seleccionado."
                 : $"Se consiguieron {report.Lyrics} letra(s).";
         }
-        catch (OperationCanceledException) { StatusMessage = "Se detuvo la búsqueda de letra."; }
+        catch (OperationCanceledException) { StatusMessage = Strings.Get("library-view-model.se-detuvo-busqueda-letra"); }
         finally { IsEnriching = false; }
     }
 

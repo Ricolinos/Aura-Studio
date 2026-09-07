@@ -1,4 +1,5 @@
 using System.Text;
+using AuraStudio.Core.Resources;
 using Microsoft.UI.Xaml;
 
 namespace AuraStudio.App.Services;
@@ -109,9 +110,9 @@ public static class CrashReporter
             var dialog = new Microsoft.UI.Xaml.Controls.ContentDialog
             {
                 XamlRoot = root.XamlRoot,
-                Title = "Algo salió mal",
+                Title = Strings.Get("crash-reporter.algo-salio-mal"),
                 Content = $"Aura Studio encontró un error inesperado y lo anotó en:\n{LogPath}\n\n{message}",
-                CloseButtonText = "Entendido"
+                CloseButtonText = Strings.Get("crash-reporter.entendido")
             };
 
             _ = dialog.ShowAsync();

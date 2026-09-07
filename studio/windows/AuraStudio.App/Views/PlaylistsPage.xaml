@@ -5,7 +5,8 @@
     xmlns:conv="using:AuraStudio.App.Converters"
     xmlns:controls="using:AuraStudio.App.Controls"
     xmlns:res="using:AuraStudio.App.Resources"
-    xmlns:vm="using:AuraStudio.App.ViewModels">
+    xmlns:vm="using:AuraStudio.App.ViewModels"
+    xmlns:str="using:AuraStudio.Core.Resources">
 
     <Page.Resources>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
@@ -18,13 +19,13 @@
             <StackPanel>
                 <TextBlock Text="{x:Bind res:AppStrings.NavPlaylists}"
                            Style="{StaticResource AuraPageTitleTextStyle}" />
-                <TextBlock Text="Listas armadas con canciones de tu biblioteca. Se copian al iPod al sincronizar."
+                <TextBlock Text="{x:Bind str:Strings.Get('playlists-page.listas-armadas-con-canciones-biblioteca')}"
                            Style="{StaticResource AuraSecondaryTextStyle}" TextWrapping="Wrap" />
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <Button Content="Nueva lista" Click="New_Click" Style="{StaticResource AuraPrimaryButtonStyle}" />
-                <Button Content="Importar M3U…" Click="Import_Click" />
+                <Button Content="{x:Bind str:Strings.Get('playlists-page.nueva-lista')}" Click="New_Click" Style="{StaticResource AuraPrimaryButtonStyle}" />
+                <Button Content="{x:Bind str:Strings.Get('playlists-page.importar-m3u')}" Click="Import_Click" />
             </StackPanel>
         </Grid>
 
@@ -48,9 +49,9 @@
                             <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" />
                             <TextBlock Text="{x:Bind Detail}" Style="{StaticResource AuraCaptionTextStyle}" />
                         </StackPanel>
-                        <Button Grid.Column="1" Content="Renombrar" Tag="{x:Bind Id}" Click="Rename_Click" />
-                        <Button Grid.Column="2" Content="Exportar" Tag="{x:Bind Id}" Click="Export_Click" />
-                        <Button Grid.Column="3" Content="Eliminar" Tag="{x:Bind Id}" Click="Delete_Click" />
+                        <Button Grid.Column="1" Content="{x:Bind str:Strings.Get('playlists-page.renombrar')}" Tag="{x:Bind Id}" Click="Rename_Click" />
+                        <Button Grid.Column="2" Content="{x:Bind str:Strings.Get('playlists-page.exportar')}" Tag="{x:Bind Id}" Click="Export_Click" />
+                        <Button Grid.Column="3" Content="{x:Bind str:Strings.Get('playlists-page.eliminar')}" Tag="{x:Bind Id}" Click="Delete_Click" />
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
@@ -59,9 +60,9 @@
         <StackPanel Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center"
                     Spacing="8" MaxWidth="420"
                     Visibility="{x:Bind ViewModel.IsEmpty, Mode=OneWay, Converter={StaticResource BoolToVisibility}}">
-            <TextBlock Text="Todavía no tienes listas."
+            <TextBlock Text="{x:Bind str:Strings.Get('playlists-page.todavia-tienes-listas')}"
                        Style="{StaticResource AuraSecondaryTextStyle}" TextAlignment="Center" />
-            <TextBlock Text="Crea una nueva, o importa un archivo .m3u/.m3u8 de otro programa. Las canciones que no estén en tu biblioteca se cuentan aparte, no se pierden en silencio."
+            <TextBlock Text="{x:Bind str:Strings.Get('playlists-page.crea-nueva-o-importa-archivo-m3u')}"
                        Style="{StaticResource AuraCaptionTextStyle}"
                        TextWrapping="Wrap" TextAlignment="Center" />
         </StackPanel>

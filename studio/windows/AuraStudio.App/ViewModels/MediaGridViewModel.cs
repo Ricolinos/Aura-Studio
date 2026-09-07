@@ -4,6 +4,7 @@ using AuraStudio.App.Resources;
 using AuraStudio.Core;
 using AuraStudio.Core.Library;
 using AuraStudio.Core.Networking;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App.ViewModels;
 
@@ -301,12 +302,12 @@ public sealed partial class MediaGridViewModel : ViewModelBase
 
     public string CountText => Kind switch
     {
-        MediaGridKind.Albums => Cards.Count == 1 ? "1 álbum" : $"{Cards.Count} álbumes",
-        MediaGridKind.Movies => Cards.Count == 1 ? "1 película" : $"{Cards.Count} películas",
-        MediaGridKind.Series => Cards.Count == 1 ? "1 serie" : $"{Cards.Count} series",
-        MediaGridKind.PhotoCollection => Cards.Count == 1 ? "1 álbum" : $"{Cards.Count} álbumes",
+        MediaGridKind.Albums => Strings.Plural("conteo.albumes", Cards.Count),
+        MediaGridKind.Movies => Strings.Plural("conteo.peliculas", Cards.Count),
+        MediaGridKind.Series => Strings.Plural("conteo.series", Cards.Count),
+        MediaGridKind.PhotoCollection => Strings.Plural("conteo.albumes", Cards.Count),
         MediaGridKind.AllPhotos => AppStrings.LibraryPhotos(Cards.Count),
-        _ => Cards.Count == 1 ? "1 video" : $"{Cards.Count} videos"
+        _ => Strings.Plural("conteo.videos", Cards.Count)
     };
 
     public void Show(MediaGridKind kind, string? photoCategory = null)
@@ -474,7 +475,7 @@ public sealed partial class MediaGridViewModel : ViewModelBase
     private static string SeasonsText(VideoCollectionGroup series)
     {
         int real = series.Seasons.Count(season => season.Number != VideoCollectionGroup.NoSeasonNumber);
-        return real == 1 ? "1 temporada" : $"{real} temporadas";
+        return Strings.Plural("conteo.temporadas", real);
     }
 
     // MARK: - Selección (ST-103)
@@ -806,7 +807,8 @@ public sealed partial class MediaGridViewModel : ViewModelBase
 
         _library.SaveAndRefresh();
         Refresh();
-        _library.StatusMessage = moved == 1 ? "Se quitó 1 foto de su álbum." : $"Se quitaron {moved} fotos de su álbum.";
+        _library.StatusMessage =
+            Strings.Plural("media-grid-view-model.photos-removed-from-album", moved);
     }
 
     /// <summary>

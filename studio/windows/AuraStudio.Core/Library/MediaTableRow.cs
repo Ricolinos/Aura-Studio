@@ -42,15 +42,27 @@ public sealed class MediaTableRow(LibraryItem item, long fileSizeBytes = 0, Sync
     /// <summary>
     /// Orden natural e insensible a mayúsculas, el equivalente de
     /// <c>localizedStandard</c>: "Pista 2" antes que "Pista 10".
+    ///
+    /// <para>ST-247: con la cultura de la interfaz, no con una fija. Ordenar la
+    /// biblioteca de alguien con las reglas de otro idioma pone los acentos
+    /// donde esa persona no los busca.</para>
+    ///
+    /// <para>Es una propiedad y no un campo guardado a propósito: la cultura
+    /// puede cambiar mientras la app está abierta (el selector de idioma es
+    /// B7b), y un comparador construido una vez al cargar el tipo se quedaría
+    /// con la de entonces. Se consulta una vez por ordenación, no por
+    /// comparación.</para>
     /// </summary>
-    public static readonly StringComparer NaturalOrder = StringComparer.Create(
-        CultureInfo.GetCultureInfo("es-MX"), CompareOptions.IgnoreCase | CompareOptions.NumericOrdering);
+    public static StringComparer NaturalOrder => StringComparer.Create(
+        CultureInfo.CurrentCulture, CompareOptions.IgnoreCase | CompareOptions.NumericOrdering);
 
     /// <summary>
-    /// Las fechas se muestran en español de México pase lo que pase, aunque
-    /// Windows esté en otro idioma: es una regla del repo, no del sistema.
+    /// Las fechas se escriben con el formato de la cultura de la interfaz
+    /// (ST-247). Antes eran siempre las de español de México, aunque Windows
+    /// estuviera en otro idioma: con la app hablando dos idiomas eso deja de
+    /// ser una regla del repo y pasa a ser una fecha que el usuario lee mal.
     /// </summary>
-    private static readonly CultureInfo DisplayCulture = CultureInfo.GetCultureInfo("es-MX");
+    private static CultureInfo DisplayCulture => CultureInfo.CurrentCulture;
 
     public LibraryItem Item { get; } = item;
     public SyncItemState? SyncState { get; set; } = syncState;

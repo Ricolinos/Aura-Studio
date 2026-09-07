@@ -6,6 +6,7 @@
     xmlns:controls="using:AuraStudio.App.Controls"
     xmlns:res="using:AuraStudio.App.Resources"
     xmlns:vm="using:AuraStudio.App.ViewModels"
+    xmlns:str="using:AuraStudio.Core.Resources"
     AllowDrop="True"
     DragOver="Page_DragOver"
     Drop="Page_Drop"
@@ -54,12 +55,12 @@
                     <TextBlock FontFamily="Segoe Fluent Icons" Text="{x:Bind res:Glyphs.Sort}" />
                 </Button>
 
-                <Button Content="Elementos parecidos" Click="Similar_Click"
-                        ToolTipService.ToolTip="Busca canciones, fotos y videos que parezcan repetidos" />
+                <Button Content="{x:Bind str:Strings.Get('songs-page.elementos-parecidos')}" Click="Similar_Click"
+                        ToolTipService.ToolTip="{x:Bind str:Strings.Get('songs-page.busca-canciones-fotos-videos-parezcan-re')}" />
 
-                <Button Content="Completar en línea" Click="Enrich_Click"
+                <Button Content="{x:Bind str:Strings.Get('songs-page.completar-linea')}" Click="Enrich_Click"
                         IsEnabled="{x:Bind ViewModel.Library.IsEnriching, Mode=OneWay, Converter={StaticResource InvertBool}}"
-                        ToolTipService.ToolTip="Busca álbum, año, carátula y letra de lo que esté incompleto" />
+                        ToolTipService.ToolTip="{x:Bind str:Strings.Get('songs-page.busca-album-ano-caratula-letra-lo')}" />
 
                 <Button x:Name="ColumnsButton" ToolTipService.ToolTip="{x:Bind res:AppStrings.LibraryColumns}"
                         AutomationProperties.Name="{x:Bind res:AppStrings.LibraryColumns}">

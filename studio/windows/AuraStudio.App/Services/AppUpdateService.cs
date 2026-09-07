@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using AuraStudio.Core.Networking;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App.Services;
 
@@ -123,7 +124,7 @@ public sealed partial class AppUpdateService : ObservableObject
     public async Task CheckNowAsync(CancellationToken ct = default)
     {
         IsChecking = true;
-        StatusMessage = "Buscando actualizaciones de Aura Studio…";
+        StatusMessage = Strings.Get("app-update-service.buscando-actualizaciones-aura-studio");
 
         try
         {
@@ -144,7 +145,8 @@ public sealed partial class AppUpdateService : ObservableObject
 
             if (Available is not { } update)
             {
-                StatusMessage = $"Aura Studio {InstalledVersion} es la versión más nueva publicada.";
+                StatusMessage = Strings.Format(
+                    "app-update-service.aura-studio-installedversion-es-version", InstalledVersion);
                 IsAnnouncing = false;
                 return;
             }
@@ -160,7 +162,7 @@ public sealed partial class AppUpdateService : ObservableObject
         }
         catch (OperationCanceledException)
         {
-            StatusMessage = "Se detuvo la búsqueda de actualizaciones.";
+            StatusMessage = Strings.Get("app-update-service.se-detuvo-busqueda-actualizaciones");
         }
         finally
         {
@@ -199,7 +201,9 @@ public sealed partial class AppUpdateService : ObservableObject
 
         IsDownloading = true;
         DownloadProgress = 0;
-        StatusMessage = $"Descargando Aura Studio {Available.Value.Version.ReleaseString}…";
+        StatusMessage = Strings.Format(
+            "app-update-service.descargando-aura-studio-available-value",
+            Available.Value.Version.ReleaseString);
 
         try
         {
