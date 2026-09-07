@@ -128,6 +128,14 @@ public sealed class LibraryItem
     public string? CoverHash { get; set; }
 
     /// <summary>
+    /// Cómo guarda la biblioteca este archivo (<c>"copy"</c> / <c>"reference"</c>),
+    /// tal como venía en el catálogo. Contrato de la ronda "ajustes 3" (ST-221 en
+    /// la Mac); <b>ST-242 solo lo conserva</b> —cargar y volver a guardar no
+    /// puede perder lo que escribió la otra app— y ST-241 le da semántica.
+    /// </summary>
+    public string? Storage { get; set; }
+
+    /// <summary>
     /// Si tiene carátula. Se contesta con lo que hay en memoria, <b>sin tocar el
     /// disco</b>.
     ///

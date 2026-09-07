@@ -147,6 +147,7 @@ public sealed class LibraryStore(string root)
                 Metadata = LibraryPersistenceMapper.ToLive(persisted.Metadata, null),
                 CoverRelativePath = persisted.CoverRelativePath,
                 CoverHash = persisted.CoverHash,
+                Storage = persisted.Storage,
 
                 PreparedPath = persisted.PreparedRelativePath is null
                     ? null : ToAbsolutePath(persisted.PreparedRelativePath),
@@ -358,6 +359,10 @@ public sealed class LibraryStore(string root)
 
                 // La invariante que fijó la maestra: sin ruta tampoco hay hash.
                 CoverHash = item.CoverRelativePath is { Length: > 0 } ? item.CoverHash : null,
+
+                // ST-242: se conserva tal cual vino. Le da semántica ST-241; acá
+                // lo único que importa es que un guardado no lo borre.
+                Storage = item.Storage,
                 Category = item.Category,
                 SeriesName = item.SeriesName,
                 Season = item.Season,

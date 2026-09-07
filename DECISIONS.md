@@ -11136,3 +11136,214 @@ como hoy.
 Reusa el fixture de A0 (`MediaFixture`) y los lectores de A2
 (`FLACTagReader`/`MP4TagReader`) tal cual, sin necesidad de escribir
 nada nuevo cuando llegue el momento de llenarlas.
+
+## ST-242 — Windows: el escritor de etiquetas (catálogo → archivo), y el interruptor de carátula que nadie escuchaba
+
+B2 de la ronda de "ajustes 3". Windows sabía **leer** etiquetas desde el
+primer día (`LocalTagReader`) y no sabía **escribirlas nunca**: editar el
+título de una canción en Studio cambiaba el catálogo y no cambiaba el
+archivo, así que la corrección no llegaba al iPod ni a ningún otro
+reproductor. La Mac sí escribía, pero solo MP3 y anteponiendo una tag
+ID3 armada a mano (`ID3Writer.swift`).
+
+### La dirección es una sola: del catálogo al archivo
+
+`LocalTagWriter` escribe en el archivo lo que dice el catálogo, y nada
+más. Leer del archivo para rellenar el catálogo es la operación
+contraria —"releer etiquetas del archivo"— y no pasa por acá. Mezclar
+las dos direcciones en un mismo camino es cómo se pierde una edición: la
+lectura pisa lo que el usuario acaba de escribir.
+
+### Qué se escribe, y qué no se escribe a propósito
+
+**Sí**: título, artista, álbum, artista del álbum, compositor, número de
+pista, número de disco, año, género y —solo con `CoverArtPolicy.PerTrack`—
+la carátula incrustada.
+
+**No**: rating, favorito, letra y categoría. No son datos del archivo:
+el rating viaja en `ratings.cfg`, la letra como `.lrc` hermano (ST-012) y
+la categoría es organización de la biblioteca, que ni siquiera llega al
+escritor (vive en el `LibraryItem`, no en el `TrackMetadata`). Reescribir
+cincuenta megabytes de audio porque alguien puso una estrella es
+exactamente el defecto que esta ronda vino a arreglar.
+
+Y hay una regla más fuerte que la lista: **si el archivo ya dice lo que
+dice el catálogo, no se escribe nada**. `PendingFields` compara campo por
+campo contra lo que el archivo dice *hoy* —no contra lo que se escribió
+la última vez, porque alguien pudo haberlo tocado por fuera— y devuelve
+`TagWriteResult.UpToDate` sin abrir la escritura. Eso es lo que hace que
+poner una estrella no le mueva la fecha de modificación al archivo, que
+es justo lo que mira la sincronización para decidir si hay que volver a
+copiarlo al iPod. La prueba no confía en el resultado que devuelve el
+código que se está probando: compara **los bytes** del archivo antes y
+después, y también la fecha de modificación.
+
+También vale al revés: un campo que el catálogo no dice (`null`) **no
+borra** el que el archivo tenía. "Sin dato" no es "vacío" — la misma
+regla de "ausente ≠ cero" que rige el resto del catálogo. Y todo lo que
+el catálogo no gobierna —comentarios, ReplayGain, identificadores de
+otros programas— se queda como estaba.
+
+### Formatos
+
+MP3 (ID3v2.3), FLAC (Vorbis comments + PICTURE) y M4A/ALAC (átomos
+`ilst`). TagLib# unifica los tres detrás de un mismo `Tag`, así que el
+código es uno solo; lo que cambia es el contenedor, y por eso las pruebas
+corren las mismas verificaciones tres veces.
+
+**ID3v2.3 y no la 2.4** que TagLib# usaría por omisión
+(`Id3v2.Tag.DefaultVersion = 3` + `ForceDefaultVersion`): es la versión
+que lee el tagcache de Rockbox y la misma que escribe la Mac. Sin eso,
+las dos apps dejarían el mismo archivo con etiquetas distintas y el
+firmware vería una biblioteca a medias.
+
+### Escritura atómica, y el defecto que encontró la prueba
+
+TagLib# guarda **en el archivo**: sin más cuidado, un corte de luz a
+mitad de guardar deja la canción del usuario rota. Así que se trabaja
+sobre una copia (`<archivo>.aura-tmp`), se guarda ahí y se reemplaza con
+`File.Move(..., overwrite: true)`, que dentro del mismo volumen es un
+paso solo: o queda el archivo viejo entero, o el nuevo entero. El
+temporal se borra en `finally` aunque algo falle.
+
+Esa copia trajo un defecto que **solo apareció al escribir las pruebas de
+ida y vuelta**: TagLib# resuelve el formato por la **extensión**, y sobre
+un archivo llamado `.aura-tmp` no sabe qué está abriendo y se niega
+(`no se pudo escribir: … (taglib/aura-tmp)`). O sea que el escritor no
+escribía **nada, en ningún formato** — y como nunca lanza, lo habría
+hecho en silencio. Se arregla diciéndole a TagLib# qué formato es
+(`Create(temporary, "taglib/mp3", …)`) en vez de renombrar el temporal a
+`.mp3`: un temporal que se llama como música es un temporal que una
+importación posterior puede levantar como si fuera una canción del
+usuario.
+
+**Regla, de acá en adelante: un temporal nunca se llama como música.**
+Si la librería de turno necesita saber el formato, se le dice; no se le
+adivina poniéndole al temporal la extensión de una canción. Un
+`.aura-tmp` que quedó tirado es basura evidente que nadie va a importar;
+un `cancion.mp3` que quedó tirado es una canción duplicada en la
+biblioteca del usuario.
+
+**Nunca lanza.** Un archivo de solo lectura, en uso por otro programa o
+corrupto devuelve un `TagWriteResult` que lo explica; una edición no
+puede tumbar un lote entero.
+
+### El interruptor de carátula que nadie escuchaba
+
+Ajustes tiene desde ST-030 un interruptor de "carátula por álbum / por
+pista", y `SyncService` lo **ignoraba**: pasaba `CoverArtPolicy.AlbumOnly`
+fijo. Ahora viene de la preferencia del usuario. Con `perTrack` el
+finalizador no escribe el `cover.jpg` de carpeta —las carátulas viajan
+incrustadas, escritas por `LocalTagWriter` cuando B3/B4 lo llamen—; con
+`albumOnly`, que es lo normal, la carátula que el archivo ya traía **no
+se toca**: el catálogo no la gobierna, así que borrarla sería quitarle al
+usuario algo que no pidió quitar.
+
+### `storage` conservado desde ya
+
+`PersistedLibraryItem`, `LibraryItem` y las dos direcciones del mapeo de
+`LibraryStore` llevan el campo `storage`, que B2 **no usa**: lo lee, lo
+guarda y no lo interpreta. Es la misma maniobra que se hizo con
+`coverHash` — un campo que se pierde en el primer guardado es un campo
+que rompe el catálogo compartido con la Mac. Su semántica la fija ST-241
+sobre el contrato de ST-221 y se implementa en B1.
+
+### La API, para que B3 y B4 la llamen
+
+```csharp
+LocalTagWriter.CanWrite(path)                       // ¿este formato se etiqueta?
+LocalTagWriter.TaggableExtensions                   // { mp3, flac, m4a }
+
+LocalTagWriter.Write(
+    path,                                           // el archivo a etiquetar
+    metadata,                                       // TrackMetadata del catálogo; null = no se toca
+    coverArt: CoverArtPolicy.AlbumOnly,             // PerTrack incrusta la carátula
+    coverBytes: null)                               // los bytes de la carátula (ST-208: no viven en el elemento)
+  -> TagWriteResult(Written, Fields, BytesWritten, Reason)
+```
+
+Es estática, sin estado y sin dependencias de UI: se puede llamar desde
+cualquier hilo y desde una tarea del centro de tareas. `Fields` dice
+**qué** campos se escribieron, por nombre — "se escribió" sin decir qué
+no se puede verificar ni mostrar. `Reason` dice por qué no, cuando
+`Written` es `false` (el archivo no está, el formato no se etiqueta, ya
+coincidía, o el error de E/S tal cual).
+
+Los bytes de la carátula los pasa quien llama (`LibraryStore.ReadCover`),
+porque desde ST-208 no viven en el elemento del catálogo.
+
+### Lo que NO entra en B2
+
+Deliberadamente fuera, con su ronda asignada:
+
+- **Enganchar el escritor a la importación y a la edición** — B3.
+- **Preparado por ID** (`.preparados/<GUID>.<ext>`) — B4.
+- **Persistir los campos nuevos del catálogo**, incluido interpretar
+  `storage` — B1 (ST-241).
+
+### WAV y AIFF: por qué no se etiquetan, y qué propongo para B3
+
+TagLib# sabe escribirles etiquetas, y aun así `TaggableExtensions` los
+deja fuera. El motivo no es técnico: es que **nadie las va a leer**. El
+plan de la ronda dice que en modo copia esos archivos se convierten a
+MP3, así que escribirles etiquetas ahora sería ensuciar el archivo del
+usuario con datos que se descartan en el paso siguiente. Hoy `Write`
+devuelve `false` con el motivo dicho, y no toca el archivo.
+
+Eso deja una punta suelta que hay que resolver en B3, y son dos caminos:
+
+1. **Transcodificar a MP3 al importar en modo copia**, con ffmpeg +
+   `libmp3lame` incluido en el instalador. Es lo que hace falta para que
+   un WAV llegue al iPod con su título y su carátula. Cuesta: el peso de
+   ffmpeg en el instalador (ya hay un `FfmpegLocator`, pero hoy ffmpeg es
+   **opcional** y su ausencia solo degrada; volverlo obligatorio es una
+   decisión de empaquetado, no de código), y las licencias de lo que se
+   redistribuya. Es la opción que le cumple al usuario lo que la UI ya le
+   promete.
+2. **Retirar la opción de la interfaz** mientras no exista el
+   transcodificador, y decir en pantalla que WAV y AIFF se copian tal
+   cual y sin etiquetas. Cuesta menos y no miente.
+
+**Recomiendo la 1**, con la 2 como estado intermedio explícito si el
+transcodificador no entra en B3: lo que no se puede dejar es la opción
+prendida sin nada detrás, que es donde estábamos con el interruptor de
+carátula. La decisión de empaquetar ffmpeg es de la Maestra, no de esta
+ronda.
+
+### Verificación
+
+`dotnet build` de `AuraStudio.Core` y de `AuraStudio.App`: **0 errores**.
+`dotnet test`: **1 584 pruebas en verde** (1 550 de antes + 34 nuevas).
+
+Las 34 nuevas (`LocalTagWriterTests`, con `MinimalAudioFiles` como
+fixture propio) son de ida y vuelta de verdad: se escribe con
+`LocalTagWriter` y se relee **de las dos formas que importan** —con
+TagLib# crudo, para ver qué quedó en el archivo, y con `LocalTagReader`,
+que es por donde vuelve al catálogo—. Los tres formatos corren:
+
+- lo escrito vuelve igual, campo por campo (incluidos pista, disco y año);
+- acentos, eñes y japonés vuelven iguales (lo que se rompe cuando una
+  etiqueta se escribe en Latin-1);
+- con `perTrack` la carátula queda incrustada, con el MIME sacado de la
+  **firma de los bytes** y no de la extensión de nada;
+- sin carátula no aparece ninguna, y con `albumOnly` la que ya estaba no
+  se toca;
+- rating, favorito y letra dejan el archivo **byte a byte igual** y con
+  la misma fecha de modificación;
+- un campo nulo no borra el que había, y el comentario que traía el
+  archivo sobrevive;
+- no queda ningún `.aura-tmp` al lado de la música;
+- WAV, AIFF y OGG no se tocan (ni siquiera se abren);
+- el MP3 queda en ID3v2.3.
+
+El fixture arma los archivos en el momento: un MP3 de 40 tramas MPEG-1
+Layer III, un FLAC con su `STREAMINFO` y un M4A con la cadena de cajas
+que exige el formato (`ftyp` + `moov`/`mvhd`/`trak`…/`stbl` + `mdat`).
+Son mínimos pero **válidos** — TagLib# los abre y les escribe de verdad—,
+y son propios: el arnés de B0 arma un fixture más completo, con archivos
+de verdad, y ese sirve para medir; este sirve para verificar reglas sin
+depender de tener música en el disco ni de otra rama.
+
+Lo que **no** se verificó acá: nada de esto se probó contra la biblioteca
+real del dueño. Por regla de la ronda, sus archivos no se etiquetan — ni
+siquiera en copia.
