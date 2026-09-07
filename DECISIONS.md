@@ -16719,3 +16719,20 @@ Corrido SOLO contra proyectos sin referencia a `AuraStudio.App`:
 tools/StorageFixtureCheck` y `dotnet run --project tools/CopyModeCheck`:
 corridas completas, sin ninguna `ATENCIÓN`. Ningún `dotnet build`/`publish`
 de `AuraStudio.App` ni de la solución completa.
+
+## ST-229 — Versión 0.4.0: la ronda "ajustes 3" se empaqueta con ese número
+
+El dueño pidió (2026-09-07) los instalables de la ronda "ajustes 3"
+(almacenamiento e idiomas) como **0.4.0** para probarlos y, si todo está
+bien, publicarlos. Se sube la versión en los cinco sitios del repo:
+`studio/AuraStudio/project.yml` (`CFBundleShortVersionString` y
+`MARKETING_VERSION`), `studio/AuraStudio/AuraStudio.xcodeproj/project.pbxproj`
+(`MARKETING_VERSION`, lo que `xcodegen` generaría del `project.yml`),
+`studio/AuraStudio/Resources/Info.plist`, `studio/windows/installer/AuraStudio.iss`
+y `studio/windows/AuraStudio.App/AuraStudio.App.csproj`. Regla del dueño
+(`CLAUDE.md` § Releases): la versión identifica el release; el tag `v0.4.0`
+se pone sobre el commit de cierre, cuando A7c, B7c y B8 estén en `main`.
+Los instalables de prueba construidos antes de ese tag llevan el hash del
+commit en el nombre del archivo o en "Acerca de" para distinguirlos.
+
+Nada más cambia en este commit. Sesión maestra.
