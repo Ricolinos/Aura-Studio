@@ -142,8 +142,54 @@ public static class AppStrings
     public static string LibraryAddFiles => "Agregar archivos";
     public static string LibraryAddFolder => "Agregar carpeta";
     public static string LibraryRemove => "Quitar de la biblioteca";
-    public static string LibraryRemoveDetail =>
-        "Se quita del catálogo de Aura Studio. El archivo sigue en tu computadora.";
+
+    // MARK: - Eliminar, con confirmación (ST-245)
+
+    /// <summary>
+    /// El título del diálogo de confirmación. Dice cuántos, no "esto no se
+    /// puede deshacer" —para lo que sí va a la Papelera, se puede—.
+    /// </summary>
+    public static string DeleteConfirmTitle(int totalCount) =>
+        totalCount == 1 ? "¿Eliminar 1 elemento?" : $"¿Eliminar {totalCount} elementos?";
+
+    /// <summary>
+    /// El cuerpo del diálogo (§0.4 del plan): cuántos archivos van a la
+    /// Papelera y cuánto ocupan —lo único que de verdad se toca en disco—, y
+    /// cuántos son puramente de catálogo. Un lote puede traer las dos cosas
+    /// mezcladas.
+    /// </summary>
+    public static string DeleteConfirmMessage(DeletionPreview preview)
+    {
+        var parts = new List<string>();
+
+        if (preview.CopyCount > 0)
+        {
+            string bytes = SimilarityText.FormatBytes(preview.CopyBytes);
+            parts.Add(preview.CopyCount == 1
+                ? $"1 archivo ({bytes}) va a la Papelera de reciclaje."
+                : $"{preview.CopyCount} archivos ({bytes}) van a la Papelera de reciclaje.");
+        }
+
+        if (preview.ReferenceCount > 0)
+        {
+            parts.Add(preview.ReferenceCount == 1
+                ? "1 elemento se quita de tu biblioteca; su archivo original no se toca."
+                : $"{preview.ReferenceCount} elementos se quitan de tu biblioteca; sus archivos originales no se tocan.");
+        }
+
+        return string.Join(" ", parts);
+    }
+
+    public static string DeleteConfirmPrimary => "Eliminar";
+    public static string DeleteConfirmCancel => "Cancelar";
+
+    /// <summary>
+    /// El aviso de duplicados por parecido, al terminar de soltar archivos
+    /// (ST-243 dejó el gancho, B5 lo conecta): no hay pantalla nueva, solo
+    /// apunta a la que ya existe.
+    /// </summary>
+    public static string LibrarySimilarFoundOnDrop(string summary) =>
+        $"{summary} Encontramos elementos parecidos entre lo que agregaste — revísalos en Similares.";
     public static string LibraryFavoritesOnly => "Solo favoritos";
     public static string LibraryColumns => "Columnas";
     public static string LibraryColumnsDetail =>
@@ -231,6 +277,56 @@ public static class AppStrings
     public static string ThemeLight => "Claro";
     public static string ThemeDark => "Oscuro";
     public static string SettingsAbout => "Acerca de";
+
+    // MARK: - Cómo guardar tu música (ST-245, plan §2 — texto compartido con la Mac)
+
+    public static string StorageSectionTitle => "Cómo guardar tu música";
+
+    /// <summary>
+    /// Beneficios y desventajas de "Copiar a la Biblioteca de Aura" — texto
+    /// fijado por la Maestra en el plan §2, el mismo en las dos plataformas.
+    /// No es una decisión de Windows: si cambia, cambia en el plan primero.
+    /// </summary>
+    public static string StorageCopyExplainer =>
+        "Copiar a la Biblioteca de Aura: Aura controla los archivos, edita sus etiquetas y los " +
+        "sincroniza directo; ocupa espacio en disco (una copia); puedes borrar tus originales después.";
+
+    /// <summary>Igual que <see cref="StorageCopyExplainer"/>, para "Referenciar en su lugar".</summary>
+    public static string StorageReferenceExplainer =>
+        "Referenciar en su lugar: no ocupa espacio extra ni toca tus archivos; Aura mantiene una " +
+        "versión preparada aparte (.preparados/), las ediciones viven solo en Aura y en el iPod, y si " +
+        "el disco original no está, esas canciones no se pueden sincronizar.";
+
+    public static string StorageChangeOnlyAffectsFuture =>
+        "Cambiar este ajuste solo afecta lo que importes de ahora en adelante: lo que ya está en tu " +
+        "biblioteca se queda como está.";
+
+    // MARK: - Limpiar archivos huérfanos (ST-245)
+
+    public static string OrphansTitle => "Archivos huérfanos";
+    public static string OrphansDetail =>
+        "Preparados y carátulas que ya no le pertenecen a ningún elemento de tu biblioteca — de " +
+        "elementos eliminados antes de esta versión, o de un reprocesamiento. No son tus archivos " +
+        "originales: son copias técnicas que Aura arma sola y puede volver a armar si hicieran falta.";
+
+    public static string OrphansButton => "Buscar huérfanos";
+    public static string OrphansCleanButton => "Limpiar archivos huérfanos";
+
+    public static string OrphansNoneFound => "No hay archivos huérfanos: no hace falta limpiar nada.";
+
+    public static string OrphansFound(OrphanScanResult scan) => scan.Count == 1
+        ? $"1 archivo huérfano ({SimilarityText.FormatBytes(scan.TotalBytes)})."
+        : $"{scan.Count} archivos huérfanos ({SimilarityText.FormatBytes(scan.TotalBytes)}).";
+
+    public static string OrphansConfirmTitle(int count) =>
+        count == 1 ? "¿Borrar 1 archivo huérfano?" : $"¿Borrar {count} archivos huérfanos?";
+
+    public static string OrphansConfirmMessage(OrphanScanResult scan) =>
+        $"{OrphansFound(scan)} No están ligados a ningún elemento de tu biblioteca; borrarlos no " +
+        "afecta ninguna canción, foto ni video que tengas.";
+
+    public static string OrphansCleaned(int count) =>
+        count == 1 ? "Se borró 1 archivo huérfano." : $"Se borraron {count} archivos huérfanos.";
 
     // MARK: - Instalador
 

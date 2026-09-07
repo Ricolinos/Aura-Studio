@@ -6,6 +6,44 @@
 > nada — todo compila desde la sesión del 2026-08-31 en la VM — por eso se
 > renombró en la Fase 0. Entradas nuevas van **arriba** de las viejas.
 
+## Ronda "ajustes 3", B5 — Eliminar de verdad, huérfanos, "Cómo guardar tu música" (2026-09-07)
+
+Decisión ST-245 (tabla completa en `DECISIONS.md`). `LibraryViewModel.Remove()`
+ahora es real: modo copia manda el archivo a la Papelera de reciclaje de
+Windows (`SHFileOperationW`, `FOF_ALLOWUNDO` — nunca un borrado definitivo);
+modo referencia solo quita del catálogo, el original nunca se toca. Los
+dos modos borran el preparado y la carátula del elemento. Confirmación
+compartida entre Canciones/Cuadrícula/Artistas antes de eliminar, con
+cuántos archivos y cuánto ocupan.
+
+Nuevo en Ajustes › Biblioteca: "Cómo guardar tu música" (texto compartido
+con la Mac, plan §2) y "Archivos huérfanos" (Buscar/Limpiar, con
+confirmación). Gancho de duplicados por parecido conectado en
+`AddDroppedFiles` (lo dejó pendiente B3).
+
+Descubierto y sorteado sin tocar el contrato compartido: las carpetas
+`Música/Imágenes/Videos` que crea la Mac quedan en NFD en disco mientras
+el catálogo guarda todo en NFC (adición de A1 a ST-241) — confirmado en
+esta VM, no solo leído: `File.Exists` con la forma NFC no encuentra una
+carpeta creada en NFD. `LibraryDiskPathResolver` lo sortea llamando a
+`MediaRoots.Directory` por componente; queda anotada la dependencia con
+`MediaRoots.Resolve`, que el Experto está construyendo en B4.
+
+Dos hallazgos del **arnés** de B0 (no del producto), documentados en
+ST-245: su medición de "editar N campos" corría antes de que terminara la
+reescritura en segundo plano de `ApplyMetadataEdit` (ST-243, adrede fuera
+del hilo de interfaz) — daba falsos "no cambió", y sin esperar llegó a
+chocar dos escrituras del mismo archivo con un `IOException` real.
+Corregido en el arnés; nada tocado en `LocalTagWriter`.
+
+`dotnet test` Core.Tests: **1677/1677** (21 nuevas). Comando de
+reproducción y números completos: ver ST-245 en `DECISIONS.md`.
+
+```
+dotnet test studio/windows/tests/AuraStudio.Core.Tests/AuraStudio.Core.Tests.csproj
+dotnet run --project studio/windows/tools/StorageFixtureCheck
+```
+
 ## Ronda "ajustes 3", B0 — Arnés de almacenamiento (2026-09-07)
 
 Decisión ST-240 (tabla completa en `DECISIONS.md`). Nuevo

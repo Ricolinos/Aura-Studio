@@ -1236,8 +1236,29 @@ public sealed partial class LibraryViewModel : ViewModelBase
             _ = ProcessAsync(result.Added);
         }
 
-        LastDropMessage = LibraryIngest.Summary(result, section);
+        LastDropMessage = WithSimilarityHint(LibraryIngest.Summary(result, section), result);
         RefreshAvailable();
+    }
+
+    /// <summary>
+    /// El aviso de duplicados por parecido que ST-243 dejó pendiente para B5:
+    /// corre <see cref="SimilarItemsDetector"/> sobre lo recién agregado y, si
+    /// encuentra algo, lo dice apuntando a Similares. La deduplicación por
+    /// ruta exacta ya pasó adentro de <see cref="LibraryIngest.Ingest"/> —esto
+    /// es para lo que se PARECE sin ser la misma ruta, que es justo lo que esa
+    /// deduplicación no puede atrapar.
+    /// </summary>
+    private string WithSimilarityHint(string summary, LibraryIngestResult result)
+    {
+        if (!result.AddedAnything) return summary;
+
+        var addedIds = result.Added.Select(item => item.Id).ToHashSet();
+        var ignored = _preferences.IgnoredSimilarGroups.ToHashSet(StringComparer.Ordinal);
+
+        bool foundSimilar = SimilarItemsDetector.Detect(Items, ignored)
+            .Any(group => group.Items.Any(item => addedIds.Contains(item.Id)));
+
+        return foundSimilar ? AppStrings.LibrarySimilarFoundOnDrop(summary) : summary;
     }
 
     /// <summary>
@@ -1287,15 +1308,46 @@ public sealed partial class LibraryViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// Lo que hay que decirle al usuario ANTES de eliminar <paramref
+    /// name="ids"/> (ST-245, §0.4 del plan): cuántos van a la Papelera y
+    /// cuánto ocupan, y cuántos son puramente de catálogo.
+    /// </summary>
+    public DeletionPreview PreviewRemoval(IEnumerable<Guid> ids)
+    {
+        var wanted = ids.ToHashSet();
+        return LibraryDeletion.Preview(Items.Where(item => wanted.Contains(item.Id)));
+    }
+
+    /// <summary>
+    /// Elimina. Modo copia: el archivo va a la Papelera de reciclaje —nunca
+    /// un borrado definitivo—; modo referencia: solo se quita del catálogo,
+    /// el original del usuario nunca se toca. En los dos modos se borran el
+    /// preparado y la carátula del elemento (ST-245).
+    /// </summary>
     public void Remove(IEnumerable<Guid> ids)
     {
         var doomed = ids.ToHashSet();
         if (doomed.Count == 0) return;
 
-        // Se quita de la biblioteca, NO del disco: el archivo es del usuario.
+        LibraryDeletion.Delete(_store.Root, Items.Where(item => doomed.Contains(item.Id)));
+
         Items = [.. Items.Where(item => !doomed.Contains(item.Id))];
         Save();
     }
+
+    // MARK: - Huérfanos (ST-245)
+
+    /// <summary>
+    /// Archivos en <c>.preparados/</c> y <c>.portadas/</c> que ningún elemento
+    /// del catálogo referencia. Solo mira; borrar es <see cref="CleanOrphans"/>,
+    /// un paso aparte para que Ajustes pueda mostrar la lista y pedir
+    /// confirmación antes.
+    /// </summary>
+    public OrphanScanResult FindOrphans() => OrphanFinder.Scan(_store.Root, Items);
+
+    /// <summary>Borra lo que encontró un <see cref="FindOrphans"/> previo.</summary>
+    public void CleanOrphans(OrphanScanResult scan) => OrphanFinder.Delete(scan);
 
     // MARK: - Listas de reproducción
 

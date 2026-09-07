@@ -311,9 +311,11 @@ public sealed partial class ArtistsPage : Page
             case "reveal": Reveal(reached); break;
 
             case "delete":
-                ViewModel.Library.Remove(songIds);
-                ViewModel.Refresh();
-                SyncListSelection();
+                if (await DeleteConfirmation.ConfirmAndRemoveAsync(XamlRoot, ViewModel.Library, songIds))
+                {
+                    ViewModel.Refresh();
+                    SyncListSelection();
+                }
                 break;
         }
     }
@@ -436,9 +438,11 @@ public sealed partial class ArtistsPage : Page
 
     private void BulkReveal_Click(object sender, RoutedEventArgs e) => Reveal(ViewModel.Selection);
 
-    private void BulkDelete_Click(object sender, RoutedEventArgs e)
+    private async void BulkDelete_Click(object sender, RoutedEventArgs e)
     {
-        ViewModel.Library.Remove(ViewModel.SongIdsOf(ViewModel.Selection));
+        if (!await DeleteConfirmation.ConfirmAndRemoveAsync(XamlRoot, ViewModel.Library, ViewModel.SongIdsOf(ViewModel.Selection)))
+            return;
+
         ViewModel.Refresh();
         SyncListSelection();
     }

@@ -499,8 +499,8 @@ public sealed partial class SongsPage : Page
             case "similar": Frame.Navigate(typeof(SimilarItemsPage)); break;
 
             case "delete":
-                ViewModel.Library.Remove(ids);
-                ViewModel.Refresh();
+                if (await DeleteConfirmation.ConfirmAndRemoveAsync(XamlRoot, ViewModel.Library, ids))
+                    ViewModel.Refresh();
                 break;
 
             default:

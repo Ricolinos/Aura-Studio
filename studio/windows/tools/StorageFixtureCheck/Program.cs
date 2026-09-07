@@ -3,6 +3,12 @@
 // qué política de carátula se aplica de verdad, contra el código de HEAD
 // bd57116 (0.3.0), antes de tocar nada del contrato de B1..B8.
 //
+// ST-245 (B5) lo extiende: Eliminar de verdad (Papelera en copia, solo
+// catálogo en referencia, con preparado y carátula reales por ID), huérfanos
+// antes/después con OrphanFinder, y un caso con acento en NFD en disco / NFC
+// en catálogo -- el mismo mecanismo que usa LibraryDiskPathResolver -- de
+// punta a punta contra LibraryViewModel.Remove real, no solo la función pura.
+//
 // Cómo correrlo:
 //   dotnet run --project tools/StorageFixtureCheck
 //
@@ -97,6 +103,27 @@ try
         Console.WriteLine($"  {format,-4}  referenciado: {referencedPath} ({new FileInfo(referencedPath).Length} bytes)");
     }
 
+    // Un elemento cuya carpeta de artista/álbum queda escrita en NFD en disco
+    // -- como las crea la Mac (adición de A1 a ST-241, pedida para B5) --
+    // mientras el catálogo, como manda el contrato, guarda todo en NFC.
+    string artistaAcentuado = "Café Tacvba".Normalize(System.Text.NormalizationForm.FormD);
+    string albumAcentuado = "Ré".Normalize(System.Text.NormalizationForm.FormD);
+    string nfdDir = Path.Combine(root, "Música", artistaAcentuado, albumAcentuado);
+    Directory.CreateDirectory(nfdDir);
+    string nfdTrackPath = Path.Combine(nfdDir, "Ingrata.mp3");
+    await FixtureAudio.SynthesizeMp3Async(ffmpeg, nfdTrackPath);
+    FixtureAudio.WriteBaselineTags(nfdTrackPath, "Café Tacvba", "Ré", "Ingrata", 1, cover);
+
+    var nfdItem = new LibraryItem
+    {
+        SourcePath = nfdTrackPath,
+        Kind = LibraryItemKind.Music,
+        Status = LibraryItemStatus.Ready,
+        Metadata = new TrackMetadata { Title = "Ingrata", Artist = "Café Tacvba", Album = "Ré", DurationSeconds = 2 }
+    };
+    items.Add(nfdItem);
+    Console.WriteLine($"  NFD   con acento: {nfdTrackPath} (carpeta real en NFD, catálogo va a guardar NFC)");
+
     Console.WriteLine();
 
     var store = new LibraryStore(root) { CoversNormalized = CoverArtNormalization.NormalizedVersion };
@@ -108,7 +135,13 @@ try
         preferences, new NoOpLibraryProcessor(), new NoOpEnrichmentService(), new BackgroundTaskCenter());
     await library.LoadingTask;
 
-    Console.WriteLine($"Ítems disponibles: {library.AvailableItems.Count} (esperado {items.Count})");
+    // El ítem NFD queda fuera de AvailableItems a propósito: item.SourcePath
+    // se reconstruye en NFC desde el catálogo (ST-241 addendum) y esa ruta no
+    // existe tal cual -- la carpeta real está en NFD. Es la premisa de la
+    // sección 5, no un error del arnés: FileAvailability usa File.Exists
+    // directo, sin el resolvedor de LibraryDeletion.
+    Console.WriteLine($"Ítems disponibles: {library.AvailableItems.Count} (esperado {items.Count - 1} de {items.Count}: " +
+        "el de acento en NFD queda \"no disponible\" al cargar, ver sección 5 más abajo)");
     Console.WriteLine();
 
     // --- 2 y 3(a). Editar N campos: bytes escritos en el archivo, y si aparece un preparado ---
@@ -145,6 +178,7 @@ try
                 ? Directory.GetFiles(store.PreparedDirectory).Length : 0;
 
             apply(library, copied.Id);
+            WaitForBackgroundWriteToSettle(path);
 
             long after = new FileInfo(path).Length;
             byte[] hashAfter = SHA256.HashData(File.ReadAllBytes(path));
@@ -159,11 +193,30 @@ try
         }
     }
 
+    // Lo que el contrato de ST-243 dice que TIENE que pasar, no lo que decía
+    // B0 antes de que existiera el modo copia real: los campos gobernados
+    // (título/artista/álbum/pista/año/género) reescriben el archivo en los
+    // formatos que LocalTagWriter sabe escribir (MP3/FLAC/M4A -- WAV no tiene
+    // escritor nativo y en este fixture nunca se convirtió a MP3 porque entró
+    // directo como archivo ya copiado, no por el importador); rating, favorito,
+    // letra, categoría y -- con la política AlbumOnly de por omisión -- la
+    // carátula, NUNCA. Y ningún campo genera un preparado nuevo: la música
+    // copiada es su propio preparado (ST-241).
+    var governedFields = new HashSet<string>(StringComparer.Ordinal)
+        { "Título", "Artista", "Álbum", "Pista", "Año", "Género" };
+    var writableFormats = new HashSet<string>(StringComparer.Ordinal) { "MP3", "FLAC", "M4A" };
+
+    var unexpected = results.Where(r =>
+    {
+        bool shouldRewrite = governedFields.Contains(r.Field) && writableFormats.Contains(r.Format);
+        return r.HashSame == shouldRewrite || r.NewPrepared;
+    }).ToList();
+
     Console.WriteLine();
-    bool allUnchanged = results.All(r => r.HashSame && !r.NewPrepared);
-    Console.WriteLine(allUnchanged
-        ? "Confirmado: las 11 ediciones × 4 formatos dieron 0 bytes cambiados en el archivo de origen y 0 preparados nuevos."
-        : "ATENCIÓN: al menos una edición SÍ tocó el archivo o generó un preparado -- ver filas marcadas arriba.");
+    Console.WriteLine(unexpected.Count == 0
+        ? "Confirmado: los campos gobernados reescriben el archivo en MP3/FLAC/M4A (no en WAV, sin escritor nativo); " +
+          "rating, favorito, letra, categoría y carátula (política AlbumOnly) no tocan el archivo; 0 preparados nuevos."
+        : "ATENCIÓN: no coincide con el contrato de ST-243 en " + unexpected.Count + " fila(s) -- ver marcadas arriba.");
 
     // --- 3(a). Qué viaja al iPod tras una edición: el origen, sin editar ---
 
@@ -180,36 +233,114 @@ try
     Console.WriteLine($"Es el mismo archivo que quedó sin editar arriba (LibraryItem.SourcePath): {plan.Items.FirstOrDefault()?.SourcePath == editedItem.SourcePath}");
     Console.WriteLine("No existe una ruta de \"preparado de música\" distinta al origen en este código (§1): la sincronización siempre parte de SourcePath.");
 
-    // --- 3(b). Eliminar: huérfanos en .preparados/ y .portadas/ ---
+    // --- 3(b). Eliminar de verdad (ST-245, B5): Papelera en copia, solo
+    // catálogo en referencia, y borra preparado + carátula en los dos ---
 
     Console.WriteLine();
-    Console.WriteLine("--- Eliminar: huérfanos que deja en .preparados/ y .portadas/ ---");
+    Console.WriteLine("--- Eliminar (ST-245): modo copia -- a la Papelera de reciclaje ---");
 
-    (LibraryItem toDelete, _) = itemsByFormat["FLAC"];
-    string coverPath = store.CoverPath(toDelete.Id);
-    Console.WriteLine($"Carátula del ítem antes de eliminar: {File.Exists(coverPath)} ({(File.Exists(coverPath) ? new FileInfo(coverPath).Length : 0)} bytes)");
+    (LibraryItem copyToDelete, _) = itemsByFormat["MP3"];
+    string copyPath = copyToDelete.SourcePath;
+    long copyBytes = new FileInfo(copyPath).Length;
 
-    // No hay preparado de música real en este código para simular con el
-    // procesador (§1: Windows no genera preparado de música todavía) -- se
-    // deja un archivo de relleno con el mismo nombrado que usa StagingPaths
-    // (por nombre base) para probar el mecanismo de limpieza de Eliminar en
-    // sí, no para simular un transcodificado real. Se dice así en la ST.
+    DeletionPreview copyPreview = library.PreviewRemoval([copyToDelete.Id]);
+    Console.WriteLine($"PreviewRemoval: {copyPreview.CopyCount} de copia ({copyPreview.CopyBytes} bytes), {copyPreview.ReferenceCount} de referencia.");
+    Console.WriteLine($"Antes: {copyPath} existe = {File.Exists(copyPath)} ({copyBytes} bytes)");
+
+    library.Remove([copyToDelete.Id]);
+
+    Console.WriteLine($"Después de Remove(): {copyPath} existe = {File.Exists(copyPath)}");
+    Console.WriteLine(File.Exists(copyPath)
+        ? "ATENCIÓN: el archivo de copia sigue en su lugar -- no se movió a la Papelera."
+        : "Confirmado: desapareció de la biblioteca -- fue a la Papelera de reciclaje de Windows (SHFileOperationW, FOF_ALLOWUNDO), no un borrado definitivo. Verificar a simple vista que está ahí es cosa de alguien con la sesión de Windows delante.");
+
+    Console.WriteLine();
+    Console.WriteLine("--- Eliminar (ST-245): modo referencia -- solo del catálogo, con preparado y carátula por ID ---");
+
+    (_, LibraryItem refToDelete) = itemsByFormat["M4A"];
+    LibraryItem liveRef = library.Items.First(i => i.Id == refToDelete.Id);
+    Console.WriteLine($"storage inferido para el referenciado: {liveRef.Storage} (esperado reference)");
+
+    string realPreparedPath = Path.Combine(store.Root, CatalogPath.PreparedRelative(liveRef.Id, "m4a").Replace('/', Path.DirectorySeparatorChar));
+    Directory.CreateDirectory(Path.GetDirectoryName(realPreparedPath)!);
+    File.Copy(liveRef.SourcePath, realPreparedPath, overwrite: true);
+    string realCoverPath = Path.Combine(store.Root, CatalogPath.CoverRelative(liveRef.Id).Replace('/', Path.DirectorySeparatorChar));
+    Directory.CreateDirectory(Path.GetDirectoryName(realCoverPath)!);
+    File.WriteAllBytes(realCoverPath, cover);
+
+    liveRef.PreparedPath = realPreparedPath;
+    liveRef.CoverRelativePath = CatalogPath.CoverRelative(liveRef.Id);
+    library.SaveAndRefresh();
+
+    long refOriginalBytes = new FileInfo(liveRef.SourcePath).Length;
+    byte[] refOriginalHashBefore = SHA256.HashData(File.ReadAllBytes(liveRef.SourcePath));
+
+    DeletionPreview refPreview = library.PreviewRemoval([liveRef.Id]);
+    Console.WriteLine($"PreviewRemoval: {refPreview.CopyCount} de copia, {refPreview.ReferenceCount} de referencia (esperado 0/1).");
+    Console.WriteLine($"Antes: preparado={File.Exists(realPreparedPath)}, carátula={File.Exists(realCoverPath)}, original={File.Exists(liveRef.SourcePath)}");
+
+    library.Remove([liveRef.Id]);
+
+    bool originalSurvives = File.Exists(liveRef.SourcePath);
+    bool originalUnchanged = originalSurvives && SHA256.HashData(File.ReadAllBytes(liveRef.SourcePath)).SequenceEqual(refOriginalHashBefore);
+    Console.WriteLine($"Después: preparado={File.Exists(realPreparedPath)}, carátula={File.Exists(realCoverPath)}, original={originalSurvives} (sin cambios: {originalUnchanged}, {refOriginalBytes} bytes)");
+    Console.WriteLine(!File.Exists(realPreparedPath) && !File.Exists(realCoverPath) && originalUnchanged
+        ? "Confirmado: preparado y carátula borrados; el original del usuario no se tocó."
+        : "ATENCIÓN: algo no coincide con lo esperado -- ver arriba.");
+
+    // --- 4. Huérfanos antes/después (ST-245) ---
+
+    Console.WriteLine();
+    Console.WriteLine("--- Huérfanos (ST-245): antes/después de \"Limpiar archivos huérfanos\" ---");
+
+    string strayPreparedPath = Path.Combine(store.PreparedDirectory, Guid.NewGuid().ToString("D").ToUpperInvariant() + ".mpg");
     Directory.CreateDirectory(store.PreparedDirectory);
-    string fakePreparedPath = Path.Combine(store.PreparedDirectory, Path.GetFileNameWithoutExtension(toDelete.SourcePath) + ".preparado.bin");
-    byte[] fakePreparedBytes = new byte[123_456];
-    Random.Shared.NextBytes(fakePreparedBytes);
-    File.WriteAllBytes(fakePreparedPath, fakePreparedBytes);
-    Console.WriteLine($"Preparado simulado creado: {fakePreparedPath} ({fakePreparedBytes.Length} bytes) -- ver nota arriba, no es un transcodificado real.");
+    File.WriteAllBytes(strayPreparedPath, new byte[50_000]);
 
-    library.Remove([toDelete.Id]);
+    string strayCoverPath = store.CoverPath(Guid.NewGuid());
+    Directory.CreateDirectory(store.CoversDirectory);
+    File.WriteAllBytes(strayCoverPath, new byte[10_000]);
 
-    bool coverSurvives = File.Exists(coverPath);
-    bool preparedSurvives = File.Exists(fakePreparedPath);
-    long orphanBytes = (coverSurvives ? new FileInfo(coverPath).Length : 0) + (preparedSurvives ? new FileInfo(fakePreparedPath).Length : 0);
-    int orphanCount = (coverSurvives ? 1 : 0) + (preparedSurvives ? 1 : 0);
+    OrphanScanResult orphansBefore = library.FindOrphans();
+    Console.WriteLine($"Antes de limpiar: {orphansBefore.Count} huérfanos, {orphansBefore.TotalBytes} bytes.");
+    foreach (OrphanFile file in orphansBefore.Files) Console.WriteLine($"  {file.AbsolutePath} ({file.SizeBytes} bytes)");
 
-    Console.WriteLine($"Tras Remove(): carátula sigue en disco = {coverSurvives}; preparado sigue en disco = {preparedSurvives}");
-    Console.WriteLine($"Huérfanos dejados por este único elemento: {orphanCount} archivo(s), {orphanBytes} bytes.");
+    library.CleanOrphans(orphansBefore);
+    OrphanScanResult orphansAfter = library.FindOrphans();
+    Console.WriteLine($"Después de limpiar: {orphansAfter.Count} huérfanos, {orphansAfter.TotalBytes} bytes.");
+    Console.WriteLine(orphansAfter.Count == 0
+        ? "Confirmado: 0 huérfanos después de limpiar."
+        : "ATENCIÓN: quedaron huérfanos sin limpiar -- ver arriba.");
+
+    // --- 5. Acento en NFD en disco, NFC en catálogo (adición de A1 a ST-241, pedida para B5) ---
+
+    Console.WriteLine();
+    Console.WriteLine("--- Acento con NFD en disco / NFC en catálogo, de punta a punta ---");
+
+    // Un LibraryViewModel nuevo, apuntando al mismo catálogo ya guardado: lo
+    // que importa es la ruta tal como la reconstruye CatalogPath.Resolve a
+    // partir de lo que quedó ESCRITO (en NFC, ST-241 addendum), contra una
+    // carpeta que sigue en NFD en disco -- no lo que ya tuviera en memoria
+    // el LibraryViewModel original desde que se creó el ítem.
+    var reloadedLibrary = new LibraryViewModel(
+        preferences, new NoOpLibraryProcessor(), new NoOpEnrichmentService(), new BackgroundTaskCenter());
+    await reloadedLibrary.LoadingTask;
+
+    LibraryItem reloadedNfdItem = reloadedLibrary.Items.First(i => i.Id == nfdItem.Id);
+    bool fastPathFindsIt = File.Exists(reloadedNfdItem.SourcePath);
+    Console.WriteLine($"item.SourcePath tras recargar: {reloadedNfdItem.SourcePath}");
+    Console.WriteLine($"El camino rápido (File.Exists directo) lo encuentra: {fastPathFindsIt} (se espera false: la carpeta real está en NFD, esto en NFC)");
+
+    DeletionPreview nfdPreview = reloadedLibrary.PreviewRemoval([reloadedNfdItem.Id]);
+    Console.WriteLine($"PreviewRemoval igual lo cuenta como copia: {nfdPreview.CopyCount} elemento(s).");
+
+    reloadedLibrary.Remove([reloadedNfdItem.Id]);
+
+    bool nfdFileGone = !File.Exists(nfdTrackPath);
+    Console.WriteLine($"El archivo real en NFD sigue existiendo: {File.Exists(nfdTrackPath)}");
+    Console.WriteLine(nfdFileGone
+        ? "Confirmado: LibraryDiskPathResolver encontró el archivo en la carpeta NFD real a partir de la ruta NFC del catálogo, y Remove() lo mandó a la Papelera."
+        : "ATENCIÓN: el archivo con acento en NFD no se pudo eliminar -- revisar LibraryDiskPathResolver/MediaRoots.");
 
     // --- 3(c). Política de carátulas forzada ---
 
@@ -241,6 +372,40 @@ finally
 {
     try { Directory.Delete(root, recursive: true); } catch (IOException) { }
     try { Directory.Delete(externalRoot, recursive: true); } catch (IOException) { }
+}
+
+/// <summary>
+/// Hallazgo real de esta corrida (ST-245): <c>ApplyMetadataEdit</c> reescribe
+/// el archivo de la biblioteca en un <c>Task.Run</c> sin ninguna señal pública
+/// de cuándo termina -- a propósito, ST-243, para no congelar la ventana. Leer
+/// bytes/hash inmediatamente después de llamarlo mide una carrera: casi
+/// siempre "no cambió" porque la escritura de fondo ni empezó, y en una
+/// corrida real con varias ediciones seguidas sobre el mismo archivo tiró
+/// <c>IOException: en uso por otro programa</c> -- dos <c>Task.Run</c> de
+/// <c>LocalTagWriter.Apply</c> pisándose el mismo <c>.aura-tmp</c>. Ninguna de
+/// las dos cosas es del contrato que se está midiendo; son del arnés.
+///
+/// <para>Se espera con un margen inicial (para que el <c>Task.Run</c> alcance
+/// a EMPEZAR) y después con reintentos de abrir en exclusiva hasta que ya no
+/// esté en uso -- con tope, para no colgarse si de verdad algo se atoró.</para>
+/// </summary>
+static void WaitForBackgroundWriteToSettle(string path, int timeoutMs = 3000)
+{
+    Thread.Sleep(80);
+
+    DateTime deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+    while (DateTime.UtcNow < deadline)
+    {
+        try
+        {
+            using FileStream handle = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.None);
+            return;
+        }
+        catch (IOException)
+        {
+            Thread.Sleep(15);
+        }
+    }
 }
 
 static TrackMetadata WithEdit(LibraryViewModel library, Guid id, Action<TrackMetadata> mutate)

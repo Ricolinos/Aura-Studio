@@ -169,6 +169,83 @@ public sealed partial class SettingsViewModel : ViewModelBase
         + "ya trae Windows. Tu archivo original queda intacto donde estaba. MP3, FLAC, M4A y ALAC se "
         + "copian tal cual, sin tocarles el audio.";
 
+    // MARK: - Cómo guardar tu música (ST-245, plan §2 — texto compartido con la Mac)
+
+    public string StorageSectionTitle => AppStrings.StorageSectionTitle;
+    public string StorageCopyExplainer => AppStrings.StorageCopyExplainer;
+    public string StorageReferenceExplainer => AppStrings.StorageReferenceExplainer;
+    public string StorageChangeOnlyAffectsFuture => AppStrings.StorageChangeOnlyAffectsFuture;
+
+    // MARK: - Huérfanos (ST-245)
+
+    public string OrphansDetail => AppStrings.OrphansDetail;
+    public string OrphansScanButton => AppStrings.OrphansButton;
+    public string OrphansCleanButton => AppStrings.OrphansCleanButton;
+
+    /// <summary>
+    /// Lo último que encontró <see cref="ScanForOrphans"/>. <c>null</c> antes
+    /// de la primera búsqueda de esta sesión de Ajustes — la pantalla no
+    /// afirma nada sobre huérfanos hasta que de verdad los buscó.
+    /// </summary>
+    private OrphanScanResult? _orphanScan;
+
+    public bool HasScannedForOrphans => _orphanScan is not null;
+
+    public string OrphanScanSummary => _orphanScan is { } scan
+        ? (scan.Count == 0 ? AppStrings.OrphansNoneFound : AppStrings.OrphansFound(scan))
+        : "";
+
+    public bool HasOrphansToClean => _orphanScan is { Count: > 0 };
+
+    public void ScanForOrphans()
+    {
+        _orphanScan = _library.FindOrphans();
+        NotifyOrphanScanChanged();
+    }
+
+    /// <summary>El mensaje del diálogo de confirmación, o <c>null</c> si no hay nada que limpiar.</summary>
+    public string? OrphanCleanupConfirmMessage => _orphanScan is { Count: > 0 } scan
+        ? AppStrings.OrphansConfirmMessage(scan)
+        : null;
+
+    public int PendingOrphanCount => _orphanScan?.Count ?? 0;
+
+    private string _orphanCleanupResult = "";
+
+    /// <summary>Lo último que dijo una limpieza. Vacío hasta que corre la primera.</summary>
+    public string OrphanCleanupResult => _orphanCleanupResult;
+
+    /// <summary>
+    /// Borra lo que encontró la última búsqueda. El llamador ya mostró la
+    /// confirmación —acá no se vuelve a preguntar—.
+    ///
+    /// <para>Vuelve a buscar después de borrar, en vez de limpiar el estado a
+    /// ciegas: es la misma prueba que se le pediría a cualquier otra acción de
+    /// "limpiar" —que ya no encuentre lo que se acaba de borrar—, y si algo
+    /// quedó (un archivo en uso en ese instante, un permiso), se ve.</para>
+    /// </summary>
+    public void ConfirmOrphanCleanup()
+    {
+        if (_orphanScan is not { Count: > 0 } scan) return;
+
+        int cleaned = scan.Count;
+        _library.CleanOrphans(scan);
+        _orphanScan = _library.FindOrphans();
+        _orphanCleanupResult = AppStrings.OrphansCleaned(cleaned);
+
+        NotifyOrphanScanChanged();
+        OnPropertyChanged(nameof(OrphanCleanupResult));
+    }
+
+    private void NotifyOrphanScanChanged()
+    {
+        OnPropertyChanged(nameof(HasScannedForOrphans));
+        OnPropertyChanged(nameof(OrphanScanSummary));
+        OnPropertyChanged(nameof(HasOrphansToClean));
+        OnPropertyChanged(nameof(OrphanCleanupConfirmMessage));
+        OnPropertyChanged(nameof(PendingOrphanCount));
+    }
+
     public IReadOnlyList<string> LinkedFolders => _preferences.LinkedLibraryFolders;
 
     public bool HasLinkedFolders => LinkedFolders.Count > 0;

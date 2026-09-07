@@ -140,6 +140,19 @@
                     <TextBlock Text="{x:Bind ViewModel.LibraryChangedNotice, Mode=OneWay}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
+                    <!-- ST-245: texto compartido con la Mac (plan §2) — explica
+                         los dos modos ANTES de que el usuario decida, no solo el
+                         que está prendido ahora. -->
+                    <TextBlock Text="{x:Bind ViewModel.StorageSectionTitle}"
+                               Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
+                    <TextBlock Text="{x:Bind ViewModel.StorageCopyExplainer}"
+                               Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
+                    <TextBlock Text="{x:Bind ViewModel.StorageReferenceExplainer}"
+                               Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
+                    <TextBlock Text="{x:Bind ViewModel.StorageChangeOnlyAffectsFuture}"
+                               Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap"
+                               FontStyle="Italic" />
+
                     <ToggleSwitch Header="Copiar los medios a la carpeta de la biblioteca"
                                   IsOn="{x:Bind ViewModel.CopyMediaIntoLibrary, Mode=TwoWay}"
                                   Margin="0,8,0,0" />
@@ -152,6 +165,24 @@
                              IsClosable="False" Severity="Informational"
                              Title="WAV y AIFF se convierten a MP3"
                              Message="{x:Bind ViewModel.AudioConversionDetail}" />
+
+                    <TextBlock Text="Archivos huérfanos" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
+                    <TextBlock Text="{x:Bind ViewModel.OrphansDetail}"
+                               Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
+
+                    <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="8">
+                        <Button Content="{x:Bind ViewModel.OrphansScanButton}" Click="ScanOrphans_Click" />
+                        <Button Grid.Column="1" Content="{x:Bind ViewModel.OrphansCleanButton}"
+                                Click="CleanOrphans_Click"
+                                IsEnabled="{x:Bind ViewModel.HasOrphansToClean, Mode=OneWay}" />
+                    </Grid>
+
+                    <TextBlock Text="{x:Bind ViewModel.OrphanScanSummary, Mode=OneWay}"
+                               Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap"
+                               Visibility="{x:Bind ViewModel.HasScannedForOrphans, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+
+                    <TextBlock Text="{x:Bind ViewModel.OrphanCleanupResult, Mode=OneWay}"
+                               Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
                     <TextBlock Text="Carpetas vinculadas"
                                Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />

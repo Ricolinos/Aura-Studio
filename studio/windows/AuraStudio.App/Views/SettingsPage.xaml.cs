@@ -4,6 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
 using AuraStudio.App.Platform;
+using AuraStudio.App.Resources;
 using AuraStudio.App.ViewModels;
 using AuraStudio.Core.Library;
 
@@ -118,6 +119,29 @@ public sealed partial class SettingsPage : Page
     private void RemoveLinkedFolder_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button { Tag: string path }) ViewModel.RemoveLinkedFolder(path);
+    }
+
+    // MARK: - Huérfanos (ST-245)
+
+    private void ScanOrphans_Click(object sender, RoutedEventArgs e) => ViewModel.ScanForOrphans();
+
+    private async void CleanOrphans_Click(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel.OrphanCleanupConfirmMessage is not { } message) return;
+
+        var dialog = new ContentDialog
+        {
+            XamlRoot = XamlRoot,
+            Title = AppStrings.OrphansConfirmTitle(ViewModel.PendingOrphanCount),
+            Content = new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap },
+            PrimaryButtonText = AppStrings.DeleteConfirmPrimary,
+            CloseButtonText = AppStrings.DeleteConfirmCancel,
+            DefaultButton = ContentDialogButton.Close
+        };
+
+        if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+
+        ViewModel.ConfirmOrphanCleanup();
     }
 
     // MARK: - Video
