@@ -90,7 +90,7 @@ c088,Datenträger vorbereiten,Preparar disco,
 c089,Was der Vorgang mit erhöhten Rechten getan hat,Qué hizo la operación con permisos elevados,
 c090,Der iPod hat den DFU-Modus verlassen. Du kannst die Firmware jetzt kopieren.,El iPod salió del modo DFU. Ya puedes copiar el firmware.,
 c091,Von vorn beginnen,Empezar de nuevo,
-c092,"Aura Studio hat zur Sicherheit angehalten, bevor der Datenträger angetastet wurde: {0}.",Por seguridad, Aura Studio se detuvo antes de tocar el disco: {0}.,
+c092,"Aura Studio hat zur Sicherheit angehalten, bevor der Datenträger angetastet wurde: {0}.","Por seguridad, Aura Studio se detuvo antes de tocar el disco: {0}.",
 c093,iPod im DFU-Modus suchen,Buscar iPod en modo DFU,
 c094,iPod wird im DFU-Modus gesucht…,Buscando iPod en modo DFU…,
 c095,Der iPod ist noch im DFU-Modus und die Installation wurde nicht bestätigt. Trenne ihn nicht: suche ihn erneut.,El iPod todavía está en modo DFU y la instalación no se confirmó. No lo desconectes: vuelve a buscarlo.,
@@ -129,23 +129,23 @@ c127,Aus den Favoriten entfernen,Quitar de favoritos,Idéntico a c126
 c128,Interpretenfoto entfernen,Quitar foto del artista,
 c129,Interpretenfotos entfernen,Quitar fotos de los artistas,
 c130,Poster entfernen,Quitar póster,
-c131,Das Gerät hat sich seit deiner Bestätigung geändert. Zur Sicherheit wurde nichts geschrieben.,El dispositivo cambió desde tu confirmación. Por seguridad, no se escribió nada.,
+c131,Das Gerät hat sich seit deiner Bestätigung geändert. Zur Sicherheit wurde nichts geschrieben.,"El dispositivo cambió desde tu confirmación. Por seguridad, no se escribió nada.",
 c132,"Gerät überprüft: {0}, {1}, {2}","Dispositivo verificado: {0}, {1}, {2}",
-c133,Es kommt mehr als ein iPod in Frage. Zur Sicherheit wurde keiner ausgewählt.,Hay más de un iPod candidato. Por seguridad, no se eligió ninguno.,
+c133,Es kommt mehr als ein iPod in Frage. Zur Sicherheit wurde keiner ausgewählt.,"Hay más de un iPod candidato. Por seguridad, no se eligió ninguno.",
 c134,Der iPod ist verschwunden. Es wurde nichts geschrieben.,El iPod desapareció. No se escribió nada.,
 c135,Das Volume des iPod ist nicht eingebunden.,El volumen del iPod no está montado.,"Alemán usa ""Volume"" (préstamo del inglés) en vez de ""Datenträger"", usado en otras filas -- podría ser inconsistencia terminológica del propio alemán, o a propósito para distinguir volumen lógico de disco físico"
 c136,Abbrechen,Cancelar,
 c137,{0} Datei in die Mediathek kopiert.,{0} archivo copiado a la biblioteca.,
 c138,{0} Dateien in die Mediathek kopiert.,{0} archivos copiados a la biblioteca.,
 c139,{0} konnte nicht kopiert werden.,No se pudo copiar {0}.,Construcción impersonal alemana; no queda claro el género/número de lo que {0} reemplaza fuera de esta oración
-c140,{0} konnten nicht kopiert werden.,No se pudieron copiar {0}.,Misma nota que c139, en plural
+c140,{0} konnten nicht kopiert werden.,No se pudieron copiar {0}.,"Misma nota que c139, en plural"
 c141,"{0} wurde übersprungen, weil die Datei fehlt; der Eintrag bleibt im Katalog.","{0} se omitió porque falta el archivo; el elemento queda en el catálogo.",
 c142,"{0} wurden übersprungen, weil ihre Dateien fehlen; die Einträge bleiben im Katalog.","{0} se omitieron porque faltan sus archivos; los elementos quedan en el catálogo.",
 c143,{0} Datei wird in die Mediathek kopiert…,Copiando {0} archivo a la biblioteca…,
 c144,{0} Dateien werden in die Mediathek kopiert…,Copiando {0} archivos a la biblioteca…,
 c145,{0} vorbereitete Datei trägt den alten Namen,{0} archivo preparado tiene el nombre antiguo,
 c146,{0} vorbereitete Dateien tragen den alten Namen,{0} archivos preparados tienen el nombre antiguo,
-c147,die Tags von {0} Titel wurden geschrieben,se escribieron las etiquetas de {0} canción,Empieza en minúscula: parece la segunda mitad de una oración concatenada con otro fragmento, no una oración independiente
+c147,die Tags von {0} Titel wurden geschrieben,se escribieron las etiquetas de {0} canción,"Empieza en minúscula: parece la segunda mitad de una oración concatenada con otro fragmento, no una oración independiente"
 c148,die Tags von {0} Titeln wurden geschrieben,se escribieron las etiquetas de {0} canciones,Misma nota que c147
 c149,"bei {0} Eintrag steht noch nicht, ob seine Datei Auras Kopie ist oder deine","en {0} elemento todavía no consta si su archivo es una copia de Aura o tuyo","Empieza en minúscula, mismo patrón fragmentario que c147/c148"
 c150,"bei {0} Einträgen steht noch nicht, ob ihre Dateien Auras Kopien sind oder deine","en {0} elementos todavía no consta si sus archivos son copias de Aura o tuyas",Misma nota que c149
