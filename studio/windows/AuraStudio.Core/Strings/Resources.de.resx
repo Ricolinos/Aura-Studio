@@ -1,0 +1,1872 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="album-cover-picker.cancelar" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="album-cover-picker.cancelar-resto" xml:space="preserve">
+    <value>Rest abbrechen</value>
+  </data>
+  <data name="album-cover-picker.omitir-este-album" xml:space="preserve">
+    <value>Dieses Album überspringen</value>
+  </data>
+  <data name="album-cover-picker.title-in-set" xml:space="preserve">
+    <value>Album {0} von {1} · Cover für „{2}“</value>
+  </data>
+  <data name="album-cover-picker.title-single" xml:space="preserve">
+    <value>Cover für „{0}“</value>
+  </data>
+  <data name="album-cover-picker.usar-esta" xml:space="preserve">
+    <value>Dieses verwenden</value>
+  </data>
+  <data name="album-cover-picker.usar-esta-2" xml:space="preserve">
+    <value>Dieses verwenden</value>
+  </data>
+  <data name="album-cover-picker.usar-recomendada" xml:space="preserve">
+    <value>Empfohlenes verwenden</value>
+  </data>
+  <data name="app-strings.action-eject" xml:space="preserve">
+    <value>Auswerfen</value>
+  </data>
+  <data name="app-strings.action-open-in-explorer" xml:space="preserve">
+    <value>Im Explorer öffnen</value>
+  </data>
+  <data name="app-strings.action-refresh" xml:space="preserve">
+    <value>Aktualisieren</value>
+  </data>
+  <data name="app-strings.action-refresh-help" xml:space="preserve">
+    <value>Liest den Zustand deines iPod und deiner Mediathek erneut ein. Es wird nichts kopiert und nichts gelöscht.</value>
+  </data>
+  <data name="app-strings.app-name" xml:space="preserve">
+    <value>Aura Studio</value>
+  </data>
+  <data name="app-strings.bootloader-update-awaiting-reboot" xml:space="preserve">
+    <value>Bootloader gesendet. Warten darauf, dass der iPod bestätigt und neu startet…</value>
+  </data>
+  <data name="app-strings.bootloader-update-continue" xml:space="preserve">
+    <value>Weiter</value>
+  </data>
+  <data name="app-strings.bootloader-update-done-detail" xml:space="preserve">
+    <value>Deine Musik und deine Einstellungen bleiben unangetastet. Wenn du den iPod das nächste Mal einschaltest, siehst du den neuen Startbildschirm.</value>
+  </data>
+  <data name="app-strings.bootloader-update-done-title" xml:space="preserve">
+    <value>Fertig: der Bootloader ist aktuell</value>
+  </data>
+  <data name="app-strings.bootloader-update-enter-dfu-when" xml:space="preserve">
+    <value>Der iPod muss dabei über USB angeschlossen bleiben. Sein Datenträger wird nicht angetastet: nur der Bootloader wird neu geschrieben.</value>
+  </data>
+  <data name="app-strings.bootloader-update-flash-confirm" xml:space="preserve">
+    <value>Mir ist klar, dass dies den Bootloader des iPod neu schreibt. Der Datenträger wird nicht gelöscht und Apples Bootloader nicht entfernt.</value>
+  </data>
+  <data name="app-strings.bootloader-update-flashing-1" xml:space="preserve">
+    <value>Bootloader des iPod wird aktualisiert…</value>
+  </data>
+  <data name="app-strings.bootloader-update-flashing-2" xml:space="preserve">
+    <value>Bootloader für {0} wird aktualisiert…</value>
+  </data>
+  <data name="app-strings.bootloader-update-no-password" xml:space="preserve">
+    <value>Nach deinem Administratorkennwort wird kein einziges Mal gefragt.</value>
+  </data>
+  <data name="app-strings.bootloader-update-not-required" xml:space="preserve">
+    <value>Das ist nicht nötig. Die neue Firmware funktioniert genauso mit dem Bootloader, den du schon hast; es ändert sich nur der Startbildschirm.</value>
+  </data>
+  <data name="app-strings.bootloader-update-nothing-touched" xml:space="preserve">
+    <value>Auf dem Datenträger wird nichts angetastet. Deine Musik, deine Fotos, deine Wiedergabelisten und deine Einstellungen bleiben genau so, wie sie sind.</value>
+  </data>
+  <data name="app-strings.bootloader-update-offer" xml:space="preserve">
+    <value>Bootloader dieses iPod aktualisieren</value>
+  </data>
+  <data name="app-strings.bootloader-update-offer-different" xml:space="preserve">
+    <value>Diese Version bringt einen neueren Bootloader mit als den auf deinem iPod.</value>
+  </data>
+  <data name="app-strings.bootloader-update-offer-unknown" xml:space="preserve">
+    <value>Wir wissen nicht, welchen Bootloader dein iPod hat: ein anderer Computer hat ihn installiert, oder eine frühere Version der App.</value>
+  </data>
+  <data name="app-strings.bootloader-update-title" xml:space="preserve">
+    <value>Bootloader aktualisieren</value>
+  </data>
+  <data name="app-strings.bootloader-update-what-it-is" xml:space="preserve">
+    <value>Der Bootloader ist das Programm, das vor der Firmware läuft, auf einem Chip getrennt vom Datenträger. Diese Version bringt einen neuen mit, mit einem anderen Startbildschirm.</value>
+  </data>
+  <data name="app-strings.bootloader-update-why-dfu" xml:space="preserve">
+    <value>Der DFU-Modus ist nötig, weil dieser Chip auf keine andere Weise beschrieben werden kann.</value>
+  </data>
+  <data name="app-strings.declared-family-label" xml:space="preserve">
+    <value>Angegebene Familie</value>
+  </data>
+  <data name="app-strings.installer-copied-files.one" xml:space="preserve">
+    <value>{0} Datei auf den iPod geschrieben.</value>
+  </data>
+  <data name="app-strings.installer-copied-files.other" xml:space="preserve">
+    <value>{0} Dateien auf den iPod geschrieben.</value>
+  </data>
+  <data name="app-strings.language-beta-detail" xml:space="preserve">
+    <value>Maschinelle Übersetzung, noch nicht von Muttersprachlern geprüft.</value>
+  </data>
+  <data name="app-strings.language-beta-mark" xml:space="preserve">
+    <value>(Beta)</value>
+  </data>
+  <data name="app-strings.language-follow-system" xml:space="preserve">
+    <value>Wie das System</value>
+  </data>
+  <data name="app-strings.language-restart-busy" xml:space="preserve">
+    <value>Die Sprache ist bereits gespeichert und gilt, sobald du Aura Studio erneut öffnest. Schließe es jetzt nicht: es läuft gerade etwas, und beim Schließen bliebe es halb fertig.</value>
+  </data>
+  <data name="app-strings.language-restart-detail" xml:space="preserve">
+    <value>Die Sprache wechselt, wenn du die App erneut öffnest. An deiner Mediathek und an deinem iPod wird nichts angetastet.</value>
+  </data>
+  <data name="app-strings.language-restart-now" xml:space="preserve">
+    <value>Jetzt schließen</value>
+  </data>
+  <data name="app-strings.language-restart-title" xml:space="preserve">
+    <value>Aura Studio muss erneut geöffnet werden</value>
+  </data>
+  <data name="artists-page.buscar-artistas-2" xml:space="preserve">
+    <value>Interpreten suchen</value>
+  </data>
+  <data name="background-task-center-indicator.cancelar" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="app-strings.delete-confirm-copy.one" xml:space="preserve">
+    <value>{0} Datei ({1}) wandert in den Papierkorb.</value>
+  </data>
+  <data name="app-strings.delete-confirm-copy.other" xml:space="preserve">
+    <value>{0} Dateien ({1}) wandern in den Papierkorb.</value>
+  </data>
+  <data name="artists-view.eliminar" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="app-strings.delete-confirm-reference.one" xml:space="preserve">
+    <value>{0} Element wird aus deiner Mediathek entfernt; seine Originaldatei wird nicht angetastet.</value>
+  </data>
+  <data name="app-strings.delete-confirm-reference.other" xml:space="preserve">
+    <value>{0} Elemente werden aus deiner Mediathek entfernt; ihre Originaldateien werden nicht angetastet.</value>
+  </data>
+  <data name="app-strings.delete-confirm-title.one" xml:space="preserve">
+    <value>{0} Element löschen?</value>
+  </data>
+  <data name="app-strings.delete-confirm-title.other" xml:space="preserve">
+    <value>{0} Elemente löschen?</value>
+  </data>
+  <data name="app-strings.device-ambiguous" xml:space="preserve">
+    <value>{0} Datenträger gefunden, die dein iPod sein könnten. Zur Sicherheit wählt Aura Studio keinen aus — trenne die anderen externen Datenträger und versuche es erneut.</value>
+  </data>
+  <data name="app-strings.device-connected" xml:space="preserve">
+    <value>Verbunden: {0}</value>
+  </data>
+  <data name="app-strings.device-detecting" xml:space="preserve">
+    <value>Dein iPod wird gesucht…</value>
+  </data>
+  <data name="app-strings.device-not-connected" xml:space="preserve">
+    <value>Es ist kein iPod angeschlossen. Schließe deinen iPod Classic über USB an.</value>
+  </data>
+  <data name="app-strings.dfu-driver-heading" xml:space="preserve">
+    <value>Treiber für den DFU-Modus</value>
+  </data>
+  <data name="app-strings.dfu-driver-installed-no-device" xml:space="preserve">
+    <value>Apples Treiber ist installiert. Es ist noch kein iPod im DFU-Modus zu sehen.</value>
+  </data>
+  <data name="app-strings.dfu-driver-missing" xml:space="preserve">
+    <value>Windows sieht den iPod, hat aber keinen Treiber dafür. Installiere „Apple-Geräte“ aus dem Microsoft Store (oder Apples iTunes) und schließe ihn erneut an: Aura Studio braucht diesen Treiber, um im DFU-Modus mit dem iPod zu sprechen.</value>
+  </data>
+  <data name="app-strings.dfu-driver-package-missing" xml:space="preserve">
+    <value>Apples Gerätetreiber wurde nicht gefunden. Installiere „Apple-Geräte“ aus dem Microsoft Store (oder iTunes), bevor du fortfährst: ohne ihn kann Windows im DFU-Modus nicht mit dem iPod sprechen.</value>
+  </data>
+  <data name="app-strings.dfu-driver-ready" xml:space="preserve">
+    <value>Windows erkennt „{0}“ und sein Treiber funktioniert.</value>
+  </data>
+  <data name="app-strings.dfu-driver-unknown" xml:space="preserve">
+    <value>Der Zustand des Treibers konnte nicht abgefragt werden.</value>
+  </data>
+  <data name="app-strings.eject-failed" xml:space="preserve">
+    <value>Der iPod konnte nicht ausgeworfen werden. Schließe die Anwendungen, die das Laufwerk verwenden, und versuche es erneut.</value>
+  </data>
+  <data name="app-strings.eject-requested" xml:space="preserve">
+    <value>Auswerfen angefordert. Du kannst den iPod trennen, sobald Windows es anzeigt.</value>
+  </data>
+  <data name="app-strings.general-subtitle" xml:space="preserve">
+    <value>Verwalte deinen iPod und sieh dir seinen Zustand an</value>
+  </data>
+  <data name="app-strings.general-title" xml:space="preserve">
+    <value>Allgemein</value>
+  </data>
+  <data name="app-strings.installer-already-writing" xml:space="preserve">
+    <value>Es wird bereits auf den iPod geschrieben. Warte, bis das fertig ist, bevor du etwas anderes startest.</value>
+  </data>
+  <data name="app-strings.installer-artifacts-invalid" xml:space="preserve">
+    <value>Die Firmware-Dateien konnten nicht überprüft werden, also wird nichts installiert.</value>
+  </data>
+  <data name="app-strings.installer-awaiting-reboot" xml:space="preserve">
+    <value>Geschrieben. Warten darauf, dass der iPod neu startet und wieder erscheint…</value>
+  </data>
+  <data name="app-strings.installer-begin" xml:space="preserve">
+    <value>Starten</value>
+  </data>
+  <data name="app-strings.installer-cancelled" xml:space="preserve">
+    <value>Vorgang abgebrochen.</value>
+  </data>
+  <data name="app-strings.installer-copy-failed" xml:space="preserve">
+    <value>Die Firmware konnte nicht auf den iPod kopiert werden.</value>
+  </data>
+  <data name="app-strings.installer-copy-files" xml:space="preserve">
+    <value>Firmware kopieren</value>
+  </data>
+  <data name="app-strings.installer-copying-title" xml:space="preserve">
+    <value>Firmware wird auf den iPod kopiert…</value>
+  </data>
+  <data name="app-strings.installer-detect-detail" xml:space="preserve">
+    <value>Sieh dir diese Angaben genau an. Was jetzt folgt, löscht den Inhalt des hier gezeigten Datenträgers.</value>
+  </data>
+  <data name="app-strings.installer-detect-title" xml:space="preserve">
+    <value>Bestätige, dass das dein iPod ist</value>
+  </data>
+  <data name="app-strings.installer-dfu-detected-detail" xml:space="preserve">
+    <value>Aura Studio hat ihn beim Anschließen erkannt. Möchtest du Firmware darauf installieren? Es passiert nichts, bis du dich entscheidest.</value>
+  </data>
+  <data name="app-strings.installer-dfu-detected-dismiss" xml:space="preserve">
+    <value>Jetzt nicht</value>
+  </data>
+  <data name="app-strings.installer-dfu-detected-install" xml:space="preserve">
+    <value>Ja, installieren</value>
+  </data>
+  <data name="app-strings.installer-dfu-detected-title" xml:space="preserve">
+    <value>Dein iPod ist im DFU-Modus</value>
+  </data>
+  <data name="app-strings.installer-dfu-found-1" xml:space="preserve">
+    <value>iPod im DFU-Modus erkannt.</value>
+  </data>
+  <data name="app-strings.installer-dfu-found-2" xml:space="preserve">
+    <value>iPod im DFU-Modus erkannt (Zustand {0}).</value>
+  </data>
+  <data name="app-strings.installer-dfu-guide-link" xml:space="preserve">
+    <value>Anleitung zum Flashen und Wiederherstellen (Firmware-Repository)</value>
+  </data>
+  <data name="app-strings.installer-dfu-guide-url" xml:space="preserve">
+    <value>https://github.com/Ricolinos/Aura-Firmware/blob/main/docs/guia-flasheo-restauracion.md</value>
+  </data>
+  <data name="app-strings.installer-dfu-no-families" xml:space="preserve">
+    <value>Es steht keine Firmware zum Installieren bereit: der Artefakte-Ordner wurde nicht befüllt.</value>
+  </data>
+  <data name="app-strings.installer-dfu-not-found" xml:space="preserve">
+    <value>Es ist noch kein iPod im DFU-Modus zu sehen. Wiederhole die Tastenkombination und suche erneut. Denk daran, weiter zu drücken, nachdem der Bildschirm schwarz wird.</value>
+  </data>
+  <data name="app-strings.installer-dfu-not-seen-by-windows" xml:space="preserve">
+    <value>Apples Treiber ist installiert, aber Windows sieht kein Apple-Gerät. Wenn du die Tastenkombination schon gemacht hast und der Bildschirm des iPod schwarz ist, ist er wahrscheinlich im DFU-Modus und seine USB-Verbindung kommt hier nicht an. Prüfe auf einer virtuellen Maschine, ob der iPod im DFU-Modus an Windows durchgereicht wird: beim Wechsel in den DFU-Modus ändert sich seine USB-Kennung und du musst ihn eventuell erneut freigeben.</value>
+  </data>
+  <data name="app-strings.installer-dfu-step1" xml:space="preserve">
+    <value>Wenn dein iPod gerade Musik abspielt, stoppe die Wiedergabe.</value>
+  </data>
+  <data name="app-strings.installer-dfu-step2" xml:space="preserve">
+    <value>Halte SELECT + MENU gleichzeitig gedrückt.</value>
+  </data>
+  <data name="app-strings.installer-dfu-step3" xml:space="preserve">
+    <value>Halte beide Tasten etwa 12 Sekunden lang gedrückt, bis nach dem Schwarzwerden des Bildschirms.</value>
+  </data>
+  <data name="app-strings.installer-dfu-step4" xml:space="preserve">
+    <value>Lass los. Aura Studio erkennt den DFU-Modus automatisch.</value>
+  </data>
+  <data name="app-strings.installer-dfu-timing-warning" xml:space="preserve">
+    <value>Wenn du vor etwa 12 Sekunden loslässt, startet der iPod normal neu und geht NICHT in den DFU-Modus. Der schwarze Bildschirm ist nicht das Zeichen zum Loslassen: halte danach weiter gedrückt.</value>
+  </data>
+  <data name="app-strings.installer-dfu-unreadable" xml:space="preserve">
+    <value>Der Zustand des iPod konnte nicht gelesen werden. Sieh unten nach, ob Apples Treiber fehlt.</value>
+  </data>
+  <data name="app-strings.installer-dfu-waiting" xml:space="preserve">
+    <value>Warten auf den DFU-Modus…</value>
+  </data>
+  <data name="app-strings.installer-done-detail" xml:space="preserve">
+    <value>Die Firmware ist installiert. Wirf den iPod unter „Allgemein“ aus, bevor du ihn abziehst.</value>
+  </data>
+  <data name="app-strings.installer-done-title" xml:space="preserve">
+    <value>Fertig</value>
+  </data>
+  <data name="app-strings.installer-dry-run" xml:space="preserve">
+    <value>Proben, ohne zu schreiben</value>
+  </data>
+  <data name="app-strings.installer-dry-run-heading" xml:space="preserve">
+    <value>Probe beendet — der Datenträger wurde nicht angetastet</value>
+  </data>
+  <data name="app-strings.installer-dry-run-ok" xml:space="preserve">
+    <value>Die Probe ist gut gelaufen: der Datenträger wurde mit Administratorrechten erneut geprüft und der Formatierungsplan ist gültig. Es wurde noch nichts geschrieben.</value>
+  </data>
+  <data name="app-strings.installer-dry-run-running" xml:space="preserve">
+    <value>Vorbereitung des Datenträgers wird geprobt…</value>
+  </data>
+  <data name="app-strings.installer-enter-dfu-title" xml:space="preserve">
+    <value>Versetze den iPod jetzt in den DFU-Modus</value>
+  </data>
+  <data name="app-strings.installer-enter-dfu-when" xml:space="preserve">
+    <value>Jetzt ist der Moment: der Datenträger ist bereit, und als Nächstes wird der Bootloader geschrieben. Der iPod muss dabei über USB angeschlossen bleiben.</value>
+  </data>
+  <data name="app-strings.installer-failed-title" xml:space="preserve">
+    <value>Es ging nicht weiter</value>
+  </data>
+  <data name="app-strings.installer-family-change" xml:space="preserve">
+    <value>Auf diesem iPod ist {0} installiert und du bist dabei, {1} zu installieren. {0} bleibt vollständig erhalten, mit seinen Einstellungen, und du kannst jederzeit über Extras dorthin zurück.</value>
+  </data>
+  <data name="app-strings.installer-family-label" xml:space="preserve">
+    <value>Zu installierende Firmware</value>
+  </data>
+  <data name="app-strings.installer-flash" xml:space="preserve">
+    <value>Bootloader schreiben</value>
+  </data>
+  <data name="app-strings.installer-flash-confirm" xml:space="preserve">
+    <value>Mir ist klar, dass dies Apples ursprünglichen Bootloader ersetzt und sich nur durch eine Wiederherstellung rückgängig machen lässt.</value>
+  </data>
+  <data name="app-strings.installer-flash-failed" xml:space="preserve">
+    <value>Der Bootloader konnte nicht geschrieben werden.</value>
+  </data>
+  <data name="app-strings.installer-flash-needs-confirmation" xml:space="preserve">
+    <value>Deine Bestätigung fehlt, bevor der Bootloader geschrieben wird. Aura Studio schreibt nichts, ohne dass du vorher bestätigst.</value>
+  </data>
+  <data name="app-strings.installer-flashing" xml:space="preserve">
+    <value>Bootloader wird auf den iPod geschrieben…</value>
+  </data>
+  <data name="app-strings.installer-format-confirm" xml:space="preserve">
+    <value>Mir ist klar, dass alles auf {0} gelöscht wird.</value>
+  </data>
+  <data name="app-strings.installer-format-danger-detail" xml:space="preserve">
+    <value>Die Probe oben hat nichts angetastet. Was jetzt folgt, löscht alles auf dem Datenträger und lässt sich nicht rückgängig machen. Prüfe, dass es der richtige iPod ist, bevor du fortfährst.</value>
+  </data>
+  <data name="app-strings.installer-format-danger-heading" xml:space="preserve">
+    <value>Dieser Schritt löscht den iPod wirklich</value>
+  </data>
+  <data name="app-strings.installer-format-needs-confirmation" xml:space="preserve">
+    <value>Deine Bestätigung fehlt, bevor der iPod gelöscht wird. Aura Studio formatiert nichts, ohne dass du vorher bestätigst, auf welchem Datenträger es arbeitet.</value>
+  </data>
+  <data name="app-strings.installer-format-needs-dry-run" xml:space="preserve">
+    <value>Die Vorbereitung des Datenträgers muss zuerst geprobt werden. Dabei wird alles geprüft, ohne etwas zu schreiben.</value>
+  </data>
+  <data name="app-strings.installer-format-now-on" xml:space="preserve">
+    <value>{0} löschen und formatieren</value>
+  </data>
+  <data name="app-strings.installer-format-running" xml:space="preserve">
+    <value>Datenträger des iPod wird formatiert…</value>
+  </data>
+  <data name="app-strings.installer-needs-mounted-volume" xml:space="preserve">
+    <value>Der iPod hat kein Volume, das Windows lesen kann. Bereite den Datenträger vor, bevor du die Dateien kopierst.</value>
+  </data>
+  <data name="app-strings.installer-no-device" xml:space="preserve">
+    <value>Es ist kein iPod angeschlossen. Schließe ihn über USB an und warte, bis Windows ihn erkennt.</value>
+  </data>
+  <data name="app-strings.installer-permissions-continue" xml:space="preserve">
+    <value>Verstanden, weiter</value>
+  </data>
+  <data name="app-strings.installer-permissions-detail" xml:space="preserve">
+    <value>Um den Datenträger des iPod vorzubereiten, fragt dich Windows mit seiner eigenen Meldung nach Administratorrechten. Aura Studio erledigt alles von hier aus: du wirst nie eine Konsole öffnen oder einen Befehl eintippen müssen. Die Rechte werden nur für zwei bestimmte Dinge angefordert — den Datenträger des iPod zu formatieren und, während der Bootloader geschrieben wird, den Apple-Dienst anzuhalten, der den USB-Anschluss belegen könnte. Jede Verwendung wird im Protokoll der Anwendung festgehalten.</value>
+  </data>
+  <data name="app-strings.installer-permissions-title" xml:space="preserve">
+    <value>Nötige Berechtigungen</value>
+  </data>
+  <data name="app-strings.installer-prepare-disk" xml:space="preserve">
+    <value>Datenträger vorbereiten</value>
+  </data>
+  <data name="app-strings.installer-privileged-log-heading" xml:space="preserve">
+    <value>Was der Vorgang mit erhöhten Rechten getan hat</value>
+  </data>
+  <data name="app-strings.installer-rebooted" xml:space="preserve">
+    <value>Der iPod hat den DFU-Modus verlassen. Du kannst die Firmware jetzt kopieren.</value>
+  </data>
+  <data name="app-strings.installer-restart" xml:space="preserve">
+    <value>Von vorn beginnen</value>
+  </data>
+  <data name="app-strings.installer-safety-abort" xml:space="preserve">
+    <value>Aura Studio hat zur Sicherheit angehalten, bevor der Datenträger angetastet wurde: {0}.</value>
+  </data>
+  <data name="app-strings.installer-scan-dfu" xml:space="preserve">
+    <value>iPod im DFU-Modus suchen</value>
+  </data>
+  <data name="app-strings.installer-scanning-dfu" xml:space="preserve">
+    <value>iPod wird im DFU-Modus gesucht…</value>
+  </data>
+  <data name="app-strings.installer-stuck-in-dfu" xml:space="preserve">
+    <value>Der iPod ist noch im DFU-Modus und die Installation wurde nicht bestätigt. Trenne ihn nicht: suche ihn erneut.</value>
+  </data>
+  <data name="app-strings.installer-subtitle" xml:space="preserve">
+    <value>Installiere die Firmware Schritt für Schritt auf deinem iPod</value>
+  </data>
+  <data name="app-strings.installer-title" xml:space="preserve">
+    <value>Installationsprogramm</value>
+  </data>
+  <data name="app-strings.installer-unknown-disk" xml:space="preserve">
+    <value>Die Datenträgernummer von „{0}“ konnte nicht ermittelt werden, also wird nichts angetastet.</value>
+  </data>
+  <data name="app-strings.installer-welcome-detail" xml:space="preserve">
+    <value>Aura Studio bereitet den Datenträger deines iPod vor, schreibt den Bootloader und kopiert die Firmware. Jeder Schritt wird erklärt, bevor er passiert, und nichts wird angetastet, bis du bestätigst.</value>
+  </data>
+  <data name="app-strings.installer-welcome-title" xml:space="preserve">
+    <value>Los geht's: Firmware auf deinem iPod installieren</value>
+  </data>
+  <data name="app-strings.installer-welcome-warning" xml:space="preserve">
+    <value>Die Installation löscht alles auf dem iPod und ersetzt seinen ursprünglichen Apple-Bootloader. Wenn du Musik nur dort hast, kopiere sie vorher woandershin.</value>
+  </data>
+  <data name="app-strings.label-bus" xml:space="preserve">
+    <value>Anschluss</value>
+  </data>
+  <data name="app-strings.label-capacity" xml:space="preserve">
+    <value>Kapazität</value>
+  </data>
+  <data name="app-strings.label-device" xml:space="preserve">
+    <value>Gerät</value>
+  </data>
+  <data name="app-strings.label-file-system" xml:space="preserve">
+    <value>Dateisystem</value>
+  </data>
+  <data name="app-strings.label-firmware" xml:space="preserve">
+    <value>Erkannte Firmware</value>
+  </data>
+  <data name="app-strings.label-free" xml:space="preserve">
+    <value>Verfügbar</value>
+  </data>
+  <data name="app-strings.label-music" xml:space="preserve">
+    <value>Musik</value>
+  </data>
+  <data name="app-strings.label-photos" xml:space="preserve">
+    <value>Fotos</value>
+  </data>
+  <data name="app-strings.label-playlists" xml:space="preserve">
+    <value>Wiedergabelisten</value>
+  </data>
+  <data name="app-strings.label-unit" xml:space="preserve">
+    <value>Laufwerk</value>
+  </data>
+  <data name="app-strings.label-used" xml:space="preserve">
+    <value>Belegt</value>
+  </data>
+  <data name="app-strings.label-video" xml:space="preserve">
+    <value>Video</value>
+  </data>
+  <data name="app-strings.last-sync-summary" xml:space="preserve">
+    <value>Zusammenfassung der letzten Synchronisierung</value>
+  </data>
+  <data name="app-strings.library-add-files" xml:space="preserve">
+    <value>Dateien hinzufügen</value>
+  </data>
+  <data name="app-strings.library-add-folder" xml:space="preserve">
+    <value>Ordner hinzufügen</value>
+  </data>
+  <data name="app-strings.library-available-without-device" xml:space="preserve">
+    <value>Du kannst deine Mediathek auch ohne angeschlossenen iPod aufbauen; sie wird synchronisiert, sobald du ihn anschließt.</value>
+  </data>
+  <data name="app-strings.library-columns" xml:space="preserve">
+    <value>Spalten</value>
+  </data>
+  <data name="app-strings.library-columns-detail" xml:space="preserve">
+    <value>Wähle, welche Spalten zu sehen sind. Der Titel ist immer dabei und steht vorn.</value>
+  </data>
+  <data name="app-strings.library-drop-hint-libraryitemkind-music" xml:space="preserve">
+    <value>Zieh deine Musik oder einen Ordner mit Alben hierher.</value>
+  </data>
+  <data name="app-strings.library-drop-hint-libraryitemkind-photo" xml:space="preserve">
+    <value>Zieh deine Fotos oder einen Ordner mit Bildern hierher.</value>
+  </data>
+  <data name="app-strings.library-drop-hint-libraryitemkind-video" xml:space="preserve">
+    <value>Zieh deine Filme, Serien oder Videos hierher.</value>
+  </data>
+  <data name="app-strings.library-drop-hint-texto" xml:space="preserve">
+    <value>Zieh deine Dateien hierher.</value>
+  </data>
+  <data name="app-strings.library-empty" xml:space="preserve">
+    <value>Deine Mediathek ist leer.</value>
+  </data>
+  <data name="app-strings.library-favorites-only" xml:space="preserve">
+    <value>Nur Favoriten</value>
+  </data>
+  <data name="app-strings.library-kind-libraryitemkind-music" xml:space="preserve">
+    <value>Musik</value>
+  </data>
+  <data name="app-strings.library-kind-libraryitemkind-photo" xml:space="preserve">
+    <value>Bild</value>
+  </data>
+  <data name="app-strings.library-kind-libraryitemkind-video" xml:space="preserve">
+    <value>Video</value>
+  </data>
+  <data name="app-strings.library-kind-texto" xml:space="preserve">
+    <value>Nicht unterstützt</value>
+  </data>
+  <data name="app-strings.library-locked-reason" xml:space="preserve">
+    <value>Auf dem angeschlossenen iPod läuft keine Firmware aus der Aura-Familie. Installiere sie über das Installationsprogramm, um deine Mediathek zu verwalten und zu synchronisieren.</value>
+  </data>
+  <data name="app-strings.library-nothing-here-yet" xml:space="preserve">
+    <value>In diesem Bereich ist noch nichts.</value>
+  </data>
+  <data name="app-strings.library-open-folder" xml:space="preserve">
+    <value>Mediathek-Ordner öffnen</value>
+  </data>
+  <data name="app-strings.library-remove" xml:space="preserve">
+    <value>Aus der Mediathek entfernen</value>
+  </data>
+  <data name="device-safety-validator.dispositivo-cambio-desde-confirmacion-po" xml:space="preserve">
+    <value>Das Gerät hat sich seit deiner Bestätigung geändert. Zur Sicherheit wurde nichts geschrieben.</value>
+  </data>
+  <data name="device-safety-validator.dispositivo-verificado-actual-displaynam" xml:space="preserve">
+    <value>Gerät überprüft: {0}, {1}, {2}</value>
+  </data>
+  <data name="device-safety-validator.hay-mas-ipod-candidato-por-seguridad" xml:space="preserve">
+    <value>Es kommt mehr als ein iPod in Frage. Zur Sicherheit wurde keiner ausgewählt.</value>
+  </data>
+  <data name="device-safety-validator.ipod-desaparecio-se-realizo-ninguna-escr" xml:space="preserve">
+    <value>Der iPod ist verschwunden. Es wurde nichts geschrieben.</value>
+  </data>
+  <data name="device-safety-validator.volumen-ipod-esta-montado" xml:space="preserve">
+    <value>Das Volume des iPod ist nicht eingebunden.</value>
+  </data>
+  <data name="library-unavailable-view.elegir-otra-biblioteca" xml:space="preserve">
+    <value>Andere Mediathek wählen</value>
+  </data>
+  <data name="library-unavailable-view.crear-nueva" xml:space="preserve">
+    <value>Neue anlegen</value>
+  </data>
+  <data name="app-strings.library-root-missing-1" xml:space="preserve">
+    <value>Es ist kein Mediathek-Ordner eingerichtet.</value>
+  </data>
+  <data name="app-strings.library-root-missing-2" xml:space="preserve">
+    <value>Deine Mediathek liegt auf einem Datenträger, der nicht angeschlossen ist: {0}</value>
+  </data>
+  <data name="library-unavailable-view.no-se-perdio-nada-tu-catalogo" xml:space="preserve">
+    <value>Es ist nichts verloren: der Katalog und deine Dateien liegen weiter auf diesem Datenträger. Schließ ihn an, und die Mediathek kommt von selbst zurück.</value>
+  </data>
+  <data name="done-view.reintentar" xml:space="preserve">
+    <value>Datenträger anschließen und erneut versuchen</value>
+  </data>
+  <data name="app-strings.library-season-1" xml:space="preserve">
+    <value>Ohne Staffel</value>
+  </data>
+  <data name="app-strings.library-season-2" xml:space="preserve">
+    <value>Staffel {0}</value>
+  </data>
+  <data name="app-strings.library-section-only-its-type-libraryitemkind-music" xml:space="preserve">
+    <value>Dieser Bereich nimmt nur Musik. Cover, die zu einem Album gehören, werden als Cover behalten, nicht als Foto.</value>
+  </data>
+  <data name="app-strings.library-section-only-its-type-libraryitemkind-photo" xml:space="preserve">
+    <value>Dieser Bereich nimmt nur Bilder.</value>
+  </data>
+  <data name="app-strings.library-section-only-its-type-libraryitemkind-video" xml:space="preserve">
+    <value>Dieser Bereich nimmt nur Video. Ein Bild mit demselben Namen wie ein Video wird als sein Poster behalten.</value>
+  </data>
+  <data name="app-strings.library-similar-found-on-drop" xml:space="preserve">
+    <value>{0} Unter dem Hinzugefügten haben wir Einträge gefunden, die sich ähneln — sieh sie dir unter „Ähnliche“ an.</value>
+  </data>
+  <data name="app-strings.library-sort-ascending" xml:space="preserve">
+    <value>Aufsteigend</value>
+  </data>
+  <data name="app-strings.library-sort-by" xml:space="preserve">
+    <value>Sortieren nach</value>
+  </data>
+  <data name="app-strings.library-status-6" xml:space="preserve">
+    <value>Fehler: {0}</value>
+  </data>
+  <data name="app-strings.library-status-7" xml:space="preserve">
+    <value>Fehler</value>
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-enrichi" xml:space="preserve">
+    <value>Angaben werden gesucht</value>
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-needsre" xml:space="preserve">
+    <value>Muss geprüft werden</value>
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-queued" xml:space="preserve">
+    <value>In der Warteschlange</value>
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-ready" xml:space="preserve">
+    <value>Fertig</value>
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-transco" xml:space="preserve">
+    <value>Wird konvertiert… {0} %</value>
+  </data>
+  <data name="app-strings.licenses-document-missing" xml:space="preserve">
+    <value>{0}: in diesen Dateien nicht enthalten</value>
+  </data>
+  <data name="app-strings.licenses-document-present" xml:space="preserve">
+    <value>{0}: enthalten</value>
+  </data>
+  <data name="app-strings.licenses-families-heading" xml:space="preserve">
+    <value>Enthaltene Firmware</value>
+  </data>
+  <data name="app-strings.licenses-intro" xml:space="preserve">
+    <value>mks5lboot, bootloader-ipod6g.ipod, rockbox.ipod und rockbox.zip sind abgeleitete Werke von Rockbox und werden unter der GNU General Public License, Version 2, verbreitet. Aura Studio nimmt sie als Zusammenstellung auf und verändert sie in keiner Weise. Für jede enthaltene Firmware kannst du ihren vollständigen Quelltext aus dem unten genannten Repository und in der unten genannten Version beziehen.</value>
+  </data>
+  <data name="app-strings.licenses-libraries-heading" xml:space="preserve">
+    <value>Enthaltene Bibliotheken</value>
+  </data>
+  <data name="app-strings.licenses-libraries-intro" xml:space="preserve">
+    <value>Aura Studio enthält Bibliotheken freier Software. Sie werden als eigene Dateien neben dem Programm verbreitet, unverändert, und du kannst sie durch eine andere kompatible Version ersetzen.</value>
+  </data>
+  <data name="app-strings.licenses-open" xml:space="preserve">
+    <value>Lizenzen ansehen</value>
+  </data>
+  <data name="app-strings.licenses-repository-label" xml:space="preserve">
+    <value>Quelltext</value>
+  </data>
+  <data name="app-strings.licenses-subtitle" xml:space="preserve">
+    <value>Freie Software in Aura Studio</value>
+  </data>
+  <data name="app-strings.licenses-tag-label" xml:space="preserve">
+    <value>Enthaltene Version</value>
+  </data>
+  <data name="app-strings.licenses-tag-lib-detail" xml:space="preserve">
+    <value>Liest die Tags und Cover deiner Musikdateien (MP3, FLAC, M4A). In Aura Studio für Mac erledigt das AVFoundation, das es unter Windows nicht gibt.</value>
+  </data>
+  <data name="app-strings.licenses-tag-lib-name" xml:space="preserve">
+    <value>TagLib# 2.3.0 — LGPL v2.1</value>
+  </data>
+  <data name="app-strings.licenses-tag-lib-source" xml:space="preserve">
+    <value>https://github.com/mono/taglib-sharp</value>
+  </data>
+  <data name="app-strings.licenses-title" xml:space="preserve">
+    <value>Lizenzen</value>
+  </data>
+  <data name="app-strings.licenses-tool-from-release" xml:space="preserve">
+    <value>Veröffentlicht in Release {0} und gegen dessen checksums.txt geprüft.</value>
+  </data>
+  <data name="app-strings.licenses-tool-heading" xml:space="preserve">
+    <value>Flash-Werkzeug (mks5lboot.exe)</value>
+  </data>
+  <data name="app-strings.licenses-tool-local-pin" xml:space="preserve">
+    <value>Separat für Windows gebaut: das Release veröffentlicht die Unix-Version. Sie stimmt mit dem in Aura Studio selbst hinterlegten Hash überein (angegebene Herkunft: {0}). Ihr Quelltext ist der aus dem oben genannten Firmware-Repository.</value>
+  </data>
+  <data name="app-strings.licenses-tool-missing" xml:space="preserve">
+    <value>In dieser Kopie ist es nicht enthalten.</value>
+  </data>
+  <data name="app-strings.licenses-tool-unverified" xml:space="preserve">
+    <value>Es konnte gegen keinen Hash geprüft werden. Aura Studio führt es nicht aus, solange es sich nicht überprüfen lässt.</value>
+  </data>
+  <data name="app-strings.licenses-unknown-tag" xml:space="preserve">
+    <value>Nicht bekannt</value>
+  </data>
+  <data name="app-strings.licenses-unknown-tag-detail" xml:space="preserve">
+    <value>Diese Dateien wurden kopiert, ohne festzuhalten, aus welchem Release sie stammen. Fülle sie erneut mit scripts/FirmwareFetch.ps1, damit die Version festgehalten wird.</value>
+  </data>
+  <data name="app-strings.nav-albums" xml:space="preserve">
+    <value>Alben</value>
+  </data>
+  <data name="app-strings.nav-all-photos" xml:space="preserve">
+    <value>Alle Fotos</value>
+  </data>
+  <data name="app-strings.nav-all-videos" xml:space="preserve">
+    <value>Alle Videos</value>
+  </data>
+  <data name="app-strings.nav-artists" xml:space="preserve">
+    <value>Interpreten</value>
+  </data>
+  <data name="app-strings.nav-clips" xml:space="preserve">
+    <value>Videoclips</value>
+  </data>
+  <data name="app-strings.nav-extras" xml:space="preserve">
+    <value>Extras</value>
+  </data>
+  <data name="app-strings.nav-general" xml:space="preserve">
+    <value>Allgemein</value>
+  </data>
+  <data name="app-strings.nav-installer" xml:space="preserve">
+    <value>Installationsprogramm</value>
+  </data>
+  <data name="app-strings.nav-movies" xml:space="preserve">
+    <value>Filme</value>
+  </data>
+  <data name="app-strings.nav-music" xml:space="preserve">
+    <value>Musik</value>
+  </data>
+  <data name="app-strings.nav-photos" xml:space="preserve">
+    <value>Fotos</value>
+  </data>
+  <data name="app-strings.nav-photos-ai" xml:space="preserve">
+    <value>KI</value>
+  </data>
+  <data name="app-strings.nav-photos-images" xml:space="preserve">
+    <value>Bilder</value>
+  </data>
+  <data name="app-strings.nav-photos-photos" xml:space="preserve">
+    <value>Fotos</value>
+  </data>
+  <data name="app-strings.nav-playlists" xml:space="preserve">
+    <value>Wiedergabelisten</value>
+  </data>
+  <data name="app-strings.nav-series" xml:space="preserve">
+    <value>Serien</value>
+  </data>
+  <data name="app-strings.nav-settings" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="app-strings.nav-songs" xml:space="preserve">
+    <value>Titel</value>
+  </data>
+  <data name="app-strings.nav-themes" xml:space="preserve">
+    <value>Designs</value>
+  </data>
+  <data name="app-strings.nav-video" xml:space="preserve">
+    <value>Video</value>
+  </data>
+  <data name="app-strings.never-synced" xml:space="preserve">
+    <value>Dieser iPod wurde noch nie mit Aura Studio synchronisiert.</value>
+  </data>
+  <data name="app-strings.no-device" xml:space="preserve">
+    <value>Kein Gerät</value>
+  </data>
+  <data name="app-strings.not-available" xml:space="preserve">
+    <value>Nicht verfügbar</value>
+  </data>
+  <data name="orphans-button" xml:space="preserve">
+    <value>Verwaiste Dateien suchen</value>
+  </data>
+  <data name="orphans-clean-button" xml:space="preserve">
+    <value>Verwaiste Dateien aufräumen</value>
+  </data>
+  <data name="app-strings.orphans-cleaned.one" xml:space="preserve">
+    <value>{0} verwaiste Datei gelöscht.</value>
+  </data>
+  <data name="app-strings.orphans-cleaned.other" xml:space="preserve">
+    <value>{0} verwaiste Dateien gelöscht.</value>
+  </data>
+  <data name="orphans-confirm-message" xml:space="preserve">
+    <value>Sie gehören zu keinem Eintrag deiner Mediathek; sie zu löschen betrifft keinen Titel, kein Foto und kein Video, das du hast.</value>
+  </data>
+  <data name="app-strings.orphans-confirm-title.one" xml:space="preserve">
+    <value>{0} verwaiste Datei löschen?</value>
+  </data>
+  <data name="app-strings.orphans-confirm-title.other" xml:space="preserve">
+    <value>{0} verwaiste Dateien löschen?</value>
+  </data>
+  <data name="orphans-detail" xml:space="preserve">
+    <value>Vorbereitete Dateien und Cover, die zu keinem Eintrag deiner Mediathek mehr gehören — von Einträgen, die vor dieser Version gelöscht wurden, oder aus einer erneuten Verarbeitung. Es sind nicht deine Originaldateien: es sind technische Kopien, die Aura selbst anlegt und bei Bedarf wieder anlegen kann.</value>
+  </data>
+  <data name="app-strings.orphans-found.one" xml:space="preserve">
+    <value>{0} verwaiste Datei ({1}).</value>
+  </data>
+  <data name="app-strings.orphans-found.other" xml:space="preserve">
+    <value>{0} verwaiste Dateien ({1}).</value>
+  </data>
+  <data name="orphans-none-found" xml:space="preserve">
+    <value>Es gibt keine verwaisten Dateien: es ist nichts aufzuräumen.</value>
+  </data>
+  <data name="orphans-title" xml:space="preserve">
+    <value>Verwaiste Dateien</value>
+  </data>
+  <data name="app-strings.section-content" xml:space="preserve">
+    <value>Inhalt auf dem iPod</value>
+  </data>
+  <data name="app-strings.section-pending-detail" xml:space="preserve">
+    <value>Dieser Bereich kommt in {0} der Windows-Portierung. Die Navigation steht schon, damit sich nichts verschiebt, wenn der Inhalt auftaucht.</value>
+  </data>
+  <data name="app-strings.section-pending-title" xml:space="preserve">
+    <value>Noch nicht fertig</value>
+  </data>
+  <data name="app-strings.section-storage" xml:space="preserve">
+    <value>Speicher</value>
+  </data>
+  <data name="app-strings.service-pause-asks-for-permission" xml:space="preserve">
+    <value>Hierfür wirst du nach Administratorrechten gefragt.</value>
+  </data>
+  <data name="app-strings.service-pause-button" xml:space="preserve">
+    <value>Apple-Dienste anhalten</value>
+  </data>
+  <data name="app-strings.service-pause-detail" xml:space="preserve">
+    <value>Windows hat vielleicht den Apple-Dienst, der den iPod belegt. Wir können ihn währenddessen anhalten und danach wieder starten.</value>
+  </data>
+  <data name="app-strings.service-pause-not-running" xml:space="preserve">
+    <value>Der Apple-Dienst läuft nicht, daran liegt es also nicht.</value>
+  </data>
+  <data name="app-strings.service-pause-title" xml:space="preserve">
+    <value>Taucht er nicht auf?</value>
+  </data>
+  <data name="app-strings.settings-about" xml:space="preserve">
+    <value>Über</value>
+  </data>
+  <data name="app-strings.settings-appearance" xml:space="preserve">
+    <value>Darstellung</value>
+  </data>
+  <data name="app-strings.settings-language-detail" xml:space="preserve">
+    <value>Aura Studio spricht die Sprache, die du hier wählst. Spanisch und Englisch hat ein Mensch geprüft; die übrigen kommen später.</value>
+  </data>
+  <data name="app-strings.settings-subtitle" xml:space="preserve">
+    <value>Einstellungen von Aura Studio</value>
+  </data>
+  <data name="app-strings.settings-theme" xml:space="preserve">
+    <value>Design</value>
+  </data>
+  <data name="app-strings.settings-theme-detail" xml:space="preserve">
+    <value>Aura Studio folgt dem Design von Windows. Du kannst es nur für diese App auf Hell oder Dunkel festlegen.</value>
+  </data>
+  <data name="app-strings.settings-title" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="settings-page.bajar" xml:space="preserve">
+    <value>Nach unten</value>
+  </data>
+  <data name="settings-page.subir" xml:space="preserve">
+    <value>Nach oben</value>
+  </data>
+  <data name="storage-change-only-affects-future" xml:space="preserve">
+    <value>Diese Änderung wirkt sich nur auf das aus, was du ab jetzt importierst: was schon in deiner Mediathek ist, bleibt, wie es ist.</value>
+  </data>
+  <data name="storage-copy-explainer" xml:space="preserve">
+    <value>In die Aura-Mediathek kopieren: Aura verwaltet die Dateien, bearbeitet ihre Tags und synchronisiert sie direkt; das braucht Speicherplatz (eine Kopie); deine Originale kannst du danach löschen.</value>
+  </data>
+  <data name="storage-reference-explainer" xml:space="preserve">
+    <value>Am Ort belassen und darauf verweisen: kein zusätzlicher Speicherplatz, deine Dateien werden nie angetastet; Aura hält eine vorbereitete Fassung daneben (.preparados/), Änderungen leben nur in Aura und auf dem iPod, und wenn der ursprüngliche Datenträger fehlt, lassen sich diese Titel nicht synchronisieren.</value>
+  </data>
+  <data name="storage-section-title" xml:space="preserve">
+    <value>Wie deine Musik gespeichert wird</value>
+  </data>
+  <data name="app-strings.theme-dark" xml:space="preserve">
+    <value>Dunkel</value>
+  </data>
+  <data name="app-strings.theme-light" xml:space="preserve">
+    <value>Hell</value>
+  </data>
+  <data name="app-strings.theme-system" xml:space="preserve">
+    <value>Wie das System</value>
+  </data>
+  <data name="app-update-service.aura-studio-installedversion-es-version" xml:space="preserve">
+    <value>Aura Studio {0} ist die neueste veröffentlichte Version.</value>
+  </data>
+  <data name="app-update-service.buscando-actualizaciones-aura-studio" xml:space="preserve">
+    <value>Nach Updates für Aura Studio wird gesucht…</value>
+  </data>
+  <data name="app-update-service.descargando-aura-studio-available-value" xml:space="preserve">
+    <value>Aura Studio {0} wird heruntergeladen…</value>
+  </data>
+  <data name="app-update-service.se-detuvo-busqueda-actualizaciones" xml:space="preserve">
+    <value>Die Suche nach Updates wurde angehalten.</value>
+  </data>
+  <data name="artists-page.buscar-artistas" xml:space="preserve">
+    <value>Interpreten suchen</value>
+  </data>
+  <data name="artists-page.buscar-fotos" xml:space="preserve">
+    <value>Fotos suchen</value>
+  </data>
+  <data name="artists-page.buscar-fotos-artistas-linea-fanart-tv" xml:space="preserve">
+    <value>Interpretenfotos online suchen (fanart.tv / Deezer)</value>
+  </data>
+  <data name="artists-page.buscar-informacion-linea" xml:space="preserve">
+    <value>Angaben online suchen</value>
+  </data>
+  <data name="artists-page.buscar-informacion-linea-2" xml:space="preserve">
+    <value>Angaben online suchen</value>
+  </data>
+  <data name="artists-page.elige-artista-lista" xml:space="preserve">
+    <value>Wähle einen Interpreten aus der Liste.</value>
+  </data>
+  <data name="artists-page.eliminar" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="artists-page.mas-acciones" xml:space="preserve">
+    <value>Weitere Aktionen</value>
+  </data>
+  <data name="artists-page.mas-acciones-2" xml:space="preserve">
+    <value>Weitere Aktionen</value>
+  </data>
+  <data name="artists-page.mostrar-explorador" xml:space="preserve">
+    <value>Im Explorer anzeigen</value>
+  </data>
+  <data name="artists-page.todavia-hay-musica-biblioteca" xml:space="preserve">
+    <value>In der Mediathek ist noch keine Musik.</value>
+  </data>
+  <data name="conteo.albumes.one" xml:space="preserve">
+    <value>{0} Album</value>
+  </data>
+  <data name="conteo.albumes.other" xml:space="preserve">
+    <value>{0} Alben</value>
+  </data>
+  <data name="conteo.artistas.one" xml:space="preserve">
+    <value>{0} Interpret</value>
+  </data>
+  <data name="conteo.artistas.other" xml:space="preserve">
+    <value>{0} Interpreten</value>
+  </data>
+  <data name="conteo.canciones.one" xml:space="preserve">
+    <value>{0} Titel</value>
+  </data>
+  <data name="conteo.canciones.other" xml:space="preserve">
+    <value>{0} Titel</value>
+  </data>
+  <data name="conteo.dias.one" xml:space="preserve">
+    <value>{0} Tag</value>
+  </data>
+  <data name="conteo.dias.other" xml:space="preserve">
+    <value>{0} Tage</value>
+  </data>
+  <data name="conteo.episodios.one" xml:space="preserve">
+    <value>{0} Folge</value>
+  </data>
+  <data name="conteo.episodios.other" xml:space="preserve">
+    <value>{0} Folgen</value>
+  </data>
+  <data name="conteo.fotos.one" xml:space="preserve">
+    <value>{0} Foto</value>
+  </data>
+  <data name="conteo.fotos.other" xml:space="preserve">
+    <value>{0} Fotos</value>
+  </data>
+  <data name="conteo.peliculas.one" xml:space="preserve">
+    <value>{0} Film</value>
+  </data>
+  <data name="conteo.peliculas.other" xml:space="preserve">
+    <value>{0} Filme</value>
+  </data>
+  <data name="conteo.seleccionados.one" xml:space="preserve">
+    <value>{0} ausgewählt</value>
+  </data>
+  <data name="conteo.seleccionados.other" xml:space="preserve">
+    <value>{0} ausgewählt</value>
+  </data>
+  <data name="conteo.series.one" xml:space="preserve">
+    <value>{0} Serie</value>
+  </data>
+  <data name="conteo.series.other" xml:space="preserve">
+    <value>{0} Serien</value>
+  </data>
+  <data name="conteo.temporadas.one" xml:space="preserve">
+    <value>{0} Staffel</value>
+  </data>
+  <data name="conteo.temporadas.other" xml:space="preserve">
+    <value>{0} Staffeln</value>
+  </data>
+  <data name="conteo.videoclips.one" xml:space="preserve">
+    <value>{0} Videoclip</value>
+  </data>
+  <data name="conteo.videoclips.other" xml:space="preserve">
+    <value>{0} Videoclips</value>
+  </data>
+  <data name="conteo.videos.one" xml:space="preserve">
+    <value>{0} Video</value>
+  </data>
+  <data name="conteo.videos.other" xml:space="preserve">
+    <value>{0} Videos</value>
+  </data>
+  <data name="context-menu.abrir" xml:space="preserve">
+    <value>Öffnen</value>
+  </data>
+  <data name="context-menu.abrir-2" xml:space="preserve">
+    <value>Öffnen</value>
+  </data>
+  <data name="context-menu.abrir-3" xml:space="preserve">
+    <value>Öffnen</value>
+  </data>
+  <data name="context-menu.aplicar-caratula-recomendada" xml:space="preserve">
+    <value>Empfohlenes Cover übernehmen</value>
+  </data>
+  <data name="context-menu.aplicar-caratula-recomendada-scope-count" xml:space="preserve">
+    <value>Empfohlenes Cover für {0} Alben übernehmen</value>
+  </data>
+  <data name="context-menu.ascendente" xml:space="preserve">
+    <value>Aufsteigend</value>
+  </data>
+  <data name="context-menu.buscar-caratulas-scope-albumcount-albume" xml:space="preserve">
+    <value>Cover für {0} Alben suchen…</value>
+  </data>
+  <data name="context-menu.buscar-elementos-similares" xml:space="preserve">
+    <value>Ähnliche Einträge suchen…</value>
+  </data>
+  <data name="context-menu.buscar-foto-artista" xml:space="preserve">
+    <value>Interpretenfoto suchen</value>
+  </data>
+  <data name="context-menu.buscar-fotos-artistas" xml:space="preserve">
+    <value>Interpretenfotos suchen</value>
+  </data>
+  <data name="context-menu.buscar-informacion-linea" xml:space="preserve">
+    <value>Angaben online suchen</value>
+  </data>
+  <data name="context-menu.buscar-letra" xml:space="preserve">
+    <value>Songtext suchen</value>
+  </data>
+  <data name="context-menu.buscar-poster-linea" xml:space="preserve">
+    <value>Poster online suchen</value>
+  </data>
+  <data name="context-menu.cambiar-categoria" xml:space="preserve">
+    <value>Kategorie ändern</value>
+  </data>
+  <data name="context-menu.cambiar-nombre" xml:space="preserve">
+    <value>Umbenennen…</value>
+  </data>
+  <data name="context-menu.change-category" xml:space="preserve">
+    <value>Kategorie ändern</value>
+  </data>
+  <data name="context-menu.descendente" xml:space="preserve">
+    <value>Absteigend</value>
+  </data>
+  <data name="context-menu.disolver-album" xml:space="preserve">
+    <value>Album auflösen</value>
+  </data>
+  <data name="context-menu.disolver-albumes" xml:space="preserve">
+    <value>Alben auflösen</value>
+  </data>
+  <data name="context-menu.eliminar" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="context-menu.eliminar-2" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="context-menu.eliminar-3" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="context-menu.eliminar-album" xml:space="preserve">
+    <value>Album löschen</value>
+  </data>
+  <data name="context-menu.eliminar-albumes" xml:space="preserve">
+    <value>Alben löschen</value>
+  </data>
+  <data name="context-menu.eliminar-artista" xml:space="preserve">
+    <value>Interpret löschen</value>
+  </data>
+  <data name="context-menu.eliminar-artistas" xml:space="preserve">
+    <value>Interpreten löschen</value>
+  </data>
+  <data name="context-menu.eliminar-biblioteca" xml:space="preserve">
+    <value>Aus der Mediathek löschen</value>
+  </data>
+  <data name="context-menu.eliminar-caratula" xml:space="preserve">
+    <value>Cover löschen</value>
+  </data>
+  <data name="context-menu.eliminar-episodio" xml:space="preserve">
+    <value>Folge löschen</value>
+  </data>
+  <data name="context-menu.eliminar-episodios" xml:space="preserve">
+    <value>Folgen löschen</value>
+  </data>
+  <data name="context-menu.eliminar-fotos-biblioteca" xml:space="preserve">
+    <value>Fotos aus der Mediathek löschen</value>
+  </data>
+  <data name="context-menu.eliminar-pelicula" xml:space="preserve">
+    <value>Film löschen</value>
+  </data>
+  <data name="context-menu.eliminar-peliculas" xml:space="preserve">
+    <value>Filme löschen</value>
+  </data>
+  <data name="context-menu.eliminar-serie" xml:space="preserve">
+    <value>Serie löschen</value>
+  </data>
+  <data name="context-menu.eliminar-series" xml:space="preserve">
+    <value>Serien löschen</value>
+  </data>
+  <data name="context-menu.marcar-como-favorito" xml:space="preserve">
+    <value>Als Favorit markieren</value>
+  </data>
+  <data name="context-menu.marcar-como-favorito-2" xml:space="preserve">
+    <value>Als Favorit markieren</value>
+  </data>
+  <data name="context-menu.mas-informacion" xml:space="preserve">
+    <value>Weitere Infos…</value>
+  </data>
+  <data name="context-menu.mas-informacion-2" xml:space="preserve">
+    <value>Weitere Infos…</value>
+  </data>
+  <data name="context-menu.mas-informacion-3" xml:space="preserve">
+    <value>Weitere Infos…</value>
+  </data>
+  <data name="context-menu.mostrar-opciones-visualizacion" xml:space="preserve">
+    <value>Ansichtsoptionen anzeigen</value>
+  </data>
+  <data name="context-menu.obtener-informacion" xml:space="preserve">
+    <value>Informationen…</value>
+  </data>
+  <data name="context-menu.opciones-para-ordenar" xml:space="preserve">
+    <value>Sortieroptionen</value>
+  </data>
+  <data name="context-menu.quitar-album" xml:space="preserve">
+    <value>Aus dem Album entfernen</value>
+  </data>
+  <data name="context-menu.quitar-favorito" xml:space="preserve">
+    <value>Favorit entfernen</value>
+  </data>
+  <data name="context-menu.quitar-favoritos" xml:space="preserve">
+    <value>Aus den Favoriten entfernen</value>
+  </data>
+  <data name="context-menu.quitar-favoritos-2" xml:space="preserve">
+    <value>Aus den Favoriten entfernen</value>
+  </data>
+  <data name="context-menu.quitar-foto-artista.one" xml:space="preserve">
+    <value>Interpretenfoto entfernen</value>
+  </data>
+  <data name="context-menu.quitar-foto-artista.other" xml:space="preserve">
+    <value>Interpretenfotos entfernen</value>
+  </data>
+  <data name="context-menu.quitar-poster" xml:space="preserve">
+    <value>Poster entfernen</value>
+  </data>
+  <data name="context-menu.renombrar-album" xml:space="preserve">
+    <value>Album umbenennen…</value>
+  </data>
+  <data name="context-menu.reveal" xml:space="preserve">
+    <value>Im Explorer anzeigen</value>
+  </data>
+  <data name="context-menu.search-album-covers" xml:space="preserve">
+    <value>Albumcover suchen…</value>
+  </data>
+  <data name="context-menu.search-online" xml:space="preserve">
+    <value>Angaben online suchen</value>
+  </data>
+  <data name="context-menu.search-poster" xml:space="preserve">
+    <value>Poster online suchen</value>
+  </data>
+  <data name="context-menu.seleccionar-canciones-mismo-album" xml:space="preserve">
+    <value>Titel desselben Albums auswählen</value>
+  </data>
+  <data name="context-menu.seleccionar-canciones-mismo-artista" xml:space="preserve">
+    <value>Titel desselben Interpreten auswählen</value>
+  </data>
+  <data name="context-menu.sincronizar-seleccion" xml:space="preserve">
+    <value>Auswahl synchronisieren</value>
+  </data>
+  <data name="context-menu.solo-favoritos" xml:space="preserve">
+    <value>Nur Favoriten</value>
+  </data>
+  <data name="context-menu.todas-canciones" xml:space="preserve">
+    <value>Alle Titel</value>
+  </data>
+  <data name="context-menu.vista-previa" xml:space="preserve">
+    <value>Vorschau</value>
+  </data>
+  <data name="context-menu.volver-leer-etiquetas-archivo" xml:space="preserve">
+    <value>Tags der Datei erneut lesen</value>
+  </data>
+  <data name="crash-reporter.algo-salio-mal" xml:space="preserve">
+    <value>Etwas ist schiefgelaufen</value>
+  </data>
+  <data name="crash-reporter.entendido" xml:space="preserve">
+    <value>Verstanden</value>
+  </data>
+  <data name="device-list-page.buscar-actualizaciones" xml:space="preserve">
+    <value>Nach Updates suchen</value>
+  </data>
+  <data name="device-list-page.calcula-se-copiaria-escribe-nada-ipod" xml:space="preserve">
+    <value>Ermittelt, was kopiert würde. Es wird nichts auf den iPod geschrieben.</value>
+  </data>
+  <data name="device-list-page.cancelar" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="device-list-page.cancelar-2" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="device-list-page.guardar" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="device-general-view.instalar-actualizacion" xml:space="preserve">
+    <value>Update installieren</value>
+  </data>
+  <data name="device-list-page.nombre-ipod" xml:space="preserve">
+    <value>Name des iPod</value>
+  </data>
+  <data name="device-list-page.por-copiar" xml:space="preserve">
+    <value>Zu kopieren</value>
+  </data>
+  <data name="device-list-page.reubicados" xml:space="preserve">
+    <value>Verschoben</value>
+  </data>
+  <data name="device-list-page.revisar-cambios" xml:space="preserve">
+    <value>Änderungen ansehen</value>
+  </data>
+  <data name="device-list-page.sincronizacion" xml:space="preserve">
+    <value>Synchronisierung</value>
+  </data>
+  <data name="device-list-page.sincronizar" xml:space="preserve">
+    <value>Synchronisieren</value>
+  </data>
+  <data name="device-list-page.toda-biblioteca" xml:space="preserve">
+    <value>Die ganze Mediathek</value>
+  </data>
+  <data name="device-list-page.xaml.listo" xml:space="preserve">
+    <value>Fertig</value>
+  </data>
+  <data name="device-list-page.ya-al-dia" xml:space="preserve">
+    <value>Schon aktuell</value>
+  </data>
+  <data name="device-list-view-model.buscando-actualizaciones-family-displayn" xml:space="preserve">
+    <value>Nach Updates für {0} wird gesucht…</value>
+  </data>
+  <data name="device-list-view-model.ipod-se-llama-devicename" xml:space="preserve">
+    <value>Der iPod heißt „{0}“.</value>
+  </data>
+  <data name="device-list-view-model.se-detuvo-busqueda-actualizaciones" xml:space="preserve">
+    <value>Die Suche nach Updates wurde angehalten.</value>
+  </data>
+  <data name="extras-page.animaciones-graficos" xml:space="preserve">
+    <value>Animationen und Grafik</value>
+  </data>
+  <data name="extras-page.cronometro-bloqueo-pantalla" xml:space="preserve">
+    <value>Stoppuhr und Bildschirmsperre</value>
+  </data>
+  <data name="extras-page.disponible-dispositivo" xml:space="preserve">
+    <value>Auf dem Gerät verfügbar</value>
+  </data>
+  <data name="extras-page.extras" xml:space="preserve">
+    <value>Extras</value>
+  </data>
+  <data name="extras-page.firmware" xml:space="preserve">
+    <value>Firmware</value>
+  </data>
+  <data name="extras-page.juegos" xml:space="preserve">
+    <value>Spiele</value>
+  </data>
+  <data name="extras-page.licencias" xml:space="preserve">
+    <value>Lizenzen</value>
+  </data>
+  <data name="extras-page.lo-firmware-ofrece-mas-alla-biblioteca" xml:space="preserve">
+    <value>Was die Firmware jenseits der Mediathek bietet</value>
+  </data>
+  <data name="extras-page.revisar-nuevo" xml:space="preserve">
+    <value>Erneut prüfen</value>
+  </data>
+  <data name="extras-page.software-libre-incluido" xml:space="preserve">
+    <value>Enthaltene freie Software</value>
+  </data>
+  <data name="extras-page.temas" xml:space="preserve">
+    <value>Designs</value>
+  </data>
+  <data name="extras-page.todavia" xml:space="preserve">
+    <value>Noch nicht</value>
+  </data>
+  <data name="installer-page.cancelar" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="library-grouping.albums-and-songs" xml:space="preserve">
+    <value>{0}, {1}</value>
+  </data>
+  <data name="library-ingest.added.one" xml:space="preserve">
+    <value>{0} Eintrag hinzugefügt.</value>
+  </data>
+  <data name="library-ingest.added.other" xml:space="preserve">
+    <value>{0} Einträge hinzugefügt.</value>
+  </data>
+  <data name="library-ingest.already-in-library.one" xml:space="preserve">
+    <value>{0} war schon in deiner Mediathek.</value>
+  </data>
+  <data name="library-ingest.already-in-library.other" xml:space="preserve">
+    <value>{0} waren schon in deiner Mediathek.</value>
+  </data>
+  <data name="library-ingest.cover-assets.one" xml:space="preserve">
+    <value>{0} Bild wurde als Cover übernommen, nicht als Foto.</value>
+  </data>
+  <data name="library-ingest.cover-assets.other" xml:space="preserve">
+    <value>{0} Bilder wurden als Cover übernommen, nicht als Fotos.</value>
+  </data>
+  <data name="library-ingest.nothing-to-add" xml:space="preserve">
+    <value>Es gab nichts hinzuzufügen.</value>
+  </data>
+  <data name="library-ingest.section-noun-music" xml:space="preserve">
+    <value>Musik</value>
+  </data>
+  <data name="library-ingest.section-noun-other" xml:space="preserve">
+    <value>unterstützt</value>
+  </data>
+  <data name="library-ingest.section-noun-photo" xml:space="preserve">
+    <value>ein Bild</value>
+  </data>
+  <data name="library-ingest.section-noun-video" xml:space="preserve">
+    <value>Video</value>
+  </data>
+  <data name="library-ingest.unsupported.one" xml:space="preserve">
+    <value>{0} Datei wird nicht unterstützt.</value>
+  </data>
+  <data name="library-ingest.unsupported.other" xml:space="preserve">
+    <value>{0} Dateien werden nicht unterstützt.</value>
+  </data>
+  <data name="library-ingest.wrong-section.one" xml:space="preserve">
+    <value>{0} Datei ist nicht {1} und wurde hier nicht hinzugefügt.</value>
+  </data>
+  <data name="library-ingest.wrong-section.other" xml:space="preserve">
+    <value>{0} Dateien sind nicht {1} und wurden hier nicht hinzugefügt.</value>
+  </data>
+  <data name="library-status-strip.detener" xml:space="preserve">
+    <value>Anhalten</value>
+  </data>
+  <data name="library-status-strip.detener-tarea-curso" xml:space="preserve">
+    <value>Laufende Aufgabe anhalten</value>
+  </data>
+  <data name="library-status-summary.days-and-hours" xml:space="preserve">
+    <value>{0} {1} Std.</value>
+  </data>
+  <data name="library-view-model.album-cover-applied.one" xml:space="preserve">
+    <value>Cover bei {0} Titel geändert.</value>
+  </data>
+  <data name="library-view-model.album-cover-applied.other" xml:space="preserve">
+    <value>Cover bei {0} Titeln geändert.</value>
+  </data>
+  <data name="library-view-model.buscando-fotos-artista" xml:space="preserve">
+    <value>Interpretenfotos werden gesucht…</value>
+  </data>
+  <data name="library-view-model.buscando-letra" xml:space="preserve">
+    <value>Songtext wird gesucht…</value>
+  </data>
+  <data name="library-view-model.buscando-posters-video" xml:space="preserve">
+    <value>Videoposter werden gesucht…</value>
+  </data>
+  <data name="library-view-model.completando-targets-count-elemento-s" xml:space="preserve">
+    <value>{0} Eintrag/Einträge werden ergänzt…</value>
+  </data>
+  <data name="library-view-model.completando-title" xml:space="preserve">
+    <value>{0} wird ergänzt…</value>
+  </data>
+  <data name="library-view-model.copied-files.one" xml:space="preserve">
+    <value>{0} Datei in die Mediathek kopiert.</value>
+  </data>
+  <data name="library-view-model.copied-files.other" xml:space="preserve">
+    <value>{0} Dateien in die Mediathek kopiert.</value>
+  </data>
+  <data name="library-view-model.copy-failed.one" xml:space="preserve">
+    <value>{0} konnte nicht kopiert werden.</value>
+  </data>
+  <data name="library-view-model.copy-failed.other" xml:space="preserve">
+    <value>{0} konnten nicht kopiert werden.</value>
+  </data>
+  <data name="library-view-model.copy-skipped.one" xml:space="preserve">
+    <value>{0} wurde übersprungen, weil die Datei fehlt; der Eintrag bleibt im Katalog.</value>
+  </data>
+  <data name="library-view-model.copy-skipped.other" xml:space="preserve">
+    <value>{0} wurden übersprungen, weil ihre Dateien fehlen; die Einträge bleiben im Katalog.</value>
+  </data>
+  <data name="library-view-model.copying-files.one" xml:space="preserve">
+    <value>{0} Datei wird in die Mediathek kopiert…</value>
+  </data>
+  <data name="library-view-model.copying-files.other" xml:space="preserve">
+    <value>{0} Dateien werden in die Mediathek kopiert…</value>
+  </data>
+  <data name="library-view-model.covers-normalized.one" xml:space="preserve">
+    <value>{0} Cover angeglichen: es ist jetzt quadratisch.</value>
+  </data>
+  <data name="library-view-model.covers-normalized.other" xml:space="preserve">
+    <value>{0} Cover angeglichen: sie sind jetzt quadratisch.</value>
+  </data>
+  <data name="library-view-model.covers-removed.one" xml:space="preserve">
+    <value>{0} Cover entfernt.</value>
+  </data>
+  <data name="library-view-model.covers-removed.other" xml:space="preserve">
+    <value>{0} Cover entfernt.</value>
+  </data>
+  <data name="library-view-model.hay-nada-completar-todo-tiene-titulo" xml:space="preserve">
+    <value>Es gibt nichts zu ergänzen: alles hat Titel, Interpret und Album.</value>
+  </data>
+  <data name="library-view-model.migration-legacy-prepared.one" xml:space="preserve">
+    <value>{0} vorbereitete Datei trägt den alten Namen</value>
+  </data>
+  <data name="library-view-model.migration-legacy-prepared.other" xml:space="preserve">
+    <value>{0} vorbereitete Dateien tragen den alten Namen</value>
+  </data>
+  <data name="library-view-model.migration-tagged.one" xml:space="preserve">
+    <value>die Tags von {0} Titel wurden geschrieben</value>
+  </data>
+  <data name="library-view-model.migration-tagged.other" xml:space="preserve">
+    <value>die Tags von {0} Titeln wurden geschrieben</value>
+  </data>
+  <data name="library-view-model.migration-without-storage.one" xml:space="preserve">
+    <value>bei {0} Eintrag steht noch nicht, ob seine Datei Auras Kopie ist oder deine</value>
+  </data>
+  <data name="library-view-model.migration-without-storage.other" xml:space="preserve">
+    <value>bei {0} Einträgen steht noch nicht, ob ihre Dateien Auras Kopien sind oder deine</value>
+  </data>
+  <data name="library-view-model.not-started.one" xml:space="preserve">
+    <value>{1} {0} blieb ungeprüft (du hast abgebrochen).</value>
+  </data>
+  <data name="library-view-model.not-started.other" xml:space="preserve">
+    <value>{1} {0} blieben ungeprüft (du hast abgebrochen).</value>
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-fotos" xml:space="preserve">
+    <value>Die Fotosuche wurde angehalten.</value>
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-letra" xml:space="preserve">
+    <value>Die Songtextsuche wurde angehalten.</value>
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-linea" xml:space="preserve">
+    <value>Die Onlinesuche wurde angehalten.</value>
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-posters" xml:space="preserve">
+    <value>Die Postersuche wurde angehalten.</value>
+  </data>
+  <data name="library-view-model.se-detuvo-normalizacion-caratulas-lo-fal" xml:space="preserve">
+    <value>Das Angleichen der Cover wurde angehalten. Was übrig ist, geht beim nächsten Mal weiter.</value>
+  </data>
+  <data name="library-view-model.se-pudo-leer-ninguna-etiqueta-archivos" xml:space="preserve">
+    <value>Es konnten keine Tags gelesen werden: die Dateien sind nicht verfügbar.</value>
+  </data>
+  <data name="library-view-model.searching-covers.one" xml:space="preserve">
+    <value>Cover wird gesucht…</value>
+  </data>
+  <data name="library-view-model.searching-covers.other" xml:space="preserve">
+    <value>Cover für {0} Alben werden gesucht…</value>
+  </data>
+  <data name="library-view-model.tags-reread.one" xml:space="preserve">
+    <value>Tags von {0} Titel erneut gelesen.</value>
+  </data>
+  <data name="library-view-model.tags-reread.other" xml:space="preserve">
+    <value>Tags von {0} Titeln erneut gelesen.</value>
+  </data>
+  <data name="main-window.aura-studio" xml:space="preserve">
+    <value>Aura Studio</value>
+  </data>
+  <data name="media-category.movies" xml:space="preserve">
+    <value>Filme</value>
+  </data>
+  <data name="media-category.series" xml:space="preserve">
+    <value>Serien</value>
+  </data>
+  <data name="media-category.videos" xml:space="preserve">
+    <value>Videos</value>
+  </data>
+  <data name="media-grid-page.buscar-posters" xml:space="preserve">
+    <value>Poster suchen</value>
+  </data>
+  <data name="media-grid-page.descarga-posters-falten-viajan-pegados-v" xml:space="preserve">
+    <value>Lädt die fehlenden Poster herunter. Sie reisen bei der nächsten Synchronisierung neben ihrem Video mit.</value>
+  </data>
+  <data name="media-grid-page.xaml.cancelar" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="media-grid-page.xaml.guardar" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="media-grid-page.xaml.renombrar-album" xml:space="preserve">
+    <value>Album umbenennen</value>
+  </data>
+  <data name="media-grid-view-model.photos-removed-from-album.one" xml:space="preserve">
+    <value>{0} Foto aus seinem Album entfernt.</value>
+  </data>
+  <data name="media-grid-view-model.photos-removed-from-album.other" xml:space="preserve">
+    <value>{0} Fotos aus ihrem Album entfernt.</value>
+  </data>
+  <data name="media-info-dialog.cancelar" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="media-info-dialog.guardar" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="media-info-dialog.mas-informacion" xml:space="preserve">
+    <value>Weitere Infos</value>
+  </data>
+  <data name="playlists-page.crea-nueva-o-importa-archivo-m3u" xml:space="preserve">
+    <value>Leg eine neue an oder importiere eine .m3u-/.m3u8-Datei aus einem anderen Programm. Titel, die nicht in deiner Mediathek sind, werden separat gezählt und nicht stillschweigend verworfen.</value>
+  </data>
+  <data name="playlists-page.eliminar" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="playlists-page.exportar" xml:space="preserve">
+    <value>Exportieren</value>
+  </data>
+  <data name="playlists-page.importar-m3u" xml:space="preserve">
+    <value>M3U importieren…</value>
+  </data>
+  <data name="playlists-page.listas-armadas-con-canciones-biblioteca" xml:space="preserve">
+    <value>Wiedergabelisten aus Titeln deiner Mediathek. Sie werden beim Synchronisieren auf den iPod kopiert.</value>
+  </data>
+  <data name="playlists-page.nueva-lista" xml:space="preserve">
+    <value>Neue Wiedergabeliste</value>
+  </data>
+  <data name="playlists-page.renombrar" xml:space="preserve">
+    <value>Umbenennen</value>
+  </data>
+  <data name="playlists-page.todavia-tienes-listas" xml:space="preserve">
+    <value>Du hast noch keine Wiedergabelisten.</value>
+  </data>
+  <data name="playlists-page.xaml.aceptar" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="playlists-page.xaml.cancelar" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="settings-page.abrir-explorador" xml:space="preserve">
+    <value>Im Explorer öffnen</value>
+  </data>
+  <data name="settings-page.activos-sin-configurar-nada" xml:space="preserve">
+    <value>Aktiv, nichts einzurichten</value>
+  </data>
+  <data name="settings-page.agregar" xml:space="preserve">
+    <value>Hinzufügen</value>
+  </data>
+  <data name="settings-page.agregar-2" xml:space="preserve">
+    <value>Hinzufügen</value>
+  </data>
+  <data name="settings-page.agrupar-colaboraciones-bajo-artista-prin" xml:space="preserve">
+    <value>Kollaborationen unter dem Hauptinterpreten zusammenfassen</value>
+  </data>
+  <data name="settings-page.al-importar" xml:space="preserve">
+    <value>Beim Importieren</value>
+  </data>
+  <data name="settings-page.apagado-aura-studio-toca-red-al" xml:space="preserve">
+    <value>Aus: Aura Studio geht beim Importieren nicht ins Netz. Es nutzt nur die Tags der Datei und was sich aus ihrem Namen erraten lässt.</value>
+  </data>
+  <data name="settings-section-view.aqui-vive-catalogo-tu-biblioteca-funcion" xml:space="preserve">
+    <value>Hier liegt der Katalog deiner Mediathek: er funktioniert auch, wenn der iPod nicht angeschlossen ist, und wird beim Anschließen synchronisiert. Ob deine Dateien ebenfalls hierher kopiert werden, hängt von der Einstellung unten ab.</value>
+  </data>
+  <data name="settings-page.archivos-huerfanos" xml:space="preserve">
+    <value>Verwaiste Dateien</value>
+  </data>
+  <data name="settings-page.artista-album-recomendado" xml:space="preserve">
+    <value>Interpret / Album (empfohlen)</value>
+  </data>
+  <data name="settings-page.biblioteca" xml:space="preserve">
+    <value>Mediathek</value>
+  </data>
+  <data name="settings-section-view.buscar-actualizaciones" xml:space="preserve">
+    <value>Nach Updates suchen</value>
+  </data>
+  <data name="settings-page.buscar-letras-sincronizadas" xml:space="preserve">
+    <value>Nach synchronisierten Songtexten suchen</value>
+  </data>
+  <data name="settings-page.buscarlo-nuevo" xml:space="preserve">
+    <value>Erneut suchen</value>
+  </data>
+  <data name="music-settings-view.calidad-audio" xml:space="preserve">
+    <value>Audioqualität</value>
+  </data>
+  <data name="settings-page.calidad-imagen" xml:space="preserve">
+    <value>Bildqualität</value>
+  </data>
+  <data name="settings-page.cambiar" xml:space="preserve">
+    <value>Ändern…</value>
+  </data>
+  <data name="settings-page.cambiar-carpeta-mueve-nada" xml:space="preserve">
+    <value>Den Ordner zu wechseln verschiebt nichts</value>
+  </data>
+  <data name="settings-page.caratula-alternativa-1000-1000-sin-clave" xml:space="preserve">
+    <value>Alternatives Cover in 1000×1000, ohne Schlüssel. Es ist die einzige Quelle, deren Bedingungen diese nicht kommerzielle Nutzung ausdrücklich erlauben.</value>
+  </data>
+  <data name="settings-page.caratula-por-album-recomendado" xml:space="preserve">
+    <value>Ein Cover pro Album (empfohlen)</value>
+  </data>
+  <data name="settings-page.caratula-por-cancion" xml:space="preserve">
+    <value>Ein Cover pro Titel</value>
+  </data>
+  <data name="settings-page.caratulas" xml:space="preserve">
+    <value>Cover</value>
+  </data>
+  <data name="settings-page.carpeta-biblioteca" xml:space="preserve">
+    <value>Mediathek-Ordner</value>
+  </data>
+  <data name="settings-page.carpeta-nueva-biblioteca-anterior-intacta" xml:space="preserve">
+    <value>Aura Studio verwendet ab jetzt den neuen Ordner und liest die Mediathek, die dort liegt (oder fängt leer an, wenn es keine gibt). Deine bisherige Mediathek bleibt unangetastet, wo sie war, und kommt zurück, wenn du diesen Ordner wieder wählst.</value>
+  </data>
+  <data name="settings-page.carpetas-externas-arrastraste-con-copia" xml:space="preserve">
+    <value>Externe Ordner, die du bei ausgeschaltetem Kopieren hereingezogen hast. Aura kopiert von dort nichts, es merkt sie sich nur. Einen aus dieser Liste zu entfernen löscht nichts und trennt nichts, was du schon von dort importiert hast: er wird bloß nicht mehr angezeigt.</value>
+  </data>
+  <data name="settings-page.carpetas-ipod" xml:space="preserve">
+    <value>Ordner auf dem iPod</value>
+  </data>
+  <data name="settings-page.carpetas-vinculadas" xml:space="preserve">
+    <value>Verknüpfte Ordner</value>
+  </data>
+  <data name="settings-page.claves-tokens" xml:space="preserve">
+    <value>Schlüssel und Token</value>
+  </data>
+  <data name="settings-page.colaboraciones" xml:space="preserve">
+    <value>Kollaborationen</value>
+  </data>
+  <data name="settings-page.colecciones" xml:space="preserve">
+    <value>Sammlungen</value>
+  </data>
+  <data name="settings-page.completar-informacion-faltante-con-servi" xml:space="preserve">
+    <value>Fehlende Angaben über Onlinedienste ergänzen</value>
+  </data>
+  <data name="music-settings-view.comprimir-mp3-buena-calidad" xml:space="preserve">
+    <value>In MP3 guter Qualität komprimieren</value>
+  </data>
+  <data name="settings-page.conversion-hace-ffmpeg-se-instala-aparte" xml:space="preserve">
+    <value>Das Konvertieren übernimmt ffmpeg, das separat installiert wird, weil es seine eigene Lizenz und seinen eigenen Veröffentlichungsrhythmus hat. Es wird von selbst gefunden; auswählen musst du es nur, wenn du es in einem eigenen Ordner aufbewahrst.</value>
+  </data>
+  <data name="settings-page.copiar-medios-carpeta-biblioteca" xml:space="preserve">
+    <value>Medien in den Mediathek-Ordner kopieren</value>
+  </data>
+  <data name="settings-page.cuando-cancion-le-falta-caratula-se" xml:space="preserve">
+    <value>Wenn einem Titel das Cover fehlt, werden diese Dienste der Reihe nach versucht und das erste gefundene Bild verwendet.</value>
+  </data>
+  <data name="settings-page.deezer" xml:space="preserve">
+    <value>Deezer</value>
+  </data>
+  <data name="settings-page.elegir-ffmpeg-exe" xml:space="preserve">
+    <value>ffmpeg.exe auswählen…</value>
+  </data>
+  <data name="settings-page.excepciones" xml:space="preserve">
+    <value>Ausnahmen</value>
+  </data>
+  <data name="settings-page.ffmpeg" xml:space="preserve">
+    <value>ffmpeg</value>
+  </data>
+  <data name="settings-page.formato-video" xml:space="preserve">
+    <value>Videoformat</value>
+  </data>
+  <data name="settings-page.fotos" xml:space="preserve">
+    <value>Fotos</value>
+  </data>
+  <data name="settings-page.general" xml:space="preserve">
+    <value>Allgemein</value>
+  </data>
+  <data name="settings-page.idioma" xml:space="preserve">
+    <value>Sprache</value>
+  </data>
+  <data name="settings-page.letras-vienen-lrclib-sin-clave-ni" xml:space="preserve">
+    <value>Die Songtexte kommen von LRCLIB, ohne Schlüssel und ohne Anmeldung. Dafür muss die Option darüber eingeschaltet sein.</value>
+  </data>
+  <data name="settings-page.listo" xml:space="preserve">
+    <value>Fertig</value>
+  </data>
+  <data name="settings-page.los-nombres-que-escribes-no-se-traducen" xml:space="preserve">
+    <value>Die Namen, die du eintippst, sind deine und werden nicht übersetzt: die App kann die Sprache wechseln, deine Sammlungen heißen weiter so, wie du sie genannt hast. Die drei Videokategorien, die Aura mitbringt, werden zwar in der Sprache der App angezeigt, intern aber immer gleich gespeichert, damit deine Mediathek auf jedem Computer gleich aussieht.</value>
+  </data>
+  <data name="settings-page.mantener-formato-original-recomendado" xml:space="preserve">
+    <value>Ursprüngliches Format behalten (empfohlen)</value>
+  </data>
+  <data name="settings-page.migrar-biblioteca" xml:space="preserve">
+    <value>Mediathek migrieren</value>
+  </data>
+  <data name="settings-page.migrar-version-anterior" xml:space="preserve">
+    <value>Von einer früheren Version migrieren</value>
+  </data>
+  <data name="settings-page.musica" xml:space="preserve">
+    <value>Musik</value>
+  </data>
+  <data name="settings-page.musicbrainz-artista-album-ano-numero-pis" xml:space="preserve">
+    <value>MusicBrainz (Interpret, Album, Jahr, Titelnummer), Cover Art Archive (Cover) und LRCLIB (synchronisierte Songtexte). Alle drei funktionieren ohne Schlüssel und ohne Anmeldung: Aura Studio ist ab der Installation brauchbar.</value>
+  </data>
+  <data name="settings-page.nombre-archivo" xml:space="preserve">
+    <value>Dateiname</value>
+  </data>
+  <data name="settings-page.nombre-completo-grupo" xml:space="preserve">
+    <value>Vollständiger Bandname</value>
+  </data>
+  <data name="settings-page.nombres-grupo-llevan-uno-esos-separadore" xml:space="preserve">
+    <value>Bandnamen, die eines dieser Trennzeichen enthalten und nicht gekürzt werden sollen, etwa „Simon + Garfunkel“ oder „Café con Leche“. Sie werden mit der vollständigen Angabe verglichen, ohne Rücksicht auf Groß- und Kleinschreibung oder Akzente.</value>
+  </data>
+  <data name="settings-page.nueva-coleccion" xml:space="preserve">
+    <value>Neue Sammlung</value>
+  </data>
+  <data name="settings-page.numero-pista-titulo" xml:space="preserve">
+    <value>Titelnummer und Titel</value>
+  </data>
+  <data name="settings-page.optimizar-espacio-320-px-recomendado" xml:space="preserve">
+    <value>Speicher sparen (320 px, empfohlen)</value>
+  </data>
+  <data name="settings-page.orden-busqueda-caratula" xml:space="preserve">
+    <value>Reihenfolge der Cover-Suche</value>
+  </data>
+  <data name="settings-page.organizar-por-categoria-dentro-bibliotec" xml:space="preserve">
+    <value>Innerhalb der Mediathek nach Kategorie ordnen</value>
+  </data>
+  <data name="settings-page.organizar-por-coleccion-dentro-bibliotec" xml:space="preserve">
+    <value>Innerhalb der Mediathek nach Sammlung ordnen</value>
+  </data>
+  <data name="settings-page.pantalla-ipod-es-320-240-foto" xml:space="preserve">
+    <value>Der Bildschirm des iPod hat 320×240: ein Foto aus einer heutigen Kamera oder einem Telefon wiegt ein Vielfaches dessen, was dieser Bildschirm zeigen kann. In beiden Fällen wird es als JPEG gespeichert, nie das vollständige Originalfoto.</value>
+  </data>
+  <data name="settings-page.quitar" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="settings-page.quitar-2" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="settings-page.quitar-3" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="settings-page.quitar-coleccion-cambia-coleccion-fotos" xml:space="preserve">
+    <value>Eine Sammlung zu entfernen ändert nichts an der Sammlung der Fotos, die ihr schon zugeordnet waren.</value>
+  </data>
+  <data name="settings-page.se-guardan-administrador-credenciales-wi" xml:space="preserve">
+    <value>Sie werden in der Anmeldeinformationsverwaltung von Windows aufbewahrt, verschlüsselt mit deinem Konto. Nie in einer Datei der App und nie im Repository; du kannst sie in Windows ansehen und löschen, ohne hier vorbeizukommen.</value>
+  </data>
+  <data name="settings-page.separa-tus-fotos-colecciones-para-encont" xml:space="preserve">
+    <value>Teilt deine Fotos in Sammlungen auf, damit du sie INNERHALB von Aura Studio leichter findest. Wo sie auf dem iPod landen, ändert das nicht: dort werden sie immer zusammen nach „Photos“ kopiert, weil der Betrachter des iPod noch keine Unterordner durchsucht.</value>
+  </data>
+  <data name="settings-page.separa-tus-videos-videos-series-pelicula" xml:space="preserve">
+    <value>Teilt deine Videos in Videos, Serien und Filme auf, damit du sie INNERHALB von Aura Studio leichter findest. Wo sie auf dem iPod landen, ändert das nicht: dort werden sie immer zusammen nach „Videos“ kopiert, weil der Player noch keine Unterordner durchsucht.</value>
+  </data>
+  <data name="settings-page.servicios" xml:space="preserve">
+    <value>Dienste</value>
+  </data>
+  <data name="settings-page.solo-album" xml:space="preserve">
+    <value>Nur Album</value>
+  </data>
+  <data name="settings-page.solo-artista" xml:space="preserve">
+    <value>Nur Interpret</value>
+  </data>
+  <data name="settings-page.solo-titulo-recomendado" xml:space="preserve">
+    <value>Nur Titel (empfohlen)</value>
+  </data>
+  <data name="settings-page.texto" xml:space="preserve">
+    <value>↑</value>
+  </data>
+  <data name="settings-page.texto-2" xml:space="preserve">
+    <value>↓</value>
+  </data>
+  <data name="settings-page.titulo-album" xml:space="preserve">
+    <value>Titel – Album</value>
+  </data>
+  <data name="settings-page.titulo-artista" xml:space="preserve">
+    <value>Titel – Interpret</value>
+  </data>
+  <data name="settings-page.todavia-agregaste-ninguna-excepcion" xml:space="preserve">
+    <value>Du hast noch keine Ausnahmen hinzugefügt.</value>
+  </data>
+  <data name="settings-page.todavia-vinculaste-ninguna-carpeta" xml:space="preserve">
+    <value>Du hast noch keine Ordner verknüpft.</value>
+  </data>
+  <data name="settings-page.todo-video-se-convierte-mpeg-1" xml:space="preserve">
+    <value>Jedes Video wird beim Synchronisieren in 320×240 MPEG-1/2 konvertiert: das ist das einzige Format, das ein iPod mit Aura in voller Geschwindigkeit abspielt (sein Chip von 2007 dekodiert weder H.264 noch moderne Formate). Das ist keine Vorliebe, sondern eine echte Grenze der Hardware, also gibt es hier nichts auszuwählen.</value>
+  </data>
+  <data name="settings-page.version-hd-640-px" xml:space="preserve">
+    <value>HD-Fassung (640 px)</value>
+  </data>
+  <data name="settings-page.video" xml:space="preserve">
+    <value>Video</value>
+  </data>
+  <data name="settings-page.wav-aiff-siempre-se-convierten" xml:space="preserve">
+    <value>WAV und AIFF werden immer konvertiert</value>
+  </data>
+  <data name="settings-section-view.actualizaciones-aura-studio" xml:space="preserve">
+    <value>Update von Aura Studio</value>
+  </data>
+  <data name="shell-page.descargar" xml:space="preserve">
+    <value>Herunterladen</value>
+  </data>
+  <data name="shell-page.esta-biblioteca-viene-version-anterior" xml:space="preserve">
+    <value>Diese Mediathek stammt aus einer früheren Version</value>
+  </data>
+  <data name="shell-page.migrar-biblioteca" xml:space="preserve">
+    <value>Mediathek migrieren</value>
+  </data>
+  <data name="shell-page.ver-hay-nuevo" xml:space="preserve">
+    <value>Ansehen, was neu ist</value>
+  </data>
+  <data name="similar-items-page.aura-studio-busca-canciones-fotos-videos" xml:space="preserve">
+    <value>Aura Studio sucht nach Titeln, Fotos und Videos, die doppelt zu sein scheinen. Es löscht und ändert nichts von selbst: hier siehst du, warum es sie zusammengefasst hat, und entscheidest.</value>
+  </data>
+  <data name="similar-items-page.buscar" xml:space="preserve">
+    <value>Suchen</value>
+  </data>
+  <data name="similar-items-page.conservar-solo-este" xml:space="preserve">
+    <value>Nur diesen behalten</value>
+  </data>
+  <data name="similar-items-page.elementos-parecidos" xml:space="preserve">
+    <value>Ähnliche Einträge</value>
+  </data>
+  <data name="similar-items-page.son-lo-mismo" xml:space="preserve">
+    <value>Sind nicht dasselbe</value>
+  </data>
+  <data name="similar-items-page.unificar-metadata" xml:space="preserve">
+    <value>Metadaten vereinheitlichen</value>
+  </data>
+  <data name="similar-items-page.volver-mostrar-descartados" xml:space="preserve">
+    <value>Verworfene wieder anzeigen</value>
+  </data>
+  <data name="similar-items-view-model.groups-found.one" xml:space="preserve">
+    <value>{0} ähnliche Gruppe gefunden.</value>
+  </data>
+  <data name="similar-items-view-model.groups-found.other" xml:space="preserve">
+    <value>{0} ähnliche Gruppen gefunden.</value>
+  </data>
+  <data name="similar-items-view-model.items-removed.one" xml:space="preserve">
+    <value>{0} Eintrag aus der Mediathek entfernt.</value>
+  </data>
+  <data name="similar-items-view-model.items-removed.other" xml:space="preserve">
+    <value>{0} Einträge aus der Mediathek entfernt.</value>
+  </data>
+  <data name="songs-page.busca-album-ano-caratula-letra-lo" xml:space="preserve">
+    <value>Sucht Album, Jahr, Cover und Songtext für alles, was unvollständig ist</value>
+  </data>
+  <data name="songs-page.busca-canciones-fotos-videos-parezcan-re" xml:space="preserve">
+    <value>Sucht nach Titeln, Fotos und Videos, die doppelt zu sein scheinen</value>
+  </data>
+  <data name="songs-page.completar-linea" xml:space="preserve">
+    <value>Online ergänzen</value>
+  </data>
+  <data name="songs-page.elementos-parecidos" xml:space="preserve">
+    <value>Ähnliche Einträge</value>
+  </data>
+  <data name="songs-page.xaml.cambiar-nombre" xml:space="preserve">
+    <value>Umbenennen</value>
+  </data>
+  <data name="songs-page.xaml.cancelar" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="songs-page.xaml.guardar" xml:space="preserve">
+    <value>Speichern</value>
+  </data>
+  <data name="sync-view-model.conecta-selecciona-ipod-antes-continuar" xml:space="preserve">
+    <value>Schließe einen iPod an und wähle ihn aus, bevor du fortfährst.</value>
+  </data>
+  <data name="sync-view-model.este-ipod-esta-ejecutando-aura-instala" xml:space="preserve">
+    <value>Auf diesem iPod läuft Aura nicht. Installiere Aura, bevor du synchronisierst.</value>
+  </data>
+  <data name="sync-view-model.orphan-header.one" xml:space="preserve">
+    <value>{0} Datei auf dem iPod ist nicht mehr in deiner Mediathek</value>
+  </data>
+  <data name="sync-view-model.orphan-header.other" xml:space="preserve">
+    <value>{0} Dateien auf dem iPod sind nicht mehr in deiner Mediathek</value>
+  </data>
+  <data name="sync-view-model.revisa-cambios-antes-sincronizar" xml:space="preserve">
+    <value>Sieh dir die Änderungen an, bevor du synchronisierst.</value>
+  </data>
+  <data name="sync-view-model.revision-cancelada" xml:space="preserve">
+    <value>Prüfung abgebrochen.</value>
+  </data>
+  <data name="sync-view-model.sincronizacion-cancelada" xml:space="preserve">
+    <value>Synchronisierung abgebrochen.</value>
+  </data>
+  <data name="themes-page.activar" xml:space="preserve">
+    <value>Aktivieren</value>
+  </data>
+  <data name="themes-page.aura-studio-arma-paquete-desde-carpeta" xml:space="preserve">
+    <value>Aura Studio baut das Paket aus einem Ordner mit Assets, die schon mit dem Design-System der Firmware erzeugt wurden (.fnt-Schriften und Symbolmasken). Es konvertiert keine Schriften und keine Symbole von deinem Computer.</value>
+  </data>
+  <data name="themes-page.autor" xml:space="preserve">
+    <value>Autor</value>
+  </data>
+  <data name="themes-page.cambia-como-se-ve-aura-ipod" xml:space="preserve">
+    <value>Ändere, wie Aura auf deinem iPod aussieht</value>
+  </data>
+  <data name="themes-page.compartir" xml:space="preserve">
+    <value>Teilen…</value>
+  </data>
+  <data name="themes-page.construir-e-instalar" xml:space="preserve">
+    <value>Bauen und installieren</value>
+  </data>
+  <data name="themes-page.construir-tema" xml:space="preserve">
+    <value>Ein Design bauen</value>
+  </data>
+  <data name="themes-page.elegir-carpeta" xml:space="preserve">
+    <value>Ordner auswählen…</value>
+  </data>
+  <data name="themes-page.eliminar" xml:space="preserve">
+    <value>Löschen</value>
+  </data>
+  <data name="themes-page.marcalo-si-tema-usa-fuentes-o" xml:space="preserve">
+    <value>Setz hier ein Häkchen, wenn das Design Schriften oder Symbole verwendet, die du nicht weitergeben darfst, etwa SF Pro oder SF Symbols. Das Design wird trotzdem auf deinem iPod installiert, aber Aura Studio lässt dich es nicht teilen.</value>
+  </data>
+  <data name="themes-page.nombre" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="themes-page.temas" xml:space="preserve">
+    <value>Designs</value>
+  </data>
+  <data name="themes-page.usa-material-licencia-restringida-solo-p" xml:space="preserve">
+    <value>Verwendet Material mit eingeschränkter Lizenz (nur für meinen persönlichen Gebrauch)</value>
+  </data>
+  <data name="themes-page.xaml.cancelar" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="themes-page.xaml.quitar" xml:space="preserve">
+    <value>Entfernen</value>
+  </data>
+  <data name="themes-page.xaml.quitar-row-name-ipod" xml:space="preserve">
+    <value>„{0}“ vom iPod entfernen?</value>
+  </data>
+  <data name="themes-view-model.row-name-se-va-aplicar-proxima" xml:space="preserve">
+    <value>„{0}“ wird beim nächsten Einschalten des iPod angewendet.</value>
+  </data>
+  <data name="themes-view-model.se-guardo-copia-path" xml:space="preserve">
+    <value>Die Kopie wurde unter {0} gespeichert</value>
+  </data>
+  <data name="themes-view-model.se-instalo-installed-name-activalo-para" xml:space="preserve">
+    <value>„{0}“ ist installiert. Aktiviere es, um es auf dem iPod zu sehen.</value>
+  </data>
+  <data name="themes-view-model.se-quito-row-name-ipod" xml:space="preserve">
+    <value>„{0}“ wurde vom iPod entfernt.</value>
+  </data>
+</root>

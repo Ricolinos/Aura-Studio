@@ -1,0 +1,34 @@
+termino es,en,ja,de,ru,fr,fuente
+Papelera de reciclaje,Recycle Bin,ごみ箱,Papierkorb,Корзина,Corbeille,nombre oficial de Windows
+Explorador de archivos,File Explorer,エクスプローラー,Explorer,Проводник,Explorateur de fichiers,nombre oficial de Windows
+Administrador de credenciales,Credential Manager,資格情報マネージャー,Anmeldeinformationsverwaltung,Диспетчер учетных данных,Gestionnaire d'identification,nombre oficial de Windows
+Microsoft Store,Microsoft Store,Microsoft Store,Microsoft Store,Microsoft Store,Microsoft Store,marca: no se traduce
+unidad,drive,ドライブ,Laufwerk,диск,lecteur,nombre oficial de Windows
+disco,disk,ディスク,Datenträger,диск,disque,nombre oficial de Windows
+carpeta,folder,フォルダー,Ordner,папка,dossier,nombre oficial de Windows
+archivo,file,ファイル,Datei,файл,fichier,nombre oficial de Windows
+expulsar,eject,取り出し,Auswerfen,Извлечь,Éjecter,nombre oficial de Windows
+administrador,administrator,管理者,Administrator,администратор,administrateur,nombre oficial de Windows
+dar formato,format,フォーマット,formatieren,форматировать,formater,nombre oficial de Windows
+controlador,driver,ドライバー,Treiber,драйвер,pilote,nombre oficial de Windows
+dispositivo,device,デバイス,Gerät,устройство,appareil,nombre oficial de Windows
+Ajustes,Settings,設定,Einstellungen,Параметры,Paramètres,nombre oficial de Windows
+actualización,update,更新,Update,обновление,mise à jour,nombre oficial de Windows
+tema,theme,テーマ,Design,тема,thème,"nombre oficial de Windows (de: ""Design"", no ""Thema"")"
+biblioteca,library,ライブラリ,Mediathek,медиатека,bibliothèque,"convención de reproductores de medios (de/ru: mediateca, no biblioteca de libros)"
+sincronizar,sync,同期,synchronisieren,синхронизировать,synchroniser,convención de reproductores de medios
+lista de reproducción,playlist,プレイリスト,Wiedergabeliste,плейлист,liste de lecture,convención de reproductores de medios
+canción,song,曲,Titel,песня,morceau,convención de reproductores de medios
+álbum,album,アルバム,Album,альбом,album,convención de reproductores de medios
+carátula,cover art,アルバムアート,Albumcover,обложка,pochette,convención de reproductores de medios
+firmware,firmware,ファームウェア,Firmware,прошивка,micrologiciel,"fr: término oficial; ru: uso corriente"
+arranque,bootloader,ブートローダー,Bootloader,загрузчик,bootloader,término técnico establecido
+modo DFU,DFU mode,DFUモード,DFU-Modus,режим DFU,mode DFU,"nombre de Apple: DFU no se traduce"
+iPod,iPod,iPod,iPod,iPod,iPod,marca: no se traduce
+Aura Studio,Aura Studio,Aura Studio,Aura Studio,Aura Studio,Aura Studio,marca: no se traduce
+Rockbox,Rockbox,Rockbox,Rockbox,Rockbox,Rockbox,marca: no se traduce
+Cancelar,Cancel,キャンセル,Abbrechen,Отмена,Annuler,botón estándar de Windows
+Guardar,Save,保存,Speichern,Сохранить,Enregistrer,botón estándar de Windows
+Eliminar,Delete,削除,Löschen,Удалить,Supprimer,botón estándar de Windows
+Quitar,Remove,取り除く,Entfernen,Убрать,Retirer,"distinto de Eliminar: saca de una lista, no borra"
+Abrir,Open,開く,Öffnen,Открыть,Ouvrir,botón estándar de Windows

@@ -55,9 +55,11 @@ public static class AppLanguages
         new("es", "Español", Ships: true, ReviewedByHumans: true),
         new("en", "English", Ships: true, ReviewedByHumans: true),
 
-        // B7c. Se declaran ya para que la lista sea una sola y no aparezca a
-        // pedazos por el código el día que lleguen.
-        new("de", "Deutsch", Ships: false, ReviewedByHumans: false),
+        // B7c: traducidos por una máquina y todavía sin revisar por nadie que
+        // hable el idioma. Se ofrecen igual, pero el selector los marca "(beta)"
+        // y dice por qué — ofrecer un idioma sin decir que nadie lo revisó, en
+        // pantallas que formatean discos, sería justo lo que no se puede hacer.
+        new("de", "Deutsch", Ships: true, ReviewedByHumans: false),
         new("fr", "Français", Ships: false, ReviewedByHumans: false),
         new("ja", "日本語", Ships: false, ReviewedByHumans: false),
         new("ru", "Русский", Ships: false, ReviewedByHumans: false),

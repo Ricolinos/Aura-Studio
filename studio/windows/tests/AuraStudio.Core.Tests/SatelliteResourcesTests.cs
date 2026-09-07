@@ -6,8 +6,8 @@ using Xunit;
 namespace AuraStudio.Core.Tests;
 
 /// <summary>
-/// El inglés existe, sale de verdad, y dice lo mismo que el español (ST-247,
-/// B7b).
+/// Cada idioma existe, sale de verdad, y dice lo mismo que el español
+/// (ST-247, B7b para el inglés; B7c para los otros cuatro).
 ///
 /// <para><b>Que el archivo esté no prueba nada.</b> Un <c>.resx</c> con la
 /// cultura en el nombre puede quedar fuera del ensamblado satélite por un
@@ -16,7 +16,7 @@ namespace AuraStudio.Core.Tests;
 /// equivocado. Es un modo de falla silencioso, así que acá se pide el texto
 /// <b>con la cultura puesta</b> y se comprueba que cambie.</para>
 /// </summary>
-public class EnglishSatelliteTests
+public class SatelliteResourcesTests
 {
     private static string StringsDirectory()
     {
@@ -56,17 +56,47 @@ public class EnglishSatelliteTests
     }
 
     /// <summary>
-    /// Con la cultura en inglés, el texto sale en inglés. Es la prueba de que
-    /// el satélite se compiló, se encontró y se leyó.
+    /// Con la cultura puesta, el texto sale en ese idioma. Es la prueba de que
+    /// el satélite se compiló, se encontró y se leyó — que el archivo exista no
+    /// prueba ninguna de las tres.
+    ///
+    /// <para>Se comprueba contra el <c>.resx</c> del idioma y no contra una
+    /// frase escrita acá: una traducción que cambie tendría que venir a
+    /// arreglar la prueba, y lo único que esta prueba sabe es que el texto que
+    /// sale es el que está en el archivo de ese idioma.</para>
     /// </summary>
     [Theory]
     [InlineData("en")]
     [InlineData("en-US")]
     [InlineData("en-GB")]
-    public void ConLaCulturaEnInglesElTextoSaleEnIngles(string culture)
+    [InlineData("de")]
+    [InlineData("de-DE")]
+    [InlineData("de-AT")]
+    public void ConLaCulturaPuestaElTextoSaleEnEseIdioma(string culture)
     {
-        Assert.Equal("Settings", WithUiCulture(culture, () => Strings.Get("app-strings.nav-settings")));
-        Assert.Equal("Orphaned files", WithUiCulture(culture, () => Strings.Get("orphans-title")));
+        string language = culture.Split('-')[0];
+        Dictionary<string, string> expected = ValuesOf($"Resources.{language}.resx");
+
+        foreach (string key in new[] { "app-strings.nav-settings", "orphans-title", "app-strings.installer-title" })
+            Assert.Equal(expected[key], WithUiCulture(culture, () => Strings.Get(key)));
+    }
+
+    /// <summary>
+    /// Y cada idioma que la app dice ofrecer tiene su archivo. Ofrecer uno sin
+    /// archivo es prometer algo que al elegirlo no pasa: cae al español y no
+    /// falla nada.
+    /// </summary>
+    [Fact]
+    public void CadaIdiomaOfrecidoTieneSuArchivo()
+    {
+        List<string> missing =
+        [
+            .. AppLanguages.RequiredSatelliteCultures
+                .Where(culture => !File.Exists(Path.Combine(StringsDirectory(), $"Resources.{culture}.resx")))
+        ];
+
+        Assert.True(missing.Count == 0,
+            "Estos idiomas se ofrecen y no tienen archivo:\n" + string.Join("\n", missing));
     }
 
     /// <summary>Y en español sigue saliendo en español, que es la cultura neutra.</summary>
@@ -78,25 +108,32 @@ public class EnglishSatelliteTests
     }
 
     /// <summary>
-    /// Un idioma que todavía no existe cae al español, nunca a un hueco. Es lo
-    /// que hace que el español sea la cultura neutra y no un satélite más.
+    /// Un idioma que la app no ofrece cae al español, nunca a un hueco. Es lo
+    /// que hace que el español sea la cultura neutra y no un satélite más — y
+    /// se comprueban las dos mitades: que no se ofrezca, y que el texto salga
+    /// igual.
     /// </summary>
     [Theory]
-    [InlineData("de-DE")]
-    [InlineData("ja-JP")]
-    public void UnIdiomaQueNoExisteTodaviaCaeAlEspanol(string culture) =>
+    [InlineData("pt-BR")]
+    [InlineData("it-IT")]
+    public void UnIdiomaQueNoSeOfreceCaeAlEspanol(string culture)
+    {
+        Assert.Null(AppLanguages.For(new CultureInfo(culture)));
         Assert.Equal("Ajustes", WithUiCulture(culture, () => Strings.Get("app-strings.nav-settings")));
+    }
 
     /// <summary>
     /// Las dos culturas tienen <b>exactamente</b> las mismas claves. Una que
     /// falte en inglés no se ve al probar —cae al español— y se descubre
     /// cuando alguien la lee en pantalla.
     /// </summary>
-    [Fact]
-    public void ElInglesTieneExactamenteLasMismasClavesQueElEspanol()
+    [Theory]
+    [InlineData("en")]
+    [InlineData("de")]
+    public void CadaIdiomaTieneExactamenteLasMismasClavesQueElEspanol(string culture)
     {
         Dictionary<string, string> spanish = ValuesOf("Resources.resx");
-        Dictionary<string, string> english = ValuesOf("Resources.en.resx");
+        Dictionary<string, string> english = ValuesOf($"Resources.{culture}.resx");
 
         List<string> missing = [.. spanish.Keys.Where(key => !english.ContainsKey(key)).Order(StringComparer.Ordinal)];
         List<string> extra = [.. english.Keys.Where(key => !spanish.ContainsKey(key)).Order(StringComparer.Ordinal)];
@@ -111,11 +148,13 @@ public class EnglishSatelliteTests
     /// <c>string.Format</c> en tiempo de ejecución, en el idioma que casi nadie
     /// prueba.
     /// </summary>
-    [Fact]
-    public void CadaTextoEnInglesTieneLosMismosHuecosQueElEspanol()
+    [Theory]
+    [InlineData("en")]
+    [InlineData("de")]
+    public void CadaTextoTraducidoTieneLosMismosHuecosQueElEspanol(string culture)
     {
         Dictionary<string, string> spanish = ValuesOf("Resources.resx");
-        Dictionary<string, string> english = ValuesOf("Resources.en.resx");
+        Dictionary<string, string> english = ValuesOf($"Resources.{culture}.resx");
 
         static string Holes(string text) =>
             string.Join(",", System.Text.RegularExpressions.Regex
@@ -154,11 +193,13 @@ public class EnglishSatelliteTests
     /// frase, no una etiqueta— no sea idéntico: ahí la coincidencia ya no es
     /// una palabra que se escribe igual, es una traducción que falta.</para>
     /// </summary>
-    [Fact]
-    public void NingunaFraseLargaQuedoSinTraducir()
+    [Theory]
+    [InlineData("en")]
+    [InlineData("de")]
+    public void NingunaFraseLargaQuedoSinTraducir(string culture)
     {
         Dictionary<string, string> spanish = ValuesOf("Resources.resx");
-        Dictionary<string, string> english = ValuesOf("Resources.en.resx");
+        Dictionary<string, string> english = ValuesOf($"Resources.{culture}.resx");
 
         List<string> untranslated =
         [

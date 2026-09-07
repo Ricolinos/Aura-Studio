@@ -30,46 +30,36 @@ public class AppLanguagesTests
     }
 
     /// <summary>
-    /// Hoy se ofrecen dos y hace falta un satélite: el inglés. Cuando B7c suba
-    /// los otros cuatro, esta prueba cambia con ellos — y que haya que venir a
-    /// cambiarla es parte del punto.
+    /// Cada idioma que se ofrece tiene su archivo, y cada archivo que existe se
+    /// ofrece. La lista y el disco dicen lo mismo.
     /// </summary>
     [Fact]
-    public void HoySeOfrecenDosIdiomasYHaceFaltaUnSatelite()
+    public void LoQueSeOfreceEsExactamenteLoQueTieneArchivo()
     {
-        Assert.Equal(["es", "en"], AppLanguages.Available.Select(language => language.Culture));
-        Assert.Equal(["en"], AppLanguages.RequiredSatelliteCultures);
+        Assert.Equal(
+            AppLanguages.All.Where(language => language.Ships).Select(language => language.Culture),
+            AppLanguages.Available.Select(language => language.Culture));
+
+        Assert.Equal(
+            AppLanguages.Available.Where(language => language.Culture != AppLanguages.NeutralCulture)
+                .Select(language => language.Culture),
+            AppLanguages.RequiredSatelliteCultures);
     }
 
     /// <summary>
-    /// Lo que se ofrece está revisado por una persona. Es la regla que separa
-    /// B7b de B7c: un idioma sin revisar puede estar en la lista, pero no se
-    /// ofrece hasta que la app pueda decir que no lo está.
+    /// Solo el español y el inglés están revisados por una persona.
+    ///
+    /// <para>Los otros cuatro se ofrecen <b>sin</b> revisar, y eso es una
+    /// decisión, no un descuido: la app los marca "(beta)" y dice que son
+    /// traducción automática. Lo que esta prueba fija es que nadie los declare
+    /// revisados sin que un revisor humano haya pasado — un <c>true</c> de más
+    /// acá apaga el aviso en pantalla y nadie lo notaría.</para>
     /// </summary>
     [Fact]
-    public void TodoLoQueSeOfreceHoyEstaRevisadoPorUnaPersona() =>
-        Assert.All(AppLanguages.Available, language => Assert.True(
-            language.ReviewedByHumans,
-            $"{language.Culture} se ofrece sin estar revisado: o se marca la revisión, o se muestra con su aviso"));
-
-    /// <summary>
-    /// Los cuatro de B7c están declarados, sin archivo y sin revisar. Vivir en
-    /// la lista desde ya es lo que evita que el día que lleguen alguien tenga
-    /// que buscar en cuántos lugares estaba escrita.
-    /// </summary>
-    [Theory]
-    [InlineData("de")]
-    [InlineData("fr")]
-    [InlineData("ja")]
-    [InlineData("ru")]
-    public void LosCuatroDeB7cEstanDeclaradosYTodaviaNoSeOfrecen(string culture)
-    {
-        AppLanguage language = Assert.Single(AppLanguages.All, entry => entry.Culture == culture);
-
-        Assert.False(language.Ships, $"{culture} dice que ya tiene archivo: si es cierto, hay que ofrecerlo");
-        Assert.False(language.ReviewedByHumans);
-        Assert.DoesNotContain(language, AppLanguages.Available);
-    }
+    public void SoloElEspanolYElInglesEstanRevisadosPorUnaPersona() =>
+        Assert.Equal(
+            ["es", "en"],
+            AppLanguages.All.Where(language => language.ReviewedByHumans).Select(language => language.Culture));
 
     /// <summary>
     /// El nombre de cada idioma está <b>en ese idioma</b>. Un selector que
@@ -101,9 +91,8 @@ public class AppLanguagesTests
 
     /// <summary>Y un idioma que no se ofrece todavía no resuelve a nada.</summary>
     [Theory]
-    [InlineData("de-DE")]
-    [InlineData("ja-JP")]
     [InlineData("pt-BR")]
+    [InlineData("it-IT")]
     public void UnIdiomaQueNoSeOfreceNoResuelveANada(string culture) =>
         Assert.Null(AppLanguages.For(new CultureInfo(culture)));
 
