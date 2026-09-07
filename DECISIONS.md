@@ -15001,3 +15001,170 @@ Rockbox). Las 31 filas del cotejo compartido que tienen texto en la Mac
 llevan ahora su inglés en la columna `texto en`, para que Windows lo use
 en B7b y el inglés también se escriba una sola vez. Las 7 restantes son
 "solo Windows": su inglés no es mío.
+
+## ST-247 (addendum) — Windows: `claves-compartidas.csv` co-propiedad por clave, huecos repetidos, y la corrección de B7b a `AuraStudio.Core`
+
+Encargo del coordinador, dos tareas sobre `origin/main`; esta cubre la
+primera más dos añadidos a mitad de tarea, todo en el mismo commit.
+
+### 1. `claves-compartidas.csv` deja de poder regenerarse entero
+
+Ya pasó una vez que la Maestra tuvo que fusionar el archivo a mano
+fila por fila -- desde ahora el reparto de columnas es una regla del
+código, no una convención: Windows edita SOLO "sitio Windows" (y
+agrega filas "solo Windows" a mano, eso no se automatiza); "sitio Mac"
+y "estado" son de la Mac. `ClavesCompartidasCsv.UpdateSitioWindows`
+(`tools/ExtraerCadenasWindows`, corre sola al final de cada `dotnet
+run`) es la única edición automática permitida: encuentra el RANGO
+exacto de la columna "sitio Windows" dentro de la línea cruda
+(consciente de comillas) y solo reemplaza esa porción si el
+`archivo:línea` de una clave YA CITADA cambió -- nunca agrega filas,
+nunca toca "sitio Mac" ni "estado", nunca reescribe el archivo entero.
+Una clave citada que ya no existe (un renombre pendiente) se deja tal
+cual y se avisa por consola en vez de adivinar.
+
+Bug real encontrado corriendo la herramienta, no por lectura de
+código: el regex de cita usaba `[^:;()]+` para la ruta, que no excluye
+espacio -- el separador `"; "` entre dos citas de una misma celda
+perdía su espacio al reemplazar (`"; "` → `";"`). Cambiado a `\S+?`
+(no vacío, no espacio, perezoso).
+
+Documentado en `docs/extraccion-cadenas/README.md`: tabla de
+propiedad de columnas, y el formato oficial de una cita --
+`archivo:línea (clave.de.windows[, nota])` -- que YA escribía
+`UpdateSitioWindows` desde el principio; lo nuevo es declararlo
+formal, porque `TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows`
+(abajo) ahora depende de él.
+
+Cinco pruebas nuevas en `tests/ExtraerCadenasWindows.Tests/ClavesCompartidasCsvTests.cs`
+(proyecto de pruebas nuevo, mismo patrón que `AuraStudio.Core.Tests`):
+sin cambios de verdad el archivo queda byte a byte idéntico; una
+columna "sitio Mac" con comillas y comas sobrevive intacta aunque la
+MISMA fila sí actualice "sitio Windows"; una fila "solo Mac" nunca se
+toca; una cita múltiple (`"; "` entre dos citas) actualiza cada tramo
+sin perder el separador; una clave citada que ya no existe se deja
+intacta y se reporta.
+
+### 2. La prueba de paridad con la Mac estaba mal planteada, no el CSV
+
+`TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows` estaba roja
+en `origin/main`: compara la clave de la COLUMNA `clave` del CSV
+(el nombre compartido, sin prefijo -- `storage-section-title`) contra
+las claves del `.resw`, pero Windows nunca renombra sus propias claves
+para calzar con el CSV -- el `.resw` trae `app-strings.storage-section-title`.
+Diez filas "igual" (4 `storage-*`, 6 `orphans-*`) fallaban por esto,
+no porque el texto estuviera mal.
+
+Decisión del coordinador: el CSV es la autoridad del NOMBRE
+compartido; la herramienta de Windows sigue emitiendo sus propias
+claves. La prueba ahora acepta DOS caminos: (1) la clave del CSV
+coincide tal cual con una clave del `.resw`, o (2) el paréntesis
+`(clave.de.windows)` al final de "sitio Windows" trae la clave real, y
+esa clave existe en el `.resw` con EL MISMO TEXTO que la columna
+"texto es" del CSV -- si el texto no coincide, la fila está mal
+alineada de verdad, no es solo un nombre distinto.
+
+**Hallazgo real, encontrado por la propia prueba, no un ajuste para
+que pasara**: `orphans-confirm-message` sigue fallando la comparación
+EXACTA aun con el camino 2 -- `AppStrings.OrphansConfirmMessage`
+(`AppStrings.cs:324-326`) antepone `{OrphansFound(scan)}` (el conteo
+dinámico de huérfanos) al texto compartido, así que el valor real del
+`.resw` es `"{0} " + texto de la Mac`, nunca el texto solo. Como
+"sitio Windows"/"texto es" son de la Mac, esto no se corrige acá con
+una reescritura silenciosa: quedó como excepción explícita y
+documentada en el propio test (`KnownIgualSuffixExceptions`, compara
+por SUFIJO solo para esta clave) -- **se avisa aquí para que la Mac
+decida si el estado real de esta fila es "clave distinta"**, no se
+decide unilateralmente desde Windows.
+
+### 3. Huecos de interpolación repetidos ahora reusan el índice
+
+`InterpolationHoles.Convert` numeraba cada `{expr}` en orden de
+aparición sin mirar si ya había visto esa MISMA expresión --
+`app-strings.installer-family-change` (`{installed}` dos veces,
+`{target}` una) salía `"...{0}...{1}...{2}..."`, obligando a pasar
+`installed` dos veces a `string.Format`. Corregido: un diccionario
+expresión→índice (comparación textual exacta, incluido el
+especificador de formato si trae uno) reusa el índice ya asignado.
+Regenerado sobre el mismo árbol: **una sola clave cambia de huecos**,
+`app-strings.installer-family-change` (`{2}` → `{0}` en la segunda
+aparición de `{installed}`) -- verificado diffeando `revision.csv` y
+los dos `.resw` línea por línea contra la corrida anterior, ninguna
+otra fila se movió. Aviso para el Experto: re-sincronizar solo esa
+clave en su `.resx`.
+
+Prueba nueva, `InterpolationHolesTests.cs` (unitaria, directa sobre
+`InterpolationHoles`): la misma expresión repetida reusa el índice,
+expresiones distintas numeran en orden, la misma variable con
+especificador de formato distinto NO comparte índice (es un dato
+"distinto" para el traductor), sin huecos devuelve el texto tal cual.
+Prueba nueva además en `LocalizationDraftTests.cs`,
+`NingunaExpresionInterpoladaRepetidaTieneHuecosDistintos`: lee
+`revision.csv` entero y verifica, fila por fila, que ninguna expresión
+tenga dos marcadores distintos NI que un marcador represente dos
+expresiones distintas (esto último sería peor -- dos datos reales
+fundidos en un solo hueco).
+
+### Añadido a mitad de tarea: `propuesta-b7b-idiomas.md` corregido
+
+El Experto/Maestra decidieron alojar los recursos de localización
+(`Strings`, `PluralRules`, `Resources.resx`) en `AuraStudio.Core`, no
+en `AuraStudio.App` -- los satélites pasan a ser
+`<cultura>/AuraStudio.Core.resources.dll` y
+`<SatelliteResourceLanguages>` va en `AuraStudio.Core.csproj`.
+Corregida la sección 3 completa de `propuesta-b7b-idiomas.md` (todas
+las referencias a `AuraStudio.App.resources.dll`, el fragmento de
+PowerShell de `$imprescindibles`, y la comprobación de `ResourceManager`
+de B8, que ahora apunta a `AuraStudio.Core.dll`). Solo documentación:
+`Make-Installer.ps1` no se toca todavía.
+
+### Añadido a mitad de tarea: cultura fijada en `StorageFixtureCheck`
+
+En cuanto existan satélites de recursos, texto que hoy es literal fijo
+pasa a resolver por `CultureInfo.CurrentUICulture` -- un runner con
+otro idioma de sistema dejaría de ver español y el arnés compararía
+contra la cultura equivocada, en silencio. `StorageFixtureCheck/Program.cs`
+fija `CultureInfo.CurrentCulture = CurrentUICulture =
+GetCultureInfo("es-MX")` antes de construir nada (`LibraryViewModel`,
+`SettingsViewModel`...). Revisado el resto de `AuraStudio.Core.Tests`
+(donde vive `LocalizationDraftTests`, que compara contra el `.resw`
+directamente, no contra `AppStrings`/`ResourceManager` en vivo): hoy
+ninguna otra prueba compara texto en español resuelto por cultura --
+`AppStrings.cs` sigue siendo literales de C# fijos, no
+`ResourceManager`, hasta que B7b lo cablee -- así que no hizo falta
+fijar cultura en ningún otro arnés todavía.
+
+### Verificación
+
+`dotnet build AuraStudio.Windows.slnx`: 0 errores. `dotnet test
+AuraStudio.Windows.slnx`: **1 750 pruebas en verde** (12 en
+`LocalizationDraftTests`, incluidas las 2 nuevas de este addendum).
+`dotnet test tests/ExtraerCadenasWindows.Tests`: **9 en verde** (5 de
+`ClavesCompartidasCsvTests` más 4 de `InterpolationHolesTests`,
+proyecto de pruebas nuevo). `dotnet run --project
+tools/ExtraerCadenasWindows`: 501 sitios, 501 claves únicas, 51
+plurales, 4 cultura fija -- sin cambio de conteo contra la corrida
+anterior, solo la única clave de huecos ya listada arriba.
+
+## ST-247 (addendum, mecánico) — Rebase contra A7b: tres citas de "sitio Windows" que la Mac reintrodujo desactualizadas
+
+Al rebasear sobre `origin/main` (A7b, columna `texto en` nueva), el CSV
+completo entró en conflicto de contenido (la Mac agregó la columna en
+todas las filas). Al fusionar a mano encontré que la versión de la Mac
+traía TRES citas de "sitio Windows" más viejas que las mías --
+`music-settings-view.calidad-audio` (`SettingsPage.xaml:261`),
+`music-settings-view.comprimir-mp3-buena-calidad` (`:264`) y
+`settings-section-view.actualizaciones-aura-studio` (`ShellPage.xaml:162`)
+-- probablemente porque la Mac partió de un snapshot del CSV anterior a
+que mi `UpdateSitioWindows` las hubiera corregido a `:275`/`:278`/`:163`
+en una corrida previa. Verificado contra el archivo real (no adivinado):
+`SettingsPage.xaml:275` es "Calidad de audio", `:278` es "Comprimir a MP3
+de buena calidad", `ShellPage.xaml:163` es el `Title` de la franja de
+actualización -- las tres líneas viejas ya no son eso. Fusionado
+conservando la estructura nueva de la Mac (columna `texto en` en su
+lugar) con mis tres líneas corregidas, nunca las suyas desactualizadas.
+
+`dotnet run --project tools/ExtraerCadenasWindows` después de la fusión:
+`claves-compartidas.csv` queda byte a byte idéntico (0 citas
+actualizadas) -- confirma que las tres líneas ya están correctas y que la
+columna `texto en` sobrevive intacta.

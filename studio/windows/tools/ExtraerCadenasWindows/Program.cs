@@ -100,6 +100,16 @@ Dictionary<string, string> spanish = allSites
 ResourceWriter.WriteResw(Path.Combine(outDir, "Strings", "es", "Resources.resw"), spanish, english: false);
 ResourceWriter.WriteResw(Path.Combine(outDir, "Strings", "en", "Resources.resw"), spanish, english: true);
 
+// claves-compartidas.csv es co-propiedad con la Mac (ST-247, addendum):
+// esto NUNCA lo regenera entero, solo actualiza la columna "sitio Windows"
+// de las claves que ya cita, sin tocar "sitio Mac" ni "estado". Si el
+// archivo no existe todavía, no hay nada que actualizar.
+Dictionary<string, Site> sitesByKey = allSites
+    .GroupBy(s => s.Key)
+    .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
+(int sharedUpdated, List<string> sharedMissingKeys) = ClavesCompartidasCsv.UpdateSitioWindows(
+    Path.Combine(outDir, "claves-compartidas.csv"), sitesByKey);
+
 // --- Conteos ---
 
 int appStringsCount = allSites.Count(s => s.Kind == "AppStrings");
@@ -127,6 +137,15 @@ Console.WriteLine($"-> {Path.Combine(outDir, "revision.csv")}");
 Console.WriteLine($"-> {Path.Combine(outDir, "plurales-ternario.csv")}");
 Console.WriteLine($"-> {Path.Combine(outDir, "Strings", "es", "Resources.resw")}");
 Console.WriteLine($"-> {Path.Combine(outDir, "Strings", "en", "Resources.resw")}");
+Console.WriteLine();
+Console.WriteLine($"claves-compartidas.csv: {sharedUpdated} cita(s) de sitio Windows actualizada(s).");
+if (sharedMissingKeys.Count > 0)
+{
+    Console.WriteLine(
+        $"  Claves citadas en claves-compartidas.csv que ya no existen en revision.csv ({sharedMissingKeys.Count}), " +
+        "no tocadas -- revisar si es un renombre pendiente de reconciliar:");
+    foreach (string key in sharedMissingKeys.Distinct(StringComparer.Ordinal)) Console.WriteLine($"    {key}");
+}
 
 static string RelativePath(string repoRoot, string absolute) =>
     Path.GetRelativePath(repoRoot, absolute).Replace('\\', '/');

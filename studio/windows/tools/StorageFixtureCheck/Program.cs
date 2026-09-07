@@ -16,6 +16,7 @@
 // ver FixtureAudio.Locate(). No toca la biblioteca real del dueño: todo pasa
 // en una carpeta temporal que se borra al terminar.
 
+using System.Globalization;
 using System.Security.Cryptography;
 using AuraStudio.App.Services;
 using AuraStudio.App.ViewModels;
@@ -23,6 +24,15 @@ using AuraStudio.Core.Library;
 using AuraStudio.Tools.StorageFixtureCheck;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
+
+// B7b (addendum): en cuanto existan satélites de recursos (AuraStudio.Core,
+// decisión de la Maestra sobre B7a), AppStrings/lo que hoy son literales
+// fijos pasa a resolver por CultureInfo.CurrentUICulture -- un runner con
+// otro idioma de sistema dejaría de ver texto en español y este arnés
+// empezaría a comparar contra la cultura equivocada, en silencio. Se fija
+// ANTES de construir nada (LibraryViewModel, SettingsViewModel...) para que
+// nunca dependa de qué cultura tenga la máquina que lo corre.
+CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("es-MX");
 
 string? ffmpeg = FixtureAudio.Locate();
 if (ffmpeg is null)

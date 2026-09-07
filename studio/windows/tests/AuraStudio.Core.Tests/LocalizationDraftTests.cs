@@ -252,29 +252,131 @@ public class LocalizationDraftTests
     /// Mac. Toda fila de <c>claves-compartidas.csv</c> marcada
     /// <c>"igual"</c> —la clave ya coincide entre las dos plataformas— tiene
     /// que existir de verdad en el <c>.resw</c> de Windows; si no, la fila
-    /// miente sobre el estado. Hoy no hay ninguna fila así (los dos
-    /// borradores nombran claves por archivo/miembro de forma independiente,
-    /// así que ninguna coincide todavía sin alinearlas a mano) — la prueba
-    /// pasa vacía, y empieza a verificar de verdad en cuanto B7a/A7a alineen
-    /// la primera.
+    /// miente sobre el estado.
+    ///
+    /// <para>Decisión del coordinador (addendum sobre huecos/formato): el CSV
+    /// es la autoridad del nombre compartido, pero la herramienta de Windows
+    /// SIGUE emitiendo sus propias claves (<c>app-strings.storage-section-title</c>,
+    /// no <c>storage-section-title</c>). Por eso "existe en el .resw" admite
+    /// DOS caminos: (1) la clave del CSV coincide tal cual con una clave del
+    /// <c>.resw</c>, o (2) la columna "sitio Windows" trae, entre paréntesis
+    /// al final de la cita, la clave de Windows de la que viene —formato
+    /// oficial "archivo:línea (clave.de.windows)", el mismo que escribe
+    /// <c>ClavesCompartidasCsv.UpdateSitioWindows</c> (tools/ExtraerCadenasWindows)—
+    /// y esa clave
+    /// existe en el <c>.resw</c> con EL MISMO TEXTO que la columna "texto es"
+    /// del CSV (si el texto no coincide, la fila quedó desalineada de verdad,
+    /// no es solo un nombre distinto).</para>
+    ///
+    /// <para><b>Hallazgo real, no un ajuste de la prueba:</b> <c>orphans-confirm-message</c>
+    /// falla la comparación exacta -- <c>AppStrings.OrphansConfirmMessage</c>
+    /// (AppStrings.cs:324-326) antepone <c>{OrphansFound(scan)}</c> (el conteo
+    /// dinámico de huérfanos) al texto compartido, así que el valor real del
+    /// <c>.resw</c> es <c>"{0} " + texto de la Mac</c>, nunca el texto solo.
+    /// "sitio Windows" y "texto es" no son de Windows (la Mac los edita), así
+    /// que esto NO se corrige acá con una reescritura silenciosa: se deja
+    /// como excepción explícita, documentada, y se avisa en el addendum para
+    /// que la Mac decida si el estado real es "clave distinta".</para>
     /// </summary>
+    private static readonly HashSet<string> KnownIgualSuffixExceptions = new(StringComparer.Ordinal)
+    {
+        "orphans-confirm-message",
+    };
+
     [Fact]
     public void TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows()
     {
         Dictionary<string, string> resw = ReadResw(RequireFile(Path.Combine("Strings", "es", "Resources.resw")));
         string sharedPath = RequireFile("claves-compartidas.csv");
+        var windowsKeyInParens = new Regex(@"\((?<key>[a-z0-9][\w.-]*)(?:,[^)]*)?\)");
 
-        List<string> igualKeys = [.. File.ReadAllLines(sharedPath)
+        List<(string CsvKey, string TextoEs, string SitioWindows)> igualRows = [.. File.ReadAllLines(sharedPath)
             .Skip(1)
             .Where(line => line.Length > 0)
             .Select(ParseCsvLine)
             .Where(fields => fields[^1] == "igual")
-            .Select(fields => fields[0])];
+            .Select(fields => (fields[0], fields[1], fields[3]))];
 
-        List<string> missing = [.. igualKeys.Where(key => !resw.ContainsKey(key)).Distinct(StringComparer.Ordinal)];
-        Assert.True(missing.Count == 0,
-            "claves-compartidas.csv marca 'igual' una clave que no está en el .resw de Windows: " +
-            string.Join(", ", missing.Take(10)));
+        List<string> sinCorrespondencia = [];
+        foreach ((string csvKey, string textoEs, string sitioWindows) in igualRows)
+        {
+            if (resw.ContainsKey(csvKey)) continue; // camino 1: la clave del CSV coincide tal cual
+
+            bool esSufijoConocido = KnownIgualSuffixExceptions.Contains(csvKey);
+
+            // camino 2: alguna clave entre paréntesis de "sitio Windows" existe
+            // en el .resw con el mismo texto que "texto es" -- o, para una
+            // excepción conocida y documentada arriba, con "texto es" como
+            // cola del valor real (un prefijo interpolado que Windows antepone).
+            bool matched = windowsKeyInParens.Matches(sitioWindows)
+                .Select(m => m.Groups["key"].Value)
+                .Any(windowsKey => resw.TryGetValue(windowsKey, out string? value) &&
+                    (value == textoEs || (esSufijoConocido && value.EndsWith(textoEs, StringComparison.Ordinal))));
+
+            if (!matched) sinCorrespondencia.Add(csvKey);
+        }
+
+        Assert.True(sinCorrespondencia.Count == 0,
+            "claves-compartidas.csv marca 'igual' una clave sin correspondencia en el .resw de Windows " +
+            "(ni por su propia clave, ni por el paréntesis \"(clave.de.windows)\" de 'sitio Windows' con el mismo texto): " +
+            string.Join(", ", sinCorrespondencia.Take(10)));
+    }
+
+    // MARK: - Huecos de interpolación: sin duplicados para la misma expresión
+
+    /// <summary>
+    /// Coordinador (addendum sobre huecos): la conversión a <c>{0}</c>/<c>{1}</c>...
+    /// tiene que REUSAR el índice cuando la misma expresión interpolada
+    /// (<c>{installed}</c>, por ejemplo) aparece más de una vez en el mismo
+    /// texto — caso real: <c>app-strings.installer-family-change</c>. Esta
+    /// prueba lee <c>revision.csv</c> y compara, fila por fila, las
+    /// expresiones de <c>texto_original</c> contra los marcadores de
+    /// <c>texto_con_marcadores</c>, en orden de aparición: la misma expresión
+    /// nunca puede traer dos marcadores distintos, y el mismo marcador nunca
+    /// puede representar dos expresiones distintas (eso sería peor: dos datos
+    /// reales fundidos en un solo hueco).
+    /// </summary>
+    [Fact]
+    public void NingunaExpresionInterpoladaRepetidaTieneHuecosDistintos()
+    {
+        string path = RequireFile("revision.csv");
+        var expressionPattern = new Regex(@"\{[^{}]*\}");
+        var markerPattern = new Regex(@"\{(\d+)\}");
+
+        foreach (string line in File.ReadAllLines(path).Skip(1))
+        {
+            if (line.Length == 0) continue;
+            List<string> fields = ParseCsvLine(line);
+            if (fields.Count < 7 || fields[6] != "sí") continue; // solo filas con interpolación
+
+            string key = fields[0];
+            List<string> expressions = [.. expressionPattern.Matches(fields[4]).Select(m => m.Value[1..^1])];
+            List<string> markers = [.. markerPattern.Matches(fields[5]).Select(m => m.Groups[1].Value)];
+
+            Assert.True(expressions.Count == markers.Count,
+                $"clave {key}: {expressions.Count} expresión(es) en texto_original vs. {markers.Count} marcador(es) en texto_con_marcadores");
+
+            var markerByExpression = new Dictionary<string, string>(StringComparer.Ordinal);
+            var expressionByMarker = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            for (int i = 0; i < expressions.Count; i++)
+            {
+                string expression = expressions[i];
+                string marker = markers[i];
+
+                if (markerByExpression.TryGetValue(expression, out string? expectedMarker))
+                    Assert.True(marker == expectedMarker,
+                        $"clave {key}: la expresión {{{expression}}} aparece con huecos distintos ({{{expectedMarker}}} y {{{marker}}})");
+                else
+                    markerByExpression[expression] = marker;
+
+                if (expressionByMarker.TryGetValue(marker, out string? expectedExpression))
+                    Assert.True(expression == expectedExpression,
+                        $"clave {key}: el hueco {{{marker}}} representa dos expresiones distintas ({{{expectedExpression}}} y {{{expression}}})");
+                else
+                    expressionByMarker[marker] = expression;
+            }
+        }
     }
 
     // MARK: - Los 9+ plurales por ternario tienen dos formas distintas

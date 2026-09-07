@@ -22,11 +22,18 @@ public static class InterpolationHoles
 
     /// <summary>
     /// Reemplaza cada hueco por <c>{0}</c>, <c>{1}</c>... en orden de
-    /// aparición. Devuelve el texto convertido y si hubo al menos un hueco.
+    /// aparición, REUTILIZANDO el mismo índice cuando la misma expresión
+    /// interpolada (comparación textual exacta del contenido entre llaves,
+    /// con y sin especificador de formato) aparece más de una vez -- es lo
+    /// normal en <c>string.Format</c> y le dice al traductor que es el mismo
+    /// dato, no uno nuevo (caso real: <c>app-strings.installer-family-change</c>,
+    /// <c>{installed}</c> dos veces). Devuelve el texto convertido y si hubo
+    /// al menos un hueco.
     /// </summary>
     public static (string Converted, bool HasInterpolation) Convert(string text)
     {
-        int index = 0;
+        var indexByExpression = new Dictionary<string, int>(StringComparer.Ordinal);
+        int nextIndex = 0;
         bool found = false;
 
         string converted = Hole.Replace(text, match =>
@@ -35,7 +42,13 @@ public static class InterpolationHoles
             // (ver StringLiteralScanner): acá todo lo que llega es un hueco de
             // verdad.
             found = true;
-            return "{" + index++ + "}";
+            string expression = match.Value[1..^1];
+            if (!indexByExpression.TryGetValue(expression, out int index))
+            {
+                index = nextIndex++;
+                indexByExpression[expression] = index;
+            }
+            return "{" + index + "}";
         });
 
         return (converted, found);
