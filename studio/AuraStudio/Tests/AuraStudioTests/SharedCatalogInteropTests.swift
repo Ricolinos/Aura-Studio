@@ -78,6 +78,10 @@ final class SharedCatalogInteropTests: XCTestCase {
         try? FileManager.default.removeItem(at: libraryRoot)
     }
 
+    private func freshPreferences() -> AppPreferences {
+        AppPreferences(defaults: makeIsolatedDefaults("SharedCatalogInterop"))
+    }
+
     private func write(_ relative: String, _ contents: String) throws {
         let url = libraryRoot.appendingPathComponent(relative)
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(),
@@ -127,7 +131,7 @@ final class SharedCatalogInteropTests: XCTestCase {
         try write(".portadas/\(itemID.uuidString).jpg", "portada")
         try writeWindowsCatalog(itemID: itemID)
 
-        let viewModel = LibraryViewModel(libraryRoot: libraryRoot)
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
 
         XCTAssertEqual(viewModel.items.count, 1,
                        "un catalogo escrito en Windows no puede verse igual que una biblioteca vacia")
@@ -147,7 +151,7 @@ final class SharedCatalogInteropTests: XCTestCase {
         try write(".preparados/01 Right Here.m4a", "preparado")
         try writeWindowsCatalog(itemID: itemID)
 
-        let viewModel = LibraryViewModel(libraryRoot: libraryRoot)
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
         let item = try XCTUnwrap(viewModel.items.first)
 
         XCTAssertEqual(item.sourceURL.lastPathComponent, "01 Right Here.m4a")
@@ -169,7 +173,7 @@ final class SharedCatalogInteropTests: XCTestCase {
         try write(".portadas/\(itemID.uuidString).jpg", "portada")
         try writeWindowsCatalog(itemID: itemID)
 
-        let viewModel = LibraryViewModel(libraryRoot: libraryRoot)
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
         let item = try XCTUnwrap(viewModel.items.first)
 
         XCTAssertEqual(item.metadata?.loadCoverData(), Data("portada".utf8))
@@ -184,7 +188,7 @@ final class SharedCatalogInteropTests: XCTestCase {
         try write(".preparados/01 Right Here.m4a", "preparado")
         try writeWindowsCatalog(itemID: itemID)
 
-        let viewModel = LibraryViewModel(libraryRoot: libraryRoot)
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
         // Cualquier mutacion persiste el catalogo completo.
         viewModel.setFavorite(true, forItems: [itemID])
 

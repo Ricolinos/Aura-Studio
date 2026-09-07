@@ -20,6 +20,10 @@ final class LibraryLegacyMigrationTests: XCTestCase {
         try? FileManager.default.removeItem(at: libraryRoot)
     }
 
+    private func freshPreferences() -> AppPreferences {
+        AppPreferences(defaults: makeIsolatedDefaults("LibraryLegacyMigration"))
+    }
+
     /// Arma una biblioteca vieja con UN item de musica: archivo en
     /// `Originales/`, preparado en `Preparados/`, portada en
     /// `Portadas/`, y el catalogo apuntando a las tres.
@@ -59,7 +63,7 @@ final class LibraryLegacyMigrationTests: XCTestCase {
         let itemID = try writeLegacyFixture()
         let fm = FileManager.default
 
-        let viewModel = LibraryViewModel(libraryRoot: libraryRoot)
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
 
         XCTAssertEqual(viewModel.items.count, 1)
         let item = try XCTUnwrap(viewModel.items.first)
@@ -92,13 +96,14 @@ final class LibraryLegacyMigrationTests: XCTestCase {
 
     func testIdempotentSecondRunIsANoOp() throws {
         try writeLegacyFixture()
-        _ = LibraryViewModel(libraryRoot: libraryRoot)
+        let prefs = freshPreferences()
+        _ = LibraryViewModel(libraryRoot: libraryRoot, preferences: prefs)
 
         // Segunda vez: ni `Originales/` ni las demas carpetas viejas
         // existen mas, asi que el chequeo inicial de
         // `migrateLegacyLibraryLayoutIfNeeded` tiene que salir de
         // inmediato sin tocar nada ni crashear.
-        let secondRun = LibraryViewModel(libraryRoot: libraryRoot)
+        let secondRun = LibraryViewModel(libraryRoot: libraryRoot, preferences: prefs)
         XCTAssertEqual(secondRun.items.count, 1)
     }
 
@@ -110,7 +115,7 @@ final class LibraryLegacyMigrationTests: XCTestCase {
         // sobreviva (no es un `rm -rf`, ver removeLegacyDirectoryIfEmpty).
         try Data().write(to: libraryRoot.appendingPathComponent("Preparados/.DS_Store"))
 
-        let viewModel = LibraryViewModel(libraryRoot: libraryRoot)
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
 
         XCTAssertEqual(viewModel.items.count, 1)
         XCTAssertTrue(FileManager.default.fileExists(atPath: libraryRoot.appendingPathComponent("Preparados").path),
@@ -123,7 +128,7 @@ final class LibraryLegacyMigrationTests: XCTestCase {
         // `migrateLegacyLibraryLayoutIfNeeded` sale de inmediato -- no
         // deberia crear `biblioteca.json` ni ninguna carpeta legacy de
         // la nada.
-        let viewModel = LibraryViewModel(libraryRoot: libraryRoot)
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
         XCTAssertEqual(viewModel.items.count, 0)
         XCTAssertFalse(FileManager.default.fileExists(atPath: libraryRoot.appendingPathComponent("Originales").path))
     }

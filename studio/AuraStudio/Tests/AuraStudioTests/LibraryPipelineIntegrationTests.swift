@@ -19,6 +19,11 @@ final class LibraryPipelineIntegrationTests: XCTestCase {
         try? FileManager.default.removeItem(at: fakeIPod)
     }
 
+    @MainActor
+    private func freshPreferences() -> AppPreferences {
+        AppPreferences(defaults: makeIsolatedDefaults("LibraryPipelineIntegration"))
+    }
+
     private func repoTestMediaURL() -> URL? {
         // Sube desde la ruta fuente de este archivo (#filePath, estable
         // sin importar el build system) hasta encontrar test-media/ en
@@ -54,7 +59,7 @@ final class LibraryPipelineIntegrationTests: XCTestCase {
         let libraryRoot = FileManager.default.temporaryDirectory
             .appendingPathComponent("AuraLibTest-\(UUID().uuidString)", isDirectory: true)
         defer { try? FileManager.default.removeItem(at: libraryRoot) }
-        let viewModel = await LibraryViewModel(libraryRoot: libraryRoot)
+        let viewModel = await LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
         await MainActor.run {
             viewModel.addDroppedFiles([photoURL, videoSource])
         }
@@ -131,7 +136,7 @@ final class LibraryPipelineIntegrationTests: XCTestCase {
         let libraryRoot = FileManager.default.temporaryDirectory
             .appendingPathComponent("AuraLibTest-\(UUID().uuidString)", isDirectory: true)
         defer { try? FileManager.default.removeItem(at: libraryRoot) }
-        let viewModel = await LibraryViewModel(libraryRoot: libraryRoot)
+        let viewModel = await LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
         await MainActor.run { viewModel.addDroppedFiles([photoURL]) }
         await viewModel.processAll()
         await viewModel.sync(toVolumeAt: fakeIPod)
