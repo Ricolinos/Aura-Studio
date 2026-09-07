@@ -12,6 +12,7 @@ import XCTest
 ///
 /// El fixture de A0 (`MediaFixture`) sigue sirviendo tal cual para
 /// armar los ítems de estas pruebas en cuanto se llenen.
+@MainActor
 final class MediaStorageAfterA5A6Tests: XCTestCase {
     private var libraryRoot: URL!
 
@@ -104,19 +105,36 @@ final class MediaStorageAfterA5A6Tests: XCTestCase {
     /// de deduplicación tiene que normalizar a NFC antes de comparar
     /// (mismo criterio que `SharedCatalogPath`, que ya distingue NFC/NFD
     /// para RESOLVER rutas -- acá es para DETECTAR que son la misma).
-    func testDeduplicationOnImportComparesPathsInNFC_pendienteDeLaAPIDeA5() throws {
-        throw XCTSkip("""
-            Pendiente de la API real de A5 (deduplicación al importar, ST-225). Forma: \
-            un archivo real en disco cuya ruta, al leerla del sistema de archivos, puede \
-            representarse tanto en NFC como en NFD (mismos bytes de contenido, distinta \
-            normalización Unicode del nombre). Importar dos veces -- una vez resuelta en \
-            NFC, otra en NFD -- con la API real de importación. Confirmar que \
-            viewModel.items termina con UN SOLO ítem para ese archivo, no dos -- la \
-            comparación de "ya existe" normaliza ambas rutas a NFC antes de comparar \
-            (mismo criterio que SharedCatalogPath, que ya distingue NFC/NFD para \
-            RESOLVER rutas al leer un catálogo compartido -- acá es para DETECTAR que dos \
-            rutas nombran el mismo archivo al importar).
-            """)
+    /// ST-223 (A3) la adelantó: la deduplicación al importar entró con
+    /// el modo copia, no en A5. Lo que A5 agrega es el aviso de
+    /// PARECIDOS (mismo tamaño y duración en carpetas distintas), que es
+    /// otra cosa y no borra nada.
+    func testDeduplicationOnImportComparesPathsInNFC() throws {
+        let externalDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("DedupNFC-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: externalDir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: externalDir) }
+
+        // El MISMO archivo, nombrado con acento: macOS lo deja
+        // descompuesto en disco, y una ruta compuesta lo resuelve igual.
+        let decomposedName = "Pro\u{0301}fugos.mp3"
+        let composedName = decomposedName.precomposedStringWithCanonicalMapping
+        XCTAssertNotEqual(Array(decomposedName.utf8), Array(composedName.utf8),
+                          "el fixture tiene que diferir byte a byte, o la prueba no prueba nada")
+        let fileURL = externalDir.appendingPathComponent(decomposedName)
+        try MediaFixture.mp3Data(title: "Prófugos", artist: "Soda Stéreo", album: "Signos",
+                                 albumArtist: "Soda Stéreo", year: "1986", genre: "Rock",
+                                 trackNumber: 1).write(to: fileURL)
+
+        let prefs = AppPreferences(defaults: makeIsolatedDefaults("MediaStorageAfterA5A6"))
+        prefs.copyMediaIntoLibrary = false
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: prefs)
+
+        viewModel.addDroppedFiles([externalDir.appendingPathComponent(decomposedName)])
+        viewModel.addDroppedFiles([externalDir.appendingPathComponent(composedName)])
+
+        XCTAssertEqual(viewModel.items.count, 1,
+                       "las dos rutas nombran el mismo archivo: un solo elemento")
     }
 
     // MARK: - (e) Migración nunca silenciosa
