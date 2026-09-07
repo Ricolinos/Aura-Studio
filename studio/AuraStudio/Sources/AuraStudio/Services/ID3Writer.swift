@@ -29,20 +29,10 @@ import Foundation
 /// que es aditiva y no toca el resto del archivo) -- queda para una
 /// iteracion futura si hace falta.
 enum ID3Writer {
-    struct Tag: Equatable {
-        var title: String?
-        var artist: String?
-        var album: String?
-        var albumArtist: String?
-        var year: String?
-        var genre: String?
-        /// Autor/compositor -- frame TCOM, lo que lee `tag_composer` del
-        /// tagcache de Rockbox (AURA_SCREEN_MUSIC_COMPOSERS).
-        var composer: String?
-        var trackNumber: Int?
-        var coverArtData: Data?
-        var coverArtMIMEType: String = "image/jpeg"
-    }
+    /// ST-222: el juego de campos se mudó a `AudioTag`, compartido por
+    /// los tres escritores nativos (MP3, FLAC, M4A). El alias queda para
+    /// no tocar los sitios que ya escribían `ID3Writer.Tag`.
+    typealias Tag = AudioTag
 
     enum WriterError: Error {
         case fileNotReadable
@@ -77,6 +67,9 @@ enum ID3Writer {
         if let genre = tag.genre { frames += textFrame("TCON", genre) }
         if let composer = tag.composer { frames += textFrame("TCOM", composer) }
         if let track = tag.trackNumber { frames += textFrame("TRCK", String(track)) }
+        // ST-222: TPOS, el número de disco. Faltaba: un álbum doble
+        // llegaba al iPod sin la separación de discos.
+        if let disc = tag.discNumber { frames += textFrame("TPOS", String(disc)) }
         if let cover = tag.coverArtData { frames += pictureFrame(cover, mimeType: tag.coverArtMIMEType) }
 
         var header = Data()
