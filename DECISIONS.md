@@ -16351,3 +16351,46 @@ Los instalables de prueba construidos antes de ese tag llevan el hash del
 commit en el nombre del archivo o en "Acerca de" para distinguirlos.
 
 Nada más cambia en este commit. Sesión maestra.
+
+## ST-248 (parcial) — Windows: retrotraducción ciega de las críticas en alemán (B7c)
+
+Encargo del coordinador. `docs/extraccion-cadenas/retrotraduccion/` es
+nueva en esta rama. **Método, para que quede en la ST**: de `windows/b2`
+se leyó, con `git show windows/b2:<ruta>`, ÚNICAMENTE
+`docs/extraccion-cadenas/retrotraduccion/criticas-de.csv` (178 filas,
+columnas `id,de` con id opaco) y `docs/extraccion-cadenas/glosario-plataforma.csv`
+(33 términos) — **nada más de esa rama**: ni `mapa-criticas.csv` (el mapa
+id → clave), ni `Resources.resx`, ni `Resources.en.resx`, ni ningún resx
+en alemán. La retrotraducción es ciega a propósito: se tradujo el alemán
+al español tal cual, sin buscar ni adivinar el texto original en español.
+
+`criticas-de-retro.csv` (`id,de,retro_es,nota`): las 178 filas
+retrotraducidas. Notas dejadas donde el sentido es ambiguo sin contexto
+(`c002` "Weiter" podría ser "Siguiente", no solo "Continuar"; `c033`
+"Starten" igual), donde el énfasis alemán es más fuerte que su
+equivalente español natural (`c009`), donde cuatro filas (`c147`/`c148`/
+`c149`/`c150`) empiezan en minúscula -- el mismo patrón de fragmento de
+oración concatenada que ya se vio en el borrador de Windows (ST-247) --,
+donde el alemán usa "Volume" en vez de "Datenträger" para lo mismo
+(`c135`), y donde hay texto idéntico repetido bajo ids distintos (`c108`/
+`c109`/`c110`, `c126`/`c127`, `c166`/`c172`) que podría ser el mismo caso
+que Windows resolvió con una sola clave reusada, o tres sitios de verdad
+distintos -- no hay forma de saberlo sin el mapa, que a propósito no se
+abrió.
+
+`glosario-veredicto.csv` (`termino,de,veredicto,fuente`): las 33
+propuestas alemanas de `glosario-plataforma.csv` contra la terminología
+pública de Microsoft en alemán (Configuración/Explorador/Papelera de
+Windows en alemán, y la convención de iTunes/Windows Media Player para
+los términos de reproductor de medios) -- las 33 correctas, dos con
+matiz: "actualización" → "Update" es lo más frecuente en la UI pero
+"Aktualisierung" también es válido y más formal; "tema" → "Design" se
+confirma explícitamente correcto (no "Thema", como ya anotaba la nota del
+propio glosario).
+
+Verificado con `Import-Csv` de PowerShell contra el CSV original antes de
+comprometerlo: las 178 filas de "de" coinciden carácter por carácter con
+`criticas-de.csv` (encontró y corrigió 7 filas donde una coma sin comillas
+partía el campo en dos -- error de comillas al escribir el archivo, no de
+traducción), 0 columnas mal formadas, 0 ids duplicados. Sin builds:
+trabajo de solo texto.
