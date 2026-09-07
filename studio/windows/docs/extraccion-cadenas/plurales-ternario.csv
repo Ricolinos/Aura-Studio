@@ -1,0 +1,49 @@
+archivo,linea,singular,plural
+studio/windows/AuraStudio.App/Resources/AppStrings.cs,153,¿Eliminar 1 elemento?,¿Eliminar {totalCount} elementos?
+studio/windows/AuraStudio.App/Resources/AppStrings.cs,168,1 archivo ({bytes}) va a la Papelera de reciclaje.,{preview.CopyCount} archivos ({bytes}) van a la Papelera de reciclaje.
+studio/windows/AuraStudio.App/Resources/AppStrings.cs,175,1 elemento se quita de tu biblioteca; su archivo original no se toca.,{preview.ReferenceCount} elementos se quitan de tu biblioteca; sus archivos originales no se tocan.
+studio/windows/AuraStudio.App/Resources/AppStrings.cs,201,1 canción,{count} canciones
+studio/windows/AuraStudio.App/Resources/AppStrings.cs,202,1 episodio,{count} episodios
+studio/windows/AuraStudio.App/Resources/AppStrings.cs,203,1 foto,{count} fotos
+studio/windows/AuraStudio.App/Resources/AppStrings.cs,317,1 archivo huérfano ({SimilarityText.FormatBytes(scan.TotalBytes)}).,{scan.Count} archivos huérfanos ({SimilarityText.FormatBytes(scan.TotalBytes)}).
+studio/windows/AuraStudio.App/Resources/AppStrings.cs,322,¿Borrar 1 archivo huérfano?,¿Borrar {count} archivos huérfanos?
+studio/windows/AuraStudio.App/Resources/AppStrings.cs,329,Se borró 1 archivo huérfano.,Se borraron {count} archivos huérfanos.
+studio/windows/AuraStudio.Core/Library/ContextMenu.cs,210,Quitar fotos de los artistas,Quitar foto del artista
+studio/windows/AuraStudio.App/ViewModels/ArtistsViewModel.cs,93,1 canción,{Album.TrackCount} canciones
+studio/windows/AuraStudio.App/ViewModels/ArtistsViewModel.cs,251,artista,artistas
+studio/windows/AuraStudio.App/ViewModels/ArtistsViewModel.cs,252,álbum,álbumes
+studio/windows/AuraStudio.App/ViewModels/ArtistsViewModel.cs,253,canción,canciones
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,60,{done} 1 quedó sin revisar (cancelaste).,{done} {NotStarted} quedaron sin revisar (cancelaste).
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,390,Se cambió la tapa de 1 canción.,Se cambió la tapa de {applied} canciones.
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,477,Buscando carátula…,Buscando carátulas de {jobs.Count} álbumes…
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1063,Se normalizó 1 carátula: ahora es cuadrada.,Se normalizaron {result.Normalized} carátulas: ahora son cuadradas.
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1210,1 canción,{songs} canciones
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1211,1 video,{videos} videos
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1212,1 foto,{photos} fotos
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1659,Copiando 1 archivo a la biblioteca…,Copiando {pending.Count} archivos a la biblioteca…
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1712,Se copió 1 archivo a la biblioteca.,Se copiaron {copied} archivos a la biblioteca.
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1717,1 se saltó porque su archivo no está; sigue en el catálogo.,{missing} se saltaron porque sus archivos no están; siguen en el catálogo.
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1722,1 no se pudo copiar.,{failed} no se pudieron copiar.
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1894,Se quitó 1 carátula.,Se quitaron {removed} carátulas.
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1975,Se releyeron las etiquetas de 1 canción.,Se releyeron las etiquetas de {read} canciones.
+studio/windows/AuraStudio.App/ViewModels/MediaGridViewModel.cs,304,1 álbum,{Cards.Count} álbumes
+studio/windows/AuraStudio.App/ViewModels/MediaGridViewModel.cs,305,1 película,{Cards.Count} películas
+studio/windows/AuraStudio.App/ViewModels/MediaGridViewModel.cs,306,1 serie,{Cards.Count} series
+studio/windows/AuraStudio.App/ViewModels/MediaGridViewModel.cs,307,1 álbum,{Cards.Count} álbumes
+studio/windows/AuraStudio.App/ViewModels/MediaGridViewModel.cs,309,1 video,{Cards.Count} videos
+studio/windows/AuraStudio.App/ViewModels/MediaGridViewModel.cs,477,1 temporada,{real} temporadas
+studio/windows/AuraStudio.App/ViewModels/MediaGridViewModel.cs,809,Se quitó 1 foto de su álbum.,Se quitaron {moved} fotos de su álbum.
+studio/windows/AuraStudio.App/ViewModels/PlaylistsViewModel.cs,16,1 canción,{TrackCount} canciones
+studio/windows/AuraStudio.App/ViewModels/SimilarItemsViewModel.cs,82,Se encontró 1 grupo parecido.,Se encontraron {found.Count} grupos parecidos.
+studio/windows/AuraStudio.App/ViewModels/SimilarItemsViewModel.cs,122,Se quitó 1 elemento de la biblioteca. El archivo sigue en tu computadora.,Se quitaron {count} elementos de la biblioteca. Los archivos siguen en tu computadora.
+studio/windows/AuraStudio.App/ViewModels/SyncViewModel.cs,86,1 archivo del iPod ya no está en tu biblioteca,{Orphans.Count} archivos del iPod ya no están en tu biblioteca
+studio/windows/AuraStudio.App/Views/AlbumCoverPicker.cs,211,"Álbum {position} de {total} · tapas de ""{albumTitle}""","Tapas de ""{albumTitle}"""
+studio/windows/AuraStudio.Core/Library/LibraryGrouping.cs,41,canción,canciones
+studio/windows/AuraStudio.Core/Library/LibraryGrouping.cs,68,1 canción,{TrackCount} canciones
+studio/windows/AuraStudio.Core/Library/LibraryGrouping.cs,70,1 álbum,{albumCount} álbumes
+studio/windows/AuraStudio.Core/Library/LibraryIngest.cs,114,Se agregó 1 elemento.,Se agregaron {result.Added.Count} elementos.
+studio/windows/AuraStudio.Core/Library/LibraryIngest.cs,119,"1 imagen se tomó como carátula, no como foto.","{result.CoverAssets.Count} imágenes se tomaron como carátulas, no como fotos."
+studio/windows/AuraStudio.Core/Library/LibraryIngest.cs,124,1 ya estaba en tu biblioteca.,{result.AlreadyInLibrary.Count} ya estaban en tu biblioteca.
+studio/windows/AuraStudio.Core/Library/LibraryIngest.cs,129,1 archivo no es {SectionNoun(section)} y no se agregó acá.,{result.WrongSection.Count} archivos no son {SectionNoun(section)} y no se agregaron acá.
+studio/windows/AuraStudio.Core/Library/LibraryIngest.cs,134,1 archivo no es compatible.,{result.Unsupported.Count} archivos no son compatibles.
+studio/windows/AuraStudio.Core/Library/LibraryStatusSummary.cs,93,día,días

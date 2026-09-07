@@ -1,0 +1,2219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="album-cover-picker.cancelar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="album-cover-picker.cancelar-resto" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="album-cover-picker.omitir-este-album" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="album-cover-picker.usar-esta" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="album-cover-picker.usar-esta-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="album-cover-picker.usar-recomendada" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.action-eject" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.action-open-in-explorer" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.action-refresh" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.action-refresh-help" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.app-name" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-awaiting-reboot" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-continue" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-done-detail-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-done-detail-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-done-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-enter-dfu-when-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-enter-dfu-when-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-flash-confirm-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-flash-confirm-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-flashing-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-flashing-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-no-password" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-not-required-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-not-required-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-nothing-touched-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-nothing-touched-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-offer" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-offer-different" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-offer-unknown-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-offer-unknown-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-what-it-is-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-what-it-is-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.bootloader-update-why-dfu" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.declared-family-label" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.delete-confirm-cancel" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.delete-confirm-primary" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.device-ambiguous-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.device-ambiguous-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.device-connected" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.device-detecting" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.device-not-connected" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.dfu-driver-heading" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.dfu-driver-installed-no-device" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.dfu-driver-missing-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.dfu-driver-missing-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.dfu-driver-missing-3" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.dfu-driver-package-missing-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.dfu-driver-package-missing-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.dfu-driver-package-missing-3" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.dfu-driver-ready" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.dfu-driver-unknown" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.eject-failed" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.eject-requested" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.general-subtitle" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.general-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-already-writing" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-artifacts-invalid" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-awaiting-reboot" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-begin" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-cancelled" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-copied-files" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-copy-failed" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-copy-files" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-copying-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-detect-detail" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-detect-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-detected-detail-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-detected-detail-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-detected-dismiss" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-detected-install" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-detected-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-found-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-found-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-guide-link" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-guide-url" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-no-families" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-not-found-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-not-found-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-not-seen-by-windows-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-not-seen-by-windows-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-not-seen-by-windows-3" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-not-seen-by-windows-4" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-not-seen-by-windows-5" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-step1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-step2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-step3" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-step4" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-timing-warning-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-timing-warning-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-unreadable" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dfu-waiting" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-done-detail" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-done-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dry-run" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dry-run-heading" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dry-run-ok-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dry-run-ok-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-dry-run-running" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-enter-dfu-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-enter-dfu-when-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-enter-dfu-when-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-failed-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-family-change-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-family-change-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-family-label" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-flash" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-flash-confirm" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-flash-failed" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-flash-needs-confirmation" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-flashing" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-format-confirm" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-format-danger-detail-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-format-danger-detail-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-format-danger-heading" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-format-needs-confirmation-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-format-needs-confirmation-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-format-needs-dry-run" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-format-now-on" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-format-running" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-needs-mounted-volume" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-no-device" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-permissions-continue" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-permissions-detail-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-permissions-detail-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-permissions-detail-3" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-permissions-detail-4" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-permissions-detail-5" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-permissions-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-prepare-disk" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-privileged-log-heading" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-rebooted" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-restart" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-safety-abort" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-scan-dfu" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-scanning-dfu" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-stuck-in-dfu" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-subtitle" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-unknown-disk" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-welcome-detail-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-welcome-detail-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-welcome-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-welcome-warning-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.installer-welcome-warning-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.label-bus" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.label-capacity" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.label-device" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.label-file-system" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.label-firmware" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.label-free" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.label-music" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.label-photos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.label-playlists" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.label-unit" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.label-used" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.label-video" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.last-sync-summary" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-add-files" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-add-folder" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-available-without-device" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-columns" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-columns-detail" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-drop-hint-libraryitemkind-music" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-drop-hint-libraryitemkind-photo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-drop-hint-libraryitemkind-video" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-drop-hint-texto" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-empty" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-favorites-only" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-kind-libraryitemkind-music" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-kind-libraryitemkind-photo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-kind-libraryitemkind-video" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-kind-texto" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-locked-reason-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-locked-reason-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-nothing-here-yet" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-open-folder" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-remove" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-root-choose" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-root-create" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-root-missing-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-root-missing-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-root-missing-detail-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-root-missing-detail-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-root-retry" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-season-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-season-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-section-only-its-type-libraryitemkind-music" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-section-only-its-type-libraryitemkind-photo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-section-only-its-type-libraryitemkind-video" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-section-only-its-type-texto" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-similar-found-on-drop" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-sort-ascending" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-sort-by" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-status-6" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-status-7" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-enrichi" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-needsre" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-queued" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-ready" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-transco" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-document-missing" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-document-present" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-families-heading" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-intro-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-intro-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-intro-3" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-intro-4" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-intro-5" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-libraries-heading" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-libraries-intro-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-libraries-intro-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-libraries-intro-3" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-open" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-repository-label" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-subtitle" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-tag-label" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-tag-lib-detail-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-tag-lib-detail-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-tag-lib-name" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-tag-lib-source" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-tool-from-release" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-tool-heading" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-tool-local-pin-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-tool-local-pin-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-tool-local-pin-3" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-tool-missing" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-tool-unverified" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-unknown-tag" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-unknown-tag-detail-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.licenses-unknown-tag-detail-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-albums" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-all-photos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-all-videos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-artists" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-clips" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-extras" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-general" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-installer" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-movies" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-music" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-photos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-photos-a-i" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-photos-images" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-photos-photos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-playlists" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-series" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-settings" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-songs" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-themes" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.nav-video" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.never-synced" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.no-device" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.not-available" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.orphans-button" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.orphans-clean-button" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.orphans-confirm-message-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.orphans-confirm-message-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.orphans-detail-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.orphans-detail-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.orphans-detail-3" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.orphans-none-found" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.orphans-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.section-content" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.section-pending-detail-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.section-pending-detail-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.section-pending-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.section-storage" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.service-pause-asks-for-permission" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.service-pause-button" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.service-pause-detail-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.service-pause-detail-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.service-pause-not-running" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.service-pause-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.settings-about" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.settings-appearance" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.settings-language-detail-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.settings-language-detail-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.settings-subtitle" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.settings-theme" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.settings-theme-detail" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.settings-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.storage-change-only-affects-future-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.storage-change-only-affects-future-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.storage-copy-explainer-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.storage-copy-explainer-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.storage-reference-explainer-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.storage-reference-explainer-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.storage-reference-explainer-3" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.storage-section-title" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.theme-dark" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.theme-light" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-strings.theme-system" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-update-service.aura-studio-installedversion-es-version" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-update-service.buscando-actualizaciones-aura-studio" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-update-service.descargando-aura-studio-available-value" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="app-update-service.se-detuvo-busqueda-actualizaciones" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="artists-page.buscar-artistas" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="artists-page.buscar-fotos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="artists-page.buscar-informacion-linea" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="artists-page.buscar-informacion-linea-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="artists-page.elige-artista-lista" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="artists-page.eliminar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="artists-page.mostrar-explorador" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="artists-page.todavia-hay-musica-biblioteca" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.abrir" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.abrir-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.abrir-3" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.aplicar-caratula-recomendada" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.aplicar-caratula-recomendada-scope-count" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.ascendente" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.buscar-caratulas-scope-albumcount-albume" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.buscar-elementos-similares" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.buscar-foto-artista" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.buscar-fotos-artistas" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.buscar-informacion-linea" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.buscar-letra" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.buscar-poster-linea" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.cambiar-categoria" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.cambiar-nombre" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.change-category" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.descendente" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.disolver-album" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.disolver-albumes" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar-3" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar-album" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar-albumes" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar-artista" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar-artistas" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar-biblioteca" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar-caratula" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar-episodio" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar-episodios" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar-fotos-biblioteca" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar-pelicula" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar-peliculas" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar-serie" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.eliminar-series" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.marcar-como-favorito" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.marcar-como-favorito-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.marcar-como-favorito-3" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.mas-informacion" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.mas-informacion-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.mas-informacion-3" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.mostrar-opciones-visualizacion" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.obtener-informacion" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.opciones-para-ordenar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.quitar-album" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.quitar-favorito" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.quitar-favoritos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.quitar-favoritos-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.quitar-foto-artista" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.quitar-fotos-artistas" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.quitar-poster" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.renombrar-album" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.reveal" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.search-album-covers" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.search-online" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.search-poster" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.seleccionar-canciones-mismo-album" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.seleccionar-canciones-mismo-artista" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.sincronizar-seleccion" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.solo-favoritos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.todas-canciones" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.vista-previa" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="context-menu.volver-leer-etiquetas-archivo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="crash-reporter.algo-salio-mal" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="crash-reporter.entendido" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-page.buscar-actualizaciones" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-page.cancelar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-page.cancelar-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-page.guardar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-page.instalar-actualizacion" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-page.nombre-ipod" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-page.por-copiar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-page.reubicados" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-page.revisar-cambios" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-page.sincronizacion" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-page.sincronizar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-page.toda-biblioteca" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-page.xaml.listo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-page.ya-al-dia" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-view-model.buscando-actualizaciones-family-displayn" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-view-model.ipod-se-llama-devicename" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-list-view-model.se-detuvo-busqueda-actualizaciones" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="extras-page.animaciones-graficos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="extras-page.cronometro-bloqueo-pantalla" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="extras-page.disponible-dispositivo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="extras-page.extras" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="extras-page.firmware" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="extras-page.juegos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="extras-page.licencias" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="extras-page.lo-firmware-ofrece-mas-alla-biblioteca" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="extras-page.revisar-nuevo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="extras-page.software-libre-incluido" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="extras-page.temas" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="extras-page.todavia" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="installer-page.cancelar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="library-status-strip.detener" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="library-view-model.buscando-fotos-artista" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="library-view-model.buscando-letra" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="library-view-model.buscando-posters-video" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="library-view-model.completando-targets-count-elemento-s" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="library-view-model.hay-nada-completar-todo-tiene-titulo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-fotos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-letra" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-linea" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-posters" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="library-view-model.se-detuvo-normalizacion-caratulas-lo-fal" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="library-view-model.se-pudo-leer-ninguna-etiqueta-archivos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="main-window.aura-studio" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="media-grid-page.buscar-posters" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="media-grid-page.xaml.cancelar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="media-grid-page.xaml.guardar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="media-grid-page.xaml.renombrar-album" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="media-grid-view-model.texto" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="media-info-dialog.cancelar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="media-info-dialog.guardar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="media-info-dialog.mas-informacion" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="playlists-page.crea-nueva-o-importa-archivo-m3u" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="playlists-page.eliminar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="playlists-page.exportar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="playlists-page.importar-m3u" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="playlists-page.listas-armadas-con-canciones-biblioteca" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="playlists-page.nueva-lista" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="playlists-page.renombrar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="playlists-page.todavia-tienes-listas" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="playlists-page.xaml.aceptar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="playlists-page.xaml.cancelar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.abrir-explorador" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.activos-sin-configurar-nada" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.agregar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.agregar-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.agrupar-colaboraciones-bajo-artista-prin" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.al-importar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.apagado-aura-studio-toca-red-al" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.aqui-vive-catalogo-biblioteca-funciona-a" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.archivos-huerfanos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.artista-album-recomendado" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.biblioteca" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.buscar-actualizaciones" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.buscar-letras-sincronizadas" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.buscarlo-nuevo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.calidad-audio" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.calidad-imagen" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.cambiar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.cambiar-carpeta-mueve-nada" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.caratula-alternativa-1000-1000-sin-clave" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.caratula-por-album-recomendado" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.caratula-por-cancion" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.caratulas" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.carpeta-biblioteca" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.carpetas-externas-arrastraste-con-copia" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.carpetas-ipod" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.carpetas-vinculadas" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.claves-tokens" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.colaboraciones" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.colecciones" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.completar-informacion-faltante-con-servi" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.comprimir-mp3-buena-calidad" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.conversion-hace-ffmpeg-se-instala-aparte" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.copiar-medios-carpeta-biblioteca" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.cuando-cancion-le-falta-caratula-se" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.deezer" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.elegir-ffmpeg-exe" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.excepciones" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.ffmpeg" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.formato-video" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.fotos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.general" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.idioma" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.letras-vienen-lrclib-sin-clave-ni" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.listo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.mantener-formato-original-recomendado" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.musica" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.musicbrainz-artista-album-ano-numero-pis" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.nombre-archivo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.nombre-completo-grupo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.nombres-grupo-llevan-uno-esos-separadore" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.nueva-coleccion" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.numero-pista-titulo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.optimizar-espacio-320-px-recomendado" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.orden-busqueda-caratula" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.organizar-por-categoria-dentro-bibliotec" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.organizar-por-coleccion-dentro-bibliotec" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.pantalla-ipod-es-320-240-foto" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.quitar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.quitar-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.quitar-3" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.quitar-coleccion-cambia-coleccion-fotos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.se-guardan-administrador-credenciales-wi" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.separa-tus-fotos-colecciones-para-encont" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.separa-tus-videos-videos-series-pelicula" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.servicios" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.solo-album" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.solo-artista" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.solo-titulo-recomendado" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.texto" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.texto-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.titulo-album" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.titulo-artista" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.todavia-agregaste-ninguna-excepcion" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.todavia-vinculaste-ninguna-carpeta" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.todo-video-se-convierte-mpeg-1" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.version-hd-640-px" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.video" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.wav-aiff-siempre-se-convierten" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="shell-page.actualizacion-aura-studio" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="shell-page.descargar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="shell-page.ver-hay-nuevo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="similar-items-page.aura-studio-busca-canciones-fotos-videos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="similar-items-page.buscar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="similar-items-page.conservar-solo-este" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="similar-items-page.elementos-parecidos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="similar-items-page.son-lo-mismo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="similar-items-page.unificar-metadata" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="similar-items-page.volver-mostrar-descartados" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="songs-page.completar-linea" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="songs-page.elementos-parecidos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="songs-page.xaml.cambiar-nombre" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="songs-page.xaml.cancelar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="songs-page.xaml.guardar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="sync-view-model.conecta-selecciona-ipod-antes-continuar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="sync-view-model.este-ipod-esta-ejecutando-aura-instala" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="sync-view-model.revisa-cambios-antes-sincronizar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="sync-view-model.revision-cancelada" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="sync-view-model.sincronizacion-cancelada" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.activar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.aura-studio-arma-paquete-desde-carpeta" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.autor" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.cambia-como-se-ve-aura-ipod" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.compartir" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.construir-e-instalar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.construir-tema" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.elegir-carpeta" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.eliminar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.marcalo-si-tema-usa-fuentes-o" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.nombre" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.temas" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.usa-material-licencia-restringida-solo-p" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.xaml.cancelar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.xaml.quitar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-page.xaml.quitar-row-name-ipod" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-view-model.row-name-se-va-aplicar-proxima" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-view-model.se-guardo-copia-path" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-view-model.se-instalo-installed-name-activalo-para" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="themes-view-model.se-quito-row-name-ipod" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+</root>

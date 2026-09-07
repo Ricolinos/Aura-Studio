@@ -13352,3 +13352,220 @@ ningún lado" como respuesta legítima.
 `LibraryDiskPathResolverTests` estaba escrita contra el comportamiento y
 **pasó sin tocar una sola línea**, que era exactamente para lo que se
 escribió así.
+
+## ST-247 — Windows: ensayo en seco de B7a (extracción de cadenas)
+
+Encargo de la Maestra, plan §3: preparar la extracción de cadenas de
+Windows **sin tocar código de la app** — ni `AppStrings.cs`, ni el XAML, ni
+el C# de `AuraStudio.App`/`AuraStudio.Core`. Mismo criterio que
+`tools/extraer-cadenas.py` de la Mac (ST-227): heurístico, para que una
+persona revise, no un resultado final automático; el cambio real (extraer
+de verdad, migrar `AppStrings` a `.resw`) es de A7a/B7a cuando se cierre,
+no de este ensayo.
+
+### Herramienta: `tools/ExtraerCadenasWindows`
+
+C# y no PowerShell — mismo motivo que Mac eligió Python sobre Swift para
+su equivalente: mejor ergonomía para el trabajo real (acá, un pequeño
+escáner consciente de cadenas de C#, ver más abajo) y corre sin fricción
+con `dotnet run`. Fuera de la solución (`.slnx` intacto), como el resto de
+los arneses.
+
+Recorre las cuatro fuentes que catalogó la auditoría de B0
+(`docs/auditoria-idiomas.md` §1):
+
+1. **`AppStrings.cs`** (230 miembros hoy): un escaneo propio, no una
+   expresión regular suelta, porque un miembro puede traer más de un
+   literal de interfaz de verdad distinto —un ternario de dos mensajes
+   (`LibraryRootMissing`), un `switch` con un literal por caso
+   (`LibraryKind`, `LibraryStatus`), una concatenación con `+`— y una sola
+   clave por miembro perdería información real. `MemberBodyFinder` parte el
+   archivo en miembros con un escaneo carácter a carácter consciente de
+   cadenas (para no cortar un cuerpo a la mitad si un `;` o una `}`
+   aparecen DENTRO de una cadena interpolada, como en
+   `$"Convirtiendo… {status.Progress * 100:0}%"`); `AppStringsExtractor`
+   separa, en orden, los ternarios de plural (van aparte, nunca se
+   traducen como si fueran dos mensajes normales), los brazos de `switch`
+   (una clave por brazo, con el caso como sufijo legible) y lo que quede.
+2. **XAML** (148 sitios, 18 archivos — más que los 146/13 de la auditoría:
+   B3-B5 agregaron pantallas y secciones desde entonces): atributos
+   `Text=`/`Content=`/`Header=`/`PlaceholderText=`/`Title=`/`Description=`
+   con un literal entre comillas, nunca `{x:Bind ...}` ni
+   `{StaticResource ...}`.
+3. **`MenuEntry` de `ContextMenu.cs`** (63 sitios): sus `const string` de
+   apoyo, los argumentos literales de cada llamada (incluidos los
+   ternarios, p. ej. `scope.IsSingle ? "Eliminar álbum" : "Eliminar
+   álbumes"`), y una pasada de red sobre el archivo entero para lo que se
+   cuela por otro camino —`ForVideoCollection(scope, categories, "Eliminar
+   película", "Eliminar películas")" pasa el texto como PARÁMETRO de un
+   método propio, nunca dentro de un `new MenuEntry(...)` ni de un
+   `const`—, excluyendo lo que tiene toda la forma de un identificador
+   interno y ninguna de un texto en español (sin espacio, sin acento: los
+   `id` de menú y claves como `"AlbumCount"`/`"Enabled"`, que sí aparecen
+   sueltos en el archivo y no son texto de cara al usuario).
+4. **`StatusMessage`/`ContentDialog`** en todo `AuraStudio.App` (27 + 24
+   sitios): mismo criterio que la auditoría.
+
+Más un quinto hallazgo que la auditoría pidió marcar aparte y no contar
+como los demás: **cultura fija** (§4 de la auditoría). No busca la línea a
+ciegas por número —`FixedCultureExtractor` encuentra
+`CultureInfo.GetCultureInfo("...")` y cualquier `.ToString("...")` cuyo
+formato traiga un fragmento entre comillas simples (gramática incrustada,
+como `"d 'de' MMMM 'de' yyyy"`), descartando los patrones ISO-8601
+(`yyyy-MM-dd'T'...'Z'`) que son timestamps técnicos, no fechas que ve el
+usuario (la propia auditoría ya lo decía de los `ToString("O")`/
+`ToString("yyyy...")` del resto del código). Encontró **cuatro** sitios,
+dos más de los que documentó la auditoría: además de
+`MediaTableRow.cs:53` (`DisplayCulture`, ya conocido), hay una segunda
+`CultureInfo.GetCultureInfo("es-MX")` en `MediaTableRow.cs:47`
+(`NaturalOrder`, para ordenar "Pista 2" antes que "Pista 10") y una
+tercera en `Library/LibraryStatusSummary.cs:69` (formato de números) que
+la auditoría no había mirado.
+
+### Nombres de clave: el mismo esquema que Mac, con una adaptación explícita
+
+`<identificador-en-kebab-case>.<slug-del-texto>`, igual que
+`tools/extraer-cadenas.py` — mismo texto exacto, misma clave, en cualquier
+sitio que lo repita (`context-menu.abrir` aparece en tres `MenuEntry`
+distintos). La única diferencia, deliberada: **para `AppStrings.cs`, el
+slug sale del NOMBRE DEL MIEMBRO, no del texto en español**
+(`app-strings.library-remove-detail`, no una eslugificación de sus dos
+párrafos). Un miembro de `AppStrings` ya es un identificador legible y
+estable —es lo que la clase existe para ser—; eslugificar el texto en su
+lugar produciría claves larguísimas y frágiles ante el más mínimo cambio
+de redacción, exactamente lo que un catálogo de claves está para evitar.
+Para todo lo demás (XAML, `MenuEntry`, `StatusMessage`, `ContentDialog`)
+el identificador es el nombre de archivo, igual que Mac.
+
+Los especificadores de interpolación se convierten a **`{0}`, `{1}`...**
+(ítem 4 del encargo), no a `%@`/`%lld` como en el borrador de la Mac: son
+plataformas distintas con convenciones de formato distintas
+(`ResourceManager`/`string.Format` indexa por posición; Foundation usa
+especificadores de tipo). Ninguna decisión de la Mac se copia a ciegas
+donde la plataforma ya impone otra cosa.
+
+### Dos bugs reales, encontrados verificando la salida — no solo leyendo el código
+
+Mismo criterio de siempre: una herramienta de extracción tiene que
+probarse contra el código real y mirar lo que produce, no solo leerse a
+sí misma.
+
+1. **Un comentario citando texto de ejemplo se colaba como código real.**
+   `SimilarItemsDetector.cs` y `ContextMenu.cs` tienen comentarios que citan
+   texto entre comillas como prosa explicativa (p. ej. `/// ... "en
+   Canciones con todo seleccionado no aparece Buscar carátulas"`, ST-206).
+   Sin distinguir comentario de código, esas comillas se leían como una
+   cadena de C# de verdad, con el texto del comentario mezclado con el
+   código que seguía. `CommentStripper` borra `//`, `///` y `/* */` ANTES
+   de escanear —consciente de cadenas él mismo, para no arruinar una URL
+   real con `//` adentro (`InstallerDfuGuideUrl`)— reemplazando por
+   espacios, nunca borrando líneas, para que ningún número de línea se
+   mueva.
+2. **Una expresión regular con `[^"]*` suelto arrastró cientos de líneas.**
+   El primer intento de `FixedCultureExtractor` para `.ToString("...")` usó
+   `[^"]*'[^']+'[^"]*"` de punta a punta: cuando el patrón no cerraba cerca
+   (`DeviceConfig.cs`, `SyncMarker.cs` — timestamps técnicos sin ninguna
+   comilla simple cerca de su `.ToString(`), el motor de regex retrocedía
+   buscando CUALQUIER `'...'` más adelante en el archivo, arrastrando
+   código real de por medio hacia el grupo capturado. Se vio en la salida,
+   no se dedujo del código: filas del CSV de cientos de caracteres, con
+   sentencias completas adentro. Corregido usando el mismo escaneo
+   consciente de cadenas que todo lo demás (`StringLiteralScanner.TrySkip`
+   en la posición exacta del argumento) en vez de una sola expresión
+   regular de punta a punta — la lección de siempre: `[^"]*` sin nada que
+   lo acote es una invitación a que el motor de regex "encuentre" un cierre
+   lejísimos de donde en realidad no hay ninguno.
+
+### Los números
+
+| Fuente | Sitios |
+|---|---|
+| `AppStrings.cs` (230 miembros) | 289 |
+| XAML (18 archivos) | 148 |
+| `MenuEntry` (`ContextMenu.cs`) | 63 |
+| `StatusMessage` | 27 |
+| `ContentDialog` | 24 |
+| **Total, claves únicas** | **551** |
+| Ternarios de plural (aparte, nunca en las 551) | 48 |
+| Cultura fija (aparte; ver arriba) | 4 |
+
+Más que el "~480 mínimo" que estimó la auditoría de B0 — esperable: B3, B4
+y B5 agregaron pantallas y secciones enteras desde entonces (Eliminar con
+confirmación, huérfanos, "Cómo guardar tu música", acciones en lote de
+Artistas). El total real de superficie, incluidas las dos formas de cada
+plural: 551 + 96 = **647** cadenas de texto distintas.
+
+### Salidas, en `studio/windows/docs/extraccion-cadenas/` (comiteadas, a diferencia de Mac)
+
+La Mac gitignora sus tres salidas —son de paso, insumo para A7a—; acá se
+**comitean**: el encargo pide una prueba que valide el borrador contra
+archivos reales en el repo, y una prueba que dependiera de que alguien
+haya corrido la herramienta a mano antes de cada `dotnet test` sería una
+prueba frágil por diseño. Si el día de mañana B7a real cambia el criterio
+y hace falta regenerarlas, se corren de nuevo y se re-commitean —el
+mecanismo es reproducible, no manual.
+
+- `revision.csv`: clave, tipo, archivo, línea, texto original, texto con
+  `{0}`/`{1}`, si tiene interpolación, nota (la fila de "cultura fija" va
+  marcada ahí, como pidió el coordinador).
+- `plurales-ternario.csv`: los 48, aparte.
+- `Strings/es/Resources.resw`: borrador real, con el texto en español.
+- `Strings/en/Resources.resw`: mismas claves, valor vacío y un comentario
+  "pendiente de traducir" — **nunca una traducción a mano de lo que no sea
+  trivial** (instrucción explícita del encargo). Ninguno de los dos está
+  cableado a `AuraStudio.App`: `AppStrings.cs` sigue siendo la fuente de
+  verdad hasta que B7a real migre.
+
+### Verificación (`LocalizationDraftTests.cs`, `AuraStudio.Core.Tests`)
+
+Mismo criterio que `LocalizationDraftTests.swift` de la Mac — corren de
+verdad, hoy, contra los archivos ya generados (comiteados, no dependen de
+ninguna API nueva):
+
+- **Claves únicas** en el `.resw` (551, sin repetidas) y **ninguna clave
+  vacía**.
+- **Especificadores consistentes entre `es`/`en`** para toda clave con
+  contenido real en las dos —hoy "en" está vacío a propósito, así que pasa
+  trivial, pero es la misma prueba que va a fallar el día que B7b traduzca
+  algo y se le pierda un `{0}`—.
+- **Toda fila traducible del CSV tiene su clave en el `.resw`** (las de
+  tipo `CulturaFija` quedan afuera a propósito: no son texto que traducir,
+  son un defecto de código para reescribir).
+- **Los 48 plurales tienen sus dos formas distintas entre sí** —no exige
+  que ninguna de las dos sea no vacía (la Mac encontró un caso real,
+  `n == 1 ? "" : "s"`, que la obligó a corregir esa misma aserción; acá no
+  apareció ningún caso así, pero la prueba ya viene escrita para tolerarlo
+  si aparece).
+
+`dotnet build` de `AuraStudio.Core`, `AuraStudio.App` y
+`ExtraerCadenasWindows`: **0 errores, 0 advertencias**. `dotnet test`:
+**1 719 pruebas en verde** (5 nuevas, `LocalizationDraftTests`).
+
+Repro completo:
+
+```
+dotnet run --project studio/windows/tools/ExtraerCadenasWindows
+dotnet test studio/windows/tests/AuraStudio.Core.Tests/AuraStudio.Core.Tests.csproj --filter FullyQualifiedName~LocalizationDraftTests
+```
+
+### Lo que NO entra en este ensayo, y por qué
+
+- **Migrar `AppStrings.cs` a `.resw` de verdad.** Es la decisión de fondo
+  que la auditoría de B0 dejó abierta (§0: ¿`AppStrings` pasa a ser una
+  capa sobre `.resw`, o se reemplaza?) — de A7a/B7a real, con "experto en
+  código", no de un ensayo en seco.
+- **Traducir a inglés** (ni a ningún otro idioma). El `.resw` en inglés
+  queda vacío a propósito.
+- **Cablear nada a la app.** Ni un `using`, ni un `ResourceLoader`, ni un
+  cambio en `AppStrings.cs`, el XAML o el C# de `AuraStudio.App`/`Core`.
+- **El detector de literales fijos** (criterio de cierre real de B7a, "que
+  ningún `Text="` con acentos quede sin pasar por el mecanismo") — es la
+  prueba que sí tiene que fallar hoy (cientos de sitios sin migrar) y
+  pasar en 0 al cerrar B7a; no tiene sentido escribirla todavía.
+
+Lo que no se verificó acá: nada de esto tocó la biblioteca real del dueño
+ni ninguna pantalla en vivo — es análisis de texto sobre archivos fuente,
+sin ventana. Que el `.resw` tenga la forma que WinUI/MRT espera para un
+`x:Uid` real (con `/` como separador de alcance, no `.`) es una decisión
+que toca cuando B7a real decida el mecanismo de carga — hoy es un borrador
+de revisión, no un recurso cargable.
