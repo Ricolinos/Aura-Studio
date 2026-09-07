@@ -141,6 +141,32 @@ public class LibraryStorageContractTests : IDisposable
         Assert.True(File.Exists(viejo));
     }
 
+    /// <summary>
+    /// <b>Ausente es un estado válido</b> (ST-244, contrato de ST-221). Una
+    /// canción referenciada cuyo archivo ya coincide con el catálogo no tiene
+    /// preparado, y eso no se rellena por inferencia en ningún lado: ni al
+    /// cargar, ni al guardar. Inventarle uno haría que el catálogo compartido
+    /// dijera que existe un archivo que no existe.
+    /// </summary>
+    [Fact]
+    public void UnPreparadoAusenteEnReferenciaSeQuedaAusente()
+    {
+        string outside = Path.Combine(Path.GetTempPath(), "AjenoALaBiblioteca", "a.mp3");
+
+        LibraryItem item = Item(LibraryItemKind.Music, outside);
+        item.Storage = ItemStorageRules.ReferenceValue;
+        Save(item);
+
+        LibraryItem loaded = _store.LoadItems()[0];
+        Assert.Null(loaded.PreparedPath);
+
+        // Y sigue ausente después de una vuelta completa por el disco.
+        _store.SaveItems([loaded]);
+
+        Assert.Null(LibraryCatalogStore.Load(_root).Items[0].PreparedRelativePath);
+        Assert.Null(_store.LoadItems()[0].PreparedPath);
+    }
+
     // MARK: - Un original que falta no se borra
 
     /// <summary>

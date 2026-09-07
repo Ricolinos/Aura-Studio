@@ -183,6 +183,61 @@ foreach ((string format, LibraryItem item, _) in imported)
 
 Console.WriteLine();
 
+// --- 4b. La calidad de audio, en modo copia -----------------------------
+//
+// Los tres casos del contrato: WAV siempre, FLAC solo con "Comprimido", FLAC
+// con "Original" tal cual. `LibraryProcessor` vive en el proyecto de la app, así
+// que copia se mide acá; referencia tiene pruebas propias en Core.Tests.
+
+Console.WriteLine("--- Calidad de audio en modo copia ---");
+Console.WriteLine();
+Console.WriteLine($"{"origen",-6} {"calidad",-12} {"¿convirtió?",12} destino");
+
+foreach ((string format, AudioQuality quality) in ((string, AudioQuality)[])
+    [("wav", AudioQuality.OriginalLossless), ("wav", AudioQuality.Compressed),
+     ("flac", AudioQuality.Compressed), ("flac", AudioQuality.OriginalLossless),
+     ("mp3", AudioQuality.OriginalLossless)])
+{
+    string qualityLibrary = Path.Combine(root, $"biblioteca-{format}-{quality}");
+    Directory.CreateDirectory(qualityLibrary);
+
+    var qualityPreferences = new AppPreferences(Path.Combine(root, $"prefs-{format}-{quality}.json"))
+    {
+        LibraryPath = qualityLibrary,
+        CopyMediaIntoLibrary = true,
+        AudioQuality = quality
+    };
+
+    // Nombre propio por caso: reusar el mismo choca con el archivo que la
+    // conversión anterior todavía tiene abierto.
+    string origin = Path.Combine(incoming, $"calidad-{format}-{quality}.{format}");
+
+    switch (format)
+    {
+        case "wav": Fixture.WriteWav(origin); break;
+
+        // FLAC con audio de verdad, hecho con el codificador de Windows: el FLAC
+        // mínimo del fixture no tiene muestras y no hay nada que convertir.
+        case "flac": await Decoded.ToFlacAsync(Fixture.WriteWav(origin + ".wav"), origin); break;
+
+        default: Fixture.WriteMp3(origin); break;
+    }
+
+    var item = new LibraryItem { Id = Guid.NewGuid(), Kind = LibraryItemKind.Music, SourcePath = origin };
+    await new LibraryProcessor(qualityPreferences).ProcessAsync(item);
+
+    string resulting = Path.GetExtension(item.SourcePath).TrimStart('.');
+    bool converted = !resulting.Equals(format, StringComparison.OrdinalIgnoreCase);
+
+    string where = item.SourcePath.StartsWith(qualityLibrary, StringComparison.OrdinalIgnoreCase)
+        ? Path.GetRelativePath(qualityLibrary, item.SourcePath)
+        : $"(no se copió) {item.Status.Error}";
+
+    Console.WriteLine($"{format,-6} {quality,-12} {(converted ? "→ " + resulting : "no"),12}  {where}");
+}
+
+Console.WriteLine();
+
 // --- 5. Modo referencia: no se toca nada --------------------------------
 
 Console.WriteLine("--- Modo referencia ---");
@@ -211,6 +266,145 @@ Console.WriteLine($"  storage:                 {referenced.Storage ?? "(sin fija
 Console.WriteLine($"  bytes del original:      {(beforeBytes.SequenceEqual(File.ReadAllBytes(original)) ? "idénticos" : "CAMBIARON")}");
 Console.WriteLine($"  fecha del original:      {(File.GetLastWriteTimeUtc(original) == beforeTime ? "sin mover" : "SE MOVIÓ")}");
 Console.WriteLine($"  archivos en biblioteca:  {Directory.GetFiles(referenceLibrary, "*", SearchOption.AllDirectories).Length}");
+Console.WriteLine();
+
+// --- 6. Cuánto cuesta la PRIMERA conversión -----------------------------
+//
+// ST-244: en la corrida de B3, el primer WAV tardó 2 922 ms y el segundo 203.
+// La diferencia es cargar Media Foundation, no convertir. Se mide aparte para
+// saber si conviene calentarlo en segundo plano al abrir la app (B8).
+
+Console.WriteLine("--- Arranque en frío de Media Foundation ---");
+Console.WriteLine();
+
+string cold = Fixture.WriteWav(Path.Combine(incoming, "frio.wav"));
+var coldTimings = new List<double>();
+
+for (int pass = 1; pass <= 3; pass++)
+{
+    AudioTranscodeResult measured =
+        await AudioTranscoder.ToMp3Async(cold, Path.Combine(root, $"frio-{pass}.mp3"));
+
+    coldTimings.Add(measured.Elapsed.TotalMilliseconds);
+    Console.WriteLine($"  pasada {pass}: {measured.Elapsed.TotalMilliseconds,7:N0} ms");
+}
+
+Console.WriteLine();
+Console.WriteLine($"  Costo de la primera vez: {coldTimings[0] - coldTimings.Skip(1).Average(),0:N0} ms sobre el promedio de las siguientes.");
+Console.WriteLine();
+
+// --- 6b. WAV y AIFF a ALAC: sin pérdida de verdad -----------------------
+//
+// ST-244: con "Original sin pérdida", WAV y AIFF van a ALAC y no a MP3. "Sin
+// pérdida" tiene que significar sin pérdida, así que no alcanza con que el
+// archivo exista: se decodifica la entrada y la salida a PCM y se comparan las
+// muestras. Si no son idénticas, no es sin pérdida.
+
+Console.WriteLine("--- WAV/AIFF → ALAC (sin pérdida) ---");
+Console.WriteLine();
+Console.WriteLine($"{"origen",-6} {"bytes origen",13} {"bytes ALAC",11} {"ms",7} {"¿mismas muestras?",18}");
+
+foreach (string format in (string[])["wav", "aiff"])
+{
+    string source = sources.First(candidate => candidate.Format == format).Path;
+    string destination = Path.Combine(root, $"sin-perdida-{format}.m4a");
+
+    try
+    {
+        AudioTranscodeResult alac =
+            await AudioTranscoder.ConvertAsync(source, destination, AudioCodec.Alac);
+
+        (bool same, long sourceBytes, long alacBytes, long common) =
+            await Decoded.ComparePcmAsync(source, destination);
+
+        Console.WriteLine(
+            $"{format,-6} {new FileInfo(source).Length,13:N0} {alac.BytesWritten,11:N0} "
+            + $"{alac.Elapsed.TotalMilliseconds,7:N0} {same,18}");
+
+        Console.WriteLine(
+            $"       PCM origen {sourceBytes:N0} B, PCM ALAC {alacBytes:N0} B, comparados {common:N0} B");
+
+        if (!same)
+        {
+            int? shift = await Decoded.FindSampleAlignmentAsync(source, destination);
+
+            Console.WriteLine(shift is { } frames
+                ? $"       alinean con {frames} cuadros de preámbulo: las muestras SON las mismas, "
+                  + "el codificador solo mete relleno al principio"
+                : "       NO alinean con ningún desplazamiento: se perdió audio de verdad");
+        }
+
+        // Y el .m4a resultante se etiqueta: `m4a` ya está en TaggableExtensions.
+        LocalTagWriter.Write(destination, new TrackMetadata
+        {
+            Title = "Ingrata", Artist = "Café Tacvba", Album = "Ré", DiscNumber = 2
+        });
+
+        TrackMetadata back = LocalTagReader.Read(destination);
+        Console.WriteLine($"       etiquetas releídas: {back.Title} / {back.Artist} / disco {back.DiscNumber}");
+    }
+    catch (AudioTranscodeException ex)
+    {
+        Console.WriteLine($"{format,-6} FALLÓ: {ex.Message}");
+    }
+}
+
+Console.WriteLine();
+
+// --- 7. Escribir etiquetas no puede cambiar lo que SUENA ----------------
+//
+// ST-244, encargo de ST-222: en M4A, escribir etiquetas obliga a mover el `moov`
+// y a corregir los offsets de `stco`/`co64`. Un offset mal corregido da un
+// archivo que abre sin error, se lee sin error y suena mal — ninguna prueba de
+// etiquetas o de tamaños lo detecta. Acá se decodifica antes y después y se
+// comparan las muestras.
+
+Console.WriteLine("--- Muestras decodificadas antes y después de etiquetar ---");
+Console.WriteLine();
+
+string encodedM4a = Path.Combine(root, "con-audio.m4a");
+await Decoded.ToM4aAsync(Fixture.WriteWav(Path.Combine(incoming, "para-m4a.wav")), encodedM4a);
+
+// MediaTranscoder escribe el moov AL FINAL, que es el caso fácil: crecerlo no
+// mueve ninguna muestra. El caso delicado es el contrario, así que se rearma el
+// archivo con el moov adelante — y se comprueba que el rearmado suene igual
+// ANTES de escribirle nada, para saber que el fixture es válido.
+string realM4a = Path.Combine(root, "con-audio-moov-primero.m4a");
+Decoded.RewriteWithMoovFirst(encodedM4a, realM4a);
+
+Console.WriteLine($"  Cajas del original:  {Decoded.TopLevelBoxOrder(encodedM4a)}");
+Console.WriteLine($"  Cajas del fixture:   {Decoded.TopLevelBoxOrder(realM4a)}");
+
+(bool fixtureIsSound, long encodedPcm, long remuxedPcm, _) =
+    await Decoded.ComparePcmAsync(encodedM4a, realM4a);
+
+Console.WriteLine($"  ¿el fixture con moov adelante suena igual que el original? {fixtureIsSound} "
+                  + $"({encodedPcm:N0} vs {remuxedPcm:N0} bytes)");
+Console.WriteLine();
+
+(string pcmHashBefore, long pcmBytesBefore) = await Decoded.PcmSummaryAsync(realM4a);
+
+TagWriteResult tagged = LocalTagWriter.Write(realM4a, new TrackMetadata
+{
+    Title = "Ingrata",
+    Artist = "Café Tacvba",
+    Album = "Ré",
+    Genre = "Rock",
+    Year = "1994",
+    TrackNumber = 7,
+    DiscNumber = 2
+});
+
+(string pcmHashAfter, long pcmBytesAfter) = await Decoded.PcmSummaryAsync(realM4a);
+
+Console.WriteLine($"  ¿escribió etiquetas?   {tagged.Written} ({string.Join(", ", tagged.Fields)})");
+Console.WriteLine($"  PCM antes:             {pcmHashBefore}  ({pcmBytesBefore:N0} bytes)");
+Console.WriteLine($"  PCM después:           {pcmHashAfter}  ({pcmBytesAfter:N0} bytes)");
+Console.WriteLine($"  ¿SUENA IGUAL?          {pcmHashBefore == pcmHashAfter && pcmBytesBefore == pcmBytesAfter}");
+Console.WriteLine();
+
+TrackMetadata m4aRead = LocalTagReader.Read(realM4a);
+Console.WriteLine($"  y las etiquetas volvieron: {m4aRead.Title} / {m4aRead.Artist} / disco {m4aRead.DiscNumber}");
 Console.WriteLine();
 
 Console.WriteLine($"Listo. Para borrar todo: rmdir /s /q \"{root}\"");

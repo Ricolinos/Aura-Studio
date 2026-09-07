@@ -69,18 +69,38 @@ public static class LibraryFileCopier
         // sí misma. Pasa al reprocesar algo que ya se copió antes.
         if (IsInside(libraryRoot, sourcePath)) return LibraryCopyResult.AlreadyInside(sourcePath);
 
-        string destination = Available(libraryRoot, relativePath, files);
-        string temporary = destination + TemporarySuffix;
+        return CopyTo(sourcePath, Available(libraryRoot, relativePath, files), files);
+    }
+
+    /// <summary>
+    /// Copia un archivo a una ruta exacta, atómicamente (ST-244).
+    ///
+    /// <para>Es la parte de <see cref="Copy"/> que no decide nada: la usa quien
+    /// ya sabe dónde va —el preparador por identificador, por ejemplo—. Misma
+    /// garantía: se copia a un <c>.aura-tmp</c> al lado del destino y recién ahí
+    /// se renombra, así que un corte deja basura evidente y no un archivo a
+    /// medias que el catálogo dé por bueno.</para>
+    /// </summary>
+    public static LibraryCopyResult CopyTo(
+        string sourcePath, string destinationPath, ILibraryFileSystem? fileSystem = null)
+    {
+        ILibraryFileSystem files = fileSystem ?? LibraryFileSystem.Shared;
+
+        if (sourcePath is not { Length: > 0 }) return LibraryCopyResult.Skipped("no hay archivo de origen");
+        if (destinationPath is not { Length: > 0 }) return LibraryCopyResult.Skipped("no hay ruta de destino");
+        if (!files.FileExists(sourcePath)) return LibraryCopyResult.Skipped("el archivo no está");
+
+        string temporary = destinationPath + TemporarySuffix;
 
         try
         {
-            files.CreateDirectory(Path.GetDirectoryName(destination)!);
+            files.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
             files.Copy(sourcePath, temporary);
 
             long bytes = files.Length(temporary);
-            files.Move(temporary, destination);
+            files.Move(temporary, destinationPath);
 
-            return new LibraryCopyResult(destination, true, bytes);
+            return new LibraryCopyResult(destinationPath, true, bytes);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
@@ -128,7 +148,13 @@ public static class LibraryFileCopier
         string libraryRoot, string relativePath, ILibraryFileSystem? fileSystem = null)
     {
         ILibraryFileSystem files = fileSystem ?? LibraryFileSystem.Shared;
-        string candidate = Path.Combine(libraryRoot, ToNative(relativePath));
+
+        // ST-244: la ruta se arma REUSANDO las carpetas que ya existan, aunque
+        // sus nombres estén en la otra forma Unicode. La Mac no puede crear
+        // carpetas en NFC, así que las suyas están siempre en NFD; armar la ruta
+        // a ciegas con la cadena del catálogo crearía una "Música" al lado de la
+        // "Música" que ya estaba.
+        string candidate = MediaRoots.Resolve(libraryRoot, relativePath);
         if (!files.FileExists(candidate)) return candidate;
 
         string directory = Path.GetDirectoryName(candidate)!;
@@ -141,9 +167,6 @@ public static class LibraryFileCopier
             if (!files.FileExists(numbered)) return numbered;
         }
     }
-
-    private static string ToNative(string relativePath) =>
-        relativePath.Replace(CatalogPath.Separator, Path.DirectorySeparatorChar);
 }
 
 /// <summary>

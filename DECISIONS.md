@@ -12922,3 +12922,252 @@ del dueño, ni en copia — el arnés sintetiza los cinco formatos y el caso
 NFD desde cero, sin tocar disco ajeno. Y la Papelera de reciclaje real se
 usó de verdad (no una `IRecycleBin` falsa) en la corrida del arnés; verla
 en pantalla lo tiene que hacer alguien con la sesión de Windows delante.
+
+## ST-244 — Windows: el preparado por identificador, la tabla de calidad, y una conversión "sin pérdida" que perdía
+
+B4 de la ronda "ajustes 3". Cierra el modo referencia —que hasta acá no
+llevaba al iPod las correcciones del usuario— y le da consumidor al
+tercer interruptor sin consumidor de la ronda.
+
+### El preparado en modo referencia: solo cuando hace falta
+
+En modo referencia el archivo es del usuario y **no se toca**: no se le
+escriben las etiquetas que él corrigió en Studio. Sin un intermediario,
+esas correcciones no llegaban al iPod. El intermediario es
+`.preparados/<ID>.<ext>` (ST-241): una copia nuestra, con las etiquetas
+del catálogo escritas, que es la que se sincroniza.
+
+Pero **no para toda canción**. Ajustes le promete al usuario, con esas
+palabras, que en modo referencia "tu disco nunca termina con una copia
+duplicada de toda tu biblioteca", y `.preparados/` no se limpia nunca
+(ST-087). Preparar las doce mil rompería esa promesa y duplicaría la
+biblioteca del dueño.
+
+La regla, aprobada por la Maestra y que la Mac replica en A4:
+
+- Se prepara **solo** si el archivo necesita conversión (tabla de abajo) o
+  si sus etiquetas no dicen lo que dice el catálogo.
+- Si el original ya coincide, **es su propio preparado**: `preparedPath`
+  **ausente** en el catálogo, y al iPod viaja `preparedPath ?? sourcePath`
+  — que es lo que la sincronización ya hacía.
+- Se rehace cuando cambia el catálogo, o cuando cambia el **tamaño** o la
+  **fecha** del origen. Si solo cambió una etiqueta, se le reescribe la
+  etiqueta al preparado: copiar de nuevo cincuenta megabytes porque
+  alguien corrigió un año es justo lo que esta ronda vino a no hacer.
+- Si después de un cambio el original vuelve a coincidir, el preparado
+  puede quedarse; lo recoge "Limpiar huérfanos" de ST-245. B4 no lo
+  borra.
+
+**`preparedPath` ausente es un estado válido y no se rellena por
+inferencia en ningún lado** — ni al cargar, ni en `Snapshot`. Inventarle
+uno haría que el catálogo compartido dijera que existe un archivo que no
+existe. Hay prueba de la vuelta completa.
+
+La decisión de rehacer o no es pura y está probada aparte
+(`PreparedMusicPlan`): sin preparado, tamaño distinto, origen más nuevo,
+o **sin fechas legibles** —y ahí se rehace, que es el lado seguro: servir
+un preparado viejo manda al iPod las etiquetas que el usuario ya
+corrigió—. La comparación de fechas lleva dos segundos de holgura porque
+no todos los sistemas de archivos guardan la misma precisión; sin ella un
+preparado se reharía en cada pasada, para siempre.
+
+### La tabla de calidad, y el tercer interruptor sin consumidor
+
+`AudioQuality` ("Original sin pérdida" / "Comprimido") **no lo leía
+nadie**: ni el procesador, ni la sincronización, ni el finalizador. Es el
+tercero de la misma familia, después de `CoverArtPolicy` (ST-242) y
+`CopyMediaIntoLibrary` (ST-243). Y su texto prometía: "Cada canción se
+convierte a MP3 de 256 kbps antes de copiarla".
+
+La tabla que fijó la Maestra con la Mac, ahora en **un solo lugar**
+(`AudioConversionRules`), para importar en copia y para preparar en
+referencia:
+
+| entrada | Original sin pérdida | Comprimido |
+|---|---|---|
+| WAV, AIFF | **ALAC** (`.m4a`) | MP3 256 kbps |
+| FLAC, ALAC, M4A | tal cual | MP3 256 kbps |
+| MP3 | tal cual | tal cual |
+
+Dos decisiones que vale la pena dejar dichas:
+
+- **WAV y AIFF nunca se quedan como están**, ni siquiera con "sin
+  pérdida": ocupan diez veces lo que la misma canción comprimida y el
+  disco del iPod no da abasto.
+- **Y con "sin pérdida" van a ALAC, no a MP3.** "Sin pérdida" tiene que
+  significar sin pérdida; convertir a MP3 ahí sería esconder una pérdida
+  debajo de una etiqueta que promete lo contrario. ALAC porque es el
+  formato que **las dos plataformas escriben de forma nativa** —macOS no
+  trae codificador MP3, Windows sí trae ALAC— y elegir otro partiría en
+  dos la biblioteca compartida.
+- **Un MP3 con "Comprimido" no se recodifica**: pasarlo otra vez por el
+  codificador pierde calidad y no gana un byte.
+
+Cambiar el ajuste afecta las importaciones futuras y las regeneraciones
+del preparado. **Nunca reprocesa en silencio lo ya importado**: ni
+convierte FLAC que ya se copiaron, ni "desconvierte" nada.
+
+Si esta versión de Windows no trae el codificador ALAC (necesita 10
+versión 1803), **se falla con el motivo dicho**. Copiar el WAV sin
+convertir dejaría cien megabytes en el iPod haciéndose pasar por lo que
+el usuario pidió.
+
+### El defecto que encontró la prueba de muestras decodificadas
+
+Encargo recibido de ST-222: que las pruebas de etiquetado comparen
+**muestras decodificadas** antes y después, porque un `stco` mal
+corregido produce un archivo que abre sin error, se lee sin error y suena
+mal.
+
+Encontró un defecto, y no en las etiquetas: **`MediaEncodingProfile.CreateAlac(AudioEncodingQuality.High)`
+trae su propio perfil y remuestrea a 48 kHz**. La primera versión de
+WAV/AIFF → ALAC producía un archivo que decía "ALAC, sin pérdida" y cuyas
+muestras **no eran las del usuario**: un WAV de 44,1 kHz salía a 48 kHz.
+Ninguna prueba de etiquetas, de tamaños ni de "¿existe el archivo?" lo
+habría visto.
+
+Arreglado: para ALAC se le copian al perfil la frecuencia, los canales y
+los bits del archivo de entrada (`MediaEncodingProfile.CreateFromFileAsync`),
+con la única excepción de subir 8 bits a 16 —subir no pierde nada, bajar
+sí—. Medido, mismo fixture de 10 s a 44,1 kHz estéreo:
+
+| | bytes | muestras vs. la entrada |
+|---|---|---|
+| antes | 1 210 162 | **no coinciden con ningún desplazamiento** |
+| después | **192 410** | **idénticas** en los 1 764 000 bytes del origen |
+
+El archivo además pesa seis veces menos: remuestrear también estaba
+costando espacio.
+
+**Y el encargo del `stco` quedó respondido con evidencia.**
+`MediaTranscoder` escribe el `moov` **al final** —el caso fácil, donde
+crecerlo no mueve ninguna muestra—, así que el caso difícil hubo que
+fabricarlo: se rearma el archivo con el `moov` adelante corrigiendo los
+offsets, y **se valida el fixture** comprobando que suena igual que el
+original *antes* de tocarlo. Con ese archivo, TagLib# escribe las siete
+etiquetas y las muestras quedan idénticas (mismo resumen, mismos
+1 764 940 bytes). O sea: TagLib# corrige bien los offsets en el caso
+delicado, demostrado y no supuesto.
+
+### Contrato recibido de ST-221 (A1 de la Mac)
+
+1. **El nombre en el iPod nunca sale del preparado.** Desde que lo
+   preparado se nombra por identificador, tomar el nombre de ahí le
+   mostraría al usuario `A1B2C3D4-….mpg` donde tenía el nombre de su
+   video. Ahora la base sale del **original** y solo la extensión del
+   derivado (`SyncLayout.DeviceFilename`): un `.heic` viaja como `.jpg`
+   conservando su nombre. La música se sigue armando desde la metadata.
+2. **La colisión se resuelve donde ocurre**: en la carpeta plana del
+   dispositivo, al sincronizar. El primero en orden de catálogo conserva
+   el nombre limpio y los siguientes reciben " 2", " 3"; el sufijo **no
+   se persiste**, así que si se borra el primero el que quede recupera el
+   nombre limpio en el siguiente sync diferencial. Cubre también dos
+   canciones con el mismo artista, álbum y título, que hasta acá se
+   pisaban en silencio y dejaban al usuario con menos archivos de los que
+   mandó. La lógica se mudó de `SyncService` a `SyncLayout` para poder
+   probarla.
+   **El sufijo nunca se mutila**: el presupuesto de bytes se calcula
+   *antes* y se recorta la base, como ya hacía `SeriesEpisodeFilename`.
+   Pegarlo sobre un nombre que ya está en el límite lo pasaría del buffer
+   de 96 bytes del firmware; recortar el nombre ya sufijado dejaría " 1"
+   donde decía " 12", o sea dos archivos distintos con el mismo nombre —
+   justo lo que esto viene a evitar. La música no tiene ese límite y no se
+   le impone: se lo cambiaría la ruta a canciones que ya están en el iPod
+   y las haría copiar de nuevo sin ganar nada.
+3. **NFC y carpetas.** La Mac **no puede** crear carpetas en NFC
+   —Foundation descompone al bajar al sistema de archivos—, así que todo
+   lo que ella haya creado está en NFD: `Música`, sí, pero también `Café
+   Tacvba`. Por eso `MediaRoots.Resolve` resuelve la ruta **componente
+   por componente**, reusando cada carpeta que ya exista aunque su nombre
+   esté escrito en la otra forma, y lo usa `LibraryFileCopier`. Sin eso,
+   Windows crearía una carpeta nueva al lado de cada una de las suyas.
+   Y sin pagarlo por archivo: se prueba la ruta tal cual —un `Exists`— y
+   solo cuando no está se lista el padre.
+4. **Prueba de canonicidad al escribir.** Una ruta que llega con `\` —de
+   un catálogo escrito por una versión con el defecto que tuvo la Mac— se
+   lee igual, pero se vuelve a guardar con `/`; y una que llega
+   descompuesta se vuelve a guardar compuesta. Leer es tolerante,
+   escribir es canónico, y escribir **nunca** conserva la forma en que
+   llegó.
+
+### Addendum de ST-242: el número de disco
+
+La Mac descubrió que no escribía disco en ningún formato. **En Windows sí
+se escribe y sí se relee**, en los tres: `LocalTagWriterTests` corre como
+Theory sobre MP3, FLAC y M4A y comprueba `Disc` con TagLib# y con
+`LocalTagReader`.
+
+Lo que **no** se puede escribir es el **total** de discos: el catálogo
+compartido tiene `discNumber` y no tiene total —ni de discos ni de
+pistas—, así que no hay de dónde sacar la N de "n/N". Decisión de la
+Maestra: no se abre campo de contrato con A1 cerrada; `discCount` y
+`trackCount` quedan **diferidos** a la ronda siguiente. Los escritores
+escriben solo "n", nunca un "n/0" ni un "n/1" inventado.
+
+### Lo demás que entra
+
+- **"Convertir referenciados en copias"**, con avance y cancelación por
+  el centro de tareas. **Copia; no mueve ni borra**: los originales
+  quedan donde están, y el que quiera recuperar el espacio los borra él
+  sabiendo lo que hace. Un original que **no está** se salta y sigue en
+  el catálogo como no disponible (ST-241), y se cuenta aparte de los que
+  fallaron: "no está el archivo" y "no se pudo copiar" son dos problemas
+  distintos y se arreglan distinto. Cancelar deja convertido lo ya
+  convertido — es trabajo válido, no algo que deshacer.
+- **Editar una etiqueta en modo referencia** rehace el preparado, fuera
+  del hilo de interfaz y sobre una copia de los campos gobernados: al
+  objeto vivo lo sigue editando el usuario mientras el hilo de fondo lee
+  tamaños y fechas del disco. Lo único que vuelve al elemento es la ruta.
+- **Lo preparado de foto y video se nombra por identificador**
+  (`StagingPaths.ForItem`), que era lo que faltaba de ST-241. Lo que ya
+  está con el nombre viejo se conserva: cargar la biblioteca no renombra
+  archivos.
+- **`Temp\Aura` se limpia al empezar cada conversión**, no al terminar,
+  porque terminar es justamente lo que a veces no pasa: un cierre forzado
+  no ejecuta ningún `finally`, y sin esto la carpeta iba acumulando un
+  WAV de cien megabytes por cada vez.
+- **Los textos de Ajustes dejaron de mentir.** El aviso de conversión
+  ahora **depende de la calidad elegida** —decir "se convierten a MP3"
+  con "Original sin pérdida" puesto sería falso—, y el texto de "Original
+  sin pérdida" dejó de prometer que WAV y AIFF "se copian tal cual", que
+  desde ST-243 no era cierto. Con "Comprimido" se dice con todas las
+  letras que si sueltas un FLAC la biblioteca de Aura guarda el MP3 y no
+  el FLAC, y que el original se queda intacto en su carpeta. Ningún texto
+  promete tasa constante, porque no se puede cumplir.
+
+### El arranque en frío de Media Foundation
+
+En la corrida de ST-243, el primer WAV tardó 2 922 ms y el segundo 203.
+Medido aparte con tres pasadas seguidas: **110 / 78 / 110 ms**, o sea
+**16 ms** de diferencia entre la primera y el promedio de las
+siguientes. La demora de aquella corrida no era de Media Foundation sino
+del arranque completo del proceso y del primer uso de todo. **No hace
+falta calentar nada**; queda medido y descartado, no pendiente.
+
+### Verificación
+
+`dotnet build` de `AuraStudio.Core`, `AuraStudio.App` y el arnés: **0
+errores**. `dotnet test`: **1 693 pruebas en verde** (37 nuevas).
+
+Las nuevas: la tabla de conversión completa (diez casos) y que un MP3 no
+se recodifique; la regla de regeneración con sus seis ramas; el preparado
+de punta a punta (que una canción que ya coincide **no** genere ninguno,
+que una corregida sí y con su identificador, que el segundo paso no lo
+rehaga, que la copiada no se prepare, que un original ausente no rompa ni
+se borre, que el WAV pase por el codificador pidiendo ALAC, que el FLAC
+solo con "Comprimido", y que sin convertidor se diga que no en vez de
+copiar un WAV); el nombre en el iPod desde el original con la extensión
+del derivado; la colisión con " 2"/" 3" sin pasarse del buffer del
+firmware, en fotos y en música; y las dos de canonicidad al escribir.
+
+Y en el arnés `tools/CopyModeCheck`, con fixture sintetizado y sin tocar
+nada del dueño: la tabla de calidad de punta a punta en modo copia —los
+cinco casos—, WAV/AIFF → ALAC con muestras idénticas, y el M4A con
+`moov` adelante antes y después de etiquetar. Para que la fila del FLAC
+probara algo hubo que fabricar un FLAC **con audio**: el mínimo del
+fixture es solo su `STREAMINFO` y la conversión fallaba con razón.
+
+Lo que **no** se verificó: nada contra la biblioteca real del dueño, ni
+en copia. Y el arnés corre sin ventana, así que los textos de Ajustes y
+el avance de "Convertir referenciados en copias" los tiene que mirar
+alguien con la app delante.

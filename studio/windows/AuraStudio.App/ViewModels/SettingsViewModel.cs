@@ -159,15 +159,21 @@ public sealed partial class SettingsViewModel : ViewModelBase
         : "No se copia nada: la biblioteca referencia tus archivos donde ya están, y aquí solo se guarda lo que los liga a Aura (metadata, letras, portadas). Al sincronizar, Aura Studio arma el archivo para el iPod leyendo el original en ese momento — un poco más lento la primera vez, pero tu disco nunca termina con una copia duplicada de toda tu biblioteca.";
 
     /// <summary>
-    /// ST-243: la conversión se avisa <b>antes</b>, no después de que el usuario
-    /// encuentre un <c>.mp3</c> donde había dejado un <c>.wav</c>. Y se dice por
-    /// qué, que es lo que convierte una sorpresa en una decisión entendida.
+    /// ST-243, corregido en ST-244: la conversión se avisa <b>antes</b>, no
+    /// después de que el usuario encuentre un <c>.m4a</c> donde había dejado un
+    /// <c>.wav</c>. Y se dice por qué, que es lo que convierte una sorpresa en
+    /// una decisión entendida.
+    ///
+    /// <para>Depende de la calidad elegida, porque el resultado depende de ella:
+    /// decir "se convierten a MP3" con "Original sin pérdida" puesto sería
+    /// mentir.</para>
     /// </summary>
     public string AudioConversionDetail =>
-        "Un WAV o un AIFF ocupa diez veces lo que la misma canción en MP3, y el disco del iPod no da "
-        + "abasto: al copiarlos a la biblioteca se convierten a MP3 de 256 kbps con el codificador que "
-        + "ya trae Windows. Tu archivo original queda intacto donde estaba. MP3, FLAC, M4A y ALAC se "
-        + "copian tal cual, sin tocarles el audio.";
+        "Un WAV o un AIFF ocupa diez veces lo que la misma canción comprimida, y el disco del iPod no "
+        + "da abasto: al copiarlos a la biblioteca se convierten, con el codificador que ya trae "
+        + "Windows, a " + (AudioOriginal ? "ALAC, que es sin pérdida" : "MP3 de 256 kbps")
+        + " — lo que hayas elegido en \"Cómo guardar tu música\". Tu archivo original queda intacto "
+        + "donde estaba.";
 
     // MARK: - Cómo guardar tu música (ST-245, plan §2 — texto compartido con la Mac)
 
@@ -467,11 +473,24 @@ public sealed partial class SettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(AudioOriginal));
         OnPropertyChanged(nameof(AudioCompressed));
         OnPropertyChanged(nameof(AudioQualityDetail));
+
+        // ST-244: el aviso de conversión también depende de la calidad, y si no
+        // se refresca queda diciendo lo contrario de lo que va a pasar.
+        OnPropertyChanged(nameof(AudioConversionDetail));
     }
 
+    /// <summary>
+    /// ST-244: dice lo que de verdad pasa con cada formato. El texto anterior
+    /// prometía que WAV y AIFF "se copian tal cual", y desde ST-243 no es cierto
+    /// — se convierten siempre, porque en el disco del iPod no caben.
+    /// </summary>
     public string AudioQualityDetail => AudioOriginal
-        ? "FLAC, ALAC, WAV, AIFF, M4A y MP3 se copian tal cual: el iPod con Aura los reproduce sin perder calidad. Ocupan más espacio."
-        : "Cada canción se convierte a MP3 de 256 kbps antes de copiarla: buena calidad, mucho menos espacio. El archivo original nunca se modifica.";
+        ? "FLAC, ALAC, M4A y MP3 se copian tal cual: el iPod con Aura los reproduce sin perder calidad. "
+          + "WAV y AIFF sí se convierten, a ALAC, que también es sin pérdida y ocupa la mitad. Tu "
+          + "archivo original nunca se modifica."
+        : "Cada canción se convierte a MP3 de 256 kbps antes de copiarla: buena calidad, mucho menos "
+          + "espacio. Si sueltas un FLAC, tu biblioteca de Aura guarda el MP3 y no el FLAC; el archivo "
+          + "original se queda intacto en su carpeta.";
 
     // MARK: - Fotos
 

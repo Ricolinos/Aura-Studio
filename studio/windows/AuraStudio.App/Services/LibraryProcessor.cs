@@ -20,6 +20,18 @@ public interface ILibraryProcessor
 {
     /// <summary>Procesa un elemento en su lugar y devuelve si algo cambió.</summary>
     Task<bool> ProcessAsync(LibraryItem item, CancellationToken ct = default);
+
+    /// <summary>
+    /// Mete el archivo del elemento adentro de la biblioteca (ST-243), y devuelve
+    /// si se puede seguir. Con <paramref name="force"/> se copia aunque el
+    /// interruptor esté apagado: es la acción explícita "Convertir referenciados
+    /// en copias" (ST-244).
+    ///
+    /// <para>Está en la interfaz porque esa acción la dispara la biblioteca, no
+    /// una importación — y tener dos implementaciones de copiar sería tener dos
+    /// formas distintas de tratar los archivos del usuario.</para>
+    /// </summary>
+    Task<bool> CopyIntoLibraryAsync(LibraryItem item, bool force = false, CancellationToken ct = default);
 }
 
 public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProcessor
@@ -43,7 +55,11 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
                     // Después de leerle las etiquetas y antes de nada más: la
                     // carpeta de destino sale del artista y del álbum, así que
                     // no se puede decidir sin ellos (ST-243).
-                    if (!await CopyIntoLibraryAsync(item, ct).ConfigureAwait(false)) return true;
+                    if (!await CopyIntoLibraryAsync(item, ct: ct).ConfigureAwait(false)) return true;
+
+                    // Y si quedó referenciada, el archivo que viaja al iPod
+                    // —solo si hace falta uno— se arma acá (ST-244).
+                    await EnsurePreparedAsync(item, ct).ConfigureAwait(false);
                     break;
 
                 case LibraryItemKind.Photo:
@@ -116,7 +132,7 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
 
         // La copia va después de la categoría, que es de qué carpeta cuelga, y
         // antes de reducirla: lo preparado sale de la copia (ST-243).
-        if (!await CopyIntoLibraryAsync(item, ct).ConfigureAwait(false)) return;
+        if (!await CopyIntoLibraryAsync(item, ct: ct).ConfigureAwait(false)) return;
 
         string output = Staging(item, "jpg");
         await ImageResizer.ResizeToLcdOptimalAsync(item.SourcePath, output, preferences.PhotoQuality.MaxDimension())
@@ -165,7 +181,7 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
 
         // Igual que la foto: después de la categoría —que es de qué carpeta
         // cuelga— y antes de transcodificar, para que el .mpg salga de la copia.
-        if (!await CopyIntoLibraryAsync(item, ct).ConfigureAwait(false)) return;
+        if (!await CopyIntoLibraryAsync(item, ct: ct).ConfigureAwait(false)) return;
 
         string output = Staging(item, "mpg");
 
@@ -246,9 +262,12 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
     /// reproduce de forma útil y son enormes. Lo hace el codificador que ya trae
     /// Windows (<see cref="AudioTranscoder"/>), no ffmpeg.</para>
     /// </summary>
-    private async Task<bool> CopyIntoLibraryAsync(LibraryItem item, CancellationToken ct)
+    public async Task<bool> CopyIntoLibraryAsync(
+        LibraryItem item, bool force = false, CancellationToken ct = default)
     {
-        if (!preferences.CopyMediaIntoLibrary) return true;
+        // `force` es la acción explícita "Convertir referenciados en copias":
+        // ahí el usuario lo pidió, aunque el interruptor esté apagado (ST-244).
+        if (!force && !preferences.CopyMediaIntoLibrary) return true;
 
         string root = preferences.LibraryPath;
 
@@ -264,7 +283,15 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
             return true;
         }
 
-        bool convert = item.Kind == LibraryItemKind.Music && AudioTranscoder.NeedsConversion(item.SourcePath);
+        // ST-244: la regla de conversión sale de UN solo lugar, el mismo que usa
+        // el preparador por identificador. Con dos reglas sería cuestión de
+        // tiempo que la biblioteca y el iPod terminaran con formatos que no se
+        // corresponden sin que nadie lo hubiera decidido.
+        AudioConversion conversion = item.Kind == LibraryItemKind.Music
+            ? AudioConversionRules.For(item.SourcePath, preferences.AudioQuality)
+            : AudioConversion.None;
+
+        bool convert = conversion.Converts;
 
         string relative = LibraryFileLayout.RelativePath(
             item,
@@ -272,15 +299,16 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
             preferences.MusicFilenameFormat,
             preferences.OrganizePhotosByCategory,
             preferences.OrganizeVideosByCategory,
-            convert ? "mp3" : null);
+            conversion.Extension);
 
         try
         {
             if (convert)
             {
                 string destination = LibraryFileCopier.Available(root, relative);
-                AudioTranscodeResult converted =
-                    await AudioTranscoder.ToMp3Async(item.SourcePath, destination, ct).ConfigureAwait(false);
+                AudioTranscodeResult converted = await AudioTranscoder
+                    .ConvertAsync(item.SourcePath, destination, conversion.Codec, ct)
+                    .ConfigureAwait(false);
 
                 MarkAsCopy(item, converted.Path, converted.BytesWritten);
                 WriteTagsIntoTheCopy(item);
@@ -342,14 +370,54 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
         LocalTagWriter.Write(item.SourcePath, item.Metadata, preferences.CoverArtPolicy, cover);
     }
 
-    private string Staging(LibraryItem item, string extension)
+    /// <summary>
+    /// Arma el archivo que viaja al iPod por una canción referenciada —y solo si
+    /// hace falta uno— (ST-244). Con la música copiada no hace nada: esa es su
+    /// propio preparado (ST-241).
+    ///
+    /// <para>Que falle no tumba la importación: la canción queda en la
+    /// biblioteca con el motivo a la vista y se puede reintentar.</para>
+    /// </summary>
+    private async Task EnsurePreparedAsync(LibraryItem item, CancellationToken ct)
+    {
+        string staging = StagingDirectory();
+
+        PreparedMusicResult result = await PreparedMusicBuilder.EnsureAsync(
+            item,
+            staging,
+            preferences.AudioQuality,
+            preferences.CoverArtPolicy,
+            preferences.CoverArtPolicy == CoverArtPolicy.PerTrack ? item.Metadata?.CoverArtData : null,
+            AudioTranscoder.ForPreparedAsync,
+            ct: ct).ConfigureAwait(false);
+
+        // `null` es una respuesta legítima y la más común: la canción ya dice lo
+        // que dice el catálogo, así que al iPod viaja el original y no se
+        // duplica nada.
+        if (result.Path is { Length: > 0 }) item.PreparedPath = result.Path;
+    }
+
+    private string StagingDirectory()
     {
         string directory = Path.Combine(preferences.LibraryPath, PersistedLibrary.PreparedDirName);
         Directory.CreateDirectory(directory);
 
-        return StagingPaths.Resolve(directory, Path.GetFileNameWithoutExtension(item.SourcePath), extension,
-            item.PreparedPath);
+        return directory;
     }
+
+    /// <summary>
+    /// Dónde va lo preparado de una foto o un video. <b>Por identificador</b>
+    /// desde ST-244: la carpeta es plana y compartida, y nombrarlo por el
+    /// archivo de origen hacía que dos archivos con el mismo nombre se pelearan
+    /// el mismo preparado (ST-064). Lo que ya está con el nombre viejo se
+    /// conserva — cargar la biblioteca no renombra archivos.
+    ///
+    /// <para>Que el preparado se llame por identificador <b>no</b> cambia el
+    /// nombre que el usuario ve en el iPod: ese sale del original
+    /// (<see cref="SyncLayout.DeviceFilename"/>).</para>
+    /// </summary>
+    private string Staging(LibraryItem item, string extension) =>
+        StagingPaths.ForItem(StagingDirectory(), item.Id, extension, item.PreparedPath);
 
     private static void TryDelete(string path)
     {
