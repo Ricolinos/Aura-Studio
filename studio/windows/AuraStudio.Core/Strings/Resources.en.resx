@@ -111,6 +111,24 @@
   <data name="app-strings.installer-copied-files.other" xml:space="preserve">
     <value>{0} files written to the iPod.</value>
   </data>
+  <data name="app-strings.language-beta-detail" xml:space="preserve">
+    <value>Machine translation, not yet reviewed by native speakers.</value>
+  </data>
+  <data name="app-strings.language-beta-mark" xml:space="preserve">
+    <value>(beta)</value>
+  </data>
+  <data name="app-strings.language-follow-system" xml:space="preserve">
+    <value>Same as the system</value>
+  </data>
+  <data name="app-strings.language-restart-detail" xml:space="preserve">
+    <value>The language changes when you reopen the app. Nothing in your library or on your iPod is touched.</value>
+  </data>
+  <data name="app-strings.language-restart-now" xml:space="preserve">
+    <value>Close now</value>
+  </data>
+  <data name="app-strings.language-restart-title" xml:space="preserve">
+    <value>Aura Studio has to open again</value>
+  </data>
   <data name="artists-page.buscar-artistas-2" xml:space="preserve">
     <value>Search artists</value>
   </data>

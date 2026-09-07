@@ -269,6 +269,15 @@ public static class AppStrings
     /// </summary>
     public static string SettingsLanguageDetail => Strings.Get("app-strings.settings-language-detail");
 
+    // MARK: - Selector de idioma (ST-247, B7b)
+
+    public static string LanguageFollowSystem => Strings.Get("app-strings.language-follow-system");
+    public static string LanguageBetaMark => Strings.Get("app-strings.language-beta-mark");
+    public static string LanguageBetaDetail => Strings.Get("app-strings.language-beta-detail");
+    public static string LanguageRestartTitle => Strings.Get("app-strings.language-restart-title");
+    public static string LanguageRestartDetail => Strings.Get("app-strings.language-restart-detail");
+    public static string LanguageRestartNow => Strings.Get("app-strings.language-restart-now");
+
     public static string ThemeSystem => Strings.Get("app-strings.theme-system");
     public static string ThemeLight => Strings.Get("app-strings.theme-light");
     public static string ThemeDark => Strings.Get("app-strings.theme-dark");

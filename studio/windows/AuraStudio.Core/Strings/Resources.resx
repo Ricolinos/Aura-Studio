@@ -111,6 +111,24 @@
   <data name="app-strings.installer-copied-files.other" xml:space="preserve">
     <value>{0} archivos escritos en el iPod.</value>
   </data>
+  <data name="app-strings.language-beta-detail" xml:space="preserve">
+    <value>Traducción automática, aún sin revisar por hablantes nativos.</value>
+  </data>
+  <data name="app-strings.language-beta-mark" xml:space="preserve">
+    <value>(beta)</value>
+  </data>
+  <data name="app-strings.language-follow-system" xml:space="preserve">
+    <value>Igual que el sistema</value>
+  </data>
+  <data name="app-strings.language-restart-detail" xml:space="preserve">
+    <value>El idioma cambia al volver a abrir la app. No se toca nada de tu biblioteca ni de tu iPod.</value>
+  </data>
+  <data name="app-strings.language-restart-now" xml:space="preserve">
+    <value>Cerrar ahora</value>
+  </data>
+  <data name="app-strings.language-restart-title" xml:space="preserve">
+    <value>Aura Studio tiene que abrirse de nuevo</value>
+  </data>
   <data name="artists-page.buscar-artistas-2" xml:space="preserve">
     <value>Buscar artistas</value>
   </data>
@@ -766,7 +784,7 @@
     <value>Apariencia</value>
   </data>
   <data name="app-strings.settings-language-detail" xml:space="preserve">
-    <value>Aura Studio para Windows está en español de México. No hay selector de idioma: a diferencia de la versión para Mac, esta app se hizo en un solo idioma.</value>
+    <value>Aura Studio habla el idioma que elijas aquí. El español y el inglés los revisó una persona; los demás llegan después.</value>
   </data>
   <data name="app-strings.settings-subtitle" xml:space="preserve">
     <value>Preferencias de Aura Studio</value>

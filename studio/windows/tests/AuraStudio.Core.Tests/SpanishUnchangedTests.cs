@@ -177,6 +177,15 @@ public class SpanishUnchangedTests
         // escribe no se traduce.
         "settings-page.los-nombres-que-escribes-no-se-traducen",
 
+        // B7b: el selector de idioma y su aviso de reinicio. Texto nuevo,
+        // porque la pantalla es nueva; van como filas "solo Windows" del CSV.
+        // La marca "(beta)" y su línea son de la Mac cuando las publique: si
+        // llegan con otro texto, se cotejan y estas se van.
+        "app-strings.language-follow-system",
+        "app-strings.language-beta-mark", "app-strings.language-beta-detail",
+        "app-strings.language-restart-title", "app-strings.language-restart-detail",
+        "app-strings.language-restart-now",
+
         // Tooltips y nombres para el lector de pantalla que el borrador no
         // extrajo. Un AutomationProperties.Name en español dentro de una app en
         // alemán es justo el defecto que B7b viene a evitar.
@@ -245,6 +254,14 @@ public class SpanishUnchangedTests
         ("app-strings.installer-copied-files",
             ["app-strings.installer-copied-files.one", "app-strings.installer-copied-files.other"],
             "{0} archivos escritos en el iPod."),
+
+        // Decía que NO hay selector de idioma y que la app se hizo en uno solo.
+        // B7b lo vuelve falso: el selector existe. Un texto que describe la app
+        // tiene que cambiar cuando la app cambia, y es exactamente el tipo de
+        // frase que se queda vieja en silencio si nadie la vigila.
+        ("app-strings.settings-language-detail",
+            ["app-strings.settings-language-detail"],
+            "Aura Studio para Windows está en español de México. No hay selector de idioma: a diferencia de la versión para Mac, esta app se hizo en un solo idioma."),
     ];
 
     /// <summary>

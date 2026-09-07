@@ -4,11 +4,28 @@ using AuraStudio.App.Platform;
 using AuraStudio.App.Resources;
 using AuraStudio.App.Services;
 using AuraStudio.Core.Library;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App.ViewModels;
 
 /// <summary>Una opción del selector de tema, con su etiqueta ya en español.</summary>
 public sealed record ThemeOption(AppTheme Theme, string Label);
+
+/// <summary>
+/// Una opción del selector de idioma (ST-247, B7b).
+///
+/// <para>El nombre va <b>en su propio idioma</b> y no traducido: quien abre la
+/// app en un idioma que no lee busca "Español" o "Русский" en la lista, y no lo
+/// encontraría si dijera "Spanish" o "Russian". Es la misma regla que con el
+/// nombre de una colección de fotos — hay texto que es dato, no interfaz.</para>
+/// </summary>
+public sealed record LanguageOption(string Culture, string Label, bool ReviewedByHumans)
+{
+    /// <summary>La marca "(beta)" de un idioma que todavía nadie revisó.</summary>
+    public string Mark => ReviewedByHumans ? "" : AppStrings.LanguageBetaMark;
+
+    public bool ShowsMark => !ReviewedByHumans;
+}
 
 /// <summary>
 /// Una entrada del orden de búsqueda de carátula: el proveedor, si hoy se puede
@@ -43,6 +60,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
         Updates = updates;
         _credentials = new CredentialStore();
         SelectedTheme = ThemeOptions.First(option => option.Theme == preferences.Theme);
+        SelectedLanguage = LanguageOptions.FirstOrDefault(option => option.Culture == preferences.Language)
+                           ?? LanguageOptions[0];
         RefreshCoverProviders();
     }
 
@@ -63,6 +82,46 @@ public sealed partial class SettingsViewModel : ViewModelBase
         // La ventana escucha el cambio de preferencia y vuelve a aplicar el
         // tema (incluida la barra de título, que no es parte del árbol XAML).
         _preferences.Theme = value.Theme;
+    }
+
+    /// <summary>
+    /// Los idiomas que se pueden elegir hoy, más "igual que el sistema".
+    ///
+    /// <para>Solo aparecen los que de verdad existen: ofrecer un idioma cuyo
+    /// archivo no está sería prometer algo que al elegirlo no pasa —la app
+    /// caería al español sin decir nada— y ese es el modo de falla que este
+    /// bloque entero viene a evitar.</para>
+    /// </summary>
+    public IReadOnlyList<LanguageOption> LanguageOptions { get; } =
+    [
+        new("", AppStrings.LanguageFollowSystem, ReviewedByHumans: true),
+        .. AppLanguages.Available.Select(
+            language => new LanguageOption(language.Culture, language.Endonym, language.ReviewedByHumans))
+    ];
+
+    [ObservableProperty]
+    public partial LanguageOption SelectedLanguage { get; set; }
+
+    /// <summary>
+    /// Si hay que decirle al usuario que cierre y vuelva a abrir. Se enciende al
+    /// cambiar de idioma y ya no se apaga: el aviso tiene que seguir ahí si
+    /// vuelve a Ajustes más tarde y no se acuerda.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool LanguageNeedsRestart { get; set; }
+
+    partial void OnSelectedLanguageChanged(LanguageOption value)
+    {
+        if (_preferences.Language == value.Culture) return;
+
+        _preferences.Language = value.Culture;
+
+        // No se recarga la interfaz en caliente. `x:Bind` resuelve el texto una
+        // sola vez, al construir cada página, así que cambiar la cultura ahora
+        // dejaría media app en un idioma y media en otro — peor que no hacer
+        // nada, porque parece que funcionó. Se dice y se deja al usuario
+        // decidir cuándo.
+        LanguageNeedsRestart = true;
     }
 
     /// <summary>Versión del ensamblado, para "Acerca de".</summary>
