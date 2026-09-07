@@ -237,21 +237,37 @@ final class MediaStorageAfterA3A4Tests: XCTestCase {
     /// cuando cambia un campo que va en una etiqueta (título, artista,
     /// álbum, etc.) o el archivo de origen (tamaño+mtime) -- nunca por
     /// rating/favorito/letra/categoría, que no tocan el preparado.
-    func testReferenceMode_originalNeverChanges_preparedIsUppercaseUUID_regeneratedOnlyOnTagFieldOrSourceChange_pendienteDeLaAPIDeA4() throws {
-        throw XCTSkip("""
-            Pendiente de la API real de A4 (modo referencia, ST-224). Forma: \
-            importar en modo referencia, capturar SHA-256 del original. \
-            Editar rating/favorito/letra/categoría uno por uno: el hash del \
-            original no cambia NUNCA, y (a diferencia de (b)) tampoco debería \
-            regenerar el preparado. Editar título: el hash del original \
-            SIGUE sin cambiar, pero .preparados/<ID-en-mayúsculas>.<ext> SÍ se \
-            regenera (nombre exacto: item.id.uuidString.uppercased() + \
-            extensión). Tocar el archivo origen por fuera (cambiar tamaño+ \
-            mtime sin que Aura lo sepa) y volver a procesar: el preparado \
-            también se regenera. Sin tocar nada de lo anterior: el preparado \
-            NO se regenera (comparado por mtime del archivo, no se reescribe \
-            si nada relevante cambió).
-            """)
+    func testReferenceModeNeverTouchesTheOriginalAndPreparesOnlyWhenItHasTo() async throws {
+        let sourceURL = try makeSource("pista.mp3", MediaFixture.mp3Data(
+            title: "Original", artist: "Artista Original", album: "Álbum Original",
+            albumArtist: "Artista Original", year: "2020", genre: "Rock", trackNumber: 1))
+        let originalHash = try sha256(sourceURL)
+
+        let (viewModel, imported) = await importInReferenceMode(sourceURL)
+        let item = try XCTUnwrap(imported)
+        XCTAssertEqual(item.storage, .reference)
+        XCTAssertEqual(item.sourceURL, sourceURL, "el original no se mueve")
+
+        // Rating, favorito y categoría no tocan ni el original ni el
+        // derivado -- a diferencia de (b), acá tampoco hay derivado que
+        // regenerar.
+        await viewModel.setRating(5, forItem: item.id)
+        viewModel.setFavorite(true, forItems: [item.id])
+        viewModel.setCategory("Recuerdos", forItem: item.id)
+        XCTAssertEqual(try sha256(sourceURL), originalHash, "el original nunca se toca")
+
+        // Editar el título SÍ tiene que llegar al iPod, y en modo
+        // referencia la única forma es por el derivado.
+        var edited = try XCTUnwrap(viewModel.items.first?.metadata)
+        edited.title = "Título Editado"
+        await viewModel.applyReview(id: item.id, metadata: edited)
+
+        XCTAssertEqual(try sha256(sourceURL), originalHash, "editar el título tampoco toca el original")
+        let prepared = try XCTUnwrap(viewModel.items.first?.preparedURL,
+                                     "una etiqueta que el archivo no dice obliga a preparar")
+        XCTAssertEqual(prepared.lastPathComponent, "\(item.id.uuidString).mp3",
+                       "el derivado se llama por el id del elemento, en mayúsculas")
+        XCTAssertTrue(prepared.path.contains("/\(PersistedLibrary.preparedDirName)/"))
     }
 
     // MARK: - (e) Sync: copia el archivo correcto según el modo
@@ -282,13 +298,22 @@ final class MediaStorageAfterA3A4Tests: XCTestCase {
         referenceVM.makePersistenceSynchronousForTesting()
         referenceVM.addDroppedFiles([referenceSource])
         await referenceVM.processAll()
-        let referenceItem = try XCTUnwrap(referenceVM.items.first)
+        var referenceItem = try XCTUnwrap(referenceVM.items.first)
         XCTAssertEqual(referenceItem.sourceURL, referenceSource, "el original no se mueve")
         XCTAssertEqual(try sha256(referenceSource), referenceHashBefore, "el original no se toca")
+        // ST-224: recién importado no hace falta derivado -- el archivo
+        // ya dice lo que dice el catálogo. Se fuerza uno editando el
+        // título, que es lo que el original no puede decir.
+        XCTAssertNil(referenceItem.preparedURL, "sin nada que cambiar no se prepara nada")
+        var edited = try XCTUnwrap(referenceItem.metadata)
+        edited.title = "Título Editado"
+        await referenceVM.applyReview(id: referenceItem.id, metadata: edited)
+        referenceItem = try XCTUnwrap(referenceVM.items.first)
         let preparedURL = try XCTUnwrap(referenceItem.preparedURL)
-        XCTAssertNotEqual(preparedURL, referenceItem.sourceURL, "en referencia sí hay un derivado aparte")
+        XCTAssertNotEqual(preparedURL, referenceItem.sourceURL, "en referencia el derivado es un archivo aparte")
         XCTAssertEqual(preparedURL.lastPathComponent, "\(referenceItem.id.uuidString).mp3",
                        "y se llama por el id del elemento (ST-221)")
+        XCTAssertEqual(try sha256(referenceSource), referenceHashBefore, "y el original sigue intacto")
 
         // Un iPod sintético para cada uno: lo que se comprueba es qué
         // archivo aterriza, no cómo se organizan entre sí.
@@ -512,6 +537,19 @@ final class MediaStorageAfterA3A4Tests: XCTestCase {
         XCTAssertEqual(item.sourceURL, sourceURL, "el WAV no puede haberse copiado sin convertir")
     }
 
+    // MARK: - Andamio de modo referencia (ST-224)
+
+    private func importInReferenceMode(_ url: URL,
+                                       quality: AppPreferences.AudioQuality = .originalLossless)
+        async -> (viewModel: LibraryViewModel, item: AuraStudio.LibraryItem?) {
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot,
+                                         preferences: freshPreferences(copy: false, quality: quality))
+        viewModel.makePersistenceSynchronousForTesting()
+        viewModel.addDroppedFiles([url])
+        await viewModel.processAll()
+        return (viewModel, viewModel.items.first)
+    }
+
     // MARK: - Andamio de audio
 
     /// Las muestras ya decodificadas a PCM de 16 bits, para comparar dos
@@ -604,5 +642,163 @@ final class MediaStorageAfterA3A4Tests: XCTestCase {
         if ssnd.count % 2 == 1 { body.append(0) }
 
         return Data(Array("FORM".utf8) + be32(body.count) + body)
+    }
+
+    /// La promesa de Ajustes en modo referencia: **tu disco no termina
+    /// con una copia de toda tu biblioteca**. Una canción cuyo archivo ya
+    /// dice lo que dice el catálogo no necesita derivado y viaja tal
+    /// cual. Hasta acá la Mac preparaba siempre, sin excepción.
+    func testNoPreparedFileWhenTheSourceAlreadySaysWhatTheCatalogSays() async throws {
+        let sourceURL = try makeSource("pista.mp3", MediaFixture.mp3Data(
+            title: "Original", artist: "Artista Original", album: "Álbum Original",
+            albumArtist: "Artista Original", year: "2020", genre: "Rock", trackNumber: 1))
+
+        let (viewModel, imported) = await importInReferenceMode(sourceURL)
+        let item = try XCTUnwrap(imported)
+
+        XCTAssertNil(item.preparedURL, "no hay nada que cambiarle: viaja el original")
+        XCTAssertTrue(preparadosContents.isEmpty, "y `.preparados/` queda vacío: \(preparadosContents)")
+
+        // Y el catálogo lo conserva así al recargar: ausente NO se
+        // rellena por inferencia, y "Listo" sin derivado sigue siendo
+        // listo.
+        let reloaded = LibraryViewModel(libraryRoot: libraryRoot,
+                                        preferences: freshPreferences(copy: false))
+        let reloadedItem = try XCTUnwrap(reloaded.items.first)
+        XCTAssertNil(reloadedItem.preparedURL)
+        XCTAssertEqual(reloadedItem.status, .ready, "sin derivado sigue estando listo")
+        _ = viewModel
+    }
+
+    /// Una vez preparado, no se rehace por gusto. Se rehace si el origen
+    /// cambió; si solo cambió una etiqueta, se le reescribe la etiqueta.
+    func testThePreparedFileIsRegeneratedOnlyWhenTheSourceChanges() async throws {
+        let sourceURL = try makeSource("pista.mp3", MediaFixture.mp3Data(
+            title: "Original", artist: "Artista Original", album: "Álbum Original",
+            albumArtist: "Artista Original", year: "2020", genre: "Rock", trackNumber: 1))
+        let (viewModel, imported) = await importInReferenceMode(sourceURL)
+        let item = try XCTUnwrap(imported)
+
+        var edited = try XCTUnwrap(item.metadata)
+        edited.title = "Título Editado"
+        await viewModel.applyReview(id: item.id, metadata: edited)
+        let prepared = try XCTUnwrap(viewModel.items.first?.preparedURL)
+        let firstModified = try XCTUnwrap(
+            FileManager.default.attributesOfItem(atPath: prepared.path)[.modificationDate] as? Date)
+
+        // Sin cambios: no se toca el disco.
+        await viewModel.applyReview(id: item.id, metadata: edited)
+        let unchangedModified = try XCTUnwrap(
+            FileManager.default.attributesOfItem(atPath: prepared.path)[.modificationDate] as? Date)
+        XCTAssertEqual(firstModified, unchangedModified,
+                       "correr la preparación sin cambios no puede reescribir nada")
+
+        // El origen cambia por fuera (más nuevo que el derivado): se
+        // rehace. La holgura de 2 s existe porque no todos los sistemas
+        // de archivos guardan la misma precisión.
+        let future = Date().addingTimeInterval(PreparedMusicPlan.modifiedTolerance + 30)
+        try FileManager.default.setAttributes([.modificationDate: future], ofItemAtPath: sourceURL.path)
+        await viewModel.applyReview(id: item.id, metadata: edited)
+
+        let rebuiltModified = try XCTUnwrap(
+            FileManager.default.attributesOfItem(atPath: prepared.path)[.modificationDate] as? Date)
+        XCTAssertGreaterThan(rebuiltModified, unchangedModified,
+                             "un origen más nuevo que el derivado obliga a rehacerlo")
+        XCTAssertEqual(try sha256(sourceURL), try sha256(sourceURL), "control")
+    }
+
+    /// La regla de regeneración, en seco. Vale la pena probarla aparte:
+    /// depende de tamaños y fechas, y con archivos de verdad hay que
+    /// fabricarlas a mano.
+    func testTheRegenerationRuleItself() {
+        let now = Date()
+        XCTAssertEqual(PreparedMusicPlan.decide(needed: false, preparedExists: false,
+                                                catalogSourceSize: 10, currentSourceSize: 10,
+                                                sourceModified: now, preparedModified: now).action,
+                       .none)
+        XCTAssertEqual(PreparedMusicPlan.decide(needed: true, preparedExists: false,
+                                                catalogSourceSize: 10, currentSourceSize: 10,
+                                                sourceModified: now, preparedModified: nil).action,
+                       .build)
+        XCTAssertEqual(PreparedMusicPlan.decide(needed: true, preparedExists: true,
+                                                catalogSourceSize: 10, currentSourceSize: 99,
+                                                sourceModified: now, preparedModified: now).action,
+                       .build, "cambió de tamaño")
+        XCTAssertEqual(PreparedMusicPlan.decide(needed: true, preparedExists: true,
+                                                catalogSourceSize: nil, currentSourceSize: 10,
+                                                sourceModified: now, preparedModified: nil).action,
+                       .build, "sin fechas legibles, el lado seguro es rehacerlo")
+        XCTAssertEqual(PreparedMusicPlan.decide(needed: true, preparedExists: true,
+                                                catalogSourceSize: 10, currentSourceSize: 10,
+                                                sourceModified: now.addingTimeInterval(1),
+                                                preparedModified: now).action,
+                       .keep, "un segundo de diferencia entra en la holgura de FAT")
+        XCTAssertEqual(PreparedMusicPlan.decide(needed: true, preparedExists: true,
+                                                catalogSourceSize: 10, currentSourceSize: 10,
+                                                sourceModified: now.addingTimeInterval(60),
+                                                preparedModified: now).action,
+                       .build)
+    }
+
+    /// El original tiene que seguir byte a byte igual después de todo el
+    /// camino: importar, editar y **sincronizar**.
+    func testTheOriginalIsByteIdenticalAfterImportingEditingAndSyncing() async throws {
+        let sourceURL = try makeSource("pista.mp3", MediaFixture.mp3Data(
+            title: "Original", artist: "Artista Original", album: "Álbum Original",
+            albumArtist: "Artista Original", year: "2020", genre: "Rock", trackNumber: 1))
+        let originalHash = try sha256(sourceURL)
+        let (viewModel, imported) = await importInReferenceMode(sourceURL)
+        let item = try XCTUnwrap(imported)
+
+        var edited = try XCTUnwrap(item.metadata)
+        edited.title = "Título Editado"
+        await viewModel.applyReview(id: item.id, metadata: edited)
+
+        let ipodRoot = libraryRoot.appendingPathComponent("iPod", isDirectory: true)
+        try FileManager.default.createDirectory(at: ipodRoot, withIntermediateDirectories: true)
+        _ = try LibrarySync(volumeRoot: ipodRoot).sync(items: viewModel.items)
+
+        XCTAssertEqual(try sha256(sourceURL), originalHash,
+                       "el archivo del usuario no cambia en ningún punto del camino")
+    }
+
+    /// "Convertir referenciados en copias": copia, nunca mueve ni borra,
+    /// y un original ausente se cuenta **aparte** de los fallos.
+    func testConvertingReferencedToCopiesCountsUnavailableSeparately() async throws {
+        let presentURL = try makeSource("presente.mp3", MediaFixture.mp3Data(
+            title: "Presente", artist: "Artista", album: "Álbum",
+            albumArtist: "Artista", year: "2020", genre: "Rock", trackNumber: 1))
+        let missingURL = try makeSource("ausente.mp3", MediaFixture.mp3Data(
+            title: "Ausente", artist: "Artista", album: "Álbum",
+            albumArtist: "Artista", year: "2020", genre: "Rock", trackNumber: 2))
+
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot,
+                                         preferences: freshPreferences(copy: false))
+        viewModel.makePersistenceSynchronousForTesting()
+        viewModel.addDroppedFiles([presentURL, missingURL])
+        await viewModel.processAll()
+        XCTAssertEqual(viewModel.items.count, 2)
+        let presentHash = try sha256(presentURL)
+
+        // El segundo desaparece (un disco que se desconectó).
+        try FileManager.default.removeItem(at: missingURL)
+
+        let summary = await viewModel.convertReferencedToCopies()
+
+        XCTAssertEqual(summary.converted, 1)
+        XCTAssertEqual(summary.skippedUnavailable, 1, "un archivo que no está no es un fallo")
+        XCTAssertEqual(summary.failed, 0)
+        XCTAssertTrue(summary.message.contains("no están") || summary.message.contains("no está"),
+                      "el resumen lo dice: \(summary.message)")
+
+        let converted = try XCTUnwrap(viewModel.items.first { $0.metadata?.title == "Presente" })
+        XCTAssertEqual(converted.storage, .copy)
+        XCTAssertEqual(converted.preparedURL, converted.sourceURL)
+        XCTAssertTrue(converted.sourceURL.path.contains("/Música/"))
+        XCTAssertEqual(try sha256(presentURL), presentHash, "el original se copia, nunca se mueve ni se borra")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: presentURL.path))
+
+        let untouched = try XCTUnwrap(viewModel.items.first { $0.metadata?.title == "Ausente" })
+        XCTAssertEqual(untouched.storage, .reference, "el que no estaba se queda como estaba")
     }
 }

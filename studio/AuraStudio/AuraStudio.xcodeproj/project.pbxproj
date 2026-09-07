@@ -281,6 +281,7 @@
 		FC07E37B2CB459E125C2347C /* USBDeviceIdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 707F23CF5EB3B1F0A4363370 /* USBDeviceIdentityTests.swift */; };
 		FC22BD2147F662779790B182 /* rockbox.zip in Resources */ = {isa = PBXBuildFile; fileRef = 8494A971EFDAA70220A174E1 /* rockbox.zip */; };
 		FCFF8A19A007CA05DCD12311 /* ThemeInstallerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA6932017115B388ED81777 /* ThemeInstallerTests.swift */; };
+		FDB8F4C07BBE40BC08420FEC /* PreparedMusicPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA4874DDACBEA230CB2FC3C /* PreparedMusicPlan.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -352,6 +353,7 @@
 		2E8C3583DE937B8FBBECABFA /* rockbox.ipod */ = {isa = PBXFileReference; path = rockbox.ipod; sourceTree = "<group>"; };
 		2EFDBD87EC2242F33CAE2115 /* AlbumsGridPerformanceBaselineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumsGridPerformanceBaselineTests.swift; sourceTree = "<group>"; };
 		2F09388124D101C4B6670DB4 /* AppUpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateChecker.swift; sourceTree = "<group>"; };
+		2FA4874DDACBEA230CB2FC3C /* PreparedMusicPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreparedMusicPlan.swift; sourceTree = "<group>"; };
 		2FAF58B738CE7203B6E7EA24 /* CoverThumbnailCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverThumbnailCache.swift; sourceTree = "<group>"; };
 		346BA2D222B8F4C8F5CE1C58 /* PhotoStagingCollisionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoStagingCollisionTests.swift; sourceTree = "<group>"; };
 		349E7DDC3F7A98547168FD9A /* VideoArtworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoArtworkTests.swift; sourceTree = "<group>"; };
@@ -729,6 +731,7 @@
 				9F2FA6BAC2F043A38FEDD0C3 /* MediaCategory.swift */,
 				9E6590F1AE04D1389AC44A9E /* MusicTableColumn.swift */,
 				A92C5F3EC062AD8FA6D8B4FA /* Playlist.swift */,
+				2FA4874DDACBEA230CB2FC3C /* PreparedMusicPlan.swift */,
 				ED8D2945BDAC8711D857F1DF /* RowsModel.swift */,
 				DFAD7C7F6FB3F01F3CDC2A66 /* SelectionStore.swift */,
 				D91D24A2286B684E8FE45C2F /* SharedCatalogPath.swift */,
@@ -1375,6 +1378,7 @@
 				91FE918C092C1349381F3D67 /* PlaylistExporter.swift in Sources */,
 				E2F6D288AA4FEA13D4AEBF01 /* PlaylistImporter.swift in Sources */,
 				000B2ECE74548136F5ACA1F4 /* PlaylistsView.swift in Sources */,
+				FDB8F4C07BBE40BC08420FEC /* PreparedMusicPlan.swift in Sources */,
 				09F680A84694ED166E42E622 /* PrivilegedActionSheet.swift in Sources */,
 				D4AD421F984F0CACB047168D /* PrivilegedExecutor.swift in Sources */,
 				10EF0307FD5A491426F20395 /* PrivilegedOperationLog.swift in Sources */,

@@ -171,6 +171,9 @@ final class LibraryViewModel: ObservableObject {
     /// cuando no hay ninguna (que es casi siempre). Lo dibuja
     /// `ContentView` sobre la barra de estado.
     @Published private(set) var coverNormalization: CoverNormalizationProgress?
+    /// ST-224: progreso de "Convertir referenciados en copias". `nil`
+    /// cuando no hay ninguna corriendo, que es casi siempre.
+    @Published private(set) var referenceConversion: ReferenceConversionProgress?
     private var coverNormalizationTask: Task<Void, Never>?
     private var stagingDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.preparedDirName, isDirectory: true) }
     private var coversDirectory: URL { libraryRoot.appendingPathComponent(PersistedLibrary.coversDirName, isDirectory: true) }
@@ -472,7 +475,7 @@ final class LibraryViewModel: ObservableObject {
             items[index].storage = LibraryStorageMode.infer(
                 sourceURL: items[index].sourceURL, libraryRoot: libraryRoot)
         }
-        items[index].preparedURL = try await refreshMusicFile(for: items[index], metadata: metadata)
+        items[index].preparedURL = await refreshMusicFile(for: items[index], metadata: metadata)
     }
 
     private func importMusicIntoLibrary(itemAt index: Int, metadata: TrackMetadata) async throws {
@@ -527,9 +530,26 @@ final class LibraryViewModel: ObservableObject {
     /// etiqueta -- recopiaba el archivo entero a `.preparados/`.
     ///
     /// En modo referencia sigue regenerándose el derivado por id.
-    private func refreshMusicFile(for item: LibraryItem, metadata: TrackMetadata) async throws -> URL {
+    private func refreshMusicFile(for item: LibraryItem, metadata: TrackMetadata) async -> URL? {
         guard item.storage == .copy else {
-            return try await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
+            // ST-224: en modo referencia el derivado se arma **solo
+            // cuando hace falta**, y `nil` es un estado válido: quiere
+            // decir que el archivo del usuario ya sirve tal como está y
+            // al iPod viaja él. Nunca se rellena por inferencia.
+            let result = await fileWorker.ensurePreparedMusic(
+                LibraryFileWorker.EnsurePreparedMusicRequest(
+                    itemID: item.id,
+                    sourceURL: item.sourceURL,
+                    previousPreparedURL: item.preparedURL,
+                    catalogSourceSize: item.fileSizeBytes,
+                    stagingDirectory: stagingDirectory,
+                    metadata: metadata,
+                    audioQuality: preferences.audioQuality,
+                    coverArtPolicy: preferences.coverArtPolicy))
+            if let failure = result.failure {
+                lastError = "No se pudo preparar \(item.sourceURL.lastPathComponent): \(failure)"
+            }
+            return result.url
         }
         let result = await fileWorker.rewriteTags(metadata: metadata,
                                                   coverArtPolicy: preferences.coverArtPolicy,
@@ -538,6 +558,89 @@ final class LibraryViewModel: ObservableObject {
             lastError = reason
         }
         return item.sourceURL
+    }
+
+    // MARK: - Convertir referenciados en copias (ST-224)
+
+    /// Cómo va la conversión, para la barra de progreso.
+    struct ReferenceConversionProgress: Equatable {
+        var completed: Int
+        var total: Int
+
+        var fraction: Double { total > 0 ? Double(completed) / Double(total) : 0 }
+        var label: String { "Convirtiendo en copias… \(completed) de \(total)" }
+    }
+
+    /// Cómo terminó. Los no disponibles se cuentan **aparte** de los
+    /// fallos a propósito: un disco desconectado no es un error del
+    /// usuario ni de la app, y decir "3 fallaron" cuando lo que pasó es
+    /// que un disco no estaba conectado manda a buscar el problema al
+    /// lugar equivocado.
+    struct ReferenceConversionSummary: Equatable {
+        var converted: Int = 0
+        var skippedUnavailable: Int = 0
+        var failed: Int = 0
+        var cancelled: Bool = false
+
+        var message: String {
+            var parts: [String] = []
+            parts.append(converted == 1 ? "1 canción convertida en copia"
+                                        : "\(converted) canciones convertidas en copias")
+            if skippedUnavailable > 0 {
+                parts.append(skippedUnavailable == 1
+                             ? "1 se saltó porque su archivo no está"
+                             : "\(skippedUnavailable) se saltaron porque sus archivos no están")
+            }
+            if failed > 0 { parts.append(failed == 1 ? "1 falló" : "\(failed) fallaron") }
+            if cancelled { parts.append("cancelado") }
+            return parts.joined(separator: "; ") + "."
+        }
+    }
+
+    /// ST-224: pasa canciones de modo referencia a modo copia.
+    ///
+    /// **Copia; nunca mueve ni borra el original.** El archivo del
+    /// usuario es del usuario: esta acción le agrega una copia a la
+    /// biblioteca, no le quita nada de donde lo tenga.
+    ///
+    /// El derivado por id que hubiera quedado en `.preparados/` **no se
+    /// borra acá**: pasa a ser un huérfano, y borrarlo es trabajo de
+    /// "Limpiar huérfanos" (A5), que le muestra al usuario qué va a
+    /// borrar antes de hacerlo.
+    @discardableResult
+    func convertReferencedToCopies(ids: Set<UUID>? = nil) async -> ReferenceConversionSummary {
+        let targets = items.filter {
+            $0.kind == .music && $0.storage == .reference && (ids?.contains($0.id) ?? true)
+        }
+        var summary = ReferenceConversionSummary()
+        guard !targets.isEmpty else { return summary }
+
+        referenceConversion = ReferenceConversionProgress(completed: 0, total: targets.count)
+        defer { referenceConversion = nil }
+
+        for (offset, target) in targets.enumerated() {
+            if Task.isCancelled {
+                summary.cancelled = true
+                break
+            }
+            defer { referenceConversion = ReferenceConversionProgress(completed: offset + 1, total: targets.count) }
+
+            guard let index = items.firstIndex(where: { $0.id == target.id }) else { continue }
+            guard FileManager.default.fileExists(atPath: items[index].sourceURL.path) else {
+                summary.skippedUnavailable += 1
+                items[index].isAvailable = false
+                continue
+            }
+            do {
+                try await importMusicIntoLibrary(itemAt: index,
+                                                 metadata: items[index].metadata ?? TrackMetadata())
+                summary.converted += 1
+            } catch {
+                summary.failed += 1
+            }
+        }
+        persistCatalog()
+        return summary
     }
 
     private func isInsideLibrary(_ url: URL) -> Bool {
@@ -809,15 +912,14 @@ final class LibraryViewModel: ObservableObject {
         items[index].metadata = metadata
         items[index].metadataEditedByUser = true
         let item = items[index]
-        do {
-            let prepared = try await refreshMusicFile(for: item, metadata: metadata)
-            guard let currentIndex = items.firstIndex(where: { $0.id == id }) else { return }
-            items[currentIndex].preparedURL = prepared
-            items[currentIndex].status = metadata.isComplete ? .ready : .needsReview
-        } catch {
-            guard let currentIndex = items.firstIndex(where: { $0.id == id }) else { return }
-            items[currentIndex].status = .failed(error.localizedDescription)
-        }
+        // ST-224: `refreshMusicFile` ya no lanza -- un fallo se reporta
+        // en `lastError` y devuelve lo que había. Y `nil` no es un fallo:
+        // en modo referencia significa que el archivo del usuario ya
+        // sirve tal como está.
+        let prepared = await refreshMusicFile(for: item, metadata: metadata)
+        guard let currentIndex = items.firstIndex(where: { $0.id == id }) else { return }
+        items[currentIndex].preparedURL = prepared
+        items[currentIndex].status = metadata.isComplete ? .ready : .needsReview
         persistCatalog()
     }
 
@@ -1039,7 +1141,7 @@ final class LibraryViewModel: ObservableObject {
         items[index].metadataEditedByUser = true
         if items[index].kind == .music {
             let item = items[index]
-            let prepared = try? await refreshMusicFile(for: item, metadata: metadata)
+            let prepared = await refreshMusicFile(for: item, metadata: metadata)
             guard let currentIndex = items.firstIndex(where: { $0.id == id }) else { return }
             items[currentIndex].preparedURL = prepared
             if items[currentIndex].status == .ready || items[currentIndex].status == .needsReview {
@@ -1294,7 +1396,7 @@ final class LibraryViewModel: ObservableObject {
         for (completed, item) in targets.enumerated() {
             var metadata = item.metadata ?? TrackMetadata()
             metadata.setCover(nil)
-            let prepared = try? await refreshMusicFile(for: item, metadata: metadata)
+            let prepared = await refreshMusicFile(for: item, metadata: metadata)
             pendingResults[item.id] = (metadata, prepared)
             CoverStore.remove(forItem: item.id, in: libraryRoot)
 
@@ -1368,8 +1470,11 @@ final class LibraryViewModel: ObservableObject {
         for (completed, item) in targets.enumerated() {
             var metadata = item.metadata ?? TrackMetadata()
             metadata.setCover(normalized)
-            let prepared = try? await refreshMusicFile(for: item, metadata: metadata)
-            pendingResults[item.id] = (metadata, prepared ?? item.preparedURL)
+            let prepared = await refreshMusicFile(for: item, metadata: metadata)
+            // ST-224: `nil` no es "no se pudo", es "no hace falta
+            // ninguno". Rellenarlo con el anterior dejaría el catálogo
+            // apuntando a un derivado que ya no corresponde.
+            pendingResults[item.id] = (metadata, prepared)
 
             handle.update(.determinate(completed: completed + 1, total: targets.count),
                           statusText: "\(completed + 1) de \(targets.count)")
@@ -1523,7 +1628,7 @@ final class LibraryViewModel: ObservableObject {
             if let composer = changes.composer { metadata.composer = composer }
             if let rating = changes.rating { metadata.rating = rating }
 
-            let preparedURL = try? await refreshMusicFile(for: item, metadata: metadata)
+            let preparedURL = await refreshMusicFile(for: item, metadata: metadata)
             pendingResults[item.id] = (metadata, preparedURL, metadata.isComplete ? .ready : .needsReview)
 
             handle.update(.determinate(completed: completed + 1, total: targets.count),
@@ -1593,7 +1698,7 @@ final class LibraryViewModel: ObservableObject {
             var preparedURL: URL??
             var status: LibraryItemStatus?
             if item.kind == .music {
-                let prepared = try? await refreshMusicFile(for: item, metadata: metadata)
+                let prepared = await refreshMusicFile(for: item, metadata: metadata)
                 preparedURL = .some(prepared)
                 if item.status == .ready || item.status == .needsReview {
                     status = metadata.isComplete ? .ready : .needsReview
@@ -1682,7 +1787,7 @@ final class LibraryViewModel: ObservableObject {
                 fetchAlbumInfo: fetchAlbumInfo, fetchLyrics: fetchLyrics,
                 coverArtOrder: preferences.coverArtProviderOrder,
                 deezerEnabled: preferences.deezerEnabled)
-            let prepared = try? await refreshMusicFile(for: item, metadata: updated)
+            let prepared = await refreshMusicFile(for: item, metadata: updated)
             pendingResults[item.id] = (updated, prepared, updated.isComplete ? .ready : .needsReview)
 
             handle.update(.determinate(completed: completed + 1, total: targets.count),
@@ -1757,7 +1862,7 @@ final class LibraryViewModel: ObservableObject {
             let current = item.metadata ?? TrackMetadata()
             let merged = mergingLocalTags(fresh, into: current)
             if merged != current { updated += 1 }
-            let prepared = try? await refreshMusicFile(for: item, metadata: merged)
+            let prepared = await refreshMusicFile(for: item, metadata: merged)
             pendingResults[item.id] = (merged, prepared, merged.isComplete ? .ready : .needsReview)
 
             let shouldFlush = pendingResults.count >= Self.batchApplySize
@@ -2714,10 +2819,14 @@ final class LibraryViewModel: ObservableObject {
                 }
                 let preparedURL = p.preparedRelativePath
                     .flatMap { SharedCatalogPath.resolve($0, in: root, fileManager: fm) }
-                let preparedExists = preparedURL != nil
+                // ST-224: que NO haya derivado es un estado válido en
+                // modo referencia -- quiere decir que el archivo del
+                // usuario ya sirve tal como está. Lo que sí es un
+                // problema es que el catálogo NOMBRE uno que ya no está.
+                let preparedIsMissing = p.preparedRelativePath != nil && preparedURL == nil
 
                 var status = LibraryPersistenceMapper.liveStatus(p.status)
-                if status == .ready && !preparedExists {
+                if status == .ready && preparedIsMissing {
                     // "Listo" sin su archivo preparado no es listo: se
                     // vuelve a encolar y el proximo procesamiento lo
                     // regenera.
@@ -2730,7 +2839,7 @@ final class LibraryViewModel: ObservableObject {
                     kind: LibraryPersistenceMapper.liveKind(p.kind),
                     status: status,
                     metadata: LibraryPersistenceMapper.liveMetadata(p.metadata, coverURL: coverURL, coverHash: coverHash),
-                    preparedURL: preparedExists ? preparedURL : nil,
+                    preparedURL: preparedURL,
                     // D-228: catalogos viejos guardaban `MediaCategory.
                     // rawValue` -- `liveCategory` traduce esos valores
                     // conocidos al string de display nuevo y deja pasar

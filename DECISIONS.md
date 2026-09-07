@@ -13352,3 +13352,94 @@ ningún lado" como respuesta legítima.
 `LibraryDiskPathResolverTests` estaba escrita contra el comportamiento y
 **pasó sin tocar una sola línea**, que era exactamente para lo que se
 escribió así.
+
+## ST-224 — Modo referencia: el derivado se arma solo cuando hace falta
+
+Fase A4 de `PLAN-studio-ajustes-3.md`. Cierra la otra mitad de la
+promesa de Ajustes: **en modo referencia tu disco no termina con una
+copia de toda tu biblioteca**. Hasta acá la Mac preparaba **siempre** --
+toda canción referenciada tenía su copia en `.preparados/`, la
+necesitara o no, y esa carpeta no se limpia sola (ST-087). La promesa
+estaba escrita en la pantalla y el código hacía lo contrario.
+
+### Cuándo hace falta un derivado
+
+Solo dos casos: hay que **convertir** el formato (misma tabla de A3,
+`AudioConversionRule`, que es el único punto que decide), o el archivo
+**no dice lo que dice el catálogo** en los campos que gobierna
+`LocalTagWriter` -- carátula incluida, comparada por bytes cuando la
+política es por pista.
+
+Si el archivo ya coincide, **no hay derivado**: `preparedURL` ausente, y
+al iPod viaja el original. En una biblioteca referenciada normal eso es
+un puñado de canciones y no doce mil.
+
+`preparedURL` ausente es un **estado válido**, no un "todavía no". No se
+rellena por inferencia en ningún lado, y eso obligó a corregir dos sitios
+que sí lo hacían:
+
+- `applyAlbumCover` guardaba `prepared ?? item.preparedURL`, que habría
+  dejado el catálogo apuntando a un derivado que ya no corresponde.
+- **`loadCatalog` volvía a encolar todo elemento "Listo" sin derivado.**
+  Ese era el peor: con A4, la mayoría de las canciones referenciadas no
+  tienen derivado, así que al abrir la app se habrían encolado casi
+  todas. La regla correcta no es "no hay derivado" sino "el catálogo
+  **nombra** uno que ya no está".
+
+### Cuándo se rehace, y cuándo no
+
+`PreparedMusicPlan` es una función pura, calcada de la de Windows
+(ST-244) hasta los motivos: se rehace si no existe, si el origen cambió
+de tamaño respecto de lo que dice el catálogo, si el origen es más nuevo
+que el derivado, o si no se pueden leer las fechas -- ahí el lado seguro
+es rehacerlo, porque servir uno viejo manda al iPod las etiquetas que el
+usuario ya corrigió. Si solo cambió una etiqueta y el derivado ya existe,
+**se le reescriben las etiquetas sin recopiar**.
+
+La holgura al comparar fechas es de 2 segundos, el mismo valor que
+Windows: FAT redondea a dos segundos, y sin holgura un derivado se
+reharía en cada pasada para siempre. Correr la preparación sin cambios no
+toca el disco, y hay prueba de eso.
+
+### El defecto que destapó la primera prueba
+
+`LibrarySync` **omitía** todo elemento sin `preparedURL`. Con el
+comportamiento anterior eso no se notaba (siempre había derivado), pero
+con A4 la mayoría de las canciones referenciadas no tienen ninguno: se
+habrían quedado fuera del iPod, en silencio y sin error. Ahora lo que
+viaja es `preparedURL ?? sourceURL`, en un solo sitio
+(`LibrarySync.fileThatTravels`).
+
+Es la clase de defecto que solo aparece cuando dos cambios se cruzan, y
+apareció porque la prueba de sincronización de A3 seguía activa.
+
+### Convertir referenciados en copias
+
+**Copia; nunca mueve ni borra el original.** El archivo del usuario es
+del usuario: la acción le agrega una copia a la biblioteca, no le quita
+nada de donde lo tenga. Con progreso y cancelación.
+
+Un original ausente **se cuenta aparte de los fallos**. No es un detalle
+de presentación: decir "3 fallaron" cuando lo que pasó es que un disco no
+estaba conectado manda al usuario a buscar el problema al lugar
+equivocado.
+
+El derivado por id que quede atrás **no se borra acá**: pasa a ser
+huérfano, y borrarlo es trabajo de "Limpiar huérfanos" (A5), que le
+muestra al usuario qué va a borrar antes de hacerlo.
+
+### Pruebas
+
+La (d) del arnés queda activa, con lo que pedía: el original intacto ante
+rating/favorito/categoría **y** ante editar el título, y el derivado
+nombrado por el id en mayúsculas dentro de `.preparados/`.
+
+Y seis más: sin nada que cambiar no se prepara nada y el catálogo lo
+conserva así al recargar (incluido que "Listo" sin derivado sigue siendo
+listo); el derivado aparece al editar el título; se rehace cuando el
+origen queda más nuevo; **no** se rehace sin cambios; el original queda
+byte a byte igual después de importar, editar y sincronizar; y la
+conversión a copias con un original ausente contado aparte. La regla de
+regeneración tiene además su prueba en seco, con los seis casos y la
+holgura de 2 segundos, porque con archivos de verdad habría que fabricar
+fechas a mano.

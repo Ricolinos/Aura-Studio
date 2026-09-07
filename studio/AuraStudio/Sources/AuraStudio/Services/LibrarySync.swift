@@ -510,7 +510,11 @@ struct LibrarySync {
         }
 
         let currentFiles = try items.compactMap { item -> (sourcePath: String, size: Int64, modifiedAt: TimeInterval, destinationRelativePath: String)? in
-            guard let prepared = item.preparedURL else { return nil }
+            // ST-224: **lo que viaja es `preparedURL ?? sourceURL`**. En
+            // modo referencia, un elemento sin derivado no es un elemento
+            // sin preparar: es uno cuyo archivo ya sirve tal como está.
+            // Omitirlo lo dejaba fuera del iPod sin decir nada.
+            guard let prepared = Self.fileThatTravels(item) else { return nil }
             let attrs = try fileManager.attributesOfItem(atPath: prepared.path)
             let size = (attrs[.size] as? Int64) ?? 0
             let modified = (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
@@ -590,7 +594,7 @@ struct LibrarySync {
         planLoop: for planItem in plan {
             guard planItem.action == .copy else { continue }
             guard let item = items.first(where: { $0.sourceURL.path == planItem.sourcePath }),
-                  let prepared = item.preparedURL else { continue }
+                  let prepared = Self.fileThatTravels(item) else { continue }
 
             // §8.3: la cancelacion se revisa en la frontera de archivo
             // (ademas de dentro de cada copia, por bloque) -- si ya se
@@ -1385,6 +1389,21 @@ struct LibrarySync {
         case .photo: return "Photos/\(PathSanitizer.sanitizeFilename(filename, maxBytes: Self.deviceFilenameMaxBytes))"
         case .unsupported: return "Unsupported/\(filename)"
         }
+    }
+
+    /// ST-224: el archivo que de verdad viaja al iPod.
+    ///
+    /// En modo copia es el de la biblioteca (que es su propio derivado,
+    /// ST-223). En modo referencia es el derivado de `.preparados/`
+    /// **si hace falta uno** -- y si no hace falta, el original del
+    /// usuario. Un elemento sin derivado no es un elemento a medio
+    /// preparar: es uno que no necesitaba nada.
+    ///
+    /// Devuelve `nil` solo si el archivo no existe, y ahí sí no hay nada
+    /// que copiar.
+    static func fileThatTravels(_ item: LibraryItem) -> URL? {
+        let candidate = item.preparedURL ?? item.sourceURL
+        return FileManager.default.fileExists(atPath: candidate.path) ? candidate : nil
     }
 
     /// ST-221: dos elementos distintos que caen en el MISMO nombre

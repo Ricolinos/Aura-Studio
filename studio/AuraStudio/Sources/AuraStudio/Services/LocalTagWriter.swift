@@ -79,4 +79,52 @@ enum LocalTagWriter {
             return .skipped("no se pudieron escribir las etiquetas de \(url.lastPathComponent): \(error)")
         }
     }
+
+    /// ST-224: ¿el archivo **ya dice** lo que dice el catálogo?
+    ///
+    /// Es la mitad barata de la regla que evita duplicar la biblioteca en
+    /// modo referencia: una canción cuyo archivo ya coincide no necesita
+    /// derivado y viaja tal cual (`PreparedMusicPlan`).
+    ///
+    /// Se compara contra lo que el archivo dice **hoy**, no contra lo que
+    /// se le escribió la última vez: el archivo manda sobre su propio
+    /// estado, y alguien pudo haberlo tocado por fuera. Y un campo que el
+    /// catálogo **no** dice no cuenta como diferencia -- no se escribe un
+    /// vacío encima de algo que el archivo ya traía.
+    static func matches(_ tag: AudioTag, fileAt url: URL) async -> Bool {
+        guard canWrite(url), FileManager.default.fileExists(atPath: url.path) else { return false }
+        return await pendingFields(tag, fileAt: url).isEmpty
+    }
+
+    /// Qué campos habría que cambiarle al archivo. Devuelve nombres
+    /// porque es lo que se registra y lo que se prueba: "no coincide" sin
+    /// decir en qué no se puede revisar.
+    static func pendingFields(_ tag: AudioTag, fileAt url: URL) async -> [String] {
+        let current = await LocalTagReader.readTag(from: url)
+        var pending: [String] = []
+
+        func compare(_ field: String, _ desired: String?, _ actual: String?) {
+            guard let desired, !desired.isEmpty else { return } // el catálogo no dice nada: no se toca
+            if desired != actual { pending.append(field) }
+        }
+        compare("título", tag.title, current.title)
+        compare("artista", tag.artist, current.artist)
+        compare("álbum", tag.album, current.album)
+        compare("artista del álbum", tag.albumArtist, current.albumArtist)
+        compare("compositor", tag.composer, current.composer)
+        compare("género", tag.genre, current.genre)
+        compare("año", tag.year, current.year)
+
+        if let track = tag.trackNumber, track > 0, track != current.trackNumber { pending.append("pista") }
+        if let disc = tag.discNumber, disc > 0, disc != current.discNumber { pending.append("disco") }
+
+        // La carátula se compara por bytes: es la única forma de saber si
+        // la que está incrustada es la que el catálogo quiere, y a esta
+        // altura las dos ya pasaron por el mismo recorte.
+        if let desiredCover = tag.coverArtData, !desiredCover.isEmpty,
+           current.pendingCoverData != desiredCover {
+            pending.append("carátula")
+        }
+        return pending
+    }
 }

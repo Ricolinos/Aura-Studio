@@ -67,6 +67,158 @@ actor LibraryFileWorker {
             discNumber: metadata.discNumber, coverArtData: embedded)
     }
 
+    // MARK: - El derivado de una canción referenciada (ST-224)
+
+    struct EnsurePreparedMusicRequest: Sendable {
+        var itemID: UUID
+        var sourceURL: URL
+        var previousPreparedURL: URL?
+        /// El tamaño del origen **según el catálogo** (ST-186). `nil` en
+        /// un catálogo viejo: entonces el tamaño no opina y decide la
+        /// fecha.
+        var catalogSourceSize: Int?
+        var stagingDirectory: URL
+        var metadata: TrackMetadata
+        var audioQuality: AppPreferences.AudioQuality
+        var coverArtPolicy: AppPreferences.CoverArtPolicy
+    }
+
+    struct EnsurePreparedMusicResult: Sendable {
+        /// El derivado, o `nil` si no hace falta ninguno -- y entonces al
+        /// iPod viaja el archivo de origen. **`nil` es un estado válido**,
+        /// no un error ni un "todavía no": nunca se rellena por
+        /// inferencia.
+        var url: URL?
+        var action: PreparedMusicAction
+        var reason: String
+        var failure: String?
+    }
+
+    /// Deja el derivado como tiene que estar, y **solo cuando hace
+    /// falta** (ST-224, hermano de `PreparedMusicBuilder` de Windows).
+    ///
+    /// **Nunca lanza y nunca toca el archivo del usuario.** Un origen que
+    /// no está devuelve "no está" y el elemento sigue en la biblioteca
+    /// como no disponible (ST-221).
+    func ensurePreparedMusic(_ request: EnsurePreparedMusicRequest) async -> EnsurePreparedMusicResult {
+        let fileManager = FileManager.default
+        let source = request.sourceURL
+        guard fileManager.fileExists(atPath: source.path) else {
+            return EnsurePreparedMusicResult(url: request.previousPreparedURL, action: .none,
+                                             reason: "el archivo de origen no está")
+        }
+
+        let conversion = AudioConversionRule.decide(sourceExtension: source.pathExtension,
+                                                    audioQuality: request.audioQuality)
+        let converts = conversion.isConversion
+        let tag = Self.audioTag(from: request.metadata, coverArtPolicy: request.coverArtPolicy)
+
+        // Ni se convierte ni se le pueden escribir etiquetas: preparar
+        // una copia idéntica no le serviría a nadie y ocuparía el doble.
+        if !converts, !LocalTagWriter.canWrite(source) {
+            return EnsurePreparedMusicResult(url: nil, action: .none, reason: "este formato viaja tal cual")
+        }
+
+        let alreadyMatches = await LocalTagWriter.matches(tag, fileAt: source)
+        let needed = converts || !alreadyMatches
+        let destinationExtension = AudioConversionRule.destinationExtension(
+            sourceExtension: source.pathExtension, audioQuality: request.audioQuality)
+        let prepared = request.stagingDirectory
+            .appendingPathComponent(request.itemID.uuidString)
+            .appendingPathExtension(destinationExtension)
+        let preparedExists = fileManager.fileExists(atPath: prepared.path)
+
+        let decision = PreparedMusicPlan.decide(
+            needed: needed,
+            preparedExists: preparedExists,
+            catalogSourceSize: request.catalogSourceSize,
+            currentSourceSize: Self.byteSize(of: source) ?? 0,
+            sourceModified: Self.modificationDate(of: source),
+            preparedModified: preparedExists ? Self.modificationDate(of: prepared) : nil)
+
+        switch decision.action {
+        case .none:
+            // El derivado que hubiera quedado de antes NO se borra acá:
+            // eso es "Limpiar huérfanos" (A5), que le muestra al usuario
+            // qué va a borrar antes de hacerlo.
+            return EnsurePreparedMusicResult(url: nil, action: .none, reason: decision.reason)
+
+        case .keep:
+            // Solo las etiquetas, que es lo barato -- y el escritor no
+            // hace nada si ya coinciden.
+            _ = rewriteTags(metadata: request.metadata, coverArtPolicy: request.coverArtPolicy, at: prepared)
+            return EnsurePreparedMusicResult(url: prepared, action: .keep, reason: decision.reason)
+
+        case .build:
+            do {
+                try await buildPrepared(source: source, prepared: prepared, conversion: conversion)
+                _ = rewriteTags(metadata: request.metadata, coverArtPolicy: request.coverArtPolicy, at: prepared)
+                removeSupersededPrepared(request.previousPreparedURL, keeping: prepared,
+                                         in: request.stagingDirectory)
+                return EnsurePreparedMusicResult(url: prepared, action: .build, reason: decision.reason)
+            } catch {
+                return EnsurePreparedMusicResult(url: request.previousPreparedURL, action: .none,
+                                                 reason: decision.reason,
+                                                 failure: error.localizedDescription)
+            }
+        }
+    }
+
+    /// Arma el derivado, siempre por un temporal: un `.preparados/` con
+    /// un archivo a medio escribir es peor que uno sin archivo, porque el
+    /// sync se lo llevaría al iPod.
+    private func buildPrepared(source: URL, prepared: URL,
+                               conversion: AudioConversionRule.Decision) async throws {
+        let fileManager = FileManager.default
+        try fileManager.createDirectory(at: prepared.deletingLastPathComponent(),
+                                        withIntermediateDirectories: true)
+        let temporary = prepared.deletingLastPathComponent()
+            .appendingPathComponent("\(UUID().uuidString).aura-tmp")
+        do {
+            switch conversion {
+            case .copyAsIs:
+                try fileManager.copyItem(at: source, to: temporary)
+            case .convertToALAC:
+                try await convert(source, into: temporary, scratchExtension: "m4a") { input, output in
+                    try await AppleLosslessEncoder.encode(input: input, output: output)
+                }
+            case .convertToMP3:
+                try await convert(source, into: temporary, scratchExtension: "mp3") { input, output in
+                    let transcoder = try AudioTranscoder()
+                    try transcoder.transcodeToMP3(input: input, output: output)
+                }
+            }
+            if fileManager.fileExists(atPath: prepared.path) {
+                try fileManager.removeItem(at: prepared)
+            }
+            try fileManager.moveItem(at: temporary, to: prepared)
+        } catch {
+            try? fileManager.removeItem(at: temporary)
+            throw error
+        }
+    }
+
+    /// El derivado anterior, si cambió de nombre, queda huérfano. Se
+    /// borra con el nuevo ya escrito y **solo si estaba dentro de
+    /// `.preparados/`** -- nunca nada de fuera de la carpeta de
+    /// derivados, pase lo que pase con el catálogo.
+    private func removeSupersededPrepared(_ previous: URL?, keeping current: URL, in stagingDirectory: URL) {
+        guard let previous,
+              previous.standardizedFileURL != current.standardizedFileURL,
+              previous.standardizedFileURL.deletingLastPathComponent().path
+                == stagingDirectory.standardizedFileURL.path else { return }
+        try? FileManager.default.removeItem(at: previous)
+        try? FileManager.default.removeItem(at: previous.deletingPathExtension().appendingPathExtension("lrc"))
+    }
+
+    nonisolated static func byteSize(of url: URL) -> Int? {
+        (try? FileManager.default.attributesOfItem(atPath: url.path)[.size] as? Int) ?? nil
+    }
+
+    nonisolated static func modificationDate(of url: URL) -> Date? {
+        (try? FileManager.default.attributesOfItem(atPath: url.path)[.modificationDate] as? Date) ?? nil
+    }
+
     // MARK: - Importar a la biblioteca en modo copia (ST-223)
 
     /// Lo que hace falta para meter una canción en la biblioteca en modo
