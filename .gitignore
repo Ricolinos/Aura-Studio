@@ -32,3 +32,8 @@ __pycache__/
 
 # Paquetes armados por scripts/package-dmg.sh
 dist/
+
+# Estado local de tools/swift-test-por-lotes.sh -- qué tandas ya
+# corrieron en ESTA Mac, nunca compartido (cada quien acumula el suyo).
+tools/.swift-test-batches-results.tsv
+tools/.swift-test-batch-*-failed.log

@@ -15074,3 +15074,57 @@ depende exactamente de ese contenido); regenerarlos contra el
 Sources/ ya convertido los habría dejado casi vacíos y habría roto esa
 prueba. Solo `tools/` y dos archivos de `Tests/` -- nada en
 `Sources/`.
+
+## ST-227 (addendum, mecánico) — deuda de verificación cerrada: `swift test` completo en lotes
+
+Encargo de "Sesión Maestra" tras confirmar (de su lado, con más
+detalle que `vm_stat`) que la Mac no compite entre sesiones -- tiene
+~40 GB de páginas en el compresor y ~90 MB libres, de aplicaciones
+reales del dueño (Parallels, Adobe, Microsoft, Brave), no de ninguna
+sesión de Claude Code. Cinco intentos seguidos del suite completo se
+habían muerto por presión de memoria, uno de ellos con el candado
+tomado en solitario -- confirmaba que no era competencia por
+compilar, era la máquina entera al límite.
+
+### `tools/swift-test-por-lotes.sh`
+
+Corre el suite completo en tandas de 8-10 clases
+(`swift test --no-parallel --filter "ClaseA|ClaseB|..."`), candado
+tomado por tanda y soltado entre tandas -- reduce el PICO de memoria
+de cada corrida individual, ya que no hace falta cargar las 116
+clases a la vez. Reanudable: los resultados quedan en
+`tools/.swift-test-batches-results.tsv` (local, gitignorado -- estado
+de ESTA Mac, nunca compartido); si una tanda muere, correr el script
+de nuevo retoma solo lo que falta, sin repetir lo que ya quedó en
+verde. `--only "Clase1,Clase2"` corre una tanda ad-hoc, para partir a
+mano una que siga muriendo. `--verify` confirma que la unión de
+tandas registradas cubre el 100% de las clases reales (vía
+`swift test list`), sin correr nada -- si una clase quedó fuera de
+toda tanda, o si una tanda vieja menciona una clase que ya no existe,
+lo dice explícito.
+
+### Resultado: 970 pruebas, 0 fallas reales, 3 saltadas
+
+15 tandas de 8 clases (116 clases, 970 métodos de prueba en total --
+`swift test list` los cuenta). 14 tandas en verde a la primera. La
+tanda 13 falló una vez:
+`RemainingCallSitesWorkerTests.testBulkImportNeverBlocksTheMainThreadOverTheWatchdogThreshold`
+midió dos bloqueos del hilo principal de 431/437 ms (el umbral es
+250 ms) importando 300 pistas -- exactamente el tipo de prueba
+sensible a que la máquina esté real y verdaderamente exigida (un
+umbral de tiempo, no un resultado). Reintentada SOLA
+(`--only "RemainingCallSitesWorkerTests"`): 6/6 en verde, confirma que
+fue la carga de la máquina en ese instante, no una regresión. El
+resto de la tanda 13 (7 clases) se corrió aparte también en verde.
+`--verify` final: **100% cubierto, sin sobrantes** -- las 970 pruebas
+de `swift test list` quedaron todas contabilizadas en alguna tanda
+DONE, ninguna se coló sin correr.
+
+`xcodebuild -configuration Release`: **BUILD SUCCEEDED**, candado
+tomado y liberado por esta sesión para esa corrida (sin competencia --
+lo tomé libre en el momento).
+
+Cierra la deuda de verificación completa que quedó pendiente desde el
+addendum de A0-contra-A4/el fix del extractor -- ese commit (y los dos
+anteriores de esta ronda) quedan confirmados con el suite completo,
+no solo con `--filter` acotado.
