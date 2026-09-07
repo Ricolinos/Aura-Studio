@@ -463,7 +463,7 @@ struct SeriesView: View {
         }
         Menu(LS("media-section-view.cambiar-categoria")) {
             ForEach(MediaCategory.videoCategories) { category in
-                Button(category.displayName) {
+                Button(category.localizedName) {
                     viewModel.setCategory(category.displayName, forItems: Set(targets.map(\.id)))
                 }
             }
@@ -499,7 +499,7 @@ struct SeriesView: View {
         }
         Menu(LS("media-section-view.cambiar-categoria")) {
             ForEach(MediaCategory.videoCategories) { category in
-                Button(category.displayName) {
+                Button(category.localizedName) {
                     viewModel.setCategory(category.displayName, forItems: Set(items.map(\.id)))
                 }
             }

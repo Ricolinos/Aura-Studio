@@ -5,6 +5,12 @@ struct AuraStudioApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     init() {
+        // ST-227 (A7b): **antes que nada.** `AppleLanguages` lo lee el
+        // sistema al arrancar, una sola vez, para resolver las tablas de
+        // cadenas. Escribirlo después de que haya cargado una vista deja
+        // la app a medias -- parte del texto en un idioma y parte en
+        // otro -- y por eso cambiar de idioma pide reiniciar.
+        AppLanguageApplier.apply(AppPreferences.shared.language, to: .standard)
         MainThreadWatchdog.startIfRequested()
     }
 

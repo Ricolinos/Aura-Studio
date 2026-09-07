@@ -14927,3 +14927,77 @@ Vale anotarlo como lo que es: la regla de verificar con **los dos**
 y esta es la segunda vez en la ronda que atrapa algo que el otro camino
 daba por bueno. Acá habría llegado a los cuatro idiomas nuevos y se
 habría visto recién al leerlos.
+
+## ST-227 (A7b) — El inglés completo y el selector de idioma
+
+Segunda de las tres PARADAs de A7. El catálogo pasa de tener solo
+español a tener **los 465 textos en los dos idiomas**, plurales
+incluidos, y la app deja de tener una tabla propia.
+
+### `AppStrings.S` desaparece
+
+Eran 46 textos con su tabla ES/EN a mano y un resolutor propio
+(`AppLanguageResolver`). Se mudaron al catálogo con la clave del cotejo
+compartido donde existía, y el archivo se borró. Ya no hay dos
+mecanismos de traducción conviviendo, que era lo que A7a dejó anotado
+como pendiente **en una prueba** -- y la prueba obligó a acordarse.
+
+### Lo que se guarda no se traduce
+
+`MediaCategory.displayName` devolvía el nombre en el idioma activo, y
+ese valor es el que se **guarda** en `item.category` (D-283). Con dos
+idiomas ya obligaba a comparar contra los dos; con seis se rompe: una
+categoría guardada como "Filme" no coincide con nada.
+
+Ahora están separados: `displayName` es el español y es **el dato**;
+`localizedName` es lo que se muestra. Es la distinción que faltaba, y no
+haberla hecho habría convertido un idioma nuevo en pérdida de datos del
+usuario.
+
+Queda dicho lo que **no** se traduce y por qué: los nombres de las
+colecciones de fotos y las categorías ya guardadas son datos del
+usuario, no texto de la app. Ajustes lo dice.
+
+### El selector
+
+Seis idiomas más "seguir al sistema", cada uno **escrito en su propio
+idioma** (Español, English, 日本語, Deutsch, Русский, Français). Alguien
+que abrió la app en un idioma que no entiende tiene que poder encontrar
+el suyo, y "Japonés" escrito en español no le sirve de nada.
+
+`AppleLanguages` se escribe **al arrancar, antes de cargar cualquier
+vista**: el sistema lo lee una sola vez para resolver las tablas, así
+que escribirlo más tarde deja la app a medias -- parte del texto en un
+idioma y parte en otro. Por eso cambiar de idioma pide reiniciar, con
+"Reiniciar ahora" o "Más tarde"; con "Más tarde" queda guardado y aplica
+al siguiente arranque. Nunca mitad y mitad.
+
+Y "seguir al sistema" **borra** la clave en vez de escribir el idioma que
+el sistema usa hoy. Escribirlo congelaría esa elección: la app dejaría de
+seguir al Mac en cuanto el usuario cambiara el idioma del sistema.
+
+### Dos cosas que aprendí probándolo
+
+**`String(localized:locale:)` no cambia de idioma.** El `locale:` decide
+el **formato** (números, fechas), no de qué tabla sale el texto. Mi
+primera prueba lo usaba y devolvía español; el error era de la prueba, no
+del catálogo. Está dicho en el código para que nadie "arregle" el
+catálogo por eso. La prueba resuelve contra el bundle de `en.lproj`
+explícitamente, que es lo más cerca que se puede estar del mecanismo
+real sin reiniciar el proceso.
+
+**`AppleLanguages` vive también en el dominio global.** Borrarlo del
+dominio de la app no lo hace desaparecer de una lectura normal: la
+búsqueda cae al global y devuelve el idioma del sistema. Lejos de ser un
+problema, **es** el mecanismo -- por eso borrar equivale a seguir al
+sistema. La prueba mira el dominio persistente de la app, que es lo
+único que la app controla.
+
+### El inglés
+
+Se escribió entero, con el mismo tono que el español (de tú, frases
+cortas) y sin traducir nombres propios (Aura, Aura Studio, iPod, Finder,
+Rockbox). Las 31 filas del cotejo compartido que tienen texto en la Mac
+llevan ahora su inglés en la columna `texto en`, para que Windows lo use
+en B7b y el inglés también se escriba una sola vez. Las 7 restantes son
+"solo Windows": su inglés no es mío.

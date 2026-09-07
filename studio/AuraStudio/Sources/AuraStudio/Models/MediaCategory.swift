@@ -46,8 +46,24 @@ enum MediaCategory: String, Codable, CaseIterable, Identifiable {
         }
     }
 
-    var displayName: String {
-        AppLanguageResolver.current == .english ? displayNameEnglish : displayNameSpanish
+    /// **El valor que se GUARDA** en `item.category` (D-283), y contra el
+    /// que se compara. Es el español, siempre.
+    ///
+    /// ST-227 (A7b): hasta acá esto devolvía el nombre en el idioma
+    /// activo, así que la categoría que quedaba guardada dependía del
+    /// idioma con que se hubiera importado -- y el código de comparación
+    /// tenía que probar contra los dos. Con seis idiomas eso deja de
+    /// funcionar: una categoría guardada como "Filme" no coincide con
+    /// nada. Lo que se guarda es un dato, no un texto de pantalla.
+    var displayName: String { displayNameSpanish }
+
+    /// **El nombre que se MUESTRA.** Este sí se traduce.
+    var localizedName: String {
+        switch self {
+        case .videos: return LS("media-category.videos")
+        case .series: return LS("media-category.series")
+        case .movies: return LS("media-category.movies")
+        }
     }
 }
 

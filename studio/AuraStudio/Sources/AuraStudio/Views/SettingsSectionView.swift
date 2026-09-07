@@ -14,6 +14,9 @@ struct SettingsSectionView: View {
     var appUpdates: AppUpdateChecker?
 
     @State private var tab: Tab = .general
+    /// ST-227 (A7b): se acaba de cambiar el idioma y falta preguntar si
+    /// reiniciar.
+    @State private var askToRestart = false
 
     enum Tab: Hashable {
         case general, library, music, photos, video, services
@@ -27,17 +30,17 @@ struct SettingsSectionView: View {
             // fuera, y una captura que hay que tomar a mano es una que
             // deja de tomarse.
             Picker("", selection: $tab) {
-                Text(S.settingsGeneral.text).tag(Tab.general)
+                Text(LS("settings.settings-general")).tag(Tab.general)
                     .accessibilityIdentifier("ajustes.pestana.general")
-                Text(S.settingsLibrary.text).tag(Tab.library)
+                Text(LS("settings.settings-library")).tag(Tab.library)
                     .accessibilityIdentifier("ajustes.pestana.almacenamiento")
-                Text(S.music.text).tag(Tab.music)
+                Text(LS("settings.music")).tag(Tab.music)
                     .accessibilityIdentifier("ajustes.pestana.musica")
-                Text(S.photos.text).tag(Tab.photos)
+                Text(LS("settings.photos")).tag(Tab.photos)
                     .accessibilityIdentifier("ajustes.pestana.fotos")
-                Text(S.video.text).tag(Tab.video)
+                Text(LS("settings.video")).tag(Tab.video)
                     .accessibilityIdentifier("ajustes.pestana.video")
-                Text(S.settingsServices.text).tag(Tab.services)
+                Text(LS("settings.settings-services")).tag(Tab.services)
                     .accessibilityIdentifier("ajustes.pestana.servicios")
             }
             .accessibilityIdentifier("ajustes.pestanas")
@@ -64,21 +67,50 @@ struct SettingsSectionView: View {
             }
             .frame(maxWidth: .infinity, alignment: .top)
         }
-        .navigationTitle(S.settings.text)
+        .navigationTitle(LS("settings.settings"))
+    }
+
+    /// Relanza la app. `NSApp.terminate` sin más dejaría al usuario con
+    /// la app cerrada y el idioma cambiado, teniendo que abrirla él: se
+    /// lanza el nuevo proceso primero y recién entonces se cierra este.
+    private func restartApp() {
+        let url = Bundle.main.bundleURL
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.createsNewApplicationInstance = true
+        NSWorkspace.shared.openApplication(at: url, configuration: configuration) { _, _ in
+            DispatchQueue.main.async { NSApp.terminate(nil) }
+        }
     }
 
     private var generalTab: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text(S.language.text).font(.headline)
-            Picker(S.language.text, selection: $preferences.language) {
-                Text(S.languageSystem.text).tag(AppLanguage.system)
-                Text(S.languageSpanish.text).tag(AppLanguage.spanish)
-                Text(S.languageEnglish.text).tag(AppLanguage.english)
+            Text(LS("settings.language")).font(.headline)
+            // ST-227 (A7b): cada idioma se lista **en su propio
+            // idioma**. Alguien que abrió la app en un idioma que no
+            // entiende tiene que poder encontrar el suyo, y "Japonés"
+            // escrito en español no le sirve de nada.
+            Picker(LS("settings.language"), selection: $preferences.language) {
+                ForEach(AppLanguage.allCases) { language in
+                    Text(language.nativeName).tag(language)
+                }
             }
             .pickerStyle(.radioGroup)
             .labelsHidden()
+            .accessibilityIdentifier("ajustes.general.idioma")
+            .onChange(of: preferences.language) { _, _ in askToRestart = true }
+            // El idioma no se aplica a medias: o toda la app en el
+            // idioma nuevo, o ninguna parte. `AppleLanguages` lo lee el
+            // sistema al arrancar, así que hay que reiniciar.
+            .alert(LS("settings.language-restart-title"), isPresented: $askToRestart) {
+                Button(LS("settings.language-restart-now")) { restartApp() }
+                    .accessibilityIdentifier("ajustes.general.idioma.reiniciar")
+                Button(LS("settings.language-restart-later"), role: .cancel) { }
+                    .accessibilityIdentifier("ajustes.general.idioma.masTarde")
+            } message: {
+                Text(LS("settings.language-restart-message"))
+            }
 
-            Text(S.languageNote.text)
+            Text(LS("settings.language-note-new"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -105,12 +137,12 @@ struct SettingsSectionView: View {
     @ViewBuilder
     private var migrationSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(S.migrateSectionTitle.text).font(.headline)
-            Text(S.migrateSettingsDetail.text)
+            Text(LS("settings-page.migrar-version-anterior")).font(.headline)
+            Text(LS("settings.migrate-settings-detail"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-            Button(S.migrateButton.text) { library.migrateLibrary() }
+            Button(LS("settings-page.migrar-biblioteca")) { library.migrateLibrary() }
                 .accessibilityIdentifier("ajustes.almacenamiento.migrar")
                 .disabled(library.isMigrating)
         }
@@ -125,26 +157,26 @@ struct SettingsSectionView: View {
     @ViewBuilder
     private var orphansSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(S.orphansTitle.text).font(.headline)
-            Text(S.orphansDetail.text)
+            Text(LS("orphans-title")).font(.headline)
+            Text(LS("orphans-detail"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             if let scan = library.orphanScan {
                 if scan.isEmpty {
-                    Text(S.orphansNoneFound.text).font(.caption)
+                    Text(LS("orphans-none-found")).font(.caption)
                 } else {
                     Text("\(scan.count) archivos, \(ByteCountFormatter.string(fromByteCount: Int64(scan.totalBytes), countStyle: .file))")
                         .font(.caption.monospaced())
-                    Text(S.orphansConfirmMessage.text)
+                    Text(LS("orphans-confirm-message"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 HStack {
                     if !scan.isEmpty {
-                        Button(S.orphansCleanButton.text, role: .destructive) {
+                        Button(LS("orphans-clean-button"), role: .destructive) {
                             library.deleteFoundOrphans()
                         }
                         .accessibilityIdentifier("ajustes.almacenamiento.limpiarHuerfanos")
@@ -152,7 +184,7 @@ struct SettingsSectionView: View {
                     Button("Cancelar") { library.dismissOrphanScan() }
                 }
             } else {
-                Button(S.orphansButton.text) { library.scanForOrphans() }
+                Button(LS("orphans-button")) { library.scanForOrphans() }
                     .accessibilityIdentifier("ajustes.almacenamiento.buscarHuerfanos")
             }
         }
@@ -188,13 +220,13 @@ struct SettingsSectionView: View {
                 // Y sus desventajas, y los dos se leen SIEMPRE -- no solo
                 // el que está activo. Elegir entre dos opciones viendo lo
                 // que dice una sola no es elegir.
-                Text(S.storageSectionTitle.text).font(.headline).padding(.top, 4)
+                Text(LS("storage-section-title")).font(.headline).padding(.top, 4)
                     .accessibilityIdentifier("ajustes.almacenamiento.seccion")
                 Toggle(LS("settings-section-view.crear-copias-medios-biblioteca-aura"), isOn: $preferences.copyMediaIntoLibrary)
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(S.storageCopyExplainer.text)
-                    Text(S.storageReferenceExplainer.text)
-                    Text(S.storageChangeOnlyAffectsFuture.text)
+                    Text(LS("storage-copy-explainer"))
+                    Text(LS("storage-reference-explainer"))
+                    Text(LS("storage-change-only-affects-future"))
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -216,17 +248,17 @@ struct SettingsSectionView: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 10) {
-                Text(S.coverArt.text).font(.headline)
-                Picker(S.coverArt.text, selection: $preferences.coverArtPolicy) {
-                    Text(S.coverArtAlbumOnly.text).tag(AppPreferences.CoverArtPolicy.albumOnly)
-                    Text(S.coverArtPerTrack.text).tag(AppPreferences.CoverArtPolicy.perTrack)
+                Text(LS("settings.cover-art")).font(.headline)
+                Picker(LS("settings.cover-art"), selection: $preferences.coverArtPolicy) {
+                    Text(LS("settings.cover-art-album-only")).tag(AppPreferences.CoverArtPolicy.albumOnly)
+                    Text(LS("settings.cover-art-per-track")).tag(AppPreferences.CoverArtPolicy.perTrack)
                 }
                 .pickerStyle(.radioGroup)
                 .labelsHidden()
 
                 Text(preferences.coverArtPolicy == .albumOnly
-                     ? S.coverArtAlbumOnlyDetail.text
-                     : S.coverArtPerTrackDetail.text)
+                     ? LS("settings.cover-art-album-only-detail")
+                     : LS("settings.cover-art-per-track-detail"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -235,16 +267,16 @@ struct SettingsSectionView: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 10) {
-                Text(S.importing.text).font(.headline)
+                Text(LS("settings.importing")).font(.headline)
 
-                Toggle(S.enrichOnline.text, isOn: $preferences.enrichOnline)
-                Text(S.enrichOnlineDetail.text)
+                Toggle(LS("settings.enrich-online"), isOn: $preferences.enrichOnline)
+                Text(LS("settings.enrich-online-detail"))
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Toggle(S.fetchLyrics.text, isOn: $preferences.fetchSyncedLyrics)
+                Toggle(LS("settings.fetch-lyrics"), isOn: $preferences.fetchSyncedLyrics)
                     .disabled(!preferences.enrichOnline)
-                Text(S.fetchLyricsDetail.text)
+                Text(LS("settings.fetch-lyrics-detail"))
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }

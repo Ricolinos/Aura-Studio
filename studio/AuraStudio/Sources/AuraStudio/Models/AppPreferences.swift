@@ -170,11 +170,10 @@ final class AppPreferences: ObservableObject {
         bootloaderVerifiedDisks.removeValue(forKey: diskKey)
     }
 
+    /// ST-227 (A7b): el idioma no se aplica al cambiarlo -- se guarda, y
+    /// se aplica al arrancar. Ver `AppLanguageApplier`.
     @Published var language: AppLanguage {
-        didSet {
-            defaults.set(language.rawValue, forKey: Keys.language)
-            AppLanguageResolver.current = language.resolved
-        }
+        didSet { defaults.set(language.rawValue, forKey: Keys.language) }
     }
 
     /// Carpeta de la biblioteca Aura (encargo del dueño, 2026-08-13):
@@ -665,22 +664,66 @@ final class AppPreferences: ObservableObject {
         self.musicShowOnlyFavorites = defaults.object(forKey: Keys.musicShowOnlyFavorites) as? Bool ?? false
         self.showStatusBar = defaults.object(forKey: Keys.showStatusBar) as? Bool ?? true
         self.ignoredSimilarGroups = defaults.stringArray(forKey: Keys.ignoredSimilarGroups) ?? []
-        AppLanguageResolver.current = self.language.resolved
     }
 }
 
+/// ST-227 (A7b): el idioma de la app.
+///
+/// `system` -- que es lo de fábrica -- significa **no opinar**: la app no
+/// escribe nada y macOS elige entre los idiomas que el bundle declara,
+/// con las preferencias del usuario. Cualquier otro valor es el usuario
+/// diciendo explícitamente "quiero este", y entonces sí se escribe.
 enum AppLanguage: String, CaseIterable, Identifiable {
     case system
-    case spanish
-    case english
+    case spanish = "es"
+    case english = "en"
+    case japanese = "ja"
+    case german = "de"
+    case russian = "ru"
+    case french = "fr"
 
     var id: String { rawValue }
 
-    /// Codigo que se le pasa a la tabla de cadenas. `system` se resuelve
-    /// contra el idioma preferido de macOS, cayendo a espanol.
-    var resolved: AppLanguage {
-        guard self == .system else { return self }
-        let preferred = Locale.preferredLanguages.first ?? "es"
-        return preferred.hasPrefix("en") ? .english : .spanish
+    /// El código de idioma que va a `AppleLanguages`, o `nil` para
+    /// "seguir al sistema".
+    var languageCode: String? { self == .system ? nil : rawValue }
+
+    /// Cada idioma **en su propio idioma**. Alguien que abrió la app en
+    /// un idioma que no entiende tiene que poder encontrar el suyo en la
+    /// lista, y "Japonés" escrito en español no le sirve de nada.
+    var nativeName: String {
+        switch self {
+        case .system:   return LS("settings.language.system")
+        case .spanish:  return "Español"
+        case .english:  return "English"
+        case .japanese: return "日本語"
+        case .german:   return "Deutsch"
+        case .russian:  return "Русский"
+        case .french:   return "Français"
+        }
+    }
+}
+
+/// ST-227 (A7b): aplica el idioma elegido **antes de que se cargue
+/// ninguna vista**.
+///
+/// `AppleLanguages` es lo que el sistema mira para resolver las tablas
+/// de cadenas, y lo mira **una vez, al arrancar**. Escribirlo más tarde
+/// deja la app a medias -- parte del texto en un idioma y parte en otro
+/// -- y por eso cambiar de idioma pide reiniciar.
+///
+/// Cuando la preferencia es "seguir al sistema" se **borra** la clave en
+/// vez de escribir un valor: dejar escrito el idioma que hoy usa el
+/// sistema congelaría esa elección, y la app dejaría de seguirlo cuando
+/// el usuario cambie el idioma del Mac.
+enum AppLanguageApplier {
+    static let appleLanguagesKey = "AppleLanguages"
+
+    static func apply(_ language: AppLanguage, to defaults: UserDefaults) {
+        if let code = language.languageCode {
+            defaults.set([code], forKey: appleLanguagesKey)
+        } else {
+            defaults.removeObject(forKey: appleLanguagesKey)
+        }
     }
 }

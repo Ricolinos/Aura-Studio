@@ -459,9 +459,9 @@ struct ContentView: View {
         let target = section.libraryKind
         let category: String? = {
             switch section {
-            case .videoMovies: return MediaCategory.movies.displayName
-            case .videoSeries: return MediaCategory.series.displayName
-            case .videoClips: return MediaCategory.videos.displayName
+            case .videoMovies: return MediaCategory.movies.localizedName
+            case .videoSeries: return MediaCategory.series.localizedName
+            case .videoClips: return MediaCategory.videos.localizedName
             case .photosPhotos: return "Fotos"
             case .photosImages: return "Imágenes"
             case .photosAI: return "IA"
@@ -677,27 +677,27 @@ enum SidebarSection: Hashable, CaseIterable {
 
     var title: String {
         switch self {
-        case .general:        return S.general.text
+        case .general:        return LS("settings.general")
         // `.music` es la tabla de Canciones; el rotulo del grupo
         // "Música" lo pone SidebarView (`S.music`).
-        case .music:          return S.songs.text
-        case .musicGroup:     return S.music.text
-        case .musicArtists:   return S.artists.text
-        case .musicAlbums:    return S.albums.text
-        case .musicPlaylists: return S.playlists.text
-        case .videoGroup:     return S.video.text
-        case .video:          return S.videoAll.text
-        case .videoMovies:    return MediaCategory.movies.displayName
-        case .videoSeries:    return MediaCategory.series.displayName
-        case .videoClips:     return S.videoClips.text
-        case .photosGroup:    return S.photos.text
-        case .photos:         return S.photosAll.text
+        case .music:          return LS("settings.songs")
+        case .musicGroup:     return LS("settings.music")
+        case .musicArtists:   return LS("settings.artists")
+        case .musicAlbums:    return LS("settings.albums")
+        case .musicPlaylists: return LS("settings.playlists")
+        case .videoGroup:     return LS("settings.video")
+        case .video:          return LS("settings.video-all")
+        case .videoMovies:    return MediaCategory.movies.localizedName
+        case .videoSeries:    return MediaCategory.series.localizedName
+        case .videoClips:     return LS("settings.video-clips")
+        case .photosGroup:    return LS("settings.photos")
+        case .photos:         return LS("settings.photos-all")
         case .photosPhotos:   return "Fotos"
         case .photosImages:   return "Imágenes"
         case .photosAI:       return "IA"
-        case .extras:         return S.extras.text
-        case .installer:      return S.installer.text
-        case .settings:       return S.settings.text
+        case .extras:         return LS("settings.extras")
+        case .installer:      return LS("settings.installer")
+        case .settings:       return LS("settings.settings")
         }
     }
 
@@ -882,7 +882,7 @@ private struct SidebarView: View {
             Image(systemName: device == nil ? "cable.connector.slash" : "ipod")
             // §1.5: el nombre editable (`device.cfg`) manda sobre la
             // etiqueta de volumen en cuanto existe.
-            Text(device?.displayName ?? S.noDevice.text)
+            Text(device?.displayName ?? LS("settings.no-device"))
                 .lineLimit(1)
         }
     }
@@ -934,7 +934,7 @@ struct MigrationBarHost: View {
                 Image(systemName: "arrow.triangle.2.circlepath")
                 Text(need.message).font(.callout).fixedSize(horizontal: false, vertical: true)
                 Spacer()
-                Button(S.migrateButton.text) { library.migrateLibrary() }
+                Button(LS("settings-page.migrar-biblioteca")) { library.migrateLibrary() }
                     .accessibilityIdentifier("franja.migrarBiblioteca")
             }
             .padding(.horizontal, 12)
