@@ -1,4 +1,5 @@
 using AuraStudio.Core.Library;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App.Resources;
 

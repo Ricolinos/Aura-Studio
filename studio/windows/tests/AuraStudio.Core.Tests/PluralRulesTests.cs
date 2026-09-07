@@ -1,4 +1,5 @@
 using System.Globalization;
+using AuraStudio.Core.Resources;
 using Xunit;
 
 namespace AuraStudio.Core.Tests;
@@ -13,14 +14,12 @@ namespace AuraStudio.Core.Tests;
 /// idioma — y no un error de compilación, sino algo que alguien lee mal en su
 /// pantalla.</para>
 ///
-/// <para>Las reglas viven en la app (<c>AuraStudio.App.Resources.PluralRules</c>)
-/// y esta prueba las reimplementa <b>a propósito</b>: el proyecto de pruebas es
-/// <c>net10.0</c> y el de la app <c>net10.0-windows</c> con WinUI, así que no se
-/// puede referenciar. Lo que se protege acá es <b>la tabla</b> —qué forma le
-/// toca a qué número en cada familia de idiomas—, que es lo que hay que acertar
-/// y lo único que un humano puede revisar leyendo. Si las dos se separan, la
-/// prueba de claves del <c>.resx</c> lo delata: pediría formas que no existen.
-/// </para>
+/// <para>Lo que se protege acá es <b>la tabla</b> —qué forma le toca a qué
+/// número en cada familia de idiomas—, que es lo que hay que acertar y lo único
+/// que un humano puede revisar leyendo. Se llama a
+/// <see cref="PluralRules"/> directamente: las reglas viven en Core desde que
+/// los recursos se mudaron ahí, así que la prueba corre contra el código que
+/// corre en la app y no contra una copia suya.</para>
 /// </summary>
 public class PluralRulesTests
 {
@@ -114,30 +113,14 @@ public class PluralRulesTests
 
     [Fact]
     public void YEspanolNo() => Assert.Equal(".other", SuffixFor(0, "es-MX"));
-    // MARK: - La misma tabla que la app
+    // MARK: - Las reglas de verdad
 
-    private static string SuffixFor(int count, string culture)
-    {
-        int absolute = Math.Abs(count);
-
-        return new CultureInfo(culture).TwoLetterISOLanguageName switch
-        {
-            "ja" or "zh" or "ko" or "vi" or "th" => ".other",
-            "fr" or "pt" => absolute is 0 or 1 ? ".one" : ".other",
-            "ru" or "uk" or "pl" or "cs" or "sk" => Slavic(absolute),
-            _ => absolute == 1 ? ".one" : ".other"
-        };
-
-        static string Slavic(int absolute)
-        {
-            int lastTwo = absolute % 100;
-            int last = absolute % 10;
-
-            if (lastTwo is >= 11 and <= 14) return ".many";
-            if (last == 1) return ".one";
-            if (last is >= 2 and <= 4) return ".few";
-
-            return ".many";
-        }
-    }
+    /// <summary>
+    /// Se llama a las reglas de verdad, no a una copia. Al mudar los recursos a
+    /// Core (ST-247) esta prueba dejó de tener que reimplementar la tabla: lo
+    /// que se prueba es el código que corre en la app, que es de lo que sirve
+    /// una prueba.
+    /// </summary>
+    private static string SuffixFor(int count, string culture) =>
+        PluralRules.SuffixFor(count, new CultureInfo(culture));
 }

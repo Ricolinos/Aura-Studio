@@ -1,7 +1,7 @@
 using System.Globalization;
 using System.Resources;
 
-namespace AuraStudio.App.Resources;
+namespace AuraStudio.Core.Resources;
 
 /// <summary>
 /// De dónde salen los textos de la app (ST-247).
@@ -43,7 +43,7 @@ namespace AuraStudio.App.Resources;
 public static class Strings
 {
     private static readonly ResourceManager Manager =
-        new("AuraStudio.App.Strings.Resources", typeof(Strings).Assembly);
+        new("AuraStudio.Core.Strings.Resources", typeof(Strings).Assembly);
 
     /// <summary>
     /// El texto de una clave.

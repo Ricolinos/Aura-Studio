@@ -30,8 +30,8 @@ Console.WriteLine();
 // ⟦clave⟧ en la primera línea, la app abriría con los textos rotos.
 
 Console.WriteLine("--- Textos desde recursos ---");
-Console.WriteLine($"  app-strings.app-name     → {AuraStudio.App.Resources.Strings.Get("app-strings.app-name")}");
-Console.WriteLine($"  una clave que no existe  → {AuraStudio.App.Resources.Strings.Get("no.existe")}");
+Console.WriteLine($"  app-strings.app-name     → {AuraStudio.Core.Resources.Strings.Get("app-strings.app-name")}");
+Console.WriteLine($"  una clave que no existe  → {AuraStudio.Core.Resources.Strings.Get("no.existe")}");
 Console.WriteLine();
 
 // --- El fixture ---------------------------------------------------------

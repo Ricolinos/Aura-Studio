@@ -63,8 +63,11 @@
   <data name="app-strings.bootloader-update-flash-confirm" xml:space="preserve">
     <value>Entiendo que esto regraba el arranque del iPod. No borra su disco ni quita el arranque de Apple.</value>
   </data>
-  <data name="app-strings.bootloader-update-flashing" xml:space="preserve">
-    <value>Actualizando el arranque del iPod…Actualizando el arranque de {0}…</value>
+  <data name="app-strings.bootloader-update-flashing-1" xml:space="preserve">
+    <value>Actualizando el arranque del iPod…</value>
+  </data>
+  <data name="app-strings.bootloader-update-flashing-2" xml:space="preserve">
+    <value>Actualizando el arranque de {0}…</value>
   </data>
   <data name="app-strings.bootloader-update-no-password" xml:space="preserve">
     <value>No te pide tu contraseña de administrador ni una sola vez.</value>
@@ -189,8 +192,11 @@
   <data name="app-strings.installer-dfu-detected-title" xml:space="preserve">
     <value>Tu iPod está en modo DFU</value>
   </data>
-  <data name="app-strings.installer-dfu-found" xml:space="preserve">
-    <value>iPod detectado en modo DFU.iPod detectado en modo DFU (estado {0}).</value>
+  <data name="app-strings.installer-dfu-found-1" xml:space="preserve">
+    <value>iPod detectado en modo DFU.</value>
+  </data>
+  <data name="app-strings.installer-dfu-found-2" xml:space="preserve">
+    <value>iPod detectado en modo DFU (estado {0}).</value>
   </data>
   <data name="app-strings.installer-dfu-guide-link" xml:space="preserve">
     <value>Guía de flasheo y restauración (repositorio del firmware)</value>
@@ -456,8 +462,11 @@
   <data name="app-strings.library-root-create" xml:space="preserve">
     <value>Crear una nueva</value>
   </data>
-  <data name="app-strings.library-root-missing" xml:space="preserve">
-    <value>No hay ninguna carpeta de biblioteca configurada.La biblioteca está en un disco que no está conectado: {0}</value>
+  <data name="app-strings.library-root-missing-1" xml:space="preserve">
+    <value>No hay ninguna carpeta de biblioteca configurada.</value>
+  </data>
+  <data name="app-strings.library-root-missing-2" xml:space="preserve">
+    <value>La biblioteca está en un disco que no está conectado: {0}</value>
   </data>
   <data name="app-strings.library-root-missing-detail" xml:space="preserve">
     <value>No se perdió nada: el catálogo y tus archivos siguen en ese disco. Conéctalo y la biblioteca vuelve sola.</value>
@@ -465,8 +474,11 @@
   <data name="app-strings.library-root-retry" xml:space="preserve">
     <value>Conectar el disco y reintentar</value>
   </data>
-  <data name="app-strings.library-season" xml:space="preserve">
-    <value>Sin temporadaTemporada {0}</value>
+  <data name="app-strings.library-season-1" xml:space="preserve">
+    <value>Sin temporada</value>
+  </data>
+  <data name="app-strings.library-season-2" xml:space="preserve">
+    <value>Temporada {0}</value>
   </data>
   <data name="app-strings.library-section-only-its-type-libraryitemkind-music" xml:space="preserve">
     <value>Esta sección solo acepta música. Las carátulas que vengan junto a un álbum se guardan como portada, no como fotos.</value>

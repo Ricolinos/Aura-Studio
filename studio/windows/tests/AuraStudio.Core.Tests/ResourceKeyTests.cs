@@ -39,11 +39,19 @@ public class ResourceKeyTests
         throw new InvalidOperationException("No se encontró la raíz del repo desde el directorio de pruebas.");
     }
 
-    private static string AppDirectory() =>
-        Path.Combine(RepoRoot(), "studio", "windows", "AuraStudio.App");
+    /// <summary>
+    /// Los dos proyectos que piden textos: la app y Core. Core también los
+    /// produce —el resumen de lo que se arrastró, el conteo de álbumes, la
+    /// barra de estado—, y por eso los recursos viven ahí (ST-247).
+    /// </summary>
+    private static IEnumerable<string> ProjectsThatUseStrings() =>
+    [
+        Path.Combine(RepoRoot(), "studio", "windows", "AuraStudio.App"),
+        Path.Combine(RepoRoot(), "studio", "windows", "AuraStudio.Core")
+    ];
 
-    private static string ResourcesPath() =>
-        Path.Combine(AppDirectory(), "Strings", "Resources.resx");
+    private static string ResourcesPath() => Path.Combine(
+        RepoRoot(), "studio", "windows", "AuraStudio.Core", "Strings", "Resources.resx");
 
     /// <summary>Las claves que el archivo de recursos trae.</summary>
     private static HashSet<string> KeysInResources() =>
@@ -54,21 +62,24 @@ public class ResourceKeyTests
             .Select(data => data.Attribute("name")!.Value)
     ];
 
-    /// <summary>Cada uso de <c>Strings.Get/Format/Plural</c> del código de la app.</summary>
+    /// <summary>Cada uso de <c>Strings.Get/Format/Plural</c> del código.</summary>
     private static IEnumerable<(string Key, string File, string Method)> KeysUsedInCode()
     {
         var pattern = new Regex(@"Strings\.(Get|Format|Plural)\(\s*""([^""]+)""");
 
-        foreach (string file in Directory.EnumerateFiles(AppDirectory(), "*.cs", SearchOption.AllDirectories))
+        foreach (string project in ProjectsThatUseStrings())
         {
-            if (file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}")
-                || file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"))
+            foreach (string file in Directory.EnumerateFiles(project, "*.cs", SearchOption.AllDirectories))
             {
-                continue;
-            }
+                if (file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}")
+                    || file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"))
+                {
+                    continue;
+                }
 
-            foreach (Match match in pattern.Matches(File.ReadAllText(file)))
-                yield return (match.Groups[2].Value, Path.GetFileName(file), match.Groups[1].Value);
+                foreach (Match match in pattern.Matches(File.ReadAllText(file)))
+                    yield return (match.Groups[2].Value, Path.GetFileName(file), match.Groups[1].Value);
+            }
         }
     }
 

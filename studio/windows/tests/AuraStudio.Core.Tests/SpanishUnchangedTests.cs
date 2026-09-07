@@ -22,6 +22,65 @@ namespace AuraStudio.Core.Tests;
 /// </summary>
 public class SpanishUnchangedTests
 {
+    /// <summary>
+    /// Las 37 frases que se reúnen, <b>nombradas una por una</b>.
+    ///
+    /// <para><b>Por qué una lista y no una regla.</b> La primera versión de esta
+    /// prueba calculaba la unión esperada con la misma lógica que hacía la
+    /// unión, y por eso no vio que cuatro de las "frases partidas" no eran
+    /// fragmentos de una concatenación sino <b>las dos ramas de un ternario</b>
+    /// —dos mensajes distintos— que quedaron pegados en una sola cadena
+    /// ("No hay ninguna carpeta de biblioteca configurada.La biblioteca está en
+    /// un disco que no está conectado: {0}"). Una prueba que reimplementa el
+    /// defecto no puede detectarlo.</para>
+    ///
+    /// <para>Con la lista escrita, unir una frase de más falla hasta que alguien
+    /// la agregue a mano, que es tanto como decir: hasta que alguien la mire. La
+    /// regla que hay que aplicar al mirarla: <b>solo se unen literales
+    /// adyacentes pegados con <c>+</c></b>; las ramas de un <c>?:</c> y las de un
+    /// <c>switch</c> son mensajes distintos y llevan claves distintas.</para>
+    /// </summary>
+    private static readonly string[] MergedSentences =
+    [
+        "app-strings.bootloader-update-done-detail",
+        "app-strings.bootloader-update-enter-dfu-when",
+        "app-strings.bootloader-update-flash-confirm",
+        "app-strings.bootloader-update-not-required",
+        "app-strings.bootloader-update-nothing-touched",
+        "app-strings.bootloader-update-offer-unknown",
+        "app-strings.bootloader-update-what-it-is",
+        "app-strings.device-ambiguous",
+        "app-strings.dfu-driver-missing",
+        "app-strings.dfu-driver-package-missing",
+        "app-strings.installer-dfu-detected-detail",
+        "app-strings.installer-dfu-not-found",
+        "app-strings.installer-dfu-not-seen-by-windows",
+        "app-strings.installer-dfu-timing-warning",
+        "app-strings.installer-dry-run-ok",
+        "app-strings.installer-enter-dfu-when",
+        "app-strings.installer-family-change",
+        "app-strings.installer-format-danger-detail",
+        "app-strings.installer-format-needs-confirmation",
+        "app-strings.installer-permissions-detail",
+        "app-strings.installer-welcome-detail",
+        "app-strings.installer-welcome-warning",
+        "app-strings.library-locked-reason",
+        "app-strings.library-root-missing-detail",
+        "app-strings.licenses-intro",
+        "app-strings.licenses-libraries-intro",
+        "app-strings.licenses-tag-lib-detail",
+        "app-strings.licenses-tool-local-pin",
+        "app-strings.licenses-unknown-tag-detail",
+        "app-strings.orphans-confirm-message",
+        "app-strings.orphans-detail",
+        "app-strings.section-pending-detail",
+        "app-strings.service-pause-detail",
+        "app-strings.settings-language-detail",
+        "app-strings.storage-change-only-affects-future",
+        "app-strings.storage-copy-explainer",
+        "app-strings.storage-reference-explainer"
+    ];
+
     private static string RepoRoot()
     {
         DirectoryInfo? directory = new(AppContext.BaseDirectory);
@@ -46,7 +105,7 @@ public class SpanishUnchangedTests
                 data => data.Element("value")?.Value ?? "");
 
     private static Dictionary<string, string> Resources() => ValuesOf(
-        Path.Combine(RepoRoot(), "studio", "windows", "AuraStudio.App", "Strings", "Resources.resx"));
+        Path.Combine(RepoRoot(), "studio", "windows", "AuraStudio.Core", "Strings", "Resources.resx"));
 
     private static Dictionary<string, string> Draft() => ValuesOf(Path.Combine(
         RepoRoot(), "studio", "windows", "docs", "extraccion-cadenas", "Strings", "es", "Resources.resw"));
@@ -124,20 +183,25 @@ public class SpanishUnchangedTests
     }
 
     /// <summary>
-    /// Las frases reunidas existen y son varias: si un cambio en la herramienta
-    /// dejara de partirlas, esta prueba avisa de que la unión ya no hace falta
-    /// en vez de quedarse callada.
+    /// Las frases reunidas son <b>exactamente</b> las de la lista: ni una más.
+    ///
+    /// <para>Unir una de más es lo que pasó con cuatro ternarios, y lo que la
+    /// versión anterior de esta prueba no vio por calcular lo esperado con la
+    /// misma lógica del defecto. Ahora una unión nueva falla hasta que alguien
+    /// la escriba en la lista, o sea hasta que alguien la mire.</para>
     /// </summary>
     [Fact]
-    public void LasFrasesReunidasSiguenSiendoLasEsperadas()
+    public void SeReunenExactamenteLasFrasesDeLaLista()
     {
         Dictionary<string, string> resources = Resources();
         Dictionary<string, string> draft = Draft();
 
-        int merged = resources.Keys.Count(key => !draft.ContainsKey(key) && JoinedFragments(draft, key) is not null);
+        List<string> merged =
+            [.. resources.Keys.Where(key => !draft.ContainsKey(key)).Order(StringComparer.Ordinal)];
 
-        Assert.Equal(41, merged);
+        Assert.Equal(MergedSentences.Order(StringComparer.Ordinal), merged);
     }
+
 
     /// <summary>
     /// Los fragmentos <c>clave-1</c>, <c>clave-2</c>… unidos en orden, o

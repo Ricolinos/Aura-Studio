@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace AuraStudio.App.Resources;
+namespace AuraStudio.Core.Resources;
 
 /// <summary>
 /// Qué forma plural le toca a un número, según el idioma (ST-247).
