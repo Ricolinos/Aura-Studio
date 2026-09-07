@@ -116,9 +116,13 @@ final class MediaStorageBaselineTests: XCTestCase {
             albumArtist: "Artista Editado", year: "2026", genre: "Jazz",
             trackNumber: 1, durationSeconds: 0)
 
+        // ST-221: el derivado se nombra por el id del elemento. Acá no
+        // hay un `LibraryItem` de por medio -- lo que se mide es el
+        // worker -- así que basta un id propio.
         let request = LibraryFileWorker.PrepareMusicRequest(
             sourceURL: sourceURL, stagingDirectory: preparadosDir,
-            metadata: editedMetadata, audioQuality: .originalLossless, coverArtPolicy: .albumOnly)
+            metadata: editedMetadata, audioQuality: .originalLossless, coverArtPolicy: .albumOnly,
+            itemID: UUID())
         let worker = LibraryFileWorker()
         let preparedURL = try await worker.prepareMusic(request)
 
@@ -205,12 +209,15 @@ final class MediaStorageBaselineTests: XCTestCase {
             let metadata = TrackMetadata(title: testCase.name, artist: "Artista", album: "Álbum",
                                         albumArtist: "Artista", year: "2020", genre: "Rock",
                                         trackNumber: 1, durationSeconds: 0)
+            // ST-221: el ítem se crea ANTES para que su id nombre el
+            // derivado, que es como ocurre en producción.
+            var item = AuraStudio.LibraryItem(sourceURL: sourceURL, addedAt: Date())
             let request = LibraryFileWorker.PrepareMusicRequest(
                 sourceURL: sourceURL, stagingDirectory: preparadosDir,
-                metadata: metadata, audioQuality: .originalLossless, coverArtPolicy: .albumOnly)
+                metadata: metadata, audioQuality: .originalLossless, coverArtPolicy: .albumOnly,
+                itemID: item.id)
             let preparedURL = try await worker.prepareMusic(request)
 
-            var item = AuraStudio.LibraryItem(sourceURL: sourceURL, addedAt: Date())
             item.status = .ready
             item.metadata = metadata
             item.preparedURL = preparedURL
