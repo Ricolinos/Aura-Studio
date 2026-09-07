@@ -10923,3 +10923,92 @@ PRUEBA de `3e55186` que el dueño usó para verificar antes del release
 (versión 0.2.3, no son de release y no van a GitHub). `0.2.2` y
 anteriores siguen sin copia local (ST-173): la copia canónica vive en los
 Releases de GitHub.
+
+## ST-220 — PLAN-studio-ajustes-3.md, Fase A0: arnés y línea base "antes"
+
+Primera PARADA de la ronda "ajustes 3" (sesión "mecanico sonnet",
+worktree propio, sin tocar `Sources/`). Objetivo: un arnés que mida el
+diagnóstico del plan (§1) con bytes reales en vez de solo la lectura
+del código, para que A1-A6 (contrato `storage`, escritores nativos
+FLAC/M4A, modo copia real) tengan un "antes" contra qué comparar.
+Medido contra `bd57116`.
+
+### El fixture (`MediaStorageFixtures.swift`)
+
+Bytes sintéticos, pequeños, **reales por formato** -- no basura con la
+extensión correcta:
+
+- **MP3**: veinte frames MPEG-1 Layer III válidos (128 kbps/44100 Hz,
+  el mismo patrón de `LibraryFileWorkerEquivalenceTests`) + una tag
+  ID3v2.3 real vía `ID3Writer.writing(_:into:)` (producción, no una
+  reinvención para la prueba).
+- **FLAC**: `fLaC` + bloque STREAMINFO (obligatorio, armado a mano bit
+  a bit) + bloque VORBIS_COMMENT con los campos editables -- sin frames
+  de audio (`totalSamples = 0`). Confirmado con un spike aparte:
+  `AVURLAsset.load(.metadata)` los lee igual (`keySpace == "vorb"`), y
+  con una prueba propia (`testFixturesCarryReadableTagsViaAVFoundation`)
+  que lo verifica cada vez que corre el arnés, no solo una vez.
+- **M4A**: `AVAssetWriter` real, una pista AAC de 0,1 s de silencio,
+  con `AVMutableMetadataItem` (`.commonKeyTitle`/`Artist`/`AlbumName`)
+  -- produce átomos iTunes reales (`keySpace == "itsk"` al releer),
+  igual que un M4A real. AVFoundation no tiene forma de escribir esto a
+  mano, así que se escribe a un archivo temporal propio y se relee como
+  `Data`.
+- **WAV**: RIFF/WAVE PCM mínimo, sin chunk de etiquetas (D-037: WAV
+  nunca las recibe en producción, no tenía sentido fingir que sí).
+- **Video/fotos**: un MOV corto (`AVAssetWriter`, un cuadro H.264 de
+  32×32) y JPEGs mínimos (mismo generador que
+  `AlbumsGridPerformanceBaselineTests`) -- completan la biblioteca de
+  prueba, aunque las dos mediciones de abajo son sobre música (el
+  contrato de video/foto no cambia esta ronda, §0.1).
+
+### Medición 1: "editar N campos → qué archivo cambia, cuántos bytes"
+
+Camino real de producción: `LibraryFileWorker.PrepareMusicRequest` +
+`prepareMusic` (el mismo actor que ya prueba
+`LibraryFileWorkerEquivalenceTests`), editando título/artista/álbum/
+año/género, `audioQuality: .originalLossless` (sin transcodificar).
+`testEditingFieldsAcrossFormatsAndModes_printsBeforeTable` corre las
+ocho combinaciones (4 formatos × copia/referencia) y las imprime:
+
+| Formato | Modo | ¿Original cambió? | Bytes escritos en `.preparados/` | `.preparados/` ¿idéntico byte a byte al original? |
+|---|---|---|---|---|
+| MP3  | copia      | No | 8 573  | **No** -- ID3Writer reescribe la tag |
+| MP3  | referencia | No | 8 573  | **No** -- ID3Writer reescribe la tag |
+| FLAC | copia      | No | 214    | **Sí** -- copia idéntica, los 5 campos editados no llegan |
+| FLAC | referencia | No | 214    | **Sí** -- copia idéntica, los 5 campos editados no llegan |
+| M4A  | copia      | No | 1 043  | **Sí** -- copia idéntica, los 5 campos editados no llegan |
+| M4A  | referencia | No | 1 043  | **Sí** -- copia idéntica, los 5 campos editados no llegan |
+| WAV  | copia      | No | 17 684 | **Sí** -- copia idéntica, los 5 campos editados no llegan |
+| WAV  | referencia | No | 17 684 | **Sí** -- copia idéntica, los 5 campos editados no llegan |
+
+Confirma el diagnóstico del plan (§1) con números reales: **el
+original nunca se toca, en ningún modo** (ni copia ni referencia --
+eso es exactamente lo que A3/A4 van a cambiar para el modo copia);
+`.preparados/` se reescribe entero en cada edición, para los cuatro
+formatos por igual (nunca un parche incremental); y de esos cuatro,
+**solo MP3 refleja los campos editados** -- FLAC/M4A/WAV reciben una
+copia byte a byte del original, así que cualquier edición de tags para
+esos tres formatos **nunca llega al archivo que de verdad viaja al
+iPod**, hoy. Eso es lo que A2 (escritores nativos FLAC/M4A) tiene que
+cerrar.
+
+### Medición 2: "sincronizar → qué archivo viaja"
+
+`testSyncCopiesThePreparedFileNeverTheOriginal`: `LibrarySync.sync`
+real (no una simulación) contra un directorio de scratch que hace de
+"iPod", con los cuatro formatos preparados de la medición 1. Confirma
+por hash (SHA-256) que lo que aterriza en el volumen es
+**`item.preparedURL`, nunca `item.sourceURL`**, para los cuatro por
+igual -- la capa de sync es agnóstica al formato; toda la diferencia
+entre formatos que importa vive en qué escribió `prepareMusic` (medición
+1), no en `LibrarySync` en sí.
+
+### Archivos
+
+`Tests/AuraStudioTests/MediaStorageFixtures.swift` (generadores) y
+`Tests/AuraStudioTests/MediaStorageBaselineTests.swift` (las tres
+pruebas: fixture legible, tabla "antes", sync). `xcodegen generate` +
+`.pbxproj` commiteado en el mismo commit (lección de ST-189: un archivo
+nuevo en `Tests/` sin regenerar el proyecto se omite en silencio del
+target).

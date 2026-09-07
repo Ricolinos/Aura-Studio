@@ -20,6 +20,7 @@
 		070DB75C9D2C3D92E65CD274 /* FirmwareFamilyPackagingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 81227B66ED077D9FB5416610 /* FirmwareFamilyPackagingTests.swift */; };
 		07B5993B76FBF1735ADA8AF2 /* FFmpegTranscoderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE684D9789506522C7BF0228 /* FFmpegTranscoderTests.swift */; };
 		07E18583E0FD105B393DEFC1 /* ThemeValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 672B82A09A8641D47F326E8D /* ThemeValidatorTests.swift */; };
+		07E1D85C3EC42D2CA58A4429 /* MediaStorageFixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12F5A78B95F1BE21C1DF869 /* MediaStorageFixtures.swift */; };
 		09F680A84694ED166E42E622 /* PrivilegedActionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAC2C915803E2ECA9BD01B52 /* PrivilegedActionSheet.swift */; };
 		0B317286F490CD4A15980B2E /* ThemePackager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3CA57FACEA209F6484781 /* ThemePackager.swift */; };
 		0B552ACC010F0B14110CB36D /* AMPAgentsGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = E61823B2E8AA5E3069393A0E /* AMPAgentsGuard.swift */; };
@@ -210,6 +211,7 @@
 		B9F991F96D02DF1AD4B32042 /* ID3Writer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D282E9DFA0D773AF988E69E5 /* ID3Writer.swift */; };
 		BB4E4B852CE6983C0E856BBA /* InstallerHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC5F915258EC049BFC791B90 /* InstallerHomeView.swift */; };
 		BB62966A5FF7363B81361821 /* AppUpdateDecisionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2CDBD2C1B95D98452EC28D /* AppUpdateDecisionTests.swift */; };
+		BB7A2B2508CD615EE92E904C /* MediaStorageBaselineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18D9DC34C79E8010BDF13EAD /* MediaStorageBaselineTests.swift */; };
 		BC30BF47ADCC5F66B79045A1 /* LiveEnrichmentIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7EDF2D22E970198CC8A5C1B /* LiveEnrichmentIntegrationTests.swift */; };
 		BD5FCF9DC5CB88162B2673C0 /* InstallingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1782D4EBAA2C3FC3EBC49F5 /* InstallingView.swift */; };
 		BD809465DDDA7B9453FDAB86 /* FilenameGuesserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BA124E3419E12A08D4AADC /* FilenameGuesserTests.swift */; };
@@ -312,6 +314,7 @@
 		17FA97DC7618F234BE711AED /* LibraryPipelineIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryPipelineIntegrationTests.swift; sourceTree = "<group>"; };
 		1813A20FCAC25F16993A1AE9 /* APIKeyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeyStore.swift; sourceTree = "<group>"; };
 		181CDD2810F5EC0A301C1384 /* LocalTagReaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTagReaderTests.swift; sourceTree = "<group>"; };
+		18D9DC34C79E8010BDF13EAD /* MediaStorageBaselineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStorageBaselineTests.swift; sourceTree = "<group>"; };
 		1A29F57327CE27D98C05565C /* AuraUpdateCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraUpdateCheckerTests.swift; sourceTree = "<group>"; };
 		1AF1D56D4FC12419217F8960 /* WelcomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		1B937DCE06440CE0E37ED1B8 /* ArtistsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistsView.swift; sourceTree = "<group>"; };
@@ -451,6 +454,7 @@
 		9F2FA6BAC2F043A38FEDD0C3 /* MediaCategory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaCategory.swift; sourceTree = "<group>"; };
 		A077ACC4534A70565AC6B622 /* IPodDiskIdentifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IPodDiskIdentifierTests.swift; sourceTree = "<group>"; };
 		A0CF9C66B5F702F5086AFE98 /* PathSanitizerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathSanitizerTests.swift; sourceTree = "<group>"; };
+		A12F5A78B95F1BE21C1DF869 /* MediaStorageFixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStorageFixtures.swift; sourceTree = "<group>"; };
 		A2AFC6DCF7F164C535175071 /* AppStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStrings.swift; sourceTree = "<group>"; };
 		A44B703F4DB8DCD3F12F4492 /* ArtistNameNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistNameNormalizer.swift; sourceTree = "<group>"; };
 		A4C0B18EAD871AB2CB02A249 /* LibraryFileWorkerEquivalenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryFileWorkerEquivalenceTests.swift; sourceTree = "<group>"; };
@@ -791,6 +795,8 @@
 				181CDD2810F5EC0A301C1384 /* LocalTagReaderTests.swift */,
 				41E05507BDCB6ED7C42C9B6A /* LyricsSidecarSyncTests.swift */,
 				63EEB772091BC184C410A194 /* MediaCategoryHeuristicsTests.swift */,
+				18D9DC34C79E8010BDF13EAD /* MediaStorageBaselineTests.swift */,
+				A12F5A78B95F1BE21C1DF869 /* MediaStorageFixtures.swift */,
 				D789632A0A38C211E33DFCBF /* MediaTableRowTests.swift */,
 				CD729ADB997C1F381DACBC45 /* MKS5LBootRunnerExecutableBitTests.swift */,
 				C70AA3068E3596A674879EA8 /* MKS5LBootRunnerTests.swift */,
@@ -1155,6 +1161,8 @@
 				1EF7EC20F69C186A9887856B /* MKS5LBootRunnerExecutableBitTests.swift in Sources */,
 				51B2A64027ACA8FC73EB923A /* MKS5LBootRunnerTests.swift in Sources */,
 				944B27A4A60F4C5BF6A1AF1F /* MediaCategoryHeuristicsTests.swift in Sources */,
+				BB7A2B2508CD615EE92E904C /* MediaStorageBaselineTests.swift in Sources */,
+				07E1D85C3EC42D2CA58A4429 /* MediaStorageFixtures.swift in Sources */,
 				98294989CBE015BFE717F68F /* MediaTableRowTests.swift in Sources */,
 				A1FC2A8749E4D919F5EFED7F /* MockURLProtocol.swift in Sources */,
 				21D3647B50D1CDE2C088EC6C /* MusicBrainzClientTests.swift in Sources */,
@@ -1381,7 +1389,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.2.3;
+				MARKETING_VERSION = 0.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ricolinos.aurastudio;
 				SDKROOT = macosx;
 			};
@@ -1598,7 +1606,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.2.3;
+				MARKETING_VERSION = 0.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ricolinos.aurastudio;
 				SDKROOT = macosx;
 			};
