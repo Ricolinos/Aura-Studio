@@ -180,13 +180,11 @@ public class SpanishUnchangedTests
         // Tooltips y nombres para el lector de pantalla que el borrador no
         // extrajo. Un AutomationProperties.Name en español dentro de una app en
         // alemán es justo el defecto que B7b viene a evitar.
-        "artists-page.buscar-fotos-artistas-linea",
-        "artists-page.mas-acciones", "artists-page.mas-acciones-2",
-        "device-list-page.calcula-que-se-copiaria",
-        "library-status-strip.detener-tarea-en-curso",
-        "media-grid-page.descarga-posters-que-falten",
+        // De estas nueve, ocho ya las emite la herramienta desde que cubre
+        // AutomationProperties.Name y ToolTipService.ToolTip, así que salieron
+        // de esta lista y se comparan contra el borrador como cualquier otra.
+        // Queda solo la que su extractor todavía no ve.
         "settings-page.carpeta-nueva-biblioteca-anterior-intacta",
-        "songs-page.busca-album-ano-caratula-letra", "songs-page.busca-repetidos",
     ];
 
     /// <summary>

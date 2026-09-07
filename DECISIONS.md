@@ -15851,7 +15851,7 @@ frases pegadas.
 - **`HardcodedSpanishTests`**: cero texto en español en las vistas y en la
   fachada. Fuera de eso queda una parte del programa que B7a no alcanzó
   —mensajes de excepción, de registro y errores de plataforma—, y ahí lo que
-  se comprueba es que **no crezca**: hay un tope de 396, que no es una meta
+  se comprueba es que **no crezca**: hay un tope de 392, que no es una meta
   cumplida sino una puerta cerrada mientras se decide qué hacer con eso
   (candidato natural a B7c).
 - **`MediaCategoryDataTests`**: la que de verdad sostiene el contrato de la
@@ -15897,3 +15897,74 @@ humano puede leer, no lógica que puede equivocarse igual que lo que vigila.
   columna "texto en" con el inglés de las filas de la Mac: se toma de ahí sin
   traducir dos veces, y el inglés de las filas "solo Windows" lo escribe
   Windows en esa misma columna.
+
+## ST-247 (addendum) — B7a: los seis encargos que llegaron con la PARADA del mecánico
+
+Seis cosas pedidas sobre B7a ya cerrado, más una que apareció al rebasar.
+
+**1. Las seis formas "plurales" sin hueco adentro** ya estaban arregladas antes
+de que llegara el encargo, y por el mismo motivo que las encontró el mecánico:
+`ArtistsViewModel.cs:251/252/253` y `LibraryGrouping.cs:41` (`artista`,
+`álbum`, `canción` ×2) y `LibraryStatusSummary.cs:93` (`día`) eran piezas
+sueltas que el código pegaba al número por fuera, y salen a `conteo.artistas`,
+`conteo.albumes`, `conteo.canciones` y `conteo.dias`, con el `{0}` dentro de la
+frase. La sexta, `ContextMenu.cs:210`, es la que él mismo dice que no es un
+plural de verdad: dos etiquetas de menú sin número. Esa queda como forma de
+plural —el ruso y el árabe también eligen bien por ahí— y está declarada en
+`PluralFormsTests.WithoutNumber` con su razón.
+
+**2. `installer-family-change`** vuelve al `{0}` repetido, y el llamador pasa
+`installed` una sola vez. Reusar el índice para la misma expresión es lo normal
+en `string.Format` y además le dice a quien traduce que ese hueco es el mismo
+que el primero.
+
+**3. Los patrones nuevos del extractor** (517 sitios) traen dieciséis sitios más.
+Once de XAML —`AutomationProperties.Name` y `ToolTipService.ToolTip`— ya
+estaban migrados: los había encontrado el detector de esta rama antes de que
+el extractor los cubriera, y lo único que cambió ahora es que ocho toman el
+nombre que emite la herramienta en vez del que yo les había puesto, y salen de
+la lista de "claves nuevas" para compararse contra el borrador como cualquier
+otra. Uno queda declarado como nuevo porque su extractor todavía no lo ve. Los
+cinco de C# —`DeviceSafetyValidator`, por el ayudante propio
+`DeviceSafetyResult.Safe`/`Unsafe`— se migraron ahora, incluido el ternario de
+dos mensajes, que son dos claves porque son dos mensajes.
+
+Un detalle que la herramienta vio y yo no: el `AutomationProperties.Name` de la
+caja de búsqueda de Artistas dice lo mismo que su `PlaceholderText`, y yo había
+reusado la clave. Son **dos sitios**: el mismo texto hoy, no necesariamente
+mañana, y quien traduce tiene que poder decidirlo por separado.
+
+**4. Las categorías de video** ya están como dato aparte del texto —es la
+entrada anterior—, y ninguna de las seis filas "Dato, no traducir" del
+`revision.csv` se migró: `CatalogName()` es el literal español que se guarda y
+se compara, y `LocalizedName()` es un mapeo aparte que solo se muestra.
+
+**5. `orphans-confirm-message`: la composición está hecha, y el `Skip` se
+queda.** Y el motivo cambió, que es lo que importa: ya no espera trabajo del
+Experto. La prueba lee el **borrador** `.resw`, que es la foto del código de
+*antes* de B7a, y ahí esa clave todavía tiene el `{0} ` adelante. Para que
+calce habría que regenerar el borrador — y eso ya no se puede: con las
+quinientas cincuenta cadenas fuera del código el extractor no encontraría casi
+nada y la foto quedaría vacía, y esa foto es contra lo que
+`SpanishUnchangedTests` comprueba que el español no cambió ni una letra.
+Regenerarla sería tirar la única prueba de eso.
+
+O sea que **la premisa de esa prueba se vence al terminar B7a**: comparaba el
+CSV contra un borrador que era el mejor retrato disponible del texto de
+Windows, y desde ahora el retrato de verdad es `Resources.resx`, donde la fila
+calza hoy. Es decisión de quien es dueño del borrador, no mía, así que el
+`Skip` queda con el nudo escrito adentro en vez de una prueba roja o un
+arreglo unilateral en un archivo ajeno.
+
+**6. Una línea que se corrió.** `DeleteEntryPointsTests` cita
+`SimilarItemsViewModel.cs:119` como hallazgo conocido, y sacar el ternario de
+plural a recurso lo movió a la 120. Es la cita, no el hallazgo: actualizada,
+con la nota de por qué se movió.
+
+### Verificación
+
+`dotnet build AuraStudio.Windows.slnx`: 0 errores. `dotnet test`: **1 810 en
+verde, 1 omitida** (la de arriba, con su motivo a la vista), ninguna en rojo.
+`dotnet test tests/ExtraerCadenasWindows.Tests`: 14 en verde. El tope de texto
+fuera de alcance baja de 396 a 392 al migrar `DeviceSafetyValidator`; es un
+trinquete, así que se baja cuando baja.

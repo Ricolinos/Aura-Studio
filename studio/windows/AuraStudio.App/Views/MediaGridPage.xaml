@@ -37,7 +37,7 @@
                 <Button Content="{x:Bind str:Strings.Get('media-grid-page.buscar-posters')}" Click="VideoPosters_Click"
                         Visibility="{x:Bind ViewModel.ShowsVideoPosterAction, Converter={StaticResource BoolToVisibility}}"
                         IsEnabled="{x:Bind ViewModel.Library.IsEnriching, Mode=OneWay, Converter={StaticResource InvertBool}}"
-                        ToolTipService.ToolTip="{x:Bind str:Strings.Get('media-grid-page.descarga-posters-que-falten')}" />
+                        ToolTipService.ToolTip="{x:Bind str:Strings.Get('media-grid-page.descarga-posters-falten-viajan-pegados-v')}" />
 
             </StackPanel>
         </Grid>

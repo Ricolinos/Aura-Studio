@@ -30,10 +30,10 @@
                 <Grid ColumnSpacing="8" ColumnDefinitions="*,Auto">
                     <TextBox PlaceholderText="{x:Bind str:Strings.Get('artists-page.buscar-artistas')}"
                              Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                             AutomationProperties.Name="{x:Bind str:Strings.Get('artists-page.buscar-artistas')}" />
+                             AutomationProperties.Name="{x:Bind str:Strings.Get('artists-page.buscar-artistas-2')}" />
                     <Button Grid.Column="1" Click="FetchPhotos_Click"
                             IsEnabled="{x:Bind ViewModel.Library.IsEnriching, Mode=OneWay, Converter={StaticResource InvertBool}}"
-                            ToolTipService.ToolTip="{x:Bind str:Strings.Get('artists-page.buscar-fotos-artistas-linea')}">
+                            ToolTipService.ToolTip="{x:Bind str:Strings.Get('artists-page.buscar-fotos-artistas-linea-fanart-tv')}">
                         <FontIcon Glyph="&#xE8D4;" FontSize="14" />
                     </Button>
                 </Grid>

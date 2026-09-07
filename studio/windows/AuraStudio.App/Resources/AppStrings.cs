@@ -352,7 +352,7 @@ public static class AppStrings
     /// se puede volver a él), pero nunca puede pasar en silencio.
     /// </summary>
     public static string InstallerFamilyChange(string installed, string target) =>
-        Strings.Format("app-strings.installer-family-change", installed, target, installed);
+        Strings.Format("app-strings.installer-family-change", installed, target);
 
     public static string InstallerPrepareDisk => Strings.Get("app-strings.installer-prepare-disk");
     public static string InstallerDryRun => Strings.Get("app-strings.installer-dry-run");

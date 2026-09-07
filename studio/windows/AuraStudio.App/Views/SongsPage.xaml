@@ -56,11 +56,11 @@
                 </Button>
 
                 <Button Content="{x:Bind str:Strings.Get('songs-page.elementos-parecidos')}" Click="Similar_Click"
-                        ToolTipService.ToolTip="{x:Bind str:Strings.Get('songs-page.busca-repetidos')}" />
+                        ToolTipService.ToolTip="{x:Bind str:Strings.Get('songs-page.busca-canciones-fotos-videos-parezcan-re')}" />
 
                 <Button Content="{x:Bind str:Strings.Get('songs-page.completar-linea')}" Click="Enrich_Click"
                         IsEnabled="{x:Bind ViewModel.Library.IsEnriching, Mode=OneWay, Converter={StaticResource InvertBool}}"
-                        ToolTipService.ToolTip="{x:Bind str:Strings.Get('songs-page.busca-album-ano-caratula-letra')}" />
+                        ToolTipService.ToolTip="{x:Bind str:Strings.Get('songs-page.busca-album-ano-caratula-letra-lo')}" />
 
                 <Button x:Name="ColumnsButton" ToolTipService.ToolTip="{x:Bind res:AppStrings.LibraryColumns}"
                         AutomationProperties.Name="{x:Bind res:AppStrings.LibraryColumns}">

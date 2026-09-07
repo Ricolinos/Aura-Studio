@@ -278,7 +278,7 @@
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <Button Content="{x:Bind str:Strings.Get('device-list-page.revisar-cambios')}" Command="{x:Bind Sync.PreviewCommand}"
                                     IsEnabled="{x:Bind Sync.IsBusy, Mode=OneWay, Converter={StaticResource InvertBool}}"
-                                    ToolTipService.ToolTip="{x:Bind str:Strings.Get('device-list-page.calcula-que-se-copiaria')}" />
+                                    ToolTipService.ToolTip="{x:Bind str:Strings.Get('device-list-page.calcula-se-copiaria-escribe-nada-ipod')}" />
                             <!-- El botón nunca lleva a un camino que falla: sin
                                  iPod con Aura, o con el alcance en una selección
                                  vacía, no se puede sincronizar y se ve. -->

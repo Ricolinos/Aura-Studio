@@ -44,7 +44,7 @@
             <Button Content="{x:Bind str:Strings.Get('library-status-strip.detener')}"
                     Visibility="{x:Bind Tasks.Current.IsCancellable, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
                     Click="CancelTask_Click"
-                    AutomationProperties.Name="{x:Bind str:Strings.Get('library-status-strip.detener-tarea-en-curso')}" />
+                    AutomationProperties.Name="{x:Bind str:Strings.Get('library-status-strip.detener-tarea-curso')}" />
         </StackPanel>
 
         <!-- El botón suelto de ST-141 se fue con ST-203: la normalización de

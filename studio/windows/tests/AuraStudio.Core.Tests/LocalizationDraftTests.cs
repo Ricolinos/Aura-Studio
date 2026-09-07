@@ -360,11 +360,27 @@ public class LocalizationDraftTests
 
     /// <summary>
     /// La décima fila, sacada de la prueba general de arriba -- ver esa
-    /// prueba para el porqué. Queda escrita entera (no comentada, no
-    /// borrada) para que alguien solo tenga que quitar el <c>Skip</c> cuando
-    /// el Experto componga <c>OrphansConfirmMessage</c> desde dos recursos.
+    /// prueba para el porqué.
+    ///
+    /// <para><b>La composición ya está hecha</b> (ST-247, cierre de B7a):
+    /// <c>AppStrings.OrphansConfirmMessage</c> une <c>OrphansFound(scan)</c> con
+    /// <c>orphans-confirm-message</c>, y en <c>Resources.resx</c> esa clave es
+    /// ahora el texto de la Mac palabra por palabra. Lo que falta no es
+    /// código: es que el <c>.resw</c> que esta prueba lee lo refleje, y ese
+    /// archivo es el <b>borrador</b> — la foto del código de ANTES de B7a.</para>
+    ///
+    /// <para>Y ahí está el nudo: ese borrador ya no se puede regenerar. Con las
+    /// quinientas cincuenta cadenas fuera del código, el extractor no
+    /// encontraría casi nada y la foto quedaría vacía; pero esa foto es contra
+    /// lo que <c>SpanishUnchangedTests</c> comprueba que el español no cambió
+    /// ni una letra. Regenerarla sería tirar la única prueba de eso.</para>
+    ///
+    /// <para>Así que el <c>Skip</c> se queda, con el motivo cambiado: no espera
+    /// trabajo del Experto, espera una decisión de quién es dueño del borrador
+    /// sobre qué mira esta prueba ahora que B7a terminó — el borrador congelado
+    /// o el <c>Resources.resx</c> de verdad, donde hoy calzaría.</para>
     /// </summary>
-    [Fact(Skip = "hasta que B7a componga orphans-confirm-message desde orphans-found + texto compartido (decisión ST-225/ST-247)")]
+    [Fact(Skip = "la composición ya está hecha en B7a; falta que el borrador .resw la refleje, y hoy no se puede regenerar sin borrar la foto de antes de B7a — ver la nota de arriba")]
     public void OrphansConfirmMessageExisteEnElReswDeWindowsConElMismoTexto()
     {
         Dictionary<string, string> resw = ReadResw(RequireFile(Path.Combine("Strings", "es", "Resources.resw")));

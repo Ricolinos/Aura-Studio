@@ -57,7 +57,7 @@ public class DeleteEntryPointsTests
     /// (<c>KeepOnly_Click</c> no muestra ningún diálogo, solo resuelve el
     /// <c>Guid</c> del botón y llama <c>ViewModel.KeepOnly</c> derecho). El
     /// doc-comment de <c>KeepOnly</c> (líneas 107-109) y el mensaje de éxito
-    /// (líneas 122-124) además mienten: dicen que el archivo "sigue en tu
+    /// (líneas 123-125) además mienten: dicen que el archivo "sigue en tu
     /// computadora", falso para un elemento en modo copia desde B5 (va a la
     /// Papelera sin avisar). El arreglo real es de interfaz (mostrar
     /// confirmación antes de <c>KeepOnly</c>, o enrutar por
@@ -68,7 +68,10 @@ public class DeleteEntryPointsTests
     /// </summary>
     private static readonly HashSet<(string File, int Line)> KnownUnconfirmedBypasses = new()
     {
-        ("AuraStudio.App/ViewModels/SimilarItemsViewModel.cs", 119),
+        // La línea se corrió un renglón al sacar el ternario de plural a recurso
+        // (ST-247). El hallazgo es el mismo; su arreglo real es el addendum de
+        // ST-245, que no cabe en B7a.
+        ("AuraStudio.App/ViewModels/SimilarItemsViewModel.cs", 120),
     };
 
     [Fact]
