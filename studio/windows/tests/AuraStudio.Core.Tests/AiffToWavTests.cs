@@ -147,6 +147,73 @@ public class AiffToWavTests
         Assert.Contains("SSND", Assert.Throws<AiffFormatException>(() => Convert(sinSsnd)).Message);
     }
 
+
+    // MARK: - Cabeceras rotas (ST-246, recibido de ST-223)
+
+    /// <summary>
+    /// Una cabecera con valores imposibles se rechaza <b>con el motivo dicho</b>.
+    /// Sin estas comprobaciones, una frecuencia de 0 o 0 canales produciría una
+    /// división por cero o una reserva absurda de memoria más adelante: el
+    /// proceso se cae y el usuario no sabe cuál de sus archivos lo tumbó.
+    /// </summary>
+    [Theory]
+    [InlineData(0, 44100, 16, "canales")]
+    [InlineData(99, 44100, 16, "canales")]
+    [InlineData(2, 0, 16, "frecuencia")]
+    [InlineData(2, 999, 16, "frecuencia")]
+    [InlineData(2, 999999, 16, "frecuencia")]
+    [InlineData(2, 44100, 0, "bits")]
+    [InlineData(2, 44100, 12, "bits")]
+    [InlineData(2, 44100, 64, "bits")]
+    public void UnaCabeceraImposibleSeRechazaConElMotivoDicho(
+        int channels, int sampleRate, int bits, string expected)
+    {
+        byte[] aiff = Form("AIFF",
+        [
+            .. Chunk("COMM", Common(channels, sampleRate, bits, 1, null)),
+            .. Chunk("SSND", [.. BigEndian32(0), .. BigEndian32(0), .. new byte[16]])
+        ]);
+
+        AiffFormatException error = Assert.Throws<AiffFormatException>(() => Convert(aiff));
+
+        Assert.Contains(expected, error.Message);
+    }
+
+    /// <summary>
+    /// Un <c>SSND</c> que declara más audio del que hay: el bloque dice mil
+    /// muestras y trae dos. Convertirlo a medias dejaría un WAV truncado que
+    /// abre y suena cortado; se dice que está truncado y no se entrega nada.
+    /// </summary>
+    [Fact]
+    public void UnSsndQueMienteSobreSuTamanoSeRechaza()
+    {
+        byte[] aiff = Form("AIFF",
+        [
+            .. Chunk("COMM", Common(2, 44100, 16, 1000, null)),
+            .. Chunk("SSND", [.. BigEndian32(0), .. BigEndian32(0), .. new byte[8]])
+        ]);
+
+        Assert.Contains("truncado", Assert.Throws<AiffFormatException>(() => Convert(aiff)).Message);
+    }
+
+    /// <summary>
+    /// Y ninguna de esas rechazadas escribe nada: lo que se le pasó como salida
+    /// queda vacío. Un archivo roto no puede dejar residuos.
+    /// </summary>
+    [Fact]
+    public void UnAiffRotoNoDejaNadaEscrito()
+    {
+        byte[] aiff = Form("AIFF",
+        [
+            .. Chunk("COMM", Common(0, 0, 0, 0, null)),
+            .. Chunk("SSND", [.. BigEndian32(0), .. BigEndian32(0)])
+        ]);
+
+        var output = new MemoryStream();
+
+        Assert.Throws<AiffFormatException>(() => AiffToWav.Convert(new MemoryStream(aiff), output));
+        Assert.Equal(0, output.Length);
+    }
     // MARK: - Armar un AIFF
 
     private static byte[] Aiff(

@@ -140,6 +140,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
@@ -174,7 +175,26 @@
                                  Margin="0,0,0,8" />
             </InfoBar>
 
-            <Frame x:Name="ContentFrame" Grid.Row="2" />
+
+            <!-- ST-246: una biblioteca de una versión anterior se avisa, NUNCA
+                 se migra sola. Franja y no diálogo, como el aviso de
+                 actualización: no interrumpe, y el botón es del usuario. No se
+                 puede cerrar porque no es una novedad que se descarta — es
+                 trabajo pendiente sobre sus archivos, y desaparece cuando de
+                 verdad se hizo. -->
+            <InfoBar Grid.Row="2"
+                     Margin="24,12,24,0"
+                     IsOpen="{x:Bind ViewModel.Library.NeedsMigration, Mode=OneWay}"
+                     IsClosable="False"
+                     Severity="Informational"
+                     Title="Esta biblioteca viene de una versión anterior"
+                     Message="{x:Bind ViewModel.Library.MigrationMessage, Mode=OneWay}">
+                <InfoBar.ActionButton>
+                    <Button Content="Migrar biblioteca"
+                            Command="{x:Bind ViewModel.Library.MigrateLibraryCommand}" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+            <Frame x:Name="ContentFrame" Grid.Row="3" />
         </Grid>
 
     </NavigationView>

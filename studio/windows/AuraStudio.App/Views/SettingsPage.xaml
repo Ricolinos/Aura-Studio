@@ -186,6 +186,20 @@
                     <TextBlock Text="{x:Bind ViewModel.OrphanCleanupResult, Mode=OneWay}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
+
+                    <!-- ST-246: la migración también vive acá, no solo en el
+                         aviso. El aviso se apaga cuando ya no queda nada por
+                         migrar, y hay un caso que no se puede detectar barato
+                         al abrir —copias sin etiquetas escritas—: sin esta
+                         entrada, ese caso no tendría por dónde arreglarse. -->
+                    <TextBlock Text="Migrar de una versión anterior"
+                               Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
+                    <TextBlock Text="{x:Bind ViewModel.MigrationDetail, Mode=OneWay}"
+                               Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
+
+                    <Button Content="Migrar biblioteca"
+                            Command="{x:Bind ViewModel.Library.MigrateLibraryCommand}"
+                            HorizontalAlignment="Left" />
                     <TextBlock Text="Carpetas vinculadas"
                                Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
                     <TextBlock Text="Carpetas externas que arrastraste con la copia apagada. Aura no copia nada de ahí, solo las recuerda. Quitar una de esta lista no borra ni desvincula lo que ya importaste desde ella: solo deja de mostrarla."

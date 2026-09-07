@@ -252,6 +252,26 @@ public sealed partial class SettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(PendingOrphanCount));
     }
 
+    // MARK: - Migración de una versión anterior (ST-246)
+
+    /// <summary>La biblioteca, para el botón de migrar.</summary>
+    public LibraryViewModel Library => _library;
+
+    /// <summary>
+    /// Qué dice la sección de migración. Cuando hay algo detectado se dice qué
+    /// es; cuando no, se explica igual para qué sirve — porque hay un caso que
+    /// <b>no se puede detectar al abrir sin leer archivo por archivo</b>
+    /// (copias de <c>Música/</c> a las que les faltan las etiquetas del
+    /// catálogo), y ST-203 prohíbe hacer eso en el arranque. Ese caso se
+    /// arregla desde acá.
+    /// </summary>
+    public string MigrationDetail => _library.MigrationNeed.Needed
+        ? _library.MigrationMessage
+        : "Si esta biblioteca la armó una versión anterior de Aura Studio, migrarla deja las "
+          + "etiquetas del catálogo escritas en las copias de Música, ordena lo preparado y borra "
+          + "lo que ya no usa nadie. Tus archivos originales no se tocan, y correrla de nuevo "
+          + "cuando ya está al día no cambia nada.";
+
     public IReadOnlyList<string> LinkedFolders => _preferences.LinkedLibraryFolders;
 
     public bool HasLinkedFolders => LinkedFolders.Count > 0;

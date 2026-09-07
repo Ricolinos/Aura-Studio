@@ -147,7 +147,7 @@ public static class AudioTranscoder
         // El temporal NUNCA se llama como música (ST-242): un `.aura-tmp` tirado
         // al lado de la biblioteca es basura evidente que nadie va a importar;
         // un `.mp3` tirado es una canción duplicada.
-        string temporary = destinationPath + ".aura-tmp";
+        string temporary = destinationPath + LibraryFileCopier.TemporarySuffix;
 
         // El WAV intermedio del AIFF sí lleva su extensión, y por eso vive en la
         // carpeta temporal de la app y no al lado de la música: Media Foundation
@@ -294,8 +294,14 @@ public static class AudioTranscoder
 
         if (!prepared.CanTranscode)
         {
+            // El motivo que da Windows suele ser "Unknown", que no le dice nada
+            // a nadie. Se acompaña con lo que de verdad pasa casi siempre —el
+            // archivo está dañado o no es del formato que dice su extensión—,
+            // dicho como lo probable y no como algo comprobado (ST-246).
             throw new AudioTranscodeException(
-                $"Windows no puede convertir este archivo ({prepared.FailureReason}).");
+                $"Windows no pudo leer «{Path.GetFileName(sourcePath)}» para convertirlo "
+                + $"(motivo: {prepared.FailureReason}). Suele ser un archivo dañado, o que no es "
+                + "del formato que dice su extensión.");
         }
 
         await prepared.TranscodeAsync().AsTask(ct).ConfigureAwait(false);
