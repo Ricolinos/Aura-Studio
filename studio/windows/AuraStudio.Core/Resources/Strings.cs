@@ -84,18 +84,36 @@ public static class Strings
     /// español metida en el programa, y en ruso hacen falta tres formas y en
     /// japonés una sola.</para>
     /// </summary>
-    public static string Plural(string key, int count, params object?[] arguments)
+    public static string Plural(string key, int count, params object?[] arguments) =>
+        string.Format(CultureInfo.CurrentUICulture, Template(key, count), [count, .. arguments]);
+
+    /// <summary>
+    /// Igual que <see cref="Plural"/>, pero el número va escrito con el formato
+    /// de la cultura, con sus separadores de miles.
+    ///
+    /// <para>Existe aparte porque no es lo mismo en todos lados: la barra de
+    /// estado dice "1,234 canciones" y un mensaje de operación dice "1234
+    /// archivos copiados". Unificarlos cambiaría lo que el usuario lee en uno
+    /// de los dos, y B7a mueve, no redacta.</para>
+    /// </summary>
+    public static string PluralCount(string key, int count) =>
+        string.Format(
+            CultureInfo.CurrentUICulture,
+            Template(key, count),
+            count.ToString("N0", CultureInfo.CurrentCulture));
+
+    /// <summary>
+    /// La forma que le toca a <paramref name="count"/>, con su respaldo: si la
+    /// cultura no trae esa forma se cae a <c>.other</c>, que toda cultura
+    /// tiene. Mejor el plural de otra forma que un hueco.
+    /// </summary>
+    private static string Template(string key, int count)
     {
         string suffix = PluralRules.SuffixFor(count, CultureInfo.CurrentUICulture);
-        string template = Manager.GetString(key + suffix, CultureInfo.CurrentUICulture)
 
-                          // Si la cultura no trae esa forma, se cae a la que
-                          // toda cultura tiene. Mejor el plural de otra forma
-                          // que un hueco.
-                          ?? Manager.GetString(key + PluralRules.OtherSuffix, CultureInfo.CurrentUICulture)
-                          ?? Missing(key + suffix);
-
-        return string.Format(CultureInfo.CurrentUICulture, template, [count, .. arguments]);
+        return Manager.GetString(key + suffix, CultureInfo.CurrentUICulture)
+               ?? Manager.GetString(key + PluralRules.OtherSuffix, CultureInfo.CurrentUICulture)
+               ?? Missing(key + suffix);
     }
 
     private static string Missing(string key) => $"⟦{key}⟧";

@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using AuraStudio.App.Services;
 using AuraStudio.Core.Library;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App.ViewModels;
 
@@ -79,7 +80,7 @@ public sealed partial class SimilarItemsViewModel : ViewModelBase
         IsScanning = false;
         LastMessage = found.Count == 0
             ? null
-            : found.Count == 1 ? "Se encontró 1 grupo parecido." : $"Se encontraron {found.Count} grupos parecidos.";
+            : Strings.Plural("similar-items-view-model.groups-found", found.Count);
 
         OnPropertyChanged(nameof(IsEmpty));
         OnPropertyChanged(nameof(EmptyMessage));
@@ -119,9 +120,7 @@ public sealed partial class SimilarItemsViewModel : ViewModelBase
         _library.Remove(doomed);
         Forget(groupId);
 
-        LastMessage = count == 1
-            ? "Se quitó 1 elemento de la biblioteca. El archivo sigue en tu computadora."
-            : $"Se quitaron {count} elementos de la biblioteca. Los archivos siguen en tu computadora.";
+        LastMessage = Strings.Plural("similar-items-view-model.items-removed", count);
     }
 
     /// <summary>Aplica las correcciones de metadata que el grupo proponía.</summary>

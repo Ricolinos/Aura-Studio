@@ -144,19 +144,19 @@ public sealed class StatusSummaryModel
         string total = section switch
         {
             LibraryStatusSection.Albums => LibraryStats.Join(
-                LibraryStats.Count(albums, "álbum", "álbumes"),
-                LibraryStats.Count(artists, "artista", "artistas"),
-                LibraryStats.Count(music.Count, "canción", "canciones")),
+                LibraryStats.Count(albums, "conteo.albumes"),
+                LibraryStats.Count(artists, "conteo.artistas"),
+                LibraryStats.Count(music.Count, "conteo.canciones")),
 
             LibraryStatusSection.Artists => LibraryStats.Join(
-                LibraryStats.Count(artists, "artista", "artistas"),
-                LibraryStats.Count(albums, "álbum", "álbumes"),
-                LibraryStats.Count(music.Count, "canción", "canciones")),
+                LibraryStats.Count(artists, "conteo.artistas"),
+                LibraryStats.Count(albums, "conteo.albumes"),
+                LibraryStats.Count(music.Count, "conteo.canciones")),
 
             _ => LibraryStats.Join(
-                LibraryStats.Count(music.Count, "canción", "canciones"),
-                LibraryStats.Count(artists, "artista", "artistas"),
-                LibraryStats.Count(albums, "álbum", "álbumes"))
+                LibraryStats.Count(music.Count, "conteo.canciones"),
+                LibraryStats.Count(artists, "conteo.artistas"),
+                LibraryStats.Count(albums, "conteo.albumes"))
         };
 
         denominator = section switch
@@ -196,7 +196,7 @@ public sealed class StatusSummaryModel
         if (!series)
         {
             return new LibraryStatusSummary(
-                LibraryStats.Count(groups, "película", "películas"),
+                LibraryStats.Count(groups, "conteo.peliculas"),
                 "",
                 LibraryStats.Join(
                     LibraryStats.DurationText(LibraryStats.TotalDuration(items)),
@@ -205,9 +205,9 @@ public sealed class StatusSummaryModel
 
         return new LibraryStatusSummary(
             LibraryStats.Join(
-                LibraryStats.Count(groups, "serie", "series"),
-                LibraryStats.Count(LibraryStats.SeasonCount(items), "temporada", "temporadas"),
-                LibraryStats.Count(items.Count, "episodio", "episodios")),
+                LibraryStats.Count(groups, "conteo.series"),
+                LibraryStats.Count(LibraryStats.SeasonCount(items), "conteo.temporadas"),
+                LibraryStats.Count(items.Count, "conteo.episodios")),
             "",
             LibraryStats.DurationText(LibraryStats.TotalDuration(items)));
     }
@@ -218,7 +218,7 @@ public sealed class StatusSummaryModel
         IReadOnlyList<LibraryItem> photos = [.. index.Items.Where(item => item.Kind == LibraryItemKind.Photo)];
         denominator = photos.Count;
 
-        List<string?> parts = [LibraryStats.Count(photos.Count, "foto", "fotos")];
+        List<string?> parts = [LibraryStats.Count(photos.Count, "conteo.fotos")];
 
         // El desglose va en el orden que el usuario configuró, y solo nombra las
         // colecciones que tienen algo: "0 en IA" no le dice nada a nadie.
@@ -232,7 +232,7 @@ public sealed class StatusSummaryModel
         }
 
         int albums = LibraryStats.PhotoAlbumCount(photos);
-        if (albums > 0) parts.Add(LibraryStats.Count(albums, "álbum", "álbumes"));
+        if (albums > 0) parts.Add(LibraryStats.Count(albums, "conteo.albumes"));
 
         return new LibraryStatusSummary(
             LibraryStats.Join([.. parts]),
@@ -259,7 +259,7 @@ public sealed class StatusSummaryModel
 
         denominator = videos.Count;
 
-        List<string?> parts = [LibraryStats.Count(videos.Count, "video", "videos")];
+        List<string?> parts = [LibraryStats.Count(videos.Count, "conteo.videos")];
 
         if (!clipsOnly && videos.Count > 0)
         {
@@ -267,9 +267,9 @@ public sealed class StatusSummaryModel
             int episodes = videos.Count(video => MediaCategoryNames.IsSeriesCategory(video.Category));
             int clips = videos.Count - movies - episodes;
 
-            if (movies > 0) parts.Add(LibraryStats.Count(movies, "película", "películas"));
-            if (episodes > 0) parts.Add(LibraryStats.Count(episodes, "episodio", "episodios"));
-            if (clips > 0) parts.Add(LibraryStats.Count(clips, "videoclip", "videoclips"));
+            if (movies > 0) parts.Add(LibraryStats.Count(movies, "conteo.peliculas"));
+            if (episodes > 0) parts.Add(LibraryStats.Count(episodes, "conteo.episodios"));
+            if (clips > 0) parts.Add(LibraryStats.Count(clips, "conteo.videoclips"));
         }
 
         return new LibraryStatusSummary(
@@ -305,8 +305,8 @@ public sealed class StatusSummaryModel
 
         return new LibraryStatusSummary(
             LibraryStats.Join(
-                LibraryStats.Count(named, "álbum", "álbumes"),
-                LibraryStats.Count(photos.Count, "foto", "fotos"),
+                LibraryStats.Count(named, "conteo.albumes"),
+                LibraryStats.Count(photos.Count, "conteo.fotos"),
                 loose > 0 ? $"{LibraryStats.Formatted(loose)} sin álbum" : null),
             "",
             LibraryStats.SizeText(LibraryStats.TotalSize(photos)));
@@ -332,14 +332,14 @@ public sealed class StatusSummaryModel
         {
             LibraryStatusSection.Albums => LibraryStats.Join(
                 OfTotal(selectedGroupCount, "seleccionados"),
-                LibraryStats.Count(LibraryStats.ArtistCount(selected, options), "artista", "artistas"),
-                LibraryStats.Count(selected.Count, "canción", "canciones"),
+                LibraryStats.Count(LibraryStats.ArtistCount(selected, options), "conteo.artistas"),
+                LibraryStats.Count(selected.Count, "conteo.canciones"),
                 duration),
 
             LibraryStatusSection.Artists => LibraryStats.Join(
                 OfTotal(selectedGroupCount, "seleccionados"),
-                LibraryStats.Count(LibraryStats.AlbumCount(selected, options), "álbum", "álbumes"),
-                LibraryStats.Count(selected.Count, "canción", "canciones"),
+                LibraryStats.Count(LibraryStats.AlbumCount(selected, options), "conteo.albumes"),
+                LibraryStats.Count(selected.Count, "conteo.canciones"),
                 duration),
 
             LibraryStatusSection.Movies => LibraryStats.Join(
@@ -347,8 +347,8 @@ public sealed class StatusSummaryModel
 
             LibraryStatusSection.Series => LibraryStats.Join(
                 OfTotal(selectedGroupCount, "seleccionadas"),
-                LibraryStats.Count(LibraryStats.SeasonCount(selected), "temporada", "temporadas"),
-                LibraryStats.Count(selected.Count, "episodio", "episodios"),
+                LibraryStats.Count(LibraryStats.SeasonCount(selected), "conteo.temporadas"),
+                LibraryStats.Count(selected.Count, "conteo.episodios"),
                 duration),
 
             // En "Todas las fotos" y en los listados planos de video la tarjeta ES
@@ -361,13 +361,13 @@ public sealed class StatusSummaryModel
 
             LibraryStatusSection.PhotoAlbums => LibraryStats.Join(
                 OfTotal(selectedGroupCount, "seleccionados"),
-                LibraryStats.Count(selected.Count, "foto", "fotos"),
+                LibraryStats.Count(selected.Count, "conteo.fotos"),
                 size),
 
             _ => LibraryStats.Join(
                 OfTotal(selected.Count, "seleccionadas"),
-                LibraryStats.Count(LibraryStats.ArtistCount(selected, options), "artista", "artistas"),
-                LibraryStats.Count(LibraryStats.AlbumCount(selected, options), "álbum", "álbumes"),
+                LibraryStats.Count(LibraryStats.ArtistCount(selected, options), "conteo.artistas"),
+                LibraryStats.Count(LibraryStats.AlbumCount(selected, options), "conteo.albumes"),
                 duration)
         };
     }

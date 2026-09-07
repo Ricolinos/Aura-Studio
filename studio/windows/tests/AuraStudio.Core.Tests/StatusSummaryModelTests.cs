@@ -204,7 +204,7 @@ public class LibraryStatsTests
     [InlineData(2, "2 canciones")]
     [InlineData(12000, "12,000 canciones")]
     public void PluralizaYSeparaLosMiles(int value, string expected) =>
-        Assert.Equal(expected, LibraryStats.Count(value, "canción", "canciones"));
+        Assert.Equal(expected, LibraryStats.Count(value, "conteo.canciones"));
 
     [Theory]
     [InlineData(0, "")]

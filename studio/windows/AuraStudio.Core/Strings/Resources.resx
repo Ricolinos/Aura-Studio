@@ -21,6 +21,12 @@
   <data name="album-cover-picker.omitir-este-album" xml:space="preserve">
     <value>Omitir este álbum</value>
   </data>
+  <data name="album-cover-picker.title-in-set" xml:space="preserve">
+    <value>Álbum {0} de {1} · tapas de "{2}"</value>
+  </data>
+  <data name="album-cover-picker.title-single" xml:space="preserve">
+    <value>Tapas de "{0}"</value>
+  </data>
   <data name="album-cover-picker.usar-esta" xml:space="preserve">
     <value>Usar esta</value>
   </data>
@@ -861,6 +867,12 @@
   <data name="conteo.peliculas.other" xml:space="preserve">
     <value>{0} películas</value>
   </data>
+  <data name="conteo.seleccionados.one" xml:space="preserve">
+    <value>{0} seleccionado</value>
+  </data>
+  <data name="conteo.seleccionados.other" xml:space="preserve">
+    <value>{0} seleccionados</value>
+  </data>
   <data name="conteo.series.one" xml:space="preserve">
     <value>{0} serie</value>
   </data>
@@ -872,6 +884,12 @@
   </data>
   <data name="conteo.temporadas.other" xml:space="preserve">
     <value>{0} temporadas</value>
+  </data>
+  <data name="conteo.videoclips.one" xml:space="preserve">
+    <value>{0} videoclip</value>
+  </data>
+  <data name="conteo.videoclips.other" xml:space="preserve">
+    <value>{0} videoclips</value>
   </data>
   <data name="conteo.videos.one" xml:space="preserve">
     <value>{0} video</value>
@@ -1221,6 +1239,12 @@
   <data name="library-status-summary.days-and-hours" xml:space="preserve">
     <value>{0} {1} h</value>
   </data>
+  <data name="library-view-model.album-cover-applied.one" xml:space="preserve">
+    <value>Se cambió la tapa de {0} canción.</value>
+  </data>
+  <data name="library-view-model.album-cover-applied.other" xml:space="preserve">
+    <value>Se cambió la tapa de {0} canciones.</value>
+  </data>
   <data name="library-view-model.buscando-fotos-artista" xml:space="preserve">
     <value>Buscando fotos de artista…</value>
   </data>
@@ -1236,8 +1260,68 @@
   <data name="library-view-model.completando-title" xml:space="preserve">
     <value>Completando {0}…</value>
   </data>
+  <data name="library-view-model.copied-files.one" xml:space="preserve">
+    <value>Se copió {0} archivo a la biblioteca.</value>
+  </data>
+  <data name="library-view-model.copied-files.other" xml:space="preserve">
+    <value>Se copiaron {0} archivos a la biblioteca.</value>
+  </data>
+  <data name="library-view-model.copy-failed.one" xml:space="preserve">
+    <value>{0} no se pudo copiar.</value>
+  </data>
+  <data name="library-view-model.copy-failed.other" xml:space="preserve">
+    <value>{0} no se pudieron copiar.</value>
+  </data>
+  <data name="library-view-model.copy-skipped.one" xml:space="preserve">
+    <value>{0} se saltó porque su archivo no está; sigue en el catálogo.</value>
+  </data>
+  <data name="library-view-model.copy-skipped.other" xml:space="preserve">
+    <value>{0} se saltaron porque sus archivos no están; siguen en el catálogo.</value>
+  </data>
+  <data name="library-view-model.copying-files.one" xml:space="preserve">
+    <value>Copiando {0} archivo a la biblioteca…</value>
+  </data>
+  <data name="library-view-model.copying-files.other" xml:space="preserve">
+    <value>Copiando {0} archivos a la biblioteca…</value>
+  </data>
+  <data name="library-view-model.covers-normalized.one" xml:space="preserve">
+    <value>Se normalizó {0} carátula: ahora es cuadrada.</value>
+  </data>
+  <data name="library-view-model.covers-normalized.other" xml:space="preserve">
+    <value>Se normalizaron {0} carátulas: ahora son cuadradas.</value>
+  </data>
+  <data name="library-view-model.covers-removed.one" xml:space="preserve">
+    <value>Se quitó {0} carátula.</value>
+  </data>
+  <data name="library-view-model.covers-removed.other" xml:space="preserve">
+    <value>Se quitaron {0} carátulas.</value>
+  </data>
   <data name="library-view-model.hay-nada-completar-todo-tiene-titulo" xml:space="preserve">
     <value>No hay nada que completar: todo tiene título, artista y álbum.</value>
+  </data>
+  <data name="library-view-model.migration-legacy-prepared.one" xml:space="preserve">
+    <value>{0} archivo preparado usa el nombre viejo</value>
+  </data>
+  <data name="library-view-model.migration-legacy-prepared.other" xml:space="preserve">
+    <value>{0} archivos preparados usan el nombre viejo</value>
+  </data>
+  <data name="library-view-model.migration-tagged.one" xml:space="preserve">
+    <value>se escribieron las etiquetas de {0} canción</value>
+  </data>
+  <data name="library-view-model.migration-tagged.other" xml:space="preserve">
+    <value>se escribieron las etiquetas de {0} canciones</value>
+  </data>
+  <data name="library-view-model.migration-without-storage.one" xml:space="preserve">
+    <value>{0} elemento no dice todavía si su archivo es una copia de Aura o tuyo</value>
+  </data>
+  <data name="library-view-model.migration-without-storage.other" xml:space="preserve">
+    <value>{0} elementos no dicen todavía si sus archivos son copias de Aura o tuyos</value>
+  </data>
+  <data name="library-view-model.not-started.one" xml:space="preserve">
+    <value>{1} {0} quedó sin revisar (cancelaste).</value>
+  </data>
+  <data name="library-view-model.not-started.other" xml:space="preserve">
+    <value>{1} {0} quedaron sin revisar (cancelaste).</value>
   </data>
   <data name="library-view-model.se-detuvo-busqueda-fotos" xml:space="preserve">
     <value>Se detuvo la búsqueda de fotos.</value>
@@ -1257,6 +1341,18 @@
   <data name="library-view-model.se-pudo-leer-ninguna-etiqueta-archivos" xml:space="preserve">
     <value>No se pudo leer ninguna etiqueta: los archivos no están disponibles.</value>
   </data>
+  <data name="library-view-model.searching-covers.one" xml:space="preserve">
+    <value>Buscando carátula…</value>
+  </data>
+  <data name="library-view-model.searching-covers.other" xml:space="preserve">
+    <value>Buscando carátulas de {0} álbumes…</value>
+  </data>
+  <data name="library-view-model.tags-reread.one" xml:space="preserve">
+    <value>Se releyeron las etiquetas de {0} canción.</value>
+  </data>
+  <data name="library-view-model.tags-reread.other" xml:space="preserve">
+    <value>Se releyeron las etiquetas de {0} canciones.</value>
+  </data>
   <data name="main-window.aura-studio" xml:space="preserve">
     <value>Aura Studio</value>
   </data>
@@ -1274,6 +1370,12 @@
   </data>
   <data name="media-grid-page.xaml.renombrar-album" xml:space="preserve">
     <value>Renombrar álbum</value>
+  </data>
+  <data name="media-grid-view-model.photos-removed-from-album.one" xml:space="preserve">
+    <value>Se quitó {0} foto de su álbum.</value>
+  </data>
+  <data name="media-grid-view-model.photos-removed-from-album.other" xml:space="preserve">
+    <value>Se quitaron {0} fotos de su álbum.</value>
   </data>
   <data name="media-info-dialog.cancelar" xml:space="preserve">
     <value>Cancelar</value>
@@ -1593,6 +1695,18 @@
   <data name="similar-items-page.volver-mostrar-descartados" xml:space="preserve">
     <value>Volver a mostrar los descartados</value>
   </data>
+  <data name="similar-items-view-model.groups-found.one" xml:space="preserve">
+    <value>Se encontró {0} grupo parecido.</value>
+  </data>
+  <data name="similar-items-view-model.groups-found.other" xml:space="preserve">
+    <value>Se encontraron {0} grupos parecidos.</value>
+  </data>
+  <data name="similar-items-view-model.items-removed.one" xml:space="preserve">
+    <value>Se quitó {0} elemento de la biblioteca. El archivo sigue en tu computadora.</value>
+  </data>
+  <data name="similar-items-view-model.items-removed.other" xml:space="preserve">
+    <value>Se quitaron {0} elementos de la biblioteca. Los archivos siguen en tu computadora.</value>
+  </data>
   <data name="songs-page.busca-album-ano-caratula-letra" xml:space="preserve">
     <value>Busca álbum, año, carátula y letra de lo que esté incompleto</value>
   </data>
@@ -1619,6 +1733,12 @@
   </data>
   <data name="sync-view-model.este-ipod-esta-ejecutando-aura-instala" xml:space="preserve">
     <value>Este iPod no está ejecutando Aura. Instala Aura antes de sincronizar.</value>
+  </data>
+  <data name="sync-view-model.orphan-header.one" xml:space="preserve">
+    <value>{0} archivo del iPod ya no está en tu biblioteca</value>
+  </data>
+  <data name="sync-view-model.orphan-header.other" xml:space="preserve">
+    <value>{0} archivos del iPod ya no están en tu biblioteca</value>
   </data>
   <data name="sync-view-model.revisa-cambios-antes-sincronizar" xml:space="preserve">
     <value>Revisa los cambios antes de sincronizar.</value>

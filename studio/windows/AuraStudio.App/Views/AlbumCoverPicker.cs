@@ -208,10 +208,13 @@ internal static class AlbumCoverPicker
         }
     }
 
+    // No son el singular y el plural de lo mismo: uno dice en qué lugar de la
+    // tanda va este álbum y el otro no habla de ninguna tanda. Son dos
+    // mensajes, así que dos claves y no formas de plural.
     private static string TitleFor(string albumTitle, int position, int total) =>
         total > 1
-            ? $"Álbum {position} de {total} · tapas de \"{albumTitle}\""
-            : $"Tapas de \"{albumTitle}\"";
+            ? Strings.Format("album-cover-picker.title-in-set", position, total, albumTitle)
+            : Strings.Format("album-cover-picker.title-single", albumTitle);
 
     private static ProgressRing Searching() => new() { IsActive = true, Width = 32, Height = 32 };
 

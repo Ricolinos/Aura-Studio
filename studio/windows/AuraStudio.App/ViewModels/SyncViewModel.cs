@@ -84,9 +84,7 @@ public sealed partial class SyncViewModel : ViewModelBase
 
     public bool HasFailures => FailureMessage.Length > 0;
 
-    public string OrphanHeader => Orphans.Count == 1
-        ? "1 archivo del iPod ya no está en tu biblioteca"
-        : $"{Orphans.Count} archivos del iPod ya no están en tu biblioteca";
+    public string OrphanHeader => Strings.Plural("sync-view-model.orphan-header", Orphans.Count);
 
     [RelayCommand]
     private async Task PreviewAsync()

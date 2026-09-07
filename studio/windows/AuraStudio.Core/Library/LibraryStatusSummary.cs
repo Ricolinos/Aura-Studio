@@ -78,9 +78,16 @@ public static class LibraryStats
 
     public static string Formatted(int value) => value.ToString("N0", DisplayCulture);
 
-    /// <summary>"1 canción" / "3 canciones".</summary>
-    public static string Count(int value, string singular, string plural) =>
-        $"{Formatted(value)} {(value == 1 ? singular : plural)}";
+    /// <summary>
+    /// "1 canción" / "1,234 canciones", con el número escrito como lo escribe
+    /// la cultura activa.
+    ///
+    /// <para>Recibe una <b>clave</b> de plural, no un sustantivo en singular y
+    /// otro en plural (ST-247). Un sustantivo suelto que la app pega al número
+    /// por fuera es intraducible: en ruso la concordancia depende del número y
+    /// del caso, y en otros idiomas el número ni siquiera va delante.</para>
+    /// </summary>
+    public static string Count(int value, string key) => Strings.PluralCount(key, value);
 
     /// <summary>Une con el separador de la barra, saltando lo vacío.</summary>
     public static string Join(params string?[] parts) =>

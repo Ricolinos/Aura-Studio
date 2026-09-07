@@ -213,8 +213,15 @@ public static class LibraryContextMenus
         // cinco pasadas — y la acción tiene todo el sentido en plural.
         if (scope.HasArtistPhoto)
         {
+            // Cuántos tienen foto es opcional en el alcance: cero significa "no
+            // lo dijeron", no "ninguno" —el `if` de arriba ya garantiza que hay
+            // al menos uno—. Sin ese piso, el plural del español manda el cero
+            // a la forma de muchos y el menú diría "Quitar fotos de los
+            // artistas" con un solo artista.
+            int withPhoto = Math.Max(scope.ArtistsWithPhotoCount, 1);
+
             items.Add(new MenuEntry("artist.photo.remove",
-                Strings.Plural("context-menu.quitar-foto-artista", scope.ArtistsWithPhotoCount)));
+                Strings.Plural("context-menu.quitar-foto-artista", withPhoto)));
         }
 
         items.Add(MenuEntry.Separator);

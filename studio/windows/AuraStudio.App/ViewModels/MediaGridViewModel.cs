@@ -807,7 +807,8 @@ public sealed partial class MediaGridViewModel : ViewModelBase
 
         _library.SaveAndRefresh();
         Refresh();
-        _library.StatusMessage = moved == 1 ? "Se quitó 1 foto de su álbum." : $"Se quitaron {moved} fotos de su álbum.";
+        _library.StatusMessage =
+            Strings.Plural("media-grid-view-model.photos-removed-from-album", moved);
     }
 
     /// <summary>

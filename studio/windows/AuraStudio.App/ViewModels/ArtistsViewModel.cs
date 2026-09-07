@@ -254,7 +254,9 @@ public sealed partial class ArtistsViewModel : ViewModelBase
                 Strings.Plural("conteo.albumes", albums),
                 Strings.Plural("conteo.canciones", songs)]);
 
-            return Selection.Count > 1 ? $"{counts} · {Selection.Count} seleccionados" : counts;
+            return Selection.Count > 1
+                ? string.Join(" · ", counts, Strings.Plural("conteo.seleccionados", Selection.Count))
+                : counts;
         }
     }
 
