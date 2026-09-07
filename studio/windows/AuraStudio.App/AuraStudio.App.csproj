@@ -54,6 +54,21 @@
     <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.0" />
   </ItemGroup>
 
+
+  <ItemGroup>
+    <!-- ST-247: los textos de la app. Español como cultura NEUTRA, o sea
+         compilado dentro del ensamblado: si mañana falta el satélite de otro
+         idioma, la app cae en español y nunca en blanco. El de inglés llega en
+         B7b como `Resources.en.resx` y el SDK lo empaqueta solo.
+
+         `.resx` y no `.resw` con el sistema de recursos de WinUI: esta app no
+         está empaquetada y ese camino depende de encontrar un `resources.pri`
+         al lado del ejecutable — cuando no lo encuentra, la app abre con todos
+         los textos vacíos. Ver Resources\Strings.cs para el resto del motivo. -->
+    <EmbeddedResource Update="Strings\Resources.resx">
+      <LogicalName>AuraStudio.App.Strings.Resources.resources</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AuraStudio.Core\AuraStudio.Core.csproj" />
   </ItemGroup>

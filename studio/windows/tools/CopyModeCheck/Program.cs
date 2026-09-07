@@ -21,6 +21,19 @@ Directory.CreateDirectory(library);
 Console.WriteLine($"Raíz del arnés: {root}");
 Console.WriteLine();
 
+// --- 0. Los textos salen del archivo de recursos -------------------------
+//
+// ST-247: que el `.resx` quedó embebido con el nombre que espera el
+// `ResourceManager` no se puede comprobar con una prueba de Core —el proyecto
+// de pruebas no puede referenciar la app de WinUI—, así que se comprueba acá,
+// que es el único lugar que corre código de la app. Si esto imprimiera
+// ⟦clave⟧ en la primera línea, la app abriría con los textos rotos.
+
+Console.WriteLine("--- Textos desde recursos ---");
+Console.WriteLine($"  app-strings.app-name     → {AuraStudio.App.Resources.Strings.Get("app-strings.app-name")}");
+Console.WriteLine($"  una clave que no existe  → {AuraStudio.App.Resources.Strings.Get("no.existe")}");
+Console.WriteLine();
+
 // --- El fixture ---------------------------------------------------------
 
 var sources = new List<(string Format, string Path)>

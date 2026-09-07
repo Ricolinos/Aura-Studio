@@ -15567,3 +15567,97 @@ run --project tools/ExtraerCadenasWindows`: 517 sitios (sin cambio -- los
 `Dato` no cuentan ahí, van aparte), 6 sitios de dato nuevos (0 antes), 4
 cultura fija; 0 filas de `revision.csv` perdidas contra la corrida
 anterior; `claves-compartidas.csv` sigue byte a byte idéntico.
+## ST-247 — Windows: los textos salen del código (B7a, infraestructura)
+
+B7a de la ronda "ajustes 3", aplicando lo que el ensayo en seco del
+mecánico dejó preparado. Se entrega por grupos; este es el primero:
+**infraestructura, reglas de plural y las culturas fijas**. Mover, no
+redactar — el español que ve el usuario no cambia ni una letra.
+
+### `.resx` y no `.resw` con el sistema de recursos de WinUI
+
+El plan pedía `Strings/<cultura>/Resources.resw` con `ResourceLoader`. Se
+implementó con `.resx` y `ResourceManager`, que es el equivalente que el
+coordinador dejó a mi criterio, y por cuatro razones:
+
+1. **Se conserva la verificación que ST-079 defendía.** Esa decisión eligió
+   una tabla estática de C# en vez de recursos, y su argumento principal
+   sigue en pie: con claves de texto, una mal escrita devuelve cadena vacía
+   y el usuario ve un hueco. Acá el acceso sigue pasando por `AppStrings`
+   —propiedades, no cadenas— y hay una prueba que comprueba que toda clave
+   usada existe en el archivo. Lo que dejó de valer de ST-079 es su tercer
+   argumento, "esta app tiene un solo idioma"; los otros dos se respetan.
+2. **La app no está empaquetada** (`WindowsPackageType=None`). El camino de
+   WinUI depende de encontrar un `resources.pri` junto al ejecutable, y
+   cuando no lo encuentra la app abre **con todos los textos en blanco**.
+   Un `.resx` se compila dentro del ensamblado y no puede faltar.
+3. **El español no puede desaparecer.** Va como cultura **neutra**, o sea
+   dentro del ensamblado principal: si mañana falta el satélite de otro
+   idioma, la app cae en español, nunca en blanco.
+4. **Las vistas no cambian de forma.** El XAML ya usa
+   `{x:Bind res:AppStrings.Algo}`; con `x:Uid` habría que rehacer cada
+   elemento, y con esto solo cambia de dónde saca el texto `AppStrings`.
+
+Una clave que falte **se ve**: devuelve `⟦la.clave⟧` en vez de vacío. Un
+hueco en la pantalla no dice qué falta y puede pasar meses sin que nadie
+lo note.
+
+### Las reglas de plural salen del código
+
+Había cincuenta y un ternarios `count == 1 ? "1 canción" : "…canciones"`.
+Eso no es una condición: es **la regla del plural del español escrita a
+mano**, cincuenta y una veces. En ruso hacen falta tres formas y en
+japonés una sola, así que cada ternario sería un texto mal escrito en
+cuanto la app hable otro idioma — y no un error de compilación, sino algo
+que alguien lee mal en su pantalla.
+
+`PluralRules` decide **cuál** forma pedir; las formas viven en el archivo
+de recursos como `<clave>.one`, `.few`, `.many` y `.other`. Tres familias:
+dos formas (español, inglés y la mayoría), tres (ruso y eslavas) y una
+sola (japonés, chino, coreano). Se mira el idioma de dos letras y no la
+cultura completa: `es-MX` y `es-ES` pluralizan igual, y enumerar países
+sería una lista que envejece sola.
+
+La prueba cubre la trampa clásica del ruso: **11, 12, 13 y 14 no siguen a
+1, 2, 3 y 4** — van todos a "muchos". Es el error de quien mira solo el
+último dígito.
+
+### Las tres culturas fijas
+
+`MediaTableRow` (el orden natural y el formato de fecha) y `LibraryStats`
+(el formato de números) usaban `es-MX` fijo, con un comentario que decía
+"pase lo que pase, aunque Windows esté en otro idioma: es una regla del
+repo". Con la app hablando dos idiomas eso deja de ser una regla y pasa a
+ser **una fecha y un número que el usuario lee mal** — "1.234" es mil
+doscientos treinta y cuatro en un idioma y uno coma algo en otro. Ahora
+los tres usan la cultura de la interfaz.
+
+Y pasan a ser **propiedades, no campos guardados**: la cultura puede
+cambiar mientras la app está abierta (el selector es B7b), y un comparador
+construido una vez al cargar el tipo se quedaría con la de entonces. El
+comparador se consulta una vez por ordenación, no por comparación.
+
+### Verificación
+
+`dotnet build` de Core, App y arnés: **0 errores**. `dotnet test`: **1 772
+pruebas en verde** (29 nuevas).
+
+Que el `.resx` quedó embebido con el nombre que espera el
+`ResourceManager` no se puede comprobar desde Core —el proyecto de pruebas
+es `net10.0` y la app `net10.0-windows` con WinUI, así que no se puede
+referenciar—, y se comprueba en el arnés, que es el único lugar que corre
+código de la app:
+
+```
+  app-strings.app-name     → Aura Studio
+  una clave que no existe  → ⟦no.existe⟧
+```
+
+Las reglas de plural se prueban desde Core reimplementando **la tabla**,
+que es lo que hay que acertar y lo único que un humano puede revisar
+leyendo. Si las dos se separaran, la prueba de claves lo delata: pediría
+formas que no existen en el archivo.
+
+**Lo que falta de B7a**, en el orden que fijó la Maestra: migrar lo no
+compartido (menús, tablas, diálogos, estado), y al final las cadenas
+compartidas con la clave definitiva de `claves-compartidas.csv`.

@@ -63,10 +63,17 @@ public enum LibraryStatusSection
 public static class LibraryStats
 {
     /// <summary>
-    /// Los números se escriben en español de México pase lo que pase, aunque
-    /// Windows esté en otro idioma: es una regla del repo, no del sistema.
+    /// Los números se escriben con el formato de la cultura de la interfaz
+    /// (ST-247). Antes eran siempre los de español de México, aunque Windows
+    /// estuviera en otro idioma: con la app hablando dos idiomas eso deja de
+    /// ser una regla del repo y pasa a ser un número que el usuario lee mal —
+    /// "1.234" es mil doscientos treinta y cuatro en un idioma y uno coma algo
+    /// en otro.
+    ///
+    /// <para>Propiedad y no campo guardado: la cultura puede cambiar mientras
+    /// la app está abierta (el selector es B7b).</para>
     /// </summary>
-    private static readonly CultureInfo DisplayCulture = CultureInfo.GetCultureInfo("es-MX");
+    private static CultureInfo DisplayCulture => CultureInfo.CurrentCulture;
 
     public static string Formatted(int value) => value.ToString("N0", DisplayCulture);
 
