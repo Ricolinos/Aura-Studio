@@ -12717,3 +12717,21 @@ biblioteca lleva las etiquetas del catálogo; una conversión fallida no
 deja rastro; y el caso sin ffmpeg bajo "Comprimido", que **se salta en
 esta máquina porque tiene ffmpeg instalado** y lo dice así en vez de
 fingir que se probó.
+
+### Addendum: el formato de salida se copia del de entrada
+
+Viene de un hallazgo de Windows durante esta misma fase: su perfil ALAC
+por omisión **remuestreaba a 48 kHz**, y el archivo decía "sin pérdida"
+con muestras que no eran las del usuario. Ninguna prueba de etiquetas, de
+tamaño ni de existencia lo habría visto.
+
+`AppleLosslessEncoder` ya lo hacía bien -- tasa, canales y bits salen del
+archivo de entrada, con la única excepción de 8 → 16 bits, que es el
+mínimo que ALAC codifica -- pero **no había prueba que lo demostrara**:
+todos los fixtures eran 44,1 kHz estéreo, así que un formato fijado a
+44,1 kHz estéreo habría pasado igual.
+
+Ahora hay una con 48 kHz mono, y se comprobó al revés: fijando la tasa a
+44 100 en el codificador, esa prueba falla y **la de 44,1 kHz sigue
+pasando**. Que es exactamente la forma del defecto de Windows, y la razón
+de que un fixture solo no alcance.

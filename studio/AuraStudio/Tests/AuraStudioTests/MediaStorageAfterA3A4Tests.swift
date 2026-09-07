@@ -372,7 +372,41 @@ final class MediaStorageAfterA3A4Tests: XCTestCase {
         let before = try await decodedPCM16(sourceURL)
         let after = try await decodedPCM16(outputURL)
         XCTAssertFalse(before.isEmpty, "control: el WAV de prueba tiene audio")
+        XCTAssertEqual(after.count, before.count, "mismo número de muestras: nada de remuestrear")
         XCTAssertEqual(before, after, "ALAC es sin pérdida: las muestras tienen que ser idénticas")
+    }
+
+    /// Hallazgo de Windows durante A3: su perfil ALAC por defecto
+    /// remuestreaba a 48 kHz, y el archivo decía "sin pérdida" con
+    /// muestras que no eran las del usuario. Ninguna prueba de
+    /// etiquetas, tamaño o existencia lo habría visto.
+    ///
+    /// Acá el formato de salida se arma **desde el de entrada** -- tasa,
+    /// canales y bits se copian, con la única excepción de 8 → 16 bits,
+    /// que es el mínimo que ALAC codifica. Esta prueba lo demuestra con
+    /// un formato distinto del habitual: si algo estuviera fijado a
+    /// 44,1 kHz estéreo, acá se vería.
+    func testALACFollowsTheSourceFormatAndDoesNotPinOneOfItsOwn() async throws {
+        let sourceURL = try makeSource("mono48.wav",
+                                       MediaFixture.wavData(sampleRate: 48000, channels: 1, seconds: 0.25))
+        let outputURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("alac-\(UUID().uuidString).m4a")
+        defer { try? FileManager.default.removeItem(at: outputURL) }
+
+        try await AppleLosslessEncoder.encode(input: sourceURL, output: outputURL)
+
+        let tracks = try await AVURLAsset(url: outputURL).loadTracks(withMediaType: .audio)
+        let descriptions = try await XCTUnwrap(tracks.first).load(.formatDescriptions)
+        let basic = try XCTUnwrap(CMAudioFormatDescriptionGetStreamBasicDescription(
+            try XCTUnwrap(descriptions.first))?.pointee)
+        XCTAssertEqual(basic.mSampleRate, 48000, "la tasa de muestreo se copia del origen")
+        XCTAssertEqual(basic.mChannelsPerFrame, 1, "y el número de canales también")
+
+        let before = try await decodedPCM16(sourceURL)
+        let after = try await decodedPCM16(outputURL)
+        XCTAssertFalse(before.isEmpty, "control: el WAV de prueba tiene audio")
+        XCTAssertEqual(after.count, before.count, "mismo número de bytes de PCM: nada de remuestrear")
+        XCTAssertEqual(before, after)
     }
 
     /// AIFF, incluido el `sowt` de QuickTime -- que es PCM pero con los
@@ -390,6 +424,7 @@ final class MediaStorageAfterA3A4Tests: XCTestCase {
             let before = try await decodedPCM16(sourceURL)
             let after = try await decodedPCM16(outputURL)
             XCTAssertFalse(before.isEmpty, "\(name): control, el AIFF de prueba tiene audio")
+            XCTAssertEqual(after.count, before.count, "\(name): mismo número de muestras, nada de remuestrear")
             XCTAssertEqual(before, after, "\(name): las muestras tienen que ser idénticas")
         }
     }
