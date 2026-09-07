@@ -200,6 +200,7 @@
 "library-unavailable-view.elegir-otra-biblioteca" = "Выбрать другую медиатеку…";
 "library-unavailable-view.instalador-extras-siguen-funcionando-sin" = "«Установка» и «Дополнения» работают и без медиатеки.";
 "library-unavailable-view.no-se-perdio-nada-tu-catalogo" = "Ничего не потеряно: ваш каталог и файлы остаются на этом диске. Aura Studio ничего не тронет, пока он снова не станет доступен.";
+"library-view-model.eliminar-copia-papelera" = "%1$@ будут перемещены в Корзину (%2$@). Оттуда их можно восстановить.";
 "library-view-model.eliminar-referencia-uno" = "Он будет убран из вашей медиатеки Aura. Исходный файл останется на месте.";
 "library-view-model.eliminar-referencia-varios" = "Они будут убраны из вашей медиатеки Aura. Исходные файлы останутся на месте.";
 "licenses-view.aura-studio-es-gratuita-se-distribuye" = "Aura Studio бесплатна и распространяется без коммерческих целей. В неё встроены — ровно в том виде, в каком были опубликованы, и без изменений — устанавливаемые прошивки для iPod Classic 6G, все они являются свободным ПО под GNU General Public License версии 2 (GPL v2). Каждая производна от Rockbox; её полный исходный код, точная включённая здесь версия и перечень изменений относительно Rockbox доступны по ссылкам ниже, как того требует раздел 3 этой лицензии.";
@@ -373,13 +374,12 @@
 "settings.importing" = "При импорте";
 "settings.installer" = "Установка";
 "settings.language" = "Язык";
-"settings.language-english" = "Английский";
+"settings.language-machine-translated" = "Машинный перевод, ещё не проверенный носителями языка";
 "settings.language-note-new" = "Язык применяется при запуске приложения. Названия ваших коллекций фото и уже сохранённые категории не переводятся: это ваши данные, а не текст приложения.";
 "settings.language-restart-later" = "Позже";
 "settings.language-restart-message" = "Язык применяется при запуске. Если выбрать «Позже», он сохранится и вступит в силу при следующем открытии Aura Studio.";
 "settings.language-restart-now" = "Перезапустить сейчас";
 "settings.language-restart-title" = "Перезапустить Aura Studio сейчас?";
-"settings.language-spanish" = "Испанский";
 "settings.language.system" = "Как в системе";
 "settings.migrate-settings-detail" = "Приводит в порядок медиатеку, созданную предыдущей версией: записывает теги каталога в копии, переименовывает подготовленные файлы и убирает то, что больше никому не принадлежит. Мигрировать можно, даже если Aura вам этого не предлагала: один случай виден только во время миграции, потому что для этого нужно открыть файлы — копии, теги которых не совпадают с тем, что говорит ваш каталог.";
 "settings.music" = "Музыка";
@@ -407,7 +407,6 @@
 "similar-items-view.elementos" = "Объекты";
 "similar-items-view.elementos-similares" = "Похожие объекты";
 "similar-items-view.elige-grupo-lista" = "Выберите группу из списка.";
-"similar-items-view.eliminar-elementos-biblioteca" = "Удалить %lld из медиатеки?";
 "similar-items-view.eliminar-solo-este" = "Удалить только этот";
 "similar-items-view.fotos" = "Фото";
 "similar-items-view.hay-grupo-s-ignorado-s" = "Пропущенных групп: %lld.";
@@ -417,7 +416,6 @@
 "similar-items-view.no-son-lo-mismo-no-volver" = "Это не одно и то же: больше не показывать эту группу.";
 "similar-items-view.por-que-se-parecen" = "Почему они похожи";
 "similar-items-view.probables-duplicados" = "Вероятные и дубликаты";
-"similar-items-view.se-conserva-archivos-que-viven-dentro" = "«%@» будет сохранён. Файлы внутри папки медиатеки удаляются; оригиналы за её пределами не трогаются.";
 "similar-items-view.solo-duplicados" = "Только дубликаты";
 "similar-items-view.sugerencia" = "Рекомендация";
 "similar-items-view.sugerido" = "рекомендуется";

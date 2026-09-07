@@ -200,6 +200,7 @@
 "library-unavailable-view.elegir-otra-biblioteca" = "Choisir une autre bibliothèque…";
 "library-unavailable-view.instalador-extras-siguen-funcionando-sin" = "L’Installation et les Extras fonctionnent toujours sans la bibliothèque.";
 "library-unavailable-view.no-se-perdio-nada-tu-catalogo" = "Rien n’est perdu : votre catalogue et vos fichiers sont toujours sur ce disque. Aura Studio n’y touchera pas tant qu’il ne sera pas de nouveau disponible.";
+"library-view-model.eliminar-copia-papelera" = "%1$@ seront déplacés vers la Corbeille (%2$@). Vous pourrez les récupérer depuis là.";
 "library-view-model.eliminar-referencia-uno" = "Il sera retiré de votre bibliothèque Aura. Le fichier d’origine reste où il est.";
 "library-view-model.eliminar-referencia-varios" = "Ils seront retirés de votre bibliothèque Aura. Les fichiers d’origine restent où ils sont.";
 "licenses-view.aura-studio-es-gratuita-se-distribuye" = "Aura Studio est gratuit et distribué sans but commercial. Il embarque, tels qu’ils ont été publiés et sans modification, les firmwares installables pour l’iPod Classic 6G, tous des logiciels libres sous la Licence publique générale GNU version 2 (GPL v2). Chacun dérive de Rockbox ; son code source complet, la version exacte incluse ici et le relevé des modifications par rapport à Rockbox figurent dans les liens ci-dessous, comme l’exige la section 3 de cette licence.";
@@ -373,13 +374,12 @@
 "settings.importing" = "À l’import";
 "settings.installer" = "Installation";
 "settings.language" = "Langue";
-"settings.language-english" = "Anglais";
+"settings.language-machine-translated" = "Traduction automatique, pas encore relue par des locuteurs natifs";
 "settings.language-note-new" = "La langue s’applique au démarrage de l’app. Les noms de vos collections de photos et les catégories déjà enregistrées ne sont pas traduits : ce sont vos données, pas le texte de l’app.";
 "settings.language-restart-later" = "Plus tard";
 "settings.language-restart-message" = "La langue s’applique au démarrage. Si vous choisissez « Plus tard », elle reste enregistrée et s’applique à la prochaine ouverture d’Aura Studio.";
 "settings.language-restart-now" = "Redémarrer maintenant";
 "settings.language-restart-title" = "Redémarrer Aura Studio maintenant ?";
-"settings.language-spanish" = "Espagnol";
 "settings.language.system" = "Comme le système";
 "settings.migrate-settings-detail" = "Met à jour une bibliothèque créée avec une version antérieure : écrit les tags du catalogue dans les copies, renomme les fichiers préparés et nettoie ce qui n’appartient plus à rien. Vous pouvez migrer même si Aura ne vous l’a pas proposé : un cas n’apparaît qu’au moment de la migration, car il faut ouvrir les fichiers pour le voir — des copies dont les tags ne correspondent pas à ce que dit votre catalogue.";
 "settings.music" = "Musique";
@@ -407,7 +407,6 @@
 "similar-items-view.elementos" = "Éléments";
 "similar-items-view.elementos-similares" = "Éléments similaires";
 "similar-items-view.elige-grupo-lista" = "Choisissez un groupe dans la liste.";
-"similar-items-view.eliminar-elementos-biblioteca" = "Supprimer %lld de la bibliothèque ?";
 "similar-items-view.eliminar-solo-este" = "Supprimer seulement celui-ci";
 "similar-items-view.fotos" = "Photos";
 "similar-items-view.hay-grupo-s-ignorado-s" = "Il y a %lld groupe(s) ignoré(s).";
@@ -417,7 +416,6 @@
 "similar-items-view.no-son-lo-mismo-no-volver" = "Ce n’est pas la même chose : ne plus afficher ce groupe.";
 "similar-items-view.por-que-se-parecen" = "Pourquoi ils se ressemblent";
 "similar-items-view.probables-duplicados" = "Probables et doublons";
-"similar-items-view.se-conserva-archivos-que-viven-dentro" = "« %@ » est conservé. Les fichiers situés dans le dossier de la bibliothèque sont supprimés ; les originaux en dehors ne sont pas touchés.";
 "similar-items-view.solo-duplicados" = "Doublons uniquement";
 "similar-items-view.sugerencia" = "Suggestion";
 "similar-items-view.sugerido" = "suggéré";

@@ -110,6 +110,18 @@ struct SettingsSectionView: View {
                 Text(LS("settings.language-restart-message"))
             }
 
+            // ST-227 (A7c addendum): se dice que son automáticas. La
+            // línea aparece siempre, no solo con uno de esos idiomas
+            // elegido: quien está por elegir japonés tiene que verlo
+            // ANTES de elegirlo, no después.
+            if AppLanguage.allCases.contains(where: \.isMachineTranslated) {
+                Text(LS("settings.language-machine-translated"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("ajustes.general.idioma.automatica")
+            }
+
             Text(LS("settings.language-note-new"))
                 .font(.caption)
                 .foregroundStyle(.secondary)

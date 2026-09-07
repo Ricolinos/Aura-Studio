@@ -119,10 +119,31 @@ final class LocalizationEnglishTests: XCTestCase {
     func testEachLanguageIsOfferedInItsOwnLanguage() {
         XCTAssertEqual(AppLanguage.spanish.nativeName, "Español")
         XCTAssertEqual(AppLanguage.english.nativeName, "English")
-        XCTAssertEqual(AppLanguage.japanese.nativeName, "日本語")
-        XCTAssertEqual(AppLanguage.german.nativeName, "Deutsch")
-        XCTAssertEqual(AppLanguage.russian.nativeName, "Русский")
-        XCTAssertEqual(AppLanguage.french.nativeName, "Français")
+        // ST-227 (A7c addendum): los cuatro traducidos a máquina llevan
+        // "(beta)" en el nombre. El nombre del idioma sigue escrito en
+        // su propio idioma; la marca es lo único que se le suma.
+        XCTAssertEqual(AppLanguage.japanese.nativeName, "日本語 (beta)")
+        XCTAssertEqual(AppLanguage.german.nativeName, "Deutsch (beta)")
+        XCTAssertEqual(AppLanguage.russian.nativeName, "Русский (beta)")
+        XCTAssertEqual(AppLanguage.french.nativeName, "Français (beta)")
+    }
+
+    /// La marca y la advertencia van juntas: un idioma marcado sin la
+    /// línea que explica por qué, o al revés, deja al usuario adivinando.
+    /// Y el español y el inglés NO se marcan -- se escribieron y se
+    /// revisaron acá.
+    func testOnlyTheMachineTranslatedLanguagesAreMarked() {
+        for language in AppLanguage.allCases {
+            let marked = language.nativeName.contains("(beta)")
+            XCTAssertEqual(marked, language.isMachineTranslated, "\(language)")
+        }
+        XCTAssertFalse(AppLanguage.spanish.isMachineTranslated)
+        XCTAssertFalse(AppLanguage.english.isMachineTranslated)
+        XCTAssertFalse(AppLanguage.system.isMachineTranslated)
+        XCTAssertFalse(LS("settings.language-machine-translated").isEmpty)
+        XCTAssertNotEqual(LS("settings.language-machine-translated"),
+                          "settings.language-machine-translated",
+                          "la advertencia no está en el catálogo")
     }
 
     /// ST-227: lo que se GUARDA como categoría es el español, siempre --

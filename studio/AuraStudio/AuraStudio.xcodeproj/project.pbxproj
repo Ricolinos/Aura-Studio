@@ -166,6 +166,7 @@
 		982F00F48C834DC4C0F57A3A /* MusicBrainzRateLimiterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0E14855D7F760E14EB547DE /* MusicBrainzRateLimiterTests.swift */; };
 		983F3D503FD3C67F03884D83 /* MediaCategoryClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFA40682BAFE0828DAA2B507 /* MediaCategoryClassifier.swift */; };
 		997A65732E30D7DDF4A81570 /* GridModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10802C9C813279C382E9B900 /* GridModel.swift */; };
+		9A2B7CE84AF79091BD85C0D9 /* DeletionConfirmationAuditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C4344B9C0C9F13442FE33A /* DeletionConfirmationAuditTests.swift */; };
 		9A5C03D344EED69325120580 /* CatalogPathNormalizationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9694CDFCA77952CEBEACA946 /* CatalogPathNormalizationTests.swift */; };
 		9A5D2523F9B12745D1230020 /* BackgroundTaskCenterIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8463CF21C20FCEBFE47FF6FE /* BackgroundTaskCenterIndicator.swift */; };
 		9C53C3873A4C5F484CCC3858 /* InstallerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EBEB24F597D3C9B609AC775 /* InstallerViewModel.swift */; };
@@ -391,6 +392,7 @@
 		43B2B93C80B360CA92398D78 /* GitHubTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GitHubTokenTests.swift; sourceTree = "<group>"; };
 		43B9358C341DF6C281F2636B /* InstallerStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallerStep.swift; sourceTree = "<group>"; };
 		444381A58BB7B201C06A6866 /* DeviceSyncIndexTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSyncIndexTests.swift; sourceTree = "<group>"; };
+		46C4344B9C0C9F13442FE33A /* DeletionConfirmationAuditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeletionConfirmationAuditTests.swift; sourceTree = "<group>"; };
 		473362F9CE502DA4AABE639D /* FirmwareReleaseDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareReleaseDownloader.swift; sourceTree = "<group>"; };
 		476586878B17D64E6EB2F3BC /* BootloaderVerifiedDisksTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BootloaderVerifiedDisksTests.swift; sourceTree = "<group>"; };
 		48CC2E3940E0EC5127461CB5 /* LibrarySync.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySync.swift; sourceTree = "<group>"; };
@@ -806,6 +808,7 @@
 				C7A75E4AA4334B6A18D04537 /* CoverArtAssetsTests.swift */,
 				2718B5F687440629F34AEB40 /* CoverArtNormalizerTests.swift */,
 				8DC1376D9856F82C80DF182B /* CoverThumbnailCacheTests.swift */,
+				46C4344B9C0C9F13442FE33A /* DeletionConfirmationAuditTests.swift */,
 				70ACE1220F0178A35F3CE798 /* DeviceNameStoreTests.swift */,
 				444381A58BB7B201C06A6866 /* DeviceSyncIndexTests.swift */,
 				FB78E19CE6152C4A34DF642B /* DroppedURLExpanderTests.swift */,
@@ -1191,6 +1194,7 @@
 				D14BAA69CD8F0052BDDAEB70 /* CoverArtAssetsTests.swift in Sources */,
 				AB786B1A7164AA76254BE3C3 /* CoverArtNormalizerTests.swift in Sources */,
 				AE58688D8D8C42B7D0CBB722 /* CoverThumbnailCacheTests.swift in Sources */,
+				9A2B7CE84AF79091BD85C0D9 /* DeletionConfirmationAuditTests.swift in Sources */,
 				C2F0510BAABF5CB03FD90D93 /* DeviceNameStoreTests.swift in Sources */,
 				F42EA5AD49A256AC55366672 /* DeviceSyncIndexTests.swift in Sources */,
 				C4E16B0230B926F38F44808C /* DroppedURLExpanderTests.swift in Sources */,

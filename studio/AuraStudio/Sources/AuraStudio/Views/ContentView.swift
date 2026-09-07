@@ -989,8 +989,8 @@ struct DeletionConfirmationHost: View {
             .alert(library.pendingDeletion?.title ?? "",
                    isPresented: Binding(get: { library.pendingDeletion != nil },
                                         set: { if !$0 { library.cancelPendingDeletion() } })) {
-                Button("Cancelar", role: .cancel) { library.cancelPendingDeletion() }
-                Button("Eliminar", role: .destructive) { library.confirmPendingDeletion() }
+                Button(LS("background-task-center-indicator.cancelar"), role: .cancel) { library.cancelPendingDeletion() }
+                Button(LS("artists-view.eliminar"), role: .destructive) { library.confirmPendingDeletion() }
             } message: {
                 Text(library.pendingDeletion?.message ?? "")
             }

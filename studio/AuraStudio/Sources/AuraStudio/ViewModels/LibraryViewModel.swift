@@ -1146,7 +1146,11 @@ final class LibraryViewModel: ObservableObject {
             }
             let size = ByteCountFormatter.string(fromByteCount: Int64(bytesToTrash), countStyle: .file)
             let files = LSf("library-view-model.plural.archivos", filesToTrash)
-            return "Se moverán \(files) a la Papelera (\(size)). Puedes recuperarlos desde ahí."
+            // ST-225 (addendum): era el único texto de esta confirmación
+            // que seguía escrito en español dentro del código. Con
+            // posicionales, porque el japonés y el alemán necesitan
+            // poder mover el tamaño de sitio.
+            return LSf("library-view-model.eliminar-copia-papelera", files, size)
         }
     }
 

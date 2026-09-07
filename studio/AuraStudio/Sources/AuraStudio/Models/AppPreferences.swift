@@ -696,10 +696,28 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         case .system:   return LS("settings.language.system")
         case .spanish:  return "Español"
         case .english:  return "English"
-        case .japanese: return "日本語"
-        case .german:   return "Deutsch"
-        case .russian:  return "Русский"
-        case .french:   return "Français"
+        case .japanese: return "日本語 (beta)"
+        case .german:   return "Deutsch (beta)"
+        case .russian:  return "Русский (beta)"
+        case .french:   return "Français (beta)"
+        }
+    }
+
+    /// ST-227 (A7c addendum): **traducción automática, sin revisar por
+    /// hablantes nativos**. Nadie en el proyecto lee japonés, alemán,
+    /// ruso ni francés, así que la app lo dice en vez de callarlo -- un
+    /// idioma que se ofrece como terminado y no lo está es peor que uno
+    /// marcado.
+    ///
+    /// El "(beta)" del nombre y la línea de abajo se quitan **por
+    /// idioma**: cuando alguien que lo hable de verdad revise el
+    /// catálogo entero de ese idioma, se saca su `case` de acá y el
+    /// "(beta)" de su `nativeName`. No se quitan los cuatro de golpe
+    /// porque no se revisan los cuatro de golpe.
+    var isMachineTranslated: Bool {
+        switch self {
+        case .japanese, .german, .russian, .french: return true
+        case .system, .spanish, .english: return false
         }
     }
 }

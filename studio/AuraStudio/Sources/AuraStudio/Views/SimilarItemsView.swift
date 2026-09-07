@@ -27,7 +27,14 @@ struct SimilarItemsView: View {
     @State private var selectedGroupID: String?
     /// Elemento marcado "conservar" por grupo (arranca en el sugerido).
     @State private var keepChoice: [String: UUID] = [:]
-    @State private var pendingDeletion: SimilarItemsGroup?
+    /// ST-225 (addendum): lo que se dirá **si** el usuario confirma. La
+    /// confirmación en sí es la del modelo (`library.pendingDeletion`),
+    /// que es la única que sabe cuántos archivos van a la Papelera y
+    /// cuántos bytes -- y la única cuyo texto es verdad en los dos modos
+    /// de guardado. Acá solo se guarda la frase del resumen, porque el
+    /// modelo no sabe (ni tiene por qué) que esto vino de un grupo de
+    /// parecidos.
+    @State private var summaryIfConfirmed: String?
     @State private var editingItem: LibraryItem?
     @State private var lastActionSummary: String?
 
@@ -79,16 +86,26 @@ struct SimilarItemsView: View {
                 selectedGroupID = ids.first
             }
         }
-        .alert(item: $pendingDeletion) { group in
-            let keepID = keepChoice[group.id] ?? group.suggestedKeepID
-            let losers = group.items.filter { $0.id != keepID }
-            let keptTitle = group.items.first { $0.id == keepID }.map(displayTitle) ?? ""
-            return Alert(
-                title: Text(LSf("similar-items-view.eliminar-elementos-biblioteca", LSf("similar-items-view.plural.elementos", losers.count))),
-                message: Text(LSf("similar-items-view.se-conserva-archivos-que-viven-dentro", keptTitle)),
-                primaryButton: .destructive(Text(LS("artists-view.eliminar"))) { deleteOthers(in: group) },
-                secondaryButton: .cancel(Text(LS("background-task-center-indicator.cancelar")))
-            )
+        // ST-225 (addendum): la confirmación de eliminar se presenta
+        // DESDE ACÁ y no desde `ContentView`.
+        //
+        // `DeletionConfirmationHost` vive en el fondo de `ContentView`, y
+        // esta vista es una **hoja** encima de ella: una hoja tapa a
+        // quien la presenta, así que una alerta colgada del presentador
+        // no aparece mientras la hoja está arriba. Los demás sitios que
+        // eliminan (álbumes, artistas, series, películas, fotos, la
+        // tabla) viven dentro de `ContentView`, no encima; éste era el
+        // único tapado.
+        //
+        // La regla de ST-225 no cambia: el plan, los números y el texto
+        // siguen saliendo del modelo. Lo que cambia es quién lo dibuja.
+        .alert(library.pendingDeletion?.title ?? "",
+               isPresented: Binding(get: { library.pendingDeletion != nil },
+                                    set: { if !$0 { cancelDeletion() } })) {
+            Button(LS("background-task-center-indicator.cancelar"), role: .cancel) { cancelDeletion() }
+            Button(LS("artists-view.eliminar"), role: .destructive) { confirmDeletion() }
+        } message: {
+            Text(library.pendingDeletion?.message ?? "")
         }
         .sheet(item: $editingItem) { item in
             let categories: [String]? = item.kind == .video
@@ -360,7 +377,7 @@ struct SimilarItemsView: View {
 
                 HStack(spacing: 10) {
                     Button(role: .destructive) {
-                        pendingDeletion = group
+                        requestDeletionOfOthers(in: group)
                     } label: {
                         Label(LS("similar-items-view.conservar-marcado-eliminar-resto"), systemImage: "trash")
                     }
@@ -461,9 +478,20 @@ struct SimilarItemsView: View {
             VStack(alignment: .trailing, spacing: 4) {
                 Button(LS("similar-items-view.editar")) { editingItem = item }
                 Button(LS("similar-items-view.eliminar-solo-este"), role: .destructive) {
+                    // ST-225 (addendum): `deleteItems` PIDE confirmación,
+                    // no borra. Escribir el resumen y rescanear acá era
+                    // decirle al usuario que se eliminó algo que todavía
+                    // no se eliminó -- y que no se eliminaba nunca si
+                    // cancelaba.
+                    // ST-225 (addendum, decisión común con Windows): el
+                    // resumen dice lo que pasó con la BIBLIOTECA y nada
+                    // sobre dónde quedó el archivo. Dónde quedó ya lo
+                    // dijo el diálogo un segundo antes, y ahí sí es
+                    // verdad en cada modo; repetirlo acá con una sola
+                    // frase para los dos modos era la mentira que
+                    // Windows encontró de su lado.
+                    summaryIfConfirmed = "Se quitó «\(displayTitle(item))» de la biblioteca."
                     library.deleteItems(ids: [item.id])
-                    lastActionSummary = "Se eliminó «\(displayTitle(item))»."
-                    rescan()
                 }
                 .disabled(group.items.count < 2)
             }
@@ -500,12 +528,33 @@ struct SimilarItemsView: View {
         }
     }
 
-    private func deleteOthers(in group: SimilarItemsGroup) {
+    /// Pide la confirmación del modelo. No borra: `deleteItems` deja
+    /// `library.pendingDeletion` puesto y la alerta de arriba lo dibuja.
+    private func requestDeletionOfOthers(in group: SimilarItemsGroup) {
         let keepID = keepChoice[group.id] ?? group.suggestedKeepID
         let losers = Set(group.items.map(\.id)).subtracting([keepID])
+        guard !losers.isEmpty else { return }
+        let kept = group.items.first { $0.id == keepID }.map(displayTitle) ?? ""
+        // Forma de etiqueta, invariable: "Elementos quitados de la
+        // biblioteca: 1" y "...: 3" son los dos correctos. Pegar el
+        // número delante de un plural ("1 elemento quitados") es
+        // justamente el error que ST-227 tuvo que deshacer diez veces.
+        summaryIfConfirmed = "Elementos quitados de la biblioteca: \(losers.count). Se conservó «\(kept)»."
         library.deleteItems(ids: losers)
-        lastActionSummary = "Se eliminaron \(losers.count) elemento(s); se conservó «\(group.items.first { $0.id == keepID }.map(displayTitle) ?? "")»."
+    }
+
+    /// El resumen se escribe con lo que de verdad pasó. Si nada se movió
+    /// a la Papelera y nada falló, no se inventa un "se eliminó".
+    private func confirmDeletion() {
+        let outcome = library.confirmPendingDeletion()
+        if outcome.itemsRemoved > 0 { lastActionSummary = summaryIfConfirmed }
+        summaryIfConfirmed = nil
         rescan()
+    }
+
+    private func cancelDeletion() {
+        library.cancelPendingDeletion()
+        summaryIfConfirmed = nil
     }
 }
 

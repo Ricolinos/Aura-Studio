@@ -502,26 +502,6 @@
 			<string>%lld сезона</string>
 		</dict>
 	</dict>
-	<key>similar-items-view.plural.elementos</key>
-	<dict>
-		<key>NSStringLocalizedFormatKey</key>
-		<string>%#@n@</string>
-		<key>n</key>
-		<dict>
-			<key>NSStringFormatSpecTypeKey</key>
-			<string>NSStringPluralRuleType</string>
-			<key>NSStringFormatValueTypeKey</key>
-			<string>lld</string>
-			<key>few</key>
-			<string>%lld объекта</string>
-			<key>many</key>
-			<string>%lld объектов</string>
-			<key>one</key>
-			<string>%lld объект</string>
-			<key>other</key>
-			<string>%lld объекта</string>
-		</dict>
-	</dict>
 	<key>similar-items-view.plural.grupos</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

@@ -138,6 +138,23 @@ final class LocalizationCatalogTests: XCTestCase {
                       "claves compartidas con Windows que no están en el catálogo: \(missing)")
     }
 
+    /// El catálogo tampoco puede tener claves que **nadie pide**. Una
+    /// clave huérfana no rompe nada, y por eso se acumula: alguien la
+    /// traduce a seis idiomas, alguien la lee creyendo que describe la
+    /// app, y describe algo que se borró hace tres fases. Se afirma en
+    /// cero porque **no hay claves construidas a mano**: todas las
+    /// llamadas a `LS`/`LSf` llevan un literal (lo comprueba el mismo
+    /// barrido que usa `testEveryKeyUsedInCodeExistsInTheCatalog`), así
+    /// que lo que no aparece ahí no lo usa nadie.
+    func testTheCatalogHasNoKeysNobodyUses() throws {
+        let strings = try XCTUnwrap(try catalog()["strings"] as? [String: Any])
+        let used = Set(try keysUsedInCode().map(\.key))
+        let orphans = strings.keys.filter { !used.contains($0) }.sorted()
+
+        XCTAssertTrue(orphans.isEmpty,
+                      "claves en el catálogo que ya no pide nadie (\(orphans.count)): \(orphans)")
+    }
+
     // MARK: - Los `.lproj` no pueden apartarse del catálogo (ST-227 addendum)
 
     /// `Localizable.xcstrings` es la fuente única; `tools/

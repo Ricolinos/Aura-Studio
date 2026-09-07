@@ -15664,3 +15664,153 @@ run --project tools/ExtraerCadenasWindows`: 517 sitios (sin cambio -- los
 `Dato` no cuentan ahí, van aparte), 6 sitios de dato nuevos (0 antes), 4
 cultura fija; 0 filas de `revision.csv` perdidas contra la corrida
 anterior; `claves-compartidas.csv` sigue byte a byte idéntico.
+
+## ST-225 (addendum) — Similares: la confirmación estaba, pero la dibujaba quien la hoja tapa
+
+Windows encontró de su lado un "Conservar solo" que mandaba archivos a la
+Papelera **sin confirmar**, con un texto que además decía "el archivo
+sigue en tu computadora", falso en modo copia. La maestra pidió confirmar
+que en la Mac no pasara lo mismo. No pasaba lo mismo: pasaba el defecto
+simétrico, y por eso no se veía.
+
+**Qué estaba mal.** La confirmación vive en el modelo desde ST-225
+(`LibraryViewModel.deleteItems` no borra: arma el `LibraryDeletionPlan`,
+cuenta los archivos que de verdad están en disco y deja
+`pendingDeletion` puesto). Quien la **dibuja** es
+`DeletionConfirmationHost`, en el fondo de `ContentView`. Y
+`SimilarItemsView` es una **hoja** presentada por `ContentView`: una hoja
+tapa a quien la presenta, así que la alerta colgaba de una vista que el
+usuario no está viendo. De los diez sitios que eliminan, nueve viven
+dentro de `ContentView` -- éste era el único encima.
+
+Peor que eso, y esto sí es seguro sin depender de cómo se comporte
+AppKit: la hoja escribía `lastActionSummary = "Se eliminaron N
+elemento(s)…"` y rescaneaba **en la misma tanda** en que pedía la
+eliminación. Como `deleteItems` solo pide, el resumen anunciaba un
+borrado que todavía no había ocurrido -- y que no ocurría nunca si el
+usuario cancelaba.
+
+Y había una tercera cosa: "Conservar el marcado y eliminar el resto"
+tenía su **propia** alerta, escrita a mano, que decía lo mismo en modo
+copia y en modo referencia ("los archivos que viven dentro de la carpeta
+de la biblioteca se eliminan"). El diálogo del modelo dice la verdad de
+cada modo -- en copia, cuántos archivos van a la Papelera y cuántos bytes
+son; en referencia, que el original se queda donde está. Dos diálogos
+seguidos, y el primero era el flojo.
+
+**Qué se hizo.** `SimilarItemsView` presenta ahora ella misma la
+confirmación **del modelo** -- el plan, los números y el texto siguen
+saliendo de `LibraryViewModel`, que es la regla de ST-225; lo único que
+cambia es quién la dibuja. Su alerta propia desapareció (y con ella dos
+claves del catálogo que ya no pedía nadie). El resumen se escribe
+**después** de confirmar y a partir del `DeletionOutcome` real: si el
+usuario cancela, no se dice nada.
+
+**El mensaje posterior, decisión común con Windows.** Ninguna frase sobre
+dónde quedó el archivo: eso lo confirmó el usuario un segundo antes, en
+el diálogo veraz. La Mac no tenía la frase falsa de Windows ("los
+archivos siguen en tu computadora"), pero sí decía "Se eliminaron N
+elementos", que en modo referencia insinúa un borrado que no hubo. Ahora
+dice "Elementos quitados de la biblioteca: N. Se conservó «X»". Va en
+forma de etiqueta a propósito: pegar el número delante de un plural ("1
+elemento quitados") es exactamente el error que ST-227 tuvo que deshacer
+diez veces, y acá no hacía falta una clave nueva para evitarlo.
+
+**Lo que impide que vuelva a pasar.** `DeletionConfirmationAuditTests`:
+
+- `trashItem` se llama en **un solo sitio** de toda la app, y es
+  `performDeletion` sobre `plan.toTrash`. Un segundo sitio sería un
+  camino que se saltó el plan, y el plan es lo único que distingue el
+  archivo del usuario del derivado nuestro.
+- Las dos listas del plan se consumen solo en `LibraryViewModel`
+  (`LibraryDeletionPlan.swift` queda fuera de la cuenta porque ahí el
+  plan se *construye*; la primera versión de la prueba no hacía esa
+  distinción y señalaba al propio plan).
+- **La que habría atrapado esto:** una vista que se presenta como
+  `.sheet` **y** llama a `deleteItems` tiene que mirar `pendingDeletion`
+  ella misma. No se pregunta "¿tiene una alerta?" sino "¿usa la del
+  modelo?", que es lo que obliga a que el texto y los números salgan de
+  un solo sitio.
+- Ninguna vista escribe su mensaje de éxito en la misma tanda en que
+  pide la eliminación.
+- El texto dice la verdad en cada modo, y los dos modos no dicen lo
+  mismo.
+
+**De paso.** El diálogo de eliminar en modo copia era el último texto de
+esa confirmación escrito en español dentro del código; pasó al catálogo
+con posicionales (`%1$@` archivos, `%2$@` tamaño) para que el japonés y
+el alemán puedan moverlos. Los botones "Cancelar"/"Eliminar" del diálogo
+genérico también estaban sueltos: no llevan acento, y el detector de
+literales mira el acento.
+
+Y una prueba nueva en `LocalizationCatalogTests`: el catálogo tampoco
+puede tener claves que **nadie pide**. Se afirma en cero porque no hay
+claves construidas a mano -- todas las llamadas a `LS`/`LSf` llevan un
+literal. Quitó cinco huérfanas: dos de A7b (`settings.language-english`,
+`settings.language-spanish`, que el selector dejó de usar cuando pasó a
+`nativeName`) y tres de este arreglo.
+
+## ST-227 (A7c, addendum) — Los cuatro idiomas se declaran automáticos, y el inglés pasa el corrector
+
+**Son traducciones automáticas y la app lo dice.** Nadie en el proyecto
+lee japonés, alemán, ruso ni francés. Las 486 claves están traducidas y
+las pruebas garantizan lo que se puede garantizar sin hablar el idioma
+--que no falte ninguna, que los plurales tengan las formas que exige cada
+uno, que los marcadores sobrevivan-- pero **ninguna prueba puede decir si
+una frase suena bien o si dice lo que el español decía**. Ofrecer un
+idioma como terminado sin que nadie lo haya leído es prometer algo que no
+se comprobó.
+
+Así que se marca: los cuatro salen en el selector como "日本語 (beta)",
+"Deutsch (beta)", "Русский (beta)", "Français (beta)", y debajo, siempre
+visible --no solo cuando uno de ellos está elegido, porque quien está por
+elegir japonés tiene que verlo ANTES-- va la línea "Traducción
+automática, aún sin revisar por hablantes nativos". El español y el
+inglés no se marcan: se escribieron acá.
+
+**Cómo se quita la marca, y por qué por idioma.** `AppLanguage.isMachineTranslated`
+enumera los cuatro `case`. Cuando alguien que hable de verdad uno de esos
+idiomas revise el catálogo **entero** de ese idioma, se saca su `case` de
+esa lista y el "(beta)" de su `nativeName`. No se quitan los cuatro de
+golpe porque no se revisan los cuatro de golpe, y una marca que se levanta
+en bloque deja de significar nada. Una prueba ata las dos cosas: un idioma
+marcado sin la línea que lo explica, o al revés, falla.
+
+**La retrotraducción.** `docs/extraccion-cadenas/criticas-a7c.csv` lleva
+las **159 cadenas críticas** con su español y sus cuatro traducciones,
+para que otra sesión las retrotraduzca sin ver el original. El criterio
+está en la columna `motivo`: todo lo que **borra, mueve, instala firmware,
+migra o convierte**, más los Ajustes de almacenamiento y calidad, más las
+**32 compartidas con Windows** (las 31 de siempre y la advertencia nueva).
+Es un tercio del catálogo: el tercio donde una traducción equivocada no
+se ve rara sino que le cuesta datos a alguien.
+
+**El corrector del inglés (encargo de la maestra).** 84 correcciones:
+
+- **1** grafía británica: `Cancelling…` → `Canceling…`.
+- **28** cadenas con `...` pasadas a `…`. El catálogo tenía las dos
+  formas conviviendo (28 con puntos sueltos, 13 con elipsis) y macOS usa
+  la elipsis.
+- **55** apóstrofos rectos (`'`) pasados a tipográficos (`’`), que es
+  con lo que ya convivían las 23 comillas dobles tipográficas del mismo
+  catálogo.
+- **0** mayúsculas mal. Las once que saltó el barrido son nombres de menú
+  ("Show Status Bar"), paneles reales de macOS ("Full Disk Access",
+  "System Settings (Privacy & Security)") o nombres de sección de la app
+  ("Remove from Images") -- todos correctos en Title Case por el estilo
+  de macOS.
+- **0** nombres propios mal escritos.
+
+**Sobre `library-unavailable-view.no-se-perdio-nada-tu-catalogo`:** el
+inglés de la Mac ya decía "won't" e "it's", con apóstrofo recto U+0027,
+tanto en el catálogo como en la columna `texto en` del cotejo, en `HEAD`
+y en `origin/main`. Lo que Windows vio sin apóstrofos se perdió al
+copiarlo de su lado, no en el origen. (Con este addendum esos dos pasan
+además a apóstrofo tipográfico, junto con los otros 53.)
+
+**Lo que NO se tocó, y por qué se dice:** el español tiene la misma
+mezcla de `...` y `…` (29 y 13). No se normaliza sin decidirlo aparte,
+porque `testTheSpanishInTheCatalogIsWhatTheSourcesSaidBefore` compara el
+español letra por letra contra `revision.csv` -- esa prueba existe
+justamente para que el idioma fuente no cambie de contrabando. Los cuatro
+idiomas nuevos ya usan `…` en todos los casos.

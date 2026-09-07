@@ -200,6 +200,7 @@
 "library-unavailable-view.elegir-otra-biblioteca" = "Andere Mediathek wählen …";
 "library-unavailable-view.instalador-extras-siguen-funcionando-sin" = "Installation und Extras funktionieren auch ohne Mediathek.";
 "library-unavailable-view.no-se-perdio-nada-tu-catalogo" = "Es ist nichts verloren: Dein Katalog und deine Dateien liegen weiterhin auf dieser Festplatte. Aura Studio rührt nichts an, bis sie wieder verfügbar ist.";
+"library-view-model.eliminar-copia-papelera" = "%1$@ werden in den Papierkorb verschoben (%2$@). Von dort kannst du sie zurückholen.";
 "library-view-model.eliminar-referencia-uno" = "Es wird aus deiner Aura-Mediathek entfernt. Die Originaldatei bleibt, wo sie ist.";
 "library-view-model.eliminar-referencia-varios" = "Sie werden aus deiner Aura-Mediathek entfernt. Die Originaldateien bleiben, wo sie sind.";
 "licenses-view.aura-studio-es-gratuita-se-distribuye" = "Aura Studio ist kostenlos und wird nicht kommerziell vertrieben. Es enthält, genau so veröffentlicht und unverändert, die installierbaren Firmwares für den iPod Classic 6G, allesamt freie Software unter der GNU General Public License Version 2 (GPL v2). Jede davon ist von Rockbox abgeleitet; ihr vollständiger Quellcode, die hier enthaltene Version und das Verzeichnis der Änderungen gegenüber Rockbox stehen in den Links unten, wie es Abschnitt 3 dieser Lizenz verlangt.";
@@ -373,13 +374,12 @@
 "settings.importing" = "Beim Importieren";
 "settings.installer" = "Installation";
 "settings.language" = "Sprache";
-"settings.language-english" = "Englisch";
+"settings.language-machine-translated" = "Maschinelle Übersetzung, noch nicht von Muttersprachlern geprüft";
 "settings.language-note-new" = "Die Sprache wird beim Start der App angewendet. Die Namen deiner Fotosammlungen und die bereits gesicherten Kategorien werden nicht übersetzt: Das sind deine Daten, kein Text der App.";
 "settings.language-restart-later" = "Später";
 "settings.language-restart-message" = "Die Sprache wird beim Start angewendet. Wenn du „Später“ wählst, bleibt sie gesichert und gilt, sobald du Aura Studio das nächste Mal öffnest.";
 "settings.language-restart-now" = "Jetzt neu starten";
 "settings.language-restart-title" = "Aura Studio jetzt neu starten?";
-"settings.language-spanish" = "Spanisch";
 "settings.language.system" = "Wie das System";
 "settings.migrate-settings-detail" = "Bringt eine mit einer älteren Version angelegte Mediathek auf den neuesten Stand: schreibt die Tags des Katalogs in die Kopien, benennt die vorbereiteten Dateien um und räumt auf, was zu nichts mehr gehört. Du kannst migrieren, auch wenn Aura dich nicht dazu aufgefordert hat: Ein Fall zeigt sich erst bei der Migration, weil dafür die Dateien geöffnet werden müssen – Kopien, deren Tags nicht zu dem passen, was dein Katalog sagt.";
 "settings.music" = "Musik";
@@ -407,7 +407,6 @@
 "similar-items-view.elementos" = "Objekte";
 "similar-items-view.elementos-similares" = "Ähnliche Objekte";
 "similar-items-view.elige-grupo-lista" = "Wähl eine Gruppe aus der Liste.";
-"similar-items-view.eliminar-elementos-biblioteca" = "%lld aus der Mediathek löschen?";
 "similar-items-view.eliminar-solo-este" = "Nur dieses löschen";
 "similar-items-view.fotos" = "Fotos";
 "similar-items-view.hay-grupo-s-ignorado-s" = "Es gibt %lld ignorierte Gruppe(n).";
@@ -417,7 +416,6 @@
 "similar-items-view.no-son-lo-mismo-no-volver" = "Sie sind nicht dasselbe: Diese Gruppe nicht mehr anzeigen.";
 "similar-items-view.por-que-se-parecen" = "Warum sie sich ähneln";
 "similar-items-view.probables-duplicados" = "Wahrscheinliche und Duplikate";
-"similar-items-view.se-conserva-archivos-que-viven-dentro" = "„%@“ wird behalten. Dateien im Mediathek-Ordner werden gelöscht; Originale außerhalb bleiben unangetastet.";
 "similar-items-view.solo-duplicados" = "Nur Duplikate";
 "similar-items-view.sugerencia" = "Vorschlag";
 "similar-items-view.sugerido" = "vorgeschlagen";

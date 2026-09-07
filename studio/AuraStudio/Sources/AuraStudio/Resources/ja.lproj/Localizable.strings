@@ -200,6 +200,7 @@
 "library-unavailable-view.elegir-otra-biblioteca" = "別のライブラリを選択…";
 "library-unavailable-view.instalador-extras-siguen-funcionando-sin" = "「インストーラ」と「その他」はライブラリがなくても使えます。";
 "library-unavailable-view.no-se-perdio-nada-tu-catalogo" = "何も失われていません。カタログもファイルもそのディスクに残っています。再び利用できるようになるまで、Aura Studio は何も触りません。";
+"library-view-model.eliminar-copia-papelera" = "%1$@ をゴミ箱に移動します（%2$@）。そこから元に戻せます。";
 "library-view-model.eliminar-referencia-uno" = "Aura のライブラリから取り除かれます。元のファイルはそのままです。";
 "library-view-model.eliminar-referencia-varios" = "Aura のライブラリから取り除かれます。元のファイルはそのままです。";
 "licenses-view.aura-studio-es-gratuita-se-distribuye" = "Aura Studio は無料で、非商用で配布されています。iPod Classic 6G 用のインストール可能なファームウェアを、公開されたそのままの形で変更せずに同梱しています。いずれも GNU 一般公衆利用許諾契約書バージョン 2（GPL v2）のもとで公開された自由ソフトウェアです。各ファームウェアは Rockbox から派生しており、その完全なソースコード、ここに含まれる正確なバージョン、Rockbox からの変更点の記録は、同ライセンス第 3 条の要求どおり下記のリンクにあります。";
@@ -373,13 +374,12 @@
 "settings.importing" = "読み込み時";
 "settings.installer" = "インストーラー";
 "settings.language" = "言語";
-"settings.language-english" = "英語";
+"settings.language-machine-translated" = "機械翻訳です。ネイティブスピーカーによる確認はまだ行われていません";
 "settings.language-note-new" = "言語はアプリの起動時に適用されます。写真のコレクション名や、すでに保存したカテゴリは翻訳されません。アプリの文言ではなく、あなたのデータだからです。";
 "settings.language-restart-later" = "あとで";
 "settings.language-restart-message" = "言語は起動時に適用されます。「あとで」を選ぶと設定は保存され、次に Aura Studio を開いたときに適用されます。";
 "settings.language-restart-now" = "今すぐ再起動";
 "settings.language-restart-title" = "Aura Studio を今すぐ再起動しますか？";
-"settings.language-spanish" = "スペイン語";
 "settings.language.system" = "システムに合わせる";
 "settings.migrate-settings-detail" = "以前のバージョンで作られたライブラリを最新の状態にします。カタログのタグをコピーに書き込み、準備済みファイルの名前を変更し、どこにも属さなくなったものを整理します。Aura からの案内がなくても移行できます。移行のときにしか見つからない場合があるからです。ファイルを開かないと分からない、タグがカタログと食い違っているコピーです。";
 "settings.music" = "ミュージック";
@@ -407,7 +407,6 @@
 "similar-items-view.elementos" = "項目";
 "similar-items-view.elementos-similares" = "似ている項目";
 "similar-items-view.elige-grupo-lista" = "リストからグループを選んでください。";
-"similar-items-view.eliminar-elementos-biblioteca" = "%lld 件をライブラリから削除しますか？";
 "similar-items-view.eliminar-solo-este" = "これだけ削除";
 "similar-items-view.fotos" = "写真";
 "similar-items-view.hay-grupo-s-ignorado-s" = "無視したグループが %lld 件あります。";
@@ -417,7 +416,6 @@
 "similar-items-view.no-son-lo-mismo-no-volver" = "同じものではありません。このグループを今後表示しない。";
 "similar-items-view.por-que-se-parecen" = "似ている理由";
 "similar-items-view.probables-duplicados" = "重複の可能性があるもの";
-"similar-items-view.se-conserva-archivos-que-viven-dentro" = "「%@」は残ります。ライブラリフォルダの中にあるファイルは削除されますが、その外にある元のファイルには触れません。";
 "similar-items-view.solo-duplicados" = "重複のみ";
 "similar-items-view.sugerencia" = "提案";
 "similar-items-view.sugerido" = "提案";

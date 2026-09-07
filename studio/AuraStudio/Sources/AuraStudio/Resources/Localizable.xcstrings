@@ -54,7 +54,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Searching Cover Art Archive and Deezer for cover art..."
+            "value": "Searching Cover Art Archive and Deezer for cover art…"
           }
         },
         "es": {
@@ -669,7 +669,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Find album cover art..."
+            "value": "Find album cover art…"
           }
         },
         "es": {
@@ -710,7 +710,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Find cover art for %lld albums..."
+            "value": "Find cover art for %lld albums…"
           }
         },
         "es": {
@@ -1075,7 +1075,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Add to Library..."
+            "value": "Add to Library…"
           }
         },
         "es": {
@@ -1116,7 +1116,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Check for Aura Studio Updates..."
+            "value": "Check for Aura Studio Updates…"
           }
         },
         "es": {
@@ -1157,7 +1157,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Find Similar Items..."
+            "value": "Find Similar Items…"
           }
         },
         "es": {
@@ -1690,7 +1690,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "See what's new"
+            "value": "See what’s new"
           }
         },
         "es": {
@@ -2018,7 +2018,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "More information..."
+            "value": "More information…"
           }
         },
         "es": {
@@ -2383,7 +2383,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Disk detected -- copying Aura..."
+            "value": "Disk detected -- copying Aura…"
           }
         },
         "es": {
@@ -2424,7 +2424,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Waiting for the iPod to show up as a disk again..."
+            "value": "Waiting for the iPod to show up as a disk again…"
           }
         },
         "es": {
@@ -2465,7 +2465,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The iPod came back with Apple's firmware -- the boot loader was not written"
+            "value": "The iPod came back with Apple’s firmware -- the boot loader was not written"
           }
         },
         "es": {
@@ -3199,7 +3199,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Don't show again"
+            "value": "Don’t show again"
           }
         },
         "es": {
@@ -3322,7 +3322,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "These are edited one song at a time -- use “Rename...” or “More information...” on a single item."
+            "value": "These are edited one song at a time -- use “Rename…” or “More information…” on a single item."
           }
         },
         "es": {
@@ -3363,7 +3363,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "You are about to edit %lld songs at once. Fields that don't match across all of them show as “Mixed” -- whatever you type applies to all %lld. Title and track number can't be edited in bulk."
+            "value": "You are about to edit %lld songs at once. Fields that don’t match across all of them show as “Mixed” -- whatever you type applies to all %lld. Title and track number can’t be edited in bulk."
           }
         },
         "es": {
@@ -3568,7 +3568,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reads the state of your iPod and your library again. It doesn't copy or delete anything."
+            "value": "Reads the state of your iPod and your library again. It doesn’t copy or delete anything."
           }
         },
         "es": {
@@ -4019,7 +4019,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Looking for your iPod..."
+            "value": "Looking for your iPod…"
           }
         },
         "es": {
@@ -4060,7 +4060,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Connect your iPod Classic 6G to this Mac over USB. If iTunes/Music opens on its own, you can close it -- it doesn't interfere with Aura Studio."
+            "value": "Connect your iPod Classic 6G to this Mac over USB. If iTunes/Music opens on its own, you can close it -- it doesn’t interfere with Aura Studio."
           }
         },
         "es": {
@@ -4101,7 +4101,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "We found “%@”, with Apple's original firmware (not on FAT32 yet). You don't need to convert it: click “I connected it, continue anyway” and Aura Studio will format it automatically later, in the disk preparation step."
+            "value": "We found “%@”, with Apple’s original firmware (not on FAT32 yet). You don’t need to convert it: click “I connected it, continue anyway” and Aura Studio will format it automatically later, in the disk preparation step."
           }
         },
         "es": {
@@ -4142,7 +4142,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "We found an Apple device, but we couldn't confirm it is an iPod Classic 6G."
+            "value": "We found an Apple device, but we couldn’t confirm it is an iPod Classic 6G."
           }
         },
         "es": {
@@ -4183,7 +4183,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "We found “%@”. Getting the next step ready..."
+            "value": "We found “%@”. Getting the next step ready…"
           }
         },
         "es": {
@@ -4224,7 +4224,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "We found your iPod, but its disk has no readable file system (that's how it looks in boot loader mode, or if an install was left halfway). Click “I connected it, continue anyway” to prepare it and install Aura."
+            "value": "We found your iPod, but its disk has no readable file system (that’s how it looks in boot loader mode, or if an install was left halfway). Click “I connected it, continue anyway” to prepare it and install Aura."
           }
         },
         "es": {
@@ -4429,7 +4429,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Cancelling..."
+            "value": "Canceling…"
           }
         },
         "es": {
@@ -4552,7 +4552,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Syncing %@ of %@ file(s)..."
+            "value": "Syncing %@ of %@ file(s)…"
           }
         },
         "es": {
@@ -4757,7 +4757,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Checking the iPod..."
+            "value": "Checking the iPod…"
           }
         },
         "es": {
@@ -5290,7 +5290,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This can't be undone -- files deleted from the iPod can't be recovered. Your library on this Mac is not touched; you can sync again whenever you want."
+            "value": "This can’t be undone -- files deleted from the iPod can’t be recovered. Your library on this Mac is not touched; you can sync again whenever you want."
           }
         },
         "es": {
@@ -5372,7 +5372,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This iPod has a Rockbox that isn't Aura: the Aura Studio library doesn't apply to this install. In the Installer section you can install Aura (no flashing -- only the .rockbox folder is replaced) or restore the original firmware."
+            "value": "This iPod has a Rockbox that isn’t Aura: the Aura Studio library doesn’t apply to this install. In the Installer section you can install Aura (no flashing -- only the .rockbox folder is replaced) or restore the original firmware."
           }
         },
         "es": {
@@ -5495,7 +5495,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "There are Aura files on the disk, but no evidence that Aura boots on this iPod: Apple's firmware is running and Aura never wrote its settings here. Install Aura from the Installer section (it flashes the boot loader over DFU and copies the files again) to turn the library on. If you already installed it, start the iPod with Aura once and connect it again."
+            "value": "There are Aura files on the disk, but no evidence that Aura boots on this iPod: Apple’s firmware is running and Aura never wrote its settings here. Install Aura from the Installer section (it flashes the boot loader over DFU and copies the files again) to turn the library on. If you already installed it, start the iPod with Aura once and connect it again."
           }
         },
         "es": {
@@ -5659,7 +5659,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The music on this iPod is managed by Apple's original firmware -- it syncs with Finder (or the Music app), not with Aura Studio. If you install Aura from the Installer section, the Aura Studio library turns on."
+            "value": "The music on this iPod is managed by Apple’s original firmware -- it syncs with Finder (or the Music app), not with Aura Studio. If you install Aura from the Installer section, the Aura Studio library turns on."
           }
         },
         "es": {
@@ -5864,7 +5864,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "You haven't synced this iPod with Aura Studio yet."
+            "value": "You haven’t synced this iPod with Aura Studio yet."
           }
         },
         "es": {
@@ -5905,7 +5905,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your iPod has %@, a firmware this version of Aura Studio doesn't bundle. It tells you about its updates but can't apply them: download it from its repository and install it as usual. Your library is not touched."
+            "value": "Your iPod has %@, a firmware this version of Aura Studio doesn’t bundle. It tells you about its updates but can’t apply them: download it from its repository and install it as usual. Your library is not touched."
           }
         },
         "es": {
@@ -6233,7 +6233,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "It didn't start with %@ -- finish over DFU"
+            "value": "It didn’t start with %@ -- finish over DFU"
           }
         },
         "es": {
@@ -6438,7 +6438,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aura Studio can't detect DFU mode"
+            "value": "Aura Studio can’t detect DFU mode"
           }
         },
         "es": {
@@ -6520,7 +6520,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Waiting for DFU mode..."
+            "value": "Waiting for DFU mode…"
           }
         },
         "es": {
@@ -6725,7 +6725,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Asking GitHub..."
+            "value": "Asking GitHub…"
           }
         },
         "es": {
@@ -6889,7 +6889,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "These extras from the original iPod are not implemented in Aura. When they exist, you'll be able to manage them from here."
+            "value": "These extras from the original iPod are not implemented in Aura. When they exist, you’ll be able to manage them from here."
           }
         },
         "es": {
@@ -7217,7 +7217,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Your iPod has %@. Installing %@ adds it: %@ is kept asleep with its settings and you'll be able to come back to it from here without installing anything again."
+            "value": "Your iPod has %@. Installing %@ adds it: %@ is kept asleep with its settings and you’ll be able to come back to it from here without installing anything again."
           }
         },
         "es": {
@@ -7258,7 +7258,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ is already installed on your iPod, asleep, with its settings saved. Switching takes a second (it doesn't download or erase anything); afterwards you have to restart the iPod, and the first time it rebuilds its music database."
+            "value": "%@ is already installed on your iPod, asleep, with its settings saved. Switching takes a second (it doesn’t download or erase anything); afterwards you have to restart the iPod, and the first time it rebuilds its music database."
           }
         },
         "es": {
@@ -8037,7 +8037,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Stopping halfway can leave the iPod's disk with errors. If that happens, run the installer again to repair it."
+            "value": "Stopping halfway can leave the iPod’s disk with errors. If that happens, run the installer again to repair it."
           }
         },
         "es": {
@@ -8078,7 +8078,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Don't unplug the iPod or close Aura Studio during this step."
+            "value": "Don’t unplug the iPod or close Aura Studio during this step."
           }
         },
         "es": {
@@ -9001,7 +9001,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose another library..."
+            "value": "Choose another library…"
           }
         },
         "es": {
@@ -9083,7 +9083,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Nothing was lost: your catalog and your files are still on that disk. Aura Studio won't touch anything until it's available again."
+            "value": "Nothing was lost: your catalog and your files are still on that disk. Aura Studio won’t touch anything until it’s available again."
           }
         },
         "es": {
@@ -9108,6 +9108,47 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ничего не потеряно: ваш каталог и файлы остаются на этом диске. Aura Studio ничего не тронет, пока он снова не станет доступен."
+          }
+        }
+      }
+    },
+    "library-view-model.eliminar-copia-papelera": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ werden in den Papierkorb verschoben (%2$@). Von dort kannst du sie zurückholen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ will be moved to the Trash (%2$@). You can get them back from there."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se moverán %1$@ a la Papelera (%2$@). Puedes recuperarlos desde ahí."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ seront déplacés vers la Corbeille (%2$@). Vous pourrez les récupérer depuis là."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ をゴミ箱に移動します（%2$@）。そこから元に戻せます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ будут перемещены в Корзину (%2$@). Оттуда их можно восстановить."
           }
         }
       }
@@ -11528,7 +11569,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Syncs with the iPod: the same rating you pick here or in the device's “Now Playing”."
+            "value": "Syncs with the iPod: the same rating you pick here or in the device’s “Now Playing”."
           }
         },
         "es": {
@@ -11692,7 +11733,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Find cover art for %lld albums..."
+            "value": "Find cover art for %lld albums…"
           }
         },
         "es": {
@@ -11856,7 +11897,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rename..."
+            "value": "Rename…"
           }
         },
         "es": {
@@ -12266,7 +12307,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This file changed on the iPod outside Aura Studio. The next time you sync you'll be able to choose whether to keep it or replace it with the version in your library."
+            "value": "This file changed on the iPod outside Aura Studio. The next time you sync you’ll be able to choose whether to keep it or replace it with the version in your library."
           }
         },
         "es": {
@@ -12594,7 +12635,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Get information..."
+            "value": "Get information…"
           }
         },
         "es": {
@@ -12635,7 +12676,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Converting videos to the iPod's format needs ffmpeg. Install it with Homebrew (“brew install ffmpeg”) and try again."
+            "value": "Converting videos to the iPod’s format needs ffmpeg. Install it with Homebrew (“brew install ffmpeg”) and try again."
           }
         },
         "es": {
@@ -12881,7 +12922,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "It was removed from the iPod outside Aura Studio -- it won't be copied again on its own. Use “Sync selection” in the context menu to copy it back."
+            "value": "It was removed from the iPod outside Aura Studio -- it won’t be copied again on its own. Use “Sync selection” in the context menu to copy it back."
           }
         },
         "es": {
@@ -13291,7 +13332,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Read the file's tags again"
+            "value": "Read the file’s tags again"
           }
         },
         "es": {
@@ -15255,7 +15296,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rename album..."
+            "value": "Rename album…"
           }
         },
         "es": {
@@ -15501,7 +15542,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The iPod's screen is 320x240 -- a photo from a current camera or phone weighs dozens of times more than that screen can show. “Save space” reduces every photo to 320px on its longest side, the screen's native width. “HD version” leaves it at 640px: a little sharper when you zoom in the viewer, in exchange for more space on the iPod. Either way it is saved as a compressed JPEG, never the full original photo."
+            "value": "The iPod’s screen is 320x240 -- a photo from a current camera or phone weighs dozens of times more than that screen can show. “Save space” reduces every photo to 320px on its longest side, the screen’s native width. “HD version” leaves it at 640px: a little sharper when you zoom in the viewer, in exchange for more space on the iPod. Either way it is saved as a compressed JPEG, never the full original photo."
           }
         },
         "es": {
@@ -15542,7 +15583,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Splits your photos into collections (Images, Photos and AI by default, editable below) so they're easier to find INSIDE Aura Studio -- the collection is suggested on import, and you can correct it by hand in Library → Photos. With this on, each collection is also a folder inside “Images” in the library's local folder (Finder). It doesn't change where they end up on the iPod: there they are always copied together into “Photos”, because the iPod's viewer doesn't browse subfolders yet."
+            "value": "Splits your photos into collections (Images, Photos and AI by default, editable below) so they’re easier to find INSIDE Aura Studio -- the collection is suggested on import, and you can correct it by hand in Library → Photos. With this on, each collection is also a folder inside “Images” in the library’s local folder (Finder). It doesn’t change where they end up on the iPod: there they are always copied together into “Photos”, because the iPod’s viewer doesn’t browse subfolders yet."
           }
         },
         "es": {
@@ -15665,7 +15706,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Choose image..."
+            "value": "Choose image…"
           }
         },
         "es": {
@@ -15747,7 +15788,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Import..."
+            "value": "Import…"
           }
         },
         "es": {
@@ -16764,7 +16805,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "These were looked into and will NOT be integrated. Written down so they don't get evaluated again."
+            "value": "These were looked into and will NOT be integrated. Written down so they don’t get evaluated again."
           }
         },
         "es": {
@@ -16969,7 +17010,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This is where your library's catalog lives -- it works even when the iPod isn't connected, and it syncs when you connect it. Whether it also copies your files here depends on the setting below."
+            "value": "This is where your library’s catalog lives -- it works even when the iPod isn’t connected, and it syncs when you connect it. Whether it also copies your files here depends on the setting below."
           }
         },
         "es": {
@@ -17133,7 +17174,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Change..."
+            "value": "Change…"
           }
         },
         "es": {
@@ -17215,7 +17256,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "External folders you dragged into Aura with “Copy media into the Aura Library” off -- Aura copies nothing from there, it only remembers them here. Removing a folder from this list doesn't delete or unlink what you already imported from it, it just stops showing it."
+            "value": "External folders you dragged into Aura with “Copy media into the Aura Library” off -- Aura copies nothing from there, it only remembers them here. Removing a folder from this list doesn’t delete or unlink what you already imported from it, it just stops showing it."
           }
         },
         "es": {
@@ -17379,7 +17420,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Right now every published version of Aura Studio is a beta, so it's worth leaving this on. Aura Studio never updates itself: it only tells you and lets you download the installer."
+            "value": "Right now every published version of Aura Studio is a beta, so it’s worth leaving this on. Aura Studio never updates itself: it only tells you and lets you download the installer."
           }
         },
         "es": {
@@ -17420,7 +17461,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Couldn't check: %@"
+            "value": "Couldn’t check: %@"
           }
         },
         "es": {
@@ -17461,7 +17502,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "You haven't dragged any folder in with that setting off yet."
+            "value": "You haven’t dragged any folder in with that setting off yet."
           }
         },
         "es": {
@@ -18228,43 +18269,43 @@
         }
       }
     },
-    "settings.language-english": {
+    "settings.language-machine-translated": {
       "extractionState": "manual",
       "localizations": {
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Englisch"
+            "value": "Maschinelle Übersetzung, noch nicht von Muttersprachlern geprüft"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "English"
+            "value": "Machine translation, not yet reviewed by native speakers"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Ingles"
+            "value": "Traducción automática, aún sin revisar por hablantes nativos"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Anglais"
+            "value": "Traduction automatique, pas encore relue par des locuteurs natifs"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "英語"
+            "value": "機械翻訳です。ネイティブスピーカーによる確認はまだ行われていません"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Английский"
+            "value": "Машинный перевод, ещё не проверенный носителями языка"
           }
         }
       }
@@ -18281,7 +18322,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The language is applied when the app starts. The names of your photo collections and the categories you already saved are not translated: they are your data, not the app's text."
+            "value": "The language is applied when the app starts. The names of your photo collections and the categories you already saved are not translated: they are your data, not the app’s text."
           }
         },
         "es": {
@@ -18474,47 +18515,6 @@
         }
       }
     },
-    "settings.language-spanish": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Spanisch"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Spanish"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Espanol"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Espagnol"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "スペイン語"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Испанский"
-          }
-        }
-      }
-    },
     "settings.language.system": {
       "extractionState": "manual",
       "localizations": {
@@ -18568,7 +18568,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Brings a library made with an earlier version up to date: writes the catalog's tags into the copies, renames the prepared files and cleans up what no longer belongs to anything. You can migrate even if Aura hasn't prompted you: there is one case that only shows up during migration, because the files have to be opened to see it — copies whose tags don't match what your catalog says."
+            "value": "Brings a library made with an earlier version up to date: writes the catalog’s tags into the copies, renames the prepared files and cleans up what no longer belongs to anything. You can migrate even if Aura hasn’t prompted you: there is one case that only shows up during migration, because the files have to be opened to see it — copies whose tags don’t match what your catalog says."
           }
         },
         "es": {
@@ -19183,7 +19183,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Applies only these artist/album/title changes. It doesn't delete anything."
+            "value": "Applies only these artist/album/title changes. It doesn’t delete anything."
           }
         },
         "es": {
@@ -19265,7 +19265,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Looking for similar items..."
+            "value": "Looking for similar items…"
           }
         },
         "es": {
@@ -19306,7 +19306,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Songs, videos or photos that look like they're in your library twice, with different metadata or a different format."
+            "value": "Songs, videos or photos that look like they’re in your library twice, with different metadata or a different format."
           }
         },
         "es": {
@@ -19347,7 +19347,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Comparing titles, artists, durations and sizes..."
+            "value": "Comparing titles, artists, durations and sizes…"
           }
         },
         "es": {
@@ -19470,7 +19470,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Edit..."
+            "value": "Edit…"
           }
         },
         "es": {
@@ -19618,47 +19618,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Выберите группу из списка."
-          }
-        }
-      }
-    },
-    "similar-items-view.eliminar-elementos-biblioteca": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld aus der Mediathek löschen?"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Delete %lld from the library?"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "¿Eliminar %lld de la biblioteca?"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Supprimer %lld de la bibliothèque ?"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld 件をライブラリから削除しますか？"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Удалить %lld из медиатеки?"
           }
         }
       }
@@ -19921,7 +19880,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "They're not the same: don't show this group again."
+            "value": "They’re not the same: don’t show this group again."
           }
         },
         "es": {
@@ -19946,125 +19905,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Это не одно и то же: больше не показывать эту группу."
-          }
-        }
-      }
-    },
-    "similar-items-view.plural.elementos": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "1 Objekt"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld Objekte"
-                }
-              }
-            }
-          }
-        },
-        "en": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "1 item"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld items"
-                }
-              }
-            }
-          }
-        },
-        "es": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "1 elemento"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld elementos"
-                }
-              }
-            }
-          }
-        },
-        "fr": {
-          "variations": {
-            "plural": {
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld élément"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld éléments"
-                }
-              }
-            }
-          }
-        },
-        "ja": {
-          "variations": {
-            "plural": {
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld 件の項目"
-                }
-              }
-            }
-          }
-        },
-        "ru": {
-          "variations": {
-            "plural": {
-              "few": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld объекта"
-                }
-              },
-              "many": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld объектов"
-                }
-              },
-              "one": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld объект"
-                }
-              },
-              "other": {
-                "stringUnit": {
-                  "state": "translated",
-                  "value": "%lld объекта"
-                }
-              }
-            }
           }
         }
       }
@@ -20266,47 +20106,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Вероятные и дубликаты"
-          }
-        }
-      }
-    },
-    "similar-items-view.se-conserva-archivos-que-viven-dentro": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "„%@“ wird behalten. Dateien im Mediathek-Ordner werden gelöscht; Originale außerhalb bleiben unangetastet."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "“%@” is kept. Files that live inside the library folder are deleted; originals outside it are not touched."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Se conserva «%@». Los archivos que viven dentro de la carpeta de la biblioteca se borran; los originales fuera de ella no se tocan."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "« %@ » est conservé. Les fichiers situés dans le dossier de la bibliothèque sont supprimés ; les originaux en dehors ne sont pas touchés."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "「%@」は残ります。ライブラリフォルダの中にあるファイルは削除されますが、その外にある元のファイルには触れません。"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "«%@» будет сохранён. Файлы внутри папки медиатеки удаляются; оригиналы за её пределами не трогаются."
           }
         }
       }
@@ -20815,7 +20614,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Reference them in place: no extra space and your files are never touched; Aura keeps a prepared version aside (.preparados/), edits live only in Aura and on the iPod, and if the original disk is missing those songs can't be synced."
+            "value": "Reference them in place: no extra space and your files are never touched; Aura keeps a prepared version aside (.preparados/), edits live only in Aura and on the iPod, and if the original disk is missing those songs can’t be synced."
           }
         },
         "es": {
@@ -21020,7 +20819,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Aura Studio never wrote these files -- they're not part of your library. You can import them (they get copied to your Mac and become part of your library) or delete them from the iPod."
+            "value": "Aura Studio never wrote these files -- they’re not part of your library. You can import them (they get copied to your Mac and become part of your library) or delete them from the iPod."
           }
         },
         "es": {
@@ -21061,7 +20860,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Keep the iPod's"
+            "value": "Keep the iPod’s"
           }
         },
         "es": {
@@ -21184,7 +20983,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This can't be undone."
+            "value": "This can’t be undone."
           }
         },
         "es": {
@@ -21307,7 +21106,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Replace with the library's"
+            "value": "Replace with the library’s"
           }
         },
         "es": {
@@ -21348,7 +21147,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "They will be deleted from the iPod. Your library on the Mac doesn't change."
+            "value": "They will be deleted from the iPod. Your library on the Mac doesn’t change."
           }
         },
         "es": {
@@ -21389,7 +21188,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A folder with fonts/ and icons/masks/ already generated -- for example, the output of the firmware's design-system/generate.py, or ~/Aura-local/theme-apple-source/design-system-out/."
+            "value": "A folder with fonts/ and icons/masks/ already generated -- for example, the output of the firmware’s design-system/generate.py, or ~/Aura-local/theme-apple-source/design-system-out/."
           }
         },
         "es": {
@@ -21635,7 +21434,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "This theme is built only for your own iPod: don't share or distribute it -- the license of those assets doesn't allow it outside your device. Aura Studio never includes or downloads these files; it only uses the ones your Mac already has."
+            "value": "This theme is built only for your own iPod: don’t share or distribute it -- the license of those assets doesn’t allow it outside your device. Aura Studio never includes or downloads these files; it only uses the ones your Mac already has."
           }
         },
         "es": {
@@ -21717,7 +21516,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Couldn't complete the operation"
+            "value": "Couldn’t complete the operation"
           }
         },
         "es": {
@@ -21758,7 +21557,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "They're applied on the iPod at startup. A theme that doesn't load (incompatible format or missing files) shows dimmed -- the firmware never pretends to support what it doesn't have."
+            "value": "They’re applied on the iPod at startup. A theme that doesn’t load (incompatible format or missing files) shows dimmed -- the firmware never pretends to support what it doesn’t have."
           }
         },
         "es": {
@@ -22004,7 +21803,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Splits your videos into Videos, Series and Movies so they're easier to find INSIDE Aura Studio (the category is suggested by duration on import -- except “Series”, which has no reliable heuristic and is always assigned by hand -- and you can correct it in Library → Video). It doesn't change where they end up on the iPod: there they are always copied together into “Videos”, because the iPod's player doesn't browse subfolders yet."
+            "value": "Splits your videos into Videos, Series and Movies so they’re easier to find INSIDE Aura Studio (the category is suggested by duration on import -- except “Series”, which has no reliable heuristic and is always assigned by hand -- and you can correct it in Library → Video). It doesn’t change where they end up on the iPod: there they are always copied together into “Videos”, because the iPod’s player doesn’t browse subfolders yet."
           }
         },
         "es": {
@@ -22045,7 +21844,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Every video is converted to 320x240 MPEG-1/2 when syncing -- it's the only format an iPod with Aura can play at full speed (this iPod's chip can't decode H.264 or modern formats). It isn't a preference: it's a real limitation of 2007 hardware, so there's nothing to choose here."
+            "value": "Every video is converted to 320x240 MPEG-1/2 when syncing -- it’s the only format an iPod with Aura can play at full speed (this iPod’s chip can’t decode H.264 or modern formats). It isn’t a preference: it’s a real limitation of 2007 hardware, so there’s nothing to choose here."
           }
         },
         "es": {
@@ -22086,7 +21885,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "I understand that Apple's boot loader is erased"
+            "value": "I understand that Apple’s boot loader is erased"
           }
         },
         "es": {
@@ -22127,7 +21926,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Apple's original firmware is erased from the iPod's boot loader. Once installed, the iPod only starts %@; to go back to Apple you have to restore it from scratch with iTunes/Finder. (Dual boot needs an iPod in “winpod” format -- restored from Windows -- and an iPod restored from a Mac isn't one, so Aura Studio no longer offers it.)"
+            "value": "Apple’s original firmware is erased from the iPod’s boot loader. Once installed, the iPod only starts %@; to go back to Apple you have to restore it from scratch with iTunes/Finder. (Dual boot needs an iPod in “winpod” format -- restored from Windows -- and an iPod restored from a Mac isn’t one, so Aura Studio no longer offers it.)"
           }
         },
         "es": {
