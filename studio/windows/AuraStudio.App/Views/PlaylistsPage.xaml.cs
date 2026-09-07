@@ -1,3 +1,4 @@
+using AuraStudio.Core.Resources;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -87,8 +88,8 @@ public sealed partial class PlaylistsPage : Page
             XamlRoot = XamlRoot,
             Title = title,
             Content = box,
-            PrimaryButtonText = "Aceptar",
-            CloseButtonText = "Cancelar",
+            PrimaryButtonText = Strings.Get("playlists-page.xaml.aceptar"),
+            CloseButtonText = Strings.Get("playlists-page.xaml.cancelar"),
             DefaultButton = ContentDialogButton.Primary,
             IsPrimaryButtonEnabled = current.Trim().Length > 0
         };

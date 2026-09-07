@@ -6,6 +6,7 @@
     xmlns:controls="using:AuraStudio.App.Controls"
     xmlns:res="using:AuraStudio.App.Resources"
     xmlns:vm="using:AuraStudio.App.ViewModels"
+    xmlns:str="using:AuraStudio.Core.Resources"
     AllowDrop="True"
     DragOver="Page_DragOver"
     Drop="Page_Drop"
@@ -33,10 +34,10 @@
                 <Button Content="{x:Bind res:AppStrings.LibraryAddFiles}" Click="AddFiles_Click" />
                 <Button Content="{x:Bind res:AppStrings.LibraryAddFolder}" Click="AddFolder_Click" />
 
-                <Button Content="Buscar pósters" Click="VideoPosters_Click"
+                <Button Content="{x:Bind str:Strings.Get('media-grid-page.buscar-posters')}" Click="VideoPosters_Click"
                         Visibility="{x:Bind ViewModel.ShowsVideoPosterAction, Converter={StaticResource BoolToVisibility}}"
                         IsEnabled="{x:Bind ViewModel.Library.IsEnriching, Mode=OneWay, Converter={StaticResource InvertBool}}"
-                        ToolTipService.ToolTip="Descarga los pósters que falten. Viajan pegados a su video en la próxima sincronización." />
+                        ToolTipService.ToolTip="{x:Bind str:Strings.Get('media-grid-page.descarga-posters-que-falten')}" />
 
             </StackPanel>
         </Grid>

@@ -128,7 +128,8 @@ public sealed partial class DeviceListViewModel : ViewModelBase
         string volume = device.VolumePath;
 
         IsCheckingUpdates = true;
-        StatusMessage = $"Buscando actualizaciones de {family.DisplayName}…";
+        StatusMessage = Strings.Format(
+            "device-list-view-model.buscando-actualizaciones-family-displayn", family.DisplayName);
 
         try
         {
@@ -370,7 +371,7 @@ public sealed partial class DeviceListViewModel : ViewModelBase
         // el resultado, no lo que escribió.
         DeviceName = saved.Name ?? "";
         CanEditDeviceName = DeviceNameStore.CanEdit(saved, _preferences.InstallationId);
-        StatusMessage = $"El iPod se llama \"{DeviceName}\".";
+        StatusMessage = Strings.Format("device-list-view-model.ipod-se-llama-devicename", DeviceName);
         OnPropertyChanged(nameof(DeviceNameExplanation));
     }
 

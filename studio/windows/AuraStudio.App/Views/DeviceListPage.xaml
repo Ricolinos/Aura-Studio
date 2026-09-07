@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:conv="using:AuraStudio.App.Converters"
     xmlns:res="using:AuraStudio.App.Resources"
-    xmlns:vm="using:AuraStudio.App.ViewModels">
+    xmlns:vm="using:AuraStudio.App.ViewModels"
+    xmlns:str="using:AuraStudio.Core.Resources">
 
     <Page.Resources>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
@@ -82,10 +83,10 @@
                              con la explicación, nunca escondido. -->
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <TextBox Text="{x:Bind ViewModel.DeviceName, Mode=TwoWay}"
-                                     PlaceholderText="Nombre del iPod" MinWidth="260"
+                                     PlaceholderText="{x:Bind str:Strings.Get('device-list-page.nombre-ipod')}" MinWidth="260"
                                      FontSize="20"
                                      IsReadOnly="{x:Bind ViewModel.CanEditDeviceName, Mode=OneWay, Converter={StaticResource InvertBool}}" />
-                            <Button Content="Guardar" Command="{x:Bind ViewModel.SaveDeviceNameCommand}"
+                            <Button Content="{x:Bind str:Strings.Get('device-list-page.guardar')}" Command="{x:Bind ViewModel.SaveDeviceNameCommand}"
                                     IsEnabled="{x:Bind ViewModel.CanEditDeviceName, Mode=OneWay}"
                                     VerticalAlignment="Bottom" />
                         </StackPanel>
@@ -115,7 +116,7 @@
                         <!-- Nombre distinto de "Actualizar" a propósito: instalar
                              firmware tiene consecuencias serias y no puede
                              compartir verbo con un refresco inofensivo. -->
-                        <Button Content="Instalar la actualización"
+                        <Button Content="{x:Bind str:Strings.Get('device-list-page.instalar-actualizacion')}"
                                 Command="{x:Bind ViewModel.UpdateFirmwareCommand}"
                                 IsEnabled="{x:Bind ViewModel.IsUpdatingFirmware, Mode=OneWay, Converter={StaticResource InvertBool}}" />
                     </InfoBar.ActionButton>
@@ -132,13 +133,13 @@
                     <!-- ST-210: mientras consulta GitHub el enlace se ve
                          deshabilitado y aparece el aviso con "Cancelar". Un
                          enlace que no responde y no explica nada parece roto. -->
-                    <HyperlinkButton Content="Buscar actualizaciones"
+                    <HyperlinkButton Content="{x:Bind str:Strings.Get('device-list-page.buscar-actualizaciones')}"
                                      Command="{x:Bind ViewModel.CheckForUpdatesCommand}"
                                      IsEnabled="{x:Bind ViewModel.IsCheckingUpdates, Mode=OneWay, Converter={StaticResource InvertBool}}" />
                     <ProgressRing IsActive="{x:Bind ViewModel.IsCheckingUpdates, Mode=OneWay}" Width="16" Height="16"
                                   Visibility="{x:Bind ViewModel.IsCheckingUpdates, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
                                   VerticalAlignment="Center" />
-                    <HyperlinkButton Content="Cancelar"
+                    <HyperlinkButton Content="{x:Bind str:Strings.Get('device-list-page.cancelar')}"
                                      Command="{x:Bind ViewModel.CheckForUpdatesCancelCommand}"
                                      Visibility="{x:Bind ViewModel.IsCheckingUpdates, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
                 </StackPanel>
@@ -245,7 +246,7 @@
                  sincronizar" en vez de desaparecer. -->
             <Border Grid.Row="2" Style="{StaticResource AuraCardStyle}">
                     <StackPanel Spacing="10">
-                        <TextBlock Text="Sincronización" Style="{StaticResource AuraSectionTitleTextStyle}" />
+                        <TextBlock Text="{x:Bind str:Strings.Get('device-list-page.sincronizacion')}" Style="{StaticResource AuraSectionTitleTextStyle}" />
 
                         <!-- Divergencia conocida contra macOS: allá la sync es
                              siempre de todo, acá se puede acotar por tipo. Se
@@ -262,7 +263,7 @@
                              selección se vacía: un alcance que apunta a nada no
                              es un estado en el que dejar al usuario. -->
                         <StackPanel Orientation="Horizontal" Spacing="16">
-                            <RadioButton Content="Toda la biblioteca"
+                            <RadioButton Content="{x:Bind str:Strings.Get('device-list-page.toda-biblioteca')}"
                                          IsChecked="{x:Bind Sync.ScopeIsSelection, Mode=TwoWay, Converter={StaticResource InvertBool}}"
                                          GroupName="syncScope" />
                             <RadioButton Content="{x:Bind Sync.SelectionScopeLabel, Mode=OneWay}"
@@ -275,16 +276,16 @@
                                    Style="{StaticResource AuraCaptionTextStyle}" />
 
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Button Content="Revisar cambios" Command="{x:Bind Sync.PreviewCommand}"
+                            <Button Content="{x:Bind str:Strings.Get('device-list-page.revisar-cambios')}" Command="{x:Bind Sync.PreviewCommand}"
                                     IsEnabled="{x:Bind Sync.IsBusy, Mode=OneWay, Converter={StaticResource InvertBool}}"
-                                    ToolTipService.ToolTip="Calcula qué se copiaría. No escribe nada en el iPod." />
+                                    ToolTipService.ToolTip="{x:Bind str:Strings.Get('device-list-page.calcula-que-se-copiaria')}" />
                             <!-- El botón nunca lleva a un camino que falla: sin
                                  iPod con Aura, o con el alcance en una selección
                                  vacía, no se puede sincronizar y se ve. -->
-                            <Button Content="Sincronizar" Command="{x:Bind Sync.SyncCommand}"
+                            <Button Content="{x:Bind str:Strings.Get('device-list-page.sincronizar')}" Command="{x:Bind Sync.SyncCommand}"
                                     Style="{StaticResource AuraPrimaryButtonStyle}"
                                     IsEnabled="{x:Bind Sync.CanSync, Mode=OneWay}" />
-                            <Button Content="Cancelar" Command="{x:Bind Sync.CancelCommand}"
+                            <Button Content="{x:Bind str:Strings.Get('device-list-page.cancelar-2')}" Command="{x:Bind Sync.CancelCommand}"
                                     IsEnabled="{x:Bind Sync.IsBusy, Mode=OneWay}" />
                         </StackPanel>
 
@@ -305,15 +306,15 @@
 
                         <Grid ColumnDefinitions="*,*,*" Margin="0,4,0,0">
                             <StackPanel>
-                                <TextBlock Text="Por copiar" Style="{StaticResource AuraCaptionTextStyle}" />
+                                <TextBlock Text="{x:Bind str:Strings.Get('device-list-page.por-copiar')}" Style="{StaticResource AuraCaptionTextStyle}" />
                                 <TextBlock Text="{x:Bind Sync.CopiedCount, Mode=OneWay}" Style="{StaticResource AuraSectionTitleTextStyle}" />
                             </StackPanel>
                             <StackPanel Grid.Column="1">
-                                <TextBlock Text="Ya al día" Style="{StaticResource AuraCaptionTextStyle}" />
+                                <TextBlock Text="{x:Bind str:Strings.Get('device-list-page.ya-al-dia')}" Style="{StaticResource AuraCaptionTextStyle}" />
                                 <TextBlock Text="{x:Bind Sync.SkippedCount, Mode=OneWay}" Style="{StaticResource AuraSectionTitleTextStyle}" />
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <TextBlock Text="Reubicados" Style="{StaticResource AuraCaptionTextStyle}" />
+                                <TextBlock Text="{x:Bind str:Strings.Get('device-list-page.reubicados')}" Style="{StaticResource AuraCaptionTextStyle}" />
                                 <TextBlock Text="{x:Bind Sync.SweptCount, Mode=OneWay}" Style="{StaticResource AuraSectionTitleTextStyle}" />
                             </StackPanel>
                         </Grid>

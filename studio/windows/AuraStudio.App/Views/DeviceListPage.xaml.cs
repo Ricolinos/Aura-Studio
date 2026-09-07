@@ -1,3 +1,4 @@
+using AuraStudio.Core.Resources;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -153,7 +154,7 @@ public sealed partial class DeviceListPage : Page
                     list
                 }
             },
-            CloseButtonText = "Listo"
+            CloseButtonText = Strings.Get("device-list-page.xaml.listo")
         };
 
         await dialog.ShowAsync();

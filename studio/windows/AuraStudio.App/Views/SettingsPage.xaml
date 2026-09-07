@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:conv="using:AuraStudio.App.Converters"
     xmlns:res="using:AuraStudio.App.Resources"
-    xmlns:vm="using:AuraStudio.App.ViewModels">
+    xmlns:vm="using:AuraStudio.App.ViewModels"
+    xmlns:str="using:AuraStudio.Core.Resources">
 
     <Page.Resources>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
@@ -22,12 +23,12 @@
         <!-- Las mismas seis pestañas que macOS -->
         <SelectorBar Grid.Row="1" x:Name="Tabs" SelectionChanged="Tabs_SelectionChanged"
                      Margin="0,0,0,16">
-            <SelectorBarItem Text="General" Tag="general" IsSelected="True" />
-            <SelectorBarItem Text="Biblioteca" Tag="library" />
-            <SelectorBarItem Text="Música" Tag="music" />
-            <SelectorBarItem Text="Fotos" Tag="photos" />
-            <SelectorBarItem Text="Video" Tag="video" />
-            <SelectorBarItem Text="Servicios" Tag="services" />
+            <SelectorBarItem Text="{x:Bind str:Strings.Get('settings-page.general')}" Tag="general" IsSelected="True" />
+            <SelectorBarItem Text="{x:Bind str:Strings.Get('settings-page.biblioteca')}" Tag="library" />
+            <SelectorBarItem Text="{x:Bind str:Strings.Get('settings-page.musica')}" Tag="music" />
+            <SelectorBarItem Text="{x:Bind str:Strings.Get('settings-page.fotos')}" Tag="photos" />
+            <SelectorBarItem Text="{x:Bind str:Strings.Get('settings-page.video')}" Tag="video" />
+            <SelectorBarItem Text="{x:Bind str:Strings.Get('settings-page.servicios')}" Tag="services" />
         </SelectorBar>
 
         <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
@@ -59,7 +60,7 @@
                         </Grid>
                     </Border>
 
-                    <TextBlock Text="Idioma" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.idioma')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
                     <Border Style="{StaticResource AuraCardStyle}">
                         <TextBlock Text="{x:Bind res:AppStrings.SettingsLanguageDetail}"
                                    Style="{StaticResource AuraSecondaryTextStyle}"
@@ -97,7 +98,7 @@
                                            Style="{StaticResource AuraSecondaryTextStyle}"
                                            TextWrapping="Wrap" />
                                 <Button Grid.Column="1" VerticalAlignment="Center"
-                                        Content="Buscar actualizaciones"
+                                        Content="{x:Bind str:Strings.Get('settings-page.buscar-actualizaciones')}"
                                         Click="CheckAppUpdates_Click"
                                         IsEnabled="{x:Bind ViewModel.Updates.IsChecking, Mode=OneWay, Converter={StaticResource InvertBool}}" />
                             </Grid>
@@ -115,9 +116,9 @@
                 <!-- ===================== Biblioteca ===================== -->
                 <StackPanel x:Name="LibraryPanel" Spacing="16" Visibility="Collapsed">
 
-                    <TextBlock Text="Carpeta de la biblioteca"
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.carpeta-biblioteca')}"
                                Style="{StaticResource AuraSectionTitleTextStyle}" />
-                    <TextBlock Text="Aquí vive el catálogo de tu biblioteca: funciona aunque el iPod no esté conectado, y se sincroniza al conectarlo. Que además se copien tus archivos aquí depende del ajuste de abajo."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.aqui-vive-catalogo-biblioteca-funciona-a')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
                     <Border Style="{StaticResource AuraCardStyle}">
@@ -126,16 +127,16 @@
                                        FontFamily="Consolas" VerticalAlignment="Center"
                                        TextTrimming="CharacterEllipsis"
                                        ToolTipService.ToolTip="{x:Bind ViewModel.LibraryPath, Mode=OneWay}" />
-                            <Button Grid.Column="1" Content="Abrir en el Explorador"
+                            <Button Grid.Column="1" Content="{x:Bind str:Strings.Get('settings-page.abrir-explorador')}"
                                     Click="OpenLibraryFolder_Click" />
-                            <Button Grid.Column="2" Content="Cambiar…" Click="ChangeLibraryFolder_Click" />
+                            <Button Grid.Column="2" Content="{x:Bind str:Strings.Get('settings-page.cambiar')}" Click="ChangeLibraryFolder_Click" />
                         </Grid>
                     </Border>
 
                     <!-- Lo que pasa al cambiar de carpeta se dice ANTES, no después -->
                     <InfoBar IsOpen="True" IsClosable="False" Severity="Informational"
-                             Title="Cambiar de carpeta no mueve nada"
-                             Message="Aura Studio empieza a usar la carpeta nueva y lee la biblioteca que haya ahí (o empieza vacía si no hay ninguna). Tu biblioteca anterior queda intacta donde estaba, y vuelve si eliges esa carpeta de nuevo." />
+                             Title="{x:Bind str:Strings.Get('settings-page.cambiar-carpeta-mueve-nada')}"
+                             Message="{x:Bind str:Strings.Get('settings-page.carpeta-nueva-biblioteca-anterior-intacta')}" />
 
                     <TextBlock Text="{x:Bind ViewModel.LibraryChangedNotice, Mode=OneWay}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
@@ -153,7 +154,7 @@
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap"
                                FontStyle="Italic" />
 
-                    <ToggleSwitch Header="Copiar los medios a la carpeta de la biblioteca"
+                    <ToggleSwitch Header="{x:Bind str:Strings.Get('settings-page.copiar-medios-carpeta-biblioteca')}"
                                   IsOn="{x:Bind ViewModel.CopyMediaIntoLibrary, Mode=TwoWay}"
                                   Margin="0,8,0,0" />
                     <TextBlock Text="{x:Bind ViewModel.CopyMediaDetail, Mode=OneWay}"
@@ -165,10 +166,10 @@
                          elegida, porque el resultado depende de ella. -->
                     <InfoBar IsOpen="{x:Bind ViewModel.CopyMediaIntoLibrary, Mode=OneWay}"
                              IsClosable="False" Severity="Informational"
-                             Title="WAV y AIFF siempre se convierten"
+                             Title="{x:Bind str:Strings.Get('settings-page.wav-aiff-siempre-se-convierten')}"
                              Message="{x:Bind ViewModel.AudioConversionDetail, Mode=OneWay}" />
 
-                    <TextBlock Text="Archivos huérfanos" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.archivos-huerfanos')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
                     <TextBlock Text="{x:Bind ViewModel.OrphansDetail}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
@@ -192,20 +193,20 @@
                          migrar, y hay un caso que no se puede detectar barato
                          al abrir —copias sin etiquetas escritas—: sin esta
                          entrada, ese caso no tendría por dónde arreglarse. -->
-                    <TextBlock Text="Migrar de una versión anterior"
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.migrar-version-anterior')}"
                                Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
                     <TextBlock Text="{x:Bind ViewModel.MigrationDetail, Mode=OneWay}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
-                    <Button Content="Migrar biblioteca"
+                    <Button Content="{x:Bind str:Strings.Get('settings-page.migrar-biblioteca')}"
                             Command="{x:Bind ViewModel.Library.MigrateLibraryCommand}"
                             HorizontalAlignment="Left" />
-                    <TextBlock Text="Carpetas vinculadas"
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.carpetas-vinculadas')}"
                                Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
-                    <TextBlock Text="Carpetas externas que arrastraste con la copia apagada. Aura no copia nada de ahí, solo las recuerda. Quitar una de esta lista no borra ni desvincula lo que ya importaste desde ella: solo deja de mostrarla."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.carpetas-externas-arrastraste-con-copia')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
-                    <TextBlock Text="Todavía no vinculaste ninguna carpeta."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.todavia-vinculaste-ninguna-carpeta')}"
                                Style="{StaticResource AuraCaptionTextStyle}"
                                Visibility="{x:Bind ViewModel.HasLinkedFolders, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}" />
 
@@ -217,7 +218,7 @@
                                         <TextBlock Text="{x:Bind}" FontFamily="Consolas"
                                                    VerticalAlignment="Center"
                                                    TextTrimming="CharacterEllipsis" />
-                                        <Button Grid.Column="1" Content="Quitar" Tag="{x:Bind}"
+                                        <Button Grid.Column="1" Content="{x:Bind str:Strings.Get('settings-page.quitar')}" Tag="{x:Bind}"
                                                 Click="RemoveLinkedFolder_Click" />
                                     </Grid>
                                 </Border>
@@ -225,82 +226,82 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <TextBlock Text="Carátulas" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
-                    <RadioButton Content="Una carátula por álbum (recomendado)"
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.caratulas')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
+                    <RadioButton Content="{x:Bind str:Strings.Get('settings-page.caratula-por-album-recomendado')}"
                                  IsChecked="{x:Bind ViewModel.CoverArtAlbumOnly, Mode=TwoWay}"
                                  GroupName="coverArt" />
-                    <RadioButton Content="Una carátula por canción"
+                    <RadioButton Content="{x:Bind str:Strings.Get('settings-page.caratula-por-cancion')}"
                                  IsChecked="{x:Bind ViewModel.CoverArtPerTrack, Mode=TwoWay}"
                                  GroupName="coverArt" />
                     <TextBlock Text="{x:Bind ViewModel.CoverArtDetail, Mode=OneWay}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
-                    <TextBlock Text="Al importar" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
-                    <CheckBox Content="Completar la información faltante con servicios en línea"
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.al-importar')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
+                    <CheckBox Content="{x:Bind str:Strings.Get('settings-page.completar-informacion-faltante-con-servi')}"
                               IsChecked="{x:Bind ViewModel.EnrichOnline, Mode=TwoWay}" />
-                    <TextBlock Text="Apagado, Aura Studio no toca la red al importar: usa solo las etiquetas del archivo y lo que se pueda adivinar de su nombre."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.apagado-aura-studio-toca-red-al')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
-                    <CheckBox Content="Buscar letras sincronizadas"
+                    <CheckBox Content="{x:Bind str:Strings.Get('settings-page.buscar-letras-sincronizadas')}"
                               IsChecked="{x:Bind ViewModel.FetchSyncedLyrics, Mode=TwoWay}"
                               IsEnabled="{x:Bind ViewModel.CanFetchLyrics, Mode=OneWay}" />
-                    <TextBlock Text="Las letras vienen de LRCLIB, sin clave ni registro. Necesita la opción de arriba encendida."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.letras-vienen-lrclib-sin-clave-ni')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
                 </StackPanel>
 
                 <!-- ===================== Música ===================== -->
                 <StackPanel x:Name="MusicPanel" Spacing="10" Visibility="Collapsed">
-                    <TextBlock Text="Carpetas en el iPod" Style="{StaticResource AuraSectionTitleTextStyle}" />
-                    <RadioButton Content="Artista / Álbum (recomendado)" GroupName="musicOrg"
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.carpetas-ipod')}" Style="{StaticResource AuraSectionTitleTextStyle}" />
+                    <RadioButton Content="{x:Bind str:Strings.Get('settings-page.artista-album-recomendado')}" GroupName="musicOrg"
                                  IsChecked="{x:Bind ViewModel.MusicByArtistAlbum, Mode=TwoWay}" />
-                    <RadioButton Content="Solo álbum" GroupName="musicOrg"
+                    <RadioButton Content="{x:Bind str:Strings.Get('settings-page.solo-album')}" GroupName="musicOrg"
                                  IsChecked="{x:Bind ViewModel.MusicByAlbum, Mode=TwoWay}" />
-                    <RadioButton Content="Solo artista" GroupName="musicOrg"
+                    <RadioButton Content="{x:Bind str:Strings.Get('settings-page.solo-artista')}" GroupName="musicOrg"
                                  IsChecked="{x:Bind ViewModel.MusicByArtist, Mode=TwoWay}" />
                     <TextBlock Text="{x:Bind ViewModel.MusicOrganizationDetail, Mode=OneWay}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
-                    <TextBlock Text="Nombre del archivo" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
-                    <RadioButton Content="Solo el título (recomendado)" GroupName="filename"
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.nombre-archivo')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
+                    <RadioButton Content="{x:Bind str:Strings.Get('settings-page.solo-titulo-recomendado')}" GroupName="filename"
                                  IsChecked="{x:Bind ViewModel.FilenameTitleOnly, Mode=TwoWay}" />
-                    <RadioButton Content="Número de pista y título" GroupName="filename"
+                    <RadioButton Content="{x:Bind str:Strings.Get('settings-page.numero-pista-titulo')}" GroupName="filename"
                                  IsChecked="{x:Bind ViewModel.FilenameTrackTitle, Mode=TwoWay}" />
-                    <RadioButton Content="Título - Artista" GroupName="filename"
+                    <RadioButton Content="{x:Bind str:Strings.Get('settings-page.titulo-artista')}" GroupName="filename"
                                  IsChecked="{x:Bind ViewModel.FilenameTitleArtist, Mode=TwoWay}" />
-                    <RadioButton Content="Título - Álbum" GroupName="filename"
+                    <RadioButton Content="{x:Bind str:Strings.Get('settings-page.titulo-album')}" GroupName="filename"
                                  IsChecked="{x:Bind ViewModel.FilenameTitleAlbum, Mode=TwoWay}" />
                     <TextBlock Text="{x:Bind ViewModel.FilenamePreview, Mode=OneWay}"
                                FontFamily="Consolas"
                                Style="{StaticResource AuraCaptionTextStyle}" />
 
-                    <TextBlock Text="Calidad de audio" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
-                    <RadioButton Content="Mantener el formato original (recomendado)" GroupName="audio"
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.calidad-audio')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
+                    <RadioButton Content="{x:Bind str:Strings.Get('settings-page.mantener-formato-original-recomendado')}" GroupName="audio"
                                  IsChecked="{x:Bind ViewModel.AudioOriginal, Mode=TwoWay}" />
-                    <RadioButton Content="Comprimir a MP3 de buena calidad" GroupName="audio"
+                    <RadioButton Content="{x:Bind str:Strings.Get('settings-page.comprimir-mp3-buena-calidad')}" GroupName="audio"
                                  IsChecked="{x:Bind ViewModel.AudioCompressed, Mode=TwoWay}" />
                     <TextBlock Text="{x:Bind ViewModel.AudioQualityDetail, Mode=OneWay}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
                     <!-- R2-4: agrupación de colaboraciones. Ver
                          docs/normalizacion-artistas.md. -->
-                    <TextBlock Text="Colaboraciones" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
-                    <ToggleSwitch Header="Agrupar las colaboraciones bajo el artista principal"
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.colaboraciones')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
+                    <ToggleSwitch Header="{x:Bind str:Strings.Get('settings-page.agrupar-colaboraciones-bajo-artista-prin')}"
                                   IsOn="{x:Bind ViewModel.GroupCollaborations, Mode=TwoWay}" />
                     <TextBlock Text="{x:Bind ViewModel.GroupCollaborationsDetail}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
-                    <TextBlock Text="Excepciones" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
-                    <TextBlock Text="Nombres de grupo que llevan uno de esos separadores adentro y no hay que recortar, como &quot;Simon + Garfunkel&quot; o &quot;Café con Leche&quot;. Se comparan con el crédito completo, sin distinguir mayúsculas ni acentos."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.excepciones')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.nombres-grupo-llevan-uno-esos-separadore')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                         <TextBox x:Name="ArtistExceptionBox"
-                                 PlaceholderText="Nombre completo del grupo"
+                                 PlaceholderText="{x:Bind str:Strings.Get('settings-page.nombre-completo-grupo')}"
                                  IsEnabled="{x:Bind ViewModel.GroupCollaborations, Mode=OneWay}" />
-                        <Button Grid.Column="1" Content="Agregar" Click="AddArtistException_Click"
+                        <Button Grid.Column="1" Content="{x:Bind str:Strings.Get('settings-page.agregar')}" Click="AddArtistException_Click"
                                 IsEnabled="{x:Bind ViewModel.GroupCollaborations, Mode=OneWay}" />
                     </Grid>
 
-                    <TextBlock Text="Todavía no agregaste ninguna excepción."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.todavia-agregaste-ninguna-excepcion')}"
                                Style="{StaticResource AuraCaptionTextStyle}"
                                Visibility="{x:Bind ViewModel.HasArtistGroupingExceptions, Mode=OneWay, Converter={StaticResource BoolToVisibility}, ConverterParameter=invertir}" />
 
@@ -311,7 +312,7 @@
                                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                         <TextBlock Text="{x:Bind}" VerticalAlignment="Center"
                                                    TextTrimming="CharacterEllipsis" />
-                                        <Button Grid.Column="1" Content="Quitar" Tag="{x:Bind}"
+                                        <Button Grid.Column="1" Content="{x:Bind str:Strings.Get('settings-page.quitar-2')}" Tag="{x:Bind}"
                                                 Click="RemoveArtistException_Click" />
                                     </Grid>
                                 </Border>
@@ -322,71 +323,71 @@
 
                 <!-- ===================== Fotos ===================== -->
                 <StackPanel x:Name="PhotosPanel" Spacing="10" Visibility="Collapsed">
-                    <TextBlock Text="Calidad de imagen" Style="{StaticResource AuraSectionTitleTextStyle}" />
-                    <RadioButton Content="Optimizar espacio (320 px, recomendado)" GroupName="photoQuality"
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.calidad-imagen')}" Style="{StaticResource AuraSectionTitleTextStyle}" />
+                    <RadioButton Content="{x:Bind str:Strings.Get('settings-page.optimizar-espacio-320-px-recomendado')}" GroupName="photoQuality"
                                  IsChecked="{x:Bind ViewModel.PhotoOptimized, Mode=TwoWay}" />
-                    <RadioButton Content="Versión HD (640 px)" GroupName="photoQuality"
+                    <RadioButton Content="{x:Bind str:Strings.Get('settings-page.version-hd-640-px')}" GroupName="photoQuality"
                                  IsChecked="{x:Bind ViewModel.PhotoHd, Mode=TwoWay}" />
-                    <TextBlock Text="La pantalla del iPod es de 320×240: una foto de una cámara o un teléfono actual pesa decenas de veces más de lo que esa pantalla puede mostrar. En los dos casos se guarda como JPEG, nunca la foto original completa."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.pantalla-ipod-es-320-240-foto')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
-                    <ToggleSwitch Header="Organizar por colección dentro de la biblioteca"
+                    <ToggleSwitch Header="{x:Bind str:Strings.Get('settings-page.organizar-por-coleccion-dentro-bibliotec')}"
                                   IsOn="{x:Bind ViewModel.OrganizePhotosByCategory, Mode=TwoWay}"
                                   Margin="0,12,0,0" />
-                    <TextBlock Text="Separa tus fotos en colecciones para encontrarlas más fácil DENTRO de Aura Studio. No cambia dónde quedan en el iPod: ahí siempre se copian juntas en Photos, porque el visor del iPod todavía no navega por subcarpetas."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.separa-tus-fotos-colecciones-para-encont')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
-                    <TextBlock Text="Colecciones" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.colecciones')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
                     <ItemsControl ItemsSource="{x:Bind ViewModel.PhotoCollections, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="x:String">
                                 <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,4">
                                     <TextBlock Text="{x:Bind}" VerticalAlignment="Center" />
-                                    <Button Grid.Column="1" Content="Quitar" Tag="{x:Bind}"
+                                    <Button Grid.Column="1" Content="{x:Bind str:Strings.Get('settings-page.quitar-3')}" Tag="{x:Bind}"
                                             Click="RemoveCollection_Click" />
                                 </Grid>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <TextBox x:Name="NewCollectionBox" PlaceholderText="Nueva colección" />
-                        <Button Grid.Column="1" Content="Agregar" Click="AddCollection_Click" />
+                        <TextBox x:Name="NewCollectionBox" PlaceholderText="{x:Bind str:Strings.Get('settings-page.nueva-coleccion')}" />
+                        <Button Grid.Column="1" Content="{x:Bind str:Strings.Get('settings-page.agregar-2')}" Click="AddCollection_Click" />
                     </Grid>
-                    <TextBlock Text="Quitar una colección no cambia la colección de las fotos que ya la tenían asignada."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.quitar-coleccion-cambia-coleccion-fotos')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
                 </StackPanel>
 
                 <!-- ===================== Video ===================== -->
                 <StackPanel x:Name="VideoPanel" Spacing="10" Visibility="Collapsed">
-                    <ToggleSwitch Header="Organizar por categoría dentro de la biblioteca"
+                    <ToggleSwitch Header="{x:Bind str:Strings.Get('settings-page.organizar-por-categoria-dentro-bibliotec')}"
                                   IsOn="{x:Bind ViewModel.OrganizeVideosByCategory, Mode=TwoWay}" />
-                    <TextBlock Text="Separa tus videos en Videos, Series y Películas para encontrarlos más fácil DENTRO de Aura Studio. No cambia dónde quedan en el iPod: ahí siempre se copian juntos en Videos, porque el reproductor todavía no navega por subcarpetas."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.separa-tus-videos-videos-series-pelicula')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
-                    <TextBlock Text="Formato de video" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
-                    <TextBlock Text="Todo video se convierte a MPEG-1/2 de 320×240 al sincronizar: es el único formato que el iPod con Aura reproduce a velocidad completa (su chip de 2007 no decodifica H.264 ni formatos modernos). No es una preferencia, es una limitación real del hardware, así que aquí no hay nada que elegir."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.formato-video')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.todo-video-se-convierte-mpeg-1')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
-                    <TextBlock Text="ffmpeg" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
-                    <TextBlock Text="La conversión la hace ffmpeg, que se instala aparte porque tiene su propia licencia y su propio ritmo de actualizaciones. Se busca solo; solo hace falta elegirlo si lo tienes en una carpeta propia."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.ffmpeg')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.conversion-hace-ffmpeg-se-instala-aparte')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
                     <TextBlock Text="{x:Bind ViewModel.FfmpegStatus, Mode=OneWay}" TextWrapping="Wrap" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Content="Elegir ffmpeg.exe…" Click="ChooseFfmpeg_Click" />
-                        <Button Content="Buscarlo de nuevo" Click="ClearFfmpeg_Click"
+                        <Button Content="{x:Bind str:Strings.Get('settings-page.elegir-ffmpeg-exe')}" Click="ChooseFfmpeg_Click" />
+                        <Button Content="{x:Bind str:Strings.Get('settings-page.buscarlo-nuevo')}" Click="ClearFfmpeg_Click"
                                 IsEnabled="{x:Bind ViewModel.HasManualFfmpegPath, Mode=OneWay}" />
                     </StackPanel>
                 </StackPanel>
 
                 <!-- ===================== Servicios ===================== -->
                 <StackPanel x:Name="ServicesPanel" Spacing="10" Visibility="Collapsed">
-                    <TextBlock Text="Activos, sin configurar nada" Style="{StaticResource AuraSectionTitleTextStyle}" />
-                    <TextBlock Text="MusicBrainz (artista, álbum, año, número de pista), Cover Art Archive (carátulas) y LRCLIB (letras sincronizadas). Los tres funcionan sin clave y sin registro: Aura Studio sirve recién instalado."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.activos-sin-configurar-nada')}" Style="{StaticResource AuraSectionTitleTextStyle}" />
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.musicbrainz-artista-album-ano-numero-pis')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
-                    <TextBlock Text="Orden de búsqueda de carátula"
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.orden-busqueda-caratula')}"
                                Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
-                    <TextBlock Text="Cuando a una canción le falta carátula, se prueban estos servicios en orden y se usa la primera imagen que aparezca."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.cuando-cancion-le-falta-caratula-se')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
                     <ItemsControl ItemsSource="{x:Bind ViewModel.CoverProviders, Mode=OneWay}">
@@ -403,14 +404,14 @@
                                                        Style="{StaticResource AuraCaptionTextStyle}"
                                                        Visibility="{x:Bind HasReason, Converter={StaticResource BoolToVisibility}}" />
                                         </StackPanel>
-                                        <TextBlock Grid.Column="2" Text="Listo" VerticalAlignment="Center"
+                                        <TextBlock Grid.Column="2" Text="{x:Bind str:Strings.Get('settings-page.listo')}" VerticalAlignment="Center"
                                                    Style="{StaticResource AuraCaptionTextStyle}"
                                                    Visibility="{x:Bind Usable, Converter={StaticResource BoolToVisibility}}" />
-                                        <Button Grid.Column="3" Content="↑" Tag="{x:Bind Provider}"
+                                        <Button Grid.Column="3" Content="{x:Bind str:Strings.Get('settings-page.texto')}" Tag="{x:Bind Provider}"
                                                 IsEnabled="{x:Bind CanMoveUp}"
                                                 AutomationProperties.Name="Subir"
                                                 Click="MoveProviderUp_Click" />
-                                        <Button Grid.Column="4" Content="↓" Tag="{x:Bind Provider}"
+                                        <Button Grid.Column="4" Content="{x:Bind str:Strings.Get('settings-page.texto-2')}" Tag="{x:Bind Provider}"
                                                 IsEnabled="{x:Bind CanMoveDown}"
                                                 AutomationProperties.Name="Bajar"
                                                 Click="MoveProviderDown_Click" />
@@ -420,13 +421,13 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
-                    <ToggleSwitch Header="Deezer" IsOn="{x:Bind ViewModel.DeezerEnabled, Mode=TwoWay}"
+                    <ToggleSwitch Header="{x:Bind str:Strings.Get('settings-page.deezer')}" IsOn="{x:Bind ViewModel.DeezerEnabled, Mode=TwoWay}"
                                   Margin="0,8,0,0" />
-                    <TextBlock Text="Carátula alternativa de 1000×1000, sin clave. Es la única fuente cuyos términos permiten explícitamente este uso no comercial."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.caratula-alternativa-1000-1000-sin-clave')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
-                    <TextBlock Text="Claves y tokens" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
-                    <TextBlock Text="Se guardan en el Administrador de credenciales de Windows, cifradas con tu cuenta. Nunca en un archivo de la app ni en el repositorio; puedes verlas y borrarlas desde Windows sin pasar por aquí."
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.claves-tokens')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.se-guardan-administrador-credenciales-wi')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
                     <StackPanel x:Name="KeyRows" Spacing="10" />

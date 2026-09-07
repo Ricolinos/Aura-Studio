@@ -1,3 +1,4 @@
+using AuraStudio.Core.Resources;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -51,12 +52,12 @@ public sealed partial class ThemesPage : Page
         var dialog = new ContentDialog
         {
             XamlRoot = XamlRoot,
-            Title = $"¿Quitar \"{row.Name}\" del iPod?",
+            Title = Strings.Format("themes-page.xaml.quitar-row-name-ipod", row.Name),
             Content = row.IsActive
                 ? "Es el tema activo: el iPod vuelve al tema integrado de Aura."
                 : "Se borra del iPod. Puedes volver a instalarlo si conservas la carpeta de assets.",
-            PrimaryButtonText = "Quitar",
-            CloseButtonText = "Cancelar",
+            PrimaryButtonText = Strings.Get("themes-page.xaml.quitar"),
+            CloseButtonText = Strings.Get("themes-page.xaml.cancelar"),
             DefaultButton = ContentDialogButton.Close
         };
 

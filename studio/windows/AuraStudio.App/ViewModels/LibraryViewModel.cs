@@ -312,12 +312,16 @@ public sealed partial class LibraryViewModel : ViewModelBase
         }
 
         IsEnriching = true;
-        StatusMessage = $"Completando {targets.Count} elemento(s)…";
+        StatusMessage = Strings.Format(
+            "library-view-model.completando-targets-count-elemento-s", targets.Count);
 
         try
         {
             EnrichmentReport report = await _enrichment.EnrichAsync(
-                targets, new Progress<string>(title => StatusMessage = $"Completando {title}…"), ct);
+                targets,
+                new Progress<string>(title =>
+                    StatusMessage = Strings.Format("library-view-model.completando-title", title)),
+                ct);
 
             Save();
             RefreshAvailable();

@@ -792,6 +792,9 @@
   <data name="artists-page.buscar-fotos" xml:space="preserve">
     <value>Buscar fotos</value>
   </data>
+  <data name="artists-page.buscar-fotos-artistas-linea" xml:space="preserve">
+    <value>Buscar las fotos de los artistas en línea (fanart.tv / Deezer)</value>
+  </data>
   <data name="artists-page.buscar-informacion-linea" xml:space="preserve">
     <value>Buscar información en línea</value>
   </data>
@@ -803,6 +806,12 @@
   </data>
   <data name="artists-page.eliminar" xml:space="preserve">
     <value>Eliminar</value>
+  </data>
+  <data name="artists-page.mas-acciones" xml:space="preserve">
+    <value>Más acciones</value>
+  </data>
+  <data name="artists-page.mas-acciones-2" xml:space="preserve">
+    <value>Más acciones</value>
   </data>
   <data name="artists-page.mostrar-explorador" xml:space="preserve">
     <value>Mostrar en el Explorador</value>
@@ -981,9 +990,6 @@
   <data name="context-menu.marcar-como-favorito-2" xml:space="preserve">
     <value>Marcar como favorito</value>
   </data>
-  <data name="context-menu.marcar-como-favorito-3" xml:space="preserve">
-    <value>Marcar como favorito</value>
-  </data>
   <data name="context-menu.mas-informacion" xml:space="preserve">
     <value>Más información...</value>
   </data>
@@ -1067,6 +1073,9 @@
   </data>
   <data name="device-list-page.buscar-actualizaciones" xml:space="preserve">
     <value>Buscar actualizaciones</value>
+  </data>
+  <data name="device-list-page.calcula-que-se-copiaria" xml:space="preserve">
+    <value>Calcula qué se copiaría. No escribe nada en el iPod.</value>
   </data>
   <data name="device-list-page.cancelar" xml:space="preserve">
     <value>Cancelar</value>
@@ -1206,6 +1215,9 @@
   <data name="library-status-strip.detener" xml:space="preserve">
     <value>Detener</value>
   </data>
+  <data name="library-status-strip.detener-tarea-en-curso" xml:space="preserve">
+    <value>Detener la tarea en curso</value>
+  </data>
   <data name="library-status-summary.days-and-hours" xml:space="preserve">
     <value>{0} {1} h</value>
   </data>
@@ -1220,6 +1232,9 @@
   </data>
   <data name="library-view-model.completando-targets-count-elemento-s" xml:space="preserve">
     <value>Completando {0} elemento(s)…</value>
+  </data>
+  <data name="library-view-model.completando-title" xml:space="preserve">
+    <value>Completando {0}…</value>
   </data>
   <data name="library-view-model.hay-nada-completar-todo-tiene-titulo" xml:space="preserve">
     <value>No hay nada que completar: todo tiene título, artista y álbum.</value>
@@ -1247,6 +1262,9 @@
   </data>
   <data name="media-grid-page.buscar-posters" xml:space="preserve">
     <value>Buscar pósters</value>
+  </data>
+  <data name="media-grid-page.descarga-posters-que-falten" xml:space="preserve">
+    <value>Descarga los pósters que falten. Viajan pegados a su video en la próxima sincronización.</value>
   </data>
   <data name="media-grid-page.xaml.cancelar" xml:space="preserve">
     <value>Cancelar</value>
@@ -1365,6 +1383,9 @@
   <data name="settings-page.carpeta-biblioteca" xml:space="preserve">
     <value>Carpeta de la biblioteca</value>
   </data>
+  <data name="settings-page.carpeta-nueva-biblioteca-anterior-intacta" xml:space="preserve">
+    <value>Aura Studio empieza a usar la carpeta nueva y lee la biblioteca que haya ahí (o empieza vacía si no hay ninguna). Tu biblioteca anterior queda intacta donde estaba, y vuelve si eliges esa carpeta de nuevo.</value>
+  </data>
   <data name="settings-page.carpetas-externas-arrastraste-con-copia" xml:space="preserve">
     <value>Carpetas externas que arrastraste con la copia apagada. Aura no copia nada de ahí, solo las recuerda. Quitar una de esta lista no borra ni desvincula lo que ya importaste desde ella: solo deja de mostrarla.</value>
   </data>
@@ -1450,7 +1471,7 @@
     <value>Nombre completo del grupo</value>
   </data>
   <data name="settings-page.nombres-grupo-llevan-uno-esos-separadore" xml:space="preserve">
-    <value>Nombres de grupo que llevan uno de esos separadores adentro y no hay que recortar, como &amp;quot;Simon + Garfunkel&amp;quot; o &amp;quot;Café con Leche&amp;quot;. Se comparan con el crédito completo, sin distinguir mayúsculas ni acentos.</value>
+    <value>Nombres de grupo que llevan uno de esos separadores adentro y no hay que recortar, como "Simon + Garfunkel" o "Café con Leche". Se comparan con el crédito completo, sin distinguir mayúsculas ni acentos.</value>
   </data>
   <data name="settings-page.nueva-coleccion" xml:space="preserve">
     <value>Nueva colección</value>
@@ -1571,6 +1592,12 @@
   </data>
   <data name="similar-items-page.volver-mostrar-descartados" xml:space="preserve">
     <value>Volver a mostrar los descartados</value>
+  </data>
+  <data name="songs-page.busca-album-ano-caratula-letra" xml:space="preserve">
+    <value>Busca álbum, año, carátula y letra de lo que esté incompleto</value>
+  </data>
+  <data name="songs-page.busca-repetidos" xml:space="preserve">
+    <value>Busca canciones, fotos y videos que parezcan repetidos</value>
   </data>
   <data name="songs-page.completar-linea" xml:space="preserve">
     <value>Completar en línea</value>

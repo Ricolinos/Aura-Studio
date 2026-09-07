@@ -1,3 +1,4 @@
+using AuraStudio.Core.Resources;
 using System.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -219,7 +220,7 @@ public sealed partial class SettingsPage : Page
             input.PlaceholderText = ViewModel.HasKey(service) ? "Ya hay una guardada" : "Pega la clave aquí";
         };
 
-        var remove = new Button { Content = "Quitar" };
+        var remove = new Button { Content = Strings.Get("settings-page.quitar") };
         remove.Click += (_, _) =>
         {
             status.Text = ViewModel.DeleteKey(service);

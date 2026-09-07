@@ -145,7 +145,8 @@ public sealed partial class AppUpdateService : ObservableObject
 
             if (Available is not { } update)
             {
-                StatusMessage = $"Aura Studio {InstalledVersion} es la versión más nueva publicada.";
+                StatusMessage = Strings.Format(
+                    "app-update-service.aura-studio-installedversion-es-version", InstalledVersion);
                 IsAnnouncing = false;
                 return;
             }
@@ -200,7 +201,9 @@ public sealed partial class AppUpdateService : ObservableObject
 
         IsDownloading = true;
         DownloadProgress = 0;
-        StatusMessage = $"Descargando Aura Studio {Available.Value.Version.ReleaseString}…";
+        StatusMessage = Strings.Format(
+            "app-update-service.descargando-aura-studio-available-value",
+            Available.Value.Version.ReleaseString);
 
         try
         {
