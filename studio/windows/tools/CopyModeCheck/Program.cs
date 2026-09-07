@@ -12,6 +12,13 @@ using AuraStudio.Tools.CopyModeCheck;
 //
 // El fixture se sintetiza acá: nada sale de la biblioteca del dueño.
 
+// ST-247: la cultura se fija a propósito. Los textos salen de recursos por
+// CurrentUICulture y los números y fechas por CurrentCulture; sin esto, en
+// cuanto existan los satélites de B7b este arnés imprimiría en el idioma de la
+// máquina y sus números medidos cambiarían de separador, que es justo lo que no
+// se quiere de una medición.
+System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("es-MX");
+System.Globalization.CultureInfo.CurrentUICulture = System.Globalization.CultureInfo.CurrentCulture;
 string root = Path.Combine(Path.GetTempPath(), "AuraCopyMode-" + Guid.NewGuid().ToString("N"));
 string incoming = Path.Combine(root, "entrada");
 string library = Path.Combine(root, "biblioteca");

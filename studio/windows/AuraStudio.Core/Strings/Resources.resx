@@ -262,7 +262,7 @@
     <value>No se pudo continuar</value>
   </data>
   <data name="app-strings.installer-family-change" xml:space="preserve">
-    <value>Este iPod tiene {0} instalado y vas a instalar {1}. {0} se guarda completo, con sus ajustes, y puedes volver a él desde Extras cuando quieras.</value>
+    <value>Este iPod tiene {0} instalado y vas a instalar {1}. {2} se guarda completo, con sus ajustes, y puedes volver a él desde Extras cuando quieras.</value>
   </data>
   <data name="app-strings.installer-family-label" xml:space="preserve">
     <value>Firmware que se va a instalar</value>
