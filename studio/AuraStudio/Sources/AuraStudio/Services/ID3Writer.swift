@@ -51,7 +51,12 @@ enum ID3Writer {
         return tagData + audioData
     }
 
-    static func write(_ tag: Tag, toFileAt url: URL) throws {
+    /// Devuelve si de verdad escribió. ST-226: el que llama necesita
+    /// poder distinguir "escrito" de "ya estaba igual" -- si no, un
+    /// resumen de migración dice "1 con etiquetas nuevas" cuando no
+    /// cambió nada, y eso es contarle al usuario algo que no pasó.
+    @discardableResult
+    static func write(_ tag: Tag, toFileAt url: URL) throws -> Bool {
         let original = try Data(contentsOf: url)
         let newData = writing(tag, into: original)
         // ST-223: un archivo que no cambia no se reescribe -- misma regla
@@ -59,8 +64,9 @@ enum ID3Writer {
         // reescritura de etiquetas que no cambia nada no le mueva la
         // fecha de modificación a la canción (y que el sync diferencial
         // no la vuelva a copiar al iPod por nada).
-        guard newData != original else { return }
+        guard newData != original else { return false }
         try newData.write(to: url, options: .atomic)
+        return true
     }
 
     static func buildTag(_ tag: Tag) -> Data {

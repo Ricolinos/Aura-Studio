@@ -255,6 +255,7 @@
 		D566F2B4E4C11F38D3B5AE5D /* AppMenuCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCAE30D50F6C8131FF93DD3F /* AppMenuCommands.swift */; };
 		D662047BDC6CFD04A9EC4827 /* MusicTableColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E6590F1AE04D1389AC44A9E /* MusicTableColumn.swift */; };
 		D7296A7241621B9F8762577C /* GridSelectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FE00D7D78AA24DEB46AF80B /* GridSelectionTests.swift */; };
+		D79A15FD636069790B8BF1D4 /* LibraryMigrationNeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = C190CA30BF3510A63CC92818 /* LibraryMigrationNeed.swift */; };
 		D8363DAB3183238539D733A5 /* AuraDeviceProbeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72773374D5D4C62732AA92F3 /* AuraDeviceProbeTests.swift */; };
 		D86EE5F74B86C5BC19C7EC31 /* ArtistImageResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A7F236B3BC2CD5356A7477E /* ArtistImageResolver.swift */; };
 		D97EFA41FAC51A50DC04A8F4 /* Playlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = A92C5F3EC062AD8FA6D8B4FA /* Playlist.swift */; };
@@ -523,6 +524,7 @@
 		BE8C778BC2609D4718EBBC45 /* AppPreferences.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPreferences.swift; sourceTree = "<group>"; };
 		BEEAD9ACEF33A34E0D7931DD /* firmware-version.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "firmware-version.txt"; sourceTree = "<group>"; };
 		C0DFA7816F1DDE457477003F /* FirmwareSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareSwitcher.swift; sourceTree = "<group>"; };
+		C190CA30BF3510A63CC92818 /* LibraryMigrationNeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryMigrationNeed.swift; sourceTree = "<group>"; };
 		C455F59CE087518F3E7DE7C6 /* PhotoSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoSettingsView.swift; sourceTree = "<group>"; };
 		C4BA3B5358A6852A9ED6C385 /* MediaStorageAfterA3A4Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStorageAfterA3A4Tests.swift; sourceTree = "<group>"; };
 		C61C5B4FA6D06A4B3BF823A0 /* SettingsCfgProtectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCfgProtectionTests.swift; sourceTree = "<group>"; };
@@ -730,6 +732,7 @@
 				2228F8FF07D169090C59F83A /* LibraryDeletionPlan.swift */,
 				89B59CFDAA76DDAEF44BAD84 /* LibraryGrouping.swift */,
 				62E6C2892E84F33B9EF97D15 /* LibraryItem.swift */,
+				C190CA30BF3510A63CC92818 /* LibraryMigrationNeed.swift */,
 				093B5EA51C45529C66A3640F /* LibraryPersistence.swift */,
 				E8D20EA1313AF38CEF030BAD /* LibraryRootAvailability.swift */,
 				78AF5B1286F86F1B3B967983 /* LibraryStatusSummary.swift */,
@@ -1352,6 +1355,7 @@
 				3EFC63921FCED5C452445D8D /* LibraryFileWorker.swift in Sources */,
 				9708C9B6AD06AFB89FA7A062 /* LibraryGrouping.swift in Sources */,
 				4CE07ED3A6AF6A3EA04D9A2C /* LibraryItem.swift in Sources */,
+				D79A15FD636069790B8BF1D4 /* LibraryMigrationNeed.swift in Sources */,
 				C3ED448AEE28EACD02E4E2CC /* LibraryPersistence.swift in Sources */,
 				B683E5D1F24DA540FF54F34A /* LibraryRootAvailability.swift in Sources */,
 				35579B1A63EF8C99DF7A6A51 /* LibraryStatusBar.swift in Sources */,

@@ -135,6 +135,8 @@ struct ContentView: View {
                 // normal presentado como error enseña a ignorar los
                 // errores.
                 ImportNoticeBarHost(library: library) { showingSimilarItems = true }
+                // ST-226: la franja de migración, que NO se puede cerrar.
+                MigrationBarHost(library: library)
                 // ST-063: barra de estado estilo Finder, al pie de la
                 // sección; "Visualización › Mostrar barra de estado" la
                 // oculta. Solo aparece donde hay algo que resumir.
@@ -894,6 +896,54 @@ private struct SidebarView: View {
 /// por esto. Mismo patrón que `LibraryStatusBarHost` y
 /// `SelectionStoreObserver`: quien observa es la pieza chica que dibuja,
 /// no la ventana entera.
+/// ST-226: la franja de "esta biblioteca viene de una versión anterior".
+///
+/// **No se puede cerrar.** No es una molestia: mientras no se migre, la
+/// app está trabajando con una biblioteca cuyo modo de guardado no está
+/// escrito y cuyos derivados tienen nombres que ya no significan nada.
+/// Un aviso que se puede descartar se descarta, y el problema se queda.
+struct MigrationBarHost: View {
+    @ObservedObject var library: LibraryViewModel
+
+    var body: some View {
+        if let progress = library.migration {
+            HStack(spacing: 12) {
+                ProgressView(value: progress.fraction).frame(width: 160)
+                Text(progress.label).font(.callout)
+                if !progress.currentTitle.isEmpty {
+                    Text(progress.currentTitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                }
+                Spacer()
+                Button("Detener") { library.cancelMigration() }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color.secondary.opacity(0.10))
+        } else if let summary = library.lastMigrationSummary {
+            HStack(spacing: 12) {
+                Image(systemName: summary.errors.isEmpty ? "checkmark.circle" : "exclamationmark.triangle")
+                Text(summary.message).font(.callout)
+                Spacer()
+                Button("Entendido") { library.dismissMigrationSummary() }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color.secondary.opacity(0.10))
+        } else if let need = library.migrationNeed, need.isNeeded {
+            HStack(spacing: 12) {
+                Image(systemName: "arrow.triangle.2.circlepath")
+                Text(need.message).font(.callout).fixedSize(horizontal: false, vertical: true)
+                Spacer()
+                Button(S.migrateButton.text) { library.migrateLibrary() }
+                    .accessibilityIdentifier("franja.migrarBiblioteca")
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color.secondary.opacity(0.14))
+        }
+    }
+}
+
 /// ST-225: el aviso de lo que pasó al importar.
 ///
 /// **No bloquea nada.** Lo repetido por ruta ya se saltó (eso sí es el

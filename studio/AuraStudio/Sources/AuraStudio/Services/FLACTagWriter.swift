@@ -58,14 +58,17 @@ enum FLACTagWriter {
 
     // MARK: - Entrada
 
-    static func write(_ tag: AudioTag, toFileAt url: URL) throws {
+    /// Devuelve si de verdad escribió (ST-226).
+    @discardableResult
+    static func write(_ tag: AudioTag, toFileAt url: URL) throws -> Bool {
         let original = try Data(contentsOf: url)
         let updated = try writing(tag, into: original)
         // Un archivo que no cambia no se reescribe: así conserva su
         // fecha de modificación, y el sync diferencial no lo vuelve a
         // copiar al iPod por nada.
-        guard updated != original else { return }
+        guard updated != original else { return false }
         try updated.write(to: url, options: .atomic)
+        return true
     }
 
     /// Devuelve el archivo con las etiquetas de `tag` escritas. No toca

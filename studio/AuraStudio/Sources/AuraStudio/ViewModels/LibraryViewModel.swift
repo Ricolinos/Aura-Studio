@@ -1282,6 +1282,170 @@ final class LibraryViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Migración de bibliotecas anteriores (ST-226)
+
+    /// Por qué conviene migrar, o `nil` si no hace falta. Lo calcula la
+    /// carga, **solo con el catálogo**.
+    @Published private(set) var migrationNeed: LibraryMigrationNeed?
+
+    /// Cómo va la migración mientras corre.
+    struct MigrationProgress: Equatable {
+        var completed: Int
+        var total: Int
+        var currentTitle: String
+
+        var fraction: Double { total > 0 ? Double(completed) / Double(total) : 0 }
+        var label: String { "Migrando biblioteca… \(completed) de \(total)" }
+    }
+
+    @Published private(set) var migration: MigrationProgress?
+    @Published private(set) var lastMigrationSummary: LibraryMigrationSummary?
+    private var migrationTask: Task<Void, Never>?
+
+    var isMigrating: Bool { migration != nil }
+
+    func cancelMigration() {
+        migrationTask?.cancel()
+    }
+
+    func dismissMigrationSummary() {
+        lastMigrationSummary = nil
+    }
+
+    /// ST-226: pone al día una biblioteca de una versión anterior.
+    ///
+    /// **Nunca corre sola.** Abrir una biblioteca vieja no escribe ni un
+    /// archivo: solo cuenta lo que encontró y lo dice. Migrar es una
+    /// acción del usuario, y por una razón concreta -- esto reescribe
+    /// etiquetas dentro de sus archivos y renombra derivados; hacerlo a
+    /// espaldas de alguien que solo quería abrir la app es exactamente lo
+    /// que no puede pasar.
+    ///
+    /// **El orden importa y no es arbitrario:**
+    /// 1. Etiquetas en las copias de `Música/` -- no-op si ya coinciden.
+    /// 2. Renombrar los derivados viejos a `.preparados/<ID>`, con su
+    ///    póster hermano. Se **renombra**, no se recopia: el archivo ya
+    ///    está bien, lo que está mal es su nombre, y recopiarlo serían
+    ///    gigabytes movidos para nada.
+    /// 3. Asegurar el derivado de los referenciados con la regla de A4,
+    ///    **solo si hace falta**.
+    /// 4. Huérfanos al final, cuando los renombrados ya dejaron de
+    ///    apuntar a los nombres viejos. Hacerlo antes borraría el archivo
+    ///    que el paso siguiente iba a renombrar.
+    func migrateLibrary() {
+        guard migrationTask == nil else { return }
+        migrationTask = Task { [weak self] in
+            await self?.runMigration()
+            await MainActor.run { [weak self] in self?.migrationTask = nil }
+        }
+    }
+
+    private func runMigration() async {
+        let targets = items
+        var summary = LibraryMigrationSummary()
+        migration = MigrationProgress(completed: 0, total: targets.count, currentTitle: "")
+        defer { migration = nil }
+
+        for (offset, target) in targets.enumerated() {
+            if Task.isCancelled { summary.cancelled = true; break }
+            migration = MigrationProgress(completed: offset, total: targets.count,
+                                          currentTitle: target.metadata?.title ?? target.sourceURL.lastPathComponent)
+            guard let index = items.firstIndex(where: { $0.id == target.id }) else { continue }
+
+            if renamePreparedToIdentifier(itemAt: index) { summary.preparedRenamed += 1 }
+            guard items[index].kind == .music else { continue }
+            let metadata = items[index].metadata ?? TrackMetadata()
+
+            if items[index].storage == .copy {
+                let result = await fileWorker.rewriteTags(metadata: metadata,
+                                                          coverArtPolicy: preferences.coverArtPolicy,
+                                                          at: items[index].sourceURL)
+                // Solo cuenta si el archivo CAMBIÓ: decir "1 con
+                // etiquetas nuevas" cuando ya decía lo mismo es contarle
+                // al usuario algo que no pasó, y rompe la idempotencia
+                // que la segunda corrida tiene que poder demostrar.
+                if result.changed {
+                    summary.tagged += 1
+                } else if let reason = result.reason, reason.hasPrefix("no se pudieron escribir") {
+                    summary.errors.append(reason)
+                }
+                items[index].preparedURL = items[index].sourceURL
+                continue
+            }
+
+            let item = items[index]
+            let result = await fileWorker.ensurePreparedMusic(
+                LibraryFileWorker.EnsurePreparedMusicRequest(
+                    itemID: item.id, sourceURL: item.sourceURL,
+                    previousPreparedURL: item.preparedURL,
+                    catalogSourceSize: item.fileSizeBytes,
+                    stagingDirectory: stagingDirectory,
+                    metadata: metadata,
+                    audioQuality: preferences.audioQuality,
+                    coverArtPolicy: preferences.coverArtPolicy))
+            if let failure = result.failure {
+                summary.errors.append("\(item.sourceURL.lastPathComponent): \(failure)")
+            }
+            if result.action == .build { summary.preparedBuilt += 1 }
+            if let current = items.firstIndex(where: { $0.id == item.id }) {
+                items[current].preparedURL = result.url
+            }
+        }
+        // Y una vez más al salir: cancelar durante el ÚLTIMO elemento no
+        // lo ve la comprobación de arriba -- el bucle ya no da otra
+        // vuelta -- y el resumen diría "terminé" cuando el usuario pidió
+        // parar.
+        if Task.isCancelled { summary.cancelled = true }
+
+        // Los huérfanos, al final y solo si no se canceló: con la lista a
+        // medias se borraría un archivo que el paso que no llegó a correr
+        // todavía iba a renombrar.
+        if !summary.cancelled {
+            let scan = OrphanScan.scan(items: items, libraryRoot: libraryRoot)
+            for file in scan.files where (try? FileManager.default.removeItem(at: file.url)) != nil {
+                summary.orphansDeleted += 1
+            }
+        }
+
+        persistCatalog()
+        // Las señales se apagan solas: `storage` quedó escrito y los
+        // derivados renombrados. No hay marca de "migrada" que pueda
+        // mentir.
+        migrationNeed = LibraryMigrationScanner.detect(items: items, itemsWithoutStorage: 0)
+        if migrationNeed?.isNeeded != true { migrationNeed = nil }
+        lastMigrationSummary = summary
+    }
+
+    /// Renombra el derivado al identificador, con su póster hermano.
+    ///
+    /// Si el destino ya está ocupado no se toca nada: eso significa que
+    /// ya hay un derivado con el nombre bueno, y el viejo es un huérfano
+    /// que el paso final se lleva.
+    private func renamePreparedToIdentifier(itemAt index: Int) -> Bool {
+        guard LibraryMigrationScanner.hasLegacyPreparedName(items[index]) else { return false }
+        guard let old = items[index].preparedURL,
+              FileManager.default.fileExists(atPath: old.path) else { return false }
+        let destination = stagingDirectory
+            .appendingPathComponent(items[index].id.uuidString)
+            .appendingPathExtension(old.pathExtension)
+        guard !FileManager.default.fileExists(atPath: destination.path) else { return false }
+        do {
+            try FileManager.default.moveItem(at: old, to: destination)
+        } catch {
+            return false
+        }
+        for sidecar in ["lrc", "jpg"] {
+            let from = old.deletingPathExtension().appendingPathExtension(sidecar)
+            let to = destination.deletingPathExtension().appendingPathExtension(sidecar)
+            if FileManager.default.fileExists(atPath: from.path),
+               !FileManager.default.fileExists(atPath: to.path) {
+                try? FileManager.default.moveItem(at: from, to: to)
+            }
+        }
+        items[index].preparedURL = destination
+        return true
+    }
+
     // MARK: - Huérfanos (ST-225)
 
     /// Lo que encontró la última búsqueda de huérfanos, para que Ajustes
@@ -2960,6 +3124,13 @@ final class LibraryViewModel: ObservableObject {
         let fm = FileManager.default
         let root = libraryRoot
         let persistedItems = persisted.items
+        // ST-226: **este es el único sitio donde se ve el valor crudo.**
+        // Un elemento sin `storage` es señal de biblioteca anterior a
+        // 0.4.0, y para cuando termine esta carga ya estará inferido y no
+        // quedará rastro de que faltaba. Se cuenta acá o no se cuenta.
+        // Es una lectura del catálogo que ya está en memoria: no toca
+        // disco, que es lo que las rondas anteriores sacaron de la carga.
+        let itemsWithoutStorage = persistedItems.filter { $0.storage == nil }.count
         var resolved = [LibraryItem?](repeating: nil, count: persistedItems.count)
         resolved.withUnsafeMutableBufferPointer { buffer in
             DispatchQueue.concurrentPerform(iterations: persistedItems.count) { index in
@@ -3066,6 +3237,9 @@ final class LibraryViewModel: ObservableObject {
                              imageRelativePath: imageRelative)
         }
         coversNormalizedVersion = persisted.coversNormalized
+        // ST-226: la detección es solo del catálogo, sin tocar disco.
+        migrationNeed = LibraryMigrationScanner.detect(items: items,
+                                                       itemsWithoutStorage: itemsWithoutStorage)
         evaluateLegacyMetadataRereadOffer()
         evaluateCoverContaminationOffer()
         startCoverNormalizationIfNeeded()

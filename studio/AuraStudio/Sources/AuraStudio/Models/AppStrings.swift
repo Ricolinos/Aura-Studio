@@ -46,6 +46,11 @@ enum S {
     case storageChangeOnlyAffectsFuture
     case orphansTitle, orphansDetail, orphansButton, orphansCleanButton
     case orphansNoneFound, orphansConfirmMessage
+    /// ST-226: migración de bibliotecas anteriores. Las dos primeras son
+    /// del cotejo compartido con Windows; la tercera es propia de la
+    /// pantalla de Ajustes y dice lo que la detección barata NO puede
+    /// ver.
+    case migrateSectionTitle, migrateButton, migrateSettingsDetail
 
     var text: String {
         AppLanguageResolver.current == .english ? english : spanish
@@ -103,6 +108,10 @@ enum S {
         case .orphansNoneFound:    return "No hay archivos huérfanos: no hace falta limpiar nada."
         case .orphansConfirmMessage:
             return "No están ligados a ningún elemento de tu biblioteca; borrarlos no afecta ninguna canción, foto ni video que tengas."
+        case .migrateSectionTitle: return "Migrar de una versión anterior"
+        case .migrateButton:       return "Migrar biblioteca"
+        case .migrateSettingsDetail:
+            return "Pone al día una biblioteca hecha con una versión anterior: escribe las etiquetas del catálogo en las copias, renombra los archivos preparados y limpia lo que ya no le pertenece a nadie. Puedes migrar aunque Aura no te haya avisado: hay un caso que solo se detecta al migrar, porque hay que abrir los archivos para verlo -- copias cuyas etiquetas no coinciden con lo que dice tu catálogo."
         }
     }
 
@@ -158,6 +167,10 @@ enum S {
         case .orphansNoneFound:    return "There are no orphaned files: nothing to clean up."
         case .orphansConfirmMessage:
             return "They are not tied to any item in your library; deleting them affects no song, photo or video you have."
+        case .migrateSectionTitle: return "Migrate from an earlier version"
+        case .migrateButton:       return "Migrate library"
+        case .migrateSettingsDetail:
+            return "Brings a library made with an earlier version up to date: writes the catalog's tags into the copies, renames the prepared files and cleans up what no longer belongs to anything. You can migrate even if Aura hasn't prompted you: there is one case that only shows up during migration, because the files have to be opened to see it — copies whose tags don't match what your catalog says."
         }
     }
 }

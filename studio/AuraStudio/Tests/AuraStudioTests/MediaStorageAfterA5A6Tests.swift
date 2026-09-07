@@ -1,3 +1,4 @@
+import AVFoundation
 import CryptoKit
 import XCTest
 @testable import AuraStudio
@@ -208,22 +209,182 @@ final class MediaStorageAfterA5A6Tests: XCTestCase {
     /// omisión), y la acción devuelve/reporta un conteo de archivos
     /// tocados -- nunca 0 cuando de verdad había discrepancias que
     /// corregir.
-    func testMigrationIsNeverSilent_loadWritesNothingOnlyExplicitMigrateWritesWithCount_pendienteDeLaAPIDeA6() throws {
-        throw XCTSkip("""
-            Pendiente de la API real de A6 (migración, ST-226). Forma: armar biblioteca \
-            "anterior" -- ítems sin storage en biblioteca.json y archivos reales en \
-            Música/<Artista>/<Álbum>/ con etiquetas EN DISCO distintas de las del \
-            catálogo (el caso real que motiva la migración). Cargar con \
-            LibraryViewModel(libraryRoot:) normal (no la acción de migrar) y capturar \
-            hashes/mtimes de todos los archivos ANTES y DESPUÉS de la carga -- deben ser \
-            IDÉNTICOS, cero bytes escritos, cero .preparados/ generado, biblioteca.json \
-            sin tocar (abrir la app nunca migra sola). Después, invocar "Migrar \
-            biblioteca" con la API real de A6: confirmar que ahora SÍ se reescriben las \
-            etiquetas en Música/ para que coincidan con el catálogo, se genera lo que \
-            falte (storage por omisión, .preparados/ si el modo lo requiere), y la acción \
-            reporta un conteo de archivos tocados que sea MAYOR A CERO (había \
-            discrepancias reales que corregir en este fixture).
-            """)
+    func testOpeningAnOldLibraryWritesNothingAndOnlyMigratingDoes() async throws {
+        let (catalogItemID, musicFile) = try seedLegacyLibrary()
+
+        // 1. Abrir NO puede escribir nada. El catálogo queda fuera del
+        //    resumen a propósito: persistir la inferencia de `storage` sí
+        //    es contrato (ST-221), y es lo único que la carga escribe.
+        let before = try treeSummary(excluding: [PersistedLibrary.catalogFileName])
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot,
+                                         preferences: legacyPreferences())
+        viewModel.makePersistenceSynchronousForTesting()
+        let after = try treeSummary(excluding: [PersistedLibrary.catalogFileName])
+        XCTAssertEqual(before, after, "abrir una biblioteca anterior no escribe ni un archivo")
+
+        // 2. Y lo dice: la detección es solo del catálogo.
+        let need = try XCTUnwrap(viewModel.migrationNeed)
+        XCTAssertTrue(need.isNeeded)
+        XCTAssertEqual(need.itemsWithoutStorage, 2, "ninguno de los dos traía `storage`")
+        // Solo el REFERENCIADO cuenta: en modo copia el derivado es el
+        // archivo mismo, así que su nombre no tiene por qué ser un id --
+        // el `.preparados/` que le quedó es un huérfano, no un renombrado
+        // pendiente, y se lo lleva el paso final.
+        XCTAssertEqual(need.legacyPrepared, 1, "el preparado del referenciado tiene el nombre viejo")
+
+        // 3. Migrar sí escribe, y dice cuánto tocó.
+        viewModel.migrateLibrary()
+        try await waitForMigration(viewModel)
+        let summary = try XCTUnwrap(viewModel.lastMigrationSummary)
+        XCTAssertFalse(summary.cancelled)
+        XCTAssertGreaterThan(summary.touched, 0, "había cosas de verdad que corregir: \(summary.message)")
+        XCTAssertEqual(summary.preparedRenamed, 1, "el preparado del referenciado se renombra por id")
+        XCTAssertGreaterThan(summary.orphansDeleted, 0,
+                             "y el que quedó del copiado se limpia al final, no antes")
+
+        // El archivo de Música/ ahora dice lo que dice el catálogo.
+        let item = try XCTUnwrap(viewModel.items.first { $0.id == catalogItemID })
+        XCTAssertEqual(item.storage, .copy)
+        let asset = AVURLAsset(url: musicFile)
+        var title: String?
+        for entry in try await asset.load(.metadata) where entry.commonKey == .commonKeyTitle {
+            title = try? await entry.load(.stringValue)
+        }
+        XCTAssertEqual(title, "Título del Catálogo",
+                       "la migración escribe las etiquetas del catálogo en la copia")
+
+        // 4. Y las señales se apagan solas: no hay campo "migrada".
+        XCTAssertNil(viewModel.migrationNeed)
+    }
+
+    /// Correrla dos veces no toca nada la segunda vez, y deja el árbol
+    /// idéntico. Una migración que se puede repetir sin consecuencia es
+    /// la que se puede reintentar tras un fallo.
+    func testMigratingTwiceTouchesNothingTheSecondTime() async throws {
+        _ = try seedLegacyLibrary()
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: legacyPreferences())
+        viewModel.makePersistenceSynchronousForTesting()
+
+        viewModel.migrateLibrary()
+        try await waitForMigration(viewModel)
+        XCTAssertGreaterThan(try XCTUnwrap(viewModel.lastMigrationSummary).touched, 0)
+        viewModel.dismissMigrationSummary()
+        let afterFirst = try treeSummary(excluding: [PersistedLibrary.catalogFileName])
+
+        viewModel.migrateLibrary()
+        try await waitForMigration(viewModel)
+        let second = try XCTUnwrap(viewModel.lastMigrationSummary)
+
+        XCTAssertEqual(second.touched, 0, "la segunda corrida no tiene nada que hacer: \(second.message)")
+        XCTAssertEqual(try treeSummary(excluding: [PersistedLibrary.catalogFileName]), afterFirst,
+                       "y el árbol queda idéntico")
+    }
+
+    // MARK: - Andamio de migración
+
+    private func legacyPreferences() -> AppPreferences {
+        let prefs = AppPreferences(defaults: makeIsolatedDefaults("MediaStorageAfterA5A6"))
+        prefs.copyMediaIntoLibrary = true
+        prefs.enrichOnline = false
+        prefs.fetchSyncedLyrics = false
+        return prefs
+    }
+
+    private func waitForMigration(_ viewModel: LibraryViewModel) async throws {
+        for _ in 0..<600 {
+            if viewModel.lastMigrationSummary != nil && !viewModel.isMigrating { return }
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
+        XCTFail("la migración no terminó")
+    }
+
+    /// Resumen del árbol: ruta relativa, tamaño y contenido de cada
+    /// archivo. Es lo que permite afirmar "no se escribió NADA" en vez de
+    /// "no se escribió lo que se me ocurrió mirar".
+    private func treeSummary(excluding: Set<String> = []) throws -> [String] {
+        guard let walker = FileManager.default.enumerator(at: libraryRoot,
+                                                          includingPropertiesForKeys: [.isRegularFileKey]) else {
+            return []
+        }
+        var summary: [String] = []
+        for case let url as URL in walker {
+            guard (try? url.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true else { continue }
+            guard !excluding.contains(url.lastPathComponent) else { continue }
+            let data = try Data(contentsOf: url)
+            let relative = url.path.replacingOccurrences(of: libraryRoot.path + "/", with: "")
+            summary.append("\(relative)|\(data.count)|\(SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined())")
+        }
+        return summary.sorted()
+    }
+
+    /// Una biblioteca "anterior": el catálogo NO trae `storage`, el
+    /// preparado tiene el nombre viejo (por nombre base, no por id) y las
+    /// etiquetas del archivo **no** coinciden con el catálogo -- que es
+    /// el caso real que motiva toda la migración.
+    ///
+    /// Lleva **dos** elementos a propósito. Uno copiado bajo `Música/`
+    /// con etiquetas desfasadas -- ese es el caso que motiva la
+    /// migración, y su derivado viejo queda huérfano porque en modo copia
+    /// el archivo ES el derivado. Y uno **referenciado** con el derivado
+    /// nombrado a la vieja: es el único que ejercita el renombrado a
+    /// `.preparados/<ID>`, y sin él la prueba habría dado por buena una
+    /// migración que nunca renombra nada.
+    private func seedLegacyLibrary() throws -> (itemID: UUID, musicFile: URL) {
+        let itemID = UUID()
+        let referencedID = UUID()
+        let musicDir = libraryRoot.appendingPathComponent("Música/Artista/Álbum", isDirectory: true)
+        try FileManager.default.createDirectory(at: musicDir, withIntermediateDirectories: true)
+        let musicFile = musicDir.appendingPathComponent("pista.mp3")
+        try MediaFixture.mp3Data(title: "Título Viejo del Archivo", artist: "Artista",
+                                 album: "Álbum", albumArtist: "Artista", year: "2020",
+                                 genre: "Rock", trackNumber: 1).write(to: musicFile)
+
+        let staging = libraryRoot.appendingPathComponent(PersistedLibrary.preparedDirName, isDirectory: true)
+        try FileManager.default.createDirectory(at: staging, withIntermediateDirectories: true)
+        let legacyPrepared = staging.appendingPathComponent("pista.mp3")
+        try Data("preparado viejo".utf8).write(to: legacyPrepared)
+
+        // El referenciado: su original vive FUERA de la biblioteca.
+        let outsideDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("A6-fuera-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: outsideDir, withIntermediateDirectories: true)
+        sourceDirs.append(outsideDir)
+        let referencedSource = outsideDir.appendingPathComponent("referenciada.mp3")
+        try MediaFixture.mp3Data(title: "Referenciada", artist: "Artista", album: "Álbum",
+                                 albumArtist: "Artista", year: "2020", genre: "Rock",
+                                 trackNumber: 2).write(to: referencedSource)
+        let legacyReferencedPrepared = staging.appendingPathComponent("referenciada.mp3")
+        try MediaFixture.mp3Data(title: "Referenciada", artist: "Artista", album: "Álbum",
+                                 albumArtist: "Artista", year: "2020", genre: "Rock",
+                                 trackNumber: 2).write(to: legacyReferencedPrepared)
+
+        let json = """
+        {
+          "items": [
+            {
+              "id": "\(itemID.uuidString)",
+              "sourceRelativePath": "Música/Artista/Álbum/pista.mp3",
+              "kind": "music",
+              "status": "ready",
+              "metadata": { "title": "Título del Catálogo", "artist": "Artista", "album": "Álbum", "trackNumber": 1 },
+              "preparedRelativePath": ".preparados/pista.mp3",
+              "metadataEditedByUser": true
+            },
+            {
+              "id": "\(referencedID.uuidString)",
+              "sourceRelativePath": "\(referencedSource.path)",
+              "kind": "music",
+              "status": "ready",
+              "metadata": { "title": "Referenciada", "artist": "Artista", "album": "Álbum", "trackNumber": 2 },
+              "preparedRelativePath": ".preparados/referenciada.mp3",
+              "metadataEditedByUser": true
+            }
+          ],
+          "playlists": []
+        }
+        """
+        try Data(json.utf8).write(to: libraryRoot.appendingPathComponent(PersistedLibrary.catalogFileName))
+        return (itemID, musicFile)
     }
 
     // MARK: - Andamio (ST-225)

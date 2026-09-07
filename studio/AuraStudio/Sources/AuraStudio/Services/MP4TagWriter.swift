@@ -52,13 +52,16 @@ enum MP4TagWriter {
 
     // MARK: - Entrada
 
-    static func write(_ tag: AudioTag, toFileAt url: URL) throws {
+    /// Devuelve si de verdad escribió (ST-226).
+    @discardableResult
+    static func write(_ tag: AudioTag, toFileAt url: URL) throws -> Bool {
         let original = try Data(contentsOf: url)
         let updated = try writing(tag, into: original)
         // Un archivo que no cambia no se reescribe (misma razón que en
         // FLAC: no moverle la fecha ni hacer que el sync lo recopie).
-        guard updated != original else { return }
+        guard updated != original else { return false }
         try updated.write(to: url, options: .atomic)
+        return true
     }
 
     static func writing(_ tag: AudioTag, into data: Data) throws -> Data {

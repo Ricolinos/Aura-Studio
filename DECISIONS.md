@@ -14560,3 +14560,94 @@ verificado antes de escribir la prueba, no asumido).
 
 `dotnet build`: 0 errores. `dotnet test`: **1 749 pruebas en verde** (3
 nuevas). Sin tocar código de la app.
+
+## ST-226 — Migrar una biblioteca anterior, nunca en silencio
+
+Fase A6 de `PLAN-studio-ajustes-3.md`. Pone al día una biblioteca hecha
+con una versión previa: elementos cuyo catálogo no dice cómo están
+guardados (anterior a ST-221) y derivados con el nombre viejo.
+
+### Abrir no migra
+
+**Abrir una biblioteca anterior no escribe ni un archivo.** Migrar
+reescribe etiquetas dentro de los archivos del usuario y renombra
+derivados; hacerlo a espaldas de alguien que solo quería abrir la app es
+exactamente lo que no puede pasar. Hay una prueba que compara un resumen
+del árbol entero -- ruta, tamaño y hash de cada archivo -- antes y
+después de la carga. El catálogo queda fuera del resumen a propósito:
+persistir la inferencia de `storage` sí es contrato (ST-221), y es lo
+único que la carga escribe.
+
+### Detección barata, y sin campo "migrada"
+
+Solo con el catálogo, sin tocar disco: elementos sin `storage` y
+derivados cuyo nombre no es el id. Lo primero **solo se puede contar
+durante la carga** -- para cuando los elementos llegan al resto de la
+app, `storage` ya está inferido y no queda rastro de que faltaba.
+
+**No hay campo "migrada".** Las señales se apagan solas cuando la
+migración hace su trabajo: el `storage` queda escrito y los derivados
+renombrados. Una marca aparte sería un dato que puede mentir -- alguien
+copia el catálogo de otra máquina, o algo falla a mitad y la marca ya
+está puesta.
+
+**Lo que la detección barata no ve**, dicho para que no sorprenda: que
+una copia de `Música/` tenga o no las etiquetas del catálogo solo se sabe
+**abriendo el archivo**, y eso no se hace al arrancar. Una biblioteca
+cuyo único problema sea ese no dispara la franja; por eso la acción está
+**también en Ajustes**, siempre disponible, con un texto que lo explica.
+
+### El orden, que no es arbitrario
+
+1. Etiquetas en las copias de `Música/` -- no-op si ya coinciden.
+2. Renombrar los derivados viejos a `.preparados/<ID>`, con su póster y
+   su `.lrc` hermanos. Se **renombra, no se recopia**: el archivo ya está
+   bien, lo que está mal es su nombre, y recopiarlo serían gigabytes
+   movidos para nada y una ventana en la que el derivado no existe. Si el
+   destino ya está ocupado no se toca nada: ya hay uno con el nombre
+   bueno, y el viejo es un huérfano que el paso final se lleva.
+3. Asegurar el derivado de los referenciados con la regla de A4, **solo
+   si hace falta**.
+4. Huérfanos **al final**, cuando los renombrados ya dejaron de apuntar a
+   los nombres viejos. Hacerlo antes borraría el archivo que el paso
+   siguiente iba a renombrar.
+
+Cancelar deja hecho lo hecho y **no borra huérfanos**: con la lista a
+medias se borraría un archivo que el paso que no llegó a correr todavía
+iba a renombrar. Y se comprueba la cancelación **otra vez al salir del
+bucle**: cancelar durante el último elemento no lo ve la comprobación de
+adentro -- el bucle ya no da otra vuelta -- y el resumen diría "terminé"
+cuando el usuario pidió parar. (Ese caso lo cazó Windows primero.)
+
+### El defecto que encontró la prueba de idempotencia
+
+La segunda corrida reportaba "1 con etiquetas nuevas" **sin haber escrito
+nada**. Los tres escritores ya se saltaban la escritura cuando el
+resultado era idéntico (ST-223), pero `LocalTagWriter` devolvía
+`written: true` igual, así que el resumen contaba escrituras que no
+ocurrieron.
+
+Ahora los tres devuelven **si de verdad escribieron** y `Result` lleva
+`changed` aparte de `written`. La diferencia importa más allá del conteo:
+un resumen que le cuenta al usuario algo que no pasó es exactamente igual
+de inútil que uno que se calla lo que sí pasó. Es la misma distinción que
+Windows tiene en `TagWriteResult.UpToDate`.
+
+### El fixture que faltaba
+
+La primera versión de la prueba tenía un solo elemento, copiado. Con eso
+`preparedRenamed` daba 0 -- correctamente, porque en modo copia el
+derivado es el archivo mismo y su nombre no tiene por qué ser un id --
+y la prueba habría dado por buena una migración **que nunca renombra
+nada**. El fixture lleva ahora dos: el copiado con etiquetas desfasadas
+(cuyo `.preparados/` viejo queda huérfano) y uno **referenciado**, que es
+el único que ejercita el renombrado.
+
+### Textos e identificadores
+
+"Migrar de una versión anterior" y "Migrar biblioteca" salen del cotejo
+compartido con Windows. El detalle de Ajustes es propio y dice justo lo
+que la detección barata no puede ver. La franja **no se puede cerrar**:
+un aviso que se descarta se descarta, y el problema se queda.
+`ajustes.almacenamiento.migrar` y `franja.migrarBiblioteca` quedan como
+identificadores para el arnés de capturas.

@@ -22,11 +22,18 @@ enum LocalTagWriter {
     /// `TagWriteResult` de Windows: `written == false` significa que **el
     /// archivo no se tocó**, y `reason` dice por qué.
     struct Result: Equatable {
+        /// Se pudo escribir (o no hacía falta). `false` = el archivo no
+        /// se tocó y `reason` dice por qué.
         var written: Bool
+        /// Si el archivo **cambió de verdad**. ST-226: `written` sin esto
+        /// no alcanza -- un resumen de migración que cuenta "1 con
+        /// etiquetas nuevas" cuando el archivo ya decía lo mismo le está
+        /// contando al usuario algo que no pasó.
+        var changed: Bool = false
         var reason: String?
 
-        static let wroteFile = Result(written: true, reason: nil)
-        static func skipped(_ reason: String) -> Result { Result(written: false, reason: reason) }
+        static func wroteFile(changed: Bool) -> Result { Result(written: true, changed: changed, reason: nil) }
+        static func skipped(_ reason: String) -> Result { Result(written: false, changed: false, reason: reason) }
     }
 
     /// Los formatos en los que esta app sabe escribir etiquetas.
@@ -66,15 +73,16 @@ enum LocalTagWriter {
             return .skipped("no hay ningún campo que escribir")
         }
         do {
+            let changed: Bool
             switch ext {
             case "mp3":
-                try ID3Writer.write(tag, toFileAt: url)
+                changed = try ID3Writer.write(tag, toFileAt: url)
             case "flac":
-                try FLACTagWriter.write(tag, toFileAt: url)
+                changed = try FLACTagWriter.write(tag, toFileAt: url)
             default:
-                try MP4TagWriter.write(tag, toFileAt: url)
+                changed = try MP4TagWriter.write(tag, toFileAt: url)
             }
-            return .wroteFile
+            return .wroteFile(changed: changed)
         } catch {
             return .skipped("no se pudieron escribir las etiquetas de \(url.lastPathComponent): \(error)")
         }

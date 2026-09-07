@@ -95,6 +95,27 @@ struct SettingsSectionView: View {
         }
     }
 
+    /// ST-226: "Migrar biblioteca", siempre disponible.
+    ///
+    /// Está acá **además** de en la franja porque hay un caso que la
+    /// detección barata no ve: una copia cuyas etiquetas no coinciden con
+    /// el catálogo solo se detecta abriendo el archivo, y eso no se hace
+    /// al arrancar. Una biblioteca cuyo único problema sea ese no dispara
+    /// la franja, y sin este botón no habría forma de arreglarla.
+    @ViewBuilder
+    private var migrationSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(S.migrateSectionTitle.text).font(.headline)
+            Text(S.migrateSettingsDetail.text)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Button(S.migrateButton.text) { library.migrateLibrary() }
+                .accessibilityIdentifier("ajustes.almacenamiento.migrar")
+                .disabled(library.isMigrating)
+        }
+    }
+
     /// ST-225: "Limpiar archivos huérfanos".
     ///
     /// Dos pasos a propósito: primero se busca y se dice **cuántos son y
@@ -183,6 +204,10 @@ struct SettingsSectionView: View {
             Divider()
 
             orphansSection
+
+            Divider()
+
+            migrationSection
 
             Divider()
 
