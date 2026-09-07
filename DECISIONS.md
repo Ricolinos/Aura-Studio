@@ -15710,3 +15710,190 @@ formas que no existen en el archivo.
 **Lo que falta de B7a**, en el orden que fijó la Maestra: migrar lo no
 compartido (menús, tablas, diálogos, estado), y al final las cadenas
 compartidas con la clave definitiva de `claves-compartidas.csv`.
+
+## ST-247 — Windows: los textos salen del código (B7a, cierre)
+
+Cierre de B7a. La entrada de infraestructura, más arriba, dejó decidido de
+dónde salen los textos (`.resx` con `ResourceManager`, español como cultura
+neutra dentro del ensamblado, `AppStrings` como fachada de propiedades) y
+por qué. Esto es lo que faltaba: **mover las quinientas cincuenta cadenas**,
+en el orden que fijó la Maestra —infraestructura, lo no compartido, y las
+compartidas al final con el CSV—, sin que el español que ve el usuario
+cambie ni una letra.
+
+### Cómo se movieron, y por qué eso importa más que cuántas
+
+Ninguna frase se copió a mano. Cada cambio se hizo por **coincidencia exacta
+de texto** contra el archivo de recursos: si una frase no estaba ahí, no se
+tocó. Eso es lo que sostiene la promesa de que el español no cambia — no una
+revisión a ojo de quinientas frases, que es exactamente el trabajo donde una
+persona (o un modelo) se cansa a la mitad.
+
+Las excepciones son tres, y las tres están declaradas y comprobadas, no
+sueltas:
+
+1. **Comillas doblemente escapadas.** El borrador guardaba `&amp;quot;` donde
+   el usuario ve una comilla. Copiarlo al pie de la letra habría puesto
+   `&quot;Simon + Garfunkel&quot;` en pantalla, con las entidades a la vista.
+   Es el único caso donde ser fiel al borrador **cambiaba** lo que el usuario
+   lee. La prueba comprueba que el recurso sea exactamente el borrador
+   desescapado.
+2. **Una clave duplicada de más.** El borrador traía "Marcar como favorito"
+   tres veces y el código tiene dos sitios. Se quitó la tercera, y la prueba
+   exige que su texto siga dicho desde otra clave: si no, no era un duplicado
+   sino una frase perdida.
+3. **`orphans-confirm-message`**, abajo.
+
+### Los plurales: el número va DENTRO de la frase
+
+Los cincuenta y un `count == 1 ? "…" : "…"` no eran condiciones: eran la
+regla del plural del español escrita a mano, cincuenta y una veces. Salen a
+`Strings.Plural`, que elige la forma según la cultura activa.
+
+Dos detalles que no son obvios y que costaría caro descubrir tarde:
+
+- **La forma `.one` lleva el hueco `{0}`, no un "1" escrito.** En ruso `.one`
+  también le toca al 21 y al 101; un "1" fijo diría "21 archivo" en la mitad
+  de los casos.
+- **El sustantivo nunca va suelto.** `LibraryStats.Count(n, "álbum",
+  "álbumes")` recibía dos sustantivos y los pegaba al número por fuera, en
+  treinta sitios. Eso no se puede traducir: en ruso la concordancia depende
+  del número *y* del caso, en árabe hay seis formas, y en varios idiomas el
+  número ni siquiera va delante — quien traduce recibe media frase y ningún
+  lugar donde acomodar la otra mitad. Ahora recibe una clave de plural.
+  (Lección de A7a en la Mac, aplicada acá antes de que costara lo mismo.)
+
+Apareció `Strings.PluralCount` al lado de `Strings.Plural` porque **no son lo
+mismo en todos lados**: la barra de estado dice "1,234 canciones" con
+separador de miles y un mensaje de operación dice "1234 archivos copiados".
+Ya había una prueba que fijaba ese separador; unificarlos habría cambiado lo
+que el usuario lee en uno de los dos.
+
+Y **un solo texto por cosa contada**: "3 canciones" tenía su propio ternario
+en cinco archivos. Ahora sale de `conteo.canciones` y se traduce una vez.
+Igual con álbumes, fotos, videos, episodios, películas, series, temporadas,
+artistas, videoclips, seleccionados y días.
+
+Tres cosas que **parecían** plurales y no lo son, y quedaron como dos claves
+cada una: "Sin temporada" / "Temporada 3", las dos ramas de la biblioteca
+ausente, y el título del selector de tapas ("Álbum 2 de 5 · tapas de X" no es
+el plural de "Tapas de X": una habla de una tanda y la otra no). Las elige un
+centinela o una condición de flujo, no una cantidad.
+
+Una que **sí** lo es y **no** se arregló: `installer-copied-files` dice
+"1 archivos escritos en el iPod" con uno solo. Arreglarlo es cambiar lo que
+el usuario lee, y B7a mueve, no redacta. Queda anotado como defecto aparte.
+
+### El XAML
+
+Los ciento cuarenta y ocho literales de las vistas pasan a un enlace a
+función (`x:Bind` sobre `Strings.Get` con la clave literal), que el generador
+de WinUI resuelve en compilación a una llamada estática — se comprobó en el
+`.g.cs` generado, no se supuso. Las vistas no cambian de forma y la clave se
+lee al lado del control. El prefijo de espacio de nombres es `str` porque
+`res` ya estaba tomado por `AuraStudio.App.Resources`.
+
+**Nueve textos que el extractor no cubría**: `AutomationProperties.Name`,
+`ToolTipService.ToolTip` y `PlaceholderText`. Un nombre de lector de pantalla
+en español dentro de una app en alemán es exactamente el defecto que B7b
+viene a evitar, y son nueve, así que entraron.
+
+### La categoría de un video es dato, no texto de pantalla
+
+Lección de A7a. La app de macOS guardaba en `item.Category` el nombre en el
+idioma activo. Con un solo idioma no se nota; con seis, el mismo video queda
+como "Series" en una máquina y "Serien" en otra, el catálogo que viaja entre
+las dos deja de coincidir consigo mismo, la agrupación parte una categoría en
+dos y el firmware arma los índices con lo que le llegue. Es de los defectos
+que no se ven hasta que hay dos máquinas, y para entonces el dato ya está
+escrito en el disco del usuario.
+
+`MediaCategoryNames` ahora dice cuál es cuál por su nombre: `CatalogName()`
+es el dato (español siempre, lo que se guarda y lo que se compara — antes se
+llamaba `DisplayName`, que era justamente la confusión), `LegacyEnglishName()`
+es lo que escribía la app de macOS cuando guardaba en inglés (se reconoce al
+leer, nunca se escribe), y `LocalizedName()` es la etiqueta. El menú de
+categoría ya llevaba el dato en su identificador, así que lo único que cambió
+es que la etiqueta sale del recurso.
+
+Lo que el usuario escribió —el nombre de su colección de fotos (D-228)—
+vuelve tal cual: es un dato suyo, no texto de la app. Ajustes lo dice de
+frente, con una línea nueva.
+
+### Las claves compartidas con la Mac
+
+El CSV es la **autoridad del renombre**: la herramienta del mecánico sigue
+emitiendo nombres de Windows y el paréntesis de la columna "sitio Windows"
+declara el mapeo. Veintidós claves toman el nombre que declara el CSV — diez
+"igual" (mismo concepto, mismo texto, ahora el mismo nombre, y se traducen
+una sola vez para las dos apps) y doce "clave distinta" (mismo concepto, el
+texto un poco diferente en cada plataforma; el nombre se alinea para que
+quien traduzca vea que son la misma cosa).
+
+`orphans-confirm-message` se arma con **dos** recursos, no con uno (decisión
+de la Maestra). La Mac dice esa oración tal cual; Windows le antepone el
+conteo, que es otra oración con su propio número. Mientras el hueco vivía
+dentro de la clave compartida, el texto no era idéntico al de la Mac y no se
+podía compartir de verdad — parecía una excepción cuando en realidad eran dos
+frases pegadas.
+
+### Las pruebas, que son la mitad del trabajo
+
+- **`SpanishUnchangedTests`** dejó de ser una igualdad plana. A una clave le
+  pueden pasar tres cosas y las tres se comprueban: queda igual, se renombra
+  (declarado, con el texto intacto), o es nueva (declarada **una por una** —
+  no un patrón, no un prefijo — porque una clave nueva es texto que nadie
+  comparó contra nada, y la lista es lo que obliga a mirarla).
+- **`PluralFormsTests`**: toda forma de plural lleva su número adentro, con
+  tres excepciones declaradas donde la frase nunca lo dijo; toda clave con
+  formas tiene `.other`, que es el respaldo; y ninguna existe a la vez con
+  formas y suelta.
+- **`HardcodedSpanishTests`**: cero texto en español en las vistas y en la
+  fachada. Fuera de eso queda una parte del programa que B7a no alcanzó
+  —mensajes de excepción, de registro y errores de plataforma—, y ahí lo que
+  se comprueba es que **no crezca**: hay un tope de 396, que no es una meta
+  cumplida sino una puerta cerrada mientras se decide qué hacer con eso
+  (candidato natural a B7c).
+- **`MediaCategoryDataTests`**: la que de verdad sostiene el contrato de la
+  categoría no es la que mira el valor. Sin los satélites de B7b, pedir el
+  texto en inglés devuelve el español y esa prueba pasaría igual con el
+  código mal escrito. La que sirve mira el **código** y falla si aparece un
+  `Category` que se asigna o se compara contra `LocalizedName`.
+- **La cultura se fija** en `es-MX` en las pruebas de Core (inicializador de
+  módulo) y en `CopyModeCheck`. Antes daba igual porque todo estaba clavado
+  al español; ahora una máquina configurada en inglés haría fallar pruebas
+  que comparan texto, y el fallo diría "esperaba 'canciones', obtuve 'songs'",
+  que parece un defecto y no lo es. Una prueba que depende de cómo está
+  configurada la máquina no es una prueba, es una encuesta.
+
+### Lo que esta ronda enseñó sobre las pruebas
+
+Dos veces, en B7a, una prueba dio confianza falsa y las dos veces por el
+mismo motivo: **calculaba lo esperado con la misma lógica que el código que
+vigilaba**. La primera reunía fragmentos con el mismo criterio que la
+migración, y por eso no vio que cuatro de esos pares no eran fragmentos sino
+las dos ramas de un ternario, o sea dos mensajes distintos pegados. La
+segunda fue una heurística para distinguir un fragmento de una rama: cazaba
+dos de los cuatro y marcaba diez párrafos legítimos, así que se borró en vez
+de dejarla dando una señal que nadie iba a poder creer. Una prueba que
+reimplementa el defecto no puede detectarlo, y una que acierta a medias es
+peor que ninguna.
+
+Lo que quedó en su lugar es igualdad más **listas declaradas**: datos que un
+humano puede leer, no lógica que puede equivocarse igual que lo que vigila.
+
+### Lo que queda
+
+- La prueba `LocalizationDraftTests` del mecánico sigue en rojo, igual que en
+  `origin/main`: lee el borrador `.resw`, que es suyo, y su criterio nuevo
+  —aceptar el paréntesis como mapeo— está en su rama sin fusionar. No se toca
+  desde acá.
+- `installer-family-change` vuelve a sincronizarse cuando llegue el reuso de
+  índice de huecos de la herramienta (`{2}` → `{0}` en la segunda aparición).
+- **B7b**: los satélites (en, ja, de, ru, fr), el selector de idioma que fija
+  la cultura antes de crear las vistas, `SatelliteResourceLanguages` en el
+  csproj de **Core** (no en el de App: los recursos viven ahí), y el
+  instalador tiene que llevar las carpetas de cultura. El CSV ya trae la
+  columna "texto en" con el inglés de las filas de la Mac: se toma de ahí sin
+  traducir dos veces, y el inglés de las filas "solo Windows" lo escribe
+  Windows en esa misma columna.
