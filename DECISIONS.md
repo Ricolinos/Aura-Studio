@@ -10838,3 +10838,30 @@ de diagnóstico que el diagnosticador no puede leer no es un log**. El
 primer intento agregó `print` + `fflush` creyendo que alcanzaba, por
 analogía con `MainThreadWatchdog` — que sí se ve, porque corre dentro del
 proceso de pruebas.
+
+## ST-195 — Versión 0.3.0: cierre de la ronda 2 de rendimiento (Mac y Windows)
+
+**Decisión (maestra, 2026-09-06).** Se publica Aura Studio **0.3.0** sobre el
+commit de cierre de la ronda 2 (`3e55186`, plan
+`Aura/docs/plans/PLAN-studio-rendimiento-2.md`), tras la verificación
+interactiva del dueño en ambas plataformas con los builds de prueba de ese
+commit ("funciona bastante bien tanto para Windows como para Mac").
+
+- **MENOR sube** (0.2.3 → 0.3.0) porque la ronda trae funciones nuevas
+  estables: carátulas en lote desde Canciones y Álbumes, selección tipo
+  Finder completa (marquee, Shift+flechas, menú Edición), "Buscar
+  actualizaciones de Aura Studio" (ST-193/ST-211), estado "biblioteca
+  desconectada" en macOS (ST-189), "Buscar actualizaciones" de Dispositivos
+  con red en Windows (ST-210), además de las mejoras de rendimiento
+  (ST-180..ST-187, ST-200..ST-209).
+- **Pin de firmware sin cambio**: Aura v0.4.6-beta, Metro v0.7.4, moonlit
+  v0.2.4 (`FIRMWARE_VERSION` idéntico a 0.2.3).
+- Sitios de versión actualizados en este commit: `project.yml`
+  (CFBundleShortVersionString y MARKETING_VERSION), `Resources/Info.plist`,
+  `installer/AuraStudio.iss`, `AuraStudio.App.csproj`.
+- Assets del Release (patrón congelado en ST-191/ST-193):
+  `AuraStudio-0.3.0.dmg`, `AuraStudioSetup-0.3.0-arm64.exe`,
+  `AuraStudioSetup-0.3.0-x64.exe`. Es el primer release que las apps 0.3.0
+  podrán detectar por sí mismas; las 0.2.3 instaladas no tienen el chequeo.
+- Abre la siguiente ronda de ajustes: vigilante en Release y menú de
+  Canciones / páginas en Windows (ST-207 addendum); idiomas de la app.
