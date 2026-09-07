@@ -259,10 +259,18 @@ try
 
     library.Remove([copyToDelete.Id]);
 
+    bool copyGoneFromOrigin = !File.Exists(copyPath);
+    // SHFileOperationW no da ningún destino para FO_DELETE (comprobado
+    // empíricamente, ver RecycleBinProbe/DECISIONS.md): no hay una ruta que
+    // afirmar directo, así que la prueba real es origen desaparecido Y
+    // presencia en $Recycle.Bin por SID -- ya no "cosa de alguien con la
+    // sesión de Windows delante".
+    string? recycledCopyPath = copyGoneFromOrigin ? RecycleBinProbe.FindRecycledFile(copyPath) : null;
     Console.WriteLine($"Después de Remove(): {copyPath} existe = {File.Exists(copyPath)}");
-    Console.WriteLine(File.Exists(copyPath)
-        ? "ATENCIÓN: el archivo de copia sigue en su lugar -- no se movió a la Papelera."
-        : "Confirmado: desapareció de la biblioteca -- fue a la Papelera de reciclaje de Windows (SHFileOperationW, FOF_ALLOWUNDO), no un borrado definitivo. Verificar a simple vista que está ahí es cosa de alguien con la sesión de Windows delante.");
+    Console.WriteLine($"En la Papelera ($Recycle.Bin por SID): {recycledCopyPath ?? "(no encontrado)"}");
+    Console.WriteLine(copyGoneFromOrigin && recycledCopyPath is not null
+        ? "Confirmado: desapareció de la biblioteca y está de verdad en la Papelera de reciclaje de Windows (SHFileOperationW, FOF_ALLOWUNDO), no un borrado definitivo."
+        : "ATENCIÓN: el archivo de copia sigue en su lugar, o desapareció pero no se encontró en la Papelera -- ver arriba.");
 
     Console.WriteLine();
     Console.WriteLine("--- Eliminar (ST-245): modo referencia -- solo del catálogo, con preparado y carátula por ID ---");
@@ -347,10 +355,12 @@ try
     reloadedLibrary.Remove([reloadedNfdItem.Id]);
 
     bool nfdFileGone = !File.Exists(nfdTrackPath);
+    string? recycledNfdPath = nfdFileGone ? RecycleBinProbe.FindRecycledFile(nfdTrackPath) : null;
     Console.WriteLine($"El archivo real en NFD sigue existiendo: {File.Exists(nfdTrackPath)}");
-    Console.WriteLine(nfdFileGone
-        ? "Confirmado: LibraryDiskPathResolver encontró el archivo en la carpeta NFD real a partir de la ruta NFC del catálogo, y Remove() lo mandó a la Papelera."
-        : "ATENCIÓN: el archivo con acento en NFD no se pudo eliminar -- revisar LibraryDiskPathResolver/MediaRoots.");
+    Console.WriteLine($"En la Papelera ($Recycle.Bin por SID): {recycledNfdPath ?? "(no encontrado)"}");
+    Console.WriteLine(nfdFileGone && recycledNfdPath is not null
+        ? "Confirmado: LibraryDiskPathResolver encontró el archivo en la carpeta NFD real a partir de la ruta NFC del catálogo, y Remove() lo mandó de verdad a la Papelera."
+        : "ATENCIÓN: el archivo con acento en NFD no se pudo eliminar, o desapareció pero no se encontró en la Papelera -- revisar LibraryDiskPathResolver/MediaRoots.");
 
     // --- 3(c). Política de carátulas forzada ---
 

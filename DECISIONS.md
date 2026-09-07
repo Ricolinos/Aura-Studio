@@ -15211,3 +15211,100 @@ recurso, y la prueba entera está lista para correr en ese momento.
 verde, 1 omitida** (la nueva, a propósito) -- ninguna en rojo. (El total
 sube de 1 750 porque ya está en el árbol, sin commitear todavía, la
 primera prueba de la tarea 2 -- ver el addendum de ST-245 que sigue.)
+
+## ST-245 (addendum) — Windows: "espejo de A5" — cobertura de confirmación en Eliminar, y la ruta real dentro de la Papelera
+
+Encargo del coordinador, tarea 2 sobre `origin/main`. Dos partes: (a)
+probar que todo punto de entrada de Eliminar pasa por confirmación, (b)
+que la prueba real de la Papelera afirme sobre una ruta de verdad, no
+reconstruida.
+
+### (a) Los cuatro puntos del encargo, y el que se la salta
+
+Revisados los cuatro: cuadrícula (`MediaGridPage.xaml.cs:1007`), canciones
+(`SongsPage.xaml.cs:502`), artistas (`ArtistsPage.xaml.cs:314` y `:443`,
+menú contextual y selección) -- los cuatro llaman
+`DeleteConfirmation.ConfirmAndRemoveAsync`, que muestra el diálogo y
+recién después llama `LibraryViewModel.Remove`. La tecla Supr no aparece
+en ningún `Page_KeyDown` de `SongsPage`/`MediaGridPage`/`ArtistsPage`
+(los tres revisados completos): no es un punto que se salte la
+confirmación, es una función que todavía no existe.
+
+**Hallazgo real, no corregido acá** (instrucción explícita del
+coordinador: no tocar Views ni `LibraryViewModel`, el Experto los tiene en
+B7a): `SimilarItemsViewModel.KeepOnly` (`AuraStudio.App/ViewModels/SimilarItemsViewModel.cs:119`)
+llama `_library.Remove(doomed)` directo, sin ninguna confirmación --
+`SimilarItemsPage.xaml.cs:33-41` (`KeepOnly_Click`) tampoco muestra ningún
+diálogo: solo resuelve el `Guid` del botón y llama a `ViewModel.KeepOnly`
+derecho. Qué hace exactamente ese camino, para la pregunta del
+coordinador: **depende del modo de almacenamiento de cada elemento del
+grupo**, igual que cualquier otro `Remove` -- modo copia manda el archivo
+original a la **Papelera de reciclaje sin preguntar**; modo referencia
+**solo lo quita del catálogo**, el original nunca se toca; en LOS DOS
+MODOS además se borra **permanentemente** (no a la Papelera, un
+`File.Delete` directo vía `ILibraryFileSystem.TryDelete`) el preparado y
+la carátula del elemento, tampoco con ningún aviso. El doc-comment de
+`KeepOnly` (líneas 107-110) y el mensaje de éxito (122-124) mienten: dicen
+"no borra archivos" / "el archivo sigue en tu computadora", falso para
+cualquier elemento en modo copia desde B5.
+
+Prueba nueva, `tests/AuraStudio.Core.Tests/DeleteEntryPointsTests.cs`: un
+"source-grep" (no una instancia real de `LibraryViewModel`, para no
+chocar con B7a) que recorre `Views/`+`ViewModels/` de `AuraStudio.App`
+buscando `library.Remove(`/`_library.Remove(` y falla si aparece fuera de
+`DeleteConfirmation.cs` y fuera de una lista explícita de hallazgos
+conocidos (`KnownUnconfirmedBypasses`, hoy solo
+`SimilarItemsViewModel.cs:119`) -- cualquier bypass NUEVO sigue
+haciéndola fallar. Segunda prueba, cinturón además del tirante: confirma
+que el hallazgo conocido SIGUE en su línea citada, para que alguien tenga
+que venir a borrar la excepción en vez de dejarla viva cuando se arregle.
+
+### (b) `SHFileOperationW` no da destino para un borrado -- comprobado, no solo leído en la documentación
+
+Investigado con una prueba real, aparte, contra la Papelera de verdad de
+esta VM: `SHFileOperationW` con `FOF_WANTMAPPINGHANDLE` deja
+`hNameMappings` en `0` después de un `FO_DELETE` -- ningún mapeo, a pesar
+de lo que el nombre de la bandera sugeriría (el mapeo de nombres resuelve
+colisiones al copiar/mover, nunca reporta destino de un borrado; esto NO
+está documentado así por Microsoft en ningún lado claro, se comprobó
+corriendo el borrado de verdad y leyendo la estructura después). La
+alternativa real -- `IFileOperation` +
+`IFileOperationProgressSink.PostDeleteItem` -- es un cambio de API mucho
+más grande que `WindowsRecycleBin` para un problema que solo existe en
+pruebas.
+
+**Aplica la segunda opción que dio el coordinador**: la prueba comprueba
+origen desaparecido Y presencia en `$Recycle.Bin` por SID. Nuevo
+`AuraStudio.Core/Library/RecycleBinProbe.cs` (`[SupportedOSPlatform("windows")]`,
+mismo patrón que `WindowsRecycleBin`): decodifica el formato `$I` de la
+Papelera de Windows 10+ (tampoco documentado oficialmente -- verificado
+byte a byte contra archivos `$I` reales de esta VM antes de escribir el
+parser: 8 bytes de versión, 8 de tamaño original, 8 de FILETIME de
+borrado, 4 de longitud de ruta en caracteres UTF-16, luego la ruta) y
+busca el `$I*` cuya ruta original decodificada coincide con la buscada,
+devolviendo el `$R*` (los bytes de verdad) correspondiente si existe.
+
+`StorageFixtureCheck.cs` (los dos puntos que ya ejercitaban un borrado
+real, modo copia y el de acento NFD) dejan de conformarse con "desapareció
+del origen, verificar a simple vista es cosa de alguien con la sesión de
+Windows delante" -- ahora llaman `RecycleBinProbe.FindRecycledFile` y
+afirman sobre la ruta real que devuelve. Corrida real contra la Papelera
+de esta VM, sin ninguna `ATENCIÓN`: modo copia →
+`$Recycle.Bin\<SID>\$RTI7QN6.mp3`; acento NFD → `$Recycle.Bin\<SID>\$RJXPIOW.mp3`.
+
+**Efecto lateral encontrado, no de este encargo**: para poder correr
+`StorageFixtureCheck` de verdad se encontró que `Fakes.cs` no compilaba
+-- `NoOpLibraryProcessor` no implementaba `ILibraryProcessor.CopyIntoLibraryAsync`
+(agregado a la interfaz en una ronda anterior, ST-244; `StorageFixtureCheck`
+no está en `AuraStudio.Windows.slnx`, así que ningún `dotnet build` de la
+solución lo detectaba). Arreglado con el mismo patrón no-op que
+`ProcessAsync` (`Task.FromResult(true)`, "puede seguir").
+
+### Verificación
+
+`dotnet build AuraStudio.Windows.slnx`: 0 errores. `dotnet build
+tools/StorageFixtureCheck`: 0 errores (antes fallaba, ver arriba).
+`dotnet test AuraStudio.Windows.slnx`: **1 752 en verde, 1 omitida**
+(la de `orphans-confirm-message`), ninguna en rojo. `dotnet run
+--project tools/StorageFixtureCheck` completo, de punta a punta, sin
+ninguna `ATENCIÓN` en toda la salida.
