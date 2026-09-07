@@ -38,6 +38,18 @@ public class RepositoryLayoutTests
         "AuraStudio.Windows.slnx",
     ];
 
+    /// <summary>
+    /// Carpetas que pueden estar o no: las produce una compilación y no están en
+    /// un checkout recién clonado. Se permiten, pero no se exigen — exigirlas
+    /// haría fallar la prueba en el único árbol que con seguridad está limpio.
+    /// </summary>
+    private static readonly string[] OptionalDirectories =
+    [
+        // La deja `Make-Installer.ps1` con los .exe de Setup. Está en
+        // .gitignore y no llega a ningún commit.
+        "dist",
+    ];
+
     private static readonly string[] AllowedDirectories =
     [
         "AuraStudio.App",
@@ -98,6 +110,7 @@ public class RepositoryLayoutTests
                 .Select(Path.GetFileName)
                 .OfType<string>()
                 .Where(name => !AllowedDirectories.Contains(name, StringComparer.Ordinal))
+                .Where(name => !OptionalDirectories.Contains(name, StringComparer.Ordinal))
                 .Order(StringComparer.Ordinal)
         ];
 

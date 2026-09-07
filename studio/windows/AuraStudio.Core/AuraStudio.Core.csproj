@@ -34,6 +34,29 @@
     <EmbeddedResource Update="Strings\Resources.resx">
       <LogicalName>AuraStudio.Core.Strings.Resources.resources</LogicalName>
     </EmbeddedResource>
+
+    <!-- Cada idioma más va en su satélite: <cultura>\AuraStudio.Core.resources.dll.
+         El nombre lógico se escribe, aunque sin escribirlo también funcione: el
+         SDK incluye los .resx por su cuenta e infiere la cultura del nombre, y
+         el nombre lógico que le toca por convención resulta ser el mismo que
+         busca el ResourceManager. Eso es una coincidencia, no un acuerdo, y su
+         modo de falla es el peor: si algún día deja de coincidir, la app pide
+         un idioma, no lo encuentra y cae al español SIN fallar nada. Escrito,
+         el emparejamiento con el neutro está a la vista; y una prueba
+         (ResourceProjectTests) exige que cada .resx de esta carpeta tenga su
+         entrada, para que no vuelva a perderse sin que nadie lo note. -->
+    <EmbeddedResource Update="Strings\Resources.en.resx">
+      <LogicalName>AuraStudio.Core.Strings.Resources.en.resources</LogicalName>
+    </EmbeddedResource>
+
+    <!-- SatelliteResourceLanguages NO se usa, y no por olvido: se probó.
+         Declarando solo "de" —una cultura que no existía acá— el satélite en/
+         se siguió generando, también tras borrar obj/ y bin/. Esa propiedad
+         filtra los satélites que traen los paquetes NuGet, no los que el propio
+         proyecto compila desde sus .resx. Dejarla puesta daría la impresión de
+         controlar algo que no controla. Lo que sí controla qué idiomas tienen
+         que existir es AppLanguages.RequiredSatelliteCultures, contra la que se
+         comprueban el publish y el instalador. -->
   </ItemGroup>
 
 </Project>
