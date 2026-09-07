@@ -12,10 +12,11 @@ import Foundation
 ///
 /// **Qué se etiqueta y qué no.** MP3 (ID3v2.3), FLAC (VORBIS_COMMENT +
 /// PICTURE) y M4A/ALAC (átomos `ilst`). WAV y AIFF **no se etiquetan**:
-/// al importarlos en modo copia se convierten a MP3 (§0.2 del plan), así
-/// que decir que no acá es lo correcto -- y decirlo, en vez de fallar en
-/// silencio, es la diferencia entre un formato que no se etiqueta y un
-/// escritor roto.
+/// al importarlos en modo copia se convierten -- a ALAC con "Mantener
+/// formato original", a MP3 con "Comprimido" (`AudioConversionRule`) --
+/// y lo que queda en la biblioteca sí lleva etiquetas. Decir que no acá,
+/// en vez de fallar en silencio, es la diferencia entre un formato que
+/// no se etiqueta y un escritor roto.
 enum LocalTagWriter {
     /// Qué pasó al intentar escribir. Mismo contrato que
     /// `TagWriteResult` de Windows: `written == false` significa que **el
@@ -43,9 +44,23 @@ enum LocalTagWriter {
     /// vez de perderse.
     @discardableResult
     static func write(_ tag: AudioTag, toFileAt url: URL) -> Result {
-        let ext = url.pathExtension.lowercased()
+        write(tag, toFileAt: url, as: url.pathExtension)
+    }
+
+    /// Igual, pero diciendo el formato aparte del nombre del archivo.
+    ///
+    /// Existe por la importación atómica de ST-223: el archivo se arma
+    /// en un temporal `.aura-tmp` —a propósito **sin** extensión de
+    /// música, para que un archivo a medio escribir no parezca una
+    /// canción importable— y hay que etiquetarlo ANTES de moverlo a su
+    /// nombre definitivo. Sin este parámetro, el despachador miraría
+    /// `.aura-tmp`, no reconocería el formato y se saltaría las
+    /// etiquetas en silencio.
+    @discardableResult
+    static func write(_ tag: AudioTag, toFileAt url: URL, as formatExtension: String) -> Result {
+        let ext = formatExtension.lowercased()
         guard taggableExtensions.contains(ext) else {
-            return .skipped("el formato .\(ext) no lleva etiquetas (se convierte a MP3 al importar)")
+            return .skipped("el formato .\(ext) no lleva etiquetas (al importarlo en copia se convierte, ver AudioConversionRule)")
         }
         guard !tag.isEmpty else {
             return .skipped("no hay ningún campo que escribir")

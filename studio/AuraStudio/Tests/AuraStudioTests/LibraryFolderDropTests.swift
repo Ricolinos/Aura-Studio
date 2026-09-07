@@ -104,7 +104,12 @@ final class LibraryFolderDropTests: XCTestCase {
         XCTAssertEqual(prefs.linkedLibraryFolders, [album.standardizedFileURL.path])
     }
 
-    func testDroppingSameFolderTwiceWithCopyOffDoesNotDuplicateLinkedEntry() throws {
+    /// ST-223 cambió lo que se espera acá. Antes el dedup era **solo**
+    /// de la carpeta vinculada y los elementos se volvían a agregar
+    /// (2 + 2): soltar dos veces la misma carpeta metía cada canción dos
+    /// veces, con dos ids, dos copias en la biblioteca y dos entradas en
+    /// el iPod. Ahora también se deduplican los elementos, por ruta.
+    func testDroppingSameFolderTwiceAddsNeitherTheFolderNorTheItemsAgain() throws {
         let album = try writeFixtureFolder()
         let prefs = freshPreferences(copyMediaIntoLibrary: false)
         let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: prefs)
@@ -113,7 +118,10 @@ final class LibraryFolderDropTests: XCTestCase {
         viewModel.addDroppedFiles([album])
 
         XCTAssertEqual(prefs.linkedLibraryFolders, [album.standardizedFileURL.path])
-        XCTAssertEqual(viewModel.items.count, 4, "los items SI se vuelven a agregar (2 + 2; ST-012: cover.jpg ya no cuenta) -- el dedup es solo de la carpeta vinculada")
+        XCTAssertEqual(viewModel.items.count, 2,
+                       "la misma ruta no entra dos veces (ST-012: cover.jpg no cuenta como elemento)")
+        XCTAssertEqual(Set(viewModel.items.map(\.sourceURL)).count, 2, "y no hay dos elementos apuntando al mismo archivo")
+        XCTAssertNotNil(viewModel.lastError, "y se dice que hubo repetidos, en vez de descartarlos en silencio")
     }
 
     func testDroppingAPlainFileWithCopyOffDoesNotRegisterAnyLinkedFolder() throws {

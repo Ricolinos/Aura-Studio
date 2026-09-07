@@ -1244,23 +1244,45 @@ struct LibrarySync {
         case .artist: folder = artist
         }
 
-        let filename: String
+        return "Music/\(folder)/\(musicFileName(for: item, filenameFormat: filenameFormat)).\(ext)"
+    }
+
+    /// El nombre de archivo (sin extensión) de una canción, según el
+    /// ajuste del usuario.
+    ///
+    /// ST-223 lo separó del armado de la ruta porque ahora hace falta en
+    /// dos sitios: la ruta de destino en el iPod y, en modo copia, **el
+    /// nombre del archivo dentro de la biblioteca** -- que en ese modo es
+    /// el mismo archivo. Antes la copia local conservaba el nombre
+    /// original (D-228, "el mismo archivo que soltaste, solo que
+    /// organizado"), y eso tenía sentido mientras la copia y lo que
+    /// viajaba al iPod fueran dos archivos distintos. Ya no lo son.
+    ///
+    /// El nombre se decide **una vez, al importar**, y no se recalcula
+    /// después: editar el título cambia las etiquetas de adentro, no el
+    /// nombre del archivo. Renombrar en cada edición movería la ruta que
+    /// el catálogo tiene anotada por un cambio que el usuario no pidió.
+    static func musicFileName(for item: LibraryItem,
+                              filenameFormat: AppPreferences.MusicFilenameFormat) -> String {
+        let meta = item.metadata
+        let artist = PathSanitizer.sanitize(meta?.albumArtist ?? meta?.artist ?? "Desconocido")
+        let album = PathSanitizer.sanitize(meta?.album ?? "Desconocido")
+        let rawTitle = meta?.title ?? item.sourceURL.deletingPathExtension().lastPathComponent
+        let title = PathSanitizer.sanitize(rawTitle)
+
         switch filenameFormat {
         case .titleOnly:
-            filename = title
+            return title
         case .trackNumberTitle:
             if let track = meta?.trackNumber, track > 0 {
-                filename = String(format: "%02d %@", track, title)
-            } else {
-                filename = title
+                return String(format: "%02d %@", track, title)
             }
+            return title
         case .titleArtist:
-            filename = "\(title) - \(artist)"
+            return "\(title) - \(artist)"
         case .titleAlbum:
-            filename = "\(title) - \(album)"
+            return "\(title) - \(album)"
         }
-
-        return "Music/\(folder)/\(filename).\(ext)"
     }
 
     /// D-228: ruta dentro de la carpeta LOCAL de la biblioteca (Finder),

@@ -226,11 +226,27 @@ extension SharedCatalogPath {
         return URL(fileURLWithPath: root.standardizedFileURL.path + "/" + chosen, isDirectory: true)
     }
 
-    /// `true` si `url` está dentro de `root`, comparando en NFC.
+    /// `true` si `url` está dentro de `root`, comparando en NFC y **por
+    /// componentes de ruta**, no por prefijo de texto.
+    ///
+    /// ST-223: la diferencia importa. Con prefijo, una raíz
+    /// `/Música` haría que `/Música de Ana/x.mp3` cuente como "dentro"
+    /// si a alguien se le olvida la barra final -- y "dentro de la
+    /// biblioteca" es justamente lo que decide si un archivo se copia o
+    /// se deja en su sitio, y si la app se cree con permiso de
+    /// escribirle etiquetas. Comparar componente a componente no admite
+    /// ese error.
     static func isInside(_ url: URL, root: URL) -> Bool {
-        let rootPath = catalogNormalized(root.standardizedFileURL.path)
-        let path = catalogNormalized(url.standardizedFileURL.path)
-        return path.hasPrefix(rootPath + "/")
+        let rootParts = pathComponents(of: root)
+        let parts = pathComponents(of: url)
+        guard parts.count > rootParts.count else { return false }
+        return Array(parts.prefix(rootParts.count)) == rootParts
+    }
+
+    private static func pathComponents(of url: URL) -> [String] {
+        catalogNormalized(url.standardizedFileURL.path)
+            .split(separator: "/", omittingEmptySubsequences: true)
+            .map(String.init)
     }
 
     /// La ruta relativa -- en la forma exacta que SI existe en disco --

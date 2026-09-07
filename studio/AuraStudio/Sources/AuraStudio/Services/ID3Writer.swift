@@ -54,6 +54,12 @@ enum ID3Writer {
     static func write(_ tag: Tag, toFileAt url: URL) throws {
         let original = try Data(contentsOf: url)
         let newData = writing(tag, into: original)
+        // ST-223: un archivo que no cambia no se reescribe -- misma regla
+        // que `FLACTagWriter` y `MP4TagWriter`. Es lo que hace que una
+        // reescritura de etiquetas que no cambia nada no le mueva la
+        // fecha de modificación a la canción (y que el sync diferencial
+        // no la vuelva a copiar al iPod por nada).
+        guard newData != original else { return }
         try newData.write(to: url, options: .atomic)
     }
 

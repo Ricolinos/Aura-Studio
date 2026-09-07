@@ -51,9 +51,11 @@ struct MusicSettingsView: View {
                 }
                 .pickerStyle(.radioGroup)
                 .labelsHidden()
-                Text(preferences.audioQuality == .originalLossless
-                     ? "FLAC, ALAC, WAV, AIFF, M4A y MP3 se copian tal cual -- el iPod con Aura los reproduce sin perder calidad. Ocupan más espacio."
-                     : "Cada canción se convierte a MP3 256kbps antes de copiarla -- buena calidad, mucho menos espacio. El archivo original nunca se modifica.")
+                // ST-223: el aviso sale de `AudioConversionRule`, que es
+                // quien de verdad decide -- tener el texto acá y la regla
+                // en otro lado es como se llega a que la pantalla prometa
+                // una cosa y la app haga otra.
+                Text(AudioConversionRule.settingsNotice(audioQuality: preferences.audioQuality))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

@@ -269,14 +269,39 @@ final class LibraryViewModel: ObservableObject {
                           category: String? = nil, photoAlbum: String? = nil) {
         ensureLibraryStructure()
         let expandedURLs = DroppedURLExpander.expand(urls)
-        let new = Self.importableURLs(from: expandedURLs, into: target)
-            .map { url -> LibraryItem in
-                var item = LibraryItem(sourceURL: url)
-                item.category = category
-                item.photoAlbum = photoAlbum
-                return item
+        // ST-223: deduplicación POR RUTA, comparando en NFC.
+        //
+        // Soltar dos veces la misma carpeta metía la misma canción dos
+        // veces, con dos ids, dos copias en la biblioteca y dos
+        // entradas en el iPod. Por ruta y no por contenido a propósito:
+        // dos archivos iguales en carpetas distintas pueden ser
+        // deliberados (una recopilación y el álbum), y ese caso se avisa
+        // sin borrar nada -- es el detector de parecidos, que va en A5.
+        //
+        // Se comparan las rutas ya conocidas Y el destino que tendría en
+        // la biblioteca: un archivo que ya se copió adentro se vuelve a
+        // soltar con SU ruta original, que ya no es la que el catálogo
+        // tiene anotada.
+        var known = Set(items.map { SharedCatalogPath.catalogNormalized($0.sourceURL.standardizedFileURL.path) })
+        var duplicates = 0
+        var new: [LibraryItem] = []
+        for url in Self.importableURLs(from: expandedURLs, into: target) {
+            let key = SharedCatalogPath.catalogNormalized(url.standardizedFileURL.path)
+            guard known.insert(key).inserted else {
+                duplicates += 1
+                continue
             }
+            var item = LibraryItem(sourceURL: url)
+            item.category = category
+            item.photoAlbum = photoAlbum
+            new.append(item)
+        }
         items.append(contentsOf: new)
+        if duplicates > 0 {
+            lastError = duplicates == 1
+                ? "Un archivo ya estaba en la biblioteca y no se volvió a agregar."
+                : "\(duplicates) archivos ya estaban en la biblioteca y no se volvieron a agregar."
+        }
 
         if !preferences.copyMediaIntoLibrary {
             for url in urls where DroppedURLExpander.isDirectory(url) {
@@ -425,6 +450,96 @@ final class LibraryViewModel: ObservableObject {
         }
     }
 
+    /// ST-223: el camino de música al entrar a la biblioteca.
+    ///
+    /// **En modo copia el archivo de la biblioteca ES el preparado.** Se
+    /// copia (o se convierte, según `AudioConversionRule`) a
+    /// `Música/<Artista>/<Álbum>/`, se le escriben las etiquetas del
+    /// catálogo adentro y `preparedURL == sourceURL`. `.preparados/` no
+    /// interviene: hasta acá TODA canción tenía una tercera copia ahí, y
+    /// cualquier edición la reescribía entera.
+    ///
+    /// En modo referencia no cambia nada: el original no se toca y el
+    /// derivado por id vive en `.preparados/`.
+    private func importOrPrepareMusic(itemAt index: Int, metadata: TrackMetadata) async throws {
+        if preferences.copyMediaIntoLibrary, !isInsideLibrary(items[index].sourceURL) {
+            try await importMusicIntoLibrary(itemAt: index, metadata: metadata)
+            return
+        }
+        if preferences.copyMediaIntoLibrary {
+            // Ya estaba dentro: no hay nada que copiar, pero sí hay que
+            // dejar dicho el modo (ST-221).
+            items[index].storage = LibraryStorageMode.infer(
+                sourceURL: items[index].sourceURL, libraryRoot: libraryRoot)
+        }
+        items[index].preparedURL = try await refreshMusicFile(for: items[index], metadata: metadata)
+    }
+
+    private func importMusicIntoLibrary(itemAt index: Int, metadata: TrackMetadata) async throws {
+        var item = items[index]
+        item.metadata = metadata
+        let sourceExtension = item.sourceURL.pathExtension
+        let decision = AudioConversionRule.decide(sourceExtension: sourceExtension,
+                                                  audioQuality: preferences.audioQuality)
+        let destinationExtension = AudioConversionRule.destinationExtension(
+            sourceExtension: sourceExtension, audioQuality: preferences.audioQuality)
+        // "El mismo criterio de nombre que usa el iPod": en modo copia
+        // los dos archivos son el mismo, así que no tiene sentido que se
+        // llamen distinto.
+        let baseName = LibrarySync.musicFileName(for: item, filenameFormat: preferences.musicFilenameFormat)
+        let relativePath = LibrarySync.localLibraryRelativePath(
+            for: item, kind: .music, fileName: "\(baseName).\(destinationExtension)")
+
+        do {
+            let destination = try resolveNonCollidingDestination(relativePath: relativePath)
+            let imported = try await fileWorker.importMusic(
+                LibraryFileWorker.ImportMusicRequest(
+                    sourceURL: item.sourceURL,
+                    destinationURL: destination,
+                    decision: decision,
+                    metadata: metadata,
+                    coverArtPolicy: preferences.coverArtPolicy))
+            items[index].sourceURL = imported.url
+            // El archivo de la biblioteca ES el que viaja al iPod.
+            items[index].preparedURL = imported.url
+            items[index].storage = .copy
+            items[index].fileSizeBytes = imported.byteSize
+            if !imported.tagResult.written, let reason = imported.tagResult.reason {
+                lastError = "\(imported.url.lastPathComponent): \(reason)"
+            }
+        } catch {
+            // No se pudo copiar ni convertir. El elemento se queda
+            // apuntando a su original y se dice por qué -- lo que NO se
+            // hace es dejar en la biblioteca un archivo sin convertir
+            // como si nada hubiera pasado.
+            items[index].status = .failed(error.localizedDescription)
+            lastError = "No se pudo importar \(item.sourceURL.lastPathComponent): \(error.localizedDescription)"
+            throw error
+        }
+    }
+
+    /// ST-223: el archivo que viaja al iPod, después de un cambio de
+    /// metadata.
+    ///
+    /// En modo copia **se reescriben las etiquetas en el sitio** y no se
+    /// copia nada: es la diferencia central con lo que había, donde
+    /// cualquier edición -- incluida una que ni siquiera va en una
+    /// etiqueta -- recopiaba el archivo entero a `.preparados/`.
+    ///
+    /// En modo referencia sigue regenerándose el derivado por id.
+    private func refreshMusicFile(for item: LibraryItem, metadata: TrackMetadata) async throws -> URL {
+        guard item.storage == .copy else {
+            return try await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
+        }
+        let result = await fileWorker.rewriteTags(metadata: metadata,
+                                                  coverArtPolicy: preferences.coverArtPolicy,
+                                                  at: item.sourceURL)
+        if !result.written, let reason = result.reason, reason.hasPrefix("no se pudieron escribir") {
+            lastError = reason
+        }
+        return item.sourceURL
+    }
+
     private func isInsideLibrary(_ url: URL) -> Bool {
         // ST-221: compara en NFC -- ver `SharedCatalogPath.catalogNormalized`.
         SharedCatalogPath.isInside(url, root: libraryRoot)
@@ -470,13 +585,13 @@ final class LibraryViewModel: ObservableObject {
                 // D-228: recien aca existe la metadata que decide la
                 // carpeta (Música/<Artista>/<Álbum>/) -- por eso la copia
                 // a la biblioteca pasa por aca y no por `addDroppedFiles`.
-                copyIntoLibraryIfNeeded(itemAt: index)
-                // PLAN-studio-rendimiento.md Fase 4 paso 5: mismo criterio
-                // que los pasos 1-4 -- `prepareMusic` (transcode/ID3) corre
-                // en `fileWorker`, fuera del actor principal. La
-                // importación es justo el camino con más impacto: son
-                // TODAS las canciones nuevas, una por una.
-                items[index].preparedURL = try await fileWorker.prepareMusic(makePrepareMusicRequest(for: items[index], metadata: metadata))
+                //
+                // ST-223: en modo copia, importar y preparar son UNA sola
+                // operación -- el archivo que entra a la biblioteca ya es
+                // el que viaja al iPod. En modo referencia sigue habiendo
+                // dos cosas distintas: el original, que no se toca, y el
+                // derivado de `.preparados/`.
+                try await importOrPrepareMusic(itemAt: index, metadata: metadata)
                 items[index].status = metadata.isComplete ? .ready : .needsReview
 
             case .video:
@@ -695,7 +810,7 @@ final class LibraryViewModel: ObservableObject {
         items[index].metadataEditedByUser = true
         let item = items[index]
         do {
-            let prepared = try await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
+            let prepared = try await refreshMusicFile(for: item, metadata: metadata)
             guard let currentIndex = items.firstIndex(where: { $0.id == id }) else { return }
             items[currentIndex].preparedURL = prepared
             items[currentIndex].status = metadata.isComplete ? .ready : .needsReview
@@ -924,7 +1039,7 @@ final class LibraryViewModel: ObservableObject {
         items[index].metadataEditedByUser = true
         if items[index].kind == .music {
             let item = items[index]
-            let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
+            let prepared = try? await refreshMusicFile(for: item, metadata: metadata)
             guard let currentIndex = items.firstIndex(where: { $0.id == id }) else { return }
             items[currentIndex].preparedURL = prepared
             if items[currentIndex].status == .ready || items[currentIndex].status == .needsReview {
@@ -940,12 +1055,16 @@ final class LibraryViewModel: ObservableObject {
     /// nunca viaja en el ID3 (va aparte en `ratings.cfg`, ver
     /// `LibrarySync.import_ratings_from_studio`) -- se ve pintada al
     /// instante con solo actualizar `metadata` en el hilo principal.
-    /// `prepareMusic` (transcode/ID3, el mismo criterio de siempre: el
-    /// archivo en staging refleja la metadata completa) corre después
-    /// en `fileWorker`, sin bloquear la estrella. Si el rating vuelve a
-    /// cambiar antes de que termine, la segunda llamada produce un
-    /// archivo preparado idéntico (ningún campo del ID3 depende del
-    /// rating), así que no hay carrera observable.
+    /// ST-223: y por eso poner una estrella **no toca el archivo de
+    /// audio en absoluto**.
+    ///
+    /// Hasta acá sí lo tocaba, y era el ejemplo más claro del defecto
+    /// que esta ronda vino a arreglar: `setRating` llamaba a
+    /// `prepareMusic`, que copiaba el archivo entero y reescribía el
+    /// ID3 -- para escribir **exactamente los mismos bytes de etiqueta
+    /// que ya tenía**, porque ninguna etiqueta tiene campo de rating.
+    /// No era trabajo de más: era trabajo enteramente inútil, y en un
+    /// FLAC de cincuenta megabytes se sentía.
     func setRating(_ rating: Int?, forItem id: UUID) async {
         guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .music else { return }
         var metadata = items[index].metadata ?? TrackMetadata()
@@ -956,12 +1075,6 @@ final class LibraryViewModel: ObservableObject {
         // guardado real, fuera del hilo principal -- diagnóstico §0.4,
         // el ejemplo textual del dueño de por qué se sentía el
         // congelamiento en ediciones individuales, no solo en lote.
-        schedulePersistCatalog()
-
-        let item = items[index]
-        let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
-        guard let currentIndex = items.firstIndex(where: { $0.id == id }) else { return }
-        items[currentIndex].preparedURL = prepared ?? items[currentIndex].preparedURL
         schedulePersistCatalog()
     }
 
@@ -1181,7 +1294,7 @@ final class LibraryViewModel: ObservableObject {
         for (completed, item) in targets.enumerated() {
             var metadata = item.metadata ?? TrackMetadata()
             metadata.setCover(nil)
-            let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
+            let prepared = try? await refreshMusicFile(for: item, metadata: metadata)
             pendingResults[item.id] = (metadata, prepared)
             CoverStore.remove(forItem: item.id, in: libraryRoot)
 
@@ -1255,7 +1368,7 @@ final class LibraryViewModel: ObservableObject {
         for (completed, item) in targets.enumerated() {
             var metadata = item.metadata ?? TrackMetadata()
             metadata.setCover(normalized)
-            let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
+            let prepared = try? await refreshMusicFile(for: item, metadata: metadata)
             pendingResults[item.id] = (metadata, prepared ?? item.preparedURL)
 
             handle.update(.determinate(completed: completed + 1, total: targets.count),
@@ -1410,7 +1523,7 @@ final class LibraryViewModel: ObservableObject {
             if let composer = changes.composer { metadata.composer = composer }
             if let rating = changes.rating { metadata.rating = rating }
 
-            let preparedURL = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
+            let preparedURL = try? await refreshMusicFile(for: item, metadata: metadata)
             pendingResults[item.id] = (metadata, preparedURL, metadata.isComplete ? .ready : .needsReview)
 
             handle.update(.determinate(completed: completed + 1, total: targets.count),
@@ -1480,7 +1593,7 @@ final class LibraryViewModel: ObservableObject {
             var preparedURL: URL??
             var status: LibraryItemStatus?
             if item.kind == .music {
-                let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: metadata))
+                let prepared = try? await refreshMusicFile(for: item, metadata: metadata)
                 preparedURL = .some(prepared)
                 if item.status == .ready || item.status == .needsReview {
                     status = metadata.isComplete ? .ready : .needsReview
@@ -1569,7 +1682,7 @@ final class LibraryViewModel: ObservableObject {
                 fetchAlbumInfo: fetchAlbumInfo, fetchLyrics: fetchLyrics,
                 coverArtOrder: preferences.coverArtProviderOrder,
                 deezerEnabled: preferences.deezerEnabled)
-            let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: updated))
+            let prepared = try? await refreshMusicFile(for: item, metadata: updated)
             pendingResults[item.id] = (updated, prepared, updated.isComplete ? .ready : .needsReview)
 
             handle.update(.determinate(completed: completed + 1, total: targets.count),
@@ -1644,7 +1757,7 @@ final class LibraryViewModel: ObservableObject {
             let current = item.metadata ?? TrackMetadata()
             let merged = mergingLocalTags(fresh, into: current)
             if merged != current { updated += 1 }
-            let prepared = try? await fileWorker.prepareMusic(makePrepareMusicRequest(for: item, metadata: merged))
+            let prepared = try? await refreshMusicFile(for: item, metadata: merged)
             pendingResults[item.id] = (merged, prepared, merged.isComplete ? .ready : .needsReview)
 
             let shouldFlush = pendingResults.count >= Self.batchApplySize

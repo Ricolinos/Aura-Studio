@@ -12448,3 +12448,141 @@ etiqueta y un escritor roto tiene que ser visible.
 Nada de esto está conectado todavía a la app: A2 son los escritores y su
 verificación. Quien los llame es A3 (ST-223), que es donde el modo copia
 pasa a escribir las etiquetas en el archivo de la biblioteca.
+
+## ST-223 — Modo copia: el archivo de la biblioteca ES el que viaja al iPod
+
+Fase A3 de `PLAN-studio-ajustes-3.md`. Es el arreglo del defecto que
+abrió la ronda: **toda canción tenía una tercera copia en `.preparados/`,
+y cualquier edición la reescribía entera**. Una estrella en un FLAC de
+cincuenta megabytes copiaba cincuenta megabytes para escribir los mismos
+bytes de etiqueta que el archivo ya tenía.
+
+### Lo que cambia
+
+En modo copia ya no hay tres archivos (original del usuario, copia en
+`Música/`, derivado en `.preparados/`) sino dos: el del usuario, que no
+se toca, y **el de la biblioteca, que es el que viaja al iPod**.
+`preparedURL == sourceURL`, `.preparados/` no interviene, y editar una
+etiqueta reescribe las etiquetas **en el sitio**.
+
+En modo referencia no cambia nada todavía: el original no se toca y el
+derivado por id sigue en `.preparados/`. Cuándo se genera ese derivado es
+A4.
+
+### Importar es atómico, y por qué el temporal se llama así
+
+El archivo se arma primero en `<destino>.aura-tmp`, **junto al destino**
+-- junto, para que el movimiento final sea dentro del mismo volumen y por
+lo tanto instantáneo e indivisible; y **sin extensión de música**, para
+que un archivo a medio escribir no parezca una canción importable si algo
+se corta en el medio. Solo cuando el contenido y las etiquetas están
+completos se renombra. Si algo falla, se limpia el temporal y **no queda
+nada en la biblioteca**: hay una prueba de eso, con una conversión que
+falla a propósito.
+
+Eso obligó a un detalle en `LocalTagWriter`: despacha por extensión, y
+`.aura-tmp` no es ninguna. Sin decirle el formato aparte se habría
+saltado las etiquetas **en silencio**, que es la peor forma de fallar.
+
+### Qué se convierte, y la corrección al ajuste que mentía
+
+La regla vive en un solo sitio (`AudioConversionRule`) porque hace falta
+en tres momentos distintos -- importar (A3), regenerar el derivado (A4) y
+el texto de Ajustes -- y tres copias de una regla es como se llega a que
+la pantalla prometa una cosa y la app haga otra. Por eso el aviso de
+Ajustes también sale de ahí.
+
+- Con **"Mantener formato original"**: FLAC, ALAC, M4A y MP3 se copian
+  tal cual. WAV y AIFF van a **ALAC**.
+- Con **"Comprimir"**: todo va a MP3 de 256 kbps.
+
+Lo de ALAC es una corrección de la sesión maestra a mitad de fase, y vale
+la pena decir por qué. El plan decía "WAV/AIFF → MP3 siempre". Eso, bajo
+un ajuste que se llama *mantener el formato original*, es **perder
+calidad a escondidas**. ALAC es sin pérdida de verdad, lo codifica el
+sistema y el resultado queda etiquetable con `MP4TagWriter` de A2.
+
+Y hay un hecho de la plataforma detrás: **macOS no trae codificador de
+MP3**. Lo comprobé enumerando los codificadores de AudioToolbox en vez de
+afirmarlo de memoria -- están aac, alac, flac, opus, lpcm y varios más;
+MP3 no. El sistema lo decodifica, no lo codifica. Así que "Comprimido"
+necesita ffmpeg (D-038, igual que el video) y **Ajustes lo dice**. Sin
+ffmpeg, importar en copia bajo "Comprimido" falla con el motivo visible;
+lo que no hace nunca es copiar el WAV sin convertir en silencio.
+
+Un AIFF-C comprimido se rechaza con el motivo dicho. AVFoundation lo
+decodificaría y la conversión "funcionaría" -- y ahí está el problema: el
+resultado sería un ALAC sin pérdida **de un audio que ya perdió
+calidad**, vendido como sin pérdida y ocupando el triple.
+
+### El nombre del archivo en la biblioteca
+
+Pasa a ser el mismo criterio que usa el iPod (`LibrarySync.musicFileName`,
+extraído para que haya una sola definición). Hasta acá la copia local
+conservaba el nombre original (D-228: "el mismo archivo que soltaste,
+solo que organizado"), y eso tenía sentido mientras la copia y lo que
+viajaba al iPod fueran dos archivos distintos. Ya no lo son.
+
+El nombre se decide **una vez, al importar**, y no se recalcula: editar
+el título cambia las etiquetas de adentro, no el nombre del archivo.
+Renombrar en cada edición movería la ruta que el catálogo tiene anotada
+por un cambio que el usuario no pidió.
+
+### Lo que NO reescribe el archivo
+
+Rating, favorito, letra y categoría. Son datos de Aura, no del archivo: el
+rating viaja en `ratings.cfg`, la letra como `.lrc` hermano (ST-012) y la
+categoría es organización de la biblioteca. `setRating` llamaba a
+`prepareMusic`; ahora no llama a nada. Hay una prueba que comprueba los
+cuatro **por separado** -- medirlos juntos escondería que solo uno de los
+cuatro tocara el archivo -- por hash y por fecha de modificación.
+
+Además los tres escritores son ahora **idempotentes**: `ID3Writer` no
+reescribía cuando el resultado era idéntico (FLAC y M4A ya lo hacían).
+Un archivo que no cambia no se toca, así no se le mueve la fecha ni el
+sync diferencial lo vuelve a copiar por nada.
+
+### Dos cosas más que salieron por el camino
+
+**"Dentro de la biblioteca" se compara por componentes de ruta, no por
+prefijo de texto.** Con prefijo, una raíz `/Música` haría que
+`/Música de Ana/x.mp3` cuente como "dentro" si a alguien se le olvida la
+barra final. Y "dentro de la biblioteca" es lo que decide si un archivo
+se copia o se deja en su sitio, y si la app se cree con permiso de
+escribirle etiquetas adentro.
+
+**`AVAssetWriterInput` lanza una excepción de Objective-C** con valores
+fuera de rango, y eso no se puede atrapar desde Swift: tumba el proceso.
+Lo encontré con un fixture mío mal armado, y el fixture era mi error --
+pero un archivo del usuario con la cabecera mal escrita habría hecho lo
+mismo. `AppleLosslessEncoder` valida la tasa de muestreo y los canales
+antes de construirlo, y devuelve un error con el motivo.
+
+### Deduplicación al importar
+
+Por ruta, comparando en NFC. Soltar dos veces la misma carpeta metía la
+misma canción dos veces, con dos ids, dos copias y dos entradas en el
+iPod. Por ruta y **no por contenido** a propósito: dos archivos iguales
+en carpetas distintas pueden ser deliberados (una recopilación y el
+álbum), y ese caso se avisa sin borrar nada -- es el detector de
+parecidos, que va en A5.
+
+### Estado de las pruebas del arnés A0
+
+De las seis de `MediaStorageAfterA3A4Tests`, **cinco quedan activas**:
+(a) importar deja el archivo listo y `.preparados/` vacío, (b) los cuatro
+campos que no tocan el audio, (c) editar el título reescribe un tag y no
+el archivo entero, (e) el sync lleva el archivo de la biblioteca en copia
+y el derivado en referencia, y (f) WAV copiado queda como ALAC -- no como
+MP3, que es la corrección de arriba.
+
+**Queda para A4** la (d): modo referencia, cuándo se regenera el derivado.
+
+Se suman seis pruebas más: las muestras decodificadas de WAV→ALAC y
+AIFF→ALAC (incluido el `sowt` de QuickTime, que es PCM con los bytes al
+revés y darlo vuelta "para convertirlo" produciría ruido) tienen que ser
+**idénticas**; el AIFF-C comprimido rechazado con motivo; el ALAC de la
+biblioteca lleva las etiquetas del catálogo; una conversión fallida no
+deja rastro; y el caso sin ffmpeg bajo "Comprimido", que **se salta en
+esta máquina porque tiene ffmpeg instalado** y lo dice así en vez de
+fingir que se probó.
