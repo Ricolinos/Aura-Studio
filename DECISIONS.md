@@ -11012,3 +11012,46 @@ pruebas: fixture legible, tabla "antes", sync). `xcodegen generate` +
 `.pbxproj` commiteado en el mismo commit (lección de ST-189: un archivo
 nuevo en `Tests/` sin regenerar el proyecto se omite en silencio del
 target).
+
+## ST-222 (encargo de la maestra): lectores propios para la ida y vuelta de A2
+
+Encargo de "Sesión Maestra" mientras "experto en código opus" hace
+A1/A2: dejar preparado el lado de LECTURA de la verificación de ida y
+vuelta de los escritores nativos FLAC/M4A, con la firma real de
+escritura pendiente de que Opus la anuncie.
+
+`Tests/AuraStudioTests/FormatTagReaders.swift`: dos lectores puros, sin
+AVFoundation, que leen los bytes crudos --
+
+- `FLACTagReader.readVorbisComments(from:)`: camina los bloques de
+  metadata de un FLAC hasta VORBIS_COMMENT (tipo 4), devuelve las
+  claves en mayúsculas.
+- `MP4TagReader.readIlstAtoms(from:)`: camina `moov/udta/meta/ilst` de
+  un M4A/MP4 y lee los átomos comunes (`©nam`/`©ART`/`©alb`/`aART`/
+  `©day`/`©wrt`/`©gen`). Dos gotchas reales que salieron al escribirlo
+  contra un M4A de verdad (el que ya produce `MediaFixture.m4aData` con
+  `AVAssetWriter`), no uno inventado a mano:
+  1. **Tamaño de caja de 64 bits**: el propio `mdat` que escribe
+     `AVAssetWriter` usa `size32 == 1` (tamaño real en los 8 bytes
+     siguientes) -- sin manejar este caso, el parser se pierde el
+     archivo completo después de `mdat`, `moov` incluido.
+  2. **El tipo del átomo no es ASCII**: `©nam`/`©ART`/etc. empiezan con
+     el byte `0xA9`, que `String(data:encoding:.ascii)` rechaza --
+     devuelve `nil` para los 4 bytes enteros, no solo para ese uno, y
+     el error se ve como "no encontré el átomo" en vez de "no pude
+     decodificar el tipo". Se resuelve con `.isoLatin1` en vez de
+     `.ascii` (ASCII es subconjunto de Latin-1, así que las cajas
+     contenedoras normales -- `moov`, `trak`, etc. -- se siguen
+     leyendo igual).
+
+`Tests/AuraStudioTests/FLACAndM4ATagRoundTripTests.swift`: dos pruebas
+en verde que confirman los lectores contra el fixture de A0
+(`MediaFixture.flacData`/`m4aData`) -- ya validados, no solo escritos.
+Dos pruebas más con `throw XCTSkip(...)`, documentando en el mensaje la
+forma exacta de la prueba de ida y vuelta que hace falta cuando Opus
+anuncie la firma real: escribir con su escritor sobre el fixture,
+releer con estos lectores Y con `AVURLAsset.load(.metadata)` (el camino
+real de `LocalTagReader`), confirmar que ambas lecturas coinciden con
+los campos editados y que el audio no cambió. Sustituir la generación
+del fixture por la llamada real al escritor es el único cambio que
+hace falta -- las aserciones no cambian.
