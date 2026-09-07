@@ -16,8 +16,11 @@ import XCTest
 /// tras A3 (ST-223, `bb164dd`), el modo copia ya no pasa por
 /// `LibraryFileWorker.prepareMusic`/`.preparados/` -- usa `importMusic`
 /// al importar y `rewriteTags` al editar, directo sobre el archivo de
-/// `Música/`. El modo referencia sigue sin cambios (A4/ST-224 todavía
-/// no cerró): mismo camino de `prepareMusic` que medía ST-220.
+/// `Música/`. Tras A4 (ST-224, `45f66ff`), el modo referencia TAMPOCO
+/// prepara siempre -- usa `ensurePreparedMusic`, que solo arma
+/// `.preparados/<ID>.ext` cuando el archivo necesita conversión o sus
+/// etiquetas no coinciden con el catálogo (`PreparedMusicPlan`); si ya
+/// coincide, no hay preparado y al iPod viaja el original.
 @MainActor
 final class MediaStorageBaselineTests: XCTestCase {
     private var libraryRoot: URL!
@@ -382,6 +385,118 @@ final class MediaStorageBaselineTests: XCTestCase {
                 if (try? sha256(candidate)) == expectedHash { found = true; break }
             }
             XCTAssertTrue(found, "no se encontró una copia del preparado de \(item.metadata?.title ?? "?") dentro del iPod sintético")
+        }
+    }
+
+    // MARK: - Modo referencia contra A4 (ST-224): el preparado solo cuando hace falta
+
+    private struct ReferenceModeResult {
+        let scenario: String
+        let action: String
+        let preparedBytesWritten: Int
+        let originalChanged: Bool
+    }
+
+    /// El camino real de producción: `LibraryFileWorker.
+    /// ensurePreparedMusic` (`refreshMusicFile`, rama `storage ==
+    /// .reference`, y también el punto de entrada al importar en modo
+    /// referencia). Tres escenarios pedidos por "Sesión Maestra", para
+    /// la tabla de A8 junto a ST-220 (antes) y su addendum (A3):
+    func testReferenceModeAgainstA4_printsTable() async throws {
+        try FileManager.default.createDirectory(at: libraryRoot, withIntermediateDirectories: true)
+        let worker = LibraryFileWorker()
+        var rows: [ReferenceModeResult] = []
+
+        // (a) Referencia sin cambios: un MP3 cuyas etiquetas YA
+        // coinciden con lo que dice el catálogo (mismo `originalMetadata`
+        // que el fixture escribió) -- no debería armar ningún preparado.
+        do {
+            let caseDir = libraryRoot.appendingPathComponent("RefSinCambios-\(UUID().uuidString)")
+            let sourceDir = caseDir.appendingPathComponent("FueraDeLaBiblioteca", isDirectory: true)
+            let preparadosDir = caseDir.appendingPathComponent(".preparados", isDirectory: true)
+            try FileManager.default.createDirectory(at: sourceDir, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(at: preparadosDir, withIntermediateDirectories: true)
+            let sourceURL = sourceDir.appendingPathComponent("pista.mp3")
+            try MediaFixture.mp3Data(title: "Original", artist: "Artista Original", album: "Álbum Original",
+                                     albumArtist: "Artista Original", year: "2020", genre: "Rock", trackNumber: 1).write(to: sourceURL)
+            let originalHashBefore = try sha256(sourceURL)
+
+            let result = await worker.ensurePreparedMusic(LibraryFileWorker.EnsurePreparedMusicRequest(
+                itemID: UUID(), sourceURL: sourceURL, previousPreparedURL: nil, catalogSourceSize: nil,
+                stagingDirectory: preparadosDir, metadata: originalMetadata,
+                audioQuality: .originalLossless, coverArtPolicy: .albumOnly))
+
+            let preparedEntries = (try? FileManager.default.contentsOfDirectory(atPath: preparadosDir.path)) ?? []
+            XCTAssertNil(result.url, "sin cambios no debería haber preparado")
+            XCTAssertTrue(preparedEntries.isEmpty, ".preparados/ debería seguir vacío")
+            rows.append(ReferenceModeResult(
+                scenario: "referencia sin cambios", action: "\(result.action)",
+                preparedBytesWritten: 0,
+                originalChanged: (try sha256(sourceURL)) != originalHashBefore))
+        }
+
+        // (b) Referencia con título editado: mismo MP3, metadata con
+        // título distinto -- debería armar el preparado, con las
+        // etiquetas nuevas, sin tocar el original.
+        do {
+            let caseDir = libraryRoot.appendingPathComponent("RefTituloEditado-\(UUID().uuidString)")
+            let sourceDir = caseDir.appendingPathComponent("FueraDeLaBiblioteca", isDirectory: true)
+            let preparadosDir = caseDir.appendingPathComponent(".preparados", isDirectory: true)
+            try FileManager.default.createDirectory(at: sourceDir, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(at: preparadosDir, withIntermediateDirectories: true)
+            let sourceURL = sourceDir.appendingPathComponent("pista.mp3")
+            try MediaFixture.mp3Data(title: "Original", artist: "Artista Original", album: "Álbum Original",
+                                     albumArtist: "Artista Original", year: "2020", genre: "Rock", trackNumber: 1).write(to: sourceURL)
+            let originalHashBefore = try sha256(sourceURL)
+
+            let result = await worker.ensurePreparedMusic(LibraryFileWorker.EnsurePreparedMusicRequest(
+                itemID: UUID(), sourceURL: sourceURL, previousPreparedURL: nil, catalogSourceSize: nil,
+                stagingDirectory: preparadosDir, metadata: editedMetadata,
+                audioQuality: .originalLossless, coverArtPolicy: .albumOnly))
+
+            let preparedURL = try XCTUnwrap(result.url, "editar el título debería armar un preparado")
+            XCTAssertEqual(result.action, .build)
+            rows.append(ReferenceModeResult(
+                scenario: "referencia con título editado", action: "\(result.action)",
+                preparedBytesWritten: try fileSize(preparedURL),
+                originalChanged: (try sha256(sourceURL)) != originalHashBefore))
+        }
+
+        // (c) Referencia WAV con "Original sin pérdida": WAV siempre
+        // convierte (nunca puede ser su propio preparado) -- debería
+        // armar un preparado ALAC (.m4a), sin importar si las etiquetas
+        // "coinciden" (WAV no lleva etiquetas que comparar).
+        do {
+            let caseDir = libraryRoot.appendingPathComponent("RefWAVOriginal-\(UUID().uuidString)")
+            let sourceDir = caseDir.appendingPathComponent("FueraDeLaBiblioteca", isDirectory: true)
+            let preparadosDir = caseDir.appendingPathComponent(".preparados", isDirectory: true)
+            try FileManager.default.createDirectory(at: sourceDir, withIntermediateDirectories: true)
+            try FileManager.default.createDirectory(at: preparadosDir, withIntermediateDirectories: true)
+            let sourceURL = sourceDir.appendingPathComponent("pista.wav")
+            try MediaFixture.wavData().write(to: sourceURL)
+            let originalHashBefore = try sha256(sourceURL)
+
+            let result = await worker.ensurePreparedMusic(LibraryFileWorker.EnsurePreparedMusicRequest(
+                itemID: UUID(), sourceURL: sourceURL, previousPreparedURL: nil, catalogSourceSize: nil,
+                stagingDirectory: preparadosDir, metadata: originalMetadata,
+                audioQuality: .originalLossless, coverArtPolicy: .albumOnly))
+
+            let preparedURL = try XCTUnwrap(result.url, "WAV siempre debería armar un preparado")
+            XCTAssertEqual(result.action, .build)
+            XCTAssertEqual(preparedURL.pathExtension.lowercased(), "m4a", "WAV en referencia con Original debería quedar en ALAC (.m4a)")
+            rows.append(ReferenceModeResult(
+                scenario: "referencia WAV con Original", action: "\(result.action)",
+                preparedBytesWritten: try fileSize(preparedURL),
+                originalChanged: (try sha256(sourceURL)) != originalHashBefore))
+        }
+
+        print("[A4] Tabla \"referencia contra A4\" -- junto a ST-220 (antes) y su addendum (A3):")
+        print("[A4] escenario | acción | bytes escritos en el preparado | ¿original cambió?")
+        for row in rows {
+            print("[A4] \(row.scenario) | \(row.action) | \(row.preparedBytesWritten) | \(row.originalChanged)")
+        }
+        for row in rows {
+            XCTAssertFalse(row.originalChanged, "\(row.scenario): el original nunca debería cambiar en modo referencia")
         }
     }
 }

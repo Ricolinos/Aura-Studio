@@ -74,23 +74,51 @@ Biblioteca de Aura" activo en Ajustes:
    - `.preparados/` no tiene ninguna entrada para este ítem -- en modo
      copia ya no interviene.
 
-## 2. Modo referencia: mismo juego, `.preparados/` mínimo
+## 2. Modo referencia: el preparado se arma solo cuando hace falta (A4/ST-224)
 
-Con "Referenciar en su lugar" activo en Ajustes, repetir la importación
-de los cinco formatos y la edición de título del punto 1, pero
-verificando lo contrario:
+Con "Referenciar en su lugar" activo en Ajustes. A diferencia del modo
+copia, acá `.preparados/` NO se llena siempre -- solo cuando el
+archivo de verdad lo necesita (conversión, o etiquetas distintas de
+las del catálogo). Un original que ya dice lo que dice el catálogo
+**nunca** tiene preparado -- es su propio preparado, y eso es
+justamente lo que promete Ajustes ("no ocupa espacio extra").
 
-1. El archivo original (fuera de la biblioteca) **nunca** cambia -- ni
-   al importar ni al editar título ni al calificar/marcar favorito.
-2. `.preparados/<ID>.ext` solo existe para los ítems que de verdad
-   necesitaron conversión (WAV/AIFF siempre; FLAC/M4A/MP3 solo si la
-   calidad es "Comprimido") **o** cuyas etiquetas quedaron editadas
-   distinto de lo que dice el original. Un MP3 sin editar, con
-   "Original sin pérdida", no debería tener preparado -- el original
-   ya es su propio preparado.
-3. Editar el título de un ítem que SÍ tenía preparado por conversión
-   (p. ej. un WAV) y confirmar que el preparado se regenera reflejando
-   el título nuevo, sin tocar el original.
+1. Soltar un MP3/FLAC/M4A cuyas etiquetas YA coincidan con lo que va a
+   quedar en el catálogo (p. ej. un archivo recién exportado con las
+   etiquetas correctas). Tras importar, abrir `.preparados/` en Finder
+   (⌘⇧. para ver ocultas si hace falta) y confirmar que **no hay
+   ninguna entrada nueva** para este ítem -- `preparedURL` queda
+   ausente, y eso es el estado correcto, no "todavía no se preparó".
+2. Editar el título de ESE MISMO ítem. Confirmar en Finder que AHORA
+   SÍ aparece `.preparados/<ID-EN-MAYÚSCULAS>.ext` (el UUID del
+   elemento, no un nombre legible) -- y que el archivo original,
+   fuera de la biblioteca, **no cambió** ni un byte ni de fecha de
+   modificación.
+3. Editar el título una segunda vez, a otro valor distinto. Confirmar
+   que la fecha de modificación de `.preparados/<ID>.ext` avanzó de
+   nuevo (se reescribió) -- sigue sin tocar el original.
+4. Tocar el archivo ORIGINAL por fuera de Aura (en Finder: abrirlo y
+   volver a guardarlo, o cualquier acción que le cambie la fecha de
+   modificación) sin avisarle a Aura. Reabrir la app o forzar un
+   reproceso del ítem y confirmar que el preparado se **regenera**
+   (nueva fecha en `.preparados/<ID>.ext`) -- la regla es "origen más
+   nuevo que el derivado", no "el catálogo cambió".
+5. Soltar un WAV o AIFF en modo referencia, con "Original sin
+   pérdida". A diferencia de MP3/FLAC/M4A del punto 1, acá SIEMPRE
+   hay preparado (WAV/AIFF siempre necesitan conversión, nunca
+   pueden ser su propio preparado): confirmar que
+   `.preparados/<ID>.m4a` existe y es ALAC (mismo criterio de
+   extensión que el modo copia, punto 1).
+6. "Convertir referenciados en copias": seleccionar varios ítems
+   referenciados, incluido uno cuyo original esté en un disco
+   desconectado (desmontar un volumen externo, o mover el archivo
+   fuera y no reconectarlo). Correr la acción y confirmar en el
+   resumen que el ausente se cuenta **aparte** de cualquier fallo real
+   -- nunca mezclado en un solo número de "fallaron".
+7. Tras esa conversión, confirmar en Finder que el archivo ORIGINAL
+   sigue exactamente donde estaba (la acción **copia**, nunca mueve
+   ni borra) -- y que ahora también existe una copia dentro de
+   `Música/<Artista>/<Álbum>/`.
 
 ## 3. Eliminar y limpiar huérfanos `[pendiente A5]`
 

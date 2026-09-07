@@ -26,25 +26,66 @@ import re
 import unicodedata
 from pathlib import Path
 
-# Cada patrón captura el PRIMER argumento con cadena literal del
-# llamado -- suficiente para el barrido de un solo renglón que cubre
-# la enorme mayoría de los casos reales (confirmado con la auditoría
+# Cada patrón encuentra el llamado y se detiene justo DESPUÉS de la
+# comilla de apertura del primer argumento -- el contenido ya NO lo
+# captura el regex (ver `scan_swift_string_literal`, más abajo, y por
+# qué). Suficiente para el barrido de un solo renglón que cubre la
+# enorme mayoría de los casos reales (confirmado con la auditoría
 # previa, docs/auditoria-idiomas.md).
 PATTERNS = [
-    ("Text", re.compile(r'\bText\(\s*"((?:[^"\\]|\\.)*)"')),
-    ("Button", re.compile(r'\bButton\(\s*"((?:[^"\\]|\\.)*)"')),
-    ("Label", re.compile(r'\bLabel\(\s*"((?:[^"\\]|\\.)*)"')),
-    (".help", re.compile(r'\.help\(\s*"((?:[^"\\]|\\.)*)"')),
-    (".navigationTitle", re.compile(r'\.navigationTitle\(\s*"((?:[^"\\]|\\.)*)"')),
-    ("Menu", re.compile(r'\bMenu\(\s*"((?:[^"\\]|\\.)*)"')),
-    ("CommandMenu", re.compile(r'\bCommandMenu\(\s*"((?:[^"\\]|\\.)*)"')),
-    (".alert", re.compile(r'\.alert\(\s*"((?:[^"\\]|\\.)*)"')),
-    ("Alert", re.compile(r'\bAlert\(\s*title:\s*Text\(\s*"((?:[^"\\]|\\.)*)"')),
-    ("Toggle", re.compile(r'\bToggle\(\s*"((?:[^"\\]|\\.)*)"')),
-    ("Picker", re.compile(r'\bPicker\(\s*"((?:[^"\\]|\\.)*)"')),
-    ("Section", re.compile(r'\bSection\(\s*"((?:[^"\\]|\\.)*)"')),
-    ("String(format:)", re.compile(r'String\(\s*format:\s*"((?:[^"\\]|\\.)*)"')),
+    ("Text", re.compile(r'\bText\(\s*"')),
+    ("Button", re.compile(r'\bButton\(\s*"')),
+    ("Label", re.compile(r'\bLabel\(\s*"')),
+    (".help", re.compile(r'\.help\(\s*"')),
+    (".navigationTitle", re.compile(r'\.navigationTitle\(\s*"')),
+    ("Menu", re.compile(r'\bMenu\(\s*"')),
+    ("CommandMenu", re.compile(r'\bCommandMenu\(\s*"')),
+    (".alert", re.compile(r'\.alert\(\s*"')),
+    ("Alert", re.compile(r'\bAlert\(\s*title:\s*Text\(\s*"')),
+    ("Toggle", re.compile(r'\bToggle\(\s*"')),
+    ("Picker", re.compile(r'\bPicker\(\s*"')),
+    ("Section", re.compile(r'\bSection\(\s*"')),
+    ("String(format:)", re.compile(r'String\(\s*format:\s*"')),
 ]
+
+
+def scan_swift_string_literal(text, start):
+    """A partir de `start` (justo después de la comilla de apertura),
+    devuelve (contenido_crudo, posición justo después de la comilla de
+    cierre).
+
+    Por qué existe: un regex de un solo carácter (`[^"\\]|\\.`) no
+    puede distinguir la comilla que CIERRA el literal de una comilla
+    que vive DENTRO de una interpolación con su propio ternario
+    anidado -- casos reales de este repo, `Text("\\(x == 1 ? "1 cosa" :
+    "\\(x) cosas")")` (SeriesView.swift/SimilarItemsView.swift): el
+    regex viejo cortaba en la primera comilla del ternario interno,
+    dejando la clave a mitad de frase y terminada en un espacio suelto
+    -- exactamente el defecto que Windows encontró con su
+    concatenación por `+`, acá con interpolaciones anidadas en vez de
+    `+`. Escanea carácter por carácter y solo trata una comilla como
+    cierre cuando la profundidad de `\\(...)` es cero.
+    """
+    i = start
+    depth = 0
+    result = []
+    while i < len(text):
+        ch = text[i]
+        if ch == "\\" and i + 1 < len(text):
+            if text[i + 1] == "(":
+                depth += 1
+            result.append(text[i:i + 2])
+            i += 2
+            continue
+        if ch == "(" and depth > 0:
+            depth += 1
+        elif ch == ")" and depth > 0:
+            depth -= 1
+        elif ch == '"' and depth == 0:
+            return "".join(result), i + 1
+        result.append(ch)
+        i += 1
+    return "".join(result), i  # sin cerrar -- se llegó al final de la línea
 
 # Un ternario de plural: `algo == 1 ? "singular" : "plural"` (o `> 1`,
 # `!= 1`) en el mismo renglón que uno de los patrones de arriba, o
@@ -53,6 +94,112 @@ PATTERNS = [
 PLURAL_TERNARY = re.compile(r'==?\s*1\s*\?\s*"((?:[^"\\]|\\.)*)"\s*:\s*"((?:[^"\\]|\\.)*)"')
 
 INTERPOLATION = re.compile(r'\\\(([^()]*(?:\([^()]*\)[^()]*)*)\)')
+
+# ST-247 (Windows) encontró que su extractor partía una frase
+# concatenada con `+` en un fragmento por literal -- 41 frases, 56
+# claves de más, intraducibles. Acá el patrón real es más chico (un
+# solo sitio, ExtrasView.swift:173: `Text("..." + (cond ? "" :
+# "..."))`) pero el defecto es el mismo en espíritu: el barrido de un
+# solo renglón capturaba el primer literal completo (termina en punto,
+# se ve bien solo) y el segundo desaparecía sin ninguna clave --
+# "cortado a mitad de oración" al revés, la mitad que falta ni
+# siquiera se nota si no se busca a propósito.
+PLAIN_STRING_LITERAL = re.compile(r'^\s*"((?:[^"\\]|\\.)*)"')
+TERNARY_STRING_BRANCHES = re.compile(r'^\(?\s*[^()"]*\?\s*"((?:[^"\\]|\\.)*)"\s*:\s*"((?:[^"\\]|\\.)*)"\s*\)?')
+LEADING_PLUS = re.compile(r'^\s*\+\s*')
+
+
+def _parens_balanced(fragment):
+    """El caso real que esto existe para atrapar
+    (ExtrasView.swift:173): una interpolación con una coma adentro,
+    `\\(x.joined(separator: ", "))`, tiene una comilla suelta que el
+    regex de rama de ternario no puede distinguir de "acá termina la
+    rama" -- ninguna expresión regular puede, sin un parser de Swift de
+    verdad (fuera de alcance para un borrador). El fragmento capturado
+    en ese caso queda cortado a la mitad, con paréntesis sin cerrar --
+    eso SÍ se puede detectar sin parsear Swift, y es la señal de "no
+    confíes en este fragmento, no lo unas en silencio"."""
+    return fragment.count("(") == fragment.count(")")
+
+
+def extend_with_concatenation(lines, line_idx, after_pos, first_raw, max_lookahead_lines=6):
+    """Si lo que sigue al literal ya capturado es ` + ...` (misma
+    línea o las siguientes -- `Text("fragmento A" + otraCosa)`), reúne
+    los fragmentos de la MISMA expresión antes de que el llamador arme
+    la clave. Dos formas reales, las dos vistas en este repo o en el
+    hermano de Windows:
+
+    - Concatenación simple: `"A" + "B"` (MusicSettingsView.swift:84-85,
+      con un tramo calculado en el medio, `"A" + calculado() + "B"`) --
+      se unen los literales, tal cual, saltando lo que no es literal.
+    - Ternario con una rama vacía (ExtrasView.swift:173,
+      `"A" + (cond ? "" : "B")`): la rama vacía es el caso "sin nada
+      que agregar" (A solo ya es una oración completa); la rama con
+      texto es la variante MÁS LARGA de la misma oración -- se toma
+      esa, no las dos concatenadas a la fuerza (un ternario significa
+      "una u otra", nunca las dos a la vez).
+
+    El `+` de Swift no se repite en cada línea envuelta -- puede quedar
+    al FINAL de la primera línea (ExtrasView, el ternario sigue solo,
+    sin `+` propio, en el renglón de abajo) o al PRINCIPIO de cada
+    línea siguiente (MusicSettingsView, con `+` al inicio de la
+    línea 85) -- por eso todo esto trabaja sobre una VENTANA de texto
+    plana (esta línea + las siguientes, unidas), no línea por línea.
+
+    Devuelve (texto_combinado, estado) -- estado es `"unido"`,
+    `"revisar"` (se detectó una concatenación pero no se pudo separar
+    con confianza -- ver `_parens_balanced`) o `None` (no había nada
+    que unir). `texto_combinado` sigue con el escape de Swift sin
+    resolver, igual que `first_raw` -- `unescape()` se aplica una sola
+    vez, después, sobre el resultado ya unido.
+    """
+    window = " ".join([lines[line_idx][after_pos:]] + lines[line_idx + 1:line_idx + 1 + max_lookahead_lines])
+
+    if not LEADING_PLUS.match(window):
+        return first_raw, None
+
+    combined = first_raw
+    status = None
+    cursor = 0
+    while True:
+        plus = LEADING_PLUS.match(window[cursor:])
+        if not plus:
+            break
+        cursor += plus.end()
+        rest = window[cursor:]
+
+        ternary = TERNARY_STRING_BRANCHES.match(rest)
+        plain = PLAIN_STRING_LITERAL.match(rest)
+        if ternary:
+            branch_a, branch_b = ternary.group(1), ternary.group(2)
+            # La rama no vacía es la variante completa -- si las dos
+            # tienen texto, un ternario de verdad significa "una U
+            # otra", no las dos juntas; se deja la segunda (el caso más
+            # común: "" vacío / "con esto" al final).
+            fragment = branch_a if branch_a.strip() and not branch_b.strip() else branch_b
+            if _parens_balanced(fragment):
+                combined += fragment
+                status = "unido"
+            else:
+                status = "revisar"
+                break  # fragmento sin confianza -- no seguir de acá
+            cursor += ternary.end()
+        elif plain:
+            combined += plain.group(1)
+            status = "unido"
+            cursor += plain.end()
+        else:
+            # Después del `+` no hay ni un literal plano ni un ternario
+            # reconocible en lo que queda de la ventana -- probable
+            # tramo calculado (`ArtistNameNormalizer....joined(...)`).
+            # Buscar el próximo `+` más adelante en la ventana, sin
+            # inventar nada de lo que hay en el medio.
+            next_plus = re.search(r'\+', rest)
+            if not next_plus:
+                break
+            cursor += next_plus.start()
+
+    return combined, status
 
 
 def slugify(text, max_words=6, max_len=40):
@@ -114,6 +261,8 @@ def main():
     # sitio = (archivo relativo, línea, tipo, texto original crudo)
     sites = []
     plural_sites = []
+    joined_sites = []  # (archivo, línea, texto ya unido) -- para el reporte y la prueba
+    unresolved_concat_sites = []  # (archivo, línea) -- se detectó un `+` pero no se pudo separar con confianza
 
     for path in swift_files:
         rel = path.relative_to(repo_root)
@@ -121,9 +270,20 @@ def main():
         for line_number, line in enumerate(lines, start=1):
             for kind, pattern in PATTERNS:
                 for match in pattern.finditer(line):
-                    raw = match.group(1)
+                    raw, end_pos = scan_swift_string_literal(line, match.end())
                     if not raw.strip():
                         continue
+                    # `raw` sale siempre seguro de acá: si el estado es
+                    # "revisar", `extend_with_concatenation` deja `raw`
+                    # tal como entró (el primer fragmento solo, sin
+                    # texto corrupto pegado) -- lo inseguro se descarta
+                    # adentro, nunca sale a `sites`.
+                    raw, status = extend_with_concatenation(
+                        lines, line_number - 1, end_pos, raw)
+                    if status == "unido":
+                        joined_sites.append((str(rel), line_number, raw))
+                    elif status == "revisar":
+                        unresolved_concat_sites.append((str(rel), line_number))
                     sites.append((str(rel), line_number, kind, raw))
             plural_match = PLURAL_TERNARY.search(line)
             if plural_match:
@@ -174,6 +334,28 @@ def main():
         for rel, line_number, singular, plural in plural_sites:
             writer.writerow([rel, line_number, unescape(singular), unescape(plural)])
 
+    # Frases que la extracción unió porque venían concatenadas con `+`
+    # -- aparte, para que se pueda revisar CADA una a mano (el ternario
+    # con una rama vacía es una heurística, no un parser real de Swift)
+    # y para que la prueba de A7a confirme el número exacto, igual que
+    # hizo Windows con sus 41. Incluye también los casos detectados
+    # pero NO unidos (estado "revisar") -- se encontró un `+` pero el
+    # fragmento de después no se pudo separar con confianza (paréntesis
+    # sin cerrar, típico de una interpolación con una coma adentro,
+    # `\(x.joined(separator: ", "))` -- ningún regex distingue esa
+    # coma de "acá termina el literal" sin parsear Swift de verdad).
+    # Ahí la clave sigue siendo el primer fragmento solo, SIN texto
+    # corrupto pegado -- pero el sitio queda marcado para que alguien
+    # lo mire, en vez de perderse en silencio otra vez.
+    joined_path = out_dir / "fragmentos-unidos.csv"
+    with joined_path.open("w", newline="", encoding="utf-8") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(["archivo", "linea", "estado", "texto_unido"])
+        for rel, line_number, raw in joined_sites:
+            writer.writerow([rel, line_number, "unido", unescape(raw)])
+        for rel, line_number in unresolved_concat_sites:
+            writer.writerow([rel, line_number, "revisar a mano", ""])
+
     # Borrador de String Catalog (.xcstrings): español como fuente,
     # "en" vacío ("new") -- estructura real del formato de Xcode.
     strings = {}
@@ -196,8 +378,12 @@ def main():
     duplicated = sum(1 for occ in by_text.values() if len(occ) > 1)
     print(f"Textos duplicados (una sola clave, varios sitios): {duplicated}")
     print(f"Ternarios de plural encontrados: {len(plural_sites)}")
+    print(f"Frases unidas (venían concatenadas con +): {len(joined_sites)}")
+    if unresolved_concat_sites:
+        print(f"Concatenaciones detectadas pero SIN unir con confianza (revisar a mano): {len(unresolved_concat_sites)}")
     print(f"-> {csv_path.relative_to(repo_root)}")
     print(f"-> {plurals_path.relative_to(repo_root)}")
+    print(f"-> {joined_path.relative_to(repo_root)}")
     print(f"-> {xcstrings_path.relative_to(repo_root)}")
 
 
