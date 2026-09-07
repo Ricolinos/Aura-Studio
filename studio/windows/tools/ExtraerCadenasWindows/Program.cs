@@ -28,7 +28,7 @@ if (File.Exists(coreResxPath) && !args.Contains("--force"))
     Console.WriteLine($"ATENCIÓN: {coreResxPath} ya existe -- B7a ya movió el texto ahí.");
     Console.WriteLine($"{outDir} quedó congelado como foto de antes de B7a (ver su README.md): correr esto ahora");
     Console.WriteLine("lo dejaría vacío o casi vacío, no un borrador útil. Nada se tocó.");
-    Console.WriteLine("Si de verdad hace falta regenerarlo, corré de nuevo con --force.");
+    Console.WriteLine("Si de verdad hace falta regenerarlo, corre de nuevo con --force.");
     return;
 }
 
