@@ -16394,3 +16394,78 @@ comprometerlo: las 178 filas de "de" coinciden carácter por carácter con
 partía el campo en dos -- error de comillas al escribir el archivo, no de
 traducción), 0 columnas mal formadas, 0 ids duplicados. Sin builds:
 trabajo de solo texto.
+
+## ST-248 (parcial) — Windows: comillas faltantes encontradas por revisión manual, y método de verificación reforzado
+
+El coordinador comparó `criticas-de-retro.csv` contra el original y
+encontró 3 filas más (`c092`, `c131`, `c133`) con una coma sin
+entrecomillar que partía el campo `retro_es` en dos, además de 2 que mi
+propia revisión posterior encontró (`c140`, `c147`, en la columna
+`nota`) -- el mismo defecto que las 7 ya corregidas antes de comprometer,
+mi verificación de esa vez (contar columnas por nombre con `Import-Csv`)
+no lo atrapaba: un CSV con un campo mal cortado en dos sigue teniendo
+"4 columnas" con nombres correctos, solo que con contenido corrido.
+Corregido, commit aparte.
+
+**Verificación reforzada, usada desde acá en adelante**: un contador de
+campos consciente de comillas que compara el número de campos POR LÍNEA
+contra el esperado (4, o 7 para el glosario) -- esto sí atrapa un campo
+sin entrecomillar, porque una coma de más produce una línea con más
+campos de los que debería tener, sin importar que los nombres de columna
+salgan bien. Corrido contra los dos archivos alemanes ya comprometidos:
+0 filas malas.
+
+## ST-248 (parcial) — Windows: retrotraducción ciega del francés (B7c), y "micrologiciel" vs. terminología oficial de Microsoft
+
+Mismo método que el alemán: de `windows/b2` (`c792de3`) se leyó SOLO
+`docs/extraccion-cadenas/retrotraduccion/criticas-fr.csv` (178 filas,
+mismos ids que el alemán, comprobado) -- nunca `mapa-criticas.csv` ni
+ningún `Resources*.resx`. El francés usa registro formal (`vous`) en
+las 178 filas, a diferencia del alemán (`du`, informal); la
+retrotraducción lo refleja con "usted" en vez de "tú", fiel al origen,
+sin adivinar qué registro usa el español real de la app.
+
+`criticas-fr-retro.csv` (`id,fr,retro_es,nota`): notas donde `c125`/
+`c126`/`c127` son las TRES idénticas en francés (a diferencia del
+alemán, donde `c125` traía un texto distinto) y donde `c149`/`c150`
+NO empiezan en minúscula en francés (a diferencia del mismo par en
+alemán, que sí) -- posible indicio de que el francés recompuso un
+fragmento que el alemán dejó a medias, o de que son construcciones
+distintas en cada idioma; no hay forma de saberlo sin el mapa, que a
+propósito no se abrió.
+
+**Hallazgo de terminología pedido explícitamente por el coordinador**:
+el Experto usó "micrologiciel" para "firmware" en las 16 filas donde
+aparece. Contrastado contra `support.microsoft.com/fr-fr` (páginas
+oficiales de controladores/firmware de Surface, consultadas hoy): el
+término DOMINANTE es **"microprogramme"** -- título de la página
+("Téléchargez les pilotes et le microprogramme pour Surface") y
+repetido varias veces en el cuerpo ("Mettre à jour automatiquement
+Windows, les pilotes et le microprogramme Surface"); "micrologiciel"
+aparece UNA sola vez, en una nota secundaria sobre el ciclo de vida de
+pilotes. Veredicto: la propuesta del Experto no coincide con lo que
+Microsoft usa hoy en este contexto -- recomendado cambiar a
+"microprogramme". Documentado en `glosario-veredicto.csv`
+(`veredicto_fr` = "INCORRECTO / desactualizado -- corregir", con la
+URL y las citas textuales como fuente).
+
+Los otros 32 términos: correctos. Uno con matiz encontrado también por
+búsqueda real (no solo memoria): "Administrador de credenciales" →
+"Gestionnaire d'identification" es una forma corta en uso, pero la
+documentación oficial de `learn.microsoft.com/fr-fr` titula la página
+"Gestionnaire d'**informations** d'identification" (completo) -- no es
+un error, pero no es el título oficial tal cual.
+
+`glosario-veredicto.csv` se AMPLÍA (no se reemplaza): ahora
+`termino,de,veredicto_de,fuente_de,fr,veredicto_fr,fuente_fr`, listo
+para que ruso y japonés agreguen sus propias columnas del mismo modo.
+
+### Verificación
+
+Contador de campos por línea (ver addendum de arriba): 0 filas malas en
+`criticas-fr-retro.csv` (3 encontradas y corregidas ANTES de comprometer
+esta vez: `c131`, `c133`, `c176`) y en `glosario-veredicto.csv` con 7
+columnas. Las 178 filas de "fr" coinciden carácter por carácter contra
+`criticas-fr.csv`; los 33 términos alemanes conservados sin cambio;
+0 ids duplicados. Sin builds: trabajo de solo texto y una búsqueda web
+real para el hallazgo de terminología.

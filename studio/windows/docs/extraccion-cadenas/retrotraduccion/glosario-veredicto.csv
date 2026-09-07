@@ -1,34 +1,34 @@
-termino,de,veredicto,fuente
-Papelera de reciclaje,Papierkorb,correcto,Nombre oficial del elemento de escritorio en la interfaz de Windows en alemán
-Explorador de archivos,Explorer,"correcto, forma corta habitual","La interfaz de Windows en alemán muestra ""Explorer""; ""Datei-Explorer"" aparece como nombre más completo en alguna documentación de Microsoft, pero no es un error usar la forma corta"
-Administrador de credenciales,Anmeldeinformationsverwaltung,correcto,Nombre oficial del panel de control de Windows en alemán
-Microsoft Store,Microsoft Store,correcto,Marca registrada; no se traduce en ningún idioma
-unidad,Laufwerk,correcto,Terminología oficial de Windows en alemán (p. ej. Explorador de archivos)
-disco,Datenträger,correcto,"Terminología oficial de Windows en alemán (Datenträgerverwaltung = Administración de discos)"
-carpeta,Ordner,correcto,Terminología oficial de Windows en alemán
-archivo,Datei,correcto,Terminología oficial de Windows en alemán
-expulsar,Auswerfen,correcto,Menú contextual de Windows en alemán al hacer clic derecho sobre una unidad extraíble
-administrador,Administrator,correcto,Terminología oficial de Windows en alemán (cuenta de Administrator)
-dar formato,formatieren,correcto,"Menú contextual de Windows en alemán (""Formatieren…"")"
-controlador,Treiber,correcto,Terminología oficial de Windows en alemán (Gerätetreiber)
-dispositivo,Gerät,correcto,Terminología oficial de Windows en alemán (Geräte-Manager)
-Ajustes,Einstellungen,correcto,Nombre oficial de la app de Configuración de Windows en alemán
-actualización,Update,"correcto, con matiz","""Update"" (préstamo del inglés) es lo más frecuente en la interfaz alemana de Windows Update, aunque la forma totalmente alemana ""Aktualisierung"" también es válida y aparece en textos más formales"
-tema,Design,correcto,"Confirmado: Configuración > Personalización > Diseños (""Design"") de Windows en alemán, no ""Thema"""
-biblioteca,Mediathek,"correcto para este contexto","No es terminología de Windows sino de reproductores de medios -- convención de iTunes/Windows Media Player en alemán"
-sincronizar,synchronisieren,correcto,Convención de iTunes/Windows Media Player en alemán
-lista de reproducción,Wiedergabeliste,correcto,Convención de iTunes/Windows Media Player en alemán
-canción,Titel,correcto,"Convención de iTunes/Windows Media Player en alemán (no ""Lied"" ni ""Song"")"
-álbum,Album,correcto,Convención de iTunes/Windows Media Player en alemán
-carátula,Albumcover,correcto,"Convención de iTunes/Windows Media Player en alemán; también se ve solo ""Cover"", igual de válido"
-firmware,Firmware,correcto,Préstamo técnico usado tal cual en alemán
-arranque,Bootloader,correcto,"Término técnico establecido; sin alternativa alemana de uso corriente (""Urlader"" no se usa en este contexto)"
-modo DFU,DFU-Modus,correcto,Documentación de soporte de Apple en alemán
-iPod,iPod,correcto,Marca de Apple; no se traduce
-Aura Studio,Aura Studio,correcto,Marca propia; no se traduce
-Rockbox,Rockbox,correcto,Marca del proyecto; no se traduce
-Cancelar,Abbrechen,correcto,Botón estándar de los diálogos de Windows en alemán
-Guardar,Speichern,correcto,Botón estándar de los diálogos de Windows en alemán
-Eliminar,Löschen,correcto,Botón estándar de los diálogos de Windows en alemán
-Quitar,Entfernen,correcto,"La distinción semántica de la nota (quitar de una lista, no borrar) es real en alemán: ""entfernen"" es lo que usa Windows para desinstalar/desvincular sin destruir (p. ej. ""aus der Liste entfernen""), frente a ""löschen"" para un borrado"
-Abrir,Öffnen,correcto,Botón estándar de los diálogos de Windows en alemán
+termino,de,veredicto_de,fuente_de,fr,veredicto_fr,fuente_fr
+Papelera de reciclaje,Papierkorb,correcto,Nombre oficial del elemento de escritorio en la interfaz de Windows en alemán,Corbeille,correcto,Nombre oficial del elemento de escritorio en la interfaz de Windows en francés
+Explorador de archivos,Explorer,"correcto, forma corta habitual","La interfaz de Windows en alemán muestra ""Explorer""; ""Datei-Explorer"" aparece como nombre más completo en alguna documentación de Microsoft, pero no es un error usar la forma corta",Explorateur de fichiers,correcto,Nombre oficial completo en la interfaz de Windows en francés
+Administrador de credenciales,Anmeldeinformationsverwaltung,correcto,Nombre oficial del panel de control de Windows en alemán,Gestionnaire d'identification,"correcto, con matiz","learn.microsoft.com (documentación oficial) usa el nombre completo ""Gestionnaire d'informations d'identification""; ""Gestionnaire d'identification"" (sin ""informations"") también se ve en uso pero es la forma corta, no el título oficial de la documentación"
+Microsoft Store,Microsoft Store,correcto,Marca registrada; no se traduce en ningún idioma,Microsoft Store,correcto,Marca registrada; no se traduce en ningún idioma
+unidad,Laufwerk,correcto,Terminología oficial de Windows en alemán (p. ej. Explorador de archivos),lecteur,correcto,Terminología oficial de Windows en francés
+disco,Datenträger,correcto,"Terminología oficial de Windows en alemán (Datenträgerverwaltung = Administración de discos)",disque,correcto,Terminología oficial de Windows en francés
+carpeta,Ordner,correcto,Terminología oficial de Windows en alemán,dossier,correcto,Terminología oficial de Windows en francés
+archivo,Datei,correcto,Terminología oficial de Windows en alemán,fichier,correcto,Terminología oficial de Windows en francés
+expulsar,Auswerfen,correcto,Menú contextual de Windows en alemán al hacer clic derecho sobre una unidad extraíble,Éjecter,correcto,Menú contextual de Windows en francés al hacer clic derecho sobre una unidad extraíble
+administrador,Administrator,correcto,Terminología oficial de Windows en alemán (cuenta de Administrator),administrateur,correcto,Terminología oficial de Windows en francés
+dar formato,formatieren,correcto,"Menú contextual de Windows en alemán (""Formatieren…"")",formater,correcto,"Menú contextual de Windows en francés (""Formater…"")"
+controlador,Treiber,correcto,Terminología oficial de Windows en alemán (Gerätetreiber),pilote,correcto,Terminología oficial de Windows en francés (pilote de périphérique)
+dispositivo,Gerät,correcto,Terminología oficial de Windows en alemán (Geräte-Manager),appareil,correcto,Terminología oficial de Windows en francés (Gestionnaire de périphériques)
+Ajustes,Einstellungen,correcto,Nombre oficial de la app de Configuración de Windows en alemán,Paramètres,correcto,Nombre oficial de la app de Configuración de Windows en francés
+actualización,Update,"correcto, con matiz","""Update"" (préstamo del inglés) es lo más frecuente en la interfaz alemana de Windows Update, aunque la forma totalmente alemana ""Aktualisierung"" también es válida y aparece en textos más formales","mise à jour",correcto,Terminología oficial de Windows en francés (Windows Update = Mise à jour Windows)
+tema,Design,correcto,"Confirmado: Configuración > Personalización > Diseños (""Design"") de Windows en alemán, no ""Thema""",thème,correcto,Terminología oficial de Windows en francés (Thèmes en Personalización)
+biblioteca,Mediathek,"correcto para este contexto","No es terminología de Windows sino de reproductores de medios -- convención de iTunes/Windows Media Player en alemán",bibliothèque,"correcto para este contexto","No es terminología de Windows sino de reproductores de medios -- convención de iTunes/Windows Media Player en francés"
+sincronizar,synchronisieren,correcto,Convención de iTunes/Windows Media Player en alemán,synchroniser,correcto,Convención de iTunes/Windows Media Player en francés
+lista de reproducción,Wiedergabeliste,correcto,Convención de iTunes/Windows Media Player en alemán,liste de lecture,correcto,Convención de iTunes/Windows Media Player en francés
+canción,Titel,correcto,"Convención de iTunes/Windows Media Player en alemán (no ""Lied"" ni ""Song"")",morceau,correcto,Convención de iTunes/Windows Media Player en francés
+álbum,Album,correcto,Convención de iTunes/Windows Media Player en alemán,album,correcto,Convención de iTunes/Windows Media Player en francés
+carátula,Albumcover,correcto,"Convención de iTunes/Windows Media Player en alemán; también se ve solo ""Cover"", igual de válido",pochette,correcto,"Convención estándar en francés (""pochette d'album"")"
+firmware,Firmware,correcto,Préstamo técnico usado tal cual en alemán,micrologiciel,"INCORRECTO / desactualizado -- corregir","Verificado en support.microsoft.com/fr-fr (páginas de controladores y firmware de Surface, consultadas 2026-09): el término DOMINANTE es ""microprogramme"" (título de la página y repetido en el cuerpo del texto); ""micrologiciel"" aparece UNA sola vez, en una nota menor. La propuesta del Experto no coincide con lo que Microsoft usa hoy en este contexto -- recomendado cambiar a ""microprogramme"""
+arranque,Bootloader,correcto,"Término técnico establecido; sin alternativa alemana de uso corriente (""Urlader"" no se usa en este contexto)",bootloader,correcto,"Préstamo técnico establecido en francés también, sin traducción de uso corriente"
+modo DFU,DFU-Modus,correcto,Documentación de soporte de Apple en alemán,mode DFU,correcto,Documentación de soporte de Apple en francés
+iPod,iPod,correcto,Marca de Apple; no se traduce,iPod,correcto,Marca de Apple; no se traduce
+Aura Studio,Aura Studio,correcto,Marca propia; no se traduce,Aura Studio,correcto,Marca propia; no se traduce
+Rockbox,Rockbox,correcto,Marca del proyecto; no se traduce,Rockbox,correcto,Marca del proyecto; no se traduce
+Cancelar,Abbrechen,correcto,Botón estándar de los diálogos de Windows en alemán,Annuler,correcto,Botón estándar de los diálogos de Windows en francés
+Guardar,Speichern,correcto,Botón estándar de los diálogos de Windows en alemán,Enregistrer,correcto,Botón estándar de los diálogos de Windows en francés
+Eliminar,Löschen,correcto,Botón estándar de los diálogos de Windows en alemán,Supprimer,correcto,Botón estándar de los diálogos de Windows en francés
+Quitar,Entfernen,correcto,"La distinción semántica de la nota (quitar de una lista, no borrar) es real en alemán: ""entfernen"" es lo que usa Windows para desinstalar/desvincular sin destruir (p. ej. ""aus der Liste entfernen""), frente a ""löschen"" para un borrado",Retirer,correcto,"Misma distinción real en francés: ""Retirer de la liste"" (quitar) frente a ""Supprimer"" (borrar definitivo)"
+Abrir,Öffnen,correcto,Botón estándar de los diálogos de Windows en alemán,Ouvrir,correcto,Botón estándar de los diálogos de Windows en francés
