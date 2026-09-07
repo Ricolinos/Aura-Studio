@@ -390,12 +390,11 @@ public static class AppStrings
     public static string InstallerCopyingTitle => Strings.Get("app-strings.installer-copying-title");
     public static string InstallerCopyFiles => Strings.Get("app-strings.installer-copy-files");
     public static string InstallerCopyFailed => Strings.Get("app-strings.installer-copy-failed");
-    // Sin formas de plural a propósito: la frase de hoy dice "archivos
-    // escritos" con cualquier cantidad, y con 1 queda mal. Arreglarlo es
-    // cambiar lo que el usuario lee, y B7a es mover, no redactar; queda
-    // anotado como defecto aparte.
+    // Decía "1 archivos escritos" con uno solo. B7a lo dejó así a propósito
+    // —mover no es redactar— y B7b lo arregla, que es cuando toca: el plural
+    // del español deja de estar escrito a mano en la frase.
     public static string InstallerCopiedFiles(int count) =>
-        Strings.Format("app-strings.installer-copied-files", count);
+        Strings.Plural("app-strings.installer-copied-files", count);
 
     // Los pasos son los mismos de `EnterDFUView.swift` (macOS), que a su vez
     // sale del README de mks5lboot y de la guía de flasheo del firmware —

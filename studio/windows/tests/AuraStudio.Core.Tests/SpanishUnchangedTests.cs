@@ -221,6 +221,33 @@ public class SpanishUnchangedTests
     ];
 
     /// <summary>
+    /// Texto que se cambió <b>a propósito</b> después de B7a, con lo que decía
+    /// antes escrito al lado.
+    ///
+    /// <para><b>Por qué hace falta esta lista y no basta con cambiar el
+    /// recurso.</b> Mientras duró B7a la regla era absoluta —mover, no
+    /// redactar— y esta prueba podía ser una igualdad. B7a terminó, el borrador
+    /// quedó congelado, y a partir de ahora habrá cambios de texto legítimos.
+    /// Sin un lugar donde declararlos, la única salida sería aflojar la prueba,
+    /// y una prueba aflojada deja de avisar también de los cambios que nadie
+    /// quiso hacer.</para>
+    ///
+    /// <para>Así que un cambio de texto sigue haciendo fallar la prueba hasta
+    /// que alguien lo escriba acá, con el antes y el porqué. Eso es un renglón
+    /// de trabajo y una decisión visible en el diff, que es exactamente lo que
+    /// se quiere que cueste.</para>
+    /// </summary>
+    private static readonly (string DraftKey, string[] ResourceKeys, string Before)[] Redacted =
+    [
+        // Decía "1 archivos escritos en el iPod" con un solo archivo: el plural
+        // del español escrito a mano dentro de la frase. B7a lo dejó así a
+        // propósito y B7b lo arregla, que es cuando toca. Ahora son dos formas.
+        ("app-strings.installer-copied-files",
+            ["app-strings.installer-copied-files.one", "app-strings.installer-copied-files.other"],
+            "{0} archivos escritos en el iPod."),
+    ];
+
+    /// <summary>
     /// Claves del borrador que ya no existen porque eran una copia de más del
     /// mismo texto. No se pierde ninguna frase: la misma sigue en otra clave.
     /// </summary>
@@ -290,6 +317,7 @@ public class SpanishUnchangedTests
         foreach ((string key, string text) in resources)
         {
             if (declaredNew.Contains(key)) continue;
+            if (Redacted.Any(entry => entry.ResourceKeys.Contains(key))) continue;
 
             string source = origin.GetValueOrDefault(key, key);
 
@@ -333,6 +361,7 @@ public class SpanishUnchangedTests
             .. resources.Keys,
             .. Renamed.Select(pair => pair.Draft),
             .. Duplicates,
+            .. Redacted.Select(entry => entry.DraftKey),
         ];
 
         List<string> lost = [.. Draft().Keys.Where(key => !accountedFor.Contains(key))];
@@ -360,6 +389,37 @@ public class SpanishUnchangedTests
         Assert.True(gone.Count == 0,
             "Se quitaron por duplicadas, pero su texto ya no está en ninguna clave:\n"
             + string.Join("\n", gone));
+    }
+
+    /// <summary>
+    /// Lo que una redacción dice que decía antes <b>es</b> lo que decía antes.
+    ///
+    /// <para>Sin esto la lista sería una nota al pie: alguien podría escribir
+    /// cualquier cosa en "Before" y la prueba quedaría verde igual. Con esto,
+    /// declarar una redacción obliga a copiar el texto viejo de verdad, y el
+    /// diff muestra el antes y el después uno al lado del otro.</para>
+    /// </summary>
+    [Fact]
+    public void LoQueUnaRedaccionDiceQueDeciaAntesEsLoQueDeciaAntes()
+    {
+        Dictionary<string, string> draft = Draft();
+        Dictionary<string, string> resources = Resources();
+
+        List<string> problems = [];
+
+        foreach ((string draftKey, string[] resourceKeys, string before) in Redacted)
+        {
+            if (!draft.TryGetValue(draftKey, out string? original))
+                problems.Add($"{draftKey}: no está en el borrador, así que no hay nada que redactar");
+            else if (original != before)
+                problems.Add($"{draftKey}: el «antes» declarado no es el del borrador\n  borrador: {original}\n  declarado: {before}");
+
+            foreach (string key in resourceKeys)
+                if (!resources.ContainsKey(key))
+                    problems.Add($"{key}: la redacción dice que reemplaza a «{draftKey}» y esa clave no está en el recurso");
+        }
+
+        Assert.True(problems.Count == 0, string.Join("\n\n", problems));
     }
 
     /// <summary>
