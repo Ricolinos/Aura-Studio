@@ -49,15 +49,28 @@ public enum MusicFilenameFormat
 }
 
 /// <summary>
-/// Calidad de audio al sincronizar. El iPod con Aura lee FLAC, ALAC y WAV sin
-/// problema, así que "mantener el original" es lo seguro por omisión: comprimir
-/// es una elección del usuario para ahorrar espacio, no algo que la app imponga.
+/// Calidad del audio que Aura guarda y sincroniza. El iPod con Aura lee FLAC y
+/// ALAC sin problema, así que "mantener el original" es lo seguro por omisión:
+/// comprimir es una elección del usuario para ahorrar espacio, no algo que la
+/// app imponga.
+///
+/// <para><b>WAV y AIFF son la excepción y se convierten siempre</b> (ST-243):
+/// ocupan diez veces lo que la misma canción en MP3 y el disco del iPod no da
+/// abasto. Quién decide qué se convierte es <see cref="AudioConversionRules"/>,
+/// en un solo lugar para los dos modos (ST-244).</para>
 /// </summary>
 public enum AudioQuality
 {
     OriginalLossless,
 
-    /// <summary>MP3 256 kbps VBR: buena calidad, una fracción del espacio.</summary>
+    /// <summary>
+    /// MP3 de 256 kbps: buena calidad, una fracción del espacio.
+    ///
+    /// <para><b>Promedio, no tasa constante.</b> El codificador de Windows
+    /// entrega los 256 kbps como promedio — medido, 257,8 kbps sobre diez
+    /// segundos, y la diferencia es la cabecera repartida. No se promete tasa
+    /// constante en ningún texto porque no se puede cumplir.</para>
+    /// </summary>
     Compressed
 }
 

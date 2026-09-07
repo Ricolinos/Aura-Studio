@@ -1598,7 +1598,15 @@ public sealed partial class LibraryViewModel : ViewModelBase
     private void WriteTagsIntoTheLibraryFile(LibraryItem item)
     {
         if (item.Kind != LibraryItemKind.Music) return;
-        if (item.StorageKind != ItemStorage.Copy) return;
+
+        // ST-244: si el archivo es del usuario, la corrección no va ahí sino al
+        // preparado, que es lo que viaja al iPod. Y solo si hace falta uno.
+        if (item.StorageKind != ItemStorage.Copy)
+        {
+            RefreshPreparedFile(item);
+            return;
+        }
+
         if (item.Metadata is not { } live || !LocalTagWriter.CanWrite(item.SourcePath)) return;
 
         string path = item.SourcePath;
@@ -1617,6 +1625,166 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
             Dispatch(() => StatusMessage =
                 $"No se pudieron escribir las etiquetas en «{name}»: {result.Reason}");
+        });
+    }
+
+    /// <summary>
+    /// Cuántos elementos son del usuario y no de la biblioteca. Es lo que hace
+    /// visible la acción de convertirlos en copias (ST-244).
+    /// </summary>
+    public int ReferencedCount => Items.Count(item => item.StorageKind == ItemStorage.Reference);
+
+    public bool HasReferencedItems => ReferencedCount > 0;
+
+    /// <summary>
+    /// Trae a la biblioteca los archivos que hoy solo se referencian (ST-244).
+    ///
+    /// <para><b>Copia; no mueve ni borra.</b> Los originales del usuario quedan
+    /// exactamente donde están y como están — el que quiera recuperar el espacio
+    /// los borra él, sabiendo lo que hace. Y el que <b>no esté</b> se salta y
+    /// sigue en el catálogo como no disponible: no se borra ni se marca como
+    /// error, porque el disco puede estar desconectado (ST-241).</para>
+    ///
+    /// <para>Va por el centro de tareas, con avance y cancelable: son gigabytes
+    /// y el usuario tiene que poder ver dónde va y poder pararlo. Cancelar deja
+    /// lo ya convertido convertido — es trabajo válido, no algo a deshacer.</para>
+    /// </summary>
+    [RelayCommand(IncludeCancelCommand = true)]
+    private async Task ConvertReferencesToCopiesAsync(CancellationToken ct)
+    {
+        List<LibraryItem> pending = [.. Items.Where(item => item.StorageKind == ItemStorage.Reference)];
+        if (pending.Count == 0) return;
+
+        BackgroundTaskHandle task = _tasks.Begin(
+            pending.Count == 1
+                ? "Copiando 1 archivo a la biblioteca…"
+                : $"Copiando {pending.Count} archivos a la biblioteca…",
+            BackgroundTaskProgress.Of(0, pending.Count));
+
+        int copied = 0;
+        int missing = 0;
+        int failed = 0;
+
+        try
+        {
+            for (int index = 0; index < pending.Count; index++)
+            {
+                if (ct.IsCancellationRequested) break;
+
+                LibraryItem item = pending[index];
+                task.Update(BackgroundTaskProgress.Of(index, pending.Count), item.DisplayTitle);
+
+                if (!FileAvailability.Exists(item.SourcePath)) { missing++; continue; }
+
+                if (await _processor.CopyIntoLibraryAsync(item, force: true, ct).ConfigureAwait(true))
+                {
+                    copied++;
+                }
+                else
+                {
+                    failed++;
+                }
+            }
+        }
+        finally
+        {
+            _tasks.Finish(task);
+        }
+
+        Save();
+        RefreshAvailable();
+        OnPropertyChanged(nameof(Items));
+        OnPropertyChanged(nameof(ReferencedCount));
+        OnPropertyChanged(nameof(HasReferencedItems));
+
+        StatusMessage = Summarize(copied, missing, failed);
+    }
+
+    /// <summary>
+    /// Lo que se le cuenta al usuario al terminar. Los que faltan y los que
+    /// fallaron se dicen <b>por separado</b>: "no está el archivo" y "no se pudo
+    /// copiar" son dos problemas distintos y se arreglan distinto.
+    /// </summary>
+    private static string Summarize(int copied, int missing, int failed)
+    {
+        var parts = new List<string>
+        {
+            copied == 1 ? "Se copió 1 archivo a la biblioteca." : $"Se copiaron {copied} archivos a la biblioteca."
+        };
+
+        if (missing > 0)
+        {
+            parts.Add(missing == 1
+                ? "1 se saltó porque su archivo no está; sigue en el catálogo."
+                : $"{missing} se saltaron porque sus archivos no están; siguen en el catálogo.");
+        }
+
+        if (failed > 0) parts.Add(failed == 1 ? "1 no se pudo copiar." : $"{failed} no se pudieron copiar.");
+
+        return string.Join(" ", parts);
+    }
+
+    /// <summary>
+    /// Rehace —solo si hace falta— el archivo que viaja al iPod por una canción
+    /// <b>referenciada</b> cuyas etiquetas cambiaron (ST-244).
+    ///
+    /// <para>El archivo del usuario no se toca. Si ya decía lo que dice el
+    /// catálogo, no se prepara nada y al iPod viaja el original: es lo que
+    /// sostiene la promesa de que el modo referencia no duplica la
+    /// biblioteca.</para>
+    ///
+    /// <para>Trabaja sobre una <b>copia</b> del elemento, no sobre el vivo: el
+    /// usuario lo sigue editando mientras esto lee tamaños y fechas del disco.
+    /// Lo único que vuelve al elemento vivo es la ruta del preparado, y vuelve
+    /// por el hilo de interfaz.</para>
+    /// </summary>
+    private void RefreshPreparedFile(LibraryItem item)
+    {
+        if (item.Metadata is not { } live) return;
+
+        var snapshot = new LibraryItem
+        {
+            Id = item.Id,
+            Kind = item.Kind,
+            SourcePath = item.SourcePath,
+            Storage = item.Storage,
+            PreparedPath = item.PreparedPath,
+            Metadata = GovernedFieldsOf(live),
+
+            // Después de SourcePath: asignar la ruta olvida el tamaño (ST-201).
+            FileSizeBytes = item.FileSizeBytes
+        };
+
+        string staging = Path.Combine(_preferences.LibraryPath, PersistedLibrary.PreparedDirName);
+        AudioQuality quality = _preferences.AudioQuality;
+        CoverArtPolicy policy = _preferences.CoverArtPolicy;
+        byte[]? cover = policy == CoverArtPolicy.PerTrack ? ReadCover(item) : null;
+        string name = Path.GetFileName(item.SourcePath);
+
+        _ = Task.Run(async () =>
+        {
+            Directory.CreateDirectory(staging);
+
+            PreparedMusicResult result = await PreparedMusicBuilder.EnsureAsync(
+                snapshot, staging, quality, policy, cover, AudioTranscoder.ForPreparedAsync);
+
+            if (result.Path is not { Length: > 0 } prepared)
+            {
+                // "No hacía falta" es la respuesta más común y no es una falla.
+                if (result.Action != PreparedMusicAction.None || result.Reason.Contains("no se pudo"))
+                {
+                    Dispatch(() => StatusMessage =
+                        $"No se pudo preparar «{name}» para el iPod: {result.Reason}");
+                }
+
+                return;
+            }
+
+            Dispatch(() =>
+            {
+                item.PreparedPath = prepared;
+                Save();
+            });
         });
     }
 

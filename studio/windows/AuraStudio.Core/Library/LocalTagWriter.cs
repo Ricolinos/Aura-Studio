@@ -126,6 +126,40 @@ public static class LocalTagWriter
     }
 
     /// <summary>
+    /// Si el archivo <b>ya dice</b> lo que dice el catálogo, sin escribir nada
+    /// (ST-244).
+    ///
+    /// <para>Existe para poder decidir <b>antes</b> de gastar disco. En modo
+    /// referencia, una canción cuyo archivo ya coincide con el catálogo no
+    /// necesita ningún preparado: al iPod puede viajar el original. Preguntar
+    /// esto es lo que evita duplicar la biblioteca entera del usuario para
+    /// nada.</para>
+    ///
+    /// <para>Un formato que no se etiqueta —o un archivo que no está, o que no
+    /// se puede abrir— da <c>false</c>: no se puede afirmar que coincide, y
+    /// suponer que sí sería mandar al iPod etiquetas viejas.</para>
+    /// </summary>
+    public static bool Matches(
+        string path,
+        TrackMetadata? metadata,
+        CoverArtPolicy coverArt = CoverArtPolicy.AlbumOnly,
+        byte[]? coverBytes = null)
+    {
+        if (metadata is null || !CanWrite(path) || !File.Exists(path)) return false;
+
+        bool embedCover = coverArt == CoverArtPolicy.PerTrack && coverBytes is { Length: > 0 };
+
+        try
+        {
+            return PendingFields(path, metadata, embedCover, coverBytes).Count == 0;
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Qué campos hay que cambiar. Se compara contra lo que el archivo dice
     /// <b>hoy</b>, y no contra lo que se escribió la última vez: el archivo es
     /// el que manda sobre su propio estado, y alguien pudo haberlo tocado por

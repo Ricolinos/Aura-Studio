@@ -159,12 +159,14 @@
                     <TextBlock Text="{x:Bind ViewModel.CopyMediaDetail, Mode=OneWay}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
-                    <!-- ST-243: la conversión se avisa ANTES, no después de que
-                         el usuario encuentre un .mp3 donde había dejado un .wav. -->
+                    <!-- ST-243, corregido en ST-244: la conversión se avisa ANTES,
+                         no después de que el usuario encuentre un .m4a donde
+                         había dejado un .wav. El texto depende de la calidad
+                         elegida, porque el resultado depende de ella. -->
                     <InfoBar IsOpen="{x:Bind ViewModel.CopyMediaIntoLibrary, Mode=OneWay}"
                              IsClosable="False" Severity="Informational"
-                             Title="WAV y AIFF se convierten a MP3"
-                             Message="{x:Bind ViewModel.AudioConversionDetail}" />
+                             Title="WAV y AIFF siempre se convierten"
+                             Message="{x:Bind ViewModel.AudioConversionDetail, Mode=OneWay}" />
 
                     <TextBlock Text="Archivos huérfanos" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
                     <TextBlock Text="{x:Bind ViewModel.OrphansDetail}"

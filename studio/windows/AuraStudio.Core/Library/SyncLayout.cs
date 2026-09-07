@@ -42,7 +42,7 @@ public static class SyncLayout
         MusicOrganization organization = MusicOrganization.ArtistAlbum,
         MusicFilenameFormat filenameFormat = MusicFilenameFormat.TitleOnly)
     {
-        string filename = Path.GetFileName(item.PreparedPath ?? item.SourcePath);
+        string filename = DeviceFilename(item);
 
         switch (item.Kind)
         {
@@ -71,6 +71,100 @@ public static class SyncLayout
                 // le da una ruta propia para que, si llegara, quede aislado y
                 // visible en vez de mezclado con la música.
                 return $"Unsupported/{filename}";
+        }
+    }
+
+    /// <summary>
+    /// El nombre con el que una foto o un video llegan al iPod: <b>la base sale
+    /// del archivo ORIGINAL y solo la extensión del derivado</b> (ST-244,
+    /// contrato de ST-221).
+    ///
+    /// <para>Es la regla que evita que el usuario vea
+    /// <c>A1B2C3D4-....mpg</c> en su iPod. Desde que lo preparado se nombra por
+    /// identificador (ST-241), tomar el nombre del preparado sería mostrarle un
+    /// identificador donde tenía el nombre de su video. La extensión sí es la
+    /// del derivado, porque es el archivo que de verdad viaja: un <c>.heic</c>
+    /// llega como <c>.jpg</c>.</para>
+    ///
+    /// <para>La música no pasa por acá: su nombre se arma desde la metadata
+    /// (<see cref="MusicRelativePath"/>).</para>
+    /// </summary>
+    /// <summary>
+    /// Cuántos bytes admite el nombre de este tipo de archivo en el iPod.
+    ///
+    /// <para>Foto y video viven en carpetas <b>planas</b> y el firmware los lee
+    /// con un buffer fijo de 96 bytes con el NUL (contrato §1). La música no:
+    /// sus carpetas son libres y el tagcache indexa a cualquier profundidad, así
+    /// que ponerle un límite acá le cambiaría la ruta a canciones que ya están en
+    /// el iPod y las haría copiar de nuevo, sin ganar nada.</para>
+    /// </summary>
+    public static int FilenameBudgetFor(LibraryItemKind kind) =>
+        kind is LibraryItemKind.Photo or LibraryItemKind.Video ? DeviceFilenameMaxBytes : int.MaxValue;
+
+    public static string DeviceFilename(LibraryItem item)
+    {
+        string baseName = Path.GetFileNameWithoutExtension(item.SourcePath);
+        string extension = Path.GetExtension(item.PreparedPath ?? item.SourcePath);
+
+        return baseName + extension;
+    }
+
+    /// <summary>
+    /// Resuelve el choque de dos archivos que caen en la misma ruta del
+    /// dispositivo (ST-244, contrato de ST-221).
+    ///
+    /// <para><b>Dónde ocurre es dónde se resuelve</b>: <c>/Photos/</c> y
+    /// <c>/Videos/</c> son carpetas <b>planas</b> en el iPod, así que dos
+    /// <c>IMG_1.jpg</c> de carpetas distintas del usuario chocan ahí y no
+    /// antes. Vale igual para dos canciones con el mismo artista, álbum y
+    /// título —que hoy se pisaban en silencio y el usuario terminaba con menos
+    /// archivos de los que mandó—.</para>
+    ///
+    /// <para><b>El primero en orden de catálogo conserva el nombre limpio</b> y
+    /// los siguientes reciben " 2", " 3". El sufijo <b>no se persiste</b>: si se
+    /// borra el primero, el que quede recupera el nombre limpio en el siguiente
+    /// sync diferencial.</para>
+    ///
+    /// <para><b>El sufijo nunca se mutila.</b> Cuando hay límite de bytes, el
+    /// presupuesto se calcula <i>antes</i> y se recorta la base, igual que en
+    /// <see cref="SeriesEpisodeFilename"/>. Recortar el nombre ya sufijado
+    /// dejaría " 1" donde decía " 12", o sea dos archivos distintos con el mismo
+    /// nombre — que es justo lo que esto viene a evitar. Y pegar el sufijo sobre
+    /// un nombre que ya está en el límite lo pasaría de largo: el buffer del
+    /// firmware es de 96 bytes con el NUL y no perdona.</para>
+    /// </summary>
+    /// <param name="claimed">
+    /// Las rutas ya tomadas. Se le agrega la devuelta: quien llama recorre el
+    /// catálogo en orden y este conjunto es lo que hace que el primero gane.
+    /// </param>
+    /// <param name="maxBytes">
+    /// El límite del nombre en el dispositivo, o <see cref="int.MaxValue"/> si
+    /// no lo hay. La música no lo tiene: sus carpetas no son planas y el
+    /// firmware no le impone ese buffer.
+    /// </param>
+    public static string UniqueDestination(
+        string relativePath, ISet<string> claimed, int maxBytes = int.MaxValue)
+    {
+        if (claimed.Add(relativePath)) return relativePath;
+
+        int cut = relativePath.LastIndexOf('/');
+        string directory = cut < 0 ? "" : relativePath[..(cut + 1)];
+        string filename = cut < 0 ? relativePath : relativePath[(cut + 1)..];
+
+        string extension = Path.GetExtension(filename);
+        string stem = filename[..^extension.Length];
+
+        for (int number = 2; ; number++)
+        {
+            string suffix = " " + number.ToString(CultureInfo.InvariantCulture);
+
+            string trimmed = maxBytes == int.MaxValue
+                ? stem
+                : TruncateToBytes(stem, Math.Max(1,
+                    maxBytes - Encoding.UTF8.GetByteCount(suffix) - Encoding.UTF8.GetByteCount(extension)));
+
+            string candidate = directory + trimmed + suffix + extension;
+            if (claimed.Add(candidate)) return candidate;
         }
     }
 

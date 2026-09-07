@@ -263,8 +263,14 @@ public sealed class SyncService : ISyncService
             string source = item.PreparedPath ?? item.SourcePath;
             if (!File.Exists(source)) continue;
 
-            string destination = UniqueDestination(
-                SyncLayout.DestinationRelativePath(item, organization, filenameFormat), claimed);
+            // ST-244: el choque se resuelve donde ocurre —la carpeta plana del
+            // dispositivo— y con la regla del contrato de ST-221. Vive en Core
+            // para poder probarla; acá solo se recorre el catálogo EN ORDEN, que
+            // es lo que hace que el primero conserve el nombre limpio.
+            string destination = SyncLayout.UniqueDestination(
+                SyncLayout.DestinationRelativePath(item, organization, filenameFormat),
+                claimed,
+                SyncLayout.FilenameBudgetFor(item.Kind));
 
             var info = new FileInfo(source);
             files.Add(new SyncSourceFile(source, info.Length, info.LastWriteTimeUtc, destination));
@@ -272,26 +278,6 @@ public sealed class SyncService : ISyncService
         }
 
         return new LibraryScan(files, items, destinations, store.Root);
-    }
-
-    /// <summary>
-    /// Dos canciones distintas pueden caer en la misma ruta: mismo título en el
-    /// mismo álbum, o dos fotos que se llaman <c>IMG_0001.jpg</c> en carpetas
-    /// distintas. <b>Sin esto una pisaría a la otra en silencio</b> y el usuario
-    /// terminaría con menos archivos de los que mandó, sin ningún aviso.
-    /// </summary>
-    private static string UniqueDestination(string destination, HashSet<string> claimed)
-    {
-        if (claimed.Add(destination)) return destination;
-
-        string extension = Path.GetExtension(destination);
-        string withoutExtension = destination[..^extension.Length];
-
-        for (int suffix = 2; ; suffix++)
-        {
-            string candidate = $"{withoutExtension} ({suffix}){extension}";
-            if (claimed.Add(candidate)) return candidate;
-        }
     }
 
     private static bool Included(LibraryItemKind kind, SyncOptions options) => kind switch
