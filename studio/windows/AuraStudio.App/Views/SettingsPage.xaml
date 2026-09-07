@@ -146,6 +146,13 @@
                     <TextBlock Text="{x:Bind ViewModel.CopyMediaDetail, Mode=OneWay}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
+                    <!-- ST-243: la conversión se avisa ANTES, no después de que
+                         el usuario encuentre un .mp3 donde había dejado un .wav. -->
+                    <InfoBar IsOpen="{x:Bind ViewModel.CopyMediaIntoLibrary, Mode=OneWay}"
+                             IsClosable="False" Severity="Informational"
+                             Title="WAV y AIFF se convierten a MP3"
+                             Message="{x:Bind ViewModel.AudioConversionDetail}" />
+
                     <TextBlock Text="Carpetas vinculadas"
                                Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
                     <TextBlock Text="Carpetas externas que arrastraste con la copia apagada. Aura no copia nada de ahí, solo las recuerda. Quitar una de esta lista no borra ni desvincula lo que ya importaste desde ella: solo deja de mostrarla."

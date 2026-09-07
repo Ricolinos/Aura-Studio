@@ -70,16 +70,22 @@ public class FfmpegArgumentsTests
         Assert.Equal("crop=720:404:0:38," + FfmpegArguments.ScaleFilter, filter);
     }
 
+    /// <summary>
+    /// ST-243: ffmpeg es <b>solo para video</b>. El audio lo convierte el
+    /// codificador que ya trae Windows (<c>AudioTranscoder</c>), así que no hay
+    /// que meter ffmpeg —con su peso y sus licencias— en el instalador por algo
+    /// que el sistema resuelve de fábrica.
+    ///
+    /// <para>La prueba existe para que el perfil de audio por ffmpeg no vuelva
+    /// solo: había uno completo, sin un solo llamador, esperando a que alguien
+    /// lo usara.</para>
+    /// </summary>
     [Fact]
-    public void TheAudioProfileHasAPredictableSize()
+    public void NoHayPerfilDeAudioPorFfmpeg()
     {
-        // CBR y no VBR a propósito: con VBR no hay forma de decirle al usuario
-        // de antemano cuánto va a ocupar su biblioteca.
-        string line = Line(FfmpegArguments.ForAudio(@"C:\in.flac", @"C:\out.mp3"));
-
-        Assert.Contains("-c:a libmp3lame", line);
-        Assert.Contains("-b:a 256k", line);
-        Assert.Contains("-vn", line);
+        Assert.DoesNotContain(
+            typeof(FfmpegArguments).GetMethods(),
+            method => method.Name.Contains("Audio", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]

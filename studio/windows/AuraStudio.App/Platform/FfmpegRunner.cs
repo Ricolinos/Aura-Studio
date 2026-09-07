@@ -67,9 +67,6 @@ public sealed class FfmpegRunner
         return RunToCompletionAsync(arguments, onProgress, ct);
     }
 
-    public Task TranscodeAudioAsync(string inputPath, string outputPath, CancellationToken ct = default) =>
-        RunToCompletionAsync(FfmpegArguments.ForAudio(inputPath, outputPath), onProgress: null, ct);
-
     /// <summary>
     /// Un fotograma como póster, tomado donde ya empezó el contenido. Falla
     /// suave: un video sin póster se sincroniza igual.

@@ -126,18 +126,4 @@ public static class FfmpegArguments
             "-f", "null", "-"
         ];
     }
-
-    /// <summary>
-    /// Audio a MP3 de 256 kbps CBR: buena calidad y, sobre todo, <b>tamaño
-    /// predecible</b> — con VBR no hay forma de decirle al usuario de antemano
-    /// cuánto va a ocupar su biblioteca.
-    /// </summary>
-    public static IReadOnlyList<string> ForAudio(string inputPath, string outputPath) =>
-    [
-        "-y", "-loglevel", "error",
-        "-i", inputPath,
-        "-map", "0:a:0", "-vn",
-        "-c:a", "libmp3lame", "-b:a", "256k",
-        outputPath
-    ];
 }
