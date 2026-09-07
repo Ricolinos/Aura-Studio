@@ -81,6 +81,44 @@ public static class CatalogPath
     public static string CoverRelative(Guid id) =>
         PersistedLibrary.CoversDirName + Separator + CoverFileName(id);
 
+    /// <summary>
+    /// El nombre de un archivo preparado: <b>el identificador en mayúsculas y
+    /// con guiones</b>, más la extensión de lo preparado (ST-241, contrato de
+    /// ST-221). Igual que <see cref="CoverFileName"/>, y por lo mismo — es como
+    /// lo escribe macOS.
+    ///
+    /// <para><c>.preparados/</c> es una carpeta <b>plana</b> compartida por toda
+    /// la biblioteca. Cuando el nombre salía del archivo de origen había que
+    /// desambiguar a mano, y dos canciones distintas que se llamaran igual
+    /// —justo el caso de los duplicados— terminaban peleándose el mismo
+    /// preparado (ST-064). Un identificador no se repite: el problema deja de
+    /// existir en vez de taparse con un contador.</para>
+    /// </summary>
+    public static string PreparedFileName(Guid id, string? extension)
+    {
+        string suffix = extension is { Length: > 0 }
+            ? "." + extension.TrimStart('.').ToLowerInvariant()
+            : "";
+
+        return id.ToString("D").ToUpperInvariant() + suffix;
+    }
+
+    /// <summary>Lo que se anota en el catálogo para un preparado.</summary>
+    public static string PreparedRelative(Guid id, string? extension) =>
+        PersistedLibrary.PreparedDirName + Separator + PreparedFileName(id, extension);
+
+    /// <summary>
+    /// El póster de un video: <c>&lt;ID&gt;.jpg</c> <b>hermano</b> del
+    /// <c>&lt;ID&gt;.mpg</c>, en la misma carpeta y con el mismo nombre base.
+    ///
+    /// <para>Existe como regla y no como un <c>ChangeExtension</c> suelto en
+    /// cada llamador porque son cuatro lugares los que lo calculan —escribirlo,
+    /// enriquecerlo, quitarlo, copiarlo al iPod— y basta con que uno lo haga
+    /// distinto para que el póster quede invisible.</para>
+    /// </summary>
+    public static string PosterFor(string preparedPath) =>
+        Path.ChangeExtension(preparedPath, ".jpg");
+
     private static string ToNative(string relativePath) =>
         relativePath.Replace(Separator, Path.DirectorySeparatorChar);
 }

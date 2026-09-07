@@ -11484,3 +11484,157 @@ cambios: esta PARADA no tocó `LocalTagReader.cs` ni `SyncService.cs`, que
 son de B2, en paralelo en el worktree del Experto). No se tocó ningún
 archivo de producción -- todo lo entregado es nuevo, bajo `tools/` y
 `docs/`.
+
+## ST-241 — Windows: `storage`, el preparado por identificador, y un original que falta no se borra
+
+B1 de la ronda de "ajustes 3", sobre el contrato que la Maestra fijó con
+la Mac en **ST-221**. B2 (ST-242) ya conservaba el campo `storage` sin
+interpretarlo; acá recibe su semántica, y con ella dos reglas más del
+mismo contrato: cómo se nombra lo preparado y qué pasa con un archivo que
+ya no está.
+
+### `storage`: cuatro reglas, en orden
+
+1. **`"copy"` y `"reference"` significan lo que dicen.** Copia es un
+   archivo que Studio puso adentro de la biblioteca y sobre el que manda;
+   referencia es un archivo del usuario, que vive donde él lo tiene.
+2. **Ausente: se infiere una vez y se persiste.** Un catálogo escrito
+   antes de que el campo existiera no tiene por qué volver a adivinarse
+   en cada arranque, y menos con las dos apps adivinando por separado.
+   Después de la primera carga y el primer guardado, el dato es un dato.
+3. **Desconocido: se interpreta como `reference` y se conserva tal
+   cual.** Interpretar no es reescribir. Si una versión futura de la Mac
+   escribe un valor que esta build no conoce, normalizarlo a `reference`
+   se lo borraría al volver a guardar — que es exactamente cómo se rompe
+   un catálogo compartido, y es la misma razón por la que B2 conservó el
+   campo antes de entenderlo.
+4. **Se infiere `copy` solo** si la ruta guardada es **relativa** y
+   cuelga de `Música/`, `Imágenes/` o `Videos/`. Cualquier otra cosa —una
+   ruta absoluta, `.preparados/`, `.portadas/`, una carpeta suelta— es
+   `reference`.
+
+La inferencia mira la ruta **guardada**, no la absoluta ya resuelta: lo
+que distingue una copia es justamente que se haya guardado relativa a la
+biblioteca (`CatalogPath.Store` deja absoluto todo lo que no cuelga de la
+raíz).
+
+Y compara en **NFC**. La Mac escribe los nombres acentuados
+descompuestos (`Mu` + acento combinante) y Windows compuestos: sin
+normalizar, "Música" del catálogo de la Mac no sería "Música" acá y toda
+la biblioteca copiada del dueño se leería como referenciada. En
+silencio, que es el peor modo de fallar.
+
+**Todo lo que no se entiende es "referencia", y es a propósito**:
+equivocarse hacia referencia hace que Studio toque de menos; hacia copia,
+que toque archivos ajenos. Del segundo error no se vuelve.
+
+### Inferir no es autorizar
+
+Que un archivo cuelgue de `Música/` dice **dónde está**, no que Studio
+sea su dueño: el usuario pudo haber apuntado la biblioteca a una carpeta
+que ya se llamaba así. Por eso `ItemStorageRules` **no tiene ningún "se
+puede escribir"**: clasifica y no da permiso. Quien vaya a modificar el
+archivo del usuario —escribirle etiquetas con `LocalTagWriter`, moverlo,
+borrarlo— decide aparte y con más que esta inferencia. B1 no conecta
+nada de eso, y no es un olvido.
+
+### El preparado se nombra por identificador
+
+`.preparados/<ID en mayúsculas y con guiones>.<ext>`, igual que las
+carátulas (`CatalogPath.CoverFileName`) y por lo mismo: con otro formato
+cada app escribiría su propio preparado para el mismo elemento y ninguna
+vería el de la otra.
+
+`.preparados/` es una carpeta **plana** compartida por toda la
+biblioteca. Cuando el nombre salía del archivo de origen había que
+desambiguar con un contador, y dos canciones distintas que se llamaran
+igual —justo el caso de los duplicados— terminaban peleándose el mismo
+preparado; borrar una dejaba a la otra apuntando a un archivo que no
+existe (ST-064). Un identificador no se repite: el problema **deja de
+existir** en vez de taparse.
+
+El póster de un video viaja como `<ID>.jpg` **hermano** del `<ID>.mpg`:
+misma carpeta, mismo nombre base. Existe como regla
+(`CatalogPath.PosterFor`) y no como un `ChangeExtension` suelto en cada
+llamador porque son cuatro los lugares que lo calculan —escribirlo,
+enriquecerlo, quitarlo, copiarlo al iPod— y basta con que uno lo haga
+distinto para que el póster quede invisible.
+
+**Cargar la biblioteca no renombra archivos.** Un preparado que ya está
+en disco con el nombre viejo se devuelve tal cual. Es distinto de lo que
+se hace con las carátulas, donde sí se renombra al canónico (ST-087), y
+la diferencia es real: ahí el nombre viejo las hacía **invisibles para
+las dos apps**, y acá no — al preparado lo encuentra el catálogo, no su
+nombre.
+
+### La música copiada es su propio preparado
+
+`PreparedPath == SourcePath` para música con `storage: copy`. Una canción
+que Studio ya copió a `Música/` está lista para el iPod tal como está: no
+hay nada que convertir, así que un segundo archivo en `.preparados/`
+sería una copia de la copia — la biblioteca del dueño pesando el doble
+sin ganar nada.
+
+Se aplica **al cargar**, y por eso queda guardado en el próximo guardado,
+**sin preguntarle nada al disco**: ST-203 sacó de la carga las consultas
+archivo por archivo y esto no las vuelve a meter. Video y foto no entran
+—esos sí se convierten— y la música referenciada tampoco: esa no es
+nuestra, y apuntarle un `PreparedPath` sería decir que sí.
+
+Se aplica sin condiciones sobre lo que hubiera: es la invariante del
+contrato, no una heurística. Hoy en Windows la música nunca tiene
+preparado (`LibraryProcessor.ProcessMusic` no lo asigna), así que en la
+práctica no pisa nada; y todos los consumidores usan
+`PreparedPath ?? SourcePath`, de modo que el valor nuevo es idéntico al
+que ya calculaban. Los dos únicos lugares que miran `PreparedPath` a
+secas —quitar el póster y enriquecerlo— están guardados por
+`Kind == Video`, así que ninguna canción va a terminar con un `.jpg`
+suyo borrado por esto.
+
+### Un original que falta se conserva como no disponible
+
+Paridad con la Mac, y ya era lo que hacía Windows: lo que se comprueba
+acá es que siga siéndolo. `FileAvailability.Sweep` **anota**, no borra;
+`Available` filtra lo que se muestra; y lo que se guarda es **siempre el
+catálogo entero**, nunca la lista filtrada. Guardar la lista filtrada es
+exactamente lo que borraría al que falta.
+
+Importa porque el disco puede estar desconectado, la unidad de red caída
+o el archivo movido a mano — y en los tres casos borrarle la entrada al
+usuario sería perderle la calificación, la categoría, la letra y la
+carátula de algo que va a volver. Es lo que costó 2 408 entradas en
+ST-087.
+
+### Lo que NO entra en B1
+
+- **Conectar el modo copia** (copiar los medios a la biblioteca al
+  importar) — B3. Hoy Windows no tiene esa preferencia; lo que hay es el
+  contrato para cuando la tenga.
+- **Cambiar los llamadores al preparado por ID** — B4.
+  `StagingPaths.Resolve`, el nombrado viejo, sigue ahí y sigue siendo el
+  que usa `LibraryProcessor`: se marca como forma vieja y se cambia allá.
+- **Escribir en archivos del usuario** a partir de `storage`. Ver
+  "inferir no es autorizar".
+
+### Verificación
+
+`dotnet build` de `AuraStudio.Core` y de `AuraStudio.App`: **0 errores**.
+`dotnet test`: **1 621 pruebas en verde** (37 nuevas).
+
+Las nuevas se reparten en dos:
+
+- `ItemStorageTests` — las reglas puras, sin tocar disco: los dos valores
+  del contrato; que todo lo que no se entienda sea referencia; que se
+  infiera copia bajo las tres raíces y **solo** ahí (con el caso de la
+  Mac descompuesta, `Música/`, que sin normalizar fallaría); que lo
+  ausente se infiera y lo desconocido se conserve; el nombre del
+  preparado y el del póster hermano; que dos elementos distintos nunca
+  compartan preparado ni necesiten contador; y que un preparado que ya
+  está no se renombre.
+- `LibraryStorageContractTests` — la vuelta completa contra el catálogo
+  en disco: inferir → guardar → recargar y que el dato quede escrito; que
+  un valor desconocido sobreviva a la vuelta; la invariante de la música
+  copiada, y que no aplique a la referenciada ni al video; que cargar no
+  renombre un preparado con nombre viejo; y que un original que falta
+  quede fuera de lo que se muestra pero siga en el catálogo después de
+  guardar y recargar.

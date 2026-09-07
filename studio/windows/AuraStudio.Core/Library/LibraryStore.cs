@@ -132,8 +132,7 @@ public sealed class LibraryStore(string root)
         foreach (PersistedLibraryItem persisted in catalog.Items)
         {
             ct.ThrowIfCancellationRequested();
-
-            items.Add(new LibraryItem
+            var item = new LibraryItem
             {
                 Id = persisted.Id,
                 SourcePath = ToAbsolutePath(persisted.SourceRelativePath),
@@ -147,7 +146,13 @@ public sealed class LibraryStore(string root)
                 Metadata = LibraryPersistenceMapper.ToLive(persisted.Metadata, null),
                 CoverRelativePath = persisted.CoverRelativePath,
                 CoverHash = persisted.CoverHash,
-                Storage = persisted.Storage,
+
+                // ST-241: ausente se infiere UNA VEZ y se persiste; lo que ya
+                // venía se conserva tal cual, aunque esta build no lo entienda.
+                // Se infiere de la ruta GUARDADA, no de la absoluta ya resuelta:
+                // lo que distingue una copia es justamente que se haya guardado
+                // relativa a la biblioteca.
+                Storage = ItemStorageRules.Resolve(persisted.Storage, persisted.SourceRelativePath),
 
                 PreparedPath = persisted.PreparedRelativePath is null
                     ? null : ToAbsolutePath(persisted.PreparedRelativePath),
@@ -161,7 +166,10 @@ public sealed class LibraryStore(string root)
                 // Después de SourcePath a propósito: asignar la ruta olvida el
                 // tamaño (ST-201), así que ponerlo antes lo borraría.
                 FileSizeBytes = persisted.FileSizeBytes
-            });
+            };
+
+            ApplyStorageInvariants(item);
+            items.Add(item);
 
             if (items.Count % ProgressEvery == 0) onProgress?.Invoke(items.Count, catalog.Items.Count);
         }
@@ -173,6 +181,31 @@ public sealed class LibraryStore(string root)
         // el constructor de la pantalla de Listas.
         onProgress?.Invoke(items.Count, catalog.Items.Count);
         return new LibraryLoad(items, ToLive(catalog.Playlists), load.Error);
+    }
+
+    /// <summary>
+    /// Lo que tiene que ser verdad de un elemento por cómo está guardado
+    /// (ST-241, contrato de ST-221 con la Mac).
+    ///
+    /// <para><b>La música copiada es su propio preparado.</b> Una canción que
+    /// Studio ya copió a <c>Música/</c> está lista para el iPod tal como está:
+    /// no hay nada que convertir, así que un segundo archivo en
+    /// <c>.preparados/</c> sería una copia de la copia —la biblioteca del dueño
+    /// pesando el doble sin ganar nada—. Por eso <c>PreparedPath</c> apunta al
+    /// mismo archivo que <c>SourcePath</c> y no a otro lado.</para>
+    ///
+    /// <para>Se aplica al cargar y por eso queda guardado en el próximo
+    /// guardado, sin preguntarle nada al disco: ST-203 sacó de la carga las
+    /// consultas archivo por archivo y esto no las vuelve a meter. Video y foto
+    /// no entran —esos sí se convierten— y la música referenciada tampoco: esa
+    /// no es nuestra.</para>
+    /// </summary>
+    private static void ApplyStorageInvariants(LibraryItem item)
+    {
+        if (item.Kind != LibraryItemKind.Music) return;
+        if (item.StorageKind != ItemStorage.Copy) return;
+
+        item.PreparedPath = item.SourcePath;
     }
 
     /// <summary>

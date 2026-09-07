@@ -130,10 +130,25 @@ public sealed class LibraryItem
     /// <summary>
     /// Cómo guarda la biblioteca este archivo (<c>"copy"</c> / <c>"reference"</c>),
     /// tal como venía en el catálogo. Contrato de la ronda "ajustes 3" (ST-221 en
-    /// la Mac); <b>ST-242 solo lo conserva</b> —cargar y volver a guardar no
-    /// puede perder lo que escribió la otra app— y ST-241 le da semántica.
+    /// la Mac).
+    ///
+    /// <para>Se guarda el <b>texto crudo</b>, no el enum: un valor que esta build
+    /// no conozca se conserva tal cual en vez de normalizarse, para que guardar
+    /// desde Windows no le borre a la Mac un dato más nuevo. Lo que significa lo
+    /// dice <see cref="StorageKind"/>.</para>
     /// </summary>
     public string? Storage { get; set; }
+
+    /// <summary>
+    /// Qué significa <see cref="Storage"/> (ST-241). Ausente, vacío o
+    /// desconocido es <see cref="ItemStorage.Reference"/>: equivocarse hacia
+    /// "referencia" hace que Studio toque de menos; hacia "copia", que toque
+    /// archivos ajenos.
+    ///
+    /// <para>No se persiste — es la lectura de <see cref="Storage"/>, no un
+    /// segundo lugar donde el dato pueda quedar distinto.</para>
+    /// </summary>
+    public ItemStorage StorageKind => ItemStorageRules.Interpret(Storage);
 
     /// <summary>
     /// Si tiene carátula. Se contesta con lo que hay en memoria, <b>sin tocar el
