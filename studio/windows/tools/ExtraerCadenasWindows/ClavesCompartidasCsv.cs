@@ -16,13 +16,14 @@ namespace AuraStudio.Tools.ExtraerCadenasWindows;
 /// archivo byte a byte idéntico" sea cierto de verdad, esto nunca reconstruye
 /// una fila desde cero: encuentra el RANGO exacto de la columna "sitio
 /// Windows" dentro de la línea cruda (consciente de comillas, sin tocar el
-/// resto) y solo esa porción se reemplaza si el contenido cambió. Las otras
-/// cuatro columnas —incluida cualquier comilla o espacio que la Mac haya
-/// escrito a su manera— quedan intactas carácter por carácter.</para>
+/// resto) y solo esa porción se reemplaza si el contenido cambió. Todas las
+/// demás columnas —incluida cualquier comilla o espacio que la Mac haya
+/// escrito a su manera, y cualquier columna nueva que agregue, en cualquier
+/// posición— quedan intactas carácter por carácter.</para>
 /// </summary>
 public static class ClavesCompartidasCsv
 {
-    private const int SitioWindowsColumnIndex = 3; // clave=0, texto es=1, sitio Mac=2, sitio Windows=3, estado=4
+    private const string SitioWindowsColumnName = "sitio Windows";
 
     // \S+ para la ruta, no [^:;()]+: una ruta real nunca trae espacios, pero
     // un espacio SÍ puede venir justo antes en el separador "; " entre dos
@@ -39,6 +40,13 @@ public static class ClavesCompartidasCsv
     /// actualizaron y cuáles claves citadas ya no existen (para avisar, sin
     /// tocar la fila -- una clave ausente puede ser un renombre que todavía
     /// no se reconcilió, no algo que este parche deba adivinar).
+    ///
+    /// <para>La columna "sitio Windows" se ubica leyendo el ENCABEZADO en
+    /// cada corrida, nunca por un índice fijo: la Mac es dueña de agregar
+    /// columnas nuevas (p. ej. "texto en") en cualquier posición, y esto
+    /// tiene que seguir encontrando "sitio Windows" sin importar dónde haya
+    /// quedado ni cuántas columnas más traiga la fila -- todo lo que no sea
+    /// esa columna, antes o después, se copia tal cual.</para>
     /// </summary>
     public static (int Updated, List<string> MissingKeys) UpdateSitioWindows(
         string path, IReadOnlyDictionary<string, Site> currentSitesByKey)
@@ -46,6 +54,11 @@ public static class ClavesCompartidasCsv
         if (!File.Exists(path)) return (0, []);
 
         string[] lines = File.ReadAllLines(path);
+        if (lines.Length == 0) return (0, []);
+
+        int sitioWindowsColumnIndex = SplitFields(lines[0]).FindIndex(field => Unquote(field) == SitioWindowsColumnName);
+        if (sitioWindowsColumnIndex < 0) return (0, []); // encabezado sin esa columna -- nada que parchar, no se adivina
+
         int updated = 0;
         var missing = new List<string>();
 
@@ -53,7 +66,7 @@ public static class ClavesCompartidasCsv
         {
             if (lines[i].Length == 0) continue;
 
-            (int start, int end) = FindField(lines[i], SitioWindowsColumnIndex);
+            (int start, int end) = FindField(lines[i], sitioWindowsColumnIndex);
             if (start < 0) continue; // línea con menos columnas de las esperadas -- no se toca
 
             string rawField = lines[i][start..end];
@@ -118,6 +131,43 @@ public static class ClavesCompartidasCsv
         }
 
         return field == fieldIndex ? (start, line.Length) : (-1, -1);
+    }
+
+    /// <summary>Todos los campos de una línea CSV cruda, consciente de comillas, sin desenquotar.</summary>
+    private static List<string> SplitFields(string line)
+    {
+        var fields = new List<string>();
+        int i = 0, start = 0;
+        bool inQuotes = false;
+
+        while (i < line.Length)
+        {
+            char c = line[i];
+
+            if (inQuotes)
+            {
+                if (c == '"')
+                {
+                    if (i + 1 < line.Length && line[i + 1] == '"') { i += 2; continue; }
+                    inQuotes = false;
+                }
+                i++;
+                continue;
+            }
+
+            if (c == '"') { inQuotes = true; i++; continue; }
+
+            if (c == ',')
+            {
+                fields.Add(line[start..i]);
+                start = i + 1;
+            }
+
+            i++;
+        }
+
+        fields.Add(line[start..]);
+        return fields;
     }
 
     private static string Unquote(string field)

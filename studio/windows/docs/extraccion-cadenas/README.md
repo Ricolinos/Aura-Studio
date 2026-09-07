@@ -68,3 +68,12 @@ Agregar una fila nueva, o decidir que dos filas de un solo lado en
 realidad son la misma cadena, sigue siendo trabajo de quien lo encuentra —
 eso no lo automatiza nada, porque hace falta leer las dos plataformas para
 saberlo.
+
+### Columnas nuevas de la Mac (p. ej. "texto en")
+
+La Mac puede agregar una columna nueva al CSV compartido, en cualquier
+posición, sin coordinarlo antes con Windows. `UpdateSitioWindows` ubica
+"sitio Windows" leyendo el ENCABEZADO en cada corrida, nunca por un índice
+fijo, así que una columna nueva antes o después de "sitio Windows" no le
+hace perder el campo ni pisar el equivocado -- todo lo que no sea esa
+columna, en cualquier posición, se copia carácter por carácter.

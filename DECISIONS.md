@@ -15308,3 +15308,83 @@ tools/StorageFixtureCheck`: 0 errores (antes fallaba, ver arriba).
 (la de `orphans-confirm-message`), ninguna en rojo. `dotnet run
 --project tools/StorageFixtureCheck` completo, de punta a punta, sin
 ninguna `ATENCIÓN` en toda la salida.
+
+## ST-247 (addendum) — Windows: tres encargos de A7a — patrones nuevos, huecos en plurales, columnas nuevas del CSV
+
+Tres pedidos del coordinador sobre A7a, todos en `tools/ExtraerCadenasWindows`.
+
+### 1. `AutomationProperties.Name` y `ToolTipService.ToolTip`, en XAML; ayudantes propios en C#
+
+`Header=` y `PlaceholderText=` ya estaban cubiertos desde B0 -- lo nuevo es
+`AutomationProperties.Name=` (el nombre para el lector de pantalla) y
+`ToolTipService.ToolTip=`, agregados al mismo regex de `XamlExtractor`
+**por su nombre calificado completo**, nunca `Name=`/`ToolTip=` sueltos:
+`x:Name="ShellFrame"` es un identificador de elemento, no texto de cara al
+usuario, y `AutomationProperties.AutomationId` (los identificadores
+estables que usa el arnés de capturas por idioma, ST-227) tampoco lo es --
+los dos tenían que quedar afuera con certeza, no por casualidad de que hoy
+no aparezcan.
+
+Del lado de C#: revisado el código en busca de ayudantes propios con texto
+de usuario como argumento (búsqueda amplia por literales con acento en
+todo `AuraStudio.App`, luego triage a mano -- no una auditoría exhaustiva
+de cada resultado, la mayoría son comentarios o ya están cubiertos).
+Encontrado uno real y verificado: `DeviceSafetyResult.Safe(string message)`/
+`.Unsafe(string message)` (`Services/DeviceSafetyValidator.cs`), mensajes
+de seguridad del dispositivo que no pasan por `AppStrings`,
+`StatusMessage` ni `ContentDialog`. `CSharpLiteralExtractor.ExtractHelperFirstArgument`
+(nuevo) los cubre con una lista EXPLÍCITA y curada de nombres de método —
+nunca un patrón genérico sobre "cualquier llamada con `string` como primer
+parámetro", que atraparía `Path.Combine("...")`,
+`Directory.CreateDirectory("...")`, claves de diccionario, etc. Extensible:
+agregar otro ayudante encontrado después es una línea en la lista.
+
+Regenerado sobre el mismo árbol: **501 → 517 sitios (+16)**. Por archivo:
+`ArtistsPage.xaml` +4, `DeviceListPage.xaml` +1, `LibraryStatusStrip.xaml`
++1, `MediaGridPage.xaml` +1, `SettingsPage.xaml` +2, `SongsPage.xaml` +2
+(11 XAML, `AutomationProperties.Name`/`ToolTipService.ToolTip`); `DeviceSafetyValidator.cs`
++5 (`HelperArgument`, incluido el ternario de dos mensajes de
+`Unsafe(count == 0 ? "..." : "...")`, cada rama su propio sitio). Cero
+filas perdidas (diff completo contra la corrida anterior). Prueba nueva,
+`XamlExtractorTests.cs` (proyecto `ExtraerCadenasWindows.Tests`): un XAML
+de ejemplo con los cuatro atributos produce cuatro sitios; `AutomationId`
+nunca produce sitio; un `{x:Bind ...}` en cualquiera de los dos atributos
+nuevos se descarta igual que en los viejos.
+
+### 2. Ninguna forma "plural" sin hueco adentro
+
+`plurales-ternario.csv` (51 filas): revisadas las 51 a mano. Seis no
+traen ninguna llave `{...}` en su columna "plural" -- documentadas como
+excepción conocida, no forzadas a pasar en silencio, y **reportadas para
+que el Experto las revise en `PluralRules`**: `ArtistsViewModel.cs:251/252/253`
+y `LibraryGrouping.cs:41` (cuatro declinaciones de una sola palabra --
+`artista`/`artistas`, `álbum`/`álbumes`, `canción`/`canciones` x2-- piezas
+sueltas que el código arma con el número aparte en otro lado, no una
+oración con el número adentro), `LibraryStatusSummary.cs:93`
+(`día`/`días`, mismo caso), y `ContextMenu.cs:210` ("Quitar fotos de los
+artistas"/"Quitar foto del artista") que ni siquiera es un plural de
+verdad -- es una etiqueta de menú distinta según selección, sin ningún
+número que interpolar. Prueba nueva,
+`TodaFormaPluralTraeUnHuecoAdentroSalvoExcepcionesConocidas`: cualquier
+fila NUEVA sin hueco, fuera de esta lista de seis, la hace fallar.
+
+### 3. `claves-compartidas.csv`: columnas nuevas por NOMBRE, no por posición
+
+Ya lo pedía A7a antes de que la Mac agregara ninguna columna todavía
+(`ClavesCompartidasCsv.UpdateSitioWindows` ubica "sitio Windows" leyendo
+el ENCABEZADO en cada corrida desde el primer commit de este addendum, no
+por un índice fijo) -- verificado ahora con dos pruebas nuevas: una
+columna nueva ANTES de "sitio Windows" (que le corre el índice) no rompe
+el parche ni pierde la columna nueva; un encabezado sin "sitio Windows"
+(formato irreconocible) no toca nada, no se adivina un índice. Documentado
+en el README de la carpeta.
+
+### Verificación
+
+`dotnet build AuraStudio.Windows.slnx`: 0 errores. `dotnet test
+AuraStudio.Windows.slnx`: **1 753 en verde, 1 omitida** (`orphans-confirm-message`),
+ninguna en rojo. `dotnet test tests/ExtraerCadenasWindows.Tests`: **14 en
+verde** (las 11 de antes más 3 de `XamlExtractorTests`). `dotnet run
+--project tools/ExtraerCadenasWindows`: 517 sitios, 517 claves únicas, 51
+plurales, 4 cultura fija; `claves-compartidas.csv` sigue byte a byte
+idéntico salvo cuando hay una cita de verdad que actualizar.

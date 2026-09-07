@@ -438,6 +438,63 @@ public class LocalizationDraftTests
         }
     }
 
+    /// <summary>
+    /// A7a (encargo del coordinador): toda forma "plural" tiene que traer un
+    /// hueco <c>{...}</c> ADENTRO -- el número nunca puede ir pegado por
+    /// fuera, sin hueco (eso rompería el día que <c>PluralRules</c>
+    /// necesite reordenar el número dentro de la frase para otro idioma).
+    ///
+    /// <para>Hoy hay 6 filas sin ninguna llave en "plural", documentadas
+    /// como excepción conocida en vez de forzadas a pasar en silencio:
+    /// cinco son declinaciones de UNA palabra sola (<c>artista</c>/<c>artistas</c>,
+    /// <c>álbum</c>/<c>álbumes</c>, <c>canción</c>/<c>canciones</c> x2,
+    /// <c>día</c>/<c>días</c>) -- piezas sueltas que el código arma con el
+    /// número aparte en otro lado, no una oración completa con el número
+    /// adentro; la sexta (<c>ContextMenu.cs:210</c>, "Quitar fotos de los
+    /// artistas"/"Quitar foto del artista") ni siquiera es un plural de
+    /// verdad -- es una etiqueta de menú distinta según cuántos artistas
+    /// están seleccionados, sin ningún número que interpolar. Cualquier fila
+    /// NUEVA sin hueco sigue haciendo fallar la prueba.</para>
+    /// </summary>
+    private static readonly HashSet<(string File, int Line)> KnownPluralFormsWithoutHole = new()
+    {
+        ("studio/windows/AuraStudio.Core/Library/ContextMenu.cs", 210),
+        ("studio/windows/AuraStudio.App/ViewModels/ArtistsViewModel.cs", 251),
+        ("studio/windows/AuraStudio.App/ViewModels/ArtistsViewModel.cs", 252),
+        ("studio/windows/AuraStudio.App/ViewModels/ArtistsViewModel.cs", 253),
+        ("studio/windows/AuraStudio.Core/Library/LibraryGrouping.cs", 41),
+        ("studio/windows/AuraStudio.Core/Library/LibraryStatusSummary.cs", 93),
+    };
+
+    [Fact]
+    public void TodaFormaPluralTraeUnHuecoAdentroSalvoExcepcionesConocidas()
+    {
+        string path = RequireFile("plurales-ternario.csv");
+        string[] lines = File.ReadAllLines(path);
+        Assert.True(lines.Length > 1, "plurales-ternario.csv no tiene filas de datos");
+
+        List<string> sinHueco = [];
+
+        foreach (string line in lines.Skip(1))
+        {
+            List<string> fields = ParseCsvLine(line);
+            Assert.True(fields.Count >= 4, $"fila de plurales-ternario.csv con menos de 4 campos: {line}");
+
+            string file = fields[0];
+            if (!int.TryParse(fields[1], out int fileLine)) continue;
+            string plural = fields[3];
+
+            if (plural.Contains('{')) continue;
+            if (KnownPluralFormsWithoutHole.Contains((file, fileLine))) continue;
+
+            sinHueco.Add($"{file}:{fileLine} ({plural})");
+        }
+
+        Assert.True(sinHueco.Count == 0,
+            "forma plural sin ningún hueco {...} adentro, fuera de las excepciones conocidas: " +
+            string.Join(", ", sinHueco.Take(10)));
+    }
+
     private static Dictionary<string, string> ReadResw(string path)
     {
         XDocument doc = XDocument.Load(path);

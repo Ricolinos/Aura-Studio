@@ -142,4 +142,49 @@ public class ClavesCompartidasCsvTests : IDisposable
         Assert.Equal(["app-strings.ya-no-existe"], missing);
         Assert.Equal(original, File.ReadAllText(_path));
     }
+
+    /// <summary>
+    /// La Mac es dueña de agregar columnas nuevas a este CSV compartido (p.
+    /// ej. "texto en") en cualquier posición -- "sitio Windows" se ubica
+    /// leyendo el encabezado, nunca por un índice fijo, así que una columna
+    /// nueva ANTES de "sitio Windows" (que corre su índice) no puede hacer
+    /// que esto parche el campo equivocado, ni perder la columna nueva.
+    /// </summary>
+    [Fact]
+    public void UnaColumnaNuevaDeLaMacAntesDeSitioWindowsNoRompeElParcheNiSePierde()
+    {
+        string original =
+            "clave,texto es,sitio Mac,texto en,sitio Windows,estado\n" +
+            "algo,Texto,studio/Mac/View.swift:10,Text,studio/windows/AuraStudio.App/Resources/AppStrings.cs:100 (app-strings.algo),clave distinta\n";
+        File.WriteAllText(_path, original);
+
+        var sites = new Dictionary<string, Site>(StringComparer.Ordinal)
+        {
+            ["app-strings.algo"] = new Site(
+                "app-strings.algo", "studio/windows/AuraStudio.App/Resources/AppStrings.cs", 205,
+                "AppStrings", "Texto", "Texto", false),
+        };
+
+        (int updated, List<string> missing) = ClavesCompartidasCsv.UpdateSitioWindows(_path, sites);
+
+        Assert.Equal(1, updated);
+        Assert.Empty(missing);
+
+        string[] lines = File.ReadAllLines(_path);
+        Assert.Contains("studio/Mac/View.swift:10,Text,studio/windows/AuraStudio.App/Resources/AppStrings.cs:205 (app-strings.algo),clave distinta", lines[1]);
+    }
+
+    /// <summary>Un encabezado sin "sitio Windows" (formato irreconocible) no toca nada -- no se adivina un índice.</summary>
+    [Fact]
+    public void UnEncabezadoSinSitioWindowsNoTocaNada()
+    {
+        string original = "clave,texto es,sitio Mac,estado\nalgo,Texto,—,solo Mac\n";
+        File.WriteAllText(_path, original);
+
+        (int updated, List<string> missing) = ClavesCompartidasCsv.UpdateSitioWindows(_path, new Dictionary<string, Site>());
+
+        Assert.Equal(0, updated);
+        Assert.Empty(missing);
+        Assert.Equal(original, File.ReadAllText(_path));
+    }
 }

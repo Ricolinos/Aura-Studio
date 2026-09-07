@@ -52,7 +52,8 @@ string contextMenuRelative = RelativePath(repoRoot, contextMenuPath);
 allSites.AddRange(CSharpLiteralExtractor.ExtractMenuEntries(contextMenuRelative, contextMenuText, keys));
 allPlurals.AddRange(PluralTernaryScan.Extract(contextMenuRelative, contextMenuText));
 
-// --- StatusMessage / ContentDialog / cultura fija, en todo AuraStudio.App ---
+// --- StatusMessage / ContentDialog / ayudantes con texto de usuario /
+// cultura fija, en todo AuraStudio.App ---
 
 string[] appCsFiles = [.. Directory.EnumerateFiles(appDir, "*.cs", SearchOption.AllDirectories)
     .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}")
@@ -67,6 +68,7 @@ foreach (string csFile in appCsFiles)
 
     allSites.AddRange(CSharpLiteralExtractor.ExtractStatusMessages(relative, text, keys));
     allSites.AddRange(CSharpLiteralExtractor.ExtractContentDialogText(relative, text, keys));
+    allSites.AddRange(CSharpLiteralExtractor.ExtractHelperFirstArgument(relative, text, keys));
     allPlurals.AddRange(PluralTernaryScan.Extract(relative, text));
     fixedCulture.AddRange(FixedCultureExtractor.Extract(relative, text, keys));
 }
@@ -117,6 +119,7 @@ int xamlCount = allSites.Count(s => s.Kind == "XAML");
 int menuEntryCount = allSites.Count(s => s.Kind == "MenuEntry");
 int statusMessageCount = allSites.Count(s => s.Kind == "StatusMessage");
 int contentDialogCount = allSites.Count(s => s.Kind == "ContentDialog");
+int helperArgumentCount = allSites.Count(s => s.Kind == "HelperArgument");
 int uniqueKeys = allSites.Select(s => s.Key).Distinct(StringComparer.Ordinal).Count();
 
 Console.WriteLine($"Archivos XAML recorridos: {xamlFiles.Length}");
@@ -128,6 +131,7 @@ Console.WriteLine($"Sitios XAML: {xamlCount}");
 Console.WriteLine($"Sitios MenuEntry (ContextMenu.cs): {menuEntryCount}");
 Console.WriteLine($"Sitios StatusMessage: {statusMessageCount}");
 Console.WriteLine($"Sitios ContentDialog: {contentDialogCount}");
+Console.WriteLine($"Sitios HelperArgument: {helperArgumentCount}");
 Console.WriteLine($"Total de sitios: {allSites.Count}");
 Console.WriteLine($"Claves únicas: {uniqueKeys}");
 Console.WriteLine($"Ternarios de plural encontrados: {allPlurals.Count}");
