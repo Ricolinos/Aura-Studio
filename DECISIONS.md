@@ -14086,3 +14086,80 @@ Repro:
 dotnet run --project studio/windows/tools/ExtraerCadenasWindows
 dotnet test studio/windows/tests/AuraStudio.Core.Tests/AuraStudio.Core.Tests.csproj --filter FullyQualifiedName~LocalizationDraftTests
 ```
+
+## ST-227 (addendum, mecánico) — arnés de capturas por idioma (A7c, preparación)
+
+Encargo de "Sesión Maestra": `tools/capturas-idiomas.sh` +
+`tools/capturas-idiomas-window-id.swift`, para que al cerrar A7c se
+pueda producir `docs/capturas/idiomas/<idioma>/<pantalla>.png` para
+es/en/ja/de/ru/fr sin XCUITest. Probado hoy contra la app real (build
+DEBUG -- `UITestEnvironment` es `#if DEBUG`, una Release ignora
+`AURA_UITEST_*`).
+
+### Tres cosas que el manual de AppleScript sugiere y que NO funcionaron, comprobadas a mano
+
+1. **`id of window`/`AXWindowNumber`** -- ninguno de los dos está en la
+   lista real de atributos que expone System Events para esta ventana
+   en esta versión de macOS (`name of every attribute of window 1`: ni
+   uno ni el otro aparecen). `screencapture -l` pide un `CGWindowID` de
+   verdad -- se consigue con `CGWindowListCopyWindowInfo` (Quartz), de
+   ahí `capturas-idiomas-window-id.swift` (un Swift de una pantalla,
+   filtra por PID + `layer == 0`).
+2. **`entire contents of window 1`** -- devuelve CERO elementos para
+   esta ventana (SwiftUI dentro de un `AXHostingView`), aunque `UI
+   elements of window 1` (hijos directos) sí funciona. Hace falta bajar
+   nivel por nivel a mano (un handler recursivo).
+3. **El identificador vive dos niveles adentro de su fila**
+   (`AXRow > AXCell > AXStaticText/AXHeading`, confirmado volcando el
+   árbol completo) -- ni `AXPress` en el elemento identificado ni
+   buscarlo con `entire contents` selecciona la fila. Lo que sí
+   funciona: el mensaje `select` de AppleScript sobre el `AXRow` que
+   CONTIENE el identificador entre sus descendientes (no sobre el
+   elemento identificado en sí) -- equivalente a clickear la fila de
+   una `List`/`NSOutlineView`.
+4. **"Acerca de \<app\>" no es el primer ítem del primer menú de la
+   barra** -- "menu bar item 1" es el menú  (sistema, compartido),
+   nunca el de la app; con eso se termina abriendo "Acerca de esta
+   Mac". Es "menu bar item 2" (posicional, no depende del idioma).
+
+### Verificado hoy contra la app real, con biblioteca de prueba sintética
+
+`albumes.png` y `canciones.png` de `es/`: lanzada la app con
+`-AppleLanguages (es) -AppleLocale es_MX` + `AURA_UITEST_LIBRARY`
+apuntando a una biblioteca sintética (2 artistas, 3 álbumes, 5
+canciones, generada por el propio script -- nunca la real), navegadas
+con `select_sidebar_row` (el mecanismo del punto 3), capturadas con
+`screencapture -l <CGWindowID>` -- contenido correcto, título de
+ventana correcto, biblioteca de prueba visible completa.
+
+**`ajustes.png`/`dispositivos.png`/`acerca-de.png` NO se comitean
+hoy.** Usan el mismo mecanismo (misma clase de fila de barra lateral,
+o el menú posicional para Acerca de), pero una prueba en vivo se
+interrumpió a mitad de la corrida: `frontmost` de System Events pasó
+de "AuraStudio" a "stable" (una Terminal real) entre un clic y el
+siguiente -- la Mac dejó de estar libre mientras corría. Mismo criterio
+que ST-187 con XCUITest ("nadie usando la Mac mientras corre"): se
+cortó por precaución en vez de seguir clicando a ciegas. Quedan para
+la próxima corrida con la Mac libre -- documentado en
+`docs/capturas/idiomas/README.md`, no se inventó ninguna captura para
+completar el set.
+
+### Lo que falta, dicho explícito (no descubierto por accidente después)
+
+`ajustes-almacenamiento` no existe todavía como pantalla (A5 no
+cerró -- `SettingsSectionView.Tab` hoy es `general/library/music/
+photos/video/services`, ninguna se llama así); `barra-estado-mensaje-
+largo` necesita disparar una operación real, sin automatizar hoy. Los
+dos quedan como `TODO` explícitos en el script, con la recomendación
+de que quien agregue la pestaña de Ajustes le ponga un
+`accessibilityIdentifier` real (el `Picker` segmentado de hoy no tiene
+ninguno).
+
+### Verificación
+
+Solo `tools/` y `docs/` -- nada en `Sources/`. Candado tomado y
+liberado por esta sesión mientras compilaba la build DEBUG (única vez
+que hizo falta). Sin `~/Library` del dueño tocado -- la biblioteca de
+prueba vive en un directorio temporal, nunca la carpeta real, y
+`AURA_UITEST_DEFAULTS_SUITE` aísla las preferencias de cada corrida
+(mismo criterio que las pruebas de XCTest, ST-194).
