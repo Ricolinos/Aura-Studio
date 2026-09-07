@@ -84,6 +84,11 @@
                                 </ComboBox>
                             </Grid>
 
+                            <TextBlock Text="{x:Bind res:AppStrings.LanguageBetaDetail}"
+                                       Visibility="{x:Bind ViewModel.LanguageIsUnreviewed, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
+                                       Style="{StaticResource AuraCaptionTextStyle}"
+                                       TextWrapping="Wrap" />
+
                             <!-- El aviso de reinicio no se puede cerrar: el idioma
                                  ya cambió en el archivo de preferencias y la app
                                  sigue mostrando el anterior. Un aviso que se

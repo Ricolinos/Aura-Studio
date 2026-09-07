@@ -120,6 +120,21 @@ public class HardcodedSpanishTests
     private static bool IsComment(string line) => line.TrimStart().StartsWith("//", StringComparison.Ordinal);
 
     /// <summary>
+    /// Archivos cuyo español no es texto de pantalla.
+    ///
+    /// <para>Uno solo, y es una tabla de documentación: <c>CriticalStrings</c>
+    /// guarda, al lado de cada familia de claves, la razón por la que es
+    /// crítica —"formatea el iPod y graba su arranque"—. Eso lo lee quien
+    /// mantiene la lista, nunca un usuario. Contarlo como texto sin traducir
+    /// haría subir el trinquete por escribir documentación, que es al revés de
+    /// lo que se quiere premiar.</para>
+    /// </summary>
+    private static readonly string[] NotUserFacingFiles =
+    [
+        "CriticalStrings.cs",
+    ];
+
+    /// <summary>
     /// Cero frases en español en las vistas. Es donde vive el texto que el
     /// usuario lee, y donde una que se escape se ve en la primera pantalla que
     /// se abra en otro idioma.
@@ -177,12 +192,36 @@ public class HardcodedSpanishTests
     [Fact]
     public void ElTextoFueraDeAlcanceNoCrece()
     {
-        int outside = Hits("*.cs", CsLiteral, IsComment)
-            .Count(hit => !hit.File.EndsWith("AppStrings.cs", StringComparison.Ordinal));
+        int outside = OutOfScope().Count();
 
         Assert.True(outside <= OutsideB7aCeiling,
             $"Hay {outside} textos en español fuera del alcance de B7a y el tope es {OutsideB7aCeiling}. "
             + "Si agregaste uno, sácalo al recurso; si de verdad hay que subir el tope, "
-            + "súbelo a mano y di por qué.");
+            + "súbelo a mano y di por qué. Están acá, por archivo:\n" + Inventory());
     }
+
+    /// <summary>
+    /// Dónde están los que quedan, agrupados por archivo. Es la lista de
+    /// trabajo de B7c.
+    ///
+    /// <para>Sale en el mensaje del fallo y no en un archivo aparte a
+    /// propósito: un inventario que hay que regenerar a mano envejece en
+    /// silencio, y este se calcula solo, justo cuando alguien lo necesita.</para>
+    ///
+    /// <para>Lo que <b>no</b> hace es decidir cuáles se traducen. Ese corte —lo
+    /// que ve el usuario sí; el registro y las excepciones internas no— hay que
+    /// hacerlo mirando cada uno, y una expresión regular que lo adivinara
+    /// entregaría una lista con aire de autoridad y errores adentro.</para>
+    /// </summary>
+    private static IEnumerable<(string File, int Line, string Text)> OutOfScope() =>
+        Hits("*.cs", CsLiteral, IsComment)
+            .Where(hit => !hit.File.EndsWith("AppStrings.cs", StringComparison.Ordinal))
+            .Where(hit => !NotUserFacingFiles.Any(name => hit.File.EndsWith(name, StringComparison.Ordinal)));
+
+    private static string Inventory() =>
+        string.Join("\n", OutOfScope()
+            .GroupBy(hit => hit.File)
+            .OrderByDescending(group => group.Count())
+            .ThenBy(group => group.Key, StringComparer.Ordinal)
+            .Select(group => $"{group.Count(),4}  {group.Key}"));
 }

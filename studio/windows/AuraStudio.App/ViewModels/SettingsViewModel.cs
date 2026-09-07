@@ -110,8 +110,20 @@ public sealed partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     public partial bool LanguageNeedsRestart { get; set; }
 
+    /// <summary>
+    /// Si el idioma elegido todavía no lo revisó una persona. Hoy nunca es
+    /// verdadero —solo se ofrecen español e inglés— y el aviso existe igual,
+    /// listo para B7c: cuando lleguen los cuatro traducidos por una máquina, la
+    /// app tiene que decirlo, no descubrirse.
+    /// </summary>
+    public bool LanguageIsUnreviewed => !SelectedLanguage.ReviewedByHumans;
+
     partial void OnSelectedLanguageChanged(LanguageOption value)
     {
+        // El aviso de "sin revisar" depende del idioma elegido, así que se
+        // refresca aunque no haya cambiado nada más.
+        OnPropertyChanged(nameof(LanguageIsUnreviewed));
+
         if (_preferences.Language == value.Culture) return;
 
         _preferences.Language = value.Culture;

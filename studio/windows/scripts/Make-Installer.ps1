@@ -135,6 +135,33 @@ function Build-Installer([string] $arch) {
         throw "[$arch] El publish está incompleto; falta:`n  " + ($faltan -join "`n  ")
     }
 
+    # --- Los idiomas (ST-247, B7b) ------------------------------------------
+    #
+    # Cada idioma que no es el español viaja en su propia carpeta, como
+    # ensamblado satélite. El español NO está acá: va dentro del ensamblado
+    # (cultura neutra), justamente para que a la app nunca le falte el texto.
+    #
+    # Falta uno y **se aborta**, no se avisa. Un satélite ausente no rompe nada
+    # visible: la app pide ese idioma, no lo encuentra y cae al español sin
+    # decir palabra. El usuario elige "English", la app sigue en español y no
+    # hay ningún error que buscar. Es el modo de falla exacto que este bloque
+    # existe para que no llegue a un instalador.
+    #
+    # La lista tiene que coincidir con AppLanguages.RequiredSatelliteCultures,
+    # y lo comprueba una prueba (SatelliteCulturesTests) — acá está escrita a
+    # mano porque PowerShell no lee la lista de C#, no porque haya dos fuentes.
+    $culturasSatelite = @('en')
+
+    foreach ($cultura in $culturasSatelite) {
+        $satelite = Join-Path $publishDir "$cultura\AuraStudio.Core.resources.dll"
+        if (-not (Test-Path $satelite)) {
+            throw ("[$arch] Falta el idioma '$cultura': no está $cultura\AuraStudio.Core.resources.dll. " +
+                   "Sin ese archivo la app ofrece ese idioma y se queda en español sin avisar.")
+        }
+    }
+
+    Write-Host ("[$arch] Idiomas incluidos: es (dentro del ensamblado) + " + ($culturasSatelite -join ', '))
+
     # Los avisos de licencia de las tres familias viajan con sus binarios: es
     # como se cumple el §3 de la GPL v2 (ver installer\AVISO-LICENCIAS.txt).
     foreach ($familia in @('', 'metro\', 'moonlit\')) {
