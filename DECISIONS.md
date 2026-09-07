@@ -16250,3 +16250,87 @@ lista sería una nota al pie donde se puede escribir cualquier cosa.
 El otro es `installer-copied-files`, que decía "1 archivos escritos en el iPod"
 con uno solo: el defecto que B7a dejó anotado a propósito, arreglado acá con
 formas de plural.
+
+## ST-248 (parcial) — Windows: cierre de la ronda "ajustes 3" — tabla final, guion del dueño, pista en el instalador
+
+Encargo del coordinador, autorizado por la Maestra, alcance que NO
+depende de B7c. Corrido sobre `origin/main = 0c8ca51` (B7b), rama
+`windows/b8`. VM compartida con el Experto (compilando el instalador de
+prueba): solo se corrieron los arneses reales (`StorageFixtureCheck`,
+`CopyModeCheck`) y `dotnet test` de `AuraStudio.Core.Tests` — ningún
+build de `AuraStudio.App`/publish/`Make-Installer.ps1`.
+
+### 1. Tabla final -- números MEDIDOS en esta corrida, no repetidos de su ST
+
+**`StorageFixtureCheck` (B0, ST-240/ST-245):**
+
+| Medición | B0 original (ST-240) | Medido ahora (`0c8ca51`) | Nota |
+|---|---|---|---|
+| Editar 11 campos × 4 formatos (44 casos) | 0 archivos reescritos (antes de que existiera ningún escritor) | MP3/FLAC/M4A: título/artista/álbum/pista/año/género SÍ reescriben (hash cambia); rating/favorito/letra/categoría/carátula NUNCA (política `AlbumOnly`); WAV nunca (sin escritor nativo); **0 preparados nuevos** en los 44 | Cambio real y esperado: B0 midió ANTES de que existieran los escritores nativos (ST-242/243); esto ya no es una comparación contra B0, es la foto de después |
+| Huérfanos antes de limpiar | ~155 687 bytes (constante sintética de esa corrida del arnés) | **60 000 bytes** (2 archivos) | Difiere de ST-240 pero coincide EXACTO con ST-245 (60 000 bytes, línea ~12874) -- el arnés cambió su constante sintética entre B0 y B5; no es un retroceso del producto |
+| Eliminar, modo copia | Papelera confirmada por `SHFileOperationW`/`FOF_ALLOWUNDO` (ST-245) | Confirmado además por SID real en `$Recycle.Bin` (`RecycleBinProbe`, ST-245 addendum): `$RJJ3YDU.mp3` | Coincide, con verificación más fuerte que la original |
+| Eliminar, modo referencia | Preparado+carátula borrados, original intacto | Igual: preparado=False, carátula=False, original=True, bytes sin cambio | Coincide |
+| Acento NFD en disco / NFC en catálogo | `LibraryDiskPathResolver` lo resuelve, manda a la Papelera | Igual, confirmado con SID real (`$RYJX5LF.mp3`) | Coincide |
+| Original desaparecido | Se conserva en catálogo como no disponible | Igual: 7→6 en `AvailableItems`, sigue en `Items` | Coincide |
+| Política de carátula forzada | `AlbumOnly` sin importar la preferencia (bug conocido, `SyncService.cs:127`) | Igual, sigue sin leer la preferencia | Sin cambio -- pendiente consciente, no de esta ronda |
+
+**`CopyModeCheck` (B3/B4/B6, ST-243/ST-244/ST-246):**
+
+| Medición | ST original | Medido ahora (`0c8ca51`) | Nota |
+|---|---|---|---|
+| Importar WAV/AIFF en copia (calidad default) | ST-243: convierte a MP3, 322 351 B | **Convierte a ALAC (M4A), 194 490 B**, mismas muestras PCM | Cambio REAL y a propósito: ST-244 cambió el default a "Original sin pérdida" -- MP3 pasó a ser la opción "Comprimir", no el default. No es una regresión, es el resultado esperado de un ST posterior |
+| WAV/AIFF → ALAC (prueba dedicada) | ST-244: 192 410 B, muestras idénticas | **192 410 B**, muestras idénticas (bit a bit, comparados 1 764 000 B) | Coincide exacto |
+| WAV/AIFF → MP3 (opción "Comprimir") | ST-243: 322 223 B, ~257.8 kbps | **322 223 B, ~257.8 kbps** | Coincide exacto |
+| Etiquetas releídas del archivo copiado | Coinciden con el origen (MP3/FLAC/M4A); WAV/AIFF sin etiquetas | Igual | Coincide |
+| Editar en la biblioteca: título vs. rating/letra | Título reescribe (mtime cambia); rating/letra no tocan el archivo | Igual, en los 5 formatos | Coincide |
+| Migrar biblioteca anterior | ST-246: 2 sin storage, 1 preparado viejo, avisa, no escribe al abrir; migrar etiqueta+renombra+borra huérfanos resueltos; segunda corrida no toca nada | **Idéntico**, incluido "3 huérfanos → 1 borrado" (2 se resolvieron con el renombrado) | Coincide exacto |
+| Cabecera de audio rota | Se rechaza, sin residuos | Igual: sin `.aura-tmp`, sin destino a medias | Coincide |
+| "Sin preparado" es válido (ST-224) | 0 trabajos encolados, sincroniza desde el original | Igual | Coincide |
+
+**Idiomas (B7a/B7b, ST-247):**
+
+| Medición | Su ST | Medido ahora | Nota |
+|---|---|---|---|
+| Cadenas movidas a recurso | B7a: "551 claves únicas" | **619 entradas** en `Resources.resx` (`grep -c '<data name='`) | No hay cadena perdida: B7a cuenta un par de plural (`.one`/`.other`) como UNA clave; el recurso físico tiene dos `<data>` por par. 619 = 551 + ~68 pares de plural contados una vez de más -- otra convención de conteo, no una discrepancia real |
+| Satélites en el instalador | B7b: inglés completo | **1 de 5** (`Resources.en.resx` existe; ja/de/ru/fr no todavía) | Esperado -- B7c los agrega. `Make-Installer.ps1` ya aborta si falta uno (verificado leyendo el script, no corriéndolo) |
+| Tamaño del Setup | Coordinador: +18 810 / +610 (instalador con B7a/B7b vs. sin idiomas) | No verificado de forma independiente en esta PARADA -- los instaladores de prueba (`dist\prueba-5e05ccd\` sin idiomas, el de B7b en el worktree del Experto) no están en este worktree y no se corrió ningún publish (VM compartida) | Cifra reportada, no remedida; queda para cuando la VM esté libre |
+
+### 2. Guion del dueño
+
+`docs/ESTADO-PORT.md`, sección nueva "Ronda 'ajustes 3', B8 (parcial)"
+arriba de todo: 11 pasos concretos (importar copia/referencia, editar y
+ver en Propiedades del Explorador, rating sin tocar la fecha del archivo,
+sincronizar y ver en el iPod, Eliminar con Papelera/confirmación,
+desconectar el disco de originales, "Convertir referenciados en copias",
+"Limpiar huérfanos", migrar una biblioteca 0.3.0 -- **solo sobre una
+COPIA**, nunca la real --, y cambiar idioma con y sin tareas en curso).
+Nota explícita de qué instalador usar para cada caso.
+
+### 3. Pista en `Make-Installer.ps1`
+
+El aviso de "publish incompleto" ahora distingue DOS causas del mismo
+síntoma: un artefacto de firmware faltante (todo bajo `artifacts\`) dice
+"corré `.\scripts\FirmwareFetch.ps1`" (o `-FromDir <carpeta>`, sin Release
+público); un binario propio de la app faltante (`.exe`/`.pri`/`.dll`) dice
+que `FirmwareFetch.ps1` no lo arregla -- revisar el publish. Sin cambiar
+el flujo: solo el texto del `throw`. Prueba nueva,
+`MakeInstallerErrorMessageTests.cs` (mismo patrón que
+`SatelliteCulturesTests`: lee el script como texto, no lo corre -- un
+publish real son minutos y necesita el SDK de Windows).
+
+### 4. Pendiente para después de B7c
+
+Comprobación de los cinco satélites (`en`/`ja`/`de`/`ru`/`fr`) en el
+publish real y en `Make-Installer.ps1` corriendo de verdad; capturas por
+idioma (`tools/capturas-idiomas.sh`, ST-227); reverificar el tamaño del
+Setup con los cinco satélites contra el "sin idiomas" de
+`dist\prueba-5e05ccd\`.
+
+### Verificación
+
+Corrido SOLO contra proyectos sin referencia a `AuraStudio.App`:
+`dotnet test tests/AuraStudio.Core.Tests`: **1 879 en verde, 0 omitidas**
+(2 nuevas de `MakeInstallerErrorMessageTests`). `dotnet run --project
+tools/StorageFixtureCheck` y `dotnet run --project tools/CopyModeCheck`:
+corridas completas, sin ninguna `ATENCIÓN`. Ningún `dotnet build`/`publish`
+de `AuraStudio.App` ni de la solución completa.
