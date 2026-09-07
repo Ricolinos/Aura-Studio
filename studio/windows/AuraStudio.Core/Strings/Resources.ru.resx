@@ -1329,6 +1329,15 @@
   <data name="library-migration.head-done" xml:space="preserve">
     <value>Медиатека перенесена</value>
   </data>
+  <data name="library-migration.needed-detail" xml:space="preserve">
+    <value>Перенос запишет теги каталога в копии и приведёт в порядок подготовленные файлы. Ваши исходные файлы не затрагиваются.</value>
+  </data>
+  <data name="library-migration.needed-intro" xml:space="preserve">
+    <value>Эта медиатека осталась от более ранней версии: {0}.</value>
+  </data>
+  <data name="library-migration.needed-joiner" xml:space="preserve">
+    <value>, и </value>
+  </data>
   <data name="library-migration.no-changes" xml:space="preserve">
     <value>изменений не было</value>
   </data>

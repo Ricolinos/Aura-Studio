@@ -540,6 +540,15 @@
   <data name="library-migration.head-done" xml:space="preserve">
     <value>Library migrated</value>
   </data>
+  <data name="library-migration.needed-detail" xml:space="preserve">
+    <value>Migrating it writes the catalog's tags into the copies and tidies up the prepared files. Your original files are not touched.</value>
+  </data>
+  <data name="library-migration.needed-intro" xml:space="preserve">
+    <value>This library comes from an earlier version: {0}.</value>
+  </data>
+  <data name="library-migration.needed-joiner" xml:space="preserve">
+    <value>, and </value>
+  </data>
   <data name="library-migration.no-changes" xml:space="preserve">
     <value>nothing changed</value>
   </data>

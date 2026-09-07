@@ -540,6 +540,15 @@
   <data name="library-migration.head-done" xml:space="preserve">
     <value>Biblioteca migrada</value>
   </data>
+  <data name="library-migration.needed-detail" xml:space="preserve">
+    <value>Migrarla deja las etiquetas del catálogo escritas en las copias y ordena lo preparado. Tus archivos originales no se tocan.</value>
+  </data>
+  <data name="library-migration.needed-intro" xml:space="preserve">
+    <value>Esta biblioteca viene de una versión anterior: {0}.</value>
+  </data>
+  <data name="library-migration.needed-joiner" xml:space="preserve">
+    <value>, y </value>
+  </data>
   <data name="library-migration.no-changes" xml:space="preserve">
     <value>no hubo cambios</value>
   </data>

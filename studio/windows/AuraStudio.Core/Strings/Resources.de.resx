@@ -540,6 +540,15 @@
   <data name="library-migration.head-done" xml:space="preserve">
     <value>Mediathek migriert</value>
   </data>
+  <data name="library-migration.needed-detail" xml:space="preserve">
+    <value>Beim Migrieren werden die Tags des Katalogs in die Kopien geschrieben und die vorbereiteten Dateien aufgeräumt. Deine Originaldateien werden nicht angetastet.</value>
+  </data>
+  <data name="library-migration.needed-intro" xml:space="preserve">
+    <value>Diese Mediathek stammt aus einer früheren Version: {0}.</value>
+  </data>
+  <data name="library-migration.needed-joiner" xml:space="preserve">
+    <value>, und </value>
+  </data>
   <data name="library-migration.no-changes" xml:space="preserve">
     <value>es gab keine Änderungen</value>
   </data>

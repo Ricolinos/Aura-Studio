@@ -1652,30 +1652,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
     /// "hay cosas que arreglar"</b>: una app que pide permiso para tocar los
     /// archivos de alguien tiene que decir cuántos y por qué.
     /// </summary>
-    public string MigrationMessage
-    {
-        get
-        {
-            var parts = new List<string>();
-
-            if (MigrationNeed.ItemsWithoutStorage is > 0 and var withoutStorage)
-            {
-                parts.Add(Strings.Plural(
-                    "library-view-model.migration-without-storage", withoutStorage));
-            }
-
-            if (MigrationNeed.LegacyPrepared is > 0 and var legacy)
-            {
-                parts.Add(Strings.Plural("library-view-model.migration-legacy-prepared", legacy));
-            }
-
-            return parts.Count == 0
-                ? ""
-                : $"Esta biblioteca viene de una versión anterior: {string.Join(", y ", parts)}. "
-                  + "Migrarla deja las etiquetas del catálogo escritas en las copias y ordena "
-                  + "lo preparado. Tus archivos originales no se tocan.";
-        }
-    }
+    public string MigrationMessage => LibraryMigrationText.Needed(MigrationNeed);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(NeedsMigration))]

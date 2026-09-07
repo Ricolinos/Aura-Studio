@@ -163,6 +163,41 @@ public class LibraryMigrationTextTests
     }
 
     /// <summary>
+    /// El aviso de "esta biblioteca viene de antes" también sale entero en el
+    /// idioma pedido, y sin ningún pedazo en español.
+    ///
+    /// <para>Tenía el mismo defecto que el resumen y lo encontró la barrida que
+    /// se hizo justo después de arreglarlo: los conteos venían del recurso y la
+    /// oración que los envuelve estaba escrita en el código, con su "y" incluida.
+    /// </para>
+    /// </summary>
+    [Theory]
+    [InlineData("en")]
+    [InlineData("de")]
+    [InlineData("fr")]
+    [InlineData("ru")]
+    [InlineData("ja")]
+    public void ElAvisoDeMigracionPendienteTampocoMezclaIdiomas(string culture)
+    {
+        Dictionary<string, string> spanish = ValuesOf("es");
+        Dictionary<string, string> resources = ValuesOf(culture);
+
+        string sentence = WithUiCulture(culture,
+            () => LibraryMigrationText.Needed(new LibraryMigrationNeed(3, 2)));
+
+        Assert.Contains(resources["library-migration.needed-detail"], sentence, StringComparison.Ordinal);
+        Assert.Contains(resources["library-migration.needed-joiner"], sentence, StringComparison.Ordinal);
+
+        foreach (string key in new[] { "library-migration.needed-detail", "library-migration.needed-joiner" })
+            Assert.DoesNotContain(spanish[key], sentence, StringComparison.Ordinal);
+    }
+
+    /// <summary>Sin nada que migrar, el aviso no dice nada: no se muestra.</summary>
+    [Fact]
+    public void SinNadaQueMigrarElAvisoEstaVacio() =>
+        Assert.Equal("", LibraryMigrationText.Needed(LibraryMigrationNeed.None));
+
+    /// <summary>
     /// Los cuatro caminos del método dan una oración con contenido: nada vacío,
     /// nada con la clave entre corchetes.
     /// </summary>

@@ -1173,6 +1173,15 @@
   <data name="library-migration.head-done" xml:space="preserve">
     <value>ライブラリを移行しました</value>
   </data>
+  <data name="library-migration.needed-detail" xml:space="preserve">
+    <value>移行すると、カタログのタグがコピーに書き込まれ、準備済みファイルが整理されます。元のファイルには触れません。</value>
+  </data>
+  <data name="library-migration.needed-intro" xml:space="preserve">
+    <value>このライブラリは以前のバージョンのものです：{0}。</value>
+  </data>
+  <data name="library-migration.needed-joiner" xml:space="preserve">
+    <value>、</value>
+  </data>
   <data name="library-migration.no-changes" xml:space="preserve">
     <value>変更はありませんでした</value>
   </data>

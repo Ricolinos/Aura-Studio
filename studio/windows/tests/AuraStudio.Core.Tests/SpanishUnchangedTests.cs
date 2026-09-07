@@ -204,6 +204,13 @@ public class SpanishUnchangedTests
         "library-migration.summary-with-failures",
         "library-migration.failed.one", "library-migration.failed.other",
 
+        // El aviso de "esta biblioteca viene de antes", que estaba en el mismo
+        // estado: los conteos del recurso y la oración que los envuelve escrita
+        // en el código, con su "y" incluida. Lo encontró la barrida que se hizo
+        // justo después de arreglar el resumen.
+        "library-migration.needed-intro", "library-migration.needed-detail",
+        "library-migration.needed-joiner",
+
         // Tooltips y nombres para el lector de pantalla que el borrador no
         // extrajo. Un AutomationProperties.Name en español dentro de una app en
         // alemán es justo el defecto que B7b viene a evitar.

@@ -26,6 +26,37 @@ namespace AuraStudio.Core.Library;
 /// </summary>
 public static class LibraryMigrationText
 {
+    /// <summary>
+    /// El aviso de que esta biblioteca viene de una versión anterior, con lo que
+    /// se encontró.
+    ///
+    /// <para>Estaba en el mismo estado que el resumen: los conteos salían del
+    /// recurso y la oración que los envuelve —incluida la coma con «y» que une
+    /// las dos partes— estaba escrita en el código. La barrida que buscaba otras
+    /// frases compuestas lo encontró justo después de arreglar la primera.</para>
+    ///
+    /// <para>Cadena vacía cuando no hay nada que migrar: el aviso no se muestra,
+    /// y decirlo con una frase sería peor que callarse.</para>
+    /// </summary>
+    public static string Needed(LibraryMigrationNeed need)
+    {
+        var parts = new List<string>();
+
+        if (need.ItemsWithoutStorage > 0)
+            parts.Add(Strings.Plural("library-view-model.migration-without-storage", need.ItemsWithoutStorage));
+
+        if (need.LegacyPrepared > 0)
+            parts.Add(Strings.Plural("library-view-model.migration-legacy-prepared", need.LegacyPrepared));
+
+        if (parts.Count == 0) return "";
+
+        string found = string.Join(Strings.Get("library-migration.needed-joiner"), parts);
+
+        return Strings.Format("library-migration.needed-intro", found)
+               + " "
+               + Strings.Get("library-migration.needed-detail");
+    }
+
     public static string Summarize(LibraryMigrationSummary summary)
     {
         if (summary.Touched == 0 && summary.Failed == 0)
