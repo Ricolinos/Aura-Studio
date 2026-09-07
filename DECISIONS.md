@@ -11104,3 +11104,35 @@ revisión, no el artefacto final):
 
 No se tocó `Sources/` en ningún momento -- la herramienta es de solo
 lectura sobre el código, solo escribe en `tools/` y `docs/`.
+
+## ST-223/ST-224 (encargo de la maestra): forma "después" de A3/A4, pendiente de API
+
+Encargo de "Sesión Maestra" mientras "experto en código opus" cierra
+A1/A2: seis pruebas `XCTSkip` en `MediaStorageAfterA3A4Tests.swift`
+-- no hay API todavía (A3 modo copia real, A4 modo referencia real),
+así que no hay nada que aserire de verdad. Cada mensaje de skip
+describe la forma exacta que la prueba tiene que tener cuando la API
+exista, para que llenarla sea sustituir el cuerpo, no rediseñarla:
+
+(a) Importar en modo copia (MP3/FLAC/M4A) deja el archivo listo en
+`Música/` con las etiquetas del catálogo ya escritas, `.preparados/`
+vacío para ese ítem, `preparedURL == sourceURL`.
+(b) Estrella/favorito/letra/categoría escriben 0 bytes en el archivo de
+audio -- solo catálogo/`ratings.cfg`/`.lrc`.
+(c) Editar título en modo copia solo cambia el archivo de la
+biblioteca, con un delta de tamaño del orden de un tag reescrito
+(cientos de bytes), nunca del orden del audio completo.
+(d) Modo referencia: el original nunca cambia (ni por (b) ni por
+título); el preparado vive en `.preparados/<UUID EN MAYÚSCULAS>.ext` y
+solo se regenera al editar un campo de etiqueta o cambiar el archivo de
+origen (tamaño+mtime) -- nunca por (b).
+(e) Sync copia `sourceURL` en modo copia (ya no hay `.preparados/` de
+por medio) o `preparedURL` en modo referencia -- verificado por hash,
+misma forma que la prueba de sync de ST-220.
+(f) WAV copiado se convierte a MP3 en `Música/` (extensión `.mp3`,
+frames MPEG reales, no la cabecera RIFF/WAVE) -- en referencia sigue
+como hoy.
+
+Reusa el fixture de A0 (`MediaFixture`) y los lectores de A2
+(`FLACTagReader`/`MP4TagReader`) tal cual, sin necesidad de escribir
+nada nuevo cuando llegue el momento de llenarlas.

@@ -166,6 +166,7 @@
 		9A5D2523F9B12745D1230020 /* BackgroundTaskCenterIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8463CF21C20FCEBFE47FF6FE /* BackgroundTaskCenterIndicator.swift */; };
 		9C53C3873A4C5F484CCC3858 /* InstallerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EBEB24F597D3C9B609AC775 /* InstallerViewModel.swift */; };
 		9CEBAACAA11BE3313233D7ED /* InstallerWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4862DCA99696DCB66D2012 /* InstallerWizardView.swift */; };
+		9DEB14FE57D88A13407D6D95 /* MediaStorageAfterA3A4Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4BA3B5358A6852A9ED6C385 /* MediaStorageAfterA3A4Tests.swift */; };
 		9FDD21617909191BB7E9B9CE /* MKS5LBootRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 722702AD0F209BDEA893FA8D /* MKS5LBootRunner.swift */; };
 		A0BDFCBDE136A9D22AC2FA61 /* LibraryFolderDropTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4B1B446620BF0826DE1BEF2 /* LibraryFolderDropTests.swift */; };
 		A18BBCCDD52DCE31AE6866AB /* ImageResizerSquareCropTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C28EC066606A5AC0A254EB5 /* ImageResizerSquareCropTests.swift */; };
@@ -500,6 +501,7 @@
 		BEEAD9ACEF33A34E0D7931DD /* firmware-version.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "firmware-version.txt"; sourceTree = "<group>"; };
 		C0DFA7816F1DDE457477003F /* FirmwareSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareSwitcher.swift; sourceTree = "<group>"; };
 		C455F59CE087518F3E7DE7C6 /* PhotoSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoSettingsView.swift; sourceTree = "<group>"; };
+		C4BA3B5358A6852A9ED6C385 /* MediaStorageAfterA3A4Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaStorageAfterA3A4Tests.swift; sourceTree = "<group>"; };
 		C61C5B4FA6D06A4B3BF823A0 /* SettingsCfgProtectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsCfgProtectionTests.swift; sourceTree = "<group>"; };
 		C70AA3068E3596A674879EA8 /* MKS5LBootRunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKS5LBootRunnerTests.swift; sourceTree = "<group>"; };
 		C796C99A64A050D14D648501 /* RemainingCallSitesWorkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemainingCallSitesWorkerTests.swift; sourceTree = "<group>"; };
@@ -801,6 +803,7 @@
 				181CDD2810F5EC0A301C1384 /* LocalTagReaderTests.swift */,
 				41E05507BDCB6ED7C42C9B6A /* LyricsSidecarSyncTests.swift */,
 				63EEB772091BC184C410A194 /* MediaCategoryHeuristicsTests.swift */,
+				C4BA3B5358A6852A9ED6C385 /* MediaStorageAfterA3A4Tests.swift */,
 				18D9DC34C79E8010BDF13EAD /* MediaStorageBaselineTests.swift */,
 				A12F5A78B95F1BE21C1DF869 /* MediaStorageFixtures.swift */,
 				D789632A0A38C211E33DFCBF /* MediaTableRowTests.swift */,
@@ -1169,6 +1172,7 @@
 				1EF7EC20F69C186A9887856B /* MKS5LBootRunnerExecutableBitTests.swift in Sources */,
 				51B2A64027ACA8FC73EB923A /* MKS5LBootRunnerTests.swift in Sources */,
 				944B27A4A60F4C5BF6A1AF1F /* MediaCategoryHeuristicsTests.swift in Sources */,
+				9DEB14FE57D88A13407D6D95 /* MediaStorageAfterA3A4Tests.swift in Sources */,
 				BB7A2B2508CD615EE92E904C /* MediaStorageBaselineTests.swift in Sources */,
 				07E1D85C3EC42D2CA58A4429 /* MediaStorageFixtures.swift in Sources */,
 				98294989CBE015BFE717F68F /* MediaTableRowTests.swift in Sources */,
