@@ -374,12 +374,14 @@
 "settings.importing" = "Al importar";
 "settings.installer" = "Instalador";
 "settings.language" = "Idioma";
+"settings.language-apply-message" = "El idioma se aplica al arrancar. Si cierras ahora, vuelve a abrir Aura Studio y ya estará en el idioma nuevo. Si eliges «Más tarde», queda guardado y se aplica la próxima vez que la abras.";
+"settings.language-apply-title" = "¿Cerrar Aura Studio ahora?";
+"settings.language-busy-message" = "Hay tareas en curso: sincronización, conversión, migración o firmware. El idioma queda guardado y se aplica la próxima vez que abras Aura Studio.";
+"settings.language-busy-title" = "Se aplicará al siguiente arranque";
+"settings.language-close-now" = "Cerrar ahora";
 "settings.language-machine-translated" = "Traducción automática, aún sin revisar por hablantes nativos";
 "settings.language-note-new" = "El idioma se aplica al arrancar la app. Los nombres de tus colecciones de fotos y las categorías que ya guardaste no se traducen: son datos tuyos, no texto de la app.";
 "settings.language-restart-later" = "Más tarde";
-"settings.language-restart-message" = "El idioma se aplica al arrancar. Si eliges «Más tarde», queda guardado y se aplica la próxima vez que abras Aura Studio.";
-"settings.language-restart-now" = "Reiniciar ahora";
-"settings.language-restart-title" = "¿Reiniciar Aura Studio ahora?";
 "settings.language.system" = "Igual que el sistema";
 "settings.migrate-settings-detail" = "Pone al día una biblioteca hecha con una versión anterior: escribe las etiquetas del catálogo en las copias, renombra los archivos preparados y limpia lo que ya no le pertenece a nadie. Puedes migrar aunque Aura no te haya avisado: hay un caso que solo se detecta al migrar, porque hay que abrir los archivos para verlo -- copias cuyas etiquetas no coinciden con lo que dice tu catálogo.";
 "settings.music" = "Musica";

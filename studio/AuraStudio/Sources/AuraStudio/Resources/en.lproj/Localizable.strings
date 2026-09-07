@@ -374,12 +374,14 @@
 "settings.importing" = "On import";
 "settings.installer" = "Installer";
 "settings.language" = "Language";
+"settings.language-apply-message" = "The language is applied at startup. If you close now, open Aura Studio again and it will already be in the new language. If you choose “Later”, it stays saved and applies the next time you open it.";
+"settings.language-apply-title" = "Close Aura Studio now?";
+"settings.language-busy-message" = "There are tasks running: syncing, conversion, migration or firmware. The language stays saved and applies the next time you open Aura Studio.";
+"settings.language-busy-title" = "It will apply at the next launch";
+"settings.language-close-now" = "Close now";
 "settings.language-machine-translated" = "Machine translation, not yet reviewed by native speakers";
 "settings.language-note-new" = "The language is applied when the app starts. The names of your photo collections and the categories you already saved are not translated: they are your data, not the app’s text.";
 "settings.language-restart-later" = "Later";
-"settings.language-restart-message" = "The language is applied at startup. If you choose “Later”, it stays saved and applies the next time you open Aura Studio.";
-"settings.language-restart-now" = "Restart now";
-"settings.language-restart-title" = "Restart Aura Studio now?";
 "settings.language.system" = "Match system";
 "settings.migrate-settings-detail" = "Brings a library made with an earlier version up to date: writes the catalog’s tags into the copies, renames the prepared files and cleans up what no longer belongs to anything. You can migrate even if Aura hasn’t prompted you: there is one case that only shows up during migration, because the files have to be opened to see it — copies whose tags don’t match what your catalog says.";
 "settings.music" = "Music";

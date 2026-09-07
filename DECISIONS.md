@@ -16369,3 +16369,46 @@ nadie volvió a leerlo.
 
 `dotnet build AuraStudio.Windows.slnx`: 0 errores. `dotnet test`: **1 820 en
 verde, ninguna omitida, ninguna en rojo**.
+
+## ST-227 (A7c, addendum 2) — El idioma se aplica cerrando, no relanzando
+
+Cambio de contrato pedido por la maestra para alinear con Windows, y es
+el correcto: **el botón dice "Cerrar ahora" y cierra**; el usuario vuelve
+a abrir la app.
+
+A7b relanzaba: abría el proceso nuevo con `NSWorkspace.openApplication` y
+recién entonces cerraba el viejo. Suena mejor y es peor. Aura Studio
+puede tener una operación de disco a medias --un sync, una conversión, un
+flasheo-- y ahí el relanzamiento no se puede prometer: o corta lo que
+está corriendo, o el proceso nuevo pelea con el viejo por el mismo iPod.
+Un botón que a veces no hace lo que dice enseña a desconfiar de todos los
+botones. Se quitó `restartApp()`; queda `closeApp()`, que es
+`NSApp.terminate` y nada más.
+
+**Con tareas en curso ni se ofrece cerrar.** Si `BackgroundTaskCenter` no
+está vacío (sync, conversión, migración, firmware), el diálogo cambia
+entero: título "Se aplicará al siguiente arranque", mensaje que nombra lo
+que está corriendo, y un solo botón, "Entendido". El ajuste ya quedó
+guardado. Ofrecer un botón que cortaría un sync a la mitad sería ofrecer
+un daño y llamarlo opción. El centro de tareas es la única fuente que se
+consulta: si una operación no está ahí, tampoco le avisa al usuario, y
+eso sería otro bug, no un caso a cubrir acá.
+
+Claves: se retiraron `settings.language-restart-title`,
+`-restart-message` y `-restart-now` (decían "reiniciar", que ya no es lo
+que pasa) y entraron `settings.language-apply-title`, `-apply-message`,
+`-close-now`, `-busy-title` y `-busy-message`, con sus seis idiomas.
+`settings.language-restart-later` ("Más tarde") sigue igual. Las seis van
+al cotejo compartido como "solo Mac" con su inglés, para que Windows las
+adopte; Windows no había publicado ninguna de este diálogo todavía.
+
+**Y una prueba que salió de un tropiezo propio.** La primera versión de
+este diálogo elegía la clave con un ternario **adentro** de `LS(...)`.
+Compilaba, funcionaba, y dejaba ciegas a las dos pruebas de inventario:
+las dos leen el código con una expresión regular que solo ve
+`LS("literal")`, así que una clave calculada no aparece ni en "no falta
+ninguna" ni en "no sobra ninguna" -- las dos habrían seguido en verde sin
+comprobar nada. Ahora la clave se elige afuera, con un literal en cada
+rama, y `testEveryLocalizationCallUsesALiteralKey` falla si alguien
+vuelve a calcularla. Comprobado al revés: con el ternario puesto, la
+prueba falla y nombra el archivo y la línea.

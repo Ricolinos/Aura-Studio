@@ -70,16 +70,46 @@ struct SettingsSectionView: View {
         .navigationTitle(LS("settings.settings"))
     }
 
-    /// Relanza la app. `NSApp.terminate` sin más dejaría al usuario con
-    /// la app cerrada y el idioma cambiado, teniendo que abrirla él: se
-    /// lanza el nuevo proceso primero y recién entonces se cierra este.
-    private func restartApp() {
-        let url = Bundle.main.bundleURL
-        let configuration = NSWorkspace.OpenConfiguration()
-        configuration.createsNewApplicationInstance = true
-        NSWorkspace.shared.openApplication(at: url, configuration: configuration) { _, _ in
-            DispatchQueue.main.async { NSApp.terminate(nil) }
-        }
+    /// Cierra la app. **No la relanza** (ST-227, A7c addendum; mismo
+    /// contrato que Windows).
+    ///
+    /// A7b relanzaba: abría el proceso nuevo y recién entonces cerraba
+    /// este. Suena mejor y es peor. Aura Studio puede tener una
+    /// operación de disco a medias --un sync, una conversión, un
+    /// flasheo-- y ahí un relanzamiento no se puede prometer: o se
+    /// cancela lo que está corriendo, o el proceso nuevo pelea con el
+    /// viejo por el mismo iPod. Un botón que a veces no hace lo que dice
+    /// enseña a desconfiar de todos los botones. Cierra, y el usuario la
+    /// vuelve a abrir.
+    ///
+    /// Con tareas en curso este camino ni se ofrece -- ver
+    /// `hasWorkInFlight`.
+    private func closeApp() {
+        NSApp.terminate(nil)
+    }
+
+    /// Si hay algo corriendo que no se puede cortar a la ligera. El
+    /// centro de tareas es la única fuente: si algo no está ahí, es que
+    /// no le avisa al usuario tampoco, y eso sería otro bug.
+    private var hasWorkInFlight: Bool {
+        !library.taskCenter.isEmpty
+    }
+
+    /// El título y el mensaje se eligen **acá**, con una clave literal en
+    /// cada rama, y no con un ternario adentro de `LS(...)`.
+    ///
+    /// No es estilo: el inventario de claves
+    /// (`LocalizationCatalogTests`) lee el código con una expresión
+    /// regular, así que una clave que no sea un literal se vuelve
+    /// invisible para él -- y entonces ni la prueba de "no falta
+    /// ninguna" ni la de "no sobra ninguna" valen nada. Hay una prueba
+    /// que falla si alguien vuelve a meter una clave calculada.
+    private var languageAlertTitle: String {
+        hasWorkInFlight ? LS("settings.language-busy-title") : LS("settings.language-apply-title")
+    }
+
+    private var languageAlertMessage: String {
+        hasWorkInFlight ? LS("settings.language-busy-message") : LS("settings.language-apply-message")
     }
 
     private var generalTab: some View {
@@ -100,14 +130,24 @@ struct SettingsSectionView: View {
             .onChange(of: preferences.language) { _, _ in askToRestart = true }
             // El idioma no se aplica a medias: o toda la app en el
             // idioma nuevo, o ninguna parte. `AppleLanguages` lo lee el
-            // sistema al arrancar, así que hay que reiniciar.
-            .alert(LS("settings.language-restart-title"), isPresented: $askToRestart) {
-                Button(LS("settings.language-restart-now")) { restartApp() }
-                    .accessibilityIdentifier("ajustes.general.idioma.reiniciar")
-                Button(LS("settings.language-restart-later"), role: .cancel) { }
-                    .accessibilityIdentifier("ajustes.general.idioma.masTarde")
+            // sistema al arrancar, así que hay que volver a abrirla.
+            //
+            // Con tareas en curso NO se ofrece cerrar: el ajuste ya
+            // quedó guardado, y ofrecer un botón que cortaría un sync a
+            // la mitad sería ofrecer un daño. Se dice lo que va a pasar
+            // y ya.
+            .alert(languageAlertTitle, isPresented: $askToRestart) {
+                if hasWorkInFlight {
+                    Button(LS("themes-view.entendido"), role: .cancel) { }
+                        .accessibilityIdentifier("ajustes.general.idioma.entendido")
+                } else {
+                    Button(LS("settings.language-close-now")) { closeApp() }
+                        .accessibilityIdentifier("ajustes.general.idioma.cerrar")
+                    Button(LS("settings.language-restart-later"), role: .cancel) { }
+                        .accessibilityIdentifier("ajustes.general.idioma.masTarde")
+                }
             } message: {
-                Text(LS("settings.language-restart-message"))
+                Text(languageAlertMessage)
             }
 
             // ST-227 (A7c addendum): se dice que son automáticas. La

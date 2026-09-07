@@ -374,12 +374,14 @@
 "settings.importing" = "À l’import";
 "settings.installer" = "Installation";
 "settings.language" = "Langue";
+"settings.language-apply-message" = "La langue est appliquée au démarrage. Si vous fermez maintenant, rouvrez Aura Studio et il sera déjà dans la nouvelle langue. Si vous choisissez « Plus tard », le réglage est enregistré et s’applique à la prochaine ouverture.";
+"settings.language-apply-title" = "Fermer Aura Studio maintenant ?";
+"settings.language-busy-message" = "Des tâches sont en cours : synchronisation, conversion, migration ou micrologiciel. La langue reste enregistrée et s’appliquera à la prochaine ouverture d’Aura Studio.";
+"settings.language-busy-title" = "S’appliquera au prochain démarrage";
+"settings.language-close-now" = "Fermer maintenant";
 "settings.language-machine-translated" = "Traduction automatique, pas encore relue par des locuteurs natifs";
 "settings.language-note-new" = "La langue s’applique au démarrage de l’app. Les noms de vos collections de photos et les catégories déjà enregistrées ne sont pas traduits : ce sont vos données, pas le texte de l’app.";
 "settings.language-restart-later" = "Plus tard";
-"settings.language-restart-message" = "La langue s’applique au démarrage. Si vous choisissez « Plus tard », elle reste enregistrée et s’applique à la prochaine ouverture d’Aura Studio.";
-"settings.language-restart-now" = "Redémarrer maintenant";
-"settings.language-restart-title" = "Redémarrer Aura Studio maintenant ?";
 "settings.language.system" = "Comme le système";
 "settings.migrate-settings-detail" = "Met à jour une bibliothèque créée avec une version antérieure : écrit les tags du catalogue dans les copies, renomme les fichiers préparés et nettoie ce qui n’appartient plus à rien. Vous pouvez migrer même si Aura ne vous l’a pas proposé : un cas n’apparaît qu’au moment de la migration, car il faut ouvrir les fichiers pour le voir — des copies dont les tags ne correspondent pas à ce que dit votre catalogue.";
 "settings.music" = "Musique";

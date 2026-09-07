@@ -138,6 +138,37 @@ final class LocalizationCatalogTests: XCTestCase {
                       "claves compartidas con Windows que no están en el catálogo: \(missing)")
     }
 
+    /// **La premisa de las dos pruebas de inventario, comprobada en vez
+    /// de supuesta.** Tanto "no falta ninguna clave" como "no sobra
+    /// ninguna" leen el código con una expresión regular que solo ve
+    /// `LS("literal")`. Una clave calculada -- un ternario adentro de
+    /// `LS(...)`, una interpolación -- se vuelve invisible para ese
+    /// barrido, y entonces las dos pruebas siguen en verde mientras
+    /// dejan de comprobar nada. Pasó al escribir el diálogo de idioma
+    /// de A7c addendum, y por eso está esta prueba.
+    func testEveryLocalizationCallUsesALiteralKey() throws {
+        let pattern = try NSRegularExpression(pattern: #"\bLSf?\((?!")"#)
+        var offenders: [String] = []
+        let walker = FileManager.default.enumerator(at: sourcesDirectory, includingPropertiesForKeys: nil)
+        while let url = walker?.nextObject() as? URL {
+            guard url.pathExtension == "swift" else { continue }
+            // `AuraBundle.swift` es donde `LS`/`LSf` se DEFINEN: ahí la
+            // clave es un parámetro, no un literal, y tiene que serlo.
+            guard url.lastPathComponent != "AuraBundle.swift" else { continue }
+            let text = try String(contentsOf: url, encoding: .utf8)
+            for (number, line) in text.split(separator: "\n", omittingEmptySubsequences: false).enumerated() {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.hasPrefix("//"), !trimmed.hasPrefix("*") else { continue }
+                let range = NSRange(line.startIndex..., in: line)
+                guard pattern.firstMatch(in: String(line), range: range) != nil else { continue }
+                offenders.append("\(url.lastPathComponent):\(number + 1)  \(trimmed.prefix(90))")
+            }
+        }
+        XCTAssertTrue(offenders.isEmpty,
+                      "claves de localización que no son literales -- el inventario no las ve:\n"
+                        + offenders.joined(separator: "\n"))
+    }
+
     /// El catálogo tampoco puede tener claves que **nadie pide**. Una
     /// clave huérfana no rompe nada, y por eso se acumula: alguien la
     /// traduce a seis idiomas, alguien la lee creyendo que describe la
