@@ -52,7 +52,8 @@ string contextMenuRelative = RelativePath(repoRoot, contextMenuPath);
 allSites.AddRange(CSharpLiteralExtractor.ExtractMenuEntries(contextMenuRelative, contextMenuText, keys));
 allPlurals.AddRange(PluralTernaryScan.Extract(contextMenuRelative, contextMenuText));
 
-// --- StatusMessage / ContentDialog / cultura fija, en todo AuraStudio.App ---
+// --- StatusMessage / ContentDialog / ayudantes con texto de usuario /
+// cultura fija, en todo AuraStudio.App ---
 
 string[] appCsFiles = [.. Directory.EnumerateFiles(appDir, "*.cs", SearchOption.AllDirectories)
     .Where(path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}")
@@ -67,6 +68,7 @@ foreach (string csFile in appCsFiles)
 
     allSites.AddRange(CSharpLiteralExtractor.ExtractStatusMessages(relative, text, keys));
     allSites.AddRange(CSharpLiteralExtractor.ExtractContentDialogText(relative, text, keys));
+    allSites.AddRange(CSharpLiteralExtractor.ExtractHelperFirstArgument(relative, text, keys));
     allPlurals.AddRange(PluralTernaryScan.Extract(relative, text));
     fixedCulture.AddRange(FixedCultureExtractor.Extract(relative, text, keys));
 }
@@ -84,6 +86,7 @@ foreach (string csFile in coreCsFiles)
     string relative = RelativePath(repoRoot, csFile);
 
     fixedCulture.AddRange(FixedCultureExtractor.Extract(relative, text, keys));
+    fixedCulture.AddRange(CatalogDataExtractor.Extract(relative, text, keys));
     if (Path.GetFileName(csFile) != "ContextMenu.cs") // ya se contó en su propio pase, con los ids de menú fuera
         allPlurals.AddRange(PluralTernaryScan.Extract(relative, text));
 }
@@ -100,6 +103,16 @@ Dictionary<string, string> spanish = allSites
 ResourceWriter.WriteResw(Path.Combine(outDir, "Strings", "es", "Resources.resw"), spanish, english: false);
 ResourceWriter.WriteResw(Path.Combine(outDir, "Strings", "en", "Resources.resw"), spanish, english: true);
 
+// claves-compartidas.csv es co-propiedad con la Mac (ST-247, addendum):
+// esto NUNCA lo regenera entero, solo actualiza la columna "sitio Windows"
+// de las claves que ya cita, sin tocar "sitio Mac" ni "estado". Si el
+// archivo no existe todavía, no hay nada que actualizar.
+Dictionary<string, Site> sitesByKey = allSites
+    .GroupBy(s => s.Key)
+    .ToDictionary(g => g.Key, g => g.First(), StringComparer.Ordinal);
+(int sharedUpdated, List<string> sharedMissingKeys) = ClavesCompartidasCsv.UpdateSitioWindows(
+    Path.Combine(outDir, "claves-compartidas.csv"), sitesByKey);
+
 // --- Conteos ---
 
 int appStringsCount = allSites.Count(s => s.Kind == "AppStrings");
@@ -107,7 +120,10 @@ int xamlCount = allSites.Count(s => s.Kind == "XAML");
 int menuEntryCount = allSites.Count(s => s.Kind == "MenuEntry");
 int statusMessageCount = allSites.Count(s => s.Kind == "StatusMessage");
 int contentDialogCount = allSites.Count(s => s.Kind == "ContentDialog");
+int helperArgumentCount = allSites.Count(s => s.Kind == "HelperArgument");
 int uniqueKeys = allSites.Select(s => s.Key).Distinct(StringComparer.Ordinal).Count();
+int culturaFijaCount = fixedCulture.Count(s => s.Kind == "CulturaFija");
+int datoCount = fixedCulture.Count(s => s.Kind == "Dato");
 
 Console.WriteLine($"Archivos XAML recorridos: {xamlFiles.Length}");
 Console.WriteLine($"Archivos .cs de AuraStudio.App recorridos: {appCsFiles.Length}");
@@ -118,15 +134,26 @@ Console.WriteLine($"Sitios XAML: {xamlCount}");
 Console.WriteLine($"Sitios MenuEntry (ContextMenu.cs): {menuEntryCount}");
 Console.WriteLine($"Sitios StatusMessage: {statusMessageCount}");
 Console.WriteLine($"Sitios ContentDialog: {contentDialogCount}");
+Console.WriteLine($"Sitios HelperArgument: {helperArgumentCount}");
 Console.WriteLine($"Total de sitios: {allSites.Count}");
 Console.WriteLine($"Claves únicas: {uniqueKeys}");
 Console.WriteLine($"Ternarios de plural encontrados: {allPlurals.Count}");
-Console.WriteLine($"Sitios de cultura fija: {fixedCulture.Count}");
+Console.WriteLine($"Sitios de cultura fija: {culturaFijaCount}");
+Console.WriteLine($"Sitios de dato (no traducir): {datoCount}");
 Console.WriteLine();
 Console.WriteLine($"-> {Path.Combine(outDir, "revision.csv")}");
 Console.WriteLine($"-> {Path.Combine(outDir, "plurales-ternario.csv")}");
 Console.WriteLine($"-> {Path.Combine(outDir, "Strings", "es", "Resources.resw")}");
 Console.WriteLine($"-> {Path.Combine(outDir, "Strings", "en", "Resources.resw")}");
+Console.WriteLine();
+Console.WriteLine($"claves-compartidas.csv: {sharedUpdated} cita(s) de sitio Windows actualizada(s).");
+if (sharedMissingKeys.Count > 0)
+{
+    Console.WriteLine(
+        $"  Claves citadas en claves-compartidas.csv que ya no existen en revision.csv ({sharedMissingKeys.Count}), " +
+        "no tocadas -- revisar si es un renombre pendiente de reconciliar:");
+    foreach (string key in sharedMissingKeys.Distinct(StringComparer.Ordinal)) Console.WriteLine($"    {key}");
+}
 
 static string RelativePath(string repoRoot, string absolute) =>
     Path.GetRelativePath(repoRoot, absolute).Replace('\\', '/');

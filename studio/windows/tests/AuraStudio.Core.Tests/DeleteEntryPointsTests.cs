@@ -1,0 +1,136 @@
+using System.Text.RegularExpressions;
+using Xunit;
+
+namespace AuraStudio.Core.Tests;
+
+/// <summary>
+/// ST-245 (addendum, "espejo de A5"): prueba, sobre el código fuente real de
+/// <c>AuraStudio.App</c> (no un mock), que TODO punto de entrada de
+/// "Eliminar" pasa por <c>DeleteConfirmation.ConfirmAndRemoveAsync</c> — el
+/// único lugar que muestra confirmación antes de llamar
+/// <c>LibraryViewModel.Remove</c> (que puede mandar archivos a la Papelera
+/// en modo copia desde B5, sin aviso si nadie confirma antes).
+///
+/// <para>Es un "source-grep", no una prueba de integración con un
+/// <c>LibraryViewModel</c> real: lee el texto de <c>Views/</c> y
+/// <c>ViewModels/</c> y busca la forma sintáctica de la llamada
+/// (<c>library.Remove(</c>/<c>_library.Remove(</c>). Elegido así porque
+/// tocar <c>Views/</c> o <c>LibraryViewModel</c> está fuera de alcance de
+/// esta sesión — el Experto los tiene en B7a ahora mismo (instrucción
+/// explícita del coordinador) — así que un arnés que instanciara un
+/// <c>LibraryViewModel</c> real (estilo <c>StorageFixtureCheck</c>) no se
+/// podía escribir sin ese riesgo de choque. Cubre los cuatro puntos del
+/// encargo: cuadrícula (<c>MediaGridPage.xaml.cs:1007</c>), canciones
+/// (<c>SongsPage.xaml.cs:502</c>), artistas (<c>ArtistsPage.xaml.cs:314</c>
+/// y <c>:443</c>, menú contextual y selección) — los cuatro llaman
+/// <c>DeleteConfirmation.ConfirmAndRemoveAsync</c>. La tecla Supr no
+/// aparece en ningún <c>Page_KeyDown</c> de <c>SongsPage</c>/
+/// <c>MediaGridPage</c>/<c>ArtistsPage</c> (revisados los tres completos):
+/// no es un punto que se salte la confirmación, es una función que todavía
+/// no existe.</para>
+/// </summary>
+public class DeleteEntryPointsTests
+{
+    private static string RepoRoot()
+    {
+        DirectoryInfo? dir = new(AppContext.BaseDirectory);
+        while (dir is not null)
+        {
+            if (File.Exists(Path.Combine(dir.FullName, "studio", "windows", "AuraStudio.Windows.slnx")))
+                return dir.FullName;
+
+            dir = dir.Parent;
+        }
+
+        throw new InvalidOperationException("No se encontró la raíz del repo desde el directorio de pruebas.");
+    }
+
+    private static readonly Regex LibraryRemoveCall = new(
+        @"\b(?:_library|library|Library)\.Remove\(", RegexOptions.Compiled);
+
+    /// <summary>
+    /// Hallazgo real (ST-245, addendum), NO corregido acá — instrucción
+    /// explícita del coordinador ("NO toques Views ni LibraryViewModel"):
+    /// <c>SimilarItemsViewModel.KeepOnly</c> (línea 119) llama
+    /// <c>_library.Remove(doomed)</c> directo, sin ninguna confirmación —
+    /// ni en el ViewModel ni en <c>SimilarItemsPage.xaml.cs</c>
+    /// (<c>KeepOnly_Click</c> no muestra ningún diálogo, solo resuelve el
+    /// <c>Guid</c> del botón y llama <c>ViewModel.KeepOnly</c> derecho). El
+    /// doc-comment de <c>KeepOnly</c> (líneas 107-109) y el mensaje de éxito
+    /// (líneas 122-124) además mienten: dicen que el archivo "sigue en tu
+    /// computadora", falso para un elemento en modo copia desde B5 (va a la
+    /// Papelera sin avisar). El arreglo real es de interfaz (mostrar
+    /// confirmación antes de <c>KeepOnly</c>, o enrutar por
+    /// <c>DeleteConfirmation</c>) — no cabe en Core sin tocar Views, así que
+    /// queda como excepción documentada, no silenciada: cualquier bypass
+    /// NUEVO (uno que no esté en esta lista) sigue haciendo fallar la
+    /// prueba de abajo.
+    /// </summary>
+    private static readonly HashSet<(string File, int Line)> KnownUnconfirmedBypasses = new()
+    {
+        ("AuraStudio.App/ViewModels/SimilarItemsViewModel.cs", 119),
+    };
+
+    [Fact]
+    public void TodoEliminarPasaPorDeleteConfirmationSalvoHallazgosConocidos()
+    {
+        string appDir = Path.Combine(RepoRoot(), "studio", "windows", "AuraStudio.App");
+        string[] files = [.. Directory.EnumerateFiles(appDir, "*.cs", SearchOption.AllDirectories)
+            .Where(path => path.Contains($"{Path.DirectorySeparatorChar}Views{Path.DirectorySeparatorChar}")
+                        || path.Contains($"{Path.DirectorySeparatorChar}ViewModels{Path.DirectorySeparatorChar}"))
+            .OrderBy(path => path, StringComparer.Ordinal)];
+
+        Assert.True(files.Length > 0, "no se encontraron archivos de Views/ViewModels -- ¿cambió la estructura del repo?");
+
+        string appRoot = Path.Combine(RepoRoot(), "studio", "windows");
+        var sinDocumentar = new List<string>();
+
+        foreach (string file in files)
+        {
+            string relative = Path.GetRelativePath(appRoot, file).Replace('\\', '/');
+            string[] lines = File.ReadAllLines(file);
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (!LibraryRemoveCall.IsMatch(lines[i])) continue;
+
+                int lineNumber = i + 1;
+                bool esElUnicoPuntoSancionado = relative == "AuraStudio.App/Views/DeleteConfirmation.cs";
+                bool esHallazgoConocido = KnownUnconfirmedBypasses.Contains((relative, lineNumber));
+
+                if (!esElUnicoPuntoSancionado && !esHallazgoConocido)
+                    sinDocumentar.Add($"{relative}:{lineNumber}");
+            }
+        }
+
+        Assert.True(sinDocumentar.Count == 0,
+            "llamada a library.Remove(...) fuera de DeleteConfirmation y sin documentar como hallazgo conocido " +
+            "(¿un bypass nuevo, o uno viejo que hay que agregar a KnownUnconfirmedBypasses?): " +
+            string.Join(", ", sinDocumentar));
+    }
+
+    /// <summary>
+    /// Cinturón además del tirante: confirma que los hallazgos conocidos
+    /// SIGUEN existiendo en el archivo/línea exactos citados arriba -- si
+    /// alguien mueve o arregla <c>SimilarItemsViewModel.KeepOnly</c>, esta
+    /// prueba obliga a venir a borrar la excepción en vez de dejarla viva y
+    /// sin sentido (una excepción que ya no aplica es tan mala como un
+    /// bypass sin documentar: los dos esconden el estado real).
+    /// </summary>
+    [Fact]
+    public void LosHallazgosConocidosSiguenExistiendoEnLaLineaCitada()
+    {
+        string appRoot = Path.Combine(RepoRoot(), "studio", "windows");
+
+        foreach ((string file, int line) in KnownUnconfirmedBypasses)
+        {
+            string fullPath = Path.Combine(appRoot, file.Replace('/', Path.DirectorySeparatorChar));
+            Assert.True(File.Exists(fullPath), $"{file} ya no existe -- actualizar KnownUnconfirmedBypasses");
+
+            string[] lines = File.ReadAllLines(fullPath);
+            Assert.True(line - 1 < lines.Length, $"{file}:{line} está fuera de rango -- el archivo cambió, revisar la excepción");
+            Assert.True(LibraryRemoveCall.IsMatch(lines[line - 1]),
+                $"{file}:{line} ya no tiene la llamada a Remove esperada -- ¿se arregló? borrar esta excepción");
+        }
+    }
+}

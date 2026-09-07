@@ -30,6 +30,24 @@ public static class CSharpLiteralExtractor
         RegexOptions.Compiled);
 
     /// <summary>
+    /// Ayudantes propios de C# cuyo (único o primer) argumento es texto de
+    /// cara al usuario (A7a: encargo del coordinador) -- NUNCA un patrón
+    /// genérico sobre toda llamada con un <c>string</c> como primer
+    /// parámetro (eso atraparía <c>Path.Combine("...")</c>,
+    /// <c>Directory.CreateDirectory("...")</c>, claves de diccionario,
+    /// mensajes de log...), sino una lista explícita y curada, verificada a
+    /// mano leyendo cada sitio real antes de agregarlo. Hoy:
+    /// <c>DeviceSafetyResult.Safe(string message)</c> y
+    /// <c>DeviceSafetyResult.Unsafe(string message)</c>
+    /// (<c>Services/DeviceSafetyValidator.cs</c>) -- mensajes de seguridad
+    /// del dispositivo que no pasan por <c>AppStrings</c>,
+    /// <c>StatusMessage</c> ni <c>ContentDialog</c>.
+    /// </summary>
+    private static readonly Regex HelperCallWithUserTextArgument = new(
+        @"\b(?:DeviceSafetyResult\.Safe|DeviceSafetyResult\.Unsafe)\(\s*(?<arg>.+?)\)\s*;",
+        RegexOptions.Compiled | RegexOptions.Singleline);
+
+    /// <summary>
     /// <c>ContextMenu.cs</c>: los <c>const string</c>, las llamadas a
     /// <c>MenuEntry</c>, y —de red, por si algo se cuela por otro
     /// camino, como <c>ForVideoCollection(scope, categories, "Eliminar
@@ -125,6 +143,34 @@ public static class CSharpLiteralExtractor
         {
             AddLiteralSite(sites, keys, relativePath, fileText, match.Groups["lit"].Value,
                 match.Index, "ContentDialog", null);
+        }
+
+        return sites;
+    }
+
+    /// <summary>
+    /// Un argumento puede ser un solo literal, o un ternario de dos (como
+    /// <c>DeviceSafetyResult.Unsafe(count == 0 ? "..." : "...")</c>): se
+    /// escanea con <see cref="StringLiteralScanner"/>, igual que la red de
+    /// <see cref="ExtractMenuEntries"/>, para levantar cada literal por
+    /// separado en vez de asumir que todo el argumento es uno solo.
+    /// </summary>
+    public static List<Site> ExtractHelperFirstArgument(string relativePath, string fileText, KeyRegistry keys)
+    {
+        var sites = new List<Site>();
+
+        foreach (Match call in HelperCallWithUserTextArgument.Matches(fileText))
+        {
+            string arg = call.Groups["arg"].Value;
+            int argOffset = call.Groups["arg"].Index;
+
+            foreach (RawLiteral literal in StringLiteralScanner.Scan(arg))
+            {
+                if (literal.RawText.Trim().Length == 0) continue;
+
+                int start = argOffset + literal.Start;
+                AddLiteralSite(sites, keys, relativePath, fileText, WrapQuotes(literal), start, "HelperArgument", null);
+            }
         }
 
         return sites;

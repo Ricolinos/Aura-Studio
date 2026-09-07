@@ -138,6 +138,108 @@ final class LocalizationCatalogTests: XCTestCase {
                       "claves compartidas con Windows que no están en el catálogo: \(missing)")
     }
 
+    // MARK: - Los `.lproj` no pueden apartarse del catálogo (ST-227 addendum)
+
+    /// `Localizable.xcstrings` es la fuente única; `tools/
+    /// compilar-catalogo.py` genera los `.lproj/Localizable.strings`
+    /// (y `.stringsdict`) que SwiftPM necesita -- **no se editan a
+    /// mano** (mismo criterio que `Generated/AuraPalette.swift`, ver
+    /// CLAUDE.md). Si alguien edita el catálogo y no vuelve a correr
+    /// el script (o edita un `.lproj` directo, a mano), los dos
+    /// quedan desincronizados en silencio: la app de Xcode (que
+    /// compila el `.xcstrings` sola) diría una cosa, y `swift test`
+    /// (que lee el `.lproj` commiteado) otra.
+    ///
+    /// Corre el script REAL contra un directorio de salida temporal
+    /// (`--output-root`, ST-227 addendum -- lee siempre el catálogo
+    /// real, nunca uno de prueba) y compara byte a byte contra lo que
+    /// hay commiteado. Si difieren, dice CUÁLES archivos y, para
+    /// `Localizable.strings`, cuáles claves -- no solo "algo cambió".
+    func testGeneratedLprojFilesMatchTheCatalog() throws {
+        let root = repositoryRoot
+        let scriptURL = root.appendingPathComponent("tools/compilar-catalogo.py")
+        let committedResources = root.appendingPathComponent("studio/AuraStudio/Sources/AuraStudio/Resources")
+
+        let tempRoot = FileManager.default.temporaryDirectory
+            .appendingPathComponent("compilar-catalogo-drift-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: tempRoot, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: tempRoot) }
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+        process.arguments = ["python3", scriptURL.path, "--output-root", tempRoot.path]
+        let stderrPipe = Pipe()
+        process.standardError = stderrPipe
+        try process.run()
+        process.waitUntilExit()
+        let stderrText = String(data: stderrPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        XCTAssertEqual(process.terminationStatus, 0, "tools/compilar-catalogo.py falló: \(stderrText)")
+
+        let generatedLprojs = (try? FileManager.default.contentsOfDirectory(
+            at: tempRoot, includingPropertiesForKeys: nil))?.filter { $0.pathExtension == "lproj" } ?? []
+        XCTAssertGreaterThan(generatedLprojs.count, 0, "el script no generó ningún .lproj -- ¿cambió su forma de invocarlo?")
+
+        var differences: [String] = []
+        for generatedLproj in generatedLprojs {
+            let language = generatedLproj.deletingPathExtension().lastPathComponent
+            let committedLproj = committedResources.appendingPathComponent("\(language).lproj")
+
+            for filename in ["Localizable.strings", "Localizable.stringsdict"] {
+                let generatedFile = generatedLproj.appendingPathComponent(filename)
+                let committedFile = committedLproj.appendingPathComponent(filename)
+                let generatedExists = FileManager.default.fileExists(atPath: generatedFile.path)
+                let committedExists = FileManager.default.fileExists(atPath: committedFile.path)
+
+                guard generatedExists || committedExists else { continue }
+                guard generatedExists else {
+                    differences.append("\(language)/\(filename): el script ya no lo genera, pero sigue commiteado -- ¿un plural que desapareció del catálogo?")
+                    continue
+                }
+                guard committedExists else {
+                    differences.append("\(language)/\(filename): el script lo genera, pero no está commiteado -- correr tools/compilar-catalogo.py")
+                    continue
+                }
+
+                let generatedText = try String(contentsOf: generatedFile, encoding: .utf8)
+                let committedText = try String(contentsOf: committedFile, encoding: .utf8)
+                guard generatedText != committedText else { continue }
+
+                if filename == "Localizable.strings" {
+                    let generatedKeys = keysAndValues(inStringsFile: generatedText)
+                    let committedKeys = keysAndValues(inStringsFile: committedText)
+                    var keyDifferences: [String] = []
+                    for key in Set(generatedKeys.keys).union(committedKeys.keys).sorted() {
+                        if generatedKeys[key] != committedKeys[key] {
+                            keyDifferences.append("  \(key): catálogo dice «\(generatedKeys[key] ?? "(ausente)")», .lproj commiteado dice «\(committedKeys[key] ?? "(ausente)")»")
+                        }
+                    }
+                    differences.append("\(language)/\(filename) difiere en \(keyDifferences.count) clave(s):\n" + keyDifferences.prefix(10).joined(separator: "\n"))
+                } else {
+                    differences.append("\(language)/\(filename) difiere del catálogo (.stringsdict, comparación completa -- ver tools/compilar-catalogo.py)")
+                }
+            }
+        }
+
+        XCTAssertTrue(differences.isEmpty,
+                      "los .lproj commiteados no coinciden con lo que genera el catálogo -- correr tools/compilar-catalogo.py y commitear el resultado:\n"
+                        + differences.joined(separator: "\n---\n"))
+    }
+
+    /// Parser mínimo de `.strings` (`"clave" = "valor";`, una entrada
+    /// por línea, escapes `\"`/`\\`/`\n` -- lo que escribe `escape()`
+    /// de `compilar-catalogo.py`, no un parser de `.strings` general).
+    private func keysAndValues(inStringsFile text: String) -> [String: String] {
+        var result: [String: String] = [:]
+        let pattern = try? NSRegularExpression(pattern: #"^"((?:[^"\\]|\\.)*)"\s*=\s*"((?:[^"\\]|\\.)*)";$"#, options: [.anchorsMatchLines])
+        guard let pattern else { return result }
+        for match in pattern.matches(in: text, range: NSRange(text.startIndex..., in: text)) {
+            guard let keyRange = Range(match.range(at: 1), in: text),
+                  let valueRange = Range(match.range(at: 2), in: text) else { continue }
+            result[String(text[keyRange])] = String(text[valueRange])
+        }
+        return result
+    }
+
     /// Un lector de CSV que aguanta comillas y saltos de línea dentro de
     /// un campo -- los textos largos del cotejo los tienen.
     private func parseCSV(_ text: String) throws -> [[String: String]] {

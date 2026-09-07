@@ -8,6 +8,9 @@ namespace AuraStudio.Tools.StorageFixtureCheck;
 internal sealed class NoOpLibraryProcessor : ILibraryProcessor
 {
     public Task<bool> ProcessAsync(LibraryItem item, CancellationToken ct = default) => Task.FromResult(false);
+
+    public Task<bool> CopyIntoLibraryAsync(LibraryItem item, bool force = false, CancellationToken ct = default) =>
+        Task.FromResult(true);
 }
 
 internal sealed class NoOpEnrichmentService : IEnrichmentService

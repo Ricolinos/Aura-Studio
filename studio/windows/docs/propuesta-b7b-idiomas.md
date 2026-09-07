@@ -215,43 +215,48 @@ propio arnés.
 
 ## 3. Comprobación del instalador
 
+> **Corregido** (addendum, tras la decisión de la Maestra): los recursos
+> (`Strings`, `PluralRules`, `Resources.resx`) se mudaron a
+> `AuraStudio.Core` — `AuraStudio.Core` no puede referenciar
+> `AuraStudio.App`, y 10 de los 51 plurales inventariados viven en Core
+> (`LibraryStatusSummary`, `SimilarityText`, etc.), así que el catálogo
+> tenía que vivir donde están todos sus consumidores, no solo los de la
+> app. Los satélites salen entonces de `AuraStudio.Core.dll`, no de
+> `AuraStudio.App.dll` — la sección de abajo ya está escrita con eso.
+
 ### Lo que ya hace `dotnet publish` solo, y lo que no
 
-Con `.resx`/`ResourceManager` (decisión de B7a), un `.resx` no neutro
-(`AppStrings.en.resx`, `.ja.resx`, etc.) genera un **ensamblado satélite**
-por cultura: `<cultura>\AuraStudio.App.resources.dll`, uno por carpeta,
-dentro del árbol publicado. El `.resx` **neutro** (el que corresponde al
-idioma fuente, español) se compila DENTRO del ensamblado principal —no
-genera una carpeta `es\` aparte—, así que de las seis culturas, la
-comprobación tiene que esperar **cinco carpetas satélite**
-(`en`/`ja`/`de`/`ru`/`fr`), no seis.
+Con `.resx`/`ResourceManager` (decisión de B7a) alojado en
+`AuraStudio.Core`, un `.resx` no neutro genera un **ensamblado satélite**
+por cultura: `<cultura>\AuraStudio.Core.resources.dll`, uno por carpeta,
+dentro del árbol publicado — el publish autocontenido de la app SÍ arrastra
+los satélites de sus dependencias, `AuraStudio.Core` incluida, así que no
+hace falta ningún paso extra por estar en un proyecto distinto. El `.resx`
+**neutro** (español, el idioma fuente) se compila DENTRO de
+`AuraStudio.Core.dll` —no genera una carpeta `es\` aparte—, así que de las
+seis culturas, la comprobación tiene que esperar **cinco carpetas
+satélite** (`en`/`ja`/`de`/`ru`/`fr`), no seis.
 
-Verificado en `AuraStudio.App.csproj`: hoy **no existe**
-`<SatelliteResourceLanguages>`. Sin esa propiedad, MSBuild no sabe qué
-culturas empaquetar como satélite y podría publicar todas las que
-encuentre `.resx` para, incluidas culturas de paquetes NuGet de terceros
-que no le importan a nadie acá. **B7b/B7a real tiene que agregarla**:
+`<SatelliteResourceLanguages>` (necesaria por el mismo motivo que antes —
+sin ella, MSBuild podría empaquetar culturas de paquetes NuGet de terceros
+que a nadie le importan acá) **va en `AuraStudio.Core.csproj`**, no en el
+de la app — es donde vive el `.resx` ahora:
 
 ```xml
-<!-- AuraStudio.App.csproj -->
+<!-- AuraStudio.Core.csproj -->
 <SatelliteResourceLanguages>en;ja;de;ru;fr</SatelliteResourceLanguages>
 ```
 
-El `.iss` (`installer/AuraStudio.iss`, sección `[Files]`) **no necesita
-ningún cambio**: ya empaqueta `Source: "{#PublishDir}\*"` con
-`recursesubdirs createallsubdirs` — copia TODO lo que haya bajo el
-publish, satélites incluidos, sin que nadie tenga que nombrar las
-carpetas de cultura a mano. Confirmado leyendo el `.iss` real, no
-asumido.
+El `.iss` (`installer/AuraStudio.iss`, sección `[Files]`) sigue **sin
+necesitar ningún cambio** por el mismo motivo de antes: `recursesubdirs
+createallsubdirs` copia TODO lo que haya bajo el publish, sea de qué
+ensamblado sea.
 
 ### Lo que sí hace falta: una comprobación en `Make-Installer.ps1`, estilo `$imprescindibles`
 
-`Make-Installer.ps1` ya tiene exactamente el patrón a calcar —el array
-`$imprescindibles` (`AuraStudio.App.exe`, `AuraStudio.App.pri`,
-`artifacts\mks5lboot.exe`, etc.), con `Test-Path` por cada uno y `throw`
-si falta algo, ANTES de empaquetar—. La propuesta es agregar ahí mismo
-(no una función aparte: es la misma comprobación de "publish completo",
-no una categoría distinta) una entrada por satélite:
+Mismo patrón que ya tiene el script —el array `$imprescindibles`, con
+`Test-Path` por cada uno y `throw` si falta algo, ANTES de empaquetar—,
+con las cinco entradas apuntando al satélite de **Core**:
 
 ```powershell
 $imprescindibles = @(
@@ -263,19 +268,26 @@ $imprescindibles = @(
     'artifacts\rockbox.ipod',
     'artifacts\metro\rockbox.ipod',
     'artifacts\moonlit\rockbox.ipod',
-    # B7b: un satélite de recursos por cultura no fuente. "es" no aparece:
-    # es el idioma fuente, va adentro de AuraStudio.App.dll, no en carpeta propia.
-    'en\AuraStudio.App.resources.dll',
-    'ja\AuraStudio.App.resources.dll',
-    'de\AuraStudio.App.resources.dll',
-    'ru\AuraStudio.App.resources.dll',
-    'fr\AuraStudio.App.resources.dll'
+    # B7b: un satélite de recursos por cultura no fuente, de AuraStudio.Core
+    # (los recursos viven ahí, no en AuraStudio.App -- ver nota de corrección
+    # arriba). "es" no aparece: es el idioma fuente, va adentro de
+    # AuraStudio.Core.dll, no en carpeta propia.
+    'en\AuraStudio.Core.resources.dll',
+    'ja\AuraStudio.Core.resources.dll',
+    'de\AuraStudio.Core.resources.dll',
+    'ru\AuraStudio.Core.resources.dll',
+    'fr\AuraStudio.Core.resources.dll'
 )
 ```
 
 Con esto, `$faltan`/`throw` ya cubre el caso —el mismo mecanismo que
 evitó que el instalador saliera sin `AuraStudio.App.pri`— sin escribir
-ninguna función nueva.
+ninguna función nueva. Y una prueba nueva, para cuando B7b real agregue
+`<SatelliteResourceLanguages>` al `.csproj` de Core: que un `dotnet
+publish` de verdad efectivamente deje las cinco carpetas —agregar la
+propiedad y que el build la ignore por un typo (`en;ja;de;ru,fr`, una coma
+en vez de punto y coma) es exactamente el tipo de error que solo se ve
+publicando, no leyendo el `.csproj`.
 
 ### La comprobación de arnés que pide B8
 
@@ -290,12 +302,13 @@ reciba el `$publishDir` y devuelva qué falta —mismo contrato que
 aparte contra un publish de prueba. Verificar además, con
 `System.Reflection.AssemblyName`/`System.Globalization.CultureInfo`, que
 el `.exe` publicado **carga** cada satélite (no solo que el archivo
-existe): instanciar un `ResourceManager` apuntando al ensamblado principal
-y pedir `GetString` con cada `CultureInfo` de las seis, confirmando que no
-lanza `MissingManifestResourceException` y que el resultado para las
-cinco no-fuente es distinto del que da la cultura fuente (si diera igual,
-el satélite existe pero está vacío o no se está usando). Esto es lo que
-de verdad prueba "las seis culturas funcionan", no solo que sus archivos
+existe): instanciar un `ResourceManager` apuntando a `AuraStudio.Core.dll`
+(no al `.exe` de la app — el catálogo vive en Core) y pedir `GetString`
+con cada `CultureInfo` de las seis, confirmando que no lanza
+`MissingManifestResourceException` y que el resultado para las cinco
+no-fuente es distinto del que da la cultura fuente (si diera igual, el
+satélite existe pero está vacío o no se está usando). Esto es lo que de
+verdad prueba "las seis culturas funcionan", no solo que sus archivos
 están en el disco.
 
 ## 4. Plurales y anchos: qué capturar en B7c

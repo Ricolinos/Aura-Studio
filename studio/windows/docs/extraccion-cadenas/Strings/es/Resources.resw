@@ -262,7 +262,7 @@
     <value>No se pudo continuar</value>
   </data>
   <data name="app-strings.installer-family-change" xml:space="preserve">
-    <value>Este iPod tiene {0} instalado y vas a instalar {1}. {2} se guarda completo, con sus ajustes, y puedes volver a él desde Extras cuando quieras.</value>
+    <value>Este iPod tiene {0} instalado y vas a instalar {1}. {0} se guarda completo, con sus ajustes, y puedes volver a él desde Extras cuando quieras.</value>
   </data>
   <data name="app-strings.installer-family-label" xml:space="preserve">
     <value>Firmware que se va a instalar</value>
@@ -753,8 +753,14 @@
   <data name="artists-page.buscar-artistas" xml:space="preserve">
     <value>Buscar artistas</value>
   </data>
+  <data name="artists-page.buscar-artistas-2" xml:space="preserve">
+    <value>Buscar artistas</value>
+  </data>
   <data name="artists-page.buscar-fotos" xml:space="preserve">
     <value>Buscar fotos</value>
+  </data>
+  <data name="artists-page.buscar-fotos-artistas-linea-fanart-tv" xml:space="preserve">
+    <value>Buscar las fotos de los artistas en línea (fanart.tv / Deezer)</value>
   </data>
   <data name="artists-page.buscar-informacion-linea" xml:space="preserve">
     <value>Buscar información en línea</value>
@@ -767,6 +773,12 @@
   </data>
   <data name="artists-page.eliminar" xml:space="preserve">
     <value>Eliminar</value>
+  </data>
+  <data name="artists-page.mas-acciones" xml:space="preserve">
+    <value>Más acciones</value>
+  </data>
+  <data name="artists-page.mas-acciones-2" xml:space="preserve">
+    <value>Más acciones</value>
   </data>
   <data name="artists-page.mostrar-explorador" xml:space="preserve">
     <value>Mostrar en el Explorador</value>
@@ -972,6 +984,9 @@
   <data name="device-list-page.buscar-actualizaciones" xml:space="preserve">
     <value>Buscar actualizaciones</value>
   </data>
+  <data name="device-list-page.calcula-se-copiaria-escribe-nada-ipod" xml:space="preserve">
+    <value>Calcula qué se copiaría. No escribe nada en el iPod.</value>
+  </data>
   <data name="device-list-page.cancelar" xml:space="preserve">
     <value>Cancelar</value>
   </data>
@@ -1020,6 +1035,21 @@
   <data name="device-list-view-model.se-detuvo-busqueda-actualizaciones" xml:space="preserve">
     <value>Se detuvo la búsqueda de actualizaciones.</value>
   </data>
+  <data name="device-safety-validator.dispositivo-cambio-desde-confirmacion-po" xml:space="preserve">
+    <value>El dispositivo cambió desde la confirmación. Por seguridad no se realizó ninguna escritura.</value>
+  </data>
+  <data name="device-safety-validator.dispositivo-verificado-actual-displaynam" xml:space="preserve">
+    <value>Dispositivo verificado: {0}, {1}, {2}</value>
+  </data>
+  <data name="device-safety-validator.hay-mas-ipod-candidato-por-seguridad" xml:space="preserve">
+    <value>Hay más de un iPod candidato. Por seguridad no se eligió ninguno.</value>
+  </data>
+  <data name="device-safety-validator.ipod-desaparecio-se-realizo-ninguna-escr" xml:space="preserve">
+    <value>El iPod desapareció. No se realizó ninguna escritura.</value>
+  </data>
+  <data name="device-safety-validator.volumen-ipod-esta-montado" xml:space="preserve">
+    <value>El volumen del iPod no está montado.</value>
+  </data>
   <data name="extras-page.animaciones-graficos" xml:space="preserve">
     <value>Animaciones y gráficos</value>
   </data>
@@ -1062,6 +1092,9 @@
   <data name="library-status-strip.detener" xml:space="preserve">
     <value>Detener</value>
   </data>
+  <data name="library-status-strip.detener-tarea-curso" xml:space="preserve">
+    <value>Detener la tarea en curso</value>
+  </data>
   <data name="library-view-model.buscando-fotos-artista" xml:space="preserve">
     <value>Buscando fotos de artista…</value>
   </data>
@@ -1100,6 +1133,9 @@
   </data>
   <data name="media-grid-page.buscar-posters" xml:space="preserve">
     <value>Buscar pósters</value>
+  </data>
+  <data name="media-grid-page.descarga-posters-falten-viajan-pegados-v" xml:space="preserve">
+    <value>Descarga los pósters que falten. Viajan pegados a su video en la próxima sincronización.</value>
   </data>
   <data name="media-grid-page.xaml.cancelar" xml:space="preserve">
     <value>Cancelar</value>
@@ -1178,6 +1214,9 @@
   </data>
   <data name="settings-page.artista-album-recomendado" xml:space="preserve">
     <value>Artista / Álbum (recomendado)</value>
+  </data>
+  <data name="settings-page.bajar" xml:space="preserve">
+    <value>Bajar</value>
   </data>
   <data name="settings-page.biblioteca" xml:space="preserve">
     <value>Biblioteca</value>
@@ -1359,6 +1398,9 @@
   <data name="settings-page.solo-titulo-recomendado" xml:space="preserve">
     <value>Solo el título (recomendado)</value>
   </data>
+  <data name="settings-page.subir" xml:space="preserve">
+    <value>Subir</value>
+  </data>
   <data name="settings-page.texto" xml:space="preserve">
     <value>↑</value>
   </data>
@@ -1424,6 +1466,12 @@
   </data>
   <data name="similar-items-page.volver-mostrar-descartados" xml:space="preserve">
     <value>Volver a mostrar los descartados</value>
+  </data>
+  <data name="songs-page.busca-album-ano-caratula-letra-lo" xml:space="preserve">
+    <value>Busca álbum, año, carátula y letra de lo que esté incompleto</value>
+  </data>
+  <data name="songs-page.busca-canciones-fotos-videos-parezcan-re" xml:space="preserve">
+    <value>Busca canciones, fotos y videos que parezcan repetidos</value>
   </data>
   <data name="songs-page.completar-linea" xml:space="preserve">
     <value>Completar en línea</value>
