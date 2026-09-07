@@ -76,11 +76,17 @@ public static class AppStringsExtractor
                 consumed.Add((litStart, litEnd));
             }
 
-            foreach (RawLiteral literal in StringLiteralScanner.Scan(member.BodyText))
-            {
-                if (Overlaps(consumed, literal.Start, literal.End)) continue;
-                if (literal.RawText.Trim().Length == 0) continue;
+            // Los que sobran se funden ANTES de convertirse en sitio: "a" +
+            // "b" (con saltos de línea entre medio, el estilo real de los
+            // párrafos largos de AppStrings.cs) es UNA frase, no dos medias
+            // frases con clave propia -- no se puede traducir un corte a
+            // mitad de oración, y la Mac ya la tiene como una sola clave.
+            List<RawLiteral> remaining = [.. StringLiteralScanner.Scan(member.BodyText)
+                .Where(literal => !Overlaps(consumed, literal.Start, literal.End))
+                .Where(literal => literal.RawText.Trim().Length > 0)];
 
+            foreach (RawLiteral literal in LiteralCoalescer.Coalesce(member.BodyText, remaining))
+            {
                 memberSites.Add((literal.Start, "", literal));
                 consumed.Add((literal.Start, literal.End));
             }

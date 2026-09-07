@@ -14458,3 +14458,105 @@ fase viven en **un solo sitio** (`S`, en `AppStrings.swift`), que es lo
 que haría corto un renombrado. Windows regeneró su cotejo mientras
 corría esta fase y las filas `storage-*` y `orphans-*` no cambiaron, así
 que las claves quedan como definitivas.
+## ST-247 (addendum) — Frases concatenadas (`"a" + "b"`) partidas a mitad de oración
+
+Tercer defecto de `ExtraerCadenasWindows`, encontrado por el Experto:
+cuando `AppStrings.cs` escribe un párrafo largo como dos o más literales
+concatenados por legibilidad (`"...y los " + "sincroniza directo..."`,
+partido en dos líneas), el extractor emitía un sitio —y una clave— por
+CADA fragmento, con el corte a mitad de oración. Eso no se puede traducir
+(el orden de palabras cambia por idioma) y no coincide con el borrador de
+la Mac, que trae la frase completa bajo una sola clave
+(`storage-copy-explainer`, citada por el Experto como ejemplo real).
+
+### La corrección: unir antes de emitir clave, solo cuando entre medio no hay más que un `+`
+
+`LiteralCoalescer.Coalesce`: dado el texto de un miembro y sus literales ya
+encontrados (después de sacar los que ya consumieron el ternario de plural
+y los brazos de `switch`), funde dos literales adyacentes en UNO solo si
+todo lo que hay entre el cierre del primero y la apertura del segundo,
+recortado, es exactamente un `+` — nada de código real de por medio. Los
+comentarios ya están en blanco a esa altura (`CommentStripper` corre antes
+de cualquier escaneo), así que un `+` con un comentario al lado entre los
+dos literales también cuenta como "solo un `+`". Cadenas de tres, cuatro o
+cinco piezas se funden igual, en una sola pasada (`InstallerDfuNotSeenByWindows`,
+cinco piezas, es la más larga del archivo).
+
+Aplicado en `AppStringsExtractor`, el único lugar donde aparece el patrón
+real hoy — verificado con `grep " +$"` contra `ContextMenu.cs` (0
+resultados) antes de decidir no tocar `CSharpLiteralExtractor`.
+
+### Los números, verificados de punta a punta, no solo el ejemplo citado
+
+Antes de escribir una sola línea de código se confirmó el total exacto de
+miembros con más de un literal en el borrador viejo: **42**. De esos, 5
+son ternarios de DOS MENSAJES REALES (`bootloader-update-flashing`,
+`installer-dfu-found`, `library-root-missing`, `library-season`,
+`library-status` — cada uno una condición que elige entre dos frases
+distintas, no un párrafo cortado) y tenían que seguir separados. Los otros
+**37** son el defecto real, y los 37 se fusionaron —confirmado
+comparando la lista de claves antes/después, no solo mirando algunos
+casos—: **553 → 501 sitios** (89 fragmentos se convirtieron en 37 claves
+unificadas, una neta reducción de 52).
+
+**Esto no coincide con el número que reportó el coordinador de parte del
+Experto ("41 frases partidas, 56 claves de más", esperando 497)**. Se
+dice así, sin forzar el número: el ejemplo citado
+(`storage-copy-explainer`) se verificó exacto, palabra por palabra, contra
+lo que reportó el Experto; los 37 grupos fusionados se verificaron
+mecánicamente (conteo antes/después, no una muestra) y los 5 que quedaron
+separados son ternarios de verdad, no fragmentos —revisados uno por uno,
+cada uno con una condición real de por medio (`family is null`, `state is
+null`, `IsNullOrWhiteSpace(root)`, `number == NoSeasonNumber`,
+`status.Error is { Length: > 0 }`)—. La diferencia (37 contra 41, 501
+contra 497) queda para que el Experto la reconcilie contra su propio
+conteo: si el suyo también fusionó alguno de esos 5 ternarios, o si hay un
+caso más que este mecanismo no encontró, hace falta mirarlo con las dos
+listas al lado.
+
+### Las 37 claves reunidas, con su nombre final (para comparar con el Experto)
+
+`app-strings.` + cada una de: `bootloader-update-done-detail`,
+`bootloader-update-enter-dfu-when`, `bootloader-update-flash-confirm`,
+`bootloader-update-not-required`, `bootloader-update-nothing-touched`,
+`bootloader-update-offer-unknown`, `bootloader-update-what-it-is`,
+`device-ambiguous`, `dfu-driver-missing`, `dfu-driver-package-missing`,
+`installer-dfu-detected-detail`, `installer-dfu-not-found`,
+`installer-dfu-not-seen-by-windows`, `installer-dfu-timing-warning`,
+`installer-dry-run-ok`, `installer-enter-dfu-when`,
+`installer-family-change`, `installer-format-danger-detail`,
+`installer-format-needs-confirmation`, `installer-permissions-detail`,
+`installer-welcome-detail`, `installer-welcome-warning`,
+`library-locked-reason`, `library-root-missing-detail`, `licenses-intro`,
+`licenses-libraries-intro`, `licenses-tag-lib-detail`,
+`licenses-tool-local-pin`, `licenses-unknown-tag-detail`,
+`orphans-confirm-message`, `orphans-detail`, `section-pending-detail`,
+`service-pause-detail`, `settings-language-detail`,
+`storage-change-only-affects-future`, `storage-copy-explainer`,
+`storage-reference-explainer`.
+
+Ninguna de las tres claves de `claves-compartidas.csv` que citaban un
+sufijo `-N` desactualizado (`storage-copy-explainer`,
+`storage-reference-explainer`, `storage-change-only-affects-future`,
+`orphans-detail`, `orphans-confirm-message`, `library-root-missing-detail`)
+necesitó cambiar de "clave" ni de "texto es" —esas columnas ya traían la
+frase completa, escrita a mano en el addendum anterior—; solo la cita de
+"sitio Windows" (línea y sufijo) se actualizó a la forma nueva, sin
+sufijo.
+
+### Verificación
+
+Tres pruebas nuevas en `LocalizationDraftTests.cs`:
+`NingunaClaveAppStringsTerminaEnGuionNumericoSalvoLosTernariosConocidos`
+(lista explícita de los 5 ternarios reales — cualquier otra clave de
+`AppStrings` con sufijo `-N` hace fallar la prueba, así que una
+concatenación nueva sin fusionar se atrapa sola), `NingunValorTerminaEnEspacio`
+(cero excepciones: un valor cortado a mitad de oración siempre termina en
+espacio, y ninguno lo hace hoy), y
+`NingunValorEmpiezaEnMinusculaSalvoExcepcionesConocidas` (seis excepciones
+reales y nombradas —"iPod" a la manera de Apple, dos URLs, dos nombres
+técnicos— contra las que si no se filtraran darían 8 falsos positivos:
+verificado antes de escribir la prueba, no asumido).
+
+`dotnet build`: 0 errores. `dotnet test`: **1 749 pruebas en verde** (3
+nuevas). Sin tocar código de la app.
