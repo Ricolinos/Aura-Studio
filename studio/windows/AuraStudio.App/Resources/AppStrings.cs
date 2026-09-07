@@ -102,11 +102,11 @@ public static class AppStrings
             ? Strings.Get("app-strings.library-root-missing-1")
             : Strings.Format("app-strings.library-root-missing-2", root);
 
-    public static string LibraryRootMissingDetail => Strings.Get("app-strings.library-root-missing-detail");
+    public static string LibraryRootMissingDetail => Strings.Get("library-unavailable-view.no-se-perdio-nada-tu-catalogo");
 
-    public static string LibraryRootRetry => Strings.Get("app-strings.library-root-retry");
-    public static string LibraryRootChoose => Strings.Get("app-strings.library-root-choose");
-    public static string LibraryRootCreate => Strings.Get("app-strings.library-root-create");
+    public static string LibraryRootRetry => Strings.Get("done-view.reintentar");
+    public static string LibraryRootChoose => Strings.Get("library-unavailable-view.elegir-otra-biblioteca");
+    public static string LibraryRootCreate => Strings.Get("library-unavailable-view.crear-nueva");
 
     public static string LibraryDropHint(LibraryItemKind kind) => kind switch
     {
@@ -173,8 +173,8 @@ public static class AppStrings
         return string.Join(" ", parts);
     }
 
-    public static string DeleteConfirmPrimary => Strings.Get("app-strings.delete-confirm-primary");
-    public static string DeleteConfirmCancel => Strings.Get("app-strings.delete-confirm-cancel");
+    public static string DeleteConfirmPrimary => Strings.Get("artists-view.eliminar");
+    public static string DeleteConfirmCancel => Strings.Get("background-task-center-indicator.cancelar");
 
     /// <summary>
     /// El aviso de duplicados por parecido, al terminar de soltar archivos
@@ -276,29 +276,29 @@ public static class AppStrings
 
     // MARK: - Cómo guardar tu música (ST-245, plan §2 — texto compartido con la Mac)
 
-    public static string StorageSectionTitle => Strings.Get("app-strings.storage-section-title");
+    public static string StorageSectionTitle => Strings.Get("storage-section-title");
 
     /// <summary>
     /// Beneficios y desventajas de "Copiar a la Biblioteca de Aura" — texto
     /// fijado por la Maestra en el plan §2, el mismo en las dos plataformas.
     /// No es una decisión de Windows: si cambia, cambia en el plan primero.
     /// </summary>
-    public static string StorageCopyExplainer => Strings.Get("app-strings.storage-copy-explainer");
+    public static string StorageCopyExplainer => Strings.Get("storage-copy-explainer");
 
     /// <summary>Igual que <see cref="StorageCopyExplainer"/>, para "Referenciar en su lugar".</summary>
-    public static string StorageReferenceExplainer => Strings.Get("app-strings.storage-reference-explainer");
+    public static string StorageReferenceExplainer => Strings.Get("storage-reference-explainer");
 
-    public static string StorageChangeOnlyAffectsFuture => Strings.Get("app-strings.storage-change-only-affects-future");
+    public static string StorageChangeOnlyAffectsFuture => Strings.Get("storage-change-only-affects-future");
 
     // MARK: - Limpiar archivos huérfanos (ST-245)
 
-    public static string OrphansTitle => Strings.Get("app-strings.orphans-title");
-    public static string OrphansDetail => Strings.Get("app-strings.orphans-detail");
+    public static string OrphansTitle => Strings.Get("orphans-title");
+    public static string OrphansDetail => Strings.Get("orphans-detail");
 
-    public static string OrphansButton => Strings.Get("app-strings.orphans-button");
-    public static string OrphansCleanButton => Strings.Get("app-strings.orphans-clean-button");
+    public static string OrphansButton => Strings.Get("orphans-button");
+    public static string OrphansCleanButton => Strings.Get("orphans-clean-button");
 
-    public static string OrphansNoneFound => Strings.Get("app-strings.orphans-none-found");
+    public static string OrphansNoneFound => Strings.Get("orphans-none-found");
 
     public static string OrphansFound(OrphanScanResult scan) =>
         Strings.Plural("app-strings.orphans-found", scan.Count, SimilarityText.FormatBytes(scan.TotalBytes));
@@ -306,8 +306,18 @@ public static class AppStrings
     public static string OrphansConfirmTitle(int count) =>
         Strings.Plural("app-strings.orphans-confirm-title", count);
 
+    /// <summary>
+    /// Se arma con DOS recursos y no con uno (decisión de la Maestra, ST-247).
+    ///
+    /// <para>La segunda oración es la misma que dice la Mac, palabra por
+    /// palabra, así que es una clave compartida y se traduce una sola vez.
+    /// Windows además antepone el conteo, que es una oración propia con su
+    /// número. Metiendo el hueco dentro de la clave compartida el texto dejaba
+    /// de ser idéntico al de la Mac y la comparación exacta no calzaba; unidas
+    /// acá con un espacio, calza y cada mitad vive donde le toca.</para>
+    /// </summary>
     public static string OrphansConfirmMessage(OrphanScanResult scan) =>
-        Strings.Format("app-strings.orphans-confirm-message", OrphansFound(scan));
+        OrphansFound(scan) + " " + Strings.Get("orphans-confirm-message");
 
     public static string OrphansCleaned(int count) =>
         Strings.Plural("app-strings.orphans-cleaned", count);

@@ -161,7 +161,7 @@
                      Margin="24,12,24,0"
                      IsOpen="{x:Bind ViewModel.Updates.IsAnnouncing, Mode=TwoWay}"
                      Severity="Informational"
-                     Title="{x:Bind str:Strings.Get('shell-page.actualizacion-aura-studio')}"
+                     Title="{x:Bind str:Strings.Get('settings-section-view.actualizaciones-aura-studio')}"
                      Message="{x:Bind ViewModel.Updates.AnnouncementMessage, Mode=OneWay}"
                      CloseButtonClick="AppUpdate_Dismissed">
                 <InfoBar.ActionButton>

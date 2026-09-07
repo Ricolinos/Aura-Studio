@@ -105,7 +105,7 @@
   <data name="app-strings.declared-family-label" xml:space="preserve">
     <value>Familia declarada</value>
   </data>
-  <data name="app-strings.delete-confirm-cancel" xml:space="preserve">
+  <data name="background-task-center-indicator.cancelar" xml:space="preserve">
     <value>Cancelar</value>
   </data>
   <data name="app-strings.delete-confirm-copy.one" xml:space="preserve">
@@ -114,7 +114,7 @@
   <data name="app-strings.delete-confirm-copy.other" xml:space="preserve">
     <value>{0} archivos ({1}) van a la Papelera de reciclaje.</value>
   </data>
-  <data name="app-strings.delete-confirm-primary" xml:space="preserve">
+  <data name="artists-view.eliminar" xml:space="preserve">
     <value>Eliminar</value>
   </data>
   <data name="app-strings.delete-confirm-reference.one" xml:space="preserve">
@@ -480,10 +480,10 @@
   <data name="app-strings.library-remove" xml:space="preserve">
     <value>Quitar de la biblioteca</value>
   </data>
-  <data name="app-strings.library-root-choose" xml:space="preserve">
+  <data name="library-unavailable-view.elegir-otra-biblioteca" xml:space="preserve">
     <value>Elegir otra biblioteca</value>
   </data>
-  <data name="app-strings.library-root-create" xml:space="preserve">
+  <data name="library-unavailable-view.crear-nueva" xml:space="preserve">
     <value>Crear una nueva</value>
   </data>
   <data name="app-strings.library-root-missing-1" xml:space="preserve">
@@ -492,10 +492,10 @@
   <data name="app-strings.library-root-missing-2" xml:space="preserve">
     <value>La biblioteca está en un disco que no está conectado: {0}</value>
   </data>
-  <data name="app-strings.library-root-missing-detail" xml:space="preserve">
+  <data name="library-unavailable-view.no-se-perdio-nada-tu-catalogo" xml:space="preserve">
     <value>No se perdió nada: el catálogo y tus archivos siguen en ese disco. Conéctalo y la biblioteca vuelve sola.</value>
   </data>
-  <data name="app-strings.library-root-retry" xml:space="preserve">
+  <data name="done-view.reintentar" xml:space="preserve">
     <value>Conectar el disco y reintentar</value>
   </data>
   <data name="app-strings.library-season-1" xml:space="preserve">
@@ -675,10 +675,10 @@
   <data name="app-strings.not-available" xml:space="preserve">
     <value>No disponible</value>
   </data>
-  <data name="app-strings.orphans-button" xml:space="preserve">
+  <data name="orphans-button" xml:space="preserve">
     <value>Buscar huérfanos</value>
   </data>
-  <data name="app-strings.orphans-clean-button" xml:space="preserve">
+  <data name="orphans-clean-button" xml:space="preserve">
     <value>Limpiar archivos huérfanos</value>
   </data>
   <data name="app-strings.orphans-cleaned.one" xml:space="preserve">
@@ -687,8 +687,8 @@
   <data name="app-strings.orphans-cleaned.other" xml:space="preserve">
     <value>Se borraron {0} archivos huérfanos.</value>
   </data>
-  <data name="app-strings.orphans-confirm-message" xml:space="preserve">
-    <value>{0} No están ligados a ningún elemento de tu biblioteca; borrarlos no afecta ninguna canción, foto ni video que tengas.</value>
+  <data name="orphans-confirm-message" xml:space="preserve">
+    <value>No están ligados a ningún elemento de tu biblioteca; borrarlos no afecta ninguna canción, foto ni video que tengas.</value>
   </data>
   <data name="app-strings.orphans-confirm-title.one" xml:space="preserve">
     <value>¿Borrar {0} archivo huérfano?</value>
@@ -696,7 +696,7 @@
   <data name="app-strings.orphans-confirm-title.other" xml:space="preserve">
     <value>¿Borrar {0} archivos huérfanos?</value>
   </data>
-  <data name="app-strings.orphans-detail" xml:space="preserve">
+  <data name="orphans-detail" xml:space="preserve">
     <value>Preparados y carátulas que ya no le pertenecen a ningún elemento de tu biblioteca — de elementos eliminados antes de esta versión, o de un reprocesamiento. No son tus archivos originales: son copias técnicas que Aura arma sola y puede volver a armar si hicieran falta.</value>
   </data>
   <data name="app-strings.orphans-found.one" xml:space="preserve">
@@ -705,10 +705,10 @@
   <data name="app-strings.orphans-found.other" xml:space="preserve">
     <value>{0} archivos huérfanos ({1}).</value>
   </data>
-  <data name="app-strings.orphans-none-found" xml:space="preserve">
+  <data name="orphans-none-found" xml:space="preserve">
     <value>No hay archivos huérfanos: no hace falta limpiar nada.</value>
   </data>
-  <data name="app-strings.orphans-title" xml:space="preserve">
+  <data name="orphans-title" xml:space="preserve">
     <value>Archivos huérfanos</value>
   </data>
   <data name="app-strings.section-content" xml:space="preserve">
@@ -759,16 +759,16 @@
   <data name="app-strings.settings-title" xml:space="preserve">
     <value>Ajustes</value>
   </data>
-  <data name="app-strings.storage-change-only-affects-future" xml:space="preserve">
+  <data name="storage-change-only-affects-future" xml:space="preserve">
     <value>Cambiar este ajuste solo afecta lo que importes de ahora en adelante: lo que ya está en tu biblioteca se queda como está.</value>
   </data>
-  <data name="app-strings.storage-copy-explainer" xml:space="preserve">
+  <data name="storage-copy-explainer" xml:space="preserve">
     <value>Copiar a la Biblioteca de Aura: Aura controla los archivos, edita sus etiquetas y los sincroniza directo; ocupa espacio en disco (una copia); puedes borrar tus originales después.</value>
   </data>
-  <data name="app-strings.storage-reference-explainer" xml:space="preserve">
+  <data name="storage-reference-explainer" xml:space="preserve">
     <value>Referenciar en su lugar: no ocupa espacio extra ni toca tus archivos; Aura mantiene una versión preparada aparte (.preparados/), las ediciones viven solo en Aura y en el iPod, y si el disco original no está, esas canciones no se pueden sincronizar.</value>
   </data>
-  <data name="app-strings.storage-section-title" xml:space="preserve">
+  <data name="storage-section-title" xml:space="preserve">
     <value>Cómo guardar tu música</value>
   </data>
   <data name="app-strings.theme-dark" xml:space="preserve">
@@ -1104,7 +1104,7 @@
   <data name="device-list-page.guardar" xml:space="preserve">
     <value>Guardar</value>
   </data>
-  <data name="device-list-page.instalar-actualizacion" xml:space="preserve">
+  <data name="device-general-view.instalar-actualizacion" xml:space="preserve">
     <value>Instalar la actualización</value>
   </data>
   <data name="device-list-page.nombre-ipod" xml:space="preserve">
@@ -1446,7 +1446,7 @@
   <data name="settings-page.apagado-aura-studio-toca-red-al" xml:space="preserve">
     <value>Apagado, Aura Studio no toca la red al importar: usa solo las etiquetas del archivo y lo que se pueda adivinar de su nombre.</value>
   </data>
-  <data name="settings-page.aqui-vive-catalogo-biblioteca-funciona-a" xml:space="preserve">
+  <data name="settings-section-view.aqui-vive-catalogo-tu-biblioteca-funcion" xml:space="preserve">
     <value>Aquí vive el catálogo de tu biblioteca: funciona aunque el iPod no esté conectado, y se sincroniza al conectarlo. Que además se copien tus archivos aquí depende del ajuste de abajo.</value>
   </data>
   <data name="settings-page.archivos-huerfanos" xml:space="preserve">
@@ -1458,7 +1458,7 @@
   <data name="settings-page.biblioteca" xml:space="preserve">
     <value>Biblioteca</value>
   </data>
-  <data name="settings-page.buscar-actualizaciones" xml:space="preserve">
+  <data name="settings-section-view.buscar-actualizaciones" xml:space="preserve">
     <value>Buscar actualizaciones</value>
   </data>
   <data name="settings-page.buscar-letras-sincronizadas" xml:space="preserve">
@@ -1467,7 +1467,7 @@
   <data name="settings-page.buscarlo-nuevo" xml:space="preserve">
     <value>Buscarlo de nuevo</value>
   </data>
-  <data name="settings-page.calidad-audio" xml:space="preserve">
+  <data name="music-settings-view.calidad-audio" xml:space="preserve">
     <value>Calidad de audio</value>
   </data>
   <data name="settings-page.calidad-imagen" xml:space="preserve">
@@ -1518,7 +1518,7 @@
   <data name="settings-page.completar-informacion-faltante-con-servi" xml:space="preserve">
     <value>Completar la información faltante con servicios en línea</value>
   </data>
-  <data name="settings-page.comprimir-mp3-buena-calidad" xml:space="preserve">
+  <data name="music-settings-view.comprimir-mp3-buena-calidad" xml:space="preserve">
     <value>Comprimir a MP3 de buena calidad</value>
   </data>
   <data name="settings-page.conversion-hace-ffmpeg-se-instala-aparte" xml:space="preserve">
@@ -1671,7 +1671,7 @@
   <data name="settings-page.wav-aiff-siempre-se-convierten" xml:space="preserve">
     <value>WAV y AIFF siempre se convierten</value>
   </data>
-  <data name="shell-page.actualizacion-aura-studio" xml:space="preserve">
+  <data name="settings-section-view.actualizaciones-aura-studio" xml:space="preserve">
     <value>Actualización de Aura Studio</value>
   </data>
   <data name="shell-page.descargar" xml:space="preserve">

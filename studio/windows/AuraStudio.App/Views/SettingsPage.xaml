@@ -98,7 +98,7 @@
                                            Style="{StaticResource AuraSecondaryTextStyle}"
                                            TextWrapping="Wrap" />
                                 <Button Grid.Column="1" VerticalAlignment="Center"
-                                        Content="{x:Bind str:Strings.Get('settings-page.buscar-actualizaciones')}"
+                                        Content="{x:Bind str:Strings.Get('settings-section-view.buscar-actualizaciones')}"
                                         Click="CheckAppUpdates_Click"
                                         IsEnabled="{x:Bind ViewModel.Updates.IsChecking, Mode=OneWay, Converter={StaticResource InvertBool}}" />
                             </Grid>
@@ -118,7 +118,7 @@
 
                     <TextBlock Text="{x:Bind str:Strings.Get('settings-page.carpeta-biblioteca')}"
                                Style="{StaticResource AuraSectionTitleTextStyle}" />
-                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.aqui-vive-catalogo-biblioteca-funciona-a')}"
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-section-view.aqui-vive-catalogo-tu-biblioteca-funcion')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
                     <Border Style="{StaticResource AuraCardStyle}">
@@ -273,10 +273,10 @@
                                FontFamily="Consolas"
                                Style="{StaticResource AuraCaptionTextStyle}" />
 
-                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.calidad-audio')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
+                    <TextBlock Text="{x:Bind str:Strings.Get('music-settings-view.calidad-audio')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
                     <RadioButton Content="{x:Bind str:Strings.Get('settings-page.mantener-formato-original-recomendado')}" GroupName="audio"
                                  IsChecked="{x:Bind ViewModel.AudioOriginal, Mode=TwoWay}" />
-                    <RadioButton Content="{x:Bind str:Strings.Get('settings-page.comprimir-mp3-buena-calidad')}" GroupName="audio"
+                    <RadioButton Content="{x:Bind str:Strings.Get('music-settings-view.comprimir-mp3-buena-calidad')}" GroupName="audio"
                                  IsChecked="{x:Bind ViewModel.AudioCompressed, Mode=TwoWay}" />
                     <TextBlock Text="{x:Bind ViewModel.AudioQualityDetail, Mode=OneWay}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />

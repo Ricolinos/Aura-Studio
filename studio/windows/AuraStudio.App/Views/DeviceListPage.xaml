@@ -116,7 +116,7 @@
                         <!-- Nombre distinto de "Actualizar" a propósito: instalar
                              firmware tiene consecuencias serias y no puede
                              compartir verbo con un refresco inofensivo. -->
-                        <Button Content="{x:Bind str:Strings.Get('device-list-page.instalar-actualizacion')}"
+                        <Button Content="{x:Bind str:Strings.Get('device-general-view.instalar-actualizacion')}"
                                 Command="{x:Bind ViewModel.UpdateFirmwareCommand}"
                                 IsEnabled="{x:Bind ViewModel.IsUpdatingFirmware, Mode=OneWay, Converter={StaticResource InvertBool}}" />
                     </InfoBar.ActionButton>

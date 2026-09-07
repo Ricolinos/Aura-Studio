@@ -49,6 +49,36 @@ public class SpanishUnchangedTests
     /// </summary>
     private static readonly (string Draft, string Resource)[] Renamed =
     [
+        // GRUPO 3: las claves compartidas con la Mac toman el nombre que declara
+        // claves-compartidas.csv, que es la autoridad del renombre. Las diez
+        // primeras son "igual" —mismo concepto, mismo texto, ahora el mismo
+        // nombre, y se traducen una sola vez—; las demás son "clave distinta":
+        // el mismo concepto con el texto un poco distinto en cada plataforma, y
+        // el nombre se alinea para que quien traduzca vea que son la misma cosa.
+        ("app-strings.storage-section-title", "storage-section-title"),
+        ("app-strings.storage-copy-explainer", "storage-copy-explainer"),
+        ("app-strings.storage-reference-explainer", "storage-reference-explainer"),
+        ("app-strings.storage-change-only-affects-future", "storage-change-only-affects-future"),
+        ("app-strings.orphans-title", "orphans-title"),
+        ("app-strings.orphans-detail", "orphans-detail"),
+        ("app-strings.orphans-button", "orphans-button"),
+        ("app-strings.orphans-clean-button", "orphans-clean-button"),
+        ("app-strings.orphans-none-found", "orphans-none-found"),
+        ("app-strings.orphans-confirm-message", "orphans-confirm-message"),
+        ("settings-page.calidad-audio", "music-settings-view.calidad-audio"),
+        ("settings-page.comprimir-mp3-buena-calidad", "music-settings-view.comprimir-mp3-buena-calidad"),
+        ("settings-page.buscar-actualizaciones", "settings-section-view.buscar-actualizaciones"),
+        ("shell-page.actualizacion-aura-studio", "settings-section-view.actualizaciones-aura-studio"),
+        ("device-list-page.instalar-actualizacion", "device-general-view.instalar-actualizacion"),
+        ("app-strings.delete-confirm-primary", "artists-view.eliminar"),
+        ("app-strings.delete-confirm-cancel", "background-task-center-indicator.cancelar"),
+        ("app-strings.library-root-missing-detail", "library-unavailable-view.no-se-perdio-nada-tu-catalogo"),
+        ("app-strings.library-root-choose", "library-unavailable-view.elegir-otra-biblioteca"),
+        ("app-strings.library-root-create", "library-unavailable-view.crear-nueva"),
+        ("app-strings.library-root-retry", "done-view.reintentar"),
+        ("settings-page.aqui-vive-catalogo-biblioteca-funciona-a",
+            "settings-section-view.aqui-vive-catalogo-tu-biblioteca-funcion"),
+
         // Las dos etiquetas del menú resultaron ser el singular y el plural de
         // la misma acción, elegidas por un `> 1` escrito a mano. Como formas de
         // plural, el ruso y el árabe también las eligen bien.
@@ -177,6 +207,22 @@ public class SpanishUnchangedTests
     ];
 
     /// <summary>
+    /// Claves a las que se les sacó un prefijo que ahora vive en otra clave.
+    ///
+    /// <para>Solo una: la oración compartida de los huérfanos. La Mac la dice
+    /// tal cual y Windows le antepone su conteo, que es otra oración con su
+    /// número. Mientras el hueco vivía dentro de la clave compartida, el texto
+    /// no era idéntico al de la Mac y no podía compartirse de verdad; ahora son
+    /// dos recursos que el sitio de uso une con un espacio (decisión de la
+    /// Maestra). Lo que se comprueba es que el recurso sea exactamente lo que
+    /// decía el borrador menos ese prefijo.</para>
+    /// </summary>
+    private static readonly (string Key, string Prefix)[] PrefixMovedOut =
+    [
+        ("orphans-confirm-message", "{0} "),
+    ];
+
+    /// <summary>
     /// Claves del borrador que ya no existen porque eran una copia de más del
     /// mismo texto. No se pierde ninguna frase: la misma sigue en otra clave.
     /// </summary>
@@ -258,6 +304,15 @@ public class SpanishUnchangedTests
             }
 
             if (Unescaped.Contains(key)) original = Unescape(original);
+
+            foreach ((string moved, string prefix) in PrefixMovedOut)
+            {
+                if (key != moved) continue;
+                if (!original.StartsWith(prefix, StringComparison.Ordinal))
+                    problems.Add($"{key}: se declaró que se le saca «{prefix}» y el borrador no empieza así");
+                else
+                    original = original[prefix.Length..];
+            }
 
             if (original != text)
                 problems.Add($"{key}: el texto cambió\n  antes: {original}\n  ahora: {text}");
