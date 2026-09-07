@@ -1,1 +1,0 @@
-                $"Windows no pudo leer «{Path.GetFileName(sourcePath)}» para convertirlo "

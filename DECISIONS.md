@@ -15968,3 +15968,34 @@ verde, 1 omitida** (la de arriba, con su motivo a la vista), ninguna en rojo.
 `dotnet test tests/ExtraerCadenasWindows.Tests`: 14 en verde. El tope de texto
 fuera de alcance baja de 396 a 392 al migrar `DeviceSafetyValidator`; es un
 trinquete, así que se baja cuando baja.
+
+### Siete archivos accidentales, y por qué ninguna prueba los vio
+
+Al cerrar B7a entraron al commit del grupo 2 **siete archivos con nombres
+absurdos** en la raíz de `studio/windows/` — trozos de frases en español, con
+líneas de código adentro: `"indows releyó la tabla de particionesp"`,
+`"AV y AIFF sí se convierten, a ALAC, … Tu p"`, y cinco más. Se quitaron.
+
+La causa es fea y vale escribirla entera: un bucle que clasificaba los
+literales que quedaban hacía `sed -n "${l}p" "$f"` con `$l` sacado de partir
+una línea por `:`. Cuando la ruta traía dos puntos, el corte salió mal y `$l`
+dejó de ser un número para ser **texto de la app**; `sed` lo leyó como guion, y
+donde ese texto traía una `w` la tomó como su comando de escribir y guardó el
+resto de la frase como nombre de archivo. De ahí que los nombres empiecen a
+media palabra —"indows…", "ithoutStorage}…"— y terminen en `p`.
+
+El error de programación es pasar texto sin comillas a algo que lo interpreta,
+y eso se arregla escribiendo mejor. Pero la lección que sobrevive es otra:
+**nadie miró la lista de archivos del commit**. `git add` sobre un directorio
+no distingue lo que uno escribió de lo que una herramienta dejó tirado, y con
+setenta archivos cambiados esa lista no la va a leer nadie la próxima vez
+tampoco.
+
+Así que la lee una prueba (`RepositoryLayoutTests`): la raíz de
+`studio/windows/` tiene lo que declara una **lista explícita** y nada más.
+Explícita a propósito — un patrón ("nada con espacios", "nada sin extensión")
+habría dejado pasar seis de los siete y encima habría dado la sensación de
+estar cubierto. Agregar algo legítimo a la raíz es un renglón, y ese renglón es
+justamente la revisión que faltó. Comprobado que falla con uno de los nombres
+de verdad y pasa con el árbol limpio; y verificado que ninguno de los siete se
+coló en un `.csproj` ni en el `.slnx`.
