@@ -37,25 +37,27 @@ distinto de ver.
 navegada por `accessibilityIdentifier`, capturada por `screencapture
 -l <CGWindowID>`, contenido correcto -- biblioteca de prueba visible,
 título de ventana correcto). `ajustes.png`/`dispositivos.png`/
-`acerca-de.png` usan el MISMO mecanismo en el script (mismo tipo de
-fila de barra lateral, o menú posicional para "Acerca de") pero una
-prueba en vivo se interrumpió a mitad de la corrida porque la Mac dejó
-de estar libre (`frontmost` cambió a otro proceso -- alguien más
-usándola) y se cortó por precaución, mismo criterio que ST-187 con
-XCUITest. No se comitean capturas sin confirmar visualmente -- se
-corren y se agregan la próxima vez que la Mac esté libre.
+`acerca-de.png`/`ajustes-almacenamiento.png` usan el mecanismo del
+script pero NO están confirmadas visualmente todavía -- dos intentos
+en vivo distintos se cortaron porque la Mac dejó de estar libre a
+mitad de la corrida (`frontmost` cambió a otro proceso -- alguien más
+usándola, la segunda vez a After Effects) y se cortó por precaución
+cada vez, mismo criterio que ST-187 con XCUITest. No se comitean
+capturas sin confirmar visualmente -- se corren y se agregan la
+próxima vez que la Mac esté libre.
 
 ## Qué falta (para quien cierre A7c)
 
-- **`ajustes-almacenamiento`**: no existe todavía una pestaña de
-  Ajustes para esto -- `SettingsSectionView.Tab` hoy es `general/
-  library/music/photos/video/services`, ninguna se llama
-  "Almacenamiento". Se agrega cuando ST-225 la cree. **Recomendación
-  para quien la agregue**: dale un `accessibilityIdentifier` real a la
-  pestaña (el `Picker` segmentado de `SettingsSectionView` hoy no tiene
-  ninguno -- se navega por texto, que solo sirve para español) para que
-  este script pueda seguir usando identificadores en vez de texto
-  localizado también ahí.
+- **`ajustes-almacenamiento`**: YA EXISTE la pestaña (ST-225/A5,
+  `ajustes.pestana.almacenamiento`, con `accessibilityIdentifier` real
+  -- exactamente lo que este documento pedía cuando A5 no había
+  cerrado). El script ya la usa (`press_element_by_identifier`, ver
+  `tools/capturas-idiomas.sh`), pero el mecanismo de clic para un
+  `Picker` segmentado es DISTINTO al de una fila de barra lateral
+  (`AXPress` directo, no `select` sobre un `AXRow`) y **no se confirmó
+  en vivo todavía** -- la próxima corrida con la Mac libre tiene que
+  verificar que de verdad cambia de pestaña, no solo que el clic no
+  tira un error.
 - **`barra-estado-mensaje-largo`**: necesita disparar una operación
   real (importar/sincronizar en curso) para que `LibraryStatusBar`
   muestre un mensaje largo, y confirmar que no se corta -- no
@@ -71,6 +73,7 @@ corren y se agregan la próxima vez que la Mac esté libre.
 | `albumes` | `accessibilityIdentifier` `biblioteca.barraLateral.albumes` |
 | `canciones` | `accessibilityIdentifier` `biblioteca.barraLateral.canciones` |
 | `ajustes` | `accessibilityIdentifier` `biblioteca.barraLateral.ajustes` (pestaña General, la que muestra la versión instalada) |
+| `ajustes-almacenamiento` | `ajustes.pestana.almacenamiento` (ST-225/A5) dentro de Ajustes -- `AXPress` directo, no `select` de fila (sin confirmar en vivo) |
 | `dispositivos` | `accessibilityIdentifier` `biblioteca.barraLateral.general` (`DeviceGeneralView`, sin ningún iPod conectado en esta corrida -- el estado "sin dispositivo" también es una pantalla real) |
 | `acerca-de` | panel estándar de macOS, por POSICIÓN de menú (primer ítem del menú de la app) -- nunca depende del idioma ni de un identificador propio |
 

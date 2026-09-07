@@ -1,0 +1,5 @@
+archivo,linea,estado,texto_unido
+studio/AuraStudio/Sources/AuraStudio/Views/LibraryUnavailableView.swift,40,unido,No se perdió nada: tu catálogo y tus archivos siguen en ese disco. Aura Studio no va a tocar nada hasta que vuelva a estar disponible.
+studio/AuraStudio/Sources/AuraStudio/Views/MusicSettingsView.swift,84,unido,"Separadores que agrupan: . «vs.» y «versus» nunca agrupan, porque ahí la colaboración tiene nombre propio."
+studio/AuraStudio/Sources/AuraStudio/Views/SettingsSectionView.swift,258,unido,"Hoy todas las versiones publicadas de Aura Studio son beta, así que conviene dejarlo activado. Aura Studio nunca se actualiza sola: solo te avisa y te deja bajar el instalador."
+studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift,173,revisar a mano,

@@ -14561,6 +14561,148 @@ verificado antes de escribir la prueba, no asumido).
 `dotnet build`: 0 errores. `dotnet test`: **1 749 pruebas en verde** (3
 nuevas). Sin tocar código de la app.
 
+## ST-224 (addendum, mecánico) — guion §2 con el comportamiento real de A4, arnés A0 contra A4
+
+Encargo de "Sesión Maestra" tras la fusión de A4 (ST-224). Dos partes.
+
+### `docs/guion-verificacion-ajustes-3.md` §2
+
+Reescrito con el comportamiento real de ST-224 (leído de DECISIONS.md,
+no supuesto): en modo referencia el preparado se arma SOLO cuando hace
+falta (conversión, o etiquetas que no coinciden) -- un original que ya
+dice lo que dice el catálogo no tiene preparado, y `preparedURL`
+ausente es un estado VÁLIDO, no "todavía no". Siete pasos concretos
+con lo que el dueño debe ver en Finder en cada uno: (1) MP3 con
+etiquetas ya coincidentes → `.preparados/` sin nada nuevo; (2) editar
+el título → aparece `.preparados/<ID-MAYÚSCULAS>.ext`, original
+intacto; (3) editar de nuevo → el preparado se reescribe (fecha nueva);
+(4) tocar el original por fuera (Finder) → se regenera; (5) WAV/AIFF
+con "Original sin pérdida" → siempre hay preparado, ALAC; (6)
+"Convertir referenciados en copias" con un original desconectado → se
+cuenta aparte de los fallos reales; (7) esa misma acción, confirmado en
+Finder: copia, nunca mueve ni borra el original.
+
+### Arnés A0 contra A4 (`MediaStorageBaselineTests.
+testReferenceModeAgainstA4_printsTable`)
+
+Camino real: `LibraryFileWorker.ensurePreparedMusic`
+(`EnsurePreparedMusicRequest`/`EnsurePreparedMusicResult`). Tres filas
+pedidas, números reales:
+
+| Escenario | Acción | Bytes escritos en el preparado | ¿Original cambió? |
+|---|---|---|---|
+| referencia sin cambios (MP3, etiquetas ya coinciden) | `none` | 0 | No |
+| referencia con título editado (MP3) | `build` | 8 573 | No |
+| referencia WAV con "Original sin pérdida" | `build` (`.m4a`) | 1 162 | No |
+
+Confirma con bytes reales la promesa central de A4: **sin cambios, cero
+preparado** -- el archivo de "referencia sin cambios" no deja NINGÚN
+rastro en `.preparados/` (antes de A4, TODA canción referenciada tenía
+su copia, la necesitara o no). El caso de edición (8 573 bytes) coincide
+exactamente con el de modo copia de la tabla de A3 (mismo escritor
+ID3, mismo delta) -- confirma que A4 reutiliza el mismo `LocalTagWriter`
+que A2/A3, no una ruta aparte. El WAV (1 162 bytes) es del mismo orden
+que el 1 158/1 167 de A3 (ALAC), con la pequeña diferencia esperable de
+un UUID de puesta en escena distinto cada corrida.
+
+Verificación de esta parte: `swift test --filter MediaStorageBaselineTests`,
+6/6 en verde.
+
+## ST-247 (addendum, mecánico) — frases concatenadas en Swift: 3 unidas, 1 sin resolver con confianza, y un bug más profundo que apareció al buscarlas
+
+Encargo de "Sesión Maestra": Windows encontró que su extractor partía
+en fragmentos las frases concatenadas con `+` entre líneas (41 frases,
+56 claves de más). Revisé `tools/extraer-cadenas.py` por lo mismo en
+Swift.
+
+### El patrón real en Swift es más chico que en Windows, pero no cero
+
+Grep manual inicial (`" *+ *$`, buscando `+` al FINAL de línea) solo
+encontró 1 sitio -- subestimado, porque el patrón real más común en
+este repo es al REVÉS: la primera línea termina en la comilla de
+cierre sola, y el `+` (o el literal siguiente) vive en la línea de
+ABAJO. El script ahora reúne los fragmentos de la MISMA expresión
+recorriendo hacia adelante (`extend_with_concatenation`, ventana de
+hasta 6 líneas), sin exigir que cada línea envuelta repita su propio
+`+` -- Swift solo necesita uno por concatenación, y puede quedar al
+final de la primera línea o al principio de la siguiente, las dos
+formas reales vistas acá.
+
+**3 unidas** (`docs/extraccion-cadenas/fragmentos-unidos.csv`,
+`estado: unido`):
+`LibraryUnavailableView.swift:40`, `MusicSettingsView.swift:84`
+(con un tramo CALCULADO en el medio, `"A" + ArtistNameNormalizer.
+collaborationSeparators.joined(...) + "B"` -- el script salta lo que
+no es literal y une A con B igual, dejando el tramo calculado para que
+alguien lo revise a mano y le ponga un `%@`), `SettingsSectionView.
+swift:258`.
+
+**1 detectada pero SIN unir con confianza** (`ExtrasView.swift:173`,
+`estado: revisar a mano`): el ternario tiene un `\(losers.count == 1 ?
+...)` -- una interpolación ANIDADA dentro de la rama con texto, con su
+propia coma (`joined(separator: ", ")`). Ningún regex distingue esa
+coma/comilla de "acá termina el literal" sin parsear Swift de verdad
+(fuera de alcance para un borrador). Detectado con una comprobación de
+paréntesis balanceados (`_parens_balanced`): si el fragmento capturado
+queda con paréntesis sin cerrar, se descarta en vez de unirse a la
+fuerza -- mejor una fila marcada "revisar a mano" que un texto
+corrupto colado en el borrador en silencio.
+
+### El bug más profundo, que no estaba en el pedido: el mismo defecto ya rompía la extracción BASE, sin ningún `+` de por medio
+
+Al escribir la prueba "ninguna clave termina a mitad de oración" (ver
+abajo), aparecieron 2 claves terminadas en un espacio suelto que no
+tenían nada que ver con concatenación: `SeriesView.swift:382` y
+`SimilarItemsView.swift:87`, las dos con la MISMA forma --
+`Text("\(x == 1 ? "1 cosa" : "\(x) cosas") resto")`, un ternario con
+literales propios ANIDADO dentro de una interpolación. El regex viejo
+de captura (`(?:[^"\\]|\\.)*`) no distingue esa comilla interna de la
+comilla que cierra el `Text(`, y cortaba ahí -- el mismo defecto de
+fondo que motivó todo este encargo, pero sin necesitar ningún `+`.
+
+Arreglado en la raíz: `PATTERNS` ya no captura el contenido con un
+regex de un solo carácter -- solo encuentra dónde EMPIEZA el literal
+(justo después de la comilla de apertura), y `scan_swift_string_literal`
+lo recorre carácter por carácter llevando la profundidad de `\(...)`
+anidados, tratando una comilla como cierre solo cuando esa profundidad
+es cero. Las dos claves quedaron completas y correctas
+(`series-view.temporadas` → `"%lld, %@"`,
+`similar-items-view.eliminar-elementos-biblioteca` → `"¿Eliminar %lld
+de la biblioteca?"`), y el conteo total de sitios/claves no se movió
+(513/401, igual que antes) -- solo cambió la CALIDAD de estas dos.
+
+### La prueba nueva encontró, además, un bug de la prueba misma
+
+`LocalizationDraftTests.testPluralCSVRowsHaveTwoDistinctForms`
+(ST-227, ya existía) leía 0 filas al re-correr el extractor hoy, no
+23 -- no un bug del extractor: `csv.writer` de Python escribe
+terminadores `\r\n` por omisión (RFC 4180, dialecto `excel`), y Swift
+trata `\r\n` como UN SOLO `Character` (un grafema, UAX #29) -- partir
+por `"\n"` a secas no encuentra nada que partir. Arreglado con
+`.split(whereSeparator: \.isNewline)` en las dos pruebas que leen CSVs
+de esta herramienta. El conteo de plurales también subió de 23 a 24 --
+real, no un bug: A1..A5 agregaron código entre las dos corridas,
+incluido un ternario de plural nuevo (`LibraryViewModel.swift:594`,
+"1 falló"/"fallaron").
+
+### Pruebas nuevas en `LocalizationDraftTests`
+
+`testNoKeyEndsMidSentence`: ninguna clave del borrador termina en
+espacio, en coma, o en una conjunción/artículo suelto ("y", "o", "de",
+"la", "el") -- la misma heurística que pidió la maestra, igual a la
+que usó Windows. `testJoinedConcatenationCountMatchesToday`: confirma
+el número EXACTO -- 3 unidas, 1 sin resolver con confianza -- leído de
+`fragmentos-unidos.csv`, mismo espíritu que los "41" de Windows.
+
+### Verificación
+
+`swift test --filter LocalizationDraftTests`: 6/6 en verde (1 saltada,
+la del detector de literales que espera a A7a). `python3 tools/
+extraer-cadenas.py` corrido de nuevo sobre `Sources/AuraStudio`
+completo: 513 sitios, 401 claves (sin cambio), 3 frases unidas, 1 sin
+resolver, `fragmentos-unidos.csv` nuevo. Solo `tools/` y `docs/` --
+nada en `Sources/`.
+
 ## ST-226 — Migrar una biblioteca anterior, nunca en silencio
 
 Fase A6 de `PLAN-studio-ajustes-3.md`. Pone al día una biblioteca hecha

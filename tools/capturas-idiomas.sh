@@ -29,16 +29,19 @@
 #   - albumes, canciones, ajustes, dispositivos: sí, por
 #     accessibilityIdentifier de la barra lateral (estables, ver
 #     UITestEnvironment.ID.sidebarRow -- Sources/AuraStudio/Models/
-#     UITestEnvironment.swift).
+#     UITestEnvironment.swift). VERIFICADAS en vivo contra la app real
+#     (2026-09-07) -- ver docs/capturas/idiomas/README.md.
+#   - ajustes-almacenamiento: por `ajustes.pestana.almacenamiento`
+#     (ST-225/A5, ya en Sources/) -- el mecanismo de clic es
+#     GENÉRICO (`press_element_by_identifier`, AXPress directo), NO el
+#     mismo `select` de fila que usan albumes/canciones/ajustes/
+#     dispositivos (un Picker segmentado es un control distinto a una
+#     fila de `AXOutline`) -- sin confirmar en vivo todavía, ver el
+#     comentario de la función.
 #   - acerca-de: sí, pero por POSICIÓN de menú (primer ítem del menú de
 #     la app, "Acerca de <app>" -- convención estándar de macOS, nunca
 #     cambia de posición aunque cambie el idioma), no por identificador
 #     ni por texto.
-#   - ajustes-almacenamiento: NO -- [pendiente A5]. Ajustes hoy tiene
-#     pestañas general/library/music/photos/video/services (ver
-#     SettingsSectionView.swift); no existe una pestaña de
-#     almacenamiento todavía. El script la salta con un aviso, no
-#     inventa una captura.
 #   - barra-estado-mensaje-largo: NO -- necesita disparar una operación
 #     real (importar/sincronizar en curso) para que la barra de estado
 #     muestre un mensaje largo, y eso es frágil de reproducir sin mirar
@@ -317,6 +320,45 @@ end tell
 EOF
 }
 
+press_element_by_identifier() {
+  # Genérico -- a diferencia de `select_sidebar_row` (filas de un
+  # `AXOutline`, que se activan con `select` sobre el `AXRow`, nunca
+  # con `AXPress`), esto es para lo demás: un `Picker` segmentado
+  # (`ajustes.pestana.*`, ST-225/A5) u otro control donde el elemento
+  # CON el identificador es el que hay que presionar directo, sin
+  # subir a ningún contenedor. NO verificado en vivo todavía contra la
+  # pestaña de Ajustes -- si falla, puede que un `Picker` segmentado
+  # necesite `select` en vez de `AXPress` sobre el segmento, como pasó
+  # con las filas de la barra lateral; confirmar la próxima vez que la
+  # Mac esté libre y ajustar acá, no adivinar dos veces.
+  local process_name="$1" identifier="$2"
+  osascript <<EOF
+on findElement(elem, targetID)
+  tell application "System Events"
+    try
+      if (value of attribute "AXIdentifier" of elem) as string is targetID then return elem
+    end try
+    try
+      set kids to UI elements of elem
+      repeat with k in kids
+        set found to my findElement(k, targetID)
+        if found is not missing value then return found
+      end repeat
+    end try
+    return missing value
+  end tell
+end findElement
+
+tell application "System Events"
+  tell process "$process_name"
+    set found to my findElement(window 1, "$identifier")
+    if found is missing value then error "no se encontró un elemento con AXIdentifier '$identifier'"
+    perform action "AXPress" of found
+  end tell
+end tell
+EOF
+}
+
 click_about_menu_item() {
   # "Acerca de <app>" es SIEMPRE el primer ítem del SEGUNDO menú de la
   # barra -- el primero ("menu bar item 1") es el menú  (sistema,
@@ -409,6 +451,19 @@ capture_language() {
   if select_sidebar_row "AuraStudio" "biblioteca.barraLateral.ajustes" 2>/dev/null; then
     sleep 0.8
     capture_window "AuraStudio" "$pid" "$lang_out/ajustes.png"
+
+    # ST-225 (A5) agregó identificadores reales por pestaña
+    # (`ajustes.pestana.*`) -- ya no hace falta texto localizado para
+    # llegar a Almacenamiento. `press_element_by_identifier` es
+    # GENÉRICO (AXPress directo, no `select` de fila) porque un
+    # `Picker` segmentado es un control distinto a la barra lateral --
+    # sin confirmar en vivo todavía, ver el comentario de la función.
+    if press_element_by_identifier "AuraStudio" "ajustes.pestana.almacenamiento" 2>/dev/null; then
+      sleep 0.8
+      capture_window "AuraStudio" "$pid" "$lang_out/ajustes-almacenamiento.png"
+    else
+      log "  aviso: no se pudo navegar a Ajustes > Almacenamiento"
+    fi
   else
     log "  aviso: no se pudo navegar a Ajustes"
   fi
@@ -427,12 +482,6 @@ capture_language() {
     log "  aviso: no se pudo abrir Acerca de"
   fi
 
-  # TODO(A5): ajustes-almacenamiento -- no existe todavía una pestaña
-  # de Ajustes para esto (ver SettingsSectionView.Tab); agregar acá
-  # cuando ST-225 la cree, con su propio accessibilityIdentifier (el
-  # Picker segmentado de Ajustes hoy no tiene ninguno -- agregarle uno
-  # es justo lo que hace falta para no navegar por texto ahí también).
-  #
   # TODO(A7c o quien lo necesite antes): barra-estado-mensaje-largo --
   # hace falta disparar una operación real (importar/sincronizar en
   # curso) para que LibraryStatusBar muestre un mensaje largo, y

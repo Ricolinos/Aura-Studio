@@ -3260,7 +3260,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "No se perdió nada: tu catálogo y tus archivos siguen en ese disco. "
+            "value": "No se perdió nada: tu catálogo y tus archivos siguen en ese disco. Aura Studio no va a tocar nada hasta que vuelva a estar disponible."
           }
         }
       }
@@ -4523,7 +4523,7 @@
         }
       }
     },
-    "music-settings-view.separadores-que-agrupan": {
+    "music-settings-view.separadores-que-agrupan-vs-versus-nunca": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -4535,7 +4535,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Separadores que agrupan: "
+            "value": "Separadores que agrupan: . «vs.» y «versus» nunca agrupan, porque ahí la colaboración tiene nombre propio."
           }
         }
       }
@@ -5220,7 +5220,7 @@
         }
       }
     },
-    "series-view.show-seasons-count-1": {
+    "series-view.temporadas": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -5232,7 +5232,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "\\(show.seasons.count == 1 ? "
+            "value": "%lld, %@"
           }
         }
       }
@@ -5640,7 +5640,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hoy todas las versiones publicadas de Aura Studio son beta, así que conviene dejarlo activado. "
+            "value": "Hoy todas las versiones publicadas de Aura Studio son beta, así que conviene dejarlo activado. Aura Studio nunca se actualiza sola: solo te avisa y te deja bajar el instalador."
           }
         }
       }
@@ -5917,7 +5917,7 @@
         }
       }
     },
-    "similar-items-view.eliminar-losers-count-1": {
+    "similar-items-view.eliminar-elementos-biblioteca": {
       "extractionState": "manual",
       "localizations": {
         "en": {
@@ -5929,7 +5929,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "¿Eliminar \\(losers.count == 1 ? "
+            "value": "¿Eliminar %lld de la biblioteca?"
           }
         }
       }
