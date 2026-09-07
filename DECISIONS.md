@@ -15001,3 +15001,101 @@ Rockbox). Las 31 filas del cotejo compartido que tienen texto en la Mac
 llevan ahora su inglés en la columna `texto en`, para que Windows lo use
 en B7b y el inglés también se escriba una sola vez. Las 7 restantes son
 "solo Windows": su inglés no es mío.
+
+## ST-227 (A7c) — Los cuatro idiomas restantes y el repaso de layout
+
+**Qué se hizo.** Las 490 claves del catálogo tienen ahora sus seis
+variantes: español (fuente), inglés (A7b), y japonés, alemán, ruso y
+francés. Son 463 cadenas simples y 27 plurales por idioma, más una clave
+retirada (abajo). Los `.lproj` que consume SwiftPM se regeneraron con
+`tools/compilar-catalogo.py`; el proyecto de Xcode sigue compilando el
+`.xcstrings`, que es la fuente única.
+
+**Los plurales, con las categorías que exige cada idioma y no con las del
+español.** El ruso lleva `one`/`few`/`many`/`other`: sin `many`, "5
+треков" saldría con la forma de "2" y sonaría mal en más de la mitad de
+los números. El japonés lleva **solo** `other` -- no marca número en el
+sustantivo, y declararle un `one` sería inventar una distinción que el
+idioma no hace; la prueba rechaza esa forma de más, porque el sistema no
+la elegiría nunca y quien la editara creería haber cambiado algo. Alemán
+y francés llevan `one`/`other`.
+
+**Dónde el número tiene que salir del argumento y no escribirse.** El
+español escribe "1 canción" en su forma `one` y es correcto: ahí `one`
+**es** exactamente el 1. En ruso `one` cubre 21, 31, 41…, y en francés
+cubre además el 0. Copiar el "1" literal habría hecho que 21 canciones
+dijeran "1 песня". Por eso las formas `one` del ruso y del francés llevan
+`%lld`. La prueba de marcadores admite exactamente esa excepción --
+una forma puede tener los especificadores de la suya **o** los de
+`other` -- y la admite dicha, no escondida.
+
+**`settings.language-note` se eliminó.** Ya no la usaba nadie (A7b la
+reemplazó por `settings.language-note-new`) y además afirmaba algo falso:
+"por ahora el idioma se aplica a Ajustes y a la barra lateral". Dejar en
+el catálogo un texto que miente es peor que no tenerlo: alguien lo
+traduce a cuatro idiomas y la mentira se multiplica.
+
+**El repaso de anchos se midió, no se supuso.** Se midió con
+`NSFont.systemFont` el ancho en puntos de las 2 940 variantes y se cruzó
+contra todos los `.frame(width:)` de `Views/`. Los controles caben: el
+más ancho de la barra lateral es 98 pt contra un mínimo de 200, y el
+segmentado de orden (ruso, el peor caso) mide 104 + 85 pt contra 260. Lo
+que sí apareció fueron **tres barras donde dos textos de una línea
+competían sin prioridad**: `AppUpdateBar` (en alemán la nota secundaria
+mide 447 pt contra 283 del mensaje principal, así que SwiftUI recortaba
+el mensaje), `CoverNormalizationBar` (la nota se comía la etiqueta de
+avance) y `LibraryStatusBar` (el dato de la derecha recortaba el total).
+Se ajustó el layout con `layoutPriority`, **no la traducción**, que es
+la regla de la fase.
+
+**El repaso a mano de los helpers portadores de texto encontró un hueco
+grande, y no es de esta fase.** El detector de literales sigue en cero,
+pero mira solo líneas con `Text("`/`Label("`/`Button("` **y** con acento
+o "ñ". Un texto que llega a la pantalla como argumento de un helper
+(`infoRow("Ubicación", …)`, `SourceRow(role:detail:)`,
+`emptyState(_:detail:)`, `batchTextField("Año")`) o por una
+interpolación nunca pasó por ahí. Contados a mano: **340 cadenas de cara
+al usuario siguen en español dentro de `Views/`** -- 209 literales
+simples, 72 interpolaciones y 59 ternarios, repartidas en 40 archivos
+(las peores: `DeviceGeneralView` 33, `InstallerHomeView` 29,
+`ServicesSettingsView` 25, `MediaSectionView` 20). No se tocan acá: son
+claves nuevas, no traducciones de las que ya existen, y meterlas en A7c
+convertiría una fase de traducción en una segunda A7a sin verificación
+propia. Queda anotado para que la maestra lo programe.
+
+Sí se arregló **uno**, porque era mío: `MigrationBarHost` (ST-226, A6)
+tenía `Button("Detener")` en español. Se le escapó al detector porque
+"Detener" no lleva acento -- que es el límite de la heurística, dicho
+acá para que no se confunda "el detector está en cero" con "no queda
+español fuera del catálogo".
+
+**Pruebas.** `LocalizationLanguagesTests` (nueva): las seis variantes de
+cada clave, ninguna traducción vacía, las formas de plural que exige cada
+idioma (y ninguna de más), los marcadores y posicionales intactos con la
+excepción del `one` explicada arriba, una muestra que resuelve en los
+cuatro idiomas sin caer al español ni devolver la clave, y el español
+intacto tras traducir. La que más va a servir con el tiempo es
+`testEachLanguageTableMatchesTheCatalogAndNeverFallsBack`: como
+`tools/compilar-catalogo.py` se corre a mano, un catálogo editado sin
+regenerar no falla en ningún lado -- la app de SwiftPM sigue mostrando el
+texto de ayer. Esa prueba es lo único que lo nota. (El comentario del
+script decía que esa prueba ya existía; no existía. Ahora sí, y el
+comentario la nombra.)
+
+También se quitó la lista de excepciones de
+`testEverySharedKeyWithWindowsExistsInTheCatalog`: eran las doce claves
+que vivían en `AppStrings.S`, y A7b las mudó. Una lista de pendientes que
+ya no tiene pendientes deja de ser una lista y pasa a ser un colchón que
+tapa el próximo hueco.
+
+**El cotejo compartido con Windows** (`claves-compartidas.csv`) ganó las
+columnas `texto ja`, `texto de`, `texto ru` y `texto fr`, al final de la
+fila para no mover ninguna columna existente. Las 31 filas con texto en
+la Mac quedaron llenas; las 7 "solo Windows" quedaron vacías, que es lo
+correcto: su texto no es mío. De un plural viaja la forma `other`.
+
+**`tools/compilar-catalogo.py` escapaba mal el XML.** Un `&`, `<` o `>`
+en una traducción rompía el `.stringsdict` entero, y un plist roto no
+dice "este texto está mal": el sistema deja de leer **todos** los
+plurales de ese idioma. Hoy ninguna traducción los usa; se escapan igual,
+porque el día que alguien escriba "R&B" el fallo sería mudo.

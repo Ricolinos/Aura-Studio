@@ -115,36 +115,27 @@ final class LocalizationCatalogTests: XCTestCase {
                       "el español cambió en \(differences.count) claves:\n" + differences.prefix(10).joined(separator: "\n"))
     }
 
-    /// Las claves compartidas con Windows tienen que existir de este lado
-    /// -- o estar en la tabla `S`, que es lo que A7b va a mudar al
-    /// catálogo. La lista de las que faltan se afirma explícitamente:
-    /// cuando A7b vacíe `S`, esta prueba obliga a actualizarla, así que
-    /// lo pendiente queda **visible** en vez de tapado.
-    func testSharedKeysWithWindowsExistHereOrAreListedAsPendingForA7b() throws {
+    /// Las claves compartidas con Windows tienen que existir de este
+    /// lado. **Ya no hay lista de excepciones**: A7b mudó al catálogo
+    /// las doce que vivían en `AppStrings.S` y A7c borró esa tabla, así
+    /// que una clave compartida que falte es un hueco real y no algo
+    /// "pendiente" -- se afirma sin colchón, que es lo que hace que la
+    /// prueba sirva.
+    func testEverySharedKeyWithWindowsExistsInTheCatalog() throws {
         let csv = repositoryRoot
             .appendingPathComponent("studio/windows/docs/extraccion-cadenas/claves-compartidas.csv")
         let rows = try parseCSV(try String(contentsOf: csv, encoding: .utf8))
         let strings = try XCTUnwrap(try catalog()["strings"] as? [String: Any])
 
-        /// Textos compartidos que todavía viven en `AppStrings.S`, que
-        /// carga la tabla ES/EN y el resolutor de idioma -- eso es A7b.
-        let pendingInAppStrings: Set<String> = [
-            "storage-section-title", "storage-copy-explainer", "storage-reference-explainer",
-            "storage-change-only-affects-future", "orphans-title", "orphans-detail",
-            "orphans-button", "orphans-clean-button", "orphans-none-found",
-            "orphans-confirm-message",
-            "settings-page.migrar-version-anterior", "settings-page.migrar-biblioteca",
-        ]
-
         var missing: [String] = []
         for row in rows {
             guard let key = row["clave"], let state = row["estado"] else { continue }
             guard state == "igual" || state == "clave distinta" else { continue }
-            guard strings[key] == nil, !pendingInAppStrings.contains(key) else { continue }
+            guard strings[key] == nil else { continue }
             missing.append(key)
         }
         XCTAssertTrue(missing.isEmpty,
-                      "claves compartidas que no están ni en el catálogo ni en la lista de pendientes de A7b: \(missing)")
+                      "claves compartidas con Windows que no están en el catálogo: \(missing)")
     }
 
     /// Un lector de CSV que aguanta comillas y saltos de línea dentro de

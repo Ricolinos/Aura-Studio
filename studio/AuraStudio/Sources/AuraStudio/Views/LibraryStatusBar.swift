@@ -10,14 +10,21 @@ struct LibraryStatusBar: View {
     let summary: LibraryStatusSummary
 
     var body: some View {
+        // ST-227 (A7c): el orden de importancia al recortar es total >
+        // selección > dato extra. Sin prioridades explícitas SwiftUI
+        // reparte el recorte por igual, y con los textos más largos del
+        // alemán y el ruso el total -- lo único que esta barra promete
+        // siempre -- se cortaba antes que el dato de la derecha.
         HStack(spacing: 12) {
             Text(summary.total)
                 .lineLimit(1)
+                .layoutPriority(2)
             if let selection = summary.selection {
                 Text(LS("library-status-bar.texto"))
                     .foregroundStyle(.tertiary)
                 Text(selection)
                     .lineLimit(1)
+                    .layoutPriority(1)
                     .foregroundStyle(.primary)
             }
             Spacer(minLength: 8)

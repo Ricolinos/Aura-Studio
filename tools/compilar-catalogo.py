@@ -11,7 +11,10 @@ texto valdría nada.
 Este script rellena ese hueco: escribe `<idioma>.lproj/Localizable.strings`
 (y `.stringsdict` cuando hay plurales) a partir del catálogo. Los archivos
 generados NO se editan a mano -- misma regla que `Generated/AuraPalette.swift`
-(ver CLAUDE.md) -- y hay una prueba que falla si se apartan del catálogo.
+(ver CLAUDE.md). Como este script se corre A MANO, un catálogo editado sin
+regenerar no falla en ningún lado: la app sigue mostrando el texto viejo.
+Lo único que lo nota es
+`LocalizationLanguagesTests.testEachLanguageTableMatchesTheCatalogAndNeverFallsBack`.
 
 Uso: python3 tools/compilar-catalogo.py
 """
@@ -57,12 +60,22 @@ def build(language: str, strings: dict) -> tuple[str, dict]:
     return "\n".join(lines) + "\n", plurals
 
 
+def xml_escape(value: str) -> str:
+    """Un `.stringsdict` es un plist XML: `&`, `<` y `>` van escapados.
+
+    Ninguna traducción los usa hoy, pero la que los use rompería el plist
+    entero -- y el sistema no dice "este texto está mal", simplemente deja
+    de leer TODOS los plurales de ese idioma. Escapar acá cuesta nada.
+    """
+    return (value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"))
+
+
 def stringsdict(plurals: dict) -> str:
     def entry(key: str, forms: dict) -> str:
         rows = "".join(
-            f"\t\t\t<key>{name}</key>\n\t\t\t<string>{value}</string>\n"
+            f"\t\t\t<key>{xml_escape(name)}</key>\n\t\t\t<string>{xml_escape(value)}</string>\n"
             for name, value in forms.items())
-        return (f"\t<key>{key}</key>\n\t<dict>\n"
+        return (f"\t<key>{xml_escape(key)}</key>\n\t<dict>\n"
                 f"\t\t<key>NSStringLocalizedFormatKey</key>\n\t\t<string>%#@n@</string>\n"
                 f"\t\t<key>n</key>\n\t\t<dict>\n"
                 f"\t\t\t<key>NSStringFormatSpecTypeKey</key>\n\t\t\t<string>NSStringPluralRuleType</string>\n"

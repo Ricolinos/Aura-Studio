@@ -18,8 +18,12 @@ struct CoverNormalizationBar: View {
             ProgressView(value: progress.fraction)
                 .progressViewStyle(.linear)
                 .frame(width: 120)
+            // ST-227 (A7c): mismo criterio que `AppUpdateBar` -- el que
+            // dice CUÁNTO FALTA no se recorta; la nota de al lado sí,
+            // que para eso tiene `.truncationMode(.tail)`.
             Text(progress.label)
                 .lineLimit(1)
+                .layoutPriority(1)
             Text(LS("cover-normalization-bar.caratulas-tu-biblioteca-pasan-ser-cuadra"))
                 .lineLimit(1)
                 .truncationMode(.tail)

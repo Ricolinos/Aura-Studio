@@ -914,7 +914,7 @@ struct MigrationBarHost: View {
                     Text(progress.currentTitle).font(.caption).foregroundStyle(.secondary).lineLimit(1)
                 }
                 Spacer()
-                Button("Detener") { library.cancelMigration() }
+                Button(LS("installer-wizard-view.detener")) { library.cancelMigration() }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)

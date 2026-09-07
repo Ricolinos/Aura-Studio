@@ -19,8 +19,15 @@ struct AppUpdateBar: View {
         HStack(spacing: 10) {
             Image(systemName: "arrow.down.circle")
                 .foregroundStyle(AuraColors.light.accent)
+            // ST-227 (A7c): el mensaje principal no cede espacio. Sin
+            // prioridad, SwiftUI reparte el recorte entre los dos textos
+            // de una línea, y en alemán -- donde la nota secundaria mide
+            // 447 pt contra 283 del mensaje -- el usuario terminaba
+            // leyendo "Hay una versión nueva de Aura Stu…" con la nota
+            // entera al lado. Se ajusta el layout, no la traducción.
             Text(LSf("app-update-bar.hay-version-nueva-aura-studio", update.version.releaseString))
                 .lineLimit(1)
+                .layoutPriority(1)
             if update.downloadURL == nil {
                 // Sin el asset esperado no se ofrece descarga -- un botón
                 // que falla es peor que no tenerlo (ST-191 §3).

@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>albums-view.plural.canciones</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld трека</string>
+			<key>many</key>
+			<string>%lld треков</string>
+			<key>one</key>
+			<string>%lld трек</string>
+			<key>other</key>
+			<string>%lld трека</string>
+		</dict>
+	</dict>
+	<key>artists-view.plural.canciones</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld трека</string>
+			<key>many</key>
+			<string>%lld треков</string>
+			<key>one</key>
+			<string>%lld трек</string>
+			<key>other</key>
+			<string>%lld трека</string>
+		</dict>
+	</dict>
+	<key>background-task-center.plural.tareas</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld задачи</string>
+			<key>many</key>
+			<string>%lld задач</string>
+			<key>one</key>
+			<string>%lld задача</string>
+			<key>other</key>
+			<string>%lld задачи</string>
+		</dict>
+	</dict>
+	<key>library-browsing.plural.fotos</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld фото</string>
+			<key>many</key>
+			<string>%lld фото</string>
+			<key>one</key>
+			<string>%lld фото</string>
+			<key>other</key>
+			<string>%lld фото</string>
+		</dict>
+	</dict>
+	<key>library-grouping.plural.albumes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld альбома</string>
+			<key>many</key>
+			<string>%lld альбомов</string>
+			<key>one</key>
+			<string>%lld альбом</string>
+			<key>other</key>
+			<string>%lld альбома</string>
+		</dict>
+	</dict>
+	<key>library-grouping.plural.canciones</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld трека</string>
+			<key>many</key>
+			<string>%lld треков</string>
+			<key>one</key>
+			<string>%lld трек</string>
+			<key>other</key>
+			<string>%lld трека</string>
+		</dict>
+	</dict>
+	<key>library-grouping.plural.canciones-frase</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld трека</string>
+			<key>many</key>
+			<string>%lld треков</string>
+			<key>one</key>
+			<string>%lld трек</string>
+			<key>other</key>
+			<string>%lld трека</string>
+		</dict>
+	</dict>
+	<key>library-status-summary.plural.dias-horas</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%1$lld дня %2$lld ч</string>
+			<key>many</key>
+			<string>%1$lld дней %2$lld ч</string>
+			<key>one</key>
+			<string>%1$lld день %2$lld ч</string>
+			<key>other</key>
+			<string>%1$lld дня %2$lld ч</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.aplicando-caratula</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Обложки применяются к %lld трекам…</string>
+			<key>many</key>
+			<string>Обложки применяются к %lld трекам…</string>
+			<key>one</key>
+			<string>Обложка применяется к %lld треку…</string>
+			<key>other</key>
+			<string>Обложки применяются к %lld трекам…</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.archivos</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld файла</string>
+			<key>many</key>
+			<string>%lld файлов</string>
+			<key>one</key>
+			<string>%lld файл</string>
+			<key>other</key>
+			<string>%lld файла</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.buscando-artistas</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Ищем фото %lld исполнителя…</string>
+			<key>many</key>
+			<string>Ищем фото %lld исполнителей…</string>
+			<key>one</key>
+			<string>Ищем фото %lld исполнителя…</string>
+			<key>other</key>
+			<string>Ищем фото %lld исполнителя…</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.buscando-posters</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Ищем постеры для %lld видео…</string>
+			<key>many</key>
+			<string>Ищем постеры для %lld видео…</string>
+			<key>one</key>
+			<string>Ищем постер для %lld видео…</string>
+			<key>other</key>
+			<string>Ищем постеры для %lld видео…</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.caratulas-aplicadas</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Обложек применено: %lld</string>
+			<key>many</key>
+			<string>Обложек применено: %lld</string>
+			<key>one</key>
+			<string>Обложек применено: %lld</string>
+			<key>other</key>
+			<string>Обложек применено: %lld</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.convertidas</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld трека превращены в копии</string>
+			<key>many</key>
+			<string>%lld треков превращены в копии</string>
+			<key>one</key>
+			<string>%lld трек превращён в копию</string>
+			<key>other</key>
+			<string>%lld трека превращены в копии</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.corrigiendo</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Исправляем %lld объекта…</string>
+			<key>many</key>
+			<string>Исправляем %lld объектов…</string>
+			<key>one</key>
+			<string>Исправляем %lld объект…</string>
+			<key>other</key>
+			<string>Исправляем %lld объекта…</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.editando</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Редактируем %lld трека…</string>
+			<key>many</key>
+			<string>Редактируем %lld треков…</string>
+			<key>one</key>
+			<string>Редактируем %lld трек…</string>
+			<key>other</key>
+			<string>Редактируем %lld трека…</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.eliminar-titulo</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Удалить %lld объекта?</string>
+			<key>many</key>
+			<string>Удалить %lld объектов?</string>
+			<key>one</key>
+			<string>Удалить %lld объект?</string>
+			<key>other</key>
+			<string>Удалить %lld объекта?</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.fallaron</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld не удалось</string>
+			<key>many</key>
+			<string>%lld не удалось</string>
+			<key>one</key>
+			<string>%lld не удалось</string>
+			<key>other</key>
+			<string>%lld не удалось</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.fotos-encontradas</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Найдено фото исполнителей: %lld</string>
+			<key>many</key>
+			<string>Найдено фото исполнителей: %lld</string>
+			<key>one</key>
+			<string>Найдено фото исполнителей: %lld</string>
+			<key>other</key>
+			<string>Найдено фото исполнителей: %lld</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.posters-encontrados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Найдено постеров: %lld</string>
+			<key>many</key>
+			<string>Найдено постеров: %lld</string>
+			<key>one</key>
+			<string>Найдено постеров: %lld</string>
+			<key>other</key>
+			<string>Найдено постеров: %lld</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.saltadas</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld пропущены, так как файлов нет</string>
+			<key>many</key>
+			<string>%lld пропущены, так как файлов нет</string>
+			<key>one</key>
+			<string>%lld пропущен, так как файла нет</string>
+			<key>other</key>
+			<string>%lld пропущены, так как файлов нет</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.ya-tenian-foto</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>У %lld уже было фото</string>
+			<key>many</key>
+			<string>У %lld уже было фото</string>
+			<key>one</key>
+			<string>У %lld уже было фото</string>
+			<key>other</key>
+			<string>У %lld уже было фото</string>
+		</dict>
+	</dict>
+	<key>photo-albums-view.plural.fotos</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld фото</string>
+			<key>many</key>
+			<string>%lld фото</string>
+			<key>one</key>
+			<string>%lld фото</string>
+			<key>other</key>
+			<string>%lld фото</string>
+		</dict>
+	</dict>
+	<key>series-view.plural.episodios</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld серии</string>
+			<key>many</key>
+			<string>%lld серий</string>
+			<key>one</key>
+			<string>%lld серия</string>
+			<key>other</key>
+			<string>%lld серии</string>
+		</dict>
+	</dict>
+	<key>series-view.plural.temporadas</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld сезона</string>
+			<key>many</key>
+			<string>%lld сезонов</string>
+			<key>one</key>
+			<string>%lld сезон</string>
+			<key>other</key>
+			<string>%lld сезона</string>
+		</dict>
+	</dict>
+	<key>similar-items-view.plural.elementos</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld объекта</string>
+			<key>many</key>
+			<string>%lld объектов</string>
+			<key>one</key>
+			<string>%lld объект</string>
+			<key>other</key>
+			<string>%lld объекта</string>
+		</dict>
+	</dict>
+	<key>similar-items-view.plural.grupos</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld группы</string>
+			<key>many</key>
+			<string>%lld групп</string>
+			<key>one</key>
+			<string>%lld группа</string>
+			<key>other</key>
+			<string>%lld группы</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

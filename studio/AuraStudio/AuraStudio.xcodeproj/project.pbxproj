@@ -171,6 +171,7 @@
 		9C53C3873A4C5F484CCC3858 /* InstallerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3EBEB24F597D3C9B609AC775 /* InstallerViewModel.swift */; };
 		9CEBAACAA11BE3313233D7ED /* InstallerWizardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D4862DCA99696DCB66D2012 /* InstallerWizardView.swift */; };
 		9DEB14FE57D88A13407D6D95 /* MediaStorageAfterA3A4Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4BA3B5358A6852A9ED6C385 /* MediaStorageAfterA3A4Tests.swift */; };
+		9E4A5C64C1B6EEF12CCC1F4F /* LocalizationLanguagesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC743DAAE9262846DE0224ED /* LocalizationLanguagesTests.swift */; };
 		9FDD21617909191BB7E9B9CE /* MKS5LBootRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 722702AD0F209BDEA893FA8D /* MKS5LBootRunner.swift */; };
 		A0BDFCBDE136A9D22AC2FA61 /* LibraryFolderDropTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4B1B446620BF0826DE1BEF2 /* LibraryFolderDropTests.swift */; };
 		A18BBCCDD52DCE31AE6866AB /* ImageResizerSquareCropTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C28EC066606A5AC0A254EB5 /* ImageResizerSquareCropTests.swift */; };
@@ -542,6 +543,7 @@
 		CAEEFCC3F50155575E896CA6 /* es.lproj */ = {isa = PBXFileReference; path = es.lproj; sourceTree = "<group>"; };
 		CB93A2C8B722FEC1F407E017 /* BackgroundTaskCenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundTaskCenterTests.swift; sourceTree = "<group>"; };
 		CBA54FA0E3385DC4D97B068F /* ArtistImageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistImageTests.swift; sourceTree = "<group>"; };
+		CC743DAAE9262846DE0224ED /* LocalizationLanguagesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationLanguagesTests.swift; sourceTree = "<group>"; };
 		CD729ADB997C1F381DACBC45 /* MKS5LBootRunnerExecutableBitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKS5LBootRunnerExecutableBitTests.swift; sourceTree = "<group>"; };
 		D00683CD00E28700EF1DC416 /* LibraryViewModelSyncScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModelSyncScopeTests.swift; sourceTree = "<group>"; };
 		D178914E2E046B794D31DB18 /* BundledArtifactsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BundledArtifactsTests.swift; sourceTree = "<group>"; };
@@ -852,6 +854,7 @@
 				136C7C53A914740AAC373981 /* LocalizationCatalogTests.swift */,
 				3981D2580775064C5992B020 /* LocalizationDraftTests.swift */,
 				0F92DF3C659F8F62AECBE903 /* LocalizationEnglishTests.swift */,
+				CC743DAAE9262846DE0224ED /* LocalizationLanguagesTests.swift */,
 				E85CF7055C85B385C6218923 /* LocalizationPluralTests.swift */,
 				181CDD2810F5EC0A301C1384 /* LocalTagReaderTests.swift */,
 				41E05507BDCB6ED7C42C9B6A /* LyricsSidecarSyncTests.swift */,
@@ -1095,8 +1098,12 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				Base,
+				de,
 				en,
 				es,
+				fr,
+				ja,
+				ru,
 			);
 			mainGroup = 0CBE9D4998D5B702EF397078;
 			minimizedProjectReferenceProxies = 1;
@@ -1233,6 +1240,7 @@
 				1CEC8A30B006263F576245AA /* LocalizationCatalogTests.swift in Sources */,
 				2D7DD88EF3CEB70958BE23A5 /* LocalizationDraftTests.swift in Sources */,
 				ADA4BC7CAD98BA33CDC4579F /* LocalizationEnglishTests.swift in Sources */,
+				9E4A5C64C1B6EEF12CCC1F4F /* LocalizationLanguagesTests.swift in Sources */,
 				EBBBF390BC9359545FDA3EDE /* LocalizationPluralTests.swift in Sources */,
 				7D905E8559BA02F19BE2AFE0 /* LyricsSidecarSyncTests.swift in Sources */,
 				1EF7EC20F69C186A9887856B /* MKS5LBootRunnerExecutableBitTests.swift in Sources */,

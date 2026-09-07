@@ -374,7 +374,6 @@
 "settings.installer" = "Instalador";
 "settings.language" = "Idioma";
 "settings.language-english" = "Ingles";
-"settings.language-note" = "Por ahora el idioma se aplica a Ajustes y a la barra lateral. El resto de la app todavia esta solo en espanol.";
 "settings.language-note-new" = "El idioma se aplica al arrancar la app. Los nombres de tus colecciones de fotos y las categorías que ya guardaste no se traducen: son datos tuyos, no texto de la app.";
 "settings.language-restart-later" = "Más tarde";
 "settings.language-restart-message" = "El idioma se aplica al arrancar. Si eliges «Más tarde», queda guardado y se aplica la próxima vez que abras Aura Studio.";
