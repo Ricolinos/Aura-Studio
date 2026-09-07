@@ -8,28 +8,21 @@ namespace AuraStudio.Core.Library;
 /// las dos formas).
 ///
 /// <para><b>Es una envoltura, no una segunda implementación</b>: el contrato
-/// dice que hay un solo resolvedor de rutas de biblioteca,
-/// <see cref="MediaRoots.Directory(string, string, Func{string,
-/// IEnumerable{string}}?)"/>, y esta clase no repite su comparación NFC —la
-/// llama, una vez por componente de la ruta relativa (artista, álbum, el
-/// nombre del archivo), porque el acento puede estar en cualquiera de ellos y
-/// <c>MediaRoots.Directory</c> solo resuelve un nivel a la vez. Para el último
-/// componente —un archivo, no una carpeta— se le inyecta un enumerador de
-/// archivos en vez del de carpetas por omisión: la comparación es la misma,
-/// lo único que cambia es qué se lista.</para>
+/// dice que hay un solo resolvedor de rutas de biblioteca, y esta clase no
+/// repite su comparación NFC — la llama.</para>
 ///
-/// <para><b>Pendiente de B4</b> (ST-245, anotado también en DECISIONS.md): el
-/// Experto está ampliando esto mismo como <c>MediaRoots.Resolve</c> (NFC
-/// componente a componente) para B4. Al integrar, esta clase pasa a llamar a
-/// <c>MediaRoots.Resolve</c> directo y puede reducirse a nada o quedar como
-/// alias fino — lo que decida esa integración. Las pruebas de este archivo
-/// están escritas contra el comportamiento (una ruta con acento en NFD en
-/// disco y NFC en el catálogo se encuentra igual), no contra los métodos
-/// internos, para sobrevivir ese cambio sin tocarlas.</para>
+/// <para><b>Integrado en B4</b> (ST-244): el recorrido componente a componente
+/// es ahora <c>MediaRoots.Resolve</c>, y esta clase lo llama. Lo que queda acá
+/// es lo suyo y no se repite en ningún lado: el camino rápido, la comprobación
+/// de que la ruta cae dentro de la biblioteca, y que <b>el último componente se
+/// resuelva contra los archivos que hay</b> —buscar uno que ya existe— en vez
+/// de darse por canónico, que es lo que corresponde cuando se elige dónde
+/// escribir uno nuevo. Las pruebas de este archivo estaban escritas contra el
+/// comportamiento y siguen en verde sin tocarlas, que era el punto.</para>
 ///
 /// <para>El camino rápido sigue siendo que el archivo esté exactamente donde
 /// el catálogo dice —el caso normal, cuando esta misma instalación de Windows
-/// creó la carpeta—; el recorrido por <c>MediaRoots.Directory</c> solo corre
+/// creó la carpeta—; el recorrido por <c>MediaRoots.Resolve</c> solo corre
 /// cuando ese camino falla.</para>
 /// </summary>
 public static class LibraryDiskPathResolver
@@ -66,23 +59,17 @@ public static class LibraryDiskPathResolver
         if (Path.IsPathRooted(relative) || relative.StartsWith("..", StringComparison.Ordinal))
             return null;
 
-        string[] segments = relative.Split(
-            [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar],
-            StringSplitOptions.RemoveEmptyEntries);
+        if (relative.Length == 0 || relative == ".") return null;
 
-        if (segments.Length == 0) return null;
+        // ST-244: el recorrido componente a componente vive en UN solo lugar.
+        // Pasarle un enumerador de archivos es lo que hace que el ÚLTIMO
+        // componente —el nombre del archivo, que la Mac también pudo dejar en
+        // NFD— se resuelva contra lo que hay en disco, en vez de darse por
+        // canónico como cuando se elige dónde escribir uno nuevo.
+        string candidate = MediaRoots.Resolve(
+            libraryRoot, relative, enumerateDirectories, enumerateFiles: enumerateFiles ?? DefaultFiles);
 
-        string current = libraryRoot;
-
-        // Todos los segmentos salvo el último son carpetas: un nivel por vez,
-        // con el mismo MediaRoots.Directory que ya resuelve Música/Imágenes/Videos.
-        for (int i = 0; i < segments.Length - 1; i++)
-            current = MediaRoots.Directory(current, segments[i], enumerateDirectories);
-
-        // El último es el archivo: misma función, listando archivos en vez de carpetas.
-        current = MediaRoots.Directory(current, segments[^1], enumerateFiles ?? DefaultFiles);
-
-        return fileExists(current) ? current : null;
+        return fileExists(candidate) ? candidate : null;
     }
 
     private static IEnumerable<string> DefaultFiles(string directory)

@@ -13171,3 +13171,29 @@ Lo que **no** se verificó: nada contra la biblioteca real del dueño, ni
 en copia. Y el arnés corre sin ventana, así que los textos de Ajustes y
 el avance de "Convertir referenciados en copias" los tiene que mirar
 alguien con la app delante.
+
+### Integración con ST-245: un solo resolvedor de rutas
+
+B5 dejó `LibraryDiskPathResolver` como envoltura sobre
+`MediaRoots.Directory`, recorriendo la ruta componente a componente, y
+anotó la dependencia: cuando B4 trajera `MediaRoots.Resolve`, esa clase
+pasaría a llamarlo. Cerrado acá.
+
+Los dos hacen el mismo recorrido y **no son lo mismo**, y esa diferencia
+quedó explícita en vez de duplicada:
+
+- **Elegir dónde escribir un archivo nuevo** (B4): las carpetas se reusan,
+  el nombre del archivo lo ponemos nosotros y va canónico.
+- **Encontrar un archivo que ya existe** (B5): el último componente
+  también puede estar en NFD, porque lo escribió la Mac, así que también
+  se resuelve contra lo que hay.
+
+Ahora es un solo método con un parámetro opcional —el enumerador de
+archivos— que dice cuál de las dos cosas se está pidiendo.
+`LibraryDiskPathResolver` conserva lo suyo: el camino rápido, la
+comprobación de que la ruta cae dentro de la biblioteca, y el "no está en
+ningún lado" como respuesta legítima.
+
+`LibraryDiskPathResolverTests` estaba escrita contra el comportamiento y
+**pasó sin tocar una sola línea**, que era exactamente para lo que se
+escribió así.

@@ -74,15 +74,26 @@ public static class MediaRoots
     /// se toca cada carpeta, no uno por canción.</para>
     /// </summary>
     /// <param name="relativePath">
-    /// Ruta relativa del catálogo, con <c>/</c> (<see cref="CatalogPath"/>).
-    /// El último componente es el archivo y no se resuelve: se escribe con el
-    /// nombre canónico.
+    /// Ruta relativa del catálogo, con <c>/</c> o con <c>\</c>
+    /// (<see cref="CatalogPath"/>): leer es tolerante.
+    /// </param>
+    /// <param name="enumerateFiles">
+    /// Qué archivos hay en una carpeta. Cuando se pasa, el <b>último</b>
+    /// componente —el archivo— también se resuelve contra lo que ya está, igual
+    /// que las carpetas; cuando no, se escribe con el nombre canónico.
+    ///
+    /// <para>Esa es toda la diferencia entre <b>buscar un archivo que ya
+    /// existe</b> (ST-245, donde el nombre del archivo también puede estar en
+    /// NFD porque lo escribió la Mac) y <b>elegir dónde escribir uno nuevo</b>
+    /// (ST-244, donde el nombre lo ponemos nosotros y va canónico). El recorrido
+    /// es el mismo y por eso vive en un solo lugar.</para>
     /// </param>
     public static string Resolve(
         string libraryRoot,
         string relativePath,
         Func<string, IEnumerable<string>>? enumerateDirectories = null,
-        Func<string, bool>? directoryExists = null)
+        Func<string, bool>? directoryExists = null,
+        Func<string, IEnumerable<string>>? enumerateFiles = null)
     {
         enumerateDirectories ??= SafeDirectories;
         directoryExists ??= System.IO.Directory.Exists;
@@ -103,9 +114,11 @@ public static class MediaRoots
                 : Directory(current, wanted, enumerateDirectories);
         }
 
-        return parts.Length == 0
-            ? current
-            : Path.Combine(current, CatalogPath.Normalize(parts[^1]));
+        if (parts.Length == 0) return current;
+
+        return enumerateFiles is null
+            ? Path.Combine(current, CatalogPath.Normalize(parts[^1]))
+            : Directory(current, parts[^1], enumerateFiles);
     }
 
     /// <summary>
