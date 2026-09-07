@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Arma los instaladores de Aura Studio para Windows (ARM64 y/o x64).
 
@@ -132,7 +132,26 @@ function Build-Installer([string] $arch) {
     )
     $faltan = $imprescindibles | Where-Object { -not (Test-Path (Join-Path $publishDir $_)) }
     if ($faltan) {
-        throw "[$arch] El publish está incompleto; falta:`n  " + ($faltan -join "`n  ")
+        # Dos causas muy distintas detrás del mismo síntoma: si falta un
+        # artefacto de firmware (todo lo que empieza en "artifacts\"), lo que
+        # falta es correr FirmwareFetch.ps1 antes del publish -- no un
+        # problema del publish en sí. Si falta un binario de la propia app
+        # (AuraStudio.App.exe/.pri, AuraStudio.Core.dll, el Bootstrap del
+        # Windows App SDK), FirmwareFetch.ps1 no tiene nada que ver: ahí el
+        # publish mismo salió mal.
+        $faltanFirmware = $faltan | Where-Object { $_ -like 'artifacts\*' }
+        $faltanApp = $faltan | Where-Object { $_ -notlike 'artifacts\*' }
+
+        $mensaje = "[$arch] El publish está incompleto; falta:`n  " + ($faltan -join "`n  ")
+        if ($faltanFirmware) {
+            $mensaje += "`n`nFalta artefacto(s) de firmware -- corré .\scripts\FirmwareFetch.ps1"
+            $mensaje += "`n(o .\scripts\FirmwareFetch.ps1 -FromDir <carpeta con artifacts>, sin Release público todavía)"
+            $mensaje += "`nantes de volver a empaquetar. Le falta:`n  " + ($faltanFirmware -join "`n  ")
+        }
+        if ($faltanApp) {
+            $mensaje += "`n`nEsto no lo arregla FirmwareFetch.ps1: falta binario propio de la app, revisar el publish."
+        }
+        throw $mensaje
     }
 
     # --- Los idiomas (ST-247, B7b) ------------------------------------------

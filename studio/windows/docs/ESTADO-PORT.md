@@ -6,6 +6,114 @@
 > nada — todo compila desde la sesión del 2026-08-31 en la VM — por eso se
 > renombró en la Fase 0. Entradas nuevas van **arriba** de las viejas.
 
+## Ronda "ajustes 3", B8 (parcial) — Cierre: tabla final, guion del dueño (2026-09-07)
+
+Decisión ST-248 (parcial; tabla completa y método en `DECISIONS.md`).
+Cierra lo que no depende de B7c: la tabla antes/después de almacenamiento
+e idiomas con los arneses reales corridos sobre `0c8ca51` (B7b) —
+`StorageFixtureCheck` (B0: edición sin recopiar, Eliminar, huérfanos) y
+`CopyModeCheck` (B3/B4/B6: importar por formato, ALAC/MP3, edición sin
+recopiar, referencia sin tocar archivos, migración idempotente) — más los
+conteos de B7a/B7b. Números MEDIDOS en esta corrida, no repetidos de su ST
+original; donde difieren de lo que su propia ST reportó, se dice por qué
+(casi siempre una constante sintética del arnés que cambió entre rondas,
+nunca un retroceso real).
+
+**Almacenamiento (medido, `0c8ca51`)**: editar título/artista/álbum/pista/
+año/género SÍ reescribe el archivo en MP3/FLAC/M4A (no en WAV, sin
+escritor nativo); rating/favorito/letra/categoría/carátula nunca tocan el
+archivo (política `AlbumOnly` forzada); 0 preparados nuevos en los 44
+casos. Eliminar en modo copia manda el original a la Papelera de verdad
+(confirmado por SID en `$Recycle.Bin`, no solo "desapareció"); en modo
+referencia solo se quita del catálogo, el original nunca se toca.
+Huérfanos: 60 000 bytes de sobra antes de limpiar, 0 después (ST-240
+había medido 155 687 bytes con una constante distinta del propio arnés;
+ST-245 la cambió y esta corrida confirma su número, no el de B0). Importar
+en copia: MP3/FLAC/M4A copian el archivo tal cual; WAV/AIFF con calidad
+"Original sin pérdida" (el default desde B4) se convierten a ALAC
+(1 764 044 B → 192 410-194 490 B, mismas muestras PCM bit a bit, sin
+pérdida) — el MP3 (322 223 B, ~258 kbps) queda como opción de "Comprimir",
+no el default (eso cambió entre ST-243 y ST-244, a propósito). Migrar una
+biblioteca anterior: detecta, avisa, no escribe nada al solo abrir;
+"Migrar biblioteca" etiqueta, renombra derivados y borra huérfanos
+resueltos en un solo paso, y una segunda corrida no toca nada (idempotente
+de verdad, medido).
+
+**Idiomas (medido, `0c8ca51`)**: `AuraStudio.Core/Strings/Resources.resx`
+trae **619 entradas** (claves + formas de plural `.one`/`.other`; B7a
+contaba "551 claves únicas" con una convención distinta, una por par de
+plural en vez de dos — no hay cadena perdida, es otra forma de contar).
+**1 satélite hoy** (`Resources.en.resx`, inglés completo, B7b) de los
+**5 que exige el instalador** (`AppLanguages.RequiredSatelliteCultures`) —
+ja/de/ru/fr quedan para B7c; `Make-Installer.ps1` ya aborta si falta
+cualquiera, no solo avisa.
+
+### Guion de verificación interactiva para el dueño (VM, biblioteca sintética o una COPIA de la real)
+
+Con los instaladores de prueba de esta ronda: `dist\prueba-5e05ccd\`
+(sin idiomas, previo a B7b) o el instalador del worktree del Experto
+(con inglés, B7b) — nunca sobre la biblioteca real sin haberla copiado
+antes. Cada paso dice qué mirar; si algo no coincide, es hallazgo.
+
+1. **Importar en modo copia.** Ajustes › Biblioteca, "Cómo guardar tu
+   música" en "Copiar a la Biblioteca de Aura". Arrastrar una canción:
+   aparece bajo `Música\Artista\Álbum\` dentro de la carpeta de la
+   biblioteca, con sus etiquetas ya leídas. Abrir el archivo COPIADO con
+   clic derecho › Propiedades › Detalles en el Explorador: título, artista
+   y álbum coinciden con lo que muestra Aura Studio.
+2. **Importar en modo referencia.** Cambiar a "Referenciar en su lugar" y
+   arrastrar otra canción desde una carpeta fuera de la biblioteca:
+   aparece en Canciones, pero el archivo original NO se mueve ni se copia
+   (seguir viéndolo en su carpeta original).
+3. **Editar y ver las etiquetas de verdad.** En una canción MP3/FLAC/M4A
+   copiada, cambiar el título y el artista desde Aura Studio. Cerrar Aura
+   Studio, abrir el archivo con clic derecho › Propiedades › Detalles (o
+   con otro reproductor): el título y artista nuevos aparecen ahí — no
+   solo en el catálogo de Aura Studio. En una canción WAV, el mismo cambio
+   NO se refleja en el archivo (sin escritor nativo, esperado).
+4. **Rating y la fecha del archivo.** Ponerle estrellas a una canción.
+   Con el Explorador en vista Detalles (columna "Modificado"), la fecha
+   del archivo NO cambia al poner el rating — el rating vive en el
+   catálogo de Aura Studio, no en el archivo.
+5. **Sincronizar y ver en el iPod.** Con el iPod conectado, sincronizar
+   la biblioteca; desconectar y ver en el propio iPod (o en su Explorador
+   de archivos con USB) que la canción editada en el paso 3 aparece con
+   el título/artista nuevos.
+6. **Eliminar.** Seleccionar una canción en modo copia y Eliminar: aparece
+   el diálogo de confirmación con cuántos archivos y cuánto ocupan;
+   confirmar, y el archivo desaparece de la biblioteca Y aparece en la
+   Papelera de reciclaje de Windows (nunca un borrado definitivo). Repetir
+   con una canción en modo referencia: se quita de la biblioteca, pero el
+   archivo original sigue intacto en su carpeta (nunca va a la Papelera).
+7. **Desconectar el disco de originales.** Con canciones en modo
+   referencia, desconectar (expulsar) el disco donde viven esos archivos:
+   Aura Studio muestra el estado de "biblioteca desconectada"/archivo no
+   disponible para esos elementos, sin error ni congelarse; reconectar el
+   disco y recargar hace que vuelvan a aparecer disponibles.
+8. **"Convertir referenciados en copias."** Sobre una canción en modo
+   referencia, usar esta acción: el archivo se copia de verdad a la
+   biblioteca y el elemento pasa a modo copia (verificar en Ajustes o en
+   la columna de almacenamiento de Canciones, si está visible); el
+   original fuera de la biblioteca sigue existiendo, sin tocarse.
+9. **"Limpiar huérfanos."** En Ajustes › Biblioteca › Archivos huérfanos,
+   "Buscar huérfanos" (puede dar 0 si no hay ninguno tras uso normal, eso
+   es correcto); si aparece alguno, "Limpiar archivos huérfanos" pide
+   confirmación y los borra sin tocar ninguna canción/foto/video real.
+10. **Migrar una biblioteca de 0.3.0.** ⚠️ Solo sobre una COPIA de la
+    carpeta de biblioteca, nunca la real. Abrir esa copia con una versión
+    de esta ronda: si detecta elementos sin migrar, Ajustes muestra
+    "Migrar de una versión anterior"/"Migrar biblioteca". Correrla: avisa
+    lo que va a hacer, deja un resumen (etiquetados/renombrados/huérfanos
+    borrados), y correrla una segunda vez no vuelve a tocar nada (mismo
+    árbol, comprobable con el explorador o `Get-FileHash`).
+11. **Cambiar idioma a inglés.** Ajustes › selector de idioma › English.
+    **Sin tareas en curso**: cambia al instante o pide reiniciar según lo
+    que diga la pantalla — no debe quedar texto a medias en dos idiomas.
+    **Con una tarea en curso** (p. ej. sincronizando o buscando
+    carátulas): cambiar de idioma NO debe ofrecer "Cerrar ahora" mientras
+    la tarea sigue corriendo (ST-247, B7b, addendum) — verificar que el
+    diálogo de idioma se comporta distinto con y sin trabajo pendiente.
+
 ## Ronda "ajustes 3", B7a (ensayo en seco) — Extracción de cadenas (2026-09-07)
 
 Decisión ST-247 (tabla completa en `DECISIONS.md`). Nuevo
