@@ -8,13 +8,13 @@ c006,Je comprends que cela réécrit le bootloader de l'iPod. Cela n'efface pas 
 c007,Mise à jour du bootloader de l'iPod…
 c008,Mise à jour du bootloader de {0}…
 c009,Votre mot de passe administrateur n'est demandé à aucun moment.
-c010,Ce n'est pas obligatoire. Le nouveau micrologiciel fonctionne aussi bien avec le bootloader que vous avez déjà ; seul l'écran de démarrage change.
+c010,Ce n'est pas obligatoire. Le nouveau microprogramme fonctionne aussi bien avec le bootloader que vous avez déjà ; seul l'écran de démarrage change.
 c011,"Rien n'est touché sur le disque. Votre musique, vos photos, vos listes de lecture et vos réglages restent exactement tels quels."
 c012,Mettre à jour le bootloader de cet iPod
 c013,Cette version apporte un bootloader plus récent que celui de votre iPod.
 c014,"Nous ne savons pas quel bootloader se trouve sur votre iPod : un autre ordinateur l'a installé, ou une version antérieure de l'application."
 c015,Mettre à jour le bootloader
-c016,"Le bootloader est le programme qui s'exécute avant le micrologiciel, sur une puce distincte du disque. Cette version en apporte un nouveau, avec un autre écran de démarrage."
+c016,"Le bootloader est le programme qui s'exécute avant le microprogramme, sur une puce distincte du disque. Cette version en apporte un nouveau, avec un autre écran de démarrage."
 c017,Le mode DFU est nécessaire parce que cette puce ne peut être écrite d'aucune autre façon.
 c018,{0} fichier ({1}) part à la Corbeille.
 c019,{0} fichiers ({1}) partent à la Corbeille.
@@ -29,26 +29,26 @@ c027,"Le pilote d'appareils d'Apple est introuvable. Installez « Appareils Appl
 c028,Windows reconnaît « {0} » et son pilote fonctionne.
 c029,L'état du pilote n'a pas pu être vérifié.
 c030,Une opération est déjà en train d'écrire sur l'iPod. Attendez qu'elle se termine avant d'en lancer une autre.
-c031,"Les fichiers du micrologiciel n'ont pas pu être vérifiés, donc rien n'est installé."
+c031,"Les fichiers du microprogramme n'ont pas pu être vérifiés, donc rien n'est installé."
 c032,Écrit. En attente du redémarrage de l'iPod et de sa réapparition…
 c033,Commencer
 c034,Opération annulée.
 c035,{0} fichier écrit sur l'iPod.
 c036,{0} fichiers écrits sur l'iPod.
-c037,Le micrologiciel n'a pas pu être copié sur l'iPod.
-c038,Copier le micrologiciel
-c039,Copie du micrologiciel sur l'iPod…
+c037,Le microprogramme n'a pas pu être copié sur l'iPod.
+c038,Copier le microprogramme
+c039,Copie du microprogramme sur l'iPod…
 c040,Vérifiez ces informations avec attention. Ce qui suit efface le contenu du disque affiché ici.
 c041,Confirmez qu'il s'agit bien de votre iPod
-c042,Aura Studio l'a reconnu au branchement. Voulez-vous y installer un micrologiciel ? Rien ne se passe tant que vous n'avez pas choisi.
+c042,Aura Studio l'a reconnu au branchement. Voulez-vous y installer un microprogramme ? Rien ne se passe tant que vous n'avez pas choisi.
 c043,Pas maintenant
 c044,"Oui, installer"
 c045,Votre iPod est en mode DFU
 c046,iPod détecté en mode DFU.
 c047,iPod détecté en mode DFU (état {0}).
-c048,Guide de flashage et de restauration (dépôt du micrologiciel)
+c048,Guide de flashage et de restauration (dépôt du microprogramme)
 c049,https://github.com/Ricolinos/Aura-Firmware/blob/main/docs/guia-flasheo-restauracion.md
-c050,Aucun micrologiciel n'est disponible à installer : le dossier des artefacts n'a pas été rempli.
+c050,Aucun microprogramme n'est disponible à installer : le dossier des artefacts n'a pas été rempli.
 c051,Aucun iPod en mode DFU n'est encore visible. Refaites la combinaison de boutons et relancez la recherche. N'oubliez pas de continuer à appuyer après que l'écran devient noir.
 c052,"Le pilote d'Apple est installé, mais Windows ne voit aucun appareil Apple. Si vous avez déjà fait la combinaison de boutons et que l'écran de l'iPod est noir, il est probablement en mode DFU et sa connexion USB n'arrive pas jusqu'ici. Sur une machine virtuelle, vérifiez que l'iPod en mode DFU est bien redirigé vers Windows : en passant en DFU il change d'identifiant USB et il faut parfois l'autoriser à nouveau."
 c053,"Si votre iPod lit de la musique, arrêtez la lecture."
@@ -58,27 +58,27 @@ c056,Relâchez. Aura Studio détectera le mode DFU automatiquement.
 c057,"Si vous relâchez avant environ 12 secondes, l'iPod redémarre normalement et n'entre PAS en mode DFU. L'écran qui devient noir n'est pas le signal pour relâcher : continuez à appuyer après cela."
 c058,L'état de l'iPod n'a pas pu être lu. Vérifiez ci-dessous si le pilote d'Apple manque.
 c059,En attente du mode DFU…
-c060,Le micrologiciel est installé. Éjectez l'iPod depuis Général avant de le débrancher.
+c060,Le microprogramme est installé. Éjectez l'iPod depuis Général avant de le débrancher.
 c061,Terminé
-c062,Répéter sans écrire
-c063,Répétition terminée — le disque n'a pas été touché
-c064,La répétition s'est bien passée : le disque a été vérifié à nouveau avec les droits d'administrateur et le plan de formatage est valide. Rien n'a encore été écrit.
-c065,Répétition de la préparation du disque…
+c062,Simuler sans écrire
+c063,Simulation terminée — le disque n'a pas été touché
+c064,La simulation s'est bien passée : le disque a été vérifié à nouveau avec les droits d'administrateur et le plan de formatage est valide. Rien n'a encore été écrit.
+c065,Simulation de la préparation du disque…
 c066,Mettez maintenant l'iPod en mode DFU
 c067,C'est le moment : le disque est prêt et l'étape suivante écrit le bootloader. L'iPod doit rester branché en USB pendant l'opération.
 c068,Impossible de continuer
 c069,"Cet iPod a {0} d'installé et vous allez installer {1}. {0} est conservé en entier, avec ses réglages, et vous pouvez y revenir depuis Extras quand vous voulez."
-c070,Micrologiciel à installer
+c070,Microprogramme à installer
 c071,Écrire le bootloader
 c072,Je comprends que cela remplace le bootloader d'origine d'Apple et que cela ne peut pas être annulé sans le restaurer.
 c073,Le bootloader n'a pas pu être écrit.
 c074,Votre confirmation manque avant d'écrire le bootloader. Aura Studio n'écrit rien sans que vous confirmiez d'abord.
 c075,Écriture du bootloader sur l'iPod…
 c076,Je comprends que tout le contenu de {0} sera effacé.
-c077,La répétition ci-dessus n'a rien touché. Ce qui suit efface tout le contenu du disque et ne peut pas être annulé. Vérifiez qu'il s'agit du bon iPod avant de continuer.
+c077,La simulation ci-dessus n'a rien touché. Ce qui suit efface tout le contenu du disque et ne peut pas être annulé. Vérifiez qu'il s'agit du bon iPod avant de continuer.
 c078,Cette étape efface réellement l'iPod
 c079,Votre confirmation manque avant d'effacer l'iPod. Aura Studio ne formate rien sans que vous confirmiez d'abord sur quel disque il va agir.
-c080,La préparation du disque doit d'abord être répétée. Cela vérifie tout sans rien écrire.
+c080,La préparation du disque doit d'abord être simulée. Cela vérifie tout sans rien écrire.
 c081,Effacer et formater {0}
 c082,Formatage du disque de l'iPod…
 c083,L'iPod n'a aucun volume que Windows puisse lire. Préparez le disque avant de copier les fichiers.
@@ -88,17 +88,17 @@ c086,"Pour préparer le disque de l'iPod, Windows vous demandera les droits d'ad
 c087,Autorisations nécessaires
 c088,Préparer le disque
 c089,Ce qu'a fait l'opération avec droits élevés
-c090,L'iPod est sorti du mode DFU. Vous pouvez copier le micrologiciel.
+c090,L'iPod est sorti du mode DFU. Vous pouvez copier le microprogramme.
 c091,Recommencer
 c092,Aura Studio s'est arrêté par sécurité avant de toucher au disque : {0}.
 c093,Rechercher l'iPod en DFU
 c094,Recherche de l'iPod en mode DFU…
 c095,L'iPod est toujours en mode DFU et l'installation n'a pas été confirmée. Ne le débranchez pas : relancez la recherche.
-c096,"Installez le micrologiciel sur votre iPod, étape par étape"
+c096,"Installez le microprogramme sur votre iPod, étape par étape"
 c097,Programme d'installation
 c098,"Le numéro de disque de « {0} » n'a pas pu être identifié, donc rien n'est touché."
-c099,"Aura Studio va préparer le disque de votre iPod, écrire le bootloader et copier le micrologiciel. Chaque étape est expliquée avant d'être exécutée, et rien n'est touché tant que vous n'avez pas confirmé."
-c100,Installons le micrologiciel sur votre iPod
+c099,"Aura Studio va préparer le disque de votre iPod, écrire le bootloader et copier le microprogramme. Chaque étape est expliquée avant d'être exécutée, et rien n'est touché tant que vous n'avez pas confirmé."
+c100,Installons le microprogramme sur votre iPod
 c101,"L'installation efface tout ce qui se trouve sur l'iPod et remplace son bootloader d'origine d'Apple. Si de la musique n'existe que là, copiez-la ailleurs avant."
 c102,{0} fichier orphelin supprimé.
 c103,{0} fichiers orphelins supprimés.

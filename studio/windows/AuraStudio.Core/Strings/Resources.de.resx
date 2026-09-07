@@ -286,7 +286,7 @@
     <value>Warten auf den DFU-Modus…</value>
   </data>
   <data name="app-strings.installer-done-detail" xml:space="preserve">
-    <value>Die Firmware ist installiert. Wirf den iPod unter „Allgemein“ aus, bevor du ihn abziehst.</value>
+    <value>Die Firmware ist installiert. Wirf den iPod unter Allgemein aus, bevor du ihn abziehst.</value>
   </data>
   <data name="app-strings.installer-done-title" xml:space="preserve">
     <value>Fertig</value>
@@ -601,7 +601,7 @@
     <value>Dieser Bereich nimmt nur Video. Ein Bild mit demselben Namen wie ein Video wird als sein Poster behalten.</value>
   </data>
   <data name="app-strings.library-similar-found-on-drop" xml:space="preserve">
-    <value>{0} Unter dem Hinzugefügten haben wir Einträge gefunden, die sich ähneln — sieh sie dir unter „Ähnliche“ an.</value>
+    <value>{0} Unter dem Hinzugefügten haben wir Einträge gefunden, die sich ähneln — sieh sie dir unter Ähnliche an.</value>
   </data>
   <data name="app-strings.library-sort-ascending" xml:space="preserve">
     <value>Aufsteigend</value>
@@ -1717,10 +1717,10 @@
     <value>Sie werden in der Anmeldeinformationsverwaltung von Windows aufbewahrt, verschlüsselt mit deinem Konto. Nie in einer Datei der App und nie im Repository; du kannst sie in Windows ansehen und löschen, ohne hier vorbeizukommen.</value>
   </data>
   <data name="settings-page.separa-tus-fotos-colecciones-para-encont" xml:space="preserve">
-    <value>Teilt deine Fotos in Sammlungen auf, damit du sie INNERHALB von Aura Studio leichter findest. Wo sie auf dem iPod landen, ändert das nicht: dort werden sie immer zusammen nach „Photos“ kopiert, weil der Betrachter des iPod noch keine Unterordner durchsucht.</value>
+    <value>Teilt deine Fotos in Sammlungen auf, damit du sie INNERHALB von Aura Studio leichter findest. Wo sie auf dem iPod landen, ändert das nicht: dort werden sie immer zusammen nach Photos kopiert, weil der Betrachter des iPod noch keine Unterordner durchsucht.</value>
   </data>
   <data name="settings-page.separa-tus-videos-videos-series-pelicula" xml:space="preserve">
-    <value>Teilt deine Videos in Videos, Serien und Filme auf, damit du sie INNERHALB von Aura Studio leichter findest. Wo sie auf dem iPod landen, ändert das nicht: dort werden sie immer zusammen nach „Videos“ kopiert, weil der Player noch keine Unterordner durchsucht.</value>
+    <value>Teilt deine Videos in Videos, Serien und Filme auf, damit du sie INNERHALB von Aura Studio leichter findest. Wo sie auf dem iPod landen, ändert das nicht: dort werden sie immer zusammen nach Videos kopiert, weil der Player noch keine Unterordner durchsucht.</value>
   </data>
   <data name="settings-page.servicios" xml:space="preserve">
     <value>Dienste</value>

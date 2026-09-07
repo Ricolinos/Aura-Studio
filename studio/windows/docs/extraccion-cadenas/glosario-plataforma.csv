@@ -1,7 +1,7 @@
 termino es,en,ja,de,ru,fr,fuente
 Papelera de reciclaje,Recycle Bin,ごみ箱,Papierkorb,Корзина,Corbeille,nombre oficial de Windows
 Explorador de archivos,File Explorer,エクスプローラー,Explorer,Проводник,Explorateur de fichiers,nombre oficial de Windows
-Administrador de credenciales,Credential Manager,資格情報マネージャー,Anmeldeinformationsverwaltung,Диспетчер учетных данных,Gestionnaire d'identification,nombre oficial de Windows
+Administrador de credenciales,Credential Manager,資格情報マネージャー,Anmeldeinformationsverwaltung,Диспетчер учетных данных,Gestionnaire d'informations d'identification,"fr: nombre completo en Microsoft Learn; la forma corta (Gestionnaire d'identification) solo si el ancho lo exige"
 Microsoft Store,Microsoft Store,Microsoft Store,Microsoft Store,Microsoft Store,Microsoft Store,marca: no se traduce
 unidad,drive,ドライブ,Laufwerk,диск,lecteur,nombre oficial de Windows
 disco,disk,ディスク,Datenträger,диск,disque,nombre oficial de Windows
@@ -21,7 +21,7 @@ lista de reproducción,playlist,プレイリスト,Wiedergabeliste,плейли�
 canción,song,曲,Titel,песня,morceau,convención de reproductores de medios
 álbum,album,アルバム,Album,альбом,album,convención de reproductores de medios
 carátula,cover art,アルバムアート,Albumcover,обложка,pochette,convención de reproductores de medios
-firmware,firmware,ファームウェア,Firmware,прошивка,micrologiciel,"fr: término oficial; ru: uso corriente"
+firmware,firmware,ファームウェア,Firmware,прошивка,microprogramme,"fr: es lo que usa Microsoft hoy en support.microsoft.com/fr-fr (título y cuerpo); ""micrologiciel"" aparece una sola vez en una nota menor. ru: uso corriente"
 arranque,bootloader,ブートローダー,Bootloader,загрузчик,bootloader,"el español evita el anglicismo Y LO EXPLICA; en de/ru/fr el término corriente es el técnico y se mantiene (decisión de la retro alemana)"
 modo DFU,DFU mode,DFUモード,DFU-Modus,режим DFU,mode DFU,"nombre de Apple: DFU no se traduce"
 iPod,iPod,iPod,iPod,iPod,iPod,marca: no se traduce
@@ -33,3 +33,4 @@ Eliminar,Delete,削除,Löschen,Удалить,Supprimer,botón estándar de Win
 Quitar,Remove,取り除く,Entfernen,Убрать,Retirer,"distinto de Eliminar: saca de una lista, no borra"
 Abrir,Open,開く,Öffnen,Открыть,Ouvrir,botón estándar de Windows
 volumen,volume,ボリューム,Volume,том,volume,"volumen LÓGICO; distinto de disco/Datenträger, que es el físico (verificado en la retro alemana)"
+ensayar,rehearse,リハーサル,proben,репетиция,simuler,"fr: NO ""répéter"" -- se lee primero como ""repetir"", y un botón que parezca Repetir junto a operaciones de firmware es peligroso (hallazgo de la retro francesa)"

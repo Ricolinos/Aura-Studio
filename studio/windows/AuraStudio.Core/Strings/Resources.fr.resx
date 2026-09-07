@@ -79,7 +79,7 @@
     <value>Votre mot de passe administrateur n'est demandé à aucun moment.</value>
   </data>
   <data name="app-strings.bootloader-update-not-required" xml:space="preserve">
-    <value>Ce n'est pas obligatoire. Le nouveau micrologiciel fonctionne aussi bien avec le bootloader que vous avez déjà ; seul l'écran de démarrage change.</value>
+    <value>Ce n'est pas obligatoire. Le nouveau microprogramme fonctionne aussi bien avec le bootloader que vous avez déjà ; seul l'écran de démarrage change.</value>
   </data>
   <data name="app-strings.bootloader-update-nothing-touched" xml:space="preserve">
     <value>Rien n'est touché sur le disque. Votre musique, vos photos, vos listes de lecture et vos réglages restent exactement tels quels.</value>
@@ -97,7 +97,7 @@
     <value>Mettre à jour le bootloader</value>
   </data>
   <data name="app-strings.bootloader-update-what-it-is" xml:space="preserve">
-    <value>Le bootloader est le programme qui s'exécute avant le micrologiciel, sur une puce distincte du disque. Cette version en apporte un nouveau, avec un autre écran de démarrage.</value>
+    <value>Le bootloader est le programme qui s'exécute avant le microprogramme, sur une puce distincte du disque. Cette version en apporte un nouveau, avec un autre écran de démarrage.</value>
   </data>
   <data name="app-strings.bootloader-update-why-dfu" xml:space="preserve">
     <value>Le mode DFU est nécessaire parce que cette puce ne peut être écrite d'aucune autre façon.</value>
@@ -205,7 +205,7 @@
     <value>Une opération est déjà en train d'écrire sur l'iPod. Attendez qu'elle se termine avant d'en lancer une autre.</value>
   </data>
   <data name="app-strings.installer-artifacts-invalid" xml:space="preserve">
-    <value>Les fichiers du micrologiciel n'ont pas pu être vérifiés, donc rien n'est installé.</value>
+    <value>Les fichiers du microprogramme n'ont pas pu être vérifiés, donc rien n'est installé.</value>
   </data>
   <data name="app-strings.installer-awaiting-reboot" xml:space="preserve">
     <value>Écrit. En attente du redémarrage de l'iPod et de sa réapparition…</value>
@@ -217,13 +217,13 @@
     <value>Opération annulée.</value>
   </data>
   <data name="app-strings.installer-copy-failed" xml:space="preserve">
-    <value>Le micrologiciel n'a pas pu être copié sur l'iPod.</value>
+    <value>Le microprogramme n'a pas pu être copié sur l'iPod.</value>
   </data>
   <data name="app-strings.installer-copy-files" xml:space="preserve">
-    <value>Copier le micrologiciel</value>
+    <value>Copier le microprogramme</value>
   </data>
   <data name="app-strings.installer-copying-title" xml:space="preserve">
-    <value>Copie du micrologiciel sur l'iPod…</value>
+    <value>Copie du microprogramme sur l'iPod…</value>
   </data>
   <data name="app-strings.installer-detect-detail" xml:space="preserve">
     <value>Vérifiez ces informations avec attention. Ce qui suit efface le contenu du disque affiché ici.</value>
@@ -232,7 +232,7 @@
     <value>Confirmez qu'il s'agit bien de votre iPod</value>
   </data>
   <data name="app-strings.installer-dfu-detected-detail" xml:space="preserve">
-    <value>Aura Studio l'a reconnu au branchement. Voulez-vous y installer un micrologiciel ? Rien ne se passe tant que vous n'avez pas choisi.</value>
+    <value>Aura Studio l'a reconnu au branchement. Voulez-vous y installer un microprogramme ? Rien ne se passe tant que vous n'avez pas choisi.</value>
   </data>
   <data name="app-strings.installer-dfu-detected-dismiss" xml:space="preserve">
     <value>Pas maintenant</value>
@@ -250,13 +250,13 @@
     <value>iPod détecté en mode DFU (état {0}).</value>
   </data>
   <data name="app-strings.installer-dfu-guide-link" xml:space="preserve">
-    <value>Guide de flashage et de restauration (dépôt du micrologiciel)</value>
+    <value>Guide de flashage et de restauration (dépôt du microprogramme)</value>
   </data>
   <data name="app-strings.installer-dfu-guide-url" xml:space="preserve">
     <value>https://github.com/Ricolinos/Aura-Firmware/blob/main/docs/guia-flasheo-restauracion.md</value>
   </data>
   <data name="app-strings.installer-dfu-no-families" xml:space="preserve">
-    <value>Aucun micrologiciel n'est disponible à installer : le dossier des artefacts n'a pas été rempli.</value>
+    <value>Aucun microprogramme n'est disponible à installer : le dossier des artefacts n'a pas été rempli.</value>
   </data>
   <data name="app-strings.installer-dfu-not-found" xml:space="preserve">
     <value>Aucun iPod en mode DFU n'est encore visible. Refaites la combinaison de boutons et relancez la recherche. N'oubliez pas de continuer à appuyer après que l'écran devient noir.</value>
@@ -286,22 +286,22 @@
     <value>En attente du mode DFU…</value>
   </data>
   <data name="app-strings.installer-done-detail" xml:space="preserve">
-    <value>Le micrologiciel est installé. Éjectez l'iPod depuis Général avant de le débrancher.</value>
+    <value>Le microprogramme est installé. Éjectez l'iPod depuis Général avant de le débrancher.</value>
   </data>
   <data name="app-strings.installer-done-title" xml:space="preserve">
     <value>Terminé</value>
   </data>
   <data name="app-strings.installer-dry-run" xml:space="preserve">
-    <value>Répéter sans écrire</value>
+    <value>Simuler sans écrire</value>
   </data>
   <data name="app-strings.installer-dry-run-heading" xml:space="preserve">
-    <value>Répétition terminée — le disque n'a pas été touché</value>
+    <value>Simulation terminée — le disque n'a pas été touché</value>
   </data>
   <data name="app-strings.installer-dry-run-ok" xml:space="preserve">
-    <value>La répétition s'est bien passée : le disque a été vérifié à nouveau avec les droits d'administrateur et le plan de formatage est valide. Rien n'a encore été écrit.</value>
+    <value>La simulation s'est bien passée : le disque a été vérifié à nouveau avec les droits d'administrateur et le plan de formatage est valide. Rien n'a encore été écrit.</value>
   </data>
   <data name="app-strings.installer-dry-run-running" xml:space="preserve">
-    <value>Répétition de la préparation du disque…</value>
+    <value>Simulation de la préparation du disque…</value>
   </data>
   <data name="app-strings.installer-enter-dfu-title" xml:space="preserve">
     <value>Mettez maintenant l'iPod en mode DFU</value>
@@ -316,7 +316,7 @@
     <value>Cet iPod a {0} d'installé et vous allez installer {1}. {0} est conservé en entier, avec ses réglages, et vous pouvez y revenir depuis Extras quand vous voulez.</value>
   </data>
   <data name="app-strings.installer-family-label" xml:space="preserve">
-    <value>Micrologiciel à installer</value>
+    <value>Microprogramme à installer</value>
   </data>
   <data name="app-strings.installer-flash" xml:space="preserve">
     <value>Écrire le bootloader</value>
@@ -337,7 +337,7 @@
     <value>Je comprends que tout le contenu de {0} sera effacé.</value>
   </data>
   <data name="app-strings.installer-format-danger-detail" xml:space="preserve">
-    <value>La répétition ci-dessus n'a rien touché. Ce qui suit efface tout le contenu du disque et ne peut pas être annulé. Vérifiez qu'il s'agit du bon iPod avant de continuer.</value>
+    <value>La simulation ci-dessus n'a rien touché. Ce qui suit efface tout le contenu du disque et ne peut pas être annulé. Vérifiez qu'il s'agit du bon iPod avant de continuer.</value>
   </data>
   <data name="app-strings.installer-format-danger-heading" xml:space="preserve">
     <value>Cette étape efface réellement l'iPod</value>
@@ -346,7 +346,7 @@
     <value>Votre confirmation manque avant d'effacer l'iPod. Aura Studio ne formate rien sans que vous confirmiez d'abord sur quel disque il va agir.</value>
   </data>
   <data name="app-strings.installer-format-needs-dry-run" xml:space="preserve">
-    <value>La préparation du disque doit d'abord être répétée. Cela vérifie tout sans rien écrire.</value>
+    <value>La préparation du disque doit d'abord être simulée. Cela vérifie tout sans rien écrire.</value>
   </data>
   <data name="app-strings.installer-format-now-on" xml:space="preserve">
     <value>Effacer et formater {0}</value>
@@ -376,7 +376,7 @@
     <value>Ce qu'a fait l'opération avec droits élevés</value>
   </data>
   <data name="app-strings.installer-rebooted" xml:space="preserve">
-    <value>L'iPod est sorti du mode DFU. Vous pouvez copier le micrologiciel.</value>
+    <value>L'iPod est sorti du mode DFU. Vous pouvez copier le microprogramme.</value>
   </data>
   <data name="app-strings.installer-restart" xml:space="preserve">
     <value>Recommencer</value>
@@ -394,7 +394,7 @@
     <value>L'iPod est toujours en mode DFU et l'installation n'a pas été confirmée. Ne le débranchez pas : relancez la recherche.</value>
   </data>
   <data name="app-strings.installer-subtitle" xml:space="preserve">
-    <value>Installez le micrologiciel sur votre iPod, étape par étape</value>
+    <value>Installez le microprogramme sur votre iPod, étape par étape</value>
   </data>
   <data name="app-strings.installer-title" xml:space="preserve">
     <value>Programme d'installation</value>
@@ -403,10 +403,10 @@
     <value>Le numéro de disque de « {0} » n'a pas pu être identifié, donc rien n'est touché.</value>
   </data>
   <data name="app-strings.installer-welcome-detail" xml:space="preserve">
-    <value>Aura Studio va préparer le disque de votre iPod, écrire le bootloader et copier le micrologiciel. Chaque étape est expliquée avant d'être exécutée, et rien n'est touché tant que vous n'avez pas confirmé.</value>
+    <value>Aura Studio va préparer le disque de votre iPod, écrire le bootloader et copier le microprogramme. Chaque étape est expliquée avant d'être exécutée, et rien n'est touché tant que vous n'avez pas confirmé.</value>
   </data>
   <data name="app-strings.installer-welcome-title" xml:space="preserve">
-    <value>Installons le micrologiciel sur votre iPod</value>
+    <value>Installons le microprogramme sur votre iPod</value>
   </data>
   <data name="app-strings.installer-welcome-warning" xml:space="preserve">
     <value>L'installation efface tout ce qui se trouve sur l'iPod et remplace son bootloader d'origine d'Apple. Si de la musique n'existe que là, copiez-la ailleurs avant.</value>
@@ -424,7 +424,7 @@
     <value>Système de fichiers</value>
   </data>
   <data name="app-strings.label-firmware" xml:space="preserve">
-    <value>Micrologiciel détecté</value>
+    <value>Microprogramme détecté</value>
   </data>
   <data name="app-strings.label-free" xml:space="preserve">
     <value>Disponible</value>
@@ -496,7 +496,7 @@
     <value>Non pris en charge</value>
   </data>
   <data name="app-strings.library-locked-reason" xml:space="preserve">
-    <value>L'iPod branché n'exécute pas un micrologiciel de la famille Aura. Installez-le depuis le programme d'installation pour gérer et synchroniser votre bibliothèque.</value>
+    <value>L'iPod branché n'exécute pas un microprogramme de la famille Aura. Installez-le depuis le programme d'installation pour gérer et synchroniser votre bibliothèque.</value>
   </data>
   <data name="app-strings.library-nothing-here-yet" xml:space="preserve">
     <value>Il n'y a encore rien dans cette section.</value>
@@ -637,10 +637,10 @@
     <value>{0} : inclus</value>
   </data>
   <data name="app-strings.licenses-families-heading" xml:space="preserve">
-    <value>Micrologiciels inclus</value>
+    <value>Microprogrammes inclus</value>
   </data>
   <data name="app-strings.licenses-intro" xml:space="preserve">
-    <value>mks5lboot, bootloader-ipod6g.ipod, rockbox.ipod et rockbox.zip sont des œuvres dérivées de Rockbox et sont distribués sous la Licence publique générale GNU, version 2. Aura Studio les inclut à titre d'agrégation et ne les modifie d'aucune façon. Pour chaque micrologiciel inclus, vous pouvez obtenir son code source complet dans le dépôt et la version exacte indiqués ci-dessous.</value>
+    <value>mks5lboot, bootloader-ipod6g.ipod, rockbox.ipod et rockbox.zip sont des œuvres dérivées de Rockbox et sont distribués sous la Licence publique générale GNU, version 2. Aura Studio les inclut à titre d'agrégation et ne les modifie d'aucune façon. Pour chaque microprogramme inclus, vous pouvez obtenir son code source complet dans le dépôt et la version exacte indiqués ci-dessous.</value>
   </data>
   <data name="app-strings.licenses-libraries-heading" xml:space="preserve">
     <value>Bibliothèques incluses</value>
@@ -679,7 +679,7 @@
     <value>Outil de flashage (mks5lboot.exe)</value>
   </data>
   <data name="app-strings.licenses-tool-local-pin" xml:space="preserve">
-    <value>Compilé à part pour Windows : la Release publie la version Unix. Il correspond à l'empreinte fixée dans Aura Studio lui-même (origine déclarée : {0}). Son code source est celui du dépôt du micrologiciel indiqué ci-dessus.</value>
+    <value>Compilé à part pour Windows : la Release publie la version Unix. Il correspond à l'empreinte fixée dans Aura Studio lui-même (origine déclarée : {0}). Son code source est celui du dépôt du microprogramme indiqué ci-dessus.</value>
   </data>
   <data name="app-strings.licenses-tool-missing" xml:space="preserve">
     <value>Il n'est pas inclus dans cette copie.</value>
@@ -1249,7 +1249,7 @@
     <value>Extras</value>
   </data>
   <data name="extras-page.firmware" xml:space="preserve">
-    <value>Micrologiciel</value>
+    <value>Microprogramme</value>
   </data>
   <data name="extras-page.juegos" xml:space="preserve">
     <value>Jeux</value>
@@ -1258,7 +1258,7 @@
     <value>Licences</value>
   </data>
   <data name="extras-page.lo-firmware-ofrece-mas-alla-biblioteca" xml:space="preserve">
-    <value>Ce que le micrologiciel offre au-delà de la bibliothèque</value>
+    <value>Ce que le microprogramme offre au-delà de la bibliothèque</value>
   </data>
   <data name="extras-page.revisar-nuevo" xml:space="preserve">
     <value>Vérifier à nouveau</value>
@@ -1714,7 +1714,7 @@
     <value>Retirer une collection ne change pas la collection des photos qui y étaient déjà affectées.</value>
   </data>
   <data name="settings-page.se-guardan-administrador-credenciales-wi" xml:space="preserve">
-    <value>Elles sont conservées dans le Gestionnaire d'identification de Windows, chiffrées avec votre compte. Jamais dans un fichier de l'application ni dans le dépôt ; vous pouvez les consulter et les supprimer depuis Windows sans passer par ici.</value>
+    <value>Elles sont conservées dans le Gestionnaire d'informations d'identification de Windows, chiffrées avec votre compte. Jamais dans un fichier de l'application ni dans le dépôt ; vous pouvez les consulter et les supprimer depuis Windows sans passer par ici.</value>
   </data>
   <data name="settings-page.separa-tus-fotos-colecciones-para-encont" xml:space="preserve">
     <value>Répartit vos photos en collections pour les retrouver plus facilement DANS Aura Studio. Cela ne change pas où elles atterrissent sur l'iPod : là, elles sont toujours copiées ensemble dans Photos, parce que la visionneuse de l'iPod ne parcourt pas encore les sous-dossiers.</value>
@@ -1858,7 +1858,7 @@
     <value>Activer</value>
   </data>
   <data name="themes-page.aura-studio-arma-paquete-desde-carpeta" xml:space="preserve">
-    <value>Aura Studio construit le paquet à partir d'un dossier d'assets déjà générés avec le design-system du micrologiciel (polices .fnt et masques d'icônes). Il ne convertit ni polices ni icônes depuis votre ordinateur.</value>
+    <value>Aura Studio construit le paquet à partir d'un dossier d'assets déjà générés avec le design-system du microprogramme (polices .fnt et masques d'icônes). Il ne convertit ni polices ni icônes depuis votre ordinateur.</value>
   </data>
   <data name="themes-page.autor" xml:space="preserve">
     <value>Auteur</value>
