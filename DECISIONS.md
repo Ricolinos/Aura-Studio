@@ -12665,3 +12665,260 @@ pruebas, 0 fallas, 15 saltadas** (el salto de 918→941 viene de A2, ya
 fusionado, que trae sus propias pruebas nuevas de escritores FLAC/M4A --
 no de este commit). No se corrió el arnés A0 contra A2 (pedido expreso
 de "Sesión Maestra": los escritores no tienen consumidor hasta A3).
+
+## ST-245 — Windows: Eliminar de verdad (Papelera / catálogo), huérfanos y "Cómo guardar tu música"
+
+B5 de la ronda "ajustes 3", en paralelo con el B4 del Experto (preparado de
+referencia por identificador), sobre el contrato de `storage` que fijó B1
+(ST-241) y el modo copia real que conectó B3 (ST-243). Cierra lo que B0
+(ST-240) ya había medido como huérfano: hoy "Eliminar" solo quita del
+catálogo, nunca toca `.preparados/`ni`.portadas/`, y el interruptor de
+copia —ya real desde B3— no tenía ningún "Eliminar" que lo supiera.
+
+### Verificación previa (§1 del plan, contra el código real antes de tocar nada)
+
+- `LibraryViewModel.Remove(ids)` (antes de este cambio) solo filtraba
+  `Items` y guardaba — el comentario decía explícitamente "se quita de la
+  biblioteca, NO del disco: el archivo es del usuario", cierto para
+  referencia pero ya falso para copia desde B3.
+- `ItemStorage`/`ItemStorageRules` (ST-241): `StorageKind` es de solo
+  lectura, no autoriza nada — clasifica. Quien borra decide aparte, con
+  más que la inferencia (la misma regla que ya regía para escribir
+  etiquetas).
+- **Los tres directorios de medios** (`Música`/`Imágenes`/`Videos`) se
+  crean en Windows con el nombre canónico NFC porque `LibraryFileCopier`
+  y `SyncLayout` pasan por `MediaRoots.Directory` (addendum de A1 a
+  ST-241) al decidir el destino — pero si la carpeta la creó la Mac
+  primero, queda en NFD, y `CatalogPath.Resolve`/`LibraryStore.Load()`
+  arman `item.SourcePath` con `Path.Combine` a secas, sin pasar por
+  `MediaRoots`. **Comprobado en esta VM, no solo leído**: crear una
+  carpeta en NFD y comparar con `File.Exists`/`Directory.Exists` contra su
+  forma NFC da `false` — Windows no normaliza al comparar nombres, solo
+  ignora mayúsculas. Es un defecto real y preexistente en la resolución de
+  `SourcePath`, no algo que B5 introduce; B5 lo tiene que **sortear** al
+  borrar (ver `LibraryDiskPathResolver` más abajo), no arreglar de raíz —
+  eso es contrato compartido (`CatalogPath`) y no se toca sin avisar.
+- **`.lrc` local: no existe en Windows, verificado, no es un olvido.**
+  `LibrarySyncFinalizer.WriteLyricsSidecars` es el único lugar que escribe
+  un `.lrc`, y lo hace **en el volumen del iPod al sincronizar**, nunca al
+  lado del archivo de la biblioteca. El encargo de B5 mencionaba borrar el
+  `.lrc` hermano del elemento (paridad con el §2 del plan, escrito
+  pensando en las dos plataformas); en Windows hoy ese archivo local
+  simplemente no existe, así que `LibraryDeletion` no tiene nada que
+  borrar ahí — el día que exista, este es el lugar.
+- **El nombrado viejo de `.preparados/` sigue en uso** (`StagingPaths.Resolve`,
+  por nombre de archivo de origen, con acento si el título lo tiene) hasta
+  que B4 cambie a `LibraryProcessor` al nombrado por ID
+  (`StagingPaths.ForItem`, listo desde B1). Mientras conviven los dos
+  nombrados, un huérfano del nombrado viejo puede tener acento — de ahí la
+  comparación en NFC de `OrphanFinder` (abajo).
+
+### `LibraryDeletion` (Core, nuevo): qué borra y qué no
+
+Modo copia → **Papelera de reciclaje**, nunca un borrado definitivo
+(`WindowsRecycleBin`, `SHFileOperationW` con `FOF_ALLOWUNDO`). Modo
+referencia → **solo del catálogo**; el original del usuario no se toca
+jamás. En los dos modos se borran el preparado y la carátula del
+elemento — si no, quedan huérfanos, que es justo lo que hoy pasa.
+
+**Decisión de la Papelera**: `SHFileOperationW` (Win32 clásica) y no el
+`IFileOperation` moderno (COM, pensado para lotes con progreso e
+interfaz). Para un archivo a la vez, sin ventana, con deshacer, hacen
+exactamente lo mismo; `SHFileOperationW` es una firma plana sin
+instanciar un objeto COM ni un `IFileOperationProgressSink`, y sigue
+siendo la función que Microsoft documenta para esto — no está retirada.
+Con `FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_NOERRORUI | FOF_SILENT`:
+sin diálogo nativo (la confirmación ya la mostró Studio antes de llegar
+acá) y siempre recuperable.
+
+**La música copiada no borra "su preparado" una segunda vez.** Invariante
+de ST-241: `PreparedPath == SourcePath` para música en modo copia — es el
+mismo archivo que `DeleteCopySource` ya mandó a la Papelera. `DeletePrepared`
+lo salta explícitamente para `Kind == Music && StorageKind == Copy`, sin
+mirar si en ese caso particular `PreparedPath` coincide con `SourcePath` o
+no: es la invariante del contrato, no una comparación caso por caso (igual
+que `LibraryStore.ApplyStorageInvariants` la aplica sin condiciones).
+
+**Un archivo que ya no está no tumba el lote.** `DeletionOutcome.SourceMissing`
+en vez de lanzar: un disco desconectado o un archivo movido a mano no
+puede impedir que se borren los demás elementos ni que el resto del
+catálogo se limpie.
+
+**`DeletionPreview`** es lo que ve la confirmación (§0.4 del plan): cuántos
+son de copia y cuánto pesan —`FileSizeBytes`, la misma aproximación de
+ST-201, un tamaño sin medir cuenta como 0— y cuántos son de referencia.
+Un lote puede traer las dos cosas mezcladas y el diálogo lo dice mezclado.
+
+### `LibraryDiskPathResolver` (Core, nuevo): envoltura sobre `MediaRoots.Directory`, no una segunda comparación NFC
+
+Para encontrar el archivo real de un elemento en modo copia cuando
+`item.SourcePath` (NFC, como lo arma `CatalogPath.Resolve`) no existe
+porque la carpeta la creó la Mac en NFD: recorre la ruta relativa
+**componente a componente** —artista, álbum, el nombre del archivo—
+llamando a `MediaRoots.Directory` en cada uno, en vez de reimplementar su
+comparación. Para el último componente (un archivo, no una carpeta) se le
+inyecta un enumerador de archivos en vez del de carpetas por omisión: la
+función es la misma, lo único que cambia es qué lista. El camino rápido
+—que el archivo esté tal cual donde dice el catálogo, el caso normal
+cuando esta misma instalación de Windows creó la carpeta— sigue siendo el
+primero, sin ningún listado de más.
+
+**Dependencia con B4, anotada como pidió el coordinador**: el Experto está
+ampliando este mismo mecanismo como `MediaRoots.Resolve` (NFC componente a
+componente) para el preparado de referencia por ID. Al integrar B4 y B5,
+`LibraryDiskPathResolver` pasa a llamar a `MediaRoots.Resolve` directo y
+puede reducirse a un alias fino o desaparecer, según lo que quede más
+chico — decisión de esa integración, no de B5. Las pruebas de este archivo
+están escritas contra el **comportamiento** (una ruta con acento en NFD en
+disco y NFC en catálogo se encuentra igual), no contra qué método interno
+se llama, para sobrevivir ese cambio sin tocarlas.
+
+### `OrphanFinder` (Core, nuevo): huérfanos en `.preparados/` y `.portadas/`, comparados en NFC
+
+"Referenciado" se arma a partir de `item.PreparedPath`/`item.CoverRelativePath`
+tal como los trae el catálogo, y se compara contra lo que hay en disco
+**normalizando Unicode** (`CatalogPath.Normalize`), nunca por igualdad
+cruda — por el nombrado viejo de `.preparados/` (arriba). Comparar crudo
+haría que un preparado con acento que SÍ está en uso apareciera como
+huérfano, y de ahí se borraría algo que un elemento del catálogo todavía
+necesita.
+
+**La música copiada no "protege" nada en `.preparados/`.** Por la misma
+invariante que `LibraryDeletion`, un elemento `Kind == Music && Copy` no
+aporta ningún nombre al conjunto de "referenciado": su preparado no vive
+ahí. Sin este cuidado, un archivo que por coincidencia se llamara igual al
+`SourcePath` de una canción copiada se "protegería" de la limpieza sin
+tener nada que ver con ella — probado explícitamente
+(`UnPreparadoQueCoincideConMusicaCopiadaSigueSiendoHuerfano`).
+
+**`preparedPath` ausente en un elemento de referencia es un estado
+válido** (regla del coordinador, confirmada en el propio diseño): B4
+genera el preparado de referencia solo cuando hace falta —conversión o
+etiquetas que no coinciden—; si el original vuelve a coincidir, puede
+quedar sin preparado, y eso no es un dato que `OrphanFinder` tenga que
+rellenar ni inferir. Solo lee lo que ya está.
+
+`Scan` nunca toca disco por su cuenta; `Delete` es un segundo paso
+explícito, para que Ajustes pueda mostrar la lista y pedir confirmación
+antes de borrar.
+
+### UI: confirmar antes de eliminar, huérfanos y "Cómo guardar tu música"
+
+**Confirmación compartida** (`DeleteConfirmation`, un solo diálogo para
+Canciones, la cuadrícula y Artistas —incluida la eliminación en lote de
+Artistas—, en vez de triplicarlo): dice cuántos archivos van a la Papelera
+y cuánto ocupan, y cuántos son puramente de catálogo (`AppStrings.DeleteConfirmMessage`,
+sobre `DeletionPreview`). Por omisión cierra, no elimina — un Enter sin
+querer no manda nada a la Papelera.
+
+**Ajustes › Biblioteca**: sección nueva "Cómo guardar tu música" con el
+texto **compartido** que fija el plan §2, textual, no una redacción propia
+de Windows — es el mismo que le toca escribir a la Mac en A5. Y "Archivos
+huérfanos": Buscar / Limpiar archivos huérfanos, con confirmación
+(cantidad y tamaño) antes de borrar, y que se pueda cancelar (cerrar el
+diálogo no borra nada). La acción "Convertir referenciados en copias" es
+de B4: se dejó el lugar, no se implementó (instrucción explícita del
+coordinador).
+
+**Aviso de duplicados por parecido al soltar archivos** (gancho que dejó
+ST-243): al terminar `AddDroppedFiles`, si `SimilarItemsDetector.Detect`
+encuentra algo entre lo recién agregado, `LastDropMessage` lo dice
+apuntando a Similares. Sin pantalla nueva. La deduplicación por ruta
+exacta ya pasaba adentro de `LibraryIngest.Ingest`; esto es para lo que se
+**parece** sin ser la misma ruta.
+
+### Dos hallazgos reales, medidos con el arnés — no de B5, pero se encontraron construyéndolo
+
+Extendiendo `StorageFixtureCheck` con casos reales de Eliminar aparecieron
+dos defectos del **arnés de B0**, no del producto — quedan anotados
+porque uno de los dos, sin corregirlo, hubiera hecho pasar por "no
+reescribe el archivo" algo que sí lo hace, y el otro tiró una excepción
+real corriendo la medición:
+
+1. **La sección de "editar N campos" de B0 medía una carrera.**
+   `ApplyMetadataEdit` reescribe el archivo en un `Task.Run` sin ninguna
+   señal pública de cuándo termina —a propósito, ST-243, para no congelar
+   la ventana—. Leer bytes/hash inmediatamente después de llamarlo daba
+   casi siempre "no cambió" porque la escritura de fondo todavía no había
+   ni empezado: la tabla de B0 (44/44 sin cambios) estaba midiendo una
+   ronda, y desde B3 dejó de ser cierto para los campos gobernados.
+   Corregido en el arnés (`WaitForBackgroundWriteToSettle`, con margen
+   inicial y reintentos de abrir en exclusiva), no en la app — no hay
+   nada que arreglar en `ApplyMetadataEdit`, el problema era de cómo medía
+   el arnés.
+2. **La misma carrera, sin la espera, hizo que dos ediciones seguidas
+   sobre el mismo archivo chocaran de verdad**: `IOException: en uso por
+   otro programa`, con dos `Task.Run` de `LocalTagWriter.Apply` pisándose
+   el mismo `.aura-tmp`/`path` (uno todavía en `PendingFields` leyendo,
+   el otro ya en `File.Move`). Con la espera del punto 1 no se volvió a
+   reproducir. Queda anotado como ventana real y angosta —en la UI de hoy
+   nadie dispara varias ediciones del mismo elemento con milisegundos de
+   diferencia sin pasar por un solo guardado— para quien toque
+   `LocalTagWriter`/`WriteTagsIntoTheLibraryFile` después (B2/B3,
+   Experto): no se tocó ninguno de los dos archivos desde B5.
+
+### Los números, medidos (arnés `tools/StorageFixtureCheck`, extendido)
+
+**Eliminar, modo copia** (MP3 copiado, 83 131 bytes): `PreviewRemoval`
+dice 1 de copia / 0 de referencia; tras `Remove()`, el archivo ya no está
+en `Música/` — fue a la Papelera de reciclaje real de Windows (confirmado
+por código de retorno de `SHFileOperationW`; que aparezca ahí a simple
+vista lo tiene que mirar alguien con la sesión de Windows delante).
+
+**Eliminar, modo referencia** (M4A referenciado, preparado y carátula
+reales por ID en `.preparados/`/`.portadas/`): antes, preparado=`True`,
+carátula=`True`, original=`True`; después, preparado=`False`,
+carátula=`False`, original=`True` **con el mismo hash SHA-256** que
+antes — el original no se tocó ni un byte.
+
+**Huérfanos, antes/después de limpiar** (dos archivos sueltos sin
+referencia, 60 000 bytes total): `FindOrphans` los encuentra a los dos;
+`CleanOrphans` los borra; una segunda búsqueda da 0/0.
+
+**Acento en NFD en disco, catálogo en NFC, de punta a punta** (no una
+prueba unitaria de la función pura: un `LibraryViewModel` recargado de
+cero contra una carpeta real "Café Tacvba/Ré" creada en NFD): el camino
+rápido (`File.Exists` directo sobre `item.SourcePath`) da `false`, como
+se esperaba; `PreviewRemoval` igual lo cuenta como copia; `Remove()`
+encuentra el archivo real vía `LibraryDiskPathResolver` y lo manda a la
+Papelera — el archivo real en NFD deja de existir.
+
+**Edición de campos, contrato de ST-243 re-verificado** (11 campos × 4
+formatos, con la carrera del hallazgo 1 ya corregida): los campos
+gobernados (título, artista, álbum, pista, año, género) reescriben MP3,
+FLAC y M4A —no WAV, que no tiene escritor nativo
+(`LocalTagWriter.CanWrite`) y en este fixture nunca pasó por la
+conversión del importador—; rating, favorito, letra, categoría y la
+carátula (con la política `AlbumOnly` por omisión) no tocan el archivo en
+ningún formato; 0 preparados nuevos en las 44 combinaciones.
+
+### Lo que NO entra en B5, y por qué
+
+- **Preparado de referencia por identificador** (`LibraryProcessor` usando
+  `StagingPaths.ForItem` en vez del nombrado viejo) — es B4. `OrphanFinder`
+  ya compara en NFC para convivir con los dos nombrados mientras tanto.
+- **"Convertir referenciados en copias"** — B4, instrucción explícita del
+  coordinador; el lugar en Ajustes queda, la acción no.
+- **Migración de bibliotecas existentes** (§0.3 del plan) — B6.
+- **El `.lrc` local** — no existe en Windows hoy (verificado arriba); el
+  día que exista, `LibraryDeletion` es el lugar.
+
+### Verificación
+
+`dotnet build` de `AuraStudio.Core`, `AuraStudio.App` y `StorageFixtureCheck`:
+**0 errores, 0 advertencias**. `dotnet test`: **1 677 pruebas en verde**
+(21 nuevas: `LibraryDeletionTests`, `OrphanFinderTests`,
+`LibraryDiskPathResolverTests`).
+
+Repro completo:
+
+```
+dotnet test studio/windows/tests/AuraStudio.Core.Tests/AuraStudio.Core.Tests.csproj
+dotnet run --project studio/windows/tools/StorageFixtureCheck
+```
+
+Lo que no se verificó acá: nada de esto se probó contra la biblioteca real
+del dueño, ni en copia — el arnés sintetiza los cinco formatos y el caso
+NFD desde cero, sin tocar disco ajeno. Y la Papelera de reciclaje real se
+usó de verdad (no una `IRecycleBin` falsa) en la corrida del arnés; verla
+en pantalla lo tiene que hacer alguien con la sesión de Windows delante.
