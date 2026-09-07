@@ -15999,3 +15999,52 @@ estar cubierto. Agregar algo legítimo a la raíz es un renglón, y ese renglón
 justamente la revisión que faltó. Comprobado que falla con uno de los nombres
 de verdad y pasa con el árbol limpio; y verificado que ninguno de los siete se
 coló en un `.csproj` ni en el `.slnx`.
+
+## ST-247 (addendum, cierre de B7a) — Windows: el borrador queda congelado, las pruebas de estado actual pasan a `Resources.resx`
+
+Encargo del coordinador, para cuando B7a llegara a `origin`. Con las
+cadenas ya movidas a `AuraStudio.Core/Strings/Resources.resx`,
+`tools/ExtraerCadenasWindows` no tiene nada que extraer de la app: correrlo
+ahora dejaría `docs/extraccion-cadenas/` vacío en vez de "al día", borrando
+la única foto de cómo era el texto ANTES de moverlo -- la foto contra la
+que se comprueba que el español no cambió ni una letra al migrar.
+
+**Congelado**: nota en `README.md` de la carpeta explicando por qué no se
+regenera. `Program.cs` ahora se detiene solo si `AuraStudio.Core/Strings/Resources.resx`
+ya existe -- avisa y no toca nada, en vez de sobrescribir en silencio;
+`--force` es la única forma de seguir de todos modos.
+
+**Pruebas redirigidas al recurso real** (`Resources.resx`, no el borrador):
+`TodaClaveCompartidaExisteEnResourcesResx` reemplaza a
+`TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows` -- ahora también
+cubre "clave distinta" (antes solo "igual"), y compara el texto completo
+contra "texto es" siempre que el estado sea "igual" (antes la comparación
+de texto solo pasaba por el camino del paréntesis; ahora aplica incluso
+cuando la clave del CSV calza tal cual, para que un nombre coincidente por
+casualidad no tape un texto que cambió). `orphans-confirm-message` deja de
+ser un caso aparte: B7a la compuso de verdad
+(`app-strings.orphans-found.{one,other}` + `orphans-confirm-message`
+idéntico a la Mac) y pasa por el camino normal -- **el `Skip` sale**, tal
+como pedía el encargo. `NingunaClaveEstaVaciaEnResourcesResx`/
+`NingunValorEstaVacioEnResourcesResx` y
+`TodaFormaPluralEnResourcesResxTraeUnHuecoAdentroSalvoExcepcionesConocidas`
+(esta última con tres excepciones reales, verificadas a mano: el par
+"Quitar foto(s) del/de los artista(s)" no es un plural de cantidad, y la
+forma `.one` de "Buscando carátula…" no necesita decir "1") hacen lo mismo
+que sus análogas históricas, contra el recurso real.
+
+Las pruebas que documentan la foto histórica (unicidad de claves, sin
+letras sueltas, frases no cortadas, huecos sin duplicar, plurales del CSV)
+se quedan tal cual, contra `docs/extraccion-cadenas/` -- el archivo de la
+clase ahora dice explícitamente cuáles son cuáles.
+
+### Verificación
+
+Corrido a propósito SOLO contra proyectos sin referencia a `AuraStudio.App`
+(el coordinador estaba compilando el instalador en la misma VM):
+`dotnet test tests/AuraStudio.Core.Tests`: **1 816 en verde, 0 omitidas**
+(el `Skip` ya no existe). `dotnet test tests/ExtraerCadenasWindows.Tests`:
+**14 en verde**, sin cambio. Probado a mano que `dotnet run --project
+tools/ExtraerCadenasWindows` (sin `--force`) se detiene con el aviso y no
+toca ningún archivo de `docs/extraccion-cadenas/` -- confirmado con `git
+status` antes y después.

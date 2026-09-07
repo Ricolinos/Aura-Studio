@@ -1,5 +1,30 @@
 # `docs/extraccion-cadenas/` — borradores de B7a/B7b, Windows
 
+## ⚠️ CONGELADO -- foto histórica de antes de B7a, no regenerar
+
+B7a ya movió las quinientas y tantas cadenas de código a
+`studio/windows/AuraStudio.Core/Strings/Resources.resx` (el recurso real,
+el que usa la app). Con el texto fuera del código, `tools/ExtraerCadenasWindows`
+ya no ve nada que extraer de `AuraStudio.App`/`AuraStudio.Core` -- **volver
+a correrlo dejaría estos archivos vacíos o casi vacíos**, borrando la única
+foto que queda de "cómo era el texto antes de moverlo". Esa foto sigue
+sirviendo: `LocalizationDraftTests.cs` la usa para comprobar que el
+español no cambió ni una letra al moverse al `.resx`.
+
+Por eso, desde este addendum:
+- **No correr `dotnet run --project tools/ExtraerCadenasWindows` en este
+  árbol.** Si hace falta compararlo contra un estado más nuevo del código
+  (poco probable, ya que el texto ya no vive ahí), avisa antes de tocarlo.
+- La herramienta en sí ya avisa y se detiene por su cuenta en vez de
+  sobrescribir en silencio si se corre por error después de B7a (ver
+  `Program.cs`) -- hace falta un flag explícito para forzarla.
+- Las pruebas que comprueban el estado ACTUAL de la app (claves
+  compartidas, huecos de plural, sin claves vacías, español idéntico)
+  se movieron a leer `studio/windows/AuraStudio.Core/Strings/Resources.resx`
+  directamente, no este borrador. Las que quedan contra este borrador están
+  marcadas como lo que son: verificación de la foto histórica, no del
+  estado actual.
+
 Insumo para A7a/B7a real (ST-227/ST-247). Generado por
 `tools/ExtraerCadenasWindows` (`dotnet run --project tools/ExtraerCadenasWindows`),
 nunca a mano — con una excepción, ver abajo.

@@ -5,12 +5,23 @@ using Xunit;
 namespace AuraStudio.Core.Tests;
 
 /// <summary>
-/// Valida el borrador de B7a (ST-247, ensayo en seco):
-/// <c>docs/extraccion-cadenas/</c> — generado por
-/// <c>tools/ExtraerCadenasWindows</c>, nunca por esta prueba. Mismo criterio
-/// que <c>LocalizationDraftTests.swift</c> (Mac, ST-225/226 addendum): estas
-/// tres corren de verdad, hoy, sobre los archivos ya generados — no dependen
-/// de ninguna API nueva.
+/// ST-247: dos cosas de naturaleza distinta viven en este archivo desde que
+/// B7a cerró y movió las cadenas de código a
+/// <c>AuraStudio.Core/Strings/Resources.resx</c> (el recurso real, el que
+/// usa la app).
+///
+/// <para><b>Foto histórica</b> (sección de arriba): pruebas contra
+/// <c>docs/extraccion-cadenas/</c> -- el borrador que generaba
+/// <c>tools/ExtraerCadenasWindows</c> antes de B7a. Esa carpeta quedó
+/// CONGELADA (ver su <c>README.md</c>): con el texto fuera del código, la
+/// herramienta ya no tiene nada que extraer, así que volver a correrla
+/// dejaría la foto vacía en vez de actualizada. Estas pruebas verifican esa
+/// foto tal cual quedó, no el estado actual de la app.</para>
+///
+/// <para><b>Estado actual</b> (sección de abajo): pruebas contra
+/// <c>AuraStudio.Core/Strings/Resources.resx</c> de verdad -- claves
+/// compartidas con la Mac, sin claves vacías, plurales con su hueco
+/// adentro. Estas SÍ pueden fallar si algo real cambia en la app.</para>
 /// </summary>
 public class LocalizationDraftTests
 {
@@ -30,6 +41,9 @@ public class LocalizationDraftTests
 
     private static string OutDir() => Path.Combine(RepoRoot(), "studio", "windows", "docs", "extraccion-cadenas");
 
+    private static string CoreResxPath() =>
+        Path.Combine(RepoRoot(), "studio", "windows", "AuraStudio.Core", "Strings", "Resources.resx");
+
     /// <summary>
     /// El borrador se commitea (a diferencia de la Mac, que lo gitignora):
     /// es un entregable de B7a, no un archivo de paso. Si no está, algo real
@@ -41,6 +55,12 @@ public class LocalizationDraftTests
         Assert.True(File.Exists(path), $"{relative} no se encontró -- ¿corriste tools/ExtraerCadenasWindows? (ST-247)");
         return path;
     }
+
+    // ======================================================================
+    // MARK: FOTO HISTÓRICA -- docs/extraccion-cadenas/, congelado desde el
+    // cierre de B7a (ver README.md de la carpeta). Verifica cómo quedó la
+    // extracción, no el estado actual de la app.
+    // ======================================================================
 
     // MARK: - Claves únicas
 
@@ -277,134 +297,76 @@ public class LocalizationDraftTests
     }
 
     /// <summary>
-    /// ST-247 (addendum): cotejo clave por clave contra el borrador de la
-    /// Mac. Toda fila de <c>claves-compartidas.csv</c> marcada
-    /// <c>"igual"</c> —la clave ya coincide entre las dos plataformas— tiene
-    /// que existir de verdad en el <c>.resw</c> de Windows; si no, la fila
-    /// miente sobre el estado.
+    /// ST-247 (cierre de B7a): cotejo clave por clave contra el borrador de
+    /// la Mac -- pero YA CONTRA <c>Resources.resx</c>, el recurso real, no
+    /// el borrador congelado (ver el <c>Skip</c> que esta prueba reemplaza,
+    /// abajo en el historial de <c>DECISIONS.md</c>).
     ///
-    /// <para>Decisión del coordinador (addendum sobre huecos/formato): el CSV
-    /// es la autoridad del nombre compartido, pero la herramienta de Windows
-    /// SIGUE emitiendo sus propias claves (<c>app-strings.storage-section-title</c>,
-    /// no <c>storage-section-title</c>). Por eso "existe en el .resw" admite
-    /// DOS caminos: (1) la clave del CSV coincide tal cual con una clave del
-    /// <c>.resw</c>, o (2) la columna "sitio Windows" trae, entre paréntesis
-    /// al final de la cita, la clave de Windows de la que viene —formato
-    /// oficial "archivo:línea (clave.de.windows)", el mismo que escribe
-    /// <c>ClavesCompartidasCsv.UpdateSitioWindows</c> (tools/ExtraerCadenasWindows)—
-    /// y esa clave
-    /// existe en el <c>.resw</c> con EL MISMO TEXTO que la columna "texto es"
-    /// del CSV (si el texto no coincide, la fila quedó desalineada de verdad,
-    /// no es solo un nombre distinto).</para>
+    /// <para>Toda fila <c>"igual"</c> de <c>claves-compartidas.csv</c> --la
+    /// clave ya coincide entre las dos plataformas-- tiene que existir en el
+    /// <c>.resx</c> CON EL MISMO TEXTO que "texto es"; toda fila
+    /// <c>"clave distinta"</c> tiene que existir (el texto difiere a
+    /// propósito, así que solo se comprueba que la clave esté, no el
+    /// texto). El CSV es la autoridad del NOMBRE compartido, pero la
+    /// herramienta de Windows no siempre renombra su propia clave para
+    /// calzar con él -- por eso "existe" admite DOS caminos: (1) la clave
+    /// del CSV coincide tal cual con una clave del <c>.resx</c>, o (2) el
+    /// paréntesis al final de "sitio Windows" -- formato oficial
+    /// "archivo:línea (clave.de.windows)" -- trae la clave real.</para>
     ///
-    /// <para><b>Hallazgo real, decisión de la Maestra:</b> <c>orphans-confirm-message</c>
-    /// falla hoy la comparación exacta -- <c>AppStrings.OrphansConfirmMessage</c>
-    /// (AppStrings.cs:324-326) antepone <c>{OrphansFound(scan)}</c> (el conteo
-    /// dinámico de huérfanos) al texto compartido, así que el valor real del
-    /// <c>.resw</c> es <c>"{0} " + texto de la Mac</c>, nunca el texto solo. La
-    /// fila SIGUE marcada "igual": el Experto va a componer
-    /// <c>OrphansConfirmMessage</c> desde dos recursos (uno con el conteo,
-    /// aparte, y <c>app-strings.orphans-confirm-message</c> idéntico a la Mac)
-    /// al cerrar las compartidas de B7a. Esta fila se saca de la prueba
-    /// GENERAL (que sigue vigilando las otras nueve, en verde) y pasa a
-    /// <see cref="OrphansConfirmMessageExisteEnElReswDeWindowsConElMismoTexto"/>,
-    /// marcada <c>Skip</c> con el motivo visible en el runner -- una prueba
-    /// roja de verdad no puede llegar a `origin` (la Maestra sube esta rama
-    /// antes de que el Experto cierre las compartidas), pero tapar el
-    /// hallazgo con una excepción silenciosa tampoco es la idea: el Skip se
-    /// ve en la salida de <c>dotnet test</c> con su razón, y se quita solo
-    /// cuando el Experto componga el recurso.</para>
+    /// <para><b>orphans-confirm-message ya no es un caso aparte</b>: B7a
+    /// compuso <c>AppStrings.OrphansConfirmMessage</c> desde
+    /// <c>app-strings.orphans-found.{0,other}</c> (el conteo) más
+    /// <c>orphans-confirm-message</c> (el texto compartido, palabra por
+    /// palabra) -- pasa por el camino 1 como cualquier otra fila "igual".
+    /// El <c>Skip</c> que existía para esta fila mientras se esperaba la
+    /// composición ya no hace falta -- coordinador, ST-247.</para>
     /// </summary>
-    private static readonly HashSet<string> PendingCompositionExceptions = new(StringComparer.Ordinal)
-    {
-        "orphans-confirm-message",
-    };
-
     [Fact]
-    public void TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows()
+    public void TodaClaveCompartidaExisteEnResourcesResx()
     {
-        Dictionary<string, string> resw = ReadResw(RequireFile(Path.Combine("Strings", "es", "Resources.resw")));
+        Dictionary<string, string> resx = ReadResw(CoreResxPath());
         string sharedPath = RequireFile("claves-compartidas.csv");
         var windowsKeyInParens = new Regex(@"\((?<key>[a-z0-9][\w.-]*)(?:,[^)]*)?\)");
 
         string[] sharedLines = File.ReadAllLines(sharedPath);
         int textoEsIndex = SharedCsvColumnIndex(sharedLines[0], "texto es");
         int sitioWindowsIndex = SharedCsvColumnIndex(sharedLines[0], "sitio Windows");
+        int estadoIndex = SharedCsvColumnIndex(sharedLines[0], "estado");
 
-        List<(string CsvKey, string TextoEs, string SitioWindows)> igualRows = [.. sharedLines
+        List<(string CsvKey, string TextoEs, string SitioWindows, string Estado)> rows = [.. sharedLines
             .Skip(1)
             .Where(line => line.Length > 0)
             .Select(ParseCsvLine)
-            .Where(fields => fields[^1] == "igual" && !PendingCompositionExceptions.Contains(fields[0]))
-            .Select(fields => (fields[0], fields[textoEsIndex], fields[sitioWindowsIndex]))];
+            .Where(fields => fields[estadoIndex] is "igual" or "clave distinta")
+            .Select(fields => (fields[0], fields[textoEsIndex], fields[sitioWindowsIndex], fields[estadoIndex]))];
 
-        List<string> sinCorrespondencia = [];
-        foreach ((string csvKey, string textoEs, string sitioWindows) in igualRows)
+        Assert.True(rows.Count > 0);
+
+        List<string> problemas = [];
+        foreach ((string csvKey, string textoEs, string sitioWindows, string estado) in rows)
         {
-            if (resw.ContainsKey(csvKey)) continue; // camino 1: la clave del CSV coincide tal cual
+            bool exigeMismoTexto = estado == "igual";
+
+            if (resx.TryGetValue(csvKey, out string? directValue)) // camino 1: la clave del CSV coincide tal cual
+            {
+                if (exigeMismoTexto && directValue != textoEs)
+                    problemas.Add($"{csvKey}: existe pero el texto no coincide (\"{directValue}\" vs \"{textoEs}\")");
+                continue;
+            }
 
             // camino 2: alguna clave entre paréntesis de "sitio Windows" existe
-            // en el .resw con el mismo texto que "texto es"
+            // en el .resx -- con el mismo texto que "texto es" si es "igual"
             bool matched = windowsKeyInParens.Matches(sitioWindows)
                 .Select(m => m.Groups["key"].Value)
-                .Any(windowsKey => resw.TryGetValue(windowsKey, out string? value) && value == textoEs);
+                .Any(windowsKey => resx.TryGetValue(windowsKey, out string? value) && (!exigeMismoTexto || value == textoEs));
 
-            if (!matched) sinCorrespondencia.Add(csvKey);
+            if (!matched) problemas.Add($"{csvKey} ({estado}): sin correspondencia en Resources.resx");
         }
 
-        Assert.True(sinCorrespondencia.Count == 0,
-            "claves-compartidas.csv marca 'igual' una clave sin correspondencia en el .resw de Windows " +
-            "(ni por su propia clave, ni por el paréntesis \"(clave.de.windows)\" de 'sitio Windows' con el mismo texto): " +
-            string.Join(", ", sinCorrespondencia.Take(10)));
-    }
-
-    /// <summary>
-    /// La décima fila, sacada de la prueba general de arriba -- ver esa
-    /// prueba para el porqué.
-    ///
-    /// <para><b>La composición ya está hecha</b> (ST-247, cierre de B7a):
-    /// <c>AppStrings.OrphansConfirmMessage</c> une <c>OrphansFound(scan)</c> con
-    /// <c>orphans-confirm-message</c>, y en <c>Resources.resx</c> esa clave es
-    /// ahora el texto de la Mac palabra por palabra. Lo que falta no es
-    /// código: es que el <c>.resw</c> que esta prueba lee lo refleje, y ese
-    /// archivo es el <b>borrador</b> — la foto del código de ANTES de B7a.</para>
-    ///
-    /// <para>Y ahí está el nudo: ese borrador ya no se puede regenerar. Con las
-    /// quinientas cincuenta cadenas fuera del código, el extractor no
-    /// encontraría casi nada y la foto quedaría vacía; pero esa foto es contra
-    /// lo que <c>SpanishUnchangedTests</c> comprueba que el español no cambió
-    /// ni una letra. Regenerarla sería tirar la única prueba de eso.</para>
-    ///
-    /// <para>Así que el <c>Skip</c> se queda, con el motivo cambiado: no espera
-    /// trabajo del Experto, espera una decisión de quién es dueño del borrador
-    /// sobre qué mira esta prueba ahora que B7a terminó — el borrador congelado
-    /// o el <c>Resources.resx</c> de verdad, donde hoy calzaría.</para>
-    /// </summary>
-    [Fact(Skip = "la composición ya está hecha en B7a; falta que el borrador .resw la refleje, y hoy no se puede regenerar sin borrar la foto de antes de B7a — ver la nota de arriba")]
-    public void OrphansConfirmMessageExisteEnElReswDeWindowsConElMismoTexto()
-    {
-        Dictionary<string, string> resw = ReadResw(RequireFile(Path.Combine("Strings", "es", "Resources.resw")));
-        string sharedPath = RequireFile("claves-compartidas.csv");
-        var windowsKeyInParens = new Regex(@"\((?<key>[a-z0-9][\w.-]*)(?:,[^)]*)?\)");
-
-        string[] sharedLines = File.ReadAllLines(sharedPath);
-        int textoEsIndex = SharedCsvColumnIndex(sharedLines[0], "texto es");
-        int sitioWindowsIndex = SharedCsvColumnIndex(sharedLines[0], "sitio Windows");
-
-        List<string> row = sharedLines
-            .Skip(1)
-            .Where(line => line.Length > 0)
-            .Select(ParseCsvLine)
-            .Single(fields => fields[0] == "orphans-confirm-message");
-
-        string textoEs = row[textoEsIndex];
-        string sitioWindows = row[sitioWindowsIndex];
-
-        bool matched = windowsKeyInParens.Matches(sitioWindows)
-            .Select(m => m.Groups["key"].Value)
-            .Any(windowsKey => resw.TryGetValue(windowsKey, out string? value) && value == textoEs);
-
-        Assert.True(matched, "orphans-confirm-message sigue sin calzar en texto exacto contra el .resw de Windows");
+        Assert.True(problemas.Count == 0,
+            "claves-compartidas.csv marca una fila sin correspondencia correcta en Resources.resx: " +
+            string.Join("; ", problemas.Take(10)));
     }
 
     // MARK: - Huecos de interpolación: sin duplicados para la misma expresión
@@ -545,6 +507,77 @@ public class LocalizationDraftTests
 
         Assert.True(sinHueco.Count == 0,
             "forma plural sin ningún hueco {...} adentro, fuera de las excepciones conocidas: " +
+            string.Join(", ", sinHueco.Take(10)));
+    }
+
+    // ======================================================================
+    // MARK: ESTADO ACTUAL -- AuraStudio.Core/Strings/Resources.resx, el
+    // recurso real que usa la app. A diferencia de la sección de arriba,
+    // estas pruebas SÍ pueden fallar si algo real cambia (ST-247, cierre
+    // de B7a, encargo del coordinador).
+    // ======================================================================
+
+    /// <summary>Mismo motivo que su análoga histórica -- un hueco vacío es "acá no hay texto", nunca algo que traducir.</summary>
+    [Fact]
+    public void NingunaClaveEstaVaciaEnResourcesResx()
+    {
+        XDocument doc = XDocument.Load(CoreResxPath());
+
+        foreach (XElement data in doc.Root!.Elements("data"))
+            Assert.False(string.IsNullOrWhiteSpace(data.Attribute("name")?.Value), "una clave vacía en Resources.resx");
+    }
+
+    /// <summary>Mismo motivo que su análoga histórica -- un valor vacío es un hueco en pantalla que ninguna prueba de "clave ausente" atrapa.</summary>
+    [Fact]
+    public void NingunValorEstaVacioEnResourcesResx()
+    {
+        XDocument doc = XDocument.Load(CoreResxPath());
+
+        foreach (XElement data in doc.Root!.Elements("data"))
+        {
+            string? value = data.Element("value")?.Value;
+            Assert.False(string.IsNullOrWhiteSpace(value),
+                $"la clave {data.Attribute("name")?.Value} tiene un valor vacío en Resources.resx");
+        }
+    }
+
+    /// <summary>
+    /// Las formas de plural viven en <c>Resources.resx</c> como
+    /// <c>&lt;clave&gt;.zero</c>/<c>.one</c>/<c>.two</c>/<c>.few</c>/<c>.many</c>/<c>.other</c>
+    /// (ver <c>Strings.Plural</c>, <c>PluralRules.SuffixFor</c>) -- toda
+    /// forma tiene que traer <c>{0}</c> adentro, el número nunca pegado por
+    /// fuera (mismo encargo que ya se comprobó contra el borrador para A7a;
+    /// esta es la versión que corre contra el recurso real). La mayoría de
+    /// las formas <c>.one</c> SÍ traen <c>{0}</c> ("1 canción", "1 archivo
+    /// ({1}) va a la Papelera") -- no se exceptúa la categoría entera, solo
+    /// los casos reales, verificados a mano.
+    /// </summary>
+    private static readonly HashSet<string> KnownResxPluralFormsWithoutHole = new(StringComparer.Ordinal)
+    {
+        // No es un plural de verdad -- una etiqueta de menú distinta según
+        // cuántos artistas están seleccionados, sin ningún número que
+        // interpolar (mismo caso que ContextMenu.cs:210 en la foto histórica).
+        "context-menu.quitar-foto-artista.one",
+        "context-menu.quitar-foto-artista.other",
+        // La forma singular no necesita decir "1": "Buscando carátula…" es la
+        // frase completa para un solo álbum; ".other" (">1", con {0}) sí lo dice.
+        "library-view-model.searching-covers.one",
+    };
+
+    [Fact]
+    public void TodaFormaPluralEnResourcesResxTraeUnHuecoAdentroSalvoExcepcionesConocidas()
+    {
+        XDocument doc = XDocument.Load(CoreResxPath());
+        var pluralSuffix = new Regex(@"^(?<baseKey>.+)\.(zero|one|two|few|many|other)$");
+
+        List<string> sinHueco = [.. doc.Root!.Elements("data")
+            .Select(e => (Key: e.Attribute("name")!.Value, Value: e.Element("value")?.Value ?? ""))
+            .Where(entry => pluralSuffix.IsMatch(entry.Key) && !entry.Value.Contains("{0}")
+                         && !KnownResxPluralFormsWithoutHole.Contains(entry.Key))
+            .Select(entry => $"{entry.Key} ({entry.Value})")];
+
+        Assert.True(sinHueco.Count == 0,
+            "forma plural en Resources.resx sin {0} adentro, fuera de las excepciones conocidas: " +
             string.Join(", ", sinHueco.Take(10)));
     }
 
