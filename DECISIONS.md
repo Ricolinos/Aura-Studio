@@ -10865,3 +10865,61 @@ commit ("funciona bastante bien tanto para Windows como para Mac").
   podrán detectar por sí mismas; las 0.2.3 instaladas no tienen el chequeo.
 - Abre la siguiente ronda de ajustes: vigilante en Release y menú de
   Canciones / páginas en Windows (ST-207 addendum); idiomas de la app.
+
+## ST-212 — Instaladores de Windows 0.3.0 (cierre de la ronda 2 de rendimiento, ST-200..ST-211, sobre 0.2.3)
+
+Release autorizado por el dueño el 2026-09-06. Commit de versión y tag
+`v0.3.0` = `6e3a371` (ST-195: 0.3.0 en `project.yml`, `Info.plist`,
+`installer/AuraStudio.iss` y `AuraStudio.App.csproj`). El pin de firmware
+**no cambia** respecto de 0.2.3: `FIRMWARE_VERSION` es idéntico entre
+`5b81c3a` (ST-174) y `v0.3.0`, así que el instalador lleva los mismos
+firmwares: Aura `v0.4.6-beta`, Metro `v0.7.4`, moonlit `v0.2.4`.
+
+Lo que trae para Windows, respecto del 0.2.3: la ronda 2 completa
+(ST-200..ST-209 con sus addenda, ST-210 y ST-211), resumida en ST-207 y en
+`docs/ESTADO-PORT.md` §W7: arranque con la biblioteca cargando en segundo
+plano, selección nativa con casilla, Ctrl+A y recuadro, menús con las
+acciones de carátulas en lote, guardado del catálogo una vez por ráfaga y
+fuera del hilo de UI, carátulas fuera de RAM con caché de miniaturas,
+"Buscar actualizaciones" de Dispositivos con red y "Buscar actualizaciones
+de Aura Studio".
+
+### Procedimiento (el de ST-170/173/174)
+
+Worktree limpio desacoplado en `v0.3.0`; `.\scripts\FirmwareFetch.ps1`
+(las tres familias, hashes cruzados contra los `checksums.txt` de cada
+Release, salida 0); `.\scripts\Make-Installer.ps1 -Architecture both`
+(publish Release por arquitectura + Inno Setup, salida 0); los `.exe`
+movidos a `studio\windows\dist\` del árbol de trabajo. Sin commit de
+binarios (`dist\` sigue ignorado), sin instalar en la VM: la instalación
+y la verificación son del dueño (guion de ST-207 / ESTADO-PORT §W7).
+
+### Verificación
+
+- `VersionInfo` de los dos Setup: `ProductVersion` y `FileVersion`
+  `0.3.0`; el `AuraStudio.App.exe` de cada publish declara
+  `0.3.0+6e3a371…`.
+- `firmware-version.txt` de los dos publish (`win-arm64` y `win-x64`):
+  `artifacts/firmware` `v0.4.6-beta`, `artifacts/metro` `v0.7.4`,
+  `artifacts/moonlit` `v0.2.4`.
+- Avisos del script, como siempre: sin firma de código (SmartScreen
+  advierte la primera vez) y las dos arquitecturas comparten `AppId`
+  (instalar una reemplaza a la otra).
+
+SHA-256 de los dos instaladores nuevos:
+
+- `AuraStudioSetup-0.3.0-arm64.exe` (99 119 000 bytes):
+  `2649402721a89b3b9af00f55a3495cc315b695cfad79f6c74f7570f5e1f82ab4`
+- `AuraStudioSetup-0.3.0-x64.exe` (101 755 041 bytes):
+  `29950b09a63eb50405e0d4f4b4549a45963993648366a360799a8ba695d47aa1`
+
+### Estado de `dist\` al compilar
+
+`0.2.3` presente y verificado intacto: mismos SHA-256 que en ST-174
+(arm64 `1413c9ac53d7506b15b733ad961103bb5f998987b3282ba9f959360c661fc429`,
+x64 `b53879e4c2015016e460c4fd2ade153fa70613fb4d697b8db8addb84634baefa`).
+Además hay una carpeta `dist\prueba-3e55186\` con los instaladores de
+PRUEBA de `3e55186` que el dueño usó para verificar antes del release
+(versión 0.2.3, no son de release y no van a GitHub). `0.2.2` y
+anteriores siguen sin copia local (ST-173): la copia canónica vive en los
+Releases de GitHub.
