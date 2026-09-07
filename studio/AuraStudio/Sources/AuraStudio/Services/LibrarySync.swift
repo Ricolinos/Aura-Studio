@@ -1279,7 +1279,7 @@ struct LibrarySync {
             return title
         case .trackNumberTitle:
             if let track = meta?.trackNumber, track > 0 {
-                return String(format: "%02d %@", track, title)
+                return String(format: LS("library-sync.02d"), track, title)
             }
             return title
         case .titleArtist:
@@ -1478,7 +1478,7 @@ struct LibrarySync {
     /// `parse_sxxeyy()` necesita), acá el presupuesto de bytes se
     /// calcula ANTES y solo `seriesName` se trunca.
     static func seriesEpisodeFilename(seriesName: String, season: Int, episode: Int, ext: String, maxBytes: Int = deviceFilenameMaxBytes) -> String {
-        let suffix = String(format: " S%02dE%02d", season, episode)
+        let suffix = String(format: LS("library-sync.s-02de-02d"), season, episode)
         let extSuffix = ext.isEmpty ? "" : ".\(ext)"
         let budget = max(1, maxBytes - suffix.utf8.count - extSuffix.utf8.count)
         // Reusa PathSanitizer.sanitize (caracteres ilegales de FAT32 -> "_",
@@ -1518,7 +1518,7 @@ struct LibrarySync {
     }
 
     static func seasonPosterRelativePath(seriesName: String, season: Int, maxBytes: Int = deviceFilenameMaxBytes) -> String {
-        let suffix = String(format: " S%02d", season)
+        let suffix = String(format: LS("library-sync.s-02d"), season)
         let extSuffix = ".jpg"
         let budget = max(1, maxBytes - suffix.utf8.count - extSuffix.utf8.count)
         var base = PathSanitizer.sanitize(seriesName, maxLength: Int.max)

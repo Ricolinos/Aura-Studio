@@ -61,11 +61,11 @@ struct AlbumCoverPickerView: View {
                 // una vez por álbum. Decir en cuál va -- y cuántos
                 // faltan -- es lo que separa "una cola" de "una ventana
                 // que reaparece sola".
-                Text("Álbum \(queuePosition.index) de \(queuePosition.total)")
+                Text(LSf("album-cover-picker-view.album", queuePosition.index, queuePosition.total))
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(AuraColors.light.accent)
             }
-            Text("Carátulas para «\(request.albumTitle)»")
+            Text(LSf("album-cover-picker-view.caratulas-para", request.albumTitle))
                 .font(.headline)
             Text([request.albumArtist, request.albumYear].compactMap { $0 }.joined(separator: " · "))
                 .foregroundStyle(.secondary)
@@ -78,7 +78,7 @@ struct AlbumCoverPickerView: View {
         if isSearching {
             VStack(spacing: 10) {
                 ProgressView()
-                Text("Buscando carátulas en Cover Art Archive y Deezer...")
+                Text(LS("album-cover-picker-view.buscando-caratulas-cover-art-archive-dee"))
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -89,9 +89,9 @@ struct AlbumCoverPickerView: View {
                 Image(systemName: "photo.on.rectangle.angled")
                     .font(.system(size: 36, weight: .light))
                     .foregroundStyle(.secondary)
-                Text("No se encontraron carátulas para este álbum.")
+                Text(LS("album-cover-picker-view.no-se-encontraron-caratulas-para-este"))
                     .foregroundStyle(.secondary)
-                Text("Revisa que el título y el artista del álbum estén bien escritos; también puedes activar Deezer en Ajustes › Servicios para tener más resultados.")
+                Text(LS("album-cover-picker-view.revisa-que-titulo-artista-album-esten"))
                     .font(.callout)
                     .foregroundStyle(.tertiary)
                     .multilineTextAlignment(.center)
@@ -116,7 +116,7 @@ struct AlbumCoverPickerView: View {
             CoverArtView(id: "candidata:\(candidate.id)", data: candidate.data, side: 140)
                 .librarySelectionBorder(candidate.id == selectedID)
             if candidate.id == recommended?.id {
-                Text("Recomendada")
+                Text(LS("album-cover-picker-view.recomendada"))
                     .font(.caption.weight(.semibold))
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
@@ -151,13 +151,13 @@ struct AlbumCoverPickerView: View {
             Button(onSkip == nil ? "Cancelar" : "Cancelar el resto", role: .cancel, action: onCancel)
                 .keyboardShortcut(.cancelAction)
             if let onSkip {
-                Button("Omitir este álbum", action: onSkip)
-                    .help("Deja este álbum como está y pasa al siguiente de la lista")
+                Button(LS("album-cover-picker-view.omitir-este-album"), action: onSkip)
+                    .help(LS("album-cover-picker-view.deja-este-album-como-esta-pasa"))
             }
             if let recommended, recommended.id != selectedID {
-                Button("Usar recomendada") { apply(recommended) }
+                Button(LS("album-cover-picker-view.usar-recomendada")) { apply(recommended) }
             }
-            Button("Usar esta carátula") {
+            Button(LS("album-cover-picker-view.usar-esta-caratula")) {
                 if let selectedCandidate { apply(selectedCandidate) }
             }
             .keyboardShortcut(.defaultAction)

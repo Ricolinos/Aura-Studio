@@ -119,7 +119,7 @@ struct MoviesView: View {
                 grid
             }
         }
-        .navigationTitle("Películas")
+        .navigationTitle(LS("movies-view.peliculas"))
         .background(LibraryStatusRelay(model: statusModel))
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
@@ -231,7 +231,7 @@ struct MoviesView: View {
             HStack(spacing: 10) {
                 Spacer()
                 Menu {
-                    Picker("Ordenar por", selection: $sortRaw) {
+                    Picker(LS("albums-view.ordenar-por"), selection: $sortRaw) {
                         ForEach(MovieSort.allCases) { option in
                             Text(option.title).tag(option.rawValue)
                         }
@@ -241,7 +241,7 @@ struct MoviesView: View {
                 }
                 .menuStyle(.borderlessButton)
                 .fixedSize()
-                .help("Ordenar las películas")
+                .help(LS("movies-view.ordenar-peliculas"))
                 LibrarySearchField(scopeTitle: "Películas", text: $searchText)
             }
             .padding(.horizontal, 20)
@@ -357,7 +357,7 @@ struct MoviesView: View {
                 Button {
                     selectedMovieID = nil
                 } label: {
-                    Label("Películas", systemImage: "chevron.left")
+                    Label(LS("movies-view.peliculas"), systemImage: "chevron.left")
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(AuraColors.light.accent)
@@ -384,10 +384,10 @@ struct MoviesView: View {
                     }
                     Spacer(minLength: 0)
                     HStack {
-                        Button("Buscar póster en línea") {
+                        Button(LS("media-section-view.buscar-poster-linea")) {
                             Task { await viewModel.fetchVideoPosters(ids: Set(movie.items.map(\.id))) }
                         }
-                        Button("Más información...") {
+                        Button(LS("artists-view.mas-informacion")) {
                             if let item = movie.items.first { reviewingItem = item }
                         }
                     }
@@ -420,16 +420,16 @@ struct MoviesView: View {
         let plural = targets.count > 1
 
         if !plural {
-            Button("Abrir") { selectedMovieID = movie.id }
+            Button(LS("albums-view.abrir")) { selectedMovieID = movie.id }
             Divider()
         }
         Button(allFavorite ? "Quitar favorito" : "Marcar como favorito") {
             viewModel.setFavorite(!allFavorite, forItems: Set(items.map(\.id)))
         }
-        Button("Buscar póster en línea") {
+        Button(LS("media-section-view.buscar-poster-linea")) {
             Task { await viewModel.fetchVideoPosters(ids: Set(items.map(\.id))) }
         }
-        Menu("Cambiar categoría") {
+        Menu(LS("media-section-view.cambiar-categoria")) {
             ForEach(MediaCategory.videoCategories) { category in
                 Button(category.displayName) {
                     viewModel.setCategory(category.displayName, forItems: Set(items.map(\.id)))
@@ -437,7 +437,7 @@ struct MoviesView: View {
             }
         }
         Divider()
-        Button("Mostrar en Finder") {
+        Button(LS("albums-view.mostrar-finder")) {
             NSWorkspace.shared.activateFileViewerSelecting(items.map(\.sourceURL))
         }
         Button(plural ? "Eliminar películas" : "Eliminar película", role: .destructive) {

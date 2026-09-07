@@ -14,7 +14,7 @@ struct LibraryStatusBar: View {
             Text(summary.total)
                 .lineLimit(1)
             if let selection = summary.selection {
-                Text("—")
+                Text(LS("library-status-bar.texto"))
                     .foregroundStyle(.tertiary)
                 Text(selection)
                     .lineLimit(1)
@@ -34,7 +34,7 @@ struct LibraryStatusBar: View {
         .background(.bar)
         .overlay(alignment: .top) { Divider() }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Barra de estado")
+        .accessibilityLabel(LS("library-status-bar.accesibilidad"))
         // ST-188: la prueba de interfaz lee acá cuántos hay
         // seleccionados -- es la forma de comprobar un arrastre sin
         // meterse en el estado interno de la vista.

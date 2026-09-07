@@ -325,10 +325,10 @@ struct MediaSectionView: View {
                         guard let selectedItem else { return }
                         reviewingItem = selectedItem
                     } label: {
-                        Label("Editar", systemImage: "pencil")
+                        Label(LS("media-section-view.editar"), systemImage: "pencil")
                     }
                     .disabled(selectedItem == nil)
-                    .help("Editar metadata y letra de la canción seleccionada")
+                    .help(LS("media-section-view.editar-metadata-letra-cancion-selecciona"))
                 }
             }
         }
@@ -487,7 +487,7 @@ struct MediaSectionView: View {
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
-            .help("Elegir qué columnas mostrar")
+            .help(LS("media-section-view.elegir-que-columnas-mostrar"))
         }
         .padding(.horizontal, 12)
         .padding(.top, 8)
@@ -517,13 +517,13 @@ struct MediaSectionView: View {
     private var legacyMetadataRereadBanner: some View {
         if let count = viewModel.legacyMetadataRereadOfferCount, !isEnriching {
             HStack(spacing: 12) {
-                Text("Aura Studio ahora lee mejor las etiquetas de tus archivos. ¿Quieres volver a leer las \(count) canción(es) de tu biblioteca?")
+                Text(LSf("media-section-view.aura-studio-ahora-lee-mejor-etiquetas", count))
                     .font(.callout)
                 Spacer()
-                Button("Ahora no") {
+                Button(LS("app-update-bar.ahora-no")) {
                     viewModel.dismissLegacyMetadataRereadOffer()
                 }
-                Button("Volver a leer") {
+                Button(LS("media-section-view.volver-leer")) {
                     runEnrichment(busyText: "Leyendo etiquetas del archivo...") {
                         await viewModel.acceptLegacyMetadataRereadOffer()
                     }
@@ -545,10 +545,10 @@ struct MediaSectionView: View {
             HStack(spacing: 12) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundStyle(.orange)
-                Text("Para convertir videos al formato del iPod hace falta ffmpeg. Instálalo con Homebrew (\"brew install ffmpeg\") y vuelve a intentar.")
+                Text(LS("media-section-view.para-convertir-videos-al-formato-ipod"))
                     .font(.callout)
                 Spacer()
-                Button("Volver a intentar") {
+                Button(LS("media-section-view.volver-intentar")) {
                     Task { await viewModel.retryVideosWaitingOnFFmpeg() }
                 }
                 .buttonStyle(.borderedProminent)
@@ -565,13 +565,13 @@ struct MediaSectionView: View {
     private var coverContaminationBanner: some View {
         if let count = viewModel.coverContaminationOfferCount {
             HStack(spacing: 12) {
-                Text("\(count) imagen(es) de tu biblioteca parecen carátulas de álbum, no fotos. ¿Quieres revisarlas?")
+                Text(LSf("media-section-view.imagen-es-tu-biblioteca-parecen-caratula", count))
                     .font(.callout)
                 Spacer()
-                Button("Ahora no") {
+                Button(LS("app-update-bar.ahora-no")) {
                     viewModel.dismissCoverContaminationOffer()
                 }
-                Button("Revisar") {
+                Button(LS("media-section-view.revisar")) {
                     reviewingCoverContamination = true
                 }
                 .buttonStyle(.borderedProminent)
@@ -753,7 +753,7 @@ struct MediaSectionView: View {
         HStack(spacing: 8) {
             LibrarySearchField(scopeTitle: searchScopeTitle, text: $searchText)
             if preferences.musicShowOnlyFavorites {
-                Label("Solo favoritos", systemImage: "star.fill")
+                Label(LS("media-section-view.solo-favoritos"), systemImage: "star.fill")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -765,7 +765,7 @@ struct MediaSectionView: View {
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
-            .help("Filtrar, ordenar y elegir columnas (también con clic derecho sobre los encabezados)")
+            .help(LS("media-section-view.filtrar-ordenar-elegir-columnas-tambien"))
         }
         .padding(.horizontal, 12)
         .padding(.top, 8)
@@ -836,7 +836,7 @@ struct MediaSectionView: View {
     private func statusCell(_ item: LibraryItem) -> some View {
         switch item.status {
         case .queued:
-            Text("En cola").foregroundStyle(.secondary)
+            Text(LS("media-section-view.cola")).foregroundStyle(.secondary)
         case .enriching:
             ProgressView().controlSize(.small)
         case .transcoding(let progress):
@@ -854,14 +854,14 @@ struct MediaSectionView: View {
             } else {
                 HStack(spacing: 4) {
                     Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
-                    Text("Listo").foregroundStyle(.secondary)
+                    Text(LS("automatic-update-view.listo")).foregroundStyle(.secondary)
                 }
             }
         case .needsReview:
             Button {
                 reviewingItem = item
             } label: {
-                Label("Revisar", systemImage: "exclamationmark.circle")
+                Label(LS("media-section-view.revisar"), systemImage: "exclamationmark.circle")
             }
             .buttonStyle(.plain)
             .foregroundStyle(.orange)
@@ -879,22 +879,22 @@ struct MediaSectionView: View {
     private func syncStateCell(_ state: SyncItemState) -> some View {
         switch state {
         case .synced:
-            Label("Sincronizado", systemImage: "checkmark.circle")
+            Label(LS("media-section-view.sincronizado"), systemImage: "checkmark.circle")
                 .foregroundStyle(.secondary)
         case .pending:
-            Label("Pendiente", systemImage: "arrow.up.circle")
+            Label(LS("media-section-view.pendiente"), systemImage: "arrow.up.circle")
                 .foregroundStyle(AuraColors.light.accent)
         case .changedLocally:
-            Label("Con cambios", systemImage: "arrow.triangle.2.circlepath")
+            Label(LS("media-section-view.con-cambios"), systemImage: "arrow.triangle.2.circlepath")
                 .foregroundStyle(AuraColors.light.accent)
         case .modifiedOnDevice:
-            Label("Modificado en el iPod", systemImage: "exclamationmark.triangle")
+            Label(LS("media-section-view.modificado-ipod"), systemImage: "exclamationmark.triangle")
                 .foregroundStyle(.orange)
-                .help("Este archivo cambió en el iPod fuera de Aura Studio. La próxima vez que sincronices podrás elegir si lo conservas o lo reemplazas con la versión de tu biblioteca.")
+                .help(LS("media-section-view.este-archivo-cambio-ipod-fuera-aura"))
         case .removedFromDevice:
-            Label("Quitado del iPod", systemImage: "minus.circle")
+            Label(LS("media-section-view.quitado-ipod"), systemImage: "minus.circle")
                 .foregroundStyle(.secondary)
-                .help("Se quitó del iPod fuera de Aura Studio -- no se vuelve a copiar solo. Usa \"Sincronizar la selección\" en el menú contextual para volver a copiarlo.")
+                .help(LS("media-section-view.se-quito-ipod-fuera-aura-studio"))
         }
     }
 
@@ -981,7 +981,7 @@ struct MediaSectionView: View {
         let targetItems = items.filter { targetIDs.contains($0.id) }
 
         if kind == .music, !targetItems.isEmpty {
-            Button("Buscar información en línea") {
+            Button(LS("albums-view.buscar-informacion-linea")) {
                 runEnrichment { await viewModel.reenrichOnline(ids: targetIDs, fetchAlbumInfo: true, fetchLyrics: false) }
             }
             // ST-104: elegir la tapa a mano, cuando la que trajo el
@@ -1000,26 +1000,26 @@ struct MediaSectionView: View {
             // 12 millones de claves normalizadas.
             let coverRequests = AlbumCoverRequest.forAlbums(of: targetItems, in: viewModel.catalogIndex)
             if coverRequests.count == 1 {
-                Button("Buscar carátulas del álbum...") { startCoverQueue(coverRequests) }
-                    .help("Busca varias carátulas en Cover Art Archive y Deezer y aplica la que elijas a todas las canciones del álbum")
-                Button("Aplicar carátula recomendada") { applyRecommendedCovers(coverRequests) }
+                Button(LS("albums-view.buscar-caratulas-album")) { startCoverQueue(coverRequests) }
+                    .help(LS("albums-view.busca-varias-caratulas-cover-art-archive"))
+                Button(LS("albums-view.aplicar-caratula-recomendada")) { applyRecommendedCovers(coverRequests) }
                     .disabled(viewModel.isApplyingRecommendedCovers)
-                    .help("Aplica sin preguntar solo la carátula que supere el umbral de confianza; si ninguna lo supera, se abre el selector")
+                    .help(LS("albums-view.aplica-sin-preguntar-solo-caratula-que"))
             } else if coverRequests.count > 1 {
-                Button("Buscar carátulas de \(coverRequests.count) álbumes...") { applyRecommendedCovers(coverRequests) }
+                Button(LSf("media-section-view.buscar-caratulas-albumes", coverRequests.count)) { applyRecommendedCovers(coverRequests) }
                     .disabled(viewModel.isApplyingRecommendedCovers)
-                    .help("Aplica sin preguntar la carátula que supere el umbral de confianza en cada álbum; los que no tengan una opción segura los eliges tú, uno por uno")
+                    .help(LS("albums-view.aplica-sin-preguntar-caratula-que-supere"))
             }
-            Button("Buscar letra") {
+            Button(LS("media-section-view.buscar-letra")) {
                 runEnrichment { await viewModel.reenrichOnline(ids: targetIDs, fetchAlbumInfo: false, fetchLyrics: true) }
             }
-            Button("Volver a leer etiquetas del archivo") {
+            Button(LS("media-section-view.volver-leer-etiquetas-archivo")) {
                 runEnrichment(busyText: "Leyendo etiquetas del archivo...") {
                     await viewModel.rereadLocalTags(ids: targetIDs)
                 }
             }
-            .help("Vuelve a leer título, artista, álbum, año, género, autor, N.º de pista y carátula directamente del archivo original")
-            Button("Eliminar carátula") {
+            .help(LS("media-section-view.vuelve-leer-titulo-artista-album-ano"))
+            Button(LS("media-section-view.eliminar-caratula")) {
                 // PLAN-studio-rendimiento.md Fase 3 punto 4: una sola
                 // llamada por lote, no una por ítem -- `clearCoverArt(ids:)`
                 // persiste el catálogo UNA vez al final.
@@ -1033,11 +1033,11 @@ struct MediaSectionView: View {
             // ST-030: favorito. Si en la seleccion hay alguna que no lo
             // es, la accion marca todas; si todas lo son, las quita.
             if targetItems.contains(where: { $0.metadata?.isFavorite != true }) {
-                Button("Marcar como favorito") {
+                Button(LS("media-section-view.marcar-como-favorito")) {
                     viewModel.setFavorite(true, forItems: Set(targetItems.map(\.id)))
                 }
             } else {
-                Button("Quitar de favoritos") {
+                Button(LS("media-section-view.quitar-favoritos")) {
                     viewModel.setFavorite(false, forItems: Set(targetItems.map(\.id)))
                 }
             }
@@ -1046,12 +1046,12 @@ struct MediaSectionView: View {
 
             if let reference = targetItems.first {
                 if let album = reference.metadata?.album {
-                    Button("Seleccionar canciones del mismo álbum") {
+                    Button(LS("media-section-view.seleccionar-canciones-mismo-album")) {
                         selection = Set(allItemsOfKind.filter { $0.metadata?.album == album }.map(\.id))
                     }
                 }
                 if let artist = reference.metadata?.artist {
-                    Button("Seleccionar canciones del mismo artista") {
+                    Button(LS("media-section-view.seleccionar-canciones-mismo-artista")) {
                         selection = Set(allItemsOfKind.filter { $0.metadata?.artist == artist }.map(\.id))
                     }
                 }
@@ -1062,13 +1062,13 @@ struct MediaSectionView: View {
 
         if kind == .video, !targetItems.isEmpty {
             // ST-033: posters de peliculas/series (TMDB + fanart.tv).
-            Button("Buscar póster en línea") {
+            Button(LS("media-section-view.buscar-poster-linea")) {
                 runEnrichment(busyText: "Buscando pósters en línea...") {
                     await viewModel.fetchVideoPosters(ids: Set(targetItems.map(\.id)))
                 }
             }
-            .help("Busca el póster en TMDB y fanart.tv (necesita la API key de TMDB en Ajustes › Servicios) y lo copia junto al video en el iPod")
-            Button("Quitar póster") {
+            .help(LS("media-section-view.busca-poster-tmdb-fanart-tv-necesita"))
+            Button(LS("media-section-view.quitar-poster")) {
                 for item in targetItems { viewModel.clearVideoPoster(id: item.id) }
             }
             .disabled(!targetItems.contains { $0.metadata?.hasCover == true })
@@ -1076,7 +1076,7 @@ struct MediaSectionView: View {
         }
 
         if let availableCategories, !targetItems.isEmpty {
-            Menu("Cambiar categoría") {
+            Menu(LS("media-section-view.cambiar-categoria")) {
                 ForEach(availableCategories, id: \.self) { category in
                     Button(category) {
                         for item in targetItems { viewModel.setCategory(category, forItem: item.id) }
@@ -1087,10 +1087,10 @@ struct MediaSectionView: View {
         }
 
         if targetItems.count == 1, let single = targetItems.first {
-            Button("Cambiar nombre...") {
+            Button(LS("media-section-view.cambiar-nombre")) {
                 renamingItem = single
             }
-            Button("Más información...") {
+            Button(LS("artists-view.mas-informacion")) {
                 reviewingItem = single
             }
             Divider()
@@ -1098,7 +1098,7 @@ struct MediaSectionView: View {
             // D-218: mismo lugar del menu que "Más información...",
             // pero para varias canciones -- dispara el aviso previo (o
             // se lo salta si el usuario ya dijo "No volver a mostrar").
-            Button("Obtener información...") {
+            Button(LS("media-section-view.obtener-informacion")) {
                 startBatchEdit(ids: targetIDs)
             }
             Divider()
@@ -1111,7 +1111,7 @@ struct MediaSectionView: View {
         // arrastrar seleccion vieja de otra vista si el usuario no volvio
         // a tocar nada aca desde que cambio de sección).
         if let device, device.supportsAuraContract, !targetItems.isEmpty {
-            Button("Sincronizar la selección") {
+            Button(LS("media-section-view.sincronizar-seleccion")) {
                 Task {
                     await viewModel.sync(toVolumeAt: URL(fileURLWithPath: device.mountPath),
                                          scope: .selection(targetIDs))
@@ -1122,18 +1122,18 @@ struct MediaSectionView: View {
         }
 
         if !targetItems.isEmpty {
-            Button("Mostrar en Finder") {
+            Button(LS("albums-view.mostrar-finder")) {
                 NSWorkspace.shared.activateFileViewerSelecting(targetItems.map(\.sourceURL))
             }
             // ST-063: misma hoja que "Biblioteca › Buscar elementos
             // similares...", arrancando filtrada a este tipo de medio.
-            Button("Buscar elementos similares...") {
+            Button(LS("app-menu-commands.buscar-elementos-similares")) {
                 showingSimilarItems = true
             }
             Divider()
         }
 
-        Button("Eliminar", role: .destructive) {
+        Button(LS("artists-view.eliminar"), role: .destructive) {
             viewModel.deleteItems(ids: targetIDs)
             selection.subtract(targetIDs)
         }
@@ -1300,7 +1300,7 @@ struct MediaTableRow: Identifiable {
     var durationText: String {
         guard let seconds = item.metadata?.durationSeconds, seconds > 0 else { return "--" }
         let total = Int(seconds.rounded())
-        return String(format: "%d:%02d", total / 60, total % 60)
+        return String(format: LS("similar-items-detector.d-02d"), total / 60, total % 60)
     }
 
     // MARK: - Columnas de musica (ST-030)
@@ -1395,14 +1395,14 @@ private struct RenameSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Cambiar nombre").font(.title3.bold())
+            Text(LS("media-section-view.cambiar-nombre-2")).font(.title3.bold())
             TextField("Nombre", text: $text)
                 .textFieldStyle(.roundedBorder)
                 .onSubmit { if !trimmed.isEmpty { onSave(trimmed) } }
             HStack {
                 Spacer()
-                Button("Cancelar", action: onCancel)
-                Button("Guardar") { onSave(trimmed) }
+                Button(LS("background-task-center-indicator.cancelar"), action: onCancel)
+                Button(LS("git-hub-token-settings-view.guardar")) { onSave(trimmed) }
                     .buttonStyle(.borderedProminent)
                     .disabled(trimmed.isEmpty)
             }
@@ -1431,17 +1431,17 @@ struct PhotoAlbumNameSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Nombrar álbum").font(.title3.bold())
-            Text("¿Cómo quieres llamar al álbum que incluirá estas fotos?")
+            Text(LS("media-section-view.nombrar-album")).font(.title3.bold())
+            Text(LS("media-section-view.como-quieres-llamar-al-album-que"))
                 .font(.callout)
                 .foregroundStyle(.secondary)
             TextField("Nombre del álbum", text: $albumName)
                 .textFieldStyle(.roundedBorder)
                 .onSubmit { if !trimmed.isEmpty { onConfirm(trimmed) } }
             HStack {
-                Button("Sin álbum") { onConfirm(nil) }
+                Button(LS("media-section-view.sin-album")) { onConfirm(nil) }
                 Spacer()
-                Button("Crear álbum") { onConfirm(trimmed) }
+                Button(LS("media-section-view.crear-album")) { onConfirm(trimmed) }
                     .buttonStyle(.borderedProminent)
                     .disabled(trimmed.isEmpty)
             }
@@ -1477,8 +1477,8 @@ private struct PhotoImportSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Importar fotos").font(.title3.bold())
-            Picker("Tipo", selection: $category) {
+            Text(LS("media-section-view.importar-fotos")).font(.title3.bold())
+            Picker(LS("media-section-view.tipo"), selection: $category) {
                 ForEach(categories, id: \.self) { Text($0).tag($0) }
             }
             .pickerStyle(.segmented)
@@ -1487,8 +1487,8 @@ private struct PhotoImportSheet: View {
                 .onSubmit { onConfirm(category, trimmedAlbum.isEmpty ? nil : trimmedAlbum) }
             HStack {
                 Spacer()
-                Button("Cancelar", action: onCancel)
-                Button("Importar") { onConfirm(category, trimmedAlbum.isEmpty ? nil : trimmedAlbum) }
+                Button(LS("background-task-center-indicator.cancelar"), action: onCancel)
+                Button(LS("media-section-view.importar")) { onConfirm(category, trimmedAlbum.isEmpty ? nil : trimmedAlbum) }
                     .buttonStyle(.borderedProminent)
             }
         }

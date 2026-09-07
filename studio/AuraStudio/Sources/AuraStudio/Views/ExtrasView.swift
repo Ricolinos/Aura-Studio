@@ -73,7 +73,7 @@ struct ExtrasView: View {
             .frame(maxWidth: 560, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
-        .navigationTitle("Extras")
+        .navigationTitle(LS("extras-view.extras"))
         .task { await versions.load() }
         .sheet(isPresented: $showingThemes) {
             if let device, device.supportsAuraContract {
@@ -92,8 +92,8 @@ struct ExtrasView: View {
     /// reinstala la familia que ya esta en el aparato.
     private var firmwareChoice: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Firmware").font(.headline)
-            Text("Elige cuál de los firmwares instalables usa Aura Studio la próxima vez que abras el Instalador. Todos son software libre (GPL v2), derivados de Rockbox, y comparten la misma biblioteca: tu música, fotos y videos se sincronizan igual con cualquiera.")
+            Text(LS("extras-view.firmware")).font(.headline)
+            Text(LS("extras-view.elige-cual-firmwares-instalables-usa-aur"))
                 .font(.callout)
                 .foregroundStyle(.secondary)
             FirmwareChoiceCard(
@@ -132,7 +132,7 @@ struct ExtrasView: View {
         HStack(spacing: 8) {
             if versions.isRefreshing {
                 ProgressView().controlSize(.small)
-                Text("Consultando GitHub...")
+                Text(LS("extras-view.consultando-github"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
@@ -141,7 +141,7 @@ struct ExtrasView: View {
                      : "No se pudo consultar GitHub (revisa el token en Ajustes › General): se muestran las versiones incluidas en Aura Studio, que son las que se instalarían.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Button("Revisar de nuevo") {
+                Button(LS("extras-view.revisar-nuevo")) {
                     Task { await versions.load(force: true) }
                 }
                 .buttonStyle(.link)
@@ -170,12 +170,12 @@ struct ExtrasView: View {
 
         VStack(alignment: .leading, spacing: 8) {
             if chosen == active {
-                Text("\(active.displayName) es el firmware activo de tu iPod." +
+                Text(LSf("extras-view.es-firmware-activo-tu-ipod", active.displayName) +
                      (dormant.isEmpty ? "" : " \(dormant.map(\.displayName).joined(separator: ", ")) también está instalado, dormido: elige su tarjeta para cambiar."))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else if dormant.contains(chosen) {
-                Text("\(chosen.displayName) ya está instalado en tu iPod, dormido, con sus ajustes guardados. Cambiar toma un segundo (no descarga ni borra nada); después hay que reiniciar el iPod y la primera vez reconstruye su base de música.")
+                Text(LSf("extras-view.ya-esta-instalado-tu-ipod-dormido", chosen.displayName))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 HStack {
@@ -189,20 +189,20 @@ struct ExtrasView: View {
                             switching = false
                         }
                     } label: {
-                        Label("Cambiar a \(chosen.displayName)", systemImage: "arrow.triangle.2.circlepath")
+                        Label(LSf("extras-view.cambiar", chosen.displayName), systemImage: "arrow.triangle.2.circlepath")
                     }
                     .buttonStyle(.borderedProminent)
                     .disabled(switching)
                     if switching { ProgressView().controlSize(.small) }
                 }
             } else {
-                Text("Tu iPod tiene \(active.displayName). Instalar \(chosen.displayName) lo agrega: \(active.displayName) se guarda dormido con sus ajustes y podrás volver a él desde aquí sin volver a instalar nada.")
+                Text(LSf("extras-view.tu-ipod-tiene-instalar-lo-agrega", active.displayName, chosen.displayName, active.displayName))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Button {
                     onOpenInstaller?()
                 } label: {
-                    Label("Instalar \(chosen.displayName)", systemImage: "square.and.arrow.down")
+                    Label(LSf("extras-view.instalar", chosen.displayName), systemImage: "square.and.arrow.down")
                 }
                 .buttonStyle(.bordered)
             }
@@ -219,7 +219,7 @@ struct ExtrasView: View {
     /// segundo firmware GPL.
     private var licenses: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Licencias").font(.headline)
+            Text(LS("extras-view.licencias")).font(.headline)
             Button {
                 showingLicenses = true
             } label: {
@@ -232,7 +232,7 @@ struct ExtrasView: View {
 
     private var available: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Disponible en el dispositivo").font(.headline)
+            Text(LS("extras-view.disponible-dispositivo")).font(.headline)
             Button {
                 showingThemes = true
             } label: {
@@ -247,8 +247,8 @@ struct ExtrasView: View {
 
     private var planned: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Todavia no").font(.headline)
-            Text("Estos extras del iPod original no estan implementados en Aura. Cuando existan, se van a poder gestionar desde aca.")
+            Text(LS("extras-view.todavia-no")).font(.headline)
+            Text(LS("extras-view.estos-extras-ipod-original-no-estan"))
                 .font(.callout)
                 .foregroundStyle(.secondary)
             row("Juegos", "gamecontroller",
@@ -314,7 +314,7 @@ private struct FirmwareChoiceCard: View {
                         // publicado" y "lo que trae la app" no son lo mismo
                         // y el usuario decide con esa diferencia.
                         if availableTag != nil, !isLatestFromGitHub {
-                            Text("incluida")
+                            Text(LS("extras-view.incluida"))
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }

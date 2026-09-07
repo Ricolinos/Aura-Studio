@@ -120,7 +120,7 @@ struct DeviceGeneralView: View {
                 )
 
                 if let index = library.deviceSyncIndex, !index.foreignFiles.isEmpty {
-                    Button("Contenido solo en el iPod (\(index.foreignFiles.count))…") {
+                    Button(LSf("device-general-view.contenido-solo-ipod", index.foreignFiles.count)) {
                         showForeignContentSheet = true
                     }
                     .buttonStyle(.link)
@@ -131,7 +131,7 @@ struct DeviceGeneralView: View {
             .frame(maxWidth: 560, alignment: .leading)
         }
         .frame(maxWidth: .infinity, alignment: .topLeading)
-        .navigationTitle("General")
+        .navigationTitle(LS("device-general-view.general"))
         .sheet(item: $pendingSyncRequest) { request in
             if let index = library.deviceSyncIndex {
                 SyncConflictSheet(index: index, onCancel: {
@@ -157,10 +157,10 @@ struct DeviceGeneralView: View {
             pendingDelete.map { "¿Eliminar \($0.label) del iPod?" } ?? "",
             isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } })
         ) {
-            Button("Cancelar", role: .cancel) { pendingDelete = nil }
-            Button("Eliminar", role: .destructive) { confirmDelete() }
+            Button(LS("background-task-center-indicator.cancelar"), role: .cancel) { pendingDelete = nil }
+            Button(LS("artists-view.eliminar"), role: .destructive) { confirmDelete() }
         } message: {
-            Text("Esta acción no se puede deshacer -- los archivos borrados del iPod no se pueden recuperar. Tu biblioteca en esta Mac no se toca; puedes volver a sincronizar cuando quieras.")
+            Text(LS("device-general-view.esta-accion-no-se-puede-deshacer"))
         }
         .toolbar {
             // El boton "Sincronizar" vive ahora en ContentView (barra de
@@ -176,7 +176,7 @@ struct DeviceGeneralView: View {
                             : "No se pudo expulsar -- cierra cualquier app que este usando el iPod y reintenta."
                     }
                 } label: {
-                    Label("Expulsar", systemImage: "eject")
+                    Label(LS("device-general-view.expulsar"), systemImage: "eject")
                 }
                 .disabled(device == nil)
             }
@@ -197,7 +197,7 @@ struct DeviceGeneralView: View {
                     DeviceNameField(name: device.displayName, onRename: handleRename)
                 } else if device.supportsAuraContract {
                     Text(device.displayName).font(.title2.bold())
-                    Text("El nombre de este iPod se puso desde otra Mac; solo desde ahí se puede cambiar.")
+                    Text(LS("device-general-view.nombre-este-ipod-se-puso-desde"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 } else {
@@ -212,7 +212,7 @@ struct DeviceGeneralView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
                 if !device.isFAT32 {
-                    Label("El volumen no esta en FAT32", systemImage: "exclamationmark.triangle.fill")
+                    Label(LS("device-general-view.volumen-no-esta-fat32"), systemImage: "exclamationmark.triangle.fill")
                         .font(.caption)
                         .foregroundStyle(.orange)
                 }
@@ -256,13 +256,13 @@ struct DeviceGeneralView: View {
                 Image(systemName: "arrow.down.circle.fill")
                     .foregroundStyle(.tint)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Actualización de \(name)\(version) disponible").font(.headline)
+                    Text(LSf("device-general-view.actualizacion-disponible", name, version)).font(.headline)
                     if family.isInstallable {
-                        Text("Esta versión de Aura Studio trae un \(name) más nuevo que el instalado en tu iPod. Actualizar no borra tu música ni tus ajustes.")
+                        Text(LSf("device-general-view.esta-version-aura-studio-trae-mas", name))
                             .font(.callout)
                             .foregroundStyle(.secondary)
                     } else {
-                        Text("Tu iPod tiene \(name), un firmware que esta versión de Aura Studio no trae embebido. Te avisa de sus actualizaciones pero no puede aplicarlas: descárgala de su repositorio e instálala como de costumbre. Tu biblioteca no se toca.")
+                        Text(LSf("device-general-view.tu-ipod-tiene-firmware-que-esta", name))
                             .font(.callout)
                             .foregroundStyle(.secondary)
                     }
@@ -275,11 +275,11 @@ struct DeviceGeneralView: View {
                 // de instalacion (ST-006), nunca el mismo verbo/boton
                 // que el refresco inofensivo de la barra de herramientas.
                 if family.isInstallable {
-                    Button("Instalar actualización de \(name)", action: onUpdateAura)
+                    Button(LSf("device-general-view.instalar-actualizacion", name), action: onUpdateAura)
                         .buttonStyle(.borderedProminent)
                 } else if let repo = family.releaseRepository,
                           let url = URL(string: "https://github.com/\(repo)/releases") {
-                    Button("Ver el Release de \(name)") { NSWorkspace.shared.open(url) }
+                    Button(LSf("device-general-view.ver-release", name)) { NSWorkspace.shared.open(url) }
                         .buttonStyle(.bordered)
                 }
             }
@@ -294,7 +294,7 @@ struct DeviceGeneralView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
                 Spacer()
-                Button("Buscar actualizaciones de \(name)", action: onCheckForUpdates)
+                Button(LSf("device-general-view.buscar-actualizaciones", name), action: onCheckForUpdates)
                     .buttonStyle(.borderless)
                     .font(.callout)
             }
@@ -368,35 +368,35 @@ struct DeviceGeneralView: View {
             // por que, en vez de mostrar contadores de un Aura que no
             // corre.
             VStack(alignment: .leading, spacing: 10) {
-                Text("Contenido").font(.headline)
-                Text("Hay archivos de Aura en el disco, pero no hay evidencia de que Aura arranque en este iPod: está corriendo el firmware de Apple y Aura nunca escribió su configuración aquí. Instala Aura desde la sección Instalador (flashea el arranque por DFU y vuelve a copiar los archivos) para activar la biblioteca. Si ya lo instalaste, enciende el iPod con Aura una vez y vuelve a conectarlo.")
+                Text(LS("device-general-view.contenido")).font(.headline)
+                Text(LS("device-general-view.hay-archivos-aura-disco-pero-no"))
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
         case .stock:
             VStack(alignment: .leading, spacing: 10) {
-                Text("Contenido").font(.headline)
-                Text("La musica de este iPod la administra el firmware original de Apple -- se sincroniza con Finder (o la app Musica), no con Aura Studio. Si instalas Aura desde la seccion Instalador, la biblioteca de Aura Studio se activa.")
+                Text(LS("device-general-view.contenido")).font(.headline)
+                Text(LS("device-general-view.musica-este-ipod-administra-firmware-ori"))
                     .font(.callout)
                     .foregroundStyle(.secondary)
                 Button {
                     NSWorkspace.shared.open(URL(fileURLWithPath: device.mountPath))
                 } label: {
-                    Label("Administrar contenido", systemImage: "arrow.up.forward.app")
+                    Label(LS("device-general-view.administrar-contenido"), systemImage: "arrow.up.forward.app")
                 }
                 .buttonStyle(.bordered)
             }
         case .rockbox:
             VStack(alignment: .leading, spacing: 10) {
-                Text("Contenido").font(.headline)
-                Text("Este iPod tiene un Rockbox que no es Aura: la biblioteca de Aura Studio no aplica a esta instalacion. En la seccion Instalador puedes instalar Aura (sin flashear -- solo se reemplaza la carpeta .rockbox) o restaurar el firmware original.")
+                Text(LS("device-general-view.contenido")).font(.headline)
+                Text(LS("device-general-view.este-ipod-tiene-rockbox-que-no"))
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
         case .empty:
             VStack(alignment: .leading, spacing: 10) {
-                Text("Contenido").font(.headline)
-                Text("El disco esta vacio. Instala Aura desde la seccion Instalador para empezar a usarlo.")
+                Text(LS("device-general-view.contenido")).font(.headline)
+                Text(LS("device-general-view.disco-esta-vacio-instala-aura-desde"))
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
@@ -406,19 +406,19 @@ struct DeviceGeneralView: View {
     @ViewBuilder
     private func auraContents(_ device: AuraDevice) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("En el iPod").font(.headline)
+            Text(LS("device-general-view.ipod")).font(.headline)
             if let summary = device.librarySummary {
                 contentRow("Musica", "music.note", summary.music)
                 contentRow("Video", "play.rectangle", summary.video)
                 contentRow("Fotos", "photo", summary.photo)
                 HStack {
-                    Label("Playlists", systemImage: "music.note.list")
+                    Label(LS("device-general-view.playlists"), systemImage: "music.note.list")
                     Spacer()
-                    Text("\(summary.playlistCount)").foregroundStyle(.secondary)
+                    Text(LSf("device-general-view.texto", summary.playlistCount)).foregroundStyle(.secondary)
                 }
                 deleteContentSection
             } else {
-                Text("Todavia no sincronizaste este iPod con Aura Studio.")
+                Text(LS("device-general-view.todavia-no-sincronizaste-este-ipod-con"))
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }
@@ -433,15 +433,15 @@ struct DeviceGeneralView: View {
     /// sección ya está en 0 (nada que borrar).
     private var deleteContentSection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Eliminar contenido").font(.subheadline.bold())
+            Text(LS("device-general-view.eliminar-contenido")).font(.subheadline.bold())
                 .foregroundStyle(.secondary)
                 .padding(.top, 6)
             HStack(spacing: 8) {
-                deleteButton("Música", kinds: [.music])
-                deleteButton("Videos", kinds: [.video])
-                deleteButton("Fotos", kinds: [.photo])
+                deleteButton(LS("device-general-view.eliminar-musica"), kinds: [.music])
+                deleteButton(LS("device-general-view.eliminar-videos"), kinds: [.video])
+                deleteButton(LS("device-general-view.eliminar-fotos"), kinds: [.photo])
                 Spacer()
-                deleteButton("Eliminar todo", kinds: [.music, .video, .photo], prominent: true)
+                deleteButton(LS("device-general-view.eliminar-todo"), kinds: [.music, .video, .photo], prominent: true)
             }
         }
     }
@@ -504,7 +504,7 @@ struct DeviceGeneralView: View {
         HStack {
             Label(title, systemImage: symbol)
             Spacer()
-            Text("\(summary.count)")
+            Text(LSf("device-general-view.texto-2", summary.count))
             Text(byteString(summary.bytes))
                 .foregroundStyle(.secondary)
                 .frame(width: 90, alignment: .trailing)
@@ -519,10 +519,10 @@ struct DeviceGeneralView: View {
             Image(systemName: "cable.connector.slash")
                 .font(.system(size: 48))
                 .foregroundStyle(.secondary)
-            Text("Conecta tu iPod").font(.title2.bold())
+            Text(LS("device-general-view.conecta-tu-ipod")).font(.title2.bold())
             Text(stateHint)
                 .foregroundStyle(.secondary)
-            Text("Mientras tanto puedes ir armando la biblioteca en Musica, Video y Fotos: se sincroniza cuando conectes el dispositivo.")
+            Text(LS("device-general-view.mientras-tanto-puedes-ir-armando-bibliot"))
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }

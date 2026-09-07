@@ -58,7 +58,7 @@ struct SimilarItemsView: View {
                     if let group = selectedGroup {
                         groupDetail(group)
                     } else {
-                        Text("Elige un grupo de la lista.")
+                        Text(LS("similar-items-view.elige-grupo-lista"))
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
                     }
@@ -84,10 +84,10 @@ struct SimilarItemsView: View {
             let losers = group.items.filter { $0.id != keepID }
             let keptTitle = group.items.first { $0.id == keepID }.map(displayTitle) ?? ""
             return Alert(
-                title: Text("¿Eliminar \(losers.count == 1 ? "1 elemento" : "\(losers.count) elementos") de la biblioteca?"),
-                message: Text("Se conserva «\(keptTitle)». Los archivos que viven dentro de la carpeta de la biblioteca se borran; los originales fuera de ella no se tocan."),
-                primaryButton: .destructive(Text("Eliminar")) { deleteOthers(in: group) },
-                secondaryButton: .cancel(Text("Cancelar"))
+                title: Text(LSf("similar-items-view.eliminar-elementos-biblioteca", LSf("similar-items-view.plural.elementos", losers.count))),
+                message: Text(LSf("similar-items-view.se-conserva-archivos-que-viven-dentro", keptTitle)),
+                primaryButton: .destructive(Text(LS("artists-view.eliminar"))) { deleteOthers(in: group) },
+                secondaryButton: .cancel(Text(LS("background-task-center-indicator.cancelar")))
             )
         }
         .sheet(item: $editingItem) { item in
@@ -122,31 +122,31 @@ struct SimilarItemsView: View {
     private var header: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("Elementos similares")
+                Text(LS("similar-items-view.elementos-similares"))
                     .font(.title2.bold())
-                Text("Canciones, videos o fotos que parecen estar dos veces en tu biblioteca, con distinta metadata o distinto formato.")
+                Text(LS("similar-items-view.canciones-videos-o-fotos-que-parecen"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
             Spacer()
-            Picker("Tipo", selection: $kindFilter) {
-                Text("Todo").tag(LibraryItemKind?.none)
-                Text("Música").tag(LibraryItemKind?.some(.music))
-                Text("Video").tag(LibraryItemKind?.some(.video))
-                Text("Fotos").tag(LibraryItemKind?.some(.photo))
+            Picker(LS("media-section-view.tipo"), selection: $kindFilter) {
+                Text(LS("similar-items-view.todo")).tag(LibraryItemKind?.none)
+                Text(LS("similar-items-view.musica")).tag(LibraryItemKind?.some(.music))
+                Text(LS("similar-items-view.video")).tag(LibraryItemKind?.some(.video))
+                Text(LS("similar-items-view.fotos")).tag(LibraryItemKind?.some(.photo))
             }
             .pickerStyle(.segmented)
             .fixedSize()
-            Picker("Confianza", selection: $minimumConfidence) {
-                Text("Solo duplicados").tag(SimilarityConfidence.duplicate)
-                Text("Probables y duplicados").tag(SimilarityConfidence.probable)
-                Text("Todos los parecidos").tag(SimilarityConfidence.possible)
+            Picker(LS("similar-items-view.confianza"), selection: $minimumConfidence) {
+                Text(LS("similar-items-view.solo-duplicados")).tag(SimilarityConfidence.duplicate)
+                Text(LS("similar-items-view.probables-duplicados")).tag(SimilarityConfidence.probable)
+                Text(LS("similar-items-view.todos-parecidos")).tag(SimilarityConfidence.possible)
             }
             .fixedSize()
             Button {
                 rescan()
             } label: {
-                Label("Volver a buscar", systemImage: "arrow.clockwise")
+                Label(LS("similar-items-view.volver-buscar"), systemImage: "arrow.clockwise")
             }
             .disabled(isScanning)
         }
@@ -157,7 +157,7 @@ struct SimilarItemsView: View {
         HStack {
             if isScanning {
                 ProgressView().controlSize(.small)
-                Text("Buscando parecidos...")
+                Text(LS("similar-items-view.buscando-parecidos"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else if let lastActionSummary {
@@ -171,12 +171,12 @@ struct SimilarItemsView: View {
             }
             Spacer()
             if !preferences.ignoredSimilarGroups.isEmpty {
-                Button("Volver a mostrar los ignorados (\(preferences.ignoredSimilarGroups.count))") {
+                Button(LSf("similar-items-view.volver-mostrar-ignorados", preferences.ignoredSimilarGroups.count)) {
                     preferences.ignoredSimilarGroups = []
                     rescan()
                 }
             }
-            Button("Listo", action: onDismiss)
+            Button(LS("automatic-update-view.listo"), action: onDismiss)
                 .keyboardShortcut(.defaultAction)
         }
         .padding(12)
@@ -189,13 +189,13 @@ struct SimilarItemsView: View {
         }
         let total = groups.count
         if total == 0 { return "No se encontraron elementos parecidos." }
-        return "\(total) \(total == 1 ? "grupo" : "grupos"): " + counts.compactMap { $0 }.joined(separator: ", ")
+        return LSf("similar-items-view.plural.grupos", total) + ": " + counts.compactMap { $0 }.joined(separator: ", ")
     }
 
     private var scanningState: some View {
         VStack(spacing: 10) {
             ProgressView()
-            Text("Comparando títulos, artistas, duraciones y tamaños...")
+            Text(LS("similar-items-view.comparando-titulos-artistas-duraciones-t"))
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -209,7 +209,7 @@ struct SimilarItemsView: View {
             Text(groups.isEmpty ? "No se encontraron elementos parecidos en tu biblioteca." : "Nada que mostrar con este filtro.")
                 .foregroundStyle(.secondary)
             if groups.isEmpty && !preferences.ignoredSimilarGroups.isEmpty {
-                Text("Hay \(preferences.ignoredSimilarGroups.count) grupo(s) ignorado(s).")
+                Text(LSf("similar-items-view.hay-grupo-s-ignorado-s", preferences.ignoredSimilarGroups.count))
                     .font(.caption)
                     .foregroundStyle(.tertiary)
             }
@@ -291,7 +291,7 @@ struct SimilarItemsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Por qué se parecen")
+                    Text(LS("similar-items-view.por-que-se-parecen"))
                         .font(.headline)
                     ForEach(group.reasons, id: \.self) { reason in
                         Label(reason, systemImage: "circle.fill")
@@ -301,7 +301,7 @@ struct SimilarItemsView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Label("Sugerencia", systemImage: "lightbulb")
+                    Label(LS("similar-items-view.sugerencia"), systemImage: "lightbulb")
                         .font(.headline)
                     Text(group.suggestion)
                         .font(.callout)
@@ -312,7 +312,7 @@ struct SimilarItemsView: View {
                 .background(AuraColors.light.accent.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Elementos")
+                    Text(LS("similar-items-view.elementos"))
                         .font(.headline)
                     ForEach(group.items) { item in
                         candidateRow(item, group: group, isKept: item.id == keepID)
@@ -321,19 +321,19 @@ struct SimilarItemsView: View {
 
                 if !group.proposedEdits.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Metadata sugerida")
+                        Text(LS("similar-items-view.metadata-sugerida"))
                             .font(.headline)
                         ForEach(group.proposedEdits) { edit in
                             HStack(spacing: 6) {
                                 Text(edit.fieldTitle + ":")
                                     .foregroundStyle(.secondary)
-                                Text("«\(edit.currentValue)»")
+                                Text(LSf("similar-items-view.texto", edit.currentValue))
                                     .strikethrough()
                                     .foregroundStyle(.secondary)
                                 Image(systemName: "arrow.right")
                                     .font(.caption)
                                     .foregroundStyle(.tertiary)
-                                Text("«\(edit.proposedValue)»")
+                                Text(LSf("similar-items-view.texto-2", edit.proposedValue))
                                 Spacer()
                                 Text(displayTitle(group.items.first { $0.id == edit.itemID } ?? group.items[0]))
                                     .font(.caption)
@@ -342,7 +342,7 @@ struct SimilarItemsView: View {
                             }
                             .font(.callout)
                         }
-                        Button("Aplicar la metadata sugerida") {
+                        Button(LS("similar-items-view.aplicar-metadata-sugerida")) {
                             // PLAN-studio-rendimiento.md Fase 4 paso 3:
                             // applySimilarityEdits es async ahora (corre en
                             // fileWorker) -- rescan() espera a que termine,
@@ -354,7 +354,7 @@ struct SimilarItemsView: View {
                                 rescan()
                             }
                         }
-                        .help("Aplica solo estos cambios de artista/álbum/título. No elimina nada.")
+                        .help(LS("similar-items-view.aplica-solo-estos-cambios-artista-album"))
                     }
                 }
 
@@ -362,16 +362,16 @@ struct SimilarItemsView: View {
                     Button(role: .destructive) {
                         pendingDeletion = group
                     } label: {
-                        Label("Conservar el marcado y eliminar el resto", systemImage: "trash")
+                        Label(LS("similar-items-view.conservar-marcado-eliminar-resto"), systemImage: "trash")
                     }
-                    Button("Ignorar este grupo") {
+                    Button(LS("similar-items-view.ignorar-este-grupo")) {
                         preferences.ignoredSimilarGroups.append(group.id)
                         groups.removeAll { $0.id == group.id }
                         lastActionSummary = "Grupo ignorado. Puedes volver a mostrarlo desde el pie de esta ventana."
                     }
-                    .help("No son lo mismo: no volver a mostrar este grupo.")
+                    .help(LS("similar-items-view.no-son-lo-mismo-no-volver"))
                     Spacer()
-                    Button("Mostrar en Finder") {
+                    Button(LS("albums-view.mostrar-finder")) {
                         NSWorkspace.shared.activateFileViewerSelecting(group.items.map(\.sourceURL))
                     }
                 }
@@ -414,7 +414,7 @@ struct SimilarItemsView: View {
                         .fontWeight(isKept ? .semibold : .regular)
                         .lineLimit(1)
                     if item.id == group.suggestedKeepID {
-                        Text("sugerido")
+                        Text(LS("similar-items-view.sugerido"))
                             .font(.caption2)
                             .padding(.horizontal, 5)
                             .padding(.vertical, 1)
@@ -440,7 +440,7 @@ struct SimilarItemsView: View {
                 }
                 Text(LibraryStats.join([
                     item.sourceURL.pathExtension.uppercased(),
-                    (meta?.durationSeconds).flatMap { $0 > 0 ? String(format: "%d:%02d", Int($0.rounded()) / 60, Int($0.rounded()) % 60) : nil },
+                    (meta?.durationSeconds).flatMap { $0 > 0 ? String(format: LS("similar-items-detector.d-02d"), Int($0.rounded()) / 60, Int($0.rounded()) % 60) : nil },
                     LibraryStats.sizeText(bytes: size),
                     meta?.hasCover == true ? (item.kind == .music ? "carátula" : "póster") : nil,
                     meta?.syncedLyrics != nil ? "letra" : nil,
@@ -459,8 +459,8 @@ struct SimilarItemsView: View {
             }
             Spacer()
             VStack(alignment: .trailing, spacing: 4) {
-                Button("Editar...") { editingItem = item }
-                Button("Eliminar solo este", role: .destructive) {
+                Button(LS("similar-items-view.editar")) { editingItem = item }
+                Button(LS("similar-items-view.eliminar-solo-este"), role: .destructive) {
                     library.deleteItems(ids: [item.id])
                     lastActionSummary = "Se eliminó «\(displayTitle(item))»."
                     rescan()

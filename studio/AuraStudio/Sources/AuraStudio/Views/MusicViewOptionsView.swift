@@ -12,7 +12,7 @@ struct MusicViewOptionsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Opciones de visualización")
+            Text(LS("music-view-options-view.opciones-visualizacion"))
                 .font(.title2.bold())
                 .padding(.bottom, 16)
 
@@ -32,14 +32,14 @@ struct MusicViewOptionsView: View {
             }
 
             HStack {
-                Button("Restablecer") {
+                Button(LS("music-view-options-view.restablecer")) {
                     preferences.musicVisibleColumns = MusicTableColumn.defaultVisible
                     preferences.musicSortField = .title
                     preferences.musicSortAscending = true
                     preferences.musicShowOnlyFavorites = false
                 }
                 Spacer()
-                Button("Listo", action: onDone)
+                Button(LS("automatic-update-view.listo"), action: onDone)
                     .keyboardShortcut(.defaultAction)
             }
             .padding(.top, 16)
@@ -51,7 +51,7 @@ struct MusicViewOptionsView: View {
     private var sortSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("Ordenar por:")
+                Text(LS("music-view-options-view.ordenar-por"))
                 Picker("", selection: $preferences.musicSortField) {
                     ForEach(MusicSortField.menuFields, id: \.self) { field in
                         Text(field.title).tag(field)
@@ -61,8 +61,8 @@ struct MusicViewOptionsView: View {
                 .frame(maxWidth: 220)
             }
             Picker("", selection: $preferences.musicSortAscending) {
-                Text("Ascendente").tag(true)
-                Text("Descendente").tag(false)
+                Text(LS("music-view-options-view.ascendente")).tag(true)
+                Text(LS("music-view-options-view.descendente")).tag(false)
             }
             .pickerStyle(.segmented)
             .labelsHidden()
@@ -71,7 +71,7 @@ struct MusicViewOptionsView: View {
     }
 
     private var filterSection: some View {
-        Toggle("Mostrar solo favoritos", isOn: $preferences.musicShowOnlyFavorites)
+        Toggle(LS("music-view-options-view.mostrar-solo-favoritos"), isOn: $preferences.musicShowOnlyFavorites)
     }
 
     private func columnGroup(_ group: MusicTableColumn.Group) -> some View {
@@ -94,9 +94,9 @@ struct MusicViewOptionsView: View {
     /// reacomodar. Título siempre va primero y no aparece aca.
     private var columnOrderSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Orden de las columnas")
+            Text(LS("music-view-options-view.orden-columnas"))
                 .font(.headline)
-            Text("Arrastra para cambiar el orden. \"Título\" siempre va primero.")
+            Text(LS("music-view-options-view.arrastra-para-cambiar-orden-titulo-siemp"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
             List {

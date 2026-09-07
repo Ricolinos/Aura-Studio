@@ -60,7 +60,7 @@ struct ModePickerView: View {
             Image(systemName: "ipod")
                 .font(.system(size: 56))
                 .foregroundStyle(.tint)
-            Text("Aura Studio")
+            Text(LS("content-view.aura-studio"))
                 .font(.largeTitle.bold())
             Text(detectionText)
                 .multilineTextAlignment(.center)
@@ -68,7 +68,7 @@ struct ModePickerView: View {
                 .frame(maxWidth: 440)
             // ST-047: decir con todas sus letras cual de los firmwares
             // va a instalar el boton -- la eleccion vive en Extras.
-            Label("Firmware a instalar: \(name) -- se elige en Extras › Firmware",
+            Label(LSf("installer-home-view.firmware-instalar-se-elige-extras-firmwa", name),
                   systemImage: family.symbolName)
                 .font(.callout)
                 .foregroundStyle(.secondary)
@@ -87,7 +87,7 @@ struct ModePickerView: View {
                     Button {
                         onChoose(.restore)
                     } label: {
-                        Label("Restaurar iPod original", systemImage: "arrow.uturn.backward")
+                        Label(LS("installer-home-view.restaurar-ipod-original"), systemImage: "arrow.uturn.backward")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
@@ -105,7 +105,7 @@ struct ModePickerView: View {
                     Button {
                         onChoose(.updateBootloader)
                     } label: {
-                        Label("Actualizar el arranque", systemImage: "power.circle")
+                        Label(LS("installer-home-view.actualizar-arranque"), systemImage: "power.circle")
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.large)

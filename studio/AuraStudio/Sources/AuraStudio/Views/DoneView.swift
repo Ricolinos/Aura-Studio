@@ -63,9 +63,9 @@ struct DoneView: View {
 
             if mode == .install && dualBoot {
                 VStack(alignment: .leading, spacing: 6) {
-                    Label("Instalaste en modo dual boot", systemImage: "arrow.triangle.branch")
+                    Label(LS("done-view.instalaste-modo-dual-boot"), systemImage: "arrow.triangle.branch")
                         .font(.headline)
-                    Text("Para volver a Apple en cualquier momento, mantén SELECT + MENU presionados unos 5 segundos al encender el iPod. Cualquier otra combinacion (o nada) arranca \(firmwareName).")
+                    Text(LSf("done-view.para-volver-apple-cualquier-momento-mant", firmwareName))
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }
@@ -76,13 +76,13 @@ struct DoneView: View {
 
             if mode == .install, assumedBootloaderWithoutVerifying, let onBootloaderMissing {
                 VStack(alignment: .leading, spacing: 8) {
-                    Label("¿Tu iPod sigue mostrando el firmware original?", systemImage: "exclamationmark.triangle.fill")
+                    Label(LS("done-view.tu-ipod-sigue-mostrando-firmware-origina"), systemImage: "exclamationmark.triangle.fill")
                         .font(.headline)
                         .foregroundStyle(.orange)
-                    Text("Detectamos que el firmware ya había estado instalado antes, así que solo actualizamos los archivos sin volver a grabar el arranque. Si al desconectar el cable tu iPod NO arranca con \(firmwareName), el arranque se perdió desde la instalación anterior y hace falta grabarlo de nuevo por DFU.")
+                    Text(LSf("done-view.detectamos-que-firmware-ya-habia-estado", firmwareName))
                         .font(.callout)
                         .foregroundStyle(.secondary)
-                    Button("No arrancó con \(firmwareName) -- terminar por DFU", action: onBootloaderMissing)
+                    Button(LSf("done-view.no-arranco-con-terminar-por-dfu", firmwareName), action: onBootloaderMissing)
                         .buttonStyle(.bordered)
                 }
                 .padding(14)
@@ -124,7 +124,7 @@ struct FailedView: View {
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: 440)
             if error == .fullDiskAccessDenied {
-                Button("Abrir Acceso total al disco") {
+                Button(LS("done-view.abrir-acceso-total-al-disco")) {
                     if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles") {
                         NSWorkspace.shared.open(url)
                     }
@@ -132,12 +132,12 @@ struct FailedView: View {
                 .buttonStyle(.bordered)
             }
             if isCalmDecision, let onSwitchToSingleBoot {
-                Button("Instalar solo este firmware en el iPod", action: onSwitchToSingleBoot)
+                Button(LS("done-view.instalar-solo-este-firmware-ipod"), action: onSwitchToSingleBoot)
                     .buttonStyle(.borderedProminent)
-                Button("Reintentar (ya preparé el iPod con iTunes)", action: onRetry)
+                Button(LS("done-view.reintentar-ya-prepare-ipod-con-itunes"), action: onRetry)
                     .buttonStyle(.bordered)
             } else {
-                Button("Reintentar", action: onRetry)
+                Button(LS("done-view.reintentar"), action: onRetry)
                     .buttonStyle(.borderedProminent)
             }
         }

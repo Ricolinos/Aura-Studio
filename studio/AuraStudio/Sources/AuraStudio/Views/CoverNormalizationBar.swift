@@ -20,14 +20,14 @@ struct CoverNormalizationBar: View {
                 .frame(width: 120)
             Text(progress.label)
                 .lineLimit(1)
-            Text("Las carátulas de tu biblioteca pasan a ser cuadradas, como las muestra el iPod. Tus archivos originales no se tocan.")
+            Text(LS("cover-normalization-bar.caratulas-tu-biblioteca-pasan-ser-cuadra"))
                 .lineLimit(1)
                 .truncationMode(.tail)
                 .foregroundStyle(.tertiary)
             Spacer(minLength: 8)
-            Button("Cancelar", action: onCancel)
+            Button(LS("background-task-center-indicator.cancelar"), action: onCancel)
                 .buttonStyle(.link)
-                .help("Detiene la normalización. Lo que ya se hizo queda hecho y el resto sigue la próxima vez que abras la biblioteca.")
+                .help(LS("cover-normalization-bar.detiene-normalizacion-lo-que-ya-se"))
         }
         .font(.caption)
         .foregroundStyle(.secondary)
@@ -37,6 +37,6 @@ struct CoverNormalizationBar: View {
         .background(.bar)
         .overlay(alignment: .top) { Divider() }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Normalizando carátulas: \(progress.completed) de \(progress.total)")
+        .accessibilityLabel(LSf("cover-normalization-bar.accesibilidad-progreso", progress.completed, progress.total))
     }
 }

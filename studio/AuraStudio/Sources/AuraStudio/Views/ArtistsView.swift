@@ -74,7 +74,7 @@ struct ArtistsView: View {
             detail
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .navigationTitle("Artistas")
+        .navigationTitle(LS("artists-view.artistas"))
         // ST-063: barra de estado -- artistas/álbumes/canciones y la
         // selección. PLAN-studio-rendimiento-2.md Fase 1 (ST-181): ya no
         // se calcula en el `body` (era `LibraryStats.artists` crudo, con
@@ -165,7 +165,7 @@ struct ArtistsView: View {
                     }
                     .buttonStyle(.plain)
                     .disabled(viewModel.isFetchingArtistImages)
-                    .help("Buscar fotos de los artistas en línea (fanart.tv / Deezer)")
+                    .help(LS("artists-view.buscar-fotos-artistas-linea-fanart-tv"))
                 }
             }
             .padding(.horizontal, 12)
@@ -177,7 +177,7 @@ struct ArtistsView: View {
                     Image(systemName: "music.mic")
                         .font(.system(size: 32, weight: .light))
                         .foregroundStyle(.secondary)
-                    Text("Todavía no hay música en la biblioteca.")
+                    Text(LS("artists-view.todavia-no-hay-musica-biblioteca"))
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 }
@@ -226,7 +226,7 @@ struct ArtistsView: View {
                 Image(systemName: "music.mic")
                     .font(.system(size: 36, weight: .light))
                     .foregroundStyle(.secondary)
-                Text("Elige un artista de la lista.")
+                Text(LS("artists-view.elige-artista-lista"))
                     .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -244,22 +244,22 @@ struct ArtistsView: View {
             Image(systemName: "music.mic")
                 .font(.system(size: 36, weight: .light))
                 .foregroundStyle(.secondary)
-            Text("\(artists.count) artistas seleccionados")
+            Text(LSf("artists-view.artistas-seleccionados", artists.count))
                 .font(.title3.bold())
             HStack(spacing: 10) {
                 Button(allFavorite ? "Quitar favorito" : "Marcar como favorito") {
                     viewModel.setFavorite(!allFavorite, forItems: Set(items.map(\.id)))
                 }
-                Button("Buscar información en línea") {
+                Button(LS("albums-view.buscar-informacion-linea")) {
                     Task { await viewModel.reenrichOnline(ids: Set(items.map(\.id)), fetchAlbumInfo: true, fetchLyrics: false) }
                 }
                 if let onFetchArtistImages {
-                    Button("Buscar fotos") { onFetchArtistImages(artists) }
+                    Button(LS("artists-view.buscar-fotos")) { onFetchArtistImages(artists) }
                 }
-                Button("Mostrar en Finder") {
+                Button(LS("albums-view.mostrar-finder")) {
                     NSWorkspace.shared.activateFileViewerSelecting(items.map(\.sourceURL))
                 }
-                Button("Eliminar", role: .destructive) {
+                Button(LS("artists-view.eliminar"), role: .destructive) {
                     viewModel.deleteItems(ids: Set(items.map(\.id)))
                 }
             }
@@ -288,7 +288,7 @@ struct ArtistsView: View {
                 Text(artist.summary)
                     .foregroundStyle(.secondary)
                 HStack(spacing: 8) {
-                    Button("Buscar información en línea") {
+                    Button(LS("albums-view.buscar-informacion-linea")) {
                         Task { await viewModel.reenrichOnline(ids: Set(artist.items.map(\.id)), fetchAlbumInfo: true, fetchLyrics: false) }
                     }
                     Menu {
@@ -321,7 +321,7 @@ struct ArtistsView: View {
                     }
                     Text([album.genre, album.year].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: " · "))
                         .foregroundStyle(.secondary)
-                    Text(album.trackCount == 1 ? "1 canción" : "\(album.trackCount) canciones")
+                    Text(LSf("artists-view.plural.canciones", album.trackCount))
                         .font(.callout)
                         .foregroundStyle(.tertiary)
                 }
@@ -330,11 +330,11 @@ struct ArtistsView: View {
                     Button(album.isFavorite ? "Quitar favorito del álbum" : "Marcar álbum como favorito") {
                         viewModel.setFavorite(!album.isFavorite, forItems: Set(album.items.map(\.id)))
                     }
-                    Button("Buscar información en línea") {
+                    Button(LS("albums-view.buscar-informacion-linea")) {
                         Task { await viewModel.reenrichOnline(ids: Set(album.items.map(\.id)), fetchAlbumInfo: true, fetchLyrics: false) }
                     }
                     Divider()
-                    Button("Mostrar en Finder") {
+                    Button(LS("albums-view.mostrar-finder")) {
                         NSWorkspace.shared.activateFileViewerSelecting(album.items.map(\.sourceURL))
                     }
                 } label: {
@@ -389,12 +389,12 @@ struct ArtistsView: View {
         .padding(.vertical, 8)
         .contentShape(Rectangle())
         .contextMenu {
-            Button("Más información...") { reviewingItem = item }
+            Button(LS("artists-view.mas-informacion")) { reviewingItem = item }
             Button(isFavorite ? "Quitar de favoritos" : "Marcar como favorito") {
                 viewModel.toggleFavorite(id: item.id)
             }
             Divider()
-            Button("Mostrar en Finder") {
+            Button(LS("albums-view.mostrar-finder")) {
                 NSWorkspace.shared.activateFileViewerSelecting([item.sourceURL])
             }
         }
@@ -413,7 +413,7 @@ struct ArtistsView: View {
         Button(allFavorite ? "Quitar favorito" : "Marcar como favorito") {
             viewModel.setFavorite(!allFavorite, forItems: Set(items.map(\.id)))
         }
-        Button("Buscar información en línea") {
+        Button(LS("albums-view.buscar-informacion-linea")) {
             Task { await viewModel.reenrichOnline(ids: Set(items.map(\.id)), fetchAlbumInfo: true, fetchLyrics: false) }
         }
         if let onFetchArtistImages {
@@ -430,7 +430,7 @@ struct ArtistsView: View {
             }
         }
         Divider()
-        Button("Mostrar en Finder") {
+        Button(LS("albums-view.mostrar-finder")) {
             NSWorkspace.shared.activateFileViewerSelecting(plural ? items.map(\.sourceURL) : Array(items.prefix(1).map(\.sourceURL)))
         }
         Button(plural ? "Eliminar artistas" : "Eliminar artista", role: .destructive) {

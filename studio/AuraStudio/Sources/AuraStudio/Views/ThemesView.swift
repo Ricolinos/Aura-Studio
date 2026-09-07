@@ -121,18 +121,18 @@ struct ThemesView: View {
                         row(id: theme.id, name: theme.name, loadable: theme.loadable, reason: theme.reason, isDefault: false)
                     }
                 } footer: {
-                    Text("Se aplican en el iPod al arrancar. Un tema que no carga (formato incompatible o archivos faltantes) aparece atenuado -- el firmware nunca finge soportar lo que no tiene.")
+                    Text(LS("themes-view.se-aplican-ipod-al-arrancar-tema"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
-            .navigationTitle("Temas")
+            .navigationTitle(LS("themes-view.temas"))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cerrar") { dismiss() }
+                    Button(LS("cover-contamination-sheet.cerrar")) { dismiss() }
                 }
                 ToolbarItem(placement: .primaryAction) {
-                    Button("Construir tema nuevo…") { showingBuildSheet = true }
+                    Button(LS("themes-view.construir-tema-nuevo")) { showingBuildSheet = true }
                         .disabled(viewModel.isBusy)
                 }
             }
@@ -151,11 +151,11 @@ struct ThemesView: View {
                 Task { await viewModel.buildAndInstall(sourceFolder: sourceFolder, name: name, author: author, isRestrictedLicense: restricted) }
             }
         }
-        .alert("No se pudo completar la operación", isPresented: Binding(
+        .alert(LS("themes-view.no-se-pudo-completar-operacion"), isPresented: Binding(
             get: { viewModel.errorMessage != nil },
             set: { if !$0 { viewModel.errorMessage = nil } }
         )) {
-            Button("Entendido", role: .cancel) {}
+            Button(LS("themes-view.entendido"), role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
@@ -164,13 +164,13 @@ struct ThemesView: View {
             isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } }),
             titleVisibility: .visible
         ) {
-            Button("Eliminar", role: .destructive) {
+            Button(LS("artists-view.eliminar"), role: .destructive) {
                 if let theme = pendingDelete { viewModel.delete(id: theme.id) }
                 pendingDelete = nil
             }
-            Button("Cancelar", role: .cancel) { pendingDelete = nil }
+            Button(LS("background-task-center-indicator.cancelar"), role: .cancel) { pendingDelete = nil }
         } message: {
-            Text("Esto borra el tema del iPod. Si estaba activo, Aura vuelve a ser el tema integrado.")
+            Text(LS("themes-view.esto-borra-tema-ipod-si-estaba"))
         }
     }
 
@@ -200,7 +200,7 @@ struct ThemesView: View {
         }
         .contextMenu {
             if !isDefault {
-                Button("Eliminar", role: .destructive) {
+                Button(LS("artists-view.eliminar"), role: .destructive) {
                     pendingDelete = InstalledTheme(id: id, name: name, loadable: loadable)
                 }
             }
@@ -224,27 +224,27 @@ private struct BuildThemeView: View {
 
     var body: some View {
         Form {
-            Section("Carpeta de origen") {
+            Section(LS("themes-view.carpeta-origen")) {
                 HStack {
                     Text(sourceFolder?.path ?? "Ninguna elegida")
                         .foregroundStyle(sourceFolder == nil ? .secondary : .primary)
                         .lineLimit(1)
                         .truncationMode(.middle)
                     Spacer()
-                    Button("Elegir…") { chooseFolder() }
+                    Button(LS("themes-view.elegir")) { chooseFolder() }
                 }
-                Text("Una carpeta con fonts/ e icons/masks/ ya generados -- por ejemplo, la salida de design-system/generate.py del firmware, o ~/Aura-local/theme-apple-source/design-system-out/.")
+                Text(LS("themes-view.carpeta-con-fonts-e-icons-masks"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            Section("Tema") {
+            Section(LS("themes-view.tema")) {
                 TextField("Nombre", text: $name)
                 TextField("Autor (opcional)", text: $author)
             }
             Section {
-                Toggle("Usa tipografías o símbolos con licencia restringida (por ejemplo, SF Pro o SF Symbols)", isOn: $restrictedLicense)
+                Toggle(LS("themes-view.usa-tipografias-o-simbolos-con-licencia"), isOn: $restrictedLicense)
                 if restrictedLicense {
-                    Text("Este tema se construye solo para tu propio iPod: no lo compartas ni lo distribuyas -- la licencia de esos assets no lo permite fuera de tu dispositivo. Aura Studio nunca incluye ni descarga estos archivos; solo usa los que tu Mac ya tiene.")
+                    Text(LS("themes-view.este-tema-se-construye-solo-para"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -254,10 +254,10 @@ private struct BuildThemeView: View {
         .frame(minWidth: 420, minHeight: 360)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
-                Button("Cancelar") { dismiss() }
+                Button(LS("background-task-center-indicator.cancelar")) { dismiss() }
             }
             ToolbarItem(placement: .confirmationAction) {
-                Button("Construir e instalar") {
+                Button(LS("themes-view.construir-e-instalar")) {
                     guard let sourceFolder else { return }
                     onSubmit(sourceFolder, name, author, restrictedLicense)
                 }

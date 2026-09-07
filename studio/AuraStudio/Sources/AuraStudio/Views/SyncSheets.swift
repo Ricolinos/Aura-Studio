@@ -20,16 +20,16 @@ struct SyncConflictSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text("Antes de sincronizar")
+            Text(LS("sync-sheets.antes-sincronizar"))
                 .font(.title3.bold())
 
             if !modifiedSourcePaths.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("\(modifiedSourcePaths.count) archivo(s) se modificaron en el iPod fuera de Aura Studio.")
+                    Text(LSf("sync-sheets.archivo-s-se-modificaron-ipod-fuera", modifiedSourcePaths.count))
                         .font(.callout)
                     Picker("", selection: $replaceModified) {
-                        Text("Conservar los del iPod").tag(false)
-                        Text("Reemplazar con la biblioteca").tag(true)
+                        Text(LS("sync-sheets.conservar-ipod")).tag(false)
+                        Text(LS("sync-sheets.reemplazar-con-biblioteca")).tag(true)
                     }
                     .pickerStyle(.radioGroup)
                     .labelsHidden()
@@ -38,9 +38,9 @@ struct SyncConflictSheet: View {
 
             if !index.orphanedRecords.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    Toggle("Quitar del iPod los \(index.orphanedRecords.count) elemento(s) que ya no están en tu biblioteca",
+                    Toggle(LSf("sync-sheets.quitar-ipod-elemento-s-que-ya", index.orphanedRecords.count),
                            isOn: $removeOrphans)
-                    Text("Se eliminarán del iPod. Tu biblioteca en la Mac no cambia.")
+                    Text(LS("sync-sheets.se-eliminaran-ipod-tu-biblioteca-mac"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -48,8 +48,8 @@ struct SyncConflictSheet: View {
 
             HStack {
                 Spacer()
-                Button("Cancelar", action: onCancel)
-                Button("Sincronizar") {
+                Button(LS("background-task-center-indicator.cancelar"), action: onCancel)
+                Button(LS("device-activity-bar.sincronizar")) {
                     var resolution = LibraryViewModel.ConflictResolution()
                     if replaceModified {
                         resolution.forceRecopySourcePaths = Set(modifiedSourcePaths)
@@ -87,21 +87,21 @@ struct ForeignContentSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("Contenido solo en el iPod")
+                Text(LS("sync-sheets.contenido-solo-ipod"))
                     .font(.title3.bold())
                 Spacer()
-                Button("Listo", action: onDismiss)
+                Button(LS("automatic-update-view.listo"), action: onDismiss)
             }
             .padding()
 
-            Text("Aura Studio nunca escribió estos archivos -- no forman parte de tu biblioteca. Puedes importarlos (se copian a tu Mac y pasan a ser parte de tu biblioteca) o eliminarlos del iPod.")
+            Text(LS("sync-sheets.aura-studio-nunca-escribio-estos-archivo"))
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal)
                 .padding(.bottom, 8)
 
             if importedCount > 0 {
-                Text("\(importedCount) archivo(s) importado(s) -- revísalos en Música/Video/Fotos.")
+                Text(LSf("sync-sheets.archivo-s-importado-s-revisalos-musica", importedCount))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
@@ -117,9 +117,9 @@ struct ForeignContentSheet: View {
             }
 
             HStack {
-                Button("Importar a la biblioteca") { importSelected() }
+                Button(LS("sync-sheets.importar-biblioteca")) { importSelected() }
                     .disabled(selection.isEmpty)
-                Button("Eliminar del iPod", role: .destructive) { pendingDeletion = selection }
+                Button(LS("sync-sheets.eliminar-ipod"), role: .destructive) { pendingDeletion = selection }
                     .disabled(selection.isEmpty)
                 Spacer()
             }
@@ -130,10 +130,10 @@ struct ForeignContentSheet: View {
             "¿Eliminar \(pendingDeletion?.count ?? 0) archivo(s) del iPod?",
             isPresented: Binding(get: { pendingDeletion != nil }, set: { if !$0 { pendingDeletion = nil } })
         ) {
-            Button("Cancelar", role: .cancel) { pendingDeletion = nil }
-            Button("Eliminar", role: .destructive) { deleteConfirmed() }
+            Button(LS("background-task-center-indicator.cancelar"), role: .cancel) { pendingDeletion = nil }
+            Button(LS("artists-view.eliminar"), role: .destructive) { deleteConfirmed() }
         } message: {
-            Text("Esta acción no se puede deshacer.")
+            Text(LS("sync-sheets.esta-accion-no-se-puede-deshacer"))
         }
     }
 

@@ -19,30 +19,30 @@ struct AppUpdateBar: View {
         HStack(spacing: 10) {
             Image(systemName: "arrow.down.circle")
                 .foregroundStyle(AuraColors.light.accent)
-            Text("Hay una versión nueva de Aura Studio: \(update.version.releaseString)")
+            Text(LSf("app-update-bar.hay-version-nueva-aura-studio", update.version.releaseString))
                 .lineLimit(1)
             if update.downloadURL == nil {
                 // Sin el asset esperado no se ofrece descarga -- un botón
                 // que falla es peor que no tenerlo (ST-191 §3).
-                Text("El instalador todavía no está publicado en ese Release.")
+                Text(LS("app-update-bar.instalador-todavia-no-esta-publicado-ese"))
                     .lineLimit(1)
                     .truncationMode(.tail)
                     .foregroundStyle(.tertiary)
             }
             Spacer(minLength: 8)
             if let page = update.releasePageURL {
-                Button("Ver novedades") { NSWorkspace.shared.open(page) }
+                Button(LS("app-update-bar.ver-novedades")) { NSWorkspace.shared.open(page) }
                     .buttonStyle(.link)
-                    .help("Abre las notas de la versión \(update.version.releaseString) en GitHub")
+                    .help(LSf("app-update-bar.abre-notas-version-github", update.version.releaseString))
             }
             if let download = update.downloadURL {
-                Button("Descargar") { NSWorkspace.shared.open(download) }
+                Button(LS("app-update-bar.descargar")) { NSWorkspace.shared.open(download) }
                     .buttonStyle(.link)
-                    .help("Baja \(update.assetName). Aura Studio no se actualiza sola: cuando termine, ábrelo y arrastra la app a Aplicaciones.")
+                    .help(LSf("app-update-bar.baja-aura-studio-no-se-actualiza", update.assetName))
             }
-            Button("Ahora no", action: onDismiss)
+            Button(LS("app-update-bar.ahora-no"), action: onDismiss)
                 .buttonStyle(.link)
-                .help("Oculta este aviso. No vuelve a aparecer por esta versión.")
+                .help(LS("app-update-bar.oculta-este-aviso-no-vuelve-aparecer"))
         }
         .font(.caption)
         .foregroundStyle(.secondary)
@@ -52,7 +52,7 @@ struct AppUpdateBar: View {
         .background(.bar)
         .overlay(alignment: .top) { Divider() }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Hay una versión nueva de Aura Studio: \(update.version.releaseString)")
+        .accessibilityLabel(LSf("app-update-bar.accesibilidad-version-nueva", update.version.releaseString))
     }
 }
 

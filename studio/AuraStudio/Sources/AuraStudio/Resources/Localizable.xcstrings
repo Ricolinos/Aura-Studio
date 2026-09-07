@@ -243,6 +243,29 @@
         }
       }
     },
+    "albums-view.plural.canciones": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 canción"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld canciones"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "albums-view.texto": {
       "extractionState": "manual",
       "localizations": {
@@ -338,6 +361,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Abre las notas de la versión %@ en GitHub"
+          }
+        }
+      }
+    },
+    "app-update-bar.accesibilidad-version-nueva": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay una versión nueva de Aura Studio: %@"
           }
         }
       }
@@ -507,6 +541,29 @@
         }
       }
     },
+    "artists-view.plural.canciones": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 canción"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld canciones"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "artists-view.todavia-no-hay-musica-biblioteca": {
       "extractionState": "manual",
       "localizations": {
@@ -668,6 +725,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ver lo que está corriendo en segundo plano"
+          }
+        }
+      }
+    },
+    "background-task-center.plural.tareas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 tarea"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld tareas"
+                }
+              }
+            }
           }
         }
       }
@@ -921,6 +1001,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld de %lld seleccionadas"
+          }
+        }
+      }
+    },
+    "cover-normalization-bar.accesibilidad-progreso": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Normalizando carátulas: %1$lld de %2$lld"
           }
         }
       }
@@ -1251,6 +1342,50 @@
           "stringUnit": {
             "state": "translated",
             "value": "Eliminar contenido"
+          }
+        }
+      }
+    },
+    "device-general-view.eliminar-fotos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotos"
+          }
+        }
+      }
+    },
+    "device-general-view.eliminar-musica": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Música"
+          }
+        }
+      }
+    },
+    "device-general-view.eliminar-todo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar todo"
+          }
+        }
+      }
+    },
+    "device-general-view.eliminar-videos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Videos"
           }
         }
       }
@@ -2025,6 +2160,109 @@
         }
       }
     },
+    "library-browsing.plural.fotos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 foto"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld fotos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-grouping.plural.albumes": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 álbum"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld álbumes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-grouping.plural.canciones": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 canción"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld canciones"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-grouping.plural.canciones-frase": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld canción"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld canciones"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-status-bar.accesibilidad": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Barra de estado"
+          }
+        }
+      }
+    },
     "library-status-bar.texto": {
       "extractionState": "manual",
       "localizations": {
@@ -2032,6 +2270,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "—"
+          }
+        }
+      }
+    },
+    "library-status-summary.plural.dias-horas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld día %2$lld h"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%1$lld días %2$lld h"
+                }
+              }
+            }
           }
         }
       }
@@ -2109,6 +2370,350 @@
           "stringUnit": {
             "state": "translated",
             "value": "No se perdió nada: tu catálogo y tus archivos siguen en ese disco. Aura Studio no va a tocar nada hasta que vuelva a estar disponible."
+          }
+        }
+      }
+    },
+    "library-view-model.eliminar-referencia-uno": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se quitará de tu biblioteca de Aura. El archivo original se queda donde está."
+          }
+        }
+      }
+    },
+    "library-view-model.eliminar-referencia-varios": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se quitarán de tu biblioteca de Aura. Los archivos originales se quedan donde están."
+          }
+        }
+      }
+    },
+    "library-view-model.plural.aplicando-caratula": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Aplicando carátula a %lld canción…"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Aplicando carátula a %lld canciones…"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-view-model.plural.archivos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 archivo"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld archivos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-view-model.plural.buscando-artistas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Buscando fotos de %lld artista…"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Buscando fotos de %lld artistas…"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-view-model.plural.buscando-posters": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Buscando póster en línea…"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Buscando pósters de %lld videos…"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-view-model.plural.caratulas-aplicadas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Carátulas: %lld aplicada"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Carátulas: %lld aplicadas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-view-model.plural.convertidas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 canción convertida en copia"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld canciones convertidas en copias"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-view-model.plural.corrigiendo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Corrigiendo %lld elemento…"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Corrigiendo %lld elementos…"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-view-model.plural.editando": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Editando %lld canción…"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Editando %lld canciones…"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-view-model.plural.eliminar-titulo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "¿Eliminar este elemento?"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "¿Eliminar %lld elementos?"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-view-model.plural.fallaron": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 falló"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld fallaron"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-view-model.plural.fotos-encontradas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Fotos de artista: %lld encontrada"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Fotos de artista: %lld encontradas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-view-model.plural.posters-encontrados": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Pósters: %lld encontrado"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Pósters: %lld encontrados"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-view-model.plural.saltadas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 se saltó porque su archivo no está"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld se saltaron porque sus archivos no están"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "library-view-model.plural.ya-tenian-foto": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld ya tenía foto"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld ya tenían foto"
+                }
+              }
+            }
           }
         }
       }
@@ -2933,7 +3538,7 @@
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Separadores que agrupan: . «vs.» y «versus» nunca agrupan, porque ahí la colaboración tiene nombre propio."
+            "value": "Separadores que agrupan: %@. «vs.» y «versus» nunca agrupan, porque ahí la colaboración tiene nombre propio."
           }
         }
       }
@@ -3143,6 +3748,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "Eliminar fotos de la biblioteca"
+          }
+        }
+      }
+    },
+    "photo-albums-view.plural.fotos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 foto"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld fotos"
+                }
+              }
+            }
           }
         }
       }
@@ -3363,6 +3991,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "El iPod quedo listo: se quito el bootloader de Aura y el disco se preparo en el formato que Finder espera (Mac OS Plus con registro, mapa GUID)."
+          }
+        }
+      }
+    },
+    "series-view.plural.episodios": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 episodio"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld episodios"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "series-view.plural.temporadas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 temporada"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld temporadas"
+                }
+              }
+            }
           }
         }
       }
@@ -3913,6 +4587,52 @@
           "stringUnit": {
             "state": "translated",
             "value": "No son lo mismo: no volver a mostrar este grupo."
+          }
+        }
+      }
+    },
+    "similar-items-view.plural.elementos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "1 elemento"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld elementos"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "similar-items-view.plural.grupos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld grupo"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld grupos"
+                }
+              }
+            }
           }
         }
       }

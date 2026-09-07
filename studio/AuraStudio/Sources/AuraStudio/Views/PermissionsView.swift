@@ -12,7 +12,7 @@ struct PermissionsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text("Permisos necesarios")
+            Text(LS("permissions-view.permisos-necesarios"))
                 .font(.title.bold())
 
             PermissionRow(
@@ -33,7 +33,7 @@ struct PermissionsView: View {
                 explanation: "En algunos pasos -- pausar servicios que interfieren con la deteccion del iPod, o preparar el disco antes de instalar -- macOS te va a pedir tu contraseña con su propio dialogo nativo. Aura Studio siempre te explica antes que va a hacer y por que, en una pantalla propia, antes de que aparezca ese dialogo. Nunca vas a necesitar abrir Terminal ni escribir ningun comando."
             )
 
-            Button("Abrir Ajustes del Sistema (Privacidad y Seguridad)") {
+            Button(LS("permissions-view.abrir-ajustes-sistema-privacidad-segurid")) {
                 if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security") {
                     NSWorkspace.shared.open(url)
                 }

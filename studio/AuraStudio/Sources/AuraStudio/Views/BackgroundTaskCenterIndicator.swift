@@ -20,12 +20,12 @@ struct BackgroundTaskCenterIndicator: View {
                     } else {
                         ProgressView().controlSize(.small).frame(width: 16)
                     }
-                    Text(center.count == 1 ? "1 tarea" : "\(center.count) tareas")
+                    Text(LSf("background-task-center.plural.tareas", center.count))
                         .font(.callout)
                 }
             }
             .buttonStyle(.plain)
-            .help("Ver lo que está corriendo en segundo plano")
+            .help(LS("background-task-center-indicator.ver-lo-que-esta-corriendo-segundo"))
             .popover(isPresented: $showingPopover) {
                 BackgroundTaskCenterPopover(center: center)
             }
@@ -38,12 +38,12 @@ private struct BackgroundTaskCenterPopover: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text("Actividad en segundo plano")
+            Text(LS("background-task-center-indicator.actividad-segundo-plano"))
                 .font(.headline)
                 .padding([.horizontal, .top], 14)
                 .padding(.bottom, 8)
             if center.isEmpty {
-                Text("Nada corriendo ahora mismo.")
+                Text(LS("background-task-center-indicator.nada-corriendo-ahora-mismo"))
                     .foregroundStyle(.secondary)
                     .padding([.horizontal, .bottom], 14)
             } else {
@@ -78,7 +78,7 @@ private struct BackgroundTaskRow: View {
             }
             Spacer()
             if task.isCancellable {
-                Button("Cancelar") { task.requestCancel() }
+                Button(LS("background-task-center-indicator.cancelar")) { task.requestCancel() }
                     .buttonStyle(.plain)
                     .foregroundStyle(AuraColors.light.accent)
                     .font(.caption)

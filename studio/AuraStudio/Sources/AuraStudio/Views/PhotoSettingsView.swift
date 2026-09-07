@@ -10,14 +10,14 @@ struct PhotoSettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Calidad de imagen").font(.headline)
-                Picker("Calidad de imagen", selection: $preferences.photoQuality) {
-                    Text("Optimizar espacio (320px, recomendado)").tag(AppPreferences.PhotoQuality.optimized)
-                    Text("Versión HD (640px)").tag(AppPreferences.PhotoQuality.hd)
+                Text(LS("photo-settings-view.calidad-imagen")).font(.headline)
+                Picker(LS("photo-settings-view.calidad-imagen"), selection: $preferences.photoQuality) {
+                    Text(LS("photo-settings-view.optimizar-espacio-320px-recomendado")).tag(AppPreferences.PhotoQuality.optimized)
+                    Text(LS("photo-settings-view.version-hd-640px")).tag(AppPreferences.PhotoQuality.hd)
                 }
                 .pickerStyle(.radioGroup)
                 .labelsHidden()
-                Text("La pantalla del iPod es de 320x240 -- una foto de una cámara o teléfono actual pesa decenas de veces más de lo que esa pantalla puede mostrar. \"Optimizar espacio\" reduce cada foto a 320px de lado mayor, el ancho nativo de la pantalla. \"Versión HD\" la deja en 640px: se ve un poco más nítida al hacer zoom en el visor, a cambio de más espacio en el iPod. En ambos casos se guarda como JPEG comprimido, nunca la foto original completa.")
+                Text(LS("photo-settings-view.pantalla-ipod-es-320x240-foto-camara"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -26,8 +26,8 @@ struct PhotoSettingsView: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 10) {
-                Toggle("Organizar por colección en la biblioteca", isOn: $preferences.organizePhotosByCategory)
-                Text("Separa tus fotos en colecciones (Imágenes, Fotos e IA por defecto, editables abajo) para encontrarlas más fácil DENTRO de Aura Studio -- la colección se sugiere sola al importar, y se puede corregir a mano en Biblioteca → Fotos. Con este ajuste activo, cada colección es ademas una carpeta dentro de \"Imágenes\" en la carpeta local de la biblioteca (Finder). No cambia dónde quedan en el iPod: ahí siempre se copian juntas en \"Photos\", porque el visor del iPod todavía no navega por subcarpetas.")
+                Toggle(LS("photo-settings-view.organizar-por-coleccion-biblioteca"), isOn: $preferences.organizePhotosByCategory)
+                Text(LS("photo-settings-view.separa-tus-fotos-colecciones-imagenes-fo"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -61,7 +61,7 @@ struct PhotoSettingsView: View {
             HStack {
                 TextField("Nueva colección", text: $newCollectionName)
                     .textFieldStyle(.roundedBorder)
-                Button("Agregar") {
+                Button(LS("music-settings-view.agregar")) {
                     preferences.addPhotoCollection(newCollectionName)
                     newCollectionName = ""
                 }

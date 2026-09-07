@@ -89,7 +89,7 @@ struct SeriesView: View {
                 grid
             }
         }
-        .navigationTitle("Series")
+        .navigationTitle(LS("series-view.series"))
         .background(LibraryStatusRelay(model: statusModel))
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
@@ -303,7 +303,7 @@ struct SeriesView: View {
     }
 
     private func episodeCountText(_ show: VideoCollectionGroup) -> String {
-        show.episodeCount == 1 ? "1 episodio" : "\(show.episodeCount) episodios"
+        LSf("series-view.plural.episodios", show.episodeCount)
     }
 
     private func emptyState(_ title: String, detail: String?) -> some View {
@@ -329,7 +329,7 @@ struct SeriesView: View {
                         selectedSeriesID = nil
                         episodeSelection.clear()
                     } label: {
-                        Label("Series", systemImage: "chevron.left")
+                        Label(LS("series-view.series"), systemImage: "chevron.left")
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(AuraColors.light.accent)
@@ -379,11 +379,11 @@ struct SeriesView: View {
                         .font(.title3)
                         .foregroundStyle(.secondary)
                 }
-                Text("\(show.seasons.count == 1 ? "1 temporada" : "\(show.seasons.count) temporadas"), \(episodeCountText(show))")
+                Text(LSf("series-view.temporadas", LSf("series-view.plural.temporadas", show.seasons.count), episodeCountText(show)))
                     .font(.callout)
                     .foregroundStyle(.tertiary)
                 Spacer(minLength: 0)
-                Button("Buscar póster en línea") {
+                Button(LS("media-section-view.buscar-poster-linea")) {
                     Task { await viewModel.fetchVideoPosters(ids: Set(show.items.map(\.id))) }
                 }
             }
@@ -455,13 +455,13 @@ struct SeriesView: View {
         let plural = targets.count > 1
 
         if !plural {
-            Button("Más información...") { reviewingItem = item }
+            Button(LS("artists-view.mas-informacion")) { reviewingItem = item }
             Divider()
         }
         Button(allFavorite ? "Quitar favorito" : "Marcar como favorito") {
             viewModel.setFavorite(!allFavorite, forItems: Set(targets.map(\.id)))
         }
-        Menu("Cambiar categoría") {
+        Menu(LS("media-section-view.cambiar-categoria")) {
             ForEach(MediaCategory.videoCategories) { category in
                 Button(category.displayName) {
                     viewModel.setCategory(category.displayName, forItems: Set(targets.map(\.id)))
@@ -469,7 +469,7 @@ struct SeriesView: View {
             }
         }
         Divider()
-        Button("Mostrar en Finder") {
+        Button(LS("albums-view.mostrar-finder")) {
             NSWorkspace.shared.activateFileViewerSelecting(targets.map(\.sourceURL))
         }
         Button(plural ? "Eliminar episodios" : "Eliminar episodio", role: .destructive) {
@@ -488,16 +488,16 @@ struct SeriesView: View {
         let plural = targets.count > 1
 
         if !plural {
-            Button("Abrir") { selectedSeriesID = show.id }
+            Button(LS("albums-view.abrir")) { selectedSeriesID = show.id }
             Divider()
         }
         Button(allFavorite ? "Quitar favorito" : "Marcar como favorito") {
             viewModel.setFavorite(!allFavorite, forItems: Set(items.map(\.id)))
         }
-        Button("Buscar póster en línea") {
+        Button(LS("media-section-view.buscar-poster-linea")) {
             Task { await viewModel.fetchVideoPosters(ids: Set(items.map(\.id))) }
         }
-        Menu("Cambiar categoría") {
+        Menu(LS("media-section-view.cambiar-categoria")) {
             ForEach(MediaCategory.videoCategories) { category in
                 Button(category.displayName) {
                     viewModel.setCategory(category.displayName, forItems: Set(items.map(\.id)))
@@ -505,7 +505,7 @@ struct SeriesView: View {
             }
         }
         Divider()
-        Button("Mostrar en Finder") {
+        Button(LS("albums-view.mostrar-finder")) {
             NSWorkspace.shared.activateFileViewerSelecting(items.map(\.sourceURL))
         }
         Button(plural ? "Eliminar series" : "Eliminar serie", role: .destructive) {

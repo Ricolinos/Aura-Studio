@@ -224,7 +224,7 @@ extension AlbumGroup {
 
     /// "3 canciones · 2019" para la tarjeta.
     var subtitleDetail: String {
-        var parts = ["\(trackCount) \(trackCount == 1 ? "canción" : "canciones")"]
+        var parts = [LSf("library-grouping.plural.canciones-frase", trackCount)]
         if let year, !year.isEmpty { parts.append(year) }
         return parts.joined(separator: " · ")
     }
@@ -234,8 +234,8 @@ extension ArtistGroup {
     /// "31 álbumes, 321 canciones" como en la cabecera de Music.app.
     var summary: String {
         let albumCount = albums.filter { !$0.isUnknown }.count
-        let albumsText = albumCount == 1 ? "1 álbum" : "\(albumCount) álbumes"
-        let songsText = trackCount == 1 ? "1 canción" : "\(trackCount) canciones"
+        let albumsText = LSf("library-grouping.plural.albumes", albumCount)
+        let songsText = LSf("library-grouping.plural.canciones", trackCount)
         return albumCount == 0 ? songsText : "\(albumsText), \(songsText)"
     }
 }

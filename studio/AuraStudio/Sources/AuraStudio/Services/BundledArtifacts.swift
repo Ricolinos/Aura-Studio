@@ -105,7 +105,7 @@ struct BundledArtifacts {
     static func sha256Hex(of url: URL) throws -> String {
         let data = try Data(contentsOf: url)
         let digest = SHA256.hash(data: data)
-        return digest.map { String(format: "%02x", $0) }.joined()
+        return digest.map { String(format: LS("bundled-artifacts.02x"), $0) }.joined()
     }
 
     /// D-297/D-298 (Aura-Firmware), ST-018: `package_dist.sh` armaba

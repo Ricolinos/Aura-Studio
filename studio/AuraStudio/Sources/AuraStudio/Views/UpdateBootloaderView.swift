@@ -23,7 +23,7 @@ struct UpdateBootloaderView: View {
                 .font(.system(size: 56))
                 .foregroundStyle(.tint)
 
-            Text("Actualizar el arranque")
+            Text(LS("installer-home-view.actualizar-arranque"))
                 .font(.largeTitle.bold())
 
             Text(reasonText)

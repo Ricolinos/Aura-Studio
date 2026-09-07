@@ -15,7 +15,7 @@ struct BackContinueRow: View {
 
     var body: some View {
         HStack {
-            Button("Atrás", action: onBack)
+            Button(LS("back-continue-row.atras"), action: onBack)
                 .buttonStyle(.bordered)
             Spacer()
             Button(continueTitle, action: onContinue)

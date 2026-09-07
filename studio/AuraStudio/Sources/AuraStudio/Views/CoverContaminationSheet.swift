@@ -17,14 +17,14 @@ struct CoverContaminationSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("Carátulas en Imágenes")
+                Text(LS("cover-contamination-sheet.caratulas-imagenes"))
                     .font(.title3.bold())
                 Spacer()
-                Button("Cerrar", action: onDismiss)
+                Button(LS("cover-contamination-sheet.cerrar"), action: onDismiss)
             }
             .padding()
 
-            Text("Estas imágenes entraron a Imágenes por su extensión, pero parecen carátulas de álbum (por su nombre, o porque viven junto a canciones o videos). Revísalas: las que quites dejan de ser fotos de tu biblioteca; el archivo original en tu Mac no se toca. Si dudas, déjala.")
+            Text(LS("cover-contamination-sheet.estas-imagenes-entraron-imagenes-por-su"))
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal)
@@ -50,18 +50,18 @@ struct CoverContaminationSheet: View {
             }
 
             HStack {
-                Button("Quitar de Imágenes") {
+                Button(LS("cover-contamination-sheet.quitar-imagenes")) {
                     library.removeFromImages(ids: selection)
                     onDismiss()
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(selection.isEmpty)
-                Button("Dejar todo como está") {
+                Button(LS("cover-contamination-sheet.dejar-todo-como-esta")) {
                     library.dismissCoverContaminationOffer()
                     onDismiss()
                 }
                 Spacer()
-                Text("\(selection.count) de \(candidates.count) seleccionadas")
+                Text(LSf("cover-contamination-sheet.seleccionadas", selection.count, candidates.count))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

@@ -32,6 +32,7 @@
 "app-menu-commands.mostrar-carpeta-biblioteca-finder" = "Mostrar carpeta de la biblioteca en Finder";
 "app-menu-commands.seleccionar-todo" = "Seleccionar todo";
 "app-update-bar.abre-notas-version-github" = "Abre las notas de la versión %@ en GitHub";
+"app-update-bar.accesibilidad-version-nueva" = "Hay una versión nueva de Aura Studio: %@";
 "app-update-bar.ahora-no" = "Ahora no";
 "app-update-bar.baja-aura-studio-no-se-actualiza" = "Baja %@. Aura Studio no se actualiza sola: cuando termine, ábrelo y arrastra la app a Aplicaciones.";
 "app-update-bar.descargar" = "Descargar";
@@ -85,6 +86,7 @@
 "cover-contamination-sheet.estas-imagenes-entraron-imagenes-por-su" = "Estas imágenes entraron a Imágenes por su extensión, pero parecen carátulas de álbum (por su nombre, o porque viven junto a canciones o videos). Revísalas: las que quites dejan de ser fotos de tu biblioteca; el archivo original en tu Mac no se toca. Si dudas, déjala.";
 "cover-contamination-sheet.quitar-imagenes" = "Quitar de Imágenes";
 "cover-contamination-sheet.seleccionadas" = "%lld de %lld seleccionadas";
+"cover-normalization-bar.accesibilidad-progreso" = "Normalizando carátulas: %1$lld de %2$lld";
 "cover-normalization-bar.caratulas-tu-biblioteca-pasan-ser-cuadra" = "Las carátulas de tu biblioteca pasan a ser cuadradas, como las muestra el iPod. Tus archivos originales no se tocan.";
 "cover-normalization-bar.detiene-normalizacion-lo-que-ya-se" = "Detiene la normalización. Lo que ya se hizo queda hecho y el resto sigue la próxima vez que abras la biblioteca.";
 "cover-store.02x" = "%02X";
@@ -115,6 +117,10 @@
 "device-general-view.contenido-solo-ipod" = "Contenido solo en el iPod (%lld)…";
 "device-general-view.disco-esta-vacio-instala-aura-desde" = "El disco esta vacio. Instala Aura desde la seccion Instalador para empezar a usarlo.";
 "device-general-view.eliminar-contenido" = "Eliminar contenido";
+"device-general-view.eliminar-fotos" = "Fotos";
+"device-general-view.eliminar-musica" = "Música";
+"device-general-view.eliminar-todo" = "Eliminar todo";
+"device-general-view.eliminar-videos" = "Videos";
 "device-general-view.esta-accion-no-se-puede-deshacer" = "Esta acción no se puede deshacer -- los archivos borrados del iPod no se pueden recuperar. Tu biblioteca en esta Mac no se toca; puedes volver a sincronizar cuando quieras.";
 "device-general-view.esta-version-aura-studio-trae-mas" = "Esta versión de Aura Studio trae un %@ más nuevo que el instalado en tu iPod. Actualizar no borra tu música ni tus ajustes.";
 "device-general-view.este-ipod-tiene-rockbox-que-no" = "Este iPod tiene un Rockbox que no es Aura: la biblioteca de Aura Studio no aplica a esta instalacion. En la seccion Instalador puedes instalar Aura (sin flashear -- solo se reemplaza la carpeta .rockbox) o restaurar el firmware original.";
@@ -185,6 +191,7 @@
 "installer-wizard-view.detener-proceso-mitad-puede-dejar-disco" = "Detener el proceso a la mitad puede dejar el disco del iPod con errores. Si eso pasa, vuelve a correr el instalador para repararlo.";
 "installing-view.no-desconectes-ipod-ni-cierres-aura" = "No desconectes el iPod ni cierres Aura Studio durante este paso.";
 "library-browsing-components.borrar-busqueda" = "Borrar búsqueda";
+"library-status-bar.accesibilidad" = "Barra de estado";
 "library-status-bar.texto" = "—";
 "library-sync.02d" = "%02d %@";
 "library-sync.s-02d" = " S%02d";
@@ -193,6 +200,8 @@
 "library-unavailable-view.elegir-otra-biblioteca" = "Elegir otra biblioteca...";
 "library-unavailable-view.instalador-extras-siguen-funcionando-sin" = "El Instalador y Extras siguen funcionando sin la biblioteca.";
 "library-unavailable-view.no-se-perdio-nada-tu-catalogo" = "No se perdió nada: tu catálogo y tus archivos siguen en ese disco. Aura Studio no va a tocar nada hasta que vuelva a estar disponible.";
+"library-view-model.eliminar-referencia-uno" = "Se quitará de tu biblioteca de Aura. El archivo original se queda donde está.";
+"library-view-model.eliminar-referencia-varios" = "Se quitarán de tu biblioteca de Aura. Los archivos originales se quedan donde están.";
 "licenses-view.aura-studio-es-gratuita-se-distribuye" = "Aura Studio es gratuita y se distribuye sin fines comerciales. Trae embebidos, tal cual se publicaron y sin modificarlos, los firmwares instalables para iPod Classic 6G, todos software libre bajo la Licencia Pública General de GNU versión 2 (GPL v2). Cada uno es un derivado de Rockbox; su código fuente completo, la versión exacta incluida aquí y el registro de cambios respecto a Rockbox están en los enlaces de abajo, como exige la sección 3 de esa licencia.";
 "licenses-view.gpl-v2" = "GPL v2";
 "licenses-view.rockbox" = "Rockbox";
@@ -267,7 +276,7 @@
 "music-settings-view.nombres-que-no-se-deben-recortar" = "Nombres que no se deben recortar aunque traigan un separador, como «Simon + Garfunkel» o «Café con Leche».";
 "music-settings-view.numero-pista-titulo" = "Número de pista y título";
 "music-settings-view.quitar-excepciones" = "Quitar «%@» de las excepciones";
-"music-settings-view.separadores-que-agrupan-vs-versus-nunca" = "Separadores que agrupan: . «vs.» y «versus» nunca agrupan, porque ahí la colaboración tiene nombre propio.";
+"music-settings-view.separadores-que-agrupan-vs-versus-nunca" = "Separadores que agrupan: %@. «vs.» y «versus» nunca agrupan, porque ahí la colaboración tiene nombre propio.";
 "music-settings-view.solo-album" = "Solo álbum";
 "music-settings-view.solo-artista" = "Solo artista";
 "music-settings-view.solo-titulo-recomendado" = "Solo el título (recomendado)";

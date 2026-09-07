@@ -37,8 +37,7 @@ struct LibraryUnavailableView: View {
                 .font(.title3.weight(.semibold))
                 .multilineTextAlignment(.center)
 
-            Text("No se perdió nada: tu catálogo y tus archivos siguen en ese disco. "
-                 + "Aura Studio no va a tocar nada hasta que vuelva a estar disponible.")
+            Text(LS("library-unavailable-view.no-se-perdio-nada-tu-catalogo"))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 460)
@@ -54,14 +53,14 @@ struct LibraryUnavailableView: View {
                     .fill(Color.secondary.opacity(0.10)))
 
             HStack(spacing: 10) {
-                Button("Reintentar", action: onRetry)
+                Button(LS("done-view.reintentar"), action: onRetry)
                     .keyboardShortcut(.defaultAction)
-                Button("Elegir otra biblioteca...", action: onChooseAnother)
-                Button("Crear una nueva", action: onCreateNew)
+                Button(LS("library-unavailable-view.elegir-otra-biblioteca"), action: onChooseAnother)
+                Button(LS("library-unavailable-view.crear-nueva"), action: onCreateNew)
             }
             .padding(.top, 4)
 
-            Text("El Instalador y Extras siguen funcionando sin la biblioteca.")
+            Text(LS("library-unavailable-view.instalador-extras-siguen-funcionando-sin"))
                 .font(.callout)
                 .foregroundStyle(.tertiary)
                 .padding(.top, 2)

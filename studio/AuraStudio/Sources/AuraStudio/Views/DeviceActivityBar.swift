@@ -72,7 +72,7 @@ struct DeviceActivityBar: View {
     private var idleBar: some View {
         if let device, device.capacityBytes > 0 {
             storageSegments(device)
-            Text("\(byteString(device.usedBytes)) usados de \(byteString(device.capacityBytes)) -- \(byteString(device.freeBytes)) libres")
+            Text(LSf("device-activity-bar.usados-libres", byteString(device.usedBytes), byteString(device.capacityBytes), byteString(device.freeBytes)))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         } else {
@@ -83,8 +83,8 @@ struct DeviceActivityBar: View {
 
         if device != nil {
             HStack(spacing: 12) {
-                Picker("Alcance", selection: $scopeChoice) {
-                    Text("Toda la biblioteca").tag(ScopeChoice.all)
+                Picker(LS("device-activity-bar.alcance"), selection: $scopeChoice) {
+                    Text(LS("device-activity-bar.toda-biblioteca")).tag(ScopeChoice.all)
                     Text(selectionCount > 0 ? "Solo la selección (\(selectionCount))" : "Solo la selección")
                         .tag(ScopeChoice.selection)
                         .disabled(selectionCount == 0)
@@ -100,7 +100,7 @@ struct DeviceActivityBar: View {
                 // sincronizar ahi solo desgastaria el disco escribiendo
                 // archivos que el firmware que SI tiene el iPod (stock,
                 // Rockbox, o ninguno) nunca va a leer.
-                Button("Sincronizar") {
+                Button(LS("device-activity-bar.sincronizar")) {
                     onSync(scopeChoice == .selection)
                 }
                 .buttonStyle(.borderedProminent)
@@ -114,7 +114,7 @@ struct DeviceActivityBar: View {
         if isVerifying {
             HStack(spacing: 6) {
                 ProgressView().controlSize(.small)
-                Text("Verificando el iPod...")
+                Text(LS("device-activity-bar.verificando-ipod"))
             }
             .font(.callout)
             .foregroundStyle(.secondary)
@@ -123,15 +123,15 @@ struct DeviceActivityBar: View {
         } else if let lastSyncSummary {
             Text(lastSyncSummary).font(.callout).foregroundStyle(.secondary)
         } else if device == nil {
-            Text("Conecta tu iPod para sincronizar.").font(.callout).foregroundStyle(.secondary)
+            Text(LS("device-activity-bar.conecta-tu-ipod-para-sincronizar")).font(.callout).foregroundStyle(.secondary)
         } else if device?.supportsAuraContract != true {
-            Text("Instala Aura en este iPod para poder sincronizar.").font(.callout).foregroundStyle(.secondary)
+            Text(LS("device-activity-bar.instala-aura-este-ipod-para-poder")).font(.callout).foregroundStyle(.secondary)
         } else if let index = deviceSyncIndex {
             Text(summaryText(for: index)).font(.callout).foregroundStyle(.secondary)
         } else if pendingCount > 0 {
-            Text("\(pendingCount) archivo(s) listo(s) para sincronizar.").font(.callout).foregroundStyle(.secondary)
+            Text(LSf("device-activity-bar.archivo-s-listo-s-para-sincronizar", pendingCount)).font(.callout).foregroundStyle(.secondary)
         } else {
-            Text("Todo sincronizado.").font(.callout).foregroundStyle(.secondary)
+            Text(LS("device-activity-bar.todo-sincronizado")).font(.callout).foregroundStyle(.secondary)
         }
     }
 
@@ -156,7 +156,7 @@ struct DeviceActivityBar: View {
             ProgressView(value: Double(progress.copied), total: Double(max(progress.total, 1)))
                 .tint(AuraColors.light.accent)
             HStack {
-                Text("Sincronizando \(progress.copied) de \(progress.total) archivo(s)...")
+                Text(LSf("device-activity-bar.sincronizando-archivo-s", progress.copied, progress.total))
                 Spacer()
                 if let remaining = progress.estimatedSecondsRemaining, remaining > 1 {
                     Text(timeRemainingText(remaining))
@@ -174,10 +174,10 @@ struct DeviceActivityBar: View {
                     if isCancelling {
                         HStack(spacing: 4) {
                             ProgressView().controlSize(.small)
-                            Text("Cancelando...")
+                            Text(LS("device-activity-bar.cancelando"))
                         }
                     } else {
-                        Text("Cancelar")
+                        Text(LS("background-task-center-indicator.cancelar"))
                     }
                 }
                 .disabled(isCancelling)

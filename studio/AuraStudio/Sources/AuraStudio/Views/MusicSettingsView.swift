@@ -10,11 +10,11 @@ struct MusicSettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Carpetas").font(.headline)
-                Picker("Carpetas", selection: $preferences.musicOrganization) {
-                    Text("Artista / Álbum (recomendado)").tag(AppPreferences.MusicOrganization.artistAlbum)
-                    Text("Solo álbum").tag(AppPreferences.MusicOrganization.album)
-                    Text("Solo artista").tag(AppPreferences.MusicOrganization.artist)
+                Text(LS("music-settings-view.carpetas")).font(.headline)
+                Picker(LS("music-settings-view.carpetas"), selection: $preferences.musicOrganization) {
+                    Text(LS("music-settings-view.artista-album-recomendado")).tag(AppPreferences.MusicOrganization.artistAlbum)
+                    Text(LS("music-settings-view.solo-album")).tag(AppPreferences.MusicOrganization.album)
+                    Text(LS("music-settings-view.solo-artista")).tag(AppPreferences.MusicOrganization.artist)
                 }
                 .pickerStyle(.radioGroup)
                 .labelsHidden()
@@ -27,12 +27,12 @@ struct MusicSettingsView: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 10) {
-                Text("Nombre del archivo").font(.headline)
-                Picker("Nombre del archivo", selection: $preferences.musicFilenameFormat) {
-                    Text("Solo el título (recomendado)").tag(AppPreferences.MusicFilenameFormat.titleOnly)
-                    Text("Número de pista y título").tag(AppPreferences.MusicFilenameFormat.trackNumberTitle)
-                    Text("Título - Artista").tag(AppPreferences.MusicFilenameFormat.titleArtist)
-                    Text("Título - Álbum").tag(AppPreferences.MusicFilenameFormat.titleAlbum)
+                Text(LS("music-settings-view.nombre-archivo")).font(.headline)
+                Picker(LS("music-settings-view.nombre-archivo"), selection: $preferences.musicFilenameFormat) {
+                    Text(LS("music-settings-view.solo-titulo-recomendado")).tag(AppPreferences.MusicFilenameFormat.titleOnly)
+                    Text(LS("music-settings-view.numero-pista-titulo")).tag(AppPreferences.MusicFilenameFormat.trackNumberTitle)
+                    Text(LS("music-settings-view.titulo-artista")).tag(AppPreferences.MusicFilenameFormat.titleArtist)
+                    Text(LS("music-settings-view.titulo-album")).tag(AppPreferences.MusicFilenameFormat.titleAlbum)
                 }
                 .pickerStyle(.radioGroup)
                 .labelsHidden()
@@ -44,10 +44,10 @@ struct MusicSettingsView: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 10) {
-                Text("Calidad de audio").font(.headline)
-                Picker("Calidad de audio", selection: $preferences.audioQuality) {
-                    Text("Mantener formato original (recomendado)").tag(AppPreferences.AudioQuality.originalLossless)
-                    Text("Comprimir a MP3 de buena calidad").tag(AppPreferences.AudioQuality.compressed)
+                Text(LS("music-settings-view.calidad-audio")).font(.headline)
+                Picker(LS("music-settings-view.calidad-audio"), selection: $preferences.audioQuality) {
+                    Text(LS("music-settings-view.mantener-formato-original-recomendado")).tag(AppPreferences.AudioQuality.originalLossless)
+                    Text(LS("music-settings-view.comprimir-mp3-buena-calidad")).tag(AppPreferences.AudioQuality.compressed)
                 }
                 .pickerStyle(.radioGroup)
                 .labelsHidden()
@@ -74,23 +74,27 @@ struct MusicSettingsView: View {
     @ViewBuilder
     private var artistHomologationSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Artistas invitados").font(.headline)
-            Toggle("Agrupar las colaboraciones bajo el artista principal",
+            Text(LS("music-settings-view.artistas-invitados")).font(.headline)
+            Toggle(LS("music-settings-view.agrupar-colaboraciones-bajo-artista-prin"),
                    isOn: $preferences.homologateArtistCollaborations)
-            Text("«Gorillaz feat. De La Soul» se agrupa junto a «Gorillaz»: un solo artista en la lista y una sola foto. Los créditos completos NO se modifican -- se siguen viendo en la tabla de canciones y en «Más información».")
+            Text(LS("music-settings-view.gorillaz-feat-soul-se-agrupa-junto"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-            Text("Separadores que agrupan: " + ArtistNameNormalizer.collaborationSeparators.joined(separator: ", ")
-                 + ". «vs.» y «versus» nunca agrupan, porque ahí la colaboración tiene nombre propio.")
+            // ST-227: el borrador de la extracción se comió el trozo
+            // CALCULADO del medio (la lista de separadores), así que su
+            // texto con marcadores no tenía `%@` y la lista habría
+            // desaparecido de la pantalla. La clave lleva el marcador.
+            Text(LSf("music-settings-view.separadores-que-agrupan-vs-versus-nunca",
+                     ArtistNameNormalizer.collaborationSeparators.joined(separator: ", ")))
                 .font(.caption)
                 .foregroundStyle(.tertiary)
                 .fixedSize(horizontal: false, vertical: true)
 
             if preferences.homologateArtistCollaborations {
-                Text("Excepciones").font(.subheadline.weight(.medium))
+                Text(LS("music-settings-view.excepciones")).font(.subheadline.weight(.medium))
                     .padding(.top, 4)
-                Text("Nombres que no se deben recortar aunque traigan un separador, como «Simon + Garfunkel» o «Café con Leche».")
+                Text(LS("music-settings-view.nombres-que-no-se-deben-recortar"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -98,11 +102,11 @@ struct MusicSettingsView: View {
                     TextField("Nombre del artista tal como aparece", text: $newException)
                         .textFieldStyle(.roundedBorder)
                         .onSubmit(addException)
-                    Button("Agregar", action: addException)
+                    Button(LS("music-settings-view.agregar"), action: addException)
                         .disabled(newException.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
                 if preferences.artistHomologationExceptions.isEmpty {
-                    Text("Todavía no hay excepciones.")
+                    Text(LS("music-settings-view.todavia-no-hay-excepciones"))
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                 } else {
@@ -116,7 +120,7 @@ struct MusicSettingsView: View {
                                 Image(systemName: "minus.circle")
                             }
                             .buttonStyle(.plain)
-                            .help("Quitar «\(name)» de las excepciones")
+                            .help(LSf("music-settings-view.quitar-excepciones", name))
                         }
                         .padding(.vertical, 1)
                     }

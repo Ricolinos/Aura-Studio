@@ -34,7 +34,7 @@ struct ServicesSettingsView: View {
 
     private var active: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Activos, sin configurar nada").font(.headline)
+            Text(LS("services-settings-view.activos-sin-configurar-nada")).font(.headline)
             SourceRow(
                 state: .active,
                 name: "MusicBrainz",
@@ -66,15 +66,15 @@ struct ServicesSettingsView: View {
     /// (`AppPreferences.coverArtProviderOrder`).
     private var coverArtPriority: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Orden de búsqueda de carátula").font(.headline)
-            Text("Cuando a una canción le falta carátula, se prueban estos servicios en orden y se usa la primera imagen que aparezca.")
+            Text(LS("services-settings-view.orden-busqueda-caratula")).font(.headline)
+            Text(LS("services-settings-view.cuando-cancion-le-falta-caratula-se"))
                 .font(.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             VStack(spacing: 0) {
                 ForEach(Array(preferences.coverArtProviderOrder.enumerated()), id: \.element) { index, provider in
                     HStack(spacing: 10) {
-                        Text("\(index + 1)").font(.callout.monospacedDigit()).foregroundStyle(.secondary)
+                        Text(LSf("services-settings-view.texto", index + 1)).font(.callout.monospacedDigit()).foregroundStyle(.secondary)
                             .frame(width: 16, alignment: .trailing)
                         Image(systemName: isUsable(provider) ? "checkmark.circle.fill" : "circle.dashed")
                             .foregroundStyle(isUsable(provider) ? .green : .secondary)
@@ -126,8 +126,8 @@ struct ServicesSettingsView: View {
 
     private var optional: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Opcionales").font(.headline)
-            Text("Se agregan solo si te faltan caratulas: lo de arriba ya cubre el caso normal.")
+            Text(LS("services-settings-view.opcionales")).font(.headline)
+            Text(LS("services-settings-view.se-agregan-solo-si-te-faltan"))
                 .font(.caption).foregroundStyle(.secondary)
 
             DeezerRow(preferences: preferences)
@@ -155,8 +155,8 @@ struct ServicesSettingsView: View {
 
     private var rejected: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Descartadas, y por que").font(.headline)
-            Text("Se investigaron y NO se van a integrar. Queda escrito para no volver a evaluarlas.")
+            Text(LS("services-settings-view.descartadas-por-que")).font(.headline)
+            Text(LS("services-settings-view.se-investigaron-no-se-van-integrar"))
                 .font(.caption).foregroundStyle(.secondary)
             SourceRow(
                 state: .rejected,
@@ -212,9 +212,9 @@ private struct DeezerRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
-                Text("Deezer").bold()
+                Text(LS("services-settings-view.deezer")).bold()
                 if preferences.deezerEnabled {
-                    Label("Activo", systemImage: "checkmark.circle.fill")
+                    Label(LS("services-settings-view.activo"), systemImage: "checkmark.circle.fill")
                         .font(.caption).foregroundStyle(.green)
                 }
                 Spacer()
@@ -227,7 +227,7 @@ private struct DeezerRow: View {
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
             }
-            Text("Caratula alternativa, 1000x1000. Sin key -- es la unica fuente cuyos terminos permiten explicitamente el uso no comercial.")
+            Text(LS("services-settings-view.caratula-alternativa-1000x1000-sin-key-e"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -250,14 +250,14 @@ private struct APIKeyServiceRow: View {
             HStack(spacing: 8) {
                 Text(service.displayName).font(.headline)
                 if isSaved {
-                    Label("Activo", systemImage: "checkmark.circle.fill")
+                    Label(LS("services-settings-view.activo"), systemImage: "checkmark.circle.fill")
                         .font(.caption).foregroundStyle(.green)
                 }
                 Spacer()
                 Button {
                     NSWorkspace.shared.open(service.guideURL)
                 } label: {
-                    Label("Cómo conseguir la key", systemImage: "arrow.up.right.square")
+                    Label(LS("services-settings-view.como-conseguir-key"), systemImage: "arrow.up.right.square")
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
@@ -275,7 +275,7 @@ private struct APIKeyServiceRow: View {
             HStack(spacing: 10) {
                 SecureField("Pega tu API key aquí", text: $keyText)
                     .textFieldStyle(.roundedBorder)
-                Button("Guardar") {
+                Button(LS("git-hub-token-settings-view.guardar")) {
                     let trimmed = keyText.trimmingCharacters(in: .whitespacesAndNewlines)
                     guard !trimmed.isEmpty else { return }
                     APIKeyStore.save(trimmed, for: service)
@@ -283,7 +283,7 @@ private struct APIKeyServiceRow: View {
                 }
                 .disabled(keyText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 if isSaved {
-                    Button("Quitar", role: .destructive) {
+                    Button(LS("git-hub-token-settings-view.quitar"), role: .destructive) {
                         APIKeyStore.delete(for: service)
                         keyText = ""
                         isSaved = false

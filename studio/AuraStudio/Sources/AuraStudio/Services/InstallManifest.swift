@@ -94,7 +94,7 @@ struct InstallManifest: Equatable {
         var lines = [Self.headerLine]
         if let tag { lines.append("tag: \(tag)") }
         for entry in entries.values.sorted(by: { $0.path < $1.path }) {
-            lines.append(String(format: "%08x %llu %@", entry.crc32, entry.size, entry.path))
+            lines.append(String(format: LS("install-manifest.08x-llu"), entry.crc32, entry.size, entry.path))
         }
         return lines.joined(separator: "\n") + "\n"
     }

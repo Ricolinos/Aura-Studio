@@ -584,14 +584,11 @@ final class LibraryViewModel: ObservableObject {
 
         var message: String {
             var parts: [String] = []
-            parts.append(converted == 1 ? "1 canción convertida en copia"
-                                        : "\(converted) canciones convertidas en copias")
+            parts.append(LSf("library-view-model.plural.convertidas", converted))
             if skippedUnavailable > 0 {
-                parts.append(skippedUnavailable == 1
-                             ? "1 se saltó porque su archivo no está"
-                             : "\(skippedUnavailable) se saltaron porque sus archivos no están")
+                parts.append(LSf("library-view-model.plural.saltadas", skippedUnavailable))
             }
-            if failed > 0 { parts.append(failed == 1 ? "1 falló" : "\(failed) fallaron") }
+            if failed > 0 { parts.append(LSf("library-view-model.plural.fallaron", failed)) }
             if cancelled { parts.append("cancelado") }
             return parts.joined(separator: "; ") + "."
         }
@@ -1138,17 +1135,17 @@ final class LibraryViewModel: ObservableObject {
         var bytesToTrash: Int
 
         var title: String {
-            itemCount == 1 ? "¿Eliminar este elemento?" : "¿Eliminar \(itemCount) elementos?"
+            LSf("library-view-model.plural.eliminar-titulo", itemCount)
         }
 
         var message: String {
             guard filesToTrash > 0 else {
                 return itemCount == 1
-                    ? "Se quitará de tu biblioteca de Aura. El archivo original se queda donde está."
-                    : "Se quitarán de tu biblioteca de Aura. Los archivos originales se quedan donde están."
+                    ? LS("library-view-model.eliminar-referencia-uno")
+                    : LS("library-view-model.eliminar-referencia-varios")
             }
             let size = ByteCountFormatter.string(fromByteCount: Int64(bytesToTrash), countStyle: .file)
-            let files = filesToTrash == 1 ? "1 archivo" : "\(filesToTrash) archivos"
+            let files = LSf("library-view-model.plural.archivos", filesToTrash)
             return "Se moverán \(files) a la Papelera (\(size)). Puedes recuperarlos desde ahí."
         }
     }
@@ -1560,7 +1557,7 @@ final class LibraryViewModel: ObservableObject {
         var cancelled = false
         let ordered = Array(ids)
         let handle = taskCenter.begin(
-            title: ordered.count == 1 ? "Buscando póster en línea…" : "Buscando pósters de \(ordered.count) videos…",
+            title: LSf("library-view-model.plural.buscando-posters", ordered.count),
             kind: .artwork,
             progress: .determinate(completed: 0, total: ordered.count),
             onCancelRequested: { cancelled = true })
@@ -1603,7 +1600,7 @@ final class LibraryViewModel: ObservableObject {
         if missingKey {
             lastError = "Para buscar pósters hace falta una API key de TMDB (gratuita). Agrégala en Ajustes › Servicios; con fanart.tv configurado además se usará su póster curado cuando exista."
         } else {
-            var parts = ["Pósters: \(found) \(found == 1 ? "encontrado" : "encontrados")"]
+            var parts = [LSf("library-view-model.plural.posters-encontrados", found)]
             if !missing.isEmpty { parts.append("\(missing.count) sin resultado (\(missing.prefix(3).joined(separator: ", "))\(missing.count > 3 ? "…" : ""))") }
             lastEnrichmentSummary = parts.joined(separator: ", ") + "."
         }
@@ -1658,7 +1655,7 @@ final class LibraryViewModel: ObservableObject {
         // spinner en un botón.
         var cancelled = false
         let handle = taskCenter.begin(
-            title: "Buscando fotos de \(artists.count) \(artists.count == 1 ? "artista" : "artistas")…",
+            title: LSf("library-view-model.plural.buscando-artistas", artists.count),
             kind: .artwork,
             progress: .determinate(completed: 0, total: artists.count),
             onCancelRequested: { cancelled = true })
@@ -1691,9 +1688,9 @@ final class LibraryViewModel: ObservableObject {
                 ? "Todos los artistas seleccionados ya tienen foto."
                 : "No hay artistas para buscar."
         } else {
-            var parts = ["Fotos de artista: \(found) \(found == 1 ? "encontrada" : "encontradas")"]
+            var parts = [LSf("library-view-model.plural.fotos-encontradas", found)]
             if missing > 0 { parts.append("\(missing) sin resultado") }
-            if skipped > 0 { parts.append("\(skipped) ya \(skipped == 1 ? "tenía" : "tenían") foto") }
+            if skipped > 0 { parts.append(LSf("library-view-model.plural.ya-tenian-foto", skipped)) }
             lastEnrichmentSummary = parts.joined(separator: ", ") + "."
         }
     }
@@ -1808,7 +1805,7 @@ final class LibraryViewModel: ObservableObject {
         }
         guard !targets.isEmpty else { return 0 }
 
-        let handle = taskCenter.begin(title: "Aplicando carátula a \(targets.count) \(targets.count == 1 ? "canción" : "canciones")…",
+        let handle = taskCenter.begin(title: LSf("library-view-model.plural.aplicando-caratula", targets.count),
                                       progress: .determinate(completed: 0, total: targets.count))
         defer { taskCenter.finish(handle) }
 
@@ -1928,7 +1925,7 @@ final class LibraryViewModel: ObservableObject {
         }
         handle.update(.determinate(completed: requests.count - skippedByCancel, total: requests.count))
 
-        var parts = ["Carátulas: \(applied) \(applied == 1 ? "aplicada" : "aplicadas")"]
+        var parts = [LSf("library-view-model.plural.caratulas-aplicadas", applied)]
         if !needsChoice.isEmpty {
             parts.append(needsChoice.count == 1
                          ? "1 sin una opción lo bastante segura (elígela tú)"
@@ -1959,7 +1956,7 @@ final class LibraryViewModel: ObservableObject {
         let targets = items.filter { ids.contains($0.id) && $0.kind == .music }
         guard !targets.isEmpty else { return }
 
-        let handle = taskCenter.begin(title: "Editando \(targets.count) \(targets.count == 1 ? "canción" : "canciones")…",
+        let handle = taskCenter.begin(title: LSf("library-view-model.plural.editando", targets.count),
                                       progress: .determinate(completed: 0, total: targets.count))
         defer { taskCenter.finish(handle) }
 
@@ -2023,7 +2020,7 @@ final class LibraryViewModel: ObservableObject {
         let targets = items.filter { targetIDs.contains($0.id) }
         guard !targets.isEmpty else { return }
 
-        let handle = taskCenter.begin(title: "Corrigiendo \(targets.count) \(targets.count == 1 ? "elemento" : "elementos")…",
+        let handle = taskCenter.begin(title: LSf("library-view-model.plural.corrigiendo", targets.count),
                                       progress: .determinate(completed: 0, total: targets.count))
         defer { taskCenter.finish(handle) }
 

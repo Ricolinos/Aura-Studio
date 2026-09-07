@@ -139,7 +139,7 @@ enum LibraryStats {
         let minutes = (total % 3600) / 60
         if hours >= 24 {
             let days = hours / 24
-            return "\(days) \(days == 1 ? "día" : "días") \(hours % 24) h"
+            return LSf("library-status-summary.plural.dias-horas", days, hours % 24)
         }
         if hours > 0 { return "\(hours) h \(minutes) min" }
         if minutes > 0 { return "\(minutes) min" }

@@ -13,9 +13,9 @@ struct RestoreHandoffView: View {
             Image(systemName: "arrow.right.circle.fill")
                 .font(.system(size: 56))
                 .foregroundStyle(.tint)
-            Text("Continua en Finder")
+            Text(LS("restore-handoff-view.continua-finder"))
                 .font(.title.bold())
-            Text("El iPod quedo listo: se quito el bootloader de Aura y el disco se preparo en el formato que Finder espera (Mac OS Plus con registro, mapa GUID).")
+            Text(LS("restore-handoff-view.ipod-quedo-listo-se-quito-bootloader"))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: 460)
@@ -29,7 +29,7 @@ struct RestoreHandoffView: View {
             .padding(14)
             .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.08)))
 
-            Button("Cerrar Aura Studio y abrir Finder") {
+            Button(LS("restore-handoff-view.cerrar-aura-studio-abrir-finder")) {
                 NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Library/CoreServices/Finder.app"))
                 // applicationShouldTerminate (AppDelegate) reactiva los
                 // agentes AMP pausados antes de dejar morir el proceso.
@@ -47,7 +47,7 @@ private struct HandoffStep: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Text("\(number)")
+            Text(LSf("await-bootloader-u-s-b-view.texto", number))
                 .font(.headline)
                 .foregroundStyle(.white)
                 .frame(width: 24, height: 24)

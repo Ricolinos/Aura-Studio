@@ -137,7 +137,7 @@ struct AlbumsView: View {
                 grid
             }
         }
-        .navigationTitle("Álbumes")
+        .navigationTitle(LS("albums-view.albumes"))
         .background(LibraryStatusRelay(model: statusModel))
         .onAppear(perform: rebuild)
         .onReceive(viewModel.$items) { _ in rebuild() }
@@ -344,7 +344,7 @@ struct AlbumsView: View {
             HStack(spacing: 10) {
                 Spacer()
                 Menu {
-                    Picker("Ordenar por", selection: $sortRaw) {
+                    Picker(LS("albums-view.ordenar-por"), selection: $sortRaw) {
                         ForEach(AlbumSort.allCases) { option in
                             Text(option.title).tag(option.rawValue)
                         }
@@ -354,7 +354,7 @@ struct AlbumsView: View {
                 }
                 .menuStyle(.borderlessButton)
                 .fixedSize()
-                .help("Ordenar los álbumes")
+                .help(LS("albums-view.ordenar-albumes"))
                 LibrarySearchField(scopeTitle: "Álbumes", text: $searchText)
             }
             .padding(.horizontal, 20)
@@ -485,7 +485,7 @@ struct AlbumsView: View {
                 Button {
                     selectedAlbumID = nil
                 } label: {
-                    Label("Álbumes", systemImage: "chevron.left")
+                    Label(LS("albums-view.albumes"), systemImage: "chevron.left")
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(AuraColors.light.accent)
@@ -519,14 +519,14 @@ struct AlbumsView: View {
                         Button(album.isFavorite ? "Quitar favorito" : "Marcar como favorito") {
                             viewModel.setFavorite(!album.isFavorite, forItems: Set(album.items.map(\.id)))
                         }
-                        Button("Buscar información en línea") {
+                        Button(LS("albums-view.buscar-informacion-linea")) {
                             Task { await viewModel.reenrichOnline(ids: Set(album.items.map(\.id)), fetchAlbumInfo: true, fetchLyrics: false) }
                         }
-                        Button("Buscar carátulas del álbum...") {
+                        Button(LS("albums-view.buscar-caratulas-album")) {
                             if let request = coverRequest(for: album) { startCoverQueue([request]) }
                         }
                         .disabled(album.isUnknown)
-                        .help("Busca varias carátulas en Cover Art Archive y Deezer y aplica la que elijas a todas las canciones del álbum")
+                        .help(LS("albums-view.busca-varias-caratulas-cover-art-archive"))
                     }
                 }
                 Spacer()
@@ -542,7 +542,7 @@ struct AlbumsView: View {
 
     private func albumStats(_ album: AlbumGroup) -> String {
         let minutes = Int((album.totalDurationSeconds / 60).rounded())
-        let songs = album.trackCount == 1 ? "1 canción" : "\(album.trackCount) canciones"
+        let songs = LSf("albums-view.plural.canciones", album.trackCount)
         return minutes > 0 ? "\(songs), \(minutes) min" : songs
     }
 
@@ -568,13 +568,13 @@ struct AlbumsView: View {
         }
 
         if targets.count == 1 {
-            Button("Abrir") { selectedAlbumID = album.id }
+            Button(LS("albums-view.abrir")) { selectedAlbumID = album.id }
             Divider()
         }
         Button(allFavorite ? "Quitar favorito" : "Marcar como favorito") {
             viewModel.setFavorite(!allFavorite, forItems: itemIDs(of: targets))
         }
-        Button("Buscar información en línea") {
+        Button(LS("albums-view.buscar-informacion-linea")) {
             Task { await viewModel.reenrichOnline(ids: itemIDs(of: targets), fetchAlbumInfo: true, fetchLyrics: false) }
         }
         if requests.count == 1 {
@@ -582,21 +582,21 @@ struct AlbumsView: View {
             // álbum, no que se haya hecho clic sobre una sola tarjeta --
             // `AlbumCoverRequest` es quien lo decide, y decide igual acá
             // que en la tabla de Canciones.
-            Button("Buscar carátulas del álbum...") { startCoverQueue(requests) }
+            Button(LS("albums-view.buscar-caratulas-album")) { startCoverQueue(requests) }
             // R2-3: la automática, sin preguntar, solo si supera el umbral.
-            Button("Aplicar carátula recomendada") { applyRecommended(requests) }
+            Button(LS("albums-view.aplicar-caratula-recomendada")) { applyRecommended(requests) }
                 .disabled(viewModel.isApplyingRecommendedCovers)
-                .help("Aplica sin preguntar solo la carátula que supere el umbral de confianza; si ninguna lo supera, se abre el selector")
+                .help(LS("albums-view.aplica-sin-preguntar-solo-caratula-que"))
         } else if requests.count > 1 {
             // F3: la acción plural que faltaba. Aplica la recomendada
             // donde alcanza el umbral y encola los dudosos en el
             // selector, uno por uno.
-            Button("Buscar carátulas de \(requests.count) álbumes...") { applyRecommended(requests) }
+            Button(LSf("albums-view.buscar-caratulas-albumes", requests.count)) { applyRecommended(requests) }
                 .disabled(viewModel.isApplyingRecommendedCovers)
-                .help("Aplica sin preguntar la carátula que supere el umbral de confianza en cada álbum; los que no tengan una opción segura los eliges tú, uno por uno")
+                .help(LS("albums-view.aplica-sin-preguntar-caratula-que-supere"))
         }
         Divider()
-        Button("Mostrar en Finder") {
+        Button(LS("albums-view.mostrar-finder")) {
             NSWorkspace.shared.activateFileViewerSelecting(targets.flatMap(\.items).map(\.sourceURL))
         }
         Button(targets.count > 1 ? "Eliminar álbumes" : "Eliminar álbum", role: .destructive) {
@@ -649,7 +649,7 @@ private struct AlbumGridCell<Menu: View>: View, Equatable {
             .onTapGesture(count: 2, perform: onOpen)
             .onTapGesture(perform: onTap)
             .contextMenu(menuItems: menu)
-            .help("\(album.title) — \(album.artist)")
+            .help(LSf("albums-view.texto", album.title, album.artist))
     }
 
     /// `nonisolated` obligatorio: `View` es `@MainActor`, así que la

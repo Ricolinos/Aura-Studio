@@ -14838,3 +14838,92 @@ Xcode desde el catálogo.
 
 `CFBundleLocalizations` pasa de `[es]` a los seis idiomas y
 `CFBundleDevelopmentRegion` se queda en `es`.
+
+### La extracción, aplicada: 513 sitios
+
+Se aplicó con un script propio y **exacto**: solo toca un literal si el
+texto que encuentra coincide letra por letra con el que dice
+`revision.csv`. Lo que no coincidía se listó y se hizo a mano --
+reescribir a ciegas un literal que no se pudo confirmar es cómo se
+cambia un texto de cara al usuario sin querer. De 513: 490 en la primera
+pasada, 17 en una segunda por búsqueda exacta en todo el archivo (las
+líneas se habían corrido con mis propias ediciones de A5/A6), 3 que solo
+eran ambiguas porque el texto también aparecía en un **comentario**, y 3
+cadenas concatenadas en varias líneas, a mano.
+
+**Un defecto del borrador, encontrado al aplicarlo.** En
+`music-settings-view.separadores-que-agrupan...` el extractor se comió el
+trozo **calculado** del medio -- la lista de separadores -- y dejó el
+texto sin marcador. Aplicarlo tal cual habría hecho **desaparecer la
+lista de la pantalla**, que es exactamente el cambio de español que esta
+fase no puede permitirse. La clave lleva su `%@` y la prueba de "el
+español no cambió" declara esa única excepción **con su motivo**: una
+excepción visible es revisable; una silenciosa no.
+
+**Tres sitios que el extractor no podía ver**, y que sí son texto de
+usuario: dos `accessibilityLabel` (lo que oye quien usa VoiceOver) y un
+ayudante propio, `deleteButton("Música", …)`, cuyo primer argumento es
+texto pero no es un constructor de SwiftUI. Los encontró el detector de
+literales al activarlo.
+
+### Plurales
+
+Los 24 ternarios pasan a variaciones del catálogo (27 claves de plural).
+No es cosmético: un ternario tiene exactamente **dos** formas, y hay
+idiomas que no funcionan así -- el ruso tiene tres y el japonés una.
+Mantenerlos habría hecho imposible traducir bien, sin que nada fallara.
+La forma en español queda idéntica y hay prueba de los casos 0, 1, 2 y 21
+(21 importa: en español es regular, en ruso no).
+
+### Las pruebas que quedan vigilando
+
+- **Cero literales de interfaz con acento fuera del catálogo.** La línea
+  base eran 484 sitios. El acento es la señal barata y sin falsos
+  positivos de que un literal es texto para el usuario y no un
+  identificador.
+- **Toda clave que el código pide existe en el catálogo.** Es la que
+  evita que la app muestre `media-section.eliminar` en pantalla: una
+  clave que falta **no falla**, devuelve la clave.
+- **El español es el que era**, comparado contra `revision.csv`.
+- **Las claves compartidas con Windows existen de este lado**, o están en
+  una lista explícita de lo que sigue en `AppStrings.S` -- la tabla ES/EN
+  con su resolutor de idioma, que es de A7b. Cuando A7b la vacíe, la
+  prueba obliga a actualizar esa lista: lo pendiente queda **visible** en
+  vez de tapado.
+
+### Lo que NO entra acá, dicho
+
+Ninguna traducción: el catálogo lleva solo español (A7b trae el inglés y
+el selector; A7c los otros cuatro). Y `AppStrings.S` sigue en pie a
+propósito: mudarla implica mover también el resolutor de idioma, que es
+justo lo que A7b viene a rehacer.
+
+### El hallazgo que solo vio `xcodebuild`
+
+Con las 24 conversiones hechas, **`swift test` pasó las 966 pruebas y el
+build de Release falló**. Xcode rechaza una variación de plural cuyo
+texto no contiene el número:
+
+> *Plural variation requires referencing the number in the string. To
+> maintain grammatical correctness for strings that do not reference the
+> number of items, use separate top-level strings.*
+
+Y tiene razón. Yo había traducido `n == 1 ? "canción" : "canciones"` a
+una clave de plural con la palabra sola, dejando el número pegado por
+fuera: `"\(n) \(LSf(...))"`. En español se ve bien y por eso pasó
+inadvertido. En ruso no: la concordancia depende del número **y del
+caso**, y separarlos hace la frase intraducible. En japonés no hay
+plural, y el número puede ir en otro lugar de la oración.
+
+Diez claves estaban así. Ahora el número va **dentro** del texto
+(`"%lld canciones"`, `"Pósters: %lld encontrados"`), con argumentos
+posicionales donde hay dos (`"%1$lld días %2$lld h"`) para que una
+traducción pueda reordenarlos. Y una que parecía plural y no lo era --
+no dice *cuántos*, dice *qué pasa* -- quedó como dos claves sueltas, que
+es lo que el propio mensaje de Xcode sugiere.
+
+Vale anotarlo como lo que es: la regla de verificar con **los dos**
+(`swift test` y `xcodebuild -configuration Release`) existe desde ST-182,
+y esta es la segunda vez en la ronda que atrapa algo que el otro camino
+daba por bueno. Acá habría llegado a los cuatro idiomas nuevos y se
+habría visto recién al leerlos.

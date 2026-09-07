@@ -22,7 +22,7 @@ struct InstallingView: View {
                 .font(.title.bold())
             Text(message)
                 .foregroundStyle(.secondary)
-            Text("No desconectes el iPod ni cierres Aura Studio durante este paso.")
+            Text(LS("installing-view.no-desconectes-ipod-ni-cierres-aura"))
                 .font(.callout)
                 .foregroundStyle(.orange)
         }

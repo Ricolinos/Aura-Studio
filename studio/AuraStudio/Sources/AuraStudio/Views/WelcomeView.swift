@@ -39,16 +39,16 @@ struct WelcomeView: View {
                     HStack(alignment: .top, spacing: 10) {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundStyle(.red)
-                        Text("El firmware original de Apple se borra del arranque del iPod. Una vez instalado, el iPod solo arranca \(firmwareName); para volver a Apple hay que restaurarlo con iTunes/Finder desde cero. (El dual boot necesita un iPod en formato \"winpod\" -- restaurado desde Windows --, y un iPod restaurado desde Mac no lo es, asi que Aura Studio ya no lo ofrece.)")
+                        Text(LSf("welcome-view.firmware-original-apple-se-borra-arranqu", firmwareName))
                             .font(.callout)
                     }
-                    Toggle("Entiendo que el arranque de Apple se borra", isOn: $acknowledgedErase)
+                    Toggle(LS("welcome-view.entiendo-que-arranque-apple-se-borra"), isOn: $acknowledgedErase)
                         .toggleStyle(.checkbox)
                         .onChange(of: acknowledgedErase) { on in
                             if on { showAcknowledgeHint = false }
                         }
                     if showAcknowledgeHint && !acknowledgedErase {
-                        Label("Marca la casilla de arriba para continuar.", systemImage: "arrow.up")
+                        Label(LS("welcome-view.marca-casilla-arriba-para-continuar"), systemImage: "arrow.up")
                             .font(.callout.bold())
                             .foregroundStyle(.red)
                     }

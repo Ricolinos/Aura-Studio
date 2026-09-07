@@ -21,7 +21,7 @@ struct PrivilegedActionSheet: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Si cancelas:").font(.callout.bold())
+                Text(LS("privileged-action-sheet.si-cancelas")).font(.callout.bold())
                 Text(authorization.cancelConsequence)
                     .font(.callout)
                     .foregroundStyle(.secondary)
@@ -31,9 +31,9 @@ struct PrivilegedActionSheet: View {
             Spacer()
 
             HStack {
-                Button("Cancelar", role: .cancel, action: onCancel)
+                Button(LS("background-task-center-indicator.cancelar"), role: .cancel, action: onCancel)
                 Spacer()
-                Button("Continuar") {
+                Button(LS("installer-wizard-view.continuar")) {
                     onConfirm()
                 }
                 .buttonStyle(.borderedProminent)

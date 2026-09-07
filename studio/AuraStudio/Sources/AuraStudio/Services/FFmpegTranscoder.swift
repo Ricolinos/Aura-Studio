@@ -210,7 +210,7 @@ struct FFmpegTranscoder {
         process.executableURL = ffmpegURL
         process.arguments = [
             "-y", "-loglevel", "error",
-            "-ss", String(format: "%.2f", seekSeconds),
+            "-ss", String(format: LS("f-fmpeg-transcoder.2f"), seekSeconds),
             "-i", input.path,
             "-frames:v", "1",
             "-pix_fmt", "yuvj420p",
@@ -269,7 +269,7 @@ struct FFmpegTranscoder {
         let process = Process()
         process.executableURL = ffmpegURL
         process.arguments = [
-            "-ss", String(format: "%.2f", seek),
+            "-ss", String(format: LS("f-fmpeg-transcoder.2f"), seek),
             "-i", input.path,
             "-an",
             "-vf", "cropdetect=24:2:0",

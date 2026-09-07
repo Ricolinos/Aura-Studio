@@ -23,16 +23,16 @@ struct LicensesView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("Licencias").font(.title2.bold())
+                Text(LS("extras-view.licencias")).font(.title2.bold())
                 Spacer()
-                Button("Listo") { dismiss() }
+                Button(LS("automatic-update-view.listo")) { dismiss() }
                     .keyboardShortcut(.defaultAction)
             }
             .padding(20)
             Divider()
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
-                    Text("Aura Studio es gratuita y se distribuye sin fines comerciales. Trae embebidos, tal cual se publicaron y sin modificarlos, los firmwares instalables para iPod Classic 6G, todos software libre bajo la Licencia Pública General de GNU versión 2 (GPL v2). Cada uno es un derivado de Rockbox; su código fuente completo, la versión exacta incluida aquí y el registro de cambios respecto a Rockbox están en los enlaces de abajo, como exige la sección 3 de esa licencia.")
+                    Text(LS("licenses-view.aura-studio-es-gratuita-se-distribuye"))
                         .font(.callout)
                         .foregroundStyle(.secondary)
 
@@ -41,8 +41,8 @@ struct LicensesView: View {
                     }
 
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Rockbox").font(.headline)
-                        Text("Todos los firmwares, su bootloader dual-boot y la herramienta de flasheo mks5lboot derivan del proyecto Rockbox (GPL v2). Aura Studio no modifica ninguno de esos binarios.")
+                        Text(LS("licenses-view.rockbox")).font(.headline)
+                        Text(LS("licenses-view.todos-firmwares-su-bootloader-dual-boot"))
                             .font(.callout)
                             .foregroundStyle(.secondary)
                         LinkRow(title: "rockbox.org", url: URL(string: "https://www.rockbox.org/")!)
@@ -65,7 +65,7 @@ private struct FamilyLicenseCard: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Text(family.displayName).font(.headline)
-                Text("GPL v2")
+                Text(LS("licenses-view.gpl-v2"))
                     .font(.caption.bold())
                     .padding(.horizontal, 8)
                     .padding(.vertical, 2)
@@ -73,12 +73,12 @@ private struct FamilyLicenseCard: View {
                     .foregroundStyle(Color.accentColor)
             }
             if let tag = artifacts.releaseTag {
-                Text("Versión incluida: \(tag)")
+                Text(LSf("licenses-view.version-incluida", tag))
                     .font(.callout)
             } else {
                 // Una build hecha sin scripts/fetch-firmware.sh no trae el
                 // marcador: se dice, no se inventa un tag.
-                Text("Versión incluida: no registrada en esta build")
+                Text(LS("licenses-view.version-incluida-no-registrada-esta-buil"))
                     .font(.callout)
                     .foregroundStyle(.secondary)
             }

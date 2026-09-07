@@ -35,11 +35,11 @@ struct PlaylistsView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Playlists")
+                Text(LS("device-general-view.playlists"))
                     .font(.title2.bold())
                 Spacer()
-                Button("Importar...", action: importPlaylist)
-                Button("Listo", action: onDismiss)
+                Button(LS("playlists-view.importar"), action: importPlaylist)
+                Button(LS("automatic-update-view.listo"), action: onDismiss)
             }
             .padding()
 
@@ -61,7 +61,7 @@ struct PlaylistsView: View {
                 } else {
                     VStack {
                         Spacer()
-                        Text("Elige o crea una playlist")
+                        Text(LS("playlists-view.elige-o-crea-playlist"))
                             .foregroundStyle(.secondary)
                         Spacer()
                     }
@@ -146,7 +146,7 @@ struct PlaylistsView: View {
                     viewModel.removePlaylist(id: selectedPlaylistID)
                     self.selectedPlaylistID = nil
                 } label: {
-                    Label("Borrar playlist", systemImage: "trash")
+                    Label(LS("playlists-view.borrar-playlist"), systemImage: "trash")
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.red)
@@ -197,14 +197,14 @@ private struct PlaylistTrackEditor: View {
 
                 Text(playlist.name).font(.headline)
                 Spacer()
-                Button("Elegir imagen...", action: chooseImage)
+                Button(LS("playlists-view.elegir-imagen"), action: chooseImage)
                 if playlist.imageRelativePath != nil {
-                    Button("Quitar imagen") { viewModel.clearPlaylistImage(id: playlist.id) }
+                    Button(LS("playlists-view.quitar-imagen")) { viewModel.clearPlaylistImage(id: playlist.id) }
                 }
             }
             .padding([.top, .horizontal])
 
-            Text("En la playlist (\(includedItems.count))")
+            Text(LSf("playlists-view.playlist", includedItems.count))
                 .font(.caption).foregroundStyle(.secondary).padding(.horizontal)
             List {
                 ForEach(Array(includedItems.enumerated()), id: \.element.id) { _, item in
@@ -226,7 +226,7 @@ private struct PlaylistTrackEditor: View {
             .frame(minHeight: 120)
 
             if !availableItems.isEmpty {
-                Text("Agregar")
+                Text(LS("music-settings-view.agregar"))
                     .font(.caption).foregroundStyle(.secondary).padding(.horizontal)
                 List(availableItems) { item in
                     HStack {

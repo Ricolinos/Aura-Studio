@@ -37,26 +37,26 @@ struct GitHubTokenSettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                Text("GitHub (opcional)").font(.headline)
+                Text(LS("git-hub-token-settings-view.github-opcional")).font(.headline)
                 if isSaved {
-                    Label("Token en el Llavero", systemImage: "checkmark.circle.fill")
+                    Label(LS("git-hub-token-settings-view.token-llavero"), systemImage: "checkmark.circle.fill")
                         .font(.caption).foregroundStyle(.green)
                 }
                 Spacer()
                 Button {
                     NSWorkspace.shared.open(URL(string: "https://github.com/settings/personal-access-tokens/new")!)
                 } label: {
-                    Label("Crear el token en GitHub", systemImage: "arrow.up.right.square")
+                    Label(LS("git-hub-token-settings-view.crear-token-github"), systemImage: "arrow.up.right.square")
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.secondary)
                 .font(.caption)
             }
 
-            Text("Los repositorios de los firmwares son públicos: Aura Studio ya avisa de versiones nuevas sin necesitar nada de esto. Un token de solo lectura solo eleva el límite de consultas a la API de GitHub (útil si compartes tu conexión con muchas otras consultas); instalar el firmware nunca depende de esto, porque viene incluido en la app.")
+            Text(LS("git-hub-token-settings-view.repositorios-firmwares-son-publicos-aura"))
                 .font(.callout)
                 .foregroundStyle(.secondary)
-            Text("Si de todas formas quieres uno: crea un fine-grained token en github.com › Settings › Developer settings con acceso solo a Aura-Firmware, Metro-Aura y moonlit-aura y permiso Contents: Read-only.")
+            Text(LS("git-hub-token-settings-view.si-todas-formas-quieres-uno-crea"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
@@ -64,9 +64,9 @@ struct GitHubTokenSettingsView: View {
                 SecureField("Pega el token aquí (github_pat_… o ghp_…)", text: $tokenText)
                     .textFieldStyle(.roundedBorder)
                     .onChange(of: tokenText) { _, _ in saveMessage = nil }
-                Button("Guardar") { save() }
+                Button(LS("git-hub-token-settings-view.guardar")) { save() }
                 if isSaved {
-                    Button("Quitar", role: .destructive) {
+                    Button(LS("git-hub-token-settings-view.quitar"), role: .destructive) {
                         GitHubToken.delete()
                         tokenText = ""
                         isSaved = false
@@ -80,11 +80,11 @@ struct GitHubTokenSettingsView: View {
                     if isTesting {
                         ProgressView().controlSize(.small)
                     } else {
-                        Text("Probar")
+                        Text(LS("git-hub-token-settings-view.probar"))
                     }
                 }
                 .disabled(isTesting)
-                .help("Consulta los Releases de Aura-Firmware con el token guardado y muestra la versión más nueva")
+                .help(LS("git-hub-token-settings-view.consulta-releases-aura-firmware-con-toke"))
             }
 
             if let saveMessage {

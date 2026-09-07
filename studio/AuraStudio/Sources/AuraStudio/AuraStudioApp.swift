@@ -48,7 +48,7 @@ struct AuraStudioApp: App {
                 ViewMenuCommands()
                 Divider()
             }
-            CommandMenu("Biblioteca") {
+            CommandMenu(LS("aura-studio-app.biblioteca")) {
                 LibraryMenuCommands()
             }
         }

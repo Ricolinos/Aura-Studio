@@ -174,10 +174,10 @@ struct ContentView: View {
                     if isRefreshing {
                         ProgressView().controlSize(.small)
                     } else {
-                        Label("Actualizar", systemImage: "arrow.clockwise")
+                        Label(LS("content-view.actualizar"), systemImage: "arrow.clockwise")
                     }
                 }
-                .help("Vuelve a leer el estado del iPod y de tu biblioteca. No copia ni borra nada.")
+                .help(LS("content-view.vuelve-leer-estado-ipod-tu-biblioteca"))
                 .disabled(isRefreshing)
             }
         }
@@ -568,7 +568,7 @@ struct SyncMenuCommand: View {
     @FocusedValue(\.auraSyncCommand) private var context
 
     var body: some View {
-        Button("Sincronizar con el iPod") {
+        Button(LS("content-view.sincronizar-con-ipod")) {
             context?.action()
         }
         .keyboardShortcut("s", modifiers: [.command, .shift])
@@ -863,7 +863,7 @@ private struct SidebarView: View {
                     }
                 }
             }
-            Section("Aura Studio") {
+            Section(LS("content-view.aura-studio")) {
                 ForEach(SidebarSection.appSections, id: \.self) { section in
                     Label(section.title, systemImage: section.symbol)
                         .tag(section)

@@ -469,7 +469,7 @@ enum SimilarItemsDetector {
     private static func clock(_ seconds: Double?) -> String {
         guard let seconds else { return "--" }
         let total = Int(seconds.rounded())
-        return String(format: "%d:%02d", total / 60, total % 60)
+        return String(format: LS("similar-items-detector.d-02d"), total / 60, total % 60)
     }
 
     // MARK: - Sugerencia

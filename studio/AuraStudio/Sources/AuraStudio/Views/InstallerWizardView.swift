@@ -116,18 +116,18 @@ struct InstallerWizardView: View {
             .padding(32)
 
             if cancelableSteps.contains(viewModel.step) {
-                Button("Cancelar instalación", role: .destructive) {
+                Button(LS("installer-wizard-view.cancelar-instalacion"), role: .destructive) {
                     showCancelConfirm = true
                 }
                 .buttonStyle(.bordered)
                 .padding(.bottom, 20)
             }
         }
-        .alert("¿Detener el proceso?", isPresented: $showCancelConfirm) {
-            Button("Detener", role: .destructive) { viewModel.cancelFlow() }
-            Button("Continuar", role: .cancel) {}
+        .alert(LS("installer-wizard-view.detener-proceso"), isPresented: $showCancelConfirm) {
+            Button(LS("installer-wizard-view.detener"), role: .destructive) { viewModel.cancelFlow() }
+            Button(LS("installer-wizard-view.continuar"), role: .cancel) {}
         } message: {
-            Text("Detener el proceso a la mitad puede dejar el disco del iPod con errores. Si eso pasa, vuelve a correr el instalador para repararlo.")
+            Text(LS("installer-wizard-view.detener-proceso-mitad-puede-dejar-disco"))
         }
         // OJO: aqui NO va .onDisappear { viewModel.stop() } -- esta
         // vista desaparece con solo navegar a otra seccion de la barra

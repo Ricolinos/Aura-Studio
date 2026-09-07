@@ -18,7 +18,7 @@ struct EnterDFUView: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            Text("Entra a modo DFU")
+            Text(LS("enter-d-f-u-view.entra-modo-dfu"))
                 .font(.title.bold())
 
             VStack(alignment: .leading, spacing: 14) {
@@ -33,10 +33,10 @@ struct EnterDFUView: View {
 
             if canPauseServices, !monitor.state.isDFU {
                 VStack(spacing: 4) {
-                    Button("¿No aparece? Pausar los servicios de macOS que pueden interferir",
+                    Button(LS("enter-d-f-u-view.no-aparece-pausar-servicios-macos-que"),
                            action: onPauseServices)
                         .buttonStyle(.link)
-                    Text("Pedirá tu contraseña. Se reactivan solos al terminar.")
+                    Text(LS("enter-d-f-u-view.pedira-tu-contrasena-se-reactivan-solos"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -46,7 +46,7 @@ struct EnterDFUView: View {
             Spacer()
 
             HStack {
-                Button("Atrás", action: onBack)
+                Button(LS("back-continue-row.atras"), action: onBack)
                     .buttonStyle(.bordered)
                 Spacer()
             }
@@ -58,7 +58,7 @@ struct EnterDFUView: View {
     private var statusBadge: some View {
         switch monitor.state {
         case .dfuMode:
-            Label("Modo DFU detectado", systemImage: "checkmark.circle.fill")
+            Label(LS("enter-d-f-u-view.modo-dfu-detectado"), systemImage: "checkmark.circle.fill")
                 .foregroundStyle(.green)
                 .font(.headline)
         default:
@@ -67,7 +67,7 @@ struct EnterDFUView: View {
                 // correr, decirlo -- "Esperando modo DFU..." con el
                 // iPod ya en DFU era una espera sin salida.
                 VStack(spacing: 8) {
-                    Label("Aura Studio no puede detectar el modo DFU", systemImage: "exclamationmark.triangle.fill")
+                    Label(LS("enter-d-f-u-view.aura-studio-no-puede-detectar-modo"), systemImage: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
                         .font(.headline)
                     Text(problem)
@@ -77,7 +77,7 @@ struct EnterDFUView: View {
                         .frame(maxWidth: 460)
                 }
             } else {
-                Label("Esperando modo DFU...", systemImage: "antenna.radiowaves.left.and.right")
+                Label(LS("enter-d-f-u-view.esperando-modo-dfu"), systemImage: "antenna.radiowaves.left.and.right")
                     .foregroundStyle(.secondary)
             }
         }
@@ -90,7 +90,7 @@ private struct DFUStepRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Text("\(number)")
+            Text(LSf("await-bootloader-u-s-b-view.texto", number))
                 .font(.headline)
                 .foregroundStyle(.white)
                 .frame(width: 24, height: 24)

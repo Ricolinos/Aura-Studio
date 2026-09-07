@@ -254,19 +254,41 @@ final class LocalizationDraftTests: XCTestCase {
     /// cientos -- se deja documentado con `XCTSkip`, línea base de la
     /// auditoría (`docs/auditoria-idiomas.md`, 2026-09-06), para que
     /// "experto en código opus" quite el `XCTSkip` al cerrar A7a.
-    func testNoAccentedTextOrEneLiteralsOutsideStringLocalized_pendienteDeA7a() throws {
-        throw XCTSkip("""
-            Pendiente de A7a (extracción real sobre Sources/, ST-227). Forma: recorrer \
-            Sources/AuraStudio y fallar si aparece Text("...")/Label("...") (u otro de \
-            los patrones de tools/extraer-cadenas.py: Button/.help/.navigationTitle/Menu/ \
-            CommandMenu/.alert/Alert/Toggle/Picker/Section/String(format:)) con una letra \
-            acentuada o "ñ" en el literal, sin pasar por String(localized:)/ \
-            LocalizedStringKey con clave real. Línea base de HOY (docs/auditoria-idiomas.md, \
-            2026-09-06): 484 sitios como mínimo (225 Text + 169 Button + 43 Label + 31 \
-            .help + 7 .navigationTitle + 7 Menu + 2 .alert) en unos 45-50 archivos, \
-            concentrados en MediaSectionView/DeviceGeneralView/SimilarItemsView/ \
-            ArtistsView/ServicesSettingsView/BatchMediaInfoView. Quitar este XCTSkip \
-            cuando el conteo real deba ser 0 -- esa es la señal de que A7a cerró.
-            """)
+    /// El criterio de cierre de A7a: **cero** literales de interfaz con
+    /// acento o "ñ" fuera del catálogo. La línea base era 484 sitios.
+    ///
+    /// Se mira el acento a propósito: es la señal barata y sin falsos
+    /// positivos de que un literal es texto **para el usuario** y no un
+    /// identificador, una clave o un nombre de sistema.
+    func testNoAccentedInterfaceLiteralsRemainOutsideTheCatalog() throws {
+        let sources = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().appendingPathComponent("Sources/AuraStudio")
+        let constructors = ["Text", "Button", "Label", "Menu", "CommandMenu", "Toggle",
+                            "Picker", "Section", "Alert"]
+        let modifiers = [".help", ".navigationTitle", ".alert"]
+        let accented = CharacterSet(charactersIn: "áéíóúÁÉÍÓÚñÑ¿¡üÜ")
+
+        var offenders: [String] = []
+        let walker = FileManager.default.enumerator(at: sources, includingPropertiesForKeys: nil)
+        while let url = walker?.nextObject() as? URL {
+            guard url.pathExtension == "swift" else { continue }
+            // El catálogo mismo y el puente de bundles no son interfaz.
+            guard url.lastPathComponent != "AppStrings.swift" else { continue }
+            let text = try String(contentsOf: url, encoding: .utf8)
+            for (number, line) in text.split(separator: "\n", omittingEmptySubsequences: false).enumerated() {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                guard !trimmed.hasPrefix("//") else { continue }
+                let opensLiteral = constructors.contains { trimmed.contains("\($0)(\"") }
+                    || modifiers.contains { trimmed.contains("\($0)(\"") }
+                guard opensLiteral else { continue }
+                guard line.rangeOfCharacter(from: accented) != nil else { continue }
+                offenders.append("\(url.lastPathComponent):\(number + 1)  \(trimmed.prefix(90))")
+            }
+        }
+
+        XCTAssertTrue(offenders.isEmpty,
+                      "quedan \(offenders.count) literales de interfaz fuera del catálogo:\n"
+                        + offenders.prefix(20).joined(separator: "\n"))
     }
 }

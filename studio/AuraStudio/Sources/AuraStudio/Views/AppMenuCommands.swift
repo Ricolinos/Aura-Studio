@@ -64,13 +64,13 @@ struct EditMenuCommands: View {
     @FocusedValue(\.auraSelectionCommand) private var context
 
     var body: some View {
-        Button("Seleccionar todo") {
+        Button(LS("app-menu-commands.seleccionar-todo")) {
             context?.selectAll()
         }
         .keyboardShortcut("a", modifiers: .command)
         .disabled(context == nil)
 
-        Button("Deseleccionar todo") {
+        Button(LS("app-menu-commands.deseleccionar-todo")) {
             context?.deselectAll()
         }
         .keyboardShortcut("a", modifiers: [.command, .shift])
@@ -102,7 +102,7 @@ struct AppUpdateMenuCommand: View {
     @FocusedValue(\.auraAppUpdateCommand) private var context
 
     var body: some View {
-        Button("Buscar actualizaciones de Aura Studio...") {
+        Button(LS("app-menu-commands.buscar-actualizaciones-aura-studio")) {
             context?.check()
         }
         .disabled(context == nil || context?.isChecking == true)
@@ -115,7 +115,7 @@ struct AddToLibraryMenuCommand: View {
     @FocusedValue(\.auraLibraryCommand) private var context
 
     var body: some View {
-        Button("Agregar a la biblioteca...") {
+        Button(LS("app-menu-commands.agregar-biblioteca")) {
             context?.addFiles()
         }
         .keyboardShortcut("o", modifiers: .command)
@@ -131,7 +131,7 @@ struct ViewMenuCommands: View {
 
     var body: some View {
         Toggle(isOn: $preferences.showStatusBar) {
-            Text("Mostrar barra de estado")
+            Text(LS("app-menu-commands.mostrar-barra-estado"))
         }
         .keyboardShortcut("/", modifiers: .command)
 
@@ -166,7 +166,7 @@ struct LibraryMenuCommands: View {
     @FocusedValue(\.auraLibraryCommand) private var context
 
     var body: some View {
-        Button("Buscar elementos similares...") {
+        Button(LS("app-menu-commands.buscar-elementos-similares")) {
             context?.showSimilarItems()
         }
         .keyboardShortcut("d", modifiers: [.command, .option])
@@ -174,7 +174,7 @@ struct LibraryMenuCommands: View {
 
         Divider()
 
-        Button("Mostrar carpeta de la biblioteca en Finder") {
+        Button(LS("app-menu-commands.mostrar-carpeta-biblioteca-finder")) {
             context?.revealLibraryFolder()
         }
         .disabled(context == nil)

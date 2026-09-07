@@ -80,16 +80,16 @@ struct BatchEditWarningSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("¿Quieres editar varios elementos?").font(.title3.bold())
-            Text("Vas a editar \(count) canciones a la vez. Los campos que no coincidan entre todas se muestran como \"Mixto\" -- lo que escribas se aplica a las \(count). El título y el número de pista no se pueden editar en lote.")
+            Text(LS("batch-media-info-view.quieres-editar-varios-elementos")).font(.title3.bold())
+            Text(LSf("batch-media-info-view.vas-editar-canciones-vez-campos-que", count, count))
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-            Toggle("No volver a mostrar", isOn: $dontShowAgain)
+            Toggle(LS("batch-media-info-view.no-volver-mostrar"), isOn: $dontShowAgain)
             HStack {
                 Spacer()
-                Button("Cancelar", action: onCancel)
-                Button("Editar elementos") { onConfirm(dontShowAgain) }
+                Button(LS("background-task-center-indicator.cancelar"), action: onCancel)
+                Button(LS("batch-media-info-view.editar-elementos")) { onConfirm(dontShowAgain) }
                     .buttonStyle(.borderedProminent)
             }
         }
@@ -173,8 +173,8 @@ struct BatchMediaInfoView: View {
                     RoundedRectangle(cornerRadius: 6).stroke(Color.accentColor, lineWidth: 2)
                 )
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(items.count) canciones seleccionadas").font(.title3.bold())
-                Text("Editar varios elementos")
+                Text(LSf("batch-media-info-view.canciones-seleccionadas", items.count)).font(.title3.bold())
+                Text(LS("batch-media-info-view.editar-varios-elementos"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -185,17 +185,17 @@ struct BatchMediaInfoView: View {
 
     private var ratingSection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Calificación").font(.callout)
+            Text(LS("batch-media-info-view.calificacion")).font(.callout)
             HStack(spacing: 8) {
                 StarRatingView(rating: Binding(
                     get: { rating ?? 0 },
                     set: { rating = $0; ratingIsMixed = false }
                 ))
                 if ratingIsMixed {
-                    Text("Mixto").font(.caption).foregroundStyle(.secondary)
+                    Text(LS("batch-media-info-view.mixto")).font(.caption).foregroundStyle(.secondary)
                 }
             }
-            Text("Se aplica a las \(items.count) canciones seleccionadas.")
+            Text(LSf("batch-media-info-view.se-aplica-canciones-seleccionadas", items.count))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -207,19 +207,19 @@ struct BatchMediaInfoView: View {
     /// edita de a una desde "Cambiar nombre..."/"Más información...".
     private var lockedFieldsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("No editables en lote").font(.callout)
+            Text(LS("batch-media-info-view.no-editables-lote")).font(.callout)
             Form {
                 TextField("Título", text: .constant(titleIsMixed ? "" : (items.first?.metadata?.title ?? "")))
                     .disabled(true)
                     .overlay(alignment: .trailing) {
                         if titleIsMixed {
-                            Text("Mixto").font(.caption).foregroundStyle(.secondary).padding(.trailing, 6)
+                            Text(LS("batch-media-info-view.mixto")).font(.caption).foregroundStyle(.secondary).padding(.trailing, 6)
                         }
                     }
                 TextField("N.º de pista", text: .constant("Distinto por canción"))
                     .disabled(true)
             }
-            Text("Se editan de a una canción -- usa \"Cambiar nombre...\" o \"Más información...\" sobre un solo elemento.")
+            Text(LS("batch-media-info-view.se-editan-cancion-usa-cambiar-nombre"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -228,7 +228,7 @@ struct BatchMediaInfoView: View {
 
     private var editableFieldsForm: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Metadata").font(.callout)
+            Text(LS("batch-media-info-view.metadata")).font(.callout)
             Form {
                 batchTextField("Artista", field: $artist)
                 batchTextField("Álbum", field: $album)
@@ -251,8 +251,8 @@ struct BatchMediaInfoView: View {
     private var footer: some View {
         HStack {
             Spacer()
-            Button("Cancelar", action: onCancel)
-            Button("Editar elementos") {
+            Button(LS("background-task-center-indicator.cancelar"), action: onCancel)
+            Button(LS("batch-media-info-view.editar-elementos")) {
                 var changes = BatchMetadataChanges()
                 changes.artist = artist.valueToApply
                 changes.album = album.valueToApply

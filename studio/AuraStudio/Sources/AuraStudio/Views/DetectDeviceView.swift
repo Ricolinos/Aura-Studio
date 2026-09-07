@@ -13,7 +13,7 @@ struct DetectDeviceView: View {
             statusIcon
                 .font(.system(size: 48))
 
-            Text("Buscando tu iPod...")
+            Text(LS("detect-device-view.buscando-tu-ipod"))
                 .font(.title.bold())
 
             statusText
@@ -24,10 +24,10 @@ struct DetectDeviceView: View {
             Spacer()
 
             HStack {
-                Button("Atrás", action: onBack)
+                Button(LS("back-continue-row.atras"), action: onBack)
                     .buttonStyle(.bordered)
                 Spacer()
-                Button("Ya lo conecte, continuar igual") {
+                Button(LS("detect-device-view.ya-lo-conecte-continuar-igual")) {
                     onDeviceReady()
                 }
                 .buttonStyle(.bordered)
@@ -72,17 +72,17 @@ struct DetectDeviceView: View {
     private var statusText: some View {
         switch monitor.state {
         case .notConnected, .detecting:
-            Text("Conecta tu iPod Classic 6G a este Mac por USB. Si iTunes/Music se abre solo, puedes cerrarlo -- no interfiere con Aura Studio.")
+            Text(LS("detect-device-view.conecta-tu-ipod-classic-6g-este"))
         case .diskMode(let info) where !info.isFAT32:
-            Text("Encontramos \"\(info.volumeName)\", con el firmware original de Apple (no esta en FAT32 todavia). No hace falta que lo conviertas: haz clic en \"Ya lo conecte, continuar igual\" y Aura Studio lo formatea automaticamente en el paso de preparar el disco, mas adelante.")
+            Text(LSf("detect-device-view.encontramos-con-firmware-original-apple", info.volumeName))
         case .diskModeNoFilesystem:
-            Text("Encontramos tu iPod, pero su disco no tiene un sistema de archivos legible (asi se ve en el modo bootloader, o si una instalacion quedo a medias). Haz clic en \"Ya lo conecte, continuar igual\" para prepararlo e instalar Aura.")
+            Text(LS("detect-device-view.encontramos-tu-ipod-pero-su-disco"))
         case .diskMode(let info):
-            Text("Encontramos \"\(info.volumeName)\". Preparando el siguiente paso...")
+            Text(LSf("detect-device-view.encontramos-preparando-siguiente-paso", info.volumeName))
         case .dfuMode:
-            Text("Tu iPod ya esta en modo DFU.")
+            Text(LS("detect-device-view.tu-ipod-ya-esta-modo-dfu"))
         case .unknown:
-            Text("Encontramos un dispositivo Apple, pero no pudimos confirmar que sea un iPod Classic 6G.")
+            Text(LS("detect-device-view.encontramos-dispositivo-apple-pero-no-pu"))
         }
     }
 }

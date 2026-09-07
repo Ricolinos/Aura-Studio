@@ -39,7 +39,7 @@ enum CoverStore {
     }
 
     static func hash(_ data: Data) -> String {
-        SHA256.hash(data: data).map { String(format: "%02X", $0) }.joined()
+        SHA256.hash(data: data).map { String(format: LS("cover-store.02x"), $0) }.joined()
     }
 
     /// El hash de un archivo ya escrito -- para la migración de un

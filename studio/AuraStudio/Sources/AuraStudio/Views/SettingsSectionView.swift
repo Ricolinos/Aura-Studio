@@ -161,8 +161,8 @@ struct SettingsSectionView: View {
     private var libraryTab: some View {
         VStack(alignment: .leading, spacing: 24) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Carpeta de la biblioteca Aura").font(.headline)
-                Text("Aquí vive el catálogo de tu biblioteca -- funciona aunque el iPod no esté conectado, y se sincroniza al conectarlo. Que además copie tus archivos aquí depende del ajuste de abajo.")
+                Text(LS("settings-section-view.carpeta-biblioteca-aura")).font(.headline)
+                Text(LS("settings-section-view.aqui-vive-catalogo-tu-biblioteca-funcion"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -174,10 +174,10 @@ struct SettingsSectionView: View {
                         .lineLimit(1)
                         .truncationMode(.middle)
                     Spacer()
-                    Button("Mostrar en Finder") {
+                    Button(LS("albums-view.mostrar-finder")) {
                         NSWorkspace.shared.open(URL(fileURLWithPath: preferences.libraryFolderPath, isDirectory: true))
                     }
-                    Button("Cambiar...") {
+                    Button(LS("settings-section-view.cambiar")) {
                         chooseLibraryFolder()
                     }
                 }
@@ -190,7 +190,7 @@ struct SettingsSectionView: View {
                 // que dice una sola no es elegir.
                 Text(S.storageSectionTitle.text).font(.headline).padding(.top, 4)
                     .accessibilityIdentifier("ajustes.almacenamiento.seccion")
-                Toggle("Crear copias de los medios en la Biblioteca de Aura", isOn: $preferences.copyMediaIntoLibrary)
+                Toggle(LS("settings-section-view.crear-copias-medios-biblioteca-aura"), isOn: $preferences.copyMediaIntoLibrary)
                 VStack(alignment: .leading, spacing: 6) {
                     Text(S.storageCopyExplainer.text)
                     Text(S.storageReferenceExplainer.text)
@@ -259,14 +259,14 @@ struct SettingsSectionView: View {
     /// carpetas no debería hacerlas desaparecer de esta lista.
     private var linkedFoldersSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Bibliotecas vinculadas").font(.headline)
-            Text("Carpetas externas que arrastraste a Aura con \"Crear copias de los medios...\" apagado -- Aura no copia nada de ahí, solo las recuerda acá. Quitar una carpeta de esta lista no borra ni desvincula lo que ya importaste desde ella, solo deja de mostrarla.")
+            Text(LS("settings-section-view.bibliotecas-vinculadas")).font(.headline)
+            Text(LS("settings-section-view.carpetas-externas-que-arrastraste-aura-c"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             if preferences.linkedLibraryFolders.isEmpty {
-                Text("Todavía no arrastraste ninguna carpeta con ese ajuste apagado.")
+                Text(LS("settings-section-view.todavia-no-arrastraste-ninguna-carpeta-c"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
@@ -287,7 +287,7 @@ struct SettingsSectionView: View {
                             }
                             .buttonStyle(.plain)
                             .foregroundStyle(.secondary)
-                            .help("Dejar de mostrar esta carpeta acá")
+                            .help(LS("settings-section-view.dejar-mostrar-esta-carpeta-aca"))
                         }
                         .padding(8)
                         .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.08)))
@@ -325,13 +325,13 @@ struct AppUpdateSettingsSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Actualizaciones de Aura Studio").font(.headline)
+            Text(LS("settings-section-view.actualizaciones-aura-studio")).font(.headline)
 
             HStack(spacing: 10) {
-                Text("Versión instalada: \(AppVersion.current)")
+                Text(LSf("settings-section-view.version-instalada", AppVersion.current))
                     .font(.callout.monospaced())
                 Spacer()
-                Button("Buscar actualizaciones") {
+                Button(LS("settings-section-view.buscar-actualizaciones")) {
                     Task { await checker.checkNow() }
                 }
                 .disabled(checker.isChecking)
@@ -346,9 +346,8 @@ struct AppUpdateSettingsSection: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            Toggle("Avisarme también de versiones beta", isOn: $includePrereleases)
-            Text("Hoy todas las versiones publicadas de Aura Studio son beta, así que conviene dejarlo activado. "
-                 + "Aura Studio nunca se actualiza sola: solo te avisa y te deja bajar el instalador.")
+            Toggle(LS("settings-section-view.avisarme-tambien-versiones-beta"), isOn: $includePrereleases)
+            Text(LS("settings-section-view.hoy-todas-versiones-publicadas-aura-stud"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -359,15 +358,15 @@ struct AppUpdateSettingsSection: View {
     private func outcomeText(_ outcome: AppUpdateDecision.Outcome) -> some View {
         switch outcome {
         case .upToDate:
-            Text("Ya tienes la versión más nueva.")
+            Text(LS("settings-section-view.ya-tienes-version-mas-nueva"))
                 .foregroundStyle(.secondary)
         case .available(let update):
-            Text("Hay una versión nueva: \(update.version.releaseString). El aviso está al pie de la ventana.")
+            Text(LSf("settings-section-view.hay-version-nueva-aviso-esta-al", update.version.releaseString))
                 .foregroundStyle(AuraColors.light.accent)
         case .couldNotCheck(let reason):
             // Se dice QUE no se pudo y POR QUÉ. "No hay novedades" sería
             // una respuesta distinta y no es la que tenemos.
-            Text("No se pudo comprobar: \(reason)")
+            Text(LSf("settings-section-view.no-se-pudo-comprobar", reason))
                 .foregroundStyle(.secondary)
         }
     }

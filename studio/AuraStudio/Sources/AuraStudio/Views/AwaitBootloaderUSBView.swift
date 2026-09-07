@@ -15,9 +15,9 @@ struct AwaitBootloaderUSBView: View {
             Image(systemName: "checkmark.seal.fill")
                 .font(.system(size: 44))
                 .foregroundStyle(.green)
-            Text("Arranque grabado")
+            Text(LS("await-bootloader-u-s-b-view.arranque-grabado"))
                 .font(.title.bold())
-            Text("El bootloader de Aura ya está en tu iPod. Ahora falta copiar Aura al disco.")
+            Text(LS("await-bootloader-u-s-b-view.bootloader-aura-ya-esta-tu-ipod"))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 460)
@@ -39,20 +39,20 @@ struct AwaitBootloaderUSBView: View {
     private var statusBadge: some View {
         switch monitor.state {
         case .diskMode(let info) where info.usb?.runningFirmware == .apple:
-            Label("El iPod apareció con el firmware de Apple -- el arranque no se grabó", systemImage: "exclamationmark.triangle.fill")
+            Label(LS("await-bootloader-u-s-b-view.ipod-aparecio-con-firmware-apple-arranqu"), systemImage: "exclamationmark.triangle.fill")
                 .foregroundStyle(.orange)
                 .font(.headline)
         case .diskMode:
-            Label("Disco detectado -- copiando Aura...", systemImage: "checkmark.circle.fill")
+            Label(LS("await-bootloader-u-s-b-view.disco-detectado-copiando-aura"), systemImage: "checkmark.circle.fill")
                 .foregroundStyle(.green)
                 .font(.headline)
         case .dfuMode:
-            Label("El iPod sigue en DFU. Reinícialo con SELECT + MENU.", systemImage: "antenna.radiowaves.left.and.right")
+            Label(LS("await-bootloader-u-s-b-view.ipod-sigue-dfu-reinicialo-con-select"), systemImage: "antenna.radiowaves.left.and.right")
                 .foregroundStyle(.secondary)
         default:
             HStack(spacing: 8) {
                 ProgressView().controlSize(.small)
-                Text("Esperando a que el iPod reaparezca como disco...")
+                Text(LS("await-bootloader-u-s-b-view.esperando-que-ipod-reaparezca-como-disco"))
                     .foregroundStyle(.secondary)
             }
         }
@@ -65,7 +65,7 @@ private struct StepRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Text("\(number)")
+            Text(LSf("await-bootloader-u-s-b-view.texto", number))
                 .font(.headline)
                 .foregroundStyle(.white)
                 .frame(width: 26, height: 26)

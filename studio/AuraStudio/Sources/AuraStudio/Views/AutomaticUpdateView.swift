@@ -24,7 +24,7 @@ struct AutomaticUpdateView: View {
                              dualBoot: !viewModel.destroyOriginalFirmware,
                              assumedBootloaderWithoutVerifying: viewModel.bootloaderAlreadyInstalled,
                              onBootloaderMissing: viewModel.retryWithBootloaderFlash)
-                    Button("Listo") {
+                    Button(LS("automatic-update-view.listo")) {
                         viewModel.dismissAutomaticUpdate()
                     }
                     .buttonStyle(.borderedProminent)

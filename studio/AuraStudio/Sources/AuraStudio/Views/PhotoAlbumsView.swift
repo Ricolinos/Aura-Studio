@@ -377,10 +377,10 @@ struct PhotoAlbumsView: View {
         let anyKnown = targets.contains { !$0.isUnknown }
 
         if !plural {
-            Button("Abrir") { selectedAlbumID = album.id }
+            Button(LS("albums-view.abrir")) { selectedAlbumID = album.id }
             Divider()
         }
-        Menu("Cambiar categoría") {
+        Menu(LS("media-section-view.cambiar-categoria")) {
             ForEach(preferences.photoCollections, id: \.self) { collection in
                 Button(collection) {
                     viewModel.setCategory(collection, forItems: Set(items.map(\.id)))
@@ -391,17 +391,17 @@ struct PhotoAlbumsView: View {
         if anyKnown {
             Divider()
             if !plural {
-                Button("Renombrar álbum...") { renamingAlbum = album }
+                Button(LS("photo-albums-view.renombrar-album")) { renamingAlbum = album }
             }
             Button(plural ? "Disolver álbumes" : "Disolver álbum", role: .destructive) {
                 viewModel.dissolvePhotoAlbum(items: Set(items.map(\.id)))
             }
         }
         Divider()
-        Button("Mostrar en Finder") {
+        Button(LS("albums-view.mostrar-finder")) {
             NSWorkspace.shared.activateFileViewerSelecting(items.map(\.sourceURL))
         }
-        Button("Eliminar fotos de la biblioteca", role: .destructive) {
+        Button(LS("photo-albums-view.eliminar-fotos-biblioteca"), role: .destructive) {
             viewModel.deleteItems(ids: Set(items.map(\.id)))
         }
     }
@@ -437,7 +437,7 @@ struct PhotoAlbumsView: View {
                 Text(album.title)
                     .font(.title.bold())
                     .lineLimit(1)
-                Text(album.count == 1 ? "1 foto" : "\(album.count) fotos")
+                Text(LSf("photo-albums-view.plural.fotos", album.count))
                     .font(.title3)
                     .foregroundStyle(.secondary)
             }
@@ -514,24 +514,24 @@ struct PhotoAlbumsView: View {
         let plural = targets.count > 1
 
         if !plural {
-            Button("Vista previa") { quickLook.toggle(for: item.sourceURL) }
+            Button(LS("photo-albums-view.vista-previa")) { quickLook.toggle(for: item.sourceURL) }
             Divider()
         }
-        Menu("Cambiar categoría") {
+        Menu(LS("media-section-view.cambiar-categoria")) {
             ForEach(preferences.photoCollections, id: \.self) { collection in
                 Button(collection) {
                     viewModel.setCategory(collection, forItems: Set(targets.map(\.id)))
                 }
             }
         }
-        Button("Quitar del álbum") {
+        Button(LS("photo-albums-view.quitar-album")) {
             viewModel.dissolvePhotoAlbum(items: Set(targets.map(\.id)))
         }
-        Button("Mostrar en Finder") {
+        Button(LS("albums-view.mostrar-finder")) {
             NSWorkspace.shared.activateFileViewerSelecting(targets.map(\.sourceURL))
         }
         Divider()
-        Button("Eliminar de la biblioteca", role: .destructive) {
+        Button(LS("photo-albums-view.eliminar-biblioteca"), role: .destructive) {
             viewModel.deleteItems(ids: Set(targets.map(\.id)))
         }
     }
@@ -556,17 +556,17 @@ private struct AlbumRenameSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Renombrar álbum").font(.title3.bold())
+            Text(LS("photo-albums-view.renombrar-album-2")).font(.title3.bold())
             TextField("Nombre del álbum", text: $text)
                 .textFieldStyle(.roundedBorder)
                 .onSubmit { onSave(trimmed) }
-            Text("Dejarlo vacío disuelve el álbum -- las fotos vuelven a \"Sin álbum\".")
+            Text(LS("photo-albums-view.dejarlo-vacio-disuelve-album-fotos-vuelv"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
             HStack {
                 Spacer()
-                Button("Cancelar", action: onCancel)
-                Button("Guardar") { onSave(trimmed) }
+                Button(LS("background-task-center-indicator.cancelar"), action: onCancel)
+                Button(LS("git-hub-token-settings-view.guardar")) { onSave(trimmed) }
                     .buttonStyle(.borderedProminent)
             }
         }

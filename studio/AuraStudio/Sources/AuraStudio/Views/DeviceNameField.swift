@@ -40,7 +40,7 @@ struct DeviceNameField: View {
                     draft = name
                     isEditing = true
                 }
-                .help("Haz clic para cambiar el nombre del iPod")
+                .help(LS("device-name-field.haz-clic-para-cambiar-nombre-ipod"))
         }
     }
 

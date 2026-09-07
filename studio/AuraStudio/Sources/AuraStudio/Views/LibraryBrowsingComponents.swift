@@ -301,7 +301,7 @@ struct PhotoAlbumCardView: View {
                 .font(.callout.weight(.medium))
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)
-            Text(album.count == 1 ? "1 foto" : "\(album.count) fotos")
+            Text(LSf("library-browsing.plural.fotos", album.count))
                 .font(.callout)
                 .foregroundStyle(.secondary)
         }
@@ -546,7 +546,7 @@ struct LibrarySearchField: View {
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
-                .help("Borrar búsqueda")
+                .help(LS("library-browsing-components.borrar-busqueda"))
             }
         }
         .padding(.horizontal, 8)

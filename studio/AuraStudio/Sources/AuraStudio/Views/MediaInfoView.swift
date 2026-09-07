@@ -125,7 +125,7 @@ struct MediaInfoView: View {
                     .overlay(Image(systemName: symbolName).foregroundStyle(.secondary))
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text("Más información").font(.title3.bold())
+                Text(LS("media-info-view.mas-informacion")).font(.title3.bold())
                 Text(item.sourceURL.lastPathComponent)
                     .font(.caption)
                     .foregroundStyle(.secondary)
@@ -148,9 +148,9 @@ struct MediaInfoView: View {
 
     private var ratingSection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Calificación").font(.callout)
+            Text(LS("batch-media-info-view.calificacion")).font(.callout)
             StarRatingView(rating: $rating)
-            Text("Se sincroniza con el iPod: la misma calificación que se elige acá o en \"Ahora suena\" del aparato.")
+            Text(LS("media-info-view.se-sincroniza-con-ipod-misma-calificacio"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -158,7 +158,7 @@ struct MediaInfoView: View {
 
     private var metadataForm: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Metadata").font(.callout)
+            Text(LS("batch-media-info-view.metadata")).font(.callout)
             Form {
                 TextField("Título", text: $title)
                 TextField("Artista", text: $artist)
@@ -173,7 +173,7 @@ struct MediaInfoView: View {
                 TextField("Autor (opcional)", text: $composer)
             }
             if !isComplete {
-                Label("Título, artista y álbum son obligatorios para sincronizar.", systemImage: "exclamationmark.circle")
+                Label(LS("media-info-view.titulo-artista-album-son-obligatorios-pa"), systemImage: "exclamationmark.circle")
                     .font(.caption)
                     .foregroundStyle(.orange)
             }
@@ -182,12 +182,12 @@ struct MediaInfoView: View {
 
     private var lyricsSection: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Letra (opcional)").font(.callout)
+            Text(LS("media-info-view.letra-opcional")).font(.callout)
             TextEditor(text: $lyrics)
                 .font(.callout.monospaced())
                 .frame(height: 100)
                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(Color.secondary.opacity(0.3)))
-            Text("Se guarda junto a la canción y se muestra en pantalla mientras suena en el iPod.")
+            Text(LS("media-info-view.se-guarda-junto-cancion-se-muestra"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -200,7 +200,7 @@ struct MediaInfoView: View {
     /// reabrir la hoja los revela.
     private var videoInfoSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Información").font(.callout)
+            Text(LS("media-info-view.informacion")).font(.callout)
             Form {
                 TextField("Título", text: $videoTitle)
                 if isSeriesItem {
@@ -216,7 +216,7 @@ struct MediaInfoView: View {
                 }
             }
             if isSeriesItem {
-                Text("El nombre de destino en el iPod se arma con estos tres campos -- cambiarlos y sincronizar de nuevo reagrupa el episodio en Movie Flow.")
+                Text(LS("media-info-view.nombre-destino-ipod-se-arma-con"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -225,8 +225,8 @@ struct MediaInfoView: View {
 
     private func categorySection(_ categories: [String]) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("Categoría").font(.callout)
-            Picker("Categoría", selection: Binding(
+            Text(LS("media-info-view.categoria")).font(.callout)
+            Picker(LS("media-info-view.categoria"), selection: Binding(
                 get: { item.category ?? categories.first ?? "" },
                 set: { onCategoryChanged($0) }
             )) {
@@ -241,7 +241,7 @@ struct MediaInfoView: View {
 
     private var fileSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Archivo").font(.callout)
+            Text(LS("media-info-view.archivo")).font(.callout)
             infoRow("Ubicación", item.sourceURL.path)
             infoRow("Formato", item.sourceURL.pathExtension.uppercased())
             infoRow("Tamaño", fileSizeText)
@@ -286,9 +286,9 @@ struct MediaInfoView: View {
     private var footer: some View {
         HStack {
             Spacer()
-            Button("Cancelar", action: onCancel)
+            Button(LS("background-task-center-indicator.cancelar"), action: onCancel)
             if item.kind == .music {
-                Button("Guardar") {
+                Button(LS("git-hub-token-settings-view.guardar")) {
                     var metadata = item.metadata ?? TrackMetadata()
                     metadata.title = title.isEmpty ? nil : title
                     metadata.artist = artist.isEmpty ? nil : artist
@@ -310,7 +310,7 @@ struct MediaInfoView: View {
                 .buttonStyle(.borderedProminent)
                 .disabled(!isComplete)
             } else if item.kind == .video, let onVideoInfoChanged {
-                Button("Guardar") {
+                Button(LS("git-hub-token-settings-view.guardar")) {
                     onVideoInfoChanged(
                         videoTitle.isEmpty ? nil : videoTitle,
                         isSeriesItem && !seriesName.isEmpty ? seriesName : nil,
@@ -320,7 +320,7 @@ struct MediaInfoView: View {
                 }
                 .buttonStyle(.borderedProminent)
             } else {
-                Button("Listo", action: onCancel)
+                Button(LS("automatic-update-view.listo"), action: onCancel)
                     .buttonStyle(.borderedProminent)
             }
         }

@@ -41,7 +41,7 @@ final class ArtistImageStore: @unchecked Sendable {
             } else if scalar == " " {
                 out.append("-")
             } else {
-                out += String(format: "_%02x", scalar.value & 0xFF)
+                out += String(format: LS("artist-image-store.02x"), scalar.value & 0xFF)
             }
         }
         if out.isEmpty { out = "artista" }
