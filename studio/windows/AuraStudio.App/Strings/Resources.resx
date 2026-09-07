@@ -585,9 +585,6 @@
   <data name="app-strings.library-section-only-its-type-libraryitemkind-video" xml:space="preserve">
     <value>Esta sección solo acepta video. Una imagen con el mismo nombre que un video se guarda como su póster.</value>
   </data>
-  <data name="app-strings.library-section-only-its-type-texto" xml:space="preserve">
-    <value></value>
-  </data>
   <data name="app-strings.library-similar-found-on-drop" xml:space="preserve">
     <value>{0} Encontramos elementos parecidos entre lo que agregaste — revísalos en Similares.</value>
   </data>
@@ -1268,9 +1265,6 @@
   </data>
   <data name="media-grid-page.xaml.renombrar-album" xml:space="preserve">
     <value>Renombrar álbum</value>
-  </data>
-  <data name="media-grid-view-model.texto" xml:space="preserve">
-    <value></value>
   </data>
   <data name="media-info-dialog.cancelar" xml:space="preserve">
     <value>Cancelar</value>
