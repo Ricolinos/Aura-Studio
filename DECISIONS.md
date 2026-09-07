@@ -11055,3 +11055,52 @@ real de `LocalTagReader`), confirmar que ambas lecturas coinciden con
 los campos editados y que el audio no cambió. Sustituir la generación
 del fixture por la llamada real al escritor es el único cambio que
 hace falta -- las aserciones no cambian.
+
+## ST-227 (encargo de la maestra): extracción en seco de cadenas para A7a
+
+Encargo de "Sesión Maestra" tras la auditoría de idiomas (ST-227,
+`docs/auditoria-idiomas.md`): una herramienta que recorra
+`Sources/AuraStudio/` y proponga la extracción, sin tocar nada --
+insumo para que "experto en código opus" aplique el cambio real en
+A7a, no una migración automática.
+
+`tools/extraer-cadenas.py` (Python: mejor ergonomía para regex/JSON que
+Swift para esto en concreto, y corre sin paso de compilación --
+`python3 tools/extraer-cadenas.py`). Reconoce trece formas de literal
+de interfaz (`Text`, `Button`, `Label`, `.help`, `.navigationTitle`,
+`Menu`, `CommandMenu`, `.alert`, `Alert(title: Text(...))`, `Toggle`,
+`Picker`, `Section`, `String(format:)`), propone una clave
+`<archivo-en-kebab-case>.<slug-del-texto>`, junta bajo una sola clave
+el mismo texto repetido en varios sitios, y convierte interpolaciones
+`\(expr)` a `%@`/`%lld` (heurística: `%lld` si `expr` huele a conteo,
+`%@` si no -- para revisar a mano, no un resultado final).
+
+Corrida contra `Sources/AuraStudio/` (150 archivos):
+
+- **513 sitios** de literal encontrados (más que los 484 de la
+  auditoría -- el resto sale de agregar `Toggle`/`Picker`/`Section`/
+  `Alert`/`String(format:)`, que la auditoría no había contado).
+- **401 claves únicas** propuestas.
+- **48 textos duplicados** (el mismo texto exacto en 2+ sitios, una
+  sola clave -- p. ej. "Abrir" aparece en `AlbumsView`/`MoviesView`/
+  `PhotoAlbumsView`/`SeriesView`, cuatro sitios, una clave).
+- **23 ternarios de plural** encontrados y listados aparte (nunca
+  "resueltos" por la herramienta -- necesitan un mecanismo real de
+  reglas de plural en A7, no una clave más; ver `docs/auditoria-
+  idiomas.md` §3).
+
+Tres salidas en `docs/extraccion-cadenas/` (gitignoradas del
+`.xcstrings` real que exista después -- estos son borradores de
+revisión, no el artefacto final):
+
+- `revision.csv`: una fila por SITIO real (archivo:línea), con la
+  clave propuesta, el tipo de literal, el texto original, el texto con
+  `%@`/`%lld`, si tiene interpolación, y cuántos sitios comparten esa
+  clave.
+- `plurales-ternario.csv`: los 23 ternarios, aparte.
+- `borrador.Localizable.xcstrings`: un String Catalog real (mismo
+  esquema que usa Xcode), español como fuente ya traducido, inglés
+  vacío (`"state": "new"`) -- el punto de partida para A7a/A7b.
+
+No se tocó `Sources/` en ningún momento -- la herramienta es de solo
+lectura sobre el código, solo escribe en `tools/` y `docs/`.

@@ -1,0 +1,24 @@
+archivo,linea,singular,plural
+studio/AuraStudio/Sources/AuraStudio/Models/LibraryGrouping.swift,227,canción,canciones
+studio/AuraStudio/Sources/AuraStudio/Models/LibraryGrouping.swift,237,1 álbum,\(albumCount) álbumes
+studio/AuraStudio/Sources/AuraStudio/Models/LibraryGrouping.swift,238,1 canción,\(trackCount) canciones
+studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift,142,día,días
+studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift,951,Buscando póster en línea…,Buscando pósters de \(ordered.count) videos…
+studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift,994,encontrado,encontrados
+studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift,1049,artista,artistas
+studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift,1082,encontrada,encontradas
+studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift,1084,tenía,tenían
+studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift,1199,canción,canciones
+studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift,1316,aplicada,aplicadas
+studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift,1347,canción,canciones
+studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift,1411,elemento,elementos
+studio/AuraStudio/Sources/AuraStudio/Views/AlbumsView.swift,545,1 canción,\(album.trackCount) canciones
+studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift,324,1 canción,\(album.trackCount) canciones
+studio/AuraStudio/Sources/AuraStudio/Views/BackgroundTaskCenterIndicator.swift,23,1 tarea,\(center.count) tareas
+studio/AuraStudio/Sources/AuraStudio/Views/LibraryBrowsingComponents.swift,304,1 foto,\(album.count) fotos
+studio/AuraStudio/Sources/AuraStudio/Views/PhotoAlbumsView.swift,440,1 foto,\(album.count) fotos
+studio/AuraStudio/Sources/AuraStudio/Views/SeriesView.swift,306,1 episodio,\(show.episodeCount) episodios
+studio/AuraStudio/Sources/AuraStudio/Views/SeriesView.swift,382,1 temporada,\(show.seasons.count) temporadas
+studio/AuraStudio/Sources/AuraStudio/Views/SimilarItemsView.swift,87,1 elemento,\(losers.count) elementos
+studio/AuraStudio/Sources/AuraStudio/Views/SimilarItemsView.swift,188,,s
+studio/AuraStudio/Sources/AuraStudio/Views/SimilarItemsView.swift,192,grupo,grupos
