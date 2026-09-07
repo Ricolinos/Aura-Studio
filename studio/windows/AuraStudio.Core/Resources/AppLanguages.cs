@@ -62,7 +62,7 @@ public static class AppLanguages
         new("de", "Deutsch", Ships: true, ReviewedByHumans: false),
         new("fr", "Français", Ships: true, ReviewedByHumans: false),
         new("ja", "日本語", Ships: false, ReviewedByHumans: false),
-        new("ru", "Русский", Ships: false, ReviewedByHumans: false),
+        new("ru", "Русский", Ships: true, ReviewedByHumans: false),
     ];
 
     /// <summary>Lo que el selector puede ofrecer hoy.</summary>

@@ -1,0 +1,2055 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="album-cover-picker.cancelar" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="album-cover-picker.cancelar-resto" xml:space="preserve">
+    <value>Отменить остальное</value>
+  </data>
+  <data name="album-cover-picker.omitir-este-album" xml:space="preserve">
+    <value>Пропустить этот альбом</value>
+  </data>
+  <data name="album-cover-picker.title-in-set" xml:space="preserve">
+    <value>Альбом {0} из {1} · обложки «{2}»</value>
+  </data>
+  <data name="album-cover-picker.title-single" xml:space="preserve">
+    <value>Обложки «{0}»</value>
+  </data>
+  <data name="album-cover-picker.usar-esta" xml:space="preserve">
+    <value>Использовать эту</value>
+  </data>
+  <data name="album-cover-picker.usar-esta-2" xml:space="preserve">
+    <value>Использовать эту</value>
+  </data>
+  <data name="album-cover-picker.usar-recomendada" xml:space="preserve">
+    <value>Использовать рекомендованную</value>
+  </data>
+  <data name="app-strings.action-eject" xml:space="preserve">
+    <value>Извлечь</value>
+  </data>
+  <data name="app-strings.action-open-in-explorer" xml:space="preserve">
+    <value>Открыть в Проводнике</value>
+  </data>
+  <data name="app-strings.action-refresh" xml:space="preserve">
+    <value>Обновить</value>
+  </data>
+  <data name="app-strings.action-refresh-help" xml:space="preserve">
+    <value>Заново считывает состояние вашего iPod и вашей медиатеки. Ничего не копируется и не удаляется.</value>
+  </data>
+  <data name="app-strings.app-name" xml:space="preserve">
+    <value>Aura Studio</value>
+  </data>
+  <data name="app-strings.bootloader-update-awaiting-reboot" xml:space="preserve">
+    <value>Загрузчик отправлен. Ожидание подтверждения и перезапуска iPod…</value>
+  </data>
+  <data name="app-strings.bootloader-update-continue" xml:space="preserve">
+    <value>Продолжить</value>
+  </data>
+  <data name="app-strings.bootloader-update-done-detail" xml:space="preserve">
+    <value>Ваша музыка и ваши настройки не тронуты. При следующем включении iPod вы увидите новый экран запуска.</value>
+  </data>
+  <data name="app-strings.bootloader-update-done-title" xml:space="preserve">
+    <value>Готово: загрузчик обновлён</value>
+  </data>
+  <data name="app-strings.bootloader-update-enter-dfu-when" xml:space="preserve">
+    <value>iPod должен оставаться подключённым по USB всё это время. Его диск не затрагивается: перезаписывается только загрузчик.</value>
+  </data>
+  <data name="app-strings.bootloader-update-flash-confirm" xml:space="preserve">
+    <value>Я понимаю, что это перезапишет загрузчик iPod. Это не стирает его диск и не удаляет загрузчик Apple.</value>
+  </data>
+  <data name="app-strings.bootloader-update-flashing-1" xml:space="preserve">
+    <value>Обновление загрузчика iPod…</value>
+  </data>
+  <data name="app-strings.bootloader-update-flashing-2" xml:space="preserve">
+    <value>Обновление загрузчика {0}…</value>
+  </data>
+  <data name="app-strings.bootloader-update-no-password" xml:space="preserve">
+    <value>Пароль администратора не запрашивается ни разу.</value>
+  </data>
+  <data name="app-strings.bootloader-update-not-required" xml:space="preserve">
+    <value>Это не обязательно. Новая прошивка так же работает с тем загрузчиком, который у вас уже есть; меняется только экран запуска.</value>
+  </data>
+  <data name="app-strings.bootloader-update-nothing-touched" xml:space="preserve">
+    <value>На диске ничего не затрагивается. Ваша музыка, ваши фото, ваши плейлисты и ваши настройки остаются ровно такими, какие есть.</value>
+  </data>
+  <data name="app-strings.bootloader-update-offer" xml:space="preserve">
+    <value>Обновить загрузчик этого iPod</value>
+  </data>
+  <data name="app-strings.bootloader-update-offer-different" xml:space="preserve">
+    <value>В этой версии загрузчик новее, чем на вашем iPod.</value>
+  </data>
+  <data name="app-strings.bootloader-update-offer-unknown" xml:space="preserve">
+    <value>Мы не знаем, какой загрузчик стоит на вашем iPod: его установил другой компьютер или более ранняя версия приложения.</value>
+  </data>
+  <data name="app-strings.bootloader-update-title" xml:space="preserve">
+    <value>Обновить загрузчик</value>
+  </data>
+  <data name="app-strings.bootloader-update-what-it-is" xml:space="preserve">
+    <value>Загрузчик — это программа, которая работает до прошивки, на отдельной от диска микросхеме. В этой версии он новый, с другим экраном запуска.</value>
+  </data>
+  <data name="app-strings.bootloader-update-why-dfu" xml:space="preserve">
+    <value>Режим DFU нужен потому, что эту микросхему нельзя записать никак иначе.</value>
+  </data>
+  <data name="app-strings.declared-family-label" xml:space="preserve">
+    <value>Заявленное семейство</value>
+  </data>
+  <data name="app-strings.delete-confirm-copy.few" xml:space="preserve">
+    <value>{0} файла ({1}) отправятся в Корзину.</value>
+  </data>
+  <data name="app-strings.delete-confirm-copy.many" xml:space="preserve">
+    <value>{0} файлов ({1}) отправятся в Корзину.</value>
+  </data>
+  <data name="app-strings.delete-confirm-copy.one" xml:space="preserve">
+    <value>{0} файл ({1}) отправится в Корзину.</value>
+  </data>
+  <data name="app-strings.delete-confirm-reference.few" xml:space="preserve">
+    <value>{0} элемента удаляются из вашей медиатеки; их исходные файлы не затрагиваются.</value>
+  </data>
+  <data name="app-strings.delete-confirm-reference.many" xml:space="preserve">
+    <value>{0} элементов удаляются из вашей медиатеки; их исходные файлы не затрагиваются.</value>
+  </data>
+  <data name="app-strings.delete-confirm-reference.one" xml:space="preserve">
+    <value>{0} элемент удаляется из вашей медиатеки; его исходный файл не затрагивается.</value>
+  </data>
+  <data name="app-strings.delete-confirm-title.few" xml:space="preserve">
+    <value>Удалить {0} элемента?</value>
+  </data>
+  <data name="app-strings.delete-confirm-title.many" xml:space="preserve">
+    <value>Удалить {0} элементов?</value>
+  </data>
+  <data name="app-strings.delete-confirm-title.one" xml:space="preserve">
+    <value>Удалить {0} элемент?</value>
+  </data>
+  <data name="app-strings.device-ambiguous" xml:space="preserve">
+    <value>Найдено {0} дисков, которые могут быть вашим iPod. В целях безопасности Aura Studio не выбирает ни один — отключите остальные внешние диски и попробуйте снова.</value>
+  </data>
+  <data name="app-strings.device-connected" xml:space="preserve">
+    <value>Подключено: {0}</value>
+  </data>
+  <data name="app-strings.device-detecting" xml:space="preserve">
+    <value>Поиск вашего iPod…</value>
+  </data>
+  <data name="app-strings.device-not-connected" xml:space="preserve">
+    <value>Ни один iPod не подключён. Подключите ваш iPod Classic по USB.</value>
+  </data>
+  <data name="app-strings.dfu-driver-heading" xml:space="preserve">
+    <value>Драйвер для режима DFU</value>
+  </data>
+  <data name="app-strings.dfu-driver-installed-no-device" xml:space="preserve">
+    <value>Драйвер Apple установлен. iPod в режиме DFU пока не виден.</value>
+  </data>
+  <data name="app-strings.dfu-driver-missing" xml:space="preserve">
+    <value>Windows видит iPod, но не имеет для него драйвера. Установите «Устройства Apple» из Microsoft Store (или iTunes от Apple) и подключите его заново: Aura Studio нужен этот драйвер, чтобы общаться с iPod в режиме DFU.</value>
+  </data>
+  <data name="app-strings.dfu-driver-package-missing" xml:space="preserve">
+    <value>Драйвер устройств Apple не найден. Установите «Устройства Apple» из Microsoft Store (или iTunes), прежде чем продолжать: без него Windows не может общаться с iPod в режиме DFU.</value>
+  </data>
+  <data name="app-strings.dfu-driver-ready" xml:space="preserve">
+    <value>Windows распознаёт «{0}», и его драйвер работает.</value>
+  </data>
+  <data name="app-strings.dfu-driver-unknown" xml:space="preserve">
+    <value>Не удалось узнать состояние драйвера.</value>
+  </data>
+  <data name="app-strings.eject-failed" xml:space="preserve">
+    <value>Не удалось извлечь iPod. Закройте приложения, которые используют этот диск, и попробуйте снова.</value>
+  </data>
+  <data name="app-strings.eject-requested" xml:space="preserve">
+    <value>Извлечение запрошено. Вы можете отключить iPod, когда Windows об этом сообщит.</value>
+  </data>
+  <data name="app-strings.general-subtitle" xml:space="preserve">
+    <value>Управляйте своим iPod и следите за его состоянием</value>
+  </data>
+  <data name="app-strings.general-title" xml:space="preserve">
+    <value>Общее</value>
+  </data>
+  <data name="app-strings.installer-already-writing" xml:space="preserve">
+    <value>На iPod уже идёт запись. Дождитесь её окончания, прежде чем начинать другую операцию.</value>
+  </data>
+  <data name="app-strings.installer-artifacts-invalid" xml:space="preserve">
+    <value>Файлы прошивки не удалось проверить, поэтому ничего не устанавливается.</value>
+  </data>
+  <data name="app-strings.installer-awaiting-reboot" xml:space="preserve">
+    <value>Записано. Ожидание перезапуска iPod и его повторного появления…</value>
+  </data>
+  <data name="app-strings.installer-begin" xml:space="preserve">
+    <value>Начать</value>
+  </data>
+  <data name="app-strings.installer-cancelled" xml:space="preserve">
+    <value>Операция отменена.</value>
+  </data>
+  <data name="app-strings.installer-copied-files.few" xml:space="preserve">
+    <value>{0} файла записано на iPod.</value>
+  </data>
+  <data name="app-strings.installer-copied-files.many" xml:space="preserve">
+    <value>{0} файлов записано на iPod.</value>
+  </data>
+  <data name="app-strings.installer-copied-files.one" xml:space="preserve">
+    <value>{0} файл записан на iPod.</value>
+  </data>
+  <data name="app-strings.installer-copy-failed" xml:space="preserve">
+    <value>Не удалось скопировать прошивку на iPod.</value>
+  </data>
+  <data name="app-strings.installer-copy-files" xml:space="preserve">
+    <value>Скопировать прошивку</value>
+  </data>
+  <data name="app-strings.installer-copying-title" xml:space="preserve">
+    <value>Копирование прошивки на iPod…</value>
+  </data>
+  <data name="app-strings.installer-detect-detail" xml:space="preserve">
+    <value>Внимательно проверьте эти данные. То, что последует дальше, стирает содержимое показанного здесь диска.</value>
+  </data>
+  <data name="app-strings.installer-detect-title" xml:space="preserve">
+    <value>Подтвердите, что это ваш iPod</value>
+  </data>
+  <data name="app-strings.installer-dfu-detected-detail" xml:space="preserve">
+    <value>Aura Studio распознала его при подключении. Хотите установить на него прошивку? Ничего не произойдёт, пока вы не выберете.</value>
+  </data>
+  <data name="app-strings.installer-dfu-detected-dismiss" xml:space="preserve">
+    <value>Не сейчас</value>
+  </data>
+  <data name="app-strings.installer-dfu-detected-install" xml:space="preserve">
+    <value>Да, установить</value>
+  </data>
+  <data name="app-strings.installer-dfu-detected-title" xml:space="preserve">
+    <value>Ваш iPod в режиме DFU</value>
+  </data>
+  <data name="app-strings.installer-dfu-found-1" xml:space="preserve">
+    <value>iPod обнаружен в режиме DFU.</value>
+  </data>
+  <data name="app-strings.installer-dfu-found-2" xml:space="preserve">
+    <value>iPod обнаружен в режиме DFU (состояние {0}).</value>
+  </data>
+  <data name="app-strings.installer-dfu-guide-link" xml:space="preserve">
+    <value>Руководство по прошивке и восстановлению (репозиторий прошивки)</value>
+  </data>
+  <data name="app-strings.installer-dfu-guide-url" xml:space="preserve">
+    <value>https://github.com/Ricolinos/Aura-Firmware/blob/main/docs/guia-flasheo-restauracion.md</value>
+  </data>
+  <data name="app-strings.installer-dfu-no-families" xml:space="preserve">
+    <value>Нет прошивки, доступной для установки: папка артефактов не заполнена.</value>
+  </data>
+  <data name="app-strings.installer-dfu-not-found" xml:space="preserve">
+    <value>iPod в режиме DFU пока не виден. Повторите сочетание кнопок и выполните поиск снова. Не забывайте продолжать удерживать после того, как экран погаснет.</value>
+  </data>
+  <data name="app-strings.installer-dfu-not-seen-by-windows" xml:space="preserve">
+    <value>Драйвер Apple установлен, но Windows не видит ни одного устройства Apple. Если вы уже выполнили сочетание кнопок и экран iPod чёрный, он, скорее всего, в режиме DFU, а его USB-подключение сюда не доходит. На виртуальной машине проверьте, что iPod в режиме DFU перенаправлен в Windows: при переходе в DFU он меняет USB-идентификатор, и его может потребоваться разрешить заново.</value>
+  </data>
+  <data name="app-strings.installer-dfu-step1" xml:space="preserve">
+    <value>Если ваш iPod играет музыку, остановите воспроизведение.</value>
+  </data>
+  <data name="app-strings.installer-dfu-step2" xml:space="preserve">
+    <value>Удерживайте SELECT + MENU одновременно.</value>
+  </data>
+  <data name="app-strings.installer-dfu-step3" xml:space="preserve">
+    <value>Продолжайте удерживать обе кнопки около 12 секунд, до момента после того, как экран погаснет.</value>
+  </data>
+  <data name="app-strings.installer-dfu-step4" xml:space="preserve">
+    <value>Отпустите. Aura Studio определит режим DFU автоматически.</value>
+  </data>
+  <data name="app-strings.installer-dfu-timing-warning" xml:space="preserve">
+    <value>Если отпустить раньше примерно 12 секунд, iPod перезапустится обычным образом и НЕ войдёт в режим DFU. Погасший экран — не сигнал отпускать: продолжайте удерживать после этого.</value>
+  </data>
+  <data name="app-strings.installer-dfu-unreadable" xml:space="preserve">
+    <value>Не удалось прочитать состояние iPod. Проверьте ниже, не отсутствует ли драйвер Apple.</value>
+  </data>
+  <data name="app-strings.installer-dfu-waiting" xml:space="preserve">
+    <value>Ожидание режима DFU…</value>
+  </data>
+  <data name="app-strings.installer-done-detail" xml:space="preserve">
+    <value>Прошивка установлена. Извлеките iPod из раздела Общее, прежде чем отключать его.</value>
+  </data>
+  <data name="app-strings.installer-done-title" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="app-strings.installer-dry-run" xml:space="preserve">
+    <value>Проверить без записи</value>
+  </data>
+  <data name="app-strings.installer-dry-run-heading" xml:space="preserve">
+    <value>Проверка завершена — диск не затронут</value>
+  </data>
+  <data name="app-strings.installer-dry-run-ok" xml:space="preserve">
+    <value>Проверка прошла хорошо: диск был повторно проверен с правами администратора, и план форматирования верен. Пока ничего не записано.</value>
+  </data>
+  <data name="app-strings.installer-dry-run-running" xml:space="preserve">
+    <value>Проверка подготовки диска…</value>
+  </data>
+  <data name="app-strings.installer-enter-dfu-title" xml:space="preserve">
+    <value>Теперь переведите iPod в режим DFU</value>
+  </data>
+  <data name="app-strings.installer-enter-dfu-when" xml:space="preserve">
+    <value>Вот этот момент: диск готов, и дальше записывается загрузчик. iPod должен оставаться подключённым по USB всё это время.</value>
+  </data>
+  <data name="app-strings.installer-failed-title" xml:space="preserve">
+    <value>Не удалось продолжить</value>
+  </data>
+  <data name="app-strings.installer-family-change" xml:space="preserve">
+    <value>На этом iPod установлено {0}, а вы собираетесь установить {1}. {0} сохраняется целиком, со своими настройками, и вы можете вернуться к нему из раздела Дополнения когда захотите.</value>
+  </data>
+  <data name="app-strings.installer-family-label" xml:space="preserve">
+    <value>Прошивка для установки</value>
+  </data>
+  <data name="app-strings.installer-flash" xml:space="preserve">
+    <value>Записать загрузчик</value>
+  </data>
+  <data name="app-strings.installer-flash-confirm" xml:space="preserve">
+    <value>Я понимаю, что это заменяет исходный загрузчик Apple и что это нельзя отменить, не восстановив его.</value>
+  </data>
+  <data name="app-strings.installer-flash-failed" xml:space="preserve">
+    <value>Не удалось записать загрузчик.</value>
+  </data>
+  <data name="app-strings.installer-flash-needs-confirmation" xml:space="preserve">
+    <value>Не хватает вашего подтверждения перед записью загрузчика. Aura Studio ничего не записывает, пока вы не подтвердите.</value>
+  </data>
+  <data name="app-strings.installer-flashing" xml:space="preserve">
+    <value>Запись загрузчика на iPod…</value>
+  </data>
+  <data name="app-strings.installer-format-confirm" xml:space="preserve">
+    <value>Я понимаю, что всё содержимое {0} будет стёрто.</value>
+  </data>
+  <data name="app-strings.installer-format-danger-detail" xml:space="preserve">
+    <value>Проверка выше ничего не затронула. То, что последует дальше, стирает всё содержимое диска, и это нельзя отменить. Убедитесь, что это нужный iPod, прежде чем продолжать.</value>
+  </data>
+  <data name="app-strings.installer-format-danger-heading" xml:space="preserve">
+    <value>Вот этот шаг действительно стирает iPod</value>
+  </data>
+  <data name="app-strings.installer-format-needs-confirmation" xml:space="preserve">
+    <value>Не хватает вашего подтверждения перед стиранием iPod. Aura Studio ничего не форматирует, пока вы не подтвердите, с каким диском она будет работать.</value>
+  </data>
+  <data name="app-strings.installer-format-needs-dry-run" xml:space="preserve">
+    <value>Сначала нужно выполнить проверку подготовки диска. Она проверяет всё, ничего не записывая.</value>
+  </data>
+  <data name="app-strings.installer-format-now-on" xml:space="preserve">
+    <value>Стереть и отформатировать {0}</value>
+  </data>
+  <data name="app-strings.installer-format-running" xml:space="preserve">
+    <value>Форматирование диска iPod…</value>
+  </data>
+  <data name="app-strings.installer-needs-mounted-volume" xml:space="preserve">
+    <value>У iPod нет тома, который Windows может прочитать. Подготовьте диск, прежде чем копировать файлы.</value>
+  </data>
+  <data name="app-strings.installer-no-device" xml:space="preserve">
+    <value>Ни один iPod не подключён. Подключите его по USB и дождитесь, пока Windows его распознает.</value>
+  </data>
+  <data name="app-strings.installer-permissions-continue" xml:space="preserve">
+    <value>Понятно, продолжить</value>
+  </data>
+  <data name="app-strings.installer-permissions-detail" xml:space="preserve">
+    <value>Чтобы подготовить диск iPod, Windows запросит у вас права администратора собственным окном. Aura Studio делает всё отсюда: вам никогда не придётся открывать консоль или набирать команду. Права запрашиваются только для двух конкретных вещей — отформатировать диск iPod и, во время записи загрузчика, приостановить службу Apple, которая может занять USB-порт. Каждое использование записывается в журнал приложения.</value>
+  </data>
+  <data name="app-strings.installer-permissions-title" xml:space="preserve">
+    <value>Необходимые разрешения</value>
+  </data>
+  <data name="app-strings.installer-prepare-disk" xml:space="preserve">
+    <value>Подготовить диск</value>
+  </data>
+  <data name="app-strings.installer-privileged-log-heading" xml:space="preserve">
+    <value>Что сделала операция с повышенными правами</value>
+  </data>
+  <data name="app-strings.installer-rebooted" xml:space="preserve">
+    <value>iPod вышел из режима DFU. Теперь можно копировать прошивку.</value>
+  </data>
+  <data name="app-strings.installer-restart" xml:space="preserve">
+    <value>Начать заново</value>
+  </data>
+  <data name="app-strings.installer-safety-abort" xml:space="preserve">
+    <value>Aura Studio остановилась в целях безопасности, не тронув диск: {0}.</value>
+  </data>
+  <data name="app-strings.installer-scan-dfu" xml:space="preserve">
+    <value>Найти iPod в режиме DFU</value>
+  </data>
+  <data name="app-strings.installer-scanning-dfu" xml:space="preserve">
+    <value>Поиск iPod в режиме DFU…</value>
+  </data>
+  <data name="app-strings.installer-stuck-in-dfu" xml:space="preserve">
+    <value>iPod всё ещё в режиме DFU, и установка не была подтверждена. Не отключайте его: выполните поиск снова.</value>
+  </data>
+  <data name="app-strings.installer-subtitle" xml:space="preserve">
+    <value>Установите прошивку на ваш iPod, шаг за шагом</value>
+  </data>
+  <data name="app-strings.installer-title" xml:space="preserve">
+    <value>Установщик</value>
+  </data>
+  <data name="app-strings.installer-unknown-disk" xml:space="preserve">
+    <value>Не удалось определить номер диска «{0}», поэтому ничего не затрагивается.</value>
+  </data>
+  <data name="app-strings.installer-welcome-detail" xml:space="preserve">
+    <value>Aura Studio подготовит диск вашего iPod, запишет загрузчик и скопирует прошивку. Каждый шаг объясняется до того, как он выполняется, и ничего не затрагивается, пока вы не подтвердите.</value>
+  </data>
+  <data name="app-strings.installer-welcome-title" xml:space="preserve">
+    <value>Установим прошивку на ваш iPod</value>
+  </data>
+  <data name="app-strings.installer-welcome-warning" xml:space="preserve">
+    <value>Установка стирает всё, что есть на iPod, и заменяет его исходный загрузчик Apple. Если какая-то музыка есть только там, скопируйте её заранее.</value>
+  </data>
+  <data name="app-strings.label-bus" xml:space="preserve">
+    <value>Подключение</value>
+  </data>
+  <data name="app-strings.label-capacity" xml:space="preserve">
+    <value>Ёмкость</value>
+  </data>
+  <data name="app-strings.label-device" xml:space="preserve">
+    <value>Устройство</value>
+  </data>
+  <data name="app-strings.label-file-system" xml:space="preserve">
+    <value>Файловая система</value>
+  </data>
+  <data name="app-strings.label-firmware" xml:space="preserve">
+    <value>Обнаруженная прошивка</value>
+  </data>
+  <data name="app-strings.label-free" xml:space="preserve">
+    <value>Доступно</value>
+  </data>
+  <data name="app-strings.label-music" xml:space="preserve">
+    <value>Музыка</value>
+  </data>
+  <data name="app-strings.label-photos" xml:space="preserve">
+    <value>Фото</value>
+  </data>
+  <data name="app-strings.label-playlists" xml:space="preserve">
+    <value>Плейлисты</value>
+  </data>
+  <data name="app-strings.label-unit" xml:space="preserve">
+    <value>Диск</value>
+  </data>
+  <data name="app-strings.label-used" xml:space="preserve">
+    <value>Занято</value>
+  </data>
+  <data name="app-strings.label-video" xml:space="preserve">
+    <value>Видео</value>
+  </data>
+  <data name="app-strings.language-beta-detail" xml:space="preserve">
+    <value>Машинный перевод, ещё не проверенный носителями языка.</value>
+  </data>
+  <data name="app-strings.language-beta-mark" xml:space="preserve">
+    <value>(бета)</value>
+  </data>
+  <data name="app-strings.language-follow-system" xml:space="preserve">
+    <value>Как в системе</value>
+  </data>
+  <data name="app-strings.language-restart-busy" xml:space="preserve">
+    <value>Язык уже сохранён и применится при следующем запуске Aura Studio. Не закрывайте программу сейчас: выполняется задача, и закрытие оставит её незавершённой.</value>
+  </data>
+  <data name="app-strings.language-restart-detail" xml:space="preserve">
+    <value>Язык меняется при повторном открытии приложения. Ничего в вашей медиатеке и на вашем iPod не затрагивается.</value>
+  </data>
+  <data name="app-strings.language-restart-now" xml:space="preserve">
+    <value>Закрыть сейчас</value>
+  </data>
+  <data name="app-strings.language-restart-title" xml:space="preserve">
+    <value>Aura Studio нужно открыть заново</value>
+  </data>
+  <data name="app-strings.last-sync-summary" xml:space="preserve">
+    <value>Итоги последней синхронизации</value>
+  </data>
+  <data name="app-strings.library-add-files" xml:space="preserve">
+    <value>Добавить файлы</value>
+  </data>
+  <data name="app-strings.library-add-folder" xml:space="preserve">
+    <value>Добавить папку</value>
+  </data>
+  <data name="app-strings.library-available-without-device" xml:space="preserve">
+    <value>Вы можете собирать медиатеку без подключённого iPod; она синхронизируется, когда вы его подключите.</value>
+  </data>
+  <data name="app-strings.library-columns" xml:space="preserve">
+    <value>Столбцы</value>
+  </data>
+  <data name="app-strings.library-columns-detail" xml:space="preserve">
+    <value>Выберите, какие столбцы показывать. Название есть всегда и идёт первым.</value>
+  </data>
+  <data name="app-strings.library-drop-hint-libraryitemkind-music" xml:space="preserve">
+    <value>Перетащите сюда вашу музыку или папку с альбомами.</value>
+  </data>
+  <data name="app-strings.library-drop-hint-libraryitemkind-photo" xml:space="preserve">
+    <value>Перетащите сюда ваши фото или папку с изображениями.</value>
+  </data>
+  <data name="app-strings.library-drop-hint-libraryitemkind-video" xml:space="preserve">
+    <value>Перетащите сюда ваши фильмы, сериалы или видео.</value>
+  </data>
+  <data name="app-strings.library-drop-hint-texto" xml:space="preserve">
+    <value>Перетащите сюда ваши файлы.</value>
+  </data>
+  <data name="app-strings.library-empty" xml:space="preserve">
+    <value>Ваша медиатека пуста.</value>
+  </data>
+  <data name="app-strings.library-favorites-only" xml:space="preserve">
+    <value>Только избранное</value>
+  </data>
+  <data name="app-strings.library-kind-libraryitemkind-music" xml:space="preserve">
+    <value>Музыка</value>
+  </data>
+  <data name="app-strings.library-kind-libraryitemkind-photo" xml:space="preserve">
+    <value>Изображение</value>
+  </data>
+  <data name="app-strings.library-kind-libraryitemkind-video" xml:space="preserve">
+    <value>Видео</value>
+  </data>
+  <data name="app-strings.library-kind-texto" xml:space="preserve">
+    <value>Не поддерживается</value>
+  </data>
+  <data name="app-strings.library-locked-reason" xml:space="preserve">
+    <value>На подключённом iPod не работает прошивка семейства Aura. Установите её через Установщик, чтобы управлять медиатекой и синхронизировать её.</value>
+  </data>
+  <data name="app-strings.library-nothing-here-yet" xml:space="preserve">
+    <value>В этом разделе пока ничего нет.</value>
+  </data>
+  <data name="app-strings.library-open-folder" xml:space="preserve">
+    <value>Открыть папку медиатеки</value>
+  </data>
+  <data name="app-strings.library-remove" xml:space="preserve">
+    <value>Убрать из медиатеки</value>
+  </data>
+  <data name="app-strings.library-root-missing-1" xml:space="preserve">
+    <value>Папка медиатеки не настроена.</value>
+  </data>
+  <data name="app-strings.library-root-missing-2" xml:space="preserve">
+    <value>Ваша медиатека находится на диске, который не подключён: {0}</value>
+  </data>
+  <data name="app-strings.library-season-1" xml:space="preserve">
+    <value>Без сезона</value>
+  </data>
+  <data name="app-strings.library-season-2" xml:space="preserve">
+    <value>Сезон {0}</value>
+  </data>
+  <data name="app-strings.library-section-only-its-type-libraryitemkind-music" xml:space="preserve">
+    <value>Этот раздел принимает только музыку. Обложки, которые приходят вместе с альбомом, сохраняются как обложки, а не как фото.</value>
+  </data>
+  <data name="app-strings.library-section-only-its-type-libraryitemkind-photo" xml:space="preserve">
+    <value>Этот раздел принимает только изображения.</value>
+  </data>
+  <data name="app-strings.library-section-only-its-type-libraryitemkind-video" xml:space="preserve">
+    <value>Этот раздел принимает только видео. Изображение с тем же именем, что и видео, сохраняется как его постер.</value>
+  </data>
+  <data name="app-strings.library-similar-found-on-drop" xml:space="preserve">
+    <value>{0} Среди добавленного мы нашли похожие элементы — посмотрите их в разделе Похожие.</value>
+  </data>
+  <data name="app-strings.library-sort-ascending" xml:space="preserve">
+    <value>По возрастанию</value>
+  </data>
+  <data name="app-strings.library-sort-by" xml:space="preserve">
+    <value>Сортировать по</value>
+  </data>
+  <data name="app-strings.library-status-6" xml:space="preserve">
+    <value>Ошибка: {0}</value>
+  </data>
+  <data name="app-strings.library-status-7" xml:space="preserve">
+    <value>Ошибка</value>
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-enrichi" xml:space="preserve">
+    <value>Поиск сведений</value>
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-needsre" xml:space="preserve">
+    <value>Нужна проверка</value>
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-queued" xml:space="preserve">
+    <value>В очереди</value>
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-ready" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-transco" xml:space="preserve">
+    <value>Преобразование… {0} %</value>
+  </data>
+  <data name="app-strings.licenses-document-missing" xml:space="preserve">
+    <value>{0}: не включён в эти файлы</value>
+  </data>
+  <data name="app-strings.licenses-document-present" xml:space="preserve">
+    <value>{0}: включён</value>
+  </data>
+  <data name="app-strings.licenses-families-heading" xml:space="preserve">
+    <value>Включённые прошивки</value>
+  </data>
+  <data name="app-strings.licenses-intro" xml:space="preserve">
+    <value>mks5lboot, bootloader-ipod6g.ipod, rockbox.ipod и rockbox.zip являются производными работами от Rockbox и распространяются по Стандартной общественной лицензии GNU, версия 2. Aura Studio включает их как совокупность и никак их не изменяет. Для каждой включённой прошивки вы можете получить её полный исходный код в репозитории и точной версии, указанных ниже.</value>
+  </data>
+  <data name="app-strings.licenses-libraries-heading" xml:space="preserve">
+    <value>Включённые библиотеки</value>
+  </data>
+  <data name="app-strings.licenses-libraries-intro" xml:space="preserve">
+    <value>Aura Studio включает библиотеки свободного программного обеспечения. Они распространяются отдельными файлами рядом с программой, без изменений, и вы можете заменить их другой совместимой версией.</value>
+  </data>
+  <data name="app-strings.licenses-open" xml:space="preserve">
+    <value>Посмотреть лицензии</value>
+  </data>
+  <data name="app-strings.licenses-repository-label" xml:space="preserve">
+    <value>Исходный код</value>
+  </data>
+  <data name="app-strings.licenses-subtitle" xml:space="preserve">
+    <value>Свободное программное обеспечение в составе Aura Studio</value>
+  </data>
+  <data name="app-strings.licenses-tag-label" xml:space="preserve">
+    <value>Включённая версия</value>
+  </data>
+  <data name="app-strings.licenses-tag-lib-detail" xml:space="preserve">
+    <value>Читает теги и обложки ваших музыкальных файлов (MP3, FLAC, M4A). В Aura Studio для Mac эту работу выполняет AVFoundation, которого нет в Windows.</value>
+  </data>
+  <data name="app-strings.licenses-tag-lib-name" xml:space="preserve">
+    <value>TagLib# 2.3.0 — LGPL v2.1</value>
+  </data>
+  <data name="app-strings.licenses-tag-lib-source" xml:space="preserve">
+    <value>https://github.com/mono/taglib-sharp</value>
+  </data>
+  <data name="app-strings.licenses-title" xml:space="preserve">
+    <value>Лицензии</value>
+  </data>
+  <data name="app-strings.licenses-tool-from-release" xml:space="preserve">
+    <value>Опубликована в выпуске {0} и проверена по его checksums.txt.</value>
+  </data>
+  <data name="app-strings.licenses-tool-heading" xml:space="preserve">
+    <value>Инструмент прошивки (mks5lboot.exe)</value>
+  </data>
+  <data name="app-strings.licenses-tool-local-pin" xml:space="preserve">
+    <value>Собран отдельно для Windows: в выпуске публикуется версия для Unix. Он совпадает с хешем, закреплённым в самой Aura Studio (заявленное происхождение: {0}). Его исходный код — тот же, что в репозитории прошивки, указанном выше.</value>
+  </data>
+  <data name="app-strings.licenses-tool-missing" xml:space="preserve">
+    <value>В этой копии он не включён.</value>
+  </data>
+  <data name="app-strings.licenses-tool-unverified" xml:space="preserve">
+    <value>Его не удалось сверить ни с одним хешем. Aura Studio не будет его запускать, пока не сможет проверить.</value>
+  </data>
+  <data name="app-strings.licenses-unknown-tag" xml:space="preserve">
+    <value>Неизвестна</value>
+  </data>
+  <data name="app-strings.licenses-unknown-tag-detail" xml:space="preserve">
+    <value>Эти файлы были скопированы без записи того, из какого выпуска они взяты. Заполните их заново с помощью scripts/FirmwareFetch.ps1, чтобы версия была записана.</value>
+  </data>
+  <data name="app-strings.nav-albums" xml:space="preserve">
+    <value>Альбомы</value>
+  </data>
+  <data name="app-strings.nav-all-photos" xml:space="preserve">
+    <value>Все фото</value>
+  </data>
+  <data name="app-strings.nav-all-videos" xml:space="preserve">
+    <value>Все видео</value>
+  </data>
+  <data name="app-strings.nav-artists" xml:space="preserve">
+    <value>Исполнители</value>
+  </data>
+  <data name="app-strings.nav-clips" xml:space="preserve">
+    <value>Видеоклипы</value>
+  </data>
+  <data name="app-strings.nav-extras" xml:space="preserve">
+    <value>Дополнения</value>
+  </data>
+  <data name="app-strings.nav-general" xml:space="preserve">
+    <value>Общее</value>
+  </data>
+  <data name="app-strings.nav-installer" xml:space="preserve">
+    <value>Установщик</value>
+  </data>
+  <data name="app-strings.nav-movies" xml:space="preserve">
+    <value>Фильмы</value>
+  </data>
+  <data name="app-strings.nav-music" xml:space="preserve">
+    <value>Музыка</value>
+  </data>
+  <data name="app-strings.nav-photos" xml:space="preserve">
+    <value>Фото</value>
+  </data>
+  <data name="app-strings.nav-photos-ai" xml:space="preserve">
+    <value>ИИ</value>
+  </data>
+  <data name="app-strings.nav-photos-images" xml:space="preserve">
+    <value>Изображения</value>
+  </data>
+  <data name="app-strings.nav-photos-photos" xml:space="preserve">
+    <value>Фото</value>
+  </data>
+  <data name="app-strings.nav-playlists" xml:space="preserve">
+    <value>Плейлисты</value>
+  </data>
+  <data name="app-strings.nav-series" xml:space="preserve">
+    <value>Сериалы</value>
+  </data>
+  <data name="app-strings.nav-settings" xml:space="preserve">
+    <value>Параметры</value>
+  </data>
+  <data name="app-strings.nav-songs" xml:space="preserve">
+    <value>Композиции</value>
+  </data>
+  <data name="app-strings.nav-themes" xml:space="preserve">
+    <value>Темы</value>
+  </data>
+  <data name="app-strings.nav-video" xml:space="preserve">
+    <value>Видео</value>
+  </data>
+  <data name="app-strings.never-synced" xml:space="preserve">
+    <value>Этот iPod ещё ни разу не синхронизировался с Aura Studio.</value>
+  </data>
+  <data name="app-strings.no-device" xml:space="preserve">
+    <value>Нет устройства</value>
+  </data>
+  <data name="app-strings.not-available" xml:space="preserve">
+    <value>Недоступно</value>
+  </data>
+  <data name="app-strings.orphans-cleaned.few" xml:space="preserve">
+    <value>Удалено {0} потерянных файла.</value>
+  </data>
+  <data name="app-strings.orphans-cleaned.many" xml:space="preserve">
+    <value>Удалено {0} потерянных файлов.</value>
+  </data>
+  <data name="app-strings.orphans-cleaned.one" xml:space="preserve">
+    <value>Удалён {0} потерянный файл.</value>
+  </data>
+  <data name="app-strings.orphans-confirm-title.few" xml:space="preserve">
+    <value>Удалить {0} потерянных файла?</value>
+  </data>
+  <data name="app-strings.orphans-confirm-title.many" xml:space="preserve">
+    <value>Удалить {0} потерянных файлов?</value>
+  </data>
+  <data name="app-strings.orphans-confirm-title.one" xml:space="preserve">
+    <value>Удалить {0} потерянный файл?</value>
+  </data>
+  <data name="app-strings.orphans-found.few" xml:space="preserve">
+    <value>{0} потерянных файла ({1}).</value>
+  </data>
+  <data name="app-strings.orphans-found.many" xml:space="preserve">
+    <value>{0} потерянных файлов ({1}).</value>
+  </data>
+  <data name="app-strings.orphans-found.one" xml:space="preserve">
+    <value>{0} потерянный файл ({1}).</value>
+  </data>
+  <data name="app-strings.section-content" xml:space="preserve">
+    <value>Содержимое на iPod</value>
+  </data>
+  <data name="app-strings.section-pending-detail" xml:space="preserve">
+    <value>Этот раздел появится в {0} переноса на Windows. Навигация уже на месте, чтобы ничего не сдвинулось, когда содержимое появится.</value>
+  </data>
+  <data name="app-strings.section-pending-title" xml:space="preserve">
+    <value>Ещё не готов</value>
+  </data>
+  <data name="app-strings.section-storage" xml:space="preserve">
+    <value>Хранилище</value>
+  </data>
+  <data name="app-strings.service-pause-asks-for-permission" xml:space="preserve">
+    <value>Вот здесь будут запрошены права администратора.</value>
+  </data>
+  <data name="app-strings.service-pause-button" xml:space="preserve">
+    <value>Приостановить службы Apple</value>
+  </data>
+  <data name="app-strings.service-pause-detail" xml:space="preserve">
+    <value>Возможно, служба Apple в Windows занимает iPod. Мы можем остановить её на время операции и снова запустить, когда закончим.</value>
+  </data>
+  <data name="app-strings.service-pause-not-running" xml:space="preserve">
+    <value>Служба Apple не работает, значит мешает не она.</value>
+  </data>
+  <data name="app-strings.service-pause-title" xml:space="preserve">
+    <value>Не появляется?</value>
+  </data>
+  <data name="app-strings.settings-about" xml:space="preserve">
+    <value>О программе</value>
+  </data>
+  <data name="app-strings.settings-appearance" xml:space="preserve">
+    <value>Оформление</value>
+  </data>
+  <data name="app-strings.settings-language-detail" xml:space="preserve">
+    <value>Aura Studio говорит на том языке, который вы выберете здесь. Испанский и английский проверил человек; остальные придут позже.</value>
+  </data>
+  <data name="app-strings.settings-subtitle" xml:space="preserve">
+    <value>Настройки Aura Studio</value>
+  </data>
+  <data name="app-strings.settings-theme" xml:space="preserve">
+    <value>Тема</value>
+  </data>
+  <data name="app-strings.settings-theme-detail" xml:space="preserve">
+    <value>Aura Studio следует теме Windows. Вы можете закрепить светлую или тёмную только для этого приложения.</value>
+  </data>
+  <data name="app-strings.settings-title" xml:space="preserve">
+    <value>Параметры</value>
+  </data>
+  <data name="app-strings.theme-dark" xml:space="preserve">
+    <value>Тёмная</value>
+  </data>
+  <data name="app-strings.theme-light" xml:space="preserve">
+    <value>Светлая</value>
+  </data>
+  <data name="app-strings.theme-system" xml:space="preserve">
+    <value>Как в системе</value>
+  </data>
+  <data name="app-update-service.aura-studio-installedversion-es-version" xml:space="preserve">
+    <value>Aura Studio {0} — самая новая опубликованная версия.</value>
+  </data>
+  <data name="app-update-service.buscando-actualizaciones-aura-studio" xml:space="preserve">
+    <value>Поиск обновлений Aura Studio…</value>
+  </data>
+  <data name="app-update-service.descargando-aura-studio-available-value" xml:space="preserve">
+    <value>Загрузка Aura Studio {0}…</value>
+  </data>
+  <data name="app-update-service.se-detuvo-busqueda-actualizaciones" xml:space="preserve">
+    <value>Поиск обновлений остановлен.</value>
+  </data>
+  <data name="artists-page.buscar-artistas" xml:space="preserve">
+    <value>Поиск исполнителей</value>
+  </data>
+  <data name="artists-page.buscar-artistas-2" xml:space="preserve">
+    <value>Поиск исполнителей</value>
+  </data>
+  <data name="artists-page.buscar-fotos" xml:space="preserve">
+    <value>Найти фото</value>
+  </data>
+  <data name="artists-page.buscar-fotos-artistas-linea-fanart-tv" xml:space="preserve">
+    <value>Найти фото исполнителей в интернете (fanart.tv / Deezer)</value>
+  </data>
+  <data name="artists-page.buscar-informacion-linea" xml:space="preserve">
+    <value>Найти сведения в интернете</value>
+  </data>
+  <data name="artists-page.buscar-informacion-linea-2" xml:space="preserve">
+    <value>Найти сведения в интернете</value>
+  </data>
+  <data name="artists-page.elige-artista-lista" xml:space="preserve">
+    <value>Выберите исполнителя из списка.</value>
+  </data>
+  <data name="artists-page.eliminar" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="artists-page.mas-acciones" xml:space="preserve">
+    <value>Другие действия</value>
+  </data>
+  <data name="artists-page.mas-acciones-2" xml:space="preserve">
+    <value>Другие действия</value>
+  </data>
+  <data name="artists-page.mostrar-explorador" xml:space="preserve">
+    <value>Показать в Проводнике</value>
+  </data>
+  <data name="artists-page.todavia-hay-musica-biblioteca" xml:space="preserve">
+    <value>В медиатеке пока нет музыки.</value>
+  </data>
+  <data name="artists-view.eliminar" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="background-task-center-indicator.cancelar" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="conteo.albumes.few" xml:space="preserve">
+    <value>{0} альбома</value>
+  </data>
+  <data name="conteo.albumes.many" xml:space="preserve">
+    <value>{0} альбомов</value>
+  </data>
+  <data name="conteo.albumes.one" xml:space="preserve">
+    <value>{0} альбом</value>
+  </data>
+  <data name="conteo.artistas.few" xml:space="preserve">
+    <value>{0} исполнителя</value>
+  </data>
+  <data name="conteo.artistas.many" xml:space="preserve">
+    <value>{0} исполнителей</value>
+  </data>
+  <data name="conteo.artistas.one" xml:space="preserve">
+    <value>{0} исполнитель</value>
+  </data>
+  <data name="conteo.canciones.few" xml:space="preserve">
+    <value>{0} композиции</value>
+  </data>
+  <data name="conteo.canciones.many" xml:space="preserve">
+    <value>{0} композиций</value>
+  </data>
+  <data name="conteo.canciones.one" xml:space="preserve">
+    <value>{0} композиция</value>
+  </data>
+  <data name="conteo.dias.few" xml:space="preserve">
+    <value>{0} дня</value>
+  </data>
+  <data name="conteo.dias.many" xml:space="preserve">
+    <value>{0} дней</value>
+  </data>
+  <data name="conteo.dias.one" xml:space="preserve">
+    <value>{0} день</value>
+  </data>
+  <data name="conteo.episodios.few" xml:space="preserve">
+    <value>{0} эпизода</value>
+  </data>
+  <data name="conteo.episodios.many" xml:space="preserve">
+    <value>{0} эпизодов</value>
+  </data>
+  <data name="conteo.episodios.one" xml:space="preserve">
+    <value>{0} эпизод</value>
+  </data>
+  <data name="conteo.fotos.few" xml:space="preserve">
+    <value>{0} фото</value>
+  </data>
+  <data name="conteo.fotos.many" xml:space="preserve">
+    <value>{0} фото</value>
+  </data>
+  <data name="conteo.fotos.one" xml:space="preserve">
+    <value>{0} фото</value>
+  </data>
+  <data name="conteo.peliculas.few" xml:space="preserve">
+    <value>{0} фильма</value>
+  </data>
+  <data name="conteo.peliculas.many" xml:space="preserve">
+    <value>{0} фильмов</value>
+  </data>
+  <data name="conteo.peliculas.one" xml:space="preserve">
+    <value>{0} фильм</value>
+  </data>
+  <data name="conteo.seleccionados.few" xml:space="preserve">
+    <value>выбрано {0}</value>
+  </data>
+  <data name="conteo.seleccionados.many" xml:space="preserve">
+    <value>выбрано {0}</value>
+  </data>
+  <data name="conteo.seleccionados.one" xml:space="preserve">
+    <value>выбран {0}</value>
+  </data>
+  <data name="conteo.series.few" xml:space="preserve">
+    <value>{0} сериала</value>
+  </data>
+  <data name="conteo.series.many" xml:space="preserve">
+    <value>{0} сериалов</value>
+  </data>
+  <data name="conteo.series.one" xml:space="preserve">
+    <value>{0} сериал</value>
+  </data>
+  <data name="conteo.temporadas.few" xml:space="preserve">
+    <value>{0} сезона</value>
+  </data>
+  <data name="conteo.temporadas.many" xml:space="preserve">
+    <value>{0} сезонов</value>
+  </data>
+  <data name="conteo.temporadas.one" xml:space="preserve">
+    <value>{0} сезон</value>
+  </data>
+  <data name="conteo.videoclips.few" xml:space="preserve">
+    <value>{0} видеоклипа</value>
+  </data>
+  <data name="conteo.videoclips.many" xml:space="preserve">
+    <value>{0} видеоклипов</value>
+  </data>
+  <data name="conteo.videoclips.one" xml:space="preserve">
+    <value>{0} видеоклип</value>
+  </data>
+  <data name="conteo.videos.few" xml:space="preserve">
+    <value>{0} видео</value>
+  </data>
+  <data name="conteo.videos.many" xml:space="preserve">
+    <value>{0} видео</value>
+  </data>
+  <data name="conteo.videos.one" xml:space="preserve">
+    <value>{0} видео</value>
+  </data>
+  <data name="context-menu.abrir" xml:space="preserve">
+    <value>Открыть</value>
+  </data>
+  <data name="context-menu.abrir-2" xml:space="preserve">
+    <value>Открыть</value>
+  </data>
+  <data name="context-menu.abrir-3" xml:space="preserve">
+    <value>Открыть</value>
+  </data>
+  <data name="context-menu.aplicar-caratula-recomendada" xml:space="preserve">
+    <value>Применить рекомендованную обложку</value>
+  </data>
+  <data name="context-menu.aplicar-caratula-recomendada-scope-count" xml:space="preserve">
+    <value>Применить рекомендованную обложку к {0} альбомам</value>
+  </data>
+  <data name="context-menu.ascendente" xml:space="preserve">
+    <value>По возрастанию</value>
+  </data>
+  <data name="context-menu.buscar-caratulas-scope-albumcount-albume" xml:space="preserve">
+    <value>Найти обложки для {0} альбомов…</value>
+  </data>
+  <data name="context-menu.buscar-elementos-similares" xml:space="preserve">
+    <value>Найти похожие элементы…</value>
+  </data>
+  <data name="context-menu.buscar-foto-artista" xml:space="preserve">
+    <value>Найти фото исполнителя</value>
+  </data>
+  <data name="context-menu.buscar-fotos-artistas" xml:space="preserve">
+    <value>Найти фото исполнителей</value>
+  </data>
+  <data name="context-menu.buscar-informacion-linea" xml:space="preserve">
+    <value>Найти сведения в интернете</value>
+  </data>
+  <data name="context-menu.buscar-letra" xml:space="preserve">
+    <value>Найти текст песни</value>
+  </data>
+  <data name="context-menu.buscar-poster-linea" xml:space="preserve">
+    <value>Найти постер в интернете</value>
+  </data>
+  <data name="context-menu.cambiar-categoria" xml:space="preserve">
+    <value>Изменить категорию</value>
+  </data>
+  <data name="context-menu.cambiar-nombre" xml:space="preserve">
+    <value>Переименовать…</value>
+  </data>
+  <data name="context-menu.change-category" xml:space="preserve">
+    <value>Изменить категорию</value>
+  </data>
+  <data name="context-menu.descendente" xml:space="preserve">
+    <value>По убыванию</value>
+  </data>
+  <data name="context-menu.disolver-album" xml:space="preserve">
+    <value>Расформировать альбом</value>
+  </data>
+  <data name="context-menu.disolver-albumes" xml:space="preserve">
+    <value>Расформировать альбомы</value>
+  </data>
+  <data name="context-menu.eliminar" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="context-menu.eliminar-2" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="context-menu.eliminar-3" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="context-menu.eliminar-album" xml:space="preserve">
+    <value>Удалить альбом</value>
+  </data>
+  <data name="context-menu.eliminar-albumes" xml:space="preserve">
+    <value>Удалить альбомы</value>
+  </data>
+  <data name="context-menu.eliminar-artista" xml:space="preserve">
+    <value>Удалить исполнителя</value>
+  </data>
+  <data name="context-menu.eliminar-artistas" xml:space="preserve">
+    <value>Удалить исполнителей</value>
+  </data>
+  <data name="context-menu.eliminar-biblioteca" xml:space="preserve">
+    <value>Удалить из медиатеки</value>
+  </data>
+  <data name="context-menu.eliminar-caratula" xml:space="preserve">
+    <value>Удалить обложку</value>
+  </data>
+  <data name="context-menu.eliminar-episodio" xml:space="preserve">
+    <value>Удалить эпизод</value>
+  </data>
+  <data name="context-menu.eliminar-episodios" xml:space="preserve">
+    <value>Удалить эпизоды</value>
+  </data>
+  <data name="context-menu.eliminar-fotos-biblioteca" xml:space="preserve">
+    <value>Удалить фото из медиатеки</value>
+  </data>
+  <data name="context-menu.eliminar-pelicula" xml:space="preserve">
+    <value>Удалить фильм</value>
+  </data>
+  <data name="context-menu.eliminar-peliculas" xml:space="preserve">
+    <value>Удалить фильмы</value>
+  </data>
+  <data name="context-menu.eliminar-serie" xml:space="preserve">
+    <value>Удалить сериал</value>
+  </data>
+  <data name="context-menu.eliminar-series" xml:space="preserve">
+    <value>Удалить сериалы</value>
+  </data>
+  <data name="context-menu.marcar-como-favorito" xml:space="preserve">
+    <value>Добавить в избранное</value>
+  </data>
+  <data name="context-menu.marcar-como-favorito-2" xml:space="preserve">
+    <value>Добавить в избранное</value>
+  </data>
+  <data name="context-menu.mas-informacion" xml:space="preserve">
+    <value>Подробнее…</value>
+  </data>
+  <data name="context-menu.mas-informacion-2" xml:space="preserve">
+    <value>Подробнее…</value>
+  </data>
+  <data name="context-menu.mas-informacion-3" xml:space="preserve">
+    <value>Подробнее…</value>
+  </data>
+  <data name="context-menu.mostrar-opciones-visualizacion" xml:space="preserve">
+    <value>Показать параметры отображения</value>
+  </data>
+  <data name="context-menu.obtener-informacion" xml:space="preserve">
+    <value>Сведения…</value>
+  </data>
+  <data name="context-menu.opciones-para-ordenar" xml:space="preserve">
+    <value>Параметры сортировки</value>
+  </data>
+  <data name="context-menu.quitar-album" xml:space="preserve">
+    <value>Убрать из альбома</value>
+  </data>
+  <data name="context-menu.quitar-favorito" xml:space="preserve">
+    <value>Убрать из избранного</value>
+  </data>
+  <data name="context-menu.quitar-favoritos" xml:space="preserve">
+    <value>Убрать из избранного</value>
+  </data>
+  <data name="context-menu.quitar-favoritos-2" xml:space="preserve">
+    <value>Убрать из избранного</value>
+  </data>
+  <data name="context-menu.quitar-foto-artista.few" xml:space="preserve">
+    <value>Убрать фото исполнителей</value>
+  </data>
+  <data name="context-menu.quitar-foto-artista.many" xml:space="preserve">
+    <value>Убрать фото исполнителей</value>
+  </data>
+  <data name="context-menu.quitar-foto-artista.one" xml:space="preserve">
+    <value>Убрать фото исполнителя</value>
+  </data>
+  <data name="context-menu.quitar-poster" xml:space="preserve">
+    <value>Убрать постер</value>
+  </data>
+  <data name="context-menu.renombrar-album" xml:space="preserve">
+    <value>Переименовать альбом…</value>
+  </data>
+  <data name="context-menu.reveal" xml:space="preserve">
+    <value>Показать в Проводнике</value>
+  </data>
+  <data name="context-menu.search-album-covers" xml:space="preserve">
+    <value>Найти обложки альбома…</value>
+  </data>
+  <data name="context-menu.search-online" xml:space="preserve">
+    <value>Найти сведения в интернете</value>
+  </data>
+  <data name="context-menu.search-poster" xml:space="preserve">
+    <value>Найти постер в интернете</value>
+  </data>
+  <data name="context-menu.seleccionar-canciones-mismo-album" xml:space="preserve">
+    <value>Выбрать композиции того же альбома</value>
+  </data>
+  <data name="context-menu.seleccionar-canciones-mismo-artista" xml:space="preserve">
+    <value>Выбрать композиции того же исполнителя</value>
+  </data>
+  <data name="context-menu.sincronizar-seleccion" xml:space="preserve">
+    <value>Синхронизировать выбранное</value>
+  </data>
+  <data name="context-menu.solo-favoritos" xml:space="preserve">
+    <value>Только избранное</value>
+  </data>
+  <data name="context-menu.todas-canciones" xml:space="preserve">
+    <value>Все композиции</value>
+  </data>
+  <data name="context-menu.vista-previa" xml:space="preserve">
+    <value>Предпросмотр</value>
+  </data>
+  <data name="context-menu.volver-leer-etiquetas-archivo" xml:space="preserve">
+    <value>Перечитать теги файла</value>
+  </data>
+  <data name="crash-reporter.algo-salio-mal" xml:space="preserve">
+    <value>Что-то пошло не так</value>
+  </data>
+  <data name="crash-reporter.entendido" xml:space="preserve">
+    <value>Понятно</value>
+  </data>
+  <data name="device-general-view.instalar-actualizacion" xml:space="preserve">
+    <value>Установить обновление</value>
+  </data>
+  <data name="device-list-page.buscar-actualizaciones" xml:space="preserve">
+    <value>Проверить обновления</value>
+  </data>
+  <data name="device-list-page.calcula-se-copiaria-escribe-nada-ipod" xml:space="preserve">
+    <value>Вычисляет, что было бы скопировано. На iPod ничего не записывается.</value>
+  </data>
+  <data name="device-list-page.cancelar" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="device-list-page.cancelar-2" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="device-list-page.guardar" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="device-list-page.nombre-ipod" xml:space="preserve">
+    <value>Имя iPod</value>
+  </data>
+  <data name="device-list-page.por-copiar" xml:space="preserve">
+    <value>К копированию</value>
+  </data>
+  <data name="device-list-page.reubicados" xml:space="preserve">
+    <value>Перемещены</value>
+  </data>
+  <data name="device-list-page.revisar-cambios" xml:space="preserve">
+    <value>Просмотреть изменения</value>
+  </data>
+  <data name="device-list-page.sincronizacion" xml:space="preserve">
+    <value>Синхронизация</value>
+  </data>
+  <data name="device-list-page.sincronizar" xml:space="preserve">
+    <value>Синхронизировать</value>
+  </data>
+  <data name="device-list-page.toda-biblioteca" xml:space="preserve">
+    <value>Вся медиатека</value>
+  </data>
+  <data name="device-list-page.xaml.listo" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="device-list-page.ya-al-dia" xml:space="preserve">
+    <value>Уже актуально</value>
+  </data>
+  <data name="device-list-view-model.buscando-actualizaciones-family-displayn" xml:space="preserve">
+    <value>Поиск обновлений {0}…</value>
+  </data>
+  <data name="device-list-view-model.ipod-se-llama-devicename" xml:space="preserve">
+    <value>iPod называется «{0}».</value>
+  </data>
+  <data name="device-list-view-model.se-detuvo-busqueda-actualizaciones" xml:space="preserve">
+    <value>Поиск обновлений остановлен.</value>
+  </data>
+  <data name="device-safety-validator.dispositivo-cambio-desde-confirmacion-po" xml:space="preserve">
+    <value>Устройство изменилось с момента подтверждения. В целях безопасности ничего не было записано.</value>
+  </data>
+  <data name="device-safety-validator.dispositivo-verificado-actual-displaynam" xml:space="preserve">
+    <value>Устройство проверено: {0}, {1}, {2}</value>
+  </data>
+  <data name="device-safety-validator.hay-mas-ipod-candidato-por-seguridad" xml:space="preserve">
+    <value>Подходит больше одного iPod. В целях безопасности не выбран ни один.</value>
+  </data>
+  <data name="device-safety-validator.ipod-desaparecio-se-realizo-ninguna-escr" xml:space="preserve">
+    <value>iPod исчез. Ничего не было записано.</value>
+  </data>
+  <data name="device-safety-validator.volumen-ipod-esta-montado" xml:space="preserve">
+    <value>Том iPod не подключён.</value>
+  </data>
+  <data name="done-view.reintentar" xml:space="preserve">
+    <value>Подключить диск и попробовать снова</value>
+  </data>
+  <data name="extras-page.animaciones-graficos" xml:space="preserve">
+    <value>Анимация и графика</value>
+  </data>
+  <data name="extras-page.cronometro-bloqueo-pantalla" xml:space="preserve">
+    <value>Секундомер и блокировка экрана</value>
+  </data>
+  <data name="extras-page.disponible-dispositivo" xml:space="preserve">
+    <value>Доступно на устройстве</value>
+  </data>
+  <data name="extras-page.extras" xml:space="preserve">
+    <value>Дополнения</value>
+  </data>
+  <data name="extras-page.firmware" xml:space="preserve">
+    <value>Прошивка</value>
+  </data>
+  <data name="extras-page.juegos" xml:space="preserve">
+    <value>Игры</value>
+  </data>
+  <data name="extras-page.licencias" xml:space="preserve">
+    <value>Лицензии</value>
+  </data>
+  <data name="extras-page.lo-firmware-ofrece-mas-alla-biblioteca" xml:space="preserve">
+    <value>Что прошивка предлагает помимо медиатеки</value>
+  </data>
+  <data name="extras-page.revisar-nuevo" xml:space="preserve">
+    <value>Проверить снова</value>
+  </data>
+  <data name="extras-page.software-libre-incluido" xml:space="preserve">
+    <value>Включённое свободное ПО</value>
+  </data>
+  <data name="extras-page.temas" xml:space="preserve">
+    <value>Темы</value>
+  </data>
+  <data name="extras-page.todavia" xml:space="preserve">
+    <value>Пока нет</value>
+  </data>
+  <data name="installer-page.cancelar" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="library-grouping.albums-and-songs" xml:space="preserve">
+    <value>{0}, {1}</value>
+  </data>
+  <data name="library-ingest.added.few" xml:space="preserve">
+    <value>Добавлено {0} элемента.</value>
+  </data>
+  <data name="library-ingest.added.many" xml:space="preserve">
+    <value>Добавлено {0} элементов.</value>
+  </data>
+  <data name="library-ingest.added.one" xml:space="preserve">
+    <value>Добавлен {0} элемент.</value>
+  </data>
+  <data name="library-ingest.already-in-library.few" xml:space="preserve">
+    <value>{0} уже были в вашей медиатеке.</value>
+  </data>
+  <data name="library-ingest.already-in-library.many" xml:space="preserve">
+    <value>{0} уже были в вашей медиатеке.</value>
+  </data>
+  <data name="library-ingest.already-in-library.one" xml:space="preserve">
+    <value>{0} уже был в вашей медиатеке.</value>
+  </data>
+  <data name="library-ingest.cover-assets.few" xml:space="preserve">
+    <value>{0} изображения приняты как обложки, а не как фото.</value>
+  </data>
+  <data name="library-ingest.cover-assets.many" xml:space="preserve">
+    <value>{0} изображений приняты как обложки, а не как фото.</value>
+  </data>
+  <data name="library-ingest.cover-assets.one" xml:space="preserve">
+    <value>{0} изображение принято как обложка, а не как фото.</value>
+  </data>
+  <data name="library-ingest.nothing-to-add" xml:space="preserve">
+    <value>Добавлять было нечего.</value>
+  </data>
+  <data name="library-ingest.section-noun-music" xml:space="preserve">
+    <value>музыка</value>
+  </data>
+  <data name="library-ingest.section-noun-other" xml:space="preserve">
+    <value>поддерживаемым</value>
+  </data>
+  <data name="library-ingest.section-noun-photo" xml:space="preserve">
+    <value>изображение</value>
+  </data>
+  <data name="library-ingest.section-noun-video" xml:space="preserve">
+    <value>видео</value>
+  </data>
+  <data name="library-ingest.unsupported.few" xml:space="preserve">
+    <value>{0} файла не поддерживаются.</value>
+  </data>
+  <data name="library-ingest.unsupported.many" xml:space="preserve">
+    <value>{0} файлов не поддерживаются.</value>
+  </data>
+  <data name="library-ingest.unsupported.one" xml:space="preserve">
+    <value>{0} файл не поддерживается.</value>
+  </data>
+  <data name="library-ingest.wrong-section.few" xml:space="preserve">
+    <value>{0} файла — это не {1}, и они не были добавлены сюда.</value>
+  </data>
+  <data name="library-ingest.wrong-section.many" xml:space="preserve">
+    <value>{0} файлов — это не {1}, и они не были добавлены сюда.</value>
+  </data>
+  <data name="library-ingest.wrong-section.one" xml:space="preserve">
+    <value>{0} файл — это не {1}, и он не был добавлен сюда.</value>
+  </data>
+  <data name="library-migration.already-up-to-date" xml:space="preserve">
+    <value>Медиатека уже была актуальна: переносить было нечего.</value>
+  </data>
+  <data name="library-migration.cancelled-nothing-done" xml:space="preserve">
+    <value>Перенос отменён; ничего изменить не успели.</value>
+  </data>
+  <data name="library-migration.failed.few" xml:space="preserve">
+    <value>{0} не удалось перенести, и они остаются в медиатеке.</value>
+  </data>
+  <data name="library-migration.failed.many" xml:space="preserve">
+    <value>{0} не удалось перенести, и они остаются в медиатеке.</value>
+  </data>
+  <data name="library-migration.failed.one" xml:space="preserve">
+    <value>{0} не удалось перенести, и он остаётся в медиатеке.</value>
+  </data>
+  <data name="library-migration.head-cancelled" xml:space="preserve">
+    <value>Перенос отменён</value>
+  </data>
+  <data name="library-migration.head-done" xml:space="preserve">
+    <value>Медиатека перенесена</value>
+  </data>
+  <data name="library-migration.no-changes" xml:space="preserve">
+    <value>изменений не было</value>
+  </data>
+  <data name="library-migration.orphans-deleted.few" xml:space="preserve">
+    <value>удалено {0} потерянных файла</value>
+  </data>
+  <data name="library-migration.orphans-deleted.many" xml:space="preserve">
+    <value>удалено {0} потерянных файлов</value>
+  </data>
+  <data name="library-migration.orphans-deleted.one" xml:space="preserve">
+    <value>удалён {0} потерянный файл</value>
+  </data>
+  <data name="library-migration.prepared-built.few" xml:space="preserve">
+    <value>собрано {0} подготовленных файла</value>
+  </data>
+  <data name="library-migration.prepared-built.many" xml:space="preserve">
+    <value>собрано {0} подготовленных файлов</value>
+  </data>
+  <data name="library-migration.prepared-built.one" xml:space="preserve">
+    <value>собран {0} подготовленный файл</value>
+  </data>
+  <data name="library-migration.prepared-renamed.few" xml:space="preserve">
+    <value>приведено в порядок {0} подготовленных файла</value>
+  </data>
+  <data name="library-migration.prepared-renamed.many" xml:space="preserve">
+    <value>приведено в порядок {0} подготовленных файлов</value>
+  </data>
+  <data name="library-migration.prepared-renamed.one" xml:space="preserve">
+    <value>приведён в порядок {0} подготовленный файл</value>
+  </data>
+  <data name="library-migration.summary" xml:space="preserve">
+    <value>{0}: {1}.</value>
+  </data>
+  <data name="library-migration.summary-with-failures" xml:space="preserve">
+    <value>{0}: {1}. {2}</value>
+  </data>
+  <data name="library-status-strip.detener" xml:space="preserve">
+    <value>Остановить</value>
+  </data>
+  <data name="library-status-strip.detener-tarea-curso" xml:space="preserve">
+    <value>Остановить текущую задачу</value>
+  </data>
+  <data name="library-status-summary.days-and-hours" xml:space="preserve">
+    <value>{0} {1} ч</value>
+  </data>
+  <data name="library-unavailable-view.crear-nueva" xml:space="preserve">
+    <value>Создать новую</value>
+  </data>
+  <data name="library-unavailable-view.elegir-otra-biblioteca" xml:space="preserve">
+    <value>Выбрать другую медиатеку</value>
+  </data>
+  <data name="library-unavailable-view.no-se-perdio-nada-tu-catalogo" xml:space="preserve">
+    <value>Ничего не потеряно: каталог и ваши файлы по-прежнему на этом диске. Подключите его, и медиатека вернётся сама.</value>
+  </data>
+  <data name="library-view-model.album-cover-applied.few" xml:space="preserve">
+    <value>Обложка изменена у {0} композиций.</value>
+  </data>
+  <data name="library-view-model.album-cover-applied.many" xml:space="preserve">
+    <value>Обложка изменена у {0} композиций.</value>
+  </data>
+  <data name="library-view-model.album-cover-applied.one" xml:space="preserve">
+    <value>Обложка изменена у {0} композиции.</value>
+  </data>
+  <data name="library-view-model.buscando-fotos-artista" xml:space="preserve">
+    <value>Поиск фото исполнителей…</value>
+  </data>
+  <data name="library-view-model.buscando-letra" xml:space="preserve">
+    <value>Поиск текста песни…</value>
+  </data>
+  <data name="library-view-model.buscando-posters-video" xml:space="preserve">
+    <value>Поиск постеров для видео…</value>
+  </data>
+  <data name="library-view-model.completando-targets-count-elemento-s" xml:space="preserve">
+    <value>Дополнение сведений: {0}…</value>
+  </data>
+  <data name="library-view-model.completando-title" xml:space="preserve">
+    <value>Дополнение сведений: {0}…</value>
+  </data>
+  <data name="library-view-model.copied-files.few" xml:space="preserve">
+    <value>{0} файла скопировано в медиатеку.</value>
+  </data>
+  <data name="library-view-model.copied-files.many" xml:space="preserve">
+    <value>{0} файлов скопировано в медиатеку.</value>
+  </data>
+  <data name="library-view-model.copied-files.one" xml:space="preserve">
+    <value>{0} файл скопирован в медиатеку.</value>
+  </data>
+  <data name="library-view-model.copy-failed.few" xml:space="preserve">
+    <value>{0} не удалось скопировать.</value>
+  </data>
+  <data name="library-view-model.copy-failed.many" xml:space="preserve">
+    <value>{0} не удалось скопировать.</value>
+  </data>
+  <data name="library-view-model.copy-failed.one" xml:space="preserve">
+    <value>{0} не удалось скопировать.</value>
+  </data>
+  <data name="library-view-model.copy-skipped.few" xml:space="preserve">
+    <value>{0} пропущены, потому что их файлов нет; они остаются в каталоге.</value>
+  </data>
+  <data name="library-view-model.copy-skipped.many" xml:space="preserve">
+    <value>{0} пропущены, потому что их файлов нет; они остаются в каталоге.</value>
+  </data>
+  <data name="library-view-model.copy-skipped.one" xml:space="preserve">
+    <value>{0} пропущен, потому что его файла нет; он остаётся в каталоге.</value>
+  </data>
+  <data name="library-view-model.copying-files.few" xml:space="preserve">
+    <value>Копирование {0} файлов в медиатеку…</value>
+  </data>
+  <data name="library-view-model.copying-files.many" xml:space="preserve">
+    <value>Копирование {0} файлов в медиатеку…</value>
+  </data>
+  <data name="library-view-model.copying-files.one" xml:space="preserve">
+    <value>Копирование {0} файла в медиатеку…</value>
+  </data>
+  <data name="library-view-model.covers-normalized.few" xml:space="preserve">
+    <value>{0} обложки приведены к квадрату.</value>
+  </data>
+  <data name="library-view-model.covers-normalized.many" xml:space="preserve">
+    <value>{0} обложек приведены к квадрату.</value>
+  </data>
+  <data name="library-view-model.covers-normalized.one" xml:space="preserve">
+    <value>{0} обложка приведена к квадрату.</value>
+  </data>
+  <data name="library-view-model.covers-removed.few" xml:space="preserve">
+    <value>Убрано {0} обложки.</value>
+  </data>
+  <data name="library-view-model.covers-removed.many" xml:space="preserve">
+    <value>Убрано {0} обложек.</value>
+  </data>
+  <data name="library-view-model.covers-removed.one" xml:space="preserve">
+    <value>Убрана {0} обложка.</value>
+  </data>
+  <data name="library-view-model.hay-nada-completar-todo-tiene-titulo" xml:space="preserve">
+    <value>Дополнять нечего: у всего есть название, исполнитель и альбом.</value>
+  </data>
+  <data name="library-view-model.migration-legacy-prepared.few" xml:space="preserve">
+    <value>{0} подготовленных файла используют старое имя</value>
+  </data>
+  <data name="library-view-model.migration-legacy-prepared.many" xml:space="preserve">
+    <value>{0} подготовленных файлов используют старое имя</value>
+  </data>
+  <data name="library-view-model.migration-legacy-prepared.one" xml:space="preserve">
+    <value>{0} подготовленный файл использует старое имя</value>
+  </data>
+  <data name="library-view-model.migration-tagged.few" xml:space="preserve">
+    <value>записаны теги {0} композиций</value>
+  </data>
+  <data name="library-view-model.migration-tagged.many" xml:space="preserve">
+    <value>записаны теги {0} композиций</value>
+  </data>
+  <data name="library-view-model.migration-tagged.one" xml:space="preserve">
+    <value>записаны теги {0} композиции</value>
+  </data>
+  <data name="library-view-model.migration-without-storage.few" xml:space="preserve">
+    <value>{0} элемента пока не сообщают, их файлы — копии Aura или ваши</value>
+  </data>
+  <data name="library-view-model.migration-without-storage.many" xml:space="preserve">
+    <value>{0} элементов пока не сообщают, их файлы — копии Aura или ваши</value>
+  </data>
+  <data name="library-view-model.migration-without-storage.one" xml:space="preserve">
+    <value>{0} элемент пока не сообщает, его файл — копия Aura или ваш</value>
+  </data>
+  <data name="library-view-model.not-started.few" xml:space="preserve">
+    <value>{1} {0} остались без проверки (вы отменили).</value>
+  </data>
+  <data name="library-view-model.not-started.many" xml:space="preserve">
+    <value>{1} {0} остались без проверки (вы отменили).</value>
+  </data>
+  <data name="library-view-model.not-started.one" xml:space="preserve">
+    <value>{1} {0} остался без проверки (вы отменили).</value>
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-fotos" xml:space="preserve">
+    <value>Поиск фото остановлен.</value>
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-letra" xml:space="preserve">
+    <value>Поиск текста песни остановлен.</value>
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-linea" xml:space="preserve">
+    <value>Поиск в интернете остановлен.</value>
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-posters" xml:space="preserve">
+    <value>Поиск постеров остановлен.</value>
+  </data>
+  <data name="library-view-model.se-detuvo-normalizacion-caratulas-lo-fal" xml:space="preserve">
+    <value>Приведение обложек к квадрату остановлено. Оставшееся продолжится в следующий раз.</value>
+  </data>
+  <data name="library-view-model.se-pudo-leer-ninguna-etiqueta-archivos" xml:space="preserve">
+    <value>Не удалось прочитать ни одного тега: файлы недоступны.</value>
+  </data>
+  <data name="library-view-model.searching-covers.few" xml:space="preserve">
+    <value>Поиск обложек для {0} альбомов…</value>
+  </data>
+  <data name="library-view-model.searching-covers.many" xml:space="preserve">
+    <value>Поиск обложек для {0} альбомов…</value>
+  </data>
+  <data name="library-view-model.searching-covers.one" xml:space="preserve">
+    <value>Поиск обложки…</value>
+  </data>
+  <data name="library-view-model.tags-reread.few" xml:space="preserve">
+    <value>Перечитаны теги {0} композиций.</value>
+  </data>
+  <data name="library-view-model.tags-reread.many" xml:space="preserve">
+    <value>Перечитаны теги {0} композиций.</value>
+  </data>
+  <data name="library-view-model.tags-reread.one" xml:space="preserve">
+    <value>Перечитаны теги {0} композиции.</value>
+  </data>
+  <data name="main-window.aura-studio" xml:space="preserve">
+    <value>Aura Studio</value>
+  </data>
+  <data name="media-category.movies" xml:space="preserve">
+    <value>Фильмы</value>
+  </data>
+  <data name="media-category.series" xml:space="preserve">
+    <value>Сериалы</value>
+  </data>
+  <data name="media-category.videos" xml:space="preserve">
+    <value>Видео</value>
+  </data>
+  <data name="media-grid-page.buscar-posters" xml:space="preserve">
+    <value>Найти постеры</value>
+  </data>
+  <data name="media-grid-page.descarga-posters-falten-viajan-pegados-v" xml:space="preserve">
+    <value>Загружает недостающие постеры. Они поедут рядом со своим видео при следующей синхронизации.</value>
+  </data>
+  <data name="media-grid-page.xaml.cancelar" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="media-grid-page.xaml.guardar" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="media-grid-page.xaml.renombrar-album" xml:space="preserve">
+    <value>Переименовать альбом</value>
+  </data>
+  <data name="media-grid-view-model.photos-removed-from-album.few" xml:space="preserve">
+    <value>Убрано {0} фото из их альбома.</value>
+  </data>
+  <data name="media-grid-view-model.photos-removed-from-album.many" xml:space="preserve">
+    <value>Убрано {0} фото из их альбома.</value>
+  </data>
+  <data name="media-grid-view-model.photos-removed-from-album.one" xml:space="preserve">
+    <value>Убрано {0} фото из его альбома.</value>
+  </data>
+  <data name="media-info-dialog.cancelar" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="media-info-dialog.guardar" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="media-info-dialog.mas-informacion" xml:space="preserve">
+    <value>Подробнее</value>
+  </data>
+  <data name="music-settings-view.calidad-audio" xml:space="preserve">
+    <value>Качество звука</value>
+  </data>
+  <data name="music-settings-view.comprimir-mp3-buena-calidad" xml:space="preserve">
+    <value>Сжимать в MP3 хорошего качества</value>
+  </data>
+  <data name="orphans-button" xml:space="preserve">
+    <value>Найти потерянные файлы</value>
+  </data>
+  <data name="orphans-clean-button" xml:space="preserve">
+    <value>Очистить потерянные файлы</value>
+  </data>
+  <data name="orphans-confirm-message" xml:space="preserve">
+    <value>Они не связаны ни с одним элементом вашей медиатеки; их удаление не затронет ни одной композиции, ни одного фото и ни одного видео из ваших.</value>
+  </data>
+  <data name="orphans-detail" xml:space="preserve">
+    <value>Подготовленные файлы и обложки, которые больше не принадлежат ни одному элементу вашей медиатеки — от элементов, удалённых до этой версии, или от повторной обработки. Это не ваши исходные файлы: это технические копии, которые Aura делает сама и может сделать заново, если понадобится.</value>
+  </data>
+  <data name="orphans-none-found" xml:space="preserve">
+    <value>Потерянных файлов нет: очищать нечего.</value>
+  </data>
+  <data name="orphans-title" xml:space="preserve">
+    <value>Потерянные файлы</value>
+  </data>
+  <data name="playlists-page.crea-nueva-o-importa-archivo-m3u" xml:space="preserve">
+    <value>Создайте новый или импортируйте файл .m3u/.m3u8 из другой программы. Композиции, которых нет в вашей медиатеке, считаются отдельно, а не теряются молча.</value>
+  </data>
+  <data name="playlists-page.eliminar" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="playlists-page.exportar" xml:space="preserve">
+    <value>Экспортировать</value>
+  </data>
+  <data name="playlists-page.importar-m3u" xml:space="preserve">
+    <value>Импортировать M3U…</value>
+  </data>
+  <data name="playlists-page.listas-armadas-con-canciones-biblioteca" xml:space="preserve">
+    <value>Плейлисты, собранные из композиций вашей медиатеки. При синхронизации они копируются на iPod.</value>
+  </data>
+  <data name="playlists-page.nueva-lista" xml:space="preserve">
+    <value>Новый плейлист</value>
+  </data>
+  <data name="playlists-page.renombrar" xml:space="preserve">
+    <value>Переименовать</value>
+  </data>
+  <data name="playlists-page.todavia-tienes-listas" xml:space="preserve">
+    <value>У вас пока нет плейлистов.</value>
+  </data>
+  <data name="playlists-page.xaml.aceptar" xml:space="preserve">
+    <value>ОК</value>
+  </data>
+  <data name="playlists-page.xaml.cancelar" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="settings-page.abrir-explorador" xml:space="preserve">
+    <value>Открыть в Проводнике</value>
+  </data>
+  <data name="settings-page.activos-sin-configurar-nada" xml:space="preserve">
+    <value>Работают, настраивать нечего</value>
+  </data>
+  <data name="settings-page.agregar" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="settings-page.agregar-2" xml:space="preserve">
+    <value>Добавить</value>
+  </data>
+  <data name="settings-page.agrupar-colaboraciones-bajo-artista-prin" xml:space="preserve">
+    <value>Группировать совместные работы под основным исполнителем</value>
+  </data>
+  <data name="settings-page.al-importar" xml:space="preserve">
+    <value>При импорте</value>
+  </data>
+  <data name="settings-page.apagado-aura-studio-toca-red-al" xml:space="preserve">
+    <value>Выключено: при импорте Aura Studio не обращается к сети. Она использует только теги файла и то, что можно угадать из его имени.</value>
+  </data>
+  <data name="settings-page.archivos-huerfanos" xml:space="preserve">
+    <value>Потерянные файлы</value>
+  </data>
+  <data name="settings-page.artista-album-recomendado" xml:space="preserve">
+    <value>Исполнитель / Альбом (рекомендуется)</value>
+  </data>
+  <data name="settings-page.bajar" xml:space="preserve">
+    <value>Вниз</value>
+  </data>
+  <data name="settings-page.biblioteca" xml:space="preserve">
+    <value>Медиатека</value>
+  </data>
+  <data name="settings-page.buscar-letras-sincronizadas" xml:space="preserve">
+    <value>Искать синхронизированные тексты песен</value>
+  </data>
+  <data name="settings-page.buscarlo-nuevo" xml:space="preserve">
+    <value>Поискать снова</value>
+  </data>
+  <data name="settings-page.calidad-imagen" xml:space="preserve">
+    <value>Качество изображения</value>
+  </data>
+  <data name="settings-page.cambiar" xml:space="preserve">
+    <value>Изменить…</value>
+  </data>
+  <data name="settings-page.cambiar-carpeta-mueve-nada" xml:space="preserve">
+    <value>Смена папки ничего не перемещает</value>
+  </data>
+  <data name="settings-page.caratula-alternativa-1000-1000-sin-clave" xml:space="preserve">
+    <value>Альтернативная обложка 1000×1000, без ключа. Это единственный источник, чьи условия прямо разрешают такое некоммерческое использование.</value>
+  </data>
+  <data name="settings-page.caratula-por-album-recomendado" xml:space="preserve">
+    <value>Одна обложка на альбом (рекомендуется)</value>
+  </data>
+  <data name="settings-page.caratula-por-cancion" xml:space="preserve">
+    <value>Одна обложка на композицию</value>
+  </data>
+  <data name="settings-page.caratulas" xml:space="preserve">
+    <value>Обложки</value>
+  </data>
+  <data name="settings-page.carpeta-biblioteca" xml:space="preserve">
+    <value>Папка медиатеки</value>
+  </data>
+  <data name="settings-page.carpeta-nueva-biblioteca-anterior-intacta" xml:space="preserve">
+    <value>Aura Studio начинает использовать новую папку и читает ту медиатеку, которая там есть (или начинает с пустой, если её нет). Ваша прежняя медиатека остаётся нетронутой там, где была, и вернётся, если вы снова выберете ту папку.</value>
+  </data>
+  <data name="settings-page.carpetas-externas-arrastraste-con-copia" xml:space="preserve">
+    <value>Внешние папки, которые вы перетащили при выключенном копировании. Aura ничего оттуда не копирует, она лишь их запоминает. Убрать одну из этого списка не удаляет и не отвязывает то, что вы уже оттуда импортировали: она просто перестаёт показываться.</value>
+  </data>
+  <data name="settings-page.carpetas-ipod" xml:space="preserve">
+    <value>Папки на iPod</value>
+  </data>
+  <data name="settings-page.carpetas-vinculadas" xml:space="preserve">
+    <value>Связанные папки</value>
+  </data>
+  <data name="settings-page.claves-tokens" xml:space="preserve">
+    <value>Ключи и токены</value>
+  </data>
+  <data name="settings-page.colaboraciones" xml:space="preserve">
+    <value>Совместные работы</value>
+  </data>
+  <data name="settings-page.colecciones" xml:space="preserve">
+    <value>Коллекции</value>
+  </data>
+  <data name="settings-page.completar-informacion-faltante-con-servi" xml:space="preserve">
+    <value>Дополнять недостающие сведения через интернет-службы</value>
+  </data>
+  <data name="settings-page.conversion-hace-ffmpeg-se-instala-aparte" xml:space="preserve">
+    <value>Преобразование выполняет ffmpeg, который устанавливается отдельно, потому что у него своя лицензия и свой ритм обновлений. Он находится сам; выбирать его нужно, только если вы держите его в своей папке.</value>
+  </data>
+  <data name="settings-page.copiar-medios-carpeta-biblioteca" xml:space="preserve">
+    <value>Копировать медиафайлы в папку медиатеки</value>
+  </data>
+  <data name="settings-page.cuando-cancion-le-falta-caratula-se" xml:space="preserve">
+    <value>Когда у композиции нет обложки, эти службы опрашиваются по порядку и берётся первое найденное изображение.</value>
+  </data>
+  <data name="settings-page.deezer" xml:space="preserve">
+    <value>Deezer</value>
+  </data>
+  <data name="settings-page.elegir-ffmpeg-exe" xml:space="preserve">
+    <value>Выбрать ffmpeg.exe…</value>
+  </data>
+  <data name="settings-page.excepciones" xml:space="preserve">
+    <value>Исключения</value>
+  </data>
+  <data name="settings-page.ffmpeg" xml:space="preserve">
+    <value>ffmpeg</value>
+  </data>
+  <data name="settings-page.formato-video" xml:space="preserve">
+    <value>Формат видео</value>
+  </data>
+  <data name="settings-page.fotos" xml:space="preserve">
+    <value>Фото</value>
+  </data>
+  <data name="settings-page.general" xml:space="preserve">
+    <value>Общее</value>
+  </data>
+  <data name="settings-page.idioma" xml:space="preserve">
+    <value>Язык</value>
+  </data>
+  <data name="settings-page.letras-vienen-lrclib-sin-clave-ni" xml:space="preserve">
+    <value>Тексты песен берутся из LRCLIB, без ключа и без регистрации. Для этого нужно включить настройку выше.</value>
+  </data>
+  <data name="settings-page.listo" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="settings-page.los-nombres-que-escribes-no-se-traducen" xml:space="preserve">
+    <value>Имена, которые вы вводите, — ваши, и они не переводятся: приложение может сменить язык, а ваши коллекции останутся с теми именами, которые вы им дали. Три категории видео, которые приносит Aura, показываются на языке приложения, но внутри всегда сохраняются одинаково, чтобы ваша медиатека выглядела одинаково на любом компьютере.</value>
+  </data>
+  <data name="settings-page.mantener-formato-original-recomendado" xml:space="preserve">
+    <value>Сохранять исходный формат (рекомендуется)</value>
+  </data>
+  <data name="settings-page.migrar-biblioteca" xml:space="preserve">
+    <value>Перенести медиатеку</value>
+  </data>
+  <data name="settings-page.migrar-version-anterior" xml:space="preserve">
+    <value>Перенести из более ранней версии</value>
+  </data>
+  <data name="settings-page.musica" xml:space="preserve">
+    <value>Музыка</value>
+  </data>
+  <data name="settings-page.musicbrainz-artista-album-ano-numero-pis" xml:space="preserve">
+    <value>MusicBrainz (исполнитель, альбом, год, номер трека), Cover Art Archive (обложки) и LRCLIB (синхронизированные тексты песен). Все три работают без ключа и без регистрации: Aura Studio полезна сразу после установки.</value>
+  </data>
+  <data name="settings-page.nombre-archivo" xml:space="preserve">
+    <value>Имя файла</value>
+  </data>
+  <data name="settings-page.nombre-completo-grupo" xml:space="preserve">
+    <value>Полное название группы</value>
+  </data>
+  <data name="settings-page.nombres-grupo-llevan-uno-esos-separadore" xml:space="preserve">
+    <value>Названия групп, которые содержат один из этих разделителей и которые не нужно обрезать, например «Simon + Garfunkel» или «Café con Leche». Они сравниваются с полным указанием авторства, без учёта регистра и диакритики.</value>
+  </data>
+  <data name="settings-page.nueva-coleccion" xml:space="preserve">
+    <value>Новая коллекция</value>
+  </data>
+  <data name="settings-page.numero-pista-titulo" xml:space="preserve">
+    <value>Номер трека и название</value>
+  </data>
+  <data name="settings-page.optimizar-espacio-320-px-recomendado" xml:space="preserve">
+    <value>Экономить место (320 px, рекомендуется)</value>
+  </data>
+  <data name="settings-page.orden-busqueda-caratula" xml:space="preserve">
+    <value>Порядок поиска обложек</value>
+  </data>
+  <data name="settings-page.organizar-por-categoria-dentro-bibliotec" xml:space="preserve">
+    <value>Упорядочивать по категориям внутри медиатеки</value>
+  </data>
+  <data name="settings-page.organizar-por-coleccion-dentro-bibliotec" xml:space="preserve">
+    <value>Упорядочивать по коллекциям внутри медиатеки</value>
+  </data>
+  <data name="settings-page.pantalla-ipod-es-320-240-foto" xml:space="preserve">
+    <value>Экран iPod — 320×240: фотография с современной камеры или телефона весит в десятки раз больше, чем этот экран способен показать. В обоих случаях она сохраняется как JPEG, никогда как полное исходное фото.</value>
+  </data>
+  <data name="settings-page.quitar" xml:space="preserve">
+    <value>Убрать</value>
+  </data>
+  <data name="settings-page.quitar-2" xml:space="preserve">
+    <value>Убрать</value>
+  </data>
+  <data name="settings-page.quitar-3" xml:space="preserve">
+    <value>Убрать</value>
+  </data>
+  <data name="settings-page.quitar-coleccion-cambia-coleccion-fotos" xml:space="preserve">
+    <value>Удаление коллекции не меняет коллекцию у тех фото, которым она уже была назначена.</value>
+  </data>
+  <data name="settings-page.se-guardan-administrador-credenciales-wi" xml:space="preserve">
+    <value>Они хранятся в Диспетчере учётных данных Windows, зашифрованные вашей учётной записью. Никогда в файле приложения и никогда в репозитории; вы можете посмотреть и удалить их из Windows, не заходя сюда.</value>
+  </data>
+  <data name="settings-page.separa-tus-fotos-colecciones-para-encont" xml:space="preserve">
+    <value>Разделяет ваши фото по коллекциям, чтобы их было легче находить ВНУТРИ Aura Studio. Это не меняет, куда они попадают на iPod: там они всегда копируются вместе в Photos, потому что просмотрщик iPod пока не умеет заходить в подпапки.</value>
+  </data>
+  <data name="settings-page.separa-tus-videos-videos-series-pelicula" xml:space="preserve">
+    <value>Разделяет ваши видео на Видео, Сериалы и Фильмы, чтобы их было легче находить ВНУТРИ Aura Studio. Это не меняет, куда они попадают на iPod: там они всегда копируются вместе в Videos, потому что проигрыватель пока не умеет заходить в подпапки.</value>
+  </data>
+  <data name="settings-page.servicios" xml:space="preserve">
+    <value>Службы</value>
+  </data>
+  <data name="settings-page.solo-album" xml:space="preserve">
+    <value>Только альбом</value>
+  </data>
+  <data name="settings-page.solo-artista" xml:space="preserve">
+    <value>Только исполнитель</value>
+  </data>
+  <data name="settings-page.solo-titulo-recomendado" xml:space="preserve">
+    <value>Только название (рекомендуется)</value>
+  </data>
+  <data name="settings-page.subir" xml:space="preserve">
+    <value>Вверх</value>
+  </data>
+  <data name="settings-page.texto" xml:space="preserve">
+    <value>↑</value>
+  </data>
+  <data name="settings-page.texto-2" xml:space="preserve">
+    <value>↓</value>
+  </data>
+  <data name="settings-page.titulo-album" xml:space="preserve">
+    <value>Название — Альбом</value>
+  </data>
+  <data name="settings-page.titulo-artista" xml:space="preserve">
+    <value>Название — Исполнитель</value>
+  </data>
+  <data name="settings-page.todavia-agregaste-ninguna-excepcion" xml:space="preserve">
+    <value>Вы пока не добавили ни одного исключения.</value>
+  </data>
+  <data name="settings-page.todavia-vinculaste-ninguna-carpeta" xml:space="preserve">
+    <value>Вы пока не связали ни одной папки.</value>
+  </data>
+  <data name="settings-page.todo-video-se-convierte-mpeg-1" xml:space="preserve">
+    <value>Любое видео при синхронизации преобразуется в MPEG-1/2 320×240: это единственный формат, который iPod с Aura воспроизводит на полной скорости (его чип 2007 года не декодирует ни H.264, ни современные форматы). Это не предпочтение, а реальное ограничение оборудования, поэтому выбирать здесь нечего.</value>
+  </data>
+  <data name="settings-page.version-hd-640-px" xml:space="preserve">
+    <value>HD-версия (640 px)</value>
+  </data>
+  <data name="settings-page.video" xml:space="preserve">
+    <value>Видео</value>
+  </data>
+  <data name="settings-page.wav-aiff-siempre-se-convierten" xml:space="preserve">
+    <value>WAV и AIFF преобразуются всегда</value>
+  </data>
+  <data name="settings-section-view.actualizaciones-aura-studio" xml:space="preserve">
+    <value>Обновление Aura Studio</value>
+  </data>
+  <data name="settings-section-view.aqui-vive-catalogo-tu-biblioteca-funcion" xml:space="preserve">
+    <value>Здесь живёт каталог вашей медиатеки: он работает, даже когда iPod не подключён, и синхронизируется, когда вы его подключите. Копируются ли сюда ещё и ваши файлы, зависит от настройки ниже.</value>
+  </data>
+  <data name="settings-section-view.buscar-actualizaciones" xml:space="preserve">
+    <value>Проверить обновления</value>
+  </data>
+  <data name="shell-page.descargar" xml:space="preserve">
+    <value>Загрузить</value>
+  </data>
+  <data name="shell-page.esta-biblioteca-viene-version-anterior" xml:space="preserve">
+    <value>Эта медиатека осталась от более ранней версии</value>
+  </data>
+  <data name="shell-page.migrar-biblioteca" xml:space="preserve">
+    <value>Перенести медиатеку</value>
+  </data>
+  <data name="shell-page.ver-hay-nuevo" xml:space="preserve">
+    <value>Посмотреть, что нового</value>
+  </data>
+  <data name="similar-items-page.aura-studio-busca-canciones-fotos-videos" xml:space="preserve">
+    <value>Aura Studio ищет композиции, фото и видео, которые выглядят как повторы. Она ничего не удаляет и не меняет сама: здесь вы видите, почему она их объединила, и решаете вы.</value>
+  </data>
+  <data name="similar-items-page.buscar" xml:space="preserve">
+    <value>Искать</value>
+  </data>
+  <data name="similar-items-page.conservar-solo-este" xml:space="preserve">
+    <value>Оставить только этот</value>
+  </data>
+  <data name="similar-items-page.elementos-parecidos" xml:space="preserve">
+    <value>Похожие элементы</value>
+  </data>
+  <data name="similar-items-page.son-lo-mismo" xml:space="preserve">
+    <value>Это не одно и то же</value>
+  </data>
+  <data name="similar-items-page.unificar-metadata" xml:space="preserve">
+    <value>Объединить метаданные</value>
+  </data>
+  <data name="similar-items-page.volver-mostrar-descartados" xml:space="preserve">
+    <value>Снова показать отклонённые</value>
+  </data>
+  <data name="similar-items-view-model.groups-found.few" xml:space="preserve">
+    <value>Найдено {0} похожие группы.</value>
+  </data>
+  <data name="similar-items-view-model.groups-found.many" xml:space="preserve">
+    <value>Найдено {0} похожих групп.</value>
+  </data>
+  <data name="similar-items-view-model.groups-found.one" xml:space="preserve">
+    <value>Найдена {0} похожая группа.</value>
+  </data>
+  <data name="similar-items-view-model.items-removed.few" xml:space="preserve">
+    <value>{0} элемента убраны из медиатеки.</value>
+  </data>
+  <data name="similar-items-view-model.items-removed.many" xml:space="preserve">
+    <value>{0} элементов убраны из медиатеки.</value>
+  </data>
+  <data name="similar-items-view-model.items-removed.one" xml:space="preserve">
+    <value>{0} элемент убран из медиатеки.</value>
+  </data>
+  <data name="songs-page.busca-album-ano-caratula-letra-lo" xml:space="preserve">
+    <value>Ищет альбом, год, обложку и текст песни для всего, что заполнено не полностью</value>
+  </data>
+  <data name="songs-page.busca-canciones-fotos-videos-parezcan-re" xml:space="preserve">
+    <value>Ищет композиции, фото и видео, которые выглядят как повторы</value>
+  </data>
+  <data name="songs-page.completar-linea" xml:space="preserve">
+    <value>Дополнить через интернет</value>
+  </data>
+  <data name="songs-page.elementos-parecidos" xml:space="preserve">
+    <value>Похожие элементы</value>
+  </data>
+  <data name="songs-page.xaml.cambiar-nombre" xml:space="preserve">
+    <value>Переименовать</value>
+  </data>
+  <data name="songs-page.xaml.cancelar" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="songs-page.xaml.guardar" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="storage-change-only-affects-future" xml:space="preserve">
+    <value>Изменение этой настройки влияет только на то, что вы импортируете начиная с этого момента: то, что уже в вашей медиатеке, остаётся как есть.</value>
+  </data>
+  <data name="storage-copy-explainer" xml:space="preserve">
+    <value>Копировать в медиатеку Aura: Aura управляет файлами, правит их теги и синхронизирует напрямую; занимает место на диске (одна копия); свои оригиналы вы можете удалить потом.</value>
+  </data>
+  <data name="storage-reference-explainer" xml:space="preserve">
+    <value>Ссылаться на месте: не занимает лишнего места и не трогает ваши файлы; Aura держит подготовленную версию рядом (.preparados/), правки живут только в Aura и на iPod, а если исходного диска нет, эти композиции нельзя синхронизировать.</value>
+  </data>
+  <data name="storage-section-title" xml:space="preserve">
+    <value>Как хранить вашу музыку</value>
+  </data>
+  <data name="sync-view-model.conecta-selecciona-ipod-antes-continuar" xml:space="preserve">
+    <value>Подключите и выберите iPod, прежде чем продолжать.</value>
+  </data>
+  <data name="sync-view-model.este-ipod-esta-ejecutando-aura-instala" xml:space="preserve">
+    <value>На этом iPod не работает Aura. Установите Aura перед синхронизацией.</value>
+  </data>
+  <data name="sync-view-model.orphan-header.few" xml:space="preserve">
+    <value>{0} файлов с iPod больше нет в вашей медиатеке</value>
+  </data>
+  <data name="sync-view-model.orphan-header.many" xml:space="preserve">
+    <value>{0} файлов с iPod больше нет в вашей медиатеке</value>
+  </data>
+  <data name="sync-view-model.orphan-header.one" xml:space="preserve">
+    <value>{0} файла с iPod больше нет в вашей медиатеке</value>
+  </data>
+  <data name="sync-view-model.revisa-cambios-antes-sincronizar" xml:space="preserve">
+    <value>Просмотрите изменения перед синхронизацией.</value>
+  </data>
+  <data name="sync-view-model.revision-cancelada" xml:space="preserve">
+    <value>Просмотр отменён.</value>
+  </data>
+  <data name="sync-view-model.sincronizacion-cancelada" xml:space="preserve">
+    <value>Синхронизация отменена.</value>
+  </data>
+  <data name="themes-page.activar" xml:space="preserve">
+    <value>Активировать</value>
+  </data>
+  <data name="themes-page.aura-studio-arma-paquete-desde-carpeta" xml:space="preserve">
+    <value>Aura Studio собирает пакет из папки с ресурсами, уже созданными через design-system прошивки (шрифты .fnt и маски значков). Она не преобразует шрифты и значки с вашего компьютера.</value>
+  </data>
+  <data name="themes-page.autor" xml:space="preserve">
+    <value>Автор</value>
+  </data>
+  <data name="themes-page.cambia-como-se-ve-aura-ipod" xml:space="preserve">
+    <value>Измените, как Aura выглядит на вашем iPod</value>
+  </data>
+  <data name="themes-page.compartir" xml:space="preserve">
+    <value>Поделиться…</value>
+  </data>
+  <data name="themes-page.construir-e-instalar" xml:space="preserve">
+    <value>Собрать и установить</value>
+  </data>
+  <data name="themes-page.construir-tema" xml:space="preserve">
+    <value>Собрать тему</value>
+  </data>
+  <data name="themes-page.elegir-carpeta" xml:space="preserve">
+    <value>Выбрать папку…</value>
+  </data>
+  <data name="themes-page.eliminar" xml:space="preserve">
+    <value>Удалить</value>
+  </data>
+  <data name="themes-page.marcalo-si-tema-usa-fuentes-o" xml:space="preserve">
+    <value>Отметьте, если тема использует шрифты или значки, которые вы не можете распространять, например SF Pro или SF Symbols. Тема всё равно установится на ваш iPod, но Aura Studio не даст вам ею поделиться.</value>
+  </data>
+  <data name="themes-page.nombre" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="themes-page.temas" xml:space="preserve">
+    <value>Темы</value>
+  </data>
+  <data name="themes-page.usa-material-licencia-restringida-solo-p" xml:space="preserve">
+    <value>Использует материалы с ограниченной лицензией (только для личного пользования)</value>
+  </data>
+  <data name="themes-page.xaml.cancelar" xml:space="preserve">
+    <value>Отмена</value>
+  </data>
+  <data name="themes-page.xaml.quitar" xml:space="preserve">
+    <value>Убрать</value>
+  </data>
+  <data name="themes-page.xaml.quitar-row-name-ipod" xml:space="preserve">
+    <value>Убрать «{0}» с iPod?</value>
+  </data>
+  <data name="themes-view-model.row-name-se-va-aplicar-proxima" xml:space="preserve">
+    <value>«{0}» применится при следующем включении iPod.</value>
+  </data>
+  <data name="themes-view-model.se-guardo-copia-path" xml:space="preserve">
+    <value>Копия сохранена в {0}</value>
+  </data>
+  <data name="themes-view-model.se-instalo-installed-name-activalo-para" xml:space="preserve">
+    <value>«{0}» установлена. Активируйте её, чтобы увидеть на iPod.</value>
+  </data>
+  <data name="themes-view-model.se-quito-row-name-ipod" xml:space="preserve">
+    <value>«{0}» убрана с iPod.</value>
+  </data>
+</root>

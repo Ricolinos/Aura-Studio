@@ -75,6 +75,8 @@ public class SatelliteResourcesTests
     [InlineData("fr")]
     [InlineData("fr-FR")]
     [InlineData("fr-CA")]
+    [InlineData("ru")]
+    [InlineData("ru-RU")]
     public void ConLaCulturaPuestaElTextoSaleEnEseIdioma(string culture)
     {
         string language = culture.Split('-')[0];
@@ -134,6 +136,7 @@ public class SatelliteResourcesTests
     [InlineData("en")]
     [InlineData("de")]
     [InlineData("fr")]
+    [InlineData("ru")]
     public void CadaIdiomaTieneLasClavesQueLeTocan(string culture)
     {
         Dictionary<string, string> spanish = ValuesOf("Resources.resx");
@@ -200,6 +203,7 @@ public class SatelliteResourcesTests
     [InlineData("en")]
     [InlineData("de")]
     [InlineData("fr")]
+    [InlineData("ru")]
     public void CadaTextoTraducidoTieneLosMismosHuecosQueElEspanol(string culture)
     {
         Dictionary<string, string> spanish = ValuesOf("Resources.resx");
@@ -246,6 +250,7 @@ public class SatelliteResourcesTests
     [InlineData("en")]
     [InlineData("de")]
     [InlineData("fr")]
+    [InlineData("ru")]
     public void NingunaFraseLargaQuedoSinTraducir(string culture)
     {
         Dictionary<string, string> spanish = ValuesOf("Resources.resx");
