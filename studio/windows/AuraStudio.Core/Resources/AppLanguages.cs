@@ -60,7 +60,7 @@ public static class AppLanguages
         // y dice por qué — ofrecer un idioma sin decir que nadie lo revisó, en
         // pantallas que formatean discos, sería justo lo que no se puede hacer.
         new("de", "Deutsch", Ships: true, ReviewedByHumans: false),
-        new("fr", "Français", Ships: false, ReviewedByHumans: false),
+        new("fr", "Français", Ships: true, ReviewedByHumans: false),
         new("ja", "日本語", Ships: false, ReviewedByHumans: false),
         new("ru", "Русский", Ships: false, ReviewedByHumans: false),
     ];
