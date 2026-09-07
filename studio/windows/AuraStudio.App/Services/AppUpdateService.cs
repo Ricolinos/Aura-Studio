@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using AuraStudio.Core.Networking;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App.Services;
 
@@ -123,7 +124,7 @@ public sealed partial class AppUpdateService : ObservableObject
     public async Task CheckNowAsync(CancellationToken ct = default)
     {
         IsChecking = true;
-        StatusMessage = "Buscando actualizaciones de Aura Studio…";
+        StatusMessage = Strings.Get("app-update-service.buscando-actualizaciones-aura-studio");
 
         try
         {
@@ -160,7 +161,7 @@ public sealed partial class AppUpdateService : ObservableObject
         }
         catch (OperationCanceledException)
         {
-            StatusMessage = "Se detuvo la búsqueda de actualizaciones.";
+            StatusMessage = Strings.Get("app-update-service.se-detuvo-busqueda-actualizaciones");
         }
         finally
         {

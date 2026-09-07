@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Controls;
 using AuraStudio.App.Resources;
 using AuraStudio.Core;
 using AuraStudio.Core.Library;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App.Views;
 
@@ -44,9 +45,9 @@ public static class MediaInfoDialog
         var dialog = new ContentDialog
         {
             XamlRoot = root,
-            Title = "Más información",
-            PrimaryButtonText = "Guardar",
-            CloseButtonText = "Cancelar",
+            Title = Strings.Get("media-info-dialog.mas-informacion"),
+            PrimaryButtonText = Strings.Get("media-info-dialog.guardar"),
+            CloseButtonText = Strings.Get("media-info-dialog.cancelar"),
             DefaultButton = ContentDialogButton.Primary
         };
 

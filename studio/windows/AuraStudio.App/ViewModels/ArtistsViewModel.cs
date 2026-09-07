@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using AuraStudio.Core.Library;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App.ViewModels;
 
@@ -90,7 +91,7 @@ public sealed partial class ArtistAlbumRow(AlbumGroup album, string artistKey) :
     public string Detail { get; } =
         string.Join(" · ", new[] { album.Genre, album.Year }.Where(part => part is { Length: > 0 }));
 
-    public string CountText => Album.TrackCount == 1 ? "1 canción" : $"{Album.TrackCount} canciones";
+    public string CountText => Strings.Plural("conteo.canciones", Album.TrackCount);
 
     public bool IsFavorite => Album.IsFavorite;
 
@@ -248,9 +249,10 @@ public sealed partial class ArtistsViewModel : ViewModelBase
             int albums = VisibleArtists.Sum(row => row.Group.Albums.Count);
             int songs = VisibleArtists.Sum(row => row.Group.TrackCount);
 
-            string counts = $"{artists} {(artists == 1 ? "artista" : "artistas")} · " +
-                            $"{albums} {(albums == 1 ? "álbum" : "álbumes")} · " +
-                            $"{songs} {(songs == 1 ? "canción" : "canciones")}";
+            string counts = string.Join(" · ", [
+                Strings.Plural("conteo.artistas", artists),
+                Strings.Plural("conteo.albumes", albums),
+                Strings.Plural("conteo.canciones", songs)]);
 
             return Selection.Count > 1 ? $"{counts} · {Selection.Count} seleccionados" : counts;
         }

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using AuraStudio.App.Services;
 using AuraStudio.Core.Library;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App.ViewModels;
 
@@ -60,7 +61,7 @@ public sealed partial class SyncViewModel : ViewModelBase
         _syncService = syncService;
         _session = session;
         _library = library;
-        StatusMessage = "Revisa los cambios antes de sincronizar.";
+        StatusMessage = Strings.Get("sync-view-model.revisa-cambios-antes-sincronizar");
         CurrentFile = "";
         FailureMessage = "";
         _syncService.ProgressChanged += OnProgressChanged;
@@ -125,7 +126,7 @@ public sealed partial class SyncViewModel : ViewModelBase
                 ? $"Se van a copiar {plan.ToCopy.Count()} archivo(s); {plan.SkipCount} ya están al día."
                 : "El iPod ya está al día con tu biblioteca.";
         }
-        catch (OperationCanceledException) { StatusMessage = "Revisión cancelada."; }
+        catch (OperationCanceledException) { StatusMessage = Strings.Get("sync-view-model.revision-cancelada"); }
         finally { Done(); }
     }
 
@@ -158,7 +159,7 @@ public sealed partial class SyncViewModel : ViewModelBase
 
             if (result.Success) await RefreshOrphansAsync(volume);
         }
-        catch (OperationCanceledException) { StatusMessage = "Sincronización cancelada."; }
+        catch (OperationCanceledException) { StatusMessage = Strings.Get("sync-view-model.sincronizacion-cancelada"); }
         finally { HasPreview = false; Done(); }
     }
 
@@ -329,13 +330,13 @@ public sealed partial class SyncViewModel : ViewModelBase
 
         if (_session.Device is null || string.IsNullOrWhiteSpace(volume))
         {
-            StatusMessage = "Conecta y selecciona un iPod antes de continuar.";
+            StatusMessage = Strings.Get("sync-view-model.conecta-selecciona-ipod-antes-continuar");
             return false;
         }
 
         if (!_session.Device.SupportsAuraContract)
         {
-            StatusMessage = "Este iPod no está ejecutando Aura. Instala Aura antes de sincronizar.";
+            StatusMessage = Strings.Get("sync-view-model.este-ipod-esta-ejecutando-aura-instala");
             return false;
         }
 

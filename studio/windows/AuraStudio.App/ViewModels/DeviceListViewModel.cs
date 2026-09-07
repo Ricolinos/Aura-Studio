@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using AuraStudio.Core.Resources;
 using AuraStudio.Core;
 using AuraStudio.Core.Installer;
 using AuraStudio.App.Resources;
@@ -152,7 +153,7 @@ public sealed partial class DeviceListViewModel : ViewModelBase
         catch (OperationCanceledException)
         {
             // Lo que había en pantalla sigue valiendo: cancelar no concluye nada.
-            StatusMessage = "Se detuvo la búsqueda de actualizaciones.";
+            StatusMessage = Strings.Get("device-list-view-model.se-detuvo-busqueda-actualizaciones");
         }
         finally
         {

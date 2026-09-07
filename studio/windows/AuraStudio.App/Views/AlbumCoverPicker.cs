@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Media;
 using AuraStudio.App.Platform;
 using AuraStudio.App.ViewModels;
 using AuraStudio.Core.Networking;
+using AuraStudio.Core.Resources;
 using Windows.Graphics.Imaging;
 
 namespace AuraStudio.App.Views;
@@ -39,7 +40,7 @@ internal static class AlbumCoverPicker
             XamlRoot = xamlRoot,
             Title = TitleFor(albumTitle, position: 0, total: 0),
             Content = Searching(),
-            CloseButtonText = "Cancelar"
+            CloseButtonText = Strings.Get("album-cover-picker.cancelar")
         };
 
         Task<ContentDialogResult> showing = dialog.ShowAsync().AsTask();
@@ -60,8 +61,8 @@ internal static class AlbumCoverPicker
         GridView chooser = await ChooserAsync(candidates);
 
         dialog.Content = chooser;
-        dialog.PrimaryButtonText = "Usar esta";
-        dialog.SecondaryButtonText = "Usar recomendada";
+        dialog.PrimaryButtonText = Strings.Get("album-cover-picker.usar-esta");
+        dialog.SecondaryButtonText = Strings.Get("album-cover-picker.usar-recomendada");
         dialog.DefaultButton = ContentDialogButton.Primary;
 
         // Se deshabilita, no se esconde: que el botón aparezca y desaparezca
@@ -119,9 +120,9 @@ internal static class AlbumCoverPicker
             XamlRoot = xamlRoot,
             Title = TitleFor(jobs[0].Title, 1, jobs.Count),
             Content = Searching(),
-            PrimaryButtonText = "Usar esta",
-            SecondaryButtonText = "Omitir este álbum",
-            CloseButtonText = "Cancelar el resto",
+            PrimaryButtonText = Strings.Get("album-cover-picker.usar-esta-2"),
+            SecondaryButtonText = Strings.Get("album-cover-picker.omitir-este-album"),
+            CloseButtonText = Strings.Get("album-cover-picker.cancelar-resto"),
             DefaultButton = ContentDialogButton.Primary,
             IsPrimaryButtonEnabled = false
         };

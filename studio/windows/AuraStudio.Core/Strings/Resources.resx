@@ -102,8 +102,26 @@
   <data name="app-strings.delete-confirm-cancel" xml:space="preserve">
     <value>Cancelar</value>
   </data>
+  <data name="app-strings.delete-confirm-copy.one" xml:space="preserve">
+    <value>{0} archivo ({1}) va a la Papelera de reciclaje.</value>
+  </data>
+  <data name="app-strings.delete-confirm-copy.other" xml:space="preserve">
+    <value>{0} archivos ({1}) van a la Papelera de reciclaje.</value>
+  </data>
   <data name="app-strings.delete-confirm-primary" xml:space="preserve">
     <value>Eliminar</value>
+  </data>
+  <data name="app-strings.delete-confirm-reference.one" xml:space="preserve">
+    <value>{0} elemento se quita de tu biblioteca; su archivo original no se toca.</value>
+  </data>
+  <data name="app-strings.delete-confirm-reference.other" xml:space="preserve">
+    <value>{0} elementos se quitan de tu biblioteca; sus archivos originales no se tocan.</value>
+  </data>
+  <data name="app-strings.delete-confirm-title.one" xml:space="preserve">
+    <value>¿Eliminar {0} elemento?</value>
+  </data>
+  <data name="app-strings.delete-confirm-title.other" xml:space="preserve">
+    <value>¿Eliminar {0} elementos?</value>
   </data>
   <data name="app-strings.device-ambiguous" xml:space="preserve">
     <value>Se encontraron {0} discos que podrían ser tu iPod. Por seguridad, Aura Studio no elige uno solo — desconecta los demás discos externos y vuelve a intentar.</value>
@@ -657,11 +675,29 @@
   <data name="app-strings.orphans-clean-button" xml:space="preserve">
     <value>Limpiar archivos huérfanos</value>
   </data>
+  <data name="app-strings.orphans-cleaned.one" xml:space="preserve">
+    <value>Se borró {0} archivo huérfano.</value>
+  </data>
+  <data name="app-strings.orphans-cleaned.other" xml:space="preserve">
+    <value>Se borraron {0} archivos huérfanos.</value>
+  </data>
   <data name="app-strings.orphans-confirm-message" xml:space="preserve">
     <value>{0} No están ligados a ningún elemento de tu biblioteca; borrarlos no afecta ninguna canción, foto ni video que tengas.</value>
   </data>
+  <data name="app-strings.orphans-confirm-title.one" xml:space="preserve">
+    <value>¿Borrar {0} archivo huérfano?</value>
+  </data>
+  <data name="app-strings.orphans-confirm-title.other" xml:space="preserve">
+    <value>¿Borrar {0} archivos huérfanos?</value>
+  </data>
   <data name="app-strings.orphans-detail" xml:space="preserve">
     <value>Preparados y carátulas que ya no le pertenecen a ningún elemento de tu biblioteca — de elementos eliminados antes de esta versión, o de un reprocesamiento. No son tus archivos originales: son copias técnicas que Aura arma sola y puede volver a armar si hicieran falta.</value>
+  </data>
+  <data name="app-strings.orphans-found.one" xml:space="preserve">
+    <value>{0} archivo huérfano ({1}).</value>
+  </data>
+  <data name="app-strings.orphans-found.other" xml:space="preserve">
+    <value>{0} archivos huérfanos ({1}).</value>
   </data>
   <data name="app-strings.orphans-none-found" xml:space="preserve">
     <value>No hay archivos huérfanos: no hace falta limpiar nada.</value>
@@ -773,6 +809,66 @@
   </data>
   <data name="artists-page.todavia-hay-musica-biblioteca" xml:space="preserve">
     <value>Todavía no hay música en la biblioteca.</value>
+  </data>
+  <data name="conteo.albumes.one" xml:space="preserve">
+    <value>{0} álbum</value>
+  </data>
+  <data name="conteo.albumes.other" xml:space="preserve">
+    <value>{0} álbumes</value>
+  </data>
+  <data name="conteo.artistas.one" xml:space="preserve">
+    <value>{0} artista</value>
+  </data>
+  <data name="conteo.artistas.other" xml:space="preserve">
+    <value>{0} artistas</value>
+  </data>
+  <data name="conteo.canciones.one" xml:space="preserve">
+    <value>{0} canción</value>
+  </data>
+  <data name="conteo.canciones.other" xml:space="preserve">
+    <value>{0} canciones</value>
+  </data>
+  <data name="conteo.dias.one" xml:space="preserve">
+    <value>{0} día</value>
+  </data>
+  <data name="conteo.dias.other" xml:space="preserve">
+    <value>{0} días</value>
+  </data>
+  <data name="conteo.episodios.one" xml:space="preserve">
+    <value>{0} episodio</value>
+  </data>
+  <data name="conteo.episodios.other" xml:space="preserve">
+    <value>{0} episodios</value>
+  </data>
+  <data name="conteo.fotos.one" xml:space="preserve">
+    <value>{0} foto</value>
+  </data>
+  <data name="conteo.fotos.other" xml:space="preserve">
+    <value>{0} fotos</value>
+  </data>
+  <data name="conteo.peliculas.one" xml:space="preserve">
+    <value>{0} película</value>
+  </data>
+  <data name="conteo.peliculas.other" xml:space="preserve">
+    <value>{0} películas</value>
+  </data>
+  <data name="conteo.series.one" xml:space="preserve">
+    <value>{0} serie</value>
+  </data>
+  <data name="conteo.series.other" xml:space="preserve">
+    <value>{0} series</value>
+  </data>
+  <data name="conteo.temporadas.one" xml:space="preserve">
+    <value>{0} temporada</value>
+  </data>
+  <data name="conteo.temporadas.other" xml:space="preserve">
+    <value>{0} temporadas</value>
+  </data>
+  <data name="conteo.videos.one" xml:space="preserve">
+    <value>{0} video</value>
+  </data>
+  <data name="conteo.videos.other" xml:space="preserve">
+    <value>{0} videos</value>
   </data>
   <data name="context-menu.abrir" xml:space="preserve">
     <value>Abrir</value>
@@ -918,10 +1014,10 @@
   <data name="context-menu.quitar-favoritos-2" xml:space="preserve">
     <value>Quitar de favoritos</value>
   </data>
-  <data name="context-menu.quitar-foto-artista" xml:space="preserve">
+  <data name="context-menu.quitar-foto-artista.one" xml:space="preserve">
     <value>Quitar foto del artista</value>
   </data>
-  <data name="context-menu.quitar-fotos-artistas" xml:space="preserve">
+  <data name="context-menu.quitar-foto-artista.other" xml:space="preserve">
     <value>Quitar fotos de los artistas</value>
   </data>
   <data name="context-menu.quitar-poster" xml:space="preserve">
@@ -1059,8 +1155,59 @@
   <data name="installer-page.cancelar" xml:space="preserve">
     <value>Cancelar</value>
   </data>
+  <data name="library-grouping.albums-and-songs" xml:space="preserve">
+    <value>{0}, {1}</value>
+  </data>
+  <data name="library-ingest.added.one" xml:space="preserve">
+    <value>Se agregó {0} elemento.</value>
+  </data>
+  <data name="library-ingest.added.other" xml:space="preserve">
+    <value>Se agregaron {0} elementos.</value>
+  </data>
+  <data name="library-ingest.already-in-library.one" xml:space="preserve">
+    <value>{0} ya estaba en tu biblioteca.</value>
+  </data>
+  <data name="library-ingest.already-in-library.other" xml:space="preserve">
+    <value>{0} ya estaban en tu biblioteca.</value>
+  </data>
+  <data name="library-ingest.cover-assets.one" xml:space="preserve">
+    <value>{0} imagen se tomó como carátula, no como foto.</value>
+  </data>
+  <data name="library-ingest.cover-assets.other" xml:space="preserve">
+    <value>{0} imágenes se tomaron como carátulas, no como fotos.</value>
+  </data>
+  <data name="library-ingest.nothing-to-add" xml:space="preserve">
+    <value>No había nada que agregar.</value>
+  </data>
+  <data name="library-ingest.section-noun-music" xml:space="preserve">
+    <value>música</value>
+  </data>
+  <data name="library-ingest.section-noun-other" xml:space="preserve">
+    <value>compatible</value>
+  </data>
+  <data name="library-ingest.section-noun-photo" xml:space="preserve">
+    <value>una imagen</value>
+  </data>
+  <data name="library-ingest.section-noun-video" xml:space="preserve">
+    <value>video</value>
+  </data>
+  <data name="library-ingest.unsupported.one" xml:space="preserve">
+    <value>{0} archivo no es compatible.</value>
+  </data>
+  <data name="library-ingest.unsupported.other" xml:space="preserve">
+    <value>{0} archivos no son compatibles.</value>
+  </data>
+  <data name="library-ingest.wrong-section.one" xml:space="preserve">
+    <value>{0} archivo no es {1} y no se agregó acá.</value>
+  </data>
+  <data name="library-ingest.wrong-section.other" xml:space="preserve">
+    <value>{0} archivos no son {1} y no se agregaron acá.</value>
+  </data>
   <data name="library-status-strip.detener" xml:space="preserve">
     <value>Detener</value>
+  </data>
+  <data name="library-status-summary.days-and-hours" xml:space="preserve">
+    <value>{0} {1} h</value>
   </data>
   <data name="library-view-model.buscando-fotos-artista" xml:space="preserve">
     <value>Buscando fotos de artista…</value>

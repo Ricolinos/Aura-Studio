@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.Core.Library;
 
@@ -38,7 +39,7 @@ public sealed record AlbumGroup(
     {
         get
         {
-            var parts = new List<string> { $"{TrackCount} {(TrackCount == 1 ? "canción" : "canciones")}" };
+            var parts = new List<string> { Strings.Plural("conteo.canciones", TrackCount) };
             if (!string.IsNullOrEmpty(Year)) parts.Add(Year);
             return string.Join(" · ", parts);
         }
@@ -65,10 +66,10 @@ public sealed record ArtistGroup(string Id, string Name, IReadOnlyList<AlbumGrou
         get
         {
             int albumCount = Albums.Count(album => !album.IsUnknown);
-            string songs = TrackCount == 1 ? "1 canción" : $"{TrackCount} canciones";
+            string songs = Strings.Plural("conteo.canciones", TrackCount);
             if (albumCount == 0) return songs;
-            string albums = albumCount == 1 ? "1 álbum" : $"{albumCount} álbumes";
-            return $"{albums}, {songs}";
+            string albums = Strings.Plural("conteo.albumes", albumCount);
+            return Strings.Format("library-grouping.albums-and-songs", albums, songs);
         }
     }
 }

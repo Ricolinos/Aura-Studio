@@ -1,4 +1,5 @@
 using System.Globalization;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.Core.Library;
 
@@ -97,7 +98,8 @@ public static class LibraryStats
         if (hours >= 24)
         {
             int days = hours / 24;
-            return $"{days} {(days == 1 ? "día" : "días")} {hours % 24} h";
+            return Strings.Format("library-status-summary.days-and-hours",
+                Strings.Plural("conteo.dias", days), hours % 24);
         }
 
         if (hours > 0) return $"{hours} h {minutes} min";

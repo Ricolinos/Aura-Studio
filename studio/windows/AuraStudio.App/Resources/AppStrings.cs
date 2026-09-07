@@ -1,35 +1,37 @@
+using System.Globalization;
 using AuraStudio.Core.Library;
 using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App.Resources;
 
 /// <summary>
-/// Tabla de cadenas de cara al usuario, centralizada — equivalente de
-/// <c>AppStrings.swift</c> (macOS) y con el mismo criterio que la del firmware
-/// (`aura_lang.c`, D-013): una tabla chica y explícita en vez del mecanismo de
-/// recursos de la plataforma.
+/// Los textos de cara al usuario, uno por propiedad — equivalente de
+/// <c>AppStrings.swift</c> (macOS).
 ///
-/// **Por qué una clase estática y no `.resw`** (decisión de la Fase 1, ST-079):
-/// esta app tiene un solo idioma por regla del repo (español de México), así
-/// que lo que aporta MRT — resolución por idioma del sistema, `x:Uid` por
-/// elemento — no se usa, y a cambio cobra: sin verificación en tiempo de
-/// compilación (una clave mal escrita en un `x:Uid` falla en silencio, dejando
-/// el texto vacío en pantalla), un archivo XML aparte por cada string, y
-/// nombres de recurso acoplados a la propiedad del control
-/// (`MiBoton.Content`). Con una clase estática, cada cadena es una propiedad:
-/// el compilador atrapa el error, se puede componer con interpolación y se
-/// lee junto al código que la usa. Es además lo que ya hace la app de macOS,
-/// que decidió lo mismo frente a los `.strings` de Apple.
+/// <para><b>Qué era y qué es ahora.</b> Hasta ST-247 esta clase <i>era</i> la
+/// tabla: cada propiedad devolvía su literal en español. ST-079 lo había
+/// decidido así con tres argumentos, y el que dejó de valer es el tercero —
+/// "esta app tiene un solo idioma". La ronda "ajustes 3" trae los demás
+/// idiomas, y quinientas cadenas con un <c>if</c> por cadena no es una tabla,
+/// es un problema. Los textos se mudaron a un <c>.resx</c> en Core; el porqué
+/// de <c>.resx</c> y no <c>.resw</c> está en <see cref="Strings"/>.</para>
 ///
-/// **Si algún día hace falta un segundo idioma** (macOS ya tiene ES/EN con un
-/// selector en Ajustes): se agrega acá el mismo patrón del Swift — un
-/// resolvedor de idioma activo y una segunda tabla — sin migrar a `.resw`. No
-/// se agregó ahora porque no hay selector de idioma en la app de Windows y una
-/// tabla bilingüe sin quién la consuma es código muerto.
+/// <para><b>Y por qué la clase sigue existiendo.</b> Los otros dos argumentos
+/// de ST-079 siguen siendo buenos y no se pierden: cada texto es una
+/// <b>propiedad</b>, así que una clave mal escrita es un error de compilación y
+/// no un hueco en la pantalla; y el XAML sigue diciendo
+/// <c>{x:Bind res:AppStrings.NavGeneral}</c> sin cambiar de forma. Lo único que
+/// cambió es de dónde sale el texto.</para>
 ///
-/// **Uso desde XAML**: `Text="{x:Bind res:AppStrings.NavGeneral}"` (x:Bind
-/// resuelve propiedades estáticas; su modo por omisión, OneTime, es justo lo
-/// que corresponde a una constante).
+/// <para><b>Cero literales acá.</b> Un texto escrito en este archivo no llega
+/// nunca a traducirse: no está en el <c>.resx</c> y nadie lo va a extrañar
+/// hasta verlo en español en una pantalla en alemán. Lo comprueba una prueba
+/// (<c>NoHayTextoEnEspanolEnElCodigo</c>), no la disciplina.</para>
+///
+/// <para><b>Plurales.</b> Nunca <c>count == 1 ? … : …</c>: eso es la regla del
+/// español escrita a mano, y en ruso hacen falta tres formas y en japonés una.
+/// Va por <see cref="Strings.Plural"/>, que elige la forma según la cultura
+/// activa.</para>
 /// </summary>
 public static class AppStrings
 {
@@ -72,10 +74,10 @@ public static class AppStrings
     /// muestran los candidatos como seleccionables.
     /// </summary>
     public static string DeviceAmbiguous(int count) =>
-        $"Se encontraron {count} discos que podrían ser tu iPod. Por seguridad, " +
-        "Aura Studio no elige uno solo — desconecta los demás discos externos y vuelve a intentar.";
+        Strings.Format("app-strings.device-ambiguous", count);
 
-    public static string DeviceConnected(string name) => $"Conectado: {name}";
+    public static string DeviceConnected(string name) =>
+        Strings.Format("app-strings.device-connected", name);
 
     /// <summary>
     /// Mismo criterio que macOS: la biblioteca se bloquea cuando hay un iPod
@@ -97,8 +99,8 @@ public static class AppStrings
 
     public static string LibraryRootMissing(string root) =>
         string.IsNullOrWhiteSpace(root)
-            ? "No hay ninguna carpeta de biblioteca configurada."
-            : $"La biblioteca está en un disco que no está conectado: {root}";
+            ? Strings.Get("app-strings.library-root-missing-1")
+            : Strings.Format("app-strings.library-root-missing-2", root);
 
     public static string LibraryRootMissingDetail => Strings.Get("app-strings.library-root-missing-detail");
 
@@ -108,10 +110,10 @@ public static class AppStrings
 
     public static string LibraryDropHint(LibraryItemKind kind) => kind switch
     {
-        LibraryItemKind.Music => "Arrastra aquí tu música o una carpeta de álbumes.",
-        LibraryItemKind.Video => "Arrastra aquí tus películas, series o videos.",
-        LibraryItemKind.Photo => "Arrastra aquí tus fotos o una carpeta de imágenes.",
-        _ => "Arrastra aquí tus archivos."
+        LibraryItemKind.Music => Strings.Get("app-strings.library-drop-hint-libraryitemkind-music"),
+        LibraryItemKind.Video => Strings.Get("app-strings.library-drop-hint-libraryitemkind-video"),
+        LibraryItemKind.Photo => Strings.Get("app-strings.library-drop-hint-libraryitemkind-photo"),
+        _ => Strings.Get("app-strings.library-drop-hint-texto")
     };
 
     /// <summary>
@@ -120,9 +122,9 @@ public static class AppStrings
     /// </summary>
     public static string LibrarySectionOnlyItsType(LibraryItemKind kind) => kind switch
     {
-        LibraryItemKind.Music => "Esta sección solo acepta música. Las carátulas que vengan junto a un álbum se guardan como portada, no como fotos.",
-        LibraryItemKind.Video => "Esta sección solo acepta video. Una imagen con el mismo nombre que un video se guarda como su póster.",
-        LibraryItemKind.Photo => "Esta sección solo acepta imágenes.",
+        LibraryItemKind.Music => Strings.Get("app-strings.library-section-only-its-type-libraryitemkind-music"),
+        LibraryItemKind.Video => Strings.Get("app-strings.library-section-only-its-type-libraryitemkind-video"),
+        LibraryItemKind.Photo => Strings.Get("app-strings.library-section-only-its-type-libraryitemkind-photo"),
         _ => ""
     };
 
@@ -145,7 +147,7 @@ public static class AppStrings
     /// puede deshacer" —para lo que sí va a la Papelera, se puede—.
     /// </summary>
     public static string DeleteConfirmTitle(int totalCount) =>
-        totalCount == 1 ? "¿Eliminar 1 elemento?" : $"¿Eliminar {totalCount} elementos?";
+        Strings.Plural("app-strings.delete-confirm-title", totalCount);
 
     /// <summary>
     /// El cuerpo del diálogo (§0.4 del plan): cuántos archivos van a la
@@ -160,16 +162,12 @@ public static class AppStrings
         if (preview.CopyCount > 0)
         {
             string bytes = SimilarityText.FormatBytes(preview.CopyBytes);
-            parts.Add(preview.CopyCount == 1
-                ? $"1 archivo ({bytes}) va a la Papelera de reciclaje."
-                : $"{preview.CopyCount} archivos ({bytes}) van a la Papelera de reciclaje.");
+            parts.Add(Strings.Plural("app-strings.delete-confirm-copy", preview.CopyCount, bytes));
         }
 
         if (preview.ReferenceCount > 0)
         {
-            parts.Add(preview.ReferenceCount == 1
-                ? "1 elemento se quita de tu biblioteca; su archivo original no se toca."
-                : $"{preview.ReferenceCount} elementos se quitan de tu biblioteca; sus archivos originales no se tocan.");
+            parts.Add(Strings.Plural("app-strings.delete-confirm-reference", preview.ReferenceCount));
         }
 
         return string.Join(" ", parts);
@@ -184,7 +182,7 @@ public static class AppStrings
     /// apunta a la que ya existe.
     /// </summary>
     public static string LibrarySimilarFoundOnDrop(string summary) =>
-        $"{summary} Encontramos elementos parecidos entre lo que agregaste — revísalos en Similares.";
+        Strings.Format("app-strings.library-similar-found-on-drop", summary);
     public static string LibraryFavoritesOnly => Strings.Get("app-strings.library-favorites-only");
     public static string LibraryColumns => Strings.Get("app-strings.library-columns");
     public static string LibraryColumnsDetail => Strings.Get("app-strings.library-columns-detail");
@@ -192,18 +190,24 @@ public static class AppStrings
     public static string LibrarySortAscending => Strings.Get("app-strings.library-sort-ascending");
     public static string LibraryUnknownArtist => LibraryGrouping.UnknownArtistName;
 
-    public static string LibraryTracks(int count) => count == 1 ? "1 canción" : $"{count} canciones";
-    public static string LibraryEpisodes(int count) => count == 1 ? "1 episodio" : $"{count} episodios";
-    public static string LibraryPhotos(int count) => count == 1 ? "1 foto" : $"{count} fotos";
+    public static string LibraryTracks(int count) => Strings.Plural("conteo.canciones", count);
+    public static string LibraryEpisodes(int count) => Strings.Plural("conteo.episodios", count);
+    public static string LibraryPhotos(int count) => Strings.Plural("conteo.fotos", count);
+
+    // "Sin temporada" y "Temporada 3" no son el singular y el plural de lo
+    // mismo: son dos mensajes distintos que elige un centinela, no una
+    // cantidad. Por eso van como dos claves y no como formas de plural.
     public static string LibrarySeason(int number) =>
-        number == VideoCollectionGroup.NoSeasonNumber ? "Sin temporada" : $"Temporada {number}";
+        number == VideoCollectionGroup.NoSeasonNumber
+            ? Strings.Get("app-strings.library-season-1")
+            : Strings.Format("app-strings.library-season-2", number);
 
     public static string LibraryKind(LibraryItemKind kind) => kind switch
     {
-        LibraryItemKind.Music => "Música",
-        LibraryItemKind.Video => "Video",
-        LibraryItemKind.Photo => "Imagen",
-        _ => "No compatible"
+        LibraryItemKind.Music => Strings.Get("app-strings.library-kind-libraryitemkind-music"),
+        LibraryItemKind.Video => Strings.Get("app-strings.library-kind-libraryitemkind-video"),
+        LibraryItemKind.Photo => Strings.Get("app-strings.library-kind-libraryitemkind-photo"),
+        _ => Strings.Get("app-strings.library-kind-texto")
     };
 
     /// <summary>
@@ -213,12 +217,16 @@ public static class AppStrings
     /// </summary>
     public static string LibraryStatus(LibraryItemStatus status) => status.State switch
     {
-        LibraryItemState.Queued => "En cola",
-        LibraryItemState.Enriching => "Buscando información",
-        LibraryItemState.Transcoding => $"Convirtiendo… {status.Progress * 100:0}%",
-        LibraryItemState.Ready => "Listo",
-        LibraryItemState.NeedsReview => "Necesita revisión",
-        _ => status.Error is { Length: > 0 } error ? $"Error: {error}" : "Error"
+        LibraryItemState.Queued => Strings.Get("app-strings.library-status-libraryitemstate-queued"),
+        LibraryItemState.Enriching => Strings.Get("app-strings.library-status-libraryitemstate-enrichi"),
+        LibraryItemState.Transcoding => Strings.Format(
+            "app-strings.library-status-libraryitemstate-transco",
+            (status.Progress * 100).ToString("0", CultureInfo.CurrentCulture)),
+        LibraryItemState.Ready => Strings.Get("app-strings.library-status-libraryitemstate-ready"),
+        LibraryItemState.NeedsReview => Strings.Get("app-strings.library-status-libraryitemstate-needsre"),
+        _ => status.Error is { Length: > 0 } error
+            ? Strings.Format("app-strings.library-status-6", error)
+            : Strings.Get("app-strings.library-status-7")
     };
 
     // MARK: - General (vista del dispositivo)
@@ -292,19 +300,17 @@ public static class AppStrings
 
     public static string OrphansNoneFound => Strings.Get("app-strings.orphans-none-found");
 
-    public static string OrphansFound(OrphanScanResult scan) => scan.Count == 1
-        ? $"1 archivo huérfano ({SimilarityText.FormatBytes(scan.TotalBytes)})."
-        : $"{scan.Count} archivos huérfanos ({SimilarityText.FormatBytes(scan.TotalBytes)}).";
+    public static string OrphansFound(OrphanScanResult scan) =>
+        Strings.Plural("app-strings.orphans-found", scan.Count, SimilarityText.FormatBytes(scan.TotalBytes));
 
     public static string OrphansConfirmTitle(int count) =>
-        count == 1 ? "¿Borrar 1 archivo huérfano?" : $"¿Borrar {count} archivos huérfanos?";
+        Strings.Plural("app-strings.orphans-confirm-title", count);
 
     public static string OrphansConfirmMessage(OrphanScanResult scan) =>
-        $"{OrphansFound(scan)} No están ligados a ningún elemento de tu biblioteca; borrarlos no " +
-        "afecta ninguna canción, foto ni video que tengas.";
+        Strings.Format("app-strings.orphans-confirm-message", OrphansFound(scan));
 
     public static string OrphansCleaned(int count) =>
-        count == 1 ? "Se borró 1 archivo huérfano." : $"Se borraron {count} archivos huérfanos.";
+        Strings.Plural("app-strings.orphans-cleaned", count);
 
     // MARK: - Instalador
 
@@ -336,8 +342,7 @@ public static class AppStrings
     /// se puede volver a él), pero nunca puede pasar en silencio.
     /// </summary>
     public static string InstallerFamilyChange(string installed, string target) =>
-        $"Este iPod tiene {installed} instalado y vas a instalar {target}. " +
-        $"{installed} se guarda completo, con sus ajustes, y puedes volver a él desde Extras cuando quieras.";
+        Strings.Format("app-strings.installer-family-change", installed, target, installed);
 
     public static string InstallerPrepareDisk => Strings.Get("app-strings.installer-prepare-disk");
     public static string InstallerDryRun => Strings.Get("app-strings.installer-dry-run");
@@ -351,14 +356,15 @@ public static class AppStrings
     /// forma de un "Continuar" — y el dueño formateó dos veces creyendo que solo
     /// estaba probando el software.
     /// </summary>
-    public static string InstallerFormatNowOn(string target) => $"Borrar y formatear {target}";
+    public static string InstallerFormatNowOn(string target) =>
+        Strings.Format("app-strings.installer-format-now-on", target);
 
     public static string InstallerFormatDangerHeading => Strings.Get("app-strings.installer-format-danger-heading");
 
     public static string InstallerFormatDangerDetail => Strings.Get("app-strings.installer-format-danger-detail");
 
     public static string InstallerFormatConfirm(string target) =>
-        $"Entiendo que se va a borrar todo el contenido de {target}.";
+        Strings.Format("app-strings.installer-format-confirm", target);
 
     public static string InstallerFormatNeedsConfirmation => Strings.Get("app-strings.installer-format-needs-confirmation");
 
@@ -366,15 +372,20 @@ public static class AppStrings
     public static string InstallerPrivilegedLogHeading => Strings.Get("app-strings.installer-privileged-log-heading");
 
     public static string InstallerSafetyAbort(string reason) =>
-        $"Aura Studio se detuvo por seguridad antes de tocar el disco: {reason}.";
+        Strings.Format("app-strings.installer-safety-abort", reason);
 
     public static string InstallerUnknownDisk(string path) =>
-        $"No se pudo identificar el número de disco de «{path}», así que no se toca nada.";
+        Strings.Format("app-strings.installer-unknown-disk", path);
 
     public static string InstallerCopyingTitle => Strings.Get("app-strings.installer-copying-title");
     public static string InstallerCopyFiles => Strings.Get("app-strings.installer-copy-files");
     public static string InstallerCopyFailed => Strings.Get("app-strings.installer-copy-failed");
-    public static string InstallerCopiedFiles(int count) => $"{count} archivos escritos en el iPod.";
+    // Sin formas de plural a propósito: la frase de hoy dice "archivos
+    // escritos" con cualquier cantidad, y con 1 queda mal. Arreglarlo es
+    // cambiar lo que el usuario lee, y B7a es mover, no redactar; queda
+    // anotado como defecto aparte.
+    public static string InstallerCopiedFiles(int count) =>
+        Strings.Format("app-strings.installer-copied-files", count);
 
     // Los pasos son los mismos de `EnterDFUView.swift` (macOS), que a su vez
     // sale del README de mks5lboot y de la guía de flasheo del firmware —
@@ -407,7 +418,9 @@ public static class AppStrings
     public static string InstallerScanDfu => Strings.Get("app-strings.installer-scan-dfu");
     public static string InstallerScanningDfu => Strings.Get("app-strings.installer-scanning-dfu");
     public static string InstallerDfuFound(int? state) =>
-        state is null ? "iPod detectado en modo DFU." : $"iPod detectado en modo DFU (estado {state}).";
+        state is null
+            ? Strings.Get("app-strings.installer-dfu-found-1")
+            : Strings.Format("app-strings.installer-dfu-found-2", state);
     public static string InstallerDfuNotFound => Strings.Get("app-strings.installer-dfu-not-found");
 
     /// <summary>
@@ -464,8 +477,8 @@ public static class AppStrings
     /// </summary>
     public static string BootloaderUpdateFlashing(string? family) =>
         string.IsNullOrWhiteSpace(family)
-            ? "Actualizando el arranque del iPod…"
-            : $"Actualizando el arranque de {family}…";
+            ? Strings.Get("app-strings.bootloader-update-flashing-1")
+            : Strings.Format("app-strings.bootloader-update-flashing-2", family);
 
     public static string BootloaderUpdateAwaitingReboot => Strings.Get("app-strings.bootloader-update-awaiting-reboot");
 
@@ -499,7 +512,7 @@ public static class AppStrings
     public static string DfuDriverHeading => Strings.Get("app-strings.dfu-driver-heading");
 
     public static string DfuDriverReady(string device) =>
-        $"Windows reconoce «{device}» y tiene su controlador funcionando.";
+        Strings.Format("app-strings.dfu-driver-ready", device);
     public static string DfuDriverMissing => Strings.Get("app-strings.dfu-driver-missing");
     public static string DfuDriverInstalledNoDevice => Strings.Get("app-strings.dfu-driver-installed-no-device");
     public static string DfuDriverPackageMissing => Strings.Get("app-strings.dfu-driver-package-missing");
@@ -521,18 +534,19 @@ public static class AppStrings
 
     public static string LicensesUnknownTagDetail => Strings.Get("app-strings.licenses-unknown-tag-detail");
 
-    public static string LicensesDocumentPresent(string name) => $"{name}: incluido";
-    public static string LicensesDocumentMissing(string name) => $"{name}: no incluido en estos archivos";
+    public static string LicensesDocumentPresent(string name) =>
+        Strings.Format("app-strings.licenses-document-present", name);
+
+    public static string LicensesDocumentMissing(string name) =>
+        Strings.Format("app-strings.licenses-document-missing", name);
 
     public static string LicensesToolHeading => Strings.Get("app-strings.licenses-tool-heading");
 
     public static string LicensesToolFromRelease(string tag) =>
-        $"Publicada en el Release {tag} y verificada contra su checksums.txt.";
+        Strings.Format("app-strings.licenses-tool-from-release", tag);
 
     public static string LicensesToolLocalPin(string tag) =>
-        "Compilada aparte para Windows: el Release publica la versión de Unix. " +
-        $"Coincide con el hash fijado en el propio Aura Studio (origen declarado: {tag}). " +
-        "Su código fuente es el del repositorio del firmware que se indica arriba.";
+        Strings.Format("app-strings.licenses-tool-local-pin", tag);
 
     public static string LicensesToolUnverified => Strings.Get("app-strings.licenses-tool-unverified");
 
@@ -566,6 +580,5 @@ public static class AppStrings
     public static string SectionPendingTitle => Strings.Get("app-strings.section-pending-title");
 
     public static string SectionPendingDetail(string phase) =>
-        $"Esta sección llega en la {phase} del port a Windows. " +
-        "La navegación ya está en su lugar para que nada cambie cuando el contenido aparezca.";
+        Strings.Format("app-strings.section-pending-detail", phase);
 }
