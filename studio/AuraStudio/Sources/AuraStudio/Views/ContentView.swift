@@ -129,6 +129,12 @@ struct ContentView: View {
                 // el mismo motivo: son cosas distintas (una resume la
                 // sección, la otra informa algo que pasó fuera).
                 AppUpdateBarHost(checker: appUpdates)
+                // ST-225: qué pasó al importar -- repetidos que se
+                // saltaron, parecidos que sí se agregaron. Va acá y no en
+                // el banner de errores porque no es un error: un aviso
+                // normal presentado como error enseña a ignorar los
+                // errores.
+                ImportNoticeBarHost(library: library) { showingSimilarItems = true }
                 // ST-063: barra de estado estilo Finder, al pie de la
                 // sección; "Visualización › Mostrar barra de estado" la
                 // oculta. Solo aparece donde hay algo que resumir.
@@ -144,6 +150,7 @@ struct ContentView: View {
         // ST-188 (addendum): solo hace algo con AURA_UITEST_MAIN_SCREEN=1.
         .background(MainWindowPlacer())
         .background(AppUpdateCommandRelay(checker: appUpdates))
+        .background(DeletionConfirmationHost(library: library))
         .tint(AuraColors.light.accent)
         .toolbar {
             // PLAN-studio-rendimiento.md Fase 4 punto 4: centro de
@@ -404,7 +411,7 @@ struct ContentView: View {
         case .installer:
             InstallerHomeView(monitor: deviceMonitor, viewModel: installer)
         case .settings:
-            SettingsSectionView(preferences: preferences, appUpdates: appUpdates)
+            SettingsSectionView(preferences: preferences, library: library, appUpdates: appUpdates)
         }
     }
 
@@ -887,6 +894,59 @@ private struct SidebarView: View {
 /// por esto. Mismo patrón que `LibraryStatusBarHost` y
 /// `SelectionStoreObserver`: quien observa es la pieza chica que dibuja,
 /// no la ventana entera.
+/// ST-225: el aviso de lo que pasó al importar.
+///
+/// **No bloquea nada.** Lo repetido por ruta ya se saltó (eso sí es el
+/// mismo archivo); lo parecido se importó igual y solo se avisa, con
+/// acceso directo a "Similares" -- dos archivos parecidos en carpetas
+/// distintas pueden ser deliberados, y eso lo decide el usuario, no la
+/// app.
+struct ImportNoticeBarHost: View {
+    @ObservedObject var library: LibraryViewModel
+    let showSimilarItems: () -> Void
+
+    var body: some View {
+        if let notice = library.lastImportNotice, !notice.isEmpty {
+            HStack(spacing: 12) {
+                Image(systemName: "info.circle")
+                Text(notice.message).font(.callout)
+                Spacer()
+                if notice.similarGroups > 0 {
+                    Button("Ver similares") { showSimilarItems() }
+                }
+                Button("Entendido") { library.dismissImportNotice() }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color.secondary.opacity(0.10))
+        }
+    }
+}
+
+/// ST-225: la confirmación de "Eliminar", en un solo sitio.
+///
+/// Vista de tamaño cero que observa **solo** `pendingDeletion`: nueve
+/// vistas distintas eliminan elementos, y una regla que dice "ningún
+/// borrado sin confirmar" no se sostiene si depende de que nueve sitios
+/// se acuerden de preguntar. El diálogo vive acá y el modelo decide
+/// cuándo hace falta.
+struct DeletionConfirmationHost: View {
+    @ObservedObject var library: LibraryViewModel
+
+    var body: some View {
+        Color.clear
+            .frame(width: 0, height: 0)
+            .alert(library.pendingDeletion?.title ?? "",
+                   isPresented: Binding(get: { library.pendingDeletion != nil },
+                                        set: { if !$0 { library.cancelPendingDeletion() } })) {
+                Button("Cancelar", role: .cancel) { library.cancelPendingDeletion() }
+                Button("Eliminar", role: .destructive) { library.confirmPendingDeletion() }
+            } message: {
+                Text(library.pendingDeletion?.message ?? "")
+            }
+    }
+}
+
 struct CoverNormalizationBarHost: View {
     @ObservedObject var library: LibraryViewModel
 

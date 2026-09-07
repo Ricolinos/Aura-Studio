@@ -14086,3 +14086,104 @@ Repro:
 dotnet run --project studio/windows/tools/ExtraerCadenasWindows
 dotnet test studio/windows/tests/AuraStudio.Core.Tests/AuraStudio.Core.Tests.csproj --filter FullyQualifiedName~LocalizationDraftTests
 ```
+
+## ST-225 — Eliminar a la Papelera, limpiar huérfanos, y avisar sin bloquear
+
+Fase A5 de `PLAN-studio-ajustes-3.md`. Tres cosas que compartían un
+defecto: la app decidía sola sobre archivos del usuario.
+
+### Eliminar dejó de ser definitivo
+
+Lo que había borraba con `removeItem` -- **definitivo, sin confirmación y
+sin vuelta atrás** -- el archivo copiado dentro de la biblioteca. Un clic
+mal dado en una tabla de doce mil canciones y el archivo no estaba en
+ningún lado.
+
+Ahora, en modo copia, el archivo va a la **Papelera** (`trashItem`), con
+su `.lrc` hermano, y se puede recuperar. En modo referencia no se toca
+nada: el original está donde el usuario lo dejó y el elemento solo sale
+del catálogo. Los derivados nuestros -- el preparado de `.preparados/`,
+su póster, la carátula por id -- sí se borran: son copias técnicas que la
+app arma sola y puede volver a armar.
+
+**La confirmación vive en el modelo, no en las vistas.** Hay nueve sitios
+que eliminan (álbumes, artistas, fotos, similares, la tabla…), y una
+regla que dice "ningún borrado sin confirmar" no se sostiene si depende
+de que nueve sitios se acuerden. `deleteItems` pide confirmación y no
+toca disco; `confirmPendingDeletion` ejecuta. No hay forma de saltárselo.
+
+El diálogo dice **cuántos archivos y cuánto ocupan**, contando solo los
+que de verdad están en disco: prometer "se moverán 3 archivos" y mover
+uno es peor que no decir nada. Y en modo referencia **no** menciona la
+Papelera, porque ahí no va nada.
+
+El borrado devuelve la ruta **dentro de la Papelera** de cada archivo
+movido. No es un adorno: es la única forma de comprobar que fue a la
+Papelera y no a `removeItem`, y la prueba lo afirma sobre esa ruta.
+
+### Limpiar huérfanos
+
+`OrphanScan` mira `.preparados/` y `.portadas/` y nada más. La lista de
+carpetas es corta y explícita a propósito, con su propia prueba: no hay
+forma de que un cambio futuro la haga caminar por `Música/`, `Imágenes/`
+o `Videos/` sin que se vea.
+
+Dos pasos: primero busca y dice cuántos son y cuánto ocupan, y solo
+después borra. Un botón que borra sin decir qué no se puede usar con
+confianza -- y estos archivos son nuestros, pero están dentro de la
+carpeta del usuario.
+
+La comparación de "referenciado" va en NFC, como todo lo que compara
+rutas desde ST-221. Comparar crudo haría que un derivado con acento que
+**sí está en uso** apareciera como huérfano, y de ahí se borraría algo
+que un elemento del catálogo todavía necesita. Un `.aura-tmp` tampoco es
+huérfano: es trabajo de alguien más, en curso.
+
+### Repetidos y parecidos no son lo mismo
+
+Un archivo con la **misma ruta** ya es el mismo archivo: se salta (A3).
+Dos archivos **parecidos** en carpetas distintas pueden ser lo mismo o
+pueden ser deliberados -- una recopilación y el álbum, dos calidades de
+la misma canción -- y eso lo decide el usuario. Así que **no se descarta
+nada solo**: se importan y se avisa, con acceso directo a "Similares".
+
+El detector corre **aparte y sin bloquear**: mira toda la biblioteca, que
+es la única forma de encontrar un parecido, y eso no puede estar en el
+camino del usuario.
+
+Y el aviso dejó de ir por `lastError`. No es un error: es lo que pasó al
+importar. Un aviso normal presentado como error enseña a ignorar los
+errores.
+
+### Los textos
+
+"Cómo guardar tu música" sale del cotejo de claves compartidas con
+Windows (`claves-compartidas.csv`), palabra por palabra, con las diez
+filas anotadas ahora como `igual` y su sitio en la Mac. Se traducen una
+sola vez para las dos apps (A7).
+
+Los **dos** modos se explican siempre, con sus beneficios y sus
+desventajas -- no solo el que está activo. Elegir entre dos opciones
+viendo lo que dice una sola no es elegir.
+
+### Addendum: identificadores de Ajustes para el arnés de capturas
+
+El Picker segmentado de pestañas no tenía `accessibilityIdentifier`, así
+que no se podía llegar a Ajustes › Biblioteca desde fuera y esa captura
+había que tomarla a mano -- una captura que hay que tomar a mano es una
+que deja de tomarse. Mismo esquema que la barra lateral de ST-188:
+
+- `ajustes.pestanas`, y por pestaña `ajustes.pestana.general`,
+  `.almacenamiento`, `.musica`, `.fotos`, `.video`, `.servicios`.
+- `ajustes.almacenamiento.seccion`,
+  `ajustes.almacenamiento.buscarHuerfanos`,
+  `ajustes.almacenamiento.limpiarHuerfanos`.
+- `ajustes.almacenamiento.migrar` queda para A6.
+
+Solo identificadores; no cambia comportamiento.
+
+**Nota sobre las claves de texto**: las diez claves compartidas de esta
+fase viven en **un solo sitio** (`S`, en `AppStrings.swift`), que es lo
+que haría corto un renombrado. Windows regeneró su cotejo mientras
+corría esta fase y las filas `storage-*` y `orphans-*` no cambiaron, así
+que las claves quedan como definitivas.

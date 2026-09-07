@@ -53,13 +53,17 @@ final class LibraryViewModelSharedPreparedTests: XCTestCase {
         XCTAssertTrue(FileManager.default.fileExists(atPath: preparedA.path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: preparedB.path))
 
+        // ST-225: eliminar pide confirmación -- pedirlo no borra nada.
         viewModel.deleteItems(ids: [ids[0]])
+        XCTAssertEqual(viewModel.items.count, 2, "todavía no se confirmó")
+        viewModel.confirmPendingDeletion()
 
         XCTAssertEqual(viewModel.items.count, 1)
         XCTAssertTrue(FileManager.default.fileExists(atPath: preparedB.path), "el preparado del sobreviviente sigue en disco")
         XCTAssertFalse(FileManager.default.fileExists(atPath: preparedA.path), "el del borrado sí se va")
 
         viewModel.deleteItems(ids: [ids[1]])
+        viewModel.confirmPendingDeletion()
         XCTAssertFalse(FileManager.default.fileExists(atPath: preparedB.path))
     }
 }

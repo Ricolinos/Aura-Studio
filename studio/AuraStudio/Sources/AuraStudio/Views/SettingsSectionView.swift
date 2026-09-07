@@ -6,6 +6,7 @@ import AppKit
 /// cambian ahi -- aca solo esta lo que le toca decidir a Studio.
 struct SettingsSectionView: View {
     @ObservedObject var preferences: AppPreferences
+    @ObservedObject var library: LibraryViewModel
     /// ST-193: el comprobador de versiones nuevas de la app, para el
     /// botón "Buscar actualizaciones" de la pestaña General. Opcional
     /// para que las vistas previas y cualquier uso suelto sigan
@@ -20,14 +21,26 @@ struct SettingsSectionView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // ST-225 (addendum): identificadores estables para el arnés
+            // de capturas. Mismo esquema que la barra lateral de ST-188:
+            // sin ellos no se puede llegar a Ajustes › Biblioteca desde
+            // fuera, y una captura que hay que tomar a mano es una que
+            // deja de tomarse.
             Picker("", selection: $tab) {
                 Text(S.settingsGeneral.text).tag(Tab.general)
+                    .accessibilityIdentifier("ajustes.pestana.general")
                 Text(S.settingsLibrary.text).tag(Tab.library)
+                    .accessibilityIdentifier("ajustes.pestana.almacenamiento")
                 Text(S.music.text).tag(Tab.music)
+                    .accessibilityIdentifier("ajustes.pestana.musica")
                 Text(S.photos.text).tag(Tab.photos)
+                    .accessibilityIdentifier("ajustes.pestana.fotos")
                 Text(S.video.text).tag(Tab.video)
+                    .accessibilityIdentifier("ajustes.pestana.video")
                 Text(S.settingsServices.text).tag(Tab.services)
+                    .accessibilityIdentifier("ajustes.pestana.servicios")
             }
+            .accessibilityIdentifier("ajustes.pestanas")
             .pickerStyle(.segmented)
             .labelsHidden()
             .padding(16)
@@ -82,6 +95,48 @@ struct SettingsSectionView: View {
         }
     }
 
+    /// ST-225: "Limpiar archivos huérfanos".
+    ///
+    /// Dos pasos a propósito: primero se busca y se dice **cuántos son y
+    /// cuánto ocupan**, y solo después se borra. Un botón que borra sin
+    /// decir qué no se puede usar con confianza -- y estos archivos son
+    /// nuestros, pero están dentro de la carpeta del usuario.
+    @ViewBuilder
+    private var orphansSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(S.orphansTitle.text).font(.headline)
+            Text(S.orphansDetail.text)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            if let scan = library.orphanScan {
+                if scan.isEmpty {
+                    Text(S.orphansNoneFound.text).font(.caption)
+                } else {
+                    Text("\(scan.count) archivos, \(ByteCountFormatter.string(fromByteCount: Int64(scan.totalBytes), countStyle: .file))")
+                        .font(.caption.monospaced())
+                    Text(S.orphansConfirmMessage.text)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                HStack {
+                    if !scan.isEmpty {
+                        Button(S.orphansCleanButton.text, role: .destructive) {
+                            library.deleteFoundOrphans()
+                        }
+                        .accessibilityIdentifier("ajustes.almacenamiento.limpiarHuerfanos")
+                    }
+                    Button("Cancelar") { library.dismissOrphanScan() }
+                }
+            } else {
+                Button(S.orphansButton.text) { library.scanForOrphans() }
+                    .accessibilityIdentifier("ajustes.almacenamiento.buscarHuerfanos")
+            }
+        }
+    }
+
     private var libraryTab: some View {
         VStack(alignment: .leading, spacing: 24) {
             VStack(alignment: .leading, spacing: 10) {
@@ -108,14 +163,26 @@ struct SettingsSectionView: View {
                 .padding(10)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.08)))
 
+                // ST-225: los dos modos se explican con sus beneficios
+                // Y sus desventajas, y los dos se leen SIEMPRE -- no solo
+                // el que está activo. Elegir entre dos opciones viendo lo
+                // que dice una sola no es elegir.
+                Text(S.storageSectionTitle.text).font(.headline).padding(.top, 4)
+                    .accessibilityIdentifier("ajustes.almacenamiento.seccion")
                 Toggle("Crear copias de los medios en la Biblioteca de Aura", isOn: $preferences.copyMediaIntoLibrary)
-                Text(preferences.copyMediaIntoLibrary
-                     ? "Cada canción, foto o video que sueltas en Aura Studio se copia dentro de la carpeta de arriba -- el original queda intacto donde estaba. Usa más espacio en disco, pero la biblioteca queda autocontenida en un solo lugar."
-                     : "Nada se copia: la biblioteca referencia tus archivos donde ya están. Aquí solo se guarda la configuración que los liga a Aura (metadata, letras, portadas). Al sincronizar con el iPod, Aura Studio arma el archivo final leyendo el original en ese momento -- un poco más lento la primera vez, pero tu disco nunca termina con una copia duplicada de tu biblioteca completa.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(S.storageCopyExplainer.text)
+                    Text(S.storageReferenceExplainer.text)
+                    Text(S.storageChangeOnlyAffectsFuture.text)
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
             }
+
+            Divider()
+
+            orphansSection
 
             Divider()
 

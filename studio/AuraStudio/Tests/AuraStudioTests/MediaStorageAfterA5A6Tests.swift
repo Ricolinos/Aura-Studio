@@ -1,3 +1,4 @@
+import CryptoKit
 import XCTest
 @testable import AuraStudio
 
@@ -15,6 +16,7 @@ import XCTest
 @MainActor
 final class MediaStorageAfterA5A6Tests: XCTestCase {
     private var libraryRoot: URL!
+    private var sourceDirs: [URL] = []
 
     override func setUpWithError() throws {
         libraryRoot = FileManager.default.temporaryDirectory.appendingPathComponent("MediaStorageAfterA5A6-\(UUID().uuidString)")
@@ -22,6 +24,8 @@ final class MediaStorageAfterA5A6Tests: XCTestCase {
 
     override func tearDownWithError() throws {
         try? FileManager.default.removeItem(at: libraryRoot)
+        for dir in sourceDirs { try? FileManager.default.removeItem(at: dir) }
+        sourceDirs = []
     }
 
     // MARK: - (a) Eliminar en modo copia: Papelera + fuera del catálogo
@@ -38,16 +42,35 @@ final class MediaStorageAfterA5A6Tests: XCTestCase {
     /// confirmación previa al usuario (el diálogo "¿Enviar a la
     /// Papelera?") es responsabilidad de la vista, no de esta prueba --
     /// acá se mide el resultado de la acción ya confirmada.
-    func testDeletingInCopyModeSendsToTrashAndRemovesFromCatalog_pendienteDeLaAPIDeA5() throws {
-        throw XCTSkip("""
-            Pendiente de la API real de A5 (eliminar, ST-225). Forma: importar en modo \
-            copia, capturar la ruta del archivo en Música/, eliminar el ítem con la API \
-            real. Confirmar (1) el archivo ya no existe en esa ruta y el resultado de la \
-            operación de borrado confirma que fue a la Papelera (FileManager.trashItem o \
-            equivalente, capturado en el momento del borrado -- no se puede reconstruir \
-            después que algo "pasó por la Papelera" solo mirando el disco); (2) el ítem \
-            ya no está en viewModel.items ni en biblioteca.json tras persistir.
-            """)
+    func testDeletingInCopyModeSendsToTrashAndRemovesFromCatalog() async throws {
+        let (viewModel, item) = try await importedItem(copy: true)
+        let libraryFile = item.sourceURL
+        XCTAssertTrue(FileManager.default.fileExists(atPath: libraryFile.path))
+
+        // Ningún borrado sin confirmar: pedirlo NO borra nada.
+        viewModel.deleteItems(ids: [item.id])
+        XCTAssertNotNil(viewModel.pendingDeletion, "tiene que pedir confirmación")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: libraryFile.path),
+                      "pedir la eliminación no puede tocar el disco todavía")
+        XCTAssertEqual(viewModel.items.count, 1)
+        let pending = try XCTUnwrap(viewModel.pendingDeletion)
+        XCTAssertGreaterThan(pending.filesToTrash, 0)
+        XCTAssertTrue(pending.message.contains("Papelera"), "el diálogo lo dice: \(pending.message)")
+
+        let outcome = viewModel.confirmPendingDeletion()
+
+        XCTAssertTrue(viewModel.items.isEmpty, "el elemento sale del catálogo")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: libraryFile.path),
+                       "el archivo ya no está donde estaba")
+        XCTAssertEqual(outcome.failures, 0)
+        // A la Papelera, no borrado: tiene que poder recuperarse. La ruta
+        // de destino la devuelve el propio borrado -- es la única prueba
+        // de que fue a la Papelera y no a `removeItem`.
+        let trashed = try XCTUnwrap(outcome.trashed.first)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: trashed.path),
+                      "el archivo tiene que estar en la Papelera, no borrado")
+        XCTAssertTrue(trashed.path.contains(".Trash"), "y en la Papelera de verdad: \(trashed.path)")
+        for url in outcome.trashed { try? FileManager.default.removeItem(at: url) }
     }
 
     // MARK: - (b) Eliminar en modo referencia: solo el catálogo, original intacto
@@ -59,16 +82,21 @@ final class MediaStorageAfterA5A6Tests: XCTestCase {
     /// preparado en `.preparados/<ID>.ext`). La diferencia central con
     /// (a): acá NUNCA hay Papelera de por medio -- Aura Studio no es
     /// dueño del original, no le toca borrarlo ni moverlo.
-    func testDeletingInReferenceModeOnlyRemovesFromCatalogOriginalStaysByteIdentical_pendienteDeLaAPIDeA5() throws {
-        throw XCTSkip("""
-            Pendiente de la API real de A5 (ST-225). Forma: importar en modo referencia, \
-            capturar SHA-256 del original, eliminar el ítem con la API real. Confirmar \
-            (1) el hash del original NO cambió y el archivo sigue exactamente donde \
-            estaba (Aura Studio nunca es dueño del original en este modo, no lo toca ni \
-            lo manda a la Papelera); (2) el ítem ya no está en viewModel.items ni en \
-            biblioteca.json; (3) si tenía preparado en .preparados/<ID>.ext, tampoco \
-            existe más tras la eliminación.
-            """)
+    func testDeletingInReferenceModeOnlyRemovesFromCatalogAndTheOriginalStaysByteIdentical() async throws {
+        let (viewModel, item) = try await importedItem(copy: false)
+        let originalHash = try sha256(item.sourceURL)
+
+        viewModel.deleteItems(ids: [item.id])
+        let pending = try XCTUnwrap(viewModel.pendingDeletion)
+        XCTAssertEqual(pending.filesToTrash, 0, "en referencia no va nada a la Papelera")
+        XCTAssertFalse(pending.message.contains("Papelera"),
+                       "y el diálogo no puede prometerlo: \(pending.message)")
+        viewModel.confirmPendingDeletion()
+
+        XCTAssertTrue(viewModel.items.isEmpty)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: item.sourceURL.path))
+        XCTAssertEqual(try sha256(item.sourceURL), originalHash,
+                       "el archivo del usuario queda byte a byte igual")
     }
 
     // MARK: - (c) "Limpiar huérfanos": solo lo no referenciado
@@ -82,16 +110,42 @@ final class MediaStorageAfterA5A6Tests: XCTestCase {
     /// sobrevive intacto (mismo hash) -- el caso que de verdad importa
     /// es que lo REFERENCIADO nunca se toque, no solo que lo huérfano
     /// se borre.
-    func testCleanOrphansDeletesOnlyWhatNoItemReferencesAndRespectsWhatIsReferenced_pendienteDeLaAPIDeA5() throws {
-        throw XCTSkip("""
-            Pendiente de la API real de A5 (limpiar huérfanos, ST-225). Forma: crear \
-            .preparados/<ID-A>.ext (referenciado por item.preparedURL de un ítem real en \
-            modo referencia) y .preparados/<ID-B>.ext (sin ningún ítem que lo referencie \
-            -- huérfano real). Correr la limpieza de huérfanos con la API real. Confirmar \
-            (1) <ID-B>.ext ya no existe; (2) <ID-A>.ext sigue existiendo con el MISMO \
-            hash que antes de limpiar -- lo referenciado nunca se toca, ese es el caso \
-            que de verdad importa, no solo que lo huérfano se borre.
-            """)
+    func testCleanOrphansDeletesOnlyWhatNoItemReferences() async throws {
+        let (viewModel, item) = try await importedItem(copy: false)
+        // Se fuerza un derivado real editando el título (ST-224).
+        var edited = try XCTUnwrap(item.metadata)
+        edited.title = "Título Editado"
+        await viewModel.applyReview(id: item.id, metadata: edited)
+        let inUse = try XCTUnwrap(viewModel.items.first?.preparedURL)
+        let inUseHash = try sha256(inUse)
+
+        // Un huérfano de verdad: nadie lo referencia.
+        let staging = libraryRoot.appendingPathComponent(PersistedLibrary.preparedDirName, isDirectory: true)
+        let orphan = staging.appendingPathComponent("\(UUID().uuidString).mp3")
+        try Data(repeating: 7, count: 4096).write(to: orphan)
+
+        viewModel.scanForOrphans()
+        let scan = try XCTUnwrap(viewModel.orphanScan)
+        XCTAssertEqual(scan.files.map(\.url.lastPathComponent), [orphan.lastPathComponent],
+                       "solo el huérfano, nunca el que está en uso")
+        XCTAssertEqual(scan.totalBytes, 4096, "el tamaño se dice antes de borrar")
+
+        viewModel.deleteFoundOrphans()
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: orphan.path))
+        XCTAssertTrue(FileManager.default.fileExists(atPath: inUse.path),
+                      "lo referenciado nunca se toca -- ese es el caso que de verdad importa")
+        XCTAssertEqual(try sha256(inUse), inUseHash)
+    }
+
+    /// La limpieza no puede mirar las carpetas del usuario. Es una lista
+    /// corta y explícita a propósito.
+    func testOrphanScanNeverLooksAtTheUsersFolders() {
+        XCTAssertEqual(OrphanScan.scannedDirectories,
+                       [PersistedLibrary.preparedDirName, PersistedLibrary.coversDirName])
+        XCTAssertFalse(OrphanScan.scannedDirectories.contains(PersistedLibrary.musicDirName))
+        XCTAssertFalse(OrphanScan.scannedDirectories.contains(PersistedLibrary.imagesDirName))
+        XCTAssertFalse(OrphanScan.scannedDirectories.contains(PersistedLibrary.videosDirName))
     }
 
     // MARK: - (d) Deduplicación al importar: misma ruta en NFC y NFD = un solo ítem
@@ -170,5 +224,33 @@ final class MediaStorageAfterA5A6Tests: XCTestCase {
             reporta un conteo de archivos tocados que sea MAYOR A CERO (había \
             discrepancias reales que corregir en este fixture).
             """)
+    }
+
+    // MARK: - Andamio (ST-225)
+
+    private func sha256(_ url: URL) throws -> String {
+        SHA256.hash(data: try Data(contentsOf: url)).map { String(format: "%02x", $0) }.joined()
+    }
+
+    private func importedItem(copy: Bool) async throws
+        -> (viewModel: LibraryViewModel, item: AuraStudio.LibraryItem) {
+        let externalDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("A5-origen-\(UUID().uuidString)", isDirectory: true)
+        try FileManager.default.createDirectory(at: externalDir, withIntermediateDirectories: true)
+        sourceDirs.append(externalDir)
+        let sourceURL = externalDir.appendingPathComponent("pista.mp3")
+        try MediaFixture.mp3Data(title: "Pista", artist: "Artista", album: "Álbum",
+                                 albumArtist: "Artista", year: "2020", genre: "Rock",
+                                 trackNumber: 1).write(to: sourceURL)
+
+        let prefs = AppPreferences(defaults: makeIsolatedDefaults("MediaStorageAfterA5A6"))
+        prefs.copyMediaIntoLibrary = copy
+        prefs.enrichOnline = false
+        prefs.fetchSyncedLyrics = false
+        let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: prefs)
+        viewModel.makePersistenceSynchronousForTesting()
+        viewModel.addDroppedFiles([sourceURL])
+        await viewModel.processAll()
+        return (viewModel, try XCTUnwrap(viewModel.items.first))
     }
 }

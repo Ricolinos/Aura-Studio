@@ -300,11 +300,11 @@ final class LibraryViewModel: ObservableObject {
             new.append(item)
         }
         items.append(contentsOf: new)
-        if duplicates > 0 {
-            lastError = duplicates == 1
-                ? "Un archivo ya estaba en la biblioteca y no se volvió a agregar."
-                : "\(duplicates) archivos ya estaban en la biblioteca y no se volvieron a agregar."
-        }
+        // ST-225: esto NO es un error -- es lo que pasó al importar, y
+        // por eso deja de ir a `lastError`. Un aviso normal presentado
+        // como error enseña a ignorar los errores.
+        lastImportNotice = ImportNotice(duplicatesSkipped: duplicates, similarGroups: 0)
+        if !new.isEmpty { detectSimilarAmongNewlyImported(ids: Set(new.map(\.id))) }
 
         if !preferences.copyMediaIntoLibrary {
             for url in urls where DroppedURLExpander.isDirectory(url) {
@@ -1084,39 +1084,135 @@ final class LibraryViewModel: ObservableObject {
     /// interna de la biblioteca si la hubiera), nunca el archivo original
     /// del usuario -- `deleteItems` ya distingue eso.
     func removeFromImages(ids: Set<UUID>) {
-        deleteItems(ids: ids)
+        // ST-225: acá NO se pide confirmación otra vez, y no es una
+        // excepción a "ningún borrado sin confirmar" sino lo contrario.
+        // Esta acción ya viene de la hoja de revisión con vista previa
+        // (regla del repo: quitar una carátula de Imágenes nunca es
+        // silencioso), que es una confirmación más fuerte que un
+        // diálogo -- el usuario vio la imagen. Encadenar un segundo
+        // diálogo genérico detrás de una revisión que ya se hizo es
+        // cómo se enseña a confirmar sin leer.
+        //
+        // Y no hay archivo del usuario en juego: lo que se quita es la
+        // ENTRADA de Imágenes, nunca el archivo, que sigue siendo la
+        // carátula del álbum.
+        performDeletion(ids: ids)
         dismissCoverContaminationOffer()
     }
 
+    /// ST-225: **pide confirmación**; no borra nada todavía.
+    ///
+    /// Lo que había borraba con `removeItem` -- definitivo, sin
+    /// confirmación y sin vuelta atrás -- el archivo copiado dentro de la
+    /// biblioteca. Un clic mal dado en una tabla de doce mil canciones y
+    /// el archivo no estaba en ningún lado.
+    ///
+    /// La confirmación vive **acá y no en las vistas**. Hay nueve sitios
+    /// que eliminan (álbumes, artistas, fotos, similares, la tabla…), y
+    /// una regla que dice "ningún borrado sin confirmar" no se sostiene
+    /// si depende de que nueve sitios se acuerden. Acá no hay forma de
+    /// saltársela.
     func deleteItems(ids: Set<UUID>) {
         guard !ids.isEmpty else { return }
+        let doomed = items.filter { ids.contains($0.id) }
+        guard !doomed.isEmpty else { return }
+        let plan = LibraryDeletionPlan.plan(deleting: doomed,
+                                            survivors: items.filter { !ids.contains($0.id) },
+                                            libraryRoot: libraryRoot,
+                                            coversDirectory: coversDirectory)
+        let existingTrash = plan.toTrash.filter { FileManager.default.fileExists(atPath: $0.path) }
+        let bytes = existingTrash.reduce(0) { $0 + (LibraryFileWorker.byteSize(of: $1) ?? 0) }
+        pendingDeletion = PendingDeletion(ids: ids,
+                                          itemCount: doomed.count,
+                                          filesToTrash: existingTrash.count,
+                                          bytesToTrash: bytes)
+    }
+
+    /// Lo que el diálogo de confirmación tiene que poder decir. Los
+    /// números son de archivos que de verdad están en disco: prometer
+    /// "se moverán 3 archivos" y mover uno es peor que no decir nada.
+    struct PendingDeletion: Equatable {
+        var ids: Set<UUID>
+        var itemCount: Int
+        var filesToTrash: Int
+        var bytesToTrash: Int
+
+        var title: String {
+            itemCount == 1 ? "¿Eliminar este elemento?" : "¿Eliminar \(itemCount) elementos?"
+        }
+
+        var message: String {
+            guard filesToTrash > 0 else {
+                return itemCount == 1
+                    ? "Se quitará de tu biblioteca de Aura. El archivo original se queda donde está."
+                    : "Se quitarán de tu biblioteca de Aura. Los archivos originales se quedan donde están."
+            }
+            let size = ByteCountFormatter.string(fromByteCount: Int64(bytesToTrash), countStyle: .file)
+            let files = filesToTrash == 1 ? "1 archivo" : "\(filesToTrash) archivos"
+            return "Se moverán \(files) a la Papelera (\(size)). Puedes recuperarlos desde ahí."
+        }
+    }
+
+    @Published private(set) var pendingDeletion: PendingDeletion?
+
+    func cancelPendingDeletion() {
+        pendingDeletion = nil
+    }
+
+    /// Ejecuta la eliminación que se confirmó.
+    ///
+    /// Los archivos del usuario van a la **Papelera** (`trashItem`), los
+    /// derivados nuestros se borran. Un fallo al mover uno no cancela el
+    /// resto -- pero se cuenta y se dice: eliminar a medias en silencio
+    /// deja al usuario creyendo que ya está.
+    @discardableResult
+    func confirmPendingDeletion() -> DeletionOutcome {
+        guard let pending = pendingDeletion else { return DeletionOutcome() }
+        pendingDeletion = nil
+        return performDeletion(ids: pending.ids)
+    }
+
+    /// El borrado en sí, sin diálogo. Existe aparte para las pruebas y
+    /// para la migración de A6, que ya confirmó una vez y no vuelve a
+    /// preguntar por cada archivo.
+    /// Qué se hizo. `trashed` trae la ruta **dentro de la Papelera** de
+    /// cada archivo movido: es la única prueba de que fue a la Papelera y
+    /// no a `removeItem`, y es lo que permite decírselo al usuario sin
+    /// suponerlo.
+    struct DeletionOutcome: Equatable {
+        var itemsRemoved: Int = 0
+        var trashed: [URL] = []
+        var failures: Int = 0
+    }
+
+    @discardableResult
+    func performDeletion(ids: Set<UUID>) -> DeletionOutcome {
+        guard !ids.isEmpty else { return DeletionOutcome() }
         let fm = FileManager.default
-        let rootPath = libraryRoot.standardizedFileURL.path
+        let doomed = items.filter { ids.contains($0.id) }
+        let plan = LibraryDeletionPlan.plan(deleting: doomed,
+                                            survivors: items.filter { !ids.contains($0.id) },
+                                            libraryRoot: libraryRoot,
+                                            coversDirectory: coversDirectory)
 
-        // ST-064: `.preparados/` es plano y se nombra por el nombre del
-        // archivo de origen, así que dos elementos con el mismo nombre
-        // (justo el caso de los duplicados que se eliminan desde
-        // "Elementos similares") COMPARTEN el preparado. Borrar el de
-        // uno dejaba al que se conserva en "Listo" apuntando a un
-        // archivo inexistente -- el sync fallaba con "no se encuentra".
-        // Solo se borra un preparado (y su .lrc) si ningún sobreviviente
-        // lo sigue usando.
-        let survivingPreparedPaths = Set(items.filter { !ids.contains($0.id) }
-            .compactMap { $0.preparedURL?.standardizedFileURL.path })
-
-        for id in ids {
-            guard let item = items.first(where: { $0.id == id }) else { continue }
-            if let prepared = item.preparedURL,
-               !survivingPreparedPaths.contains(prepared.standardizedFileURL.path) {
-                try? fm.removeItem(at: prepared)
-                try? fm.removeItem(at: prepared.deletingPathExtension().appendingPathExtension("lrc"))
+        var outcome = DeletionOutcome(itemsRemoved: doomed.count)
+        for url in plan.toTrash where fm.fileExists(atPath: url.path) {
+            do {
+                var resulting: NSURL?
+                try fm.trashItem(at: url, resultingItemURL: &resulting)
+                if let resulting = resulting as URL? { outcome.trashed.append(resulting) }
+            } catch {
+                outcome.failures += 1
             }
-            let coverURL = coversDirectory.appendingPathComponent("\(item.id.uuidString).jpg")
-            try? fm.removeItem(at: coverURL)
-            let sourcePath = item.sourceURL.standardizedFileURL.path
-            if sourcePath.hasPrefix(rootPath + "/") {
-                try? fm.removeItem(at: item.sourceURL)
-            }
+        }
+        let failures = outcome.failures
+        for url in plan.toDelete {
+            try? fm.removeItem(at: url)
+        }
+        if failures > 0 {
+            lastError = failures == 1
+                ? "No se pudo mover 1 archivo a la Papelera; el elemento sí se quitó de la biblioteca."
+                : "No se pudieron mover \(failures) archivos a la Papelera; los elementos sí se quitaron de la biblioteca."
         }
 
         items.removeAll { ids.contains($0.id) }
@@ -1124,6 +1220,94 @@ final class LibraryViewModel: ObservableObject {
             playlists[index].trackItemIDs.removeAll { ids.contains($0) }
         }
         persistCatalog()
+        return outcome
+    }
+
+    // MARK: - Aviso de importación (ST-225)
+
+    /// Lo que pasó en la última importación: repetidos que no se
+    /// volvieron a agregar, y parecidos que sí se agregaron **pero
+    /// conviene mirar**.
+    ///
+    /// La diferencia entre los dos es deliberada. Un archivo con la
+    /// **misma ruta** ya es el mismo archivo, y volver a meterlo no
+    /// aporta nada: se salta. Dos archivos **parecidos** en carpetas
+    /// distintas pueden ser lo mismo o pueden ser deliberados -- una
+    /// recopilación y el álbum, dos calidades de la misma canción -- y
+    /// eso lo decide el usuario. Así que **no se descarta nada solo**:
+    /// se importan y se avisa.
+    struct ImportNotice: Equatable {
+        var duplicatesSkipped: Int
+        var similarGroups: Int
+
+        var isEmpty: Bool { duplicatesSkipped == 0 && similarGroups == 0 }
+
+        var message: String {
+            var parts: [String] = []
+            if duplicatesSkipped == 1 {
+                parts.append("1 archivo ya estaba en tu biblioteca y no se volvió a agregar")
+            } else if duplicatesSkipped > 1 {
+                parts.append("\(duplicatesSkipped) archivos ya estaban en tu biblioteca y no se volvieron a agregar")
+            }
+            if similarGroups == 1 {
+                parts.append("hay 1 grupo de elementos parecidos entre lo que acabas de agregar")
+            } else if similarGroups > 1 {
+                parts.append("hay \(similarGroups) grupos de elementos parecidos entre lo que acabas de agregar")
+            }
+            return parts.joined(separator: "; ") + "."
+        }
+    }
+
+    @Published private(set) var lastImportNotice: ImportNotice?
+
+    func dismissImportNotice() {
+        lastImportNotice = nil
+    }
+
+    /// Busca parecidos **sin bloquear la importación**: corre aparte y
+    /// actualiza el aviso cuando termina. El detector mira toda la
+    /// biblioteca (es la única forma de encontrar el parecido), así que
+    /// no puede correr en el camino del usuario.
+    private func detectSimilarAmongNewlyImported(ids: Set<UUID>) {
+        let snapshot = items
+        let ignored = Set(preferences.ignoredSimilarGroups)
+        Task.detached(priority: .utility) {
+            let groups = SimilarItemsDetector.detect(in: snapshot, ignoredGroupIDs: ignored)
+                .filter { group in group.items.contains { ids.contains($0.id) } }
+            await MainActor.run { [weak self] in
+                guard let self, var notice = self.lastImportNotice else { return }
+                notice.similarGroups = groups.count
+                self.lastImportNotice = notice.isEmpty ? nil : notice
+            }
+        }
+    }
+
+    // MARK: - Huérfanos (ST-225)
+
+    /// Lo que encontró la última búsqueda de huérfanos, para que Ajustes
+    /// pueda mostrar cuántos son y cuánto ocupan **antes** de borrar.
+    @Published private(set) var orphanScan: OrphanScanResult?
+
+    func scanForOrphans() {
+        orphanScan = OrphanScan.scan(items: items, libraryRoot: libraryRoot)
+    }
+
+    func dismissOrphanScan() {
+        orphanScan = nil
+    }
+
+    /// Borra exactamente lo que la búsqueda encontró, y nada más -- ni
+    /// siquiera lo que haya aparecido entre medio. Si algo cambió, se
+    /// vuelve a buscar.
+    @discardableResult
+    func deleteFoundOrphans() -> Int {
+        guard let scan = orphanScan else { return 0 }
+        orphanScan = nil
+        var deleted = 0
+        for file in scan.files where FileManager.default.fileExists(atPath: file.url.path) {
+            if (try? FileManager.default.removeItem(at: file.url)) != nil { deleted += 1 }
+        }
+        return deleted
     }
 
     /// "Cambiar nombre" del menu contextual -- solo el TITULO mostrado/

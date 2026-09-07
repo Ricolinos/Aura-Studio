@@ -35,6 +35,17 @@ enum S {
     /// en español (D-228: el usuario las puede renombrar, no son un
     /// concepto de idioma).
     case photosAll
+    /// ST-225: sección "Cómo guardar tu música" y limpieza de huérfanos.
+    /// Los textos en español son **los del cotejo de claves compartidas**
+    /// con Windows (`studio/windows/docs/extraccion-cadenas/
+    /// claves-compartidas.csv`, filas `storage-*` y `orphans-*`), palabra
+    /// por palabra salvo lo que es propio de la plataforma: acá dice
+    /// "Papelera" donde Windows dice "Papelera de reciclaje". Se
+    /// traducen una sola vez para las dos apps (A7).
+    case storageSectionTitle, storageCopyExplainer, storageReferenceExplainer
+    case storageChangeOnlyAffectsFuture
+    case orphansTitle, orphansDetail, orphansButton, orphansCleanButton
+    case orphansNoneFound, orphansConfirmMessage
 
     var text: String {
         AppLanguageResolver.current == .english ? english : spanish
@@ -77,6 +88,21 @@ enum S {
         case .videoAll:            return "Todos los videos"
         case .videoClips:          return "Videoclips"
         case .photosAll:           return "Todas las fotos"
+        case .storageSectionTitle: return "Cómo guardar tu música"
+        case .storageCopyExplainer:
+            return "Copiar a la Biblioteca de Aura: Aura controla los archivos, edita sus etiquetas y los sincroniza directo; ocupa espacio en disco (una copia); puedes borrar tus originales después."
+        case .storageReferenceExplainer:
+            return "Referenciar en su lugar: no ocupa espacio extra ni toca tus archivos; Aura mantiene una versión preparada aparte (.preparados/), las ediciones viven solo en Aura y en el iPod, y si el disco original no está, esas canciones no se pueden sincronizar."
+        case .storageChangeOnlyAffectsFuture:
+            return "Cambiar este ajuste solo afecta lo que importes de ahora en adelante: lo que ya está en tu biblioteca se queda como está."
+        case .orphansTitle:        return "Archivos huérfanos"
+        case .orphansDetail:
+            return "Preparados y carátulas que ya no le pertenecen a ningún elemento de tu biblioteca — de elementos eliminados antes de esta versión, o de un reprocesamiento. No son tus archivos originales: son copias técnicas que Aura arma sola y puede volver a armar si hicieran falta."
+        case .orphansButton:       return "Buscar huérfanos"
+        case .orphansCleanButton:  return "Limpiar archivos huérfanos"
+        case .orphansNoneFound:    return "No hay archivos huérfanos: no hace falta limpiar nada."
+        case .orphansConfirmMessage:
+            return "No están ligados a ningún elemento de tu biblioteca; borrarlos no afecta ninguna canción, foto ni video que tengas."
         }
     }
 
@@ -117,6 +143,21 @@ enum S {
         case .videoAll:            return "All Videos"
         case .videoClips:          return "Clips"
         case .photosAll:           return "All Photos"
+        case .storageSectionTitle: return "How to store your music"
+        case .storageCopyExplainer:
+            return "Copy into the Aura Library: Aura owns the files, edits their tags and syncs them directly; it uses disk space (one copy); you can delete your originals afterwards."
+        case .storageReferenceExplainer:
+            return "Reference them in place: no extra space and your files are never touched; Aura keeps a prepared version aside (.preparados/), edits live only in Aura and on the iPod, and if the original disk is missing those songs can't be synced."
+        case .storageChangeOnlyAffectsFuture:
+            return "Changing this only affects what you import from now on: what is already in your library stays as it is."
+        case .orphansTitle:        return "Orphaned files"
+        case .orphansDetail:
+            return "Prepared files and cover art that no longer belong to any item in your library — from items deleted before this version, or from reprocessing. They are not your original files: they are technical copies Aura makes on its own and can make again if needed."
+        case .orphansButton:       return "Find orphans"
+        case .orphansCleanButton:  return "Clean up orphaned files"
+        case .orphansNoneFound:    return "There are no orphaned files: nothing to clean up."
+        case .orphansConfirmMessage:
+            return "They are not tied to any item in your library; deleting them affects no song, photo or video you have."
         }
     }
 }

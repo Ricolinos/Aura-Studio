@@ -121,7 +121,12 @@ final class LibraryFolderDropTests: XCTestCase {
         XCTAssertEqual(viewModel.items.count, 2,
                        "la misma ruta no entra dos veces (ST-012: cover.jpg no cuenta como elemento)")
         XCTAssertEqual(Set(viewModel.items.map(\.sourceURL)).count, 2, "y no hay dos elementos apuntando al mismo archivo")
-        XCTAssertNotNil(viewModel.lastError, "y se dice que hubo repetidos, en vez de descartarlos en silencio")
+        // ST-225: se dice, pero como AVISO y no como error -- un aviso
+        // normal presentado como error enseña a ignorar los errores.
+        let notice = try XCTUnwrap(viewModel.lastImportNotice,
+                                   "se dice que hubo repetidos, en vez de descartarlos en silencio")
+        XCTAssertEqual(notice.duplicatesSkipped, 2)
+        XCTAssertNil(viewModel.lastError, "y no por el canal de errores")
     }
 
     func testDroppingAPlainFileWithCopyOffDoesNotRegisterAnyLinkedFolder() throws {
