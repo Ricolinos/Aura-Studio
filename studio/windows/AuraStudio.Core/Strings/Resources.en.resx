@@ -13,556 +13,556 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="album-cover-picker.cancelar" xml:space="preserve">
-    <value>Cancelar</value>
+    <value>Cancel</value>
   </data>
   <data name="album-cover-picker.cancelar-resto" xml:space="preserve">
-    <value>Cancelar el resto</value>
+    <value>Cancel the rest</value>
   </data>
   <data name="album-cover-picker.omitir-este-album" xml:space="preserve">
-    <value>Omitir este álbum</value>
+    <value>Skip this album</value>
   </data>
   <data name="album-cover-picker.title-in-set" xml:space="preserve">
-    <value>Álbum {0} de {1} · tapas de "{2}"</value>
+    <value>Album {0} of {1} · covers for "{2}"</value>
   </data>
   <data name="album-cover-picker.title-single" xml:space="preserve">
-    <value>Tapas de "{0}"</value>
+    <value>Covers for "{0}"</value>
   </data>
   <data name="album-cover-picker.usar-esta" xml:space="preserve">
-    <value>Usar esta</value>
+    <value>Use this one</value>
   </data>
   <data name="album-cover-picker.usar-esta-2" xml:space="preserve">
-    <value>Usar esta</value>
+    <value>Use this one</value>
   </data>
   <data name="album-cover-picker.usar-recomendada" xml:space="preserve">
-    <value>Usar recomendada</value>
+    <value>Use the recommended one</value>
   </data>
   <data name="app-strings.action-eject" xml:space="preserve">
-    <value>Expulsar</value>
+    <value>Eject</value>
   </data>
   <data name="app-strings.action-open-in-explorer" xml:space="preserve">
-    <value>Abrir en el Explorador</value>
+    <value>Open in File Explorer</value>
   </data>
   <data name="app-strings.action-refresh" xml:space="preserve">
-    <value>Actualizar</value>
+    <value>Refresh</value>
   </data>
   <data name="app-strings.action-refresh-help" xml:space="preserve">
-    <value>Vuelve a leer el estado del iPod y de tu biblioteca. No copia ni borra nada.</value>
+    <value>Reads the state of your iPod and your library again. It copies and deletes nothing.</value>
   </data>
   <data name="app-strings.app-name" xml:space="preserve">
     <value>Aura Studio</value>
   </data>
   <data name="app-strings.bootloader-update-awaiting-reboot" xml:space="preserve">
-    <value>Arranque enviado. Esperando a que el iPod confirme y reinicie…</value>
+    <value>Bootloader sent. Waiting for the iPod to confirm and restart…</value>
   </data>
   <data name="app-strings.bootloader-update-continue" xml:space="preserve">
-    <value>Continuar</value>
+    <value>Continue</value>
   </data>
   <data name="app-strings.bootloader-update-done-detail" xml:space="preserve">
-    <value>Tu música y tus ajustes siguen intactos. La próxima vez que enciendas el iPod vas a ver la pantalla de arranque nueva.</value>
+    <value>Your music and your settings are untouched. Next time you turn the iPod on you'll see the new startup screen.</value>
   </data>
   <data name="app-strings.bootloader-update-done-title" xml:space="preserve">
-    <value>Listo: el arranque quedó actualizado</value>
+    <value>Done: the bootloader is up to date</value>
   </data>
   <data name="app-strings.bootloader-update-enter-dfu-when" xml:space="preserve">
-    <value>El iPod tiene que estar conectado por USB mientras lo haces. No se toca su disco: solo se regraba el arranque.</value>
+    <value>The iPod has to stay connected over USB while this happens. Its disk is not touched: only the bootloader is rewritten.</value>
   </data>
   <data name="app-strings.bootloader-update-flash-confirm" xml:space="preserve">
-    <value>Entiendo que esto regraba el arranque del iPod. No borra su disco ni quita el arranque de Apple.</value>
+    <value>I understand this rewrites the iPod's bootloader. It does not erase its disk or remove Apple's bootloader.</value>
   </data>
   <data name="app-strings.bootloader-update-flashing-1" xml:space="preserve">
-    <value>Actualizando el arranque del iPod…</value>
+    <value>Updating the iPod's bootloader…</value>
   </data>
   <data name="app-strings.bootloader-update-flashing-2" xml:space="preserve">
-    <value>Actualizando el arranque de {0}…</value>
+    <value>Updating the bootloader for {0}…</value>
   </data>
   <data name="app-strings.bootloader-update-no-password" xml:space="preserve">
-    <value>No te pide tu contraseña de administrador ni una sola vez.</value>
+    <value>It never asks for your administrator password, not once.</value>
   </data>
   <data name="app-strings.bootloader-update-not-required" xml:space="preserve">
-    <value>No es obligatorio. El firmware nuevo funciona igual con el arranque que ya tienes; lo único que cambia es la pantalla de encendido.</value>
+    <value>This isn't required. The new firmware works fine with the bootloader you already have; the only thing that changes is the startup screen.</value>
   </data>
   <data name="app-strings.bootloader-update-nothing-touched" xml:space="preserve">
-    <value>No se toca nada del disco. Tu música, tus fotos, tus listas y tus ajustes se quedan exactamente como están.</value>
+    <value>Nothing on the disk is touched. Your music, your photos, your playlists and your settings stay exactly as they are.</value>
   </data>
   <data name="app-strings.bootloader-update-offer" xml:space="preserve">
-    <value>Actualizar el arranque de este iPod</value>
+    <value>Update this iPod's bootloader</value>
   </data>
   <data name="app-strings.bootloader-update-offer-different" xml:space="preserve">
-    <value>Esta versión trae un arranque más nuevo que el que tiene tu iPod.</value>
+    <value>This version comes with a newer bootloader than the one on your iPod.</value>
   </data>
   <data name="app-strings.bootloader-update-offer-unknown" xml:space="preserve">
-    <value>No sabemos qué arranque tiene tu iPod: lo instaló otra computadora, o una versión anterior de la app.</value>
+    <value>We don't know which bootloader your iPod has: another computer installed it, or an earlier version of the app.</value>
   </data>
   <data name="app-strings.bootloader-update-title" xml:space="preserve">
-    <value>Actualizar el arranque</value>
+    <value>Update the bootloader</value>
   </data>
   <data name="app-strings.bootloader-update-what-it-is" xml:space="preserve">
-    <value>El arranque es el programa que corre antes del firmware, en un chip aparte del disco. Esta versión trae uno nuevo, con otra pantalla de encendido.</value>
+    <value>The bootloader is the program that runs before the firmware, on a chip separate from the disk. This version comes with a new one, with a different startup screen.</value>
   </data>
   <data name="app-strings.bootloader-update-why-dfu" xml:space="preserve">
-    <value>Hace falta modo DFU porque ese chip no se puede escribir de ninguna otra forma.</value>
+    <value>DFU mode is required because that chip cannot be written any other way.</value>
   </data>
   <data name="app-strings.declared-family-label" xml:space="preserve">
-    <value>Familia declarada</value>
+    <value>Declared family</value>
   </data>
   <data name="app-strings.installer-copied-files.one" xml:space="preserve">
-    <value>{0} archivo escrito en el iPod.</value>
+    <value>{0} file written to the iPod.</value>
   </data>
   <data name="app-strings.installer-copied-files.other" xml:space="preserve">
-    <value>{0} archivos escritos en el iPod.</value>
+    <value>{0} files written to the iPod.</value>
   </data>
   <data name="app-strings.language-beta-detail" xml:space="preserve">
-    <value>Traducción automática, aún sin revisar por hablantes nativos.</value>
+    <value>Machine translation, not yet reviewed by native speakers.</value>
   </data>
   <data name="app-strings.language-beta-mark" xml:space="preserve">
     <value>(beta)</value>
   </data>
   <data name="app-strings.language-follow-system" xml:space="preserve">
-    <value>Igual que el sistema</value>
+    <value>Same as the system</value>
   </data>
   <data name="app-strings.language-restart-busy" xml:space="preserve">
-    <value>El idioma ya quedó guardado y se aplica la próxima vez que abras Aura Studio. No la cierres ahora: hay trabajo en curso y cerrarla lo dejaría a medias.</value>
+    <value>The language is already saved and takes effect next time you open Aura Studio. Don't close it now: there is work in progress and closing would leave it half done.</value>
   </data>
   <data name="app-strings.language-restart-detail" xml:space="preserve">
-    <value>El idioma cambia al volver a abrir la app. No se toca nada de tu biblioteca ni de tu iPod.</value>
+    <value>The language changes when you reopen the app. Nothing in your library or on your iPod is touched.</value>
   </data>
   <data name="app-strings.language-restart-now" xml:space="preserve">
-    <value>Cerrar ahora</value>
+    <value>Close now</value>
   </data>
   <data name="app-strings.language-restart-title" xml:space="preserve">
-    <value>Aura Studio tiene que abrirse de nuevo</value>
+    <value>Aura Studio has to open again</value>
   </data>
   <data name="artists-page.buscar-artistas-2" xml:space="preserve">
-    <value>Buscar artistas</value>
+    <value>Search artists</value>
   </data>
   <data name="background-task-center-indicator.cancelar" xml:space="preserve">
-    <value>Cancelar</value>
+    <value>Cancel</value>
   </data>
   <data name="app-strings.delete-confirm-copy.one" xml:space="preserve">
-    <value>{0} archivo ({1}) va a la Papelera de reciclaje.</value>
+    <value>{0} file ({1}) goes to the Recycle Bin.</value>
   </data>
   <data name="app-strings.delete-confirm-copy.other" xml:space="preserve">
-    <value>{0} archivos ({1}) van a la Papelera de reciclaje.</value>
+    <value>{0} files ({1}) go to the Recycle Bin.</value>
   </data>
   <data name="artists-view.eliminar" xml:space="preserve">
-    <value>Eliminar</value>
+    <value>Delete</value>
   </data>
   <data name="app-strings.delete-confirm-reference.one" xml:space="preserve">
-    <value>{0} elemento se quita de tu biblioteca; su archivo original no se toca.</value>
+    <value>{0} item is removed from your library; its original file is not touched.</value>
   </data>
   <data name="app-strings.delete-confirm-reference.other" xml:space="preserve">
-    <value>{0} elementos se quitan de tu biblioteca; sus archivos originales no se tocan.</value>
+    <value>{0} items are removed from your library; their original files are not touched.</value>
   </data>
   <data name="app-strings.delete-confirm-title.one" xml:space="preserve">
-    <value>¿Eliminar {0} elemento?</value>
+    <value>Delete {0} item?</value>
   </data>
   <data name="app-strings.delete-confirm-title.other" xml:space="preserve">
-    <value>¿Eliminar {0} elementos?</value>
+    <value>Delete {0} items?</value>
   </data>
   <data name="app-strings.device-ambiguous" xml:space="preserve">
-    <value>Se encontraron {0} discos que podrían ser tu iPod. Por seguridad, Aura Studio no elige uno solo — desconecta los demás discos externos y vuelve a intentar.</value>
+    <value>Found {0} disks that could be your iPod. To be safe, Aura Studio won't pick one — disconnect the other external disks and try again.</value>
   </data>
   <data name="app-strings.device-connected" xml:space="preserve">
-    <value>Conectado: {0}</value>
+    <value>Connected: {0}</value>
   </data>
   <data name="app-strings.device-detecting" xml:space="preserve">
-    <value>Buscando tu iPod…</value>
+    <value>Looking for your iPod…</value>
   </data>
   <data name="app-strings.device-not-connected" xml:space="preserve">
-    <value>No hay ningún iPod conectado. Conecta tu iPod Classic por USB.</value>
+    <value>No iPod is connected. Connect your iPod Classic over USB.</value>
   </data>
   <data name="app-strings.dfu-driver-heading" xml:space="preserve">
-    <value>Controlador para el modo DFU</value>
+    <value>Driver for DFU mode</value>
   </data>
   <data name="app-strings.dfu-driver-installed-no-device" xml:space="preserve">
-    <value>El controlador de Apple está instalado. Todavía no se ve ningún iPod en modo DFU.</value>
+    <value>Apple's driver is installed. No iPod in DFU mode is visible yet.</value>
   </data>
   <data name="app-strings.dfu-driver-missing" xml:space="preserve">
-    <value>Windows ve el iPod pero no tiene controlador para él. Instala «Dispositivos Apple» desde la Microsoft Store (o iTunes de Apple) y vuelve a conectarlo: Aura Studio necesita ese controlador para hablarle al iPod en modo DFU.</value>
+    <value>Windows sees the iPod but has no driver for it. Install "Apple Devices" from the Microsoft Store (or Apple's iTunes) and reconnect it: Aura Studio needs that driver to talk to the iPod in DFU mode.</value>
   </data>
   <data name="app-strings.dfu-driver-package-missing" xml:space="preserve">
-    <value>No se encontró el controlador de dispositivos de Apple. Instala «Dispositivos Apple» desde la Microsoft Store (o iTunes) antes de continuar: sin él, Windows no puede hablarle al iPod en modo DFU.</value>
+    <value>Apple's device driver was not found. Install "Apple Devices" from the Microsoft Store (or iTunes) before continuing: without it, Windows cannot talk to the iPod in DFU mode.</value>
   </data>
   <data name="app-strings.dfu-driver-ready" xml:space="preserve">
-    <value>Windows reconoce «{0}» y tiene su controlador funcionando.</value>
+    <value>Windows recognizes "{0}" and its driver is working.</value>
   </data>
   <data name="app-strings.dfu-driver-unknown" xml:space="preserve">
-    <value>No se pudo consultar el estado del controlador.</value>
+    <value>The driver's state could not be checked.</value>
   </data>
   <data name="app-strings.eject-failed" xml:space="preserve">
-    <value>No se pudo expulsar el iPod. Cierra las aplicaciones que estén usando la unidad y vuelve a intentarlo.</value>
+    <value>The iPod could not be ejected. Close the applications using the drive and try again.</value>
   </data>
   <data name="app-strings.eject-requested" xml:space="preserve">
-    <value>Se solicitó la expulsión. Ya puedes desconectar el iPod cuando Windows lo indique.</value>
+    <value>Eject requested. You can disconnect the iPod once Windows says so.</value>
   </data>
   <data name="app-strings.general-subtitle" xml:space="preserve">
-    <value>Administra tu iPod y revisa su estado</value>
+    <value>Manage your iPod and check its state</value>
   </data>
   <data name="app-strings.general-title" xml:space="preserve">
     <value>General</value>
   </data>
   <data name="app-strings.installer-already-writing" xml:space="preserve">
-    <value>Ya hay una operación escribiendo en el iPod. Espera a que termine antes de empezar otra.</value>
+    <value>Something is already writing to the iPod. Wait for it to finish before starting another operation.</value>
   </data>
   <data name="app-strings.installer-artifacts-invalid" xml:space="preserve">
-    <value>Los archivos del firmware no se pudieron verificar, así que no se instala nada.</value>
+    <value>The firmware files could not be verified, so nothing is installed.</value>
   </data>
   <data name="app-strings.installer-awaiting-reboot" xml:space="preserve">
-    <value>Grabado. Esperando a que el iPod se reinicie y vuelva a aparecer…</value>
+    <value>Written. Waiting for the iPod to restart and come back…</value>
   </data>
   <data name="app-strings.installer-begin" xml:space="preserve">
-    <value>Comenzar</value>
+    <value>Start</value>
   </data>
   <data name="app-strings.installer-cancelled" xml:space="preserve">
-    <value>Operación cancelada.</value>
+    <value>Operation cancelled.</value>
   </data>
   <data name="app-strings.installer-copy-failed" xml:space="preserve">
-    <value>No se pudo copiar el firmware al iPod.</value>
+    <value>The firmware could not be copied to the iPod.</value>
   </data>
   <data name="app-strings.installer-copy-files" xml:space="preserve">
-    <value>Copiar el firmware</value>
+    <value>Copy the firmware</value>
   </data>
   <data name="app-strings.installer-copying-title" xml:space="preserve">
-    <value>Copiando el firmware al iPod…</value>
+    <value>Copying the firmware to the iPod…</value>
   </data>
   <data name="app-strings.installer-detect-detail" xml:space="preserve">
-    <value>Revisa estos datos con cuidado. Lo que sigue borra el contenido del disco que aparece aquí.</value>
+    <value>Check these details carefully. What follows erases the contents of the disk shown here.</value>
   </data>
   <data name="app-strings.installer-detect-title" xml:space="preserve">
-    <value>Confirma que este es tu iPod</value>
+    <value>Confirm this is your iPod</value>
   </data>
   <data name="app-strings.installer-dfu-detected-detail" xml:space="preserve">
-    <value>Aura Studio lo reconoció al conectarlo. ¿Quieres instalarle un firmware? No se hace nada hasta que elijas.</value>
+    <value>Aura Studio recognized it when you connected it. Do you want to install firmware on it? Nothing happens until you choose.</value>
   </data>
   <data name="app-strings.installer-dfu-detected-dismiss" xml:space="preserve">
-    <value>Ahora no</value>
+    <value>Not now</value>
   </data>
   <data name="app-strings.installer-dfu-detected-install" xml:space="preserve">
-    <value>Sí, instalar</value>
+    <value>Yes, install</value>
   </data>
   <data name="app-strings.installer-dfu-detected-title" xml:space="preserve">
-    <value>Tu iPod está en modo DFU</value>
+    <value>Your iPod is in DFU mode</value>
   </data>
   <data name="app-strings.installer-dfu-found-1" xml:space="preserve">
-    <value>iPod detectado en modo DFU.</value>
+    <value>iPod detected in DFU mode.</value>
   </data>
   <data name="app-strings.installer-dfu-found-2" xml:space="preserve">
-    <value>iPod detectado en modo DFU (estado {0}).</value>
+    <value>iPod detected in DFU mode (state {0}).</value>
   </data>
   <data name="app-strings.installer-dfu-guide-link" xml:space="preserve">
-    <value>Guía de flasheo y restauración (repositorio del firmware)</value>
+    <value>Flashing and restore guide (firmware repository)</value>
   </data>
   <data name="app-strings.installer-dfu-guide-url" xml:space="preserve">
     <value>https://github.com/Ricolinos/Aura-Firmware/blob/main/docs/guia-flasheo-restauracion.md</value>
   </data>
   <data name="app-strings.installer-dfu-no-families" xml:space="preserve">
-    <value>No hay ningún firmware disponible para instalar: falta poblar la carpeta de artefactos.</value>
+    <value>There is no firmware available to install: the artifacts folder has not been populated.</value>
   </data>
   <data name="app-strings.installer-dfu-not-found" xml:space="preserve">
-    <value>No se ve ningún iPod en modo DFU todavía. Repite la combinación de botones y vuelve a buscar. Recuerda seguir presionando después de que la pantalla se ponga negra.</value>
+    <value>No iPod in DFU mode is visible yet. Repeat the button combination and search again. Remember to keep holding after the screen goes black.</value>
   </data>
   <data name="app-strings.installer-dfu-not-seen-by-windows" xml:space="preserve">
-    <value>El controlador de Apple está instalado, pero Windows no ve ningún dispositivo de Apple. Si ya hiciste la combinación de botones y la pantalla del iPod está en negro, es probable que esté en modo DFU y que su conexión USB no esté llegando hasta aquí. En una máquina virtual, revisa que el iPod en modo DFU esté redirigido a Windows: al entrar en DFU cambia de identificador USB y puede hacer falta autorizarlo de nuevo.</value>
+    <value>Apple's driver is installed, but Windows sees no Apple device. If you already did the button combination and the iPod's screen is black, it is probably in DFU mode and its USB connection isn't reaching this far. On a virtual machine, check that the iPod in DFU mode is forwarded to Windows: entering DFU changes its USB identifier and you may have to authorize it again.</value>
   </data>
   <data name="app-strings.installer-dfu-step1" xml:space="preserve">
-    <value>Si tu iPod está reproduciendo música, detén la reproducción.</value>
+    <value>If your iPod is playing music, stop playback.</value>
   </data>
   <data name="app-strings.installer-dfu-step2" xml:space="preserve">
-    <value>Mantén presionados SELECT + MENU al mismo tiempo.</value>
+    <value>Press and hold SELECT + MENU at the same time.</value>
   </data>
   <data name="app-strings.installer-dfu-step3" xml:space="preserve">
-    <value>Sigue presionando ambos botones unos 12 segundos, hasta después de que la pantalla se ponga negra.</value>
+    <value>Keep holding both buttons for about 12 seconds, until after the screen goes black.</value>
   </data>
   <data name="app-strings.installer-dfu-step4" xml:space="preserve">
-    <value>Suéltalos. Aura Studio va a detectar el modo DFU automáticamente.</value>
+    <value>Let go. Aura Studio will detect DFU mode automatically.</value>
   </data>
   <data name="app-strings.installer-dfu-timing-warning" xml:space="preserve">
-    <value>Si sueltas los botones antes de unos 12 segundos, el iPod se reinicia normalmente y NO entra en modo DFU. Que la pantalla se ponga negra no es la señal de soltar: sigue presionando después de eso.</value>
+    <value>If you let go before about 12 seconds, the iPod restarts normally and does NOT enter DFU mode. The screen going black is not the cue to let go: keep holding after that.</value>
   </data>
   <data name="app-strings.installer-dfu-unreadable" xml:space="preserve">
-    <value>No se pudo leer el estado del iPod. Revisa abajo si falta el controlador de Apple.</value>
+    <value>The iPod's state could not be read. Check below whether Apple's driver is missing.</value>
   </data>
   <data name="app-strings.installer-dfu-waiting" xml:space="preserve">
-    <value>Esperando el modo DFU…</value>
+    <value>Waiting for DFU mode…</value>
   </data>
   <data name="app-strings.installer-done-detail" xml:space="preserve">
-    <value>El firmware quedó instalado. Expulsa el iPod desde General antes de desconectarlo.</value>
+    <value>The firmware is installed. Eject the iPod from General before disconnecting it.</value>
   </data>
   <data name="app-strings.installer-done-title" xml:space="preserve">
-    <value>Listo</value>
+    <value>Done</value>
   </data>
   <data name="app-strings.installer-dry-run" xml:space="preserve">
-    <value>Ensayar sin escribir</value>
+    <value>Rehearse without writing</value>
   </data>
   <data name="app-strings.installer-dry-run-heading" xml:space="preserve">
-    <value>Ensayo terminado — no se tocó el disco</value>
+    <value>Rehearsal finished — the disk was not touched</value>
   </data>
   <data name="app-strings.installer-dry-run-ok" xml:space="preserve">
-    <value>El ensayo salió bien: el disco se volvió a verificar con permisos de administrador y el plan de formateo es válido. No se escribió nada todavía.</value>
+    <value>The rehearsal went well: the disk was verified again with administrator permission and the format plan is valid. Nothing has been written yet.</value>
   </data>
   <data name="app-strings.installer-dry-run-running" xml:space="preserve">
-    <value>Ensayando la preparación del disco…</value>
+    <value>Rehearsing the disk preparation…</value>
   </data>
   <data name="app-strings.installer-enter-dfu-title" xml:space="preserve">
-    <value>Ahora pon el iPod en modo DFU</value>
+    <value>Now put the iPod into DFU mode</value>
   </data>
   <data name="app-strings.installer-enter-dfu-when" xml:space="preserve">
-    <value>Este es el momento: el disco ya está listo y lo que sigue es grabar el arranque. El iPod tiene que estar conectado por USB mientras lo haces.</value>
+    <value>This is the moment: the disk is ready and what follows is writing the bootloader. The iPod has to stay connected over USB while you do it.</value>
   </data>
   <data name="app-strings.installer-failed-title" xml:space="preserve">
-    <value>No se pudo continuar</value>
+    <value>Couldn't continue</value>
   </data>
   <data name="app-strings.installer-family-change" xml:space="preserve">
-    <value>Este iPod tiene {0} instalado y vas a instalar {1}. {0} se guarda completo, con sus ajustes, y puedes volver a él desde Extras cuando quieras.</value>
+    <value>This iPod has {0} installed and you're about to install {1}. {0} is kept whole, with its settings, and you can go back to it from Extras whenever you want.</value>
   </data>
   <data name="app-strings.installer-family-label" xml:space="preserve">
-    <value>Firmware que se va a instalar</value>
+    <value>Firmware to install</value>
   </data>
   <data name="app-strings.installer-flash" xml:space="preserve">
-    <value>Grabar el arranque</value>
+    <value>Write the bootloader</value>
   </data>
   <data name="app-strings.installer-flash-confirm" xml:space="preserve">
-    <value>Entiendo que esto reemplaza el arranque original de Apple y no se puede deshacer sin restaurarlo.</value>
+    <value>I understand this replaces Apple's original bootloader and cannot be undone without restoring it.</value>
   </data>
   <data name="app-strings.installer-flash-failed" xml:space="preserve">
-    <value>No se pudo grabar el arranque.</value>
+    <value>The bootloader could not be written.</value>
   </data>
   <data name="app-strings.installer-flash-needs-confirmation" xml:space="preserve">
-    <value>Falta tu confirmación para grabar el arranque. Aura Studio no graba nada sin que confirmes antes.</value>
+    <value>Your confirmation is missing before writing the bootloader. Aura Studio writes nothing without you confirming first.</value>
   </data>
   <data name="app-strings.installer-flashing" xml:space="preserve">
-    <value>Grabando el arranque en el iPod…</value>
+    <value>Writing the bootloader to the iPod…</value>
   </data>
   <data name="app-strings.installer-format-confirm" xml:space="preserve">
-    <value>Entiendo que se va a borrar todo el contenido de {0}.</value>
+    <value>I understand that everything on {0} will be erased.</value>
   </data>
   <data name="app-strings.installer-format-danger-detail" xml:space="preserve">
-    <value>El ensayo de arriba no tocó nada. Lo que sigue borra todo el contenido del disco y no se puede deshacer. Revisa que sea el iPod correcto antes de continuar.</value>
+    <value>The rehearsal above touched nothing. What follows erases everything on the disk and cannot be undone. Check that this is the right iPod before continuing.</value>
   </data>
   <data name="app-strings.installer-format-danger-heading" xml:space="preserve">
-    <value>Esto sí borra el iPod</value>
+    <value>This one does erase the iPod</value>
   </data>
   <data name="app-strings.installer-format-needs-confirmation" xml:space="preserve">
-    <value>Falta tu confirmación para borrar el iPod. Aura Studio no formatea nada sin que confirmes antes sobre qué disco va a actuar.</value>
+    <value>Your confirmation is missing before erasing the iPod. Aura Studio formats nothing without you confirming first which disk it will act on.</value>
   </data>
   <data name="app-strings.installer-format-needs-dry-run" xml:space="preserve">
-    <value>Primero hay que ensayar la preparación del disco. Así se comprueba todo sin escribir nada.</value>
+    <value>The disk preparation has to be rehearsed first. That checks everything without writing anything.</value>
   </data>
   <data name="app-strings.installer-format-now-on" xml:space="preserve">
-    <value>Borrar y formatear {0}</value>
+    <value>Erase and format {0}</value>
   </data>
   <data name="app-strings.installer-format-running" xml:space="preserve">
-    <value>Dando formato al disco del iPod…</value>
+    <value>Formatting the iPod's disk…</value>
   </data>
   <data name="app-strings.installer-needs-mounted-volume" xml:space="preserve">
-    <value>El iPod no tiene un volumen que Windows pueda leer. Prepara el disco antes de copiar los archivos.</value>
+    <value>The iPod has no volume Windows can read. Prepare the disk before copying the files.</value>
   </data>
   <data name="app-strings.installer-no-device" xml:space="preserve">
-    <value>No hay ningún iPod conectado. Conéctalo por USB y espera a que Windows lo reconozca.</value>
+    <value>No iPod is connected. Connect it over USB and wait for Windows to recognize it.</value>
   </data>
   <data name="app-strings.installer-permissions-continue" xml:space="preserve">
-    <value>Entendido, continuar</value>
+    <value>Understood, continue</value>
   </data>
   <data name="app-strings.installer-permissions-detail" xml:space="preserve">
-    <value>Para preparar el disco del iPod, Windows te va a pedir permiso de administrador con su propio aviso. Aura Studio hace todo desde aquí: nunca vas a tener que abrir una consola ni escribir un comando. El permiso se pide solo para dos cosas concretas — dar formato al disco del iPod y, durante el grabado, pausar el servicio de Apple que podría quedarse con el puerto USB. Cada vez que se use queda anotado en la bitácora de la aplicación.</value>
+    <value>To prepare the iPod's disk, Windows will ask you for administrator permission with its own prompt. Aura Studio does everything from here: you will never have to open a console or type a command. Permission is asked for two specific things only — formatting the iPod's disk and, while writing the bootloader, pausing the Apple service that could hold on to the USB port. Every use is recorded in the application's log.</value>
   </data>
   <data name="app-strings.installer-permissions-title" xml:space="preserve">
-    <value>Permisos que hacen falta</value>
+    <value>Permissions needed</value>
   </data>
   <data name="app-strings.installer-prepare-disk" xml:space="preserve">
-    <value>Preparar el disco</value>
+    <value>Prepare the disk</value>
   </data>
   <data name="app-strings.installer-privileged-log-heading" xml:space="preserve">
-    <value>Lo que hizo la operación con permisos</value>
+    <value>What the privileged operation did</value>
   </data>
   <data name="app-strings.installer-rebooted" xml:space="preserve">
-    <value>El iPod salió de modo DFU. Ya puedes copiar el firmware.</value>
+    <value>The iPod left DFU mode. You can copy the firmware now.</value>
   </data>
   <data name="app-strings.installer-restart" xml:space="preserve">
-    <value>Empezar de nuevo</value>
+    <value>Start over</value>
   </data>
   <data name="app-strings.installer-safety-abort" xml:space="preserve">
-    <value>Aura Studio se detuvo por seguridad antes de tocar el disco: {0}.</value>
+    <value>Aura Studio stopped for safety before touching the disk: {0}.</value>
   </data>
   <data name="app-strings.installer-scan-dfu" xml:space="preserve">
-    <value>Buscar el iPod en DFU</value>
+    <value>Look for the iPod in DFU</value>
   </data>
   <data name="app-strings.installer-scanning-dfu" xml:space="preserve">
-    <value>Buscando el iPod en modo DFU…</value>
+    <value>Looking for the iPod in DFU mode…</value>
   </data>
   <data name="app-strings.installer-stuck-in-dfu" xml:space="preserve">
-    <value>El iPod sigue en modo DFU y no se confirmó la instalación. No desconectes: vuelve a buscarlo.</value>
+    <value>The iPod is still in DFU mode and the installation was not confirmed. Don't disconnect: look for it again.</value>
   </data>
   <data name="app-strings.installer-subtitle" xml:space="preserve">
-    <value>Instala el firmware en tu iPod, paso a paso</value>
+    <value>Install the firmware on your iPod, step by step</value>
   </data>
   <data name="app-strings.installer-title" xml:space="preserve">
-    <value>Instalador</value>
+    <value>Installer</value>
   </data>
   <data name="app-strings.installer-unknown-disk" xml:space="preserve">
-    <value>No se pudo identificar el número de disco de «{0}», así que no se toca nada.</value>
+    <value>The disk number for "{0}" could not be identified, so nothing is touched.</value>
   </data>
   <data name="app-strings.installer-welcome-detail" xml:space="preserve">
-    <value>Aura Studio va a preparar el disco de tu iPod, grabar el arranque y copiar el firmware. Te va a ir explicando cada paso antes de hacerlo, y no toca nada hasta que confirmes.</value>
+    <value>Aura Studio will prepare your iPod's disk, write the bootloader and copy the firmware. It explains every step before doing it, and touches nothing until you confirm.</value>
   </data>
   <data name="app-strings.installer-welcome-title" xml:space="preserve">
-    <value>Vamos a instalar el firmware en tu iPod</value>
+    <value>Let's install the firmware on your iPod</value>
   </data>
   <data name="app-strings.installer-welcome-warning" xml:space="preserve">
-    <value>Instalar borra todo lo que haya en el iPod y reemplaza su arranque original de Apple. Si tienes música solo ahí, cópiala antes.</value>
+    <value>Installing erases everything on the iPod and replaces its original Apple bootloader. If your only copy of some music is there, copy it out first.</value>
   </data>
   <data name="app-strings.label-bus" xml:space="preserve">
-    <value>Conexión</value>
+    <value>Connection</value>
   </data>
   <data name="app-strings.label-capacity" xml:space="preserve">
-    <value>Capacidad</value>
+    <value>Capacity</value>
   </data>
   <data name="app-strings.label-device" xml:space="preserve">
-    <value>Dispositivo</value>
+    <value>Device</value>
   </data>
   <data name="app-strings.label-file-system" xml:space="preserve">
-    <value>Sistema de archivos</value>
+    <value>File system</value>
   </data>
   <data name="app-strings.label-firmware" xml:space="preserve">
-    <value>Firmware detectado</value>
+    <value>Firmware detected</value>
   </data>
   <data name="app-strings.label-free" xml:space="preserve">
-    <value>Disponible</value>
+    <value>Available</value>
   </data>
   <data name="app-strings.label-music" xml:space="preserve">
-    <value>Música</value>
+    <value>Music</value>
   </data>
   <data name="app-strings.label-photos" xml:space="preserve">
-    <value>Fotos</value>
+    <value>Photos</value>
   </data>
   <data name="app-strings.label-playlists" xml:space="preserve">
-    <value>Listas</value>
+    <value>Playlists</value>
   </data>
   <data name="app-strings.label-unit" xml:space="preserve">
-    <value>Unidad</value>
+    <value>Drive</value>
   </data>
   <data name="app-strings.label-used" xml:space="preserve">
-    <value>Usado</value>
+    <value>Used</value>
   </data>
   <data name="app-strings.label-video" xml:space="preserve">
     <value>Video</value>
   </data>
   <data name="app-strings.last-sync-summary" xml:space="preserve">
-    <value>Resumen de la última sincronización</value>
+    <value>Last sync summary</value>
   </data>
   <data name="app-strings.library-add-files" xml:space="preserve">
-    <value>Agregar archivos</value>
+    <value>Add files</value>
   </data>
   <data name="app-strings.library-add-folder" xml:space="preserve">
-    <value>Agregar carpeta</value>
+    <value>Add folder</value>
   </data>
   <data name="app-strings.library-available-without-device" xml:space="preserve">
-    <value>Puedes armar tu biblioteca sin el iPod conectado; se sincroniza cuando lo conectes.</value>
+    <value>You can build your library without the iPod connected; it syncs when you connect it.</value>
   </data>
   <data name="app-strings.library-columns" xml:space="preserve">
-    <value>Columnas</value>
+    <value>Columns</value>
   </data>
   <data name="app-strings.library-columns-detail" xml:space="preserve">
-    <value>Elige qué columnas ver. Título siempre está y va primero.</value>
+    <value>Choose which columns to show. Title is always there and comes first.</value>
   </data>
   <data name="app-strings.library-drop-hint-libraryitemkind-music" xml:space="preserve">
-    <value>Arrastra aquí tu música o una carpeta de álbumes.</value>
+    <value>Drag your music or a folder of albums here.</value>
   </data>
   <data name="app-strings.library-drop-hint-libraryitemkind-photo" xml:space="preserve">
-    <value>Arrastra aquí tus fotos o una carpeta de imágenes.</value>
+    <value>Drag your photos or a folder of images here.</value>
   </data>
   <data name="app-strings.library-drop-hint-libraryitemkind-video" xml:space="preserve">
-    <value>Arrastra aquí tus películas, series o videos.</value>
+    <value>Drag your movies, series or videos here.</value>
   </data>
   <data name="app-strings.library-drop-hint-texto" xml:space="preserve">
-    <value>Arrastra aquí tus archivos.</value>
+    <value>Drag your files here.</value>
   </data>
   <data name="app-strings.library-empty" xml:space="preserve">
-    <value>Tu biblioteca está vacía.</value>
+    <value>Your library is empty.</value>
   </data>
   <data name="app-strings.library-favorites-only" xml:space="preserve">
-    <value>Solo favoritos</value>
+    <value>Favorites only</value>
   </data>
   <data name="app-strings.library-kind-libraryitemkind-music" xml:space="preserve">
-    <value>Música</value>
+    <value>Music</value>
   </data>
   <data name="app-strings.library-kind-libraryitemkind-photo" xml:space="preserve">
-    <value>Imagen</value>
+    <value>Image</value>
   </data>
   <data name="app-strings.library-kind-libraryitemkind-video" xml:space="preserve">
     <value>Video</value>
   </data>
   <data name="app-strings.library-kind-texto" xml:space="preserve">
-    <value>No compatible</value>
+    <value>Not supported</value>
   </data>
   <data name="app-strings.library-locked-reason" xml:space="preserve">
-    <value>El iPod conectado no tiene un firmware de la familia Aura corriendo. Instálalo desde el Instalador para administrar y sincronizar tu biblioteca.</value>
+    <value>The connected iPod isn't running firmware from the Aura family. Install it from the Installer to manage and sync your library.</value>
   </data>
   <data name="app-strings.library-nothing-here-yet" xml:space="preserve">
-    <value>Todavía no hay nada en esta sección.</value>
+    <value>There's nothing in this section yet.</value>
   </data>
   <data name="app-strings.library-open-folder" xml:space="preserve">
-    <value>Abrir la carpeta de la biblioteca</value>
+    <value>Open the library folder</value>
   </data>
   <data name="app-strings.library-remove" xml:space="preserve">
-    <value>Quitar de la biblioteca</value>
+    <value>Remove from the library</value>
   </data>
   <data name="device-safety-validator.dispositivo-cambio-desde-confirmacion-po" xml:space="preserve">
-    <value>El dispositivo cambió desde la confirmación. Por seguridad no se realizó ninguna escritura.</value>
+    <value>The device changed since you confirmed. For safety, nothing was written.</value>
   </data>
   <data name="device-safety-validator.dispositivo-verificado-actual-displaynam" xml:space="preserve">
-    <value>Dispositivo verificado: {0}, {1}, {2}</value>
+    <value>Device verified: {0}, {1}, {2}</value>
   </data>
   <data name="device-safety-validator.hay-mas-ipod-candidato-por-seguridad" xml:space="preserve">
-    <value>Hay más de un iPod candidato. Por seguridad no se eligió ninguno.</value>
+    <value>There is more than one candidate iPod. For safety, none was chosen.</value>
   </data>
   <data name="device-safety-validator.ipod-desaparecio-se-realizo-ninguna-escr" xml:space="preserve">
-    <value>El iPod desapareció. No se realizó ninguna escritura.</value>
+    <value>The iPod disappeared. Nothing was written.</value>
   </data>
   <data name="device-safety-validator.volumen-ipod-esta-montado" xml:space="preserve">
-    <value>El volumen del iPod no está montado.</value>
+    <value>The iPod's volume is not mounted.</value>
   </data>
   <data name="library-unavailable-view.elegir-otra-biblioteca" xml:space="preserve">
-    <value>Elegir otra biblioteca</value>
+    <value>Choose another library</value>
   </data>
   <data name="library-unavailable-view.crear-nueva" xml:space="preserve">
-    <value>Crear una nueva</value>
+    <value>Create a new one</value>
   </data>
   <data name="app-strings.library-root-missing-1" xml:space="preserve">
-    <value>No hay ninguna carpeta de biblioteca configurada.</value>
+    <value>No library folder is set up.</value>
   </data>
   <data name="app-strings.library-root-missing-2" xml:space="preserve">
-    <value>La biblioteca está en un disco que no está conectado: {0}</value>
+    <value>Your library is on a disk that isn't connected: {0}</value>
   </data>
   <data name="library-unavailable-view.no-se-perdio-nada-tu-catalogo" xml:space="preserve">
-    <value>No se perdió nada: el catálogo y tus archivos siguen en ese disco. Conéctalo y la biblioteca vuelve sola.</value>
+    <value>Nothing was lost: the catalog and your files are still on that disk. Connect it and the library comes back on its own.</value>
   </data>
   <data name="done-view.reintentar" xml:space="preserve">
-    <value>Conectar el disco y reintentar</value>
+    <value>Connect the disk and try again</value>
   </data>
   <data name="app-strings.library-season-1" xml:space="preserve">
-    <value>Sin temporada</value>
+    <value>No season</value>
   </data>
   <data name="app-strings.library-season-2" xml:space="preserve">
-    <value>Temporada {0}</value>
+    <value>Season {0}</value>
   </data>
   <data name="app-strings.library-section-only-its-type-libraryitemkind-music" xml:space="preserve">
-    <value>Esta sección solo acepta música. Las carátulas que vengan junto a un álbum se guardan como portada, no como fotos.</value>
+    <value>This section only takes music. Cover art that comes with an album is kept as a cover, not as a photo.</value>
   </data>
   <data name="app-strings.library-section-only-its-type-libraryitemkind-photo" xml:space="preserve">
-    <value>Esta sección solo acepta imágenes.</value>
+    <value>This section only takes images.</value>
   </data>
   <data name="app-strings.library-section-only-its-type-libraryitemkind-video" xml:space="preserve">
-    <value>Esta sección solo acepta video. Una imagen con el mismo nombre que un video se guarda como su póster.</value>
+    <value>This section only takes video. An image with the same name as a video is kept as its poster.</value>
   </data>
   <data name="app-strings.library-similar-found-on-drop" xml:space="preserve">
-    <value>{0} Encontramos elementos parecidos entre lo que agregaste — revísalos en Similares.</value>
+    <value>{0} We found items that look alike among what you added — review them in Similar.</value>
   </data>
   <data name="app-strings.library-sort-ascending" xml:space="preserve">
-    <value>Ascendente</value>
+    <value>Ascending</value>
   </data>
   <data name="app-strings.library-sort-by" xml:space="preserve">
-    <value>Ordenar por</value>
+    <value>Sort by</value>
   </data>
   <data name="app-strings.library-status-6" xml:space="preserve">
     <value>Error: {0}</value>
@@ -571,52 +571,52 @@
     <value>Error</value>
   </data>
   <data name="app-strings.library-status-libraryitemstate-enrichi" xml:space="preserve">
-    <value>Buscando información</value>
+    <value>Looking up details</value>
   </data>
   <data name="app-strings.library-status-libraryitemstate-needsre" xml:space="preserve">
-    <value>Necesita revisión</value>
+    <value>Needs review</value>
   </data>
   <data name="app-strings.library-status-libraryitemstate-queued" xml:space="preserve">
-    <value>En cola</value>
+    <value>Queued</value>
   </data>
   <data name="app-strings.library-status-libraryitemstate-ready" xml:space="preserve">
-    <value>Listo</value>
+    <value>Ready</value>
   </data>
   <data name="app-strings.library-status-libraryitemstate-transco" xml:space="preserve">
-    <value>Convirtiendo… {0}%</value>
+    <value>Converting… {0}%</value>
   </data>
   <data name="app-strings.licenses-document-missing" xml:space="preserve">
-    <value>{0}: no incluido en estos archivos</value>
+    <value>{0}: not included in these files</value>
   </data>
   <data name="app-strings.licenses-document-present" xml:space="preserve">
-    <value>{0}: incluido</value>
+    <value>{0}: included</value>
   </data>
   <data name="app-strings.licenses-families-heading" xml:space="preserve">
-    <value>Firmware incluido</value>
+    <value>Firmware included</value>
   </data>
   <data name="app-strings.licenses-intro" xml:space="preserve">
-    <value>mks5lboot, bootloader-ipod6g.ipod, rockbox.ipod y rockbox.zip son obras derivadas de Rockbox y se distribuyen bajo la Licencia Pública General de GNU, versión 2. Aura Studio los incluye como agregación y no los modifica de ninguna forma. Para cada firmware incluido puedes obtener su código fuente completo en el repositorio y la versión exacta que se listan abajo.</value>
+    <value>mks5lboot, bootloader-ipod6g.ipod, rockbox.ipod and rockbox.zip are derivative works of Rockbox and are distributed under the GNU General Public License, version 2. Aura Studio includes them as an aggregation and does not modify them in any way. For each firmware included you can obtain its complete source code from the repository and the exact version listed below.</value>
   </data>
   <data name="app-strings.licenses-libraries-heading" xml:space="preserve">
-    <value>Bibliotecas incluidas</value>
+    <value>Libraries included</value>
   </data>
   <data name="app-strings.licenses-libraries-intro" xml:space="preserve">
-    <value>Aura Studio incluye bibliotecas de software libre. Se distribuyen como archivos aparte junto al programa, sin modificar, y puedes reemplazarlas por otra versión compatible.</value>
+    <value>Aura Studio includes free software libraries. They are distributed as separate files next to the program, unmodified, and you can replace them with another compatible version.</value>
   </data>
   <data name="app-strings.licenses-open" xml:space="preserve">
-    <value>Ver licencias</value>
+    <value>View licenses</value>
   </data>
   <data name="app-strings.licenses-repository-label" xml:space="preserve">
-    <value>Código fuente</value>
+    <value>Source code</value>
   </data>
   <data name="app-strings.licenses-subtitle" xml:space="preserve">
-    <value>Software libre incluido en Aura Studio</value>
+    <value>Free software included in Aura Studio</value>
   </data>
   <data name="app-strings.licenses-tag-label" xml:space="preserve">
-    <value>Versión incluida</value>
+    <value>Version included</value>
   </data>
   <data name="app-strings.licenses-tag-lib-detail" xml:space="preserve">
-    <value>Lee las etiquetas y las carátulas de tus archivos de música (MP3, FLAC, M4A). En Aura Studio para Mac ese trabajo lo hace AVFoundation, que no existe en Windows.</value>
+    <value>Reads the tags and cover art of your music files (MP3, FLAC, M4A). In Aura Studio for Mac that work is done by AVFoundation, which doesn't exist on Windows.</value>
   </data>
   <data name="app-strings.licenses-tag-lib-name" xml:space="preserve">
     <value>TagLib# 2.3.0 — LGPL v2.1</value>
@@ -625,43 +625,43 @@
     <value>https://github.com/mono/taglib-sharp</value>
   </data>
   <data name="app-strings.licenses-title" xml:space="preserve">
-    <value>Licencias</value>
+    <value>Licenses</value>
   </data>
   <data name="app-strings.licenses-tool-from-release" xml:space="preserve">
-    <value>Publicada en el Release {0} y verificada contra su checksums.txt.</value>
+    <value>Published in Release {0} and verified against its checksums.txt.</value>
   </data>
   <data name="app-strings.licenses-tool-heading" xml:space="preserve">
-    <value>Herramienta de grabado (mks5lboot.exe)</value>
+    <value>Flashing tool (mks5lboot.exe)</value>
   </data>
   <data name="app-strings.licenses-tool-local-pin" xml:space="preserve">
-    <value>Compilada aparte para Windows: el Release publica la versión de Unix. Coincide con el hash fijado en el propio Aura Studio (origen declarado: {0}). Su código fuente es el del repositorio del firmware que se indica arriba.</value>
+    <value>Built separately for Windows: the Release publishes the Unix version. It matches the hash pinned inside Aura Studio itself (declared origin: {0}). Its source code is the one in the firmware repository shown above.</value>
   </data>
   <data name="app-strings.licenses-tool-missing" xml:space="preserve">
-    <value>No está incluida en esta copia.</value>
+    <value>It is not included in this copy.</value>
   </data>
   <data name="app-strings.licenses-tool-unverified" xml:space="preserve">
-    <value>No se pudo comprobar contra ningún hash. Aura Studio no la ejecutará hasta poder verificarla.</value>
+    <value>It could not be checked against any hash. Aura Studio will not run it until it can be verified.</value>
   </data>
   <data name="app-strings.licenses-unknown-tag" xml:space="preserve">
-    <value>No se conoce</value>
+    <value>Not known</value>
   </data>
   <data name="app-strings.licenses-unknown-tag-detail" xml:space="preserve">
-    <value>Estos archivos se copiaron sin registrar de qué Release salieron. Vuelve a poblarlos con scripts/FirmwareFetch.ps1 para que la versión quede anotada.</value>
+    <value>These files were copied without recording which Release they came from. Populate them again with scripts/FirmwareFetch.ps1 so the version gets recorded.</value>
   </data>
   <data name="app-strings.nav-albums" xml:space="preserve">
-    <value>Álbumes</value>
+    <value>Albums</value>
   </data>
   <data name="app-strings.nav-all-photos" xml:space="preserve">
-    <value>Todas las fotos</value>
+    <value>All photos</value>
   </data>
   <data name="app-strings.nav-all-videos" xml:space="preserve">
-    <value>Todos los videos</value>
+    <value>All videos</value>
   </data>
   <data name="app-strings.nav-artists" xml:space="preserve">
-    <value>Artistas</value>
+    <value>Artists</value>
   </data>
   <data name="app-strings.nav-clips" xml:space="preserve">
-    <value>Videoclips</value>
+    <value>Video clips</value>
   </data>
   <data name="app-strings.nav-extras" xml:space="preserve">
     <value>Extras</value>
@@ -670,274 +670,274 @@
     <value>General</value>
   </data>
   <data name="app-strings.nav-installer" xml:space="preserve">
-    <value>Instalador</value>
+    <value>Installer</value>
   </data>
   <data name="app-strings.nav-movies" xml:space="preserve">
-    <value>Películas</value>
+    <value>Movies</value>
   </data>
   <data name="app-strings.nav-music" xml:space="preserve">
-    <value>Música</value>
+    <value>Music</value>
   </data>
   <data name="app-strings.nav-photos" xml:space="preserve">
-    <value>Fotos</value>
+    <value>Photos</value>
   </data>
   <data name="app-strings.nav-photos-ai" xml:space="preserve">
-    <value>IA</value>
+    <value>AI</value>
   </data>
   <data name="app-strings.nav-photos-images" xml:space="preserve">
-    <value>Imágenes</value>
+    <value>Images</value>
   </data>
   <data name="app-strings.nav-photos-photos" xml:space="preserve">
-    <value>Fotos</value>
+    <value>Photos</value>
   </data>
   <data name="app-strings.nav-playlists" xml:space="preserve">
-    <value>Listas</value>
+    <value>Playlists</value>
   </data>
   <data name="app-strings.nav-series" xml:space="preserve">
     <value>Series</value>
   </data>
   <data name="app-strings.nav-settings" xml:space="preserve">
-    <value>Ajustes</value>
+    <value>Settings</value>
   </data>
   <data name="app-strings.nav-songs" xml:space="preserve">
-    <value>Canciones</value>
+    <value>Songs</value>
   </data>
   <data name="app-strings.nav-themes" xml:space="preserve">
-    <value>Temas</value>
+    <value>Themes</value>
   </data>
   <data name="app-strings.nav-video" xml:space="preserve">
     <value>Video</value>
   </data>
   <data name="app-strings.never-synced" xml:space="preserve">
-    <value>Este iPod todavía no se ha sincronizado con Aura Studio.</value>
+    <value>This iPod hasn't been synced with Aura Studio yet.</value>
   </data>
   <data name="app-strings.no-device" xml:space="preserve">
-    <value>Sin dispositivo</value>
+    <value>No device</value>
   </data>
   <data name="app-strings.not-available" xml:space="preserve">
-    <value>No disponible</value>
+    <value>Not available</value>
   </data>
   <data name="orphans-button" xml:space="preserve">
-    <value>Buscar huérfanos</value>
+    <value>Find orphans</value>
   </data>
   <data name="orphans-clean-button" xml:space="preserve">
-    <value>Limpiar archivos huérfanos</value>
+    <value>Clean up orphaned files</value>
   </data>
   <data name="app-strings.orphans-cleaned.one" xml:space="preserve">
-    <value>Se borró {0} archivo huérfano.</value>
+    <value>{0} orphaned file deleted.</value>
   </data>
   <data name="app-strings.orphans-cleaned.other" xml:space="preserve">
-    <value>Se borraron {0} archivos huérfanos.</value>
+    <value>{0} orphaned files deleted.</value>
   </data>
   <data name="orphans-confirm-message" xml:space="preserve">
-    <value>No están ligados a ningún elemento de tu biblioteca; borrarlos no afecta ninguna canción, foto ni video que tengas.</value>
+    <value>They are not tied to any item in your library; deleting them affects no song, photo or video you have.</value>
   </data>
   <data name="app-strings.orphans-confirm-title.one" xml:space="preserve">
-    <value>¿Borrar {0} archivo huérfano?</value>
+    <value>Delete {0} orphaned file?</value>
   </data>
   <data name="app-strings.orphans-confirm-title.other" xml:space="preserve">
-    <value>¿Borrar {0} archivos huérfanos?</value>
+    <value>Delete {0} orphaned files?</value>
   </data>
   <data name="orphans-detail" xml:space="preserve">
-    <value>Preparados y carátulas que ya no le pertenecen a ningún elemento de tu biblioteca — de elementos eliminados antes de esta versión, o de un reprocesamiento. No son tus archivos originales: son copias técnicas que Aura arma sola y puede volver a armar si hicieran falta.</value>
+    <value>Prepared files and cover art that no longer belong to any item in your library — from items deleted before this version, or from reprocessing. They are not your original files: they are technical copies Aura makes on its own and can make again if needed.</value>
   </data>
   <data name="app-strings.orphans-found.one" xml:space="preserve">
-    <value>{0} archivo huérfano ({1}).</value>
+    <value>{0} orphaned file ({1}).</value>
   </data>
   <data name="app-strings.orphans-found.other" xml:space="preserve">
-    <value>{0} archivos huérfanos ({1}).</value>
+    <value>{0} orphaned files ({1}).</value>
   </data>
   <data name="orphans-none-found" xml:space="preserve">
-    <value>No hay archivos huérfanos: no hace falta limpiar nada.</value>
+    <value>There are no orphaned files: nothing to clean up.</value>
   </data>
   <data name="orphans-title" xml:space="preserve">
-    <value>Archivos huérfanos</value>
+    <value>Orphaned files</value>
   </data>
   <data name="app-strings.section-content" xml:space="preserve">
-    <value>Contenido en el iPod</value>
+    <value>Content on the iPod</value>
   </data>
   <data name="app-strings.section-pending-detail" xml:space="preserve">
-    <value>Esta sección llega en la {0} del port a Windows. La navegación ya está en su lugar para que nada cambie cuando el contenido aparezca.</value>
+    <value>This section arrives in {0} of the Windows port. The navigation is already in place so nothing moves when the content shows up.</value>
   </data>
   <data name="app-strings.section-pending-title" xml:space="preserve">
-    <value>Todavía no está lista</value>
+    <value>Not ready yet</value>
   </data>
   <data name="app-strings.section-storage" xml:space="preserve">
-    <value>Almacenamiento</value>
+    <value>Storage</value>
   </data>
   <data name="app-strings.service-pause-asks-for-permission" xml:space="preserve">
-    <value>Esto sí te va a pedir permiso de administrador.</value>
+    <value>This one will ask for administrator permission.</value>
   </data>
   <data name="app-strings.service-pause-button" xml:space="preserve">
-    <value>Pausar los servicios de Apple</value>
+    <value>Pause Apple's services</value>
   </data>
   <data name="app-strings.service-pause-detail" xml:space="preserve">
-    <value>Windows puede tener el servicio de Apple ocupando el iPod. Podemos detenerlo mientras dura esto y lo volvemos a encender al terminar.</value>
+    <value>Windows may have Apple's service holding on to the iPod. We can stop it while this lasts and turn it back on when we're done.</value>
   </data>
   <data name="app-strings.service-pause-not-running" xml:space="preserve">
-    <value>El servicio de Apple no está corriendo, así que no es lo que está estorbando.</value>
+    <value>Apple's service isn't running, so that's not what's in the way.</value>
   </data>
   <data name="app-strings.service-pause-title" xml:space="preserve">
-    <value>¿No aparece?</value>
+    <value>Not showing up?</value>
   </data>
   <data name="app-strings.settings-about" xml:space="preserve">
-    <value>Acerca de</value>
+    <value>About</value>
   </data>
   <data name="app-strings.settings-appearance" xml:space="preserve">
-    <value>Apariencia</value>
+    <value>Appearance</value>
   </data>
   <data name="app-strings.settings-language-detail" xml:space="preserve">
-    <value>Aura Studio habla el idioma que elijas aquí. El español y el inglés los revisó una persona; los demás llegan después.</value>
+    <value>Aura Studio follows the language you choose here. Spanish and English are reviewed by people; the rest arrive later.</value>
   </data>
   <data name="app-strings.settings-subtitle" xml:space="preserve">
-    <value>Preferencias de Aura Studio</value>
+    <value>Aura Studio preferences</value>
   </data>
   <data name="app-strings.settings-theme" xml:space="preserve">
-    <value>Tema</value>
+    <value>Theme</value>
   </data>
   <data name="app-strings.settings-theme-detail" xml:space="preserve">
-    <value>Aura Studio sigue el tema de Windows. Puedes fijarlo en claro u oscuro solo para esta app.</value>
+    <value>Aura Studio follows the Windows theme. You can pin it to light or dark for this app only.</value>
   </data>
   <data name="app-strings.settings-title" xml:space="preserve">
-    <value>Ajustes</value>
+    <value>Settings</value>
   </data>
   <data name="settings-page.bajar" xml:space="preserve">
-    <value>Bajar</value>
+    <value>Move down</value>
   </data>
   <data name="settings-page.subir" xml:space="preserve">
-    <value>Subir</value>
+    <value>Move up</value>
   </data>
   <data name="storage-change-only-affects-future" xml:space="preserve">
-    <value>Cambiar este ajuste solo afecta lo que importes de ahora en adelante: lo que ya está en tu biblioteca se queda como está.</value>
+    <value>Changing this only affects what you import from now on: what is already in your library stays as it is.</value>
   </data>
   <data name="storage-copy-explainer" xml:space="preserve">
-    <value>Copiar a la Biblioteca de Aura: Aura controla los archivos, edita sus etiquetas y los sincroniza directo; ocupa espacio en disco (una copia); puedes borrar tus originales después.</value>
+    <value>Copy into the Aura Library: Aura owns the files, edits their tags and syncs them directly; it uses disk space (one copy); you can delete your originals afterwards.</value>
   </data>
   <data name="storage-reference-explainer" xml:space="preserve">
-    <value>Referenciar en su lugar: no ocupa espacio extra ni toca tus archivos; Aura mantiene una versión preparada aparte (.preparados/), las ediciones viven solo en Aura y en el iPod, y si el disco original no está, esas canciones no se pueden sincronizar.</value>
+    <value>Reference them in place: no extra space and your files are never touched; Aura keeps a prepared version aside (.preparados/), edits live only in Aura and on the iPod, and if the original disk is missing those songs can't be synced.</value>
   </data>
   <data name="storage-section-title" xml:space="preserve">
-    <value>Cómo guardar tu música</value>
+    <value>How to store your music</value>
   </data>
   <data name="app-strings.theme-dark" xml:space="preserve">
-    <value>Oscuro</value>
+    <value>Dark</value>
   </data>
   <data name="app-strings.theme-light" xml:space="preserve">
-    <value>Claro</value>
+    <value>Light</value>
   </data>
   <data name="app-strings.theme-system" xml:space="preserve">
-    <value>Igual que el sistema</value>
+    <value>Same as the system</value>
   </data>
   <data name="app-update-service.aura-studio-installedversion-es-version" xml:space="preserve">
-    <value>Aura Studio {0} es la versión más nueva publicada.</value>
+    <value>Aura Studio {0} is the newest version published.</value>
   </data>
   <data name="app-update-service.buscando-actualizaciones-aura-studio" xml:space="preserve">
-    <value>Buscando actualizaciones de Aura Studio…</value>
+    <value>Checking for Aura Studio updates…</value>
   </data>
   <data name="app-update-service.descargando-aura-studio-available-value" xml:space="preserve">
-    <value>Descargando Aura Studio {0}…</value>
+    <value>Downloading Aura Studio {0}…</value>
   </data>
   <data name="app-update-service.se-detuvo-busqueda-actualizaciones" xml:space="preserve">
-    <value>Se detuvo la búsqueda de actualizaciones.</value>
+    <value>The update check was stopped.</value>
   </data>
   <data name="artists-page.buscar-artistas" xml:space="preserve">
-    <value>Buscar artistas</value>
+    <value>Search artists</value>
   </data>
   <data name="artists-page.buscar-fotos" xml:space="preserve">
-    <value>Buscar fotos</value>
+    <value>Find photos</value>
   </data>
   <data name="artists-page.buscar-fotos-artistas-linea-fanart-tv" xml:space="preserve">
-    <value>Buscar las fotos de los artistas en línea (fanart.tv / Deezer)</value>
+    <value>Find artist photos online (fanart.tv / Deezer)</value>
   </data>
   <data name="artists-page.buscar-informacion-linea" xml:space="preserve">
-    <value>Buscar información en línea</value>
+    <value>Look up details online</value>
   </data>
   <data name="artists-page.buscar-informacion-linea-2" xml:space="preserve">
-    <value>Buscar información en línea</value>
+    <value>Look up details online</value>
   </data>
   <data name="artists-page.elige-artista-lista" xml:space="preserve">
-    <value>Elige un artista de la lista.</value>
+    <value>Pick an artist from the list.</value>
   </data>
   <data name="artists-page.eliminar" xml:space="preserve">
-    <value>Eliminar</value>
+    <value>Delete</value>
   </data>
   <data name="artists-page.mas-acciones" xml:space="preserve">
-    <value>Más acciones</value>
+    <value>More actions</value>
   </data>
   <data name="artists-page.mas-acciones-2" xml:space="preserve">
-    <value>Más acciones</value>
+    <value>More actions</value>
   </data>
   <data name="artists-page.mostrar-explorador" xml:space="preserve">
-    <value>Mostrar en el Explorador</value>
+    <value>Show in File Explorer</value>
   </data>
   <data name="artists-page.todavia-hay-musica-biblioteca" xml:space="preserve">
-    <value>Todavía no hay música en la biblioteca.</value>
+    <value>There's no music in the library yet.</value>
   </data>
   <data name="conteo.albumes.one" xml:space="preserve">
-    <value>{0} álbum</value>
+    <value>{0} album</value>
   </data>
   <data name="conteo.albumes.other" xml:space="preserve">
-    <value>{0} álbumes</value>
+    <value>{0} albums</value>
   </data>
   <data name="conteo.artistas.one" xml:space="preserve">
-    <value>{0} artista</value>
+    <value>{0} artist</value>
   </data>
   <data name="conteo.artistas.other" xml:space="preserve">
-    <value>{0} artistas</value>
+    <value>{0} artists</value>
   </data>
   <data name="conteo.canciones.one" xml:space="preserve">
-    <value>{0} canción</value>
+    <value>{0} song</value>
   </data>
   <data name="conteo.canciones.other" xml:space="preserve">
-    <value>{0} canciones</value>
+    <value>{0} songs</value>
   </data>
   <data name="conteo.dias.one" xml:space="preserve">
-    <value>{0} día</value>
+    <value>{0} day</value>
   </data>
   <data name="conteo.dias.other" xml:space="preserve">
-    <value>{0} días</value>
+    <value>{0} days</value>
   </data>
   <data name="conteo.episodios.one" xml:space="preserve">
-    <value>{0} episodio</value>
+    <value>{0} episode</value>
   </data>
   <data name="conteo.episodios.other" xml:space="preserve">
-    <value>{0} episodios</value>
+    <value>{0} episodes</value>
   </data>
   <data name="conteo.fotos.one" xml:space="preserve">
-    <value>{0} foto</value>
+    <value>{0} photo</value>
   </data>
   <data name="conteo.fotos.other" xml:space="preserve">
-    <value>{0} fotos</value>
+    <value>{0} photos</value>
   </data>
   <data name="conteo.peliculas.one" xml:space="preserve">
-    <value>{0} película</value>
+    <value>{0} movie</value>
   </data>
   <data name="conteo.peliculas.other" xml:space="preserve">
-    <value>{0} películas</value>
+    <value>{0} movies</value>
   </data>
   <data name="conteo.seleccionados.one" xml:space="preserve">
-    <value>{0} seleccionado</value>
+    <value>{0} selected</value>
   </data>
   <data name="conteo.seleccionados.other" xml:space="preserve">
-    <value>{0} seleccionados</value>
+    <value>{0} selected</value>
   </data>
   <data name="conteo.series.one" xml:space="preserve">
-    <value>{0} serie</value>
+    <value>{0} series</value>
   </data>
   <data name="conteo.series.other" xml:space="preserve">
     <value>{0} series</value>
   </data>
   <data name="conteo.temporadas.one" xml:space="preserve">
-    <value>{0} temporada</value>
+    <value>{0} season</value>
   </data>
   <data name="conteo.temporadas.other" xml:space="preserve">
-    <value>{0} temporadas</value>
+    <value>{0} seasons</value>
   </data>
   <data name="conteo.videoclips.one" xml:space="preserve">
-    <value>{0} videoclip</value>
+    <value>{0} video clip</value>
   </data>
   <data name="conteo.videoclips.other" xml:space="preserve">
-    <value>{0} videoclips</value>
+    <value>{0} video clips</value>
   </data>
   <data name="conteo.videos.one" xml:space="preserve">
     <value>{0} video</value>
@@ -946,259 +946,259 @@
     <value>{0} videos</value>
   </data>
   <data name="context-menu.abrir" xml:space="preserve">
-    <value>Abrir</value>
+    <value>Open</value>
   </data>
   <data name="context-menu.abrir-2" xml:space="preserve">
-    <value>Abrir</value>
+    <value>Open</value>
   </data>
   <data name="context-menu.abrir-3" xml:space="preserve">
-    <value>Abrir</value>
+    <value>Open</value>
   </data>
   <data name="context-menu.aplicar-caratula-recomendada" xml:space="preserve">
-    <value>Aplicar carátula recomendada</value>
+    <value>Apply recommended cover</value>
   </data>
   <data name="context-menu.aplicar-caratula-recomendada-scope-count" xml:space="preserve">
-    <value>Aplicar carátula recomendada a {0} álbumes</value>
+    <value>Apply recommended cover to {0} albums</value>
   </data>
   <data name="context-menu.ascendente" xml:space="preserve">
-    <value>Ascendente</value>
+    <value>Ascending</value>
   </data>
   <data name="context-menu.buscar-caratulas-scope-albumcount-albume" xml:space="preserve">
-    <value>Buscar carátulas de {0} álbumes...</value>
+    <value>Find covers for {0} albums...</value>
   </data>
   <data name="context-menu.buscar-elementos-similares" xml:space="preserve">
-    <value>Buscar elementos similares...</value>
+    <value>Find similar items...</value>
   </data>
   <data name="context-menu.buscar-foto-artista" xml:space="preserve">
-    <value>Buscar foto del artista</value>
+    <value>Find artist photo</value>
   </data>
   <data name="context-menu.buscar-fotos-artistas" xml:space="preserve">
-    <value>Buscar fotos de los artistas</value>
+    <value>Find artist photos</value>
   </data>
   <data name="context-menu.buscar-informacion-linea" xml:space="preserve">
-    <value>Buscar información en línea</value>
+    <value>Look up details online</value>
   </data>
   <data name="context-menu.buscar-letra" xml:space="preserve">
-    <value>Buscar letra</value>
+    <value>Find lyrics</value>
   </data>
   <data name="context-menu.buscar-poster-linea" xml:space="preserve">
-    <value>Buscar póster en línea</value>
+    <value>Find poster online</value>
   </data>
   <data name="context-menu.cambiar-categoria" xml:space="preserve">
-    <value>Cambiar categoría</value>
+    <value>Change category</value>
   </data>
   <data name="context-menu.cambiar-nombre" xml:space="preserve">
-    <value>Cambiar nombre...</value>
+    <value>Rename...</value>
   </data>
   <data name="context-menu.change-category" xml:space="preserve">
-    <value>Cambiar categoría</value>
+    <value>Change category</value>
   </data>
   <data name="context-menu.descendente" xml:space="preserve">
-    <value>Descendente</value>
+    <value>Descending</value>
   </data>
   <data name="context-menu.disolver-album" xml:space="preserve">
-    <value>Disolver álbum</value>
+    <value>Break up album</value>
   </data>
   <data name="context-menu.disolver-albumes" xml:space="preserve">
-    <value>Disolver álbumes</value>
+    <value>Break up albums</value>
   </data>
   <data name="context-menu.eliminar" xml:space="preserve">
-    <value>Eliminar</value>
+    <value>Delete</value>
   </data>
   <data name="context-menu.eliminar-2" xml:space="preserve">
-    <value>Eliminar</value>
+    <value>Delete</value>
   </data>
   <data name="context-menu.eliminar-3" xml:space="preserve">
-    <value>Eliminar</value>
+    <value>Delete</value>
   </data>
   <data name="context-menu.eliminar-album" xml:space="preserve">
-    <value>Eliminar álbum</value>
+    <value>Delete album</value>
   </data>
   <data name="context-menu.eliminar-albumes" xml:space="preserve">
-    <value>Eliminar álbumes</value>
+    <value>Delete albums</value>
   </data>
   <data name="context-menu.eliminar-artista" xml:space="preserve">
-    <value>Eliminar artista</value>
+    <value>Delete artist</value>
   </data>
   <data name="context-menu.eliminar-artistas" xml:space="preserve">
-    <value>Eliminar artistas</value>
+    <value>Delete artists</value>
   </data>
   <data name="context-menu.eliminar-biblioteca" xml:space="preserve">
-    <value>Eliminar de la biblioteca</value>
+    <value>Delete from the library</value>
   </data>
   <data name="context-menu.eliminar-caratula" xml:space="preserve">
-    <value>Eliminar carátula</value>
+    <value>Delete cover</value>
   </data>
   <data name="context-menu.eliminar-episodio" xml:space="preserve">
-    <value>Eliminar episodio</value>
+    <value>Delete episode</value>
   </data>
   <data name="context-menu.eliminar-episodios" xml:space="preserve">
-    <value>Eliminar episodios</value>
+    <value>Delete episodes</value>
   </data>
   <data name="context-menu.eliminar-fotos-biblioteca" xml:space="preserve">
-    <value>Eliminar fotos de la biblioteca</value>
+    <value>Delete photos from the library</value>
   </data>
   <data name="context-menu.eliminar-pelicula" xml:space="preserve">
-    <value>Eliminar película</value>
+    <value>Delete movie</value>
   </data>
   <data name="context-menu.eliminar-peliculas" xml:space="preserve">
-    <value>Eliminar películas</value>
+    <value>Delete movies</value>
   </data>
   <data name="context-menu.eliminar-serie" xml:space="preserve">
-    <value>Eliminar serie</value>
+    <value>Delete series</value>
   </data>
   <data name="context-menu.eliminar-series" xml:space="preserve">
-    <value>Eliminar series</value>
+    <value>Delete series</value>
   </data>
   <data name="context-menu.marcar-como-favorito" xml:space="preserve">
-    <value>Marcar como favorito</value>
+    <value>Mark as favorite</value>
   </data>
   <data name="context-menu.marcar-como-favorito-2" xml:space="preserve">
-    <value>Marcar como favorito</value>
+    <value>Mark as favorite</value>
   </data>
   <data name="context-menu.mas-informacion" xml:space="preserve">
-    <value>Más información...</value>
+    <value>More info...</value>
   </data>
   <data name="context-menu.mas-informacion-2" xml:space="preserve">
-    <value>Más información...</value>
+    <value>More info...</value>
   </data>
   <data name="context-menu.mas-informacion-3" xml:space="preserve">
-    <value>Más información...</value>
+    <value>More info...</value>
   </data>
   <data name="context-menu.mostrar-opciones-visualizacion" xml:space="preserve">
-    <value>Mostrar opciones de visualización</value>
+    <value>Show view options</value>
   </data>
   <data name="context-menu.obtener-informacion" xml:space="preserve">
-    <value>Obtener información...</value>
+    <value>Get info...</value>
   </data>
   <data name="context-menu.opciones-para-ordenar" xml:space="preserve">
-    <value>Opciones para ordenar</value>
+    <value>Sorting options</value>
   </data>
   <data name="context-menu.quitar-album" xml:space="preserve">
-    <value>Quitar del álbum</value>
+    <value>Remove from album</value>
   </data>
   <data name="context-menu.quitar-favorito" xml:space="preserve">
-    <value>Quitar favorito</value>
+    <value>Remove favorite</value>
   </data>
   <data name="context-menu.quitar-favoritos" xml:space="preserve">
-    <value>Quitar de favoritos</value>
+    <value>Remove from favorites</value>
   </data>
   <data name="context-menu.quitar-favoritos-2" xml:space="preserve">
-    <value>Quitar de favoritos</value>
+    <value>Remove from favorites</value>
   </data>
   <data name="context-menu.quitar-foto-artista.one" xml:space="preserve">
-    <value>Quitar foto del artista</value>
+    <value>Remove artist photo</value>
   </data>
   <data name="context-menu.quitar-foto-artista.other" xml:space="preserve">
-    <value>Quitar fotos de los artistas</value>
+    <value>Remove artist photos</value>
   </data>
   <data name="context-menu.quitar-poster" xml:space="preserve">
-    <value>Quitar póster</value>
+    <value>Remove poster</value>
   </data>
   <data name="context-menu.renombrar-album" xml:space="preserve">
-    <value>Renombrar álbum...</value>
+    <value>Rename album...</value>
   </data>
   <data name="context-menu.reveal" xml:space="preserve">
-    <value>Mostrar en el Explorador</value>
+    <value>Show in File Explorer</value>
   </data>
   <data name="context-menu.search-album-covers" xml:space="preserve">
-    <value>Buscar carátulas del álbum...</value>
+    <value>Find album covers...</value>
   </data>
   <data name="context-menu.search-online" xml:space="preserve">
-    <value>Buscar información en línea</value>
+    <value>Look up details online</value>
   </data>
   <data name="context-menu.search-poster" xml:space="preserve">
-    <value>Buscar póster en línea</value>
+    <value>Find poster online</value>
   </data>
   <data name="context-menu.seleccionar-canciones-mismo-album" xml:space="preserve">
-    <value>Seleccionar canciones del mismo álbum</value>
+    <value>Select songs from the same album</value>
   </data>
   <data name="context-menu.seleccionar-canciones-mismo-artista" xml:space="preserve">
-    <value>Seleccionar canciones del mismo artista</value>
+    <value>Select songs by the same artist</value>
   </data>
   <data name="context-menu.sincronizar-seleccion" xml:space="preserve">
-    <value>Sincronizar la selección</value>
+    <value>Sync the selection</value>
   </data>
   <data name="context-menu.solo-favoritos" xml:space="preserve">
-    <value>Solo favoritos</value>
+    <value>Favorites only</value>
   </data>
   <data name="context-menu.todas-canciones" xml:space="preserve">
-    <value>Todas las canciones</value>
+    <value>All songs</value>
   </data>
   <data name="context-menu.vista-previa" xml:space="preserve">
-    <value>Vista previa</value>
+    <value>Preview</value>
   </data>
   <data name="context-menu.volver-leer-etiquetas-archivo" xml:space="preserve">
-    <value>Volver a leer etiquetas del archivo</value>
+    <value>Read the file's tags again</value>
   </data>
   <data name="crash-reporter.algo-salio-mal" xml:space="preserve">
-    <value>Algo salió mal</value>
+    <value>Something went wrong</value>
   </data>
   <data name="crash-reporter.entendido" xml:space="preserve">
-    <value>Entendido</value>
+    <value>Got it</value>
   </data>
   <data name="device-list-page.buscar-actualizaciones" xml:space="preserve">
-    <value>Buscar actualizaciones</value>
+    <value>Check for updates</value>
   </data>
   <data name="device-list-page.calcula-se-copiaria-escribe-nada-ipod" xml:space="preserve">
-    <value>Calcula qué se copiaría. No escribe nada en el iPod.</value>
+    <value>Works out what would be copied. It writes nothing to the iPod.</value>
   </data>
   <data name="device-list-page.cancelar" xml:space="preserve">
-    <value>Cancelar</value>
+    <value>Cancel</value>
   </data>
   <data name="device-list-page.cancelar-2" xml:space="preserve">
-    <value>Cancelar</value>
+    <value>Cancel</value>
   </data>
   <data name="device-list-page.guardar" xml:space="preserve">
-    <value>Guardar</value>
+    <value>Save</value>
   </data>
   <data name="device-general-view.instalar-actualizacion" xml:space="preserve">
-    <value>Instalar la actualización</value>
+    <value>Install the update</value>
   </data>
   <data name="device-list-page.nombre-ipod" xml:space="preserve">
-    <value>Nombre del iPod</value>
+    <value>iPod name</value>
   </data>
   <data name="device-list-page.por-copiar" xml:space="preserve">
-    <value>Por copiar</value>
+    <value>To copy</value>
   </data>
   <data name="device-list-page.reubicados" xml:space="preserve">
-    <value>Reubicados</value>
+    <value>Moved</value>
   </data>
   <data name="device-list-page.revisar-cambios" xml:space="preserve">
-    <value>Revisar cambios</value>
+    <value>Review changes</value>
   </data>
   <data name="device-list-page.sincronizacion" xml:space="preserve">
-    <value>Sincronización</value>
+    <value>Sync</value>
   </data>
   <data name="device-list-page.sincronizar" xml:space="preserve">
-    <value>Sincronizar</value>
+    <value>Sync</value>
   </data>
   <data name="device-list-page.toda-biblioteca" xml:space="preserve">
-    <value>Toda la biblioteca</value>
+    <value>The whole library</value>
   </data>
   <data name="device-list-page.xaml.listo" xml:space="preserve">
-    <value>Listo</value>
+    <value>Done</value>
   </data>
   <data name="device-list-page.ya-al-dia" xml:space="preserve">
-    <value>Ya al día</value>
+    <value>Already up to date</value>
   </data>
   <data name="device-list-view-model.buscando-actualizaciones-family-displayn" xml:space="preserve">
-    <value>Buscando actualizaciones de {0}…</value>
+    <value>Checking for {0} updates…</value>
   </data>
   <data name="device-list-view-model.ipod-se-llama-devicename" xml:space="preserve">
-    <value>El iPod se llama "{0}".</value>
+    <value>The iPod is called "{0}".</value>
   </data>
   <data name="device-list-view-model.se-detuvo-busqueda-actualizaciones" xml:space="preserve">
-    <value>Se detuvo la búsqueda de actualizaciones.</value>
+    <value>The update check was stopped.</value>
   </data>
   <data name="extras-page.animaciones-graficos" xml:space="preserve">
-    <value>Animaciones y gráficos</value>
+    <value>Animations and graphics</value>
   </data>
   <data name="extras-page.cronometro-bloqueo-pantalla" xml:space="preserve">
-    <value>Cronómetro y bloqueo de pantalla</value>
+    <value>Stopwatch and screen lock</value>
   </data>
   <data name="extras-page.disponible-dispositivo" xml:space="preserve">
-    <value>Disponible en el dispositivo</value>
+    <value>Available on the device</value>
   </data>
   <data name="extras-page.extras" xml:space="preserve">
     <value>Extras</value>
@@ -1207,205 +1207,205 @@
     <value>Firmware</value>
   </data>
   <data name="extras-page.juegos" xml:space="preserve">
-    <value>Juegos</value>
+    <value>Games</value>
   </data>
   <data name="extras-page.licencias" xml:space="preserve">
-    <value>Licencias</value>
+    <value>Licenses</value>
   </data>
   <data name="extras-page.lo-firmware-ofrece-mas-alla-biblioteca" xml:space="preserve">
-    <value>Lo que el firmware ofrece más allá de la biblioteca</value>
+    <value>What the firmware offers beyond the library</value>
   </data>
   <data name="extras-page.revisar-nuevo" xml:space="preserve">
-    <value>Revisar de nuevo</value>
+    <value>Check again</value>
   </data>
   <data name="extras-page.software-libre-incluido" xml:space="preserve">
-    <value>Software libre incluido</value>
+    <value>Free software included</value>
   </data>
   <data name="extras-page.temas" xml:space="preserve">
-    <value>Temas</value>
+    <value>Themes</value>
   </data>
   <data name="extras-page.todavia" xml:space="preserve">
-    <value>Todavía no</value>
+    <value>Not yet</value>
   </data>
   <data name="installer-page.cancelar" xml:space="preserve">
-    <value>Cancelar</value>
+    <value>Cancel</value>
   </data>
   <data name="library-grouping.albums-and-songs" xml:space="preserve">
     <value>{0}, {1}</value>
   </data>
   <data name="library-ingest.added.one" xml:space="preserve">
-    <value>Se agregó {0} elemento.</value>
+    <value>{0} item added.</value>
   </data>
   <data name="library-ingest.added.other" xml:space="preserve">
-    <value>Se agregaron {0} elementos.</value>
+    <value>{0} items added.</value>
   </data>
   <data name="library-ingest.already-in-library.one" xml:space="preserve">
-    <value>{0} ya estaba en tu biblioteca.</value>
+    <value>{0} was already in your library.</value>
   </data>
   <data name="library-ingest.already-in-library.other" xml:space="preserve">
-    <value>{0} ya estaban en tu biblioteca.</value>
+    <value>{0} were already in your library.</value>
   </data>
   <data name="library-ingest.cover-assets.one" xml:space="preserve">
-    <value>{0} imagen se tomó como carátula, no como foto.</value>
+    <value>{0} image was taken as cover art, not as a photo.</value>
   </data>
   <data name="library-ingest.cover-assets.other" xml:space="preserve">
-    <value>{0} imágenes se tomaron como carátulas, no como fotos.</value>
+    <value>{0} images were taken as cover art, not as photos.</value>
   </data>
   <data name="library-ingest.nothing-to-add" xml:space="preserve">
-    <value>No había nada que agregar.</value>
+    <value>There was nothing to add.</value>
   </data>
   <data name="library-ingest.section-noun-music" xml:space="preserve">
-    <value>música</value>
+    <value>music</value>
   </data>
   <data name="library-ingest.section-noun-other" xml:space="preserve">
-    <value>compatible</value>
+    <value>supported</value>
   </data>
   <data name="library-ingest.section-noun-photo" xml:space="preserve">
-    <value>una imagen</value>
+    <value>an image</value>
   </data>
   <data name="library-ingest.section-noun-video" xml:space="preserve">
     <value>video</value>
   </data>
   <data name="library-ingest.unsupported.one" xml:space="preserve">
-    <value>{0} archivo no es compatible.</value>
+    <value>{0} file is not supported.</value>
   </data>
   <data name="library-ingest.unsupported.other" xml:space="preserve">
-    <value>{0} archivos no son compatibles.</value>
+    <value>{0} files are not supported.</value>
   </data>
   <data name="library-ingest.wrong-section.one" xml:space="preserve">
-    <value>{0} archivo no es {1} y no se agregó acá.</value>
+    <value>{0} file is not {1} and wasn't added here.</value>
   </data>
   <data name="library-ingest.wrong-section.other" xml:space="preserve">
-    <value>{0} archivos no son {1} y no se agregaron acá.</value>
+    <value>{0} files are not {1} and weren't added here.</value>
   </data>
   <data name="library-status-strip.detener" xml:space="preserve">
-    <value>Detener</value>
+    <value>Stop</value>
   </data>
   <data name="library-status-strip.detener-tarea-curso" xml:space="preserve">
-    <value>Detener la tarea en curso</value>
+    <value>Stop the running task</value>
   </data>
   <data name="library-status-summary.days-and-hours" xml:space="preserve">
     <value>{0} {1} h</value>
   </data>
   <data name="library-view-model.album-cover-applied.one" xml:space="preserve">
-    <value>Se cambió la tapa de {0} canción.</value>
+    <value>Cover changed on {0} song.</value>
   </data>
   <data name="library-view-model.album-cover-applied.other" xml:space="preserve">
-    <value>Se cambió la tapa de {0} canciones.</value>
+    <value>Cover changed on {0} songs.</value>
   </data>
   <data name="library-view-model.buscando-fotos-artista" xml:space="preserve">
-    <value>Buscando fotos de artista…</value>
+    <value>Looking for artist photos…</value>
   </data>
   <data name="library-view-model.buscando-letra" xml:space="preserve">
-    <value>Buscando letra…</value>
+    <value>Looking for lyrics…</value>
   </data>
   <data name="library-view-model.buscando-posters-video" xml:space="preserve">
-    <value>Buscando pósters de video…</value>
+    <value>Looking for video posters…</value>
   </data>
   <data name="library-view-model.completando-targets-count-elemento-s" xml:space="preserve">
-    <value>Completando {0} elemento(s)…</value>
+    <value>Filling in {0} item(s)…</value>
   </data>
   <data name="library-view-model.completando-title" xml:space="preserve">
-    <value>Completando {0}…</value>
+    <value>Filling in {0}…</value>
   </data>
   <data name="library-view-model.copied-files.one" xml:space="preserve">
-    <value>Se copió {0} archivo a la biblioteca.</value>
+    <value>{0} file copied into the library.</value>
   </data>
   <data name="library-view-model.copied-files.other" xml:space="preserve">
-    <value>Se copiaron {0} archivos a la biblioteca.</value>
+    <value>{0} files copied into the library.</value>
   </data>
   <data name="library-view-model.copy-failed.one" xml:space="preserve">
-    <value>{0} no se pudo copiar.</value>
+    <value>{0} could not be copied.</value>
   </data>
   <data name="library-view-model.copy-failed.other" xml:space="preserve">
-    <value>{0} no se pudieron copiar.</value>
+    <value>{0} could not be copied.</value>
   </data>
   <data name="library-view-model.copy-skipped.one" xml:space="preserve">
-    <value>{0} se saltó porque su archivo no está; sigue en el catálogo.</value>
+    <value>{0} was skipped because its file is missing; it stays in the catalog.</value>
   </data>
   <data name="library-view-model.copy-skipped.other" xml:space="preserve">
-    <value>{0} se saltaron porque sus archivos no están; siguen en el catálogo.</value>
+    <value>{0} were skipped because their files are missing; they stay in the catalog.</value>
   </data>
   <data name="library-view-model.copying-files.one" xml:space="preserve">
-    <value>Copiando {0} archivo a la biblioteca…</value>
+    <value>Copying {0} file into the library…</value>
   </data>
   <data name="library-view-model.copying-files.other" xml:space="preserve">
-    <value>Copiando {0} archivos a la biblioteca…</value>
+    <value>Copying {0} files into the library…</value>
   </data>
   <data name="library-view-model.covers-normalized.one" xml:space="preserve">
-    <value>Se normalizó {0} carátula: ahora es cuadrada.</value>
+    <value>{0} cover normalized: it's square now.</value>
   </data>
   <data name="library-view-model.covers-normalized.other" xml:space="preserve">
-    <value>Se normalizaron {0} carátulas: ahora son cuadradas.</value>
+    <value>{0} covers normalized: they're square now.</value>
   </data>
   <data name="library-view-model.covers-removed.one" xml:space="preserve">
-    <value>Se quitó {0} carátula.</value>
+    <value>{0} cover removed.</value>
   </data>
   <data name="library-view-model.covers-removed.other" xml:space="preserve">
-    <value>Se quitaron {0} carátulas.</value>
+    <value>{0} covers removed.</value>
   </data>
   <data name="library-view-model.hay-nada-completar-todo-tiene-titulo" xml:space="preserve">
-    <value>No hay nada que completar: todo tiene título, artista y álbum.</value>
+    <value>There's nothing to fill in: everything has a title, an artist and an album.</value>
   </data>
   <data name="library-view-model.migration-legacy-prepared.one" xml:space="preserve">
-    <value>{0} archivo preparado usa el nombre viejo</value>
+    <value>{0} prepared file uses the old name</value>
   </data>
   <data name="library-view-model.migration-legacy-prepared.other" xml:space="preserve">
-    <value>{0} archivos preparados usan el nombre viejo</value>
+    <value>{0} prepared files use the old name</value>
   </data>
   <data name="library-view-model.migration-tagged.one" xml:space="preserve">
-    <value>se escribieron las etiquetas de {0} canción</value>
+    <value>tags were written for {0} song</value>
   </data>
   <data name="library-view-model.migration-tagged.other" xml:space="preserve">
-    <value>se escribieron las etiquetas de {0} canciones</value>
+    <value>tags were written for {0} songs</value>
   </data>
   <data name="library-view-model.migration-without-storage.one" xml:space="preserve">
-    <value>{0} elemento no dice todavía si su archivo es una copia de Aura o tuyo</value>
+    <value>{0} item doesn't say yet whether its file is Aura's copy or yours</value>
   </data>
   <data name="library-view-model.migration-without-storage.other" xml:space="preserve">
-    <value>{0} elementos no dicen todavía si sus archivos son copias de Aura o tuyos</value>
+    <value>{0} items don't say yet whether their files are Aura's copies or yours</value>
   </data>
   <data name="library-view-model.not-started.one" xml:space="preserve">
-    <value>{1} {0} quedó sin revisar (cancelaste).</value>
+    <value>{1} {0} was left unreviewed (you cancelled).</value>
   </data>
   <data name="library-view-model.not-started.other" xml:space="preserve">
-    <value>{1} {0} quedaron sin revisar (cancelaste).</value>
+    <value>{1} {0} were left unreviewed (you cancelled).</value>
   </data>
   <data name="library-view-model.se-detuvo-busqueda-fotos" xml:space="preserve">
-    <value>Se detuvo la búsqueda de fotos.</value>
+    <value>The photo search was stopped.</value>
   </data>
   <data name="library-view-model.se-detuvo-busqueda-letra" xml:space="preserve">
-    <value>Se detuvo la búsqueda de letra.</value>
+    <value>The lyrics search was stopped.</value>
   </data>
   <data name="library-view-model.se-detuvo-busqueda-linea" xml:space="preserve">
-    <value>Se detuvo la búsqueda en línea.</value>
+    <value>The online search was stopped.</value>
   </data>
   <data name="library-view-model.se-detuvo-busqueda-posters" xml:space="preserve">
-    <value>Se detuvo la búsqueda de pósters.</value>
+    <value>The poster search was stopped.</value>
   </data>
   <data name="library-view-model.se-detuvo-normalizacion-caratulas-lo-fal" xml:space="preserve">
-    <value>Se detuvo la normalización de carátulas. Lo que falte sigue la próxima vez.</value>
+    <value>Cover normalization was stopped. Whatever is left continues next time.</value>
   </data>
   <data name="library-view-model.se-pudo-leer-ninguna-etiqueta-archivos" xml:space="preserve">
-    <value>No se pudo leer ninguna etiqueta: los archivos no están disponibles.</value>
+    <value>No tags could be read: the files aren't available.</value>
   </data>
   <data name="library-view-model.searching-covers.one" xml:space="preserve">
-    <value>Buscando carátula…</value>
+    <value>Looking for cover art…</value>
   </data>
   <data name="library-view-model.searching-covers.other" xml:space="preserve">
-    <value>Buscando carátulas de {0} álbumes…</value>
+    <value>Looking for cover art for {0} albums…</value>
   </data>
   <data name="library-view-model.tags-reread.one" xml:space="preserve">
-    <value>Se releyeron las etiquetas de {0} canción.</value>
+    <value>Tags read again for {0} song.</value>
   </data>
   <data name="library-view-model.tags-reread.other" xml:space="preserve">
-    <value>Se releyeron las etiquetas de {0} canciones.</value>
+    <value>Tags read again for {0} songs.</value>
   </data>
   <data name="main-window.aura-studio" xml:space="preserve">
     <value>Aura Studio</value>
   </data>
   <data name="media-category.movies" xml:space="preserve">
-    <value>Películas</value>
+    <value>Movies</value>
   </data>
   <data name="media-category.series" xml:space="preserve">
     <value>Series</value>
@@ -1414,280 +1414,280 @@
     <value>Videos</value>
   </data>
   <data name="media-grid-page.buscar-posters" xml:space="preserve">
-    <value>Buscar pósters</value>
+    <value>Find posters</value>
   </data>
   <data name="media-grid-page.descarga-posters-falten-viajan-pegados-v" xml:space="preserve">
-    <value>Descarga los pósters que falten. Viajan pegados a su video en la próxima sincronización.</value>
+    <value>Downloads the posters that are missing. They travel next to their video on the next sync.</value>
   </data>
   <data name="media-grid-page.xaml.cancelar" xml:space="preserve">
-    <value>Cancelar</value>
+    <value>Cancel</value>
   </data>
   <data name="media-grid-page.xaml.guardar" xml:space="preserve">
-    <value>Guardar</value>
+    <value>Save</value>
   </data>
   <data name="media-grid-page.xaml.renombrar-album" xml:space="preserve">
-    <value>Renombrar álbum</value>
+    <value>Rename album</value>
   </data>
   <data name="media-grid-view-model.photos-removed-from-album.one" xml:space="preserve">
-    <value>Se quitó {0} foto de su álbum.</value>
+    <value>{0} photo removed from its album.</value>
   </data>
   <data name="media-grid-view-model.photos-removed-from-album.other" xml:space="preserve">
-    <value>Se quitaron {0} fotos de su álbum.</value>
+    <value>{0} photos removed from their album.</value>
   </data>
   <data name="media-info-dialog.cancelar" xml:space="preserve">
-    <value>Cancelar</value>
+    <value>Cancel</value>
   </data>
   <data name="media-info-dialog.guardar" xml:space="preserve">
-    <value>Guardar</value>
+    <value>Save</value>
   </data>
   <data name="media-info-dialog.mas-informacion" xml:space="preserve">
-    <value>Más información</value>
+    <value>More info</value>
   </data>
   <data name="playlists-page.crea-nueva-o-importa-archivo-m3u" xml:space="preserve">
-    <value>Crea una nueva, o importa un archivo .m3u/.m3u8 de otro programa. Las canciones que no estén en tu biblioteca se cuentan aparte, no se pierden en silencio.</value>
+    <value>Create a new one, or import an .m3u/.m3u8 file from another program. Songs that aren't in your library are counted separately, not lost in silence.</value>
   </data>
   <data name="playlists-page.eliminar" xml:space="preserve">
-    <value>Eliminar</value>
+    <value>Delete</value>
   </data>
   <data name="playlists-page.exportar" xml:space="preserve">
-    <value>Exportar</value>
+    <value>Export</value>
   </data>
   <data name="playlists-page.importar-m3u" xml:space="preserve">
-    <value>Importar M3U…</value>
+    <value>Import M3U…</value>
   </data>
   <data name="playlists-page.listas-armadas-con-canciones-biblioteca" xml:space="preserve">
-    <value>Listas armadas con canciones de tu biblioteca. Se copian al iPod al sincronizar.</value>
+    <value>Playlists built from songs in your library. They're copied to the iPod when you sync.</value>
   </data>
   <data name="playlists-page.nueva-lista" xml:space="preserve">
-    <value>Nueva lista</value>
+    <value>New playlist</value>
   </data>
   <data name="playlists-page.renombrar" xml:space="preserve">
-    <value>Renombrar</value>
+    <value>Rename</value>
   </data>
   <data name="playlists-page.todavia-tienes-listas" xml:space="preserve">
-    <value>Todavía no tienes listas.</value>
+    <value>You don't have any playlists yet.</value>
   </data>
   <data name="playlists-page.xaml.aceptar" xml:space="preserve">
-    <value>Aceptar</value>
+    <value>OK</value>
   </data>
   <data name="playlists-page.xaml.cancelar" xml:space="preserve">
-    <value>Cancelar</value>
+    <value>Cancel</value>
   </data>
   <data name="settings-page.abrir-explorador" xml:space="preserve">
-    <value>Abrir en el Explorador</value>
+    <value>Open in File Explorer</value>
   </data>
   <data name="settings-page.activos-sin-configurar-nada" xml:space="preserve">
-    <value>Activos, sin configurar nada</value>
+    <value>Active, with nothing to set up</value>
   </data>
   <data name="settings-page.agregar" xml:space="preserve">
-    <value>Agregar</value>
+    <value>Add</value>
   </data>
   <data name="settings-page.agregar-2" xml:space="preserve">
-    <value>Agregar</value>
+    <value>Add</value>
   </data>
   <data name="settings-page.agrupar-colaboraciones-bajo-artista-prin" xml:space="preserve">
-    <value>Agrupar las colaboraciones bajo el artista principal</value>
+    <value>Group collaborations under the main artist</value>
   </data>
   <data name="settings-page.al-importar" xml:space="preserve">
-    <value>Al importar</value>
+    <value>When importing</value>
   </data>
   <data name="settings-page.apagado-aura-studio-toca-red-al" xml:space="preserve">
-    <value>Apagado, Aura Studio no toca la red al importar: usa solo las etiquetas del archivo y lo que se pueda adivinar de su nombre.</value>
+    <value>Off: Aura Studio doesn't touch the network when importing. It uses only the file's tags and whatever can be guessed from its name.</value>
   </data>
   <data name="settings-section-view.aqui-vive-catalogo-tu-biblioteca-funcion" xml:space="preserve">
-    <value>Aquí vive el catálogo de tu biblioteca: funciona aunque el iPod no esté conectado, y se sincroniza al conectarlo. Que además se copien tus archivos aquí depende del ajuste de abajo.</value>
+    <value>This is where your library's catalog lives: it works even when the iPod isn't connected, and it syncs when you connect it. Whether your files are also copied here depends on the setting below.</value>
   </data>
   <data name="settings-page.archivos-huerfanos" xml:space="preserve">
-    <value>Archivos huérfanos</value>
+    <value>Orphaned files</value>
   </data>
   <data name="settings-page.artista-album-recomendado" xml:space="preserve">
-    <value>Artista / Álbum (recomendado)</value>
+    <value>Artist / Album (recommended)</value>
   </data>
   <data name="settings-page.biblioteca" xml:space="preserve">
-    <value>Biblioteca</value>
+    <value>Library</value>
   </data>
   <data name="settings-section-view.buscar-actualizaciones" xml:space="preserve">
-    <value>Buscar actualizaciones</value>
+    <value>Check for updates</value>
   </data>
   <data name="settings-page.buscar-letras-sincronizadas" xml:space="preserve">
-    <value>Buscar letras sincronizadas</value>
+    <value>Look for synced lyrics</value>
   </data>
   <data name="settings-page.buscarlo-nuevo" xml:space="preserve">
-    <value>Buscarlo de nuevo</value>
+    <value>Look for it again</value>
   </data>
   <data name="music-settings-view.calidad-audio" xml:space="preserve">
-    <value>Calidad de audio</value>
+    <value>Audio quality</value>
   </data>
   <data name="settings-page.calidad-imagen" xml:space="preserve">
-    <value>Calidad de imagen</value>
+    <value>Image quality</value>
   </data>
   <data name="settings-page.cambiar" xml:space="preserve">
-    <value>Cambiar…</value>
+    <value>Change…</value>
   </data>
   <data name="settings-page.cambiar-carpeta-mueve-nada" xml:space="preserve">
-    <value>Cambiar de carpeta no mueve nada</value>
+    <value>Changing folders moves nothing</value>
   </data>
   <data name="settings-page.caratula-alternativa-1000-1000-sin-clave" xml:space="preserve">
-    <value>Carátula alternativa de 1000×1000, sin clave. Es la única fuente cuyos términos permiten explícitamente este uso no comercial.</value>
+    <value>Alternative 1000×1000 cover art, no key needed. It's the only source whose terms explicitly allow this non-commercial use.</value>
   </data>
   <data name="settings-page.caratula-por-album-recomendado" xml:space="preserve">
-    <value>Una carátula por álbum (recomendado)</value>
+    <value>One cover per album (recommended)</value>
   </data>
   <data name="settings-page.caratula-por-cancion" xml:space="preserve">
-    <value>Una carátula por canción</value>
+    <value>One cover per song</value>
   </data>
   <data name="settings-page.caratulas" xml:space="preserve">
-    <value>Carátulas</value>
+    <value>Cover art</value>
   </data>
   <data name="settings-page.carpeta-biblioteca" xml:space="preserve">
-    <value>Carpeta de la biblioteca</value>
+    <value>Library folder</value>
   </data>
   <data name="settings-page.carpeta-nueva-biblioteca-anterior-intacta" xml:space="preserve">
-    <value>Aura Studio empieza a usar la carpeta nueva y lee la biblioteca que haya ahí (o empieza vacía si no hay ninguna). Tu biblioteca anterior queda intacta donde estaba, y vuelve si eliges esa carpeta de nuevo.</value>
+    <value>Aura Studio starts using the new folder and reads whatever library is there (or starts empty if there is none). Your previous library stays untouched where it was, and comes back if you pick that folder again.</value>
   </data>
   <data name="settings-page.carpetas-externas-arrastraste-con-copia" xml:space="preserve">
-    <value>Carpetas externas que arrastraste con la copia apagada. Aura no copia nada de ahí, solo las recuerda. Quitar una de esta lista no borra ni desvincula lo que ya importaste desde ella: solo deja de mostrarla.</value>
+    <value>External folders you dragged in with copying turned off. Aura copies nothing from there, it only remembers them. Removing one from this list doesn't delete or unlink what you already imported from it: it just stops showing it.</value>
   </data>
   <data name="settings-page.carpetas-ipod" xml:space="preserve">
-    <value>Carpetas en el iPod</value>
+    <value>Folders on the iPod</value>
   </data>
   <data name="settings-page.carpetas-vinculadas" xml:space="preserve">
-    <value>Carpetas vinculadas</value>
+    <value>Linked folders</value>
   </data>
   <data name="settings-page.claves-tokens" xml:space="preserve">
-    <value>Claves y tokens</value>
+    <value>Keys and tokens</value>
   </data>
   <data name="settings-page.colaboraciones" xml:space="preserve">
-    <value>Colaboraciones</value>
+    <value>Collaborations</value>
   </data>
   <data name="settings-page.colecciones" xml:space="preserve">
-    <value>Colecciones</value>
+    <value>Collections</value>
   </data>
   <data name="settings-page.completar-informacion-faltante-con-servi" xml:space="preserve">
-    <value>Completar la información faltante con servicios en línea</value>
+    <value>Fill in missing details with online services</value>
   </data>
   <data name="music-settings-view.comprimir-mp3-buena-calidad" xml:space="preserve">
-    <value>Comprimir a MP3 de buena calidad</value>
+    <value>Compress to good-quality MP3</value>
   </data>
   <data name="settings-page.conversion-hace-ffmpeg-se-instala-aparte" xml:space="preserve">
-    <value>La conversión la hace ffmpeg, que se instala aparte porque tiene su propia licencia y su propio ritmo de actualizaciones. Se busca solo; solo hace falta elegirlo si lo tienes en una carpeta propia.</value>
+    <value>Converting is done by ffmpeg, which is installed separately because it has its own license and its own release pace. It's found automatically; you only need to pick it if you keep it in a folder of your own.</value>
   </data>
   <data name="settings-page.copiar-medios-carpeta-biblioteca" xml:space="preserve">
-    <value>Copiar los medios a la carpeta de la biblioteca</value>
+    <value>Copy media into the library folder</value>
   </data>
   <data name="settings-page.cuando-cancion-le-falta-caratula-se" xml:space="preserve">
-    <value>Cuando a una canción le falta carátula, se prueban estos servicios en orden y se usa la primera imagen que aparezca.</value>
+    <value>When a song has no cover art, these services are tried in order and the first image found is used.</value>
   </data>
   <data name="settings-page.deezer" xml:space="preserve">
     <value>Deezer</value>
   </data>
   <data name="settings-page.elegir-ffmpeg-exe" xml:space="preserve">
-    <value>Elegir ffmpeg.exe…</value>
+    <value>Choose ffmpeg.exe…</value>
   </data>
   <data name="settings-page.excepciones" xml:space="preserve">
-    <value>Excepciones</value>
+    <value>Exceptions</value>
   </data>
   <data name="settings-page.ffmpeg" xml:space="preserve">
     <value>ffmpeg</value>
   </data>
   <data name="settings-page.formato-video" xml:space="preserve">
-    <value>Formato de video</value>
+    <value>Video format</value>
   </data>
   <data name="settings-page.fotos" xml:space="preserve">
-    <value>Fotos</value>
+    <value>Photos</value>
   </data>
   <data name="settings-page.general" xml:space="preserve">
     <value>General</value>
   </data>
   <data name="settings-page.idioma" xml:space="preserve">
-    <value>Idioma</value>
+    <value>Language</value>
   </data>
   <data name="settings-page.letras-vienen-lrclib-sin-clave-ni" xml:space="preserve">
-    <value>Las letras vienen de LRCLIB, sin clave ni registro. Necesita la opción de arriba encendida.</value>
+    <value>Lyrics come from LRCLIB, with no key and no sign-up. It needs the option above turned on.</value>
   </data>
   <data name="settings-page.listo" xml:space="preserve">
-    <value>Listo</value>
+    <value>Done</value>
   </data>
   <data name="settings-page.los-nombres-que-escribes-no-se-traducen" xml:space="preserve">
-    <value>Los nombres que escribes son tuyos y no se traducen: la app puede cambiar de idioma, tus colecciones siguen llamándose como las llamaste. Las tres categorías de video que trae Aura sí se muestran en el idioma de la app, pero por dentro se guardan siempre igual para que tu biblioteca se vea igual en cualquier computadora.</value>
+    <value>The names you type are yours and are not translated: the app can change language, your collections keep the names you gave them. The three video categories Aura ships with are shown in the app's language, but inside they're always stored the same so your library looks the same on any computer.</value>
   </data>
   <data name="settings-page.mantener-formato-original-recomendado" xml:space="preserve">
-    <value>Mantener el formato original (recomendado)</value>
+    <value>Keep the original format (recommended)</value>
   </data>
   <data name="settings-page.migrar-biblioteca" xml:space="preserve">
-    <value>Migrar biblioteca</value>
+    <value>Migrate library</value>
   </data>
   <data name="settings-page.migrar-version-anterior" xml:space="preserve">
-    <value>Migrar de una versión anterior</value>
+    <value>Migrate from an earlier version</value>
   </data>
   <data name="settings-page.musica" xml:space="preserve">
-    <value>Música</value>
+    <value>Music</value>
   </data>
   <data name="settings-page.musicbrainz-artista-album-ano-numero-pis" xml:space="preserve">
-    <value>MusicBrainz (artista, álbum, año, número de pista), Cover Art Archive (carátulas) y LRCLIB (letras sincronizadas). Los tres funcionan sin clave y sin registro: Aura Studio sirve recién instalado.</value>
+    <value>MusicBrainz (artist, album, year, track number), Cover Art Archive (cover art) and LRCLIB (synced lyrics). All three work with no key and no sign-up: Aura Studio is useful the moment you install it.</value>
   </data>
   <data name="settings-page.nombre-archivo" xml:space="preserve">
-    <value>Nombre del archivo</value>
+    <value>File name</value>
   </data>
   <data name="settings-page.nombre-completo-grupo" xml:space="preserve">
-    <value>Nombre completo del grupo</value>
+    <value>Full band name</value>
   </data>
   <data name="settings-page.nombres-grupo-llevan-uno-esos-separadore" xml:space="preserve">
-    <value>Nombres de grupo que llevan uno de esos separadores adentro y no hay que recortar, como "Simon + Garfunkel" o "Café con Leche". Se comparan con el crédito completo, sin distinguir mayúsculas ni acentos.</value>
+    <value>Band names that contain one of those separators and shouldn't be trimmed, such as "Simon + Garfunkel" or "Café con Leche". They're matched against the full credit, ignoring case and accents.</value>
   </data>
   <data name="settings-page.nueva-coleccion" xml:space="preserve">
-    <value>Nueva colección</value>
+    <value>New collection</value>
   </data>
   <data name="settings-page.numero-pista-titulo" xml:space="preserve">
-    <value>Número de pista y título</value>
+    <value>Track number and title</value>
   </data>
   <data name="settings-page.optimizar-espacio-320-px-recomendado" xml:space="preserve">
-    <value>Optimizar espacio (320 px, recomendado)</value>
+    <value>Save space (320 px, recommended)</value>
   </data>
   <data name="settings-page.orden-busqueda-caratula" xml:space="preserve">
-    <value>Orden de búsqueda de carátula</value>
+    <value>Cover art search order</value>
   </data>
   <data name="settings-page.organizar-por-categoria-dentro-bibliotec" xml:space="preserve">
-    <value>Organizar por categoría dentro de la biblioteca</value>
+    <value>Organize by category inside the library</value>
   </data>
   <data name="settings-page.organizar-por-coleccion-dentro-bibliotec" xml:space="preserve">
-    <value>Organizar por colección dentro de la biblioteca</value>
+    <value>Organize by collection inside the library</value>
   </data>
   <data name="settings-page.pantalla-ipod-es-320-240-foto" xml:space="preserve">
-    <value>La pantalla del iPod es de 320×240: una foto de una cámara o un teléfono actual pesa decenas de veces más de lo que esa pantalla puede mostrar. En los dos casos se guarda como JPEG, nunca la foto original completa.</value>
+    <value>The iPod's screen is 320×240: a photo from a current camera or phone weighs dozens of times more than that screen can show. Either way it's saved as JPEG, never the full original photo.</value>
   </data>
   <data name="settings-page.quitar" xml:space="preserve">
-    <value>Quitar</value>
+    <value>Remove</value>
   </data>
   <data name="settings-page.quitar-2" xml:space="preserve">
-    <value>Quitar</value>
+    <value>Remove</value>
   </data>
   <data name="settings-page.quitar-3" xml:space="preserve">
-    <value>Quitar</value>
+    <value>Remove</value>
   </data>
   <data name="settings-page.quitar-coleccion-cambia-coleccion-fotos" xml:space="preserve">
-    <value>Quitar una colección no cambia la colección de las fotos que ya la tenían asignada.</value>
+    <value>Removing a collection doesn't change the collection of photos that were already assigned to it.</value>
   </data>
   <data name="settings-page.se-guardan-administrador-credenciales-wi" xml:space="preserve">
-    <value>Se guardan en el Administrador de credenciales de Windows, cifradas con tu cuenta. Nunca en un archivo de la app ni en el repositorio; puedes verlas y borrarlas desde Windows sin pasar por aquí.</value>
+    <value>They're kept in Windows Credential Manager, encrypted with your account. Never in a file of the app's or in the repository; you can view and delete them from Windows without coming through here.</value>
   </data>
   <data name="settings-page.separa-tus-fotos-colecciones-para-encont" xml:space="preserve">
-    <value>Separa tus fotos en colecciones para encontrarlas más fácil DENTRO de Aura Studio. No cambia dónde quedan en el iPod: ahí siempre se copian juntas en Photos, porque el visor del iPod todavía no navega por subcarpetas.</value>
+    <value>Splits your photos into collections so they're easier to find INSIDE Aura Studio. It doesn't change where they end up on the iPod: there they're always copied together into Photos, because the iPod's viewer doesn't browse subfolders yet.</value>
   </data>
   <data name="settings-page.separa-tus-videos-videos-series-pelicula" xml:space="preserve">
-    <value>Separa tus videos en Videos, Series y Películas para encontrarlos más fácil DENTRO de Aura Studio. No cambia dónde quedan en el iPod: ahí siempre se copian juntos en Videos, porque el reproductor todavía no navega por subcarpetas.</value>
+    <value>Splits your videos into Videos, Series and Movies so they're easier to find INSIDE Aura Studio. It doesn't change where they end up on the iPod: there they're always copied together into Videos, because the player doesn't browse subfolders yet.</value>
   </data>
   <data name="settings-page.servicios" xml:space="preserve">
-    <value>Servicios</value>
+    <value>Services</value>
   </data>
   <data name="settings-page.solo-album" xml:space="preserve">
-    <value>Solo álbum</value>
+    <value>Album only</value>
   </data>
   <data name="settings-page.solo-artista" xml:space="preserve">
-    <value>Solo artista</value>
+    <value>Artist only</value>
   </data>
   <data name="settings-page.solo-titulo-recomendado" xml:space="preserve">
-    <value>Solo el título (recomendado)</value>
+    <value>Title only (recommended)</value>
   </data>
   <data name="settings-page.texto" xml:space="preserve">
     <value>↑</value>
@@ -1696,177 +1696,177 @@
     <value>↓</value>
   </data>
   <data name="settings-page.titulo-album" xml:space="preserve">
-    <value>Título - Álbum</value>
+    <value>Title - Album</value>
   </data>
   <data name="settings-page.titulo-artista" xml:space="preserve">
-    <value>Título - Artista</value>
+    <value>Title - Artist</value>
   </data>
   <data name="settings-page.todavia-agregaste-ninguna-excepcion" xml:space="preserve">
-    <value>Todavía no agregaste ninguna excepción.</value>
+    <value>You haven't added any exceptions yet.</value>
   </data>
   <data name="settings-page.todavia-vinculaste-ninguna-carpeta" xml:space="preserve">
-    <value>Todavía no vinculaste ninguna carpeta.</value>
+    <value>You haven't linked any folders yet.</value>
   </data>
   <data name="settings-page.todo-video-se-convierte-mpeg-1" xml:space="preserve">
-    <value>Todo video se convierte a MPEG-1/2 de 320×240 al sincronizar: es el único formato que el iPod con Aura reproduce a velocidad completa (su chip de 2007 no decodifica H.264 ni formatos modernos). No es una preferencia, es una limitación real del hardware, así que aquí no hay nada que elegir.</value>
+    <value>Every video is converted to 320×240 MPEG-1/2 when syncing: it's the only format an iPod running Aura plays at full speed (its 2007 chip decodes neither H.264 nor modern formats). It isn't a preference, it's a real hardware limit, so there's nothing to choose here.</value>
   </data>
   <data name="settings-page.version-hd-640-px" xml:space="preserve">
-    <value>Versión HD (640 px)</value>
+    <value>HD version (640 px)</value>
   </data>
   <data name="settings-page.video" xml:space="preserve">
     <value>Video</value>
   </data>
   <data name="settings-page.wav-aiff-siempre-se-convierten" xml:space="preserve">
-    <value>WAV y AIFF siempre se convierten</value>
+    <value>WAV and AIFF are always converted</value>
   </data>
   <data name="settings-section-view.actualizaciones-aura-studio" xml:space="preserve">
-    <value>Actualización de Aura Studio</value>
+    <value>Aura Studio update</value>
   </data>
   <data name="shell-page.descargar" xml:space="preserve">
-    <value>Descargar</value>
+    <value>Download</value>
   </data>
   <data name="shell-page.esta-biblioteca-viene-version-anterior" xml:space="preserve">
-    <value>Esta biblioteca viene de una versión anterior</value>
+    <value>This library comes from an earlier version</value>
   </data>
   <data name="shell-page.migrar-biblioteca" xml:space="preserve">
-    <value>Migrar biblioteca</value>
+    <value>Migrate library</value>
   </data>
   <data name="shell-page.ver-hay-nuevo" xml:space="preserve">
-    <value>Ver qué hay de nuevo</value>
+    <value>See what's new</value>
   </data>
   <data name="similar-items-page.aura-studio-busca-canciones-fotos-videos" xml:space="preserve">
-    <value>Aura Studio busca canciones, fotos y videos que parezcan repetidos. No borra ni cambia nada por su cuenta: aquí ves por qué los juntó y decides tú.</value>
+    <value>Aura Studio looks for songs, photos and videos that seem to be duplicates. It deletes and changes nothing on its own: here you see why it grouped them and you decide.</value>
   </data>
   <data name="similar-items-page.buscar" xml:space="preserve">
-    <value>Buscar</value>
+    <value>Search</value>
   </data>
   <data name="similar-items-page.conservar-solo-este" xml:space="preserve">
-    <value>Conservar solo este</value>
+    <value>Keep only this one</value>
   </data>
   <data name="similar-items-page.elementos-parecidos" xml:space="preserve">
-    <value>Elementos parecidos</value>
+    <value>Similar items</value>
   </data>
   <data name="similar-items-page.son-lo-mismo" xml:space="preserve">
-    <value>No son lo mismo</value>
+    <value>They're not the same</value>
   </data>
   <data name="similar-items-page.unificar-metadata" xml:space="preserve">
-    <value>Unificar la metadata</value>
+    <value>Unify the metadata</value>
   </data>
   <data name="similar-items-page.volver-mostrar-descartados" xml:space="preserve">
-    <value>Volver a mostrar los descartados</value>
+    <value>Show the dismissed ones again</value>
   </data>
   <data name="similar-items-view-model.groups-found.one" xml:space="preserve">
-    <value>Se encontró {0} grupo parecido.</value>
+    <value>{0} similar group found.</value>
   </data>
   <data name="similar-items-view-model.groups-found.other" xml:space="preserve">
-    <value>Se encontraron {0} grupos parecidos.</value>
+    <value>{0} similar groups found.</value>
   </data>
   <data name="similar-items-view-model.items-removed.one" xml:space="preserve">
-    <value>Se quitó {0} elemento de la biblioteca.</value>
+    <value>{0} item removed from the library.</value>
   </data>
   <data name="similar-items-view-model.items-removed.other" xml:space="preserve">
-    <value>Se quitaron {0} elementos de la biblioteca.</value>
+    <value>{0} items removed from the library.</value>
   </data>
   <data name="songs-page.busca-album-ano-caratula-letra-lo" xml:space="preserve">
-    <value>Busca álbum, año, carátula y letra de lo que esté incompleto</value>
+    <value>Finds album, year, cover art and lyrics for whatever is incomplete</value>
   </data>
   <data name="songs-page.busca-canciones-fotos-videos-parezcan-re" xml:space="preserve">
-    <value>Busca canciones, fotos y videos que parezcan repetidos</value>
+    <value>Looks for songs, photos and videos that seem to be duplicates</value>
   </data>
   <data name="songs-page.completar-linea" xml:space="preserve">
-    <value>Completar en línea</value>
+    <value>Fill in online</value>
   </data>
   <data name="songs-page.elementos-parecidos" xml:space="preserve">
-    <value>Elementos parecidos</value>
+    <value>Similar items</value>
   </data>
   <data name="songs-page.xaml.cambiar-nombre" xml:space="preserve">
-    <value>Cambiar nombre</value>
+    <value>Rename</value>
   </data>
   <data name="songs-page.xaml.cancelar" xml:space="preserve">
-    <value>Cancelar</value>
+    <value>Cancel</value>
   </data>
   <data name="songs-page.xaml.guardar" xml:space="preserve">
-    <value>Guardar</value>
+    <value>Save</value>
   </data>
   <data name="sync-view-model.conecta-selecciona-ipod-antes-continuar" xml:space="preserve">
-    <value>Conecta y selecciona un iPod antes de continuar.</value>
+    <value>Connect and select an iPod before continuing.</value>
   </data>
   <data name="sync-view-model.este-ipod-esta-ejecutando-aura-instala" xml:space="preserve">
-    <value>Este iPod no está ejecutando Aura. Instala Aura antes de sincronizar.</value>
+    <value>This iPod isn't running Aura. Install Aura before syncing.</value>
   </data>
   <data name="sync-view-model.orphan-header.one" xml:space="preserve">
-    <value>{0} archivo del iPod ya no está en tu biblioteca</value>
+    <value>{0} file on the iPod is no longer in your library</value>
   </data>
   <data name="sync-view-model.orphan-header.other" xml:space="preserve">
-    <value>{0} archivos del iPod ya no están en tu biblioteca</value>
+    <value>{0} files on the iPod are no longer in your library</value>
   </data>
   <data name="sync-view-model.revisa-cambios-antes-sincronizar" xml:space="preserve">
-    <value>Revisa los cambios antes de sincronizar.</value>
+    <value>Review the changes before syncing.</value>
   </data>
   <data name="sync-view-model.revision-cancelada" xml:space="preserve">
-    <value>Revisión cancelada.</value>
+    <value>Review cancelled.</value>
   </data>
   <data name="sync-view-model.sincronizacion-cancelada" xml:space="preserve">
-    <value>Sincronización cancelada.</value>
+    <value>Sync cancelled.</value>
   </data>
   <data name="themes-page.activar" xml:space="preserve">
-    <value>Activar</value>
+    <value>Activate</value>
   </data>
   <data name="themes-page.aura-studio-arma-paquete-desde-carpeta" xml:space="preserve">
-    <value>Aura Studio arma el paquete desde una carpeta de assets ya generados con el design-system del firmware (fuentes .fnt y máscaras de íconos). No convierte fuentes ni íconos de tu computadora.</value>
+    <value>Aura Studio builds the package from a folder of assets already generated with the firmware's design-system (.fnt fonts and icon masks). It doesn't convert fonts or icons from your computer.</value>
   </data>
   <data name="themes-page.autor" xml:space="preserve">
-    <value>Autor</value>
+    <value>Author</value>
   </data>
   <data name="themes-page.cambia-como-se-ve-aura-ipod" xml:space="preserve">
-    <value>Cambia cómo se ve Aura en tu iPod</value>
+    <value>Change how Aura looks on your iPod</value>
   </data>
   <data name="themes-page.compartir" xml:space="preserve">
-    <value>Compartir…</value>
+    <value>Share…</value>
   </data>
   <data name="themes-page.construir-e-instalar" xml:space="preserve">
-    <value>Construir e instalar</value>
+    <value>Build and install</value>
   </data>
   <data name="themes-page.construir-tema" xml:space="preserve">
-    <value>Construir un tema</value>
+    <value>Build a theme</value>
   </data>
   <data name="themes-page.elegir-carpeta" xml:space="preserve">
-    <value>Elegir carpeta…</value>
+    <value>Choose folder…</value>
   </data>
   <data name="themes-page.eliminar" xml:space="preserve">
-    <value>Eliminar</value>
+    <value>Delete</value>
   </data>
   <data name="themes-page.marcalo-si-tema-usa-fuentes-o" xml:space="preserve">
-    <value>Márcalo si el tema usa fuentes o íconos que no puedes redistribuir, como SF Pro o SF Symbols. El tema se instala igual en tu iPod, pero Aura Studio no te va a dejar compartirlo.</value>
+    <value>Tick this if the theme uses fonts or icons you can't redistribute, such as SF Pro or SF Symbols. The theme still installs on your iPod, but Aura Studio won't let you share it.</value>
   </data>
   <data name="themes-page.nombre" xml:space="preserve">
-    <value>Nombre</value>
+    <value>Name</value>
   </data>
   <data name="themes-page.temas" xml:space="preserve">
-    <value>Temas</value>
+    <value>Themes</value>
   </data>
   <data name="themes-page.usa-material-licencia-restringida-solo-p" xml:space="preserve">
-    <value>Usa material de licencia restringida (solo para mi uso personal)</value>
+    <value>Uses restricted-license material (for my personal use only)</value>
   </data>
   <data name="themes-page.xaml.cancelar" xml:space="preserve">
-    <value>Cancelar</value>
+    <value>Cancel</value>
   </data>
   <data name="themes-page.xaml.quitar" xml:space="preserve">
-    <value>Quitar</value>
+    <value>Remove</value>
   </data>
   <data name="themes-page.xaml.quitar-row-name-ipod" xml:space="preserve">
-    <value>¿Quitar "{0}" del iPod?</value>
+    <value>Remove "{0}" from the iPod?</value>
   </data>
   <data name="themes-view-model.row-name-se-va-aplicar-proxima" xml:space="preserve">
-    <value>"{0}" se va a aplicar la próxima vez que enciendas el iPod.</value>
+    <value>"{0}" will be applied next time you turn the iPod on.</value>
   </data>
   <data name="themes-view-model.se-guardo-copia-path" xml:space="preserve">
-    <value>Se guardó la copia en {0}</value>
+    <value>The copy was saved to {0}</value>
   </data>
   <data name="themes-view-model.se-instalo-installed-name-activalo-para" xml:space="preserve">
-    <value>Se instaló "{0}". Actívalo para verlo en el iPod.</value>
+    <value>"{0}" is installed. Activate it to see it on the iPod.</value>
   </data>
   <data name="themes-view-model.se-quito-row-name-ipod" xml:space="preserve">
-    <value>Se quitó "{0}" del iPod.</value>
+    <value>"{0}" was removed from the iPod.</value>
   </data>
 </root>

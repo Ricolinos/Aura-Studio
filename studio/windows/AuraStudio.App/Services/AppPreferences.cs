@@ -61,6 +61,12 @@ public sealed class AppPreferences : IAppPreferences
         set => Set(value, _values.Theme, v => _values = _values with { Theme = v });
     }
 
+    public string Language
+    {
+        get => _values.Language;
+        set => Set(value, _values.Language, v => _values = _values with { Language = v });
+    }
+
     public WindowPlacement? WindowPlacement
     {
         get => _values.WindowPlacement;
@@ -470,6 +476,7 @@ public sealed class AppPreferences : IAppPreferences
     private sealed record PreferencesFile
     {
         public AppTheme Theme { get; init; } = AppTheme.System;
+        public string Language { get; init; } = "";
         public WindowPlacement? WindowPlacement { get; init; }
         public string? InstallationId { get; init; }
 

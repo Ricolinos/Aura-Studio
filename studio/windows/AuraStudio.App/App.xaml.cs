@@ -1,6 +1,9 @@
 using Microsoft.UI.Xaml;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Globalization;
+using System.Linq;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App;
 
@@ -23,6 +26,41 @@ public sealed partial class App : Application
         AuraStudio.App.Services.CrashReporter.Install(this);
 
         ConfigureServices();
+
+        // Y el idioma, ANTES de que exista una sola vista (ST-247, B7b).
+        // `x:Bind` resuelve el texto una vez, al construir la página: si la
+        // cultura se fijara después, la primera pantalla quedaría en el idioma
+        // anterior y las siguientes no — un revoltijo que además solo se ve al
+        // abrir la app, que es cuando nadie está mirando el código.
+        ApplyLanguage();
+    }
+
+    /// <summary>
+    /// Deja la cultura en el idioma elegido, o en el de Windows si no hay
+    /// ninguno elegido.
+    ///
+    /// <para>Se tocan las dos culturas, y por motivos distintos: la de interfaz
+    /// decide de qué satélite salen los textos, y la de formato decide cómo se
+    /// escriben las fechas y los números. Una app en inglés con los miles
+    /// separados a la española se lee mal aunque cada palabra esté bien.</para>
+    ///
+    /// <para>Un idioma guardado que ya no se ofrece —o que nunca existió, si
+    /// alguien editó el archivo de preferencias a mano— se ignora y se cae al
+    /// del sistema. No se avisa: no es culpa del usuario y no hay nada que
+    /// pueda hacer al respecto.</para>
+    /// </summary>
+    private static void ApplyLanguage()
+    {
+        string chosen = Services.GetRequiredService<AuraStudio.App.Services.IAppPreferences>().Language;
+        if (chosen.Length == 0) return;
+        if (AppLanguages.Available.All(language => language.Culture != chosen)) return;
+
+        var culture = new CultureInfo(chosen);
+
+        CultureInfo.DefaultThreadCurrentUICulture = culture;
+        CultureInfo.DefaultThreadCurrentCulture = culture;
+        CultureInfo.CurrentUICulture = culture;
+        CultureInfo.CurrentCulture = culture;
     }
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)

@@ -374,7 +374,7 @@
 "settings.importing" = "Beim Importieren";
 "settings.installer" = "Installation";
 "settings.language" = "Sprache";
-"settings.language-apply-message" = "Die Sprache wird beim Start übernommen. Wenn du jetzt schließt, öffne Aura Studio erneut -- dann ist es bereits in der neuen Sprache. Wählst du „Später“, bleibt die Einstellung gespeichert und gilt beim nächsten Öffnen.";
+"settings.language-apply-message" = "Die Sprache wechselt, wenn du die App wieder öffnest; an deiner Mediathek und deinem iPod wird nichts angerührt. Wählst du „Später“, bleibt die Einstellung gespeichert und gilt beim nächsten Öffnen.";
 "settings.language-apply-title" = "Aura Studio jetzt schließen?";
 "settings.language-busy-message" = "Es laufen gerade Aufgaben: Synchronisieren, Umwandeln, Migrieren oder Firmware. Die Sprache bleibt gespeichert und gilt, wenn du Aura Studio das nächste Mal öffnest.";
 "settings.language-busy-title" = "Wird beim nächsten Start übernommen";

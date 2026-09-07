@@ -16412,3 +16412,130 @@ comprobar nada. Ahora la clave se elige afuera, con un literal en cada
 rama, y `testEveryLocalizationCallUsesALiteralKey` falla si alguien
 vuelve a calcularla. Comprobado al revés: con el ternario puesto, la
 prueba falla y nombra el archivo y la línea.
+## ST-247 — Windows: el inglés y el selector de idioma (B7b)
+
+B7b de la ronda "ajustes 3". B7a sacó los textos del código; esto los pone en
+un segundo idioma y le da al usuario cómo elegirlo. Japonés, alemán, ruso y
+francés son B7c.
+
+### El inglés: 612 claves, y de dónde salió cada una
+
+Diez claves compartidas con la Mac llevan **su** texto verbatim: mismo español
+en las dos apps, misma traducción, y se escribe una sola vez.
+
+Las doce marcadas "clave distinta" **no** se copiaron, y ahí hubo que corregir
+la regla que traía el encargo. "Clave distinta" significa que el español difiere
+a propósito en cada plataforma; si el español difiere, el inglés también tiene
+que diferir. Copiar el de la Mac habría puesto `Install %@ update` —un hueco de
+Swift, que en .NET no significa nada y se imprime tal cual— en un botón de
+Windows cuyo español ni siquiera lleva el nombre del firmware. Y habría
+contradicho lo que la app dice en español en otras cuatro: "Try again" donde
+Windows dice "Conectar el disco y reintentar", plural donde Windows va en
+singular, puntos suspensivos que el propio CSV anota que Windows no lleva.
+
+La regla, entonces, quedó formulada así: **donde el español es el mismo, el
+inglés también**. El CSV sirve para saber que dos claves son la misma cosa, no
+como texto a copiar cuando el español difiere. (De paso: el inglés de la Mac
+tiene dos apóstrofos de menos, "wont" y "its". Es de su lado y quedó avisado.)
+
+### Que el archivo exista no prueba nada
+
+Un `.resx` con la cultura en el nombre puede quedar fuera del ensamblado
+satélite por un detalle del proyecto, y entonces la app pide inglés y recibe
+español **sin que falle nada**: salen los textos, se ven bien, y están en el
+idioma equivocado. Es un modo de falla silencioso, y por eso las pruebas piden
+el texto con la cultura puesta y comprueban que cambie: `en`, `en-US` y `en-GB`
+dan inglés; `de` y `ja` caen al español, que es lo que hace del español una
+cultura neutra y no un satélite más.
+
+Se comprueba además que las dos culturas tengan **las mismas claves** —una que
+falte en inglés no se ve al probar, porque cae al español— y **los mismos
+huecos**: uno de menos deja un dato fuera de la frase, uno de más revienta
+`string.Format` en el idioma que casi nadie prueba.
+
+### `SatelliteResourceLanguages` no se usa, y se probó
+
+El encargo decía ponerla "si se verifica". Se verificó y **no hace lo que se
+esperaba**: declarando solo `de` —una cultura que acá no existe— el satélite
+`en/` se siguió generando, también tras borrar `obj/` y `bin/`. Esa propiedad
+filtra los satélites que traen los paquetes NuGet, no los que el propio
+proyecto compila desde sus `.resx`. Dejarla puesta habría dado la impresión de
+controlar algo que no controla, así que no está, y el csproj dice por qué.
+
+Lo que sí controla es `AppLanguages.RequiredSatelliteCultures`, que es contra
+lo que se comprueban el publish y el instalador.
+
+### La lista de idiomas es una sola
+
+`AppLanguages` tiene los seis desde ya; cada uno dice si su archivo existe y si
+una persona lo revisó. De ahí salen tres cosas que si no estarían escritas en
+tres lados: qué ofrece el selector, qué satélites exige el instalador, y qué
+idiomas se declaran. Agregar uno en B7c es cambiar un `false` por un `true`
+junto a su `.resx`.
+
+**El nombre de cada idioma va en ese idioma** —"Español", "Deutsch", "日本語"— y
+no se traduce nunca. Un selector que traduce los nombres no le sirve a la única
+persona que lo necesita: la que abrió la app en un idioma que no lee y busca el
+suyo en la lista. Es la misma regla que con las categorías de video y los
+nombres de colecciones: hay texto que es dato.
+
+### La cultura, antes de las vistas; y nada en caliente
+
+Se fija en el constructor de `App`, antes de que exista una sola vista. `x:Bind`
+resuelve el texto una vez, al construir cada página: fijarla después dejaría la
+primera pantalla en el idioma anterior y las siguientes no, y eso solo se ve al
+abrir la app.
+
+Por lo mismo **no se recarga en caliente**, y el aviso lo dice: media app en un
+idioma y media en otro es peor que no hacer nada, porque parece que funcionó.
+
+El botón dice **"Cerrar ahora" y cierra, no reinicia**. Reiniciarse sola es una
+promesa que esta app no puede cumplir siempre —va sin empaquetar y puede tener
+una operación de disco a medias— y un botón que a veces no hace lo que dice es
+peor que uno que hace menos.
+
+### El instalador aborta si falta un idioma
+
+No avisa: aborta. Un satélite ausente no rompe nada visible —la app ofrece el
+idioma, no lo encuentra y cae al español en silencio—, así que el único momento
+en que se puede atrapar es antes de empaquetar.
+
+La lista está en dos lados, porque PowerShell no lee C#, y no puede divergir:
+una prueba lee el script y compara con `AppLanguages`. Comprobado que falla de
+verdad agregándole `de` al script.
+
+### Lo que queda preparado para B7c
+
+`CriticalStrings` marca qué textos son críticos con el criterio que fijó la
+Maestra: todo lo que borra, mueve, instala firmware, migra o convierte, más los
+ajustes de almacenamiento y de calidad. Es la lista que se retrotraduce —los
+cuatro idiomas llegan traducidos por una máquina y nadie del proyecto los lee—;
+hacerlo con seiscientas frases por cuatro idiomas no es realista, con estas sí,
+y son donde una traducción torcida cuesta archivos. Va por prefijos y no clave
+por clave: una clave nueva en una familia crítica entra sola, mientras que al
+revés quedaría fuera en silencio.
+
+El selector ya trae la marca por idioma —"(beta)" y la línea de "traducción
+automática, aún sin revisar"— aunque hoy no la dispare nadie: cuando lleguen
+los cuatro, la app tiene que decirlo, no descubrirse.
+
+Y el trinquete de texto fuera de alcance ahora **imprime dónde está**, agrupado
+por archivo, en el mensaje del fallo. Son 392, con la cola larga: 32 en
+`SettingsViewModel`, 25 en `InstallerError`, 24 en `PrivilegedHost`, 18 en
+`LibraryViewModel`, y de ahí para abajo hasta dos docenas de archivos con uno
+solo. Lo que la lista **no** hace es decidir cuáles se traducen: ese corte —lo
+que ve el usuario sí, el registro y las excepciones internas no— hay que
+mirarlo uno por uno, y una expresión regular que lo adivinara entregaría una
+lista con aire de autoridad y errores adentro.
+
+### Dos textos redactados, declarados
+
+El detalle de Ajustes decía que **no** hay selector de idioma y que la app se
+hizo en uno solo. B7b lo vuelve falso. Es el tipo de frase que se queda vieja en
+silencio, así que va como redacción declarada con su texto anterior al lado, y
+una prueba comprueba que ese "antes" sea de verdad el del borrador — sin eso la
+lista sería una nota al pie donde se puede escribir cualquier cosa.
+
+El otro es `installer-copied-files`, que decía "1 archivos escritos en el iPod"
+con uno solo: el defecto que B7a dejó anotado a propósito, arreglado acá con
+formas de plural.

@@ -18275,37 +18275,37 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Die Sprache wird beim Start übernommen. Wenn du jetzt schließt, öffne Aura Studio erneut -- dann ist es bereits in der neuen Sprache. Wählst du „Später“, bleibt die Einstellung gespeichert und gilt beim nächsten Öffnen."
+            "value": "Die Sprache wechselt, wenn du die App wieder öffnest; an deiner Mediathek und deinem iPod wird nichts angerührt. Wählst du „Später“, bleibt die Einstellung gespeichert und gilt beim nächsten Öffnen."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "The language is applied at startup. If you close now, open Aura Studio again and it will already be in the new language. If you choose “Later”, it stays saved and applies the next time you open it."
+            "value": "The language changes when you reopen the app, and nothing in your library or on your iPod is touched. If you choose “Later”, the setting stays saved and applies the next time you open it."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "El idioma se aplica al arrancar. Si cierras ahora, vuelve a abrir Aura Studio y ya estará en el idioma nuevo. Si eliges «Más tarde», queda guardado y se aplica la próxima vez que la abras."
+            "value": "El idioma cambia al volver a abrir la app, y no se toca nada de tu biblioteca ni de tu iPod. Si eliges «Más tarde», el ajuste queda guardado y se aplica la próxima vez que la abras."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "La langue est appliquée au démarrage. Si vous fermez maintenant, rouvrez Aura Studio et il sera déjà dans la nouvelle langue. Si vous choisissez « Plus tard », le réglage est enregistré et s’applique à la prochaine ouverture."
+            "value": "La langue change à la réouverture de l’app, et rien dans votre bibliothèque ni sur votre iPod n’est modifié. Si vous choisissez « Plus tard », le réglage reste enregistré et s’applique à la prochaine ouverture."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "言語は起動時に適用されます。今すぐ終了した場合は、Aura Studio を開き直すと新しい言語になっています。「あとで」を選ぶと設定は保存され、次に開いたときに適用されます。"
+            "value": "言語はアプリを開き直したときに変わります。ライブラリや iPod には何も手を加えません。「あとで」を選ぶと設定は保存され、次に開いたときに適用されます。"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Язык применяется при запуске. Если закрыть сейчас, откройте Aura Studio снова — она уже будет на новом языке. Если выбрать «Позже», настройка сохранится и применится при следующем открытии."
+            "value": "Язык меняется при повторном открытии приложения, и ничего в вашей медиатеке или на iPod не затрагивается. Если выбрать «Позже», настройка сохранится и применится при следующем открытии."
           }
         }
       }

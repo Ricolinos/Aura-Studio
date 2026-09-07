@@ -33,6 +33,17 @@ public interface IAppPreferences
 {
     AppTheme Theme { get; set; }
 
+    /// <summary>
+    /// El idioma elegido, como nombre de cultura (<c>es</c>, <c>en</c>), o
+    /// cadena vacía para seguir al de Windows (ST-247, B7b).
+    ///
+    /// <para>Vacío por omisión y a propósito: recién instalada, la app habla el
+    /// idioma del sistema. Que el dueño de una máquina en inglés tenga que
+    /// entrar a Ajustes en español para ponerla en inglés sería justo al revés
+    /// de lo que sirve.</para>
+    /// </summary>
+    string Language { get; set; }
+
     /// <summary>`null` la primera vez que se abre la app (sin nada que restaurar).</summary>
     WindowPlacement? WindowPlacement { get; set; }
 

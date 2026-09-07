@@ -62,9 +62,53 @@
 
                     <TextBlock Text="{x:Bind str:Strings.Get('settings-page.idioma')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,8,0,0" />
                     <Border Style="{StaticResource AuraCardStyle}">
-                        <TextBlock Text="{x:Bind res:AppStrings.SettingsLanguageDetail}"
-                                   Style="{StaticResource AuraSecondaryTextStyle}"
-                                   TextWrapping="Wrap" />
+                        <StackPanel Spacing="12">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                                <TextBlock Text="{x:Bind res:AppStrings.SettingsLanguageDetail}"
+                                           Style="{StaticResource AuraSecondaryTextStyle}"
+                                           TextWrapping="Wrap" VerticalAlignment="Center" />
+                                <ComboBox Grid.Column="1" MinWidth="200" VerticalAlignment="Center"
+                                          ItemsSource="{x:Bind ViewModel.LanguageOptions}"
+                                          SelectedItem="{x:Bind ViewModel.SelectedLanguage, Mode=TwoWay}">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:LanguageOption">
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <TextBlock Text="{x:Bind Label}" />
+                                                <TextBlock Text="{x:Bind Mark}"
+                                                           Visibility="{x:Bind ShowsMark, Converter={StaticResource BoolToVisibility}}"
+                                                           Style="{StaticResource AuraCaptionTextStyle}"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </Grid>
+
+                            <TextBlock Text="{x:Bind res:AppStrings.LanguageBetaDetail}"
+                                       Visibility="{x:Bind ViewModel.LanguageIsUnreviewed, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
+                                       Style="{StaticResource AuraCaptionTextStyle}"
+                                       TextWrapping="Wrap" />
+
+                            <!-- El aviso de reinicio no se puede cerrar: el idioma
+                                 ya cambió en el archivo de preferencias y la app
+                                 sigue mostrando el anterior. Un aviso que se
+                                 despacha con una X deja al usuario creyendo que no
+                                 pasó nada. -->
+                            <InfoBar IsOpen="{x:Bind ViewModel.LanguageNeedsRestart, Mode=OneWay}"
+                                     IsClosable="False" Severity="Informational"
+                                     Title="{x:Bind res:AppStrings.LanguageRestartTitle}"
+                                     Message="{x:Bind ViewModel.LanguageRestartDetail, Mode=OneWay}">
+                                <InfoBar.ActionButton>
+                                    <!-- Con trabajo en curso el botón NO está, en vez de estar
+                                         gris: uno gris invita a preguntarse qué falta para que
+                                         se encienda; que no esté, con la frase que lo explica,
+                                         no deja esa duda. -->
+                                    <Button Content="{x:Bind res:AppStrings.LanguageRestartNow}"
+                                            Visibility="{x:Bind ViewModel.LanguageCanCloseNow, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
+                                            Click="CloseForLanguage_Click" />
+                                </InfoBar.ActionButton>
+                            </InfoBar>
+                        </StackPanel>
                     </Border>
 
                     <TextBlock Text="{x:Bind res:AppStrings.SettingsAbout}"

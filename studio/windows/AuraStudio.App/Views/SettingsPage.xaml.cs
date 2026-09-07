@@ -60,6 +60,19 @@ public sealed partial class SettingsPage : Page
         => Frame.Navigate(typeof(LicensesPage), null, new DrillInNavigationTransitionInfo());
 
     /// <summary>
+    /// Cierra la app para que el idioma nuevo valga la próxima vez que se abra
+    /// (ST-247, B7b).
+    ///
+    /// <para><b>Cierra, no reinicia.</b> Reiniciarse sola es una promesa que
+    /// esta app no puede cumplir siempre —va sin empaquetar, y puede tener una
+    /// operación de disco a medias—, y un botón que a veces no hace lo que dice
+    /// es peor que uno que hace menos. El texto dice "Cerrar ahora" y eso es lo
+    /// que hace.</para>
+    /// </summary>
+    private void CloseForLanguage_Click(object sender, RoutedEventArgs e) =>
+        Application.Current.Exit();
+
+    /// <summary>
     /// "Buscar actualizaciones" de la app (ST-211). Ignora el intervalo de 24 h:
     /// una revisión que el usuario pide a mano tiene que preguntar de verdad.
     /// </summary>
