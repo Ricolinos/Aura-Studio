@@ -52,6 +52,8 @@ PREFIXES=(
   HostedAlbumsView
   LibraryCoverMemoryTests
   LibraryFolderDropTests
+  LibraryLegacyMigration
+  LibraryPipelineIntegration
   LoadCatalogParallelTests
   LocalTagRereadTests
   MusicTableColumnTests
@@ -63,6 +65,7 @@ PREFIXES=(
   ST046
   ST047
   SetRatingTests
+  SharedCatalogInterop
   SharedPrepared
   SyncScopeTests
 )

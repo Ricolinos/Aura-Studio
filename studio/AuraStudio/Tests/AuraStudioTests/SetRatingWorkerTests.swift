@@ -101,6 +101,12 @@ final class SetRatingWorkerTests: XCTestCase {
         viewModel.replaceItemsForPerformanceTesting(tracks)
         viewModel.makePersistenceSynchronousForTesting()
 
+        // ST-186: reiniciar la base de medición justo antes de lo que se
+        // quiere medir -- crear los 300 archivos del fixture no puede
+        // quedar dentro de la ventana medida (mismo defecto que ST-186
+        // arregló en `ApplyBatchEditWorkerTests`).
+        MainThreadWatchdog.resetForTesting()
+
         for track in tracks {
             await viewModel.setRating(Int.random(in: 1...5), forItem: track.id)
         }

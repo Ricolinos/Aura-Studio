@@ -12338,3 +12338,136 @@ Lo que **no** se verificó acá: nada de esto se probó contra la biblioteca
 real del dueño, ni en copia. Y el arnés corre sin ventana — que el
 `InfoBar` de Ajustes se vea como se espera lo tiene que mirar alguien con
 la app delante.
+
+## PARADA A1 (mecanico sonnet) — rebase, preferencias aisladas, fixtures
+## fuera de la medición, línea base "después de A1"
+
+Encargo de "Sesión Maestra" tras el merge de A1 (ST-221, `fdc614e`).
+Cuatro partes, todas en el worktree `mac/medicion`, sin tocar `Sources/`.
+
+### 1. Rebase
+
+`mac/medicion` (`a5a49cd`) sobre `origin/main` (`fdc614e`, A1 de la Mac +
+B3 de Windows): sin conflictos -- todos mis commits (A0/A2-prep/auditoría/
+extracción/A3-A4-skip) ya estaban fusionados a `main` antes de este
+rebase, así que `mac/medicion` terminó apuntando al mismo commit que
+`origin/main`. El arreglo de "experto en código opus" al arnés A0
+(`itemID` nuevo en `PrepareMusicRequest`, `87c5832`) ya venía incluido.
+
+### 2. Once pruebas sin preferencias aisladas
+
+`LibraryViewModel(libraryRoot:)` sin `preferences:` usa `AppPreferences.
+shared` por omisión -- escribe en el dominio real del bundle
+(`com.ricolinos.AuraStudio`), contra la regla de esta ronda (ver el
+incidente de ST-187 en este mismo archivo). "Experto en código opus" ya
+había arreglado una de las tres en `SharedCatalogInteropTests` (la que
+él mismo tocó para el contrato nuevo); quedaban diez:
+
+- `LibraryLegacyMigrationTests` (5 sitios) -- `freshPreferences()` nuevo,
+  suite `LibraryLegacyMigration-<UUID>`. Dos de los cinco sitios (`testIdempotentSecondRunIsANoOp`) comparten la MISMA instancia de
+  `AppPreferences` entre las dos construcciones de `LibraryViewModel` --
+  son dos "arranques" de la misma app sobre el mismo disco, como en
+  producción.
+- `LibraryPipelineIntegrationTests` (2 sitios) -- `freshPreferences()`
+  nuevo, pero `@MainActor` explícito (la clase no lo es; `AppPreferences.
+  init(defaults:)` sí lo es, y el compilador lo exige bajo Swift 6).
+- `SharedCatalogInteropTests` (4 sitios restantes) -- mismo patrón,
+  suite `SharedCatalogInterop-<UUID>`.
+
+Verificado: `xcodebuild -configuration Release` compila (Swift 6 exige
+`@MainActor` correcto en todo lado); `swift test --filter` de los tres
+archivos, 11/11 en verde.
+
+`tools/limpiar-preferencias-de-pruebas.sh` (modo lista, sin `--borrar`)
+confirmó lo que de verdad importa: el hash de
+`~/Library/Preferences/com.ricolinos.AuraStudio.plist` **no cambió**
+antes/después de correr todo el paquete (dominio real del dueño
+intacto). Lo que SÍ encontré: las tres familias nuevas
+(`SharedCatalogInterop`/`LibraryLegacyMigration`/
+`LibraryPipelineIntegration`) no estaban en la lista blanca del script
+-- las agregué (el propio script lo pide: "si agregas una familia nueva
+en Tests/, agrégala también acá"). Y, con la lista blanca ya al día,
+encontré 22 archivos `.plist` sueltos de esas tres familias (algunos de
+antes de hoy, de cuando "experto en código opus" corrió
+`SharedCatalogInteropTests`; otros nuevos, de mis propias corridas de
+hoy) -- **no son un escape al dominio real** (siguen aislados en su
+propia suite con nombre `<Familia>-<UUID>`), son el mismo residual que
+ya documenta `TestDefaults.swift`: el borrado de dos pasadas (por prueba
++ al terminar el paquete) no llega al 100% cuando `cfprefsd` alcanza a
+reescribir el archivo después de la segunda pasada, en una corrida
+larga con muchas suites. No los borré yo -- el propio script es
+deliberadamente de accionar manual ("no lo decide un script que corre
+por su cuenta"); quedan para que el dueño los limpie con
+`--borrar` cuando quiera.
+
+### 3. Fixture dentro de la ventana medida (patrón de ST-186)
+
+Barrida de las 5 pruebas que instalan `MainThreadWatchdog.
+onHangDetectedForTesting` (las únicas que miden bloqueos del hilo
+principal con temporalidad real, no `measure{}` de XCTest ni bytes):
+
+| Archivo | Prueba | Estado |
+|---|---|---|
+| `ApplyAlbumCoverAndSimilarityWorkerTests` | 300 pistas / carátula | ya arreglada (comentario propio la documenta) |
+| `ApplyBatchEditWorkerTests` | 500 ítems / edición en lote | ya arreglada por "experto en código opus" (el disparador de este encargo) |
+| `AlbumsGridPerformanceBaselineTests` | sesión guionizada F7 | ya arreglada (`resetForTesting()` antes del guion, ST-186 explícito en el comentario) |
+| `RemainingCallSitesWorkerTests` | 300 pistas / importación en lote | **defecto real, arreglado acá** -- sin `resetForTesting()`, el fixture de 300 archivos quedaba dentro de la ventana |
+| `RemainingCallSitesWorkerTests` | 300+300 pistas / reenrich+releer tags | **mismo defecto, arreglado acá** |
+| `SetRatingWorkerTests` | 300 calificaciones seguidas | **mismo defecto, arreglado acá** |
+
+Las tres arregladas acá reciben `MainThreadWatchdog.resetForTesting()`
+justo antes de la operación medida, mismo patrón que las otras dos. Las
+`measure{}` de XCTest (`LibraryPerformanceBaselineTests`,
+`AlbumsGridPerformanceBaselineTests` fuera de la sesión guionizada) ya
+construían su fixture ANTES del bloque `measure`, que es donde
+corresponde -- sin defecto. El arnés A0 (`MediaStorageBaselineTests`,
+mío) no mide bloqueos del hilo principal en absoluto (mide bytes/hashes,
+no tiempo), así que el patrón no le aplica.
+
+`swift test` completo tras estos arreglos: **918 pruebas, 0 fallas, 11
+saltadas** (9 de "después" de A3/A4 y de línea base con `test-media/` no
+generado + las 2 de `LibraryPipelineIntegrationTests` que necesitan
+`tools/gen_test_media.sh`). El registro completo de esa corrida imprime
+un backtrace simbolizado del propio `MainThreadWatchdog` DESPUÉS de que
+`Test Suite 'All tests' passed` ya se había impreso (~968 ms en
+`ThemeValidatorTests`, escribiendo un fixture a disco bajo la máquina
+cargada) -- diagnóstico propio del vigilante, no un crash del proceso
+(`EXIT:0`, confirmado dos veces con corridas separadas). No se investiga
+más -- es exactamente el tipo de ruido de máquina cargada que ST-187 ya
+documentó, sobre un test que ni siquiera es de rendimiento.
+
+### 4. Línea base "después de A1"
+
+`MediaStorageBaselineTests.testEditingFieldsAcrossFormatsAndModes_
+printsBeforeTable`, misma tabla de ST-220, contra `fdc614e`:
+
+| Formato | Modo | ¿Original cambió? | Bytes en `.preparados/` | ¿Idéntico al original? |
+|---|---|---|---|---|
+| MP3  | copia      | No | 8 573  | No |
+| MP3  | referencia | No | 8 573  | No |
+| FLAC | copia      | No | 214    | Sí |
+| FLAC | referencia | No | 214    | Sí |
+| M4A  | copia      | No | 1 043  | Sí |
+| M4A  | referencia | No | 1 043  | Sí |
+| WAV  | copia      | No | 17 684 | Sí |
+| WAV  | referencia | No | 17 684 | Sí |
+
+**Idéntica a la de "antes" (ST-220), byte a byte.** Esperable: A1 fijó
+el contrato (`storage`, `.preparados/<ID>`, ausente no se borra) sin
+tocar el camino de escritura que mide este arnés -- confirma que A1 no
+introdujo ningún cambio de comportamiento en `prepareMusic` por
+accidente. El arnés queda listo, sin cambios, para volver a correr tras
+A2 (donde SÍ se espera que la tabla cambie: FLAC/M4A deberían dejar de
+ser copias idénticas).
+
+### Verificación y commit
+
+`xcodebuild -scheme AuraStudio -configuration Release build`: **BUILD
+SUCCEEDED** (bajo el candado de compilación compartido, tomado y
+liberado por esta sesión). `swift test` completo: 918/918, 0 fallas, 11
+saltadas. `git rev-parse HEAD` tras el commit de esta PARADA: ver el
+mensaje de commit. Archivos tocados: `SharedCatalogInteropTests.swift`,
+`LibraryLegacyMigrationTests.swift`, `LibraryPipelineIntegrationTests.swift`,
+`RemainingCallSitesWorkerTests.swift`, `SetRatingWorkerTests.swift`,
+`tools/limpiar-preferencias-de-pruebas.sh`, `DECISIONS.md`. Nada en
+`Sources/`.

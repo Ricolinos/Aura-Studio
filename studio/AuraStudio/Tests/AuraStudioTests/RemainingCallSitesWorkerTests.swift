@@ -99,6 +99,13 @@ final class RemainingCallSitesWorkerTests: XCTestCase {
         viewModel.replaceItemsForPerformanceTesting(tracks)
         viewModel.makePersistenceSynchronousForTesting()
 
+        // ST-186: reiniciar la base de medición justo antes de lo que se
+        // quiere medir -- crear los 300 archivos del fixture pasaba acá,
+        // entre instalar el colector y la operación medida, así que ese
+        // bloqueo del andamio se le cobraba a `processAll`, no a él
+        // (mismo defecto que ST-186 arregló en `ApplyBatchEditWorkerTests`).
+        MainThreadWatchdog.resetForTesting()
+
         await viewModel.processAll()
 
         XCTAssertTrue(hangs.values.isEmpty, "bloqueos del hilo principal > 250 ms importando 300 pistas: \(hangs.values)")
@@ -170,6 +177,10 @@ final class RemainingCallSitesWorkerTests: XCTestCase {
         let viewModel = LibraryViewModel(libraryRoot: libraryRoot, preferences: offlinePreferences())
         viewModel.replaceItemsForPerformanceTesting(tracks)
         viewModel.makePersistenceSynchronousForTesting()
+
+        // ST-186: mismo arreglo que arriba -- el fixture de 300 pistas
+        // no puede quedar dentro de la ventana medida.
+        MainThreadWatchdog.resetForTesting()
 
         await viewModel.reenrichOnline(ids: Set(tracks.map(\.id)), fetchAlbumInfo: false, fetchLyrics: false)
         await viewModel.rereadLocalTags(ids: Set(tracks.map(\.id)))
