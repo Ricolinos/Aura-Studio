@@ -12339,8 +12339,7 @@ real del dueño, ni en copia. Y el arnés corre sin ventana — que el
 `InfoBar` de Ajustes se vea como se espera lo tiene que mirar alguien con
 la app delante.
 
-## PARADA A1 (mecanico sonnet) — rebase, preferencias aisladas, fixtures
-## fuera de la medición, línea base "después de A1"
+## ST-221 (addendum, mecánico) — rebase, preferencias aisladas, fixtures fuera de la medición, línea base "después de A1"
 
 Encargo de "Sesión Maestra" tras el merge de A1 (ST-221, `fdc614e`).
 Cuatro partes, todas en el worktree `mac/medicion`, sin tocar `Sources/`.
@@ -12471,3 +12470,112 @@ mensaje de commit. Archivos tocados: `SharedCatalogInteropTests.swift`,
 `RemainingCallSitesWorkerTests.swift`, `SetRatingWorkerTests.swift`,
 `tools/limpiar-preferencias-de-pruebas.sh`, `DECISIONS.md`. Nada en
 `Sources/`.
+## ST-222 — Escritores nativos de etiquetas: FLAC y M4A
+
+Fase A2 de `PLAN-studio-ajustes-3.md`. Cierra el agujero central del
+diagnóstico: **la Mac escribía etiquetas solo en MP3**. En FLAC, M4A, WAV
+y AIFF no escribía nada, así que editar el título de una canción no
+cambiaba el archivo y la edición **no llegaba al iPod**. No fallaba: no
+hacía nada, que es peor.
+
+### Por qué no bastaba con lo que ya había
+
+`ID3Writer` antepone una tag ID3 al archivo. Eso es aditivo: no toca el
+resto y por eso fue seguro durante años. Ni FLAC ni M4A admiten ese
+truco — sus metadatos son estructuras internas del contenedor, y hay que
+reescribirlas entendiéndolas. El comentario que había en `ID3Writer`
+decía justamente eso y lo dejaba "para una iteración futura". Es esta.
+
+### Los tres, y en qué se diferencian de verdad
+
+`AudioTag` (era `ID3Writer.Tag`) es el juego de campos común;
+`LocalTagWriter` es la única puerta y despacha por extensión, igual que
+su hermano `LocalTagWriter.cs` de Windows (ST-242).
+
+**MP3** sigue como estaba, más `TPOS`: el número de disco no se escribía
+en ningún formato, así que un álbum doble llegaba al iPod sin separación
+de discos.
+
+**FLAC** (`FLACTagWriter`): se reemplazan **solo** VORBIS_COMMENT y, si
+hay carátula, el PICTURE de portada frontal. STREAMINFO, SEEKTABLE,
+APPLICATION y CUESHEET pasan intactos; el padding se conserva y se emite
+como un solo bloque al final, que es donde sirve para que otro programa
+pueda editar sin mover el audio. Los fotogramas se copian byte a byte.
+
+Detalle que hace que esto sea seguro y que conviene tener escrito: los
+puntos de SEEKTABLE guardan desplazamientos **desde el primer
+fotograma**, no desde el principio del archivo. Crecer o encoger los
+metadatos no los invalida. En M4A no es así, y de ahí sale todo el
+trabajo del otro escritor.
+
+Dos decisiones chicas con motivo: el **vendor** de un VORBIS_COMMENT
+existente se conserva (según el formato identifica al *codificador* que
+produjo el archivo, no a quien editó las etiquetas — pisarlo con "Aura
+Studio" sería afirmar algo falso sobre el archivo del usuario), y el
+ancho/alto/profundidad del PICTURE se leen de la imagen con ImageIO en
+vez de escribir ceros. Un `.flac` que en realidad es Ogg **no se toca**:
+decir que no es mejor que escribir algo que el archivo no sabe leer.
+
+**M4A/ALAC** (`MP4TagWriter`): átomos `ilst` bajo `moov/udta/meta`,
+recomponiendo los tamaños de todas las cajas padre.
+
+Lo peligroso es otra cosa. La tabla de fragmentos (`stco`/`co64`) guarda
+**desplazamientos absolutos dentro del archivo**. Si `moov` está antes de
+`mdat` y las etiquetas lo hacen crecer, todo el audio se corre y esos
+números quedan apuntando al lugar equivocado. El archivo **sigue
+pareciendo válido y abre sin error** — simplemente suena mal. Es
+exactamente la clase de defecto que una prueba de estructura no ve.
+
+La corrección no pregunta "¿está moov antes de mdat?" sino que suma el
+desplazamiento **solo a los offsets que apuntaban después del `moov`
+original**, que son precisamente los bytes que se movieron. Sale gratis y
+deja bien también el archivo raro con `mdat` a los dos lados, sin ningún
+caso especial.
+
+Dos cosas más del formato que cuestan poco y evitan un archivo mudo: el
+`meta` de `udta` es una caja de "versión completa" (4 bytes de
+versión+banderas antes de sus hijos) **casi siempre** — hay archivos de
+QuickTime donde no, y leerlos como si lo fueran desplaza todo 4 bytes y
+no se encuentra nada; se detecta probando cuál de las dos lecturas cierra
+exacto. Y el `hdlr` con handler `mdir` es lo que le dice a iTunes y a
+AVFoundation que ese `meta` contiene etiquetas: sin él el `ilst` está
+pero nadie lo mira, así que se crea cuando falta.
+
+Los átomos de `ilst` que **no** gobierna el catálogo (los que pone
+iTunes, agrupaciones, identificadores) pasan intactos: no son nuestros y
+no los entendemos, así que no se tiran.
+
+### Cómo está verificado
+
+18 pruebas. Las dos que importan de verdad no miran la estructura sino el
+resultado: **las muestras de audio decodificadas** antes y después de
+etiquetar tienen que ser idénticas, una sobre un M4A normal y otra sobre
+uno con `moov` antes de `mdat`. El segundo fixture se le pide a
+AVFoundation (`shouldOptimizeForNetworkUse`) en vez de reordenar las
+cajas a mano: reordenarlas requeriría la misma aritmética de
+desplazamientos que la prueba viene a verificar, y entonces no
+verificaría nada.
+
+Y esa prueba se comprobó **al revés**: desactivando la corrección de
+`stco`, falla; con el archivo normal (`moov` al final) sigue pasando,
+que es lo correcto porque ahí no hay nada que corregir. Una prueba que no
+falla cuando el defecto está presente no prueba nada, y era barato
+saberlo.
+
+El resto cubre la ida y vuelta por los dos caminos —nuestro lector de
+bytes crudos y `AVURLAsset.load(.metadata)`, que es el que usa la app en
+producción—, que el audio y el STREAMINFO no se tocan, que el SEEKTABLE y
+el padding sobreviven, la carátula, la idempotencia (escribir dos veces
+lo mismo da el mismo archivo, que es lo que permite no tocar el disco y
+no moverle la fecha a la canción) y el despachador.
+
+### Lo que queda fuera, dicho
+
+WAV y AIFF **no se etiquetan**: al importarlos en modo copia se
+convierten a MP3 (§0.2 del plan). `LocalTagWriter` lo dice con el motivo
+en vez de fallar en silencio — la diferencia entre un formato que no se
+etiqueta y un escritor roto tiene que ser visible.
+
+Nada de esto está conectado todavía a la app: A2 son los escritores y su
+verificación. Quien los llame es A3 (ST-223), que es donde el modo copia
+pasa a escribir las etiquetas en el archivo de la biblioteca.

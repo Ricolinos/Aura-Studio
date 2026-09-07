@@ -135,3 +135,126 @@ enum MP4TagReader {
         return result
     }
 }
+
+// MARK: - ST-222: lo que hace falta para verificar los escritores de A2
+
+extension FLACTagReader {
+    /// Los tipos de bloque de metadatos, en orden, con su tamaño. Sirve
+    /// para comprobar que el escritor conservó lo que no le tocaba
+    /// (STREAMINFO, SEEKTABLE, padding) y no solo que escribió lo suyo.
+    static func metadataBlockLayout(from data: Data) -> [(type: UInt8, length: Int)]? {
+        guard data.count >= 4, data.subdata(in: 0..<4) == Data("fLaC".utf8) else { return nil }
+        var layout: [(UInt8, Int)] = []
+        var offset = 4
+        while offset + 4 <= data.count {
+            let header = data[data.startIndex + offset]
+            let isLast = (header & 0x80) != 0
+            let length = Int(data[data.startIndex + offset + 1]) << 16
+                | Int(data[data.startIndex + offset + 2]) << 8
+                | Int(data[data.startIndex + offset + 3])
+            guard offset + 4 + length <= data.count else { return nil }
+            layout.append((header & 0x7F, length))
+            offset += 4 + length
+            if isLast { break }
+        }
+        return layout
+    }
+
+    /// Dónde empieza el audio (después del último bloque de metadatos).
+    static func audioStartOffset(from data: Data) -> Int? {
+        guard let layout = metadataBlockLayout(from: data) else { return nil }
+        return layout.reduce(4) { $0 + 4 + $1.length }
+    }
+
+    /// El payload del primer bloque PICTURE (tipo 6), ya separado en sus
+    /// campos -- para verificar que la carátula viajó entera y con el
+    /// tipo "portada frontal".
+    static func readPicture(from data: Data) -> (pictureType: UInt32, mimeType: String, imageData: Data)? {
+        guard data.count >= 4, data.subdata(in: 0..<4) == Data("fLaC".utf8) else { return nil }
+        var offset = 4
+        while offset + 4 <= data.count {
+            let header = data[data.startIndex + offset]
+            let isLast = (header & 0x80) != 0
+            let length = Int(data[data.startIndex + offset + 1]) << 16
+                | Int(data[data.startIndex + offset + 2]) << 8
+                | Int(data[data.startIndex + offset + 3])
+            let payloadStart = offset + 4
+            guard payloadStart + length <= data.count else { return nil }
+            if (header & 0x7F) == 6 {
+                return parsePicturePayload(data.subdata(in: (data.startIndex + payloadStart)..<(data.startIndex + payloadStart + length)))
+            }
+            offset = payloadStart + length
+            if isLast { break }
+        }
+        return nil
+    }
+
+    private static func parsePicturePayload(_ payload: Data) -> (UInt32, String, Data)? {
+        var cursor = payload.startIndex
+        func readBE32() -> UInt32? {
+            guard cursor + 4 <= payload.endIndex else { return nil }
+            let value = payload[cursor..<(cursor + 4)].reduce(UInt32(0)) { ($0 << 8) | UInt32($1) }
+            cursor += 4
+            return value
+        }
+        guard let pictureType = readBE32(),
+              let mimeLength = readBE32(), cursor + Int(mimeLength) <= payload.endIndex else { return nil }
+        let mime = String(data: payload.subdata(in: cursor..<(cursor + Int(mimeLength))), encoding: .utf8) ?? ""
+        cursor += Int(mimeLength)
+        guard let descriptionLength = readBE32(), cursor + Int(descriptionLength) <= payload.endIndex else { return nil }
+        cursor += Int(descriptionLength)
+        // ancho, alto, profundidad, colores del índice
+        for _ in 0..<4 { guard readBE32() != nil else { return nil } }
+        guard let imageLength = readBE32(), cursor + Int(imageLength) <= payload.endIndex else { return nil }
+        return (pictureType, mime, payload.subdata(in: cursor..<(cursor + Int(imageLength))))
+    }
+}
+
+extension MP4TagReader {
+    /// `trkn` y `disk`: el número va en los bytes 2-3 del valor, después
+    /// de los 8 de cabecera del átomo `data`.
+    static func readTrackAndDisc(from data: Data) -> (track: Int?, disc: Int?) {
+        (numberAtom("trkn", in: data), numberAtom("disk", in: data))
+    }
+
+    static func readCoverArt(from data: Data) -> (typeIndicator: UInt32, imageData: Data)? {
+        guard let payload = rawAtomPayload("covr", in: data) else { return nil }
+        guard payload.count > 8 else { return nil }
+        let base = payload.startIndex
+        let indicator = payload[base..<(base + 4)].reduce(UInt32(0)) { ($0 << 8) | UInt32($1) }
+        return (indicator, payload.subdata(in: (base + 8)..<payload.endIndex))
+    }
+
+    /// Los tipos de átomo presentes en `ilst`, para comprobar que el
+    /// escritor no tiró los que no son suyos.
+    static func ilstAtomTypes(from data: Data) -> [String] {
+        guard let range = ilstRange(in: data) else { return [] }
+        return readBoxes(in: data, range: range).map(\.type)
+    }
+
+    private static func numberAtom(_ type: String, in data: Data) -> Int? {
+        guard let payload = rawAtomPayload(type, in: data), payload.count >= 12 else { return nil }
+        let base = payload.startIndex
+        return Int(payload[(base + 10)..<(base + 12)].reduce(UInt32(0)) { ($0 << 8) | UInt32($1) })
+    }
+
+    /// El contenido del `data` que hay dentro del átomo `type`.
+    private static func rawAtomPayload(_ type: String, in data: Data) -> Data? {
+        guard let range = ilstRange(in: data) else { return nil }
+        guard let atom = readBoxes(in: data, range: range).first(where: { $0.type == type }),
+              let dataBox = readBoxes(in: data, range: atom.payloadRange).first(where: { $0.type == "data" }) else {
+            return nil
+        }
+        return data.subdata(in: dataBox.payloadRange)
+    }
+
+    private static func ilstRange(in data: Data) -> Range<Int>? {
+        guard let moov = readBoxes(in: data, range: 0..<data.count).first(where: { $0.type == "moov" }),
+              let udta = readBoxes(in: data, range: moov.payloadRange).first(where: { $0.type == "udta" }),
+              let metaBox = readBoxes(in: data, range: udta.payloadRange).first(where: { $0.type == "meta" }) else {
+            return nil
+        }
+        let metaChildren = (metaBox.payloadRange.lowerBound + 4)..<metaBox.payloadRange.upperBound
+        return readBoxes(in: data, range: metaChildren).first(where: { $0.type == "ilst" })?.payloadRange
+    }
+}
