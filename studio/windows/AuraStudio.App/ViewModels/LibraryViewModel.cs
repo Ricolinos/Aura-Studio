@@ -824,6 +824,13 @@ public sealed partial class LibraryViewModel : ViewModelBase
         Items = load.Items;
         RefreshAvailable();
 
+        // ST-246: ¿esta biblioteca viene de una versión anterior? La pregunta se
+        // contesta con lo que la carga ya tenía en la mano —cuántos elementos
+        // venían sin `storage`, y cuántos preparados llevan el nombre viejo—,
+        // sin una sola consulta al disco: ST-203 sacó eso del arranque y una
+        // comprobación de migración no lo va a volver a meter.
+        MigrationNeed = LibraryMigrationScanner.Detect(Items, load.ItemsWithoutStorage);
+
         // Lo que quedó en cola —porque la app se cerró a media importación, o
         // porque un intento anterior falló— se reintenta al abrir. El catálogo
         // guarda esos estados como "en cola" justamente para esto; sin
@@ -1626,6 +1633,136 @@ public sealed partial class LibraryViewModel : ViewModelBase
             Dispatch(() => StatusMessage =
                 $"No se pudieron escribir las etiquetas en «{name}»: {result.Reason}");
         });
+    }
+
+    // MARK: - Migración de una biblioteca anterior (ST-246)
+
+    /// <summary>
+    /// Qué hay para migrar en esta biblioteca. Se calcula al cargar, con lo que
+    /// la carga ya sabía y sin tocar disco.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NeedsMigration))]
+    [NotifyPropertyChangedFor(nameof(MigrationMessage))]
+    public partial LibraryMigrationNeed MigrationNeed { get; private set; }
+
+    public bool NeedsMigration => MigrationNeed.Needed && !IsMigrating;
+
+    /// <summary>
+    /// Lo que se le dice al usuario. <b>Se cuenta lo que se encontró, no un
+    /// "hay cosas que arreglar"</b>: una app que pide permiso para tocar los
+    /// archivos de alguien tiene que decir cuántos y por qué.
+    /// </summary>
+    public string MigrationMessage
+    {
+        get
+        {
+            var parts = new List<string>();
+
+            if (MigrationNeed.ItemsWithoutStorage is > 0 and var withoutStorage)
+            {
+                parts.Add(withoutStorage == 1
+                    ? "1 elemento no dice todavía si su archivo es una copia de Aura o tuyo"
+                    : $"{withoutStorage} elementos no dicen todavía si sus archivos son copias de Aura o tuyos");
+            }
+
+            if (MigrationNeed.LegacyPrepared is > 0 and var legacy)
+            {
+                parts.Add(legacy == 1
+                    ? "1 archivo preparado usa el nombre viejo"
+                    : $"{legacy} archivos preparados usan el nombre viejo");
+            }
+
+            return parts.Count == 0
+                ? ""
+                : $"Esta biblioteca viene de una versión anterior: {string.Join(", y ", parts)}. "
+                  + "Migrarla deja las etiquetas del catálogo escritas en las copias y ordena "
+                  + "lo preparado. Tus archivos originales no se tocan.";
+        }
+    }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(NeedsMigration))]
+    public partial bool IsMigrating { get; private set; }
+
+    /// <summary>
+    /// Pone al día una biblioteca anterior (ST-246). <b>Solo cuando el usuario
+    /// lo pide</b>: abrir la biblioteca no escribe un archivo.
+    ///
+    /// <para>Al terminar se recalcula qué falta. Si quedó todo, el aviso
+    /// desaparece solo — no hace falta ninguna marca de "ya migrada" en el
+    /// catálogo compartido, y por eso no se agrega ninguna.</para>
+    /// </summary>
+    [RelayCommand(IncludeCancelCommand = true)]
+    private async Task MigrateLibraryAsync(CancellationToken ct)
+    {
+        if (IsMigrating) return;
+
+        IReadOnlyList<LibraryItem> items = Items;
+
+        BackgroundTaskHandle task = _tasks.Begin(
+            "Migrando la biblioteca…", BackgroundTaskProgress.Of(0, items.Count));
+
+        IsMigrating = true;
+
+        LibraryMigrationSummary summary;
+
+        try
+        {
+            summary = await LibraryMigrator.RunAsync(
+                _store.Root,
+                items,
+                _preferences.AudioQuality,
+                _preferences.CoverArtPolicy,
+                ReadCover,
+                AudioTranscoder.ForPreparedAsync,
+                (done, total, what) => Dispatch(() => task.Update(BackgroundTaskProgress.Of(done, total), what)),
+                ct: ct).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsMigrating = false;
+            _tasks.Finish(task);
+        }
+
+        Save();
+        OnPropertyChanged(nameof(Items));
+
+        // Lo que quedó por hacer se vuelve a medir: si la migración se canceló,
+        // el aviso sigue —y con razón—; si terminó, se apaga solo.
+        MigrationNeed = LibraryMigrationScanner.Detect(Items, 0);
+
+        StatusMessage = SummarizeMigration(summary);
+    }
+
+    private static string SummarizeMigration(LibraryMigrationSummary summary)
+    {
+        if (summary.Touched == 0 && summary.Failed == 0)
+        {
+            return summary.Cancelled
+                ? "Migración cancelada; no se alcanzó a cambiar nada."
+                : "La biblioteca ya estaba al día: no hubo nada que migrar.";
+        }
+
+        var parts = new List<string>();
+
+        if (summary.Tagged > 0)
+        {
+            parts.Add(summary.Tagged == 1
+                ? "se escribieron las etiquetas de 1 canción"
+                : $"se escribieron las etiquetas de {summary.Tagged} canciones");
+        }
+
+        if (summary.PreparedRenamed > 0) parts.Add($"se ordenaron {summary.PreparedRenamed} preparados");
+        if (summary.PreparedBuilt > 0) parts.Add($"se armaron {summary.PreparedBuilt} preparados");
+        if (summary.OrphansDeleted > 0) parts.Add($"se borraron {summary.OrphansDeleted} archivos huérfanos");
+
+        string done = parts.Count == 0 ? "no hubo cambios" : string.Join(", ", parts);
+        string head = summary.Cancelled ? "Migración cancelada" : "Biblioteca migrada";
+
+        return summary.Failed > 0
+            ? $"{head}: {done}. {summary.Failed} no se pudieron migrar y siguen en la biblioteca."
+            : $"{head}: {done}.";
     }
 
     /// <summary>

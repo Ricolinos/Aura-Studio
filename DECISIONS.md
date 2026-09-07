@@ -13569,3 +13569,142 @@ sin ventana. Que el `.resw` tenga la forma que WinUI/MRT espera para un
 `x:Uid` real (con `/` como separador de alcance, no `.`) es una decisión
 que toca cuando B7a real decida el mecanismo de carga — hoy es un borrador
 de revisión, no un recurso cargable.
+
+## ST-246 — Windows: migrar una biblioteca de una versión anterior, y solo cuando el dueño lo pide
+
+B6 de la ronda "ajustes 3". Las cinco entregas anteriores cambiaron cómo
+Studio guarda las cosas —`storage` (ST-241), etiquetas escritas (ST-242),
+modo copia (ST-243), preparado por identificador (ST-244)—, y una
+biblioteca armada antes de todo eso queda a medio camino: sin `storage`,
+con las copias sin las etiquetas del catálogo, con preparados nombrados
+por el archivo de origen.
+
+### Lo primero: abrirla no escribe nada
+
+**Abrir una biblioteca anterior no toca un solo archivo del usuario.** Lo
+único que pasa al cargar es que `storage` se infiere en memoria (ST-241)
+y se persiste con el próximo guardado del catálogo. La música, las fotos,
+los videos y las carátulas quedan exactamente como estaban.
+
+Hay una prueba que lo fija y es la más importante del archivo: se calcula
+el resumen de **todos** los archivos de la biblioteca —ruta, tamaño y
+contenido— antes y después de abrirla, y tiene que dar idéntico. El
+catálogo se deja fuera del cálculo a propósito, porque persistir la
+inferencia sí es parte del contrato.
+
+Migrar sin avisar sería tocar los archivos de alguien porque sí. Son
+suyos.
+
+### Cómo se sabe que hay algo que migrar, sin pagarlo en el arranque
+
+Dos señales, las dos **del catálogo** y sin una sola consulta al disco:
+ST-203 sacó del arranque las preguntas archivo por archivo y una
+comprobación de migración no las va a volver a meter.
+
+- **Elementos sin `storage`.** Se cuentan en `LibraryStore.Load`, que es
+  el único lugar donde se ve el valor crudo: apenas pasa por
+  `ItemStorageRules.Resolve` ya está inferido y no se distingue de uno
+  que sí lo traía. Sale del recorrido que la carga ya hacía.
+- **Preparados con el nombre viejo.** Comparación de texto contra
+  `<ID>.<ext>`. La música copiada no cuenta: su preparado es el archivo
+  mismo (ST-241) y no tiene por qué llamarse como un identificador —
+  contarla sería avisar de una migración que no hace falta, para siempre.
+
+**Lo que no se puede detectar barato se confirma adentro de la
+migración.** Que una copia de `Música/` tenga o no las etiquetas del
+catálogo solo se sabe abriendo el archivo. La consecuencia, dicha para
+que no sorprenda: una biblioteca cuyo **único** problema sea ese no
+dispara el aviso sola. Por eso la acción está **también en Ajustes**,
+siempre disponible — y por eso esa sección explica para qué sirve incluso
+cuando no hay nada detectado.
+
+### Sin marca de "ya migrada" en el catálogo compartido
+
+Las dos señales **se apagan solas** al arreglarlas: `storage` queda
+escrito, y los preparados quedan con nombre de identificador. Así que una
+biblioteca ya migrada no vuelve a avisar sin necesidad de agregarle un
+campo al catálogo que comparten las dos apps. **No se agregó ninguno**, y
+es a propósito: un campo nuevo es contrato, y no hacía falta.
+
+### Qué hace la migración
+
+Por elemento y en este orden:
+
+1. A las copias de `Música/` les escribe las etiquetas del catálogo. El
+   escritor no hace nada si ya coinciden (ST-242), así que esto es gratis
+   en una biblioteca al día.
+2. A los preparados con nombre viejo los **renombra** al identificador,
+   **con su póster hermano**. Renombrar y no recopiar: son gigabytes, y el
+   archivo ya está bien. Si el póster se quedara con el nombre viejo, el
+   video perdería su carátula sin que nadie lo note.
+3. A la música referenciada le asegura su preparado con la regla de
+   ST-244 — **solo si hace falta uno**.
+4. Y al final borra lo que quedó huérfano, con el detector de ST-245. Al
+   final y no antes: hacerlo primero borraría justo el archivo que el paso
+   2 iba a renombrar. Y **con el detector de B5, no con uno propio**: dos
+   formas de decidir qué es huérfano es cómo se termina borrando algo que
+   sí hacía falta.
+
+**Nunca borra un elemento del catálogo.** Un original que no está se salta
+y sigue como no disponible (ST-241).
+
+### Se puede correr dos veces, y se puede parar
+
+**Idempotente**: cada paso pregunta antes de escribir, así que la segunda
+corrida no toca nada. Se comprueba con el resumen *y* con el árbol de la
+biblioteca byte a byte, porque una reescritura que dejara el mismo
+contenido igual cambiaría la fecha — y con eso la sincronización volvería
+a copiar la biblioteca entera al iPod.
+
+**Cancelable y reanudable**: lo hecho queda hecho, que es trabajo válido y
+no algo que deshacer, y lo que falta se hace en la siguiente. Una corrida
+cancelada **no borra ningún huérfano**: la lista de lo referenciado está a
+medias, y borrar con esa lista se llevaría archivos que sí hacen falta.
+
+Detalle que salió de escribir la prueba: cancelar durante el **último**
+elemento no lo veía la comprobación del bucle —ya no daba otra vuelta— y
+el resumen decía "terminé" cuando el usuario había pedido parar. Se
+comprueba también al salir.
+
+### Cómo se le pide al usuario
+
+Una franja en el armazón, como el aviso de versión nueva (ST-211): no
+interrumpe, y el botón es suyo. **No se puede cerrar**, porque no es una
+novedad que se descarta — es trabajo pendiente sobre sus archivos, y
+desaparece cuando de verdad se hizo.
+
+El texto **cuenta lo que se encontró**, no un "hay cosas que arreglar":
+una app que pide permiso para tocar los archivos de alguien tiene que
+decir cuántos y por qué. Y el resumen final dice qué se hizo y qué falló,
+por separado.
+
+### Verificación
+
+`dotnet build` de `AuraStudio.Core`, `AuraStudio.App` y el arnés: **0
+errores**. `dotnet test`: **1 726 pruebas en verde** (12 nuevas).
+
+Las 12: que abrir no escriba nada (la del resumen del árbol); que la
+inferencia ocurra en memoria y se cuente al cargar; las tres señales de
+aviso y la que no cuenta (música copiada); que se escriban las etiquetas,
+que se renombre el preparado con su póster, y que se borren los
+huérfanos; que correrla dos veces no toque nada la segunda; que cancelar
+a mitad no rompa, no borre huérfanos y se reanude; y que un archivo que no
+está no rompa ni cuente como error.
+
+Y en el arnés `tools/CopyModeCheck`, con una biblioteca vieja sintetizada
+—sin `storage`, con la copia sin etiquetas, con un preparado por nombre
+base y un huérfano—:
+
+| | antes | después |
+|---|---|---|
+| sin `storage` / preparados viejos | 2 / 1 → **avisa** | — → **no avisa** |
+| título en el archivo | `Pista 01` | `Ingrata` |
+| preparado del video | `peli.mpg` | `6CE9EE0D-….mpg` (+ póster) |
+| huérfanos en `.preparados/` | 3 archivos | 1 borrado |
+
+Abrir no escribió nada, y la segunda corrida tocó **0 archivos** con el
+árbol idéntico.
+
+Lo que **no** se verificó: nada contra la biblioteca real del dueño, ni en
+copia — la biblioteca vieja del arnés se sintetiza desde cero. Y la franja
+y el botón de Ajustes los tiene que mirar alguien con la app delante.
