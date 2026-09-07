@@ -44,6 +44,62 @@
 			<string>%lld 件のタスク</string>
 		</dict>
 	</dict>
+	<key>device-activity-bar.plural.con-cambios</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>変更あり %lld 件</string>
+		</dict>
+	</dict>
+	<key>device-activity-bar.plural.modificados-ipod</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>iPod 上で変更 %lld 件</string>
+		</dict>
+	</dict>
+	<key>device-activity-bar.plural.pendientes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>保留中 %lld 件</string>
+		</dict>
+	</dict>
+	<key>device-activity-bar.plural.quitados-ipod</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>iPod から削除 %lld 件</string>
+		</dict>
+	</dict>
 	<key>library-browsing.plural.fotos</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -98,6 +154,104 @@
 			<string>lld</string>
 			<key>other</key>
 			<string>%lld 曲</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.con-etiquetas-nuevas</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>%lld 件にタグを書き込みました</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.fallaron-siguen</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>%lld 件が失敗し、ライブラリに残っています</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.huerfanos-borrados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>%lld 個の孤立ファイルを削除</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.nombre-viejo</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>%lld 個の準備済みファイルが古い名前のままです</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.preparados-armados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>%lld 個の準備済みファイルを作成</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.preparados-renombrados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>%lld 個の準備済みファイルの名前を変更</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.sin-modo-guardado</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>%lld 件の項目に、コピーか参照かの記録がありません</string>
 		</dict>
 	</dict>
 	<key>library-status-summary.plural.dias-horas</key>
@@ -212,6 +366,20 @@
 			<string>%lld 件の項目を修正中…</string>
 		</dict>
 	</dict>
+	<key>library-view-model.plural.duplicados-saltados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>%lld 個のファイルはすでにライブラリにあり、再度追加されませんでした</string>
+		</dict>
+	</dict>
 	<key>library-view-model.plural.editando</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -268,6 +436,20 @@
 			<string>アーティストの写真: %lld 件見つかりました</string>
 		</dict>
 	</dict>
+	<key>library-view-model.plural.grupos-parecidos</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>追加したものの中に、似ている項目のグループが %lld 件あります</string>
+		</dict>
+	</dict>
 	<key>library-view-model.plural.posters-encontrados</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -294,6 +476,48 @@
 			<string>lld</string>
 			<key>other</key>
 			<string>%lld 件はファイルが見つからないためスキップしました</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.sin-opcion-segura</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>%lld 件は確度の高い候補がありません（ご自身で選んでください）</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.sin-resultado</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>%lld 件は結果なし</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.sin-revisar-cancelaste</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>%lld 件は未確認（キャンセルしました）</string>
 		</dict>
 	</dict>
 	<key>library-view-model.plural.ya-tenian-foto</key>
@@ -352,6 +576,20 @@
 			<string>%lld シーズン</string>
 		</dict>
 	</dict>
+	<key>similar-items-view.plural.elementos</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>%lld 件の項目</string>
+		</dict>
+	</dict>
 	<key>similar-items-view.plural.grupos</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -364,6 +602,48 @@
 			<string>lld</string>
 			<key>other</key>
 			<string>%lld グループ</string>
+		</dict>
+	</dict>
+	<key>similar-items.plural.duplicados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>重複 %lld 件</string>
+		</dict>
+	</dict>
+	<key>similar-items.plural.posibles</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>可能性あり %lld 件</string>
+		</dict>
+	</dict>
+	<key>similar-items.plural.probables</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>可能性大 %lld 件</string>
 		</dict>
 	</dict>
 </dict>

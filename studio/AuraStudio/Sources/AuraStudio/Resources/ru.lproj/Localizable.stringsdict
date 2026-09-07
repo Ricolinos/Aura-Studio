@@ -62,6 +62,86 @@
 			<string>%lld задачи</string>
 		</dict>
 	</dict>
+	<key>device-activity-bar.plural.con-cambios</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld с изменениями</string>
+			<key>many</key>
+			<string>%lld с изменениями</string>
+			<key>one</key>
+			<string>%lld с изменениями</string>
+			<key>other</key>
+			<string>%lld с изменениями</string>
+		</dict>
+	</dict>
+	<key>device-activity-bar.plural.modificados-ipod</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld изменено на iPod</string>
+			<key>many</key>
+			<string>%lld изменено на iPod</string>
+			<key>one</key>
+			<string>%lld изменён на iPod</string>
+			<key>other</key>
+			<string>%lld изменено на iPod</string>
+		</dict>
+	</dict>
+	<key>device-activity-bar.plural.pendientes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld в очереди</string>
+			<key>many</key>
+			<string>%lld в очереди</string>
+			<key>one</key>
+			<string>%lld в очереди</string>
+			<key>other</key>
+			<string>%lld в очереди</string>
+		</dict>
+	</dict>
+	<key>device-activity-bar.plural.quitados-ipod</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld удалено с iPod</string>
+			<key>many</key>
+			<string>%lld удалено с iPod</string>
+			<key>one</key>
+			<string>%lld удалён с iPod</string>
+			<key>other</key>
+			<string>%lld удалено с iPod</string>
+		</dict>
+	</dict>
 	<key>library-browsing.plural.fotos</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -140,6 +220,146 @@
 			<string>%lld трек</string>
 			<key>other</key>
 			<string>%lld трека</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.con-etiquetas-nuevas</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld с новыми тегами</string>
+			<key>many</key>
+			<string>%lld с новыми тегами</string>
+			<key>one</key>
+			<string>%lld с новыми тегами</string>
+			<key>other</key>
+			<string>%lld с новыми тегами</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.fallaron-siguen</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld объекта не удалось обработать, они остались в медиатеке</string>
+			<key>many</key>
+			<string>%lld объектов не удалось обработать, они остались в медиатеке</string>
+			<key>one</key>
+			<string>%lld объект не удалось обработать, он остался в медиатеке</string>
+			<key>other</key>
+			<string>%lld объекта не удалось обработать, они остались в медиатеке</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.huerfanos-borrados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld потерянных файла удалено</string>
+			<key>many</key>
+			<string>%lld потерянных файлов удалено</string>
+			<key>one</key>
+			<string>%lld потерянный файл удалён</string>
+			<key>other</key>
+			<string>%lld потерянных файла удалено</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.nombre-viejo</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld подготовленных файла имеют старые имена</string>
+			<key>many</key>
+			<string>%lld подготовленных файлов имеют старые имена</string>
+			<key>one</key>
+			<string>%lld подготовленный файл имеет старое имя</string>
+			<key>other</key>
+			<string>%lld подготовленных файла имеют старые имена</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.preparados-armados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld подготовленных файла создано</string>
+			<key>many</key>
+			<string>%lld подготовленных файлов создано</string>
+			<key>one</key>
+			<string>%lld подготовленный файл создан</string>
+			<key>other</key>
+			<string>%lld подготовленных файла создано</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.preparados-renombrados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld подготовленных файла переименовано</string>
+			<key>many</key>
+			<string>%lld подготовленных файлов переименовано</string>
+			<key>one</key>
+			<string>%lld подготовленный файл переименован</string>
+			<key>other</key>
+			<string>%lld подготовленных файла переименовано</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.sin-modo-guardado</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld объекта не указывают, скопированы они или связаны</string>
+			<key>many</key>
+			<string>%lld объектов не указывают, скопированы они или связаны</string>
+			<key>one</key>
+			<string>%lld объект не указывает, скопирован он или связан</string>
+			<key>other</key>
+			<string>%lld объекта не указывают, скопированы они или связаны</string>
 		</dict>
 	</dict>
 	<key>library-status-summary.plural.dias-horas</key>
@@ -302,6 +522,26 @@
 			<string>Исправляем %lld объекта…</string>
 		</dict>
 	</dict>
+	<key>library-view-model.plural.duplicados-saltados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld файла уже были в медиатеке и не добавлены повторно</string>
+			<key>many</key>
+			<string>%lld файлов уже были в медиатеке и не добавлены повторно</string>
+			<key>one</key>
+			<string>%lld файл уже был в медиатеке и не добавлен повторно</string>
+			<key>other</key>
+			<string>%lld файла уже были в медиатеке и не добавлены повторно</string>
+		</dict>
+	</dict>
 	<key>library-view-model.plural.editando</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -382,6 +622,26 @@
 			<string>Найдено фото исполнителей: %lld</string>
 		</dict>
 	</dict>
+	<key>library-view-model.plural.grupos-parecidos</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>среди только что добавленного есть %lld группы похожих объектов</string>
+			<key>many</key>
+			<string>среди только что добавленного есть %lld групп похожих объектов</string>
+			<key>one</key>
+			<string>среди только что добавленного есть %lld группа похожих объектов</string>
+			<key>other</key>
+			<string>среди только что добавленного есть %lld группы похожих объектов</string>
+		</dict>
+	</dict>
 	<key>library-view-model.plural.posters-encontrados</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -420,6 +680,66 @@
 			<string>%lld пропущен, так как файла нет</string>
 			<key>other</key>
 			<string>%lld пропущены, так как файлов нет</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.sin-opcion-segura</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld без достаточно надёжного варианта (выберите сами)</string>
+			<key>many</key>
+			<string>%lld без достаточно надёжного варианта (выберите сами)</string>
+			<key>one</key>
+			<string>%lld без достаточно надёжного варианта (выберите сами)</string>
+			<key>other</key>
+			<string>%lld без достаточно надёжного варианта (выберите сами)</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.sin-resultado</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld без результата</string>
+			<key>many</key>
+			<string>%lld без результата</string>
+			<key>one</key>
+			<string>%lld без результата</string>
+			<key>other</key>
+			<string>%lld без результата</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.sin-revisar-cancelaste</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld не проверено (вы отменили)</string>
+			<key>many</key>
+			<string>%lld не проверено (вы отменили)</string>
+			<key>one</key>
+			<string>%lld не проверено (вы отменили)</string>
+			<key>other</key>
+			<string>%lld не проверено (вы отменили)</string>
 		</dict>
 	</dict>
 	<key>library-view-model.plural.ya-tenian-foto</key>
@@ -502,6 +822,26 @@
 			<string>%lld сезона</string>
 		</dict>
 	</dict>
+	<key>similar-items-view.plural.elementos</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld объекта</string>
+			<key>many</key>
+			<string>%lld объектов</string>
+			<key>one</key>
+			<string>%lld объект</string>
+			<key>other</key>
+			<string>%lld объекта</string>
+		</dict>
+	</dict>
 	<key>similar-items-view.plural.grupos</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -520,6 +860,66 @@
 			<string>%lld группа</string>
 			<key>other</key>
 			<string>%lld группы</string>
+		</dict>
+	</dict>
+	<key>similar-items.plural.duplicados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld дубликата</string>
+			<key>many</key>
+			<string>%lld дубликатов</string>
+			<key>one</key>
+			<string>%lld дубликат</string>
+			<key>other</key>
+			<string>%lld дубликата</string>
+		</dict>
+	</dict>
+	<key>similar-items.plural.posibles</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld возможных</string>
+			<key>many</key>
+			<string>%lld возможных</string>
+			<key>one</key>
+			<string>%lld возможный</string>
+			<key>other</key>
+			<string>%lld возможных</string>
+		</dict>
+	</dict>
+	<key>similar-items.plural.probables</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld вероятных</string>
+			<key>many</key>
+			<string>%lld вероятных</string>
+			<key>one</key>
+			<string>%lld вероятный</string>
+			<key>other</key>
+			<string>%lld вероятных</string>
 		</dict>
 	</dict>
 </dict>

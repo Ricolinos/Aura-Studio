@@ -17,17 +17,32 @@ enum SimilarityConfidence: Int, Comparable, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .duplicate: return "Duplicado"
-        case .probable: return "Probable"
-        case .possible: return "Posible"
+        case .duplicate: return LS("similar-items.confianza.duplicado")
+        case .probable:  return LS("similar-items.confianza.probable")
+        case .possible:  return LS("similar-items.confianza.posible")
         }
     }
 
     var detail: String {
         switch self {
-        case .duplicate: return "Casi seguro es el mismo archivo dos veces."
-        case .probable: return "Probablemente es la misma canción con la metadata escrita distinto."
-        case .possible: return "Se parecen, pero podrían ser versiones distintas. Conviene revisar."
+        case .duplicate: return LS("similar-items.confianza.duplicado-detalle")
+        case .probable:  return LS("similar-items.confianza.probable-detalle")
+        case .possible:  return LS("similar-items.confianza.posible-detalle")
+        }
+    }
+
+    /// ST-227 (A7c addendum 3): "3 duplicados", con el plural del idioma.
+    ///
+    /// La versión anterior armaba esto pegándole una "s" al título en
+    /// minúsculas (`"\(n) \(title.lowercased())\(n == 1 ? "" : "s")"`).
+    /// Funciona en español y en inglés por casualidad y en ningún otro
+    /// idioma: el alemán no pluraliza con "s", el ruso tiene cuatro
+    /// formas y el japonés ninguna.
+    func countText(_ n: Int) -> String {
+        switch self {
+        case .duplicate: return LSf("similar-items.plural.duplicados", n)
+        case .probable:  return LSf("similar-items.plural.probables", n)
+        case .possible:  return LSf("similar-items.plural.posibles", n)
         }
     }
 }

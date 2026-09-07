@@ -50,6 +50,70 @@
 			<string>%lld tasks</string>
 		</dict>
 	</dict>
+	<key>device-activity-bar.plural.con-cambios</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld changed</string>
+			<key>other</key>
+			<string>%lld changed</string>
+		</dict>
+	</dict>
+	<key>device-activity-bar.plural.modificados-ipod</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld changed on the iPod</string>
+			<key>other</key>
+			<string>%lld changed on the iPod</string>
+		</dict>
+	</dict>
+	<key>device-activity-bar.plural.pendientes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld pending</string>
+			<key>other</key>
+			<string>%lld pending</string>
+		</dict>
+	</dict>
+	<key>device-activity-bar.plural.quitados-ipod</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld removed from the iPod</string>
+			<key>other</key>
+			<string>%lld removed from the iPod</string>
+		</dict>
+	</dict>
 	<key>library-browsing.plural.fotos</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -112,6 +176,118 @@
 			<string>%lld song</string>
 			<key>other</key>
 			<string>%lld songs</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.con-etiquetas-nuevas</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld with new tags</string>
+			<key>other</key>
+			<string>%lld with new tags</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.fallaron-siguen</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld item failed and is still in your library</string>
+			<key>other</key>
+			<string>%lld items failed and are still in your library</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.huerfanos-borrados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld orphan deleted</string>
+			<key>other</key>
+			<string>%lld orphans deleted</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.nombre-viejo</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>1 prepared file has the old name</string>
+			<key>other</key>
+			<string>%lld prepared files have the old name</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.preparados-armados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld prepared file built</string>
+			<key>other</key>
+			<string>%lld prepared files built</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.preparados-renombrados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld prepared file renamed</string>
+			<key>other</key>
+			<string>%lld prepared files renamed</string>
+		</dict>
+	</dict>
+	<key>library-migration.plural.sin-modo-guardado</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>1 item doesn’t say whether it is copied or referenced</string>
+			<key>other</key>
+			<string>%lld items don’t say whether they are copied or referenced</string>
 		</dict>
 	</dict>
 	<key>library-status-summary.plural.dias-horas</key>
@@ -242,6 +418,22 @@
 			<string>Fixing %lld items…</string>
 		</dict>
 	</dict>
+	<key>library-view-model.plural.duplicados-saltados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>1 file was already in your library and wasn’t added again</string>
+			<key>other</key>
+			<string>%lld files were already in your library and weren’t added again</string>
+		</dict>
+	</dict>
 	<key>library-view-model.plural.editando</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -306,6 +498,22 @@
 			<string>Artist photos: %lld found</string>
 		</dict>
 	</dict>
+	<key>library-view-model.plural.grupos-parecidos</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>there is 1 group of similar items among what you just added</string>
+			<key>other</key>
+			<string>there are %lld groups of similar items among what you just added</string>
+		</dict>
+	</dict>
 	<key>library-view-model.plural.posters-encontrados</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -336,6 +544,54 @@
 			<string>1 was skipped because its file is missing</string>
 			<key>other</key>
 			<string>%lld were skipped because their files are missing</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.sin-opcion-segura</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>1 without a confident enough option (pick it yourself)</string>
+			<key>other</key>
+			<string>%lld without a confident enough option (pick them yourself)</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.sin-resultado</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld with no result</string>
+			<key>other</key>
+			<string>%lld with no results</string>
+		</dict>
+	</dict>
+	<key>library-view-model.plural.sin-revisar-cancelaste</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld not reviewed (you canceled)</string>
+			<key>other</key>
+			<string>%lld not reviewed (you canceled)</string>
 		</dict>
 	</dict>
 	<key>library-view-model.plural.ya-tenian-foto</key>
@@ -402,6 +658,22 @@
 			<string>%lld seasons</string>
 		</dict>
 	</dict>
+	<key>similar-items-view.plural.elementos</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>1 item</string>
+			<key>other</key>
+			<string>%lld items</string>
+		</dict>
+	</dict>
 	<key>similar-items-view.plural.grupos</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>
@@ -416,6 +688,54 @@
 			<string>%lld group</string>
 			<key>other</key>
 			<string>%lld groups</string>
+		</dict>
+	</dict>
+	<key>similar-items.plural.duplicados</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld duplicate</string>
+			<key>other</key>
+			<string>%lld duplicates</string>
+		</dict>
+	</dict>
+	<key>similar-items.plural.posibles</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld possible</string>
+			<key>other</key>
+			<string>%lld possible</string>
+		</dict>
+	</dict>
+	<key>similar-items.plural.probables</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld probable</string>
+			<key>other</key>
+			<string>%lld probable</string>
 		</dict>
 	</dict>
 </dict>

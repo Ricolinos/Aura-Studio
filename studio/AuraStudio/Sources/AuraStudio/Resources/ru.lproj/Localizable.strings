@@ -191,6 +191,10 @@
 "installer-wizard-view.detener-proceso-mitad-puede-dejar-disco" = "Остановка на середине может оставить диск iPod с ошибками. Если это произойдёт, запустите установщик снова, чтобы его восстановить.";
 "installing-view.no-desconectes-ipod-ni-cierres-aura" = "Не отключайте iPod и не закрывайте Aura Studio на этом шаге.";
 "library-browsing-components.borrar-busqueda" = "Очистить поиск";
+"library-migration.cancelada" = "Миграция отменена: %@";
+"library-migration.no-hizo-falta-tocar-nada" = "ничего менять не потребовалось";
+"library-migration.terminada" = "Миграция завершена: %@";
+"library-migration.viene-de-version-anterior" = "Эта медиатека создана в более ранней версии Aura Studio: %@";
 "library-status-bar.accesibilidad" = "Строка состояния";
 "library-status-bar.texto" = "—";
 "library-sync.02d" = "%02d %@";
@@ -200,9 +204,11 @@
 "library-unavailable-view.elegir-otra-biblioteca" = "Выбрать другую медиатеку…";
 "library-unavailable-view.instalador-extras-siguen-funcionando-sin" = "«Установка» и «Дополнения» работают и без медиатеки.";
 "library-unavailable-view.no-se-perdio-nada-tu-catalogo" = "Ничего не потеряно: ваш каталог и файлы остаются на этом диске. Aura Studio ничего не тронет, пока он снова не станет доступен.";
+"library-view-model.cancelado" = "отменено";
 "library-view-model.eliminar-copia-papelera" = "%1$@ будут перемещены в Корзину (%2$@). Оттуда их можно восстановить.";
 "library-view-model.eliminar-referencia-uno" = "Он будет убран из вашей медиатеки Aura. Исходный файл останется на месте.";
 "library-view-model.eliminar-referencia-varios" = "Они будут убраны из вашей медиатеки Aura. Исходные файлы останутся на месте.";
+"library-view-model.sin-resultado-ejemplos" = "%1$@ (%2$@)";
 "licenses-view.aura-studio-es-gratuita-se-distribuye" = "Aura Studio бесплатна и распространяется без коммерческих целей. В неё встроены — ровно в том виде, в каком были опубликованы, и без изменений — устанавливаемые прошивки для iPod Classic 6G, все они являются свободным ПО под GNU General Public License версии 2 (GPL v2). Каждая производна от Rockbox; её полный исходный код, точная включённая здесь версия и перечень изменений относительно Rockbox доступны по ссылкам ниже, как того требует раздел 3 этой лицензии.";
 "licenses-view.gpl-v2" = "GPL v2";
 "licenses-view.rockbox" = "Rockbox";
@@ -326,6 +332,12 @@
 "restore-handoff-view.cerrar-aura-studio-abrir-finder" = "Закрыть Aura Studio и открыть Finder";
 "restore-handoff-view.continua-finder" = "Продолжить в Finder";
 "restore-handoff-view.ipod-quedo-listo-se-quito-bootloader" = "iPod готов: загрузчик Aura удалён, а диск подготовлен в формате, который ожидает Finder (Mac OS Extended с журналом, схема GUID).";
+"sentence.colon" = ": ";
+"sentence.period" = ".";
+"sentence.separator-and" = " и ";
+"sentence.separator-comma" = ", ";
+"sentence.separator-middot" = " · ";
+"sentence.separator-semicolon" = "; ";
 "series-view.series" = "Сериалы";
 "series-view.temporadas" = "%lld, %@";
 "services-settings-view.activo" = "Включено";
@@ -415,6 +427,7 @@
 "similar-items-view.ignorar-este-grupo" = "Пропустить эту группу";
 "similar-items-view.metadata-sugerida" = "Предложенные метаданные";
 "similar-items-view.musica" = "Музыка";
+"similar-items-view.no-se-encontraron-elementos-parecidos" = "Похожие объекты не найдены.";
 "similar-items-view.no-son-lo-mismo-no-volver" = "Это не одно и то же: больше не показывать эту группу.";
 "similar-items-view.por-que-se-parecen" = "Почему они похожи";
 "similar-items-view.probables-duplicados" = "Вероятные и дубликаты";
@@ -428,6 +441,12 @@
 "similar-items-view.video" = "Видео";
 "similar-items-view.volver-buscar" = "Искать снова";
 "similar-items-view.volver-mostrar-ignorados" = "Снова показать пропущенные (%lld)";
+"similar-items.confianza.duplicado" = "Дубликат";
+"similar-items.confianza.duplicado-detalle" = "Почти наверняка это один и тот же файл дважды.";
+"similar-items.confianza.posible" = "Возможно";
+"similar-items.confianza.posible-detalle" = "Они похожи, но это могут быть разные версии. Стоит проверить.";
+"similar-items.confianza.probable" = "Вероятно";
+"similar-items.confianza.probable-detalle" = "Вероятно, это один и тот же трек с по-разному записанными метаданными.";
 "storage-change-only-affects-future" = "Изменение этой настройки влияет только на то, что вы импортируете дальше: то, что уже в медиатеке, остаётся как есть.";
 "storage-copy-explainer" = "Копировать в медиатеку Aura: Aura управляет файлами, правит их теги и синхронизирует напрямую; это занимает место на диске (одна копия); свои оригиналы потом можно удалить.";
 "storage-reference-explainer" = "Ссылаться на них на месте: не занимает лишнего места и не трогает ваши файлы; Aura хранит подготовленную версию отдельно (.preparados/), правки живут только в Aura и на iPod, а если исходный диск недоступен, эти треки синхронизировать не получится.";

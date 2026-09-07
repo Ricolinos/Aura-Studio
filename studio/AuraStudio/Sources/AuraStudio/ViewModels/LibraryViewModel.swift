@@ -589,8 +589,8 @@ final class LibraryViewModel: ObservableObject {
                 parts.append(LSf("library-view-model.plural.saltadas", skippedUnavailable))
             }
             if failed > 0 { parts.append(LSf("library-view-model.plural.fallaron", failed)) }
-            if cancelled { parts.append("cancelado") }
-            return parts.joined(separator: "; ") + "."
+            if cancelled { parts.append(LS("library-view-model.cancelado")) }
+            return Sentence.ended(Sentence.clauses(parts))
         }
     }
 
@@ -1245,17 +1245,13 @@ final class LibraryViewModel: ObservableObject {
 
         var message: String {
             var parts: [String] = []
-            if duplicatesSkipped == 1 {
-                parts.append("1 archivo ya estaba en tu biblioteca y no se volvió a agregar")
-            } else if duplicatesSkipped > 1 {
-                parts.append("\(duplicatesSkipped) archivos ya estaban en tu biblioteca y no se volvieron a agregar")
+            if duplicatesSkipped > 0 {
+                parts.append(LSf("library-view-model.plural.duplicados-saltados", duplicatesSkipped))
             }
-            if similarGroups == 1 {
-                parts.append("hay 1 grupo de elementos parecidos entre lo que acabas de agregar")
-            } else if similarGroups > 1 {
-                parts.append("hay \(similarGroups) grupos de elementos parecidos entre lo que acabas de agregar")
+            if similarGroups > 0 {
+                parts.append(LSf("library-view-model.plural.grupos-parecidos", similarGroups))
             }
-            return parts.joined(separator: "; ") + "."
+            return Sentence.ended(Sentence.clauses(parts))
         }
     }
 
@@ -1605,8 +1601,14 @@ final class LibraryViewModel: ObservableObject {
             lastError = "Para buscar pósters hace falta una API key de TMDB (gratuita). Agrégala en Ajustes › Servicios; con fanart.tv configurado además se usará su póster curado cuando exista."
         } else {
             var parts = [LSf("library-view-model.plural.posters-encontrados", found)]
-            if !missing.isEmpty { parts.append("\(missing.count) sin resultado (\(missing.prefix(3).joined(separator: ", "))\(missing.count > 3 ? "…" : ""))") }
-            lastEnrichmentSummary = parts.joined(separator: ", ") + "."
+            if !missing.isEmpty {
+                let ejemplos = Sentence.commaList(Array(missing.prefix(3)))
+                    + (missing.count > 3 ? "…" : "")
+                parts.append(LSf("library-view-model.sin-resultado-ejemplos",
+                                 LSf("library-view-model.plural.sin-resultado", missing.count),
+                                 ejemplos))
+            }
+            lastEnrichmentSummary = Sentence.ended(Sentence.commaList(parts))
         }
         if found > 0 { persistCatalog() }
     }
@@ -1693,9 +1695,9 @@ final class LibraryViewModel: ObservableObject {
                 : "No hay artistas para buscar."
         } else {
             var parts = [LSf("library-view-model.plural.fotos-encontradas", found)]
-            if missing > 0 { parts.append("\(missing) sin resultado") }
+            if missing > 0 { parts.append(LSf("library-view-model.plural.sin-resultado", missing)) }
             if skipped > 0 { parts.append(LSf("library-view-model.plural.ya-tenian-foto", skipped)) }
-            lastEnrichmentSummary = parts.joined(separator: ", ") + "."
+            lastEnrichmentSummary = Sentence.ended(Sentence.commaList(parts))
         }
     }
 
@@ -1931,13 +1933,11 @@ final class LibraryViewModel: ObservableObject {
 
         var parts = [LSf("library-view-model.plural.caratulas-aplicadas", applied)]
         if !needsChoice.isEmpty {
-            parts.append(needsChoice.count == 1
-                         ? "1 sin una opción lo bastante segura (elígela tú)"
-                         : "\(needsChoice.count) sin una opción lo bastante segura (elígelas tú)")
+            parts.append(LSf("library-view-model.plural.sin-opcion-segura", needsChoice.count))
         }
-        if withoutResults > 0 { parts.append("\(withoutResults) sin resultados") }
-        if skippedByCancel > 0 { parts.append("\(skippedByCancel) sin revisar (cancelaste)") }
-        lastEnrichmentSummary = parts.joined(separator: ", ") + "."
+        if withoutResults > 0 { parts.append(LSf("library-view-model.plural.sin-resultado", withoutResults)) }
+        if skippedByCancel > 0 { parts.append(LSf("library-view-model.plural.sin-revisar-cancelaste", skippedByCancel)) }
+        lastEnrichmentSummary = Sentence.ended(Sentence.commaList(parts))
         // Cancelar tampoco encola pickers de lo que sí alcanzó a
         // revisarse: si el usuario paró, paró.
         return cancelled ? [] : needsChoice

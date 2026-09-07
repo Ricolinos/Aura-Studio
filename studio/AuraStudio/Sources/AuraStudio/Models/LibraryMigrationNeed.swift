@@ -20,18 +20,17 @@ struct LibraryMigrationNeed: Equatable {
     /// con su biblioteca.
     var message: String {
         var parts: [String] = []
-        if itemsWithoutStorage == 1 {
-            parts.append("1 elemento no dice si está copiado o referenciado")
-        } else if itemsWithoutStorage > 1 {
-            parts.append("\(itemsWithoutStorage) elementos no dicen si están copiados o referenciados")
+        if itemsWithoutStorage > 0 {
+            parts.append(LSf("library-migration.plural.sin-modo-guardado", itemsWithoutStorage))
         }
-        if legacyPrepared == 1 {
-            parts.append("1 archivo preparado tiene el nombre viejo")
-        } else if legacyPrepared > 1 {
-            parts.append("\(legacyPrepared) archivos preparados tienen el nombre viejo")
+        if legacyPrepared > 0 {
+            parts.append(LSf("library-migration.plural.nombre-viejo", legacyPrepared))
         }
-        return "Esta biblioteca viene de una versión anterior de Aura Studio: "
-            + parts.joined(separator: " y ") + "."
+        // ST-227 (A7c addendum 3): la frase entera sale del catálogo,
+        // separadores incluidos. Antes el encabezado y el " y " eran
+        // literales en español pegados a fragmentos traducidos -- con la
+        // app en alemán salía media oración en cada idioma.
+        return Sentence.ended(LSf("library-migration.viene-de-version-anterior", Sentence.list(parts)))
     }
 }
 
@@ -99,17 +98,22 @@ struct LibraryMigrationSummary: Equatable {
 
     var message: String {
         var parts: [String] = []
-        if tagged > 0 { parts.append("\(tagged) con etiquetas nuevas") }
-        if preparedRenamed > 0 { parts.append("\(preparedRenamed) preparados renombrados") }
-        if preparedBuilt > 0 { parts.append("\(preparedBuilt) preparados armados") }
-        if orphansDeleted > 0 { parts.append("\(orphansDeleted) huérfanos borrados") }
-        if parts.isEmpty { parts.append("no hizo falta tocar nada") }
-        var message = (cancelled ? "Migración cancelada: " : "Migración terminada: ")
-            + parts.joined(separator: ", ") + "."
+        if tagged > 0 { parts.append(LSf("library-migration.plural.con-etiquetas-nuevas", tagged)) }
+        if preparedRenamed > 0 { parts.append(LSf("library-migration.plural.preparados-renombrados", preparedRenamed)) }
+        if preparedBuilt > 0 { parts.append(LSf("library-migration.plural.preparados-armados", preparedBuilt)) }
+        if orphansDeleted > 0 { parts.append(LSf("library-migration.plural.huerfanos-borrados", orphansDeleted)) }
+        if parts.isEmpty { parts.append(LS("library-migration.no-hizo-falta-tocar-nada")) }
+        let cuerpo = Sentence.commaList(parts)
+        // La clave con un literal en cada rama, no un ternario adentro
+        // de `LSf`: el inventario de claves lee el código con una
+        // expresión regular y una clave calculada se le vuelve
+        // invisible (ver `testEveryLocalizationCallUsesALiteralKey`).
+        let encabezado = cancelled
+            ? LSf("library-migration.cancelada", cuerpo)
+            : LSf("library-migration.terminada", cuerpo)
+        var message = Sentence.ended(encabezado)
         if !errors.isEmpty {
-            message += errors.count == 1
-                ? " 1 elemento falló y sigue en tu biblioteca."
-                : " \(errors.count) elementos fallaron y siguen en tu biblioteca."
+            message += " " + Sentence.ended(LSf("library-migration.plural.fallaron-siguen", errors.count))
         }
         return message
     }

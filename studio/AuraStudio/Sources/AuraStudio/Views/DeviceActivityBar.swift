@@ -142,11 +142,19 @@ struct DeviceActivityBar: View {
             counts[state, default: 0] += 1
         }
         var parts: [String] = []
-        if let pending = counts[.pending], pending > 0 { parts.append("\(pending) pendiente(s)") }
-        if let changed = counts[.changedLocally], changed > 0 { parts.append("\(changed) con cambios") }
-        if let modified = counts[.modifiedOnDevice], modified > 0 { parts.append("\(modified) modificado(s) en el iPod") }
-        if let removed = counts[.removedFromDevice], removed > 0 { parts.append("\(removed) quitado(s) del iPod") }
-        return parts.isEmpty ? "Todo sincronizado." : parts.joined(separator: " · ")
+        if let pending = counts[.pending], pending > 0 {
+            parts.append(LSf("device-activity-bar.plural.pendientes", pending))
+        }
+        if let changed = counts[.changedLocally], changed > 0 {
+            parts.append(LSf("device-activity-bar.plural.con-cambios", changed))
+        }
+        if let modified = counts[.modifiedOnDevice], modified > 0 {
+            parts.append(LSf("device-activity-bar.plural.modificados-ipod", modified))
+        }
+        if let removed = counts[.removedFromDevice], removed > 0 {
+            parts.append(LSf("device-activity-bar.plural.quitados-ipod", removed))
+        }
+        return parts.isEmpty ? LS("device-activity-bar.todo-sincronizado") : Sentence.fields(parts)
     }
 
     // MARK: - Sincronizando / Cancelando

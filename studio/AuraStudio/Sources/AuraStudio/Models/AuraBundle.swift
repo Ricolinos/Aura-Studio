@@ -13,13 +13,30 @@ import Foundation
 /// Éste es el único sitio del repo donde esa diferencia existe. Si algún
 /// día se rompe, se rompe acá y hay una prueba que lo dice.
 enum AuraBundle {
-    static let strings: Bundle = {
+    private static let `default`: Bundle = {
         #if SWIFT_PACKAGE
         return .module
         #else
         return .main
         #endif
     }()
+
+    /// ST-227 (A7c, addendum 3): la única costura de este archivo, y
+    /// existe por una prueba concreta.
+    ///
+    /// El defecto que Windows encontró --una oración armada de ocho
+    /// pedazos donde solo uno venía del catálogo-- **no se ve mirando
+    /// cadenas sueltas**: cada pedazo está bien; lo que está mal es la
+    /// unión. La única forma de verlo es **componer la frase entera en
+    /// otro idioma** y buscar restos de español. Y para eso hay que
+    /// poder decirle a `LS` de qué tabla leer.
+    ///
+    /// Solo la escriben las pruebas, y la devuelven a `nil` al terminar.
+    /// La app nunca la toca: `AppLanguageApplier` cambia el idioma por
+    /// `AppleLanguages`, que es lo que el sistema lee al arrancar.
+    nonisolated(unsafe) static var overrideForTests: Bundle?
+
+    static var strings: Bundle { overrideForTests ?? `default` }
 }
 
 /// El texto localizado de `key`.

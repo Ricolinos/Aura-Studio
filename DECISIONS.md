@@ -16539,3 +16539,100 @@ lista sería una nota al pie donde se puede escribir cualquier cosa.
 El otro es `installer-copied-files`, que decía "1 archivos escritos en el iPod"
 con uno solo: el defecto que B7a dejó anotado a propósito, arreglado acá con
 formas de plural.
+
+## ST-227 (A7c, addendum 3) — Las frases que se arman de pedazos
+
+Hallazgo de Windows en B7c que valía igual acá, y es de los que no se ven
+mirando cadenas: **un resumen se componía de ocho fragmentos y solo el
+que llevaba plural venía del catálogo**. Con la app en alemán salía
+*"Migración terminada: die Tags von 3 Titeln wurden geschrieben, se
+ordenaron 2 preparados."* Ningún error, ilegible, y **ninguna prueba de
+cadenas sueltas podía verlo**: cada fragmento por separado estaba bien
+traducido. El defecto solo existe en la unión.
+
+### El inventario
+
+Frases compuestas de cara al usuario, todas arregladas en este addendum:
+
+1. `LibraryMigrationNeed.message` — el aviso "esta biblioteca viene de una
+   versión anterior": encabezado, dos fragmentos, " y ", punto final.
+2. `LibraryMigrationSummary.message` — el resumen de la migración: cinco
+   fragmentos, comas, punto y la frase de errores. **El caso de Windows,
+   idéntico.**
+3. `LibraryViewModel.ConversionSummary.message` — convertir a copia:
+   plurales del catálogo + `"cancelado"` suelto.
+4. `LibraryViewModel.ImportNotice.message` — duplicados saltados y grupos
+   parecidos, los dos en español.
+5. Resumen de pósters — plural traducido + `"N sin resultado (a, b, c)"`.
+6. Resumen de fotos de artista — plural traducido + `"N sin resultado"`.
+7. Resumen de carátulas aplicadas — plural traducido + tres fragmentos
+   sueltos.
+8. `DeviceActivityBar.summaryText` — cuatro conteos con `"(s)"` pegado,
+   que no es plural en ningún idioma.
+9. `SimilarItemsView` (dos): el conteo por confianza, que armaba el
+   plural **pegándole una "s"** al título en minúsculas
+   (`"\(n) \(title.lowercased())\(n == 1 ? "" : "s")"`) -- funciona en
+   español y en inglés por casualidad y en ninguno más: el alemán no
+   pluraliza con "s", el ruso tiene cuatro formas y el japonés ninguna;
+   y el subtítulo de grupo, con `"\(n) elementos"`.
+10. `SimilarityConfidence.title` y `.detail` — seis textos en español
+    dentro de un `Service`.
+
+### Cómo quedó
+
+`Sentence` (nuevo, `Models/Sentence.swift`) es el único sitio donde se
+unen piezas: `list` ("a, b y c"), `commaList`, `clauses`, `fields`
+(" · "), `ended` y `titled`. **Los separadores son claves del catálogo**,
+no puntuación escrita en el código: el japonés usa `、` y `。`, y el
+francés pone espacio antes de `;` y `:`. Un `", "` en el código es
+español disfrazado de puntuación.
+
+`ended` no encadena signos: una frase que ya cierra con `.`, `…` o `?` no
+recibe otro punto.
+
+### La prueba, y por qué necesitó una costura
+
+`ComposedSentenceTests` **arma cada oración entera con la tabla del
+inglés** y falla si aparece una palabra que solo existe en el español del
+catálogo. El vocabulario "solo español" se calcula del propio catálogo
+(palabras de más de tres letras que están en `es` y no en `en`), no de
+una lista escrita a mano, así que sigue midiendo lo mismo si mañana
+cambia el texto fuente. Una prueba extra afirma que ese vocabulario no
+quedó vacío: si quedara, las demás pasarían siempre sin comprobar nada.
+
+Para componer en otro idioma hizo falta poder decirle a `LS` de qué tabla
+leer: `AuraBundle.overrideForTests`, la única costura del archivo, que
+solo escriben las pruebas y devuelven a `nil` al terminar. La app no la
+toca -- el idioma se cambia por `AppleLanguages`, que el sistema lee al
+arrancar.
+
+Comprobado al revés, que es lo que hace que valga: devolviéndole el
+literal `"no hizo falta tocar nada"` al resumen de migración, la prueba
+falla y muestra la oración mezclada, *"Migration finished: no hizo falta
+tocar nada."* -- el defecto de Windows, reproducido y cazado.
+
+### Lo segundo que preguntó la maestra
+
+La prueba de plurales **ya compara formas por idioma, no solo claves**:
+`testPluralsHaveTheFormsEachLanguageRequires` exige `one/few/many/other`
+al ruso, `one/other` a alemán y francés y solo `other` al japonés, y
+además **rechaza una forma de más** -- un `one` japonés que el sistema no
+elegiría nunca haría creer a quien lo edite que cambió algo. El ruso no
+puede caer al español en silencio por faltarle `many`.
+
+### Lo que queda, dicho con su motivo
+
+`LibraryStatusSummary.count(_:singular:plural:)` -- **33 sitios** con el
+singular y el plural en español (`count(items.count, "canción",
+"canciones")`), que es toda la barra de estado. No entra acá porque
+hacerlo bien no es sustituir por una clave de plural: `count` usa
+`formatted(n)`, que mete el separador de miles, y un `%lld` de plural no
+lo hace. Hace falta un plural que reciba el número **ya formateado**
+(`%1$lld` para elegir la forma, `%2$@` para mostrarlo), y eso pide
+extender la generación de `.stringsdict` en `tools/compilar-catalogo.py`.
+Es una pasada propia, no una línea más de ésta.
+
+Y en el mismo archivo, un defecto que los idiomas nuevos destaparon:
+`numberFormatter` está fijado a `Locale(identifier: "es_MX")`. Con la app
+en alemán los miles saldrían con el separador mexicano. Se arregla en esa
+misma pasada, porque cambia los mismos textos y conviene medirlo junto.

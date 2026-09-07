@@ -146,6 +146,7 @@
 		7DE4A653C7B6086644BF8095 /* AuraUpdateCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A29F57327CE27D98C05565C /* AuraUpdateCheckerTests.swift */; };
 		7F80040C49B6F9BAEC7C4EB4 /* PlaylistExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F307EFCD3106FEFB532DF8E /* PlaylistExporterTests.swift */; };
 		808B7D0862DBE45795244B1C /* LoadCatalogParallelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124AB1CEB3AC65F233E89857 /* LoadCatalogParallelTests.swift */; };
+		809CB64E728706AA2D84C0F5 /* ComposedSentenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00FC46BA44DA22AE767796D5 /* ComposedSentenceTests.swift */; };
 		81CB7D3F4D377EAD5420BF32 /* LibraryCatalogIndex.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95DE93DDB5865C16EB1A1B48 /* LibraryCatalogIndex.swift */; };
 		86FC49E7F66DF426C3ADF9DC /* GitHubTokenSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42BF0B1098835C981433DD68 /* GitHubTokenSettingsView.swift */; };
 		8790C71B6B7CCA4BC7A59692 /* GridMarqueeOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 934AEC42CD64458109755A00 /* GridMarqueeOverlay.swift */; };
@@ -195,6 +196,7 @@
 		A97401AE31F2CC10AB44DDCD /* CatalogSummaryWriterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC0636DEF76695EC784AFCE2 /* CatalogSummaryWriterTests.swift */; };
 		A989674D62D8CE1AB1A78C6F /* LicensesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB5F5744B03DEE73ECA86298 /* LicensesView.swift */; };
 		A994E0FE4CABA16BE4B72715 /* SharedCatalogPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = D91D24A2286B684E8FE45C2F /* SharedCatalogPath.swift */; };
+		A9E4174D99E5400FC1FCDE9A /* Sentence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9342E921F74CE9B5853A71EB /* Sentence.swift */; };
 		A9F8DF2008E248463E13EB6E /* LocalTagReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5EB599930E65EEEA8E31ACE /* LocalTagReader.swift */; };
 		AA478A4AA8D1677407F93D00 /* PersistCatalogCoalescedTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C32A4C6B7FB380823E08C9D /* PersistCatalogCoalescedTests.swift */; };
 		AA5BCB0D068E33D1B6337E39 /* UpdateBootloaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3C214CEEFDB94378C60B0A4 /* UpdateBootloaderView.swift */; };
@@ -311,6 +313,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		00FC46BA44DA22AE767796D5 /* ComposedSentenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposedSentenceTests.swift; sourceTree = "<group>"; };
 		0116DC50EA8DBAE3B02AE0FB /* DoneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DoneView.swift; sourceTree = "<group>"; };
 		014013C15A64389929222AD7 /* metro */ = {isa = PBXFileReference; lastKnownFileType = folder; name = metro; path = "Vendor/firmware-dist/metro"; sourceTree = SOURCE_ROOT; };
 		023DD34CF2FA51D520A73D41 /* AvailableFirmwareVersions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AvailableFirmwareVersions.swift; sourceTree = "<group>"; };
@@ -476,6 +479,7 @@
 		8FE00D7D78AA24DEB46AF80B /* GridSelectionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridSelectionTests.swift; sourceTree = "<group>"; };
 		8FE0ED199852C215C9423943 /* SquareCropPlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SquareCropPlanTests.swift; sourceTree = "<group>"; };
 		925A40A7F39FBE6F9552F0D0 /* DeviceNameField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceNameField.swift; sourceTree = "<group>"; };
+		9342E921F74CE9B5853A71EB /* Sentence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sentence.swift; sourceTree = "<group>"; };
 		934AEC42CD64458109755A00 /* GridMarqueeOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GridMarqueeOverlay.swift; sourceTree = "<group>"; };
 		942969FD7DB3DE501DDCA57C /* AuraStudio.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AuraStudio.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		95D1717F5BE6E99586CBAF44 /* MusicBrainzClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicBrainzClientTests.swift; sourceTree = "<group>"; };
@@ -764,6 +768,7 @@
 				2FA4874DDACBEA230CB2FC3C /* PreparedMusicPlan.swift */,
 				ED8D2945BDAC8711D857F1DF /* RowsModel.swift */,
 				DFAD7C7F6FB3F01F3CDC2A66 /* SelectionStore.swift */,
+				9342E921F74CE9B5853A71EB /* Sentence.swift */,
 				D91D24A2286B684E8FE45C2F /* SharedCatalogPath.swift */,
 				520AF45B2D0C9151B8D3C2BA /* StatusSummaryModel.swift */,
 				D96F62F5D0767305583513FF /* TrackMetadata.swift */,
@@ -805,6 +810,7 @@
 				AC0636DEF76695EC784AFCE2 /* CatalogSummaryWriterTests.swift */,
 				D921E701B695E44C62DF9A38 /* CategoryIndexWriterTests.swift */,
 				3F32B696741F0E62A203E7BC /* ClockSyncWriterTests.swift */,
+				00FC46BA44DA22AE767796D5 /* ComposedSentenceTests.swift */,
 				C7A75E4AA4334B6A18D04537 /* CoverArtAssetsTests.swift */,
 				2718B5F687440629F34AEB40 /* CoverArtNormalizerTests.swift */,
 				8DC1376D9856F82C80DF182B /* CoverThumbnailCacheTests.swift */,
@@ -1191,6 +1197,7 @@
 				A97401AE31F2CC10AB44DDCD /* CatalogSummaryWriterTests.swift in Sources */,
 				C695524FFC68AD87BB044B1A /* CategoryIndexWriterTests.swift in Sources */,
 				741C227ABE979EE55749B07D /* ClockSyncWriterTests.swift in Sources */,
+				809CB64E728706AA2D84C0F5 /* ComposedSentenceTests.swift in Sources */,
 				D14BAA69CD8F0052BDDAEB70 /* CoverArtAssetsTests.swift in Sources */,
 				AB786B1A7164AA76254BE3C3 /* CoverArtNormalizerTests.swift in Sources */,
 				AE58688D8D8C42B7D0CBB722 /* CoverThumbnailCacheTests.swift in Sources */,
@@ -1435,6 +1442,7 @@
 				B8DE9892192CAACED7ECC3BD /* RestoreHandoffView.swift in Sources */,
 				C53547E1351DF54D95064451 /* RowsModel.swift in Sources */,
 				2D4B90D2F93C144AAFDB07CE /* SelectionStore.swift in Sources */,
+				A9E4174D99E5400FC1FCDE9A /* Sentence.swift in Sources */,
 				31FE39F7713996DC2349E715 /* SeriesView.swift in Sources */,
 				5FD738F18BBCA9163DDAA684 /* ServicesSettingsView.swift in Sources */,
 				A801BD6910D0A5909C8AF4C1 /* SettingsSectionView.swift in Sources */,

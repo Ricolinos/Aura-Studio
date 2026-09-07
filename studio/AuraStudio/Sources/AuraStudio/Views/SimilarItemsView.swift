@@ -202,11 +202,12 @@ struct SimilarItemsView: View {
     private var summaryText: String {
         let counts = SimilarityConfidence.allCases.map { level -> String? in
             let n = groups.filter { $0.confidence == level }.count
-            return n == 0 ? nil : "\(n) \(level.title.lowercased())\(n == 1 ? "" : "s")"
+            return n == 0 ? nil : level.countText(n)
         }
         let total = groups.count
-        if total == 0 { return "No se encontraron elementos parecidos." }
-        return LSf("similar-items-view.plural.grupos", total) + ": " + counts.compactMap { $0 }.joined(separator: ", ")
+        if total == 0 { return LS("similar-items-view.no-se-encontraron-elementos-parecidos") }
+        return Sentence.titled(LSf("similar-items-view.plural.grupos", total),
+                               Sentence.commaList(counts.compactMap { $0 }))
     }
 
     private var scanningState: some View {
@@ -260,11 +261,11 @@ struct SimilarItemsView: View {
 
     private func groupSubtitle(_ group: SimilarItemsGroup) -> String {
         let n = group.items.count
-        var parts = ["\(n) elementos"]
+        var parts = [LSf("similar-items-view.plural.elementos", n)]
         if group.kind == .music, let artist = group.items[0].metadata?.artist, !artist.isEmpty {
             parts.insert(artist, at: 0)
         }
-        return parts.joined(separator: " · ")
+        return Sentence.fields(parts)
     }
 
     private func confidenceBadge(_ confidence: SimilarityConfidence) -> some View {

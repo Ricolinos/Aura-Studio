@@ -191,6 +191,10 @@
 "installer-wizard-view.detener-proceso-mitad-puede-dejar-disco" = "Arrêter en cours de route peut laisser le disque de l’iPod avec des erreurs. Si cela arrive, relancez le programme d’installation pour le réparer.";
 "installing-view.no-desconectes-ipod-ni-cierres-aura" = "Ne débranchez pas l’iPod et ne fermez pas Aura Studio pendant cette étape.";
 "library-browsing-components.borrar-busqueda" = "Effacer la recherche";
+"library-migration.cancelada" = "Migration annulée : %@";
+"library-migration.no-hizo-falta-tocar-nada" = "rien n’a eu besoin d’être modifié";
+"library-migration.terminada" = "Migration terminée : %@";
+"library-migration.viene-de-version-anterior" = "Cette bibliothèque provient d’une version antérieure d’Aura Studio : %@";
 "library-status-bar.accesibilidad" = "Barre d’état";
 "library-status-bar.texto" = "—";
 "library-sync.02d" = "%02d %@";
@@ -200,9 +204,11 @@
 "library-unavailable-view.elegir-otra-biblioteca" = "Choisir une autre bibliothèque…";
 "library-unavailable-view.instalador-extras-siguen-funcionando-sin" = "L’Installation et les Extras fonctionnent toujours sans la bibliothèque.";
 "library-unavailable-view.no-se-perdio-nada-tu-catalogo" = "Rien n’est perdu : votre catalogue et vos fichiers sont toujours sur ce disque. Aura Studio n’y touchera pas tant qu’il ne sera pas de nouveau disponible.";
+"library-view-model.cancelado" = "annulé";
 "library-view-model.eliminar-copia-papelera" = "%1$@ seront déplacés vers la Corbeille (%2$@). Vous pourrez les récupérer depuis là.";
 "library-view-model.eliminar-referencia-uno" = "Il sera retiré de votre bibliothèque Aura. Le fichier d’origine reste où il est.";
 "library-view-model.eliminar-referencia-varios" = "Ils seront retirés de votre bibliothèque Aura. Les fichiers d’origine restent où ils sont.";
+"library-view-model.sin-resultado-ejemplos" = "%1$@ (%2$@)";
 "licenses-view.aura-studio-es-gratuita-se-distribuye" = "Aura Studio est gratuit et distribué sans but commercial. Il embarque, tels qu’ils ont été publiés et sans modification, les firmwares installables pour l’iPod Classic 6G, tous des logiciels libres sous la Licence publique générale GNU version 2 (GPL v2). Chacun dérive de Rockbox ; son code source complet, la version exacte incluse ici et le relevé des modifications par rapport à Rockbox figurent dans les liens ci-dessous, comme l’exige la section 3 de cette licence.";
 "licenses-view.gpl-v2" = "GPL v2";
 "licenses-view.rockbox" = "Rockbox";
@@ -326,6 +332,12 @@
 "restore-handoff-view.cerrar-aura-studio-abrir-finder" = "Fermer Aura Studio et ouvrir le Finder";
 "restore-handoff-view.continua-finder" = "Continuer dans le Finder";
 "restore-handoff-view.ipod-quedo-listo-se-quito-bootloader" = "L’iPod est prêt : le bootloader d’Aura a été retiré et le disque a été préparé au format attendu par le Finder (Mac OS étendu journalisé, table GUID).";
+"sentence.colon" = " : ";
+"sentence.period" = ".";
+"sentence.separator-and" = " et ";
+"sentence.separator-comma" = ", ";
+"sentence.separator-middot" = " · ";
+"sentence.separator-semicolon" = " ; ";
 "series-view.series" = "Séries";
 "series-view.temporadas" = "%lld, %@";
 "services-settings-view.activo" = "Actif";
@@ -415,6 +427,7 @@
 "similar-items-view.ignorar-este-grupo" = "Ignorer ce groupe";
 "similar-items-view.metadata-sugerida" = "Métadonnées suggérées";
 "similar-items-view.musica" = "Musique";
+"similar-items-view.no-se-encontraron-elementos-parecidos" = "Aucun élément similaire n’a été trouvé.";
 "similar-items-view.no-son-lo-mismo-no-volver" = "Ce n’est pas la même chose : ne plus afficher ce groupe.";
 "similar-items-view.por-que-se-parecen" = "Pourquoi ils se ressemblent";
 "similar-items-view.probables-duplicados" = "Probables et doublons";
@@ -428,6 +441,12 @@
 "similar-items-view.video" = "Vidéo";
 "similar-items-view.volver-buscar" = "Rechercher à nouveau";
 "similar-items-view.volver-mostrar-ignorados" = "Réafficher les ignorés (%lld)";
+"similar-items.confianza.duplicado" = "Doublon";
+"similar-items.confianza.duplicado-detalle" = "Presque certainement le même fichier en double.";
+"similar-items.confianza.posible" = "Possible";
+"similar-items.confianza.posible-detalle" = "Ils se ressemblent, mais ce sont peut-être des versions différentes. Mieux vaut vérifier.";
+"similar-items.confianza.probable" = "Probable";
+"similar-items.confianza.probable-detalle" = "Probablement le même morceau avec des métadonnées écrites différemment.";
 "storage-change-only-affects-future" = "Modifier ce réglage n’affecte que ce que vous importerez désormais : ce qui est déjà dans votre bibliothèque reste tel quel.";
 "storage-copy-explainer" = "Copier dans la bibliothèque Aura : Aura gère les fichiers, modifie leurs tags et les synchronise directement ; cela occupe de l’espace disque (une copie) ; vous pouvez supprimer vos originaux ensuite.";
 "storage-reference-explainer" = "Les référencer sur place : aucun espace supplémentaire et vos fichiers ne sont jamais touchés ; Aura conserve une version préparée à part (.preparados/), les modifications ne vivent que dans Aura et sur l’iPod, et si le disque d’origine est absent, ces morceaux ne peuvent pas être synchronisés.";

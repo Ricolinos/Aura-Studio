@@ -191,6 +191,10 @@
 "installer-wizard-view.detener-proceso-mitad-puede-dejar-disco" = "途中で停止すると、iPod のディスクにエラーが残ることがあります。その場合は、もう一度インストーラを実行すると修復できます。";
 "installing-view.no-desconectes-ipod-ni-cierres-aura" = "この手順の間は iPod を外したり Aura Studio を終了したりしないでください。";
 "library-browsing-components.borrar-busqueda" = "検索をクリア";
+"library-migration.cancelada" = "移行をキャンセルしました: %@";
+"library-migration.no-hizo-falta-tocar-nada" = "変更の必要はありませんでした";
+"library-migration.terminada" = "移行が完了しました: %@";
+"library-migration.viene-de-version-anterior" = "このライブラリは以前のバージョンの Aura Studio のものです: %@";
 "library-status-bar.accesibilidad" = "ステータスバー";
 "library-status-bar.texto" = "—";
 "library-sync.02d" = "%02d %@";
@@ -200,9 +204,11 @@
 "library-unavailable-view.elegir-otra-biblioteca" = "別のライブラリを選択…";
 "library-unavailable-view.instalador-extras-siguen-funcionando-sin" = "「インストーラ」と「その他」はライブラリがなくても使えます。";
 "library-unavailable-view.no-se-perdio-nada-tu-catalogo" = "何も失われていません。カタログもファイルもそのディスクに残っています。再び利用できるようになるまで、Aura Studio は何も触りません。";
+"library-view-model.cancelado" = "キャンセル済み";
 "library-view-model.eliminar-copia-papelera" = "%1$@ をゴミ箱に移動します（%2$@）。そこから元に戻せます。";
 "library-view-model.eliminar-referencia-uno" = "Aura のライブラリから取り除かれます。元のファイルはそのままです。";
 "library-view-model.eliminar-referencia-varios" = "Aura のライブラリから取り除かれます。元のファイルはそのままです。";
+"library-view-model.sin-resultado-ejemplos" = "%1$@（%2$@）";
 "licenses-view.aura-studio-es-gratuita-se-distribuye" = "Aura Studio は無料で、非商用で配布されています。iPod Classic 6G 用のインストール可能なファームウェアを、公開されたそのままの形で変更せずに同梱しています。いずれも GNU 一般公衆利用許諾契約書バージョン 2（GPL v2）のもとで公開された自由ソフトウェアです。各ファームウェアは Rockbox から派生しており、その完全なソースコード、ここに含まれる正確なバージョン、Rockbox からの変更点の記録は、同ライセンス第 3 条の要求どおり下記のリンクにあります。";
 "licenses-view.gpl-v2" = "GPL v2";
 "licenses-view.rockbox" = "Rockbox";
@@ -326,6 +332,12 @@
 "restore-handoff-view.cerrar-aura-studio-abrir-finder" = "Aura Studio を終了して Finder を開く";
 "restore-handoff-view.continua-finder" = "Finder で続ける";
 "restore-handoff-view.ipod-quedo-listo-se-quito-bootloader" = "iPod の準備ができました。Aura のブートローダーを取り除き、ディスクを Finder が想定する形式（Mac OS 拡張（ジャーナリング）、GUID パーティションマップ）で用意しました。";
+"sentence.colon" = "：";
+"sentence.period" = "。";
+"sentence.separator-and" = "、";
+"sentence.separator-comma" = "、";
+"sentence.separator-middot" = " · ";
+"sentence.separator-semicolon" = "、";
 "series-view.series" = "シリーズ";
 "series-view.temporadas" = "%lld, %@";
 "services-settings-view.activo" = "有効";
@@ -415,6 +427,7 @@
 "similar-items-view.ignorar-este-grupo" = "このグループを無視";
 "similar-items-view.metadata-sugerida" = "提案されたメタデータ";
 "similar-items-view.musica" = "ミュージック";
+"similar-items-view.no-se-encontraron-elementos-parecidos" = "似ている項目は見つかりませんでした。";
 "similar-items-view.no-son-lo-mismo-no-volver" = "同じものではありません。このグループを今後表示しない。";
 "similar-items-view.por-que-se-parecen" = "似ている理由";
 "similar-items-view.probables-duplicados" = "重複の可能性があるもの";
@@ -428,6 +441,12 @@
 "similar-items-view.video" = "ビデオ";
 "similar-items-view.volver-buscar" = "もう一度検索";
 "similar-items-view.volver-mostrar-ignorados" = "無視したものを再表示（%lld）";
+"similar-items.confianza.duplicado" = "重複";
+"similar-items.confianza.duplicado-detalle" = "ほぼ確実に同じファイルが 2 つあります。";
+"similar-items.confianza.posible" = "可能性あり";
+"similar-items.confianza.posible-detalle" = "似ていますが、別のバージョンかもしれません。確認をおすすめします。";
+"similar-items.confianza.probable" = "可能性大";
+"similar-items.confianza.probable-detalle" = "おそらく同じ曲で、メタデータの書き方が違うだけです。";
 "storage-change-only-affects-future" = "この設定を変更しても、影響するのはこれから読み込むものだけです。すでにライブラリにあるものはそのままです。";
 "storage-copy-explainer" = "Aura ライブラリにコピー: Aura がファイルを管理し、タグを編集し、そのまま同期します。ディスク容量を使います（コピーが 1 つ）。元のファイルはあとで削除できます。";
 "storage-reference-explainer" = "その場所のまま参照: 追加の容量を使わず、あなたのファイルにも触れません。Aura は準備済みのバージョンを別に保持し（.preparados/）、編集内容は Aura と iPod の中だけに存在します。元のディスクがない場合、それらの曲は同期できません。";
