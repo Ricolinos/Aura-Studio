@@ -16558,3 +16558,115 @@ actualizó con mis propios hallazgos; no es un error de esta corrida, es
 que mi veredicto es anterior a esa actualización). 0 ids duplicados,
 0 filas perdidas ni de más contra el original. Sin builds: trabajo de
 solo texto y dos búsquedas web reales.
+
+## ST-248 (parcial) — Windows: retrotraducción ciega del japonés (B7c) — sin fila ".one", y dos discrepancias glosario/uso real
+
+Mismo método: de `windows/b2` (`262abab`) se leyó SOLO
+`docs/extraccion-cadenas/retrotraduccion/criticas-ja.csv` (162 filas) y
+`docs/extraccion-cadenas/glosario-plataforma.csv` (35 términos, sin
+cambios desde la corrida del ruso -- diff vacío contra la copia usada
+entonces) -- nunca `mapa-criticas.csv` ni ningún `Resources*.resx`.
+Registro です/ます confirmado en las 162 filas, sin mezcla con formas
+llanas.
+
+**Estructura de plural**: confirmado, no es un descuadre. El japonés no
+flexiona número gramatical, así que cada base de plural pierde
+exactamente la fila que en los demás idiomas llevaba la forma "uno" --
+comprobado exhaustivamente contra el rango completo `c001`-`c178`: faltan
+16 ids (`c018`, `c020`, `c022`, `c035`, `c102`, `c104`, `c106`, `c128`,
+`c137`, `c139`, `c141`, `c143`, `c145`, `c147`, `c149`, `c173`), ni uno
+más ni uno menos que las 16 bases de plural que el ruso expandió con
+`.few`/`.many`. La fila que sobrevive (la que era "otro"/"few"/"many" en
+los demás idiomas) cubre sola cualquier cantidad, con el contador
+pegado al `{0}` (sin espacio: `{0}件`, `{0}曲`) -- confirmado en las 15
+filas donde aparece un contador con número. En al menos dos pares
+(`c111`/`c112` "アルバムを削除", `c117`/`c118` "エピソードを削除",
+`c120`/`c121`, `c122`/`c123`) el japonés usa el MISMO texto para lo que
+en español son formas distintas ("eliminar el álbum" vs. "eliminar los
+álbumes") -- no es duplicado por error, es que ninguna de las dos formas
+necesita contador ni flexión en japonés.
+
+**Contadores, verificados uno por uno contra los que de verdad aparecen
+en el texto** (lo que pidió el coordinador): en las 162 filas solo
+aparecen dos contadores junto a un `{0}`: 件 (genérico, archivos/
+elementos -- 11 filas) y 曲 (canciones -- 1 fila, `c148`). Ninguna fila
+de esta tanda usa 枚 (fotos/carátulas/álbumes), 本 (videos), 人
+(artistas) ni 話 (episodios) con un número real -- no hay ninguna
+cadena en `criticas-ja.csv` que cuente álbumes, fotos, videos, artistas
+ni episodios; el hallazgo es de cobertura, no de error (esas cinco
+categorías simplemente no tienen ninguna cadena crítica en esta tanda).
+Sobre las dos decisiones que sí pidió contrastar con fuente:
+
+1. **件 como contador de archivos/elementos** (frente a 個): confirmado
+   con búsqueda real (2026-09) que 件 es terminología vigente de
+   Microsoft en japonés para este uso -- un hilo de soporte de OneDrive
+   en learn.microsoft.com/ja-jp muestra la interfaz real diciendo
+   "523件のアイテムを保持する". 個 también existe como contador genérico
+   de objetos físicos, pero 件 es lo confirmado en un producto de
+   Microsoft para "elementos/archivos" en una lista, coincide con lo
+   que usa `criticas-ja.csv` en sus 11 filas con contador de archivos.
+
+2. **枚 como contador de álbumes** (frente a 本/つ): no verificable contra
+   `criticas-ja.csv` (no hay ninguna fila que cuente álbumes), pero sí es
+   la convención real del idioma para discos/álbumes físicos (visto en
+   uso real de "2枚組アルバム" = álbum de 2 discos, y en general 枚 es el
+   contador japonés para objetos planos y delgados -- un CD/disco encaja
+   ahí). 本 es el contador correcto para objetos cilíndricos alargados y,
+   coherente con la lista que dio el coordinador, es el que corresponde
+   a VIDEOS, no a álbumes -- usar 枚 para álbumes y 本 para videos es
+   la distinción correcta, no un error si en algún momento aparecen
+   ambos contadores en el mismo archivo.
+
+**「」 y ：/、 de ancho completo**: confirmado correcto en las filas donde
+aparecen (`c026`/`c027`/`c028`/`c069`/`c098` con 「」; `c004`/`c092`/
+`c132`/`c176` con ：; `c132` también con 、de ancho completo entre los
+tres marcadores) -- convención japonesa real, no se marcó como error,
+tal como avisó el coordinador.
+
+**Dos discrepancias entre `glosario-plataforma.csv` y lo que de verdad
+usó `criticas-ja.csv`**, encontradas al cotejar:
+
+1. **Quitar → 取り除く**: el glosario propone 取り除く, pero el texto real
+   no lo usa ni una vez para la distinción "quitar de una lista sin
+   borrar" (frente a 削除, "eliminar" de verdad). Las seis filas de esa
+   distinción (`c124` "アルバムから外す", `c125`-`c127` "お気に入りから
+   外す" ×3, `c129` "…の写真を外す", `c130` "ポスターを外す") usan todas
+   外す (desprender/desenganchar) -- término idiomático real para
+   "quitar/desvincular" en interfaces japonesas, frente a 取り除く, que
+   suena más físico ("quitar una mancha/un obstáculo") y no aparece en
+   el texto. Mismo patrón que el caso ruso (Убрать/Удалить, que sí
+   coincidió) pero en sentido inverso: aquí el glosario no coincide con
+   lo usado. Recomendado que el glosario adopte 外す.
+
+2. **ensayar → リハーサル**: el glosario propone リハーサル (préstamo de
+   "rehearsal", asociado a ensayos musicales/teatrales). Búsqueda real
+   confirma que el término técnico japonés corriente para el concepto de
+   "dry run" es ドライラン (préstamo directo del inglés, ver e-words.jp,
+   diccionario de términos de TI) -- リハーサル no aparece como uso
+   corriente en ese dominio. Ninguno de los dos aparece en
+   `criticas-ja.csv`: el texto real usa 確認 (comprobar/confirmar,
+   `c062` "書き込まずに確認") -- mismo patrón que alemán→francés→ruso: el
+   glosario propone un marco de "ensayo/simulacro" y el texto real
+   prefiere uno de "verificación". Recomendado que el glosario
+   reconsidere リハーサル para este término.
+
+`glosario-veredicto.csv` se amplía con `ja,veredicto_ja,fuente_ja`.
+
+### Verificación
+
+Contador de campos por línea: encontró y corrigió 1 fila en
+`criticas-ja-retro.csv` (`c060`, coma sin entrecomillar en `retro_es`) y
+1 error de transcripción propio en la columna `ja` (`c001`: escribí
+"再認識" donde el original dice "再起動") detectado por la comparación
+carácter por carácter contra `criticas-ja.csv`, ambos corregidos ANTES
+de comprometer. También detecté y corregí una regresión mía en
+`glosario-veredicto.csv` (fila "disco": había simplificado
+`""unidad""` a `"unidad"` al transcribir la columna `fuente_ru` ya
+existente) -- confirmada con una comparación columna por columna contra
+la versión en `HEAD` antes de esta corrida: 0 diferencias en las 10
+columnas de/fr/ru tras la corrección. Las 162 filas de "ja" coinciden
+carácter por carácter contra `criticas-ja.csv` tras corregir `c001`.
+0 ids duplicados, 0 filas perdidas ni de más contra el original (162
+presentes, 16 ausentes según lo esperado, verificado contra el rango
+completo `c001`-`c178`). Sin builds: trabajo de solo texto y cuatro
+búsquedas web reales.
