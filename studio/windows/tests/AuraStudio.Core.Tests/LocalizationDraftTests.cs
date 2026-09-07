@@ -113,6 +113,87 @@ public class LocalizationDraftTests
             "claves con una sigla partida letra por letra: " + string.Join(", ", rotas.Take(10)));
     }
 
+    // MARK: - Frases concatenadas ("a" + "b"), no partidas en dos claves
+
+    /// <summary>
+    /// Los únicos <c>app-strings.*</c> con sufijo <c>-N</c> numérico
+    /// legítimos son los ternarios de DOS mensajes de verdad distintos
+    /// (<c>condición ? "mensaje A" : "mensaje B"</c>) — nunca un párrafo
+    /// escrito como <c>"a" + "b"</c> que el extractor no supo unir. Lista
+    /// explícita, no un patrón: agregar una clave nueva acá tiene que ser
+    /// una decisión consciente ("sí, es un ternario de verdad"), no un
+    /// efecto colateral silencioso de una corrida futura.
+    /// </summary>
+    private static readonly HashSet<string> KnownAppStringsTernaryPairs = new(StringComparer.Ordinal)
+    {
+        "app-strings.bootloader-update-flashing-1", "app-strings.bootloader-update-flashing-2",
+        "app-strings.installer-dfu-found-1", "app-strings.installer-dfu-found-2",
+        "app-strings.library-root-missing-1", "app-strings.library-root-missing-2",
+        "app-strings.library-season-1", "app-strings.library-season-2",
+        "app-strings.library-status-6", "app-strings.library-status-7",
+    };
+
+    [Fact]
+    public void NingunaClaveAppStringsTerminaEnGuionNumericoSalvoLosTernariosConocidos()
+    {
+        XDocument doc = XDocument.Load(RequireFile(Path.Combine("Strings", "es", "Resources.resw")));
+        var numericSuffix = new Regex(@"^app-strings\..*-\d+$");
+
+        List<string> sospechosas = [.. doc.Root!.Elements("data")
+            .Select(e => e.Attribute("name")!.Value)
+            .Where(key => numericSuffix.IsMatch(key) && !KnownAppStringsTernaryPairs.Contains(key))];
+
+        Assert.True(sospechosas.Count == 0,
+            "claves de AppStrings con sufijo -N fuera de la lista de ternarios conocidos " +
+            "(¿un párrafo concatenado que no se unió?): " + string.Join(", ", sospechosas));
+    }
+
+    [Fact]
+    public void NingunValorTerminaEnEspacio()
+    {
+        XDocument doc = XDocument.Load(RequireFile(Path.Combine("Strings", "es", "Resources.resw")));
+
+        List<string> rotos = [.. doc.Root!.Elements("data")
+            .Where(e => Regex.IsMatch(e.Element("value")?.Value ?? "", @"\s$"))
+            .Select(e => e.Attribute("name")!.Value)];
+
+        Assert.True(rotos.Count == 0,
+            "valores que terminan en espacio -- mitad de una frase cortada: " + string.Join(", ", rotos.Take(10)));
+    }
+
+    /// <summary>
+    /// Un valor que empieza en minúscula suele ser la segunda mitad de una
+    /// frase cortada a mitad ("...y los " + "sincroniza directo..." daba un
+    /// segundo fragmento que empezaba en "sincroniza"). Las excepciones son
+    /// reales y conocidas -- "iPod" (la propia Apple lo escribe así), URLs, y
+    /// un par de nombres técnicos (ffmpeg, nombres de archivo en el aviso de
+    /// licencias) -- así que se excluyen por clave, no por adivinar un patrón
+    /// que las distinga del síntoma real.
+    /// </summary>
+    private static readonly HashSet<string> KnownLowercaseStartExceptions = new(StringComparer.Ordinal)
+    {
+        "app-strings.installer-dfu-found-1", "app-strings.installer-dfu-found-2", // "iPod detectado..."
+        "app-strings.installer-dfu-guide-url", "app-strings.licenses-tag-lib-source", // URLs
+        "app-strings.licenses-intro", // "mks5lboot, bootloader-ipod6g.ipod y..."
+        "settings-page.ffmpeg", // "ffmpeg"
+    };
+
+    [Fact]
+    public void NingunValorEmpiezaEnMinusculaSalvoExcepcionesConocidas()
+    {
+        XDocument doc = XDocument.Load(RequireFile(Path.Combine("Strings", "es", "Resources.resw")));
+        var lowercaseStart = new Regex(@"^\p{Ll}");
+
+        List<string> rotos = [.. doc.Root!.Elements("data")
+            .Where(e => lowercaseStart.IsMatch(e.Element("value")?.Value ?? ""))
+            .Select(e => e.Attribute("name")!.Value)
+            .Where(key => !KnownLowercaseStartExceptions.Contains(key))];
+
+        Assert.True(rotos.Count == 0,
+            "valores que empiezan en minúscula fuera de las excepciones conocidas " +
+            "(¿la segunda mitad de una frase cortada?): " + string.Join(", ", rotos.Take(10)));
+    }
+
     // MARK: - Especificadores consistentes entre es/en
 
     /// <summary>
