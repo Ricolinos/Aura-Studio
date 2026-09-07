@@ -16048,3 +16048,77 @@ Corrido a propósito SOLO contra proyectos sin referencia a `AuraStudio.App`
 tools/ExtraerCadenasWindows` (sin `--force`) se detiene con el aviso y no
 toca ningún archivo de `docs/extraccion-cadenas/` -- confirmado con `git
 status` antes y después.
+
+## ST-245 (addendum) — Windows: "Conservar solo este" pasa por la misma confirmación que todo lo demás
+
+La pantalla de Similares era la única que eliminaba **sin preguntar**.
+`KeepOnly_Click` resolvía el `Guid` del botón y llamaba derecho al ViewModel,
+que hacía `_library.Remove(doomed)`. Y desde B5 eso no es "quitar del
+catálogo": en modo copia los archivos se van a la Papelera de reciclaje. El
+botón dice "Conservar solo este" y no menciona en ningún lado que a los otros
+dos del grupo se los lleve la Papelera.
+
+Peor era el aviso de después: *"Se quitaron 2 elementos de la biblioteca. Los
+archivos siguen en tu computadora."* Cierto en modo referencia, **falso** en
+modo copia. Un mensaje que tranquiliza sobre algo que no pasó es peor que no
+decir nada: el usuario deja de buscar el archivo justo cuando todavía podría
+recuperarlo de la Papelera.
+
+### El arreglo es enrutar, no escribir
+
+`KeepOnly_Click` pasa por `DeleteConfirmation.ConfirmAndRemoveAsync`, el mismo
+camino que Canciones, la cuadrícula y Artistas. Ese diálogo ya hacía todo lo
+que hacía falta y nadie tuvo que redactar nada: `PreviewRemoval` da el conteo y
+el tamaño, y `DeleteConfirmMessage` **ya dice la verdad por modo** —los que van
+a la Papelera con sus bytes, los que solo salen del catálogo con su original
+intacto—, incluso mezclados en un mismo lote, que es exactamente lo que puede
+traer un grupo de parecidos. El texto veraz no había que inventarlo: había que
+dejar de esquivarlo.
+
+`KeepOnly` se partió en dos: `IdsToRemoveKeeping` dice **quiénes se van** y no
+elimina, y `ConfirmKeptOnly` hace lo que queda cuando el usuario ya confirmó
+—olvidar el grupo y avisar—. Eliminar se lo lleva el camino compartido.
+
+### El diálogo compartido no se toca, y el aviso posterior pierde una oración
+
+Se evaluó si el diálogo debía decir que **se conserva uno**. No: el botón ya lo
+dijo, el diálogo dice qué se va, y el conteo es comprobable contra el grupo que
+el usuario tiene delante. Meter esa frase en un diálogo que usan cuatro
+pantallas la haría falsa en las otras tres, que es justo lo que ese archivo
+existe para evitar.
+
+Y el aviso posterior queda en *"Se quitaron {0} elementos de la biblioteca."*,
+cierto en los dos modos. **Se borró la segunda oración en vez de reemplazarla
+por una versión por modo**, y la razón no es economía: el usuario acaba de leer
+y confirmar un diálogo que le dijo adónde iban esos archivos y cuánto pesaban.
+Repetirlo en la barra de estado no agrega nada, y el dato veraz llega donde
+sirve —**antes** de la acción, no después, cuando ya no puede hacer nada con
+él—. La única razón por la que esa oración existía era tranquilizar sobre algo
+que resultó no ser verdad.
+
+### Las pruebas
+
+La línea de `KnownUnconfirmedBypasses` se **borró**, que es lo que corresponde
+cuando el hallazgo se arregla: una excepción que ya no aplica esconde el estado
+real igual que un bypass sin documentar, y la prueba hermana obliga a venir a
+borrarla.
+
+Y se agregó la afirmación que faltaba. Las dos pruebas que había son negativas
+—"nadie elimina por fuera del diálogo"—, y una afirmación negativa se cumple
+sola si alguien borra la funcionalidad o si una pantalla elimina por un camino
+que el escaneo no reconoce. `CadaPantallaQueEliminaLlamaAlDialogoDeConfirmacion`
+comprueba lo positivo: las cuatro pantallas que ofrecen eliminar **llaman** al
+diálogo. Es la que se habría puesto roja el día que Similares se lo saltó.
+Verificado que falla de verdad: quitando la llamada de `SimilarItemsPage`, se
+pone en rojo nombrando esa pantalla; restaurada, verde.
+
+Un comentario que también se corrigió, porque era la creencia que causó todo:
+la clase `SimilarItemsPage` decía que quitar de la biblioteca "ni siquiera
+borra archivos — se dice en el aviso que queda después, no en un diálogo que se
+despacha sin leer". Era verdad cuando se escribió y dejó de serlo en B5, y
+nadie volvió a leerlo.
+
+### Verificación
+
+`dotnet build AuraStudio.Windows.slnx`: 0 errores. `dotnet test`: **1 820 en
+verde, ninguna omitida, ninguna en rojo**.

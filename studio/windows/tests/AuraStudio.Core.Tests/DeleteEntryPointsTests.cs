@@ -49,29 +49,26 @@ public class DeleteEntryPointsTests
         @"\b(?:_library|library|Library)\.Remove\(", RegexOptions.Compiled);
 
     /// <summary>
-    /// Hallazgo real (ST-245, addendum), NO corregido acá — instrucción
-    /// explícita del coordinador ("NO toques Views ni LibraryViewModel"):
-    /// <c>SimilarItemsViewModel.KeepOnly</c> (línea 119) llama
-    /// <c>_library.Remove(doomed)</c> directo, sin ninguna confirmación —
-    /// ni en el ViewModel ni en <c>SimilarItemsPage.xaml.cs</c>
-    /// (<c>KeepOnly_Click</c> no muestra ningún diálogo, solo resuelve el
-    /// <c>Guid</c> del botón y llama <c>ViewModel.KeepOnly</c> derecho). El
-    /// doc-comment de <c>KeepOnly</c> (líneas 107-109) y el mensaje de éxito
-    /// (líneas 123-125) además mienten: dicen que el archivo "sigue en tu
-    /// computadora", falso para un elemento en modo copia desde B5 (va a la
-    /// Papelera sin avisar). El arreglo real es de interfaz (mostrar
-    /// confirmación antes de <c>KeepOnly</c>, o enrutar por
-    /// <c>DeleteConfirmation</c>) — no cabe en Core sin tocar Views, así que
-    /// queda como excepción documentada, no silenciada: cualquier bypass
-    /// NUEVO (uno que no esté en esta lista) sigue haciendo fallar la
-    /// prueba de abajo.
+    /// Bypasses conocidos: sitios que eliminan sin pasar por
+    /// <c>DeleteConfirmation</c> y que están documentados en vez de
+    /// silenciados. <b>Hoy está vacía, y esa es la idea.</b>
+    ///
+    /// <para>Tuvo uno: <c>SimilarItemsViewModel.KeepOnly</c> llamaba
+    /// <c>_library.Remove</c> directo, sin confirmación en ninguna capa, y el
+    /// aviso posterior decía que el archivo "sigue en tu computadora" —cierto
+    /// en modo referencia y falso en modo copia, donde ya se había ido a la
+    /// Papelera—. Se arregló enrutando <c>KeepOnly_Click</c> por
+    /// <c>DeleteConfirmation</c> como las otras tres pantallas (ST-245,
+    /// addendum), y la línea salió de esta lista.</para>
+    ///
+    /// <para>Que quede vacía no la hace inútil: un bypass NUEVO hace fallar la
+    /// prueba de abajo, y
+    /// <see cref="LosHallazgosConocidosSiguenExistiendoEnLaLineaCitada"/> hace
+    /// fallar cualquier renglón que sobre — o sea que tampoco se puede tapar un
+    /// hallazgo agregándolo acá y olvidándolo.</para>
     /// </summary>
     private static readonly HashSet<(string File, int Line)> KnownUnconfirmedBypasses = new()
     {
-        // La línea se corrió un renglón al sacar el ternario de plural a recurso
-        // (ST-247). El hallazgo es el mismo; su arreglo real es el addendum de
-        // ST-245, que no cabe en B7a.
-        ("AuraStudio.App/ViewModels/SimilarItemsViewModel.cs", 120),
     };
 
     [Fact]
@@ -110,6 +107,40 @@ public class DeleteEntryPointsTests
             "llamada a library.Remove(...) fuera de DeleteConfirmation y sin documentar como hallazgo conocido " +
             "(¿un bypass nuevo, o uno viejo que hay que agregar a KnownUnconfirmedBypasses?): " +
             string.Join(", ", sinDocumentar));
+    }
+
+    /// <summary>
+    /// Y del otro lado: cada pantalla que ofrece eliminar <b>llama</b> a
+    /// <see cref="DeleteConfirmation"/>.
+    ///
+    /// <para>Las dos pruebas de arriba comprueban que nadie elimine <i>por
+    /// fuera</i> del diálogo, que es una afirmación negativa: se cumple sola si
+    /// alguien borra la funcionalidad, o si una pantalla deja de eliminar por
+    /// un camino que este archivo no reconoce. Ésta es la afirmación positiva,
+    /// y es la que se habría puesto roja el día que Similares se saltó la
+    /// confirmación (ST-245, addendum): entonces esa pantalla ofrecía
+    /// "Conservar solo este" y no llamaba al diálogo desde ningún lado.</para>
+    ///
+    /// <para>La lista es explícita. Una pantalla nueva con un botón de eliminar
+    /// no aparece acá sola, y ese renglón que falta es la conversación que hay
+    /// que tener antes de que salga.</para>
+    /// </summary>
+    [Theory]
+    [InlineData("AuraStudio.App/Views/SongsPage.xaml.cs")]
+    [InlineData("AuraStudio.App/Views/ArtistsPage.xaml.cs")]
+    [InlineData("AuraStudio.App/Views/MediaGridPage.xaml.cs")]
+    [InlineData("AuraStudio.App/Views/SimilarItemsPage.xaml.cs")]
+    public void CadaPantallaQueEliminaLlamaAlDialogoDeConfirmacion(string screen)
+    {
+        string fullPath = Path.Combine(
+            RepoRoot(), "studio", "windows", screen.Replace('/', Path.DirectorySeparatorChar));
+
+        Assert.True(File.Exists(fullPath), $"{screen} no existe -- ¿se movió la pantalla?");
+
+        Assert.Contains(
+            "DeleteConfirmation.ConfirmAndRemoveAsync",
+            File.ReadAllText(fullPath),
+            StringComparison.Ordinal);
     }
 
     /// <summary>

@@ -105,22 +105,41 @@ public sealed partial class SimilarItemsViewModel : ViewModelBase
                 $"{edit.FieldTitle}: «{edit.CurrentValue}» → «{edit.ProposedValue}»")
         ]);
 
+    /// <summary>La biblioteca, para que la pantalla pueda pedir confirmación.</summary>
+    public LibraryViewModel Library => _library;
+
     /// <summary>
-    /// Quita del catálogo todo el grupo menos el que se conserva. <b>No borra
-    /// archivos</b>: se quitan de la biblioteca y siguen en el disco.
+    /// Quiénes se van si se conserva <paramref name="keepId"/>: todo el grupo
+    /// menos ese.
+    ///
+    /// <para>Solo dice quiénes; no elimina (ST-245, addendum). Eliminar pasa
+    /// por <c>DeleteConfirmation</c> como en las otras tres pantallas, que es
+    /// donde el usuario ve cuántos archivos se van, cuánto ocupan y adónde
+    /// van. Antes esto borraba directo y sin preguntar, y encima avisaba
+    /// después que "el archivo sigue en tu computadora" — cierto en modo
+    /// referencia y <b>falso</b> en modo copia, donde el archivo se había ido
+    /// a la Papelera.</para>
     /// </summary>
-    public void KeepOnly(string groupId, Guid keepId)
+    public IReadOnlyList<Guid> IdsToRemoveKeeping(string groupId, Guid keepId)
     {
         SimilarGroupRow? row = Groups.FirstOrDefault(candidate => candidate.Id == groupId);
-        if (row is null) return;
+        if (row is null) return [];
 
-        IEnumerable<Guid> doomed = row.Members.Where(member => member.Id != keepId).Select(member => member.Id);
-        int count = doomed.Count();
+        return [.. row.Members.Where(member => member.Id != keepId).Select(member => member.Id)];
+    }
 
-        _library.Remove(doomed);
+    /// <summary>
+    /// Lo que queda por hacer cuando el usuario ya confirmó y la eliminación ya
+    /// ocurrió: el grupo desaparece de la hoja y se dice cuántos se fueron.
+    ///
+    /// <para>El mensaje no repite adónde fueron a parar los archivos. Eso lo
+    /// dijo el diálogo, con su tamaño, <b>antes</b> de hacerlo — que es cuando
+    /// le sirve a alguien.</para>
+    /// </summary>
+    public void ConfirmKeptOnly(string groupId, int removedCount)
+    {
         Forget(groupId);
-
-        LastMessage = Strings.Plural("similar-items-view-model.items-removed", count);
+        LastMessage = Strings.Plural("similar-items-view-model.items-removed", removedCount);
     }
 
     /// <summary>Aplica las correcciones de metadata que el grupo proponía.</summary>

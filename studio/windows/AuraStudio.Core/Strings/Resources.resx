@@ -1738,10 +1738,10 @@
     <value>Se encontraron {0} grupos parecidos.</value>
   </data>
   <data name="similar-items-view-model.items-removed.one" xml:space="preserve">
-    <value>Se quitó {0} elemento de la biblioteca. El archivo sigue en tu computadora.</value>
+    <value>Se quitó {0} elemento de la biblioteca.</value>
   </data>
   <data name="similar-items-view-model.items-removed.other" xml:space="preserve">
-    <value>Se quitaron {0} elementos de la biblioteca. Los archivos siguen en tu computadora.</value>
+    <value>Se quitaron {0} elementos de la biblioteca.</value>
   </data>
   <data name="songs-page.busca-album-ano-caratula-letra-lo" xml:space="preserve">
     <value>Busca álbum, año, carátula y letra de lo que esté incompleto</value>
