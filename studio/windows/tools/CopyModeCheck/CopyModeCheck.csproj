@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- ST-243 (B3): arnés del modo copia. Importa los cuatro formatos con el
+       pipeline de verdad (LibraryProcessor), mide qué se copió, qué se
+       convirtió y a qué bitrate, cuánto escribe una edición de campo, y
+       comprueba que el modo referencia no toca nada. Fuera de la solución,
+       igual que LibraryPerfCheck y StorageFixtureCheck: no es una prueba (no
+       afirma, mide).
+
+       No necesita ffmpeg ni ningún archivo de la máquina: el fixture se
+       sintetiza acá — el WAV y el AIFF con muestras de verdad, para que la
+       conversión a MP3 tenga algo que codificar. -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
+    <RootNamespace>AuraStudio.Tools.CopyModeCheck</RootNamespace>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AuraStudio.Core\AuraStudio.Core.csproj" />
+    <ProjectReference Include="..\..\AuraStudio.App\AuraStudio.App.csproj" />
+  </ItemGroup>
+
+</Project>

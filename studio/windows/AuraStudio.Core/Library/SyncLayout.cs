@@ -82,9 +82,33 @@ public static class SyncLayout
     public static string MusicDestinationRelativePath(
         LibraryItem item,
         MusicOrganization organization = MusicOrganization.ArtistAlbum,
-        MusicFilenameFormat filenameFormat = MusicFilenameFormat.TitleOnly)
+        MusicFilenameFormat filenameFormat = MusicFilenameFormat.TitleOnly) =>
+        MusicRelativePath(item, MusicDirectory, organization, filenameFormat);
+
+    /// <summary>
+    /// La misma regla, bajo la carpeta que se le diga (ST-243).
+    ///
+    /// <para>Existe porque el modo copia acomoda la música <b>dentro de la
+    /// biblioteca</b> con el mismo criterio con el que se acomoda en el iPod: es
+    /// lo que el usuario eligió en Ajustes, y tener dos reglas para lo mismo
+    /// sería que la carpeta de la Mac y la del iPod no se parecieran sin que
+    /// nadie lo hubiera decidido. Lo que cambia es la raíz: <c>Music</c> allá,
+    /// <c>Música</c> acá.</para>
+    /// </summary>
+    /// <param name="extensionOverride">
+    /// La extensión del archivo que de verdad se va a escribir, cuando no es la
+    /// del original — un WAV que se convierte a MP3 al importarlo llega acá como
+    /// <c>mp3</c>.
+    /// </param>
+    public static string MusicRelativePath(
+        LibraryItem item,
+        string root,
+        MusicOrganization organization = MusicOrganization.ArtistAlbum,
+        MusicFilenameFormat filenameFormat = MusicFilenameFormat.TitleOnly,
+        string? extensionOverride = null)
     {
-        string extension = Path.GetExtension(item.PreparedPath ?? item.SourcePath).TrimStart('.');
+        string extension = (extensionOverride
+                            ?? Path.GetExtension(item.PreparedPath ?? item.SourcePath)).TrimStart('.');
         TrackMetadata? metadata = item.Metadata;
 
         // El artista de la CARPETA es el del álbum si lo hay: así una
@@ -113,8 +137,8 @@ public static class SyncLayout
         };
 
         return extension.Length == 0
-            ? $"{MusicDirectory}/{folder}/{filename}"
-            : $"{MusicDirectory}/{folder}/{filename}.{extension}";
+            ? $"{root}/{folder}/{filename}"
+            : $"{root}/{folder}/{filename}.{extension}";
     }
 
     /// <summary>

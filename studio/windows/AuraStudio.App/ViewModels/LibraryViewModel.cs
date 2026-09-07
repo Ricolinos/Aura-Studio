@@ -1516,9 +1516,75 @@ public sealed partial class LibraryViewModel : ViewModelBase
             item.Status = LibraryItemStatus.Ready;
         }
 
+        // ST-243: si el archivo es de la biblioteca, la corrección va también al
+        // archivo. Editar el título de una canción y que el iPod siguiera
+        // mostrando el viejo era el defecto original.
+        WriteTagsIntoTheLibraryFile(item);
+
         Save();
         OnPropertyChanged(nameof(Items));
     }
+
+    /// <summary>
+    /// Deja en el archivo lo que dice el catálogo (ST-243), <b>solo si el
+    /// archivo es nuestro</b>: música con <c>storage: copy</c>. A un original
+    /// del usuario no se le escribe nada — es lo que promete el interruptor de
+    /// Ajustes, y la inferencia de ST-241 no autoriza a romperlo.
+    ///
+    /// <para>Va <b>fuera del hilo de interfaz</b>: reescribir una canción de
+    /// cincuenta megabytes con la ventana congelada es justo lo que la ronda
+    /// anterior vino a quitar. Y va con una <b>copia</b> de los campos
+    /// gobernados, no con el objeto vivo, porque a ese lo sigue editando el
+    /// usuario mientras esto escribe.</para>
+    ///
+    /// <para>Lo que <b>no</b> dispara una reescritura, a propósito: el
+    /// enriquecimiento en línea y aplicar una carátula a un álbum entero. Los
+    /// dos tocan cientos o miles de elementos de una vez, y reescribir en bloque
+    /// la biblioteca del usuario es una decisión que merece su propia ronda, no
+    /// un efecto secundario de esta.</para>
+    /// </summary>
+    private void WriteTagsIntoTheLibraryFile(LibraryItem item)
+    {
+        if (item.Kind != LibraryItemKind.Music) return;
+        if (item.StorageKind != ItemStorage.Copy) return;
+        if (item.Metadata is not { } live || !LocalTagWriter.CanWrite(item.SourcePath)) return;
+
+        string path = item.SourcePath;
+        string name = Path.GetFileName(path);
+        TrackMetadata snapshot = GovernedFieldsOf(live);
+        CoverArtPolicy policy = _preferences.CoverArtPolicy;
+        byte[]? cover = policy == CoverArtPolicy.PerTrack ? ReadCover(item) : null;
+
+        _ = Task.Run(() =>
+        {
+            TagWriteResult result = LocalTagWriter.Write(path, snapshot, policy, cover);
+
+            // "No había nada que cambiar" no es una falla: es el caso normal
+            // cuando se editó algo que no va en las etiquetas.
+            if (result.Written || result.Reason == TagWriteResult.UpToDate.Reason) return;
+
+            Dispatch(() => StatusMessage =
+                $"No se pudieron escribir las etiquetas en «{name}»: {result.Reason}");
+        });
+    }
+
+    /// <summary>
+    /// Copia de los campos que el catálogo gobierna, y solo esos: es lo único
+    /// que el escritor lee, y copiarlos deja al hilo de fondo trabajando sobre
+    /// algo que nadie más va a tocar.
+    /// </summary>
+    private static TrackMetadata GovernedFieldsOf(TrackMetadata source) => new()
+    {
+        Title = source.Title,
+        Artist = source.Artist,
+        Album = source.Album,
+        AlbumArtist = source.AlbumArtist,
+        Composer = source.Composer,
+        Genre = source.Genre,
+        Year = source.Year,
+        TrackNumber = source.TrackNumber,
+        DiscNumber = source.DiscNumber
+    };
 
     /// <summary>Aplica los datos de un video editados a mano.</summary>
     public void ApplyVideoEdit(Guid id, string? title, string? seriesName, int? season, int? episode, string? category)

@@ -49,7 +49,12 @@ public static class LibraryIngest
         var context = new CoverArtDropContext(paths);
         bool intoPhotos = section == LibraryItemKind.Photo;
 
-        var existing = new HashSet<string>(existingPaths ?? [], StringComparer.OrdinalIgnoreCase);
+        // Normalizadas antes de comparar (addendum de ST-241): dos rutas al mismo
+        // archivo pueden traer el acento escrito de las dos maneras —una del
+        // Explorador, otra del catálogo que escribió la Mac— y sin normalizar la
+        // misma canción entraría dos veces.
+        var existing = new HashSet<string>(
+            (existingPaths ?? []).Select(CatalogPath.Normalize), StringComparer.OrdinalIgnoreCase);
 
         var added = new List<LibraryItem>();
         var covers = new List<string>();
@@ -84,7 +89,7 @@ public static class LibraryIngest
                 continue;
             }
 
-            if (!existing.Add(path))
+            if (!existing.Add(CatalogPath.Normalize(path)))
             {
                 duplicates.Add(path);
                 continue;

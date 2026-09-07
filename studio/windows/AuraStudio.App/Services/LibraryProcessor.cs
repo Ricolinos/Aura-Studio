@@ -39,10 +39,15 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
             {
                 case LibraryItemKind.Music:
                     ProcessMusic(item);
+
+                    // Después de leerle las etiquetas y antes de nada más: la
+                    // carpeta de destino sale del artista y del álbum, así que
+                    // no se puede decidir sin ellos (ST-243).
+                    if (!await CopyIntoLibraryAsync(item, ct).ConfigureAwait(false)) return true;
                     break;
 
                 case LibraryItemKind.Photo:
-                    await ProcessPhotoAsync(item).ConfigureAwait(false);
+                    await ProcessPhotoAsync(item, ct).ConfigureAwait(false);
                     break;
 
                 case LibraryItemKind.Video:
@@ -101,13 +106,17 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
     /// La foto viaja <b>reducida</b>: el LCD del iPod es de 320x240 y una foto
     /// de teléfono ocupa cien veces lo que hace falta para verse igual.
     /// </summary>
-    private async Task ProcessPhotoAsync(LibraryItem item)
+    private async Task ProcessPhotoAsync(LibraryItem item, CancellationToken ct)
     {
         PhotoExif exif = await PhotoExifReader.ReadAsync(item.SourcePath).ConfigureAwait(false);
 
         // La categoría es una sugerencia: el usuario la puede cambiar, y por eso
         // no se vuelve a calcular si ya tiene una.
         item.Category ??= MediaCategoryHeuristics.ClassifyPhoto(exif.SoftwareTag, exif.HasCameraExif);
+
+        // La copia va después de la categoría, que es de qué carpeta cuelga, y
+        // antes de reducirla: lo preparado sale de la copia (ST-243).
+        if (!await CopyIntoLibraryAsync(item, ct).ConfigureAwait(false)) return;
 
         string output = Staging(item, "jpg");
         await ImageResizer.ResizeToLcdOptimalAsync(item.SourcePath, output, preferences.PhotoQuality.MaxDimension())
@@ -153,6 +162,10 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
             ? parsed.Title
             : Path.GetFileNameWithoutExtension(item.SourcePath);
         item.Metadata.DurationSeconds ??= info.Duration;
+
+        // Igual que la foto: después de la categoría —que es de qué carpeta
+        // cuelga— y antes de transcodificar, para que el .mpg salga de la copia.
+        if (!await CopyIntoLibraryAsync(item, ct).ConfigureAwait(false)) return;
 
         string output = Staging(item, "mpg");
 
@@ -210,6 +223,123 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
         }
 
         await ffmpeg.GeneratePosterAsync(videoPath, poster, duration, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Mete el archivo adentro de la biblioteca si el usuario pidió copiar
+    /// (ST-243). Devuelve si se puede seguir procesando el elemento.
+    ///
+    /// <para><b>Esto es lo que el interruptor de Ajustes venía prometiendo y
+    /// nadie cumplía.</b> "Cada canción, foto o video que sueltas en Aura Studio
+    /// se copia dentro de la carpeta de arriba" decía la pantalla —y viene
+    /// encendido de fábrica— mientras la biblioteca referenciaba todo donde
+    /// estuviera. Un usuario que le creyó y ordenó su carpeta de descargas se
+    /// quedó sin biblioteca.</para>
+    ///
+    /// <para><b>El original nunca se toca</b>: se copia, y lo que pasa a estar
+    /// bajo nuestro mando es la copia. A partir de ahí el elemento es
+    /// <c>storage: copy</c> y, si es música, <b>su propio preparado</b>
+    /// (ST-241): no hay un segundo archivo en <c>.preparados/</c> que sea copia
+    /// de la copia.</para>
+    ///
+    /// <para><b>WAV y AIFF se convierten a MP3</b> en el camino: el iPod no los
+    /// reproduce de forma útil y son enormes. Lo hace el codificador que ya trae
+    /// Windows (<see cref="AudioTranscoder"/>), no ffmpeg.</para>
+    /// </summary>
+    private async Task<bool> CopyIntoLibraryAsync(LibraryItem item, CancellationToken ct)
+    {
+        if (!preferences.CopyMediaIntoLibrary) return true;
+
+        string root = preferences.LibraryPath;
+
+        // Sin biblioteca elegida no hay adónde copiar. No es un error del
+        // archivo: se referencia, que es lo que se venía haciendo siempre.
+        if (root is not { Length: > 0 } || !Directory.Exists(root)) return true;
+
+        // Ya adentro —el usuario apuntó la biblioteca a su propia carpeta de
+        // música, o esto es un reproceso— no se copia sobre sí mismo.
+        if (LibraryFileCopier.IsInside(root, item.SourcePath))
+        {
+            MarkAsCopy(item, item.SourcePath, item.FileSizeBytes);
+            return true;
+        }
+
+        bool convert = item.Kind == LibraryItemKind.Music && AudioTranscoder.NeedsConversion(item.SourcePath);
+
+        string relative = LibraryFileLayout.RelativePath(
+            item,
+            preferences.MusicOrganization,
+            preferences.MusicFilenameFormat,
+            preferences.OrganizePhotosByCategory,
+            preferences.OrganizeVideosByCategory,
+            convert ? "mp3" : null);
+
+        try
+        {
+            if (convert)
+            {
+                string destination = LibraryFileCopier.Available(root, relative);
+                AudioTranscodeResult converted =
+                    await AudioTranscoder.ToMp3Async(item.SourcePath, destination, ct).ConfigureAwait(false);
+
+                MarkAsCopy(item, converted.Path, converted.BytesWritten);
+                WriteTagsIntoTheCopy(item);
+                return true;
+            }
+
+            LibraryCopyResult copied = LibraryFileCopier.Copy(item.SourcePath, root, relative);
+
+            if (!copied.Copied)
+            {
+                // Que la copia falle no se puede tapar quedándose con la
+                // referencia: el usuario pidió una copia y podría borrar el
+                // original creyendo que ya está adentro.
+                item.Status = LibraryItemStatus.Failed(
+                    $"No se pudo copiar a la biblioteca: {copied.Reason}");
+                return false;
+            }
+
+            MarkAsCopy(item, copied.Path, copied.BytesWritten);
+            if (item.Kind == LibraryItemKind.Music) WriteTagsIntoTheCopy(item);
+
+            return true;
+        }
+        catch (AudioTranscodeException ex)
+        {
+            item.Status = LibraryItemStatus.Failed($"No se pudo convertir a MP3: {ex.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// El elemento pasa a ser de la biblioteca: su archivo es la copia, su
+    /// <c>storage</c> es <c>copy</c> y —si es música— su preparado es él mismo
+    /// (ST-241).
+    /// </summary>
+    private static void MarkAsCopy(LibraryItem item, string path, long? bytes)
+    {
+        item.SourcePath = path;
+        item.Storage = ItemStorageRules.CopyValue;
+
+        // Asignar la ruta olvida el tamaño (ST-201): se repone acá, con lo que
+        // de verdad se escribió, en vez de dejar que alguien lo vuelva a medir.
+        item.FileSizeBytes = bytes;
+
+        if (item.Kind == LibraryItemKind.Music) item.PreparedPath = item.SourcePath;
+    }
+
+    /// <summary>
+    /// Deja en la copia las etiquetas del catálogo. Se escribe <b>en la copia,
+    /// nunca en el original</b>: el archivo del usuario no se toca ni siquiera
+    /// para mejorarlo.
+    /// </summary>
+    private void WriteTagsIntoTheCopy(LibraryItem item)
+    {
+        byte[]? cover = preferences.CoverArtPolicy == CoverArtPolicy.PerTrack
+            ? item.Metadata?.CoverArtData
+            : null;
+
+        LocalTagWriter.Write(item.SourcePath, item.Metadata, preferences.CoverArtPolicy, cover);
     }
 
     private string Staging(LibraryItem item, string extension)

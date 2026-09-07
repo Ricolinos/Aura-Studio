@@ -12087,3 +12087,254 @@ sin pasar por `MediaRoots`, en Windows no la va a encontrar. La defensa
 es que Studio crea esas carpetas él mismo y ahora las busca antes de
 crearlas; el camino que no pase por ahí es un defecto, y por eso el
 resolvedor es un lugar solo.
+
+## ST-243 — Windows: el modo copia que Ajustes prometía, y WAV/AIFF a MP3 sin ffmpeg
+
+B3 de la ronda "ajustes 3". Es el interruptor que cierra lo que abrieron
+B2 y B1: con `LocalTagWriter` sabiendo escribir etiquetas (ST-242) y
+`storage` con semántica (ST-241), ya se puede tener archivos propios.
+
+### Qué había: una promesa escrita en la pantalla y nada detrás
+
+Ajustes › Biblioteca tiene un interruptor —**encendido de fábrica**— que
+dice, textualmente:
+
+> Cada canción, foto o video que sueltas en Aura Studio se copia dentro
+> de la carpeta de arriba; el original queda intacto donde estaba.
+
+No se copiaba nada. `CopyMediaIntoLibrary` existía en las preferencias,
+se guardaba, se mostraba, y **no tenía un solo consumidor**: la
+biblioteca referenciaba todo donde estuviera. Un usuario que le creyó y
+después ordenó su carpeta de descargas se quedó sin biblioteca.
+
+Es la misma forma exacta del defecto de ST-242 con la política de
+carátula, y por eso vale la pena decirla como regla: **un interruptor sin
+consumidor es peor que no tener el interruptor**. No es una función que
+falta; es la app afirmando algo falso sobre lo que acaba de hacer con los
+archivos del usuario.
+
+Junto con eso había un segundo cabo suelto: `FfmpegArguments.ForAudio` y
+`FfmpegRunner.TranscodeAudioAsync`, un perfil de audio por ffmpeg
+completo —256 kbps CBR, con su prueba— y **sin un solo llamador**,
+esperando a que alguien lo usara.
+
+### Qué hay: el archivo pasa a ser nuestro, y solo entonces se toca
+
+Con el interruptor encendido, al importar:
+
+1. Se leen las etiquetas (o se saca la categoría, si es foto o video).
+2. Se decide la ruta de destino **con esos datos**:
+   `Música/<Artista>/<Álbum>/<Título>.<ext>` según lo que el usuario ya
+   eligió en Ajustes, `Imágenes/<Categoría>/<archivo>` y
+   `Videos/<Categoría>/<archivo>`.
+3. Se **copia** —o se convierte, si hace falta— y la copia pasa a ser el
+   archivo del elemento: `storage: copy`, y para música
+   `PreparedPath == SourcePath` (ST-241).
+4. Recién ahí `LocalTagWriter` escribe en **la copia** las etiquetas del
+   catálogo.
+
+**El original del usuario no se toca nunca**: ni se mueve, ni se
+renombra, ni se le escriben etiquetas. Es lo que promete la pantalla, y
+es la línea que separa una app que organiza de una que arruina una
+biblioteca ajena. La inferencia de `storage` de ST-241 no autoriza a
+cruzarla: se escribe porque el archivo **es** una copia que hicimos, no
+porque una ruta se parezca a una.
+
+La música se acomoda con el **mismo criterio** con el que se acomoda en
+el iPod (`SyncLayout.MusicRelativePath`, ahora con la raíz como
+parámetro). Tener dos reglas para lo mismo sería que la carpeta de la
+computadora y la del iPod no se parecieran sin que nadie lo hubiera
+decidido. De paso, `OrganizePhotosByCategory` y `OrganizeVideosByCategory`
+—que también estaban sin consumidor— pasan a tenerlo.
+
+**Copia atómica** (`LibraryFileCopier`): se copia a un `.aura-tmp` al
+lado del destino y recién ahí se renombra. Un corte a mitad de copiar
+cincuenta megabytes deja basura evidente que se borra sola, no una
+canción truncada que el catálogo da por buena. El temporal **nunca se
+llama como música** (regla de ST-242).
+
+Un destino ocupado **se desambigua, no se pisa**: dos canciones distintas
+con el mismo artista, álbum y título existen —las hay en vivo y en
+estudio—. Y estar "adentro de la biblioteca" se decide comparando rutas,
+no prefijos de texto: `C:\Bib2` empieza con `C:\Bib` y no está adentro de
+ella.
+
+### Editar un campo reescribe el archivo de la biblioteca
+
+Corregir el título de una canción y que el iPod siguiera mostrando el
+viejo era el defecto original. Ahora `ApplyMetadataEdit` deja la
+corrección **también en el archivo**, y solo cuando el archivo es
+nuestro: música con `storage: copy`. Va fuera del hilo de interfaz
+—reescribir cincuenta megabytes con la ventana congelada es lo que la
+ronda anterior vino a quitar— y con una **copia** de los campos
+gobernados, porque al objeto vivo lo sigue editando el usuario mientras
+esto escribe.
+
+Rating, favorito, letra y categoría **no** reescriben nada: el rating
+viaja en `ratings.cfg` y la letra como `.lrc` hermano, los dos escritos
+al sincronizar (`LibrarySyncFinalizer`), igual que en la Mac. Está
+medido más abajo, byte a byte.
+
+Lo que **no** dispara una reescritura, a propósito: el enriquecimiento en
+línea y aplicar una carátula a un álbum entero. Los dos tocan cientos o
+miles de elementos de una vez, y reescribir en bloque la biblioteca del
+usuario es una decisión que merece su propia ronda, no un efecto
+secundario de esta.
+
+### La sincronización viaja con el archivo de la biblioteca
+
+Sin cambios y a propósito: `SyncService` copia `PreparedPath ??
+SourcePath`, y para música copiada los dos son el archivo de la
+biblioteca. O sea que **no pasa por `.preparados/`** — no hay una copia
+de la copia, que es justamente la invariante de ST-241. El arnés lo
+comprueba: `preparado == origen` da verdadero en los cinco formatos.
+
+### WAV y AIFF: a MP3, con el codificador que ya trae Windows
+
+Decisión de la Maestra, y es mejor que las dos que yo había propuesto en
+ST-242: ni empaquetar ffmpeg ni retirar la opción, sino
+`Windows.Media.Transcoding.MediaTranscoder` con
+`MediaEncodingProfile.CreateMp3`. Viene con Windows 10 y 11, no pesa nada
+en el instalador y no agrega licencias. Es la misma forma que la Mac, que
+usa AVFoundation.
+
+**AIFF no tiene fuente nativa en Media Foundation**, así que pasa antes
+por un WAV que arma `AiffToWav` — código propio, en Core y probado sin
+plataforma. Convertir AIFF a WAV es leer la cabecera y **dar vuelta los
+bytes de cada muestra**: no se remuestrea ni se recodifica nada. Tres
+detalles que no son de adorno:
+
+- **`sowt` no se da vuelta.** El AIFF-C `sowt` —lo que escribe
+  QuickTime— es PCM que ya viene en little-endian. Darlo vuelta "para
+  convertirlo" produce ruido: la clase de defecto que se oye y no se ve.
+- **Ocho bits pasan de con signo a sin signo.** No hay bytes que dar
+  vuelta, pero AIFF los guarda con signo y WAV sin él; sin correr el
+  cero, la canción sale con un chasquido en cada muestra.
+- **Un AIFF-C de verdad comprimido se rechaza** (IMA4, µ-law, incluso
+  MP3 adentro). Se dice que no; no se entrega ruido.
+
+El WAV intermedio **sí** lleva extensión `.wav`, y por eso vive en la
+carpeta temporal del sistema y no al lado de la música: Media Foundation
+elige el decodificador por la extensión —el mismo tropiezo que TagLib# en
+ST-242— así que ahí necesita llamarse como lo que es, y ahí no le estorba
+a nadie. La regla de ST-242 sigue en pie donde importa: el temporal que
+queda **al lado de la biblioteca del usuario** es siempre `.aura-tmp`.
+
+El MP3 se escribe atómicamente y después `LocalTagWriter` le pone las
+etiquetas del catálogo.
+
+**El aviso está en Ajustes, antes**: un `InfoBar` que aparece con el
+interruptor encendido y explica que WAV y AIFF se convierten a MP3 de 256
+kbps, que el original queda intacto, y que MP3, FLAC, M4A y ALAC se
+copian tal cual. Se dice antes, no después de que el usuario encuentre un
+`.mp3` donde había dejado un `.wav`.
+
+**ffmpeg queda solo para video.** `FfmpegArguments.ForAudio` y
+`FfmpegRunner.TranscodeAudioAsync` se retiran, y queda una prueba de que
+no vuelvan solos.
+
+### Los números, medidos
+
+Arnés nuevo `tools/CopyModeCheck` —no afirma, mide—, con el fixture
+sintetizado en el momento: el WAV y el AIFF llevan **muestras de verdad**
+(un la de 440 Hz, 10 s exactos, 44,1 kHz estéreo 16 bits) para que la
+conversión tenga algo que codificar. No necesita ffmpeg ni ningún archivo
+de la máquina. **Nada de la biblioteca del dueño, ni en copia.**
+
+**Importar en modo copia**, los cinco formatos:
+
+| formato | storage | bytes | ms | destino |
+|---|---|---|---|---|
+| mp3 | copy | 17 956 | 78 | `Música\Café Tacvba\Ré\Ingrata.mp3` |
+| flac | copy | 4 235 | 47 | `Música\Café Tacvba\Ré\Ingrata.flac` |
+| m4a | copy | 2 753 | 16 | `Música\Café Tacvba\Ré\Ingrata.m4a` |
+| wav | copy | 322 351 | 2 922 | `Música\Desconocido\Desconocido\cancion.mp3` |
+| aiff | copy | 322 351 | 203 | `Música\Desconocido\Desconocido\cancion 2.mp3` |
+
+Las etiquetas releídas del archivo **copiado** son las del catálogo en
+los cinco, y `preparado == origen` da verdadero en los cinco.
+
+Tres cosas que dicen los números:
+
+- Los 2 922 ms del primer WAV contra los 203 ms del AIFF que le sigue son
+  el **costo de la primera vez** (cargar Media Foundation), no el de
+  convertir. Medido aparte, abajo, da 344 ms.
+- El WAV y el AIFF caen en `Desconocido/Desconocido` porque el fixture no
+  trae etiquetas — un WAV sin etiquetas de verdad no tiene artista ni
+  álbum, y `Desconocido` es lo correcto, no un error.
+- El segundo cae como `cancion 2.mp3`: la desambiguación funciona.
+
+**Conversión a MP3**, medida aparte:
+
+| origen | bytes origen | bytes MP3 | ms | kbps medidos |
+|---|---|---|---|---|
+| wav | 1 764 044 | 322 223 | 344 | 257,8 |
+| aiff | 1 764 054 | 322 223 | 234 | 257,8 |
+
+Los dos dan **exactamente el mismo tamaño**, que es la comprobación de
+que `AiffToWav` produce el mismo stream que el WAV original. Y **257,8
+kbps medidos contra 256 pedidos**: el codificador entrega el bitrate como
+promedio, y la diferencia es la cabecera repartida sobre diez segundos.
+Queda anotado como pidió la Maestra: **256 kbps promedio, no CBR
+exacto**.
+
+**Qué escribe cada edición**, sobre el archivo ya copiado:
+
+| campo | ¿reescribió? | bytes antes → después | ¿fecha igual? |
+|---|---|---|---|
+| título | **sí** | iguales | no |
+| rating | **no** | iguales | **sí** |
+| letra | **no** | iguales | **sí** |
+
+En los cinco formatos, sin excepción. Que la fecha no se mueva es lo que
+importa: es lo que mira la sincronización para decidir si hay que volver
+a copiar la canción al iPod, y sin esto poner una estrella copiaría el
+álbum entero otra vez.
+
+**Modo referencia**: ruta sin cambiar, bytes del original idénticos,
+fecha del original sin mover, **cero archivos** en la carpeta de la
+biblioteca. El `storage` queda sin fijar y se infiere al guardar, que es
+lo que dice ST-241.
+
+### Lo que NO entra, y por qué
+
+- **El aviso de duplicados por tamaño y duración.** La deduplicación
+  **por ruta** sí está (y ahora normaliza a NFC antes de comparar, por el
+  addendum de ST-241: dos rutas al mismo archivo pueden traer el acento
+  escrito de las dos maneras y sin normalizar la canción entraría dos
+  veces). El aviso por parecido es otra cosa: `SimilarItemsDetector` y su
+  pantalla ya existen completos, así que lo que falta no es detectar sino
+  **decidir el flujo** —cuándo avisar, cómo se descarta, qué pasa con un
+  arrastre de mil archivos—. Eso es una ronda, no un renglón. **Queda
+  para B5**, con el gancho ya identificado: correr `Detect` sobre lo
+  recién agregado al terminar `AddDroppedFiles` y, si encuentra algo,
+  decirlo en `LastDropMessage` apuntando a Similares. No hace falta UI
+  nueva.
+- **Preparado por identificador**: sigue siendo B4. El nombrado por ID
+  está listo desde ST-241 (`StagingPaths.ForItem`) y `LibraryProcessor`
+  todavía usa el viejo.
+- **Convertir lo que ya está en la biblioteca.** La conversión pasa al
+  importar. Un WAV que ya entró como referencia se queda como está hasta
+  que alguien decida qué hacer con él.
+
+### Verificación
+
+`dotnet build` de `AuraStudio.Core`, `AuraStudio.App` y el arnés: **0
+errores, 0 advertencias**. `dotnet test`: **1 656 pruebas en verde** (22
+nuevas).
+
+Las 22: el layout de la biblioteca (música por artista y álbum, la
+organización elegida, la extensión de lo convertido, foto y video por
+categoría y sin ella, y que lo sin categoría no quede suelto en la raíz);
+la copia (original intacto, destino desambiguado, lo que ya está adentro
+no se copia sobre sí mismo, "adentro" por ruta y no por prefijo de texto,
+sin temporales, y un error de disco que se explica en vez de lanzar); y
+el lector de AIFF (muestras dadas vuelta a 16 y 24 bits, ocho bits con y
+sin signo, `sowt` que **no** se da vuelta, AIFF-C sin comprimir que sí,
+la cabecera del WAV completa, y los cuatro rechazos: comprimido, no es
+AIFF, truncado, sin audio).
+
+Lo que **no** se verificó acá: nada de esto se probó contra la biblioteca
+real del dueño, ni en copia. Y el arnés corre sin ventana — que el
+`InfoBar` de Ajustes se vea como se espera lo tiene que mirar alguien con
+la app delante.

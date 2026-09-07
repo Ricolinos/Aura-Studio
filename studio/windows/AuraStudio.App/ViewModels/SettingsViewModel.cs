@@ -158,6 +158,17 @@ public sealed partial class SettingsViewModel : ViewModelBase
         ? "Cada canción, foto o video que sueltas en Aura Studio se copia dentro de la carpeta de arriba; el original queda intacto donde estaba. Usa más espacio en disco, pero la biblioteca queda completa en un solo lugar."
         : "No se copia nada: la biblioteca referencia tus archivos donde ya están, y aquí solo se guarda lo que los liga a Aura (metadata, letras, portadas). Al sincronizar, Aura Studio arma el archivo para el iPod leyendo el original en ese momento — un poco más lento la primera vez, pero tu disco nunca termina con una copia duplicada de toda tu biblioteca.";
 
+    /// <summary>
+    /// ST-243: la conversión se avisa <b>antes</b>, no después de que el usuario
+    /// encuentre un <c>.mp3</c> donde había dejado un <c>.wav</c>. Y se dice por
+    /// qué, que es lo que convierte una sorpresa en una decisión entendida.
+    /// </summary>
+    public string AudioConversionDetail =>
+        "Un WAV o un AIFF ocupa diez veces lo que la misma canción en MP3, y el disco del iPod no da "
+        + "abasto: al copiarlos a la biblioteca se convierten a MP3 de 256 kbps con el codificador que "
+        + "ya trae Windows. Tu archivo original queda intacto donde estaba. MP3, FLAC, M4A y ALAC se "
+        + "copian tal cual, sin tocarles el audio.";
+
     public IReadOnlyList<string> LinkedFolders => _preferences.LinkedLibraryFolders;
 
     public bool HasLinkedFolders => LinkedFolders.Count > 0;
