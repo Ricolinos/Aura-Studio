@@ -1004,8 +1004,8 @@ public sealed partial class MediaGridPage : Page
             case "info": if (ViewModel.ItemsOf(reached) is [{ } only]) await ShowInfoAsync(only); break;
 
             case "delete":
-                ViewModel.Library.Remove(songIds);
-                ViewModel.Refresh();
+                if (await DeleteConfirmation.ConfirmAndRemoveAsync(XamlRoot, ViewModel.Library, songIds))
+                    ViewModel.Refresh();
                 break;
 
             default:
