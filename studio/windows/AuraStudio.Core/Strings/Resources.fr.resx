@@ -522,6 +522,51 @@
   <data name="device-safety-validator.volumen-ipod-esta-montado" xml:space="preserve">
     <value>Le volume de l'iPod n'est pas monté.</value>
   </data>
+  <data name="library-migration.already-up-to-date" xml:space="preserve">
+    <value>La bibliothèque était déjà à jour : il n'y avait rien à migrer.</value>
+  </data>
+  <data name="library-migration.cancelled-nothing-done" xml:space="preserve">
+    <value>Migration annulée ; rien n'a pu être modifié.</value>
+  </data>
+  <data name="library-migration.failed.one" xml:space="preserve">
+    <value>{0} n'a pas pu être migré et reste dans la bibliothèque.</value>
+  </data>
+  <data name="library-migration.failed.other" xml:space="preserve">
+    <value>{0} n'ont pas pu être migrés et restent dans la bibliothèque.</value>
+  </data>
+  <data name="library-migration.head-cancelled" xml:space="preserve">
+    <value>Migration annulée</value>
+  </data>
+  <data name="library-migration.head-done" xml:space="preserve">
+    <value>Bibliothèque migrée</value>
+  </data>
+  <data name="library-migration.no-changes" xml:space="preserve">
+    <value>rien n'a changé</value>
+  </data>
+  <data name="library-migration.orphans-deleted.one" xml:space="preserve">
+    <value>{0} fichier orphelin a été supprimé</value>
+  </data>
+  <data name="library-migration.orphans-deleted.other" xml:space="preserve">
+    <value>{0} fichiers orphelins ont été supprimés</value>
+  </data>
+  <data name="library-migration.prepared-built.one" xml:space="preserve">
+    <value>{0} fichier préparé a été créé</value>
+  </data>
+  <data name="library-migration.prepared-built.other" xml:space="preserve">
+    <value>{0} fichiers préparés ont été créés</value>
+  </data>
+  <data name="library-migration.prepared-renamed.one" xml:space="preserve">
+    <value>{0} fichier préparé a été rangé</value>
+  </data>
+  <data name="library-migration.prepared-renamed.other" xml:space="preserve">
+    <value>{0} fichiers préparés ont été rangés</value>
+  </data>
+  <data name="library-migration.summary" xml:space="preserve">
+    <value>{0} : {1}.</value>
+  </data>
+  <data name="library-migration.summary-with-failures" xml:space="preserve">
+    <value>{0} : {1}. {2}</value>
+  </data>
   <data name="library-unavailable-view.elegir-otra-biblioteca" xml:space="preserve">
     <value>Choisir une autre bibliothèque</value>
   </data>

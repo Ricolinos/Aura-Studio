@@ -13,7 +13,7 @@ dar formato,format,フォーマット,formatieren,форматировать,for
 controlador,driver,ドライバー,Treiber,драйвер,pilote,nombre oficial de Windows
 dispositivo,device,デバイス,Gerät,устройство,appareil,nombre oficial de Windows
 Ajustes,Settings,設定,Einstellungen,Параметры,Paramètres,nombre oficial de Windows
-actualización,update,更新,Update,обновление,mise à jour,nombre oficial de Windows
+actualización,update,更新,Update,обновление,mise à jour,"de: ""Update"" y no ""Aktualisierung"" -- es lo que usa Windows moderno en alemán (verificado en la retro)"
 tema,theme,テーマ,Design,тема,thème,"nombre oficial de Windows (de: ""Design"", no ""Thema"")"
 biblioteca,library,ライブラリ,Mediathek,медиатека,bibliothèque,"convención de reproductores de medios (de/ru: mediateca, no biblioteca de libros)"
 sincronizar,sync,同期,synchronisieren,синхронизировать,synchroniser,convención de reproductores de medios
@@ -22,7 +22,7 @@ canción,song,曲,Titel,песня,morceau,convención de reproductores de medio
 álbum,album,アルバム,Album,альбом,album,convención de reproductores de medios
 carátula,cover art,アルバムアート,Albumcover,обложка,pochette,convención de reproductores de medios
 firmware,firmware,ファームウェア,Firmware,прошивка,micrologiciel,"fr: término oficial; ru: uso corriente"
-arranque,bootloader,ブートローダー,Bootloader,загрузчик,bootloader,término técnico establecido
+arranque,bootloader,ブートローダー,Bootloader,загрузчик,bootloader,"el español evita el anglicismo Y LO EXPLICA; en de/ru/fr el término corriente es el técnico y se mantiene (decisión de la retro alemana)"
 modo DFU,DFU mode,DFUモード,DFU-Modus,режим DFU,mode DFU,"nombre de Apple: DFU no se traduce"
 iPod,iPod,iPod,iPod,iPod,iPod,marca: no se traduce
 Aura Studio,Aura Studio,Aura Studio,Aura Studio,Aura Studio,Aura Studio,marca: no se traduce
@@ -32,3 +32,4 @@ Guardar,Save,保存,Speichern,Сохранить,Enregistrer,botón estándar de
 Eliminar,Delete,削除,Löschen,Удалить,Supprimer,botón estándar de Windows
 Quitar,Remove,取り除く,Entfernen,Убрать,Retirer,"distinto de Eliminar: saca de una lista, no borra"
 Abrir,Open,開く,Öffnen,Открыть,Ouvrir,botón estándar de Windows
+volumen,volume,ボリューム,Volume,том,volume,"volumen LÓGICO; distinto de disco/Datenträger, que es el físico (verificado en la retro alemana)"

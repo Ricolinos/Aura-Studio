@@ -190,6 +190,20 @@ public class SpanishUnchangedTests
         // curso y por eso NO se ofrece cerrar.
         "app-strings.language-restart-busy",
 
+        // B7c: el resumen de una migración. Siete de sus ocho pedazos eran
+        // literales en el código —B7a solo se llevó el que tenía un ternario de
+        // plural—, así que con la app en otro idioma la oración salía mitad y
+        // mitad. El texto en español es el que ya decía, palabra por palabra;
+        // lo que cambia es de dónde sale.
+        "library-migration.cancelled-nothing-done", "library-migration.already-up-to-date",
+        "library-migration.prepared-renamed.one", "library-migration.prepared-renamed.other",
+        "library-migration.prepared-built.one", "library-migration.prepared-built.other",
+        "library-migration.orphans-deleted.one", "library-migration.orphans-deleted.other",
+        "library-migration.no-changes", "library-migration.head-cancelled",
+        "library-migration.head-done", "library-migration.summary",
+        "library-migration.summary-with-failures",
+        "library-migration.failed.one", "library-migration.failed.other",
+
         // Tooltips y nombres para el lector de pantalla que el borrador no
         // extrajo. Un AutomationProperties.Name en español dentro de una app en
         // alemán es justo el defecto que B7b viene a evitar.

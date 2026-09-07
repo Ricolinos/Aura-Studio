@@ -134,16 +134,60 @@ public class SatelliteResourcesTests
     [InlineData("en")]
     [InlineData("de")]
     [InlineData("fr")]
-    public void CadaIdiomaTieneExactamenteLasMismasClavesQueElEspanol(string culture)
+    public void CadaIdiomaTieneLasClavesQueLeTocan(string culture)
     {
         Dictionary<string, string> spanish = ValuesOf("Resources.resx");
-        Dictionary<string, string> english = ValuesOf($"Resources.{culture}.resx");
+        Dictionary<string, string> translated = ValuesOf($"Resources.{culture}.resx");
 
-        List<string> missing = [.. spanish.Keys.Where(key => !english.ContainsKey(key)).Order(StringComparer.Ordinal)];
-        List<string> extra = [.. english.Keys.Where(key => !spanish.ContainsKey(key)).Order(StringComparer.Ordinal)];
+        HashSet<string> expected = ExpectedKeys(spanish.Keys, culture);
 
-        Assert.True(missing.Count == 0, "Sin traducir al inglés:\n" + string.Join("\n", missing));
-        Assert.True(extra.Count == 0, "En inglés y no en español:\n" + string.Join("\n", extra));
+        List<string> missing = [.. expected.Where(key => !translated.ContainsKey(key)).Order(StringComparer.Ordinal)];
+        List<string> extra = [.. translated.Keys.Where(key => !expected.Contains(key)).Order(StringComparer.Ordinal)];
+
+        Assert.True(missing.Count == 0,
+            $"Faltan en {culture} — y una forma de plural que falta NO se ve al probar: "
+            + "el recurso cae a la cultura neutra y sale en español:\n" + string.Join("\n", missing));
+
+        Assert.True(extra.Count == 0,
+            $"Sobran en {culture}: nadie las va a pedir nunca, así que son texto que se tradujo "
+            + "para nada o una forma de plural que ese idioma no usa:\n" + string.Join("\n", extra));
+    }
+
+    /// <summary>
+    /// Qué claves le tocan a un idioma. <b>No son las mismas que al español</b>,
+    /// y ese es el punto.
+    ///
+    /// <para>Las formas de plural dependen de la familia del idioma: el ruso usa
+    /// tres —<c>.one</c>, <c>.few</c>, <c>.many</c>— y el japonés una sola
+    /// (<c>.other</c>), mientras que el español, el inglés, el alemán y el
+    /// francés usan dos. Exigir "las mismas claves que el español" habría dejado
+    /// el ruso sin <c>.few</c> ni <c>.many</c>, y el fallo no se vería: cuando
+    /// falta una forma, el <c>ResourceManager</c> cae a la cultura neutra y
+    /// devuelve <b>el español</b> — una frase suelta en español en medio de una
+    /// app en ruso, sin ningún error.</para>
+    ///
+    /// <para>Las formas se piden a <see cref="PluralRules.SuffixesFor"/>, que es
+    /// quien las elige en tiempo de ejecución. Si la tabla cambiara, esta prueba
+    /// cambia con ella en vez de quedarse describiendo un pasado.</para>
+    /// </summary>
+    private static HashSet<string> ExpectedKeys(IEnumerable<string> spanishKeys, string culture)
+    {
+        string[] anySuffix = [".one", ".few", ".many", ".other"];
+        IReadOnlyList<string> suffixes = PluralRules.SuffixesFor(new CultureInfo(culture));
+
+        HashSet<string> expected = [];
+
+        foreach (string key in spanishKeys)
+        {
+            string? suffix = anySuffix.FirstOrDefault(s => key.EndsWith(s, StringComparison.Ordinal));
+
+            if (suffix is null) { expected.Add(key); continue; }
+
+            string basis = key[..^suffix.Length];
+            foreach (string wanted in suffixes) expected.Add(basis + wanted);
+        }
+
+        return expected;
     }
 
     /// <summary>

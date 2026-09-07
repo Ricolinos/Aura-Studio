@@ -1728,36 +1728,9 @@ public sealed partial class LibraryViewModel : ViewModelBase
         // el aviso sigue —y con razón—; si terminó, se apaga solo.
         MigrationNeed = LibraryMigrationScanner.Detect(Items, 0);
 
-        StatusMessage = SummarizeMigration(summary);
+        StatusMessage = LibraryMigrationText.Summarize(summary);
     }
 
-    private static string SummarizeMigration(LibraryMigrationSummary summary)
-    {
-        if (summary.Touched == 0 && summary.Failed == 0)
-        {
-            return summary.Cancelled
-                ? "Migración cancelada; no se alcanzó a cambiar nada."
-                : "La biblioteca ya estaba al día: no hubo nada que migrar.";
-        }
-
-        var parts = new List<string>();
-
-        if (summary.Tagged > 0)
-        {
-            parts.Add(Strings.Plural("library-view-model.migration-tagged", summary.Tagged));
-        }
-
-        if (summary.PreparedRenamed > 0) parts.Add($"se ordenaron {summary.PreparedRenamed} preparados");
-        if (summary.PreparedBuilt > 0) parts.Add($"se armaron {summary.PreparedBuilt} preparados");
-        if (summary.OrphansDeleted > 0) parts.Add($"se borraron {summary.OrphansDeleted} archivos huérfanos");
-
-        string done = parts.Count == 0 ? "no hubo cambios" : string.Join(", ", parts);
-        string head = summary.Cancelled ? "Migración cancelada" : "Biblioteca migrada";
-
-        return summary.Failed > 0
-            ? $"{head}: {done}. {summary.Failed} no se pudieron migrar y siguen en la biblioteca."
-            : $"{head}: {done}.";
-    }
 
     /// <summary>
     /// Cuántos elementos son del usuario y no de la biblioteca. Es lo que hace

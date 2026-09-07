@@ -522,6 +522,51 @@
   <data name="device-safety-validator.volumen-ipod-esta-montado" xml:space="preserve">
     <value>Das Volume des iPod ist nicht eingebunden.</value>
   </data>
+  <data name="library-migration.already-up-to-date" xml:space="preserve">
+    <value>Die Mediathek war schon aktuell: es gab nichts zu migrieren.</value>
+  </data>
+  <data name="library-migration.cancelled-nothing-done" xml:space="preserve">
+    <value>Migration abgebrochen; es wurde nichts geändert.</value>
+  </data>
+  <data name="library-migration.failed.one" xml:space="preserve">
+    <value>{0} konnte nicht migriert werden und bleibt in der Mediathek.</value>
+  </data>
+  <data name="library-migration.failed.other" xml:space="preserve">
+    <value>{0} konnten nicht migriert werden und bleiben in der Mediathek.</value>
+  </data>
+  <data name="library-migration.head-cancelled" xml:space="preserve">
+    <value>Migration abgebrochen</value>
+  </data>
+  <data name="library-migration.head-done" xml:space="preserve">
+    <value>Mediathek migriert</value>
+  </data>
+  <data name="library-migration.no-changes" xml:space="preserve">
+    <value>es gab keine Änderungen</value>
+  </data>
+  <data name="library-migration.orphans-deleted.one" xml:space="preserve">
+    <value>{0} verwaiste Datei wurde gelöscht</value>
+  </data>
+  <data name="library-migration.orphans-deleted.other" xml:space="preserve">
+    <value>{0} verwaiste Dateien wurden gelöscht</value>
+  </data>
+  <data name="library-migration.prepared-built.one" xml:space="preserve">
+    <value>{0} vorbereitete Datei wurde erstellt</value>
+  </data>
+  <data name="library-migration.prepared-built.other" xml:space="preserve">
+    <value>{0} vorbereitete Dateien wurden erstellt</value>
+  </data>
+  <data name="library-migration.prepared-renamed.one" xml:space="preserve">
+    <value>{0} vorbereitete Datei wurde aufgeräumt</value>
+  </data>
+  <data name="library-migration.prepared-renamed.other" xml:space="preserve">
+    <value>{0} vorbereitete Dateien wurden aufgeräumt</value>
+  </data>
+  <data name="library-migration.summary" xml:space="preserve">
+    <value>{0}: {1}.</value>
+  </data>
+  <data name="library-migration.summary-with-failures" xml:space="preserve">
+    <value>{0}: {1}. {2}</value>
+  </data>
   <data name="library-unavailable-view.elegir-otra-biblioteca" xml:space="preserve">
     <value>Andere Mediathek wählen</value>
   </data>
