@@ -1,0 +1,179 @@
+id,de
+c001,"Bootloader gesendet. Warten darauf, dass der iPod bestätigt und neu startet…"
+c002,Weiter
+c003,"Deine Musik und deine Einstellungen bleiben unangetastet. Wenn du den iPod das nächste Mal einschaltest, siehst du den neuen Startbildschirm."
+c004,Fertig: der Bootloader ist aktuell
+c005,Der iPod muss dabei über USB angeschlossen bleiben. Sein Datenträger wird nicht angetastet: nur der Bootloader wird neu geschrieben.
+c006,"Mir ist klar, dass dies den Bootloader des iPod neu schreibt. Der Datenträger wird nicht gelöscht und Apples Bootloader nicht entfernt."
+c007,Bootloader des iPod wird aktualisiert…
+c008,Bootloader für {0} wird aktualisiert…
+c009,Nach deinem Administratorkennwort wird kein einziges Mal gefragt.
+c010,"Das ist nicht nötig. Die neue Firmware funktioniert genauso mit dem Bootloader, den du schon hast; es ändert sich nur der Startbildschirm."
+c011,"Auf dem Datenträger wird nichts angetastet. Deine Musik, deine Fotos, deine Wiedergabelisten und deine Einstellungen bleiben genau so, wie sie sind."
+c012,Bootloader dieses iPod aktualisieren
+c013,Diese Version bringt einen neueren Bootloader mit als den auf deinem iPod.
+c014,"Wir wissen nicht, welchen Bootloader dein iPod hat: ein anderer Computer hat ihn installiert, oder eine frühere Version der App."
+c015,Bootloader aktualisieren
+c016,"Der Bootloader ist das Programm, das vor der Firmware läuft, auf einem Chip getrennt vom Datenträger. Diese Version bringt einen neuen mit, mit einem anderen Startbildschirm."
+c017,"Der DFU-Modus ist nötig, weil dieser Chip auf keine andere Weise beschrieben werden kann."
+c018,{0} Datei ({1}) wandert in den Papierkorb.
+c019,{0} Dateien ({1}) wandern in den Papierkorb.
+c020,{0} Element wird aus deiner Mediathek entfernt; seine Originaldatei wird nicht angetastet.
+c021,{0} Elemente werden aus deiner Mediathek entfernt; ihre Originaldateien werden nicht angetastet.
+c022,{0} Element löschen?
+c023,{0} Elemente löschen?
+c024,Treiber für den DFU-Modus
+c025,Apples Treiber ist installiert. Es ist noch kein iPod im DFU-Modus zu sehen.
+c026,"Windows sieht den iPod, hat aber keinen Treiber dafür. Installiere „Apple-Geräte“ aus dem Microsoft Store (oder Apples iTunes) und schließe ihn erneut an: Aura Studio braucht diesen Treiber, um im DFU-Modus mit dem iPod zu sprechen."
+c027,"Apples Gerätetreiber wurde nicht gefunden. Installiere „Apple-Geräte“ aus dem Microsoft Store (oder iTunes), bevor du fortfährst: ohne ihn kann Windows im DFU-Modus nicht mit dem iPod sprechen."
+c028,Windows erkennt „{0}“ und sein Treiber funktioniert.
+c029,Der Zustand des Treibers konnte nicht abgefragt werden.
+c030,"Es wird bereits auf den iPod geschrieben. Warte, bis das fertig ist, bevor du etwas anderes startest."
+c031,"Die Firmware-Dateien konnten nicht überprüft werden, also wird nichts installiert."
+c032,"Geschrieben. Warten darauf, dass der iPod neu startet und wieder erscheint…"
+c033,Starten
+c034,Vorgang abgebrochen.
+c035,{0} Datei auf den iPod geschrieben.
+c036,{0} Dateien auf den iPod geschrieben.
+c037,Die Firmware konnte nicht auf den iPod kopiert werden.
+c038,Firmware kopieren
+c039,Firmware wird auf den iPod kopiert…
+c040,"Sieh dir diese Angaben genau an. Was jetzt folgt, löscht den Inhalt des hier gezeigten Datenträgers."
+c041,"Bestätige, dass das dein iPod ist"
+c042,"Aura Studio hat ihn beim Anschließen erkannt. Möchtest du Firmware darauf installieren? Es passiert nichts, bis du dich entscheidest."
+c043,Jetzt nicht
+c044,"Ja, installieren"
+c045,Dein iPod ist im DFU-Modus
+c046,iPod im DFU-Modus erkannt.
+c047,iPod im DFU-Modus erkannt (Zustand {0}).
+c048,Anleitung zum Flashen und Wiederherstellen (Firmware-Repository)
+c049,https://github.com/Ricolinos/Aura-Firmware/blob/main/docs/guia-flasheo-restauracion.md
+c050,Es steht keine Firmware zum Installieren bereit: der Artefakte-Ordner wurde nicht befüllt.
+c051,"Es ist noch kein iPod im DFU-Modus zu sehen. Wiederhole die Tastenkombination und suche erneut. Denk daran, weiter zu drücken, nachdem der Bildschirm schwarz wird."
+c052,"Apples Treiber ist installiert, aber Windows sieht kein Apple-Gerät. Wenn du die Tastenkombination schon gemacht hast und der Bildschirm des iPod schwarz ist, ist er wahrscheinlich im DFU-Modus und seine USB-Verbindung kommt hier nicht an. Prüfe auf einer virtuellen Maschine, ob der iPod im DFU-Modus an Windows durchgereicht wird: beim Wechsel in den DFU-Modus ändert sich seine USB-Kennung und du musst ihn eventuell erneut freigeben."
+c053,"Wenn dein iPod gerade Musik abspielt, stoppe die Wiedergabe."
+c054,Halte SELECT + MENU gleichzeitig gedrückt.
+c055,"Halte beide Tasten etwa 12 Sekunden lang gedrückt, bis nach dem Schwarzwerden des Bildschirms."
+c056,Lass los. Aura Studio erkennt den DFU-Modus automatisch.
+c057,"Wenn du vor etwa 12 Sekunden loslässt, startet der iPod normal neu und geht NICHT in den DFU-Modus. Der schwarze Bildschirm ist nicht das Zeichen zum Loslassen: halte danach weiter gedrückt."
+c058,"Der Zustand des iPod konnte nicht gelesen werden. Sieh unten nach, ob Apples Treiber fehlt."
+c059,Warten auf den DFU-Modus…
+c060,"Die Firmware ist installiert. Wirf den iPod unter „Allgemein“ aus, bevor du ihn abziehst."
+c061,Fertig
+c062,"Proben, ohne zu schreiben"
+c063,Probe beendet — der Datenträger wurde nicht angetastet
+c064,Die Probe ist gut gelaufen: der Datenträger wurde mit Administratorrechten erneut geprüft und der Formatierungsplan ist gültig. Es wurde noch nichts geschrieben.
+c065,Vorbereitung des Datenträgers wird geprobt…
+c066,Versetze den iPod jetzt in den DFU-Modus
+c067,"Jetzt ist der Moment: der Datenträger ist bereit, und als Nächstes wird der Bootloader geschrieben. Der iPod muss dabei über USB angeschlossen bleiben."
+c068,Es ging nicht weiter
+c069,"Auf diesem iPod ist {0} installiert und du bist dabei, {1} zu installieren. {0} bleibt vollständig erhalten, mit seinen Einstellungen, und du kannst jederzeit über Extras dorthin zurück."
+c070,Zu installierende Firmware
+c071,Bootloader schreiben
+c072,"Mir ist klar, dass dies Apples ursprünglichen Bootloader ersetzt und sich nur durch eine Wiederherstellung rückgängig machen lässt."
+c073,Der Bootloader konnte nicht geschrieben werden.
+c074,"Deine Bestätigung fehlt, bevor der Bootloader geschrieben wird. Aura Studio schreibt nichts, ohne dass du vorher bestätigst."
+c075,Bootloader wird auf den iPod geschrieben…
+c076,"Mir ist klar, dass alles auf {0} gelöscht wird."
+c077,"Die Probe oben hat nichts angetastet. Was jetzt folgt, löscht alles auf dem Datenträger und lässt sich nicht rückgängig machen. Prüfe, dass es der richtige iPod ist, bevor du fortfährst."
+c078,Dieser Schritt löscht den iPod wirklich
+c079,"Deine Bestätigung fehlt, bevor der iPod gelöscht wird. Aura Studio formatiert nichts, ohne dass du vorher bestätigst, auf welchem Datenträger es arbeitet."
+c080,"Die Vorbereitung des Datenträgers muss zuerst geprobt werden. Dabei wird alles geprüft, ohne etwas zu schreiben."
+c081,{0} löschen und formatieren
+c082,Datenträger des iPod wird formatiert…
+c083,"Der iPod hat kein Volume, das Windows lesen kann. Bereite den Datenträger vor, bevor du die Dateien kopierst."
+c084,"Es ist kein iPod angeschlossen. Schließe ihn über USB an und warte, bis Windows ihn erkennt."
+c085,"Verstanden, weiter"
+c086,"Um den Datenträger des iPod vorzubereiten, fragt dich Windows mit seiner eigenen Meldung nach Administratorrechten. Aura Studio erledigt alles von hier aus: du wirst nie eine Konsole öffnen oder einen Befehl eintippen müssen. Die Rechte werden nur für zwei bestimmte Dinge angefordert — den Datenträger des iPod zu formatieren und, während der Bootloader geschrieben wird, den Apple-Dienst anzuhalten, der den USB-Anschluss belegen könnte. Jede Verwendung wird im Protokoll der Anwendung festgehalten."
+c087,Nötige Berechtigungen
+c088,Datenträger vorbereiten
+c089,Was der Vorgang mit erhöhten Rechten getan hat
+c090,Der iPod hat den DFU-Modus verlassen. Du kannst die Firmware jetzt kopieren.
+c091,Von vorn beginnen
+c092,"Aura Studio hat zur Sicherheit angehalten, bevor der Datenträger angetastet wurde: {0}."
+c093,iPod im DFU-Modus suchen
+c094,iPod wird im DFU-Modus gesucht…
+c095,Der iPod ist noch im DFU-Modus und die Installation wurde nicht bestätigt. Trenne ihn nicht: suche ihn erneut.
+c096,Installiere die Firmware Schritt für Schritt auf deinem iPod
+c097,Installationsprogramm
+c098,"Die Datenträgernummer von „{0}“ konnte nicht ermittelt werden, also wird nichts angetastet."
+c099,"Aura Studio bereitet den Datenträger deines iPod vor, schreibt den Bootloader und kopiert die Firmware. Jeder Schritt wird erklärt, bevor er passiert, und nichts wird angetastet, bis du bestätigst."
+c100,Los geht's: Firmware auf deinem iPod installieren
+c101,"Die Installation löscht alles auf dem iPod und ersetzt seinen ursprünglichen Apple-Bootloader. Wenn du Musik nur dort hast, kopiere sie vorher woandershin."
+c102,{0} verwaiste Datei gelöscht.
+c103,{0} verwaiste Dateien gelöscht.
+c104,{0} verwaiste Datei löschen?
+c105,{0} verwaiste Dateien löschen?
+c106,{0} verwaiste Datei ({1}).
+c107,{0} verwaiste Dateien ({1}).
+c108,Löschen
+c109,Löschen
+c110,Löschen
+c111,Album löschen
+c112,Alben löschen
+c113,Interpret löschen
+c114,Interpreten löschen
+c115,Aus der Mediathek löschen
+c116,Cover löschen
+c117,Folge löschen
+c118,Folgen löschen
+c119,Fotos aus der Mediathek löschen
+c120,Film löschen
+c121,Filme löschen
+c122,Serie löschen
+c123,Serien löschen
+c124,Aus dem Album entfernen
+c125,Favorit entfernen
+c126,Aus den Favoriten entfernen
+c127,Aus den Favoriten entfernen
+c128,Interpretenfoto entfernen
+c129,Interpretenfotos entfernen
+c130,Poster entfernen
+c131,Das Gerät hat sich seit deiner Bestätigung geändert. Zur Sicherheit wurde nichts geschrieben.
+c132,"Gerät überprüft: {0}, {1}, {2}"
+c133,Es kommt mehr als ein iPod in Frage. Zur Sicherheit wurde keiner ausgewählt.
+c134,Der iPod ist verschwunden. Es wurde nichts geschrieben.
+c135,Das Volume des iPod ist nicht eingebunden.
+c136,Abbrechen
+c137,{0} Datei in die Mediathek kopiert.
+c138,{0} Dateien in die Mediathek kopiert.
+c139,{0} konnte nicht kopiert werden.
+c140,{0} konnten nicht kopiert werden.
+c141,"{0} wurde übersprungen, weil die Datei fehlt; der Eintrag bleibt im Katalog."
+c142,"{0} wurden übersprungen, weil ihre Dateien fehlen; die Einträge bleiben im Katalog."
+c143,{0} Datei wird in die Mediathek kopiert…
+c144,{0} Dateien werden in die Mediathek kopiert…
+c145,{0} vorbereitete Datei trägt den alten Namen
+c146,{0} vorbereitete Dateien tragen den alten Namen
+c147,die Tags von {0} Titel wurden geschrieben
+c148,die Tags von {0} Titeln wurden geschrieben
+c149,"bei {0} Eintrag steht noch nicht, ob seine Datei Auras Kopie ist oder deine"
+c150,"bei {0} Einträgen steht noch nicht, ob ihre Dateien Auras Kopien sind oder deine"
+c151,Audioqualität
+c152,In MP3 guter Qualität komprimieren
+c153,Verwaiste Dateien suchen
+c154,Verwaiste Dateien aufräumen
+c155,"Sie gehören zu keinem Eintrag deiner Mediathek; sie zu löschen betrifft keinen Titel, kein Foto und kein Video, das du hast."
+c156,"Vorbereitete Dateien und Cover, die zu keinem Eintrag deiner Mediathek mehr gehören — von Einträgen, die vor dieser Version gelöscht wurden, oder aus einer erneuten Verarbeitung. Es sind nicht deine Originaldateien: es sind technische Kopien, die Aura selbst anlegt und bei Bedarf wieder anlegen kann."
+c157,Es gibt keine verwaisten Dateien: es ist nichts aufzuräumen.
+c158,Verwaiste Dateien
+c159,Bildqualität
+c160,Den Ordner zu wechseln verschiebt nichts
+c161,Mediathek-Ordner
+c162,"Aura Studio verwendet ab jetzt den neuen Ordner und liest die Mediathek, die dort liegt (oder fängt leer an, wenn es keine gibt). Deine bisherige Mediathek bleibt unangetastet, wo sie war, und kommt zurück, wenn du diesen Ordner wieder wählst."
+c163,"Externe Ordner, die du bei ausgeschaltetem Kopieren hereingezogen hast. Aura kopiert von dort nichts, es merkt sie sich nur. Einen aus dieser Liste zu entfernen löscht nichts und trennt nichts, was du schon von dort importiert hast: er wird bloß nicht mehr angezeigt."
+c164,Medien in den Mediathek-Ordner kopieren
+c165,Ursprüngliches Format behalten (empfohlen)
+c166,Mediathek migrieren
+c167,Von einer früheren Version migrieren
+c168,"Speicher sparen (320 px, empfohlen)"
+c169,HD-Fassung (640 px)
+c170,WAV und AIFF werden immer konvertiert
+c171,Diese Mediathek stammt aus einer früheren Version
+c172,Mediathek migrieren
+c173,{0} Eintrag aus der Mediathek entfernt.
+c174,{0} Einträge aus der Mediathek entfernt.
+c175,"Diese Änderung wirkt sich nur auf das aus, was du ab jetzt importierst: was schon in deiner Mediathek ist, bleibt, wie es ist."
+c176,"In die Aura-Mediathek kopieren: Aura verwaltet die Dateien, bearbeitet ihre Tags und synchronisiert sie direkt; das braucht Speicherplatz (eine Kopie); deine Originale kannst du danach löschen."
+c177,"Am Ort belassen und darauf verweisen: kein zusätzlicher Speicherplatz, deine Dateien werden nie angetastet; Aura hält eine vorbereitete Fassung daneben (.preparados/), Änderungen leben nur in Aura und auf dem iPod, und wenn der ursprüngliche Datenträger fehlt, lassen sich diese Titel nicht synchronisieren."
+c178,Wie deine Musik gespeichert wird
