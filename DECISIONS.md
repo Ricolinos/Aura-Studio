@@ -11347,3 +11347,140 @@ depender de tener música en el disco ni de otra rama.
 Lo que **no** se verificó acá: nada de esto se probó contra la biblioteca
 real del dueño. Por regla de la ronda, sus archivos no se etiquetan — ni
 siquiera en copia.
+
+## ST-240 — PLAN-studio-ajustes-3.md, B0: arnés de almacenamiento (Windows), contra HEAD bd57116 (0.3.0)
+
+Primera PARADA de la ronda "ajustes 3" en Windows (sesión "Sonnet"),
+equivalente al A0 de la Mac. `tools/StorageFixtureCheck` genera un
+fixture de audio **real** (MP3, FLAC, M4A, WAV -- un tono de 440 Hz de
+2 s, sintetizado con ffmpeg, no bytes al azar ni material del dueño), en
+las dos variantes (copiado dentro de la biblioteca, referenciado afuera),
+con carátula real, y mide -- no asume -- qué escribe cada edición de
+campo, qué deja huérfano Eliminar, qué política de carátula se aplica de
+verdad, y qué pasa con un original que desaparece.
+
+### Verificación de §1 contra el código
+
+Ningún punto del diagnóstico resultó falso. Confirmado con evidencia de
+archivo/línea, no solo grep:
+
+- **`CopyMediaIntoLibrary` existe pero no tiene ningún consumidor**:
+  cero resultados de ese nombre en todo `AuraStudio.Core` (el motor de
+  importación, `LibraryIngest`, no lo conoce). Solo aparece en
+  `AppPreferences.cs` (el valor), `SettingsViewModel.cs`/`SettingsPage.xaml`
+  (el interruptor) -- se puede prender y apagar en Ajustes sin que nada
+  cambie en cómo se importa un archivo.
+- **TagLib# solo lee**: `grep -rn "\.Save()"` sobre `LocalTagReader.cs` y
+  el resto de `AuraStudio.Core`/`AuraStudio.App` da **un solo resultado en
+  todo el repo**, y es de `LocalTagReaderTests.cs` -- código de prueba, no
+  de producción.
+- **`CoverArtPolicy` forzada**: `AuraStudio.App/Services/SyncService.cs:127`
+  pasa el literal `CoverArtPolicy.AlbumOnly` a `LibrarySyncFinalizer.Run`,
+  sin leer `_preferences.CoverArtPolicy` en absoluto -- confirmado además
+  en vivo con el arnés (abajo).
+- **"Convertir a MP3" sin código, con un matiz**: sí existe la
+  infraestructura de bajo nivel para codificar a MP3 256 kbps
+  (`AuraStudio.Core.Media.FfmpegArguments.ForAudio`, con el comentario
+  "tamaño predecible" que cita el plan) y un método de más alto nivel que
+  la invoca (`FfmpegRunner.TranscodeAudioAsync`) -- pero **ese método no
+  tiene ningún llamador** en toda la app (`grep` de su nombre da un solo
+  resultado, su propia definición). Es un cabo suelto de una ronda
+  anterior, no algo que B3 tenga que escribir desde cero: hay que
+  *conectarlo*, no crearlo.
+- **`.preparados/` plano y por nombre base**: `StagingPaths.Resolve`
+  arma la ruta como `stagingDirectory/baseName.ext`, con un contador
+  (` 2`, ` 3`…) si ya existe -- confirma "colisiones" del diagnóstico:
+  el contador evita pisarse, pero dos canciones con el mismo nombre base
+  siguen sin desambiguación real por identidad (dos IDs, un solo
+  "espacio de nombres" de archivo).
+
+### Reconocimiento (a): cadenas de la app en Windows, para B7
+
+Documento completo en `docs/auditoria-idiomas.md`, con la misma
+estructura que el de la Mac (`a078036`). Resumen: **no hay ningún
+`.resw`** (confirmado, cero resultados), pero sí una clase centralizadora,
+`AppStrings.cs` (231 miembros, 585 líneas) -- a diferencia de Mac, acá el
+problema no es "no hay mecanismo", es que la mitad de los textos pasan
+por `AppStrings` y la otra mitad son literales sueltos (146 en XAML, 103
+más en C# fuera de `AppStrings` entre menús contextuales, mensajes de
+estado y diálogos) sin ningún criterio de cuándo usar cuál. Un hallazgo
+que **no** tiene equivalente en la auditoría de Mac: `MediaTableRow.cs:53`
+fija `DisplayCulture` a `es-MX` a mano, y la fecha de "agregado" usa un
+patrón con la gramática del español escrita adentro
+(`"d 'de' MMMM 'de' yyyy"`) -- no es "confirmar que ya funciona" como en
+Mac, es reescribirlo para B7.
+
+### Reconocimiento (b): localizador de ffmpeg, para B3
+
+`FfmpegLocator.Locate()` **no encontró ningún ffmpeg en esta VM** antes
+de esta sesión (cero resultados en las cuatro rutas comunes que revisa --
+winget/ProgramFiles/chocolatey/scoop -- ni en `PATH`, ni configurado en
+preferencias). Se instaló con el comando exacto que la propia app
+recomienda (`winget install Gyan.FFmpeg`, el texto de
+`FfmpegLocator.NotFoundMessage`) para poder generar el fixture de este
+arnés -- y **tampoco así lo encuentra `FfmpegLocator`**: winget instaló
+el binario en su carpeta de paquetes
+(`%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_...\...\bin\ffmpeg.exe`)
+y dijo haber agregado un alias de línea de comandos, pero **no** dejó
+nada en `%LOCALAPPDATA%\Microsoft\WinGet\Links\ffmpeg.exe` (la única
+ruta de winget que `FfmpegLocator` revisa), ni en una sesión nueva de
+PowerShell arrancada después de instalar. El ffmpeg instalado **sí**
+trae `libmp3lame`, `flac` (nativo) y `alac` -- los tres codificadores que
+hacen falta para B2/B3 -- confirmado con `ffmpeg -encoders`. Para B3: el
+camino de instalación recomendado hoy en el propio mensaje de error no
+deja a la app en condiciones de encontrarlo sola; hace falta agregar la
+carpeta de paquetes de winget a `FfmpegLocator.CommonPaths` (o resolver
+por el símbolo de PATH real tras un reinicio de sesión, que tampoco
+alcanzó en esta prueba) antes de poder decirle a un usuario "instala
+ffmpeg con winget" y que funcione sin pasos extra.
+
+### Línea base: edición de campos, 44 combinaciones (11 campos × 4 formatos)
+
+Título, artista, álbum, pista, año, género, carátula, rating, favorito,
+letra y categoría, cada uno sobre el ítem **copiado** de cada formato,
+midiendo bytes y hash SHA-256 del archivo de origen antes/después de cada
+edición, y si aparece algún archivo nuevo en `.preparados/`:
+
+**Las 44 combinaciones dieron 0 bytes cambiados en el archivo de origen y
+0 preparados nuevos.** Coincide exacto con lo que decía el diagnóstico
+("hoy la respuesta esperada es 0 bytes en el archivo y 0 preparado de
+música") -- medido, no asumido.
+
+| | |
+|---|---|
+| Qué viaja al iPod tras editar | El archivo de origen, **sin editar** -- `SyncPlanner.Plan` elige literalmente `LibraryItem.SourcePath`, verificado con el mismo objeto de la prueba de edición de arriba. No existe ninguna ruta de "preparado de música" distinta al origen en este código: la sincronización siempre parte de `SourcePath`. |
+| Eliminar: huérfanos en `.preparados/`/`.portadas/` | Con un elemento que tenía carátula real (32 231 bytes) y un preparado simulado (123 456 bytes, ver nota de método abajo): tras `LibraryViewModel.Remove()`, **los dos siguen en disco** -- 2 archivos, 155 687 bytes huérfanos por un solo elemento eliminado. `Remove()` solo toca la lista en memoria y el catálogo; no mira `.preparados/` ni `.portadas/` en absoluto. |
+| Política de carátulas forzada | Con la preferencia puesta en `PerTrack` (el usuario sí puede elegirla en Ajustes), `SyncService.cs:127` la ignora por completo -- confirmado en vivo, no solo por lectura del código. |
+| Original desaparecido | Se borra el archivo de origen de un ítem referenciado y se recarga: el ítem **sigue en `Items`** (7 de 7, tras el elemento ya eliminado en la prueba anterior) pero **no aparece en `AvailableItems`** -- se conserva como no disponible, no se borra del catálogo. |
+
+**Nota de método sobre el huérfano de `.preparados/`**: Windows no genera
+ningún preparado de música hoy (confirmado arriba), así que no hay un
+transcodificado real que dejar huérfano para probar el mecanismo de
+limpieza de `Remove()` en sí. Se creó un archivo de relleno con el mismo
+nombrado que usa `StagingPaths` (por nombre base) -- prueba el mecanismo
+de "Eliminar no limpia esta carpeta", no simula un preparado real. Para
+video/foto (que sí generan preparados hoy, vía `ILibraryProcessor`) el
+resultado sería el mismo por el mismo motivo: `Remove()` no distingue.
+
+### Costo de mantener esto
+
+Una corrida completa: ~15-20 s con ffmpeg ya instalado (la síntesis de
+los 8 archivos domina). Necesita ffmpeg en la máquina -- no viene con el
+repo (D-038) -- así que en una VM nueva hay que instalarlo primero
+(`winget install Gyan.FFmpeg`, ver reconocimiento (b) arriba).
+
+### Cómo reproducir
+
+```
+dotnet run --project studio/windows/tools/StorageFixtureCheck
+```
+
+### Verificación
+
+`dotnet build` de `AuraStudio.App`, `AuraStudio.Core.Tests` y
+`tools/StorageFixtureCheck`: los tres en verde, 0 advertencias / 0
+errores. `dotnet test` de `AuraStudio.Core.Tests`: **1550/1550** (sin
+cambios: esta PARADA no tocó `LocalTagReader.cs` ni `SyncService.cs`, que
+son de B2, en paralelo en el worktree del Experto). No se tocó ningún
+archivo de producción -- todo lo entregado es nuevo, bajo `tools/` y
+`docs/`.

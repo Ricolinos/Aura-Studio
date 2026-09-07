@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- ST-240 (B0): arnés de almacenamiento, fixture con audio real (MP3,
+       FLAC, M4A, WAV) en las dos variantes (copiado/referenciado) y medición
+       de qué escribe (o no) cada edición de campo, qué pasa al eliminar, y
+       qué política de carátula se aplica de verdad. Fuera de la solución,
+       igual que LibraryPerfCheck: no es una prueba (no afirma, mide) y
+       necesita ffmpeg instalado en la máquina para sintetizar el fixture. -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
+    <RootNamespace>AuraStudio.Tools.StorageFixtureCheck</RootNamespace>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AuraStudio.Core\AuraStudio.Core.csproj" />
+    <ProjectReference Include="..\..\AuraStudio.App\AuraStudio.App.csproj" />
+  </ItemGroup>
+
+</Project>

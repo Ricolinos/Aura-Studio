@@ -6,6 +6,39 @@
 > nada — todo compila desde la sesión del 2026-08-31 en la VM — por eso se
 > renombró en la Fase 0. Entradas nuevas van **arriba** de las viejas.
 
+## Ronda "ajustes 3", B0 — Arnés de almacenamiento (2026-09-07)
+
+Decisión ST-240 (tabla completa en `DECISIONS.md`). Nuevo
+`tools/StorageFixtureCheck`: fixture de audio real (MP3/FLAC/M4A/WAV,
+sintetizado con ffmpeg) en las dos variantes -- copiado y referenciado --
+con carátula real, y medición empírica de que **editar cualquiera de 11
+campos hoy no escribe ni un byte en el archivo de origen ni genera un
+preparado de música** (44 combinaciones probadas, las 44 en cero).
+También mide qué viaja al iPod tras editar (el original sin editar),
+cuántos archivos huérfanos deja Eliminar en `.preparados/`/`.portadas/`
+(2 archivos, ~156 KB por un solo elemento en la corrida de referencia), y
+confirma en vivo que la política de carátulas queda forzada a
+`AlbumOnly` sin importar lo que el usuario elija en Ajustes.
+
+Reconocimientos para B3/B7: `FfmpegLocator` no encuentra ningún ffmpeg en
+esta VM aunque se instale con el comando que la propia app recomienda
+(`winget install Gyan.FFmpeg` deja el binario en la carpeta de paquetes de
+winget, no en la carpeta de alias que `FfmpegLocator` revisa) -- pero el
+binario instalado sí trae `libmp3lame`/`flac`/`alac`. Auditoría completa
+de cadenas en `docs/auditoria-idiomas.md`: no hay `.resw`, pero sí una
+clase centralizadora (`AppStrings`, 231 miembros) con ~250 literales más
+sueltos fuera de ella, y un hallazgo propio de Windows sin equivalente en
+Mac -- la fecha "agregado" usa un patrón con la gramática del español
+escrita a mano (`DisplayCulture` fijo a `es-MX`), no es solo "confirmar
+que ya funciona", hay que reescribirlo para B7.
+
+`dotnet test` Core.Tests: **1550/1550**. Comando de reproducción y tabla
+completa: ver ST-240 en `DECISIONS.md`.
+
+```
+dotnet run --project studio/windows/tools/StorageFixtureCheck
+```
+
 ## Ronda de rendimiento 2, W7 — Cierre: tabla final, pasada con ventana y guion del dueño (2026-09-06)
 
 Decisión ST-207 (`DECISIONS.md`: tabla final completa contra ST-200, nota
