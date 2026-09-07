@@ -71,6 +71,48 @@ public class LocalizationDraftTests
             Assert.False(string.IsNullOrWhiteSpace(data.Attribute("name")?.Value), "una clave vacía en el .resw");
     }
 
+    /// <summary>
+    /// ST-247 (addendum): un brazo <c>_ =&gt; ""</c> de un <c>switch</c>
+    /// (<c>LibrarySectionOnlyItsType</c>, <c>MediaGridViewModel</c>) no es un
+    /// hueco de traducción -- es "acá no hay texto". Antes de esta corrección
+    /// llegaba al borrador con <c>&lt;value&gt;&lt;/value&gt;</c>: la clave
+    /// existe, así que ninguna prueba de "clave ausente" lo atrapaba nunca —
+    /// hacía falta mirar el VALOR, no la clave.
+    /// </summary>
+    [Fact]
+    public void NingunValorEstaVacio()
+    {
+        XDocument doc = XDocument.Load(RequireFile(Path.Combine("Strings", "es", "Resources.resw")));
+
+        foreach (XElement data in doc.Root!.Elements("data"))
+        {
+            string? value = data.Element("value")?.Value;
+            Assert.False(string.IsNullOrWhiteSpace(value),
+                $"la clave {data.Attribute("name")?.Value} tiene un valor vacío en español");
+        }
+    }
+
+    /// <summary>
+    /// ST-247 (addendum): <c>NavPhotosAI</c> salía <c>nav-photos-a-i</c> —el
+    /// kebab-case partía la sigla letra por letra— en vez de
+    /// <c>nav-photos-ai</c>. Cualquier clave con dos o más letras SUELTAS
+    /// seguidas, cada una separada por guion, es la misma forma del defecto
+    /// resurgiendo (`KeyNaming.PascalToKebab`, corregido en este addendum).
+    /// </summary>
+    [Fact]
+    public void NingunaClaveTieneLetrasSueltasSeparadasPorGuion()
+    {
+        XDocument doc = XDocument.Load(RequireFile(Path.Combine("Strings", "es", "Resources.resw")));
+        var brokenAcronym = new Regex(@"(^|-)[a-z](-[a-z]){1,}(-|$)");
+
+        List<string> rotas = [.. doc.Root!.Elements("data")
+            .Select(e => e.Attribute("name")!.Value)
+            .Where(key => brokenAcronym.IsMatch(key))];
+
+        Assert.True(rotas.Count == 0,
+            "claves con una sigla partida letra por letra: " + string.Join(", ", rotas.Take(10)));
+    }
+
     // MARK: - Especificadores consistentes entre es/en
 
     /// <summary>

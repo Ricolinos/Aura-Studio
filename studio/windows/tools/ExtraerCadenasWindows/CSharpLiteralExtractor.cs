@@ -138,6 +138,14 @@ public static class CSharpLiteralExtractor
         string raw = Strip(quotedLiteral);
         string unescaped = StringLiteralScanner.Unescape(raw);
 
+        // Un literal vacío (o solo espacios) no es texto de interfaz -- es un
+        // brazo de switch tipo `_ => ""` (LibrarySectionOnlyItsType,
+        // MediaGridViewModel) o un `StatusMessage = ""` que limpia el
+        // estado. Sin este corte, la clave llega al borrador con
+        // <value></value>: un hueco en pantalla que nunca dispara el aviso
+        // de "clave ausente" porque la clave SÍ está, solo que vacía.
+        if (unescaped.Trim().Length == 0) return;
+
         (string converted, bool hasInterpolation) = interpolated
             ? InterpolationHoles.Convert(unescaped)
             : (unescaped, false);

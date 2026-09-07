@@ -14275,3 +14275,85 @@ tolerantes a idiomas más largos por diseño.
 Documento y `DECISIONS.md` únicamente — sin código, sin scripts, tal como
 pidió el encargo. `dotnet test`: **1 744 pruebas en verde**, sin cambio
 (nada tocado que las afecte).
+
+## ST-247 (addendum) — Dos arreglos de `ExtraerCadenasWindows`, salidos del grupo 2a del Experto
+
+### 1. Siglas partidas letra por letra
+
+`KeyNaming.FileStemKebab`/`MemberKebab` usaban una sola regla
+(`(?<!^)(?=[A-Z])`, guion antes de toda mayúscula que no sea la primera),
+así que `NavPhotosAI` salía `nav-photos-a-i` en vez de `nav-photos-ai` —
+partía la sigla "AI" en dos letras sueltas. Ahora `PascalToKebab` (nombre
+nuevo, un solo lugar para las dos funciones) usa dos reglas: un guion
+antes de una mayúscula que sigue a una minúscula/dígito (el borde normal
+de PascalCase) y un guion DENTRO de una racha de mayúsculas solo en su
+borde de salida —antes de la última mayúscula de la racha, si la sigue
+una minúscula— nunca entre dos mayúsculas consecutivas de la misma sigla.
+`HTTPRequest` da `http-request` (no `h-t-t-p-request`); `NavPhotosAI` da
+`nav-photos-ai`.
+
+Revisado el CSV completo por más casos (`ID`/`URL`/`MP3`/`ALAC`/`iPod`,
+como pidió el coordinador): ninguno más — los demás sitios con esas
+palabras salen de texto en español vía `Slugify` (que ya lowercasea todo
+antes de separar en palabras, sin tocar la regla de PascalCase) y no de
+un nombre de archivo o de miembro, así que nunca pasaron por el código
+con el defecto. **Un caso queda anotado, no corregido, porque no aparece
+hoy**: si algún día un nombre de archivo o de miembro de C# usa la
+capitalización de Apple para "iPod" (minúscula-mayúscula, no PascalCase
+puro), `PascalToKebab` lo partiría en `i-pod` — no hay ningún caso así en
+el código actual (verificado: ningún miembro de `AppStrings.cs` ni ningún
+archivo se llama con ese patrón), así que no se generalizó la regla para
+un caso hipotético.
+
+### 2. Literales vacíos que llegaban con clave
+
+Un brazo `_ => ""` de un `switch` (`LibrarySectionOnlyItsType`,
+`MediaGridViewModel`) no es un hueco de traducción: es "acá no hay
+texto". La extracción de brazos de `switch`
+(`AppStringsExtractor.SwitchArm`) no tenía el mismo corte que ya existía
+en el resto de la herramienta para literales vacíos, así que esos dos
+llegaban al borrador con clave y `<value></value>` — la clave existe, así
+que ninguna prueba de "clave ausente" los atrapaba nunca; hacía falta
+mirar el VALOR.
+
+Corregido en dos lugares: el brazo de `switch` (`AppStringsExtractor`)
+ahora se salta y se marca consumido sin generar sitio si el texto
+desescapado queda vacío tras recortar espacios; y `AddLiteralSite`
+(`CSharpLiteralExtractor`, usado por `MenuEntry`/`StatusMessage`/
+`ContentDialog`) tiene el mismo corte **centralizado** — antes solo
+algunos de sus llamadores lo verificaban por su cuenta (con `if
+(literal.RawText.Trim().Length == 0) continue;` sueltos, o el caso
+especial de `StatusMessage = ""`), ahora es una sola regla en un solo
+lugar, así que un futuro llamador nuevo no puede volver a colarla por
+olvido.
+
+### Qué cambió, para que el Experto lo aplique en su `.resx`/fachada
+
+Regenerado sobre el mismo árbol (sin cambios en `AppStrings.cs`, el XAML
+ni ningún C# de la app): **555 → 553 sitios**, igual al número que ya
+tiene el `.resx` del Experto.
+
+**Una clave renombrada**:
+
+- `app-strings.nav-photos-a-i` → `app-strings.nav-photos-ai`
+
+**Dos claves eliminadas** (valor vacío, ya no se generan):
+
+- `app-strings.library-section-only-its-type-texto`
+- `media-grid-view-model.texto`
+
+Ninguna de las tres aparecía en `claves-compartidas.csv` (verificado con
+`grep`) — el cotejo con la Mac no necesitó ningún cambio.
+
+### Verificación
+
+Dos pruebas nuevas en `LocalizationDraftTests.cs`: `NingunValorEstaVacio`
+(recorre el `.resw`, falla si algún `<value>` queda vacío o solo
+espacios — la que hubiera atrapado el defecto de origen, a diferencia de
+`NingunaClaveEstaVacia`, que solo mira el nombre de la clave) y
+`NingunaClaveTieneLetrasSueltasSeparadasPorGuion` (una clave con dos o
+más letras sueltas seguidas, cada una separada por guion, es la misma
+forma del defecto de siglas resurgiendo).
+
+`dotnet build`: 0 errores. `dotnet test`: **1 746 pruebas en verde** (2
+nuevas). Sin tocar código de la app.
