@@ -199,6 +199,57 @@ public class LibraryCopyModeTests : IDisposable
         Assert.Contains("no queda espacio", result.Reason);
     }
 
+
+    // MARK: - El temporal y las etiquetas (ST-246, recibido de ST-223)
+
+    /// <summary>
+    /// <b>Las etiquetas se escriben en el archivo FINAL, después del
+    /// renombrado.</b> La Mac encontró que su escritor despacha por extensión y
+    /// <c>.aura-tmp</c> no es ninguna: etiquetar el temporal se habría saltado
+    /// las etiquetas en silencio. Acá se fija el orden con una prueba, para que
+    /// invertirlo deje de compilar en verde.
+    /// </summary>
+    [Fact]
+    public void LasEtiquetasQuedanEnElArchivoFinalYNoEnElTemporal()
+    {
+        string original = OutsideMp3("cancion.mp3");
+
+        LibraryCopyResult copied = LibraryFileCopier.Copy(original, _root, "Música/A/B/Título.mp3");
+        Assert.True(copied.Copied, copied.Reason);
+
+        // Lo que hace la importación: escribir DESPUÉS, sobre la ruta devuelta.
+        TagWriteResult written = LocalTagWriter.Write(
+            copied.Path, new TrackMetadata { Title = "Ingrata", Artist = "Café Tacvba" });
+
+        Assert.True(written.Written, written.Reason);
+        Assert.EndsWith("Título.mp3", copied.Path);
+        Assert.Equal("Ingrata", LocalTagReader.Read(copied.Path).Title);
+
+        // Y no quedó ningún temporal con etiquetas —ni sin ellas— al lado.
+        Assert.DoesNotContain(
+            Directory.GetFiles(_root, "*", SearchOption.AllDirectories),
+            path => path.EndsWith(LibraryFileCopier.TemporarySuffix, StringComparison.Ordinal));
+    }
+
+    /// <summary>
+    /// Y si alguien invirtiera el orden, no se confunde con "ese formato no se
+    /// etiqueta": se dice que es un temporal. Ese es justamente el silencio que
+    /// hay que evitar — un <c>Skipped</c> de aspecto inofensivo por un defecto
+    /// de programación.
+    /// </summary>
+    [Fact]
+    public void EscribirleAUnTemporalSeReportaComoDefectoYNoComoFormatoNoSoportado()
+    {
+        string temporary = Path.Combine(_root, "Música", "Título.mp3" + LibraryFileCopier.TemporarySuffix);
+        Directory.CreateDirectory(Path.GetDirectoryName(temporary)!);
+        MinimalAudioFiles.WriteMp3(temporary);
+
+        TagWriteResult result = LocalTagWriter.Write(temporary, new TrackMetadata { Title = "Ingrata" });
+
+        Assert.False(result.Written);
+        Assert.Contains("temporal", result.Reason);
+        Assert.DoesNotContain("no se etiqueta", result.Reason!["no se etiqueta un archivo temporal".Length..]);
+    }
     // MARK: - Fixture
 
     private static LibraryItem Music(
@@ -217,6 +268,17 @@ public class LibraryCopyModeTests : IDisposable
                 TrackNumber = track
             }
         };
+
+    /// <summary>Un MP3 válido fuera de la biblioteca, para poder etiquetarlo de verdad.</summary>
+    private string OutsideMp3(string name)
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "AuraAjeno-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+
+        string path = Path.Combine(directory, name);
+        MinimalAudioFiles.WriteMp3(path);
+        return path;
+    }
 
     private string Outside(string name, byte[] bytes)
     {

@@ -407,6 +407,46 @@ TrackMetadata m4aRead = LocalTagReader.Read(realM4a);
 Console.WriteLine($"  y las etiquetas volvieron: {m4aRead.Title} / {m4aRead.Artist} / disco {m4aRead.DiscNumber}");
 Console.WriteLine();
 
+// --- 7b. Una cabecera rota no tumba nada ni deja residuos ---------------
+//
+// ST-246, recibido de ST-223: un WAV con la cabecera destrozada tiene que
+// fallar con motivo visible, sin dejar nada en Temp\Aura ni un `.aura-tmp` al
+// lado del destino. Lo que no se puede es que se caiga el proceso o que quede
+// medio archivo haciéndose pasar por una canción.
+
+Console.WriteLine("--- Cabecera rota: se rechaza y no deja residuos ---");
+Console.WriteLine();
+
+string broken = Path.Combine(incoming, "rota.wav");
+byte[] goodWav = await File.ReadAllBytesAsync(Fixture.WriteWav(Path.Combine(incoming, "buena.wav")));
+
+// Se rompen la frecuencia, los canales y la alineación de bloque, dejando la
+// firma RIFF/WAVE intacta: el archivo "parece" un WAV hasta que se lee.
+byte[] brokenBytes = [.. goodWav];
+for (int offset = 22; offset < 36; offset++) brokenBytes[offset] = 0;
+await File.WriteAllBytesAsync(broken, brokenBytes);
+
+string brokenDestination = Path.Combine(root, "rota-convertida.mp3");
+
+try
+{
+    await AudioTranscoder.ToMp3Async(broken, brokenDestination);
+    Console.WriteLine("  NO falló — MAL: una cabecera rota tiene que rechazarse");
+}
+catch (AudioTranscodeException ex)
+{
+    Console.WriteLine($"  Rechazada con motivo: {ex.Message}");
+}
+
+string workLeftovers = Directory.Exists(AudioTranscoder.WorkDirectory)
+    ? string.Join(", ", Directory.GetFiles(AudioTranscoder.WorkDirectory).Select(Path.GetFileName))
+    : "(no existe)";
+
+Console.WriteLine($"  Restos en Temp\\Aura:      {(workLeftovers.Length == 0 ? "ninguno" : workLeftovers)}");
+Console.WriteLine($"  .aura-tmp junto al destino: {File.Exists(brokenDestination + ".aura-tmp")}");
+Console.WriteLine($"  destino a medias:           {File.Exists(brokenDestination)}");
+Console.WriteLine();
+
 // --- 8. Migrar una biblioteca anterior ----------------------------------
 //
 // ST-246: se sintetiza una biblioteca como la que dejaba una versión vieja

@@ -13708,3 +13708,57 @@ Abrir no escribió nada, y la segunda corrida tocó **0 archivos** con el
 Lo que **no** se verificó: nada contra la biblioteca real del dueño, ni en
 copia — la biblioteca vieja del arnés se sintetiza desde cero. Y la franja
 y el botón de Ajustes los tiene que mirar alguien con la app delante.
+
+## ST-246 (addendum) — Dos comprobaciones recibidas de ST-223 (A3 de la Mac)
+
+### 1. Las etiquetas van al archivo final, nunca al temporal
+
+La Mac encontró que su escritor despacha por extensión y `.aura-tmp` no es
+ninguna: etiquetar el temporal en vez del archivo final se habría saltado
+las etiquetas **en silencio**.
+
+En Windows el orden ya era el correcto —`LibraryFileCopier` devuelve la
+ruta **final**, después del renombrado, y es sobre esa que escribe
+`LocalTagWriter`— y el escritor además le pasa a TagLib# el formato
+explícito derivado de la ruta final (ST-242). Lo que faltaba era **fijarlo
+con una prueba**, porque un orden correcto que nadie comprueba es un orden
+correcto hasta el próximo refactor.
+
+Y se agregó la red: **escribirle a un temporal se reporta como defecto**,
+no como "ese formato no se etiqueta". Confundir las dos cosas es
+exactamente el silencio que hay que evitar — un `Skipped` de aspecto
+inofensivo tapando un error de programación. Ahora el motivo dice que es
+un temporal y que las etiquetas van después del renombrado.
+
+De paso, el sufijo del temporal salía de tres literales sueltos; ahora los
+tres usan `LibraryFileCopier.TemporarySuffix`.
+
+### 2. Una cabecera rota se rechaza y no deja residuos
+
+`AiffToWav` ya validaba canales, bits, frecuencia y truncamiento; lo que
+faltaban eran las pruebas de esos rechazos, que ahora cubren **ocho
+cabeceras imposibles** (0 canales, 99 canales, frecuencia 0, 999,
+999 999, 0 bits, 12 bits, 64 bits), un `SSND` que declara mil muestras y
+trae dos, y que un AIFF roto **no escriba un solo byte** en la salida.
+
+Sin esas comprobaciones, una frecuencia de 0 o 0 canales produciría más
+adelante una división por cero o una reserva absurda de memoria: el
+proceso se cae y el usuario no sabe cuál de sus archivos lo tumbó.
+
+En el arnés, un WAV con la cabecera destrozada —firma RIFF/WAVE intacta,
+frecuencia, canales y alineación en cero— pasa por `MediaTranscoder`:
+
+```
+  Rechazada con motivo: Windows no pudo leer «rota.wav» para convertirlo…
+  Restos en Temp\Aura:        ninguno
+  .aura-tmp junto al destino: False
+  destino a medias:           False
+```
+
+Y se mejoró ese mensaje: el motivo que da Windows suele ser `Unknown`, que
+no le dice nada a nadie. Ahora se nombra el archivo y se acompaña con lo
+que de verdad pasa casi siempre —dañado, o no es del formato que dice su
+extensión—, dicho como lo probable y no como algo comprobado.
+
+**Verificación**: `dotnet test`, **1 738 pruebas en verde** (12 más que
+las de B6).
