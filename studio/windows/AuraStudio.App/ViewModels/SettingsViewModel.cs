@@ -51,13 +51,17 @@ public sealed partial class SettingsViewModel : ViewModelBase
 {
     private readonly IAppPreferences _preferences;
     private readonly CredentialStore _credentials;
+    private readonly BackgroundTaskCenter _tasks;
     private readonly LibraryViewModel _library;
 
-    public SettingsViewModel(IAppPreferences preferences, LibraryViewModel library, AppUpdateService updates)
+    public SettingsViewModel(
+        IAppPreferences preferences, LibraryViewModel library, AppUpdateService updates,
+        BackgroundTaskCenter tasks)
     {
         _preferences = preferences;
         _library = library;
         Updates = updates;
+        _tasks = tasks;
         _credentials = new CredentialStore();
         SelectedTheme = ThemeOptions.First(option => option.Theme == preferences.Theme);
         SelectedLanguage = LanguageOptions.FirstOrDefault(option => option.Culture == preferences.Language)
@@ -118,11 +122,31 @@ public sealed partial class SettingsViewModel : ViewModelBase
     /// </summary>
     public bool LanguageIsUnreviewed => !SelectedLanguage.ReviewedByHumans;
 
+    /// <summary>
+    /// Qué ofrecer después de cambiar el idioma. La decisión vive en Core
+    /// (<see cref="LanguageChangePrompt"/>) para poder probarla sin abrir una
+    /// ventana; acá solo se le pregunta cuántas tareas hay en curso.
+    /// </summary>
+    private LanguageChangeAdvice LanguageAdvice => LanguageChangePrompt.For(_tasks.Count);
+
+    /// <summary>
+    /// Si se puede ofrecer cerrar. Con una sincronización, una conversión, una
+    /// migración o una instalación de firmware en curso, <b>no</b>: cerrar
+    /// dejaría eso a medias en el disco de alguien, y por un cambio de idioma,
+    /// que es lo más prescindible que hay.
+    /// </summary>
+    public bool LanguageCanCloseNow => LanguageAdvice.CanCloseNow;
+
+    /// <summary>El texto del aviso, que no es el mismo en los dos casos.</summary>
+    public string LanguageRestartDetail => Strings.Get(LanguageAdvice.DetailKey);
+
     partial void OnSelectedLanguageChanged(LanguageOption value)
     {
         // El aviso de "sin revisar" depende del idioma elegido, así que se
         // refresca aunque no haya cambiado nada más.
         OnPropertyChanged(nameof(LanguageIsUnreviewed));
+        OnPropertyChanged(nameof(LanguageCanCloseNow));
+        OnPropertyChanged(nameof(LanguageRestartDetail));
 
         if (_preferences.Language == value.Culture) return;
 

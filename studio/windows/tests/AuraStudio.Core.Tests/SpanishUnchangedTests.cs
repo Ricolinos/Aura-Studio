@@ -186,6 +186,10 @@ public class SpanishUnchangedTests
         "app-strings.language-restart-title", "app-strings.language-restart-detail",
         "app-strings.language-restart-now",
 
+        // Y el otro texto del mismo aviso: el que sale cuando hay trabajo en
+        // curso y por eso NO se ofrece cerrar.
+        "app-strings.language-restart-busy",
+
         // Tooltips y nombres para el lector de pantalla que el borrador no
         // extrajo. Un AutomationProperties.Name en español dentro de una app en
         // alemán es justo el defecto que B7b viene a evitar.

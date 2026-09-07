@@ -97,9 +97,14 @@
                             <InfoBar IsOpen="{x:Bind ViewModel.LanguageNeedsRestart, Mode=OneWay}"
                                      IsClosable="False" Severity="Informational"
                                      Title="{x:Bind res:AppStrings.LanguageRestartTitle}"
-                                     Message="{x:Bind res:AppStrings.LanguageRestartDetail}">
+                                     Message="{x:Bind ViewModel.LanguageRestartDetail, Mode=OneWay}">
                                 <InfoBar.ActionButton>
+                                    <!-- Con trabajo en curso el botón NO está, en vez de estar
+                                         gris: uno gris invita a preguntarse qué falta para que
+                                         se encienda; que no esté, con la frase que lo explica,
+                                         no deja esa duda. -->
                                     <Button Content="{x:Bind res:AppStrings.LanguageRestartNow}"
+                                            Visibility="{x:Bind ViewModel.LanguageCanCloseNow, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
                                             Click="CloseForLanguage_Click" />
                                 </InfoBar.ActionButton>
                             </InfoBar>

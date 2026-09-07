@@ -120,6 +120,9 @@
   <data name="app-strings.language-follow-system" xml:space="preserve">
     <value>Igual que el sistema</value>
   </data>
+  <data name="app-strings.language-restart-busy" xml:space="preserve">
+    <value>El idioma ya quedó guardado y se aplica la próxima vez que abras Aura Studio. No la cierres ahora: hay trabajo en curso y cerrarla lo dejaría a medias.</value>
+  </data>
   <data name="app-strings.language-restart-detail" xml:space="preserve">
     <value>El idioma cambia al volver a abrir la app. No se toca nada de tu biblioteca ni de tu iPod.</value>
   </data>
