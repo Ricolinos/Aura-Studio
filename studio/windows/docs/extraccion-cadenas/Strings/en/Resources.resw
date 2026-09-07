@@ -776,10 +776,6 @@
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
-  <data name="app-strings.library-section-only-its-type-texto" xml:space="preserve">
-    <value></value>
-    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
-  </data>
   <data name="app-strings.library-similar-found-on-drop" xml:space="preserve">
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
@@ -988,7 +984,7 @@
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
-  <data name="app-strings.nav-photos-a-i" xml:space="preserve">
+  <data name="app-strings.nav-photos-ai" xml:space="preserve">
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
@@ -1685,10 +1681,6 @@
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
   <data name="media-grid-page.xaml.renombrar-album" xml:space="preserve">
-    <value></value>
-    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
-  </data>
-  <data name="media-grid-view-model.texto" xml:space="preserve">
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>

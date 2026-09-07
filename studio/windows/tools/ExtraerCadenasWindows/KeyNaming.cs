@@ -41,17 +41,29 @@ public sealed class KeyRegistry
         return key;
     }
 
-    public static string FileStemKebab(string filePath)
-    {
-        string stem = Path.GetFileNameWithoutExtension(filePath);
-        string kebab = Regex.Replace(stem, "(?<!^)(?=[A-Z])", "-").ToLowerInvariant();
-        return kebab;
-    }
+    public static string FileStemKebab(string filePath) => PascalToKebab(Path.GetFileNameWithoutExtension(filePath));
 
-    public static string MemberKebab(string memberName)
+    public static string MemberKebab(string memberName) => PascalToKebab(memberName);
+
+    /// <summary>
+    /// PascalCase -&gt; kebab-case, sin partir una sigla en letras sueltas
+    /// (addendum de ST-247, a partir de un hallazgo del Experto: `NavPhotosAI`
+    /// salía `nav-photos-a-i` en vez de `nav-photos-ai`). Dos reglas, no una:
+    /// un guion antes de una mayúscula que sigue a una minúscula/dígito
+    /// (`PhotosAI` -&gt; `Photos-AI`, el borde normal de PascalCase), y un
+    /// guion DENTRO de una racha de mayúsculas solo en el borde de salida —
+    /// antes de la última mayúscula de la racha si la sigue una minúscula
+    /// (`HTTPRequest` -&gt; `HTTP-Request`, no `H-T-T-P-Request`) — nunca entre
+    /// dos mayúsculas consecutivas dentro de la misma sigla.
+    /// </summary>
+    private static string PascalToKebab(string value)
     {
-        string kebab = Regex.Replace(memberName, "(?<!^)(?=[A-Z])", "-").ToLowerInvariant();
-        return kebab;
+        string withHyphens = Regex.Replace(
+            value,
+            "(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])",
+            "-");
+
+        return withHyphens.ToLowerInvariant();
     }
 
     /// <summary>Texto en español -&gt; slug ascii-kebab-case. Nunca vacío.</summary>

@@ -56,9 +56,22 @@ public static class AppStringsExtractor
                 int litEnd = litStart + arm.Groups["lit"].Length;
                 if (Overlaps(consumed, litStart, litEnd)) continue;
 
+                string rawLiteral = Strip(arm.Groups["lit"].Value);
+
+                // `_ => ""` (LibrarySectionOnlyItsType, MediaGridViewModel):
+                // el brazo por omisión que no muestra nada no es un hueco de
+                // traducción, es "no hay texto acá". Sin este corte, la
+                // clave llegaba al borrador con <value></value> -- vacía,
+                // pero presente, así que ningún aviso de "clave ausente" la
+                // atrapa nunca.
+                if (StringLiteralScanner.Unescape(rawLiteral).Trim().Length == 0)
+                {
+                    consumed.Add((litStart, litEnd));
+                    continue;
+                }
+
                 string label = arm.Groups["label"].Value.Trim();
-                var literal = new RawLiteral(litStart, litEnd, Strip(arm.Groups["lit"].Value),
-                    arm.Groups["lit"].Value.StartsWith('$'));
+                var literal = new RawLiteral(litStart, litEnd, rawLiteral, arm.Groups["lit"].Value.StartsWith('$'));
                 memberSites.Add((litStart, label, literal));
                 consumed.Add((litStart, litEnd));
             }

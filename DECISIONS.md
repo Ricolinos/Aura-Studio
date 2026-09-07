@@ -14087,6 +14087,277 @@ dotnet run --project studio/windows/tools/ExtraerCadenasWindows
 dotnet test studio/windows/tests/AuraStudio.Core.Tests/AuraStudio.Core.Tests.csproj --filter FullyQualifiedName~LocalizationDraftTests
 ```
 
+## ST-227 (addendum, mecánico) — arnés de capturas por idioma (A7c, preparación)
+
+Encargo de "Sesión Maestra": `tools/capturas-idiomas.sh` +
+`tools/capturas-idiomas-window-id.swift`, para que al cerrar A7c se
+pueda producir `docs/capturas/idiomas/<idioma>/<pantalla>.png` para
+es/en/ja/de/ru/fr sin XCUITest. Probado hoy contra la app real (build
+DEBUG -- `UITestEnvironment` es `#if DEBUG`, una Release ignora
+`AURA_UITEST_*`).
+
+### Tres cosas que el manual de AppleScript sugiere y que NO funcionaron, comprobadas a mano
+
+1. **`id of window`/`AXWindowNumber`** -- ninguno de los dos está en la
+   lista real de atributos que expone System Events para esta ventana
+   en esta versión de macOS (`name of every attribute of window 1`: ni
+   uno ni el otro aparecen). `screencapture -l` pide un `CGWindowID` de
+   verdad -- se consigue con `CGWindowListCopyWindowInfo` (Quartz), de
+   ahí `capturas-idiomas-window-id.swift` (un Swift de una pantalla,
+   filtra por PID + `layer == 0`).
+2. **`entire contents of window 1`** -- devuelve CERO elementos para
+   esta ventana (SwiftUI dentro de un `AXHostingView`), aunque `UI
+   elements of window 1` (hijos directos) sí funciona. Hace falta bajar
+   nivel por nivel a mano (un handler recursivo).
+3. **El identificador vive dos niveles adentro de su fila**
+   (`AXRow > AXCell > AXStaticText/AXHeading`, confirmado volcando el
+   árbol completo) -- ni `AXPress` en el elemento identificado ni
+   buscarlo con `entire contents` selecciona la fila. Lo que sí
+   funciona: el mensaje `select` de AppleScript sobre el `AXRow` que
+   CONTIENE el identificador entre sus descendientes (no sobre el
+   elemento identificado en sí) -- equivalente a clickear la fila de
+   una `List`/`NSOutlineView`.
+4. **"Acerca de \<app\>" no es el primer ítem del primer menú de la
+   barra** -- "menu bar item 1" es el menú  (sistema, compartido),
+   nunca el de la app; con eso se termina abriendo "Acerca de esta
+   Mac". Es "menu bar item 2" (posicional, no depende del idioma).
+
+### Verificado hoy contra la app real, con biblioteca de prueba sintética
+
+`albumes.png` y `canciones.png` de `es/`: lanzada la app con
+`-AppleLanguages (es) -AppleLocale es_MX` + `AURA_UITEST_LIBRARY`
+apuntando a una biblioteca sintética (2 artistas, 3 álbumes, 5
+canciones, generada por el propio script -- nunca la real), navegadas
+con `select_sidebar_row` (el mecanismo del punto 3), capturadas con
+`screencapture -l <CGWindowID>` -- contenido correcto, título de
+ventana correcto, biblioteca de prueba visible completa.
+
+**`ajustes.png`/`dispositivos.png`/`acerca-de.png` NO se comitean
+hoy.** Usan el mismo mecanismo (misma clase de fila de barra lateral,
+o el menú posicional para Acerca de), pero una prueba en vivo se
+interrumpió a mitad de la corrida: `frontmost` de System Events pasó
+de "AuraStudio" a "stable" (una Terminal real) entre un clic y el
+siguiente -- la Mac dejó de estar libre mientras corría. Mismo criterio
+que ST-187 con XCUITest ("nadie usando la Mac mientras corre"): se
+cortó por precaución en vez de seguir clicando a ciegas. Quedan para
+la próxima corrida con la Mac libre -- documentado en
+`docs/capturas/idiomas/README.md`, no se inventó ninguna captura para
+completar el set.
+
+### Lo que falta, dicho explícito (no descubierto por accidente después)
+
+`ajustes-almacenamiento` no existe todavía como pantalla (A5 no
+cerró -- `SettingsSectionView.Tab` hoy es `general/library/music/
+photos/video/services`, ninguna se llama así); `barra-estado-mensaje-
+largo` necesita disparar una operación real, sin automatizar hoy. Los
+dos quedan como `TODO` explícitos en el script, con la recomendación
+de que quien agregue la pestaña de Ajustes le ponga un
+`accessibilityIdentifier` real (el `Picker` segmentado de hoy no tiene
+ninguno).
+
+### Verificación
+
+Solo `tools/` y `docs/` -- nada en `Sources/`. Candado tomado y
+liberado por esta sesión mientras compilaba la build DEBUG (única vez
+que hizo falta). Sin `~/Library` del dueño tocado -- la biblioteca de
+prueba vive en un directorio temporal, nunca la carpeta real, y
+`AURA_UITEST_DEFAULTS_SUITE` aísla las preferencias de cada corrida
+(mismo criterio que las pruebas de XCTest, ST-194).
+
+## ST-247 (addendum) — Propuesta B7b: selector de idioma, aplicación de cultura, instalador y B7c
+
+Encargo de la Maestra, mientras el Experto cierra B7a real (extracción →
+`.resx`/`ResourceManager`) — un **documento**, sin tocar código de la
+app: `studio/windows/docs/propuesta-b7b-idiomas.md`. Cuatro partes.
+
+### 1. Selector de idioma
+
+`IAppPreferences.Language` propuesto como `string?` (no un enum como
+`AppTheme`): los seis valores YA son nombres de cultura de .NET
+(`es`/`en`/`ja`/`de`/`ru`/`fr`), y un enum obligaría a traducir de ida y
+vuelta entre el enum y el nombre de cultura en cada punto de uso, sin
+ganar nada — a diferencia de `AppTheme`, donde `Light`/`Dark` no son
+nombres que ninguna API espere. `null` = "Seguir al sistema", sin un
+tercer caso especial. Mismo patrón de persistencia que el resto de
+`AppPreferences` (texto, resiliente a un valor que una build anterior no
+conocía).
+
+### 2. Aplicar la cultura
+
+**El punto exacto**: `Program.cs`, en `Main`, antes de
+`Application.Start` — no `App.OnLaunched` (ya se creó `App`), ni siquiera
+el constructor de `App`. El archivo ya existe con ese propósito (leer
+antes de arrancar la interfaz, para el camino de `PrivilegedHost`).
+
+**Sin doble lectura de disco**: construir la `AppPreferences` real UNA
+vez en `Program.Main` (antes de `Application.Start`), leer `Language` de
+ahí, y pasar esa MISMA instancia a `App` para que `ConfigureServices()`
+la registre en vez de construir una propia — hoy `ConfigureServices()`
+construiría una segunda si nadie lo evita.
+
+**Cambiar el idioma: reiniciar el proceso, no recrear la ventana**.
+Comparadas las dos formas: recrear solo `MainWindow` deja intactos los
+singletons de sesión (`IDeviceSessionService`, `LibraryViewModel`,
+`BackgroundTaskCenter`...) pero abre una ventana de carreras real entre
+"la UI vieja se destruye" y un evento de sesión en curso —sin ninguna
+prueba que cubra ese camino hoy, y en un WinUI 3 sin empaquetar el margen
+es mayor—; reiniciar el proceso entero no tiene ninguna carrera —nada
+sobrevive, todo se reconstruye—, cuesta un parpadeo aceptable (cambiar de
+idioma no es una acción que se haga a mitad de sincronizar), y es el
+mismo patrón que el propio selector de idioma de Windows. **Recomendada:
+reiniciar el proceso.** Nunca mitad y mitad.
+
+**El fallo citado por el coordinador, verificado en el código de hoy, no
+supuesto**: `MediaTableRow.cs:47` y `:53`, `LibraryStatusSummary.cs:69`
+—los mismos 4 sitios de "cultura fija" que ya encuentra
+`ExtraerCadenasWindows`/`FixedCultureExtractor`— son campos `static
+readonly CultureInfo`, evaluados UNA sola vez al cargar el tipo. Con un
+solo idioma da igual; en cuanto exista el selector, dos usuarios con
+culturas distintas verían el MISMO orden natural y el MISMO formato de
+fecha, congelado desde la primera vez que alguien tocó una canción. La
+corrección real: que dejen de ser campos y se vuelvan propiedades que
+lean `CultureInfo.CurrentCulture`/`CurrentUICulture` en cada acceso —
+nunca guardar la cultura en un campo—, más el propio patrón de fecha de
+`MediaTableRow.cs:115` (`"d 'de' MMMM 'de' yyyy"`) cambiado a uno
+estándar que .NET traduzca solo, no solo a una cultura distinta con la
+misma plantilla en español.
+
+### 3. Instalador
+
+Verificado, no asumido: `.resx` no neutro genera un satélite
+`<cultura>\AuraStudio.App.resources.dll`; el neutro (español, idioma
+fuente) se compila DENTRO del ensamblado principal — son **cinco**
+carpetas satélite a comprobar (`en`/`ja`/`de`/`ru`/`fr`), no seis.
+`AuraStudio.App.csproj` hoy **no tiene** `<SatelliteResourceLanguages>` —
+falta agregarla, o MSBuild puede publicar culturas de paquetes NuGet de
+terceros que a nadie le importan acá.
+
+`installer/AuraStudio.iss` **no necesita ningún cambio** — confirmado
+leyendo el archivo real: `[Files]` ya empaqueta
+`Source: "{#PublishDir}\*"` con `recursesubdirs createallsubdirs`, así
+que cualquier carpeta de cultura que `dotnet publish` deje bajo el
+publish se empaqueta sola.
+
+Lo que sí hace falta: cinco entradas nuevas en el array
+`$imprescindibles` de `Make-Installer.ps1` —el mismo mecanismo que ya
+evitó que el instalador saliera sin `AuraStudio.App.pri`—, y una función
+reutilizable (`Test-SatellitesPresentes` o el nombre que se decida) para
+que B8 pueda correr la misma comprobación contra un `dotnet publish`
+suelto, sin necesitar Inno Setup instalado — con un paso extra que la
+sola presencia de los `.dll` no cubre: instanciar `ResourceManager` y
+pedir `GetString` con cada una de las seis culturas, confirmando que
+carga sin `MissingManifestResourceException` y que el resultado no
+neutro es de verdad distinto del neutro.
+
+### 4. Plurales y anchos para B7c
+
+Formas de plural reales por idioma (regla CLDR): es/en/de dos formas
+(singular/plural); **fr también dos, pero el corte es en 0 y 1** —el
+patrón `n == 1 ? singular : plural` que domina el código hoy clasifica
+mal el caso de 0—; **ja una sola forma**, sin distinción — escribirle una
+regla de plural sería un error de más, no de menos; **ru tres formas**
+(uno/pocos/muchos, por el resto módulo 10 y módulo 100) — ninguna de las
+48+ instancias de `n == 1 ? ... : ...` de hoy alcanza para esto.
+
+Pantallas a capturar en B7c por riesgo de ancho, en orden de prioridad:
+la barra de estado (`LibraryStatusStrip`, espacio angosto con
+contadores), los botones de Ajustes (`SettingsPage.xaml`, 76 literales,
+varios sin `MinWidth`), los menús contextuales (un ítem largo en ruso o
+alemán puede ensanchar el menú entero, no solo esa fila — vale la pena el
+menú de Canciones, el más largo), y la confirmación de Eliminar/"Limpiar
+archivos huérfanos" (B5, con conteo y tamaño interpolados, sin ningún
+precedente visual todavía en ningún idioma). Fuera a propósito: pantallas
+del Instalador y "Cómo guardar tu música" — ya envueltas en párrafos
+tolerantes a idiomas más largos por diseño.
+
+### Verificación
+
+Documento y `DECISIONS.md` únicamente — sin código, sin scripts, tal como
+pidió el encargo. `dotnet test`: **1 744 pruebas en verde**, sin cambio
+(nada tocado que las afecte).
+
+## ST-247 (addendum) — Dos arreglos de `ExtraerCadenasWindows`, salidos del grupo 2a del Experto
+
+### 1. Siglas partidas letra por letra
+
+`KeyNaming.FileStemKebab`/`MemberKebab` usaban una sola regla
+(`(?<!^)(?=[A-Z])`, guion antes de toda mayúscula que no sea la primera),
+así que `NavPhotosAI` salía `nav-photos-a-i` en vez de `nav-photos-ai` —
+partía la sigla "AI" en dos letras sueltas. Ahora `PascalToKebab` (nombre
+nuevo, un solo lugar para las dos funciones) usa dos reglas: un guion
+antes de una mayúscula que sigue a una minúscula/dígito (el borde normal
+de PascalCase) y un guion DENTRO de una racha de mayúsculas solo en su
+borde de salida —antes de la última mayúscula de la racha, si la sigue
+una minúscula— nunca entre dos mayúsculas consecutivas de la misma sigla.
+`HTTPRequest` da `http-request` (no `h-t-t-p-request`); `NavPhotosAI` da
+`nav-photos-ai`.
+
+Revisado el CSV completo por más casos (`ID`/`URL`/`MP3`/`ALAC`/`iPod`,
+como pidió el coordinador): ninguno más — los demás sitios con esas
+palabras salen de texto en español vía `Slugify` (que ya lowercasea todo
+antes de separar en palabras, sin tocar la regla de PascalCase) y no de
+un nombre de archivo o de miembro, así que nunca pasaron por el código
+con el defecto. **Un caso queda anotado, no corregido, porque no aparece
+hoy**: si algún día un nombre de archivo o de miembro de C# usa la
+capitalización de Apple para "iPod" (minúscula-mayúscula, no PascalCase
+puro), `PascalToKebab` lo partiría en `i-pod` — no hay ningún caso así en
+el código actual (verificado: ningún miembro de `AppStrings.cs` ni ningún
+archivo se llama con ese patrón), así que no se generalizó la regla para
+un caso hipotético.
+
+### 2. Literales vacíos que llegaban con clave
+
+Un brazo `_ => ""` de un `switch` (`LibrarySectionOnlyItsType`,
+`MediaGridViewModel`) no es un hueco de traducción: es "acá no hay
+texto". La extracción de brazos de `switch`
+(`AppStringsExtractor.SwitchArm`) no tenía el mismo corte que ya existía
+en el resto de la herramienta para literales vacíos, así que esos dos
+llegaban al borrador con clave y `<value></value>` — la clave existe, así
+que ninguna prueba de "clave ausente" los atrapaba nunca; hacía falta
+mirar el VALOR.
+
+Corregido en dos lugares: el brazo de `switch` (`AppStringsExtractor`)
+ahora se salta y se marca consumido sin generar sitio si el texto
+desescapado queda vacío tras recortar espacios; y `AddLiteralSite`
+(`CSharpLiteralExtractor`, usado por `MenuEntry`/`StatusMessage`/
+`ContentDialog`) tiene el mismo corte **centralizado** — antes solo
+algunos de sus llamadores lo verificaban por su cuenta (con `if
+(literal.RawText.Trim().Length == 0) continue;` sueltos, o el caso
+especial de `StatusMessage = ""`), ahora es una sola regla en un solo
+lugar, así que un futuro llamador nuevo no puede volver a colarla por
+olvido.
+
+### Qué cambió, para que el Experto lo aplique en su `.resx`/fachada
+
+Regenerado sobre el mismo árbol (sin cambios en `AppStrings.cs`, el XAML
+ni ningún C# de la app): **555 → 553 sitios**, igual al número que ya
+tiene el `.resx` del Experto.
+
+**Una clave renombrada**:
+
+- `app-strings.nav-photos-a-i` → `app-strings.nav-photos-ai`
+
+**Dos claves eliminadas** (valor vacío, ya no se generan):
+
+- `app-strings.library-section-only-its-type-texto`
+- `media-grid-view-model.texto`
+
+Ninguna de las tres aparecía en `claves-compartidas.csv` (verificado con
+`grep`) — el cotejo con la Mac no necesitó ningún cambio.
+
+### Verificación
+
+Dos pruebas nuevas en `LocalizationDraftTests.cs`: `NingunValorEstaVacio`
+(recorre el `.resw`, falla si algún `<value>` queda vacío o solo
+espacios — la que hubiera atrapado el defecto de origen, a diferencia de
+`NingunaClaveEstaVacia`, que solo mira el nombre de la clave) y
+`NingunaClaveTieneLetrasSueltasSeparadasPorGuion` (una clave con dos o
+más letras sueltas seguidas, cada una separada por guion, es la misma
+forma del defecto de siglas resurgiendo).
+
+`dotnet build`: 0 errores. `dotnet test`: **1 746 pruebas en verde** (2
+nuevas). Sin tocar código de la app.
+
 ## ST-225 — Eliminar a la Papelera, limpiar huérfanos, y avisar sin bloquear
 
 Fase A5 de `PLAN-studio-ajustes-3.md`. Tres cosas que compartían un
