@@ -12579,3 +12579,89 @@ etiqueta y un escritor roto tiene que ser visible.
 Nada de esto está conectado todavía a la app: A2 son los escritores y su
 verificación. Quien los llame es A3 (ST-223), que es donde el modo copia
 pasa a escribir las etiquetas en el archivo de la biblioteca.
+
+## ST-225/226 (addendum, mecánico) — forma "después" de A5/A6 y ensayo en seco de A7a
+
+Encargo de "Sesión Maestra" tras la fusión de A1/A2 (`523f11d`), mismo
+estilo que ST-223/224. Worktree movido de `/private/tmp` a
+`/Volumes/Ricolinos/Codigo/GitHub/Aura/worktrees/mac-medicion` (ver
+incidente: la metadata de `.git/worktrees/aura-studio-medicion` en el
+repo compartido desapareció a mitad de la PARADA A1, más probablemente
+por un `git worktree prune` corrido desde otra Mac/VM viendo mis
+worktrees como ajenos que ya no existen -- recuperado con `git worktree
+add` fresco y un respaldo manual de lo no comiteado, sin pedirle a nadie
+que tocara worktrees ajenos).
+
+### A5/A6 "después" (`MediaStorageAfterA5A6Tests.swift`)
+
+Cinco `XCTSkip` con la forma exacta de la aserción futura, mismo patrón
+que ST-223/224 -- llenar el cuerpo cuando la API exista no rediseña la
+prueba:
+
+1. Eliminar en modo copia: el archivo sale de `Música/` (Papelera del
+   sistema, confirmado en el momento del borrado, no reconstruido
+   después) y el ítem desaparece del catálogo.
+2. Eliminar en modo referencia: el original sobrevive byte a byte (hash
+   idéntico); solo desaparece la entrada del catálogo (y el preparado,
+   si existía). Nunca Papelera -- Aura Studio no es dueño del original
+   en este modo.
+3. "Limpiar huérfanos": borra solo `.preparados/<ID>.ext` sin ningún
+   ítem que lo referencie; lo referenciado sobrevive con el MISMO hash
+   -- el caso que importa es que lo referenciado nunca se toque, no
+   solo que lo huérfano se borre.
+4. Deduplicación al importar: la misma ruta en NFC y NFD tiene que
+   colapsar a un solo ítem -- la comparación normaliza a NFC antes de
+   comparar (mismo criterio de normalización que `SharedCatalogPath`,
+   pero para DETECTAR duplicados al importar, no para RESOLVER rutas de
+   un catálogo ya existente).
+5. Migración nunca silenciosa: con una biblioteca "anterior" (ítems sin
+   `storage`, archivos en `Música/` cuyas etiquetas en disco no
+   coinciden con el catálogo), la CARGA normal no escribe ningún byte
+   -- ni etiquetas, ni `.preparados/`, ni `biblioteca.json`. Solo
+   "Migrar biblioteca" (acción explícita) reescribe etiquetas, genera lo
+   que falte, y reporta un conteo de archivos tocados mayor a cero.
+
+### A7a, ensayo en seco (`LocalizationDraftTests.swift`)
+
+A diferencia de A5/A6, los borradores de `tools/extraer-cadenas.py`
+(`docs/extraccion-cadenas/`) YA EXISTEN (ST-227) -- así que estas tres
+pruebas corren de verdad, hoy, sin esperar ninguna API:
+
+- **Claves únicas**: `JSONSerialization` colapsa en silencio una clave
+  de objeto JSON repetida (se queda con la última) -- verificado sobre
+  el TEXTO crudo del `.xcstrings` con una expresión regular, no sobre el
+  diccionario ya decodificado, o una clave duplicada nunca se
+  detectaría. 401 claves, todas únicas.
+- **Especificadores `%@`/`%lld` consistentes entre localizaciones de
+  una misma clave**: compara los especificadores de todas las
+  `localizations` con `stringUnit.value` no vacío -- hoy solo "es"
+  tiene contenido real ("en" es `state: "new"`, vacío), así que pasa
+  trivialmente, pero es la misma prueba que sí detectará una traducción
+  que pierda un `%@` el día que "en"/"ja"/"de"/"ru"/"fr" tengan
+  contenido.
+- **Los 23 plurales por ternario tienen dos formas distintas**: leídos
+  de `plurales-ternario.csv`. Encontré un caso real al escribir esta
+  prueba que me obligó a corregir mi propia aserción inicial (exigía
+  ambas formas no vacías): `SimilarItemsView.swift:188`,
+  `n == 1 ? "" : "s"` -- un sufijo plural en inglés (no el patrón de
+  palabra completa en español que domina el resto del archivo), con
+  singular vacío legítimamente. La prueba ahora exige solo que las dos
+  formas sean DISTINTAS entre sí, nunca ambas vacías a la vez.
+
+El "detector de literales" del plan (§3, criterio de cierre real de
+A7a) SÍ queda con `XCTSkip` -- hoy fallaría por cientos de sitios sin
+localizar. El mensaje documenta la línea base exacta de
+`docs/auditoria-idiomas.md` (484 sitios como mínimo) para que "experto
+en código opus" quite el `XCTSkip` al cerrar A7a, cuando el conteo real
+deba ser 0.
+
+### Verificación
+
+`xcodegen generate` + `.pbxproj` regenerado en este mismo commit (dos
+archivos nuevos en `Tests/`). `xcodebuild -configuration Release`:
+**BUILD SUCCEEDED** (candado tomado y liberado por esta sesión, esperado
+mientras lo tenía "experto A3 verif 2"). `swift test` completo: **941
+pruebas, 0 fallas, 15 saltadas** (el salto de 918→941 viene de A2, ya
+fusionado, que trae sus propias pruebas nuevas de escritores FLAC/M4A --
+no de este commit). No se corrió el arnés A0 contra A2 (pedido expreso
+de "Sesión Maestra": los escritores no tienen consumidor hasta A3).
