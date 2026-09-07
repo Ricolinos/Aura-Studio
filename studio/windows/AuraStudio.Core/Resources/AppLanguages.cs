@@ -61,7 +61,7 @@ public static class AppLanguages
         // pantallas que formatean discos, sería justo lo que no se puede hacer.
         new("de", "Deutsch", Ships: true, ReviewedByHumans: false),
         new("fr", "Français", Ships: true, ReviewedByHumans: false),
-        new("ja", "日本語", Ships: false, ReviewedByHumans: false),
+        new("ja", "日本語", Ships: true, ReviewedByHumans: false),
         new("ru", "Русский", Ships: true, ReviewedByHumans: false),
     ];
 

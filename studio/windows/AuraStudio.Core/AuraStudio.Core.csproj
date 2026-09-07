@@ -61,6 +61,10 @@
       <LogicalName>AuraStudio.Core.Strings.Resources.ru.resources</LogicalName>
     </EmbeddedResource>
 
+    <EmbeddedResource Update="Strings\Resources.ja.resx">
+      <LogicalName>AuraStudio.Core.Strings.Resources.ja.resources</LogicalName>
+    </EmbeddedResource>
+
     <!-- SatelliteResourceLanguages NO se usa, y no por olvido: se probó.
          Declarando solo "de" —una cultura que no existía acá— el satélite en/
          se siguió generando, también tras borrar obj/ y bin/. Esa propiedad

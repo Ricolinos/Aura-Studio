@@ -169,7 +169,7 @@ function Build-Installer([string] $arch) {
     # La lista tiene que coincidir con AppLanguages.RequiredSatelliteCultures,
     # y lo comprueba una prueba (SatelliteCulturesTests) — acá está escrita a
     # mano porque PowerShell no lee la lista de C#, no porque haya dos fuentes.
-    $culturasSatelite = @('en', 'de', 'fr', 'ru')
+    $culturasSatelite = @('en', 'de', 'fr', 'ru', 'ja')
 
     foreach ($cultura in $culturasSatelite) {
         $satelite = Join-Path $publishDir "$cultura\AuraStudio.Core.resources.dll"
