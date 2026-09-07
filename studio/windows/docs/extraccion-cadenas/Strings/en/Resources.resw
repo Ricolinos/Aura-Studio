@@ -1000,7 +1000,15 @@
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
+  <data name="artists-page.buscar-artistas-2" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
   <data name="artists-page.buscar-fotos" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="artists-page.buscar-fotos-artistas-linea-fanart-tv" xml:space="preserve">
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
@@ -1017,6 +1025,14 @@
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
   <data name="artists-page.eliminar" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="artists-page.mas-acciones" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="artists-page.mas-acciones-2" xml:space="preserve">
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
@@ -1292,6 +1308,10 @@
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
+  <data name="device-list-page.calcula-se-copiaria-escribe-nada-ipod" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
   <data name="device-list-page.cancelar" xml:space="preserve">
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
@@ -1356,6 +1376,26 @@
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
+  <data name="device-safety-validator.dispositivo-cambio-desde-confirmacion-po" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-safety-validator.dispositivo-verificado-actual-displaynam" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-safety-validator.hay-mas-ipod-candidato-por-seguridad" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-safety-validator.ipod-desaparecio-se-realizo-ninguna-escr" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="device-safety-validator.volumen-ipod-esta-montado" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
   <data name="extras-page.animaciones-graficos" xml:space="preserve">
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
@@ -1412,6 +1452,10 @@
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
+  <data name="library-status-strip.detener-tarea-curso" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
   <data name="library-view-model.buscando-fotos-artista" xml:space="preserve">
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
@@ -1461,6 +1505,10 @@
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
   <data name="media-grid-page.buscar-posters" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="media-grid-page.descarga-posters-falten-viajan-pegados-v" xml:space="preserve">
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
@@ -1565,6 +1613,10 @@
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
   <data name="settings-page.artista-album-recomendado" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="settings-page.bajar" xml:space="preserve">
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
@@ -1808,6 +1860,10 @@
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
+  <data name="settings-page.subir" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
   <data name="settings-page.texto" xml:space="preserve">
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
@@ -1893,6 +1949,14 @@
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>
   <data name="similar-items-page.volver-mostrar-descartados" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="songs-page.busca-album-ano-caratula-letra-lo" xml:space="preserve">
+    <value></value>
+    <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
+  </data>
+  <data name="songs-page.busca-canciones-fotos-videos-parezcan-re" xml:space="preserve">
     <value></value>
     <!-- pendiente de traducir - - borrador de B7a, ver docs/extraccion-cadenas/revision.csv -->
   </data>

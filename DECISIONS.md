@@ -15128,3 +15128,442 @@ Cierra la deuda de verificación completa que quedó pendiente desde el
 addendum de A0-contra-A4/el fix del extractor -- ese commit (y los dos
 anteriores de esta ronda) quedan confirmados con el suite completo,
 no solo con `--filter` acotado.
+## ST-247 (addendum) — Windows: `claves-compartidas.csv` co-propiedad por clave, huecos repetidos, y la corrección de B7b a `AuraStudio.Core`
+
+Encargo del coordinador, dos tareas sobre `origin/main`; esta cubre la
+primera más dos añadidos a mitad de tarea, todo en el mismo commit.
+
+### 1. `claves-compartidas.csv` deja de poder regenerarse entero
+
+Ya pasó una vez que la Maestra tuvo que fusionar el archivo a mano
+fila por fila -- desde ahora el reparto de columnas es una regla del
+código, no una convención: Windows edita SOLO "sitio Windows" (y
+agrega filas "solo Windows" a mano, eso no se automatiza); "sitio Mac"
+y "estado" son de la Mac. `ClavesCompartidasCsv.UpdateSitioWindows`
+(`tools/ExtraerCadenasWindows`, corre sola al final de cada `dotnet
+run`) es la única edición automática permitida: encuentra el RANGO
+exacto de la columna "sitio Windows" dentro de la línea cruda
+(consciente de comillas) y solo reemplaza esa porción si el
+`archivo:línea` de una clave YA CITADA cambió -- nunca agrega filas,
+nunca toca "sitio Mac" ni "estado", nunca reescribe el archivo entero.
+Una clave citada que ya no existe (un renombre pendiente) se deja tal
+cual y se avisa por consola en vez de adivinar.
+
+Bug real encontrado corriendo la herramienta, no por lectura de
+código: el regex de cita usaba `[^:;()]+` para la ruta, que no excluye
+espacio -- el separador `"; "` entre dos citas de una misma celda
+perdía su espacio al reemplazar (`"; "` → `";"`). Cambiado a `\S+?`
+(no vacío, no espacio, perezoso).
+
+Documentado en `docs/extraccion-cadenas/README.md`: tabla de
+propiedad de columnas, y el formato oficial de una cita --
+`archivo:línea (clave.de.windows[, nota])` -- que YA escribía
+`UpdateSitioWindows` desde el principio; lo nuevo es declararlo
+formal, porque `TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows`
+(abajo) ahora depende de él.
+
+Cinco pruebas nuevas en `tests/ExtraerCadenasWindows.Tests/ClavesCompartidasCsvTests.cs`
+(proyecto de pruebas nuevo, mismo patrón que `AuraStudio.Core.Tests`):
+sin cambios de verdad el archivo queda byte a byte idéntico; una
+columna "sitio Mac" con comillas y comas sobrevive intacta aunque la
+MISMA fila sí actualice "sitio Windows"; una fila "solo Mac" nunca se
+toca; una cita múltiple (`"; "` entre dos citas) actualiza cada tramo
+sin perder el separador; una clave citada que ya no existe se deja
+intacta y se reporta.
+
+### 2. La prueba de paridad con la Mac estaba mal planteada, no el CSV
+
+`TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows` estaba roja
+en `origin/main`: compara la clave de la COLUMNA `clave` del CSV
+(el nombre compartido, sin prefijo -- `storage-section-title`) contra
+las claves del `.resw`, pero Windows nunca renombra sus propias claves
+para calzar con el CSV -- el `.resw` trae `app-strings.storage-section-title`.
+Diez filas "igual" (4 `storage-*`, 6 `orphans-*`) fallaban por esto,
+no porque el texto estuviera mal.
+
+Decisión del coordinador: el CSV es la autoridad del NOMBRE
+compartido; la herramienta de Windows sigue emitiendo sus propias
+claves. La prueba ahora acepta DOS caminos: (1) la clave del CSV
+coincide tal cual con una clave del `.resw`, o (2) el paréntesis
+`(clave.de.windows)` al final de "sitio Windows" trae la clave real, y
+esa clave existe en el `.resw` con EL MISMO TEXTO que la columna
+"texto es" del CSV -- si el texto no coincide, la fila está mal
+alineada de verdad, no es solo un nombre distinto.
+
+**Hallazgo real, encontrado por la propia prueba, no un ajuste para
+que pasara**: `orphans-confirm-message` sigue fallando la comparación
+EXACTA aun con el camino 2 -- `AppStrings.OrphansConfirmMessage`
+(`AppStrings.cs:324-326`) antepone `{OrphansFound(scan)}` (el conteo
+dinámico de huérfanos) al texto compartido, así que el valor real del
+`.resw` es `"{0} " + texto de la Mac`, nunca el texto solo. Como
+"sitio Windows"/"texto es" son de la Mac, esto no se corrige acá con
+una reescritura silenciosa: quedó como excepción explícita y
+documentada en el propio test (`KnownIgualSuffixExceptions`, compara
+por SUFIJO solo para esta clave) -- **se avisa aquí para que la Mac
+decida si el estado real de esta fila es "clave distinta"**, no se
+decide unilateralmente desde Windows.
+
+### 3. Huecos de interpolación repetidos ahora reusan el índice
+
+`InterpolationHoles.Convert` numeraba cada `{expr}` en orden de
+aparición sin mirar si ya había visto esa MISMA expresión --
+`app-strings.installer-family-change` (`{installed}` dos veces,
+`{target}` una) salía `"...{0}...{1}...{2}..."`, obligando a pasar
+`installed` dos veces a `string.Format`. Corregido: un diccionario
+expresión→índice (comparación textual exacta, incluido el
+especificador de formato si trae uno) reusa el índice ya asignado.
+Regenerado sobre el mismo árbol: **una sola clave cambia de huecos**,
+`app-strings.installer-family-change` (`{2}` → `{0}` en la segunda
+aparición de `{installed}`) -- verificado diffeando `revision.csv` y
+los dos `.resw` línea por línea contra la corrida anterior, ninguna
+otra fila se movió. Aviso para el Experto: re-sincronizar solo esa
+clave en su `.resx`.
+
+Prueba nueva, `InterpolationHolesTests.cs` (unitaria, directa sobre
+`InterpolationHoles`): la misma expresión repetida reusa el índice,
+expresiones distintas numeran en orden, la misma variable con
+especificador de formato distinto NO comparte índice (es un dato
+"distinto" para el traductor), sin huecos devuelve el texto tal cual.
+Prueba nueva además en `LocalizationDraftTests.cs`,
+`NingunaExpresionInterpoladaRepetidaTieneHuecosDistintos`: lee
+`revision.csv` entero y verifica, fila por fila, que ninguna expresión
+tenga dos marcadores distintos NI que un marcador represente dos
+expresiones distintas (esto último sería peor -- dos datos reales
+fundidos en un solo hueco).
+
+### Añadido a mitad de tarea: `propuesta-b7b-idiomas.md` corregido
+
+El Experto/Maestra decidieron alojar los recursos de localización
+(`Strings`, `PluralRules`, `Resources.resx`) en `AuraStudio.Core`, no
+en `AuraStudio.App` -- los satélites pasan a ser
+`<cultura>/AuraStudio.Core.resources.dll` y
+`<SatelliteResourceLanguages>` va en `AuraStudio.Core.csproj`.
+Corregida la sección 3 completa de `propuesta-b7b-idiomas.md` (todas
+las referencias a `AuraStudio.App.resources.dll`, el fragmento de
+PowerShell de `$imprescindibles`, y la comprobación de `ResourceManager`
+de B8, que ahora apunta a `AuraStudio.Core.dll`). Solo documentación:
+`Make-Installer.ps1` no se toca todavía.
+
+### Añadido a mitad de tarea: cultura fijada en `StorageFixtureCheck`
+
+En cuanto existan satélites de recursos, texto que hoy es literal fijo
+pasa a resolver por `CultureInfo.CurrentUICulture` -- un runner con
+otro idioma de sistema dejaría de ver español y el arnés compararía
+contra la cultura equivocada, en silencio. `StorageFixtureCheck/Program.cs`
+fija `CultureInfo.CurrentCulture = CurrentUICulture =
+GetCultureInfo("es-MX")` antes de construir nada (`LibraryViewModel`,
+`SettingsViewModel`...). Revisado el resto de `AuraStudio.Core.Tests`
+(donde vive `LocalizationDraftTests`, que compara contra el `.resw`
+directamente, no contra `AppStrings`/`ResourceManager` en vivo): hoy
+ninguna otra prueba compara texto en español resuelto por cultura --
+`AppStrings.cs` sigue siendo literales de C# fijos, no
+`ResourceManager`, hasta que B7b lo cablee -- así que no hizo falta
+fijar cultura en ningún otro arnés todavía.
+
+### Verificación
+
+`dotnet build AuraStudio.Windows.slnx`: 0 errores. `dotnet test
+AuraStudio.Windows.slnx`: **1 750 pruebas en verde** (12 en
+`LocalizationDraftTests`, incluidas las 2 nuevas de este addendum).
+`dotnet test tests/ExtraerCadenasWindows.Tests`: **9 en verde** (5 de
+`ClavesCompartidasCsvTests` más 4 de `InterpolationHolesTests`,
+proyecto de pruebas nuevo). `dotnet run --project
+tools/ExtraerCadenasWindows`: 501 sitios, 501 claves únicas, 51
+plurales, 4 cultura fija -- sin cambio de conteo contra la corrida
+anterior, solo la única clave de huecos ya listada arriba.
+
+## ST-247 (addendum, mecánico) — Rebase contra A7b: tres citas de "sitio Windows" que la Mac reintrodujo desactualizadas
+
+Al rebasear sobre `origin/main` (A7b, columna `texto en` nueva), el CSV
+completo entró en conflicto de contenido (la Mac agregó la columna en
+todas las filas). Al fusionar a mano encontré que la versión de la Mac
+traía TRES citas de "sitio Windows" más viejas que las mías --
+`music-settings-view.calidad-audio` (`SettingsPage.xaml:261`),
+`music-settings-view.comprimir-mp3-buena-calidad` (`:264`) y
+`settings-section-view.actualizaciones-aura-studio` (`ShellPage.xaml:162`)
+-- probablemente porque la Mac partió de un snapshot del CSV anterior a
+que mi `UpdateSitioWindows` las hubiera corregido a `:275`/`:278`/`:163`
+en una corrida previa. Verificado contra el archivo real (no adivinado):
+`SettingsPage.xaml:275` es "Calidad de audio", `:278` es "Comprimir a MP3
+de buena calidad", `ShellPage.xaml:163` es el `Title` de la franja de
+actualización -- las tres líneas viejas ya no son eso. Fusionado
+conservando la estructura nueva de la Mac (columna `texto en` en su
+lugar) con mis tres líneas corregidas, nunca las suyas desactualizadas.
+
+`dotnet run --project tools/ExtraerCadenasWindows` después de la fusión:
+`claves-compartidas.csv` queda byte a byte idéntico (0 citas
+actualizadas) -- confirma que las tres líneas ya están correctas y que la
+columna `texto en` sobrevive intacta.
+
+## ST-247 (addendum, mecánico) — `orphans-confirm-message` se queda "igual" sin excepción, roja a propósito
+
+Decisión de la Maestra sobre el hallazgo de más arriba: `orphans-confirm-message`
+NO lleva excepción. Windows compone la oración desde dos recursos (el
+conteo aparte, `app-strings.orphans-confirm-message` idéntico a la Mac) --
+lo hace el Experto al cerrar las compartidas de B7a, no Windows (ni "sitio
+Windows" ni "texto es" de esa fila son de Windows). Quitado
+`KnownIgualSuffixExceptions` de `TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows`:
+la fila vuelve al mismo camino que las otras nueve (paréntesis +
+comparación EXACTA), y hoy falla ahí de verdad -- roja de forma explícita,
+con el nombre de la fila en el mensaje, hasta que el Experto componga el
+recurso. Una prueba roja y clara sobre un hallazgo ya avisado es mejor que
+una excepción que tapa el estado real.
+
+`dotnet build`: 0 errores. `dotnet test AuraStudio.Core.Tests`: **1 749 en
+verde, 1 en rojo** (`TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows`,
+a propósito, ver arriba) -- el resto de la corrida (1 750 - 1 = 1 749) sin
+cambio.
+
+## ST-247 (addendum, mecánico) — La roja de `orphans-confirm-message` pasa a `Skip` con motivo visible
+
+Corrección del coordinador sobre el addendum de arriba: una prueba roja de
+verdad no puede llegar a `origin/main` -- la Maestra sube esta rama antes
+de que el Experto cierre las compartidas de B7a, y `origin` quedaría en
+rojo por un hallazgo ya avisado y en curso, no por un defecto nuevo.
+
+`TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows` vuelve a estar en
+verde: `orphans-confirm-message` se saca de su recorrido
+(`PendingCompositionExceptions`) -- las otras nueve filas "igual" siguen
+vigiladas ahí, sin excepción. La décima pasa a una prueba aparte,
+`OrphansConfirmMessageExisteEnElReswDeWindowsConElMismoTexto`, escrita
+entera (misma lógica, no comentada ni recortada) y marcada
+`[Fact(Skip = "hasta que B7a componga orphans-confirm-message desde
+orphans-found + texto compartido (decisión ST-225/ST-247)")]` -- el motivo
+aparece en la salida de `dotnet test` (`[SKIP]`), visible sin tapar nada;
+alguien solo tiene que quitar el `Skip` cuando el Experto componga el
+recurso, y la prueba entera está lista para correr en ese momento.
+
+`dotnet build`: 0 errores. `dotnet test AuraStudio.Core.Tests`: **1 752 en
+verde, 1 omitida** (la nueva, a propósito) -- ninguna en rojo. (El total
+sube de 1 750 porque ya está en el árbol, sin commitear todavía, la
+primera prueba de la tarea 2 -- ver el addendum de ST-245 que sigue.)
+
+## ST-245 (addendum) — Windows: "espejo de A5" — cobertura de confirmación en Eliminar, y la ruta real dentro de la Papelera
+
+Encargo del coordinador, tarea 2 sobre `origin/main`. Dos partes: (a)
+probar que todo punto de entrada de Eliminar pasa por confirmación, (b)
+que la prueba real de la Papelera afirme sobre una ruta de verdad, no
+reconstruida.
+
+### (a) Los cuatro puntos del encargo, y el que se la salta
+
+Revisados los cuatro: cuadrícula (`MediaGridPage.xaml.cs:1007`), canciones
+(`SongsPage.xaml.cs:502`), artistas (`ArtistsPage.xaml.cs:314` y `:443`,
+menú contextual y selección) -- los cuatro llaman
+`DeleteConfirmation.ConfirmAndRemoveAsync`, que muestra el diálogo y
+recién después llama `LibraryViewModel.Remove`. La tecla Supr no aparece
+en ningún `Page_KeyDown` de `SongsPage`/`MediaGridPage`/`ArtistsPage`
+(los tres revisados completos): no es un punto que se salte la
+confirmación, es una función que todavía no existe.
+
+**Hallazgo real, no corregido acá** (instrucción explícita del
+coordinador: no tocar Views ni `LibraryViewModel`, el Experto los tiene en
+B7a): `SimilarItemsViewModel.KeepOnly` (`AuraStudio.App/ViewModels/SimilarItemsViewModel.cs:119`)
+llama `_library.Remove(doomed)` directo, sin ninguna confirmación --
+`SimilarItemsPage.xaml.cs:33-41` (`KeepOnly_Click`) tampoco muestra ningún
+diálogo: solo resuelve el `Guid` del botón y llama a `ViewModel.KeepOnly`
+derecho. Qué hace exactamente ese camino, para la pregunta del
+coordinador: **depende del modo de almacenamiento de cada elemento del
+grupo**, igual que cualquier otro `Remove` -- modo copia manda el archivo
+original a la **Papelera de reciclaje sin preguntar**; modo referencia
+**solo lo quita del catálogo**, el original nunca se toca; en LOS DOS
+MODOS además se borra **permanentemente** (no a la Papelera, un
+`File.Delete` directo vía `ILibraryFileSystem.TryDelete`) el preparado y
+la carátula del elemento, tampoco con ningún aviso. El doc-comment de
+`KeepOnly` (líneas 107-110) y el mensaje de éxito (122-124) mienten: dicen
+"no borra archivos" / "el archivo sigue en tu computadora", falso para
+cualquier elemento en modo copia desde B5.
+
+Prueba nueva, `tests/AuraStudio.Core.Tests/DeleteEntryPointsTests.cs`: un
+"source-grep" (no una instancia real de `LibraryViewModel`, para no
+chocar con B7a) que recorre `Views/`+`ViewModels/` de `AuraStudio.App`
+buscando `library.Remove(`/`_library.Remove(` y falla si aparece fuera de
+`DeleteConfirmation.cs` y fuera de una lista explícita de hallazgos
+conocidos (`KnownUnconfirmedBypasses`, hoy solo
+`SimilarItemsViewModel.cs:119`) -- cualquier bypass NUEVO sigue
+haciéndola fallar. Segunda prueba, cinturón además del tirante: confirma
+que el hallazgo conocido SIGUE en su línea citada, para que alguien tenga
+que venir a borrar la excepción en vez de dejarla viva cuando se arregle.
+
+### (b) `SHFileOperationW` no da destino para un borrado -- comprobado, no solo leído en la documentación
+
+Investigado con una prueba real, aparte, contra la Papelera de verdad de
+esta VM: `SHFileOperationW` con `FOF_WANTMAPPINGHANDLE` deja
+`hNameMappings` en `0` después de un `FO_DELETE` -- ningún mapeo, a pesar
+de lo que el nombre de la bandera sugeriría (el mapeo de nombres resuelve
+colisiones al copiar/mover, nunca reporta destino de un borrado; esto NO
+está documentado así por Microsoft en ningún lado claro, se comprobó
+corriendo el borrado de verdad y leyendo la estructura después). La
+alternativa real -- `IFileOperation` +
+`IFileOperationProgressSink.PostDeleteItem` -- es un cambio de API mucho
+más grande que `WindowsRecycleBin` para un problema que solo existe en
+pruebas.
+
+**Aplica la segunda opción que dio el coordinador**: la prueba comprueba
+origen desaparecido Y presencia en `$Recycle.Bin` por SID. Nuevo
+`AuraStudio.Core/Library/RecycleBinProbe.cs` (`[SupportedOSPlatform("windows")]`,
+mismo patrón que `WindowsRecycleBin`): decodifica el formato `$I` de la
+Papelera de Windows 10+ (tampoco documentado oficialmente -- verificado
+byte a byte contra archivos `$I` reales de esta VM antes de escribir el
+parser: 8 bytes de versión, 8 de tamaño original, 8 de FILETIME de
+borrado, 4 de longitud de ruta en caracteres UTF-16, luego la ruta) y
+busca el `$I*` cuya ruta original decodificada coincide con la buscada,
+devolviendo el `$R*` (los bytes de verdad) correspondiente si existe.
+
+`StorageFixtureCheck.cs` (los dos puntos que ya ejercitaban un borrado
+real, modo copia y el de acento NFD) dejan de conformarse con "desapareció
+del origen, verificar a simple vista es cosa de alguien con la sesión de
+Windows delante" -- ahora llaman `RecycleBinProbe.FindRecycledFile` y
+afirman sobre la ruta real que devuelve. Corrida real contra la Papelera
+de esta VM, sin ninguna `ATENCIÓN`: modo copia →
+`$Recycle.Bin\<SID>\$RTI7QN6.mp3`; acento NFD → `$Recycle.Bin\<SID>\$RJXPIOW.mp3`.
+
+**Efecto lateral encontrado, no de este encargo**: para poder correr
+`StorageFixtureCheck` de verdad se encontró que `Fakes.cs` no compilaba
+-- `NoOpLibraryProcessor` no implementaba `ILibraryProcessor.CopyIntoLibraryAsync`
+(agregado a la interfaz en una ronda anterior, ST-244; `StorageFixtureCheck`
+no está en `AuraStudio.Windows.slnx`, así que ningún `dotnet build` de la
+solución lo detectaba). Arreglado con el mismo patrón no-op que
+`ProcessAsync` (`Task.FromResult(true)`, "puede seguir").
+
+### Verificación
+
+`dotnet build AuraStudio.Windows.slnx`: 0 errores. `dotnet build
+tools/StorageFixtureCheck`: 0 errores (antes fallaba, ver arriba).
+`dotnet test AuraStudio.Windows.slnx`: **1 752 en verde, 1 omitida**
+(la de `orphans-confirm-message`), ninguna en rojo. `dotnet run
+--project tools/StorageFixtureCheck` completo, de punta a punta, sin
+ninguna `ATENCIÓN` en toda la salida.
+
+## ST-247 (addendum) — Windows: tres encargos de A7a — patrones nuevos, huecos en plurales, columnas nuevas del CSV
+
+Tres pedidos del coordinador sobre A7a, todos en `tools/ExtraerCadenasWindows`.
+
+### 1. `AutomationProperties.Name` y `ToolTipService.ToolTip`, en XAML; ayudantes propios en C#
+
+`Header=` y `PlaceholderText=` ya estaban cubiertos desde B0 -- lo nuevo es
+`AutomationProperties.Name=` (el nombre para el lector de pantalla) y
+`ToolTipService.ToolTip=`, agregados al mismo regex de `XamlExtractor`
+**por su nombre calificado completo**, nunca `Name=`/`ToolTip=` sueltos:
+`x:Name="ShellFrame"` es un identificador de elemento, no texto de cara al
+usuario, y `AutomationProperties.AutomationId` (los identificadores
+estables que usa el arnés de capturas por idioma, ST-227) tampoco lo es --
+los dos tenían que quedar afuera con certeza, no por casualidad de que hoy
+no aparezcan.
+
+Del lado de C#: revisado el código en busca de ayudantes propios con texto
+de usuario como argumento (búsqueda amplia por literales con acento en
+todo `AuraStudio.App`, luego triage a mano -- no una auditoría exhaustiva
+de cada resultado, la mayoría son comentarios o ya están cubiertos).
+Encontrado uno real y verificado: `DeviceSafetyResult.Safe(string message)`/
+`.Unsafe(string message)` (`Services/DeviceSafetyValidator.cs`), mensajes
+de seguridad del dispositivo que no pasan por `AppStrings`,
+`StatusMessage` ni `ContentDialog`. `CSharpLiteralExtractor.ExtractHelperFirstArgument`
+(nuevo) los cubre con una lista EXPLÍCITA y curada de nombres de método —
+nunca un patrón genérico sobre "cualquier llamada con `string` como primer
+parámetro", que atraparía `Path.Combine("...")`,
+`Directory.CreateDirectory("...")`, claves de diccionario, etc. Extensible:
+agregar otro ayudante encontrado después es una línea en la lista.
+
+Regenerado sobre el mismo árbol: **501 → 517 sitios (+16)**. Por archivo:
+`ArtistsPage.xaml` +4, `DeviceListPage.xaml` +1, `LibraryStatusStrip.xaml`
++1, `MediaGridPage.xaml` +1, `SettingsPage.xaml` +2, `SongsPage.xaml` +2
+(11 XAML, `AutomationProperties.Name`/`ToolTipService.ToolTip`); `DeviceSafetyValidator.cs`
++5 (`HelperArgument`, incluido el ternario de dos mensajes de
+`Unsafe(count == 0 ? "..." : "...")`, cada rama su propio sitio). Cero
+filas perdidas (diff completo contra la corrida anterior). Prueba nueva,
+`XamlExtractorTests.cs` (proyecto `ExtraerCadenasWindows.Tests`): un XAML
+de ejemplo con los cuatro atributos produce cuatro sitios; `AutomationId`
+nunca produce sitio; un `{x:Bind ...}` en cualquiera de los dos atributos
+nuevos se descarta igual que en los viejos.
+
+### 2. Ninguna forma "plural" sin hueco adentro
+
+`plurales-ternario.csv` (51 filas): revisadas las 51 a mano. Seis no
+traen ninguna llave `{...}` en su columna "plural" -- documentadas como
+excepción conocida, no forzadas a pasar en silencio, y **reportadas para
+que el Experto las revise en `PluralRules`**: `ArtistsViewModel.cs:251/252/253`
+y `LibraryGrouping.cs:41` (cuatro declinaciones de una sola palabra --
+`artista`/`artistas`, `álbum`/`álbumes`, `canción`/`canciones` x2-- piezas
+sueltas que el código arma con el número aparte en otro lado, no una
+oración con el número adentro), `LibraryStatusSummary.cs:93`
+(`día`/`días`, mismo caso), y `ContextMenu.cs:210` ("Quitar fotos de los
+artistas"/"Quitar foto del artista") que ni siquiera es un plural de
+verdad -- es una etiqueta de menú distinta según selección, sin ningún
+número que interpolar. Prueba nueva,
+`TodaFormaPluralTraeUnHuecoAdentroSalvoExcepcionesConocidas`: cualquier
+fila NUEVA sin hueco, fuera de esta lista de seis, la hace fallar.
+
+### 3. `claves-compartidas.csv`: columnas nuevas por NOMBRE, no por posición
+
+Ya lo pedía A7a antes de que la Mac agregara ninguna columna todavía
+(`ClavesCompartidasCsv.UpdateSitioWindows` ubica "sitio Windows" leyendo
+el ENCABEZADO en cada corrida desde el primer commit de este addendum, no
+por un índice fijo) -- verificado ahora con dos pruebas nuevas: una
+columna nueva ANTES de "sitio Windows" (que le corre el índice) no rompe
+el parche ni pierde la columna nueva; un encabezado sin "sitio Windows"
+(formato irreconocible) no toca nada, no se adivina un índice. Documentado
+en el README de la carpeta.
+
+### Verificación
+
+`dotnet build AuraStudio.Windows.slnx`: 0 errores. `dotnet test
+AuraStudio.Windows.slnx`: **1 753 en verde, 1 omitida** (`orphans-confirm-message`),
+ninguna en rojo. `dotnet test tests/ExtraerCadenasWindows.Tests`: **14 en
+verde** (las 11 de antes más 3 de `XamlExtractorTests`). `dotnet run
+--project tools/ExtraerCadenasWindows`: 517 sitios, 517 claves únicas, 51
+plurales, 4 cultura fija; `claves-compartidas.csv` sigue byte a byte
+idéntico salvo cuando hay una cita de verdad que actualizar.
+
+## ST-247 (addendum) — Windows: las categorías de video son dato del catálogo, no texto de interfaz
+
+Encargo del coordinador (A7b). `MediaCategoryNames.DisplayNameSpanish`/
+`DisplayNameEnglish` (`AuraStudio.Core/MediaCategory.cs`) --
+"Películas"/"Series"/"Videos"-- se guardan literalmente en el catálogo
+(D-228) y `MediaCategoryNames.IsMoviesCategory`/`IsSeriesCategory` las
+compara por igualdad contra esos dos literales fijos (es/en), nunca
+contra un recurso localizado en vivo: si algún día se tradujeran de
+verdad, un catálogo en otro idioma (ja/de/ru/fr) dejaría de reconocerse.
+
+Verificado que HOY no hay ningún bug de verdad que corregir: `AuraStudio.Core`
+no entra al escaneo general de literales (solo `FixedCultureExtractor`/
+`PluralTernaryScan` recorren Core, ninguno de los dos reconocería estas
+cadenas), así que nunca se emitieron como clave. `CatalogDataExtractor`
+(nuevo) es preventivo, para cuando se amplíe el escaneo a Core: reconoce
+los seis literales de `MediaCategoryNames` (3 español + 3 inglés,
+incluido el brazo `_ => "Videos"`/`"Videos"` por defecto, guardado SOLO
+dentro de un archivo ya confirmado como el de `MediaCategoryNames` --
+nunca un patrón `_ => "..."` suelto en cualquier archivo) y los marca
+`Kind = "Dato"` con una nota explicando el porqué, en la columna "tipo" Y
+"nota" de `revision.csv`. Van al mismo cajón que `CulturaFija`
+(`fixedCulture`, ya excluido del `.resw`): entran a `revision.csv` pero
+nunca a la salida traducible.
+
+Dos pruebas: `TodaFilaTraducibleDelCsvTieneSuClaveEnElResw` ahora excluye
+también `Kind = "Dato"` (antes solo `CulturaFija`);
+`NingunaFilaDeDatoDeCatalogoTerminaEnElResw` (nueva) falla si alguna vez
+una clave "Dato" se cuela en el `.resw` como si fuera texto vivo.
+
+### Bug real encontrado de paso, no de este encargo: dos pruebas de `claves-compartidas.csv` seguían leyendo columnas por índice fijo
+
+Al correr la batería completa tras el rebase de A7b (columna `texto en`
+nueva, corre el índice de todo lo que viene después) aparecieron NUEVE
+filas "igual" rotas de golpe en
+`TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows` -- no un defecto
+de esta tarea: la prueba (y su hermana `OrphansConfirmMessageExisteEnElReswDeWindowsConElMismoTexto`)
+leían "texto es"/"sitio Windows" con `fields[1]`/`fields[3]` fijos, el
+mismo defecto que `ClavesCompartidasCsv.UpdateSitioWindows` ya había
+corregido (ubicar por NOMBRE de columna, leyendo el encabezado) pero que
+nunca se replicó en las pruebas que leen el mismo archivo desde
+`AuraStudio.Core.Tests`. Corregido con el mismo criterio: `SharedCsvColumnIndex`
+(nuevo, lee el encabezado) reemplaza los dos índices fijos.
+
+### Verificación
+
+`dotnet build AuraStudio.Windows.slnx`: 0 errores. `dotnet test
+AuraStudio.Windows.slnx`: **1 754 en verde, 1 omitida**, ninguna en rojo.
+`dotnet test tests/ExtraerCadenasWindows.Tests`: **14 en verde**. `dotnet
+run --project tools/ExtraerCadenasWindows`: 517 sitios (sin cambio -- los
+`Dato` no cuentan ahí, van aparte), 6 sitios de dato nuevos (0 antes), 4
+cultura fija; 0 filas de `revision.csv` perdidas contra la corrida
+anterior; `claves-compartidas.csv` sigue byte a byte idéntico.
