@@ -9,8 +9,20 @@ namespace AuraStudio.Core.Library;
 /// vacía y un catálogo ilegible no son lo mismo</b>, y en pantalla se veían
 /// idénticos hasta que esto existió.
 /// </param>
+/// <param name="ItemsWithoutStorage">
+/// Cuántos elementos venían <b>sin</b> <c>storage</c> en el catálogo (ST-246).
+/// Se cuenta acá porque es el único lugar donde se ve el valor crudo: apenas
+/// pasa por <see cref="ItemStorageRules.Resolve"/> ya está inferido y no se
+/// puede distinguir de uno que sí lo traía. Es una de las dos señales
+/// <b>baratas</b> de "esta biblioteca es anterior y conviene migrarla", y sale
+/// del recorrido que la carga ya hacía: no cuesta ni una consulta al disco
+/// (ST-203).
+/// </param>
 public readonly record struct LibraryLoad(
-    IReadOnlyList<LibraryItem> Items, IReadOnlyList<Playlist> Playlists, string? Error);
+    IReadOnlyList<LibraryItem> Items,
+    IReadOnlyList<Playlist> Playlists,
+    string? Error,
+    int ItemsWithoutStorage = 0);
 
 /// <summary>
 /// La biblioteca en disco: traduce entre los <see cref="LibraryItem"/> vivos y
@@ -129,9 +141,18 @@ public sealed class LibraryStore(string root)
         CoversNormalized = catalog.CoversNormalized;
         var items = new List<LibraryItem>(catalog.Items.Count);
 
+        // ST-246: se cuenta acá porque es el único lugar donde se ve el valor
+        // crudo. Apenas pasa por `ItemStorageRules.Resolve` queda inferido y ya
+        // no se distingue de uno que sí lo traía.
+        int withoutStorage = 0;
+
         foreach (PersistedLibraryItem persisted in catalog.Items)
         {
             ct.ThrowIfCancellationRequested();
+
+            if (persisted.Storage is not { Length: > 0 } declared || declared.Trim().Length == 0)
+                withoutStorage++;
+
             var item = new LibraryItem
             {
                 Id = persisted.Id,
@@ -180,7 +201,7 @@ public sealed class LibraryStore(string root)
         // a parsear los 7 MB del catálogo por segunda vez, y era lo que costaba
         // el constructor de la pantalla de Listas.
         onProgress?.Invoke(items.Count, catalog.Items.Count);
-        return new LibraryLoad(items, ToLive(catalog.Playlists), load.Error);
+        return new LibraryLoad(items, ToLive(catalog.Playlists), load.Error, withoutStorage);
     }
 
     /// <summary>

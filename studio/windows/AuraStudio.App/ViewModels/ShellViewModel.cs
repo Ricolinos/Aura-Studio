@@ -37,11 +37,12 @@ public sealed partial class ShellViewModel : ViewModelBase
 
     public string LibraryLockedReason => AppStrings.LibraryLockedReason;
 
-    public ShellViewModel(IDeviceSessionService session, AppUpdateService updates)
+    public ShellViewModel(IDeviceSessionService session, AppUpdateService updates, LibraryViewModel library)
     {
         _session = session;
         _session.Changed += OnSessionChanged;
         Updates = updates;
+        Library = library;
 
         DeviceTitle = AppStrings.NoDevice;
         LibraryEnabled = true;
@@ -54,6 +55,13 @@ public sealed partial class ShellViewModel : ViewModelBase
     /// el mismo estado se ve además en Ajustes › Acerca de.
     /// </summary>
     public AppUpdateService Updates { get; }
+
+    /// <summary>
+    /// La biblioteca, para el aviso de migración de ST-246. Vive en el armazón
+    /// por lo mismo que el aviso de actualización: la franja es de la ventana
+    /// entera y el usuario tiene que verla aunque esté en otra pantalla.
+    /// </summary>
+    public LibraryViewModel Library { get; }
 
     private void OnSessionChanged(object? sender, DeviceSessionChangedEventArgs e) => Apply();
 

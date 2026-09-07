@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- ST-247 (B7a, ensayo en seco): extraccion EN SECO de las cadenas de
+       interfaz de Windows: nunca toca AppStrings.cs, ni el XAML, ni el C#
+       de la app, solo lee y produce borradores de revision en
+       docs/extraccion-cadenas/. Mismo criterio que tools/extraer-cadenas.py
+       (Mac): heuristico, para que una persona revise, no un resultado final
+       automatico. Fuera de la solucion, igual que los demas arneses: no es
+       una prueba y no necesita WinUI, es puro procesamiento de texto. -->
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>AuraStudio.Tools.ExtraerCadenasWindows</RootNamespace>
+  </PropertyGroup>
+
+</Project>

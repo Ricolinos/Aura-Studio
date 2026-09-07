@@ -13353,6 +13353,416 @@ ningún lado" como respuesta legítima.
 **pasó sin tocar una sola línea**, que era exactamente para lo que se
 escribió así.
 
+## ST-247 — Windows: ensayo en seco de B7a (extracción de cadenas)
+
+Encargo de la Maestra, plan §3: preparar la extracción de cadenas de
+Windows **sin tocar código de la app** — ni `AppStrings.cs`, ni el XAML, ni
+el C# de `AuraStudio.App`/`AuraStudio.Core`. Mismo criterio que
+`tools/extraer-cadenas.py` de la Mac (ST-227): heurístico, para que una
+persona revise, no un resultado final automático; el cambio real (extraer
+de verdad, migrar `AppStrings` a `.resw`) es de A7a/B7a cuando se cierre,
+no de este ensayo.
+
+### Herramienta: `tools/ExtraerCadenasWindows`
+
+C# y no PowerShell — mismo motivo que Mac eligió Python sobre Swift para
+su equivalente: mejor ergonomía para el trabajo real (acá, un pequeño
+escáner consciente de cadenas de C#, ver más abajo) y corre sin fricción
+con `dotnet run`. Fuera de la solución (`.slnx` intacto), como el resto de
+los arneses.
+
+Recorre las cuatro fuentes que catalogó la auditoría de B0
+(`docs/auditoria-idiomas.md` §1):
+
+1. **`AppStrings.cs`** (230 miembros hoy): un escaneo propio, no una
+   expresión regular suelta, porque un miembro puede traer más de un
+   literal de interfaz de verdad distinto —un ternario de dos mensajes
+   (`LibraryRootMissing`), un `switch` con un literal por caso
+   (`LibraryKind`, `LibraryStatus`), una concatenación con `+`— y una sola
+   clave por miembro perdería información real. `MemberBodyFinder` parte el
+   archivo en miembros con un escaneo carácter a carácter consciente de
+   cadenas (para no cortar un cuerpo a la mitad si un `;` o una `}`
+   aparecen DENTRO de una cadena interpolada, como en
+   `$"Convirtiendo… {status.Progress * 100:0}%"`); `AppStringsExtractor`
+   separa, en orden, los ternarios de plural (van aparte, nunca se
+   traducen como si fueran dos mensajes normales), los brazos de `switch`
+   (una clave por brazo, con el caso como sufijo legible) y lo que quede.
+2. **XAML** (148 sitios, 18 archivos — más que los 146/13 de la auditoría:
+   B3-B5 agregaron pantallas y secciones desde entonces): atributos
+   `Text=`/`Content=`/`Header=`/`PlaceholderText=`/`Title=`/`Description=`
+   con un literal entre comillas, nunca `{x:Bind ...}` ni
+   `{StaticResource ...}`.
+3. **`MenuEntry` de `ContextMenu.cs`** (63 sitios): sus `const string` de
+   apoyo, los argumentos literales de cada llamada (incluidos los
+   ternarios, p. ej. `scope.IsSingle ? "Eliminar álbum" : "Eliminar
+   álbumes"`), y una pasada de red sobre el archivo entero para lo que se
+   cuela por otro camino —`ForVideoCollection(scope, categories, "Eliminar
+   película", "Eliminar películas")" pasa el texto como PARÁMETRO de un
+   método propio, nunca dentro de un `new MenuEntry(...)` ni de un
+   `const`—, excluyendo lo que tiene toda la forma de un identificador
+   interno y ninguna de un texto en español (sin espacio, sin acento: los
+   `id` de menú y claves como `"AlbumCount"`/`"Enabled"`, que sí aparecen
+   sueltos en el archivo y no son texto de cara al usuario).
+4. **`StatusMessage`/`ContentDialog`** en todo `AuraStudio.App` (27 + 24
+   sitios): mismo criterio que la auditoría.
+
+Más un quinto hallazgo que la auditoría pidió marcar aparte y no contar
+como los demás: **cultura fija** (§4 de la auditoría). No busca la línea a
+ciegas por número —`FixedCultureExtractor` encuentra
+`CultureInfo.GetCultureInfo("...")` y cualquier `.ToString("...")` cuyo
+formato traiga un fragmento entre comillas simples (gramática incrustada,
+como `"d 'de' MMMM 'de' yyyy"`), descartando los patrones ISO-8601
+(`yyyy-MM-dd'T'...'Z'`) que son timestamps técnicos, no fechas que ve el
+usuario (la propia auditoría ya lo decía de los `ToString("O")`/
+`ToString("yyyy...")` del resto del código). Encontró **cuatro** sitios,
+dos más de los que documentó la auditoría: además de
+`MediaTableRow.cs:53` (`DisplayCulture`, ya conocido), hay una segunda
+`CultureInfo.GetCultureInfo("es-MX")` en `MediaTableRow.cs:47`
+(`NaturalOrder`, para ordenar "Pista 2" antes que "Pista 10") y una
+tercera en `Library/LibraryStatusSummary.cs:69` (formato de números) que
+la auditoría no había mirado.
+
+### Nombres de clave: el mismo esquema que Mac, con una adaptación explícita
+
+`<identificador-en-kebab-case>.<slug-del-texto>`, igual que
+`tools/extraer-cadenas.py` — mismo texto exacto, misma clave, en cualquier
+sitio que lo repita (`context-menu.abrir` aparece en tres `MenuEntry`
+distintos). La única diferencia, deliberada: **para `AppStrings.cs`, el
+slug sale del NOMBRE DEL MIEMBRO, no del texto en español**
+(`app-strings.library-remove-detail`, no una eslugificación de sus dos
+párrafos). Un miembro de `AppStrings` ya es un identificador legible y
+estable —es lo que la clase existe para ser—; eslugificar el texto en su
+lugar produciría claves larguísimas y frágiles ante el más mínimo cambio
+de redacción, exactamente lo que un catálogo de claves está para evitar.
+Para todo lo demás (XAML, `MenuEntry`, `StatusMessage`, `ContentDialog`)
+el identificador es el nombre de archivo, igual que Mac.
+
+Los especificadores de interpolación se convierten a **`{0}`, `{1}`...**
+(ítem 4 del encargo), no a `%@`/`%lld` como en el borrador de la Mac: son
+plataformas distintas con convenciones de formato distintas
+(`ResourceManager`/`string.Format` indexa por posición; Foundation usa
+especificadores de tipo). Ninguna decisión de la Mac se copia a ciegas
+donde la plataforma ya impone otra cosa.
+
+### Dos bugs reales, encontrados verificando la salida — no solo leyendo el código
+
+Mismo criterio de siempre: una herramienta de extracción tiene que
+probarse contra el código real y mirar lo que produce, no solo leerse a
+sí misma.
+
+1. **Un comentario citando texto de ejemplo se colaba como código real.**
+   `SimilarItemsDetector.cs` y `ContextMenu.cs` tienen comentarios que citan
+   texto entre comillas como prosa explicativa (p. ej. `/// ... "en
+   Canciones con todo seleccionado no aparece Buscar carátulas"`, ST-206).
+   Sin distinguir comentario de código, esas comillas se leían como una
+   cadena de C# de verdad, con el texto del comentario mezclado con el
+   código que seguía. `CommentStripper` borra `//`, `///` y `/* */` ANTES
+   de escanear —consciente de cadenas él mismo, para no arruinar una URL
+   real con `//` adentro (`InstallerDfuGuideUrl`)— reemplazando por
+   espacios, nunca borrando líneas, para que ningún número de línea se
+   mueva.
+2. **Una expresión regular con `[^"]*` suelto arrastró cientos de líneas.**
+   El primer intento de `FixedCultureExtractor` para `.ToString("...")` usó
+   `[^"]*'[^']+'[^"]*"` de punta a punta: cuando el patrón no cerraba cerca
+   (`DeviceConfig.cs`, `SyncMarker.cs` — timestamps técnicos sin ninguna
+   comilla simple cerca de su `.ToString(`), el motor de regex retrocedía
+   buscando CUALQUIER `'...'` más adelante en el archivo, arrastrando
+   código real de por medio hacia el grupo capturado. Se vio en la salida,
+   no se dedujo del código: filas del CSV de cientos de caracteres, con
+   sentencias completas adentro. Corregido usando el mismo escaneo
+   consciente de cadenas que todo lo demás (`StringLiteralScanner.TrySkip`
+   en la posición exacta del argumento) en vez de una sola expresión
+   regular de punta a punta — la lección de siempre: `[^"]*` sin nada que
+   lo acote es una invitación a que el motor de regex "encuentre" un cierre
+   lejísimos de donde en realidad no hay ninguno.
+
+### Los números
+
+| Fuente | Sitios |
+|---|---|
+| `AppStrings.cs` (230 miembros) | 289 |
+| XAML (18 archivos) | 148 |
+| `MenuEntry` (`ContextMenu.cs`) | 63 |
+| `StatusMessage` | 27 |
+| `ContentDialog` | 24 |
+| **Total, claves únicas** | **551** |
+| Ternarios de plural (aparte, nunca en las 551) | 48 |
+| Cultura fija (aparte; ver arriba) | 4 |
+
+Más que el "~480 mínimo" que estimó la auditoría de B0 — esperable: B3, B4
+y B5 agregaron pantallas y secciones enteras desde entonces (Eliminar con
+confirmación, huérfanos, "Cómo guardar tu música", acciones en lote de
+Artistas). El total real de superficie, incluidas las dos formas de cada
+plural: 551 + 96 = **647** cadenas de texto distintas.
+
+### Salidas, en `studio/windows/docs/extraccion-cadenas/` (comiteadas, a diferencia de Mac)
+
+La Mac gitignora sus tres salidas —son de paso, insumo para A7a—; acá se
+**comitean**: el encargo pide una prueba que valide el borrador contra
+archivos reales en el repo, y una prueba que dependiera de que alguien
+haya corrido la herramienta a mano antes de cada `dotnet test` sería una
+prueba frágil por diseño. Si el día de mañana B7a real cambia el criterio
+y hace falta regenerarlas, se corren de nuevo y se re-commitean —el
+mecanismo es reproducible, no manual.
+
+- `revision.csv`: clave, tipo, archivo, línea, texto original, texto con
+  `{0}`/`{1}`, si tiene interpolación, nota (la fila de "cultura fija" va
+  marcada ahí, como pidió el coordinador).
+- `plurales-ternario.csv`: los 48, aparte.
+- `Strings/es/Resources.resw`: borrador real, con el texto en español.
+- `Strings/en/Resources.resw`: mismas claves, valor vacío y un comentario
+  "pendiente de traducir" — **nunca una traducción a mano de lo que no sea
+  trivial** (instrucción explícita del encargo). Ninguno de los dos está
+  cableado a `AuraStudio.App`: `AppStrings.cs` sigue siendo la fuente de
+  verdad hasta que B7a real migre.
+
+### Verificación (`LocalizationDraftTests.cs`, `AuraStudio.Core.Tests`)
+
+Mismo criterio que `LocalizationDraftTests.swift` de la Mac — corren de
+verdad, hoy, contra los archivos ya generados (comiteados, no dependen de
+ninguna API nueva):
+
+- **Claves únicas** en el `.resw` (551, sin repetidas) y **ninguna clave
+  vacía**.
+- **Especificadores consistentes entre `es`/`en`** para toda clave con
+  contenido real en las dos —hoy "en" está vacío a propósito, así que pasa
+  trivial, pero es la misma prueba que va a fallar el día que B7b traduzca
+  algo y se le pierda un `{0}`—.
+- **Toda fila traducible del CSV tiene su clave en el `.resw`** (las de
+  tipo `CulturaFija` quedan afuera a propósito: no son texto que traducir,
+  son un defecto de código para reescribir).
+- **Los 48 plurales tienen sus dos formas distintas entre sí** —no exige
+  que ninguna de las dos sea no vacía (la Mac encontró un caso real,
+  `n == 1 ? "" : "s"`, que la obligó a corregir esa misma aserción; acá no
+  apareció ningún caso así, pero la prueba ya viene escrita para tolerarlo
+  si aparece).
+
+`dotnet build` de `AuraStudio.Core`, `AuraStudio.App` y
+`ExtraerCadenasWindows`: **0 errores, 0 advertencias**. `dotnet test`:
+**1 719 pruebas en verde** (5 nuevas, `LocalizationDraftTests`).
+
+Repro completo:
+
+```
+dotnet run --project studio/windows/tools/ExtraerCadenasWindows
+dotnet test studio/windows/tests/AuraStudio.Core.Tests/AuraStudio.Core.Tests.csproj --filter FullyQualifiedName~LocalizationDraftTests
+```
+
+### Lo que NO entra en este ensayo, y por qué
+
+- **Migrar `AppStrings.cs` a `.resw` de verdad.** Es la decisión de fondo
+  que la auditoría de B0 dejó abierta (§0: ¿`AppStrings` pasa a ser una
+  capa sobre `.resw`, o se reemplaza?) — de A7a/B7a real, con "experto en
+  código", no de un ensayo en seco.
+- **Traducir a inglés** (ni a ningún otro idioma). El `.resw` en inglés
+  queda vacío a propósito.
+- **Cablear nada a la app.** Ni un `using`, ni un `ResourceLoader`, ni un
+  cambio en `AppStrings.cs`, el XAML o el C# de `AuraStudio.App`/`Core`.
+- **El detector de literales fijos** (criterio de cierre real de B7a, "que
+  ningún `Text="` con acentos quede sin pasar por el mecanismo") — es la
+  prueba que sí tiene que fallar hoy (cientos de sitios sin migrar) y
+  pasar en 0 al cerrar B7a; no tiene sentido escribirla todavía.
+
+Lo que no se verificó acá: nada de esto tocó la biblioteca real del dueño
+ni ninguna pantalla en vivo — es análisis de texto sobre archivos fuente,
+sin ventana. Que el `.resw` tenga la forma que WinUI/MRT espera para un
+`x:Uid` real (con `/` como separador de alcance, no `.`) es una decisión
+que toca cuando B7a real decida el mecanismo de carga — hoy es un borrador
+de revisión, no un recurso cargable.
+
+## ST-246 — Windows: migrar una biblioteca de una versión anterior, y solo cuando el dueño lo pide
+
+B6 de la ronda "ajustes 3". Las cinco entregas anteriores cambiaron cómo
+Studio guarda las cosas —`storage` (ST-241), etiquetas escritas (ST-242),
+modo copia (ST-243), preparado por identificador (ST-244)—, y una
+biblioteca armada antes de todo eso queda a medio camino: sin `storage`,
+con las copias sin las etiquetas del catálogo, con preparados nombrados
+por el archivo de origen.
+
+### Lo primero: abrirla no escribe nada
+
+**Abrir una biblioteca anterior no toca un solo archivo del usuario.** Lo
+único que pasa al cargar es que `storage` se infiere en memoria (ST-241)
+y se persiste con el próximo guardado del catálogo. La música, las fotos,
+los videos y las carátulas quedan exactamente como estaban.
+
+Hay una prueba que lo fija y es la más importante del archivo: se calcula
+el resumen de **todos** los archivos de la biblioteca —ruta, tamaño y
+contenido— antes y después de abrirla, y tiene que dar idéntico. El
+catálogo se deja fuera del cálculo a propósito, porque persistir la
+inferencia sí es parte del contrato.
+
+Migrar sin avisar sería tocar los archivos de alguien porque sí. Son
+suyos.
+
+### Cómo se sabe que hay algo que migrar, sin pagarlo en el arranque
+
+Dos señales, las dos **del catálogo** y sin una sola consulta al disco:
+ST-203 sacó del arranque las preguntas archivo por archivo y una
+comprobación de migración no las va a volver a meter.
+
+- **Elementos sin `storage`.** Se cuentan en `LibraryStore.Load`, que es
+  el único lugar donde se ve el valor crudo: apenas pasa por
+  `ItemStorageRules.Resolve` ya está inferido y no se distingue de uno
+  que sí lo traía. Sale del recorrido que la carga ya hacía.
+- **Preparados con el nombre viejo.** Comparación de texto contra
+  `<ID>.<ext>`. La música copiada no cuenta: su preparado es el archivo
+  mismo (ST-241) y no tiene por qué llamarse como un identificador —
+  contarla sería avisar de una migración que no hace falta, para siempre.
+
+**Lo que no se puede detectar barato se confirma adentro de la
+migración.** Que una copia de `Música/` tenga o no las etiquetas del
+catálogo solo se sabe abriendo el archivo. La consecuencia, dicha para
+que no sorprenda: una biblioteca cuyo **único** problema sea ese no
+dispara el aviso sola. Por eso la acción está **también en Ajustes**,
+siempre disponible — y por eso esa sección explica para qué sirve incluso
+cuando no hay nada detectado.
+
+### Sin marca de "ya migrada" en el catálogo compartido
+
+Las dos señales **se apagan solas** al arreglarlas: `storage` queda
+escrito, y los preparados quedan con nombre de identificador. Así que una
+biblioteca ya migrada no vuelve a avisar sin necesidad de agregarle un
+campo al catálogo que comparten las dos apps. **No se agregó ninguno**, y
+es a propósito: un campo nuevo es contrato, y no hacía falta.
+
+### Qué hace la migración
+
+Por elemento y en este orden:
+
+1. A las copias de `Música/` les escribe las etiquetas del catálogo. El
+   escritor no hace nada si ya coinciden (ST-242), así que esto es gratis
+   en una biblioteca al día.
+2. A los preparados con nombre viejo los **renombra** al identificador,
+   **con su póster hermano**. Renombrar y no recopiar: son gigabytes, y el
+   archivo ya está bien. Si el póster se quedara con el nombre viejo, el
+   video perdería su carátula sin que nadie lo note.
+3. A la música referenciada le asegura su preparado con la regla de
+   ST-244 — **solo si hace falta uno**.
+4. Y al final borra lo que quedó huérfano, con el detector de ST-245. Al
+   final y no antes: hacerlo primero borraría justo el archivo que el paso
+   2 iba a renombrar. Y **con el detector de B5, no con uno propio**: dos
+   formas de decidir qué es huérfano es cómo se termina borrando algo que
+   sí hacía falta.
+
+**Nunca borra un elemento del catálogo.** Un original que no está se salta
+y sigue como no disponible (ST-241).
+
+### Se puede correr dos veces, y se puede parar
+
+**Idempotente**: cada paso pregunta antes de escribir, así que la segunda
+corrida no toca nada. Se comprueba con el resumen *y* con el árbol de la
+biblioteca byte a byte, porque una reescritura que dejara el mismo
+contenido igual cambiaría la fecha — y con eso la sincronización volvería
+a copiar la biblioteca entera al iPod.
+
+**Cancelable y reanudable**: lo hecho queda hecho, que es trabajo válido y
+no algo que deshacer, y lo que falta se hace en la siguiente. Una corrida
+cancelada **no borra ningún huérfano**: la lista de lo referenciado está a
+medias, y borrar con esa lista se llevaría archivos que sí hacen falta.
+
+Detalle que salió de escribir la prueba: cancelar durante el **último**
+elemento no lo veía la comprobación del bucle —ya no daba otra vuelta— y
+el resumen decía "terminé" cuando el usuario había pedido parar. Se
+comprueba también al salir.
+
+### Cómo se le pide al usuario
+
+Una franja en el armazón, como el aviso de versión nueva (ST-211): no
+interrumpe, y el botón es suyo. **No se puede cerrar**, porque no es una
+novedad que se descarta — es trabajo pendiente sobre sus archivos, y
+desaparece cuando de verdad se hizo.
+
+El texto **cuenta lo que se encontró**, no un "hay cosas que arreglar":
+una app que pide permiso para tocar los archivos de alguien tiene que
+decir cuántos y por qué. Y el resumen final dice qué se hizo y qué falló,
+por separado.
+
+### Verificación
+
+`dotnet build` de `AuraStudio.Core`, `AuraStudio.App` y el arnés: **0
+errores**. `dotnet test`: **1 726 pruebas en verde** (12 nuevas).
+
+Las 12: que abrir no escriba nada (la del resumen del árbol); que la
+inferencia ocurra en memoria y se cuente al cargar; las tres señales de
+aviso y la que no cuenta (música copiada); que se escriban las etiquetas,
+que se renombre el preparado con su póster, y que se borren los
+huérfanos; que correrla dos veces no toque nada la segunda; que cancelar
+a mitad no rompa, no borre huérfanos y se reanude; y que un archivo que no
+está no rompa ni cuente como error.
+
+Y en el arnés `tools/CopyModeCheck`, con una biblioteca vieja sintetizada
+—sin `storage`, con la copia sin etiquetas, con un preparado por nombre
+base y un huérfano—:
+
+| | antes | después |
+|---|---|---|
+| sin `storage` / preparados viejos | 2 / 1 → **avisa** | — → **no avisa** |
+| título en el archivo | `Pista 01` | `Ingrata` |
+| preparado del video | `peli.mpg` | `6CE9EE0D-….mpg` (+ póster) |
+| huérfanos en `.preparados/` | 3 archivos | 1 borrado |
+
+Abrir no escribió nada, y la segunda corrida tocó **0 archivos** con el
+árbol idéntico.
+
+Lo que **no** se verificó: nada contra la biblioteca real del dueño, ni en
+copia — la biblioteca vieja del arnés se sintetiza desde cero. Y la franja
+y el botón de Ajustes los tiene que mirar alguien con la app delante.
+
+## ST-246 (addendum) — Dos comprobaciones recibidas de ST-223 (A3 de la Mac)
+
+### 1. Las etiquetas van al archivo final, nunca al temporal
+
+La Mac encontró que su escritor despacha por extensión y `.aura-tmp` no es
+ninguna: etiquetar el temporal en vez del archivo final se habría saltado
+las etiquetas **en silencio**.
+
+En Windows el orden ya era el correcto —`LibraryFileCopier` devuelve la
+ruta **final**, después del renombrado, y es sobre esa que escribe
+`LocalTagWriter`— y el escritor además le pasa a TagLib# el formato
+explícito derivado de la ruta final (ST-242). Lo que faltaba era **fijarlo
+con una prueba**, porque un orden correcto que nadie comprueba es un orden
+correcto hasta el próximo refactor.
+
+Y se agregó la red: **escribirle a un temporal se reporta como defecto**,
+no como "ese formato no se etiqueta". Confundir las dos cosas es
+exactamente el silencio que hay que evitar — un `Skipped` de aspecto
+inofensivo tapando un error de programación. Ahora el motivo dice que es
+un temporal y que las etiquetas van después del renombrado.
+
+De paso, el sufijo del temporal salía de tres literales sueltos; ahora los
+tres usan `LibraryFileCopier.TemporarySuffix`.
+
+### 2. Una cabecera rota se rechaza y no deja residuos
+
+`AiffToWav` ya validaba canales, bits, frecuencia y truncamiento; lo que
+faltaban eran las pruebas de esos rechazos, que ahora cubren **ocho
+cabeceras imposibles** (0 canales, 99 canales, frecuencia 0, 999,
+999 999, 0 bits, 12 bits, 64 bits), un `SSND` que declara mil muestras y
+trae dos, y que un AIFF roto **no escriba un solo byte** en la salida.
+
+Sin esas comprobaciones, una frecuencia de 0 o 0 canales produciría más
+adelante una división por cero o una reserva absurda de memoria: el
+proceso se cae y el usuario no sabe cuál de sus archivos lo tumbó.
+
+En el arnés, un WAV con la cabecera destrozada —firma RIFF/WAVE intacta,
+frecuencia, canales y alineación en cero— pasa por `MediaTranscoder`:
+
+```
+  Rechazada con motivo: Windows no pudo leer «rota.wav» para convertirlo…
+  Restos en Temp\Aura:        ninguno
+  .aura-tmp junto al destino: False
+  destino a medias:           False
+```
+
+Y se mejoró ese mensaje: el motivo que da Windows suele ser `Unknown`, que
+no le dice nada a nadie. Ahora se nombra el archivo y se acompaña con lo
+que de verdad pasa casi siempre —dañado, o no es del formato que dice su
+extensión—, dicho como lo probable y no como algo comprobado.
+
+**Verificación**: `dotnet test`, **1 738 pruebas en verde** (12 más que
+las de B6).
+
 ## ST-224 — Modo referencia: el derivado se arma solo cuando hace falta
 
 Fase A4 de `PLAN-studio-ajustes-3.md`. Cierra la otra mitad de la

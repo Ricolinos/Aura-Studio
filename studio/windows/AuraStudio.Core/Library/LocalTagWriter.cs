@@ -106,6 +106,23 @@ public static class LocalTagWriter
         byte[]? coverBytes = null)
     {
         if (metadata is null) return TagWriteResult.Skipped("el elemento no tiene metadata");
+
+        // ST-246 (recibido de ST-223): escribirle a un temporal se registra como
+        // DEFECTO, no como "ese formato no se etiqueta".
+        //
+        // La Mac encontró que su escritor despacha por extensión y `.aura-tmp`
+        // no es ninguna: etiquetar el temporal en vez del archivo final se
+        // habría saltado las etiquetas EN SILENCIO. Acá el orden es el correcto
+        // —se escribe después del renombrado— y hay prueba que lo fija; esto es
+        // la red por si alguien lo invierte más adelante. Confundirlo con un
+        // formato no soportado es exactamente el silencio que hay que evitar.
+        if (path is { Length: > 0 } && path.EndsWith(LibraryFileCopier.TemporarySuffix, StringComparison.OrdinalIgnoreCase))
+        {
+            return TagWriteResult.Skipped(
+                "no se etiqueta un archivo temporal: las etiquetas van al archivo final, "
+                + "después del renombrado");
+        }
+
         if (!CanWrite(path)) return TagWriteResult.Skipped($"{Path.GetExtension(path)} no se etiqueta");
         if (!File.Exists(path)) return TagWriteResult.Skipped("el archivo no está");
 
@@ -210,7 +227,7 @@ public static class LocalTagWriter
         // Escritura atómica: se trabaja sobre una copia y se reemplaza al final.
         // TagLib# guarda EN EL ARCHIVO, así que sin esto un corte de luz a mitad
         // de guardar deja la canción del usuario rota.
-        string temporary = path + ".aura-tmp";
+        string temporary = path + LibraryFileCopier.TemporarySuffix;
 
         // TagLib# resuelve el formato por la EXTENSIÓN, así que sobre un
         // archivo llamado `.aura-tmp` no sabe qué está abriendo y se niega. Se

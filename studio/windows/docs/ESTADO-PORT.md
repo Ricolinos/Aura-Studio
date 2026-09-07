@@ -6,6 +6,45 @@
 > nada — todo compila desde la sesión del 2026-08-31 en la VM — por eso se
 > renombró en la Fase 0. Entradas nuevas van **arriba** de las viejas.
 
+## Ronda "ajustes 3", B7a (ensayo en seco) — Extracción de cadenas (2026-09-07)
+
+Decisión ST-247 (tabla completa en `DECISIONS.md`). Nuevo
+`tools/ExtraerCadenasWindows`: recorre `AppStrings.cs` (230 miembros → 289
+sitios, con ternarios y brazos de `switch` separados), XAML (148 sitios,
+18 archivos), `MenuEntry` de `ContextMenu.cs` (63) y
+`StatusMessage`/`ContentDialog` (27+24) — **551 claves únicas** en total,
+más 48 ternarios de plural y 4 sitios de cultura fija (dos nuevos que la
+auditoría de B0 no había encontrado: `MediaTableRow.cs:47` y
+`LibraryStatusSummary.cs:69`, los dos `CultureInfo.GetCultureInfo("es-MX")`).
+Mismo criterio de nombres de clave que el borrador de la Mac
+(`tools/extraer-cadenas.py`), con una adaptación explícita: para
+`AppStrings.cs` la clave sale del nombre del miembro, no de eslugificar el
+texto en español.
+
+Salidas comiteadas bajo `docs/extraccion-cadenas/` de Windows (a
+diferencia de la Mac, que las gitignora): `revision.csv`,
+`plurales-ternario.csv`, `Strings/es|en/Resources.resw`. Nada cableado a
+la app — `AppStrings.cs` sigue siendo la fuente de verdad hasta que B7a
+real decida el mecanismo. Verificado con `LocalizationDraftTests.cs`
+(claves únicas, especificadores `{0}`/`{1}` consistentes, toda fila
+traducible del CSV en el `.resw`, los 48 plurales con formas distintas).
+
+Dos bugs reales de la propia herramienta, encontrados mirando la salida:
+un comentario citando texto de ejemplo entre comillas se colaba como
+código real (corregido con `CommentStripper`, consciente de cadenas para
+no arruinar una URL con `//`), y una expresión regular con `[^"]*` suelto
+en la detección de formatos de fecha arrastraba cientos de líneas de
+código real cuando el patrón no cerraba cerca (corregido usando el mismo
+escaneo consciente de cadenas que todo lo demás).
+
+`dotnet test` Core.Tests: **1719/1719** (5 nuevas). Comando de
+reproducción y números completos: ver ST-247 en `DECISIONS.md`.
+
+```
+dotnet run --project studio/windows/tools/ExtraerCadenasWindows
+dotnet test studio/windows/tests/AuraStudio.Core.Tests/AuraStudio.Core.Tests.csproj --filter FullyQualifiedName~LocalizationDraftTests
+```
+
 ## Ronda "ajustes 3", B5 — Eliminar de verdad, huérfanos, "Cómo guardar tu música" (2026-09-07)
 
 Decisión ST-245 (tabla completa en `DECISIONS.md`). `LibraryViewModel.Remove()`
