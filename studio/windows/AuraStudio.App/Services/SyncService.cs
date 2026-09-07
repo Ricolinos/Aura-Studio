@@ -124,7 +124,18 @@ public sealed class SyncService : ISyncService
             DestinationByItemId = destinations,
             Playlists = options.SyncPlaylists ? new LibraryStore(scan.LibraryRoot).LoadPlaylists() : [],
             LibraryRoot = scan.LibraryRoot,
-            CoverArtPolicy = CoverArtPolicy.AlbumOnly,
+            // ST-242: sale de la preferencia del usuario, no forzada. El
+            // interruptor existía en Ajustes desde ST-030 y esta línea lo
+            // ignoraba: quien elegía "una carátula por canción" recibía igual
+            // una por álbum, sin que nada lo dijera.
+            //
+            // Con `perTrack` el finalizador NO escribe `cover.jpg` por carpeta:
+            // la carátula viaja incrustada en cada archivo, que es lo que
+            // escribe LocalTagWriter cuando el importador y el preparado lo
+            // llamen (B3/B4). Hasta entonces, elegir `perTrack` deja los álbumes
+            // sin carátula en el iPod — por eso `albumOnly` sigue siendo lo
+            // predeterminado.
+            CoverArtPolicy = _preferences.CoverArtPolicy,
             Downscale = options.SyncArtistImages ? Downscale : null,
             SquareCrop = SquareCrop,
             PlaylistArt = ComposePlaylistArt,

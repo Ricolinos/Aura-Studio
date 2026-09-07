@@ -270,4 +270,101 @@ public class FfmpegLocatorTests
     {
         Assert.Contains("winget install", FfmpegLocator.NotFoundMessage);
     }
+
+    // MARK: - El paquete desempaquetado de winget (addendum de ST-243)
+
+    /// <summary>
+    /// Un árbol simulado como el que deja winget: una carpeta por paquete, y
+    /// adentro una por versión con el nombre que trae el zip.
+    /// </summary>
+    private static readonly Dictionary<string, string[]> WinGetTree = new(StringComparer.OrdinalIgnoreCase)
+    {
+        [@"C:\Users\r\AppData\Local\Microsoft\WinGet\Packages"] =
+        [
+            @"C:\Users\r\AppData\Local\Microsoft\WinGet\Packages\Microsoft.PowerToys_Microsoft.Winget.Source_8wekyb3d8bbwe",
+            @"C:\Users\r\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe"
+        ],
+        [@"C:\Users\r\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe"] =
+        [
+            @"C:\Users\r\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-7.1-full_build",
+            @"C:\Users\r\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-10.0-full_build"
+        ]
+    };
+
+    private static IEnumerable<string> Directories(string path) =>
+        WinGetTree.TryGetValue(path, out string[]? children) ? children : [];
+
+    /// <summary>
+    /// Instalado con winget pero <b>sin el atajo</b> en <c>WinGet\Links</c>:
+    /// pasa cuando el paquete no declara alias o la instalación fue de máquina.
+    /// Antes de esto, Studio decía que no había ffmpeg y mandaba al usuario a
+    /// instalar de nuevo algo que ya tenía.
+    /// </summary>
+    [Fact]
+    public void ElDeWingetSeEncuentraAunqueNoHayaAtajoEnLinks()
+    {
+        const string esperado =
+            @"C:\Users\r\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-10.0-full_build\bin\ffmpeg.exe";
+
+        Assert.Equal(esperado, FfmpegLocator.Locate(
+            null,
+            path => path == esperado,
+            Env,
+            Directories));
+    }
+
+    /// <summary>
+    /// Con dos versiones instaladas gana la más nueva, y "más nueva" se decide
+    /// comparando los números como números: alfabéticamente, `ffmpeg-10` iría
+    /// antes que `ffmpeg-7` y Studio elegiría la vieja.
+    /// </summary>
+    [Fact]
+    public void ConDosVersionesGanaLaMasNuevaDeVerdad()
+    {
+        // Las dos están en disco: la que se devuelva es la que se prefiere.
+        string? encontrado = FfmpegLocator.Locate(
+            null,
+            path => path.EndsWith(@"full_build\bin\ffmpeg.exe", StringComparison.Ordinal),
+            Env,
+            Directories);
+
+        Assert.Contains("ffmpeg-10.0", encontrado);
+    }
+
+    /// <summary>
+    /// El atajo de <c>Links</c> sigue ganando: es más barato de comprobar y es
+    /// lo que winget mantiene apuntando a la versión vigente.
+    /// </summary>
+    [Fact]
+    public void ElAtajoDeLinksSigueGanandoleAlPaquete()
+    {
+        Assert.Equal(@"C:\Users\r\AppData\Local\Microsoft\WinGet\Links\ffmpeg.exe",
+            FfmpegLocator.Locate(null, path => path.Contains("WinGet", StringComparison.Ordinal),
+                Env, Directories));
+    }
+
+    /// <summary>
+    /// Solo se mira dentro de los paquetes que hablan de ffmpeg. Y aunque se
+    /// mirara de más, no pasa nada: solo se devuelve lo que existe.
+    /// </summary>
+    [Fact]
+    public void NoSeProponeNadaDeUnPaqueteAjeno()
+    {
+        Assert.DoesNotContain(
+            FfmpegLocator.WinGetPackagePaths(Env, Directories),
+            candidate => candidate.Contains("PowerToys", StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Sin winget instalado, la carpeta no existe: no es un error que tenga que
+    /// ver nadie, y la búsqueda sigue con el PATH.
+    /// </summary>
+    [Fact]
+    public void SinCarpetaDePaquetesNoPasaNada()
+    {
+        Assert.Empty(FfmpegLocator.WinGetPackagePaths(Env, _ => []));
+
+        Assert.Equal(@"C:\otra carpeta\ffmpeg.exe",
+            FfmpegLocator.Locate(null, path => path == @"C:\otra carpeta\ffmpeg.exe", Env, _ => []));
+    }
 }

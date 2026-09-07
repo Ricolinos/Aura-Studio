@@ -120,6 +120,21 @@ public sealed class PersistedLibraryItem
     /// tampoco hay hash.</para>
     /// </summary>
     public string? CoverHash { get; set; }
+
+    /// <summary>
+    /// Cómo guarda la biblioteca este archivo: <c>"copy"</c> (la copia dentro de
+    /// la biblioteca ES el archivo, y sus etiquetas se escriben) o
+    /// <c>"reference"</c> (el original no se toca nunca). Contrato de la ronda
+    /// "ajustes 3", fijado por la sesión maestra con la Mac (ST-221) e
+    /// implementado en ST-241.
+    ///
+    /// <para><b>Acá se conserva y todavía no se usa</b> (ST-242): un catálogo
+    /// que pasa por esta versión no puede perder el campo que escribió la otra
+    /// app, igual que se hizo con <see cref="CoverHash"/>. Ausente = se infiere
+    /// una vez al cargar y se persiste; un valor desconocido se lee como
+    /// <c>"reference"</c>, que es el modo que no toca archivos.</para>
+    /// </summary>
+    public string? Storage { get; set; }
 }
 
 public sealed class PersistedTrackMetadata

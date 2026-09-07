@@ -10924,6 +10924,95 @@ PRUEBA de `3e55186` que el dueño usó para verificar antes del release
 anteriores siguen sin copia local (ST-173): la copia canónica vive en los
 Releases de GitHub.
 
+## ST-220 — PLAN-studio-ajustes-3.md, Fase A0: arnés y línea base "antes"
+
+Primera PARADA de la ronda "ajustes 3" (sesión "mecanico sonnet",
+worktree propio, sin tocar `Sources/`). Objetivo: un arnés que mida el
+diagnóstico del plan (§1) con bytes reales en vez de solo la lectura
+del código, para que A1-A6 (contrato `storage`, escritores nativos
+FLAC/M4A, modo copia real) tengan un "antes" contra qué comparar.
+Medido contra `bd57116`.
+
+### El fixture (`MediaStorageFixtures.swift`)
+
+Bytes sintéticos, pequeños, **reales por formato** -- no basura con la
+extensión correcta:
+
+- **MP3**: veinte frames MPEG-1 Layer III válidos (128 kbps/44100 Hz,
+  el mismo patrón de `LibraryFileWorkerEquivalenceTests`) + una tag
+  ID3v2.3 real vía `ID3Writer.writing(_:into:)` (producción, no una
+  reinvención para la prueba).
+- **FLAC**: `fLaC` + bloque STREAMINFO (obligatorio, armado a mano bit
+  a bit) + bloque VORBIS_COMMENT con los campos editables -- sin frames
+  de audio (`totalSamples = 0`). Confirmado con un spike aparte:
+  `AVURLAsset.load(.metadata)` los lee igual (`keySpace == "vorb"`), y
+  con una prueba propia (`testFixturesCarryReadableTagsViaAVFoundation`)
+  que lo verifica cada vez que corre el arnés, no solo una vez.
+- **M4A**: `AVAssetWriter` real, una pista AAC de 0,1 s de silencio,
+  con `AVMutableMetadataItem` (`.commonKeyTitle`/`Artist`/`AlbumName`)
+  -- produce átomos iTunes reales (`keySpace == "itsk"` al releer),
+  igual que un M4A real. AVFoundation no tiene forma de escribir esto a
+  mano, así que se escribe a un archivo temporal propio y se relee como
+  `Data`.
+- **WAV**: RIFF/WAVE PCM mínimo, sin chunk de etiquetas (D-037: WAV
+  nunca las recibe en producción, no tenía sentido fingir que sí).
+- **Video/fotos**: un MOV corto (`AVAssetWriter`, un cuadro H.264 de
+  32×32) y JPEGs mínimos (mismo generador que
+  `AlbumsGridPerformanceBaselineTests`) -- completan la biblioteca de
+  prueba, aunque las dos mediciones de abajo son sobre música (el
+  contrato de video/foto no cambia esta ronda, §0.1).
+
+### Medición 1: "editar N campos → qué archivo cambia, cuántos bytes"
+
+Camino real de producción: `LibraryFileWorker.PrepareMusicRequest` +
+`prepareMusic` (el mismo actor que ya prueba
+`LibraryFileWorkerEquivalenceTests`), editando título/artista/álbum/
+año/género, `audioQuality: .originalLossless` (sin transcodificar).
+`testEditingFieldsAcrossFormatsAndModes_printsBeforeTable` corre las
+ocho combinaciones (4 formatos × copia/referencia) y las imprime:
+
+| Formato | Modo | ¿Original cambió? | Bytes escritos en `.preparados/` | `.preparados/` ¿idéntico byte a byte al original? |
+|---|---|---|---|---|
+| MP3  | copia      | No | 8 573  | **No** -- ID3Writer reescribe la tag |
+| MP3  | referencia | No | 8 573  | **No** -- ID3Writer reescribe la tag |
+| FLAC | copia      | No | 214    | **Sí** -- copia idéntica, los 5 campos editados no llegan |
+| FLAC | referencia | No | 214    | **Sí** -- copia idéntica, los 5 campos editados no llegan |
+| M4A  | copia      | No | 1 043  | **Sí** -- copia idéntica, los 5 campos editados no llegan |
+| M4A  | referencia | No | 1 043  | **Sí** -- copia idéntica, los 5 campos editados no llegan |
+| WAV  | copia      | No | 17 684 | **Sí** -- copia idéntica, los 5 campos editados no llegan |
+| WAV  | referencia | No | 17 684 | **Sí** -- copia idéntica, los 5 campos editados no llegan |
+
+Confirma el diagnóstico del plan (§1) con números reales: **el
+original nunca se toca, en ningún modo** (ni copia ni referencia --
+eso es exactamente lo que A3/A4 van a cambiar para el modo copia);
+`.preparados/` se reescribe entero en cada edición, para los cuatro
+formatos por igual (nunca un parche incremental); y de esos cuatro,
+**solo MP3 refleja los campos editados** -- FLAC/M4A/WAV reciben una
+copia byte a byte del original, así que cualquier edición de tags para
+esos tres formatos **nunca llega al archivo que de verdad viaja al
+iPod**, hoy. Eso es lo que A2 (escritores nativos FLAC/M4A) tiene que
+cerrar.
+
+### Medición 2: "sincronizar → qué archivo viaja"
+
+`testSyncCopiesThePreparedFileNeverTheOriginal`: `LibrarySync.sync`
+real (no una simulación) contra un directorio de scratch que hace de
+"iPod", con los cuatro formatos preparados de la medición 1. Confirma
+por hash (SHA-256) que lo que aterriza en el volumen es
+**`item.preparedURL`, nunca `item.sourceURL`**, para los cuatro por
+igual -- la capa de sync es agnóstica al formato; toda la diferencia
+entre formatos que importa vive en qué escribió `prepareMusic` (medición
+1), no en `LibrarySync` en sí.
+
+### Archivos
+
+`Tests/AuraStudioTests/MediaStorageFixtures.swift` (generadores) y
+`Tests/AuraStudioTests/MediaStorageBaselineTests.swift` (las tres
+pruebas: fixture legible, tabla "antes", sync). `xcodegen generate` +
+`.pbxproj` commiteado en el mismo commit (lección de ST-189: un archivo
+nuevo en `Tests/` sin regenerar el proyecto se omite en silencio del
+target).
+
 ## ST-221 — El contrato de almacenamiento: `storage`, `.preparados/<ID>`, y un elemento ausente deja de borrarse solo
 
 Primera PARADA de la ronda "ajustes 3" (A1 de
@@ -11245,3 +11334,756 @@ compuesta al lado de una descompuesta en exFAT o en un recurso de red.
 Windows debe conservar su `MediaRoots.Directory` por la misma razón, y
 ahora con un motivo más firme: **las carpetas que crea la Mac van a
 estar en NFD siempre**, no ocasionalmente.
+
+
+## ST-222 (encargo de la maestra): lectores propios para la ida y vuelta de A2
+
+Encargo de "Sesión Maestra" mientras "experto en código opus" hace
+A1/A2: dejar preparado el lado de LECTURA de la verificación de ida y
+vuelta de los escritores nativos FLAC/M4A, con la firma real de
+escritura pendiente de que Opus la anuncie.
+
+`Tests/AuraStudioTests/FormatTagReaders.swift`: dos lectores puros, sin
+AVFoundation, que leen los bytes crudos --
+
+- `FLACTagReader.readVorbisComments(from:)`: camina los bloques de
+  metadata de un FLAC hasta VORBIS_COMMENT (tipo 4), devuelve las
+  claves en mayúsculas.
+- `MP4TagReader.readIlstAtoms(from:)`: camina `moov/udta/meta/ilst` de
+  un M4A/MP4 y lee los átomos comunes (`©nam`/`©ART`/`©alb`/`aART`/
+  `©day`/`©wrt`/`©gen`). Dos gotchas reales que salieron al escribirlo
+  contra un M4A de verdad (el que ya produce `MediaFixture.m4aData` con
+  `AVAssetWriter`), no uno inventado a mano:
+  1. **Tamaño de caja de 64 bits**: el propio `mdat` que escribe
+     `AVAssetWriter` usa `size32 == 1` (tamaño real en los 8 bytes
+     siguientes) -- sin manejar este caso, el parser se pierde el
+     archivo completo después de `mdat`, `moov` incluido.
+  2. **El tipo del átomo no es ASCII**: `©nam`/`©ART`/etc. empiezan con
+     el byte `0xA9`, que `String(data:encoding:.ascii)` rechaza --
+     devuelve `nil` para los 4 bytes enteros, no solo para ese uno, y
+     el error se ve como "no encontré el átomo" en vez de "no pude
+     decodificar el tipo". Se resuelve con `.isoLatin1` en vez de
+     `.ascii` (ASCII es subconjunto de Latin-1, así que las cajas
+     contenedoras normales -- `moov`, `trak`, etc. -- se siguen
+     leyendo igual).
+
+`Tests/AuraStudioTests/FLACAndM4ATagRoundTripTests.swift`: dos pruebas
+en verde que confirman los lectores contra el fixture de A0
+(`MediaFixture.flacData`/`m4aData`) -- ya validados, no solo escritos.
+Dos pruebas más con `throw XCTSkip(...)`, documentando en el mensaje la
+forma exacta de la prueba de ida y vuelta que hace falta cuando Opus
+anuncie la firma real: escribir con su escritor sobre el fixture,
+releer con estos lectores Y con `AVURLAsset.load(.metadata)` (el camino
+real de `LocalTagReader`), confirmar que ambas lecturas coinciden con
+los campos editados y que el audio no cambió. Sustituir la generación
+del fixture por la llamada real al escritor es el único cambio que
+hace falta -- las aserciones no cambian.
+
+## ST-227 (encargo de la maestra): extracción en seco de cadenas para A7a
+
+Encargo de "Sesión Maestra" tras la auditoría de idiomas (ST-227,
+`docs/auditoria-idiomas.md`): una herramienta que recorra
+`Sources/AuraStudio/` y proponga la extracción, sin tocar nada --
+insumo para que "experto en código opus" aplique el cambio real en
+A7a, no una migración automática.
+
+`tools/extraer-cadenas.py` (Python: mejor ergonomía para regex/JSON que
+Swift para esto en concreto, y corre sin paso de compilación --
+`python3 tools/extraer-cadenas.py`). Reconoce trece formas de literal
+de interfaz (`Text`, `Button`, `Label`, `.help`, `.navigationTitle`,
+`Menu`, `CommandMenu`, `.alert`, `Alert(title: Text(...))`, `Toggle`,
+`Picker`, `Section`, `String(format:)`), propone una clave
+`<archivo-en-kebab-case>.<slug-del-texto>`, junta bajo una sola clave
+el mismo texto repetido en varios sitios, y convierte interpolaciones
+`\(expr)` a `%@`/`%lld` (heurística: `%lld` si `expr` huele a conteo,
+`%@` si no -- para revisar a mano, no un resultado final).
+
+Corrida contra `Sources/AuraStudio/` (150 archivos):
+
+- **513 sitios** de literal encontrados (más que los 484 de la
+  auditoría -- el resto sale de agregar `Toggle`/`Picker`/`Section`/
+  `Alert`/`String(format:)`, que la auditoría no había contado).
+- **401 claves únicas** propuestas.
+- **48 textos duplicados** (el mismo texto exacto en 2+ sitios, una
+  sola clave -- p. ej. "Abrir" aparece en `AlbumsView`/`MoviesView`/
+  `PhotoAlbumsView`/`SeriesView`, cuatro sitios, una clave).
+- **23 ternarios de plural** encontrados y listados aparte (nunca
+  "resueltos" por la herramienta -- necesitan un mecanismo real de
+  reglas de plural en A7, no una clave más; ver `docs/auditoria-
+  idiomas.md` §3).
+
+Tres salidas en `docs/extraccion-cadenas/` (gitignoradas del
+`.xcstrings` real que exista después -- estos son borradores de
+revisión, no el artefacto final):
+
+- `revision.csv`: una fila por SITIO real (archivo:línea), con la
+  clave propuesta, el tipo de literal, el texto original, el texto con
+  `%@`/`%lld`, si tiene interpolación, y cuántos sitios comparten esa
+  clave.
+- `plurales-ternario.csv`: los 23 ternarios, aparte.
+- `borrador.Localizable.xcstrings`: un String Catalog real (mismo
+  esquema que usa Xcode), español como fuente ya traducido, inglés
+  vacío (`"state": "new"`) -- el punto de partida para A7a/A7b.
+
+No se tocó `Sources/` en ningún momento -- la herramienta es de solo
+lectura sobre el código, solo escribe en `tools/` y `docs/`.
+
+## ST-223/ST-224 (encargo de la maestra): forma "después" de A3/A4, pendiente de API
+
+Encargo de "Sesión Maestra" mientras "experto en código opus" cierra
+A1/A2: seis pruebas `XCTSkip` en `MediaStorageAfterA3A4Tests.swift`
+-- no hay API todavía (A3 modo copia real, A4 modo referencia real),
+así que no hay nada que aserire de verdad. Cada mensaje de skip
+describe la forma exacta que la prueba tiene que tener cuando la API
+exista, para que llenarla sea sustituir el cuerpo, no rediseñarla:
+
+(a) Importar en modo copia (MP3/FLAC/M4A) deja el archivo listo en
+`Música/` con las etiquetas del catálogo ya escritas, `.preparados/`
+vacío para ese ítem, `preparedURL == sourceURL`.
+(b) Estrella/favorito/letra/categoría escriben 0 bytes en el archivo de
+audio -- solo catálogo/`ratings.cfg`/`.lrc`.
+(c) Editar título en modo copia solo cambia el archivo de la
+biblioteca, con un delta de tamaño del orden de un tag reescrito
+(cientos de bytes), nunca del orden del audio completo.
+(d) Modo referencia: el original nunca cambia (ni por (b) ni por
+título); el preparado vive en `.preparados/<UUID EN MAYÚSCULAS>.ext` y
+solo se regenera al editar un campo de etiqueta o cambiar el archivo de
+origen (tamaño+mtime) -- nunca por (b).
+(e) Sync copia `sourceURL` en modo copia (ya no hay `.preparados/` de
+por medio) o `preparedURL` en modo referencia -- verificado por hash,
+misma forma que la prueba de sync de ST-220.
+(f) WAV copiado se convierte a MP3 en `Música/` (extensión `.mp3`,
+frames MPEG reales, no la cabecera RIFF/WAVE) -- en referencia sigue
+como hoy.
+
+Reusa el fixture de A0 (`MediaFixture`) y los lectores de A2
+(`FLACTagReader`/`MP4TagReader`) tal cual, sin necesidad de escribir
+nada nuevo cuando llegue el momento de llenarlas.
+
+## ST-242 — Windows: el escritor de etiquetas (catálogo → archivo), y el interruptor de carátula que nadie escuchaba
+
+B2 de la ronda de "ajustes 3". Windows sabía **leer** etiquetas desde el
+primer día (`LocalTagReader`) y no sabía **escribirlas nunca**: editar el
+título de una canción en Studio cambiaba el catálogo y no cambiaba el
+archivo, así que la corrección no llegaba al iPod ni a ningún otro
+reproductor. La Mac sí escribía, pero solo MP3 y anteponiendo una tag
+ID3 armada a mano (`ID3Writer.swift`).
+
+### La dirección es una sola: del catálogo al archivo
+
+`LocalTagWriter` escribe en el archivo lo que dice el catálogo, y nada
+más. Leer del archivo para rellenar el catálogo es la operación
+contraria —"releer etiquetas del archivo"— y no pasa por acá. Mezclar
+las dos direcciones en un mismo camino es cómo se pierde una edición: la
+lectura pisa lo que el usuario acaba de escribir.
+
+### Qué se escribe, y qué no se escribe a propósito
+
+**Sí**: título, artista, álbum, artista del álbum, compositor, número de
+pista, número de disco, año, género y —solo con `CoverArtPolicy.PerTrack`—
+la carátula incrustada.
+
+**No**: rating, favorito, letra y categoría. No son datos del archivo:
+el rating viaja en `ratings.cfg`, la letra como `.lrc` hermano (ST-012) y
+la categoría es organización de la biblioteca, que ni siquiera llega al
+escritor (vive en el `LibraryItem`, no en el `TrackMetadata`). Reescribir
+cincuenta megabytes de audio porque alguien puso una estrella es
+exactamente el defecto que esta ronda vino a arreglar.
+
+Y hay una regla más fuerte que la lista: **si el archivo ya dice lo que
+dice el catálogo, no se escribe nada**. `PendingFields` compara campo por
+campo contra lo que el archivo dice *hoy* —no contra lo que se escribió
+la última vez, porque alguien pudo haberlo tocado por fuera— y devuelve
+`TagWriteResult.UpToDate` sin abrir la escritura. Eso es lo que hace que
+poner una estrella no le mueva la fecha de modificación al archivo, que
+es justo lo que mira la sincronización para decidir si hay que volver a
+copiarlo al iPod. La prueba no confía en el resultado que devuelve el
+código que se está probando: compara **los bytes** del archivo antes y
+después, y también la fecha de modificación.
+
+También vale al revés: un campo que el catálogo no dice (`null`) **no
+borra** el que el archivo tenía. "Sin dato" no es "vacío" — la misma
+regla de "ausente ≠ cero" que rige el resto del catálogo. Y todo lo que
+el catálogo no gobierna —comentarios, ReplayGain, identificadores de
+otros programas— se queda como estaba.
+
+### Formatos
+
+MP3 (ID3v2.3), FLAC (Vorbis comments + PICTURE) y M4A/ALAC (átomos
+`ilst`). TagLib# unifica los tres detrás de un mismo `Tag`, así que el
+código es uno solo; lo que cambia es el contenedor, y por eso las pruebas
+corren las mismas verificaciones tres veces.
+
+**ID3v2.3 y no la 2.4** que TagLib# usaría por omisión
+(`Id3v2.Tag.DefaultVersion = 3` + `ForceDefaultVersion`): es la versión
+que lee el tagcache de Rockbox y la misma que escribe la Mac. Sin eso,
+las dos apps dejarían el mismo archivo con etiquetas distintas y el
+firmware vería una biblioteca a medias.
+
+### Escritura atómica, y el defecto que encontró la prueba
+
+TagLib# guarda **en el archivo**: sin más cuidado, un corte de luz a
+mitad de guardar deja la canción del usuario rota. Así que se trabaja
+sobre una copia (`<archivo>.aura-tmp`), se guarda ahí y se reemplaza con
+`File.Move(..., overwrite: true)`, que dentro del mismo volumen es un
+paso solo: o queda el archivo viejo entero, o el nuevo entero. El
+temporal se borra en `finally` aunque algo falle.
+
+Esa copia trajo un defecto que **solo apareció al escribir las pruebas de
+ida y vuelta**: TagLib# resuelve el formato por la **extensión**, y sobre
+un archivo llamado `.aura-tmp` no sabe qué está abriendo y se niega
+(`no se pudo escribir: … (taglib/aura-tmp)`). O sea que el escritor no
+escribía **nada, en ningún formato** — y como nunca lanza, lo habría
+hecho en silencio. Se arregla diciéndole a TagLib# qué formato es
+(`Create(temporary, "taglib/mp3", …)`) en vez de renombrar el temporal a
+`.mp3`: un temporal que se llama como música es un temporal que una
+importación posterior puede levantar como si fuera una canción del
+usuario.
+
+**Regla, de acá en adelante: un temporal nunca se llama como música.**
+Si la librería de turno necesita saber el formato, se le dice; no se le
+adivina poniéndole al temporal la extensión de una canción. Un
+`.aura-tmp` que quedó tirado es basura evidente que nadie va a importar;
+un `cancion.mp3` que quedó tirado es una canción duplicada en la
+biblioteca del usuario.
+
+**Nunca lanza.** Un archivo de solo lectura, en uso por otro programa o
+corrupto devuelve un `TagWriteResult` que lo explica; una edición no
+puede tumbar un lote entero.
+
+### El interruptor de carátula que nadie escuchaba
+
+Ajustes tiene desde ST-030 un interruptor de "carátula por álbum / por
+pista", y `SyncService` lo **ignoraba**: pasaba `CoverArtPolicy.AlbumOnly`
+fijo. Ahora viene de la preferencia del usuario. Con `perTrack` el
+finalizador no escribe el `cover.jpg` de carpeta —las carátulas viajan
+incrustadas, escritas por `LocalTagWriter` cuando B3/B4 lo llamen—; con
+`albumOnly`, que es lo normal, la carátula que el archivo ya traía **no
+se toca**: el catálogo no la gobierna, así que borrarla sería quitarle al
+usuario algo que no pidió quitar.
+
+### `storage` conservado desde ya
+
+`PersistedLibraryItem`, `LibraryItem` y las dos direcciones del mapeo de
+`LibraryStore` llevan el campo `storage`, que B2 **no usa**: lo lee, lo
+guarda y no lo interpreta. Es la misma maniobra que se hizo con
+`coverHash` — un campo que se pierde en el primer guardado es un campo
+que rompe el catálogo compartido con la Mac. Su semántica la fija ST-241
+sobre el contrato de ST-221 y se implementa en B1.
+
+### La API, para que B3 y B4 la llamen
+
+```csharp
+LocalTagWriter.CanWrite(path)                       // ¿este formato se etiqueta?
+LocalTagWriter.TaggableExtensions                   // { mp3, flac, m4a }
+
+LocalTagWriter.Write(
+    path,                                           // el archivo a etiquetar
+    metadata,                                       // TrackMetadata del catálogo; null = no se toca
+    coverArt: CoverArtPolicy.AlbumOnly,             // PerTrack incrusta la carátula
+    coverBytes: null)                               // los bytes de la carátula (ST-208: no viven en el elemento)
+  -> TagWriteResult(Written, Fields, BytesWritten, Reason)
+```
+
+Es estática, sin estado y sin dependencias de UI: se puede llamar desde
+cualquier hilo y desde una tarea del centro de tareas. `Fields` dice
+**qué** campos se escribieron, por nombre — "se escribió" sin decir qué
+no se puede verificar ni mostrar. `Reason` dice por qué no, cuando
+`Written` es `false` (el archivo no está, el formato no se etiqueta, ya
+coincidía, o el error de E/S tal cual).
+
+Los bytes de la carátula los pasa quien llama (`LibraryStore.ReadCover`),
+porque desde ST-208 no viven en el elemento del catálogo.
+
+### Lo que NO entra en B2
+
+Deliberadamente fuera, con su ronda asignada:
+
+- **Enganchar el escritor a la importación y a la edición** — B3.
+- **Preparado por ID** (`.preparados/<GUID>.<ext>`) — B4.
+- **Persistir los campos nuevos del catálogo**, incluido interpretar
+  `storage` — B1 (ST-241).
+
+### WAV y AIFF: por qué no se etiquetan, y qué propongo para B3
+
+TagLib# sabe escribirles etiquetas, y aun así `TaggableExtensions` los
+deja fuera. El motivo no es técnico: es que **nadie las va a leer**. El
+plan de la ronda dice que en modo copia esos archivos se convierten a
+MP3, así que escribirles etiquetas ahora sería ensuciar el archivo del
+usuario con datos que se descartan en el paso siguiente. Hoy `Write`
+devuelve `false` con el motivo dicho, y no toca el archivo.
+
+Eso deja una punta suelta que hay que resolver en B3, y son dos caminos:
+
+1. **Transcodificar a MP3 al importar en modo copia**, con ffmpeg +
+   `libmp3lame` incluido en el instalador. Es lo que hace falta para que
+   un WAV llegue al iPod con su título y su carátula. Cuesta: el peso de
+   ffmpeg en el instalador (ya hay un `FfmpegLocator`, pero hoy ffmpeg es
+   **opcional** y su ausencia solo degrada; volverlo obligatorio es una
+   decisión de empaquetado, no de código), y las licencias de lo que se
+   redistribuya. Es la opción que le cumple al usuario lo que la UI ya le
+   promete.
+2. **Retirar la opción de la interfaz** mientras no exista el
+   transcodificador, y decir en pantalla que WAV y AIFF se copian tal
+   cual y sin etiquetas. Cuesta menos y no miente.
+
+**Recomiendo la 1**, con la 2 como estado intermedio explícito si el
+transcodificador no entra en B3: lo que no se puede dejar es la opción
+prendida sin nada detrás, que es donde estábamos con el interruptor de
+carátula. La decisión de empaquetar ffmpeg es de la Maestra, no de esta
+ronda.
+
+### Verificación
+
+`dotnet build` de `AuraStudio.Core` y de `AuraStudio.App`: **0 errores**.
+`dotnet test`: **1 584 pruebas en verde** (1 550 de antes + 34 nuevas).
+
+Las 34 nuevas (`LocalTagWriterTests`, con `MinimalAudioFiles` como
+fixture propio) son de ida y vuelta de verdad: se escribe con
+`LocalTagWriter` y se relee **de las dos formas que importan** —con
+TagLib# crudo, para ver qué quedó en el archivo, y con `LocalTagReader`,
+que es por donde vuelve al catálogo—. Los tres formatos corren:
+
+- lo escrito vuelve igual, campo por campo (incluidos pista, disco y año);
+- acentos, eñes y japonés vuelven iguales (lo que se rompe cuando una
+  etiqueta se escribe en Latin-1);
+- con `perTrack` la carátula queda incrustada, con el MIME sacado de la
+  **firma de los bytes** y no de la extensión de nada;
+- sin carátula no aparece ninguna, y con `albumOnly` la que ya estaba no
+  se toca;
+- rating, favorito y letra dejan el archivo **byte a byte igual** y con
+  la misma fecha de modificación;
+- un campo nulo no borra el que había, y el comentario que traía el
+  archivo sobrevive;
+- no queda ningún `.aura-tmp` al lado de la música;
+- WAV, AIFF y OGG no se tocan (ni siquiera se abren);
+- el MP3 queda en ID3v2.3.
+
+El fixture arma los archivos en el momento: un MP3 de 40 tramas MPEG-1
+Layer III, un FLAC con su `STREAMINFO` y un M4A con la cadena de cajas
+que exige el formato (`ftyp` + `moov`/`mvhd`/`trak`…/`stbl` + `mdat`).
+Son mínimos pero **válidos** — TagLib# los abre y les escribe de verdad—,
+y son propios: el arnés de B0 arma un fixture más completo, con archivos
+de verdad, y ese sirve para medir; este sirve para verificar reglas sin
+depender de tener música en el disco ni de otra rama.
+
+Lo que **no** se verificó acá: nada de esto se probó contra la biblioteca
+real del dueño. Por regla de la ronda, sus archivos no se etiquetan — ni
+siquiera en copia.
+
+## ST-240 — PLAN-studio-ajustes-3.md, B0: arnés de almacenamiento (Windows), contra HEAD bd57116 (0.3.0)
+
+Primera PARADA de la ronda "ajustes 3" en Windows (sesión "Sonnet"),
+equivalente al A0 de la Mac. `tools/StorageFixtureCheck` genera un
+fixture de audio **real** (MP3, FLAC, M4A, WAV -- un tono de 440 Hz de
+2 s, sintetizado con ffmpeg, no bytes al azar ni material del dueño), en
+las dos variantes (copiado dentro de la biblioteca, referenciado afuera),
+con carátula real, y mide -- no asume -- qué escribe cada edición de
+campo, qué deja huérfano Eliminar, qué política de carátula se aplica de
+verdad, y qué pasa con un original que desaparece.
+
+### Verificación de §1 contra el código
+
+Ningún punto del diagnóstico resultó falso. Confirmado con evidencia de
+archivo/línea, no solo grep:
+
+- **`CopyMediaIntoLibrary` existe pero no tiene ningún consumidor**:
+  cero resultados de ese nombre en todo `AuraStudio.Core` (el motor de
+  importación, `LibraryIngest`, no lo conoce). Solo aparece en
+  `AppPreferences.cs` (el valor), `SettingsViewModel.cs`/`SettingsPage.xaml`
+  (el interruptor) -- se puede prender y apagar en Ajustes sin que nada
+  cambie en cómo se importa un archivo.
+- **TagLib# solo lee**: `grep -rn "\.Save()"` sobre `LocalTagReader.cs` y
+  el resto de `AuraStudio.Core`/`AuraStudio.App` da **un solo resultado en
+  todo el repo**, y es de `LocalTagReaderTests.cs` -- código de prueba, no
+  de producción.
+- **`CoverArtPolicy` forzada**: `AuraStudio.App/Services/SyncService.cs:127`
+  pasa el literal `CoverArtPolicy.AlbumOnly` a `LibrarySyncFinalizer.Run`,
+  sin leer `_preferences.CoverArtPolicy` en absoluto -- confirmado además
+  en vivo con el arnés (abajo).
+- **"Convertir a MP3" sin código, con un matiz**: sí existe la
+  infraestructura de bajo nivel para codificar a MP3 256 kbps
+  (`AuraStudio.Core.Media.FfmpegArguments.ForAudio`, con el comentario
+  "tamaño predecible" que cita el plan) y un método de más alto nivel que
+  la invoca (`FfmpegRunner.TranscodeAudioAsync`) -- pero **ese método no
+  tiene ningún llamador** en toda la app (`grep` de su nombre da un solo
+  resultado, su propia definición). Es un cabo suelto de una ronda
+  anterior, no algo que B3 tenga que escribir desde cero: hay que
+  *conectarlo*, no crearlo.
+- **`.preparados/` plano y por nombre base**: `StagingPaths.Resolve`
+  arma la ruta como `stagingDirectory/baseName.ext`, con un contador
+  (` 2`, ` 3`…) si ya existe -- confirma "colisiones" del diagnóstico:
+  el contador evita pisarse, pero dos canciones con el mismo nombre base
+  siguen sin desambiguación real por identidad (dos IDs, un solo
+  "espacio de nombres" de archivo).
+
+### Reconocimiento (a): cadenas de la app en Windows, para B7
+
+Documento completo en `docs/auditoria-idiomas.md`, con la misma
+estructura que el de la Mac (`a078036`). Resumen: **no hay ningún
+`.resw`** (confirmado, cero resultados), pero sí una clase centralizadora,
+`AppStrings.cs` (231 miembros, 585 líneas) -- a diferencia de Mac, acá el
+problema no es "no hay mecanismo", es que la mitad de los textos pasan
+por `AppStrings` y la otra mitad son literales sueltos (146 en XAML, 103
+más en C# fuera de `AppStrings` entre menús contextuales, mensajes de
+estado y diálogos) sin ningún criterio de cuándo usar cuál. Un hallazgo
+que **no** tiene equivalente en la auditoría de Mac: `MediaTableRow.cs:53`
+fija `DisplayCulture` a `es-MX` a mano, y la fecha de "agregado" usa un
+patrón con la gramática del español escrita adentro
+(`"d 'de' MMMM 'de' yyyy"`) -- no es "confirmar que ya funciona" como en
+Mac, es reescribirlo para B7.
+
+### Reconocimiento (b): localizador de ffmpeg, para B3
+
+`FfmpegLocator.Locate()` **no encontró ningún ffmpeg en esta VM** antes
+de esta sesión (cero resultados en las cuatro rutas comunes que revisa --
+winget/ProgramFiles/chocolatey/scoop -- ni en `PATH`, ni configurado en
+preferencias). Se instaló con el comando exacto que la propia app
+recomienda (`winget install Gyan.FFmpeg`, el texto de
+`FfmpegLocator.NotFoundMessage`) para poder generar el fixture de este
+arnés -- y **tampoco así lo encuentra `FfmpegLocator`**: winget instaló
+el binario en su carpeta de paquetes
+(`%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_...\...\bin\ffmpeg.exe`)
+y dijo haber agregado un alias de línea de comandos, pero **no** dejó
+nada en `%LOCALAPPDATA%\Microsoft\WinGet\Links\ffmpeg.exe` (la única
+ruta de winget que `FfmpegLocator` revisa), ni en una sesión nueva de
+PowerShell arrancada después de instalar. El ffmpeg instalado **sí**
+trae `libmp3lame`, `flac` (nativo) y `alac` -- los tres codificadores que
+hacen falta para B2/B3 -- confirmado con `ffmpeg -encoders`. Para B3: el
+camino de instalación recomendado hoy en el propio mensaje de error no
+deja a la app en condiciones de encontrarlo sola; hace falta agregar la
+carpeta de paquetes de winget a `FfmpegLocator.CommonPaths` (o resolver
+por el símbolo de PATH real tras un reinicio de sesión, que tampoco
+alcanzó en esta prueba) antes de poder decirle a un usuario "instala
+ffmpeg con winget" y que funcione sin pasos extra.
+
+### Línea base: edición de campos, 44 combinaciones (11 campos × 4 formatos)
+
+Título, artista, álbum, pista, año, género, carátula, rating, favorito,
+letra y categoría, cada uno sobre el ítem **copiado** de cada formato,
+midiendo bytes y hash SHA-256 del archivo de origen antes/después de cada
+edición, y si aparece algún archivo nuevo en `.preparados/`:
+
+**Las 44 combinaciones dieron 0 bytes cambiados en el archivo de origen y
+0 preparados nuevos.** Coincide exacto con lo que decía el diagnóstico
+("hoy la respuesta esperada es 0 bytes en el archivo y 0 preparado de
+música") -- medido, no asumido.
+
+| | |
+|---|---|
+| Qué viaja al iPod tras editar | El archivo de origen, **sin editar** -- `SyncPlanner.Plan` elige literalmente `LibraryItem.SourcePath`, verificado con el mismo objeto de la prueba de edición de arriba. No existe ninguna ruta de "preparado de música" distinta al origen en este código: la sincronización siempre parte de `SourcePath`. |
+| Eliminar: huérfanos en `.preparados/`/`.portadas/` | Con un elemento que tenía carátula real (32 231 bytes) y un preparado simulado (123 456 bytes, ver nota de método abajo): tras `LibraryViewModel.Remove()`, **los dos siguen en disco** -- 2 archivos, 155 687 bytes huérfanos por un solo elemento eliminado. `Remove()` solo toca la lista en memoria y el catálogo; no mira `.preparados/` ni `.portadas/` en absoluto. |
+| Política de carátulas forzada | Con la preferencia puesta en `PerTrack` (el usuario sí puede elegirla en Ajustes), `SyncService.cs:127` la ignora por completo -- confirmado en vivo, no solo por lectura del código. |
+| Original desaparecido | Se borra el archivo de origen de un ítem referenciado y se recarga: el ítem **sigue en `Items`** (7 de 7, tras el elemento ya eliminado en la prueba anterior) pero **no aparece en `AvailableItems`** -- se conserva como no disponible, no se borra del catálogo. |
+
+**Nota de método sobre el huérfano de `.preparados/`**: Windows no genera
+ningún preparado de música hoy (confirmado arriba), así que no hay un
+transcodificado real que dejar huérfano para probar el mecanismo de
+limpieza de `Remove()` en sí. Se creó un archivo de relleno con el mismo
+nombrado que usa `StagingPaths` (por nombre base) -- prueba el mecanismo
+de "Eliminar no limpia esta carpeta", no simula un preparado real. Para
+video/foto (que sí generan preparados hoy, vía `ILibraryProcessor`) el
+resultado sería el mismo por el mismo motivo: `Remove()` no distingue.
+
+### Costo de mantener esto
+
+Una corrida completa: ~15-20 s con ffmpeg ya instalado (la síntesis de
+los 8 archivos domina). Necesita ffmpeg en la máquina -- no viene con el
+repo (D-038) -- así que en una VM nueva hay que instalarlo primero
+(`winget install Gyan.FFmpeg`, ver reconocimiento (b) arriba).
+
+### Cómo reproducir
+
+```
+dotnet run --project studio/windows/tools/StorageFixtureCheck
+```
+
+### Verificación
+
+`dotnet build` de `AuraStudio.App`, `AuraStudio.Core.Tests` y
+`tools/StorageFixtureCheck`: los tres en verde, 0 advertencias / 0
+errores. `dotnet test` de `AuraStudio.Core.Tests`: **1550/1550** (sin
+cambios: esta PARADA no tocó `LocalTagReader.cs` ni `SyncService.cs`, que
+son de B2, en paralelo en el worktree del Experto). No se tocó ningún
+archivo de producción -- todo lo entregado es nuevo, bajo `tools/` y
+`docs/`.
+
+## ST-241 — Windows: `storage`, el preparado por identificador, y un original que falta no se borra
+
+B1 de la ronda de "ajustes 3", sobre el contrato que la Maestra fijó con
+la Mac en **ST-221**. B2 (ST-242) ya conservaba el campo `storage` sin
+interpretarlo; acá recibe su semántica, y con ella dos reglas más del
+mismo contrato: cómo se nombra lo preparado y qué pasa con un archivo que
+ya no está.
+
+### `storage`: cuatro reglas, en orden
+
+1. **`"copy"` y `"reference"` significan lo que dicen.** Copia es un
+   archivo que Studio puso adentro de la biblioteca y sobre el que manda;
+   referencia es un archivo del usuario, que vive donde él lo tiene.
+2. **Ausente: se infiere una vez y se persiste.** Un catálogo escrito
+   antes de que el campo existiera no tiene por qué volver a adivinarse
+   en cada arranque, y menos con las dos apps adivinando por separado.
+   Después de la primera carga y el primer guardado, el dato es un dato.
+3. **Desconocido: se interpreta como `reference` y se conserva tal
+   cual.** Interpretar no es reescribir. Si una versión futura de la Mac
+   escribe un valor que esta build no conoce, normalizarlo a `reference`
+   se lo borraría al volver a guardar — que es exactamente cómo se rompe
+   un catálogo compartido, y es la misma razón por la que B2 conservó el
+   campo antes de entenderlo.
+4. **Se infiere `copy` solo** si la ruta guardada es **relativa** y
+   cuelga de `Música/`, `Imágenes/` o `Videos/`. Cualquier otra cosa —una
+   ruta absoluta, `.preparados/`, `.portadas/`, una carpeta suelta— es
+   `reference`.
+
+La inferencia mira la ruta **guardada**, no la absoluta ya resuelta: lo
+que distingue una copia es justamente que se haya guardado relativa a la
+biblioteca (`CatalogPath.Store` deja absoluto todo lo que no cuelga de la
+raíz).
+
+Y compara en **NFC**. La Mac escribe los nombres acentuados
+descompuestos (`Mu` + acento combinante) y Windows compuestos: sin
+normalizar, "Música" del catálogo de la Mac no sería "Música" acá y toda
+la biblioteca copiada del dueño se leería como referenciada. En
+silencio, que es el peor modo de fallar.
+
+**Todo lo que no se entiende es "referencia", y es a propósito**:
+equivocarse hacia referencia hace que Studio toque de menos; hacia copia,
+que toque archivos ajenos. Del segundo error no se vuelve.
+
+### Inferir no es autorizar
+
+Que un archivo cuelgue de `Música/` dice **dónde está**, no que Studio
+sea su dueño: el usuario pudo haber apuntado la biblioteca a una carpeta
+que ya se llamaba así. Por eso `ItemStorageRules` **no tiene ningún "se
+puede escribir"**: clasifica y no da permiso. Quien vaya a modificar el
+archivo del usuario —escribirle etiquetas con `LocalTagWriter`, moverlo,
+borrarlo— decide aparte y con más que esta inferencia. B1 no conecta
+nada de eso, y no es un olvido.
+
+### El preparado se nombra por identificador
+
+`.preparados/<ID en mayúsculas y con guiones>.<ext>`, igual que las
+carátulas (`CatalogPath.CoverFileName`) y por lo mismo: con otro formato
+cada app escribiría su propio preparado para el mismo elemento y ninguna
+vería el de la otra.
+
+`.preparados/` es una carpeta **plana** compartida por toda la
+biblioteca. Cuando el nombre salía del archivo de origen había que
+desambiguar con un contador, y dos canciones distintas que se llamaran
+igual —justo el caso de los duplicados— terminaban peleándose el mismo
+preparado; borrar una dejaba a la otra apuntando a un archivo que no
+existe (ST-064). Un identificador no se repite: el problema **deja de
+existir** en vez de taparse.
+
+El póster de un video viaja como `<ID>.jpg` **hermano** del `<ID>.mpg`:
+misma carpeta, mismo nombre base. Existe como regla
+(`CatalogPath.PosterFor`) y no como un `ChangeExtension` suelto en cada
+llamador porque son cuatro los lugares que lo calculan —escribirlo,
+enriquecerlo, quitarlo, copiarlo al iPod— y basta con que uno lo haga
+distinto para que el póster quede invisible.
+
+**Cargar la biblioteca no renombra archivos.** Un preparado que ya está
+en disco con el nombre viejo se devuelve tal cual. Es distinto de lo que
+se hace con las carátulas, donde sí se renombra al canónico (ST-087), y
+la diferencia es real: ahí el nombre viejo las hacía **invisibles para
+las dos apps**, y acá no — al preparado lo encuentra el catálogo, no su
+nombre.
+
+### La música copiada es su propio preparado
+
+`PreparedPath == SourcePath` para música con `storage: copy`. Una canción
+que Studio ya copió a `Música/` está lista para el iPod tal como está: no
+hay nada que convertir, así que un segundo archivo en `.preparados/`
+sería una copia de la copia — la biblioteca del dueño pesando el doble
+sin ganar nada.
+
+Se aplica **al cargar**, y por eso queda guardado en el próximo guardado,
+**sin preguntarle nada al disco**: ST-203 sacó de la carga las consultas
+archivo por archivo y esto no las vuelve a meter. Video y foto no entran
+—esos sí se convierten— y la música referenciada tampoco: esa no es
+nuestra, y apuntarle un `PreparedPath` sería decir que sí.
+
+Se aplica sin condiciones sobre lo que hubiera: es la invariante del
+contrato, no una heurística. Hoy en Windows la música nunca tiene
+preparado (`LibraryProcessor.ProcessMusic` no lo asigna), así que en la
+práctica no pisa nada; y todos los consumidores usan
+`PreparedPath ?? SourcePath`, de modo que el valor nuevo es idéntico al
+que ya calculaban. Los dos únicos lugares que miran `PreparedPath` a
+secas —quitar el póster y enriquecerlo— están guardados por
+`Kind == Video`, así que ninguna canción va a terminar con un `.jpg`
+suyo borrado por esto.
+
+### Un original que falta se conserva como no disponible
+
+Paridad con la Mac, y ya era lo que hacía Windows: lo que se comprueba
+acá es que siga siéndolo. `FileAvailability.Sweep` **anota**, no borra;
+`Available` filtra lo que se muestra; y lo que se guarda es **siempre el
+catálogo entero**, nunca la lista filtrada. Guardar la lista filtrada es
+exactamente lo que borraría al que falta.
+
+Importa porque el disco puede estar desconectado, la unidad de red caída
+o el archivo movido a mano — y en los tres casos borrarle la entrada al
+usuario sería perderle la calificación, la categoría, la letra y la
+carátula de algo que va a volver. Es lo que costó 2 408 entradas en
+ST-087.
+
+### Lo que NO entra en B1
+
+- **Conectar el modo copia** (copiar los medios a la biblioteca al
+  importar) — B3. Hoy Windows no tiene esa preferencia; lo que hay es el
+  contrato para cuando la tenga.
+- **Cambiar los llamadores al preparado por ID** — B4.
+  `StagingPaths.Resolve`, el nombrado viejo, sigue ahí y sigue siendo el
+  que usa `LibraryProcessor`: se marca como forma vieja y se cambia allá.
+- **Escribir en archivos del usuario** a partir de `storage`. Ver
+  "inferir no es autorizar".
+
+### Verificación
+
+`dotnet build` de `AuraStudio.Core` y de `AuraStudio.App`: **0 errores**.
+`dotnet test`: **1 621 pruebas en verde** (37 nuevas).
+
+Las nuevas se reparten en dos:
+
+- `ItemStorageTests` — las reglas puras, sin tocar disco: los dos valores
+  del contrato; que todo lo que no se entienda sea referencia; que se
+  infiera copia bajo las tres raíces y **solo** ahí (con el caso de la
+  Mac descompuesta, `Música/`, que sin normalizar fallaría); que lo
+  ausente se infiera y lo desconocido se conserve; el nombre del
+  preparado y el del póster hermano; que dos elementos distintos nunca
+  compartan preparado ni necesiten contador; y que un preparado que ya
+  está no se renombre.
+- `LibraryStorageContractTests` — la vuelta completa contra el catálogo
+  en disco: inferir → guardar → recargar y que el dato quede escrito; que
+  un valor desconocido sobreviva a la vuelta; la invariante de la música
+  copiada, y que no aplique a la referenciada ni al video; que cargar no
+  renombre un preparado con nombre viejo; y que un original que falta
+  quede fuera de lo que se muestra pero siga en el catálogo después de
+  guardar y recargar.
+
+## ST-240 (addendum) — El ffmpeg de winget que estaba instalado y Studio no encontraba
+
+Cabo suelto que salió del arnés de B0. `FfmpegLocator` buscaba el atajo
+que winget deja en `%LOCALAPPDATA%\Microsoft\WinGet\Links`, y con eso
+alcanza casi siempre. Casi.
+
+Ese atajo **no siempre aparece**: el paquete puede no declarar alias, la
+instalación puede haber sido de máquina y no de usuario, o el `Links` del
+usuario puede haber quedado fuera del PATH. Cuando pasa, el ffmpeg
+**está instalado** —desempaquetado, funcionando, a un `cd` de distancia—
+y Studio decía que no hay ninguno y mandaba al usuario a instalar con
+winget algo que winget ya le había instalado. Ese es el defecto: no que
+falte una ruta, sino que la app le diga al usuario una cosa falsa sobre
+su propia computadora.
+
+Ahora también se mira dentro del paquete desempaquetado:
+
+```
+%LOCALAPPDATA%\Microsoft\WinGet\Packages\Gyan.FFmpeg_…\ffmpeg-7.1-full_build\bin\ffmpeg.exe
+```
+
+Una carpeta por paquete y adentro una por versión, con el nombre que trae
+el zip — así que hay que **listar**, no adivinar la ruta. Detalles que no
+son de adorno:
+
+- **Se listan de más nueva a más vieja, comparando los números como
+  números.** Alfabéticamente `ffmpeg-10.0` va antes que `ffmpeg-7.1`, y
+  quien tenga las dos instaladas terminaría usando la vieja.
+- **Vale cualquier paquete cuyo nombre mencione ffmpeg**, no solo
+  `Gyan.FFmpeg`: hay más de un publicador. Un falso positivo no cuesta
+  nada, porque solo se devuelve la ruta si el ejecutable existe de
+  verdad.
+- **El atajo de `Links` sigue ganando**: es más barato de comprobar y es
+  el que winget mantiene apuntando a la versión vigente. El listado va
+  después de los atajos y antes del PATH.
+- **Una carpeta que no existe no es un error.** En una máquina sin winget
+  no hay nada que ver, y la búsqueda sigue con el PATH sin decir nada.
+
+Esto **solo afecta a video**: desde ST-243 el audio se convierte con el
+codificador que trae Windows, y ffmpeg queda para lo que siempre fue
+suyo.
+
+**Verificación**: cinco pruebas nuevas contra un árbol de carpetas
+simulado —el ffmpeg de winget sin atajo en `Links`; que con dos versiones
+gane la de verdad más nueva; que `Links` le siga ganando al paquete; que
+no se proponga nada de un paquete ajeno; y que sin carpeta de paquetes no
+pase nada y la búsqueda siga—. Sin tocar disco: el listado se inyecta.
+
+## ST-241 (addendum) — Las rutas del catálogo se escriben en NFC, no solo se comparan
+
+Ampliación del contrato de ST-221, fijada por la Maestra para **las dos
+plataformas** a partir de lo que apareció al implementar B1.
+
+"Música" se puede escribir de dos maneras que en pantalla se ven
+idénticas: **compuesta**, con una sola letra acentuada, o
+**descompuesta**, con la letra y el acento como dos caracteres. La Mac
+escribe la descompuesta y Windows la compuesta. Para el catálogo son dos
+rutas distintas, y el modo de falla es el peor que hay: silencioso. Toda
+la biblioteca copiada del dueño se leería como referenciada y nadie vería
+un error.
+
+B1 ya comparaba en NFC al inferir `storage`. Faltaba la otra mitad, que
+es la que evita que el problema se siga produciendo:
+
+- **Se escriben en NFC** las tres rutas relativas del catálogo:
+  `sourceRelativePath`, `preparedRelativePath` y `coverRelativePath`.
+  Todas pasan por `CatalogPath.Canonical`, que era ya el único embudo de
+  escritura. La de carátula hoy es un identificador sin acentos, y se
+  normaliza igual: la excepción de una es como se vuelve a colar la forma
+  descompuesta.
+- **Toda comparación normaliza antes de comparar**
+  (`CatalogPath.SameStoredPath`, y `ItemStorageRules` que ahora usa la
+  misma implementación en vez de la suya). Una sola normalización, para
+  que escribir y comparar no puedan discrepar.
+- **Una ruta absoluta no se normaliza, a propósito.** En Windows el
+  nombre en disco es la secuencia exacta de caracteres con la que se
+  creó: cambiarle la forma a la ruta de un archivo del usuario sería no
+  encontrarlo. Lo que se normaliza es lo que Studio escribe adentro de su
+  propia biblioteca.
+
+### La carpeta que ya está se reusa
+
+Consecuencia directa, y la parte con consecuencias visibles:
+`MediaRoots.Directory` **lista** la raíz de la biblioteca y busca una
+carpeta que se llame igual en cualquiera de las dos formas, en vez de
+armar la ruta a ciegas con `Path.Combine`. Si no hay ninguna, propone el
+nombre canónico.
+
+Sin eso, Windows crearía una segunda `Música` al lado de la que creó la
+Mac —dos carpetas que se ven iguales, la biblioteca partida en dos y
+nadie entendiendo por qué—. Es un listado por tipo de medio, tres en
+total, no uno por archivo: no es lo que ST-203 sacó de la carga.
+
+### Y `storage` se resuelve también al guardar
+
+Al escribir la prueba de ida y vuelta apareció que la inferencia solo
+corría **al cargar**. Un elemento que acaba de entrar a la biblioteca
+nunca pasó por una carga, así que todo lo que importara Windows saldría
+al catálogo compartido **sin el campo**, y la Mac tendría que adivinarlo
+por su cuenta — que es justo lo que el contrato vino a evitar. Ahora
+`Snapshot` resuelve igual que la carga: conserva lo que ya venía —aunque
+no lo entienda— e infiere lo que falta.
+
+**Verificación**: `dotnet build` de `AuraStudio.Core` y de
+`AuraStudio.App`, 0 errores y 0 advertencias; `dotnet test`, **1 634
+pruebas en verde** (13 nuevas entre este addendum y el de ST-240).
+
+Las ocho de este addendum, con las dos formas escritas como escapes
+explícitos —si el archivo de prueba las guardara iguales, no se probaría
+nada, y hay una prueba de que son distintas como texto—: que una ruta
+relativa se escriba compuesta; la **ida y vuelta completa** con un nombre
+descompuesto, mirando lo que quedó ESCRITO en el catálogo y no lo que
+devuelve la carga (si solo se mirara la carga, una normalización al leer
+taparía el defecto y la Mac seguiría recibiendo la forma descompuesta);
+que una ruta absoluta se guarde sin tocar; que dos rutas iguales en
+distinta forma se comparen como la misma; que se reuse la carpeta
+existente aunque venga descompuesta; que sin carpeta se proponga el
+nombre canónico; y que lo no soportado no tenga carpeta ninguna.
+
+**Lo que queda dicho y no resuelto**: si una carpeta de la biblioteca
+está físicamente en disco con la forma descompuesta y algo arma la ruta
+sin pasar por `MediaRoots`, en Windows no la va a encontrar. La defensa
+es que Studio crea esas carpetas él mismo y ahora las busca antes de
+crearlas; el camino que no pase por ahí es un defecto, y por eso el
+resolvedor es un lugar solo.

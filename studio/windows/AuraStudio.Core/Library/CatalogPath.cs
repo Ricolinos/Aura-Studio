@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace AuraStudio.Core.Library;
 
 /// <summary>
@@ -51,8 +53,23 @@ public static class CatalogPath
         : Path.GetFullPath(Path.Combine(libraryRoot, ToNative(storedPath)));
 
     /// <summary>
-    /// Una ruta relativa con el separador del catálogo. Idempotente, y deja
-    /// intacta una ruta absoluta.
+    /// Una ruta relativa con el separador del catálogo y en <b>NFC</b>.
+    /// Idempotente, y deja intacta una ruta absoluta.
+    ///
+    /// <para><b>Por qué NFC</b> (addendum de ST-241, contrato ampliado para las
+    /// dos plataformas): "Música" se puede escribir de dos maneras que se ven
+    /// idénticas —compuesta, con una sola letra acentuada, o descompuesta, con
+    /// la letra y el acento por separado—. La Mac escribe la descompuesta y
+    /// Windows la compuesta, y para el catálogo son dos rutas distintas: la
+    /// biblioteca copiada del dueño se leería como referenciada, y en silencio.
+    /// Así que <b>se escribe siempre en la forma compuesta</b>, y toda
+    /// comparación normaliza antes de comparar.</para>
+    ///
+    /// <para>Una ruta <b>absoluta</b> no se normaliza, a propósito: en Windows el
+    /// nombre en disco es la secuencia exacta de caracteres con la que se creó, y
+    /// cambiarle la forma a la ruta de un archivo del usuario sería no
+    /// encontrarlo. Lo que se normaliza es lo que Studio escribe adentro de su
+    /// propia biblioteca.</para>
     /// </summary>
     public static string Canonical(string? relativePath)
     {
@@ -60,8 +77,36 @@ public static class CatalogPath
 
         return Path.IsPathRooted(relativePath)
             ? relativePath
-            : relativePath.Replace('\\', Separator);
+            : Normalize(relativePath.Replace('\\', Separator));
     }
+
+    /// <summary>
+    /// Un texto en la forma compuesta (NFC), que es como se guardan y se
+    /// comparan los nombres del catálogo. <b>Nunca lanza</b>: un nombre con
+    /// sustitutos inválidos se devuelve como vino — un nombre roto no puede
+    /// tumbar la carga de la biblioteca.
+    /// </summary>
+    public static string Normalize(string value)
+    {
+        try
+        {
+            return value.IsNormalized(NormalizationForm.FormC)
+                ? value
+                : value.Normalize(NormalizationForm.FormC);
+        }
+        catch (ArgumentException)
+        {
+            return value;
+        }
+    }
+
+    /// <summary>
+    /// Si dos rutas del catálogo nombran lo mismo: misma forma Unicode, mismo
+    /// separador, y sin distinguir mayúsculas —que es como se comportan los
+    /// sistemas de archivos de las dos plataformas—.
+    /// </summary>
+    public static bool SameStoredPath(string? left, string? right) =>
+        string.Equals(Canonical(left), Canonical(right), StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// El nombre del archivo de carátula: <b>el identificador en mayúsculas y
@@ -80,6 +125,44 @@ public static class CatalogPath
     /// </summary>
     public static string CoverRelative(Guid id) =>
         PersistedLibrary.CoversDirName + Separator + CoverFileName(id);
+
+    /// <summary>
+    /// El nombre de un archivo preparado: <b>el identificador en mayúsculas y
+    /// con guiones</b>, más la extensión de lo preparado (ST-241, contrato de
+    /// ST-221). Igual que <see cref="CoverFileName"/>, y por lo mismo — es como
+    /// lo escribe macOS.
+    ///
+    /// <para><c>.preparados/</c> es una carpeta <b>plana</b> compartida por toda
+    /// la biblioteca. Cuando el nombre salía del archivo de origen había que
+    /// desambiguar a mano, y dos canciones distintas que se llamaran igual
+    /// —justo el caso de los duplicados— terminaban peleándose el mismo
+    /// preparado (ST-064). Un identificador no se repite: el problema deja de
+    /// existir en vez de taparse con un contador.</para>
+    /// </summary>
+    public static string PreparedFileName(Guid id, string? extension)
+    {
+        string suffix = extension is { Length: > 0 }
+            ? "." + extension.TrimStart('.').ToLowerInvariant()
+            : "";
+
+        return id.ToString("D").ToUpperInvariant() + suffix;
+    }
+
+    /// <summary>Lo que se anota en el catálogo para un preparado.</summary>
+    public static string PreparedRelative(Guid id, string? extension) =>
+        PersistedLibrary.PreparedDirName + Separator + PreparedFileName(id, extension);
+
+    /// <summary>
+    /// El póster de un video: <c>&lt;ID&gt;.jpg</c> <b>hermano</b> del
+    /// <c>&lt;ID&gt;.mpg</c>, en la misma carpeta y con el mismo nombre base.
+    ///
+    /// <para>Existe como regla y no como un <c>ChangeExtension</c> suelto en
+    /// cada llamador porque son cuatro lugares los que lo calculan —escribirlo,
+    /// enriquecerlo, quitarlo, copiarlo al iPod— y basta con que uno lo haga
+    /// distinto para que el póster quede invisible.</para>
+    /// </summary>
+    public static string PosterFor(string preparedPath) =>
+        Path.ChangeExtension(preparedPath, ".jpg");
 
     private static string ToNative(string relativePath) =>
         relativePath.Replace(Separator, Path.DirectorySeparatorChar);
