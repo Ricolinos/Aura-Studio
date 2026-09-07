@@ -260,7 +260,7 @@ public class LibraryStatsTests
     {
         SourcePath = path,
         Kind = LibraryItemKind.Video,
-        Category = MediaCategory.Movies.DisplayName(),
+        Category = MediaCategory.Movies.CatalogName(),
         Metadata = new TrackMetadata { Title = title, DurationSeconds = seconds },
         FileSizeBytes = size
     };
@@ -270,7 +270,7 @@ public class LibraryStatsTests
     {
         SourcePath = path,
         Kind = LibraryItemKind.Video,
-        Category = MediaCategory.Series.DisplayName(),
+        Category = MediaCategory.Series.CatalogName(),
         SeriesName = series,
         Season = season,
         Episode = episode,

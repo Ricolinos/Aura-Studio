@@ -338,6 +338,8 @@
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
                     <TextBlock Text="{x:Bind str:Strings.Get('settings-page.colecciones')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
+                    <TextBlock Text="{x:Bind str:Strings.Get('settings-page.los-nombres-que-escribes-no-se-traducen')}"
+                               Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
                     <ItemsControl ItemsSource="{x:Bind ViewModel.PhotoCollections, Mode=OneWay}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="x:String">

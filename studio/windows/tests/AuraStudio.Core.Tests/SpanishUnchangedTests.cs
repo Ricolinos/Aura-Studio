@@ -136,6 +136,17 @@ public class SpanishUnchangedTests
         // completando. Son dos mensajes.
         "library-view-model.completando-title",
 
+        // La etiqueta de las tres categorías fijas de video. Existe porque el
+        // nombre guardado en el catálogo dejó de ser el que se muestra: el dato
+        // es español siempre y la etiqueta cambia con el idioma. El texto de
+        // cada una es el mismo que se mostraba antes, que era también el que se
+        // guardaba.
+        "media-category.videos", "media-category.series", "media-category.movies",
+
+        // Y la línea de Ajustes que lo dice de frente: lo que el usuario
+        // escribe no se traduce.
+        "settings-page.los-nombres-que-escribes-no-se-traducen",
+
         // Tooltips y nombres para el lector de pantalla que el borrador no
         // extrajo. Un AutomationProperties.Name en español dentro de una app en
         // alemán es justo el defecto que B7b viene a evitar.

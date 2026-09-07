@@ -1356,6 +1356,15 @@
   <data name="main-window.aura-studio" xml:space="preserve">
     <value>Aura Studio</value>
   </data>
+  <data name="media-category.movies" xml:space="preserve">
+    <value>Películas</value>
+  </data>
+  <data name="media-category.series" xml:space="preserve">
+    <value>Series</value>
+  </data>
+  <data name="media-category.videos" xml:space="preserve">
+    <value>Videos</value>
+  </data>
   <data name="media-grid-page.buscar-posters" xml:space="preserve">
     <value>Buscar pósters</value>
   </data>
@@ -1550,6 +1559,9 @@
   </data>
   <data name="settings-page.listo" xml:space="preserve">
     <value>Listo</value>
+  </data>
+  <data name="settings-page.los-nombres-que-escribes-no-se-traducen" xml:space="preserve">
+    <value>Los nombres que escribes son tuyos y no se traducen: la app puede cambiar de idioma, tus colecciones siguen llamándose como las llamaste. Las tres categorías de video que trae Aura sí se muestran en el idioma de la app, pero por dentro se guardan siempre igual para que tu biblioteca se vea igual en cualquier computadora.</value>
   </data>
   <data name="settings-page.mantener-formato-original-recomendado" xml:space="preserve">
     <value>Mantener el formato original (recomendado)</value>

@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.Core;
 
@@ -33,53 +34,99 @@ public enum MediaCategory
 }
 
 /// <summary>
-/// Los nombres con los que una categoría aparece en pantalla y, desde D-228, se
-/// <b>guarda</b> en el catálogo — por eso hay que reconocer también el nombre en
-/// inglés: un catálogo escrito por la app de macOS en inglés dice "Movies", y
-/// tratarlo como una categoría desconocida dejaría esas películas fuera de la
-/// vista de Películas.
+/// El nombre de una categoría, que son <b>dos cosas distintas</b> y hay que no
+/// confundirlas nunca (ST-247, lección de A7a en la Mac).
+///
+/// <list type="bullet">
+/// <item><b>El dato</b> — lo que se guarda en <c>item.Category</c> del catálogo
+/// compartido (D-228, D-283) y contra lo que se compara para agrupar,
+/// sincronizar y armar los índices del firmware. Es <b>siempre el español</b>,
+/// pase lo que pase con el idioma de la app.</item>
+/// <item><b>La etiqueta</b> — lo que el usuario lee en el menú de categoría y
+/// en los títulos. Esa sí cambia con el idioma, y sale del archivo de
+/// recursos.</item>
+/// </list>
+///
+/// <para><b>Por qué importa tanto.</b> La app de macOS guardaba el nombre en el
+/// idioma activo. Con un solo idioma eso no se nota; con seis, el mismo video
+/// queda como "Series" en una máquina y "Serien" en otra, el catálogo que
+/// viaja entre las dos deja de coincidir consigo mismo y el firmware arma los
+/// índices con dos categorías donde hay una. El texto que se ve no puede ser
+/// el dato que se guarda.</para>
+///
+/// <para>El nombre en inglés se sigue reconociendo al <b>leer</b>: un catálogo
+/// que escribió la app de macOS cuando guardaba en inglés dice "Movies", y
+/// tratarlo como categoría desconocida dejaría esas películas fuera de la vista
+/// de Películas. Se reconoce, no se escribe.</para>
 /// </summary>
 public static class MediaCategoryNames
 {
-    public static string DisplayNameSpanish(this MediaCategory category) => category switch
+    /// <summary>
+    /// El dato: lo que se guarda y lo que se compara. Español siempre.
+    /// </summary>
+    public static string CatalogName(this MediaCategory category) => category switch
     {
         MediaCategory.Series => "Series",
         MediaCategory.Movies => "Películas",
         _ => "Videos"
     };
 
-    public static string DisplayNameEnglish(this MediaCategory category) => category switch
+    /// <summary>
+    /// El nombre que escribía la app de macOS cuando guardaba en inglés. Se
+    /// reconoce al leer un catálogo viejo; nunca se escribe.
+    /// </summary>
+    public static string LegacyEnglishName(this MediaCategory category) => category switch
     {
         MediaCategory.Series => "Series",
         MediaCategory.Movies => "Movies",
         _ => "Videos"
     };
 
-    /// <summary>
-    /// Aura Studio para Windows muestra un solo idioma (regla del repo), así que
-    /// el nombre visible es siempre el español.
-    /// </summary>
-    public static string DisplayName(this MediaCategory category) => category.DisplayNameSpanish();
+    /// <summary>La etiqueta: lo que el usuario lee, en el idioma de la app.</summary>
+    public static string LocalizedName(this MediaCategory category) => category switch
+    {
+        MediaCategory.Series => Strings.Get("media-category.series"),
+        MediaCategory.Movies => Strings.Get("media-category.movies"),
+        _ => Strings.Get("media-category.videos")
+    };
 
     /// <summary>
-    /// Las tres categorías de video, en el orden en que se muestran. Conjunto
-    /// fijo, a diferencia de las colecciones de fotos, que las edita el usuario
-    /// (D-228).
+    /// La etiqueta de un valor <b>ya guardado</b>.
+    ///
+    /// <para>Lo que no reconoce lo devuelve tal cual, y eso es a propósito: las
+    /// colecciones de fotos las escribe el usuario (D-228) y una categoría que
+    /// no es de las tres fijas es un dato suyo. El nombre que alguien le puso a
+    /// su colección no se traduce — no es texto de la app.</para>
+    /// </summary>
+    public static string LocalizedNameOf(string? category) =>
+        IsSeriesCategory(category) ? MediaCategory.Series.LocalizedName()
+        : IsMoviesCategory(category) ? MediaCategory.Movies.LocalizedName()
+        : IsVideosCategory(category) ? MediaCategory.Videos.LocalizedName()
+        : category ?? "";
+
+    /// <summary>
+    /// Las tres categorías de video, en el orden en que se muestran, <b>como
+    /// dato</b>. Conjunto fijo, a diferencia de las colecciones de fotos, que
+    /// las edita el usuario (D-228).
     /// </summary>
     public static readonly IReadOnlyList<string> VideoCategories =
     [
-        MediaCategory.Videos.DisplayNameSpanish(),
-        MediaCategory.Series.DisplayNameSpanish(),
-        MediaCategory.Movies.DisplayNameSpanish()
+        MediaCategory.Videos.CatalogName(),
+        MediaCategory.Series.CatalogName(),
+        MediaCategory.Movies.CatalogName()
     ];
 
     public static bool IsSeriesCategory(string? category) =>
-        category == MediaCategory.Series.DisplayNameSpanish()
-        || category == MediaCategory.Series.DisplayNameEnglish();
+        category == MediaCategory.Series.CatalogName()
+        || category == MediaCategory.Series.LegacyEnglishName();
 
     public static bool IsMoviesCategory(string? category) =>
-        category == MediaCategory.Movies.DisplayNameSpanish()
-        || category == MediaCategory.Movies.DisplayNameEnglish();
+        category == MediaCategory.Movies.CatalogName()
+        || category == MediaCategory.Movies.LegacyEnglishName();
+
+    public static bool IsVideosCategory(string? category) =>
+        category == MediaCategory.Videos.CatalogName()
+        || category == MediaCategory.Videos.LegacyEnglishName();
 }
 
 /// <summary>

@@ -364,7 +364,8 @@ public static class LibraryContextMenus
 
     private static MenuEntry CategorySubmenu(IReadOnlyList<string> categories) =>
         MenuEntry.Sub("category", ChangeCategory,
-            [.. categories.Select(category => new MenuEntry("category:" + category, category))]);
+            [.. categories.Select(category =>
+                new MenuEntry("category:" + category, MediaCategoryNames.LocalizedNameOf(category)))]);
 }
 
 /// <summary>
@@ -460,7 +461,8 @@ public static class MediaTableContextMenu
         return
         [
             MenuEntry.Sub("category", Strings.Get("context-menu.cambiar-categoria"),
-                [.. categories.Select(category => new MenuEntry("category:" + category, category))])
+                [.. categories.Select(category =>
+                new MenuEntry("category:" + category, MediaCategoryNames.LocalizedNameOf(category)))])
         ];
     }
 
