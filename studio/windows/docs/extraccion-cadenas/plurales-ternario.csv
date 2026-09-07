@@ -16,16 +16,19 @@ studio/windows/AuraStudio.App/ViewModels/ArtistsViewModel.cs,253,canción,cancio
 studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,60,{done} 1 quedó sin revisar (cancelaste).,{done} {NotStarted} quedaron sin revisar (cancelaste).
 studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,390,Se cambió la tapa de 1 canción.,Se cambió la tapa de {applied} canciones.
 studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,477,Buscando carátula…,Buscando carátulas de {jobs.Count} álbumes…
-studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1063,Se normalizó 1 carátula: ahora es cuadrada.,Se normalizaron {result.Normalized} carátulas: ahora son cuadradas.
-studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1210,1 canción,{songs} canciones
-studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1211,1 video,{videos} videos
-studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1212,1 foto,{photos} fotos
-studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1659,Copiando 1 archivo a la biblioteca…,Copiando {pending.Count} archivos a la biblioteca…
-studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1712,Se copió 1 archivo a la biblioteca.,Se copiaron {copied} archivos a la biblioteca.
-studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1717,1 se saltó porque su archivo no está; sigue en el catálogo.,{missing} se saltaron porque sus archivos no están; siguen en el catálogo.
-studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1722,1 no se pudo copiar.,{failed} no se pudieron copiar.
-studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1894,Se quitó 1 carátula.,Se quitaron {removed} carátulas.
-studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1975,Se releyeron las etiquetas de 1 canción.,Se releyeron las etiquetas de {read} canciones.
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1070,Se normalizó 1 carátula: ahora es cuadrada.,Se normalizaron {result.Normalized} carátulas: ahora son cuadradas.
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1217,1 canción,{songs} canciones
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1218,1 video,{videos} videos
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1219,1 foto,{photos} fotos
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1664,1 elemento no dice todavía si su archivo es una copia de Aura o tuyo,{withoutStorage} elementos no dicen todavía si sus archivos son copias de Aura o tuyos
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1671,1 archivo preparado usa el nombre viejo,{legacy} archivos preparados usan el nombre viejo
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1751,se escribieron las etiquetas de 1 canción,se escribieron las etiquetas de {summary.Tagged} canciones
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1796,Copiando 1 archivo a la biblioteca…,Copiando {pending.Count} archivos a la biblioteca…
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1849,Se copió 1 archivo a la biblioteca.,Se copiaron {copied} archivos a la biblioteca.
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1854,1 se saltó porque su archivo no está; sigue en el catálogo.,{missing} se saltaron porque sus archivos no están; siguen en el catálogo.
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,1859,1 no se pudo copiar.,{failed} no se pudieron copiar.
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,2031,Se quitó 1 carátula.,Se quitaron {removed} carátulas.
+studio/windows/AuraStudio.App/ViewModels/LibraryViewModel.cs,2112,Se releyeron las etiquetas de 1 canción.,Se releyeron las etiquetas de {read} canciones.
 studio/windows/AuraStudio.App/ViewModels/MediaGridViewModel.cs,304,1 álbum,{Cards.Count} álbumes
 studio/windows/AuraStudio.App/ViewModels/MediaGridViewModel.cs,305,1 película,{Cards.Count} películas
 studio/windows/AuraStudio.App/ViewModels/MediaGridViewModel.cs,306,1 serie,{Cards.Count} series
