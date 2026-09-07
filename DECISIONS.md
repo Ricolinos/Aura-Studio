@@ -14793,3 +14793,48 @@ que la detección barata no puede ver. La franja **no se puede cerrar**:
 un aviso que se descarta se descarta, y el problema se queda.
 `ajustes.almacenamiento.migrar` y `franja.migrarBiblioteca` quedan como
 identificadores para el arnés de capturas.
+
+## ST-227 — Localización: el String Catalog y el puente entre los dos builds
+
+Fase A7a de `PLAN-studio-ajustes-3.md`, primera de tres (A7a
+infraestructura y extracción; A7b inglés y selector; A7c ja/de/ru/fr).
+
+### El defecto que apareció antes de escribir una sola clave
+
+`Localizable.xcstrings` en el paquete y `String(localized:)` en el
+código: eso **no funciona bajo SwiftPM**. Xcode compila el catálogo a
+`<idioma>.lproj/Localizable.strings` al construir la app; SwiftPM copia
+el `.xcstrings` tal cual y no lo compila. Y una clave que no se resuelve
+**no falla**: `String(localized:)` devuelve la clave misma. La app habría
+mostrado `media-section.eliminar` en pantalla y seguido andando.
+
+Lo cazó la primera prueba que escribí, antes de convertir 513 sitios --
+que es exactamente donde había que cazarlo. Convertirlos primero habría
+significado descubrirlo con la app entera en clave.
+
+**La solución**: el `.xcstrings` es la fuente única y editable;
+`tools/compilar-catalogo.py` genera de ahí los `.lproj` que SwiftPM
+necesita, y esos archivos **no se editan a mano** (misma regla que
+`Generated/AuraPalette.swift`). Xcode sigue compilando el catálogo por su
+cuenta, así que los `.lproj` generados se **excluyen** del target de la
+app: si entraran, habría dos productores del mismo `Localizable.strings`
+y cuál gana sería cuestión de suerte.
+
+`AuraBundle.strings` es el único sitio del repo que conoce esa
+diferencia (`Bundle.module` bajo SwiftPM, `Bundle.main` en la app), y
+`LS`/`LSf` son las dos funciones por las que pasa todo el texto. `LSf`
+usa `String.localizedStringWithFormat` y no `String(format:)` a
+propósito: es el que respeta los argumentos posicionales (`%1$@`), y una
+traducción que necesita cambiar el orden de las palabras -- japonés y
+alemán, sin ir más lejos -- no tiene otra forma de hacerlo.
+
+### Verificado de punta a punta, en los dos builds
+
+La prueba no comprueba que el archivo exista: pide una clave y **exige
+recibir el texto en español, no la clave**. Es la única forma de saber
+que el puente funciona. Y el `.app` que sale de `xcodebuild` se inspecciona:
+`Contents/Resources/es.lproj/Localizable.strings` está ahí, compilado por
+Xcode desde el catálogo.
+
+`CFBundleLocalizations` pasa de `[es]` a los seis idiomas y
+`CFBundleDevelopmentRegion` se queda en `es`.

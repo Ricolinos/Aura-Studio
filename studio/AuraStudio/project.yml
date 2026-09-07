@@ -37,6 +37,12 @@ targets:
     platform: macOS
     sources:
       - path: Sources/AuraStudio
+        # ST-227: los `.lproj` generados son SOLO para SwiftPM. Si
+        # entraran acá, Xcode tendría dos productores del mismo
+        # `Localizable.strings` -- el catálogo compilado y estos -- y el
+        # que gane sería cuestión de suerte.
+        excludes:
+          - "Resources/*.lproj"
       # NOTA: el top-level "resources:" de XcodeGen no genero ninguna
       # entrada de Copy Bundle Resources en este entorno (XcodeGen
       # 2.46.0 / Xcode 26.6, objectVersion 77) -- ni para carpetas ni
@@ -84,8 +90,16 @@ targets:
       # ASSETCATALOG_COMPILER_APPICON_NAME de abajo.
       - path: Resources/AppIcon.icon
         buildPhase: resources
-      # ST-063: única localización del bundle (español).
+      # ST-063: recursos de Info.plist localizados (nombre de la app).
       - path: Resources/es.lproj
+        buildPhase: resources
+      # ST-227: el String Catalog, la fuente única de todo el texto de
+      # interfaz. Xcode lo COMPILA a `<idioma>.lproj/Localizable.strings`
+      # al construir la app. Los `.lproj` que están junto a él en
+      # `Sources/AuraStudio/Resources/` son para SwiftPM, que no compila
+      # catálogos (los genera `tools/compilar-catalogo.py`) -- acá NO se
+      # incluyen, o habría dos archivos peleando por la misma salida.
+      - path: Sources/AuraStudio/Resources/Localizable.xcstrings
         buildPhase: resources
     info:
       path: Resources/Info.plist
@@ -101,7 +115,11 @@ targets:
         LSApplicationCategoryType: public.app-category.music
         LSMinimumSystemVersion: "13.0"
         CFBundleDevelopmentRegion: es
-        CFBundleLocalizations: [es]
+        # ST-227: los seis idiomas de la app. Hasta acá era solo `es`
+        # (ST-063, para que la barra de menús estándar saliera en
+        # español); ahora el String Catalog trae los demás y el sistema
+        # elige. El selector propio de A7b decide por encima.
+        CFBundleLocalizations: [es, en, ja, de, ru, fr]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.ricolinos.aurastudio

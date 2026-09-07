@@ -18,11 +18,20 @@ import PackageDescription
 // Vendor/firmware-dist/ (SwiftPM no los referencia).
 let package = Package(
     name: "AuraStudio",
+    // ST-227: el idioma FUENTE de la app. El texto que se escribe en el
+    // código es español y de ahí salen las traducciones, no al revés.
+    defaultLocalization: "es",
     platforms: [.macOS("14.4")],
     targets: [
         .executableTarget(
             name: "AuraStudio",
-            path: "Sources/AuraStudio"
+            path: "Sources/AuraStudio",
+            // ST-227: el String Catalog. En SwiftPM se resuelve por
+            // `Bundle.module`; en el proyecto de Xcode --que es el
+            // entregable real-- va como recurso del bundle de la app y
+            // se resuelve por `Bundle.main`. `AuraBundle.strings` elige
+            // cuál, y es el único sitio donde esa diferencia existe.
+            resources: [.process("Resources")]
         ),
         .testTarget(
             name: "AuraStudioTests",

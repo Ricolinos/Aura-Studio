@@ -1,0 +1,4417 @@
+{
+  "sourceLanguage": "es",
+  "strings": {
+    "album-cover-picker-view.album": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Álbum %@ de %@"
+          }
+        }
+      }
+    },
+    "album-cover-picker-view.buscando-caratulas-cover-art-archive-dee": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscando carátulas en Cover Art Archive y Deezer..."
+          }
+        }
+      }
+    },
+    "album-cover-picker-view.caratulas-para": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carátulas para «%@»"
+          }
+        }
+      }
+    },
+    "album-cover-picker-view.deja-este-album-como-esta-pasa": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deja este álbum como está y pasa al siguiente de la lista"
+          }
+        }
+      }
+    },
+    "album-cover-picker-view.no-se-encontraron-caratulas-para-este": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se encontraron carátulas para este álbum."
+          }
+        }
+      }
+    },
+    "album-cover-picker-view.omitir-este-album": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Omitir este álbum"
+          }
+        }
+      }
+    },
+    "album-cover-picker-view.recomendada": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recomendada"
+          }
+        }
+      }
+    },
+    "album-cover-picker-view.revisa-que-titulo-artista-album-esten": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisa que el título y el artista del álbum estén bien escritos; también puedes activar Deezer en Ajustes › Servicios para tener más resultados."
+          }
+        }
+      }
+    },
+    "album-cover-picker-view.usar-esta-caratula": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar esta carátula"
+          }
+        }
+      }
+    },
+    "album-cover-picker-view.usar-recomendada": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar recomendada"
+          }
+        }
+      }
+    },
+    "albums-view.abrir": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir"
+          }
+        }
+      }
+    },
+    "albums-view.albumes": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Álbumes"
+          }
+        }
+      }
+    },
+    "albums-view.aplica-sin-preguntar-caratula-que-supere": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplica sin preguntar la carátula que supere el umbral de confianza en cada álbum; los que no tengan una opción segura los eliges tú, uno por uno"
+          }
+        }
+      }
+    },
+    "albums-view.aplica-sin-preguntar-solo-caratula-que": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplica sin preguntar solo la carátula que supere el umbral de confianza; si ninguna lo supera, se abre el selector"
+          }
+        }
+      }
+    },
+    "albums-view.aplicar-caratula-recomendada": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicar carátula recomendada"
+          }
+        }
+      }
+    },
+    "albums-view.busca-varias-caratulas-cover-art-archive": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Busca varias carátulas en Cover Art Archive y Deezer y aplica la que elijas a todas las canciones del álbum"
+          }
+        }
+      }
+    },
+    "albums-view.buscar-caratulas-album": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar carátulas del álbum..."
+          }
+        }
+      }
+    },
+    "albums-view.buscar-caratulas-albumes": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar carátulas de %lld álbumes..."
+          }
+        }
+      }
+    },
+    "albums-view.buscar-informacion-linea": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar información en línea"
+          }
+        }
+      }
+    },
+    "albums-view.mostrar-finder": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar en Finder"
+          }
+        }
+      }
+    },
+    "albums-view.ordenar-albumes": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ordenar los álbumes"
+          }
+        }
+      }
+    },
+    "albums-view.ordenar-por": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ordenar por"
+          }
+        }
+      }
+    },
+    "albums-view.texto": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ — %@"
+          }
+        }
+      }
+    },
+    "app-menu-commands.agregar-biblioteca": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agregar a la biblioteca..."
+          }
+        }
+      }
+    },
+    "app-menu-commands.buscar-actualizaciones-aura-studio": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar actualizaciones de Aura Studio..."
+          }
+        }
+      }
+    },
+    "app-menu-commands.buscar-elementos-similares": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar elementos similares..."
+          }
+        }
+      }
+    },
+    "app-menu-commands.deseleccionar-todo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deseleccionar todo"
+          }
+        }
+      }
+    },
+    "app-menu-commands.mostrar-barra-estado": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar barra de estado"
+          }
+        }
+      }
+    },
+    "app-menu-commands.mostrar-carpeta-biblioteca-finder": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar carpeta de la biblioteca en Finder"
+          }
+        }
+      }
+    },
+    "app-menu-commands.seleccionar-todo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seleccionar todo"
+          }
+        }
+      }
+    },
+    "app-update-bar.abre-notas-version-github": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre las notas de la versión %@ en GitHub"
+          }
+        }
+      }
+    },
+    "app-update-bar.ahora-no": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ahora no"
+          }
+        }
+      }
+    },
+    "app-update-bar.baja-aura-studio-no-se-actualiza": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baja %@. Aura Studio no se actualiza sola: cuando termine, ábrelo y arrastra la app a Aplicaciones."
+          }
+        }
+      }
+    },
+    "app-update-bar.descargar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descargar"
+          }
+        }
+      }
+    },
+    "app-update-bar.hay-version-nueva-aura-studio": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay una versión nueva de Aura Studio: %@"
+          }
+        }
+      }
+    },
+    "app-update-bar.instalador-todavia-no-esta-publicado-ese": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El instalador todavía no está publicado en ese Release."
+          }
+        }
+      }
+    },
+    "app-update-bar.oculta-este-aviso-no-vuelve-aparecer": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oculta este aviso. No vuelve a aparecer por esta versión."
+          }
+        }
+      }
+    },
+    "app-update-bar.ver-novedades": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver novedades"
+          }
+        }
+      }
+    },
+    "artist-image-store.02x": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "_%02x"
+          }
+        }
+      }
+    },
+    "artists-view.artistas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Artistas"
+          }
+        }
+      }
+    },
+    "artists-view.artistas-seleccionados": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld artistas seleccionados"
+          }
+        }
+      }
+    },
+    "artists-view.buscar-fotos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar fotos"
+          }
+        }
+      }
+    },
+    "artists-view.buscar-fotos-artistas-linea-fanart-tv": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar fotos de los artistas en línea (fanart.tv / Deezer)"
+          }
+        }
+      }
+    },
+    "artists-view.elige-artista-lista": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige un artista de la lista."
+          }
+        }
+      }
+    },
+    "artists-view.eliminar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar"
+          }
+        }
+      }
+    },
+    "artists-view.mas-informacion": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más información..."
+          }
+        }
+      }
+    },
+    "artists-view.todavia-no-hay-musica-biblioteca": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía no hay música en la biblioteca."
+          }
+        }
+      }
+    },
+    "aura-studio-app.biblioteca": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Biblioteca"
+          }
+        }
+      }
+    },
+    "automatic-update-view.listo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo"
+          }
+        }
+      }
+    },
+    "await-bootloader-u-s-b-view.arranque-grabado": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arranque grabado"
+          }
+        }
+      }
+    },
+    "await-bootloader-u-s-b-view.bootloader-aura-ya-esta-tu-ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El bootloader de Aura ya está en tu iPod. Ahora falta copiar Aura al disco."
+          }
+        }
+      }
+    },
+    "await-bootloader-u-s-b-view.disco-detectado-copiando-aura": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disco detectado -- copiando Aura..."
+          }
+        }
+      }
+    },
+    "await-bootloader-u-s-b-view.esperando-que-ipod-reaparezca-como-disco": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando a que el iPod reaparezca como disco..."
+          }
+        }
+      }
+    },
+    "await-bootloader-u-s-b-view.ipod-aparecio-con-firmware-apple-arranqu": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El iPod apareció con el firmware de Apple -- el arranque no se grabó"
+          }
+        }
+      }
+    },
+    "await-bootloader-u-s-b-view.ipod-sigue-dfu-reinicialo-con-select": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El iPod sigue en DFU. Reinícialo con SELECT + MENU."
+          }
+        }
+      }
+    },
+    "await-bootloader-u-s-b-view.texto": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        }
+      }
+    },
+    "back-continue-row.atras": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atrás"
+          }
+        }
+      }
+    },
+    "background-task-center-indicator.actividad-segundo-plano": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actividad en segundo plano"
+          }
+        }
+      }
+    },
+    "background-task-center-indicator.cancelar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelar"
+          }
+        }
+      }
+    },
+    "background-task-center-indicator.nada-corriendo-ahora-mismo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada corriendo ahora mismo."
+          }
+        }
+      }
+    },
+    "background-task-center-indicator.ver-lo-que-esta-corriendo-segundo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver lo que está corriendo en segundo plano"
+          }
+        }
+      }
+    },
+    "batch-media-info-view.calificacion": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calificación"
+          }
+        }
+      }
+    },
+    "batch-media-info-view.canciones-seleccionadas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld canciones seleccionadas"
+          }
+        }
+      }
+    },
+    "batch-media-info-view.editar-elementos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editar elementos"
+          }
+        }
+      }
+    },
+    "batch-media-info-view.editar-varios-elementos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editar varios elementos"
+          }
+        }
+      }
+    },
+    "batch-media-info-view.metadata": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metadata"
+          }
+        }
+      }
+    },
+    "batch-media-info-view.mixto": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mixto"
+          }
+        }
+      }
+    },
+    "batch-media-info-view.no-editables-lote": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No editables en lote"
+          }
+        }
+      }
+    },
+    "batch-media-info-view.no-volver-mostrar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No volver a mostrar"
+          }
+        }
+      }
+    },
+    "batch-media-info-view.quieres-editar-varios-elementos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Quieres editar varios elementos?"
+          }
+        }
+      }
+    },
+    "batch-media-info-view.se-aplica-canciones-seleccionadas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se aplica a las %lld canciones seleccionadas."
+          }
+        }
+      }
+    },
+    "batch-media-info-view.se-editan-cancion-usa-cambiar-nombre": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se editan de a una canción -- usa \"Cambiar nombre...\" o \"Más información...\" sobre un solo elemento."
+          }
+        }
+      }
+    },
+    "batch-media-info-view.vas-editar-canciones-vez-campos-que": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vas a editar %lld canciones a la vez. Los campos que no coincidan entre todas se muestran como \"Mixto\" -- lo que escribas se aplica a las %lld. El título y el número de pista no se pueden editar en lote."
+          }
+        }
+      }
+    },
+    "bundled-artifacts.02x": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%02x"
+          }
+        }
+      }
+    },
+    "content-view.actualizar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizar"
+          }
+        }
+      }
+    },
+    "content-view.aura-studio": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio"
+          }
+        }
+      }
+    },
+    "content-view.sincronizar-con-ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizar con el iPod"
+          }
+        }
+      }
+    },
+    "content-view.vuelve-leer-estado-ipod-tu-biblioteca": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuelve a leer el estado del iPod y de tu biblioteca. No copia ni borra nada."
+          }
+        }
+      }
+    },
+    "cover-contamination-sheet.caratulas-imagenes": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carátulas en Imágenes"
+          }
+        }
+      }
+    },
+    "cover-contamination-sheet.cerrar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerrar"
+          }
+        }
+      }
+    },
+    "cover-contamination-sheet.dejar-todo-como-esta": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dejar todo como está"
+          }
+        }
+      }
+    },
+    "cover-contamination-sheet.estas-imagenes-entraron-imagenes-por-su": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estas imágenes entraron a Imágenes por su extensión, pero parecen carátulas de álbum (por su nombre, o porque viven junto a canciones o videos). Revísalas: las que quites dejan de ser fotos de tu biblioteca; el archivo original en tu Mac no se toca. Si dudas, déjala."
+          }
+        }
+      }
+    },
+    "cover-contamination-sheet.quitar-imagenes": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar de Imágenes"
+          }
+        }
+      }
+    },
+    "cover-contamination-sheet.seleccionadas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld de %lld seleccionadas"
+          }
+        }
+      }
+    },
+    "cover-normalization-bar.caratulas-tu-biblioteca-pasan-ser-cuadra": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Las carátulas de tu biblioteca pasan a ser cuadradas, como las muestra el iPod. Tus archivos originales no se tocan."
+          }
+        }
+      }
+    },
+    "cover-normalization-bar.detiene-normalizacion-lo-que-ya-se": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detiene la normalización. Lo que ya se hizo queda hecho y el resto sigue la próxima vez que abras la biblioteca."
+          }
+        }
+      }
+    },
+    "cover-store.02x": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%02X"
+          }
+        }
+      }
+    },
+    "detect-device-view.buscando-tu-ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscando tu iPod..."
+          }
+        }
+      }
+    },
+    "detect-device-view.conecta-tu-ipod-classic-6g-este": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecta tu iPod Classic 6G a este Mac por USB. Si iTunes/Music se abre solo, puedes cerrarlo -- no interfiere con Aura Studio."
+          }
+        }
+      }
+    },
+    "detect-device-view.encontramos-con-firmware-original-apple": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encontramos \"%@\", con el firmware original de Apple (no esta en FAT32 todavia). No hace falta que lo conviertas: haz clic en \"Ya lo conecte, continuar igual\" y Aura Studio lo formatea automaticamente en el paso de preparar el disco, mas adelante."
+          }
+        }
+      }
+    },
+    "detect-device-view.encontramos-dispositivo-apple-pero-no-pu": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encontramos un dispositivo Apple, pero no pudimos confirmar que sea un iPod Classic 6G."
+          }
+        }
+      }
+    },
+    "detect-device-view.encontramos-preparando-siguiente-paso": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encontramos \"%@\". Preparando el siguiente paso..."
+          }
+        }
+      }
+    },
+    "detect-device-view.encontramos-tu-ipod-pero-su-disco": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encontramos tu iPod, pero su disco no tiene un sistema de archivos legible (asi se ve en el modo bootloader, o si una instalacion quedo a medias). Haz clic en \"Ya lo conecte, continuar igual\" para prepararlo e instalar Aura."
+          }
+        }
+      }
+    },
+    "detect-device-view.tu-ipod-ya-esta-modo-dfu": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod ya esta en modo DFU."
+          }
+        }
+      }
+    },
+    "detect-device-view.ya-lo-conecte-continuar-igual": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya lo conecte, continuar igual"
+          }
+        }
+      }
+    },
+    "device-activity-bar.alcance": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alcance"
+          }
+        }
+      }
+    },
+    "device-activity-bar.archivo-s-listo-s-para-sincronizar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld archivo(s) listo(s) para sincronizar."
+          }
+        }
+      }
+    },
+    "device-activity-bar.cancelando": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelando..."
+          }
+        }
+      }
+    },
+    "device-activity-bar.conecta-tu-ipod-para-sincronizar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecta tu iPod para sincronizar."
+          }
+        }
+      }
+    },
+    "device-activity-bar.instala-aura-este-ipod-para-poder": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instala Aura en este iPod para poder sincronizar."
+          }
+        }
+      }
+    },
+    "device-activity-bar.sincronizando-archivo-s": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizando %@ de %@ archivo(s)..."
+          }
+        }
+      }
+    },
+    "device-activity-bar.sincronizar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizar"
+          }
+        }
+      }
+    },
+    "device-activity-bar.toda-biblioteca": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toda la biblioteca"
+          }
+        }
+      }
+    },
+    "device-activity-bar.todo-sincronizado": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todo sincronizado."
+          }
+        }
+      }
+    },
+    "device-activity-bar.usados-libres": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ usados de %@ -- %@ libres"
+          }
+        }
+      }
+    },
+    "device-activity-bar.verificando-ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificando el iPod..."
+          }
+        }
+      }
+    },
+    "device-general-view.actualizacion-disponible": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualización de %@%@ disponible"
+          }
+        }
+      }
+    },
+    "device-general-view.administrar-contenido": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Administrar contenido"
+          }
+        }
+      }
+    },
+    "device-general-view.buscar-actualizaciones": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar actualizaciones de %@"
+          }
+        }
+      }
+    },
+    "device-general-view.conecta-tu-ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecta tu iPod"
+          }
+        }
+      }
+    },
+    "device-general-view.contenido": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contenido"
+          }
+        }
+      }
+    },
+    "device-general-view.contenido-solo-ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contenido solo en el iPod (%lld)…"
+          }
+        }
+      }
+    },
+    "device-general-view.disco-esta-vacio-instala-aura-desde": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El disco esta vacio. Instala Aura desde la seccion Instalador para empezar a usarlo."
+          }
+        }
+      }
+    },
+    "device-general-view.eliminar-contenido": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar contenido"
+          }
+        }
+      }
+    },
+    "device-general-view.esta-accion-no-se-puede-deshacer": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta acción no se puede deshacer -- los archivos borrados del iPod no se pueden recuperar. Tu biblioteca en esta Mac no se toca; puedes volver a sincronizar cuando quieras."
+          }
+        }
+      }
+    },
+    "device-general-view.esta-version-aura-studio-trae-mas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta versión de Aura Studio trae un %@ más nuevo que el instalado en tu iPod. Actualizar no borra tu música ni tus ajustes."
+          }
+        }
+      }
+    },
+    "device-general-view.este-ipod-tiene-rockbox-que-no": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este iPod tiene un Rockbox que no es Aura: la biblioteca de Aura Studio no aplica a esta instalacion. En la seccion Instalador puedes instalar Aura (sin flashear -- solo se reemplaza la carpeta .rockbox) o restaurar el firmware original."
+          }
+        }
+      }
+    },
+    "device-general-view.expulsar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expulsar"
+          }
+        }
+      }
+    },
+    "device-general-view.general": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "General"
+          }
+        }
+      }
+    },
+    "device-general-view.hay-archivos-aura-disco-pero-no": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay archivos de Aura en el disco, pero no hay evidencia de que Aura arranque en este iPod: está corriendo el firmware de Apple y Aura nunca escribió su configuración aquí. Instala Aura desde la sección Instalador (flashea el arranque por DFU y vuelve a copiar los archivos) para activar la biblioteca. Si ya lo instalaste, enciende el iPod con Aura una vez y vuelve a conectarlo."
+          }
+        }
+      }
+    },
+    "device-general-view.instalar-actualizacion": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar actualización de %@"
+          }
+        }
+      }
+    },
+    "device-general-view.ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En el iPod"
+          }
+        }
+      }
+    },
+    "device-general-view.mientras-tanto-puedes-ir-armando-bibliot": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mientras tanto puedes ir armando la biblioteca en Musica, Video y Fotos: se sincroniza cuando conectes el dispositivo."
+          }
+        }
+      }
+    },
+    "device-general-view.musica-este-ipod-administra-firmware-ori": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La musica de este iPod la administra el firmware original de Apple -- se sincroniza con Finder (o la app Musica), no con Aura Studio. Si instalas Aura desde la seccion Instalador, la biblioteca de Aura Studio se activa."
+          }
+        }
+      }
+    },
+    "device-general-view.nombre-este-ipod-se-puso-desde": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El nombre de este iPod se puso desde otra Mac; solo desde ahí se puede cambiar."
+          }
+        }
+      }
+    },
+    "device-general-view.playlists": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Playlists"
+          }
+        }
+      }
+    },
+    "device-general-view.texto": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        }
+      }
+    },
+    "device-general-view.texto-2": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld"
+          }
+        }
+      }
+    },
+    "device-general-view.todavia-no-sincronizaste-este-ipod-con": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavia no sincronizaste este iPod con Aura Studio."
+          }
+        }
+      }
+    },
+    "device-general-view.tu-ipod-tiene-firmware-que-esta": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod tiene %@, un firmware que esta versión de Aura Studio no trae embebido. Te avisa de sus actualizaciones pero no puede aplicarlas: descárgala de su repositorio e instálala como de costumbre. Tu biblioteca no se toca."
+          }
+        }
+      }
+    },
+    "device-general-view.ver-release": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ver el Release de %@"
+          }
+        }
+      }
+    },
+    "device-general-view.volumen-no-esta-fat32": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El volumen no esta en FAT32"
+          }
+        }
+      }
+    },
+    "device-name-field.haz-clic-para-cambiar-nombre-ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Haz clic para cambiar el nombre del iPod"
+          }
+        }
+      }
+    },
+    "done-view.abrir-acceso-total-al-disco": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Acceso total al disco"
+          }
+        }
+      }
+    },
+    "done-view.detectamos-que-firmware-ya-habia-estado": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detectamos que el firmware ya había estado instalado antes, así que solo actualizamos los archivos sin volver a grabar el arranque. Si al desconectar el cable tu iPod NO arranca con %@, el arranque se perdió desde la instalación anterior y hace falta grabarlo de nuevo por DFU."
+          }
+        }
+      }
+    },
+    "done-view.instalar-solo-este-firmware-ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar solo este firmware en el iPod"
+          }
+        }
+      }
+    },
+    "done-view.instalaste-modo-dual-boot": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalaste en modo dual boot"
+          }
+        }
+      }
+    },
+    "done-view.no-arranco-con-terminar-por-dfu": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No arrancó con %@ -- terminar por DFU"
+          }
+        }
+      }
+    },
+    "done-view.para-volver-apple-cualquier-momento-mant": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para volver a Apple en cualquier momento, mantén SELECT + MENU presionados unos 5 segundos al encender el iPod. Cualquier otra combinacion (o nada) arranca %@."
+          }
+        }
+      }
+    },
+    "done-view.reintentar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reintentar"
+          }
+        }
+      }
+    },
+    "done-view.reintentar-ya-prepare-ipod-con-itunes": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reintentar (ya preparé el iPod con iTunes)"
+          }
+        }
+      }
+    },
+    "done-view.tu-ipod-sigue-mostrando-firmware-origina": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Tu iPod sigue mostrando el firmware original?"
+          }
+        }
+      }
+    },
+    "enter-d-f-u-view.aura-studio-no-puede-detectar-modo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio no puede detectar el modo DFU"
+          }
+        }
+      }
+    },
+    "enter-d-f-u-view.entra-modo-dfu": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entra a modo DFU"
+          }
+        }
+      }
+    },
+    "enter-d-f-u-view.esperando-modo-dfu": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esperando modo DFU..."
+          }
+        }
+      }
+    },
+    "enter-d-f-u-view.modo-dfu-detectado": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modo DFU detectado"
+          }
+        }
+      }
+    },
+    "enter-d-f-u-view.no-aparece-pausar-servicios-macos-que": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿No aparece? Pausar los servicios de macOS que pueden interferir"
+          }
+        }
+      }
+    },
+    "enter-d-f-u-view.pedira-tu-contrasena-se-reactivan-solos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pedirá tu contraseña. Se reactivan solos al terminar."
+          }
+        }
+      }
+    },
+    "extras-view.cambiar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar a %@"
+          }
+        }
+      }
+    },
+    "extras-view.consultando-github": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consultando GitHub..."
+          }
+        }
+      }
+    },
+    "extras-view.disponible-dispositivo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disponible en el dispositivo"
+          }
+        }
+      }
+    },
+    "extras-view.elige-cual-firmwares-instalables-usa-aur": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige cuál de los firmwares instalables usa Aura Studio la próxima vez que abras el Instalador. Todos son software libre (GPL v2), derivados de Rockbox, y comparten la misma biblioteca: tu música, fotos y videos se sincronizan igual con cualquiera."
+          }
+        }
+      }
+    },
+    "extras-view.es-firmware-activo-tu-ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ es el firmware activo de tu iPod."
+          }
+        }
+      }
+    },
+    "extras-view.estos-extras-ipod-original-no-estan": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Estos extras del iPod original no estan implementados en Aura. Cuando existan, se van a poder gestionar desde aca."
+          }
+        }
+      }
+    },
+    "extras-view.extras": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Extras"
+          }
+        }
+      }
+    },
+    "extras-view.firmware": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware"
+          }
+        }
+      }
+    },
+    "extras-view.incluida": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "incluida"
+          }
+        }
+      }
+    },
+    "extras-view.instalar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar %@"
+          }
+        }
+      }
+    },
+    "extras-view.licencias": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Licencias"
+          }
+        }
+      }
+    },
+    "extras-view.revisar-nuevo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar de nuevo"
+          }
+        }
+      }
+    },
+    "extras-view.todavia-no": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavia no"
+          }
+        }
+      }
+    },
+    "extras-view.tu-ipod-tiene-instalar-lo-agrega": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod tiene %@. Instalar %@ lo agrega: %@ se guarda dormido con sus ajustes y podrás volver a él desde aquí sin volver a instalar nada."
+          }
+        }
+      }
+    },
+    "extras-view.ya-esta-instalado-tu-ipod-dormido": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ya está instalado en tu iPod, dormido, con sus ajustes guardados. Cambiar toma un segundo (no descarga ni borra nada); después hay que reiniciar el iPod y la primera vez reconstruye su base de música."
+          }
+        }
+      }
+    },
+    "f-fmpeg-transcoder.2f": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%.2f"
+          }
+        }
+      }
+    },
+    "git-hub-token-settings-view.consulta-releases-aura-firmware-con-toke": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Consulta los Releases de Aura-Firmware con el token guardado y muestra la versión más nueva"
+          }
+        }
+      }
+    },
+    "git-hub-token-settings-view.crear-token-github": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear el token en GitHub"
+          }
+        }
+      }
+    },
+    "git-hub-token-settings-view.github-opcional": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GitHub (opcional)"
+          }
+        }
+      }
+    },
+    "git-hub-token-settings-view.guardar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Guardar"
+          }
+        }
+      }
+    },
+    "git-hub-token-settings-view.probar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probar"
+          }
+        }
+      }
+    },
+    "git-hub-token-settings-view.quitar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar"
+          }
+        }
+      }
+    },
+    "git-hub-token-settings-view.repositorios-firmwares-son-publicos-aura": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Los repositorios de los firmwares son públicos: Aura Studio ya avisa de versiones nuevas sin necesitar nada de esto. Un token de solo lectura solo eleva el límite de consultas a la API de GitHub (útil si compartes tu conexión con muchas otras consultas); instalar el firmware nunca depende de esto, porque viene incluido en la app."
+          }
+        }
+      }
+    },
+    "git-hub-token-settings-view.si-todas-formas-quieres-uno-crea": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si de todas formas quieres uno: crea un fine-grained token en github.com › Settings › Developer settings con acceso solo a Aura-Firmware, Metro-Aura y moonlit-aura y permiso Contents: Read-only."
+          }
+        }
+      }
+    },
+    "git-hub-token-settings-view.token-llavero": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Token en el Llavero"
+          }
+        }
+      }
+    },
+    "install-manifest.08x-llu": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%08x %llu %@"
+          }
+        }
+      }
+    },
+    "installer-home-view.actualizar-arranque": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizar el arranque"
+          }
+        }
+      }
+    },
+    "installer-home-view.firmware-instalar-se-elige-extras-firmwa": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware a instalar: %@ -- se elige en Extras › Firmware"
+          }
+        }
+      }
+    },
+    "installer-home-view.restaurar-ipod-original": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar iPod original"
+          }
+        }
+      }
+    },
+    "installer-wizard-view.cancelar-instalacion": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelar instalación"
+          }
+        }
+      }
+    },
+    "installer-wizard-view.continuar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuar"
+          }
+        }
+      }
+    },
+    "installer-wizard-view.detener": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detener"
+          }
+        }
+      }
+    },
+    "installer-wizard-view.detener-proceso": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Detener el proceso?"
+          }
+        }
+      }
+    },
+    "installer-wizard-view.detener-proceso-mitad-puede-dejar-disco": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detener el proceso a la mitad puede dejar el disco del iPod con errores. Si eso pasa, vuelve a correr el instalador para repararlo."
+          }
+        }
+      }
+    },
+    "installing-view.no-desconectes-ipod-ni-cierres-aura": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No desconectes el iPod ni cierres Aura Studio durante este paso."
+          }
+        }
+      }
+    },
+    "library-browsing-components.borrar-busqueda": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar búsqueda"
+          }
+        }
+      }
+    },
+    "library-status-bar.texto": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "—"
+          }
+        }
+      }
+    },
+    "library-sync.02d": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%02d %@"
+          }
+        }
+      }
+    },
+    "library-sync.s-02d": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " S%02d"
+          }
+        }
+      }
+    },
+    "library-sync.s-02de-02d": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": " S%02dE%02d"
+          }
+        }
+      }
+    },
+    "library-unavailable-view.crear-nueva": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear una nueva"
+          }
+        }
+      }
+    },
+    "library-unavailable-view.elegir-otra-biblioteca": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegir otra biblioteca..."
+          }
+        }
+      }
+    },
+    "library-unavailable-view.instalador-extras-siguen-funcionando-sin": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El Instalador y Extras siguen funcionando sin la biblioteca."
+          }
+        }
+      }
+    },
+    "library-unavailable-view.no-se-perdio-nada-tu-catalogo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se perdió nada: tu catálogo y tus archivos siguen en ese disco. Aura Studio no va a tocar nada hasta que vuelva a estar disponible."
+          }
+        }
+      }
+    },
+    "licenses-view.aura-studio-es-gratuita-se-distribuye": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio es gratuita y se distribuye sin fines comerciales. Trae embebidos, tal cual se publicaron y sin modificarlos, los firmwares instalables para iPod Classic 6G, todos software libre bajo la Licencia Pública General de GNU versión 2 (GPL v2). Cada uno es un derivado de Rockbox; su código fuente completo, la versión exacta incluida aquí y el registro de cambios respecto a Rockbox están en los enlaces de abajo, como exige la sección 3 de esa licencia."
+          }
+        }
+      }
+    },
+    "licenses-view.gpl-v2": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GPL v2"
+          }
+        }
+      }
+    },
+    "licenses-view.rockbox": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rockbox"
+          }
+        }
+      }
+    },
+    "licenses-view.todos-firmwares-su-bootloader-dual-boot": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todos los firmwares, su bootloader dual-boot y la herramienta de flasheo mks5lboot derivan del proyecto Rockbox (GPL v2). Aura Studio no modifica ninguno de esos binarios."
+          }
+        }
+      }
+    },
+    "licenses-view.version-incluida": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versión incluida: %@"
+          }
+        }
+      }
+    },
+    "licenses-view.version-incluida-no-registrada-esta-buil": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versión incluida: no registrada en esta build"
+          }
+        }
+      }
+    },
+    "media-info-view.archivo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archivo"
+          }
+        }
+      }
+    },
+    "media-info-view.categoria": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Categoría"
+          }
+        }
+      }
+    },
+    "media-info-view.informacion": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Información"
+          }
+        }
+      }
+    },
+    "media-info-view.letra-opcional": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Letra (opcional)"
+          }
+        }
+      }
+    },
+    "media-info-view.mas-informacion": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Más información"
+          }
+        }
+      }
+    },
+    "media-info-view.nombre-destino-ipod-se-arma-con": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El nombre de destino en el iPod se arma con estos tres campos -- cambiarlos y sincronizar de nuevo reagrupa el episodio en Movie Flow."
+          }
+        }
+      }
+    },
+    "media-info-view.se-guarda-junto-cancion-se-muestra": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se guarda junto a la canción y se muestra en pantalla mientras suena en el iPod."
+          }
+        }
+      }
+    },
+    "media-info-view.se-sincroniza-con-ipod-misma-calificacio": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se sincroniza con el iPod: la misma calificación que se elige acá o en \"Ahora suena\" del aparato."
+          }
+        }
+      }
+    },
+    "media-info-view.titulo-artista-album-son-obligatorios-pa": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Título, artista y álbum son obligatorios para sincronizar."
+          }
+        }
+      }
+    },
+    "media-section-view.aura-studio-ahora-lee-mejor-etiquetas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio ahora lee mejor las etiquetas de tus archivos. ¿Quieres volver a leer las %lld canción(es) de tu biblioteca?"
+          }
+        }
+      }
+    },
+    "media-section-view.busca-poster-tmdb-fanart-tv-necesita": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Busca el póster en TMDB y fanart.tv (necesita la API key de TMDB en Ajustes › Servicios) y lo copia junto al video en el iPod"
+          }
+        }
+      }
+    },
+    "media-section-view.buscar-caratulas-albumes": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar carátulas de %lld álbumes..."
+          }
+        }
+      }
+    },
+    "media-section-view.buscar-letra": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar letra"
+          }
+        }
+      }
+    },
+    "media-section-view.buscar-poster-linea": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar póster en línea"
+          }
+        }
+      }
+    },
+    "media-section-view.cambiar-categoria": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar categoría"
+          }
+        }
+      }
+    },
+    "media-section-view.cambiar-nombre": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar nombre..."
+          }
+        }
+      }
+    },
+    "media-section-view.cambiar-nombre-2": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar nombre"
+          }
+        }
+      }
+    },
+    "media-section-view.cola": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En cola"
+          }
+        }
+      }
+    },
+    "media-section-view.como-quieres-llamar-al-album-que": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Cómo quieres llamar al álbum que incluirá estas fotos?"
+          }
+        }
+      }
+    },
+    "media-section-view.con-cambios": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Con cambios"
+          }
+        }
+      }
+    },
+    "media-section-view.crear-album": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear álbum"
+          }
+        }
+      }
+    },
+    "media-section-view.editar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editar"
+          }
+        }
+      }
+    },
+    "media-section-view.editar-metadata-letra-cancion-selecciona": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editar metadata y letra de la canción seleccionada"
+          }
+        }
+      }
+    },
+    "media-section-view.elegir-que-columnas-mostrar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegir qué columnas mostrar"
+          }
+        }
+      }
+    },
+    "media-section-view.eliminar-caratula": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar carátula"
+          }
+        }
+      }
+    },
+    "media-section-view.este-archivo-cambio-ipod-fuera-aura": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este archivo cambió en el iPod fuera de Aura Studio. La próxima vez que sincronices podrás elegir si lo conservas o lo reemplazas con la versión de tu biblioteca."
+          }
+        }
+      }
+    },
+    "media-section-view.filtrar-ordenar-elegir-columnas-tambien": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filtrar, ordenar y elegir columnas (también con clic derecho sobre los encabezados)"
+          }
+        }
+      }
+    },
+    "media-section-view.imagen-es-tu-biblioteca-parecen-caratula": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld imagen(es) de tu biblioteca parecen carátulas de álbum, no fotos. ¿Quieres revisarlas?"
+          }
+        }
+      }
+    },
+    "media-section-view.importar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar"
+          }
+        }
+      }
+    },
+    "media-section-view.importar-fotos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar fotos"
+          }
+        }
+      }
+    },
+    "media-section-view.marcar-como-favorito": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marcar como favorito"
+          }
+        }
+      }
+    },
+    "media-section-view.modificado-ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modificado en el iPod"
+          }
+        }
+      }
+    },
+    "media-section-view.nombrar-album": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombrar álbum"
+          }
+        }
+      }
+    },
+    "media-section-view.obtener-informacion": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Obtener información..."
+          }
+        }
+      }
+    },
+    "media-section-view.para-convertir-videos-al-formato-ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para convertir videos al formato del iPod hace falta ffmpeg. Instálalo con Homebrew (\"brew install ffmpeg\") y vuelve a intentar."
+          }
+        }
+      }
+    },
+    "media-section-view.pendiente": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pendiente"
+          }
+        }
+      }
+    },
+    "media-section-view.quitado-ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitado del iPod"
+          }
+        }
+      }
+    },
+    "media-section-view.quitar-favoritos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar de favoritos"
+          }
+        }
+      }
+    },
+    "media-section-view.quitar-poster": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar póster"
+          }
+        }
+      }
+    },
+    "media-section-view.revisar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revisar"
+          }
+        }
+      }
+    },
+    "media-section-view.se-quito-ipod-fuera-aura-studio": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se quitó del iPod fuera de Aura Studio -- no se vuelve a copiar solo. Usa \"Sincronizar la selección\" en el menú contextual para volver a copiarlo."
+          }
+        }
+      }
+    },
+    "media-section-view.seleccionar-canciones-mismo-album": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seleccionar canciones del mismo álbum"
+          }
+        }
+      }
+    },
+    "media-section-view.seleccionar-canciones-mismo-artista": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seleccionar canciones del mismo artista"
+          }
+        }
+      }
+    },
+    "media-section-view.sin-album": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sin álbum"
+          }
+        }
+      }
+    },
+    "media-section-view.sincronizado": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizado"
+          }
+        }
+      }
+    },
+    "media-section-view.sincronizar-seleccion": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sincronizar la selección"
+          }
+        }
+      }
+    },
+    "media-section-view.solo-favoritos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo favoritos"
+          }
+        }
+      }
+    },
+    "media-section-view.tipo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tipo"
+          }
+        }
+      }
+    },
+    "media-section-view.volver-intentar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volver a intentar"
+          }
+        }
+      }
+    },
+    "media-section-view.volver-leer": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volver a leer"
+          }
+        }
+      }
+    },
+    "media-section-view.volver-leer-etiquetas-archivo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volver a leer etiquetas del archivo"
+          }
+        }
+      }
+    },
+    "media-section-view.vuelve-leer-titulo-artista-album-ano": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vuelve a leer título, artista, álbum, año, género, autor, N.º de pista y carátula directamente del archivo original"
+          }
+        }
+      }
+    },
+    "movies-view.ordenar-peliculas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ordenar las películas"
+          }
+        }
+      }
+    },
+    "movies-view.peliculas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Películas"
+          }
+        }
+      }
+    },
+    "music-settings-view.agregar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agregar"
+          }
+        }
+      }
+    },
+    "music-settings-view.agrupar-colaboraciones-bajo-artista-prin": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agrupar las colaboraciones bajo el artista principal"
+          }
+        }
+      }
+    },
+    "music-settings-view.artista-album-recomendado": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Artista / Álbum (recomendado)"
+          }
+        }
+      }
+    },
+    "music-settings-view.artistas-invitados": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Artistas invitados"
+          }
+        }
+      }
+    },
+    "music-settings-view.calidad-audio": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calidad de audio"
+          }
+        }
+      }
+    },
+    "music-settings-view.carpetas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carpetas"
+          }
+        }
+      }
+    },
+    "music-settings-view.comprimir-mp3-buena-calidad": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comprimir a MP3 de buena calidad"
+          }
+        }
+      }
+    },
+    "music-settings-view.excepciones": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Excepciones"
+          }
+        }
+      }
+    },
+    "music-settings-view.gorillaz-feat-soul-se-agrupa-junto": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«Gorillaz feat. De La Soul» se agrupa junto a «Gorillaz»: un solo artista en la lista y una sola foto. Los créditos completos NO se modifican -- se siguen viendo en la tabla de canciones y en «Más información»."
+          }
+        }
+      }
+    },
+    "music-settings-view.mantener-formato-original-recomendado": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantener formato original (recomendado)"
+          }
+        }
+      }
+    },
+    "music-settings-view.nombre-archivo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombre del archivo"
+          }
+        }
+      }
+    },
+    "music-settings-view.nombres-que-no-se-deben-recortar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nombres que no se deben recortar aunque traigan un separador, como «Simon + Garfunkel» o «Café con Leche»."
+          }
+        }
+      }
+    },
+    "music-settings-view.numero-pista-titulo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Número de pista y título"
+          }
+        }
+      }
+    },
+    "music-settings-view.quitar-excepciones": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar «%@» de las excepciones"
+          }
+        }
+      }
+    },
+    "music-settings-view.separadores-que-agrupan-vs-versus-nunca": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Separadores que agrupan: . «vs.» y «versus» nunca agrupan, porque ahí la colaboración tiene nombre propio."
+          }
+        }
+      }
+    },
+    "music-settings-view.solo-album": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo álbum"
+          }
+        }
+      }
+    },
+    "music-settings-view.solo-artista": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo artista"
+          }
+        }
+      }
+    },
+    "music-settings-view.solo-titulo-recomendado": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo el título (recomendado)"
+          }
+        }
+      }
+    },
+    "music-settings-view.titulo-album": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Título - Álbum"
+          }
+        }
+      }
+    },
+    "music-settings-view.titulo-artista": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Título - Artista"
+          }
+        }
+      }
+    },
+    "music-settings-view.todavia-no-hay-excepciones": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía no hay excepciones."
+          }
+        }
+      }
+    },
+    "music-view-options-view.arrastra-para-cambiar-orden-titulo-siemp": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrastra para cambiar el orden. \"Título\" siempre va primero."
+          }
+        }
+      }
+    },
+    "music-view-options-view.ascendente": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ascendente"
+          }
+        }
+      }
+    },
+    "music-view-options-view.descendente": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descendente"
+          }
+        }
+      }
+    },
+    "music-view-options-view.mostrar-solo-favoritos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostrar solo favoritos"
+          }
+        }
+      }
+    },
+    "music-view-options-view.opciones-visualizacion": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opciones de visualización"
+          }
+        }
+      }
+    },
+    "music-view-options-view.orden-columnas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orden de las columnas"
+          }
+        }
+      }
+    },
+    "music-view-options-view.ordenar-por": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ordenar por:"
+          }
+        }
+      }
+    },
+    "music-view-options-view.restablecer": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restablecer"
+          }
+        }
+      }
+    },
+    "permissions-view.abrir-ajustes-sistema-privacidad-segurid": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir Ajustes del Sistema (Privacidad y Seguridad)"
+          }
+        }
+      }
+    },
+    "permissions-view.permisos-necesarios": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permisos necesarios"
+          }
+        }
+      }
+    },
+    "photo-albums-view.dejarlo-vacio-disuelve-album-fotos-vuelv": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dejarlo vacío disuelve el álbum -- las fotos vuelven a \"Sin álbum\"."
+          }
+        }
+      }
+    },
+    "photo-albums-view.eliminar-biblioteca": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar de la biblioteca"
+          }
+        }
+      }
+    },
+    "photo-albums-view.eliminar-fotos-biblioteca": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar fotos de la biblioteca"
+          }
+        }
+      }
+    },
+    "photo-albums-view.quitar-album": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar del álbum"
+          }
+        }
+      }
+    },
+    "photo-albums-view.renombrar-album": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renombrar álbum..."
+          }
+        }
+      }
+    },
+    "photo-albums-view.renombrar-album-2": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renombrar álbum"
+          }
+        }
+      }
+    },
+    "photo-albums-view.vista-previa": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vista previa"
+          }
+        }
+      }
+    },
+    "photo-settings-view.calidad-imagen": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calidad de imagen"
+          }
+        }
+      }
+    },
+    "photo-settings-view.optimizar-espacio-320px-recomendado": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Optimizar espacio (320px, recomendado)"
+          }
+        }
+      }
+    },
+    "photo-settings-view.organizar-por-coleccion-biblioteca": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Organizar por colección en la biblioteca"
+          }
+        }
+      }
+    },
+    "photo-settings-view.pantalla-ipod-es-320x240-foto-camara": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La pantalla del iPod es de 320x240 -- una foto de una cámara o teléfono actual pesa decenas de veces más de lo que esa pantalla puede mostrar. \"Optimizar espacio\" reduce cada foto a 320px de lado mayor, el ancho nativo de la pantalla. \"Versión HD\" la deja en 640px: se ve un poco más nítida al hacer zoom en el visor, a cambio de más espacio en el iPod. En ambos casos se guarda como JPEG comprimido, nunca la foto original completa."
+          }
+        }
+      }
+    },
+    "photo-settings-view.separa-tus-fotos-colecciones-imagenes-fo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Separa tus fotos en colecciones (Imágenes, Fotos e IA por defecto, editables abajo) para encontrarlas más fácil DENTRO de Aura Studio -- la colección se sugiere sola al importar, y se puede corregir a mano en Biblioteca → Fotos. Con este ajuste activo, cada colección es ademas una carpeta dentro de \"Imágenes\" en la carpeta local de la biblioteca (Finder). No cambia dónde quedan en el iPod: ahí siempre se copian juntas en \"Photos\", porque el visor del iPod todavía no navega por subcarpetas."
+          }
+        }
+      }
+    },
+    "photo-settings-view.version-hd-640px": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versión HD (640px)"
+          }
+        }
+      }
+    },
+    "playlists-view.borrar-playlist": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borrar playlist"
+          }
+        }
+      }
+    },
+    "playlists-view.elegir-imagen": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegir imagen..."
+          }
+        }
+      }
+    },
+    "playlists-view.elige-o-crea-playlist": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige o crea una playlist"
+          }
+        }
+      }
+    },
+    "playlists-view.importar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar..."
+          }
+        }
+      }
+    },
+    "playlists-view.playlist": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En la playlist (%lld)"
+          }
+        }
+      }
+    },
+    "playlists-view.quitar-imagen": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar imagen"
+          }
+        }
+      }
+    },
+    "privileged-action-sheet.si-cancelas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si cancelas:"
+          }
+        }
+      }
+    },
+    "restore-handoff-view.cerrar-aura-studio-abrir-finder": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerrar Aura Studio y abrir Finder"
+          }
+        }
+      }
+    },
+    "restore-handoff-view.continua-finder": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continua en Finder"
+          }
+        }
+      }
+    },
+    "restore-handoff-view.ipod-quedo-listo-se-quito-bootloader": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El iPod quedo listo: se quito el bootloader de Aura y el disco se preparo en el formato que Finder espera (Mac OS Plus con registro, mapa GUID)."
+          }
+        }
+      }
+    },
+    "series-view.series": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Series"
+          }
+        }
+      }
+    },
+    "series-view.temporadas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld, %@"
+          }
+        }
+      }
+    },
+    "services-settings-view.activo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activo"
+          }
+        }
+      }
+    },
+    "services-settings-view.activos-sin-configurar-nada": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activos, sin configurar nada"
+          }
+        }
+      }
+    },
+    "services-settings-view.caratula-alternativa-1000x1000-sin-key-e": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Caratula alternativa, 1000x1000. Sin key -- es la unica fuente cuyos terminos permiten explicitamente el uso no comercial."
+          }
+        }
+      }
+    },
+    "services-settings-view.como-conseguir-key": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cómo conseguir la key"
+          }
+        }
+      }
+    },
+    "services-settings-view.cuando-cancion-le-falta-caratula-se": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cuando a una canción le falta carátula, se prueban estos servicios en orden y se usa la primera imagen que aparezca."
+          }
+        }
+      }
+    },
+    "services-settings-view.deezer": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deezer"
+          }
+        }
+      }
+    },
+    "services-settings-view.descartadas-por-que": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descartadas, y por que"
+          }
+        }
+      }
+    },
+    "services-settings-view.opcionales": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opcionales"
+          }
+        }
+      }
+    },
+    "services-settings-view.orden-busqueda-caratula": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Orden de búsqueda de carátula"
+          }
+        }
+      }
+    },
+    "services-settings-view.se-agregan-solo-si-te-faltan": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se agregan solo si te faltan caratulas: lo de arriba ya cubre el caso normal."
+          }
+        }
+      }
+    },
+    "services-settings-view.se-investigaron-no-se-van-integrar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se investigaron y NO se van a integrar. Queda escrito para no volver a evaluarlas."
+          }
+        }
+      }
+    },
+    "services-settings-view.texto": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        }
+      }
+    },
+    "settings-section-view.actualizaciones-aura-studio": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizaciones de Aura Studio"
+          }
+        }
+      }
+    },
+    "settings-section-view.aqui-vive-catalogo-tu-biblioteca-funcion": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aquí vive el catálogo de tu biblioteca -- funciona aunque el iPod no esté conectado, y se sincroniza al conectarlo. Que además copie tus archivos aquí depende del ajuste de abajo."
+          }
+        }
+      }
+    },
+    "settings-section-view.avisarme-tambien-versiones-beta": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Avisarme también de versiones beta"
+          }
+        }
+      }
+    },
+    "settings-section-view.bibliotecas-vinculadas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bibliotecas vinculadas"
+          }
+        }
+      }
+    },
+    "settings-section-view.buscar-actualizaciones": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar actualizaciones"
+          }
+        }
+      }
+    },
+    "settings-section-view.cambiar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cambiar..."
+          }
+        }
+      }
+    },
+    "settings-section-view.carpeta-biblioteca-aura": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carpeta de la biblioteca Aura"
+          }
+        }
+      }
+    },
+    "settings-section-view.carpetas-externas-que-arrastraste-aura-c": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carpetas externas que arrastraste a Aura con \"Crear copias de los medios...\" apagado -- Aura no copia nada de ahí, solo las recuerda acá. Quitar una carpeta de esta lista no borra ni desvincula lo que ya importaste desde ella, solo deja de mostrarla."
+          }
+        }
+      }
+    },
+    "settings-section-view.crear-copias-medios-biblioteca-aura": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crear copias de los medios en la Biblioteca de Aura"
+          }
+        }
+      }
+    },
+    "settings-section-view.dejar-mostrar-esta-carpeta-aca": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dejar de mostrar esta carpeta acá"
+          }
+        }
+      }
+    },
+    "settings-section-view.hay-version-nueva-aviso-esta-al": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay una versión nueva: %@. El aviso está al pie de la ventana."
+          }
+        }
+      }
+    },
+    "settings-section-view.hoy-todas-versiones-publicadas-aura-stud": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hoy todas las versiones publicadas de Aura Studio son beta, así que conviene dejarlo activado. Aura Studio nunca se actualiza sola: solo te avisa y te deja bajar el instalador."
+          }
+        }
+      }
+    },
+    "settings-section-view.no-se-pudo-comprobar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo comprobar: %@"
+          }
+        }
+      }
+    },
+    "settings-section-view.todavia-no-arrastraste-ninguna-carpeta-c": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todavía no arrastraste ninguna carpeta con ese ajuste apagado."
+          }
+        }
+      }
+    },
+    "settings-section-view.version-instalada": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versión instalada: %@"
+          }
+        }
+      }
+    },
+    "settings-section-view.ya-tienes-version-mas-nueva": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ya tienes la versión más nueva."
+          }
+        }
+      }
+    },
+    "similar-items-detector.d-02d": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%d:%02d"
+          }
+        }
+      }
+    },
+    "similar-items-view.aplica-solo-estos-cambios-artista-album": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplica solo estos cambios de artista/álbum/título. No elimina nada."
+          }
+        }
+      }
+    },
+    "similar-items-view.aplicar-metadata-sugerida": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicar la metadata sugerida"
+          }
+        }
+      }
+    },
+    "similar-items-view.buscando-parecidos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscando parecidos..."
+          }
+        }
+      }
+    },
+    "similar-items-view.canciones-videos-o-fotos-que-parecen": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Canciones, videos o fotos que parecen estar dos veces en tu biblioteca, con distinta metadata o distinto formato."
+          }
+        }
+      }
+    },
+    "similar-items-view.comparando-titulos-artistas-duraciones-t": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comparando títulos, artistas, duraciones y tamaños..."
+          }
+        }
+      }
+    },
+    "similar-items-view.confianza": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confianza"
+          }
+        }
+      }
+    },
+    "similar-items-view.conservar-marcado-eliminar-resto": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conservar el marcado y eliminar el resto"
+          }
+        }
+      }
+    },
+    "similar-items-view.editar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editar..."
+          }
+        }
+      }
+    },
+    "similar-items-view.elementos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elementos"
+          }
+        }
+      }
+    },
+    "similar-items-view.elementos-similares": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elementos similares"
+          }
+        }
+      }
+    },
+    "similar-items-view.elige-grupo-lista": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elige un grupo de la lista."
+          }
+        }
+      }
+    },
+    "similar-items-view.eliminar-elementos-biblioteca": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Eliminar %lld de la biblioteca?"
+          }
+        }
+      }
+    },
+    "similar-items-view.eliminar-solo-este": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar solo este"
+          }
+        }
+      }
+    },
+    "similar-items-view.fotos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fotos"
+          }
+        }
+      }
+    },
+    "similar-items-view.hay-grupo-s-ignorado-s": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay %lld grupo(s) ignorado(s)."
+          }
+        }
+      }
+    },
+    "similar-items-view.ignorar-este-grupo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ignorar este grupo"
+          }
+        }
+      }
+    },
+    "similar-items-view.metadata-sugerida": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metadata sugerida"
+          }
+        }
+      }
+    },
+    "similar-items-view.musica": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Música"
+          }
+        }
+      }
+    },
+    "similar-items-view.no-son-lo-mismo-no-volver": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No son lo mismo: no volver a mostrar este grupo."
+          }
+        }
+      }
+    },
+    "similar-items-view.por-que-se-parecen": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por qué se parecen"
+          }
+        }
+      }
+    },
+    "similar-items-view.probables-duplicados": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Probables y duplicados"
+          }
+        }
+      }
+    },
+    "similar-items-view.se-conserva-archivos-que-viven-dentro": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se conserva «%@». Los archivos que viven dentro de la carpeta de la biblioteca se borran; los originales fuera de ella no se tocan."
+          }
+        }
+      }
+    },
+    "similar-items-view.solo-duplicados": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Solo duplicados"
+          }
+        }
+      }
+    },
+    "similar-items-view.sugerencia": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sugerencia"
+          }
+        }
+      }
+    },
+    "similar-items-view.sugerido": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "sugerido"
+          }
+        }
+      }
+    },
+    "similar-items-view.texto": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@»"
+          }
+        }
+      }
+    },
+    "similar-items-view.texto-2": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "«%@»"
+          }
+        }
+      }
+    },
+    "similar-items-view.todo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todo"
+          }
+        }
+      }
+    },
+    "similar-items-view.todos-parecidos": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todos los parecidos"
+          }
+        }
+      }
+    },
+    "similar-items-view.video": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Video"
+          }
+        }
+      }
+    },
+    "similar-items-view.volver-buscar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volver a buscar"
+          }
+        }
+      }
+    },
+    "similar-items-view.volver-mostrar-ignorados": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volver a mostrar los ignorados (%lld)"
+          }
+        }
+      }
+    },
+    "sync-sheets.antes-sincronizar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Antes de sincronizar"
+          }
+        }
+      }
+    },
+    "sync-sheets.archivo-s-importado-s-revisalos-musica": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld archivo(s) importado(s) -- revísalos en Música/Video/Fotos."
+          }
+        }
+      }
+    },
+    "sync-sheets.archivo-s-se-modificaron-ipod-fuera": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld archivo(s) se modificaron en el iPod fuera de Aura Studio."
+          }
+        }
+      }
+    },
+    "sync-sheets.aura-studio-nunca-escribio-estos-archivo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio nunca escribió estos archivos -- no forman parte de tu biblioteca. Puedes importarlos (se copian a tu Mac y pasan a ser parte de tu biblioteca) o eliminarlos del iPod."
+          }
+        }
+      }
+    },
+    "sync-sheets.conservar-ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conservar los del iPod"
+          }
+        }
+      }
+    },
+    "sync-sheets.contenido-solo-ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contenido solo en el iPod"
+          }
+        }
+      }
+    },
+    "sync-sheets.eliminar-ipod": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Eliminar del iPod"
+          }
+        }
+      }
+    },
+    "sync-sheets.esta-accion-no-se-puede-deshacer": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta acción no se puede deshacer."
+          }
+        }
+      }
+    },
+    "sync-sheets.importar-biblioteca": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar a la biblioteca"
+          }
+        }
+      }
+    },
+    "sync-sheets.quitar-ipod-elemento-s-que-ya": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quitar del iPod los %lld elemento(s) que ya no están en tu biblioteca"
+          }
+        }
+      }
+    },
+    "sync-sheets.reemplazar-con-biblioteca": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reemplazar con la biblioteca"
+          }
+        }
+      }
+    },
+    "sync-sheets.se-eliminaran-ipod-tu-biblioteca-mac": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se eliminarán del iPod. Tu biblioteca en la Mac no cambia."
+          }
+        }
+      }
+    },
+    "themes-view.carpeta-con-fonts-e-icons-masks": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Una carpeta con fonts/ e icons/masks/ ya generados -- por ejemplo, la salida de design-system/generate.py del firmware, o ~/Aura-local/theme-apple-source/design-system-out/."
+          }
+        }
+      }
+    },
+    "themes-view.carpeta-origen": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carpeta de origen"
+          }
+        }
+      }
+    },
+    "themes-view.construir-e-instalar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Construir e instalar"
+          }
+        }
+      }
+    },
+    "themes-view.construir-tema-nuevo": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Construir tema nuevo…"
+          }
+        }
+      }
+    },
+    "themes-view.elegir": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Elegir…"
+          }
+        }
+      }
+    },
+    "themes-view.entendido": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entendido"
+          }
+        }
+      }
+    },
+    "themes-view.este-tema-se-construye-solo-para": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este tema se construye solo para tu propio iPod: no lo compartas ni lo distribuyas -- la licencia de esos assets no lo permite fuera de tu dispositivo. Aura Studio nunca incluye ni descarga estos archivos; solo usa los que tu Mac ya tiene."
+          }
+        }
+      }
+    },
+    "themes-view.esto-borra-tema-ipod-si-estaba": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esto borra el tema del iPod. Si estaba activo, Aura vuelve a ser el tema integrado."
+          }
+        }
+      }
+    },
+    "themes-view.no-se-pudo-completar-operacion": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo completar la operación"
+          }
+        }
+      }
+    },
+    "themes-view.se-aplican-ipod-al-arrancar-tema": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se aplican en el iPod al arrancar. Un tema que no carga (formato incompatible o archivos faltantes) aparece atenuado -- el firmware nunca finge soportar lo que no tiene."
+          }
+        }
+      }
+    },
+    "themes-view.tema": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tema"
+          }
+        }
+      }
+    },
+    "themes-view.temas": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Temas"
+          }
+        }
+      }
+    },
+    "themes-view.usa-tipografias-o-simbolos-con-licencia": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa tipografías o símbolos con licencia restringida (por ejemplo, SF Pro o SF Symbols)"
+          }
+        }
+      }
+    },
+    "video-settings-view.formato-video": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Formato de video"
+          }
+        }
+      }
+    },
+    "video-settings-view.organizar-por-categoria-biblioteca": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Organizar por categoría en la biblioteca"
+          }
+        }
+      }
+    },
+    "video-settings-view.separa-tus-videos-videos-series-pelicula": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Separa tus videos en Videos, Series y Películas para encontrarlos más fácil DENTRO de Aura Studio (la categoría se sugiere sola por duración al importar -- salvo \"Series\", que no tiene una heurística confiable y siempre se asigna a mano -- y se puede corregir en Biblioteca → Video). No cambia dónde quedan en el iPod: ahí siempre se copian juntos en \"Videos\", porque el reproductor del iPod todavía no navega por subcarpetas."
+          }
+        }
+      }
+    },
+    "video-settings-view.todo-video-se-convierte-320x240-mpeg": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todo video se convierte a 320x240 MPEG-1/2 al sincronizar -- es el único formato que el iPod con Aura puede reproducir a velocidad completa (el chip de este iPod no puede decodificar H.264 ni formatos modernos). No es una preferencia: es una limitación real del hardware de 2007, así que aquí no hay nada que elegir."
+          }
+        }
+      }
+    },
+    "welcome-view.entiendo-que-arranque-apple-se-borra": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entiendo que el arranque de Apple se borra"
+          }
+        }
+      }
+    },
+    "welcome-view.firmware-original-apple-se-borra-arranqu": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El firmware original de Apple se borra del arranque del iPod. Una vez instalado, el iPod solo arranca %@; para volver a Apple hay que restaurarlo con iTunes/Finder desde cero. (El dual boot necesita un iPod en formato \"winpod\" -- restaurado desde Windows --, y un iPod restaurado desde Mac no lo es, asi que Aura Studio ya no lo ofrece.)"
+          }
+        }
+      }
+    },
+    "welcome-view.marca-casilla-arriba-para-continuar": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marca la casilla de arriba para continuar."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
