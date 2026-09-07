@@ -86,6 +86,7 @@ foreach (string csFile in coreCsFiles)
     string relative = RelativePath(repoRoot, csFile);
 
     fixedCulture.AddRange(FixedCultureExtractor.Extract(relative, text, keys));
+    fixedCulture.AddRange(CatalogDataExtractor.Extract(relative, text, keys));
     if (Path.GetFileName(csFile) != "ContextMenu.cs") // ya se contó en su propio pase, con los ids de menú fuera
         allPlurals.AddRange(PluralTernaryScan.Extract(relative, text));
 }
@@ -121,6 +122,8 @@ int statusMessageCount = allSites.Count(s => s.Kind == "StatusMessage");
 int contentDialogCount = allSites.Count(s => s.Kind == "ContentDialog");
 int helperArgumentCount = allSites.Count(s => s.Kind == "HelperArgument");
 int uniqueKeys = allSites.Select(s => s.Key).Distinct(StringComparer.Ordinal).Count();
+int culturaFijaCount = fixedCulture.Count(s => s.Kind == "CulturaFija");
+int datoCount = fixedCulture.Count(s => s.Kind == "Dato");
 
 Console.WriteLine($"Archivos XAML recorridos: {xamlFiles.Length}");
 Console.WriteLine($"Archivos .cs de AuraStudio.App recorridos: {appCsFiles.Length}");
@@ -135,7 +138,8 @@ Console.WriteLine($"Sitios HelperArgument: {helperArgumentCount}");
 Console.WriteLine($"Total de sitios: {allSites.Count}");
 Console.WriteLine($"Claves únicas: {uniqueKeys}");
 Console.WriteLine($"Ternarios de plural encontrados: {allPlurals.Count}");
-Console.WriteLine($"Sitios de cultura fija: {fixedCulture.Count}");
+Console.WriteLine($"Sitios de cultura fija: {culturaFijaCount}");
+Console.WriteLine($"Sitios de dato (no traducir): {datoCount}");
 Console.WriteLine();
 Console.WriteLine($"-> {Path.Combine(outDir, "revision.csv")}");
 Console.WriteLine($"-> {Path.Combine(outDir, "plurales-ternario.csv")}");

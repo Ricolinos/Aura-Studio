@@ -239,12 +239,41 @@ public class LocalizationDraftTests
     public void TodaFilaTraducibleDelCsvTieneSuClaveEnElResw()
     {
         Dictionary<string, string> resw = ReadResw(RequireFile(Path.Combine("Strings", "es", "Resources.resw")));
-        List<string> csvKeys = ReadCsvKeys(RequireFile("revision.csv"), excludeKind: "CulturaFija");
+        // "CulturaFija": no es texto para traducir, es un defecto de código.
+        // "Dato" (A7b): dato de catálogo que se compara por igualdad
+        // (MediaCategoryNames.IsMoviesCategory/IsSeriesCategory) -- tampoco
+        // entra al .resw, ver CatalogDataExtractor.
+        List<string> csvKeys = ReadCsvKeys(RequireFile("revision.csv"), "CulturaFija", "Dato");
 
         Assert.True(csvKeys.Count > 0);
 
         List<string> missing = [.. csvKeys.Where(key => !resw.ContainsKey(key)).Distinct(StringComparer.Ordinal)];
         Assert.True(missing.Count == 0, "claves del CSV ausentes en el .resw: " + string.Join(", ", missing.Take(10)));
+    }
+
+    /// <summary>
+    /// A7b (encargo del coordinador): las categorías de video son dato del
+    /// catálogo, no texto de interfaz -- <c>CatalogDataExtractor</c> las
+    /// marca <c>Kind = "Dato"</c> con una nota explicando por qué, en vez de
+    /// dejarlas colar como una clave traducible más. Ninguna fila "Dato"
+    /// puede terminar en el <c>.resw</c> -- si apareciera ahí, alguien la
+    /// estaría tratando como texto vivo, exactamente lo que esto evita.
+    /// </summary>
+    [Fact]
+    public void NingunaFilaDeDatoDeCatalogoTerminaEnElResw()
+    {
+        Dictionary<string, string> resw = ReadResw(RequireFile(Path.Combine("Strings", "es", "Resources.resw")));
+        string[] lines = File.ReadAllLines(RequireFile("revision.csv"));
+
+        List<string> datoKeys = [.. lines.Skip(1)
+            .Where(line => line.Length > 0)
+            .Select(ParseCsvLine)
+            .Where(fields => fields[1] == "Dato")
+            .Select(fields => fields[0])];
+
+        List<string> filtradas = [.. datoKeys.Where(key => resw.ContainsKey(key))];
+        Assert.True(filtradas.Count == 0,
+            "clave de dato de catálogo colada en el .resw como si fuera texto traducible: " + string.Join(", ", filtradas));
     }
 
     /// <summary>
@@ -298,12 +327,16 @@ public class LocalizationDraftTests
         string sharedPath = RequireFile("claves-compartidas.csv");
         var windowsKeyInParens = new Regex(@"\((?<key>[a-z0-9][\w.-]*)(?:,[^)]*)?\)");
 
-        List<(string CsvKey, string TextoEs, string SitioWindows)> igualRows = [.. File.ReadAllLines(sharedPath)
+        string[] sharedLines = File.ReadAllLines(sharedPath);
+        int textoEsIndex = SharedCsvColumnIndex(sharedLines[0], "texto es");
+        int sitioWindowsIndex = SharedCsvColumnIndex(sharedLines[0], "sitio Windows");
+
+        List<(string CsvKey, string TextoEs, string SitioWindows)> igualRows = [.. sharedLines
             .Skip(1)
             .Where(line => line.Length > 0)
             .Select(ParseCsvLine)
             .Where(fields => fields[^1] == "igual" && !PendingCompositionExceptions.Contains(fields[0]))
-            .Select(fields => (fields[0], fields[1], fields[3]))];
+            .Select(fields => (fields[0], fields[textoEsIndex], fields[sitioWindowsIndex]))];
 
         List<string> sinCorrespondencia = [];
         foreach ((string csvKey, string textoEs, string sitioWindows) in igualRows)
@@ -338,14 +371,18 @@ public class LocalizationDraftTests
         string sharedPath = RequireFile("claves-compartidas.csv");
         var windowsKeyInParens = new Regex(@"\((?<key>[a-z0-9][\w.-]*)(?:,[^)]*)?\)");
 
-        List<string> row = File.ReadAllLines(sharedPath)
+        string[] sharedLines = File.ReadAllLines(sharedPath);
+        int textoEsIndex = SharedCsvColumnIndex(sharedLines[0], "texto es");
+        int sitioWindowsIndex = SharedCsvColumnIndex(sharedLines[0], "sitio Windows");
+
+        List<string> row = sharedLines
             .Skip(1)
             .Where(line => line.Length > 0)
             .Select(ParseCsvLine)
             .Single(fields => fields[0] == "orphans-confirm-message");
 
-        string textoEs = row[1];
-        string sitioWindows = row[3];
+        string textoEs = row[textoEsIndex];
+        string sitioWindows = row[sitioWindowsIndex];
 
         bool matched = windowsKeyInParens.Matches(sitioWindows)
             .Select(m => m.Groups["key"].Value)
@@ -505,14 +542,29 @@ public class LocalizationDraftTests
                 StringComparer.Ordinal);
     }
 
-    private static List<string> ReadCsvKeys(string path, string? excludeKind = null)
+    private static List<string> ReadCsvKeys(string path, params string[] excludeKinds)
     {
         string[] lines = File.ReadAllLines(path);
         return [.. lines.Skip(1)
             .Where(line => line.Length > 0)
             .Select(ParseCsvLine)
-            .Where(fields => excludeKind is null || fields[1] != excludeKind)
+            .Where(fields => !excludeKinds.Contains(fields[1]))
             .Select(fields => fields[0])];
+    }
+
+    /// <summary>
+    /// El índice de una columna de <c>claves-compartidas.csv</c>, leído del
+    /// ENCABEZADO -- nunca un índice fijo (ST-247, addendum A7b): la Mac
+    /// agregó "texto en" entre "texto es" y "sitio Mac" sin avisar de la
+    /// posición, corriendo el índice de todo lo que venía después. Mismo
+    /// criterio que <c>ClavesCompartidasCsv.UpdateSitioWindows</c>
+    /// (tools/ExtraerCadenasWindows), que ya lo hacía así desde el principio.
+    /// </summary>
+    private static int SharedCsvColumnIndex(string headerLine, string columnName)
+    {
+        int index = ParseCsvLine(headerLine).IndexOf(columnName);
+        Assert.True(index >= 0, $"claves-compartidas.csv no tiene una columna \"{columnName}\" en su encabezado");
+        return index;
     }
 
     /// <summary>Un parser de CSV mínimo: comillas dobles, con <c>""</c> como escape adentro.</summary>

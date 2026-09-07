@@ -15388,3 +15388,56 @@ verde** (las 11 de antes más 3 de `XamlExtractorTests`). `dotnet run
 --project tools/ExtraerCadenasWindows`: 517 sitios, 517 claves únicas, 51
 plurales, 4 cultura fija; `claves-compartidas.csv` sigue byte a byte
 idéntico salvo cuando hay una cita de verdad que actualizar.
+
+## ST-247 (addendum) — Windows: las categorías de video son dato del catálogo, no texto de interfaz
+
+Encargo del coordinador (A7b). `MediaCategoryNames.DisplayNameSpanish`/
+`DisplayNameEnglish` (`AuraStudio.Core/MediaCategory.cs`) --
+"Películas"/"Series"/"Videos"-- se guardan literalmente en el catálogo
+(D-228) y `MediaCategoryNames.IsMoviesCategory`/`IsSeriesCategory` las
+compara por igualdad contra esos dos literales fijos (es/en), nunca
+contra un recurso localizado en vivo: si algún día se tradujeran de
+verdad, un catálogo en otro idioma (ja/de/ru/fr) dejaría de reconocerse.
+
+Verificado que HOY no hay ningún bug de verdad que corregir: `AuraStudio.Core`
+no entra al escaneo general de literales (solo `FixedCultureExtractor`/
+`PluralTernaryScan` recorren Core, ninguno de los dos reconocería estas
+cadenas), así que nunca se emitieron como clave. `CatalogDataExtractor`
+(nuevo) es preventivo, para cuando se amplíe el escaneo a Core: reconoce
+los seis literales de `MediaCategoryNames` (3 español + 3 inglés,
+incluido el brazo `_ => "Videos"`/`"Videos"` por defecto, guardado SOLO
+dentro de un archivo ya confirmado como el de `MediaCategoryNames` --
+nunca un patrón `_ => "..."` suelto en cualquier archivo) y los marca
+`Kind = "Dato"` con una nota explicando el porqué, en la columna "tipo" Y
+"nota" de `revision.csv`. Van al mismo cajón que `CulturaFija`
+(`fixedCulture`, ya excluido del `.resw`): entran a `revision.csv` pero
+nunca a la salida traducible.
+
+Dos pruebas: `TodaFilaTraducibleDelCsvTieneSuClaveEnElResw` ahora excluye
+también `Kind = "Dato"` (antes solo `CulturaFija`);
+`NingunaFilaDeDatoDeCatalogoTerminaEnElResw` (nueva) falla si alguna vez
+una clave "Dato" se cuela en el `.resw` como si fuera texto vivo.
+
+### Bug real encontrado de paso, no de este encargo: dos pruebas de `claves-compartidas.csv` seguían leyendo columnas por índice fijo
+
+Al correr la batería completa tras el rebase de A7b (columna `texto en`
+nueva, corre el índice de todo lo que viene después) aparecieron NUEVE
+filas "igual" rotas de golpe en
+`TodaClaveCompartidaMarcadaIgualExisteEnElReswDeWindows` -- no un defecto
+de esta tarea: la prueba (y su hermana `OrphansConfirmMessageExisteEnElReswDeWindowsConElMismoTexto`)
+leían "texto es"/"sitio Windows" con `fields[1]`/`fields[3]` fijos, el
+mismo defecto que `ClavesCompartidasCsv.UpdateSitioWindows` ya había
+corregido (ubicar por NOMBRE de columna, leyendo el encabezado) pero que
+nunca se replicó en las pruebas que leen el mismo archivo desde
+`AuraStudio.Core.Tests`. Corregido con el mismo criterio: `SharedCsvColumnIndex`
+(nuevo, lee el encabezado) reemplaza los dos índices fijos.
+
+### Verificación
+
+`dotnet build AuraStudio.Windows.slnx`: 0 errores. `dotnet test
+AuraStudio.Windows.slnx`: **1 754 en verde, 1 omitida**, ninguna en rojo.
+`dotnet test tests/ExtraerCadenasWindows.Tests`: **14 en verde**. `dotnet
+run --project tools/ExtraerCadenasWindows`: 517 sitios (sin cambio -- los
+`Dato` no cuentan ahí, van aparte), 6 sitios de dato nuevos (0 antes), 4
+cultura fija; 0 filas de `revision.csv` perdidas contra la corrida
+anterior; `claves-compartidas.csv` sigue byte a byte idéntico.
