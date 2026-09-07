@@ -16469,3 +16469,92 @@ columnas. Las 178 filas de "fr" coinciden carácter por carácter contra
 `criticas-fr.csv`; los 33 términos alemanes conservados sin cambio;
 0 ids duplicados. Sin builds: trabajo de solo texto y una búsqueda web
 real para el hallazgo de terminología.
+
+## ST-248 (parcial) — Windows: retrotraducción ciega del ruso (B7c) — tres formas de plural, y dos discrepancias glosario/uso real
+
+Mismo método: de `windows/b2` (`558ebb2`) se leyó SOLO
+`docs/extraccion-cadenas/retrotraduccion/criticas-ru.csv` (194 filas --
+178 bases + 16 de más por la tercera forma de plural rusa) y
+`docs/extraccion-cadenas/glosario-plataforma.csv` (35 términos, ya
+ampliado por el Experto con "volumen" y "ensayar" a partir de los
+hallazgos de las retrotraducciones de alemán/francés) -- nunca
+`mapa-criticas.csv` ni ningún `Resources*.resx`. Registro formal
+("вы"), reflejado como "usted".
+
+**Estructura de plural**: donde alemán/francés traían `<id>` (uno) +
+`<id+1>` (otro), el ruso expande la forma "otro" en `<id+1>.few` (2-4) y
+`<id+1>.many` (5+), y la forma "uno" (`<id>`) queda igual, sin sufijo --
+confirmado en las 16 bases, sin excepciones. Tres cosas que el
+coordinador avisó que NO son error, confirmadas en el texto real:
+"фото"/"видео" son indeclinables (misma forma en cualquier contexto,
+visto en `c011`/`c119`/`c155`); el registro es "вы" en las 194 filas;
+no apareció ningún caso literal de "número después del sustantivo"
+como el ejemplo que se mencionó (`c132` sigue el mismo orden que en los
+demás idiomas).
+
+**Concordancia numeral-sustantivo, verificada fila por fila** (lo que
+pidió el coordinador): correcta en las 16 bases. Dos patrones reales,
+ninguno un error: (1) en contexto NOMINATIVO (sujeto de una oración,
+p. ej. `c018`/`c019`), las tres formas SÍ difieren --
+"файл"/"файла"/"файлов"--, siguiendo la regla estándar (1 = nominativo,
+2-4 = genitivo singular, 5+ = genitivo plural); (2) en contexto
+genitivo-regido por otra palabra (p. ej. `c143`/`c144`, "Копирование N
+файлов…"), la distinción 2-4 vs. 5+ **colapsa** en la misma forma
+genitiva plural -- es una propiedad real del ruso (los casos oblicuos no
+conservan la forma paucal especial de 2-4, que solo existe en
+nominativo/acusativo), no un descuido de quien tradujo. También se ve
+variación real entre concordancia neutra-impersonal ("записано"/
+"скопировано", invariable) y plural ("убраны") para sujetos numerados
+2+ según el verbo -- las dos son gramaticalmente válidas en ruso
+moderno, es variación de estilo entre frases, no un error.
+
+**Dos discrepancias entre `glosario-plataforma.csv` y lo que de verdad
+usó `criticas-ru.csv`**, encontradas al cotejar (nadie las había
+señalado todavía):
+
+1. **canción**: el glosario propone "песня"; el texto real usa
+   "композиция" en las cuatro filas donde aparece (`c147`/`c148`/`c155`/
+   `c177`). Contrastado con Yandex.Music (búsqueda real, no solo
+   memoria): el término dominante en la UI real de un servicio de
+   música ruso es **"трек"** (préstamo del inglés -- "Треки с
+   устройства", "Добавить трек"); "композиция" aparece en textos de
+   ayuda más descriptivos, no en botones cortos; "песня" es más
+   restringido (canción CON voz, no aplica bien a un instrumental).
+   Ninguno es "incorrecto", pero "песня" (lo que propone el glosario)
+   es la peor opción de las tres para este contexto -- recomendado
+   reconciliar el glosario con lo ya usado, no al revés.
+
+2. **ensayar**: el glosario propone "репетиция" (SUSTANTIVO,
+   "un ensayo/una repetición"), que ni siquiera calza gramaticalmente
+   con el patrón de los demás botones de la sección (verbos/imperativos:
+   "Форматировать…", "Убрать"). El texto real usa "Проверить" (verbo,
+   comprobar/verificar) en `c062` ("Проверить без записи") -- coherente
+   con el resto del texto ruso, que prefiere el marco de "verificación"
+   en vez de "simulacro" para este concepto (a diferencia del alemán
+   "proben" y el francés "simuler"). Recomendado que el glosario adopte
+   "Проверить"/"проверка", no "репетиция".
+
+**Nota aparte, no un error**: "unidad" y "disco" comparten la misma
+palabra rusa ("диск") en el glosario -- confirmado que es real (el ruso
+no tiene dos palabras distintas para "drive" y "disk" como el español),
+no una fila mal copiada.
+
+`glosario-veredicto.csv` se amplía con `ru,veredicto_ru,fuente_ru`
+(y de paso incorpora "volumen"/"ensayar", los dos términos que el
+Experto agregó al glosario compartido a partir de los hallazgos de
+alemán/francés).
+
+### Verificación
+
+Contador de campos por línea: encontró y corrigió 2 filas en
+`criticas-ru-retro.csv` (`c003`, `c028`) y 1 en `glosario-veredicto.csv`
+(fila de "Explorador de archivos", 11 campos en vez de 10) ANTES de
+comprometer. Las 194 filas de "ru" coinciden carácter por carácter
+contra `criticas-ru.csv`; los 35 términos de "de"/"fr" conservados sin
+cambio (dos de ellos -- Administrador de credenciales, firmware --
+ya no coinciden con lo que el Experto puso en `glosario-plataforma.csv`
+DESPUÉS de mi verificación de alemán/francés, porque ese archivo se
+actualizó con mis propios hallazgos; no es un error de esta corrida, es
+que mi veredicto es anterior a esa actualización). 0 ids duplicados,
+0 filas perdidas ni de más contra el original. Sin builds: trabajo de
+solo texto y dos búsquedas web reales.
