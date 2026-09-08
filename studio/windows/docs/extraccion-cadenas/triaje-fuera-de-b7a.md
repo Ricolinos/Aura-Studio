@@ -38,6 +38,7 @@ trinquete de `HardcodedSpanishTests`, y acá queda dicho por qué.
 | paso 2, cola de Core y de la app | 93 | aviso de versión del firmware, servicios de red, credenciales, actualizaciones, hojas y vistas sueltas |
 | paso 2, razones de Abort | 91 | las nueve razones por las que NO se escribe en el disco, más lo que la segunda barrida sacó con ellas |
 | paso 2, cierre de la barrida | 91 | ~45 frases que el trinquete **no cuenta**: el trinquete no baja, y por eso hizo falta la barrida |
+| paso 3, las 11 DATO | 91 | comprobadas: su valor no cambia con el idioma, y por eso el trinquete tampoco baja |
 
 El trinquete baja poco en el segundo paso y eso es correcto: **doce literales
 cambiaron de clase, no de sitio.** Las razones de `PreparedMusic` estaban como
