@@ -408,6 +408,84 @@
   <data name="installer-error.device-not-found" xml:space="preserve">
     <value>Es wurde kein angeschlossener iPod erkannt.</value>
   </data>
+  <data name="settings-view-model.library-empty-missing.one" xml:space="preserve">
+    <value>Der Katalog dieses Ordners hat {0} Eintrag, aber dessen Datei wurde nicht gefunden. Das passiert meist, wenn man auf die Mediathek eines anderen Computers zeigt.</value>
+  </data>
+  <data name="settings-view-model.library-empty-missing.other" xml:space="preserve">
+    <value>Der Katalog dieses Ordners hat {0} Einträge, aber keine ihrer Dateien wurde gefunden. Das passiert meist, wenn man auf die Mediathek eines anderen Computers zeigt.</value>
+  </data>
+  <data name="settings-view-model.library-summary-missing.one" xml:space="preserve">
+    <value>{1}. Bei {0} weiteren Eintrag des Katalogs fehlt die Datei.</value>
+  </data>
+  <data name="settings-view-model.library-summary-missing.other" xml:space="preserve">
+    <value>{1}. Bei {0} weiteren Einträgen des Katalogs fehlen die Dateien.</value>
+  </data>
+  <data name="settings-view-model.library-empty" xml:space="preserve">
+    <value>Dieser Ordner hat noch keine Aura-Studio-Mediathek: Er beginnt leer.</value>
+  </data>
+  <data name="settings-view-model.copy-media-on" xml:space="preserve">
+    <value>Jeder Titel, jedes Foto und jedes Video, das du in Aura Studio ablegst, wird in den Ordner oben kopiert; das Original bleibt unangetastet, wo es war. Das braucht mehr Speicherplatz, dafür ist die Mediathek an einem Ort vollständig.</value>
+  </data>
+  <data name="settings-view-model.copy-media-off" xml:space="preserve">
+    <value>Es wird nichts kopiert: Die Mediathek verweist auf deine Dateien dort, wo sie schon liegen, und hier wird nur gespeichert, was sie mit Aura verbindet (Metadaten, Liedtexte, Cover). Beim Synchronisieren baut Aura Studio die Datei für den iPod, indem es in dem Moment das Original liest — beim ersten Mal etwas langsamer, dafür landet auf deinem Datenträger nie eine doppelte Kopie deiner ganzen Mediathek.</value>
+  </data>
+  <data name="settings-view-model.audio-codec-alac" xml:space="preserve">
+    <value>ALAC, das verlustfrei ist</value>
+  </data>
+  <data name="settings-view-model.audio-codec-mp3" xml:space="preserve">
+    <value>MP3 mit 256 kbit/s</value>
+  </data>
+  <data name="settings-view-model.audio-conversion-detail" xml:space="preserve">
+    <value>Eine WAV- oder AIFF-Datei braucht das Zehnfache desselben Titels in komprimierter Form, und der Datenträger des iPod kommt da nicht mit: Beim Kopieren in die Mediathek werden sie mit dem Encoder, den Windows schon mitbringt, in {0} umgewandelt — je nachdem, was du unter "{1}" gewählt hast. Deine Originaldatei bleibt unangetastet, wo sie war.</value>
+  </data>
+  <data name="settings-view-model.migration-idle" xml:space="preserve">
+    <value>Wenn diese Mediathek von einer früheren Version von Aura Studio angelegt wurde, schreibt die Migration die Tags des Katalogs in die Kopien unter Musik, ordnet das Vorbereitete und löscht, was niemand mehr braucht. Deine Originaldateien werden nicht angerührt, und ein erneuter Durchlauf ändert nichts, wenn schon alles aktuell ist.</value>
+  </data>
+  <data name="settings-view-model.quoted-term" xml:space="preserve">
+    <value>„{0}“</value>
+  </data>
+  <data name="settings-view-model.term-joiner" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="settings-view-model.group-collaborations-detail" xml:space="preserve">
+    <value>„Gorillaz feat. De La Soul“ erscheint innerhalb von „Gorillaz“: eine Zeile unter Interpreten und ein Interpretenfoto. Die Trennwörter sind {0}, immer als ganzes Wort. {1} gruppieren NICHT: „Spacemonkeyz vs. Gorillaz“ ist ein Projekt mit eigenem Namen. Das ändert nur, wie das Gezeigte GRUPPIERT wird; der Interpret des Titels wird nie überschrieben und auf dem iPod wird kein Ordner verschoben.</value>
+  </data>
+  <data name="settings-view-model.cover-art-album-only" xml:space="preserve">
+    <value>Ein Bild pro Album, das alle seine Titel teilen. Danach sucht die Firmware zuerst, und es braucht viel weniger Platz auf dem iPod.</value>
+  </data>
+  <data name="settings-view-model.cover-art-per-track" xml:space="preserve">
+    <value>Jeder Titel bekommt sein eigenes Albumcover. Das ist nützlich bei Singles und Kompilationen, wo ein einziges Cover pro Album falsch wäre.</value>
+  </data>
+  <data name="settings-view-model.music-organization-album" xml:space="preserve">
+    <value>Music/Album/ — alle Titel nur nach Album gruppiert, ohne Interpretenordner.</value>
+  </data>
+  <data name="settings-view-model.music-organization-artist" xml:space="preserve">
+    <value>Music/Interpret/ — alle Titel des Interpreten zusammen, ohne Albumordner.</value>
+  </data>
+  <data name="settings-view-model.music-organization-artist-album" xml:space="preserve">
+    <value>Music/Interpret/Album/ — ein Ordner pro Album innerhalb jedes Interpreten.</value>
+  </data>
+  <data name="settings-view-model.audio-quality-original" xml:space="preserve">
+    <value>FLAC, ALAC, M4A und MP3 werden unverändert kopiert: Der iPod mit Aura gibt sie ohne Qualitätsverlust wieder. WAV und AIFF werden umgewandelt, und zwar in ALAC, das ebenfalls verlustfrei ist und halb so viel Platz braucht. Deine Originaldatei wird nie verändert.</value>
+  </data>
+  <data name="settings-view-model.audio-quality-compressed" xml:space="preserve">
+    <value>Jeder Titel wird vor dem Kopieren in MP3 mit 256 kbit/s umgewandelt: gute Qualität, viel weniger Platz. Wenn du eine FLAC-Datei ablegst, behält deine Aura-Mediathek die MP3 und nicht die FLAC; die Originaldatei bleibt unangetastet in ihrem Ordner.</value>
+  </data>
+  <data name="settings-view-model.provider-off" xml:space="preserve">
+    <value>unten ausgeschaltet</value>
+  </data>
+  <data name="settings-view-model.provider-no-key" xml:space="preserve">
+    <value>unten kein Schlüssel eingerichtet</value>
+  </data>
+  <data name="settings-view-model.key-removed" xml:space="preserve">
+    <value>Der Schlüssel wurde aus der Anmeldeinformationsverwaltung entfernt.</value>
+  </data>
+  <data name="settings-view-model.key-saved" xml:space="preserve">
+    <value>Schlüssel in der Anmeldeinformationsverwaltung von Windows gespeichert.</value>
+  </data>
+  <data name="settings-view-model.key-save-failed" xml:space="preserve">
+    <value>Der Schlüssel konnte nicht gespeichert werden. Prüfe, ob dein Windows-Konto Anmeldeinformationen speichern darf.</value>
+  </data>
   <data name="privileged.disk-number-out-of-range" xml:space="preserve">
     <value>Die Datenträgernummer {0} liegt außerhalb des zulässigen Bereichs.</value>
   </data>

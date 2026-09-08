@@ -328,6 +328,46 @@ public class SpanishUnchangedTests
         "firmware-artifacts.zip-incomplete", "firmware-artifacts.zip-invalid",
         "dfu-flash.still-in-dfu", "dfu-flash.waiting-for-dfu",
         "dfu-flash.tool-not-started", "dfu-flash.tool-not-found",
+
+        // B7d, paso 2: las explicaciones de Ajustes. Texto largo que decide
+        // cosas —si Aura copia tus archivos o los referencia, en qué formato
+        // queda tu música— y que por eso ya estaba marcado como crítico.
+        "settings-view-model.library-empty",
+        "settings-view-model.copy-media-on", "settings-view-model.copy-media-off",
+        "settings-view-model.migration-idle",
+        "settings-view-model.cover-art-album-only", "settings-view-model.cover-art-per-track",
+        "settings-view-model.music-organization-album",
+        "settings-view-model.music-organization-artist",
+        "settings-view-model.music-organization-artist-album",
+        "settings-view-model.audio-quality-original",
+        "settings-view-model.audio-quality-compressed",
+        "settings-view-model.provider-off", "settings-view-model.provider-no-key",
+        "settings-view-model.key-removed", "settings-view-model.key-saved",
+        "settings-view-model.key-save-failed",
+
+        // La frase de la conversión de audio se parte en tres claves porque
+        // tenía DOS cosas metidas adentro: el códec, elegido por un ternario, y
+        // el nombre de la sección "Cómo guardar tu música", escrito a mano. El
+        // nombre ahora se pide, para que la frase mande a una sección que en ese
+        // idioma se llame así.
+        "settings-view-model.audio-conversion-detail",
+        "settings-view-model.audio-codec-alac", "settings-view-model.audio-codec-mp3",
+
+        // Y la de las colaboraciones enumera los separadores desde el código.
+        // El texto escrito a mano ya se había quedado viejo: decía «vs.» y
+        // «versus», y se olvidaba de «vs». Las comillas y el separador de la
+        // lista son claves porque en alemán se abren abajo, en francés llevan
+        // espacio adentro y en japonés son otras.
+        "settings-view-model.group-collaborations-detail",
+        "settings-view-model.quoted-term", "settings-view-model.term-joiner",
+
+        // Dos que pasan a tener formas de plural. El `.other` de la primera es
+        // el texto de antes; en la segunda cambia un poco («otros N» → «N más»)
+        // porque la misma oración tiene que servir para uno y para muchos.
+        "settings-view-model.library-empty-missing.one",
+        "settings-view-model.library-empty-missing.other",
+        "settings-view-model.library-summary-missing.one",
+        "settings-view-model.library-summary-missing.other",
     ];
 
     /// <summary>

@@ -408,6 +408,84 @@
   <data name="installer-error.device-not-found" xml:space="preserve">
     <value>No connected iPod was detected.</value>
   </data>
+  <data name="settings-view-model.library-empty-missing.one" xml:space="preserve">
+    <value>The catalog in this folder has {0} item, but its file was not found. It usually happens when pointing at another computer's library.</value>
+  </data>
+  <data name="settings-view-model.library-empty-missing.other" xml:space="preserve">
+    <value>The catalog in this folder has {0} items, but none of their files were found. It usually happens when pointing at another computer's library.</value>
+  </data>
+  <data name="settings-view-model.library-summary-missing.one" xml:space="preserve">
+    <value>{1}. The file for {0} more catalog item is missing.</value>
+  </data>
+  <data name="settings-view-model.library-summary-missing.other" xml:space="preserve">
+    <value>{1}. The files for {0} more catalog items are missing.</value>
+  </data>
+  <data name="settings-view-model.library-empty" xml:space="preserve">
+    <value>This folder does not have an Aura Studio library yet: it starts empty.</value>
+  </data>
+  <data name="settings-view-model.copy-media-on" xml:space="preserve">
+    <value>Every song, photo or video you drop into Aura Studio is copied into the folder above; the original stays untouched where it was. It uses more disk space, but the library ends up complete in one place.</value>
+  </data>
+  <data name="settings-view-model.copy-media-off" xml:space="preserve">
+    <value>Nothing is copied: the library references your files where they already are, and only what ties them to Aura is stored here (metadata, lyrics, cover art). When syncing, Aura Studio builds the file for the iPod by reading the original at that moment — a little slower the first time, but your disk never ends up with a duplicate copy of your whole library.</value>
+  </data>
+  <data name="settings-view-model.audio-codec-alac" xml:space="preserve">
+    <value>ALAC, which is lossless</value>
+  </data>
+  <data name="settings-view-model.audio-codec-mp3" xml:space="preserve">
+    <value>256 kbps MP3</value>
+  </data>
+  <data name="settings-view-model.audio-conversion-detail" xml:space="preserve">
+    <value>A WAV or an AIFF takes ten times what the same song does compressed, and the iPod's disk cannot keep up: when copied into the library they are converted, with the encoder Windows already includes, to {0} — whichever you chose under "{1}". Your original file stays untouched where it was.</value>
+  </data>
+  <data name="settings-view-model.migration-idle" xml:space="preserve">
+    <value>If an earlier version of Aura Studio built this library, migrating it writes the catalog's tags into the copies under Music, tidies what was prepared and deletes what nobody uses any more. Your original files are not touched, and running it again when it is already up to date changes nothing.</value>
+  </data>
+  <data name="settings-view-model.quoted-term" xml:space="preserve">
+    <value>"{0}"</value>
+  </data>
+  <data name="settings-view-model.term-joiner" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="settings-view-model.group-collaborations-detail" xml:space="preserve">
+    <value>"Gorillaz feat. De La Soul" shows up inside "Gorillaz": one row in Artists and one artist photo. The separators are {0}, always as a whole word. {1} do NOT group: "Spacemonkeyz vs. Gorillaz" is a project with a name of its own. This only changes how what you see is GROUPED; it never rewrites the song's artist nor moves folders on the iPod.</value>
+  </data>
+  <data name="settings-view-model.cover-art-album-only" xml:space="preserve">
+    <value>One image per album, shared by all its songs. It is what the firmware looks for first and takes up much less space on the iPod.</value>
+  </data>
+  <data name="settings-view-model.cover-art-per-track" xml:space="preserve">
+    <value>Every song carries its own cover art. It is useful for singles and compilations, where a single cover per album would be wrong.</value>
+  </data>
+  <data name="settings-view-model.music-organization-album" xml:space="preserve">
+    <value>Music/Album/ — all songs grouped by album only, with no artist folder.</value>
+  </data>
+  <data name="settings-view-model.music-organization-artist" xml:space="preserve">
+    <value>Music/Artist/ — all of the artist's songs together, with no album folder.</value>
+  </data>
+  <data name="settings-view-model.music-organization-artist-album" xml:space="preserve">
+    <value>Music/Artist/Album/ — one folder per album inside each artist.</value>
+  </data>
+  <data name="settings-view-model.audio-quality-original" xml:space="preserve">
+    <value>FLAC, ALAC, M4A and MP3 are copied as they are: the iPod with Aura plays them without losing quality. WAV and AIFF are converted, to ALAC, which is also lossless and takes half the space. Your original file is never modified.</value>
+  </data>
+  <data name="settings-view-model.audio-quality-compressed" xml:space="preserve">
+    <value>Every song is converted to 256 kbps MP3 before being copied: good quality, much less space. If you drop a FLAC, your Aura library keeps the MP3 and not the FLAC; the original file stays untouched in its folder.</value>
+  </data>
+  <data name="settings-view-model.provider-off" xml:space="preserve">
+    <value>turned off below</value>
+  </data>
+  <data name="settings-view-model.provider-no-key" xml:space="preserve">
+    <value>no key set up below</value>
+  </data>
+  <data name="settings-view-model.key-removed" xml:space="preserve">
+    <value>The key was removed from Credential Manager.</value>
+  </data>
+  <data name="settings-view-model.key-saved" xml:space="preserve">
+    <value>Key saved in the Windows Credential Manager.</value>
+  </data>
+  <data name="settings-view-model.key-save-failed" xml:space="preserve">
+    <value>The key could not be saved. Check that your Windows account is allowed to save credentials.</value>
+  </data>
   <data name="privileged.disk-number-out-of-range" xml:space="preserve">
     <value>Disk number {0} is out of range.</value>
   </data>

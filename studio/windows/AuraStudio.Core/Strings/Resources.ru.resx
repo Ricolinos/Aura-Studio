@@ -393,6 +393,90 @@
   <data name="installer-error.device-not-found" xml:space="preserve">
     <value>Подключённый iPod не обнаружен.</value>
   </data>
+  <data name="settings-view-model.library-empty-missing.one" xml:space="preserve">
+    <value>В каталоге этой папки {0} элемент, но его файл не найден. Обычно так бывает, когда указана медиатека с другого компьютера.</value>
+  </data>
+  <data name="settings-view-model.library-empty-missing.few" xml:space="preserve">
+    <value>В каталоге этой папки {0} элемента, но ни одного из их файлов не найдено. Обычно так бывает, когда указана медиатека с другого компьютера.</value>
+  </data>
+  <data name="settings-view-model.library-empty-missing.many" xml:space="preserve">
+    <value>В каталоге этой папки {0} элементов, но ни одного из их файлов не найдено. Обычно так бывает, когда указана медиатека с другого компьютера.</value>
+  </data>
+  <data name="settings-view-model.library-summary-missing.one" xml:space="preserve">
+    <value>{1}. Ещё у {0} элемента каталога не хватает файла.</value>
+  </data>
+  <data name="settings-view-model.library-summary-missing.few" xml:space="preserve">
+    <value>{1}. Ещё у {0} элементов каталога не хватает файлов.</value>
+  </data>
+  <data name="settings-view-model.library-summary-missing.many" xml:space="preserve">
+    <value>{1}. Ещё у {0} элементов каталога не хватает файлов.</value>
+  </data>
+  <data name="settings-view-model.library-empty" xml:space="preserve">
+    <value>В этой папке ещё нет медиатеки Aura Studio: она начнётся пустой.</value>
+  </data>
+  <data name="settings-view-model.copy-media-on" xml:space="preserve">
+    <value>Каждый трек, фотография или видео, которые вы переносите в Aura Studio, копируются в папку выше; оригинал остаётся нетронутым там, где был. Места на диске уходит больше, зато медиатека целиком лежит в одном месте.</value>
+  </data>
+  <data name="settings-view-model.copy-media-off" xml:space="preserve">
+    <value>Ничего не копируется: медиатека ссылается на ваши файлы там, где они уже лежат, а здесь хранится только то, что связывает их с Aura (метаданные, тексты, обложки). При синхронизации Aura Studio собирает файл для iPod, читая оригинал в этот момент, — в первый раз чуть медленнее, зато на диске никогда не появится вторая копия всей медиатеки.</value>
+  </data>
+  <data name="settings-view-model.audio-codec-alac" xml:space="preserve">
+    <value>ALAC — без потерь</value>
+  </data>
+  <data name="settings-view-model.audio-codec-mp3" xml:space="preserve">
+    <value>MP3 256 кбит/с</value>
+  </data>
+  <data name="settings-view-model.audio-conversion-detail" xml:space="preserve">
+    <value>WAV или AIFF занимает в десять раз больше, чем тот же трек в сжатом виде, а диск iPod столько не тянет: при копировании в медиатеку они преобразуются кодировщиком, который уже есть в Windows, в {0} — смотря что вы выбрали в разделе "{1}". Исходный файл остаётся нетронутым там, где был.</value>
+  </data>
+  <data name="settings-view-model.migration-idle" xml:space="preserve">
+    <value>Если эта медиатека собрана прежней версией Aura Studio, миграция запишет теги каталога в копии в папке Музыка, приведёт в порядок подготовленные файлы и удалит то, что больше не нужно. Исходные файлы не трогаются, а повторный запуск, когда всё уже в порядке, ничего не меняет.</value>
+  </data>
+  <data name="settings-view-model.quoted-term" xml:space="preserve">
+    <value>«{0}»</value>
+  </data>
+  <data name="settings-view-model.term-joiner" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="settings-view-model.group-collaborations-detail" xml:space="preserve">
+    <value>«Gorillaz feat. De La Soul» показывается внутри «Gorillaz»: одна строка в разделе Исполнители и одна фотография исполнителя. Разделители — {0}, всегда как отдельное слово. {1} НЕ объединяют: «Spacemonkeyz vs. Gorillaz» — это проект с собственным именем. Меняется только то, как ГРУППИРУЕТСЯ показанное; исполнитель трека никогда не переписывается, и папки на iPod не перемещаются.</value>
+  </data>
+  <data name="settings-view-model.cover-art-album-only" xml:space="preserve">
+    <value>Одно изображение на альбом, общее для всех его треков. Прошивка ищет именно его в первую очередь, и места на iPod уходит намного меньше.</value>
+  </data>
+  <data name="settings-view-model.cover-art-per-track" xml:space="preserve">
+    <value>У каждого трека своя обложка. Это нужно для синглов и сборников, где одна обложка на альбом была бы неверной.</value>
+  </data>
+  <data name="settings-view-model.music-organization-album" xml:space="preserve">
+    <value>Music/Альбом/ — все треки сгруппированы только по альбому, без папки исполнителя.</value>
+  </data>
+  <data name="settings-view-model.music-organization-artist" xml:space="preserve">
+    <value>Music/Исполнитель/ — все треки исполнителя вместе, без папки альбома.</value>
+  </data>
+  <data name="settings-view-model.music-organization-artist-album" xml:space="preserve">
+    <value>Music/Исполнитель/Альбом/ — по папке на альбом внутри каждого исполнителя.</value>
+  </data>
+  <data name="settings-view-model.audio-quality-original" xml:space="preserve">
+    <value>FLAC, ALAC, M4A и MP3 копируются как есть: iPod с Aura воспроизводит их без потери качества. WAV и AIFF преобразуются — в ALAC, который тоже без потерь и занимает вдвое меньше. Исходный файл никогда не изменяется.</value>
+  </data>
+  <data name="settings-view-model.audio-quality-compressed" xml:space="preserve">
+    <value>Каждый трек перед копированием преобразуется в MP3 256 кбит/с: хорошее качество, намного меньше места. Если вы перенесёте FLAC, в медиатеке Aura останется MP3, а не FLAC; исходный файл не тронут и лежит в своей папке.</value>
+  </data>
+  <data name="settings-view-model.provider-off" xml:space="preserve">
+    <value>выключено ниже</value>
+  </data>
+  <data name="settings-view-model.provider-no-key" xml:space="preserve">
+    <value>ключ ниже не настроен</value>
+  </data>
+  <data name="settings-view-model.key-removed" xml:space="preserve">
+    <value>Ключ удалён из Диспетчера учетных данных.</value>
+  </data>
+  <data name="settings-view-model.key-saved" xml:space="preserve">
+    <value>Ключ сохранён в Диспетчере учетных данных Windows.</value>
+  </data>
+  <data name="settings-view-model.key-save-failed" xml:space="preserve">
+    <value>Не удалось сохранить ключ. Проверьте, разрешено ли вашей учётной записи Windows сохранять учётные данные.</value>
+  </data>
   <data name="privileged.disk-number-out-of-range" xml:space="preserve">
     <value>Номер диска {0} вне допустимого диапазона.</value>
   </data>

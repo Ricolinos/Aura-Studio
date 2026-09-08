@@ -28,6 +28,7 @@ trinquete de `HardcodedSpanishTests`, y acá queda dicho por qué.
 | paso 2, `InstallerError` | 344 | los 16 errores del asistente a recursos en los seis idiomas |
 | paso 2, familia privilegiada | 324 | los 20 mensajes de `PrivilegedOperation`, `PrivilegedHost` y `PrivilegedRunner`, y el idioma viajando al proceso elevado |
 | paso 2, `FirmwareArtifacts` y `DfuFlashRunner` | 309 | las dos últimas familias críticas: verificación de artefactos y grabado por DFU |
+| paso 2, `SettingsViewModel` | 277 | las explicaciones de Ajustes; la de colaboraciones pasa a enumerar los separadores desde el código |
 
 El trinquete baja poco en el segundo paso y eso es correcto: **doce literales
 cambiaron de clase, no de sitio.** Las razones de `PreparedMusic` estaban como
