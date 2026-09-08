@@ -942,5 +942,225 @@
 			<string>%lld вероятных</string>
 		</dict>
 	</dict>
+	<key>status.plural.albumes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%2$@ альбома</string>
+			<key>many</key>
+			<string>%2$@ альбомов</string>
+			<key>one</key>
+			<string>%2$@ альбом</string>
+			<key>other</key>
+			<string>%2$@ альбома</string>
+		</dict>
+	</dict>
+	<key>status.plural.artistas</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%2$@ исполнителя</string>
+			<key>many</key>
+			<string>%2$@ исполнителей</string>
+			<key>one</key>
+			<string>%2$@ исполнитель</string>
+			<key>other</key>
+			<string>%2$@ исполнителя</string>
+		</dict>
+	</dict>
+	<key>status.plural.canciones</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%2$@ трека</string>
+			<key>many</key>
+			<string>%2$@ треков</string>
+			<key>one</key>
+			<string>%2$@ трек</string>
+			<key>other</key>
+			<string>%2$@ трека</string>
+		</dict>
+	</dict>
+	<key>status.plural.episodios</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%2$@ серии</string>
+			<key>many</key>
+			<string>%2$@ серий</string>
+			<key>one</key>
+			<string>%2$@ серия</string>
+			<key>other</key>
+			<string>%2$@ серии</string>
+		</dict>
+	</dict>
+	<key>status.plural.fotos</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%2$@ фото</string>
+			<key>many</key>
+			<string>%2$@ фото</string>
+			<key>one</key>
+			<string>%2$@ фото</string>
+			<key>other</key>
+			<string>%2$@ фото</string>
+		</dict>
+	</dict>
+	<key>status.plural.listas</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%2$@ плейлиста</string>
+			<key>many</key>
+			<string>%2$@ плейлистов</string>
+			<key>one</key>
+			<string>%2$@ плейлист</string>
+			<key>other</key>
+			<string>%2$@ плейлиста</string>
+		</dict>
+	</dict>
+	<key>status.plural.peliculas</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%2$@ фильма</string>
+			<key>many</key>
+			<string>%2$@ фильмов</string>
+			<key>one</key>
+			<string>%2$@ фильм</string>
+			<key>other</key>
+			<string>%2$@ фильма</string>
+		</dict>
+	</dict>
+	<key>status.plural.series</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%2$@ сериала</string>
+			<key>many</key>
+			<string>%2$@ сериалов</string>
+			<key>one</key>
+			<string>%2$@ сериал</string>
+			<key>other</key>
+			<string>%2$@ сериала</string>
+		</dict>
+	</dict>
+	<key>status.plural.temporadas</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%2$@ сезона</string>
+			<key>many</key>
+			<string>%2$@ сезонов</string>
+			<key>one</key>
+			<string>%2$@ сезон</string>
+			<key>other</key>
+			<string>%2$@ сезона</string>
+		</dict>
+	</dict>
+	<key>status.plural.videoclips</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%2$@ клипа</string>
+			<key>many</key>
+			<string>%2$@ клипов</string>
+			<key>one</key>
+			<string>%2$@ клип</string>
+			<key>other</key>
+			<string>%2$@ клипа</string>
+		</dict>
+	</dict>
+	<key>status.plural.videos</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%1$#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%2$@ видео</string>
+			<key>many</key>
+			<string>%2$@ видео</string>
+			<key>one</key>
+			<string>%2$@ видео</string>
+			<key>other</key>
+			<string>%2$@ видео</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

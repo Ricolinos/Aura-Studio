@@ -197,8 +197,17 @@ final class SimilarItemsDetectorTests: XCTestCase {
         XCTAssertEqual(LibraryStats.durationText(seconds: 3600 * 8 + 60 * 12), "8 h 12 min")
     }
 
+    /// ST-227 (A7d): `count` toma un sustantivo tipado y el texto sale
+    /// del catálogo.
+    ///
+    /// El separador de miles **ya no se escribe a mano** en la
+    /// expectativa: era "1,500", el del español de México, y desde que
+    /// el formateador sigue al idioma de la app esa aserción habría
+    /// fallado con la app en alemán ("1.500"). Se compara contra
+    /// `formatted`, que es quien lo decide.
     func testPluralization() {
-        XCTAssertEqual(LibraryStats.count(1, "canción", "canciones"), "1 canción")
-        XCTAssertEqual(LibraryStats.count(1500, "canción", "canciones"), "1,500 canciones")
+        XCTAssertEqual(LibraryStats.count(1, .songs), "1 canción")
+        XCTAssertEqual(LibraryStats.count(1500, .songs),
+                       "\(LibraryStats.formatted(1500)) canciones")
     }
 }

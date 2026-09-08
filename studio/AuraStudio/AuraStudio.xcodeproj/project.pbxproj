@@ -235,6 +235,7 @@
 		BD809465DDDA7B9453FDAB86 /* FilenameGuesserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37BA124E3419E12A08D4AADC /* FilenameGuesserTests.swift */; };
 		BF731CAA1C79C1B58D481F8A /* AlbumCoverScoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF4D7A1B08050E2D11356AB8 /* AlbumCoverScoring.swift */; };
 		C00927AA16A846C48C119A54 /* firmware-version.txt in Resources */ = {isa = PBXBuildFile; fileRef = BEEAD9ACEF33A34E0D7931DD /* firmware-version.txt */; };
+		C0B0FA6A55C341FD59D839A7 /* StatusCountTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 751AAD1257D517A08FB9C24B /* StatusCountTests.swift */; };
 		C29E1A48C58E8CBCAFC485EA /* PlaylistImporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 528818777E4EF0B5EF8F9306 /* PlaylistImporterTests.swift */; };
 		C2F0510BAABF5CB03FD90D93 /* DeviceNameStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70ACE1220F0178A35F3CE798 /* DeviceNameStoreTests.swift */; };
 		C3583E3F60FAE8856D130B33 /* SimilarItemsDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22EAF387001DF11B4CDC8A48 /* SimilarItemsDetector.swift */; };
@@ -444,6 +445,7 @@
 		7112AA8DB5475B1134DBEECE /* CoverArtNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverArtNormalizer.swift; sourceTree = "<group>"; };
 		722702AD0F209BDEA893FA8D /* MKS5LBootRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MKS5LBootRunner.swift; sourceTree = "<group>"; };
 		72773374D5D4C62732AA92F3 /* AuraDeviceProbeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuraDeviceProbeTests.swift; sourceTree = "<group>"; };
+		751AAD1257D517A08FB9C24B /* StatusCountTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusCountTests.swift; sourceTree = "<group>"; };
 		777383A161FBD9C32BFA6D82 /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
 		782E91A183A2BBFDDB6889A1 /* ApplyBatchEditWorkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplyBatchEditWorkerTests.swift; sourceTree = "<group>"; };
 		78AF5B1286F86F1B3B967983 /* LibraryStatusSummary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryStatusSummary.swift; sourceTree = "<group>"; };
@@ -894,6 +896,7 @@
 				61E13AE080C61D53DD31BC2E /* SharedCatalogInteropTests.swift */,
 				82C6AEB753EB596261D12780 /* SimilarItemsDetectorTests.swift */,
 				8FE0ED199852C215C9423943 /* SquareCropPlanTests.swift */,
+				751AAD1257D517A08FB9C24B /* StatusCountTests.swift */,
 				6973A46003D114CD07FC2DB0 /* SyncMarkerTests.swift */,
 				B6A56207E06BF883E789308E /* SyncPlannerTests.swift */,
 				8D9218CDC26C973338140922 /* TestDefaults.swift */,
@@ -1282,6 +1285,7 @@
 				B9CE37DDF75A0432AA14480B /* SharedCatalogInteropTests.swift in Sources */,
 				3C9BA6C7EC120BEA5C9F6DC5 /* SimilarItemsDetectorTests.swift in Sources */,
 				A708CE9C17FD00F4465C6D1E /* SquareCropPlanTests.swift in Sources */,
+				C0B0FA6A55C341FD59D839A7 /* StatusCountTests.swift in Sources */,
 				FB85BBAE15E355B9E622BA3A /* SyncMarkerTests.swift in Sources */,
 				3C55D1529747E73BFE103166 /* SyncPlannerTests.swift in Sources */,
 				301DA2AEFE8107B308F61154 /* TestDefaults.swift in Sources */,

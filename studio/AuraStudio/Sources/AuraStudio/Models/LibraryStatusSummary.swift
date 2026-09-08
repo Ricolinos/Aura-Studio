@@ -115,9 +115,38 @@ private struct LibraryStatusPublisher: ViewModifier {
 enum LibraryStats {
     // MARK: - Texto
 
-    /// "1 canción" / "3 canciones".
-    static func count(_ n: Int, _ singular: String, _ plural: String) -> String {
-        "\(formatted(n)) \(n == 1 ? singular : plural)"
+    /// Los sustantivos que la barra de estado cuenta.
+    ///
+    /// ST-227 (A7d): antes `count` recibía el singular y el plural **en
+    /// español**, escritos a mano en cada uno de sus 33 sitios de
+    /// llamada (`count(items.count, .songs)`). Con un
+    /// enum, el idioma sale del catálogo y el compilador no deja
+    /// inventarse un sustantivo que no existe.
+    enum CountedNoun: String, CaseIterable {
+        case songs = "status.plural.canciones"
+        case albums = "status.plural.albumes"
+        case artists = "status.plural.artistas"
+        case playlists = "status.plural.listas"
+        case videos = "status.plural.videos"
+        case movies = "status.plural.peliculas"
+        case episodes = "status.plural.episodios"
+        case clips = "status.plural.videoclips"
+        case series = "status.plural.series"
+        case seasons = "status.plural.temporadas"
+        case photos = "status.plural.fotos"
+    }
+
+    /// "1 canción" / "12 345 canciones".
+    ///
+    /// **Dos argumentos con el mismo número, y no es un descuido.** El
+    /// primero es el `Int` y elige la FORMA del plural; el segundo es ese
+    /// mismo número ya formateado y es lo que se MUESTRA. Un `%lld`
+    /// dentro de un plural no lleva separador de miles, así que una
+    /// biblioteca de doce mil canciones habría pasado a decir "12345".
+    /// El catálogo lo expresa como una sustitución (`%1$#@n@` con
+    /// `%2$@` adentro); ver `tools/compilar-catalogo.py`.
+    static func count(_ n: Int, _ noun: CountedNoun) -> String {
+        LSf(String.LocalizationValue(noun.rawValue), n, formatted(n))
     }
 
     static func formatted(_ n: Int) -> String {
@@ -227,8 +256,8 @@ enum LibraryStats {
         guard !selected.isEmpty else { return nil }
         return join([
             "\(formatted(selected.count)) de \(formatted(totalCount)) seleccionadas",
-            count(artistCount(of: selected, options: options), "artista", "artistas"),
-            count(albumCount(of: selected, options: options), "álbum", "álbumes"),
+            count(artistCount(of: selected, options: options), .artists),
+            count(albumCount(of: selected, options: options), .albums),
             durationText(seconds: totalDuration(of: selected)),
         ])
     }
@@ -256,16 +285,16 @@ enum LibraryStats {
     static func music(items: [LibraryItem], selected: [LibraryItem],
                       options: ArtistGroupingOptions = .default) -> LibraryStatusSummary {
         let total = join([
-            count(items.count, "canción", "canciones"),
-            items.isEmpty ? nil : count(artistCount(of: items, options: options), "artista", "artistas"),
-            items.isEmpty ? nil : count(albumCount(of: items, options: options), "álbum", "álbumes"),
+            count(items.count, .songs),
+            items.isEmpty ? nil : count(artistCount(of: items, options: options), .artists),
+            items.isEmpty ? nil : count(albumCount(of: items, options: options), .albums),
         ])
         var selection: String?
         if !selected.isEmpty {
             selection = join([
                 "\(formatted(selected.count)) de \(formatted(items.count)) seleccionadas",
-                count(artistCount(of: selected, options: options), "artista", "artistas"),
-                count(albumCount(of: selected, options: options), "álbum", "álbumes"),
+                count(artistCount(of: selected, options: options), .artists),
+                count(albumCount(of: selected, options: options), .albums),
                 durationText(seconds: totalDuration(of: selected)),
             ])
         }
@@ -290,9 +319,9 @@ enum LibraryStats {
         let items = albums.flatMap(\.items)
         return LibraryStatusSummary(
             total: join([
-                count(albums.count, "álbum", "álbumes"),
-                count(artistCount(of: items), "artista", "artistas"),
-                count(items.count, "canción", "canciones"),
+                count(albums.count, .albums),
+                count(artistCount(of: items), .artists),
+                count(items.count, .songs),
             ]),
             trailing: durationText(seconds: totalDuration(of: items)))
     }
@@ -302,8 +331,8 @@ enum LibraryStats {
         let selectedItems = selected.flatMap(\.items)
         return join([
             "\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados",
-            count(artistCount(of: selectedItems), "artista", "artistas"),
-            count(selectedItems.count, "canción", "canciones"),
+            count(artistCount(of: selectedItems), .artists),
+            count(selectedItems.count, .songs),
             durationText(seconds: totalDuration(of: selectedItems)),
         ])
     }
@@ -318,9 +347,9 @@ enum LibraryStats {
         let items = artists.flatMap(\.items)
         return LibraryStatusSummary(
             total: join([
-                count(artists.count, "artista", "artistas"),
-                count(albumCount(of: items), "álbum", "álbumes"),
-                count(items.count, "canción", "canciones"),
+                count(artists.count, .artists),
+                count(albumCount(of: items), .albums),
+                count(items.count, .songs),
             ]),
             trailing: durationText(seconds: totalDuration(of: items)))
     }
@@ -330,8 +359,8 @@ enum LibraryStats {
         let selectedItems = selected.flatMap(\.items)
         return join([
             "\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados",
-            count(albumCount(of: selectedItems), "álbum", "álbumes"),
-            count(selectedItems.count, "canción", "canciones"),
+            count(albumCount(of: selectedItems), .albums),
+            count(selectedItems.count, .songs),
             durationText(seconds: totalDuration(of: selectedItems)),
         ])
     }
@@ -344,8 +373,8 @@ enum LibraryStats {
 
     static func playlistsTotal(_ playlists: [Playlist]) -> LibraryStatusSummary {
         LibraryStatusSummary(total: join([
-            count(playlists.count, "lista", "listas"),
-            count(playlists.reduce(0) { $0 + $1.trackItemIDs.count }, "canción", "canciones"),
+            count(playlists.count, .playlists),
+            count(playlists.reduce(0) { $0 + $1.trackItemIDs.count }, .songs),
         ]))
     }
 
@@ -355,8 +384,8 @@ enum LibraryStats {
         let tracks = musicItems.filter { wanted.contains($0.id) }
         return join([
             "«\(selected.name)»",
-            count(tracks.count, "canción", "canciones"),
-            count(artistCount(of: tracks), "artista", "artistas"),
+            count(tracks.count, .songs),
+            count(artistCount(of: tracks), .artists),
             durationText(seconds: totalDuration(of: tracks)),
         ])
     }
@@ -370,14 +399,14 @@ enum LibraryStats {
     /// Todos los videos / Videoclips (tabla plana). Sin `presetCategory`
     /// desglosa por categoría.
     static func videos(items: [LibraryItem], selected: [LibraryItem], breakdown: Bool) -> LibraryStatusSummary {
-        var parts: [String?] = [count(items.count, "video", "videos")]
+        var parts: [String?] = [count(items.count, .videos)]
         if breakdown && !items.isEmpty {
             let movies = items.filter { $0.category == MediaCategory.movies.displayName }.count
             let episodes = items.filter { LibrarySync.isSeriesCategory($0.category) }.count
             let clips = items.filter { $0.category == MediaCategory.videos.displayName }.count
-            if movies > 0 { parts.append(count(movies, "película", "películas")) }
-            if episodes > 0 { parts.append(count(episodes, "episodio", "episodios")) }
-            if clips > 0 { parts.append(count(clips, "videoclip", "videoclips")) }
+            if movies > 0 { parts.append(count(movies, .movies)) }
+            if episodes > 0 { parts.append(count(episodes, .episodes)) }
+            if clips > 0 { parts.append(count(clips, .clips)) }
         }
         var selection: String?
         if !selected.isEmpty {
@@ -395,7 +424,7 @@ enum LibraryStats {
     static func moviesTotal(_ movies: [VideoCollectionGroup]) -> LibraryStatusSummary {
         let items = movies.flatMap(\.items)
         return LibraryStatusSummary(
-            total: count(movies.count, "película", "películas"),
+            total: count(movies.count, .movies),
             trailing: join([durationText(seconds: totalDuration(of: items)),
                             sizeText(bytes: totalSize(of: items))]).nilIfEmpty)
     }
@@ -421,9 +450,9 @@ enum LibraryStats {
         let seasons = series.reduce(0) { $0 + $1.seasons.count }
         return LibraryStatusSummary(
             total: join([
-                count(series.count, "serie", "series"),
-                count(seasons, "temporada", "temporadas"),
-                count(items.count, "episodio", "episodios"),
+                count(series.count, .series),
+                count(seasons, .seasons),
+                count(items.count, .episodes),
             ]),
             trailing: durationText(seconds: totalDuration(of: items)))
     }
@@ -433,8 +462,8 @@ enum LibraryStats {
         let selectedItems = selected.flatMap(\.items)
         return join([
             "\(formatted(selected.count)) de \(formatted(totalCount)) seleccionadas",
-            count(selected.reduce(0) { $0 + $1.seasons.count }, "temporada", "temporadas"),
-            count(selectedItems.count, "episodio", "episodios"),
+            count(selected.reduce(0) { $0 + $1.seasons.count }, .seasons),
+            count(selectedItems.count, .episodes),
             durationText(seconds: totalDuration(of: selectedItems)),
         ])
     }
@@ -450,8 +479,8 @@ enum LibraryStats {
         LibraryStatusSummary(
             total: join([
                 "«\(show.title)»",
-                count(show.seasons.count, "temporada", "temporadas"),
-                count(show.items.count, "episodio", "episodios"),
+                count(show.seasons.count, .seasons),
+                count(show.items.count, .episodes),
             ]),
             trailing: durationText(seconds: totalDuration(of: show.items)))
     }
@@ -473,7 +502,7 @@ enum LibraryStats {
     /// Todas las fotos (tabla plana). Con `breakdown` desglosa por
     /// colección (Fotos/Imágenes/IA).
     static func photos(items: [LibraryItem], selected: [LibraryItem], collections: [String]?) -> LibraryStatusSummary {
-        var parts: [String?] = [count(items.count, "foto", "fotos")]
+        var parts: [String?] = [count(items.count, .photos)]
         if let collections, !items.isEmpty {
             for collection in collections {
                 let n = items.filter { $0.category == collection }.count
@@ -481,7 +510,7 @@ enum LibraryStats {
             }
         }
         let albumCount = Set(items.compactMap { $0.photoAlbum?.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }).count
-        if albumCount > 0 { parts.append(count(albumCount, "álbum", "álbumes")) }
+        if albumCount > 0 { parts.append(count(albumCount, .albums)) }
         var selection: String?
         if !selected.isEmpty {
             selection = join([
@@ -499,8 +528,8 @@ enum LibraryStats {
         let loose = albums.first { $0.isUnknown }?.count ?? 0
         return LibraryStatusSummary(
             total: join([
-                count(named, "álbum", "álbumes"),
-                count(items.count, "foto", "fotos"),
+                count(named, .albums),
+                count(items.count, .photos),
                 loose > 0 ? "\(formatted(loose)) sin álbum" : nil,
             ]),
             trailing: sizeText(bytes: totalSize(of: items)))
@@ -511,7 +540,7 @@ enum LibraryStats {
         let selectedItems = selected.flatMap(\.items)
         return join([
             "\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados",
-            count(selectedItems.count, "foto", "fotos"),
+            count(selectedItems.count, .photos),
             sizeText(bytes: totalSize(of: selectedItems)),
         ])
     }
@@ -525,7 +554,7 @@ enum LibraryStats {
     /// Un álbum de fotos abierto.
     static func photoAlbumTotal(_ album: PhotoAlbumGroup) -> LibraryStatusSummary {
         LibraryStatusSummary(
-            total: join(["«\(album.title)»", count(album.count, "foto", "fotos")]),
+            total: join(["«\(album.title)»", count(album.count, .photos)]),
             trailing: sizeText(bytes: totalSize(of: album.items)))
     }
 

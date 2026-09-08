@@ -53,21 +53,46 @@ final class LocalizationCatalogTests: XCTestCase {
             .deletingLastPathComponent().deletingLastPathComponent()
     }
 
-    /// Todas las claves que el código pide, en el orden en que aparecen.
+    /// Las claves que el código pide **con un literal**:
+    /// `LS("clave")` / `LSf("clave", …)`.
     private func keysUsedInCode() throws -> [(key: String, file: String)] {
-        var used: [(String, String)] = []
-        let pattern = try NSRegularExpression(pattern: #"\bLSf?\("([^"]+)"#)
+        try scan(NSRegularExpression(pattern: #"\bLSf?\("([^"]+)"#))
+    }
+
+    /// Los `rawValue` de un enum que **son** claves del catálogo
+    /// (`case songs = "status.plural.canciones"`), resueltos con
+    /// `LSf(String.LocalizationValue(noun.rawValue), …)`.
+    ///
+    /// Es lo que usa `LibraryStats.CountedNoun` (ST-227, A7d): once
+    /// sustantivos que antes viajaban como singular y plural **en
+    /// español** por 33 sitios de llamada. Un enum los vuelve un tipo y
+    /// el compilador deja de aceptar uno que no existe.
+    ///
+    /// **Solo cuentan como uso los que de verdad están en el catálogo.**
+    /// Un `rawValue` con puntos no es necesariamente una clave: en este
+    /// repo también son nombres de archivo (`rockbox.ipod`,
+    /// `checksums.txt`) y llaves de JSON. Filtrar por existencia evita
+    /// inventar "claves que faltan" a partir de eso. Un error de dedo en
+    /// un `rawValue` sigue saliendo en rojo, pero por otras dos vías: la
+    /// clave real queda huérfana, y `StatusCountTests` ve que la
+    /// resolución devuelve la clave.
+    private func keyLikeEnumRawValues(existingIn catalog: [String: Any]) throws -> [(key: String, file: String)] {
+        try scan(NSRegularExpression(pattern: #"\bcase\s+\w+\s*=\s*"([a-z][\w-]*(?:\.[\w-]+)+)""#))
+            .filter { catalog[$0.key] != nil }
+    }
+
+    private func scan(_ pattern: NSRegularExpression) throws -> [(key: String, file: String)] {
+        var found: [(String, String)] = []
         let walker = FileManager.default.enumerator(at: sourcesDirectory, includingPropertiesForKeys: nil)
         while let url = walker?.nextObject() as? URL {
             guard url.pathExtension == "swift" else { continue }
             let text = try String(contentsOf: url, encoding: .utf8)
-            let range = NSRange(text.startIndex..., in: text)
-            for match in pattern.matches(in: text, range: range) {
+            for match in pattern.matches(in: text, range: NSRange(text.startIndex..., in: text)) {
                 guard let keyRange = Range(match.range(at: 1), in: text) else { continue }
-                used.append((String(text[keyRange]), url.lastPathComponent))
+                found.append((String(text[keyRange]), url.lastPathComponent))
             }
         }
-        return used
+        return found
     }
 
     /// **La prueba que evita que la app muestre claves en pantalla.** Una
@@ -143,7 +168,14 @@ final class LocalizationCatalogTests: XCTestCase {
         var missing: [String] = []
         for row in rows {
             guard let key = row["clave"], let state = row["estado"] else { continue }
-            guard state == "igual" || state == "clave distinta" else { continue }
+            // "convención de plataforma" (ST-227, A7d): etiquetas que
+            // cada sistema fija por idioma -- Cancelar, Eliminar,
+            // Reintentar. El español coincide, pero la traducción la
+            // manda la plataforma: en ruso macOS dice "Отменить" y
+            // Windows "Отмена". La clave tiene que existir de este lado
+            // igual, así que cuenta como compartida.
+            guard state == "igual" || state == "clave distinta"
+                    || state == "convención de plataforma" else { continue }
             guard strings[key] == nil else { continue }
             missing.append(key)
         }
@@ -160,7 +192,12 @@ final class LocalizationCatalogTests: XCTestCase {
     /// dejan de comprobar nada. Pasó al escribir el diálogo de idioma
     /// de A7c addendum, y por eso está esta prueba.
     func testEveryLocalizationCallUsesALiteralKey() throws {
-        let pattern = try NSRegularExpression(pattern: #"\bLSf?\((?!")"#)
+        // La única indirección permitida: `String.LocalizationValue(x.rawValue)`
+        // sobre un enum de claves. Sigue siendo inventariable, porque las
+        // claves están escritas como literales en los `case` y
+        // `keysUsedInCode()` las lee. Cualquier otra cosa calculada --un
+        // ternario, una interpolación-- deja la clave invisible.
+        let pattern = try NSRegularExpression(pattern: #"\bLSf?\((?!"|String\.LocalizationValue\()"#)
         var offenders: [String] = []
         let walker = FileManager.default.enumerator(at: sourcesDirectory, includingPropertiesForKeys: nil)
         while let url = walker?.nextObject() as? URL {
@@ -192,7 +229,8 @@ final class LocalizationCatalogTests: XCTestCase {
     /// que lo que no aparece ahí no lo usa nadie.
     func testTheCatalogHasNoKeysNobodyUses() throws {
         let strings = try XCTUnwrap(try catalog()["strings"] as? [String: Any])
-        let used = Set(try keysUsedInCode().map(\.key))
+        var used = Set(try keysUsedInCode().map(\.key))
+        used.formUnion(try keyLikeEnumRawValues(existingIn: strings).map(\.key))
         let orphans = strings.keys.filter { !used.contains($0) }.sorted()
 
         XCTAssertTrue(orphans.isEmpty,

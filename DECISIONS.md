@@ -18301,3 +18301,117 @@ y por eso el criterio no cambia.
   no es un faltante: son **74 familias de plural** por la matemática CLDR —el
   japonés tiene una sola forma (74 claves menos), el ruso tres (74 más).
 - `Offered` sigue en `false` para de, fr, ja y ru. **Nada cambia en 0.4.0.**
+
+## ST-227 (A7d, paso 1) — Los conteos de la barra de estado, con plural de verdad
+
+`LibraryStats.count(_:singular:plural:)` recibía el singular y el plural
+**en español**, escritos a mano en cada uno de sus **33 sitios de
+llamada** (`count(items.count, "canción", "canciones")`). Es lo último
+grande que quedaba del inventario con una forma propia, y no se resolvía
+con una clave de plural corriente.
+
+**Por qué no bastaba un plural normal.** `count` muestra el número con
+`formatted(n)`, que le pone el separador de miles del idioma. Un `%lld`
+dentro de un plural **no lo lleva**: una biblioteca de 12 345 canciones
+habría pasado a decir "12345". Y quitar el formateo para meter el número
+crudo en el plural es cambiar un defecto por otro.
+
+**La forma que sí da las dos cosas** es la *sustitución* del catálogo de
+Xcode: el argumento 1 es el `Int` y elige la FORMA; el argumento 2 es ese
+mismo número **ya formateado** y es lo que se MUESTRA. En el `.xcstrings`
+es un `stringUnit` con valor `%1$#@n@` más un bloque `substitutions`; en
+el `.stringsdict` que genera `tools/compilar-catalogo.py`, un
+`NSStringLocalizedFormatKey` de `%1$#@n@` con `%2$@` dentro de cada forma.
+
+**Comprobado en los dos compiladores, no supuesto.** En A7a el compilador
+de Xcode rechazó plurales que SwiftPM aceptaba sin chistar, así que esta
+vez se verificó primero con una sola clave: `swift test` resuelve y
+conserva el separador de miles, y `xcodebuild` genera las once claves
+dentro del `.app` con la forma correcta (comprobado leyendo el
+`.stringsdict` compilado del ruso, no el fuente).
+
+Los once sustantivos pasaron a `LibraryStats.CountedNoun`, un enum cuyos
+`rawValue` **son** las claves. El compilador ya no acepta un sustantivo
+que no exista, y los 40 usos de literales en español desaparecieron.
+
+### Dos pruebas de inventario que hubo que enseñar
+
+`CountedNoun` resuelve con `LSf(String.LocalizationValue(noun.rawValue), …)`,
+así que las dos pruebas que leen el código con expresiones regulares
+dejaron de ver esas claves: una las daba por huérfanas y la otra por
+"clave calculada". Las dos tenían razón **con la regla vieja**, y la
+regla vieja se quedó corta: un enum de claves es tan inventariable como
+una llamada literal, solo que hay que leer los `case`.
+
+Ahora hay dos barridos con propósitos distintos, y cada prueba usa el
+suyo:
+
+- `keysUsedInCode()` -- solo `LS("literal")`. Es la que responde "¿esta
+  clave existe en el catálogo?", y tiene que seguir siendo estricta.
+- `keyLikeEnumRawValues(existingIn:)` -- los `case x = "una.clave"`, y
+  **solo cuentan los que de verdad están en el catálogo**. Un `rawValue`
+  con puntos no es necesariamente una clave: en este repo también son
+  nombres de archivo (`rockbox.ipod`, `checksums.txt`) y llaves de JSON
+  (`artist-credit`), y las dos primeras versiones del barrido las
+  reportaron como "claves que faltan". Filtrar por existencia lo arregla
+  sin inventar nada.
+
+Un error de dedo en un `rawValue` sigue saliendo en rojo, por otras dos
+vías: la clave real queda huérfana, y `StatusCountTests` ve que la
+resolución devuelve la clave en vez del texto.
+
+La única indirección permitida en `LS`/`LSf` pasa a ser
+`String.LocalizationValue(x.rawValue)`; cualquier otra cosa calculada --un
+ternario, una interpolación-- sigue dejando la clave invisible y la
+prueba en rojo.
+
+Y `testPluralsHaveTheFormsEachLanguageRequires` aprendió a mirar dentro de
+`substitutions`: sin eso, las once claves nuevas se habrían saltado
+**todas** las comprobaciones de plural por idioma sin que nadie lo notara.
+
+De paso, una prueba vieja (`SimilarItemsDetectorTests.testPluralization`)
+esperaba "1,500 canciones" con el separador del español de México escrito
+a mano. Desde que el formateador sigue al idioma de la app, esa aserción
+habría fallado con la app en alemán; ahora compara contra `formatted`,
+que es quien lo decide.
+
+## ST-227 (A7d, paso 2) — "Convención de plataforma" en el cotejo compartido
+
+Regla nueva de la maestra: las etiquetas estándar que **cada sistema fija
+por idioma** siguen la convención de su plataforma aunque el español sea
+idéntico. El caso que lo motivó: "Cancelar" en ruso es **`Отменить`** en
+macOS y **`Отмена`** en Windows.
+
+Mi ruso ya decía `Отменить`, así que no hubo texto que corregir -- solo la
+columna `estado`, que es de la Mac.
+
+**Tres filas marcadas**, y solo tres:
+
+| clave | texto | por qué |
+|---|---|---|
+| `background-task-center-indicator.cancelar` | Cancelar | la que motivó la regla |
+| `artists-view.eliminar` | Eliminar | Delete: etiqueta estándar de alerta en los dos sistemas |
+| `done-view.reintentar` | Reintentar | Retry, ídem |
+
+**Lo que NO se marcó, y es la mitad del trabajo.** "Más tarde", "Cerrar
+ahora", "Crear una nueva", "Elegir otra biblioteca…" son cortas y suenan a
+botón, pero son **decisiones nuestras**, no etiquetas que fije el sistema.
+Marcarlas diluiría la regla hasta volverla inútil: si "convención de
+plataforma" acaba significando "cadena corta", deja de avisar de nada.
+
+**La Papelera no tiene fila que marcar** porque en la Mac aparece dentro
+de frases, no como etiqueta suelta. Pero hay un dato que conviene que
+Windows tenga antes de adoptar ninguna: **macOS escribe「ゴミ箱」en
+katakana y la papelera de Windows es「ごみ箱」en hiragana**.
+`library-view-model.eliminar-copia-papelera` usa la forma de macOS, que es
+la correcta acá; si esa frase se compartiera y Windows la copiara
+verbatim, shipearían la ortografía ajena.
+
+Una discrepancia de la que dejo constancia: el encargo decía que esa fila
+estaba en `igual`, y tanto en mi copia como en `origin/main` estaba en
+`clave distinta`. Se cambió igual a `convención de plataforma`, que es lo
+pedido, pero el punto de partida no era el que se creía.
+
+`testEverySharedKeyWithWindowsExistsInTheCatalog` acepta ahora el estado
+nuevo: la clave tiene que existir de este lado igual que con `igual` y
+`clave distinta` -- lo que cambia es la traducción, no la existencia.

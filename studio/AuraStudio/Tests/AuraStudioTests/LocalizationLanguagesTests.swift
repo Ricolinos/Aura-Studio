@@ -31,10 +31,23 @@ final class LocalizationLanguagesTests: XCTestCase {
 
     /// Las formas de plural de una localización, vacío si no es plural.
     private func pluralForms(_ localization: Any?) -> [String: String] {
-        guard let plural = ((localization as? [String: Any])?["variations"] as? [String: Any])?["plural"]
-                as? [String: Any] else { return [:] }
-        return plural.compactMapValues { ($0 as? [String: Any])?["stringUnit"] as? [String: Any] }
-            .compactMapValues { $0["value"] as? String }
+        func formas(_ contenedor: [String: Any]?) -> [String: String] {
+            guard let plural = (contenedor?["variations"] as? [String: Any])?["plural"] as? [String: Any]
+            else { return [:] }
+            return plural.compactMapValues { ($0 as? [String: Any])?["stringUnit"] as? [String: Any] }
+                .compactMapValues { $0["value"] as? String }
+        }
+        let dict = localization as? [String: Any]
+        let directas = formas(dict)
+        if !directas.isEmpty { return directas }
+        // ST-227 (A7d): plural con SUSTITUCIÓN -- las formas viven bajo
+        // `substitutions.<nombre>.variations.plural`, no colgando de la
+        // localización. Sin esto, las claves nuevas se saltarían TODAS
+        // las comprobaciones de plural sin que nadie lo notara.
+        guard let subs = dict?["substitutions"] as? [String: Any] else { return [:] }
+        var todas: [String: String] = [:]
+        for (_, spec) in subs { todas.merge(formas(spec as? [String: Any])) { a, _ in a } }
+        return todas
     }
 
     // MARK: - Cobertura
@@ -96,6 +109,7 @@ final class LocalizationLanguagesTests: XCTestCase {
         for (key, entry) in try catalogStrings() {
             let spanish = localizations(entry)["es"]
             guard !pluralForms(spanish).isEmpty else { continue } // no es un plural
+            _ = key
             for language in Self.languages {
                 let forms = Set(pluralForms(localizations(entry)[language]).keys)
                 let missing = required[language]!.subtracting(forms)

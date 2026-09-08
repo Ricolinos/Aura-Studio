@@ -49,6 +49,27 @@ def build(language: str, strings: dict) -> tuple[str, dict]:
         localization = strings[key].get("localizations", {}).get(language)
         if localization is None:
             continue
+        # ST-227 (A7d): plural con SUSTITUCIÓN. El catálogo de Xcode lo
+        # guarda como un `stringUnit` con tokens `%N$#@nombre@` más un
+        # bloque `substitutions`; es la única forma de que la FORMA del
+        # plural la elija un argumento y el texto MUESTRE otro -- que es
+        # lo que hace falta para "12 345 canciones", donde el número va
+        # ya formateado con el separador de miles del idioma y un `%lld`
+        # a secas lo perdería.
+        substitutions = localization.get("substitutions")
+        if substitutions:
+            plurals[key] = {"formato": localization["stringUnit"]["value"],
+                            "sustituciones": {
+                                nombre: {
+                                    "argNum": spec.get("argNum", 1),
+                                    "formatSpecifier": spec.get("formatSpecifier", "lld"),
+                                    "formas": {f: v["stringUnit"]["value"]
+                                               for f, v in spec["variations"]["plural"].items()
+                                               if "stringUnit" in v},
+                                }
+                                for nombre, spec in substitutions.items()
+                            }}
+            continue
         unit = localization.get("stringUnit")
         if unit is not None:
             lines.append(f'"{escape(key)}" = "{escape(unit["value"])}";')
@@ -77,16 +98,28 @@ def xml_escape(value: str) -> str:
 
 
 def stringsdict(plurals: dict) -> str:
-    def entry(key: str, forms: dict) -> str:
+    def bloque(nombre: str, especificador: str, formas: dict) -> str:
         rows = "".join(
-            f"\t\t\t<key>{xml_escape(name)}</key>\n\t\t\t<string>{xml_escape(value)}</string>\n"
-            for name, value in forms.items())
-        return (f"\t<key>{xml_escape(key)}</key>\n\t<dict>\n"
-                f"\t\t<key>NSStringLocalizedFormatKey</key>\n\t\t<string>%#@n@</string>\n"
-                f"\t\t<key>n</key>\n\t\t<dict>\n"
+            f"\t\t\t<key>{xml_escape(f)}</key>\n\t\t\t<string>{xml_escape(v)}</string>\n"
+            for f, v in formas.items())
+        return (f"\t\t<key>{xml_escape(nombre)}</key>\n\t\t<dict>\n"
                 f"\t\t\t<key>NSStringFormatSpecTypeKey</key>\n\t\t\t<string>NSStringPluralRuleType</string>\n"
-                f"\t\t\t<key>NSStringFormatValueTypeKey</key>\n\t\t\t<string>lld</string>\n"
-                f"{rows}\t\t</dict>\n\t</dict>\n")
+                f"\t\t\t<key>NSStringFormatValueTypeKey</key>\n\t\t\t<string>{xml_escape(especificador)}</string>\n"
+                f"{rows}\t\t</dict>\n")
+
+    def entry(key: str, forms) -> str:
+        # Plural de toda la cadena: un solo argumento, el número.
+        if not isinstance(forms, dict) or "sustituciones" not in forms:
+            cuerpo = bloque("n", "lld", forms)
+            return (f"\t<key>{xml_escape(key)}</key>\n\t<dict>\n"
+                    f"\t\t<key>NSStringLocalizedFormatKey</key>\n\t\t<string>%#@n@</string>\n"
+                    f"{cuerpo}\t</dict>\n")
+        # Plural con sustitución: el formato exterior nombra los tokens.
+        cuerpo = "".join(bloque(nombre, spec["formatSpecifier"], spec["formas"])
+                         for nombre, spec in sorted(forms["sustituciones"].items()))
+        return (f"\t<key>{xml_escape(key)}</key>\n\t<dict>\n"
+                f"\t\t<key>NSStringLocalizedFormatKey</key>\n\t\t<string>{xml_escape(forms['formato'])}</string>\n"
+                f"{cuerpo}\t</dict>\n")
     body = "".join(entry(key, forms) for key, forms in sorted(plurals.items()))
     return ('<?xml version="1.0" encoding="UTF-8"?>\n'
             '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" '
