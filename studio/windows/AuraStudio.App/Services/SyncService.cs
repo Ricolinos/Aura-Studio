@@ -1,6 +1,8 @@
 using AuraStudio.Core;
 using AuraStudio.Core.Library;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.App.Services;
 
 /// <summary>
@@ -29,7 +31,8 @@ public sealed class SyncService : ISyncService
     public async Task<SyncResult> PreviewSyncAsync(string volumeRoot, SyncOptions options, CancellationToken ct = default)
     {
         DateTimeOffset started = DateTimeOffset.UtcNow;
-        if (!Directory.Exists(volumeRoot)) return Failure("El volumen del iPod ya no está disponible.", started);
+        if (!Directory.Exists(volumeRoot))
+            return Failure(Strings.Get("volume.ipod-unavailable"), started);
 
         Report(SyncPhase.Scanning);
         SyncPlanResult plan = await BuildPlanAsync(volumeRoot, options, ct);
@@ -49,7 +52,8 @@ public sealed class SyncService : ISyncService
     public async Task<SyncResult> SyncAsync(string volumeRoot, SyncOptions options, CancellationToken ct = default)
     {
         DateTimeOffset started = DateTimeOffset.UtcNow;
-        if (!Directory.Exists(volumeRoot)) return Failure("El volumen del iPod ya no está disponible.", started);
+        if (!Directory.Exists(volumeRoot))
+            return Failure(Strings.Get("volume.ipod-unavailable"), started);
 
         if (options.DryRun) return await PreviewSyncAsync(volumeRoot, options, ct);
 

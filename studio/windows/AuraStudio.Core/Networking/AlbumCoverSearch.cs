@@ -1,5 +1,7 @@
 using AuraStudio.Core.Library;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Networking;
 
 public enum AlbumCoverSource
@@ -65,11 +67,11 @@ public sealed class AlbumCoverSearch(
 
     public int MaximumCandidates { get; init; } = 10;
 
-    public const string NoResultsReason =
-        "No se encontraron tapas para este álbum. Revisa que el título y el artista estén bien escritos.";
+    public static string NoResultsReason =>
+        Strings.Get("album-cover-search.no-results");
 
-    public const string NoResultsWithoutDeezerHint =
-        "También puedes activar Deezer en Ajustes › Servicios para buscar en más lugares.";
+    public static string NoResultsWithoutDeezerHint =>
+        Strings.Get("album-cover-search.try-deezer");
 
     /// <summary>
     /// Las candidatas, en el orden en que conviene mostrarlas: primero Cover Art

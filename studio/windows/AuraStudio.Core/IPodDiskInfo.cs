@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core;
 
 /// <summary>
@@ -52,7 +54,9 @@ public sealed record IPodDiskInfo
     public string FreeDisplay => FormatBytes(FreeBytes);
     public bool HasLibrarySummary => LibrarySummary.HasValue;
     public string FirmwareDisplay => DeclaredFamily is null
-        ? (HasAuraConfig ? "Archivos Aura detectados (familia no declarada)" : "No se detectó una instalación Aura")
+        ? Strings.Get(HasAuraConfig
+            ? "ipod-disk.aura-files-undeclared"
+            : "ipod-disk.no-aura")
         : DeclaredFamily.DisplayName;
     public string SummaryMusicDisplay => SummaryValue(LibrarySummary?.Music);
     public string SummaryVideoDisplay => SummaryValue(LibrarySummary?.Video);

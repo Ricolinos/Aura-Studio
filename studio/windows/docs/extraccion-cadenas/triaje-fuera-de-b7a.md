@@ -35,6 +35,7 @@ trinquete de `HardcodedSpanishTests`, y acá queda dicho por qué.
 | paso 2, `SimilarItemsDetector` | 206 | los motivos y la sugerencia; los nombres de campo se piden a la hoja de metadata |
 | paso 2, rótulos de tabla | 194 | columnas de Canciones, estados de la biblioteca y los avisos de alcance |
 | paso 2, biblioteca y cuadrículas | 168 | `LibraryViewModel`, `MediaGridViewModel` y la sección de claves de Ajustes |
+| paso 2, cola de Core y de la app | 93 | aviso de versión del firmware, servicios de red, credenciales, actualizaciones, hojas y vistas sueltas |
 
 El trinquete baja poco en el segundo paso y eso es correcto: **doce literales
 cambiaron de clase, no de sitio.** Las razones de `PreparedMusic` estaban como

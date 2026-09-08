@@ -5,6 +5,8 @@ using AuraStudio.Core.Installer;
 using AuraStudio.App.Resources;
 using AuraStudio.App.Services;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.App.ViewModels;
 
 /// <summary>
@@ -809,7 +811,8 @@ public sealed partial class InstallerViewModel : ViewModelBase
         DfuDriverReport report = _appleSupport.Probe();
         DriverStatusText = report.Status switch
         {
-            DfuDriverStatus.DeviceReady => AppStrings.DfuDriverReady(report.DeviceName ?? "el dispositivo"),
+            DfuDriverStatus.DeviceReady => AppStrings.DfuDriverReady(
+                report.DeviceName ?? Strings.Get("installer-view-model.the-device")),
             DfuDriverStatus.DeviceWithoutDriver => AppStrings.DfuDriverMissing,
             DfuDriverStatus.NoAppleDevice => report.DriverPackageInstalled
                 ? AppStrings.DfuDriverInstalledNoDevice
@@ -1258,7 +1261,7 @@ public sealed partial class InstallerViewModel : ViewModelBase
         if (TargetFamily is null)
         {
             Fail(AppStrings.InstallerArtifactsInvalid,
-                 "No se pudo determinar qué firmware instalar. Vuelve a elegirlo y reintenta.");
+                 Strings.Get("installer-view-model.unknown-firmware"));
             return false;
         }
 

@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Networking;
 
 /// <summary>
@@ -24,7 +26,7 @@ public sealed class EnrichmentError : Exception
         new($"Error de red (HTTP {statusCode})") { StatusCode = statusCode };
 
     public static EnrichmentError NoMatch =>
-        new("No se encontró ningún resultado") { IsNoMatch = true };
+        new(Strings.Get("networking.no-results")) { IsNoMatch = true };
 
     private EnrichmentError(string message) : base(message) { }
 }

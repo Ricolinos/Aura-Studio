@@ -3,6 +3,8 @@ using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using AuraStudio.Core.Networking;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.App.Platform;
 
 /// <summary>Cómo terminó bajar y lanzar el instalador (ST-211).</summary>
@@ -71,7 +73,8 @@ internal static class AppUpdateInstaller
         catch (OperationCanceledException)
         {
             Discard(destination);
-            return new AppUpdateDownloadResult(AppUpdateDownloadOutcome.Cancelled, "Se detuvo la descarga.");
+            return new AppUpdateDownloadResult(
+                AppUpdateDownloadOutcome.Cancelled, Strings.Get("app-update.download-stopped"));
         }
         catch (Exception ex) when (ex is HttpRequestException or IOException or UnauthorizedAccessException)
         {
@@ -103,7 +106,7 @@ internal static class AppUpdateInstaller
 
         return new AppUpdateDownloadResult(
             AppUpdateDownloadOutcome.Started,
-            "El instalador está abriéndose. Aura Studio se cerrará para poder actualizarse.");
+            Strings.Get("app-update.installer-opening"));
     }
 
     /// <summary>
@@ -124,8 +127,7 @@ internal static class AppUpdateInstaller
 
             return string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase)
                 ? null
-                : "Lo descargado no coincide con el resumen que publica GitHub para ese archivo. "
-                  + "Se borró y no se abrió nada; vuelve a intentarlo más tarde.";
+                : Strings.Get("app-update.checksum-mismatch");
         }
 
         if (asset.Size <= 0) return null;
@@ -134,8 +136,7 @@ internal static class AppUpdateInstaller
 
         return size == asset.Size
             ? null
-            : $"Lo descargado mide {size} bytes y el Release dice {asset.Size}: la descarga quedó "
-              + "incompleta. Se borró y no se abrió nada.";
+            : Strings.Format("app-update.size-mismatch", size, asset.Size);
     }
 
     /// <summary>

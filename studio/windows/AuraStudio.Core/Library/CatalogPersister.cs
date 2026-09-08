@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Library;
 
 /// <summary>
@@ -145,7 +147,7 @@ public sealed class CatalogPersister
             {
                 // ST-171: el disco se fue. Es un estado, no un error que tirar
                 // en la cara del usuario, y lo que hay en memoria sigue estando.
-                Failed?.Invoke(this, "La biblioteca no está disponible: no se pudo guardar.");
+                Failed?.Invoke(this, Strings.Get("catalog-persister.unavailable"));
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {

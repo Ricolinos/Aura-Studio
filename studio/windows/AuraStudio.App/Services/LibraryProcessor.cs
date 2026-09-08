@@ -4,6 +4,8 @@ using AuraStudio.Core.Library;
 using AuraStudio.Core.Media;
 using AuraStudio.Core.Networking;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.App.Services;
 
 /// <summary>
@@ -71,7 +73,7 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
                     break;
 
                 default:
-                    item.Status = LibraryItemStatus.Failed("Este tipo de archivo no es compatible.");
+                    item.Status = LibraryItemStatus.Failed(Strings.Get("library-processor.unsupported"));
                     return true;
             }
 

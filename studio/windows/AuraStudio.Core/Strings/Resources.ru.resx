@@ -393,6 +393,267 @@
   <data name="installer-error.device-not-found" xml:space="preserve">
     <value>Подключённый iPod не обнаружен.</value>
   </data>
+  <data name="credential-store.fanart-summary" xml:space="preserve">
+    <value>Обложки в высоком разрешении (~1000 px), фотографии исполнителей и отобранные постеры фильмов и сериалов (для последних нужен ещё ключ TMDB, чтобы найти название).</value>
+  </data>
+  <data name="credential-store.fanart-guide" xml:space="preserve">
+    <value>Создайте бесплатную учётную запись на fanart.tv, зайдите в профиль и скопируйте «Personal API Key» (не проектный).</value>
+  </data>
+  <data name="credential-store.tmdb-summary" xml:space="preserve">
+    <value>Постеры фильмов и сериалов. Находит название и его идентификатор; если настроен fanart.tv, предпочтение отдаётся отобранному постеру оттуда, иначе — из TMDB.</value>
+  </data>
+  <data name="credential-store.tmdb-guide" xml:space="preserve">
+    <value>Создайте бесплатную учётную запись на themoviedb.org, откройте Параметры › API и скопируйте «API Key (v3 auth)».</value>
+  </data>
+  <data name="credential-store.github-summary" xml:space="preserve">
+    <value>Репозитории прошивок открыты: Aura Studio и так сообщает о новых версиях без всего этого. Токен только для чтения лишь повышает лимит запросов к API GitHub; установка прошивки от него никогда не зависит, потому что прошивка входит в приложение.</value>
+  </data>
+  <data name="credential-store.github-guide" xml:space="preserve">
+    <value>Если он всё же нужен: создайте персональный токен доступа «fine-grained» на github.com › Settings › Developer settings, с доступом только к Aura-Firmware, Metro-Aura и moonlit-aura и правом Contents: Read-only.</value>
+  </data>
+  <data name="app-update.download-stopped" xml:space="preserve">
+    <value>Загрузка остановлена.</value>
+  </data>
+  <data name="app-update.installer-opening" xml:space="preserve">
+    <value>Установщик открывается. Aura Studio закроется, чтобы обновиться.</value>
+  </data>
+  <data name="app-update.checksum-mismatch" xml:space="preserve">
+    <value>Скачанное не совпадает с контрольной суммой, которую GitHub публикует для этого файла. Оно удалено, ничего не открыто; повторите позже.</value>
+  </data>
+  <data name="app-update.size-mismatch" xml:space="preserve">
+    <value>Скачанное занимает {0} байт, а в Release указано {1}: загрузка осталась неполной. Она удалена, ничего не открыто.</value>
+  </data>
+  <data name="app-update-service.announcement-missing-asset" xml:space="preserve">
+    <value>{0} В этом Release нет {1}: откройте его на GitHub и скачайте вручную.</value>
+  </data>
+  <data name="similar-items.nothing-new-with-hidden" xml:space="preserve">
+    <value>Ничего нового не нашлось. Есть группы, которые вы уже отметили как «это не одно и то же»: их можно снова показать ниже.</value>
+  </data>
+  <data name="similar-items.nothing-similar" xml:space="preserve">
+    <value>В вашей медиатеке похожих элементов не нашлось.</value>
+  </data>
+  <data name="similar-items.hidden-reset" xml:space="preserve">
+    <value>Готово, больше показываться не будет. Сбросить это можно ниже.</value>
+  </data>
+  <data name="artists-view-model.favorite-label-add" xml:space="preserve">
+    <value>Отметить как избранное: {0}</value>
+  </data>
+  <data name="artists-view-model.favorite-label-remove" xml:space="preserve">
+    <value>Убрать из избранного: {0}</value>
+  </data>
+  <data name="artists-view-model.favorite-button-add" xml:space="preserve">
+    <value>Отметить как избранное</value>
+  </data>
+  <data name="artists-view-model.favorite-button-remove" xml:space="preserve">
+    <value>Убрать из избранного</value>
+  </data>
+  <data name="artists-page.album-favorite-add" xml:space="preserve">
+    <value>Отметить альбом как избранный</value>
+  </data>
+  <data name="artists-page.album-favorite-remove" xml:space="preserve">
+    <value>Убрать альбом из избранного</value>
+  </data>
+  <data name="songs-view-model.favorite" xml:space="preserve">
+    <value>Избранное</value>
+  </data>
+  <data name="songs-view-model.not-favorite" xml:space="preserve">
+    <value>Не избранное</value>
+  </data>
+  <data name="songs-view-model.no-favorites" xml:space="preserve">
+    <value>Ни один трек не отмечен как избранный. Снимите фильтр, чтобы увидеть все.</value>
+  </data>
+  <data name="device-list-view-model.check-updates-hint" xml:space="preserve">
+    <value>Проверьте обновления, чтобы узнать, вышла ли версия новее.</value>
+  </data>
+  <data name="device-list-view-model.firmware-updated" xml:space="preserve">
+    <value>Прошивка обновлена. Извлеките iPod и включите его.</value>
+  </data>
+  <data name="device-list-page.orphans-stay" xml:space="preserve">
+    <value>Они остаются на iPod. Отметьте те, что хотите убрать, и синхронизируйте снова; остальные не трогаются.</value>
+  </data>
+  <data name="installer-view-model.the-device" xml:space="preserve">
+    <value>устройство</value>
+  </data>
+  <data name="installer-view-model.unknown-firmware" xml:space="preserve">
+    <value>Не удалось определить, какую прошивку устанавливать. Выберите её заново и повторите.</value>
+  </data>
+  <data name="playlists-page.rename-title" xml:space="preserve">
+    <value>Переименовать плейлист</value>
+  </data>
+  <data name="playlists-page.name-placeholder" xml:space="preserve">
+    <value>Название плейлиста</value>
+  </data>
+  <data name="songs-page.all-music" xml:space="preserve">
+    <value>Вся ваша музыка.</value>
+  </data>
+  <data name="songs-page.edit-hint" xml:space="preserve">
+    <value>Меняется то, как это выглядит в медиатеке и на iPod. Файл на диске не трогается.</value>
+  </data>
+  <data name="themes-page.remove-active" xml:space="preserve">
+    <value>Это активная тема: iPod вернётся к встроенной теме Aura.</value>
+  </data>
+  <data name="themes-page.remove-inactive" xml:space="preserve">
+    <value>Она удаляется с iPod. Установить её снова можно, если сохранить папку ресурсов.</value>
+  </data>
+  <data name="media-grid-page.no-tree" xml:space="preserve">
+    <value>(без дерева)</value>
+  </data>
+  <data name="library-processor.unsupported" xml:space="preserve">
+    <value>Файлы такого типа не поддерживаются.</value>
+  </data>
+  <data name="enrichment.online-off" xml:space="preserve">
+    <value>«Дополнять из сети» выключено в разделе Параметры › Службы.</value>
+  </data>
+  <data name="audio-transcoder.no-encoder" xml:space="preserve">
+    <value>В этой версии Windows нет кодировщика {0} ({1}). Для ALAC нужна Windows 10 версии 1803 или новее.</value>
+  </data>
+  <data name="audio-transcoder.cannot-read" xml:space="preserve">
+    <value>Windows не смог прочитать «{0}» для преобразования (причина: {1}). Обычно файл повреждён или он не того формата, что заявлен в расширении.</value>
+  </data>
+  <data name="volume-lock.close-explorer" xml:space="preserve">
+    <value>Закройте окна Проводника и приложения, которые используют iPod.</value>
+  </data>
+  <data name="firmware-update.no-network" xml:space="preserve">
+    <value>Не удалось обратиться к GitHub, чтобы узнать, есть ли версия новее. Проверьте подключение и повторите.</value>
+  </data>
+  <data name="firmware-update.no-network-matches-bundled" xml:space="preserve">
+    <value>Не удалось обратиться к GitHub, чтобы узнать, есть ли версия новее. Проверьте подключение и повторите. Установленное совпадает с {0} {1} — именно это и входит в эту копию Aura Studio.</value>
+  </data>
+  <data name="firmware-update.up-to-date-tag" xml:space="preserve">
+    <value>{0} в актуальном состоянии: на iPod стоит {1} — самая свежая опубликованная версия.</value>
+  </data>
+  <data name="firmware-update.up-to-date-hash" xml:space="preserve">
+    <value>{0} в актуальном состоянии: установленное совпадает с {1} — самой свежей опубликованной версией.</value>
+  </data>
+  <data name="firmware-update.bundled-newer-than-ipod" xml:space="preserve">
+    <value>Опубликована {0} {1}. В этой копии Aura Studio есть {2} — уже новее, чем на iPod ({3}): можно установить {2} сейчас либо обновить Aura Studio, чтобы получить {1}.</value>
+  </data>
+  <data name="firmware-update.update-available" xml:space="preserve">
+    <value>Есть версия {0} новее ({1}).</value>
+  </data>
+  <data name="firmware-update.newer-than-bundled" xml:space="preserve">
+    <value>Опубликована {0} {1}, но в этой копии Aura Studio есть {2}. Обновите Aura Studio, чтобы её установить.</value>
+  </data>
+  <data name="firmware-update.older-version" xml:space="preserve">
+    <value>версия постарше</value>
+  </data>
+  <data name="firmware-update.another-version" xml:space="preserve">
+    <value>другая версия</value>
+  </data>
+  <data name="firmware-update.ipod-older-than-bundled" xml:space="preserve">
+    <value>На iPod стоит версия {0} старее, чем в этой копии Aura Studio ({1}); самая свежая опубликованная — {2}.</value>
+  </data>
+  <data name="firmware-update.bundled-newer-hash" xml:space="preserve">
+    <value>Есть версия {0} ({1}) новее, чем на iPod.</value>
+  </data>
+  <data name="artist-image.missing-key" xml:space="preserve">
+    <value>Для фотографий исполнителей нужен ключ fanart.tv (Параметры › Службы).</value>
+  </data>
+  <data name="artist-image.no-match" xml:space="preserve">
+    <value>Этот исполнитель не найден в MusicBrainz.</value>
+  </data>
+  <data name="artist-image.no-image" xml:space="preserve">
+    <value>В fanart.tv нет фотографии этого исполнителя.</value>
+  </data>
+  <data name="artist-image.musicbrainz-busy" xml:space="preserve">
+    <value>MusicBrainz сейчас перегружен. Повторите попытку чуть позже.</value>
+  </data>
+  <data name="artist-image.failed-musicbrainz-busy" xml:space="preserve">
+    <value>Не получилось: MusicBrainz перегружен. Повторите попытку чуть позже.</value>
+  </data>
+  <data name="artist-image.none-new" xml:space="preserve">
+    <value>Новых фотографий исполнителей не нашлось.</value>
+  </data>
+  <data name="artist-image.summary-stopped-some.one" xml:space="preserve">
+    <value>Найдена {0} фотография, и на этом остановились: MusicBrainz перегружен. Повторите попытку чуть позже.</value>
+  </data>
+  <data name="artist-image.summary-stopped-some.few" xml:space="preserve">
+    <value>Найдено {0} фотографии, и на этом остановились: MusicBrainz перегружен. Повторите попытку чуть позже.</value>
+  </data>
+  <data name="artist-image.summary-stopped-some.many" xml:space="preserve">
+    <value>Найдено {0} фотографий, и на этом остановились: MusicBrainz перегружен. Повторите попытку чуть позже.</value>
+  </data>
+  <data name="artist-image.summary-found.one" xml:space="preserve">
+    <value>Найдена {0} фотография исполнителя.</value>
+  </data>
+  <data name="artist-image.summary-found.few" xml:space="preserve">
+    <value>Найдено {0} фотографии исполнителей.</value>
+  </data>
+  <data name="artist-image.summary-found.many" xml:space="preserve">
+    <value>Найдено {0} фотографий исполнителей.</value>
+  </data>
+  <data name="artist-image.summary-failed.one" xml:space="preserve">
+    <value>С {0} исполнителем не вышло.</value>
+  </data>
+  <data name="artist-image.summary-failed.few" xml:space="preserve">
+    <value>С {0} исполнителями не вышло.</value>
+  </data>
+  <data name="artist-image.summary-failed.many" xml:space="preserve">
+    <value>С {0} исполнителями не вышло.</value>
+  </data>
+  <data name="artist-image.summary-none-with-failures.one" xml:space="preserve">
+    <value>Новых фотографий не нашлось; с {0} исполнителем не вышло.</value>
+  </data>
+  <data name="artist-image.summary-none-with-failures.few" xml:space="preserve">
+    <value>Новых фотографий не нашлось; с {0} исполнителями не вышло.</value>
+  </data>
+  <data name="artist-image.summary-none-with-failures.many" xml:space="preserve">
+    <value>Новых фотографий не нашлось; с {0} исполнителями не вышло.</value>
+  </data>
+  <data name="artist-image.summary-found-with-failures" xml:space="preserve">
+    <value>{0}; {1}</value>
+  </data>
+  <data name="album-cover-search.no-results" xml:space="preserve">
+    <value>Обложек для этого альбома не нашлось. Проверьте, правильно ли написаны название и исполнитель.</value>
+  </data>
+  <data name="album-cover-search.try-deezer" xml:space="preserve">
+    <value>Ещё можно включить Deezer в разделе Параметры › Службы, чтобы искать в большем числе мест.</value>
+  </data>
+  <data name="video-artwork.missing-key" xml:space="preserve">
+    <value>Для постеров видео нужен ключ TMDB (Параметры › Службы).</value>
+  </data>
+  <data name="video-artwork.no-match" xml:space="preserve">
+    <value>Постер для этого видео не найден.</value>
+  </data>
+  <data name="ffmpeg-locator.not-found" xml:space="preserve">
+    <value>ffmpeg не найден на этом компьютере. Установите его командой "winget install Gyan.FFmpeg" либо укажите его расположение в разделе Параметры › Видео.</value>
+  </data>
+  <data name="networking.no-results" xml:space="preserve">
+    <value>Ничего не найдено</value>
+  </data>
+  <data name="device-config.name-set-elsewhere" xml:space="preserve">
+    <value>Имя этого iPod задано с другого компьютера; изменить его можно только оттуда.</value>
+  </data>
+  <data name="install-manifest.empty" xml:space="preserve">
+    <value>В файле прошивки нет ни одной записи.</value>
+  </data>
+  <data name="firmware-switcher.failed" xml:space="preserve">
+    <value>Не удалось сменить прошивку.</value>
+  </data>
+  <data name="catalog-persister.unavailable" xml:space="preserve">
+    <value>Медиатека недоступна: сохранить не удалось.</value>
+  </data>
+  <data name="ipod-disk.aura-files-undeclared" xml:space="preserve">
+    <value>Обнаружены файлы Aura (семейство не объявлено)</value>
+  </data>
+  <data name="ipod-disk.no-aura" xml:space="preserve">
+    <value>Установка Aura не обнаружена</value>
+  </data>
+  <data name="firmware-tree.verifying" xml:space="preserve">
+    <value>Проверка целостности файлов…</value>
+  </data>
+  <data name="firmware-tree.copying" xml:space="preserve">
+    <value>Копирование прошивки на iPod…</value>
+  </data>
+  <data name="firmware-tree.falling-back-to-full" xml:space="preserve">
+    <value>Выборочное обновление не удалось; ставится полное…</value>
+  </data>
+  <data name="firmware-tree.copy-interrupted" xml:space="preserve">
+    <value>Копирование прервалось — повтор…</value>
+  </data>
+  <data name="volume.ipod-unavailable" xml:space="preserve">
+    <value>Том iPod больше недоступен.</value>
+  </data>
   <data name="device-firmware.dual-suffix" xml:space="preserve">
     <value> (двойная загрузка с Apple)</value>
   </data>
@@ -2874,11 +3135,32 @@
   <data name="similarity.same-file-size" xml:space="preserve">
     <value>Ровно одинаковый размер файла</value>
   </data>
+  <data name="similarity.same-file-size-with-size" xml:space="preserve">
+    <value>Ровно одинаковый размер файла ({0})</value>
+  </data>
+  <data name="similarity.artist-spelled-differently" xml:space="preserve">
+    <value>Исполнитель написан по-разному: «{0}» / «{1}»</value>
+  </data>
+  <data name="similarity.artist-similar" xml:space="preserve">
+    <value>Похожий исполнитель: «{0}» / «{1}»</value>
+  </data>
+  <data name="similarity.other-version" xml:space="preserve">
+    <value>Один похож на другую версию ({0})</value>
+  </data>
+  <data name="similarity.same-filename-ignoring-copy" xml:space="preserve">
+    <value>Одинаковое имя файла без «копия»/«(1)»: {0} / {1}</value>
+  </data>
+  <data name="similarity.almost-same-filename" xml:space="preserve">
+    <value>Почти одинаковое имя файла: {0} / {1}</value>
+  </data>
   <data name="similarity.same-episode" xml:space="preserve">
     <value>Та же серия: {0} S{1}E{2}</value>
   </data>
   <data name="similarity.same-title" xml:space="preserve">
     <value>Одинаковое название: «{0}»</value>
+  </data>
+  <data name="similarity.same-title-ignoring-track" xml:space="preserve">
+    <value>Одинаковое название без номера трека и скобок: «{0}» / «{1}»</value>
   </data>
   <data name="similarity.almost-same-title" xml:space="preserve">
     <value>Почти одинаковое название: «{0}» / «{1}»</value>

@@ -2,6 +2,8 @@ using AuraStudio.App.Platform;
 using AuraStudio.Core.Library;
 using AuraStudio.Core.Networking;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.App.Services;
 
 /// <param name="Improved">Cuántos elementos ganaron algo.</param>
@@ -56,7 +58,7 @@ public sealed class EnrichmentService(IAppPreferences preferences, CredentialSto
         if (!preferences.EnrichOnline)
         {
             return new EnrichmentReport(0, 0, 0,
-                "\"Completar en línea\" está apagado en Ajustes › Servicios.");
+                Strings.Get("enrichment.online-off"));
         }
 
         var enricher = new LibraryEnricher(fanartTV: new FanartTVClient(apiKeyStore: credentials));

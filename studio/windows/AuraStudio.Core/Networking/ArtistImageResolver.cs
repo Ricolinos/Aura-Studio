@@ -1,5 +1,7 @@
 using AuraStudio.Core.Library;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Networking;
 
 /// <param name="Reason">Por qué no se consiguió, cuando no se consiguió. Siempre se dice.</param>
@@ -27,12 +29,12 @@ public sealed class ArtistImageResolver(
     private readonly FanartTVClient _fanartTV = fanartTV ?? new FanartTVClient();
     private readonly Func<bool> _hasFanartKey = hasFanartKey ?? (() => false);
 
-    public const string MissingKeyReason =
-        "Para las fotos de artista hace falta una clave de fanart.tv (Ajustes › Servicios).";
+    public static string MissingKeyReason =>
+        Strings.Get("artist-image.missing-key");
 
-    public const string NoMatchReason = "No se encontró a este artista en MusicBrainz.";
+    public static string NoMatchReason => Strings.Get("artist-image.no-match");
 
-    public const string NoImageReason = "fanart.tv no tiene foto de este artista.";
+    public static string NoImageReason => Strings.Get("artist-image.no-image");
 
     /// <summary>
     /// La foto del artista, o el motivo por el que no la hay.
@@ -74,8 +76,8 @@ public sealed class ArtistImageResolver(
     /// un error de él ni de su biblioteca</b>, y decirlo como "falló la
     /// conexión" lo mandaría a revisar su internet.
     /// </summary>
-    public const string SaturatedReason =
-        "MusicBrainz está saturado en este momento. Vuelve a intentarlo en un rato.";
+    public static string SaturatedReason =>
+        Strings.Get("artist-image.musicbrainz-busy");
 
     /// <summary>
     /// Cuántas saturaciones seguidas antes de dejar de insistir. Con el
@@ -157,15 +159,21 @@ public sealed class ArtistImageResolver(
 public readonly record struct ArtistImageBatch(int Found, int Failed, bool StoppedBySaturation)
 {
     /// <summary>Lo que se muestra al terminar. Nunca un diálogo: una línea al pie.</summary>
+    // Cinco ramas con "foto(s)" y "artista(s)" adentro. Ese paréntesis no es
+    // un plural en ningún idioma; ahora cada conteo elige su forma y la frase
+    // que junta las dos se arma de las dos (ST-247, B7d).
     public string Summary => this switch
     {
         { StoppedBySaturation: true, Found: 0 } =>
-            "No se pudo: MusicBrainz está saturado. Vuelve a intentarlo en un rato.",
+            Strings.Get("artist-image.failed-musicbrainz-busy"),
         { StoppedBySaturation: true } =>
-            $"Se consiguieron {Found} foto(s) y se paró: MusicBrainz está saturado. Vuelve a intentarlo en un rato.",
-        { Found: 0, Failed: 0 } => "No se consiguió ninguna foto de artista nueva.",
-        { Found: 0 } => $"No se consiguió ninguna foto nueva; {Failed} artista(s) fallaron.",
-        { Failed: 0 } => $"Se consiguieron {Found} foto(s) de artista.",
-        _ => $"Se consiguieron {Found} foto(s) de artista; {Failed} fallaron."
+            Strings.Plural("artist-image.summary-stopped-some", Found),
+        { Found: 0, Failed: 0 } => Strings.Get("artist-image.none-new"),
+        { Found: 0 } => Strings.Plural("artist-image.summary-none-with-failures", Failed),
+        { Failed: 0 } => Strings.Plural("artist-image.summary-found", Found),
+        _ => Strings.Format(
+            "artist-image.summary-found-with-failures",
+            Strings.Plural("artist-image.summary-found", Found),
+            Strings.Plural("artist-image.summary-failed", Failed))
     };
 }

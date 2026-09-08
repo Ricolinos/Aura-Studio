@@ -1,5 +1,7 @@
 using System.IO.Compression;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Installer;
 
 /// <summary>Avance de la escritura del firmware, para la barra de progreso y el texto de estado.</summary>
@@ -78,7 +80,7 @@ public static class FirmwareTreeWriter
             throw new InstallerException(new InstallerError.DeviceDisconnectedDuringCopy());
         }
 
-        progress?.Report(new("Verificando integridad de los archivos…", null));
+        progress?.Report(new(Strings.Get("firmware-tree.verifying"), null));
         ArtifactVerificationResult verification =
             FirmwareArtifactVerifier.Verify(artifacts, ArtifactScope.FirmwareTree);
         if (!verification.IsValid)
@@ -100,7 +102,7 @@ public static class FirmwareTreeWriter
             parked = detected;
         }
 
-        progress?.Report(new("Copiando el firmware al iPod…", null));
+        progress?.Report(new(Strings.Get("firmware-tree.copying"), null));
         string rootBinary = Path.Combine(volumeRoot, FirmwareSwitcher.RootFirmwareBinaryName);
         File.Copy(firmwarePath, rootBinary, overwrite: true);
         if (!File.Exists(rootBinary))
@@ -137,7 +139,7 @@ public static class FirmwareTreeWriter
                 {
                     // Ni idea de en qué quedó el árbol: extracción completa encima
                     // (merge), que lo repara todo.
-                    progress?.Report(new("La actualización selectiva no pudo; instalando completo…", null));
+                    progress?.Report(new(Strings.Get("firmware-tree.falling-back-to-full"), null));
                     usedDelta = false;
                 }
             }
@@ -267,7 +269,7 @@ public static class FirmwareTreeWriter
                 last = ex;
                 if (!Directory.Exists(volumeRoot)) break;
                 if (attempt == 2) break;
-                progress?.Report(new("La copia se interrumpió — reintentando…", null));
+                progress?.Report(new(Strings.Get("firmware-tree.copy-interrupted"), null));
             }
         }
 

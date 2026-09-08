@@ -2,6 +2,8 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Text;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core;
 
 /// <summary>Una entrada del árbol instalado: ruta dentro del zip, tamaño sin comprimir y CRC-32.</summary>
@@ -86,7 +88,7 @@ public sealed record InstallManifest
 
         if (entries.Count == 0)
         {
-            throw new InvalidDataException("El archivo de firmware no contiene ninguna entrada.");
+            throw new InvalidDataException(Strings.Get("install-manifest.empty"));
         }
         return entries;
     }

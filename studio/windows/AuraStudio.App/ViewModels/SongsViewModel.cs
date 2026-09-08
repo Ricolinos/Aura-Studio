@@ -2,6 +2,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using AuraStudio.App.Resources;
 using AuraStudio.Core.Library;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.App.ViewModels;
 
 /// <summary>
@@ -15,7 +17,9 @@ public sealed record SongCell(MusicTableColumn Column, string Text, double Width
     /// <summary>Corazón lleno o vacío; el texto va aparte para que se pueda leer con lector de pantalla.</summary>
     public string FavoriteGlyph => IsFavorite ? Glyphs.HeartFilled : Glyphs.HeartOutline;
 
-    public string FavoriteLabel => IsFavorite ? "Favorito" : "No es favorito";
+    public string FavoriteLabel => Strings.Get(IsFavorite
+        ? "songs-view-model.favorite"
+        : "songs-view-model.not-favorite");
 }
 
 /// <summary>Un renglón de la tabla, con sus celdas ya armadas para las columnas visibles.</summary>
@@ -247,7 +251,7 @@ public sealed partial class SongsViewModel : ViewModelBase
     /// </summary>
     public string EmptyMessage =>
         FavoritesOnly && _library.Items.Any(item => item.Kind == LibraryItemKind.Music)
-            ? "Ninguna canción está marcada como favorita. Quita el filtro para verlas todas."
+            ? Strings.Get("songs-view-model.no-favorites")
             : AppStrings.LibraryDropHint(LibraryItemKind.Music);
 
     public string CountText => AppStrings.LibraryTracks(Rows.Count);

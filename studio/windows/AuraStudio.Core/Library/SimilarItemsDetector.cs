@@ -349,12 +349,12 @@ public static class SimilarItemsDetector
         if (titleSim >= 0.999)
         {
             reasons.Add(a.RawTitle != b.RawTitle
-                ? $"Mismo título sin contar el número de pista o los paréntesis: «{a.RawTitle}» / «{b.RawTitle}»"
-                : $"Mismo título: «{a.RawTitle}»");
+                ? Strings.Format("similarity.same-title-ignoring-track", a.RawTitle, b.RawTitle)
+                : Strings.Format("similarity.same-title", a.RawTitle));
         }
         else if (titleSim >= 0.8)
         {
-            reasons.Add($"Título casi igual: «{a.RawTitle}» / «{b.RawTitle}»");
+            reasons.Add(Strings.Format("similarity.almost-same-title", a.RawTitle, b.RawTitle));
         }
 
         string artistA = a.Item.Metadata?.Artist ?? "", artistB = b.Item.Metadata?.Artist ?? "";
@@ -364,11 +364,11 @@ public static class SimilarItemsDetector
             if (a.Artist == b.Artist)
             {
                 if (artistA != artistB)
-                    reasons.Add($"Artista escrito distinto: «{artistA}» / «{artistB}»");
+                    reasons.Add(Strings.Format("similarity.artist-spelled-differently", artistA, artistB));
             }
             else if (artistSim >= 0.6)
             {
-                reasons.Add($"Artista parecido: «{artistA}» / «{artistB}»");
+                reasons.Add(Strings.Format("similarity.artist-similar", artistA, artistB));
             }
         }
         else
@@ -376,12 +376,13 @@ public static class SimilarItemsDetector
             reasons.Add(Strings.Get("similarity.missing-artist"));
         }
 
-        if (duration == 1) reasons.Add($"Misma duración ({SimilarityText.Clock(a.Duration)})");
+        if (duration == 1) reasons.Add(Strings.Format("similarity.same-duration", SimilarityText.Clock(a.Duration)));
         else if (duration >= 0.3)
-            reasons.Add($"Duración parecida ({SimilarityText.Clock(a.Duration)} / {SimilarityText.Clock(b.Duration)})");
+            reasons.Add(Strings.Format("similarity.similar-duration",
+                SimilarityText.Clock(a.Duration), SimilarityText.Clock(b.Duration)));
 
         if (sameFileSize)
-            reasons.Add($"Mismo tamaño exacto de archivo ({SimilarityText.FormatBytes(a.FileSize)})");
+            reasons.Add(Strings.Format("similarity.same-file-size-with-size", SimilarityText.FormatBytes(a.FileSize)));
 
         if (a.Extension != b.Extension)
             reasons.Add(Strings.Format("similarity.different-formats",
@@ -389,7 +390,7 @@ public static class SimilarItemsDetector
 
         List<string> qualifierDiff = [.. a.Qualifiers.Except(b.Qualifiers).Concat(b.Qualifiers.Except(a.Qualifiers)).Order(StringComparer.Ordinal)];
         if (qualifierDiff.Count > 0)
-            reasons.Add($"Una parece otra versión ({string.Join(", ", qualifierDiff)})");
+            reasons.Add(Strings.Format("similarity.other-version", string.Join(", ", qualifierDiff)));
 
         SimilarityConfidence confidence;
 
@@ -428,8 +429,8 @@ public static class SimilarItemsDetector
         {
             reasons.Add(Strings.Format("similarity.same-episode",
                 a.Item.SeriesName ?? "", a.Item.Season ?? 0, a.Item.Episode ?? 0));
-            if (duration == 1) reasons.Add($"Misma duración ({SimilarityText.Clock(a.Duration)})");
-            if (sameFileSize) reasons.Add("Mismo tamaño exacto de archivo");
+            if (duration == 1) reasons.Add(Strings.Format("similarity.same-duration", SimilarityText.Clock(a.Duration)));
+            if (sameFileSize) reasons.Add(Strings.Get("similarity.same-file-size"));
 
             return new PairVerdict(
                 duration == 1 || sameFileSize ? SimilarityConfidence.Duplicate : SimilarityConfidence.Probable,
@@ -447,14 +448,16 @@ public static class SimilarItemsDetector
             ? Strings.Format("similarity.same-title", a.RawTitle)
             : Strings.Format("similarity.almost-same-title", a.RawTitle, b.RawTitle));
 
-        if (duration == 1) reasons.Add($"Misma duración ({SimilarityText.Clock(a.Duration)})");
+        if (duration == 1) reasons.Add(Strings.Format("similarity.same-duration", SimilarityText.Clock(a.Duration)));
         else if (duration >= 0.3)
-            reasons.Add($"Duración parecida ({SimilarityText.Clock(a.Duration)} / {SimilarityText.Clock(b.Duration)})");
+            reasons.Add(Strings.Format("similarity.similar-duration",
+                SimilarityText.Clock(a.Duration), SimilarityText.Clock(b.Duration)));
 
-        if (sameFileSize) reasons.Add("Mismo tamaño exacto de archivo");
+        if (sameFileSize) reasons.Add(Strings.Get("similarity.same-file-size"));
 
         if (a.Extension != b.Extension)
-            reasons.Add($"Formatos distintos: {a.Extension.ToUpperInvariant()} / {b.Extension.ToUpperInvariant()}");
+            reasons.Add(Strings.Format("similarity.different-formats",
+                a.Extension.ToUpperInvariant(), b.Extension.ToUpperInvariant()));
 
         if ((a.Item.Category ?? "") != (b.Item.Category ?? ""))
             reasons.Add(Strings.Format("similarity.different-categories",
@@ -484,15 +487,16 @@ public static class SimilarItemsDetector
         string nameA = Path.GetFileName(a.Item.SourcePath), nameB = Path.GetFileName(b.Item.SourcePath);
 
         if (stemSim >= 0.999)
-            reasons.Add($"Mismo nombre de archivo sin contar «copia»/«(1)»: {nameA} / {nameB}");
+            reasons.Add(Strings.Format("similarity.same-filename-ignoring-copy", nameA, nameB));
         else if (stemSim >= 0.85)
-            reasons.Add($"Nombre de archivo casi igual: {nameA} / {nameB}");
+            reasons.Add(Strings.Format("similarity.almost-same-filename", nameA, nameB));
 
         if (sameFileSize)
-            reasons.Add($"Mismo tamaño exacto de archivo ({SimilarityText.FormatBytes(a.FileSize)})");
+            reasons.Add(Strings.Format("similarity.same-file-size-with-size", SimilarityText.FormatBytes(a.FileSize)));
 
         if (a.Extension != b.Extension)
-            reasons.Add($"Formatos distintos: {a.Extension.ToUpperInvariant()} / {b.Extension.ToUpperInvariant()}");
+            reasons.Add(Strings.Format("similarity.different-formats",
+                a.Extension.ToUpperInvariant(), b.Extension.ToUpperInvariant()));
 
         SimilarityConfidence confidence;
         if (sameFileSize && stemSim >= 0.85) confidence = SimilarityConfidence.Duplicate;

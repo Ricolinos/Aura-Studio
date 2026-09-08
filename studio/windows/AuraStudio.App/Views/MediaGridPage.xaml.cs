@@ -311,7 +311,7 @@ public sealed partial class MediaGridPage : Page
             if (element is GridView) break;
         }
 
-        return chain.Count == 0 ? "(sin árbol)" : string.Join(" > ", chain);
+        return chain.Count == 0 ? Strings.Get("media-grid-page.no-tree") : string.Join(" > ", chain);
     }
 
     /// <summary>

@@ -147,8 +147,7 @@ public sealed partial class DeviceListPage : Page
                 {
                     new TextBlock
                     {
-                        Text = "Se quedan en el iPod. Marca los que quieras quitar y vuelve a sincronizar; " +
-                               "los demás no se tocan.",
+                        Text = Strings.Get("device-list-page.orphans-stay"),
                         TextWrapping = TextWrapping.Wrap
                     },
                     list

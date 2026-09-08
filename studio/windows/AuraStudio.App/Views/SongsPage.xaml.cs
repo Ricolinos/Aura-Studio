@@ -72,7 +72,8 @@ public sealed partial class SongsPage : Page
         if (e.Parameter is SongsRequest request)
             ViewModel.SetScope(request.Scope, request.Title, request.Subtitle);
         else
-            ViewModel.SetScope(new MusicScope.All(), AppStrings.NavSongs, "Toda tu música.");
+            ViewModel.SetScope(
+            new MusicScope.All(), AppStrings.NavSongs, Strings.Get("songs-page.all-music"));
     }
 
     // MARK: - Menús que salen del modelo, no de XAML
@@ -548,7 +549,7 @@ public sealed partial class SongsPage : Page
                     box,
                     new TextBlock
                     {
-                        Text = "Cambia cómo se ve en tu biblioteca y en el iPod. El archivo en disco no se toca.",
+                        Text = Strings.Get("songs-page.edit-hint"),
                         TextWrapping = TextWrapping.Wrap,
                         Style = (Style)Application.Current.Resources["AuraCaptionTextStyle"]
                     }

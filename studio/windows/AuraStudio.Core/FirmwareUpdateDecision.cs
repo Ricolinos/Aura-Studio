@@ -1,5 +1,7 @@
 using AuraStudio.Core.Networking;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core;
 
 /// <summary>Qué se concluyó al buscar actualizaciones del firmware (ST-210).</summary>
@@ -74,9 +76,7 @@ public readonly record struct FirmwareUpdateReport(
 public static class FirmwareUpdateDecision
 {
     /// <summary>Lo que se dice cuando no se pudo preguntar y tampoco concluir nada.</summary>
-    public const string NoNetworkMessage =
-        "No se pudo consultar GitHub para saber si hay una versión más nueva. " +
-        "Revisa tu conexión y vuelve a intentar.";
+    public static string NoNetworkMessage => Strings.Get("firmware-update.no-network");
 
     /// <param name="published">
     /// El Release más nuevo que GitHub devolvió, o <c>null</c> si no se pudo
@@ -132,8 +132,7 @@ public static class FirmwareUpdateDecision
             {
                 return new FirmwareUpdateReport(
                     FirmwareUpdateOutcome.UpToDate,
-                    $"{family.DisplayName} está al día: el iPod tiene {installedTag}, " +
-                    "la versión más nueva publicada.",
+                    Strings.Format("firmware-update.up-to-date-tag", family.DisplayName, installedTag),
                     installedTag, published, bundledTag, UpdateVerdictReason.VersionTag);
             }
 
@@ -141,10 +140,9 @@ public static class FirmwareUpdateDecision
             if (bundled is not null && installed.Value < bundled.Value)
             {
                 string message = publishedBeatsBundled
-                    ? $"Hay {family.DisplayName} {published} publicada. Esta copia de Aura Studio trae " +
-                      $"{bundledTag}, que ya es más nueva que la del iPod ({installedTag}): puedes instalar " +
-                      $"{bundledTag} ahora, o actualizar Aura Studio para tener {published}."
-                    : $"Hay una versión más nueva de {family.DisplayName} ({published}).";
+                    ? Strings.Format("firmware-update.bundled-newer-than-ipod",
+                        family.DisplayName, published, bundledTag, installedTag)
+                    : Strings.Format("firmware-update.update-available", family.DisplayName, published);
 
                 return new FirmwareUpdateReport(
                     FirmwareUpdateOutcome.UpdateAvailable, message,
@@ -153,8 +151,9 @@ public static class FirmwareUpdateDecision
 
             return new FirmwareUpdateReport(
                 FirmwareUpdateOutcome.NewerThanBundled,
-                $"Se publicó {family.DisplayName} {published}, pero esta copia de Aura Studio trae " +
-                $"{bundledTag ?? "una versión más vieja"}. Actualiza Aura Studio para poder instalarla.",
+                Strings.Format("firmware-update.newer-than-bundled",
+                    family.DisplayName, published,
+                    bundledTag ?? Strings.Get("firmware-update.older-version")),
                 installedTag, published, bundledTag, UpdateVerdictReason.VersionTag);
         }
 
@@ -163,9 +162,9 @@ public static class FirmwareUpdateDecision
         if (hashVerdict.UpdateAvailable)
         {
             string message = latest is not null && publishedBeatsBundled
-                ? $"El iPod tiene una versión más vieja de {family.DisplayName} que la de esta copia de " +
-                  $"Aura Studio ({bundledTag}); la más nueva publicada es {published}."
-                : $"Hay una versión más nueva de {family.DisplayName} ({bundledTag}) que la del iPod.";
+                ? Strings.Format("firmware-update.ipod-older-than-bundled",
+                    family.DisplayName, bundledTag, published)
+                : Strings.Format("firmware-update.bundled-newer-hash", family.DisplayName, bundledTag);
 
             return new FirmwareUpdateReport(
                 FirmwareUpdateOutcome.UpdateAvailable, message,
@@ -176,9 +175,11 @@ public static class FirmwareUpdateDecision
         // se dice exactamente lo que se sabe.
         if (networkFailed || latest is null)
         {
+            // La frase no se arma pegando una oración detrás de otra: son dos
+            // mensajes enteros, cada uno en su clave (ST-247, B7d).
             string message = hashVerdict.Reason == UpdateVerdictReason.BinaryHash
-                ? NoNetworkMessage + $" Lo instalado coincide con {family.DisplayName} {bundledTag}, " +
-                  "que es lo que trae esta copia de Aura Studio."
+                ? Strings.Format("firmware-update.no-network-matches-bundled",
+                    family.DisplayName, bundledTag)
                 : NoNetworkMessage;
 
             return new FirmwareUpdateReport(
@@ -190,15 +191,15 @@ public static class FirmwareUpdateDecision
         {
             return new FirmwareUpdateReport(
                 FirmwareUpdateOutcome.NewerThanBundled,
-                $"Se publicó {family.DisplayName} {published}, pero esta copia de Aura Studio trae " +
-                $"{bundledTag ?? "otra versión"}. Actualiza Aura Studio para poder instalarla.",
+                Strings.Format("firmware-update.newer-than-bundled",
+                    family.DisplayName, published,
+                    bundledTag ?? Strings.Get("firmware-update.another-version")),
                 installedTag, published, bundledTag, hashVerdict.Reason);
         }
 
         return new FirmwareUpdateReport(
             FirmwareUpdateOutcome.UpToDate,
-            $"{family.DisplayName} está al día: lo instalado coincide con {published}, " +
-            "la versión más nueva publicada.",
+            Strings.Format("firmware-update.up-to-date-hash", family.DisplayName, published),
             installedTag, published, bundledTag, hashVerdict.Reason);
     }
 

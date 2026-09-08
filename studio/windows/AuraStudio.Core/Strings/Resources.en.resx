@@ -408,6 +408,255 @@
   <data name="installer-error.device-not-found" xml:space="preserve">
     <value>No connected iPod was detected.</value>
   </data>
+  <data name="credential-store.fanart-summary" xml:space="preserve">
+    <value>High-resolution cover art (~1000 px), artist photos, and curated posters for movies and series (those also need the TMDB key to find the title).</value>
+  </data>
+  <data name="credential-store.fanart-guide" xml:space="preserve">
+    <value>Create a free account on fanart.tv, go to your profile and copy the "Personal API Key" (not the project one).</value>
+  </data>
+  <data name="credential-store.tmdb-summary" xml:space="preserve">
+    <value>Posters for movies and series. It finds the title and its identifier; with fanart.tv set up, the curated poster from there is preferred, and otherwise TMDB's.</value>
+  </data>
+  <data name="credential-store.tmdb-guide" xml:space="preserve">
+    <value>Create a free account on themoviedb.org, go to Settings › API and copy the "API Key (v3 auth)".</value>
+  </data>
+  <data name="credential-store.github-summary" xml:space="preserve">
+    <value>The firmware repositories are public: Aura Studio already reports new versions without needing any of this. A read-only token only raises the GitHub API query limit; installing the firmware never depends on this, because it comes bundled with the app.</value>
+  </data>
+  <data name="credential-store.github-guide" xml:space="preserve">
+    <value>If you want one anyway: create a "fine-grained" personal access token at github.com › Settings › Developer settings, with access only to Aura-Firmware, Metro-Aura and moonlit-aura, and the Contents: Read-only permission.</value>
+  </data>
+  <data name="app-update.download-stopped" xml:space="preserve">
+    <value>The download was stopped.</value>
+  </data>
+  <data name="app-update.installer-opening" xml:space="preserve">
+    <value>The installer is opening. Aura Studio will close so it can update itself.</value>
+  </data>
+  <data name="app-update.checksum-mismatch" xml:space="preserve">
+    <value>What was downloaded does not match the digest GitHub publishes for that file. It was deleted and nothing was opened; try again later.</value>
+  </data>
+  <data name="app-update.size-mismatch" xml:space="preserve">
+    <value>What was downloaded is {0} bytes and the Release says {1}: the download was left incomplete. It was deleted and nothing was opened.</value>
+  </data>
+  <data name="app-update-service.announcement-missing-asset" xml:space="preserve">
+    <value>{0} This Release does not include {1}: open it on GitHub to download it by hand.</value>
+  </data>
+  <data name="similar-items.nothing-new-with-hidden" xml:space="preserve">
+    <value>Nothing new was found. There are groups you already marked as "not the same": you can show them again below.</value>
+  </data>
+  <data name="similar-items.nothing-similar" xml:space="preserve">
+    <value>No similar items were found in your library.</value>
+  </data>
+  <data name="similar-items.hidden-reset" xml:space="preserve">
+    <value>Done, it will not be shown again. You can reset that below.</value>
+  </data>
+  <data name="artists-view-model.favorite-label-add" xml:space="preserve">
+    <value>Mark as favourite: {0}</value>
+  </data>
+  <data name="artists-view-model.favorite-label-remove" xml:space="preserve">
+    <value>Remove from favourites: {0}</value>
+  </data>
+  <data name="artists-view-model.favorite-button-add" xml:space="preserve">
+    <value>Mark as favourite</value>
+  </data>
+  <data name="artists-view-model.favorite-button-remove" xml:space="preserve">
+    <value>Remove favourite</value>
+  </data>
+  <data name="artists-page.album-favorite-add" xml:space="preserve">
+    <value>Mark album as favourite</value>
+  </data>
+  <data name="artists-page.album-favorite-remove" xml:space="preserve">
+    <value>Remove the album's favourite</value>
+  </data>
+  <data name="songs-view-model.favorite" xml:space="preserve">
+    <value>Favourite</value>
+  </data>
+  <data name="songs-view-model.not-favorite" xml:space="preserve">
+    <value>Not a favourite</value>
+  </data>
+  <data name="songs-view-model.no-favorites" xml:space="preserve">
+    <value>No song is marked as a favourite. Remove the filter to see them all.</value>
+  </data>
+  <data name="device-list-view-model.check-updates-hint" xml:space="preserve">
+    <value>Check for updates to find out whether a newer one has been published.</value>
+  </data>
+  <data name="device-list-view-model.firmware-updated" xml:space="preserve">
+    <value>The firmware is updated. Eject the iPod and turn it on.</value>
+  </data>
+  <data name="device-list-page.orphans-stay" xml:space="preserve">
+    <value>They stay on the iPod. Tick the ones you want to remove and sync again; the rest are not touched.</value>
+  </data>
+  <data name="installer-view-model.the-device" xml:space="preserve">
+    <value>the device</value>
+  </data>
+  <data name="installer-view-model.unknown-firmware" xml:space="preserve">
+    <value>It was not possible to determine which firmware to install. Choose it again and retry.</value>
+  </data>
+  <data name="playlists-page.rename-title" xml:space="preserve">
+    <value>Rename the playlist</value>
+  </data>
+  <data name="playlists-page.name-placeholder" xml:space="preserve">
+    <value>Playlist name</value>
+  </data>
+  <data name="songs-page.all-music" xml:space="preserve">
+    <value>All your music.</value>
+  </data>
+  <data name="songs-page.edit-hint" xml:space="preserve">
+    <value>It changes how it looks in your library and on the iPod. The file on disk is not touched.</value>
+  </data>
+  <data name="themes-page.remove-active" xml:space="preserve">
+    <value>It is the active theme: the iPod goes back to Aura's built-in theme.</value>
+  </data>
+  <data name="themes-page.remove-inactive" xml:space="preserve">
+    <value>It is deleted from the iPod. You can install it again if you keep the assets folder.</value>
+  </data>
+  <data name="media-grid-page.no-tree" xml:space="preserve">
+    <value>(no tree)</value>
+  </data>
+  <data name="library-processor.unsupported" xml:space="preserve">
+    <value>This kind of file is not supported.</value>
+  </data>
+  <data name="enrichment.online-off" xml:space="preserve">
+    <value>"Complete online" is turned off under Settings › Services.</value>
+  </data>
+  <data name="audio-transcoder.no-encoder" xml:space="preserve">
+    <value>This version of Windows does not include the {0} encoder ({1}). ALAC needs Windows 10 version 1803 or newer.</value>
+  </data>
+  <data name="audio-transcoder.cannot-read" xml:space="preserve">
+    <value>Windows could not read "{0}" in order to convert it (reason: {1}). It is usually a damaged file, or one that is not the format its extension claims.</value>
+  </data>
+  <data name="volume-lock.close-explorer" xml:space="preserve">
+    <value>Close the File Explorer windows and the applications using the iPod.</value>
+  </data>
+  <data name="firmware-update.no-network" xml:space="preserve">
+    <value>GitHub could not be reached to find out whether there is a newer version. Check your connection and try again.</value>
+  </data>
+  <data name="firmware-update.no-network-matches-bundled" xml:space="preserve">
+    <value>GitHub could not be reached to find out whether there is a newer version. Check your connection and try again. What is installed matches {0} {1}, which is what this copy of Aura Studio brings.</value>
+  </data>
+  <data name="firmware-update.up-to-date-tag" xml:space="preserve">
+    <value>{0} is up to date: the iPod has {1}, the newest published version.</value>
+  </data>
+  <data name="firmware-update.up-to-date-hash" xml:space="preserve">
+    <value>{0} is up to date: what is installed matches {1}, the newest published version.</value>
+  </data>
+  <data name="firmware-update.bundled-newer-than-ipod" xml:space="preserve">
+    <value>{0} {1} has been published. This copy of Aura Studio brings {2}, which is already newer than the iPod's ({3}): you can install {2} now, or update Aura Studio to get {1}.</value>
+  </data>
+  <data name="firmware-update.update-available" xml:space="preserve">
+    <value>There is a newer version of {0} ({1}).</value>
+  </data>
+  <data name="firmware-update.newer-than-bundled" xml:space="preserve">
+    <value>{0} {1} was published, but this copy of Aura Studio brings {2}. Update Aura Studio to be able to install it.</value>
+  </data>
+  <data name="firmware-update.older-version" xml:space="preserve">
+    <value>an older version</value>
+  </data>
+  <data name="firmware-update.another-version" xml:space="preserve">
+    <value>another version</value>
+  </data>
+  <data name="firmware-update.ipod-older-than-bundled" xml:space="preserve">
+    <value>The iPod has an older version of {0} than this copy of Aura Studio ({1}); the newest published one is {2}.</value>
+  </data>
+  <data name="firmware-update.bundled-newer-hash" xml:space="preserve">
+    <value>There is a newer version of {0} ({1}) than the iPod's.</value>
+  </data>
+  <data name="artist-image.missing-key" xml:space="preserve">
+    <value>Artist photos need a fanart.tv key (Settings › Services).</value>
+  </data>
+  <data name="artist-image.no-match" xml:space="preserve">
+    <value>This artist was not found on MusicBrainz.</value>
+  </data>
+  <data name="artist-image.no-image" xml:space="preserve">
+    <value>fanart.tv has no photo of this artist.</value>
+  </data>
+  <data name="artist-image.musicbrainz-busy" xml:space="preserve">
+    <value>MusicBrainz is overloaded right now. Try again in a while.</value>
+  </data>
+  <data name="artist-image.failed-musicbrainz-busy" xml:space="preserve">
+    <value>It could not be done: MusicBrainz is overloaded. Try again in a while.</value>
+  </data>
+  <data name="artist-image.none-new" xml:space="preserve">
+    <value>No new artist photo was found.</value>
+  </data>
+  <data name="artist-image.summary-stopped-some.one" xml:space="preserve">
+    <value>{0} photo was found and it stopped: MusicBrainz is overloaded. Try again in a while.</value>
+  </data>
+  <data name="artist-image.summary-stopped-some.other" xml:space="preserve">
+    <value>{0} photos were found and it stopped: MusicBrainz is overloaded. Try again in a while.</value>
+  </data>
+  <data name="artist-image.summary-found.one" xml:space="preserve">
+    <value>{0} artist photo was found.</value>
+  </data>
+  <data name="artist-image.summary-found.other" xml:space="preserve">
+    <value>{0} artist photos were found.</value>
+  </data>
+  <data name="artist-image.summary-failed.one" xml:space="preserve">
+    <value>{0} artist failed.</value>
+  </data>
+  <data name="artist-image.summary-failed.other" xml:space="preserve">
+    <value>{0} artists failed.</value>
+  </data>
+  <data name="artist-image.summary-none-with-failures.one" xml:space="preserve">
+    <value>No new photo was found; {0} artist failed.</value>
+  </data>
+  <data name="artist-image.summary-none-with-failures.other" xml:space="preserve">
+    <value>No new photo was found; {0} artists failed.</value>
+  </data>
+  <data name="artist-image.summary-found-with-failures" xml:space="preserve">
+    <value>{0}; {1}</value>
+  </data>
+  <data name="album-cover-search.no-results" xml:space="preserve">
+    <value>No covers were found for this album. Check that the title and the artist are spelled correctly.</value>
+  </data>
+  <data name="album-cover-search.try-deezer" xml:space="preserve">
+    <value>You can also turn on Deezer under Settings › Services to search in more places.</value>
+  </data>
+  <data name="video-artwork.missing-key" xml:space="preserve">
+    <value>Video posters need a TMDB key (Settings › Services).</value>
+  </data>
+  <data name="video-artwork.no-match" xml:space="preserve">
+    <value>No poster was found for this video.</value>
+  </data>
+  <data name="ffmpeg-locator.not-found" xml:space="preserve">
+    <value>ffmpeg was not found on this computer. Install it with "winget install Gyan.FFmpeg", or point to where it is under Settings › Video.</value>
+  </data>
+  <data name="networking.no-results" xml:space="preserve">
+    <value>No results were found</value>
+  </data>
+  <data name="device-config.name-set-elsewhere" xml:space="preserve">
+    <value>This iPod's name was set from another computer; it can only be changed from there.</value>
+  </data>
+  <data name="install-manifest.empty" xml:space="preserve">
+    <value>The firmware file contains no entries.</value>
+  </data>
+  <data name="firmware-switcher.failed" xml:space="preserve">
+    <value>The firmware could not be switched.</value>
+  </data>
+  <data name="catalog-persister.unavailable" xml:space="preserve">
+    <value>The library is not available: it could not be saved.</value>
+  </data>
+  <data name="ipod-disk.aura-files-undeclared" xml:space="preserve">
+    <value>Aura files detected (family not declared)</value>
+  </data>
+  <data name="ipod-disk.no-aura" xml:space="preserve">
+    <value>No Aura installation was detected</value>
+  </data>
+  <data name="firmware-tree.verifying" xml:space="preserve">
+    <value>Verifying the integrity of the files…</value>
+  </data>
+  <data name="firmware-tree.copying" xml:space="preserve">
+    <value>Copying the firmware to the iPod…</value>
+  </data>
+  <data name="firmware-tree.falling-back-to-full" xml:space="preserve">
+    <value>The selective update did not work; installing the full one…</value>
+  </data>
+  <data name="firmware-tree.copy-interrupted" xml:space="preserve">
+    <value>The copy was interrupted — retrying…</value>
+  </data>
+  <data name="volume.ipod-unavailable" xml:space="preserve">
+    <value>The iPod's volume is no longer available.</value>
+  </data>
   <data name="device-firmware.dual-suffix" xml:space="preserve">
     <value> (dual boot with Apple)</value>
   </data>
@@ -2688,11 +2937,32 @@
   <data name="similarity.same-file-size" xml:space="preserve">
     <value>Exactly the same file size</value>
   </data>
+  <data name="similarity.same-file-size-with-size" xml:space="preserve">
+    <value>Exactly the same file size ({0})</value>
+  </data>
+  <data name="similarity.artist-spelled-differently" xml:space="preserve">
+    <value>Artist spelled differently: "{0}" / "{1}"</value>
+  </data>
+  <data name="similarity.artist-similar" xml:space="preserve">
+    <value>Similar artist: "{0}" / "{1}"</value>
+  </data>
+  <data name="similarity.other-version" xml:space="preserve">
+    <value>One looks like another version ({0})</value>
+  </data>
+  <data name="similarity.same-filename-ignoring-copy" xml:space="preserve">
+    <value>Same file name ignoring "copy"/"(1)": {0} / {1}</value>
+  </data>
+  <data name="similarity.almost-same-filename" xml:space="preserve">
+    <value>Almost the same file name: {0} / {1}</value>
+  </data>
   <data name="similarity.same-episode" xml:space="preserve">
     <value>Same episode: {0} S{1}E{2}</value>
   </data>
   <data name="similarity.same-title" xml:space="preserve">
     <value>Same title: "{0}"</value>
+  </data>
+  <data name="similarity.same-title-ignoring-track" xml:space="preserve">
+    <value>Same title ignoring the track number and the parentheses: "{0}" / "{1}"</value>
   </data>
   <data name="similarity.almost-same-title" xml:space="preserve">
     <value>Almost the same title: "{0}" / "{1}"</value>

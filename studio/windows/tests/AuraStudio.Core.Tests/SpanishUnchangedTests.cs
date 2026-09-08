@@ -547,6 +547,81 @@ public class SpanishUnchangedTests
         // que el mismo botón diga cosas distintas. Unificarlas es una decisión
         // que abarca todo el archivo, no algo que arreglar de paso.
         "settings-page.guardar",
+
+        // B7d, paso 2: la cola de Core. El aviso de versión del firmware era
+        // ocho oraciones armadas con cuatro datos —familia, lo instalado, lo
+        // publicado, lo que trae Studio—, y una de ellas se hacía pegando una
+        // frase entera detrás de otra (`NoNetworkMessage + " Lo instalado…"`).
+        // Ahora cada caso es una frase completa con sus huecos.
+        "firmware-update.no-network", "firmware-update.no-network-matches-bundled",
+        "firmware-update.up-to-date-tag", "firmware-update.up-to-date-hash",
+        "firmware-update.bundled-newer-than-ipod", "firmware-update.update-available",
+        "firmware-update.newer-than-bundled", "firmware-update.older-version",
+        "firmware-update.another-version", "firmware-update.ipod-older-than-bundled",
+        "firmware-update.bundled-newer-hash",
+
+        // Y el resumen de las fotos de artista, con cinco ramas que llevaban
+        // «foto(s)» y «artista(s)» adentro.
+        "artist-image.missing-key", "artist-image.no-match", "artist-image.no-image",
+        "artist-image.musicbrainz-busy", "artist-image.failed-musicbrainz-busy",
+        "artist-image.none-new", "artist-image.summary-found-with-failures",
+        "artist-image.summary-stopped-some.one", "artist-image.summary-stopped-some.other",
+        "artist-image.summary-found.one", "artist-image.summary-found.other",
+        "artist-image.summary-failed.one", "artist-image.summary-failed.other",
+        "artist-image.summary-none-with-failures.one",
+        "artist-image.summary-none-with-failures.other",
+
+        "album-cover-search.no-results", "album-cover-search.try-deezer",
+        "video-artwork.missing-key", "video-artwork.no-match",
+        "ffmpeg-locator.not-found", "networking.no-results",
+        "device-config.name-set-elsewhere", "install-manifest.empty",
+        "firmware-switcher.failed", "catalog-persister.unavailable",
+        "ipod-disk.aura-files-undeclared", "ipod-disk.no-aura",
+        "firmware-tree.verifying", "firmware-tree.copying",
+        "firmware-tree.falling-back-to-full", "firmware-tree.copy-interrupted",
+
+        // "El volumen del iPod ya no está disponible" lo decían tres sitios con
+        // el mismo texto escrito tres veces. Una sola clave.
+        "volume.ipod-unavailable",
+
+        // B7d, paso 2: la cola de la app. Las descripciones de los servicios
+        // con clave, los avisos de actualización, los elementos parecidos, los
+        // favoritos, y las hojas que quedaban.
+        //
+        // `AppUpdateService` decía la misma frase que el aviso del firmware
+        // —"No se pudo consultar GitHub…"— escrita otra vez. Usa la de él.
+        "credential-store.fanart-summary", "credential-store.fanart-guide",
+        "credential-store.tmdb-summary", "credential-store.tmdb-guide",
+        "credential-store.github-summary", "credential-store.github-guide",
+        "app-update.download-stopped", "app-update.installer-opening",
+        "app-update.checksum-mismatch", "app-update.size-mismatch",
+        "app-update-service.announcement-missing-asset",
+        "similar-items.nothing-new-with-hidden", "similar-items.nothing-similar",
+        "similar-items.hidden-reset",
+        "artists-view-model.favorite-label-add", "artists-view-model.favorite-label-remove",
+        "artists-view-model.favorite-button-add", "artists-view-model.favorite-button-remove",
+        "artists-page.album-favorite-add", "artists-page.album-favorite-remove",
+        "songs-view-model.favorite", "songs-view-model.not-favorite",
+        "songs-view-model.no-favorites",
+        "device-list-view-model.check-updates-hint", "device-list-view-model.firmware-updated",
+        "device-list-page.orphans-stay",
+        "installer-view-model.the-device", "installer-view-model.unknown-firmware",
+        "playlists-page.rename-title", "playlists-page.name-placeholder",
+        "songs-page.all-music", "songs-page.edit-hint",
+        "themes-page.remove-active", "themes-page.remove-inactive",
+        "media-grid-page.no-tree", "library-processor.unsupported",
+        "enrichment.online-off",
+        "audio-transcoder.no-encoder", "audio-transcoder.cannot-read",
+        "volume-lock.close-explorer",
+
+        // Y una que se escapó dos veces: el detector de parecidos tiene TRES
+        // variantes de "mismo título" y yo había visto dos. La tercera —la que
+        // ignora el número de pista y los paréntesis— salió al medir el
+        // trinquete, no al leer el archivo.
+        "similarity.same-title-ignoring-track",
+        "similarity.same-file-size-with-size", "similarity.artist-spelled-differently",
+        "similarity.artist-similar", "similarity.other-version",
+        "similarity.same-filename-ignoring-copy", "similarity.almost-same-filename",
     ];
 
     /// <summary>

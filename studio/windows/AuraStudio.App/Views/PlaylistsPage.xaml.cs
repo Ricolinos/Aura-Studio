@@ -38,7 +38,7 @@ public sealed partial class PlaylistsPage : Page
         PlaylistRow? row = ViewModel.Rows.FirstOrDefault(candidate => candidate.Id == id);
         if (row is null) return;
 
-        string? name = await AskForName("Renombrar la lista", row.Name);
+        string? name = await AskForName(Strings.Get("playlists-page.rename-title"), row.Name);
         if (name is not null) ViewModel.Rename(id, name);
     }
 
@@ -81,7 +81,11 @@ public sealed partial class PlaylistsPage : Page
     /// <summary>Un cuadro de texto con Aceptar deshabilitado si está vacío.</summary>
     private async Task<string?> AskForName(string title, string current)
     {
-        var box = new TextBox { Text = current, PlaceholderText = "Nombre de la lista" };
+        var box = new TextBox
+        {
+            Text = current,
+            PlaceholderText = Strings.Get("playlists-page.name-placeholder")
+        };
 
         var dialog = new ContentDialog
         {

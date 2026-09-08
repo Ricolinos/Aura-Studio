@@ -94,7 +94,7 @@ public sealed partial class DeviceListViewModel : ViewModelBase
 
             return family.IsInstallable
                 ? $"{family.DisplayName} coincide con la versión que trae esta copia de Aura Studio. " +
-                  "Busca actualizaciones para saber si hay una más nueva publicada."
+                  Strings.Get("device-list-view-model.check-updates-hint")
                 : $"No se sabe si hay una versión más nueva de {family.DisplayName}.";
         }
     }
@@ -265,7 +265,7 @@ public sealed partial class DeviceListViewModel : ViewModelBase
             await _installer.UpdateInPlaceAsync(device.DeclaredFamily ?? FirmwareFamily.Aura);
 
             StatusMessage = _installer.Step == InstallerStep.Done
-                ? "El firmware quedó actualizado. Expulsa el iPod y enciéndelo."
+                ? Strings.Get("device-list-view-model.firmware-updated")
                 : _installer.DetailMessage;
 
             CheckFirmwareUpdate();
