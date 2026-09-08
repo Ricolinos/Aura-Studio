@@ -19233,3 +19233,63 @@ dos listas que habían dejado de diferir: **una guarda que deja de guardar se ve
 idéntica a una que guarda y pasa.** La diferencia es que ésta no se descubrió
 poniéndola en rojo a propósito, sino notando que un cambio que debía costar algo
 no costó nada.
+
+## ST-211 — Windows: el aviso de actualización no se ofrece a sí mismo, probado contra el release real
+
+Encargo de la Maestra, tras publicarse `v0.4.0` (`0a0dbc9`). Sin
+instalar ni descargar ningún Setup: dos pruebas, contra dos binarios
+distintos, ambas con `AURA_STUDIO_PREFERENCES` apuntando a la
+biblioteca sintética de las capturas (nunca la real ni las
+preferencias del dueño).
+
+### 1. El chequeo automático de arranque, contra el 0.4.0 instalado del dueño
+
+`C:\Users\ricolinos\AppData\Local\Programs\Aura Studio\AuraStudio.App.exe`
+(ProductVersion `0.4.0+f6dd461c1279753ae88d2e610cbe344b81ea48e2`, previo
+al arreglo de `InvertBool` -- Ajustes no es alcanzable en este binario,
+ver hallazgo de más abajo). No hay franja de actualización en General
+en dos lanzamientos.
+
+Que la franja no aparezca no prueba nada por sí solo -- también se ve
+así si el chequeo nunca llegó a correr (sin red, o dentro de las 24 h
+del intervalo). Se verificó que sí corrió de verdad, leyendo
+`AppUpdateService.CheckOnLaunchAsync` antes de confiar en la pantalla
+vacía: la fecha `AppUpdateLastCheck` de las preferencias **solo se
+actualiza si el fetch tuvo éxito** ("Sin red, el automático calla...
+la fecha NO se anota", dice el propio comentario del código). Se puso
+esa fecha en `null` a propósito y se relanzó: tras el arranque quedó
+escrita con la hora real -- prueba de que hubo respuesta real de
+GitHub, no un chequeo que nunca ocurrió ni un fallo silencioso de red.
+`AppUpdateDecision.Decide` hace el resto: `if (installed >=
+latestVersion) return null;` -- 0.4.0 instalado contra 0.4.0
+publicado, sin nada que ofrecer.
+
+### 2. El botón manual, contra `windows/b8` (con el arreglo de `InvertBool`)
+
+El botón "Buscar actualizaciones de Aura Studio" (`CheckNowAsync`,
+`SettingsPage.xaml.cs`) es inalcanzable en el 0.4.0 instalado del
+dueño porque Ajustes revienta ahí -- exactamente lo que se esperaba.
+Probado en cambio contra un build propio de `windows/b8` sobre
+`f535f3f` (`0.4.0+f535f3fd281722eb61815273fade1fd9ebc4997c`, con el
+arreglo ya aplicado): Ajustes › General › Acerca de, pulsando "Buscar
+actualizaciones" por UI Automation (`InvokePattern`, sin mouse). Texto
+literal, tras el chequeo real:
+
+> "Aura Studio 0.4.0 es la versión más nueva publicada."
+
+Es la clave `app-update-service.aura-studio-installedversion-es-version`
+-- la rama de "ya tienes la más nueva", no la de
+`firmware-update.no-network` ("no se pudo preguntar"). Confirma que la
+distinción entre ambas ramas funciona con una respuesta real de GitHub,
+no solo en el código fuente.
+
+### Verificación
+
+Sin builds del lado del 0.4.0 instalado (se usó tal cual). Build propio
+de `windows/b8`: `dotnet build AuraStudio.App -c Release
+-p:Platform=ARM64`, 0 advertencias, 0 errores. Capturas de las dos
+pruebas verificadas antes de comprometer (releídas con la herramienta
+de lectura de imágenes, solo Aura Studio visible, nada ajeno): la
+franja de estado en General (sin instalado) y la tarjeta de "Buscar
+actualizaciones" con el texto exacto de arriba (con instalado). Sin
+tocar `%LOCALAPPDATA%\Programs\Aura Studio` ni sus preferencias reales.
