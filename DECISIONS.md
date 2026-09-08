@@ -17367,3 +17367,104 @@ pida. El alcance real es acotado: hace falta una biblioteca en modo referencia,
 una canción que necesite conversión, y que el convertidor no esté disponible;
 lo que se pierde no son los archivos sino las etiquetas corregidas, que vuelven
 a escribirse en la siguiente sincronización con el arreglo puesto.
+
+## ST-247 (B7d, pasos 2 y 3) — Las 303 de pantalla a seis idiomas, y las 11 que no son texto
+
+### Lo que se hizo
+
+**Paso 2.** Las 303 de PANTALLA salieron a recurso y se tradujeron a los seis
+idiomas, empezando por las cuatro familias críticas que hasta entonces vivían
+como literal dentro del código del instalador — `InstallerError`,
+`PrivilegedHost`, `FirmwareArtifacts` y `DfuFlashRunner` —, todas declaradas en
+`CriticalStrings` **el mismo día que salieron**. Una familia crítica que se
+extrae y no se declara crítica es una que se traduce sin que nadie la
+retrotraduzca.
+
+**Paso 3.** Once literales que parecen español y no lo son: la categoría que se
+guarda en `item.category`, los nombres de carpeta en disco, las claves del
+desglose de almacenamiento, la lista de artículos con la que se ordena
+ignorando el «el/la», y la salida en inglés de `mks5lboot.exe`.
+
+`DataNotTranslatedTests` no comprueba que no estén en el archivo de recursos
+—eso sería fácil y no probaría nada—. Corre **todo con la interfaz en japonés**
+y mira que el valor salga idéntico. Y comprueba la otra mitad: que
+`LocalizedName()` **sí** cambia. Sin esa segunda mitad, la prueba pasaría igual
+con una función que devolviera siempre la misma constante.
+
+### La ronda 3 de retrotraducción
+
+28 claves, cuatro idiomas, ids `e001`… (la 'c' fue B7c, la 'd' la ronda 2; una
+fila `e012` no se confunde con ninguna de las dos). El mecánico retrotradujo a
+ciegas. **Sin inversiones de sentido, un ajuste**: en japonés `e006` y `e009`
+perdían el «ya no» del español —decían que no hay medio, no que **dejó de**
+haberlo—, mientras `e004` y `e007` sí lo traían. Corregido a
+「もう…なくなった」/「…ではなくなった」, la misma construcción que ya usaban las otras dos.
+
+Esta ronda existe porque la segunda barrida encontró familias críticas que el
+trinquete no contaba: las razones por las que NO se escribe en el disco, el
+conmutador de firmware y la escritura del árbol.
+
+### El trinquete es un piso, no un censo
+
+**El triaje de las 303 salió de `HardcodedSpanishTests`, y por eso heredó su
+ceguera.** El trinquete decide qué es español con una **lista de palabras**
+—«archivo», «canción», «álbum», «biblioteca»…—. Una frase que no contenga
+ninguna no la ve, y hay muchas: «Formatos distintos», «Misma duración», «El
+árbol de X en el iPod está incompleto».
+
+Así que **las 303 eran un subconteo**: no la lista de todo lo que el usuario
+lee, sino la de lo que ese léxico alcanzaba.
+
+Se descubrió por un error de método. Las sustituciones se venían haciendo con
+`s///` **sin `/g`**, y `SimilarItemsDetector` repite los mismos motivos en tres
+bloques —música, video, foto—; la primera pasada convirtió solo la primera
+aparición de cada frase. **El trinquete no vio ninguna de las diez que quedaron
+sin convertir.** Lo que sí las vio fue `barrida-frases.pl`, con otra señal:
+literales de dos o más palabras que no parezcan ruta, identificador ni clave.
+Da más ruido a propósito — **es para leer, no para contar**, y ningún número
+suyo entra en un trinquete. Encontró, entre otras cosas, **las nueve razones
+por las que Aura Studio se niega a escribir en el disco**, que el triaje había
+clasificado como bitácora y que el usuario lee justo cuando el formateo se
+detiene: exactamente la familia que la tabla de `CriticalStrings` ya nombraba
+dos renglones más arriba.
+
+La regla que queda: **el trinquete sirve para que no crezca; no sirve para dar
+por terminado un archivo.** Eso hay que hacerlo leyendo el archivo — y ni eso
+alcanza: las dos últimas frases que aparecieron estaban en un bloque de tres
+cuya primera rama **ya usaba `Strings.Get`**, así que al leer el archivo el
+bloque entero pasó por convertido. Un archivo medio convertido se lee como un
+archivo convertido.
+
+`barrida-frases.pl` queda commiteada como herramienta, con dos pruebas: que
+existe y que corre. **Deliberadamente no se comprueba cuántas encuentra** —
+sería convertir en trinquete lo que es un instrumento de lectura.
+
+### La lista de prefijos también sobre-captura
+
+`CriticalStrings` es una lista de **prefijos**, no de claves. Se eligió así para
+que una clave nueva de una familia crítica entre sola, y eso funciona; el costo
+es que también entran claves que no son críticas: `storage-breakdown.usage-line`
+—un rótulo de «X de Y en uso»— entró a la retrotraducción por el prefijo
+`storage-`, que está ahí por los ajustes que deciden si Aura copia los archivos
+del usuario. Se retrotradujo de más y no pasó nada. El error contrario —una
+clave crítica que queda fuera en silencio— no se puede permitir en este grupo,
+y por eso el criterio no cambia.
+
+### Cómo quedó
+
+- **Barrida: 179 literales, ninguno de pantalla.** Cada uno comprobado siguiendo
+  a quien lo consume, no leyéndolo en su sitio: la tabla de familias de
+  `CriticalStrings` (38, su propia documentación), razones internas tipadas
+  donde quien atrapa mira el **tipo** y no el mensaje (37), excepciones internas
+  de conversión, formateo y disco (34), bitácora del proceso con permisos (28),
+  trazas de diagnóstico (23), nombres propios y datos (13), consultas WMI/SQL y
+  el nombre del servicio de Windows (6).
+- **Trinquete: 90, con el tope pegado en 90.** 11 DATO y 79 INTERNO. Estaba en
+  91 con el número real en 90: un tope con holgura deja entrar un literal nuevo
+  sin que nada se ponga rojo.
+- **Los dos números no se comparan.** Miden cosas distintas con detectores
+  distintos, y esa es toda la razón de que existan los dos.
+- **Claves:** 1 108 en es, en, de y fr; 1 034 en ja; 1 182 en ru. La diferencia
+  no es un faltante: son **74 familias de plural** por la matemática CLDR —el
+  japonés tiene una sola forma (74 claves menos), el ruso tres (74 más).
+- `Offered` sigue en `false` para de, fr, ja y ru. **Nada cambia en 0.4.0.**
