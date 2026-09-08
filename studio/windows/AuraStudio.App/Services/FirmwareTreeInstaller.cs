@@ -1,6 +1,8 @@
 using AuraStudio.Core;
 using AuraStudio.Core.Installer;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.App.Services;
 
 /// <summary>
@@ -25,7 +27,7 @@ public sealed class FirmwareTreeInstaller : IFirmwareTreeInstaller
     {
         if (!Directory.Exists(volumeRoot))
         {
-            return new FirmwareTreeInstallResult(false, 0, "El volumen del iPod ya no está disponible.");
+            return new FirmwareTreeInstallResult(false, 0, Strings.Get("volume.ipod-unavailable"));
         }
 
         // Qué familia hay instalada DE VERDAD (no qué archivos hay sueltos):

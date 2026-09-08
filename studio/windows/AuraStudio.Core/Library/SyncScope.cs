@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Library;
 
 /// <summary>
@@ -47,11 +49,16 @@ public readonly record struct SyncScopeResolution(
 /// </summary>
 public static class SyncScopeResolver
 {
-    public const string NothingSelected = "No hay ningún elemento seleccionado para sincronizar.";
+    public static string NothingSelected => Strings.Get("sync-scope.nothing-selected");
 
-    public const string SelectionNotReady = "Los elementos seleccionados todavía no están listos para sincronizar.";
+    public static string SelectionNotReady => Strings.Get("sync-scope.selection-not-ready");
 
-    public const string NothingReady = "No hay nada listo para sincronizar.";
+    /// <summary>
+    /// La misma frase que muestra la ficha de sincronización, y por eso la misma
+    /// clave: dos claves con el mismo texto son dos textos esperando a que uno
+    /// de los dos cambie (ST-247, B7d).
+    /// </summary>
+    public static string NothingReady => Strings.Get("sync-view-model.nothing-ready");
 
     /// <summary>
     /// Solo lo que está <b>listo</b> viaja. Un elemento a medio convertir o que

@@ -1,0 +1,54 @@
+id,de
+d001,Der iPod ist noch im DFU-Modus…
+d002,mks5lboot.exe wurde nicht neben Aura Studio gefunden.
+d003,mks5lboot.exe konnte nicht gestartet werden.
+d004,"Warten, bis der iPod in den DFU-Modus wechselt…"
+d005,"Die Prüfsumme von {0} stimmt nicht (erwartet {1}, berechnet {2}): Die Datei ist beschädigt oder nicht die, die das Release veröffentlicht hat."
+d006,"Die Prüfsumme von {0} stimmt nicht mit der des Releases überein (erwartet {1}, berechnet {2}): Die Datei ist beschädigt oder nicht die, die das Release veröffentlicht hat."
+d007,checksums.txt enthält eine ungültige Zeile.
+d008,checksums.txt enthält einen unsicheren Pfad.
+d009,{0} fehlt: Der Bootloader kann nicht geschrieben werden.
+d010,"{0} fehlt: Es gibt nichts, womit sich die Firmware-Dateien prüfen ließen."
+d011,{0} fehlt (auch nicht in {1}): Ohne dieses Werkzeug kann der Bootloader nicht geschrieben werden.
+d012,"{0} beschreibt {1} nicht, also gibt es nichts, womit es sich prüfen ließe."
+d013,"{0} stimmt nicht mit dem in {1} festgelegten Hash überein (erwartet {2}, berechnet {3}): Die Datei hat sich geändert und ist nicht vertrauenswürdig."
+d014,rockbox.zip ist unvollständig (es fehlen Codecs oder Plugins): {0}.
+d015,rockbox.zip ist keine gültige Datei.
+d016,rockbox.zip enthält einen unsicheren Pfad.
+d017,Du hast die Administratorberechtigung abgebrochen. Ohne diese Berechtigung kann dieser Schritt nicht fortfahren.
+d018,"Der iPod ist wieder mit Apples ursprünglicher Firmware am USB erschienen: Der Bootloader wurde nicht geschrieben. Versuche den DFU-Schritt erneut (der Datenträger ist bereits vorbereitet, er muss nicht noch einmal formatiert werden)."
+d019,Die Datei {0} hat die Integritätsprüfung nicht bestanden.
+d020,"Dein iPod wurde während des Kopierens getrennt. Die vollständige Firmware sind Tausende kleiner Dateien und kann über USB mehrere Minuten dauern — prüfe das Kabel (vermeide USB-Hubs, falls du einen verwendest) und versuche es erneut: Was schon kopiert wurde, geht nicht verloren, das Kopieren geht dort weiter, wo es aufgehört hat."
+d021,Es wurde kein angeschlossener iPod erkannt.
+d022,"Der iPod hat die Firmware empfangen, aber nie bestätigt, dass er sie angewendet hat — er ist weiterhin im DFU-Modus. Falls Windows iTunes oder Apple-Geräte geöffnet hat und den iPod im Wiederherstellungsmodus zeigt, schließe es, OHNE ""Wiederherstellen"" anzutippen (das würde Apples ursprüngliche Firmware neu installieren). Versuche es danach erneut: Der iPod ist bereits im DFU-Modus, der zweite Versuch sollte also schnell wieder hier ankommen."
+d023,"Windows hat keinen Treiber für deinen iPod im DFU-Modus, deshalb kann Aura Studio nicht mit ihm sprechen. Installiere Apple-Geräte (oder iTunes) aus dem Microsoft Store, oder weise dem Gerät mit Zadig den WinUSB-Treiber zu; der Schritt mit den Berechtigungen erklärt beide Möglichkeiten."
+d024,Der iPod im DFU-Modus wurde nicht rechtzeitig erkannt. Versuche die Tastenkombination erneut.
+d025,"Es wurde {0} Datenträger gefunden, der dein iPod sein könnte. Aus Sicherheitsgründen wählt Aura Studio keinen davon aus — trenne die anderen externen Datenträger und versuche es erneut."
+d026,"Es wurden {0} Datenträger gefunden, die dein iPod sein könnten. Aus Sicherheitsgründen wählt Aura Studio keinen davon aus — trenne die anderen externen Datenträger und versuche es erneut."
+d027,"Für Dual-Boot muss der iPod Apples ursprüngliche Firmware im Format ""winpod"" behalten: eine MBR-Partitionstabelle mit intakter Apple-Firmware-Partition plus einer FAT32-Partition — das Format, das iTunes beim Wiederherstellen auf einem Windows-PC erzeugt. Dieser iPod ist im Mac-Format (Apple/HFS-Partitionen, die Rockbox nicht lesen kann) oder sein Datenträger ist nicht lesbar, und ihn von hier aus vorzubereiten würde den ganzen Datenträger löschen, einschließlich der ursprünglichen Firmware. Möglichkeiten: Stelle den iPod mit iTunes/Apple-Geräte wieder her und versuche Dual-Boot erneut, oder installiere nur die Firmware, wenn du Apples nicht behalten musst."
+d028,"Die Firmware dieses Releases ist unvollständig: In rockbox.zip fehlen {0} — der iPod bliebe ohne Video oder ohne Audio. Es liegt nicht an deiner Verbindung; versuche es später erneut oder melde, dass dieses Release fehlerhaft ist."
+d029,Das Artefakt {0} fehlt in den Firmware-Dateien. Führe scripts\FirmwareFetch.ps1 erneut aus.
+d030,Der Vorgang endete mit Code {0}: {1}
+d031,"Die neueste Version von {0} konnte nicht heruntergeladen werden: {1} Es wird die Version verwendet, die Aura Studio mitbringt."
+d032,"Dem Release {0} fehlt {1}, deshalb kann daraus nicht installiert werden. Es wird die Version verwendet, die Aura Studio mitbringt."
+d033,"Der iPod ist nicht mit FAT32 formatiert. Wandle ihn um, bevor du fortfährst."
+d034,Du hast die Autorisierung abgebrochen. Ohne diese Berechtigung kann dieser Schritt nicht fortfahren.
+d035,Die Datenträgernummer {0} liegt außerhalb des zulässigen Bereichs.
+d036,Probelauf abgeschlossen: Der Datenträger wurde erneut geprüft und der Formatierungsplan ist gültig. Es wurde nichts geschrieben.
+d037,Die Volumebezeichnung ist leer geblieben.
+d038,Der iPod ist jetzt mit FAT32 formatiert.
+d039,"Die Anfrage enthält nicht die erwartete Datenträgergröße, deshalb lässt sie sich nicht erneut prüfen."
+d040,Die Größentoleranz darf nicht negativ sein.
+d041,"Der Vorgang mit Administratorrechten endete, ohne ein Ergebnis zu hinterlassen. Es lässt sich nicht feststellen, ob er etwas getan hat, deshalb wird nicht fortgefahren."
+d042,Die Administratorberechtigung konnte nicht angefordert werden: {0}
+d043,Die Anfrage konnte nicht gelesen werden.
+d044,Das Ergebnis des Vorgangs konnte nicht gelesen werden.
+d045,"Der automatische Neustart konnte nicht eingerichtet werden, deshalb wurde kein Dienst angehalten."
+d046,Der Apple-Dienst lief bereits.
+d047,Der Apple-Dienst war bereits angehalten.
+d048,Der Apple-Dienst lässt sich nicht anhalten.
+d049,Auf diesem Computer gibt es keinen Apple-Dienst zum Anhalten.
+d050,Der Apple-Dienst wurde wieder gestartet.
+d051,Der Apple-Dienst wurde während des Schreibens angehalten.
+d052,Der Apple-Dienst hat nicht rechtzeitig geantwortet.
+d053,Unbekannter Vorgang mit erhöhten Rechten.

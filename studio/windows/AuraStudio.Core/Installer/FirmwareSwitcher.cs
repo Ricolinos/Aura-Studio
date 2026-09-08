@@ -2,6 +2,8 @@ using System.Globalization;
 using System.Text;
 using AuraStudio.Core;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Installer;
 
 /// <summary>
@@ -77,10 +79,13 @@ public static class FirmwareSwitcher
 
         private static string Describe(SwitchFailure failure, FirmwareFamily family) => failure switch
         {
-            SwitchFailure.DormantTreeMissing => $"No hay un árbol dormido de {family.DisplayName} en este iPod.",
-            SwitchFailure.AlreadyActive => $"{family.DisplayName} ya es el firmware activo.",
-            SwitchFailure.FamilyNotSwitchable => $"Aura Studio no sabe cómo estacionar ni despertar {family.DisplayName}.",
-            _ => "No se pudo cambiar de firmware."
+            SwitchFailure.DormantTreeMissing =>
+                Strings.Format("firmware-switcher.dormant-missing", family.DisplayName),
+            SwitchFailure.AlreadyActive =>
+                Strings.Format("firmware-switcher.already-active", family.DisplayName),
+            SwitchFailure.FamilyNotSwitchable =>
+                Strings.Format("firmware-switcher.not-switchable", family.DisplayName),
+            _ => Strings.Get("firmware-switcher.failed")
         };
     }
 

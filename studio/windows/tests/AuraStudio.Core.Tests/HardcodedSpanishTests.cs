@@ -20,7 +20,7 @@ namespace AuraStudio.Core.Tests;
 ///
 /// <para>Fuera de eso queda una parte del programa que B7a no alcanzó: los
 /// mensajes de excepción, los de registro y los errores que se arman en
-/// servicios y en la capa de plataforma. Son trescientos sesenta y nueve, el extractor no
+/// servicios y en la capa de plataforma. Son noventa y uno, el extractor no
 /// los tomó y meterlos en B7a sería duplicar el bloque sin nada contra qué
 /// comparar el texto. Para que eso no se convierta en una puerta abierta, lo
 /// que se comprueba ahí es que <b>no crezca</b>: hay un número, y subirlo es
@@ -67,8 +67,23 @@ public class HardcodedSpanishTests
     /// Cuánto texto en español queda fuera del alcance de B7a. Es un tope, no
     /// una meta: baja cuando alguien mueva alguno, y subirlo hay que escribirlo
     /// a mano y explicar por qué.
+    ///
+    /// <para>Al cerrar B7d quedan <b>90</b> y el tope es 90: pegado, sin
+    /// holgura. Estaba en 91 porque una conversión de la última tanda bajó el
+    /// número real y nadie ajustó el tope; un tope con holgura deja entrar
+    /// un literal nuevo sin que nada se ponga rojo, que es justo lo contrario
+    /// de para qué existe.</para>
+    ///
+    /// <para>De esos 90: <b>11 son DATO</b> —valores que se comparan, se
+    /// guardan o nombran una carpeta, y que <c>DataNotTranslatedTests</c>
+    /// comprueba que no cambian con el idioma— y <b>79 son INTERNO</b>:
+    /// bitácora, trazas de diagnóstico y mensajes de excepción que nadie lee
+    /// como texto porque quien los atrapa mira el tipo, no el mensaje. De
+    /// PANTALLA no queda ninguno, pero <b>eso no lo dice este número</b>: este
+    /// detector busca palabras de una lista y hay frases enteras que no trae
+    /// ninguna. Quien contesta esa pregunta es <c>barrida-frases.pl</c>.</para>
     /// </summary>
-    private const int OutsideB7aCeiling = 369;
+    private const int OutsideB7aCeiling = 90;
 
     private static string WindowsRoot()
     {

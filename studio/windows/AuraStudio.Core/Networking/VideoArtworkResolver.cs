@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Networking;
 
 /// <summary>
@@ -134,10 +136,10 @@ public sealed class VideoArtworkResolver
     /// TMDB. Sin esa clave no hay póster por ningún camino, y decirlo es
     /// distinto de decir "no se encontró".
     /// </summary>
-    public const string MissingKeyReason =
-        "Para los pósters de video hace falta una clave de TMDB (Ajustes › Servicios).";
+    public static string MissingKeyReason =>
+        Strings.Get("video-artwork.missing-key");
 
-    public const string NoMatchReason = "No se encontró un póster para este video.";
+    public static string NoMatchReason => Strings.Get("video-artwork.no-match");
 
     /// <summary>
     /// El póster, o el motivo por el que no lo hay.

@@ -1,0 +1,29 @@
+id,de,retro_es,nota
+e001,mks5lboot.exe konnte nicht gestartet werden: {0},No se pudo iniciar mks5lboot.exe: {0},
+e002,der Datenträger passt nicht in die 32-Bit-Adressierung des MBR,el disco no cabe en el direccionamiento de 32 bits del MBR,"fragmento en minúscula, pensado para completar la oración de e010 con "": "" -- ver nota de e010"
+e003,auf diesem Datenträger lässt sich kein FAT32 anlegen: {0},en este disco no se puede crear un FAT32: {0},fragmento en minúscula (ver nota de e010)
+e004,der Datenträger {0} existiert nicht mehr,el disco {0} ya no existe,fragmento en minúscula (ver nota de e010)
+e005,das Modell des Datenträgers hat sich geändert (jetzt steht dort „{0}“),el modelo del disco cambió (ahora indica «{0}»),fragmento en minúscula (ver nota de e010)
+e006,im Datenträger ist kein Medium mehr eingelegt,el disco ya no tiene ningún medio insertado,fragmento en minúscula (ver nota de e010)
+e007,der Datenträger erscheint nicht mehr über USB verbunden (Bus {0}),el disco ya no aparece conectado por USB (bus {0}),fragmento en minúscula (ver nota de e010)
+e008,der Datenträger konnte nicht erneut abgefragt werden ({0}),no se pudo volver a consultar el disco ({0}),fragmento en minúscula (ver nota de e010)
+e009,die Größe des Datenträgers stimmt nicht mehr überein ({0} Bytes),el tamaño del disco ya no coincide ({0} bytes),fragmento en minúscula (ver nota de e010)
+e010,Auf den Datenträger konnte nicht geschrieben werden: {0},No se pudo escribir en el disco: {0},"Esta es la envoltura de la familia de 9 (e002-e010): {0} recibe una de las 8 razones (e002-e009), todas en minúscula para encadenar tras "":"". La frase compuesta SÍ deja claro que no se escribió nada (""No se pudo escribir"") y POR QUÉ (la razón insertada) -- verificado que las 9 encajan gramaticalmente en alemán"
+e011,"Der Ordner {0} existiert nicht, und dort sollten die Dateien von {1} liegen.","La carpeta {0} no existe, y ahí deberían estar los archivos de {1}.",
+e012,{0} lässt sich nicht prüfen: Das Release veröffentlicht {1} nicht und neben der Binärdatei gibt es kein {2}.,"{0} no se puede verificar: el Release no publica {1}, y junto al binario no hay ningún {2}.",
+e013,{0} ist bereits die aktive Firmware.,{0} ya es el firmware activo.,
+e014,Auf diesem iPod gibt es keinen schlafenden {0}-Baum.,En este iPod no hay ningún árbol de {0} en reposo.,
+e015,Die Firmware konnte nicht gewechselt werden.,No se pudo cambiar el firmware.,
+e016,"Aura Studio weiß nicht, wie sich {0} parken oder aufwecken lässt.",Aura Studio no sabe cómo poner en reposo ni despertar a {0}.,
+e017,Das Kopieren wurde unterbrochen — neuer Versuch…,La copia se interrumpió — nuevo intento…,
+e018,Die Firmware wird auf den iPod kopiert…,El firmware se está copiando al iPod…,
+e019,Das selektive Update hat nicht funktioniert; die vollständige Installation läuft…,La actualización selectiva no funcionó; se está haciendo la instalación completa…,
+e020,{0} zu entfernen,{0} por quitar,
+e021,{0} zu entfernen,{0} por quitar,"idéntica a e020 en alemán -- una sola forma para singular/plural, {0} es probablemente un nombre de archivo que no flexiona"
+e022,{0} Datei zu schreiben,{0} archivo por escribir,
+e023,{0} Dateien zu schreiben,{0} archivos por escribir,
+e024,"{0} wird auf dem iPod installiert (Schriften, Symbole, Codecs)… Über USB kann das mehrere Minuten dauern — trenne den iPod nicht.","Se está instalando {0} en el iPod (tipografías, íconos, códecs)… Por USB esto puede tardar varios minutos — no desconectes el iPod.",
+e025,"{0} wird gesichert, damit du dorthin zurück kannst…","Se está respaldando {0}, para que puedas volver a él…",
+e026,"{0} wird aktualisiert: {1}, {2}…","Se está actualizando {0}: {1}, {2}…",
+e027,Die Integrität der Dateien wird geprüft…,Se está verificando la integridad de los archivos…,
+e028,{0} von {1} belegt — {2} frei,{0} de {1} ocupado — {2} libre,

@@ -10,6 +10,8 @@ using AuraStudio.App.Platform;
 using AuraStudio.App.ViewModels;
 using AuraStudio.Core.Library;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.App.Views;
 
 /// <summary>
@@ -347,7 +349,9 @@ public sealed partial class ArtistsPage : Page
 
         var favorite = new MenuFlyoutItem
         {
-            Text = album.IsFavorite ? "Quitar favorito del álbum" : "Marcar álbum como favorito"
+            Text = Strings.Get(album.IsFavorite
+                ? "artists-page.album-favorite-remove"
+                : "artists-page.album-favorite-add")
         };
         favorite.Click += (_, _) =>
         {
@@ -355,7 +359,7 @@ public sealed partial class ArtistsPage : Page
             ViewModel.Refresh();
         };
 
-        var enrich = new MenuFlyoutItem { Text = "Buscar información en línea" };
+        var enrich = new MenuFlyoutItem { Text = Strings.Get("artists-page.enrich-online") };
         enrich.Click += async (_, _) => await ViewModel.Library.EnrichAsync(songIds);
 
         var reveal = new MenuFlyoutItem { Text = LibraryContextMenus.Reveal };

@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core;
 
 // ---------------------------------------------------------------------------
@@ -11,7 +13,7 @@ namespace AuraStudio.Core;
 public abstract class ThemePackagerException(string message) : Exception(message)
 {
     public sealed class SourceFontMissing(string fileName)
-        : ThemePackagerException($"No se encontró {fileName} en la carpeta de origen.")
+        : ThemePackagerException(Strings.Format("theme-packager.source-file-missing", fileName))
     {
         public string FileName { get; } = fileName;
     }

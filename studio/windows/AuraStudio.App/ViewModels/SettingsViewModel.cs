@@ -21,10 +21,19 @@ public sealed record ThemeOption(AppTheme Theme, string Label);
 /// </summary>
 public sealed record LanguageOption(string Culture, string Label, bool ReviewedByHumans)
 {
-    /// <summary>La marca "(beta)" de un idioma que todavía nadie revisó.</summary>
-    public string Mark => ReviewedByHumans ? "" : AppStrings.LanguageBetaMark;
+    /// <summary>
+    /// La marca "(beta)" de un idioma que todavía nadie revisó. La decisión
+    /// vive en Core (LanguageBadge) para poder comprobarla sin abrir una
+    /// ventana: es lo que hace que la app admita delante del usuario que ese
+    /// idioma no lo revisó nadie.
+    /// </summary>
+    public string Mark => LanguageBadge.Mark(AsLanguage);
 
-    public bool ShowsMark => !ReviewedByHumans;
+    public bool ShowsMark => LanguageBadge.ShowsMark(AsLanguage);
+
+    /// <summary>Lo que LanguageBadge necesita saber de esta fila.</summary>
+    private AppLanguage AsLanguage =>
+        new(Culture, Label, Built: true, Offered: true, ReviewedByHumans);
 }
 
 /// <summary>
@@ -181,7 +190,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
     /// se está usando.
     /// </summary>
     public string FfmpegStatus => Core.Media.FfmpegLocator.Locate(_preferences.FfmpegPath) is { } path
-        ? $"Encontrado en {path}"
+        ? Strings.Format("settings-view-model.ffmpeg-found", path)
         : Core.Media.FfmpegLocator.NotFoundMessage;
 
     public void SetFfmpegPath(string path)
@@ -227,13 +236,13 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
             if (_library.Items.Count == 0)
                 return _library.MissingFileCount > 0
-                    ? $"El catálogo de esta carpeta tiene {_library.MissingFileCount} elementos, pero no se encontró ninguno de sus archivos. Suele pasar al apuntar a la biblioteca de otra computadora."
-                    : "Esta carpeta todavía no tiene una biblioteca de Aura Studio: empieza vacía.";
+                    ? Strings.Plural("settings-view-model.library-empty-missing", _library.MissingFileCount)
+                    : Strings.Get("settings-view-model.library-empty");
 
             string summary = LibraryViewModel.SummaryOf(_library.Items);
 
             return _library.MissingFileCount > 0
-                ? $"{summary}. Faltan los archivos de otros {_library.MissingFileCount} elementos del catálogo."
+                ? Strings.Plural("settings-view-model.library-summary-missing", _library.MissingFileCount, summary)
                 : summary;
         }
     }
@@ -249,9 +258,9 @@ public sealed partial class SettingsViewModel : ViewModelBase
         }
     }
 
-    public string CopyMediaDetail => CopyMediaIntoLibrary
-        ? "Cada canción, foto o video que sueltas en Aura Studio se copia dentro de la carpeta de arriba; el original queda intacto donde estaba. Usa más espacio en disco, pero la biblioteca queda completa en un solo lugar."
-        : "No se copia nada: la biblioteca referencia tus archivos donde ya están, y aquí solo se guarda lo que los liga a Aura (metadata, letras, portadas). Al sincronizar, Aura Studio arma el archivo para el iPod leyendo el original en ese momento — un poco más lento la primera vez, pero tu disco nunca termina con una copia duplicada de toda tu biblioteca.";
+    public string CopyMediaDetail => Strings.Get(CopyMediaIntoLibrary
+        ? "settings-view-model.copy-media-on"
+        : "settings-view-model.copy-media-off");
 
     /// <summary>
     /// ST-243, corregido en ST-244: la conversión se avisa <b>antes</b>, no
@@ -263,12 +272,16 @@ public sealed partial class SettingsViewModel : ViewModelBase
     /// decir "se convierten a MP3" con "Original sin pérdida" puesto sería
     /// mentir.</para>
     /// </summary>
-    public string AudioConversionDetail =>
-        "Un WAV o un AIFF ocupa diez veces lo que la misma canción comprimida, y el disco del iPod no "
-        + "da abasto: al copiarlos a la biblioteca se convierten, con el codificador que ya trae "
-        + "Windows, a " + (AudioOriginal ? "ALAC, que es sin pérdida" : "MP3 de 256 kbps")
-        + " — lo que hayas elegido en \"Cómo guardar tu música\". Tu archivo original queda intacto "
-        + "donde estaba.";
+    public string AudioConversionDetail => Strings.Format(
+        "settings-view-model.audio-conversion-detail",
+        Strings.Get(AudioOriginal
+            ? "settings-view-model.audio-codec-alac"
+            : "settings-view-model.audio-codec-mp3"),
+        // El nombre de la sección se pide, no se escribe: la frase manda a
+        // "Cómo guardar tu música" y tiene que llamarla igual que su título en
+        // ese idioma. Escrito dos veces, en alemán acabarían diciendo cosas
+        // distintas y la frase mandaría a una sección que no existe.
+        StorageSectionTitle);
 
     // MARK: - Cómo guardar tu música (ST-245, plan §2 — texto compartido con la Mac)
 
@@ -362,10 +375,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
     /// </summary>
     public string MigrationDetail => _library.MigrationNeed.Needed
         ? _library.MigrationMessage
-        : "Si esta biblioteca la armó una versión anterior de Aura Studio, migrarla deja las "
-          + "etiquetas del catálogo escritas en las copias de Música, ordena lo preparado y borra "
-          + "lo que ya no usa nadie. Tus archivos originales no se tocan, y correrla de nuevo "
-          + "cuando ya está al día no cambia nada.";
+        : Strings.Get("settings-view-model.migration-idle");
 
     public IReadOnlyList<string> LinkedFolders => _preferences.LinkedLibraryFolders;
 
@@ -400,11 +410,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         }
     }
 
-    public string GroupCollaborationsDetail =>
-        "«Gorillaz feat. De La Soul» se muestra dentro de «Gorillaz»: una sola fila en Artistas y una sola foto de artista. " +
-        "Los separadores son «feat.», «feat», «ft.», «ft», «featuring», «+», «with» y «con», siempre como palabra suelta. " +
-        "«vs.» y «versus» NO agrupan: «Spacemonkeyz vs. Gorillaz» es un proyecto con nombre propio. " +
-        "Esto solo cambia cómo se AGRUPA lo que ves; nunca reescribe el artista de la canción ni mueve carpetas en el iPod.";
+    public string GroupCollaborationsDetail => ArtistGroupingText.Detail();
 
     public IReadOnlyList<string> ArtistGroupingExceptions => _preferences.ArtistGroupingExceptions;
 
@@ -458,9 +464,9 @@ public sealed partial class SettingsViewModel : ViewModelBase
         set => CoverArtAlbumOnly = !value;
     }
 
-    public string CoverArtDetail => CoverArtAlbumOnly
-        ? "Una sola imagen por álbum, compartida por todas sus canciones. Es lo que el firmware busca primero y ocupa mucho menos espacio en el iPod."
-        : "Cada canción lleva su propia carátula. Sirve para sencillos y recopilaciones, donde una sola portada por álbum sería incorrecta.";
+    public string CoverArtDetail => Strings.Get(CoverArtAlbumOnly
+        ? "settings-view-model.cover-art-album-only"
+        : "settings-view-model.cover-art-per-track");
 
     public bool EnrichOnline
     {
@@ -511,12 +517,12 @@ public sealed partial class SettingsViewModel : ViewModelBase
         OnPropertyChanged(nameof(MusicOrganizationDetail));
     }
 
-    public string MusicOrganizationDetail => _preferences.MusicOrganization switch
+    public string MusicOrganizationDetail => Strings.Get(_preferences.MusicOrganization switch
     {
-        MusicOrganization.Album => "Music/Álbum/ — todas las canciones agrupadas solo por álbum, sin carpeta de artista.",
-        MusicOrganization.Artist => "Music/Artista/ — todas las canciones del artista juntas, sin carpeta de álbum.",
-        _ => "Music/Artista/Álbum/ — una carpeta por álbum dentro de cada artista."
-    };
+        MusicOrganization.Album => "settings-view-model.music-organization-album",
+        MusicOrganization.Artist => "settings-view-model.music-organization-artist",
+        _ => "settings-view-model.music-organization-artist-album"
+    });
 
     public bool FilenameTitleOnly
     {
@@ -555,10 +561,13 @@ public sealed partial class SettingsViewModel : ViewModelBase
     /// <summary>Un ejemplo concreto vale más que la descripción del formato.</summary>
     public string FilenamePreview => _preferences.MusicFilenameFormat switch
     {
-        MusicFilenameFormat.TrackNumberTitle => "Ejemplo: 03 Persiana americana.mp3",
-        MusicFilenameFormat.TitleArtist => "Ejemplo: Persiana americana - Soda Stereo.mp3",
-        MusicFilenameFormat.TitleAlbum => "Ejemplo: Persiana americana - Signos.mp3",
-        _ => "Ejemplo: Persiana americana.mp3"
+        MusicFilenameFormat.TrackNumberTitle =>
+            Strings.Get("settings-view-model.filename-example-track-title"),
+        MusicFilenameFormat.TitleArtist =>
+            Strings.Get("settings-view-model.filename-example-title-artist"),
+        MusicFilenameFormat.TitleAlbum =>
+            Strings.Get("settings-view-model.filename-example-title-album"),
+        _ => Strings.Get("settings-view-model.filename-example-title")
     };
 
     public bool AudioOriginal
@@ -599,13 +608,9 @@ public sealed partial class SettingsViewModel : ViewModelBase
     /// prometía que WAV y AIFF "se copian tal cual", y desde ST-243 no es cierto
     /// — se convierten siempre, porque en el disco del iPod no caben.
     /// </summary>
-    public string AudioQualityDetail => AudioOriginal
-        ? "FLAC, ALAC, M4A y MP3 se copian tal cual: el iPod con Aura los reproduce sin perder calidad. "
-          + "WAV y AIFF sí se convierten, a ALAC, que también es sin pérdida y ocupa la mitad. Tu "
-          + "archivo original nunca se modifica."
-        : "Cada canción se convierte a MP3 de 256 kbps antes de copiarla: buena calidad, mucho menos "
-          + "espacio. Si sueltas un FLAC, tu biblioteca de Aura guarda el MP3 y no el FLAC; el archivo "
-          + "original se queda intacto en su carpeta.";
+    public string AudioQualityDetail => Strings.Get(AudioOriginal
+        ? "settings-view-model.audio-quality-original"
+        : "settings-view-model.audio-quality-compressed");
 
     // MARK: - Fotos
 
@@ -721,9 +726,9 @@ public sealed partial class SettingsViewModel : ViewModelBase
     {
         if (IsUsable(provider)) return "";
 
-        return provider == CoverArtProvider.Deezer
-            ? "apagado abajo"
-            : "sin clave configurada abajo";
+        return Strings.Get(provider == CoverArtProvider.Deezer
+            ? "settings-view-model.provider-off"
+            : "settings-view-model.provider-no-key");
     }
 
     // MARK: - Claves
@@ -748,21 +753,21 @@ public sealed partial class SettingsViewModel : ViewModelBase
         {
             _credentials.Delete(service.Key);
             RefreshCoverProviders();
-            return "Se quitó la clave del Administrador de credenciales.";
+            return Strings.Get("settings-view-model.key-removed");
         }
 
         bool saved = _credentials.Save(service.Key, trimmed);
         RefreshCoverProviders();
 
-        return saved
-            ? "Clave guardada en el Administrador de credenciales de Windows."
-            : "No se pudo guardar la clave. Revisa que tu cuenta de Windows permita guardar credenciales.";
+        return Strings.Get(saved
+            ? "settings-view-model.key-saved"
+            : "settings-view-model.key-save-failed");
     }
 
     public string DeleteKey(ApiKeyService service)
     {
         _credentials.Delete(service.Key);
         RefreshCoverProviders();
-        return "Se quitó la clave del Administrador de credenciales.";
+        return Strings.Get("settings-view-model.key-removed");
     }
 }

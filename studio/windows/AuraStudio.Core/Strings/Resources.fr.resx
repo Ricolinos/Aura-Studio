@@ -399,6 +399,837 @@
   <data name="app-strings.installer-title" xml:space="preserve">
     <value>Programme d'installation</value>
   </data>
+  <data name="installer-error.disk-ambiguous.one" xml:space="preserve">
+    <value>{0} disque pouvant être votre iPod a été trouvé. Par sécurité, Aura Studio n'en choisit aucun — débranchez les autres disques externes et réessayez.</value>
+  </data>
+  <data name="installer-error.disk-ambiguous.other" xml:space="preserve">
+    <value>{0} disques pouvant être votre iPod ont été trouvés. Par sécurité, Aura Studio n'en choisit aucun — débranchez les autres disques externes et réessayez.</value>
+  </data>
+  <data name="installer-error.device-not-found" xml:space="preserve">
+    <value>Aucun iPod connecté n'a été détecté.</value>
+  </data>
+  <data name="enrichment.completed.one" xml:space="preserve">
+    <value>{0} élément complété</value>
+  </data>
+  <data name="enrichment.completed.other" xml:space="preserve">
+    <value>{0} éléments complétés</value>
+  </data>
+  <data name="enrichment.lyrics.one" xml:space="preserve">
+    <value>{0} parole</value>
+  </data>
+  <data name="enrichment.lyrics.other" xml:space="preserve">
+    <value>{0} paroles</value>
+  </data>
+  <data name="app-update-service.announcement" xml:space="preserve">
+    <value>Il existe une nouvelle version d'Aura Studio : {0}. Vous avez la {1}.</value>
+  </data>
+  <data name="enrichment.poster-save-failed" xml:space="preserve">
+    <value>{0} : l'affiche n'a pas pu être enregistrée ({1})</value>
+  </data>
+  <data name="library-processor.copy-failed" xml:space="preserve">
+    <value>La copie dans la bibliothèque a échoué : {0}</value>
+  </data>
+  <data name="library-processor.mp3-failed" xml:space="preserve">
+    <value>La conversion en MP3 a échoué : {0}</value>
+  </data>
+  <data name="sync-summary.sync-failed" xml:space="preserve">
+    <value>La synchronisation n'a pas pu être terminée : {0}</value>
+  </data>
+  <data name="enrichment.summary-with-error" xml:space="preserve">
+    <value>{0}, mais il y a eu un problème de connexion : {1}</value>
+  </data>
+  <data name="enrichment.summary-joiner" xml:space="preserve">
+    <value>{0} et {1}</value>
+  </data>
+  <data name="playlists-view-model.subtitle-missing.one" xml:space="preserve">
+    <value>{1} · {0} manquant qui n'est pas dans votre bibliothèque</value>
+  </data>
+  <data name="playlists-view-model.subtitle-missing.other" xml:space="preserve">
+    <value>{1} · {0} manquants qui ne sont pas dans votre bibliothèque</value>
+  </data>
+  <data name="playlists-view-model.imported.one" xml:space="preserve">
+    <value>« {1} » a été importée avec {0} morceau.</value>
+  </data>
+  <data name="playlists-view-model.imported.other" xml:space="preserve">
+    <value>« {1} » a été importée avec {0} morceaux.</value>
+  </data>
+  <data name="playlists-view-model.still-missing.one" xml:space="preserve">
+    <value>{0} autre n'est pas encore dans votre bibliothèque.</value>
+  </data>
+  <data name="playlists-view-model.still-missing.other" xml:space="preserve">
+    <value>{0} autres ne sont pas encore dans votre bibliothèque.</value>
+  </data>
+  <data name="artists-view-model.selection-summary.one" xml:space="preserve">
+    <value>{0} artiste sélectionné</value>
+  </data>
+  <data name="artists-view-model.selection-summary.other" xml:space="preserve">
+    <value>{0} artistes sélectionnés</value>
+  </data>
+  <data name="firmware-tree.files-to-write.one" xml:space="preserve">
+    <value>{0} fichier à écrire</value>
+  </data>
+  <data name="firmware-tree.files-to-write.other" xml:space="preserve">
+    <value>{0} fichiers à écrire</value>
+  </data>
+  <data name="firmware-tree.files-to-delete.one" xml:space="preserve">
+    <value>{0} à retirer</value>
+  </data>
+  <data name="firmware-tree.files-to-delete.other" xml:space="preserve">
+    <value>{0} à retirer</value>
+  </data>
+  <data name="device-list-view-model.matches-bundled" xml:space="preserve">
+    <value>{0} correspond à la version fournie avec cette copie d'Aura Studio. {1}</value>
+  </data>
+  <data name="device-list-view-model.unknown-newer" xml:space="preserve">
+    <value>On ne sait pas s'il existe une version plus récente de {0}.</value>
+  </data>
+  <data name="device-list-view-model.my-ipod" xml:space="preserve">
+    <value>Mon iPod</value>
+  </data>
+  <data name="device-list-view-model.ipod-of" xml:space="preserve">
+    <value>iPod de {0}</value>
+  </data>
+  <data name="firmware-update.tree-incomplete" xml:space="preserve">
+    <value>L'arborescence de {0} sur l'iPod est incomplète. Réinstallez-la depuis l'Installateur.</value>
+  </data>
+  <data name="firmware-update.unknown-source" xml:space="preserve">
+    <value>On ne sait pas d'où viennent les mises à jour de {0}.</value>
+  </data>
+  <data name="extras-view-model.choice-already-active" xml:space="preserve">
+    <value>{0} est le microprogramme actif de votre iPod.</value>
+  </data>
+  <data name="extras-view-model.choice-adds" xml:space="preserve">
+    <value>Votre iPod a {0}. Installer {1} l'ajoute : {0} est conservé en veille avec ses réglages et rien n'est supprimé.</value>
+  </data>
+  <data name="extras-view-model.choice-will-install" xml:space="preserve">
+    <value>{0} sera installé la prochaine fois que vous utiliserez l'Installateur.</value>
+  </data>
+  <data name="library-view-model.checking-files" xml:space="preserve">
+    <value>Vérification des fichiers… {0} sur {1}</value>
+  </data>
+  <data name="library-view-model.read-failed" xml:space="preserve">
+    <value>La bibliothèque n'a pas pu être lue : {0}</value>
+  </data>
+  <data name="library-view-model.tags-write-failed" xml:space="preserve">
+    <value>Les tags n'ont pas pu être écrits dans « {0} » : {1}</value>
+  </data>
+  <data name="library-view-model.searching-lyrics-for" xml:space="preserve">
+    <value>Recherche des paroles de {0}…</value>
+  </data>
+  <data name="playlists-view-model.deleted" xml:space="preserve">
+    <value>« {0} » a été supprimée. Les morceaux restent dans votre bibliothèque.</value>
+  </data>
+  <data name="playlists-view-model.read-failed" xml:space="preserve">
+    <value>La liste de lecture n'a pas pu être lue : {0}</value>
+  </data>
+  <data name="playlists-view-model.imported-and-missing" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="playlists-page.new-playlist" xml:space="preserve">
+    <value>Nouvelle liste de lecture</value>
+  </data>
+  <data name="playlists-page.file-type" xml:space="preserve">
+    <value>Liste de lecture</value>
+  </data>
+  <data name="playlists-page.export-failed" xml:space="preserve">
+    <value>L'export a échoué : {0}</value>
+  </data>
+  <data name="settings-view-model.ffmpeg-found" xml:space="preserve">
+    <value>Trouvé dans {0}</value>
+  </data>
+  <data name="settings-view-model.filename-example-track-title" xml:space="preserve">
+    <value>Exemple : 03 Persiana americana.mp3</value>
+  </data>
+  <data name="settings-view-model.filename-example-title-artist" xml:space="preserve">
+    <value>Exemple : Persiana americana - Soda Stereo.mp3</value>
+  </data>
+  <data name="settings-view-model.filename-example-title-album" xml:space="preserve">
+    <value>Exemple : Persiana americana - Signos.mp3</value>
+  </data>
+  <data name="settings-view-model.filename-example-title" xml:space="preserve">
+    <value>Exemple : Persiana americana.mp3</value>
+  </data>
+  <data name="sync-view-model.selection-only" xml:space="preserve">
+    <value>Sélection uniquement</value>
+  </data>
+  <data name="sync-view-model.selection-only-count" xml:space="preserve">
+    <value>Sélection uniquement ({0})</value>
+  </data>
+  <data name="artists-page.enrich-online" xml:space="preserve">
+    <value>Rechercher des informations en ligne</value>
+  </data>
+  <data name="theme-manifest.license-open" xml:space="preserve">
+    <value>Libre</value>
+  </data>
+  <data name="theme-manifest.license-personal" xml:space="preserve">
+    <value>Usage personnel</value>
+  </data>
+  <data name="firmware-artifacts.missing-directory" xml:space="preserve">
+    <value>Le dossier {0} n'existe pas, et c'est là que devraient se trouver les fichiers de {1}.</value>
+  </data>
+  <data name="firmware-artifacts.tool-unverifiable" xml:space="preserve">
+    <value>{0} ne peut pas être vérifié : la Release ne publie pas {1} et il n'y a pas de {2} à côté du binaire.</value>
+  </data>
+  <data name="ipod-disk.display-name" xml:space="preserve">
+    <value>iPod Classic ({0})</value>
+  </data>
+  <data name="firmware-switcher.dormant-missing" xml:space="preserve">
+    <value>Il n'y a pas d'arborescence {0} en veille sur cet iPod.</value>
+  </data>
+  <data name="firmware-switcher.already-active" xml:space="preserve">
+    <value>{0} est déjà le microprogramme actif.</value>
+  </data>
+  <data name="firmware-switcher.not-switchable" xml:space="preserve">
+    <value>Aura Studio ne sait pas comment mettre en veille ni réveiller {0}.</value>
+  </data>
+  <data name="firmware-tree.parking" xml:space="preserve">
+    <value>Sauvegarde de {0} pour pouvoir y revenir…</value>
+  </data>
+  <data name="firmware-tree.updating" xml:space="preserve">
+    <value>Mise à jour de {0} : {1}, {2}…</value>
+  </data>
+  <data name="firmware-tree.installing" xml:space="preserve">
+    <value>Installation de {0} sur l'iPod (polices, icônes, codecs)… Cela peut prendre plusieurs minutes en USB — ne débranchez pas l'iPod.</value>
+  </data>
+  <data name="catalog-persister.save-failed" xml:space="preserve">
+    <value>La bibliothèque n'a pas pu être enregistrée : {0}</value>
+  </data>
+  <data name="credential-store.fanart-summary" xml:space="preserve">
+    <value>Pochettes en haute résolution (~1000 px), photos d'artiste et affiches sélectionnées de films et de séries (ces dernières nécessitent aussi la clé TMDB pour trouver le titre).</value>
+  </data>
+  <data name="credential-store.fanart-guide" xml:space="preserve">
+    <value>Créez un compte gratuit sur fanart.tv, allez dans votre profil et copiez la « Personal API Key » (pas celle du projet).</value>
+  </data>
+  <data name="credential-store.tmdb-summary" xml:space="preserve">
+    <value>Affiches de films et de séries. Trouve le titre et son identifiant ; avec fanart.tv configuré, l'affiche sélectionnée de là-bas est préférée, sinon celle de TMDB.</value>
+  </data>
+  <data name="credential-store.tmdb-guide" xml:space="preserve">
+    <value>Créez un compte gratuit sur themoviedb.org, allez dans Paramètres › API et copiez la « API Key (v3 auth) ».</value>
+  </data>
+  <data name="credential-store.github-summary" xml:space="preserve">
+    <value>Les dépôts des microprogrammes sont publics : Aura Studio signale déjà les nouvelles versions sans rien de tout cela. Un jeton en lecture seule ne fait qu'augmenter la limite de requêtes de l'API GitHub ; l'installation du microprogramme n'en dépend jamais, car il est fourni avec l'application.</value>
+  </data>
+  <data name="credential-store.github-guide" xml:space="preserve">
+    <value>Si vous en voulez un quand même : créez un jeton d'accès personnel « fine-grained » sur github.com › Settings › Developer settings, avec accès uniquement à Aura-Firmware, Metro-Aura et moonlit-aura, et la permission Contents: Read-only.</value>
+  </data>
+  <data name="app-update.download-stopped" xml:space="preserve">
+    <value>Le téléchargement a été arrêté.</value>
+  </data>
+  <data name="app-update.installer-opening" xml:space="preserve">
+    <value>L'installateur s'ouvre. Aura Studio va se fermer pour pouvoir se mettre à jour.</value>
+  </data>
+  <data name="app-update.checksum-mismatch" xml:space="preserve">
+    <value>Le fichier téléchargé ne correspond pas à l'empreinte publiée par GitHub pour ce fichier. Il a été supprimé et rien n'a été ouvert ; réessayez plus tard.</value>
+  </data>
+  <data name="app-update.size-mismatch" xml:space="preserve">
+    <value>Le fichier téléchargé fait {0} octets et la Release en indique {1} : le téléchargement est resté incomplet. Il a été supprimé et rien n'a été ouvert.</value>
+  </data>
+  <data name="app-update-service.announcement-missing-asset" xml:space="preserve">
+    <value>{0} Cette Release ne contient pas {1} : ouvrez-la sur GitHub pour le télécharger à la main.</value>
+  </data>
+  <data name="similar-items.nothing-new-with-hidden" xml:space="preserve">
+    <value>Rien de nouveau n'a été trouvé. Certains groupes sont déjà marqués comme « ce n'est pas la même chose » : vous pouvez les réafficher ci-dessous.</value>
+  </data>
+  <data name="similar-items.nothing-similar" xml:space="preserve">
+    <value>Aucun élément semblable n'a été trouvé dans votre bibliothèque.</value>
+  </data>
+  <data name="similar-items.hidden-reset" xml:space="preserve">
+    <value>C'est fait, il ne sera plus affiché. Vous pouvez rétablir cela ci-dessous.</value>
+  </data>
+  <data name="artists-view-model.favorite-label-add" xml:space="preserve">
+    <value>Marquer comme favori : {0}</value>
+  </data>
+  <data name="artists-view-model.favorite-label-remove" xml:space="preserve">
+    <value>Retirer des favoris : {0}</value>
+  </data>
+  <data name="artists-view-model.favorite-button-add" xml:space="preserve">
+    <value>Marquer comme favori</value>
+  </data>
+  <data name="artists-view-model.favorite-button-remove" xml:space="preserve">
+    <value>Retirer le favori</value>
+  </data>
+  <data name="artists-page.album-favorite-add" xml:space="preserve">
+    <value>Marquer l'album comme favori</value>
+  </data>
+  <data name="artists-page.album-favorite-remove" xml:space="preserve">
+    <value>Retirer le favori de l'album</value>
+  </data>
+  <data name="songs-view-model.favorite" xml:space="preserve">
+    <value>Favori</value>
+  </data>
+  <data name="songs-view-model.not-favorite" xml:space="preserve">
+    <value>Pas un favori</value>
+  </data>
+  <data name="songs-view-model.no-favorites" xml:space="preserve">
+    <value>Aucun morceau n'est marqué comme favori. Retirez le filtre pour tous les voir.</value>
+  </data>
+  <data name="device-list-view-model.check-updates-hint" xml:space="preserve">
+    <value>Recherchez les mises à jour pour savoir si une version plus récente a été publiée.</value>
+  </data>
+  <data name="device-list-view-model.firmware-updated" xml:space="preserve">
+    <value>Le microprogramme est à jour. Éjectez l'iPod et allumez-le.</value>
+  </data>
+  <data name="device-list-page.orphans-stay" xml:space="preserve">
+    <value>Ils restent sur l'iPod. Cochez ceux que vous voulez retirer et synchronisez à nouveau ; les autres ne sont pas touchés.</value>
+  </data>
+  <data name="installer-view-model.the-device" xml:space="preserve">
+    <value>l'appareil</value>
+  </data>
+  <data name="installer-view-model.unknown-firmware" xml:space="preserve">
+    <value>Impossible de déterminer quel microprogramme installer. Choisissez-le à nouveau et réessayez.</value>
+  </data>
+  <data name="playlists-page.rename-title" xml:space="preserve">
+    <value>Renommer la liste de lecture</value>
+  </data>
+  <data name="playlists-page.name-placeholder" xml:space="preserve">
+    <value>Nom de la liste de lecture</value>
+  </data>
+  <data name="songs-page.all-music" xml:space="preserve">
+    <value>Toute votre musique.</value>
+  </data>
+  <data name="songs-page.edit-hint" xml:space="preserve">
+    <value>Cela change son apparence dans votre bibliothèque et sur l'iPod. Le fichier sur le disque n'est pas touché.</value>
+  </data>
+  <data name="themes-page.remove-active" xml:space="preserve">
+    <value>C'est le thème actif : l'iPod revient au thème intégré d'Aura.</value>
+  </data>
+  <data name="themes-page.remove-inactive" xml:space="preserve">
+    <value>Il est supprimé de l'iPod. Vous pouvez le réinstaller si vous conservez le dossier des assets.</value>
+  </data>
+  <data name="media-grid-page.no-tree" xml:space="preserve">
+    <value>(pas d'arborescence)</value>
+  </data>
+  <data name="library-processor.unsupported" xml:space="preserve">
+    <value>Ce type de fichier n'est pas pris en charge.</value>
+  </data>
+  <data name="enrichment.online-off" xml:space="preserve">
+    <value>« Compléter en ligne » est désactivé dans Paramètres › Services.</value>
+  </data>
+  <data name="audio-transcoder.no-encoder" xml:space="preserve">
+    <value>Cette version de Windows ne fournit pas l'encodeur {0} ({1}). ALAC nécessite Windows 10 version 1803 ou plus récent.</value>
+  </data>
+  <data name="audio-transcoder.cannot-read" xml:space="preserve">
+    <value>Windows n'a pas pu lire « {0} » pour le convertir (raison : {1}). C'est en général un fichier endommagé, ou qui n'est pas du format annoncé par son extension.</value>
+  </data>
+  <data name="volume-lock.close-explorer" xml:space="preserve">
+    <value>Fermez les fenêtres de l'Explorateur de fichiers et les applications qui utilisent l'iPod.</value>
+  </data>
+  <data name="firmware-update.no-network" xml:space="preserve">
+    <value>Impossible de consulter GitHub pour savoir s'il existe une version plus récente. Vérifiez votre connexion et réessayez.</value>
+  </data>
+  <data name="firmware-update.no-network-matches-bundled" xml:space="preserve">
+    <value>Impossible de consulter GitHub pour savoir s'il existe une version plus récente. Vérifiez votre connexion et réessayez. Ce qui est installé correspond à {0} {1}, c'est-à-dire ce que fournit cette copie d'Aura Studio.</value>
+  </data>
+  <data name="firmware-update.up-to-date-tag" xml:space="preserve">
+    <value>{0} est à jour : l'iPod a {1}, la version publiée la plus récente.</value>
+  </data>
+  <data name="firmware-update.up-to-date-hash" xml:space="preserve">
+    <value>{0} est à jour : ce qui est installé correspond à {1}, la version publiée la plus récente.</value>
+  </data>
+  <data name="firmware-update.bundled-newer-than-ipod" xml:space="preserve">
+    <value>{0} {1} est publié. Cette copie d'Aura Studio fournit {2}, déjà plus récent que celui de l'iPod ({3}) : vous pouvez installer {2} maintenant, ou mettre à jour Aura Studio pour avoir {1}.</value>
+  </data>
+  <data name="firmware-update.update-available" xml:space="preserve">
+    <value>Il existe une version plus récente de {0} ({1}).</value>
+  </data>
+  <data name="firmware-update.newer-than-bundled" xml:space="preserve">
+    <value>{0} {1} a été publié, mais cette copie d'Aura Studio fournit {2}. Mettez à jour Aura Studio pour pouvoir l'installer.</value>
+  </data>
+  <data name="firmware-update.older-version" xml:space="preserve">
+    <value>une version plus ancienne</value>
+  </data>
+  <data name="firmware-update.another-version" xml:space="preserve">
+    <value>une autre version</value>
+  </data>
+  <data name="firmware-update.ipod-older-than-bundled" xml:space="preserve">
+    <value>L'iPod a une version de {0} plus ancienne que celle de cette copie d'Aura Studio ({1}) ; la plus récente publiée est {2}.</value>
+  </data>
+  <data name="firmware-update.bundled-newer-hash" xml:space="preserve">
+    <value>Il existe une version de {0} ({1}) plus récente que celle de l'iPod.</value>
+  </data>
+  <data name="artist-image.missing-key" xml:space="preserve">
+    <value>Les photos d'artiste nécessitent une clé fanart.tv (Paramètres › Services).</value>
+  </data>
+  <data name="artist-image.no-match" xml:space="preserve">
+    <value>Cet artiste n'a pas été trouvé sur MusicBrainz.</value>
+  </data>
+  <data name="artist-image.no-image" xml:space="preserve">
+    <value>fanart.tv n'a pas de photo de cet artiste.</value>
+  </data>
+  <data name="artist-image.musicbrainz-busy" xml:space="preserve">
+    <value>MusicBrainz est saturé en ce moment. Réessayez dans un moment.</value>
+  </data>
+  <data name="artist-image.failed-musicbrainz-busy" xml:space="preserve">
+    <value>Cela n'a pas marché : MusicBrainz est saturé. Réessayez dans un moment.</value>
+  </data>
+  <data name="artist-image.none-new" xml:space="preserve">
+    <value>Aucune nouvelle photo d'artiste n'a été trouvée.</value>
+  </data>
+  <data name="artist-image.summary-stopped-some.one" xml:space="preserve">
+    <value>{0} photo a été trouvée puis cela s'est arrêté : MusicBrainz est saturé. Réessayez dans un moment.</value>
+  </data>
+  <data name="artist-image.summary-stopped-some.other" xml:space="preserve">
+    <value>{0} photos ont été trouvées puis cela s'est arrêté : MusicBrainz est saturé. Réessayez dans un moment.</value>
+  </data>
+  <data name="artist-image.summary-found.one" xml:space="preserve">
+    <value>{0} photo d'artiste a été trouvée.</value>
+  </data>
+  <data name="artist-image.summary-found.other" xml:space="preserve">
+    <value>{0} photos d'artiste ont été trouvées.</value>
+  </data>
+  <data name="artist-image.summary-failed.one" xml:space="preserve">
+    <value>{0} artiste a échoué.</value>
+  </data>
+  <data name="artist-image.summary-failed.other" xml:space="preserve">
+    <value>{0} artistes ont échoué.</value>
+  </data>
+  <data name="artist-image.summary-none-with-failures.one" xml:space="preserve">
+    <value>Aucune nouvelle photo n'a été trouvée ; {0} artiste a échoué.</value>
+  </data>
+  <data name="artist-image.summary-none-with-failures.other" xml:space="preserve">
+    <value>Aucune nouvelle photo n'a été trouvée ; {0} artistes ont échoué.</value>
+  </data>
+  <data name="artist-image.summary-found-with-failures" xml:space="preserve">
+    <value>{0} ; {1}</value>
+  </data>
+  <data name="album-cover-search.no-results" xml:space="preserve">
+    <value>Aucune pochette n'a été trouvée pour cet album. Vérifiez que le titre et l'artiste sont bien orthographiés.</value>
+  </data>
+  <data name="album-cover-search.try-deezer" xml:space="preserve">
+    <value>Vous pouvez aussi activer Deezer dans Paramètres › Services pour chercher à plus d'endroits.</value>
+  </data>
+  <data name="video-artwork.missing-key" xml:space="preserve">
+    <value>Les affiches de vidéo nécessitent une clé TMDB (Paramètres › Services).</value>
+  </data>
+  <data name="video-artwork.no-match" xml:space="preserve">
+    <value>Aucune affiche n'a été trouvée pour cette vidéo.</value>
+  </data>
+  <data name="ffmpeg-locator.not-found" xml:space="preserve">
+    <value>ffmpeg est introuvable sur cet ordinateur. Installez-le avec "winget install Gyan.FFmpeg", ou indiquez où il se trouve dans Paramètres › Vidéo.</value>
+  </data>
+  <data name="networking.no-results" xml:space="preserve">
+    <value>Aucun résultat n'a été trouvé</value>
+  </data>
+  <data name="device-config.name-set-elsewhere" xml:space="preserve">
+    <value>Le nom de cet iPod a été défini depuis un autre ordinateur ; il ne peut être changé que de là.</value>
+  </data>
+  <data name="install-manifest.empty" xml:space="preserve">
+    <value>Le fichier de microprogramme ne contient aucune entrée.</value>
+  </data>
+  <data name="firmware-switcher.failed" xml:space="preserve">
+    <value>Le microprogramme n'a pas pu être changé.</value>
+  </data>
+  <data name="catalog-persister.unavailable" xml:space="preserve">
+    <value>La bibliothèque n'est pas disponible : l'enregistrement a échoué.</value>
+  </data>
+  <data name="library-persistence.catalog-empty-or-damaged" xml:space="preserve">
+    <value>Le catalogue de la bibliothèque est vide ou endommagé.</value>
+  </data>
+  <data name="library-persistence.catalog-unreadable" xml:space="preserve">
+    <value>Le catalogue de la bibliothèque n'a pas pu être lu : {0}</value>
+  </data>
+  <data name="library-persistence.catalog-unopenable" xml:space="preserve">
+    <value>Le catalogue de la bibliothèque n'a pas pu être ouvert : {0}</value>
+  </data>
+  <data name="library-migrator.orphans-delete-failed" xml:space="preserve">
+    <value>Les fichiers inutilisés n'ont pas pu être supprimés : {0}</value>
+  </data>
+  <data name="library-root.unavailable" xml:space="preserve">
+    <value>La bibliothèque n'est pas disponible : {0}</value>
+  </data>
+  <data name="library-persistence.invalid-path" xml:space="preserve">
+    <value>Le chemin de la bibliothèque n'est pas valide : {0}</value>
+  </data>
+  <data name="status-summary.without-album" xml:space="preserve">
+    <value>{0} sans album</value>
+  </data>
+  <data name="ipod-disk.aura-files-undeclared" xml:space="preserve">
+    <value>Fichiers Aura détectés (famille non déclarée)</value>
+  </data>
+  <data name="ipod-disk.no-aura" xml:space="preserve">
+    <value>Aucune installation Aura n'a été détectée</value>
+  </data>
+  <data name="firmware-tree.verifying" xml:space="preserve">
+    <value>Vérification de l'intégrité des fichiers…</value>
+  </data>
+  <data name="firmware-tree.copying" xml:space="preserve">
+    <value>Copie du microprogramme sur l'iPod…</value>
+  </data>
+  <data name="firmware-tree.falling-back-to-full" xml:space="preserve">
+    <value>La mise à jour sélective n'a pas fonctionné ; installation complète en cours…</value>
+  </data>
+  <data name="firmware-tree.copy-interrupted" xml:space="preserve">
+    <value>La copie a été interrompue — nouvelle tentative…</value>
+  </data>
+  <data name="volume.ipod-unavailable" xml:space="preserve">
+    <value>Le volume de l'iPod n'est plus disponible.</value>
+  </data>
+  <data name="device-firmware.dual-suffix" xml:space="preserve">
+    <value> (double démarrage avec Apple)</value>
+  </data>
+  <data name="device-firmware.stock-usb-rockbox" xml:space="preserve">
+    <value>Microprogramme d'origine d'Apple sur le disque — mais l'USB est pris en charge par le bootloader Aura/Rockbox (mode USB du bootloader)</value>
+  </data>
+  <data name="device-firmware.stock" xml:space="preserve">
+    <value>Microprogramme d'origine d'Apple</value>
+  </data>
+  <data name="device-firmware.empty-usb-rockbox" xml:space="preserve">
+    <value>Disque vide — l'USB est pris en charge par le bootloader Aura/Rockbox (mode USB du bootloader)</value>
+  </data>
+  <data name="device-firmware.empty" xml:space="preserve">
+    <value>Disque vide, sans microprogramme</value>
+  </data>
+  <data name="device-firmware.aura-booted-from-firmware" xml:space="preserve">
+    <value>Microprogramme {0} installé — connecté depuis {0}{1}</value>
+  </data>
+  <data name="device-firmware.aura-not-configured" xml:space="preserve">
+    <value>Microprogramme de la famille Aura installé — connecté depuis le microprogramme, sa configuration n'est pas encore écrite{0}</value>
+  </data>
+  <data name="device-firmware.aura-booted-from-apple-disk" xml:space="preserve">
+    <value>Microprogramme {0} installé — connecté depuis le mode disque d'Apple{1}</value>
+  </data>
+  <data name="device-firmware.aura-files-apple-running" xml:space="preserve">
+    <value>Fichiers de la famille Aura sur le disque, mais l'iPod exécute le microprogramme d'Apple et ce microprogramme n'a jamais démarré ici — rien ne prouve qu'il soit installé</value>
+  </data>
+  <data name="device-firmware.aura-installed" xml:space="preserve">
+    <value>Microprogramme {0} installé{1}</value>
+  </data>
+  <data name="device-firmware.aura-files-not-booted" xml:space="preserve">
+    <value>Fichiers de la famille Aura sur le disque — pas encore démarré (rien ne prouve que le bootloader soit installé)</value>
+  </data>
+  <data name="device-firmware.rockbox-from-rockbox" xml:space="preserve">
+    <value>Rockbox installé (ce n'est pas Aura) — connecté depuis Rockbox{0}</value>
+  </data>
+  <data name="device-firmware.rockbox-installed" xml:space="preserve">
+    <value>Rockbox installé (ce n'est pas Aura){0}</value>
+  </data>
+  <data name="device-firmware.rockbox-files-apple-running" xml:space="preserve">
+    <value>Fichiers Rockbox sur le disque (ce n'est pas Aura), mais l'iPod exécute le microprogramme d'Apple et Rockbox n'a jamais démarré ici</value>
+  </data>
+  <data name="device-firmware.rockbox-files-not-booted" xml:space="preserve">
+    <value>Fichiers Rockbox sur le disque (ce n'est pas Aura) — aucune preuve de démarrage</value>
+  </data>
+  <data name="extras-view-model.visual-metro" xml:space="preserve">
+    <value>Langage visuel Metro (Windows Phone 7 / Zune) : police Selawik, hub de tuiles, accents de couleur, transitions de pivot.</value>
+  </data>
+  <data name="extras-view-model.visual-moonlit" xml:space="preserve">
+    <value>Langage visuel Waning Crescent : calme nocturne, Material Design 3 adapté à l'iPod, sans système de thèmes.</value>
+  </data>
+  <data name="extras-view-model.visual-aura" xml:space="preserve">
+    <value>Langage visuel "Apple 2026" : polices SF, thèmes clair/sombre et thèmes installables, Cover Flow.</value>
+  </data>
+  <data name="extras-view-model.firmware-intro" xml:space="preserve">
+    <value>Choisissez lequel des microprogrammes installables Aura Studio utilisera la prochaine fois que vous ouvrirez l'Installateur. Ce sont tous des logiciels libres (GPL v2), dérivés de Rockbox, et ils partagent la même bibliothèque : votre musique, vos photos et vos vidéos se synchronisent de la même façon avec n'importe lequel.</value>
+  </data>
+  <data name="extras-view-model.checking-github" xml:space="preserve">
+    <value>Consultation de GitHub…</value>
+  </data>
+  <data name="extras-view-model.versions-from-github" xml:space="preserve">
+    <value>Les versions sont les plus récentes publiées sur GitHub : une installation à partir de zéro télécharge celle-là.</value>
+  </data>
+  <data name="extras-view-model.versions-bundled" xml:space="preserve">
+    <value>Impossible de consulter GitHub (vérifiez le jeton dans Paramètres › Services) : les versions fournies avec Aura Studio sont affichées, et ce sont elles qui seraient installées.</value>
+  </data>
+  <data name="extras-view-model.themes-need-aura" xml:space="preserve">
+    <value>Connectez votre iPod avec Aura installé pour installer, activer ou construire des thèmes.</value>
+  </data>
+  <data name="extras-view-model.themes-unsupported" xml:space="preserve">
+    <value>Ce microprogramme ne prend pas en charge les thèmes ({0} n'a pas de système de thèmes).</value>
+  </data>
+  <data name="extras-view-model.this-firmware" xml:space="preserve">
+    <value>Ce microprogramme</value>
+  </data>
+  <data name="extras-view-model.themes-detail" xml:space="preserve">
+    <value>Le thème intégré (Clair/Sombre) plus ceux que vous installez — Réglages › Style, sur l'iPod.</value>
+  </data>
+  <data name="extras-view-model.animations-detail" xml:space="preserve">
+    <value>Trois niveaux chacun. Ils se choisissent dans les Réglages, sur l'iPod.</value>
+  </data>
+  <data name="extras-view-model.planned-intro" xml:space="preserve">
+    <value>Ces extras de l'iPod d'origine ne sont pas implémentés dans Aura. Quand ils existeront, ils se géreront depuis ici.</value>
+  </data>
+  <data name="extras-view-model.not-implemented" xml:space="preserve">
+    <value>Non implémentés.</value>
+  </data>
+  <data name="extras-view-model.licenses-detail" xml:space="preserve">
+    <value>Tous les microprogrammes sont sous GPL v2. Voici leurs sources, versions exactes et modifications.</value>
+  </data>
+  <data name="settings-view-model.library-empty-missing.one" xml:space="preserve">
+    <value>Le catalogue de ce dossier contient {0} élément, mais son fichier est introuvable. Cela arrive souvent quand on pointe vers la bibliothèque d'un autre ordinateur.</value>
+  </data>
+  <data name="settings-view-model.library-empty-missing.other" xml:space="preserve">
+    <value>Le catalogue de ce dossier contient {0} éléments, mais aucun de leurs fichiers n'a été trouvé. Cela arrive souvent quand on pointe vers la bibliothèque d'un autre ordinateur.</value>
+  </data>
+  <data name="settings-view-model.library-summary-missing.one" xml:space="preserve">
+    <value>{1}. Le fichier de {0} autre élément du catalogue manque.</value>
+  </data>
+  <data name="settings-view-model.library-summary-missing.other" xml:space="preserve">
+    <value>{1}. Les fichiers de {0} autres éléments du catalogue manquent.</value>
+  </data>
+  <data name="settings-view-model.library-empty" xml:space="preserve">
+    <value>Ce dossier n'a pas encore de bibliothèque Aura Studio : elle commence vide.</value>
+  </data>
+  <data name="settings-view-model.copy-media-on" xml:space="preserve">
+    <value>Chaque morceau, photo ou vidéo que vous déposez dans Aura Studio est copié dans le dossier ci-dessus ; l'original reste intact là où il était. Cela occupe plus d'espace disque, mais la bibliothèque est complète au même endroit.</value>
+  </data>
+  <data name="settings-view-model.copy-media-off" xml:space="preserve">
+    <value>Rien n'est copié : la bibliothèque référence vos fichiers là où ils sont déjà, et seul ce qui les relie à Aura est enregistré ici (métadonnées, paroles, pochettes). À la synchronisation, Aura Studio construit le fichier pour l'iPod en lisant l'original à ce moment-là — un peu plus lent la première fois, mais votre disque ne se retrouve jamais avec une copie en double de toute votre bibliothèque.</value>
+  </data>
+  <data name="settings-view-model.audio-codec-alac" xml:space="preserve">
+    <value>ALAC, qui est sans perte</value>
+  </data>
+  <data name="settings-view-model.audio-codec-mp3" xml:space="preserve">
+    <value>MP3 à 256 kbit/s</value>
+  </data>
+  <data name="settings-view-model.audio-conversion-detail" xml:space="preserve">
+    <value>Un WAV ou un AIFF occupe dix fois ce que prend le même morceau compressé, et le disque de l'iPod ne suit pas : à la copie dans la bibliothèque, ils sont convertis, avec l'encodeur déjà fourni par Windows, en {0} — selon ce que vous avez choisi dans "{1}". Votre fichier d'origine reste intact là où il était.</value>
+  </data>
+  <data name="settings-view-model.migration-idle" xml:space="preserve">
+    <value>Si cette bibliothèque a été créée par une version précédente d'Aura Studio, la migrer écrit les tags du catalogue dans les copies sous Musique, range ce qui a été préparé et supprime ce dont personne ne se sert plus. Vos fichiers d'origine ne sont pas touchés, et la relancer alors que tout est à jour ne change rien.</value>
+  </data>
+  <data name="settings-view-model.quoted-term" xml:space="preserve">
+    <value>« {0} »</value>
+  </data>
+  <data name="settings-view-model.term-joiner" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="settings-view-model.group-collaborations-detail" xml:space="preserve">
+    <value>« Gorillaz feat. De La Soul » apparaît dans « Gorillaz » : une seule ligne dans Artistes et une seule photo d'artiste. Les séparateurs sont {0}, toujours en tant que mot entier. {1} ne regroupent PAS : « Spacemonkeyz vs. Gorillaz » est un projet qui a son propre nom. Cela change seulement la façon dont ce que vous voyez est REGROUPÉ ; l'artiste du morceau n'est jamais réécrit et aucun dossier n'est déplacé sur l'iPod.</value>
+  </data>
+  <data name="settings-view-model.cover-art-album-only" xml:space="preserve">
+    <value>Une seule image par album, partagée par tous ses morceaux. C'est ce que le microprogramme cherche en premier et cela occupe bien moins de place sur l'iPod.</value>
+  </data>
+  <data name="settings-view-model.cover-art-per-track" xml:space="preserve">
+    <value>Chaque morceau porte sa propre pochette. C'est utile pour les singles et les compilations, où une seule pochette par album serait incorrecte.</value>
+  </data>
+  <data name="settings-view-model.music-organization-album" xml:space="preserve">
+    <value>Music/Album/ — tous les morceaux regroupés par album seulement, sans dossier d'artiste.</value>
+  </data>
+  <data name="settings-view-model.music-organization-artist" xml:space="preserve">
+    <value>Music/Artiste/ — tous les morceaux de l'artiste ensemble, sans dossier d'album.</value>
+  </data>
+  <data name="settings-view-model.music-organization-artist-album" xml:space="preserve">
+    <value>Music/Artiste/Album/ — un dossier par album à l'intérieur de chaque artiste.</value>
+  </data>
+  <data name="settings-view-model.audio-quality-original" xml:space="preserve">
+    <value>Les FLAC, ALAC, M4A et MP3 sont copiés tels quels : l'iPod avec Aura les lit sans perte de qualité. Les WAV et les AIFF sont convertis, en ALAC, qui est également sans perte et occupe la moitié de la place. Votre fichier d'origine n'est jamais modifié.</value>
+  </data>
+  <data name="settings-view-model.audio-quality-compressed" xml:space="preserve">
+    <value>Chaque morceau est converti en MP3 à 256 kbit/s avant d'être copié : bonne qualité, beaucoup moins de place. Si vous déposez un FLAC, votre bibliothèque Aura conserve le MP3 et non le FLAC ; le fichier d'origine reste intact dans son dossier.</value>
+  </data>
+  <data name="settings-view-model.provider-off" xml:space="preserve">
+    <value>désactivé ci-dessous</value>
+  </data>
+  <data name="settings-view-model.provider-no-key" xml:space="preserve">
+    <value>aucune clé configurée ci-dessous</value>
+  </data>
+  <data name="settings-view-model.key-removed" xml:space="preserve">
+    <value>La clé a été retirée du Gestionnaire d'informations d'identification.</value>
+  </data>
+  <data name="settings-view-model.key-saved" xml:space="preserve">
+    <value>Clé enregistrée dans le Gestionnaire d'informations d'identification de Windows.</value>
+  </data>
+  <data name="settings-view-model.key-save-failed" xml:space="preserve">
+    <value>La clé n'a pas pu être enregistrée. Vérifiez que votre compte Windows est autorisé à enregistrer des informations d'identification.</value>
+  </data>
+  <data name="privileged.disk-number-out-of-range" xml:space="preserve">
+    <value>Le numéro de disque {0} est hors limites.</value>
+  </data>
+  <data name="privileged.missing-expected-size" xml:space="preserve">
+    <value>La demande ne contient pas la taille attendue du disque, elle ne peut donc pas être revérifiée.</value>
+  </data>
+  <data name="privileged.negative-tolerance" xml:space="preserve">
+    <value>La tolérance de taille ne peut pas être négative.</value>
+  </data>
+  <data name="privileged.empty-volume-label" xml:space="preserve">
+    <value>Le nom du volume est resté vide.</value>
+  </data>
+  <data name="privileged.unknown-operation" xml:space="preserve">
+    <value>Opération privilégiée inconnue.</value>
+  </data>
+  <data name="privileged.request-unreadable" xml:space="preserve">
+    <value>La demande n'a pas pu être lue.</value>
+  </data>
+  <data name="disk-abort.requery-failed" xml:space="preserve">
+    <value>le disque n'a pas pu être interrogé à nouveau ({0})</value>
+  </data>
+  <data name="disk-abort.gone" xml:space="preserve">
+    <value>le disque {0} n'existe plus</value>
+  </data>
+  <data name="disk-abort.not-usb" xml:space="preserve">
+    <value>le disque n'apparaît plus connecté en USB (bus {0})</value>
+  </data>
+  <data name="disk-abort.no-media" xml:space="preserve">
+    <value>le disque n'a plus de support monté</value>
+  </data>
+  <data name="disk-abort.size-changed" xml:space="preserve">
+    <value>la taille du disque ne correspond plus ({0} octets)</value>
+  </data>
+  <data name="disk-abort.model-changed" xml:space="preserve">
+    <value>le modèle du disque a changé (il indique maintenant « {0} »)</value>
+  </data>
+  <data name="disk-abort.beyond-mbr" xml:space="preserve">
+    <value>le disque ne tient pas dans l'adressage 32 bits du MBR</value>
+  </data>
+  <data name="disk-abort.fat32-layout" xml:space="preserve">
+    <value>impossible de construire un FAT32 sur ce disque : {0}</value>
+  </data>
+  <data name="disk-abort.write-failed" xml:space="preserve">
+    <value>Impossible d'écrire sur le disque : {0}</value>
+  </data>
+  <data name="app-update.download-failed" xml:space="preserve">
+    <value>L'installateur n'a pas pu être téléchargé : {0}</value>
+  </data>
+  <data name="app-update.cannot-open" xml:space="preserve">
+    <value>L'installateur a été téléchargé dans {0}, mais n'a pas pu être ouvert : {1}</value>
+  </data>
+  <data name="dfu-flash.tool-start-failed" xml:space="preserve">
+    <value>mks5lboot.exe n'a pas pu être démarré : {0}</value>
+  </data>
+  <data name="audio-transcoder.convert-failed" xml:space="preserve">
+    <value>la conversion en {0} a échoué : {1}</value>
+  </data>
+  <data name="theme-packager.source-file-missing" xml:space="preserve">
+    <value>{0} est introuvable dans le dossier source.</value>
+  </data>
+  <data name="networking.http-error" xml:space="preserve">
+    <value>Erreur réseau (HTTP {0})</value>
+  </data>
+  <data name="storage-breakdown.usage-line" xml:space="preserve">
+    <value>{0} utilisés sur {1} — {2} libres</value>
+  </data>
+  <data name="firmware-artifacts.missing-checksums" xml:space="preserve">
+    <value>{0} manque : il n'y a rien pour vérifier les fichiers du microprogramme.</value>
+  </data>
+  <data name="firmware-artifacts.missing-bootloader" xml:space="preserve">
+    <value>{0} manque : le bootloader ne peut pas être écrit.</value>
+  </data>
+  <data name="firmware-artifacts.missing-tool" xml:space="preserve">
+    <value>{0} manque (il n'est pas non plus dans {1}) : sans cet outil, le bootloader ne peut pas être écrit.</value>
+  </data>
+  <data name="firmware-artifacts.checksum-mismatch-release" xml:space="preserve">
+    <value>La somme de contrôle de {0} ne correspond pas à celle de la Release (attendu {1}, calculé {2}) : le fichier est endommagé ou n'est pas celui publié par la Release.</value>
+  </data>
+  <data name="firmware-artifacts.pin-mismatch" xml:space="preserve">
+    <value>{0} ne correspond pas à l'empreinte fixée dans {1} (attendu {2}, calculé {3}) : le fichier a changé et n'est plus fiable.</value>
+  </data>
+  <data name="firmware-artifacts.not-described" xml:space="preserve">
+    <value>{0} ne décrit pas {1}, il n'y a donc rien pour le vérifier.</value>
+  </data>
+  <data name="firmware-artifacts.checksum-mismatch" xml:space="preserve">
+    <value>La somme de contrôle de {0} ne correspond pas (attendu {1}, calculé {2}) : le fichier est endommagé ou n'est pas celui publié par la Release.</value>
+  </data>
+  <data name="firmware-artifacts.checksums-invalid-line" xml:space="preserve">
+    <value>checksums.txt contient une ligne non valide.</value>
+  </data>
+  <data name="firmware-artifacts.checksums-unsafe-path" xml:space="preserve">
+    <value>checksums.txt contient un chemin non sûr.</value>
+  </data>
+  <data name="firmware-artifacts.zip-unsafe-path" xml:space="preserve">
+    <value>rockbox.zip contient un chemin non sûr.</value>
+  </data>
+  <data name="firmware-artifacts.zip-incomplete" xml:space="preserve">
+    <value>rockbox.zip est incomplet (des codecs ou des plugins manquent) : {0}.</value>
+  </data>
+  <data name="firmware-artifacts.zip-invalid" xml:space="preserve">
+    <value>rockbox.zip n'est pas un fichier valide.</value>
+  </data>
+  <data name="dfu-flash.still-in-dfu" xml:space="preserve">
+    <value>L'iPod est encore en mode DFU…</value>
+  </data>
+  <data name="dfu-flash.waiting-for-dfu" xml:space="preserve">
+    <value>En attente du passage de l'iPod en mode DFU…</value>
+  </data>
+  <data name="dfu-flash.tool-not-started" xml:space="preserve">
+    <value>mks5lboot.exe n'a pas pu être démarré.</value>
+  </data>
+  <data name="dfu-flash.tool-not-found" xml:space="preserve">
+    <value>mks5lboot.exe est introuvable à côté d'Aura Studio.</value>
+  </data>
+  <data name="privileged.dry-run-complete" xml:space="preserve">
+    <value>Simulation terminée : le disque a été vérifié à nouveau et le plan de formatage est valide. Rien n'a été écrit.</value>
+  </data>
+  <data name="privileged.format-done" xml:space="preserve">
+    <value>L'iPod est maintenant formaté en FAT32.</value>
+  </data>
+  <data name="privileged.service-already-running" xml:space="preserve">
+    <value>Le service Apple était déjà en cours d'exécution.</value>
+  </data>
+  <data name="privileged.service-restarted" xml:space="preserve">
+    <value>Le service Apple a été redémarré.</value>
+  </data>
+  <data name="privileged.service-already-stopped" xml:space="preserve">
+    <value>Le service Apple était déjà arrêté.</value>
+  </data>
+  <data name="privileged.service-cannot-stop" xml:space="preserve">
+    <value>Le service Apple ne peut pas être arrêté.</value>
+  </data>
+  <data name="privileged.resume-guard-failed" xml:space="preserve">
+    <value>Le redémarrage automatique du service Apple n'a pas pu être préparé, aucun service n'a donc été arrêté.</value>
+  </data>
+  <data name="privileged.service-stopped" xml:space="preserve">
+    <value>Le service Apple a été arrêté pendant l'écriture.</value>
+  </data>
+  <data name="privileged.service-not-installed" xml:space="preserve">
+    <value>Il n'y a aucun service Apple à suspendre sur cet ordinateur.</value>
+  </data>
+  <data name="privileged.service-timeout" xml:space="preserve">
+    <value>Le service Apple n'a pas répondu à temps.</value>
+  </data>
+  <data name="privileged.authorization-cancelled" xml:space="preserve">
+    <value>Vous avez annulé l'autorisation d'administrateur. Cette étape ne peut pas continuer sans cette autorisation.</value>
+  </data>
+  <data name="privileged.no-result" xml:space="preserve">
+    <value>L'opération avec les droits d'administrateur s'est terminée sans laisser de résultat. Impossible de savoir si elle a fait quelque chose, on ne continue donc pas.</value>
+  </data>
+  <data name="privileged.result-unreadable" xml:space="preserve">
+    <value>Le résultat de l'opération n'a pas pu être lu.</value>
+  </data>
+  <data name="privileged.request-failed" xml:space="preserve">
+    <value>Impossible de demander l'autorisation d'administrateur : {0}</value>
+  </data>
+  <data name="installer-error.wrong-disk-format" xml:space="preserve">
+    <value>L'iPod n'est pas formaté en FAT32. Convertissez-le avant de continuer.</value>
+  </data>
+  <data name="installer-error.dfu-timeout" xml:space="preserve">
+    <value>L'iPod en mode DFU n'a pas été détecté à temps. Refaites la combinaison de boutons.</value>
+  </data>
+  <data name="installer-error.checksum-mismatch" xml:space="preserve">
+    <value>Le fichier {0} n'a pas passé la vérification d'intégrité.</value>
+  </data>
+  <data name="installer-error.incomplete-rockbox-tree" xml:space="preserve">
+    <value>Le microprogramme de cette Release est incomplet : il manque {0} dans rockbox.zip — l'iPod se retrouverait sans vidéo ou sans audio. Ce n'est pas un problème de connexion ; réessayez plus tard ou signalez que cette Release est défectueuse.</value>
+  </data>
+  <data name="installer-error.process-failed" xml:space="preserve">
+    <value>L'opération s'est terminée avec le code {0} : {1}</value>
+  </data>
+  <data name="installer-error.missing-artifact" xml:space="preserve">
+    <value>L'artefact {0} manque parmi les fichiers du microprogramme. Relancez scripts\FirmwareFetch.ps1.</value>
+  </data>
+  <data name="installer-error.authorization-cancelled" xml:space="preserve">
+    <value>Vous avez annulé l'autorisation d'administrateur. Cette étape ne peut pas continuer sans cette autorisation.</value>
+  </data>
+  <data name="installer-error.dual-boot-requires-winpod" xml:space="preserve">
+    <value>Pour le double démarrage, l'iPod doit conserver le microprogramme d'origine d'Apple au format "winpod" : une table de partitions MBR avec la partition de microprogramme d'Apple intacte plus une partition FAT32 — le format que crée iTunes lors d'une restauration sur un PC Windows. Cet iPod est au format Mac (partitions Apple/HFS, que Rockbox ne sait pas lire) ou son disque n'est pas lisible, et le préparer d'ici effacerait tout le disque, y compris le microprogramme d'origine. Options : restaurez l'iPod avec iTunes/Appareils Apple et réessayez le double démarrage, ou installez seulement le microprogramme si vous n'avez pas besoin de conserver celui d'Apple.</value>
+  </data>
+  <data name="installer-error.device-disconnected-during-copy" xml:space="preserve">
+    <value>Votre iPod s'est déconnecté pendant la copie des fichiers. Copier le microprogramme complet représente des milliers de petits fichiers et peut prendre plusieurs minutes en USB — vérifiez le câble (évitez les concentrateurs USB si vous en utilisez un) et réessayez : ce qui a déjà été copié n'est pas perdu, la copie reprend là où elle s'est arrêtée.</value>
+  </data>
+  <data name="installer-error.device-stuck-in-dfu" xml:space="preserve">
+    <value>L'iPod a reçu le microprogramme, mais n'a jamais confirmé l'avoir appliqué — il est toujours en mode DFU. Si Windows a ouvert iTunes ou Appareils Apple en affichant l'iPod en mode de récupération, fermez-le SANS toucher à « Restaurer » (cela réinstallerait le microprogramme d'origine d'Apple). Réessayez ensuite : l'iPod est déjà en mode DFU, la nouvelle tentative devrait donc revenir vite à cette même étape.</value>
+  </data>
+  <data name="installer-error.bootloader-not-applied" xml:space="preserve">
+    <value>L'iPod est réapparu avec le microprogramme d'origine d'Apple sur l'USB : le bootloader n'a pas été écrit. Refaites l'étape DFU (le disque est déjà préparé, inutile de le formater à nouveau).</value>
+  </data>
+  <data name="installer-error.release-download-failed" xml:space="preserve">
+    <value>La version la plus récente de {0} n'a pas pu être téléchargée : {1} La version fournie avec Aura Studio sera utilisée.</value>
+  </data>
+  <data name="installer-error.release-missing-asset" xml:space="preserve">
+    <value>Il manque {1} à la Release {0}, elle ne peut donc pas servir à l'installation. La version fournie avec Aura Studio sera utilisée.</value>
+  </data>
+  <data name="installer-error.dfu-driver-missing" xml:space="preserve">
+    <value>Windows n'a pas de pilote pour votre iPod en mode DFU, Aura Studio ne peut donc pas lui parler. Installez Appareils Apple (ou iTunes) depuis le Microsoft Store, ou attribuez le pilote WinUSB à l'appareil avec Zadig ; l'étape des autorisations explique les deux options.</value>
+  </data>
   <data name="app-strings.installer-unknown-disk" xml:space="preserve">
     <value>Le numéro de disque de « {0} » n'a pas pu être identifié, donc rien n'est touché.</value>
   </data>
@@ -1371,6 +2202,105 @@
   <data name="library-view-model.completando-title" xml:space="preserve">
     <value>Complément de {0}…</value>
   </data>
+  <data name="album-cover-batch.none-safe.one" xml:space="preserve">
+    <value>Aucune pochette sûre n'a été trouvée pour {0} album.</value>
+  </data>
+  <data name="album-cover-batch.none-safe.other" xml:space="preserve">
+    <value>Aucune pochette sûre n'a été trouvée pour {0} albums.</value>
+  </data>
+  <data name="album-cover-batch.applied.one" xml:space="preserve">
+    <value>La pochette recommandée a été appliquée à {0} album.</value>
+  </data>
+  <data name="album-cover-batch.applied.other" xml:space="preserve">
+    <value>La pochette recommandée a été appliquée à {0} albums.</value>
+  </data>
+  <data name="album-cover-batch.pending.one" xml:space="preserve">
+    <value>{0} est resté sans option sûre.</value>
+  </data>
+  <data name="album-cover-batch.pending.other" xml:space="preserve">
+    <value>{0} sont restés sans option sûre.</value>
+  </data>
+  <data name="library-view-model.posters-found.one" xml:space="preserve">
+    <value>{0} affiche a été trouvée.</value>
+  </data>
+  <data name="library-view-model.posters-found.other" xml:space="preserve">
+    <value>{0} affiches ont été trouvées.</value>
+  </data>
+  <data name="library-view-model.lyrics-found.one" xml:space="preserve">
+    <value>Des paroles ont été trouvées pour {0} morceau.</value>
+  </data>
+  <data name="library-view-model.lyrics-found.other" xml:space="preserve">
+    <value>Des paroles ont été trouvées pour {0} morceaux.</value>
+  </data>
+  <data name="album-cover-batch.nothing-to-do" xml:space="preserve">
+    <value>Il n'y avait aucun album avec un titre auquel appliquer une pochette.</value>
+  </data>
+  <data name="album-cover-batch.applied-with-pending" xml:space="preserve">
+    <value>{0} ; {1}</value>
+  </data>
+  <data name="library-view-model.posters-none" xml:space="preserve">
+    <value>Aucune nouvelle affiche n'a été trouvée.</value>
+  </data>
+  <data name="library-view-model.loading-library" xml:space="preserve">
+    <value>Chargement de la bibliothèque…</value>
+  </data>
+  <data name="library-view-model.measuring-files" xml:space="preserve">
+    <value>Mesure des fichiers…</value>
+  </data>
+  <data name="library-view-model.normalizing-covers" xml:space="preserve">
+    <value>Normalisation des pochettes…</value>
+  </data>
+  <data name="library-view-model.migrating-library" xml:space="preserve">
+    <value>Migration de la bibliothèque…</value>
+  </data>
+  <data name="library-view-model.poster-none-to-remove" xml:space="preserve">
+    <value>Il n'y avait aucune affiche à retirer.</value>
+  </data>
+  <data name="library-view-model.poster-removed" xml:space="preserve">
+    <value>L'affiche a été retirée.</value>
+  </data>
+  <data name="library-view-model.lyrics-none" xml:space="preserve">
+    <value>Aucune parole n'a été trouvée pour la sélection.</value>
+  </data>
+  <data name="media-grid-view-model.albums-detail" xml:space="preserve">
+    <value>Les albums de votre bibliothèque, constitués à partir des métadonnées de chaque morceau.</value>
+  </data>
+  <data name="media-grid-view-model.movies-detail" xml:space="preserve">
+    <value>Vos films.</value>
+  </data>
+  <data name="media-grid-view-model.series-detail" xml:space="preserve">
+    <value>Vos séries, avec leurs saisons.</value>
+  </data>
+  <data name="media-grid-view-model.photo-collection-detail" xml:space="preserve">
+    <value>Albums de cette collection. Les albums sont locaux : les photos partent vers l'iPod sans dossiers.</value>
+  </data>
+  <data name="media-grid-view-model.all-photos-detail" xml:space="preserve">
+    <value>Toutes vos images.</value>
+  </data>
+  <data name="media-grid-view-model.clips-detail" xml:space="preserve">
+    <value>Vidéos qui ne sont ni des films ni des séries.</value>
+  </data>
+  <data name="media-grid-view-model.videos-detail" xml:space="preserve">
+    <value>Toutes vos vidéos.</value>
+  </data>
+  <data name="settings-page.key-saved-short" xml:space="preserve">
+    <value>Enregistrée dans le Gestionnaire d'informations d'identification.</value>
+  </data>
+  <data name="settings-page.key-not-set" xml:space="preserve">
+    <value>Non configurée.</value>
+  </data>
+  <data name="settings-page.guardar" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="settings-page.key-placeholder-existing" xml:space="preserve">
+    <value>Une clé est déjà enregistrée</value>
+  </data>
+  <data name="settings-page.key-placeholder-new" xml:space="preserve">
+    <value>Collez la clé ici</value>
+  </data>
+  <data name="settings-page.get-the-key" xml:space="preserve">
+    <value>Obtenir la clé</value>
+  </data>
   <data name="library-view-model.prepared-no-transcoder" xml:space="preserve">
     <value>Impossible de préparer « {0} » pour l'iPod : il faut le convertir et aucun convertisseur n'est disponible. Le morceau est synchronisé tel quel, sans les tags corrigés.</value>
   </data>
@@ -1959,6 +2889,99 @@
   <data name="sync-view-model.revision-cancelada" xml:space="preserve">
     <value>Examen annulé.</value>
   </data>
+  <data name="sync-summary.copied.one" xml:space="preserve">
+    <value>{0} fichier copié</value>
+  </data>
+  <data name="sync-summary.copied.other" xml:space="preserve">
+    <value>{0} fichiers copiés</value>
+  </data>
+  <data name="sync-summary.removed.one" xml:space="preserve">
+    <value>{0} retiré de l'iPod</value>
+  </data>
+  <data name="sync-summary.removed.other" xml:space="preserve">
+    <value>{0} retirés de l'iPod</value>
+  </data>
+  <data name="sync-summary.failed-count.one" xml:space="preserve">
+    <value>{0} n'a pas pu être copié.</value>
+  </data>
+  <data name="sync-summary.failed-count.other" xml:space="preserve">
+    <value>{0} n'ont pas pu être copiés.</value>
+  </data>
+  <data name="sync-view-model.will-copy.one" xml:space="preserve">
+    <value>{0} fichier va être copié</value>
+  </data>
+  <data name="sync-view-model.will-copy.other" xml:space="preserve">
+    <value>{0} fichiers vont être copiés</value>
+  </data>
+  <data name="sync-view-model.already-current.one" xml:space="preserve">
+    <value>{0} est déjà à jour</value>
+  </data>
+  <data name="sync-view-model.already-current.other" xml:space="preserve">
+    <value>{0} sont déjà à jour</value>
+  </data>
+  <data name="sync-view-model.ready.one" xml:space="preserve">
+    <value>{0} fichier prêt à synchroniser.</value>
+  </data>
+  <data name="sync-view-model.ready.other" xml:space="preserve">
+    <value>{0} fichiers prêts à synchroniser.</value>
+  </data>
+  <data name="sync-summary.not-completed" xml:space="preserve">
+    <value>La synchronisation ne s'est pas terminée.</value>
+  </data>
+  <data name="sync-summary.joiner" xml:space="preserve">
+    <value> et </value>
+  </data>
+  <data name="sync-summary.done" xml:space="preserve">
+    <value>Terminé : {0}.</value>
+  </data>
+  <data name="sync-summary.done-with-failures" xml:space="preserve">
+    <value>Terminé : {0}. {1}</value>
+  </data>
+  <data name="sync-summary.cancelled" xml:space="preserve">
+    <value>Vous avez annulé la synchronisation. {0} avant de l'arrêter.</value>
+  </data>
+  <data name="sync-summary.cancelled-with-failures" xml:space="preserve">
+    <value>Vous avez annulé la synchronisation. {0} avant de l'arrêter. {1}</value>
+  </data>
+  <data name="sync-view-model.destination" xml:space="preserve">
+    <value>Destination : {0}</value>
+  </data>
+  <data name="sync-view-model.device-no-aura" xml:space="preserve">
+    <value>L'iPod détecté n'a pas Aura actif.</value>
+  </data>
+  <data name="sync-view-model.connect-ipod" xml:space="preserve">
+    <value>Connectez un iPod pour synchroniser.</value>
+  </data>
+  <data name="sync-view-model.preview" xml:space="preserve">
+    <value>{0} ; {1}.</value>
+  </data>
+  <data name="sync-view-model.up-to-date" xml:space="preserve">
+    <value>L'iPod est déjà à jour par rapport à votre bibliothèque.</value>
+  </data>
+  <data name="sync-view-model.ejected" xml:space="preserve">
+    <value>Vous pouvez maintenant débrancher l'iPod.</value>
+  </data>
+  <data name="sync-view-model.eject-failed" xml:space="preserve">
+    <value>L'iPod n'a pas pu être éjecté. Fermez-le depuis l'Explorateur de fichiers avant de le débrancher.</value>
+  </data>
+  <data name="sync-view-model.nothing-ready" xml:space="preserve">
+    <value>Il n'y a rien de prêt à synchroniser.</value>
+  </data>
+  <data name="sync-view-model.phase-scanning" xml:space="preserve">
+    <value>Analyse de la bibliothèque…</value>
+  </data>
+  <data name="sync-view-model.phase-comparing" xml:space="preserve">
+    <value>Comparaison des changements…</value>
+  </data>
+  <data name="sync-view-model.phase-copying" xml:space="preserve">
+    <value>Copie de {0} sur {1}…</value>
+  </data>
+  <data name="sync-view-model.phase-writing-manifest" xml:space="preserve">
+    <value>Enregistrement des paroles, des pochettes et des index…</value>
+  </data>
+  <data name="sync-view-model.phase-writing-marker" xml:space="preserve">
+    <value>Préparation de la mise à jour de l'iPod…</value>
+  </data>
   <data name="sync-view-model.sincronizacion-cancelada" xml:space="preserve">
     <value>Synchronisation annulée.</value>
   </data>
@@ -2015,6 +3038,297 @@
   </data>
   <data name="themes-view-model.se-guardo-copia-path" xml:space="preserve">
     <value>La copie a été enregistrée dans {0}</value>
+  </data>
+  <data name="theme-validation.missing-fonts.one" xml:space="preserve">
+    <value>il lui manque {0} police : {1}.</value>
+  </data>
+  <data name="theme-validation.missing-fonts.other" xml:space="preserve">
+    <value>il lui manque {0} polices : {1}.</value>
+  </data>
+  <data name="theme-validation.missing-masks.one" xml:space="preserve">
+    <value>il a {0} masque d'icône et il en faut {1}.</value>
+  </data>
+  <data name="theme-validation.missing-masks.other" xml:space="preserve">
+    <value>il a {0} masques d'icônes et il en faut {1}.</value>
+  </data>
+  <data name="theme-validation.manifest-missing" xml:space="preserve">
+    <value>il lui manque le fichier theme.cfg.</value>
+  </data>
+  <data name="theme-validation.manifest-unreadable" xml:space="preserve">
+    <value>son theme.cfg ne peut pas être lu.</value>
+  </data>
+  <data name="theme-validation.invalid-id" xml:space="preserve">
+    <value>son id n'est pas valide : "{0}".</value>
+  </data>
+  <data name="theme-validation.format-unsupported" xml:space="preserve">
+    <value>il est fait pour la version {0} du format et ce microprogramme comprend jusqu'à la {1}. Mettez à jour le microprogramme de l'iPod.</value>
+  </data>
+  <data name="theme-validation.unknown" xml:space="preserve">
+    <value>il n'a pas passé la vérification.</value>
+  </data>
+  <data name="theme-installer.cannot-review" xml:space="preserve">
+    <value>Le thème n'a pas pu être vérifié.</value>
+  </data>
+  <data name="similarity.detail-duplicate" xml:space="preserve">
+    <value>Presque certainement le même fichier deux fois.</value>
+  </data>
+  <data name="music-column-group.music" xml:space="preserve">
+    <value>Musique</value>
+  </data>
+  <data name="music-column-group.personal" xml:space="preserve">
+    <value>Personnel</value>
+  </data>
+  <data name="music-column-group.statistics" xml:space="preserve">
+    <value>Statistiques</value>
+  </data>
+  <data name="music-column-group.file" xml:space="preserve">
+    <value>Fichier</value>
+  </data>
+  <data name="music-column-group.other-columns" xml:space="preserve">
+    <value>Autres</value>
+  </data>
+  <data name="music-column.album" xml:space="preserve">
+    <value>Album</value>
+  </data>
+  <data name="music-column.album-artist" xml:space="preserve">
+    <value>Artiste de l'album</value>
+  </data>
+  <data name="music-column.artist" xml:space="preserve">
+    <value>Artiste</value>
+  </data>
+  <data name="music-column.composer" xml:space="preserve">
+    <value>Compositeur</value>
+  </data>
+  <data name="music-column.disc-number" xml:space="preserve">
+    <value>Numéro de disque</value>
+  </data>
+  <data name="music-column.duration" xml:space="preserve">
+    <value>Durée</value>
+  </data>
+  <data name="music-column.genre" xml:space="preserve">
+    <value>Genre</value>
+  </data>
+  <data name="music-column.track-number" xml:space="preserve">
+    <value>Numéro de piste</value>
+  </data>
+  <data name="music-column.year" xml:space="preserve">
+    <value>Année</value>
+  </data>
+  <data name="music-column.favorite" xml:space="preserve">
+    <value>Favori</value>
+  </data>
+  <data name="music-column.rating" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="music-column.date-added" xml:space="preserve">
+    <value>Date d'ajout</value>
+  </data>
+  <data name="music-column.file-format" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="music-column.file-size" xml:space="preserve">
+    <value>Taille</value>
+  </data>
+  <data name="music-column.status" xml:space="preserve">
+    <value>État</value>
+  </data>
+  <data name="music-column.header-disc-number" xml:space="preserve">
+    <value>Disque</value>
+  </data>
+  <data name="music-column.header-track-number" xml:space="preserve">
+    <value>N°</value>
+  </data>
+  <data name="music-column.header-date-added" xml:space="preserve">
+    <value>Ajouté</value>
+  </data>
+  <data name="media-table-row.status-synced" xml:space="preserve">
+    <value>Sur l'iPod</value>
+  </data>
+  <data name="media-table-row.status-ready" xml:space="preserve">
+    <value>Prêt</value>
+  </data>
+  <data name="media-table-row.status-pending" xml:space="preserve">
+    <value>Reste à copier</value>
+  </data>
+  <data name="media-table-row.status-changed-locally" xml:space="preserve">
+    <value>Modifié ici</value>
+  </data>
+  <data name="media-table-row.status-modified-on-device" xml:space="preserve">
+    <value>Modifié sur l'iPod</value>
+  </data>
+  <data name="media-table-row.status-deleted-on-device" xml:space="preserve">
+    <value>Supprimé sur l'iPod</value>
+  </data>
+  <data name="media-table-row.status-queued" xml:space="preserve">
+    <value>En file d'attente</value>
+  </data>
+  <data name="media-table-row.status-enriching" xml:space="preserve">
+    <value>Recherche d'informations</value>
+  </data>
+  <data name="media-table-row.status-transcoding" xml:space="preserve">
+    <value>Conversion… {0} %</value>
+  </data>
+  <data name="sync-scope.nothing-selected" xml:space="preserve">
+    <value>Aucun élément n'est sélectionné pour la synchronisation.</value>
+  </data>
+  <data name="sync-scope.selection-not-ready" xml:space="preserve">
+    <value>Les éléments sélectionnés ne sont pas encore prêts à synchroniser.</value>
+  </data>
+  <data name="similarity.detail-probable" xml:space="preserve">
+    <value>Probablement le même morceau avec les métadonnées écrites différemment.</value>
+  </data>
+  <data name="similarity.detail-possible" xml:space="preserve">
+    <value>Ils se ressemblent, mais ce sont peut-être des versions différentes. Mieux vaut vérifier.</value>
+  </data>
+  <data name="similarity.missing-artist" xml:space="preserve">
+    <value>Il manque l'artiste à l'un des deux</value>
+  </data>
+  <data name="similarity.same-duration" xml:space="preserve">
+    <value>Même durée ({0})</value>
+  </data>
+  <data name="similarity.similar-duration" xml:space="preserve">
+    <value>Durée proche ({0} / {1})</value>
+  </data>
+  <data name="similarity.same-file-size" xml:space="preserve">
+    <value>Taille de fichier exactement identique</value>
+  </data>
+  <data name="similarity.same-file-size-with-size" xml:space="preserve">
+    <value>Taille de fichier exactement identique ({0})</value>
+  </data>
+  <data name="similarity.artist-spelled-differently" xml:space="preserve">
+    <value>Artiste écrit différemment : « {0} » / « {1} »</value>
+  </data>
+  <data name="similarity.artist-similar" xml:space="preserve">
+    <value>Artiste proche : « {0} » / « {1} »</value>
+  </data>
+  <data name="similarity.other-version" xml:space="preserve">
+    <value>L'un semble être une autre version ({0})</value>
+  </data>
+  <data name="similarity.same-filename-ignoring-copy" xml:space="preserve">
+    <value>Même nom de fichier sans « copie »/« (1) » : {0} / {1}</value>
+  </data>
+  <data name="similarity.almost-same-filename" xml:space="preserve">
+    <value>Nom de fichier presque identique : {0} / {1}</value>
+  </data>
+  <data name="similarity.same-episode" xml:space="preserve">
+    <value>Même épisode : {0} S{1}E{2}</value>
+  </data>
+  <data name="similarity.same-title" xml:space="preserve">
+    <value>Même titre : « {0} »</value>
+  </data>
+  <data name="similarity.same-title-ignoring-track" xml:space="preserve">
+    <value>Même titre sans le numéro de piste ni les parenthèses : « {0} » / « {1} »</value>
+  </data>
+  <data name="similarity.almost-same-title" xml:space="preserve">
+    <value>Titre presque identique : « {0} » / « {1} »</value>
+  </data>
+  <data name="similarity.different-formats" xml:space="preserve">
+    <value>Formats différents : {0} / {1}</value>
+  </data>
+  <data name="similarity.different-categories" xml:space="preserve">
+    <value>Catégories différentes : {0} / {1}</value>
+  </data>
+  <data name="similarity.no-category" xml:space="preserve">
+    <value>sans catégorie</value>
+  </data>
+  <data name="similarity.lossless" xml:space="preserve">
+    <value>{0} sans perte</value>
+  </data>
+  <data name="similarity.with-cover" xml:space="preserve">
+    <value>avec pochette</value>
+  </data>
+  <data name="similarity.with-poster" xml:space="preserve">
+    <value>avec affiche</value>
+  </data>
+  <data name="similarity.with-lyrics" xml:space="preserve">
+    <value>avec paroles</value>
+  </data>
+  <data name="similarity.edited-by-hand" xml:space="preserve">
+    <value>corrigé à la main</value>
+  </data>
+  <data name="similarity.largest" xml:space="preserve">
+    <value>le plus grand</value>
+  </data>
+  <data name="similarity.bits-joiner" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="similarity.suggest-duplicate" xml:space="preserve">
+    <value>Ils ressemblent au même fichier en double. Suggestion : conserver « {0} » ({1}) et supprimer le reste.</value>
+  </data>
+  <data name="similarity.suggest-probable" xml:space="preserve">
+    <value>Probablement le même élément avec les métadonnées écrites différemment. Suggestion : conserver « {0} » ({1}) et supprimer le reste, ou unifier les métadonnées si vous préférez garder les deux.</value>
+  </data>
+  <data name="similarity.suggest-possible" xml:space="preserve">
+    <value>Ce sont peut-être des versions différentes. Suggestion : vérifier avant de supprimer. Si c'est bien la même, conserver « {0} » ({1}).</value>
+  </data>
+  <data name="similarity.canonical-artist" xml:space="preserve">
+    <value> L'artiste le plus utilisé dans votre bibliothèque est « {0} ».</value>
+  </data>
+  <data name="theme-installer.cannot-install" xml:space="preserve">
+    <value>Ce thème ne peut pas être installé : {0}</value>
+  </data>
+  <data name="theme-installer.invalid-theme-id" xml:space="preserve">
+    <value>Id de thème non valide : {0}</value>
+  </data>
+  <data name="theme-installer.not-on-ipod" xml:space="preserve">
+    <value>Ce thème n'est plus sur l'iPod.</value>
+  </data>
+  <data name="theme-installer.cannot-read-to-export" xml:space="preserve">
+    <value>Ce thème ne peut pas être lu pour être exporté.</value>
+  </data>
+  <data name="theme-installer.personal-use" xml:space="preserve">
+    <value>"{0}" est marqué comme à usage personnel : il ne peut pas être partagé.</value>
+  </data>
+  <data name="theme-packager.source-font-missing" xml:space="preserve">
+    <value>La police {0} manque dans le dossier des assets. Générez-la avec le design system du microprogramme avant de construire le thème.</value>
+  </data>
+  <data name="theme-packager.source-masks-missing" xml:space="preserve">
+    <value>icons/masks/ manque dans le dossier des assets, et c'est là que vivent les masques d'icônes.</value>
+  </data>
+  <data name="theme-packager.write-failed" xml:space="preserve">
+    <value>Le thème n'a pas pu être écrit : {0}</value>
+  </data>
+  <data name="themes-view-model.share-blocked-reason" xml:space="preserve">
+    <value>Ce thème utilise du matériel sous licence restreinte : il est pour votre usage personnel et ne peut pas être partagé.</value>
+  </data>
+  <data name="themes-view-model.state-active" xml:space="preserve">
+    <value>Actif</value>
+  </data>
+  <data name="themes-view-model.state-not-loading" xml:space="preserve">
+    <value>Ne se charge pas</value>
+  </data>
+  <data name="themes-view-model.device-themes-of" xml:space="preserve">
+    <value>Thèmes de {0}</value>
+  </data>
+  <data name="themes-view-model.device-no-aura" xml:space="preserve">
+    <value>L'iPod détecté n'a pas Aura actif : les thèmes appartiennent à Aura.</value>
+  </data>
+  <data name="themes-view-model.connect-ipod" xml:space="preserve">
+    <value>Connectez votre iPod avec Aura pour voir et changer ses thèmes.</value>
+  </data>
+  <data name="themes-view-model.pick-assets-folder" xml:space="preserve">
+    <value>Choisissez le dossier avec les assets déjà générés.</value>
+  </data>
+  <data name="themes-view-model.name-the-theme" xml:space="preserve">
+    <value>Donnez un nom au thème.</value>
+  </data>
+  <data name="themes-view-model.will-install-with-id" xml:space="preserve">
+    <value>Il sera installé avec l'id "{0}".</value>
+  </data>
+  <data name="themes-view-model.invalid-id" xml:space="preserve">
+    <value>"{0}" ne produit pas d'id valide : utilisez des lettres, des chiffres et des espaces.</value>
+  </data>
+  <data name="themes-view-model.built-in-name" xml:space="preserve">
+    <value>Aura (intégré au microprogramme)</value>
+  </data>
+  <data name="themes-view-model.no-themes-installed" xml:space="preserve">
+    <value>Il n'y a encore aucun thème installé sur cet iPod.</value>
+  </data>
+  <data name="themes-view-model.cannot-activate" xml:space="preserve">
+    <value>"{0}" ne peut pas être activé : {1}</value>
+  </data>
+  <data name="themes-view-model.cannot-remove" xml:space="preserve">
+    <value>"{0}" n'a pas pu être retiré de l'iPod.</value>
   </data>
   <data name="themes-view-model.se-instalo-installed-name-activalo-para" xml:space="preserve">
     <value>« {0} » est installé. Activez-le pour le voir sur l'iPod.</value>

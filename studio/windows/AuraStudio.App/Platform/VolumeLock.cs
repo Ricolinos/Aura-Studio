@@ -1,6 +1,8 @@
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.App.Platform;
 
 /// <summary>
@@ -123,7 +125,7 @@ internal sealed partial class VolumeLock : IDisposable
                 handle.Dispose();
                 throw new IOException(
                     $"No se pudo bloquear el volumen {path} tras {attempts} intentos (error {error}). " +
-                    "Cierra las ventanas del Explorador y las aplicaciones que estén usando el iPod.");
+                    Strings.Get("volume-lock.close-explorer"));
             }
             Thread.Sleep(300);
         }

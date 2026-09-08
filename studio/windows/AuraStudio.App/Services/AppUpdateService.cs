@@ -72,8 +72,8 @@ public sealed partial class AppUpdateService : ObservableObject
 
     /// <summary>El texto de la franja, el mismo que la de macOS.</summary>
     public string AnnouncementMessage => Available is { } update
-        ? $"Hay una versión nueva de Aura Studio: {update.Version.ReleaseString}. "
-          + $"Tienes la {InstalledVersion}."
+        ? Strings.Format(
+            "app-update-service.announcement", update.Version.ReleaseString, InstalledVersion)
         : "";
 
     /// <summary>
@@ -133,8 +133,9 @@ public sealed partial class AppUpdateService : ObservableObject
             if (failed || releases is null)
             {
                 // ST-210: "no se pudo preguntar" no es "no hay novedades".
-                StatusMessage = "No se pudo consultar GitHub para saber si hay una versión más nueva. " +
-                                "Revisa tu conexión y vuelve a intentar.";
+                // La misma frase que dice el aviso del firmware, y por eso la
+                // misma clave (ST-247, B7d).
+                StatusMessage = Strings.Get("firmware-update.no-network");
                 return;
             }
 
@@ -157,8 +158,9 @@ public sealed partial class AppUpdateService : ObservableObject
 
             StatusMessage = update.CanDownload
                 ? AnnouncementMessage
-                : AnnouncementMessage + $" Este Release no trae {update.AssetName}: " +
-                  "ábrelo en GitHub para descargarlo a mano.";
+                : Strings.Format(
+                    "app-update-service.announcement-missing-asset",
+                    AnnouncementMessage, update.AssetName);
         }
         catch (OperationCanceledException)
         {

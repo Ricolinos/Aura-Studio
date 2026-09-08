@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core;
 
 // ---------------------------------------------------------------------------
@@ -22,8 +24,8 @@ public sealed record ThemeLicense
 
     public string DisplayName => RawValue.ToLowerInvariant() switch
     {
-        "open" => "Libre",
-        "personal" => "Uso personal",
+        "open" => Strings.Get("theme-manifest.license-open"),
+        "personal" => Strings.Get("theme-manifest.license-personal"),
         _ => RawValue,
     };
 

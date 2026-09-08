@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Library;
 
 /// <summary>
@@ -182,7 +184,7 @@ public static class LibraryMigrator
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
-            errors.Add($"No se pudieron borrar los archivos huérfanos: {ex.Message}");
+            errors.Add(Strings.Format("library-migrator.orphans-delete-failed", ex.Message));
             return 0;
         }
     }

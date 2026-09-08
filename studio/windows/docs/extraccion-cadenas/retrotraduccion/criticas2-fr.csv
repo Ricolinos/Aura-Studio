@@ -1,0 +1,54 @@
+id,fr
+d001,L'iPod est encore en mode DFU…
+d002,mks5lboot.exe est introuvable à côté d'Aura Studio.
+d003,mks5lboot.exe n'a pas pu être démarré.
+d004,En attente du passage de l'iPod en mode DFU…
+d005,"La somme de contrôle de {0} ne correspond pas (attendu {1}, calculé {2}) : le fichier est endommagé ou n'est pas celui publié par la Release."
+d006,"La somme de contrôle de {0} ne correspond pas à celle de la Release (attendu {1}, calculé {2}) : le fichier est endommagé ou n'est pas celui publié par la Release."
+d007,checksums.txt contient une ligne non valide.
+d008,checksums.txt contient un chemin non sûr.
+d009,{0} manque : le bootloader ne peut pas être écrit.
+d010,{0} manque : il n'y a rien pour vérifier les fichiers du microprogramme.
+d011,"{0} manque (il n'est pas non plus dans {1}) : sans cet outil, le bootloader ne peut pas être écrit."
+d012,"{0} ne décrit pas {1}, il n'y a donc rien pour le vérifier."
+d013,"{0} ne correspond pas à l'empreinte fixée dans {1} (attendu {2}, calculé {3}) : le fichier a changé et n'est plus fiable."
+d014,rockbox.zip est incomplet (des codecs ou des plugins manquent) : {0}.
+d015,rockbox.zip n'est pas un fichier valide.
+d016,rockbox.zip contient un chemin non sûr.
+d017,Vous avez annulé l'autorisation d'administrateur. Cette étape ne peut pas continuer sans cette autorisation.
+d018,"L'iPod est réapparu avec le microprogramme d'origine d'Apple sur l'USB : le bootloader n'a pas été écrit. Refaites l'étape DFU (le disque est déjà préparé, inutile de le formater à nouveau)."
+d019,Le fichier {0} n'a pas passé la vérification d'intégrité.
+d020,"Votre iPod s'est déconnecté pendant la copie des fichiers. Copier le microprogramme complet représente des milliers de petits fichiers et peut prendre plusieurs minutes en USB — vérifiez le câble (évitez les concentrateurs USB si vous en utilisez un) et réessayez : ce qui a déjà été copié n'est pas perdu, la copie reprend là où elle s'est arrêtée."
+d021,Aucun iPod connecté n'a été détecté.
+d022,"L'iPod a reçu le microprogramme, mais n'a jamais confirmé l'avoir appliqué — il est toujours en mode DFU. Si Windows a ouvert iTunes ou Appareils Apple en affichant l'iPod en mode de récupération, fermez-le SANS toucher à « Restaurer » (cela réinstallerait le microprogramme d'origine d'Apple). Réessayez ensuite : l'iPod est déjà en mode DFU, la nouvelle tentative devrait donc revenir vite à cette même étape."
+d023,"Windows n'a pas de pilote pour votre iPod en mode DFU, Aura Studio ne peut donc pas lui parler. Installez Appareils Apple (ou iTunes) depuis le Microsoft Store, ou attribuez le pilote WinUSB à l'appareil avec Zadig ; l'étape des autorisations explique les deux options."
+d024,L'iPod en mode DFU n'a pas été détecté à temps. Refaites la combinaison de boutons.
+d025,"{0} disque pouvant être votre iPod a été trouvé. Par sécurité, Aura Studio n'en choisit aucun — débranchez les autres disques externes et réessayez."
+d026,"{0} disques pouvant être votre iPod ont été trouvés. Par sécurité, Aura Studio n'en choisit aucun — débranchez les autres disques externes et réessayez."
+d027,"Pour le double démarrage, l'iPod doit conserver le microprogramme d'origine d'Apple au format ""winpod"" : une table de partitions MBR avec la partition de microprogramme d'Apple intacte plus une partition FAT32 — le format que crée iTunes lors d'une restauration sur un PC Windows. Cet iPod est au format Mac (partitions Apple/HFS, que Rockbox ne sait pas lire) ou son disque n'est pas lisible, et le préparer d'ici effacerait tout le disque, y compris le microprogramme d'origine. Options : restaurez l'iPod avec iTunes/Appareils Apple et réessayez le double démarrage, ou installez seulement le microprogramme si vous n'avez pas besoin de conserver celui d'Apple."
+d028,Le microprogramme de cette Release est incomplet : il manque {0} dans rockbox.zip — l'iPod se retrouverait sans vidéo ou sans audio. Ce n'est pas un problème de connexion ; réessayez plus tard ou signalez que cette Release est défectueuse.
+d029,L'artefact {0} manque parmi les fichiers du microprogramme. Relancez scripts\FirmwareFetch.ps1.
+d030,L'opération s'est terminée avec le code {0} : {1}
+d031,La version la plus récente de {0} n'a pas pu être téléchargée : {1} La version fournie avec Aura Studio sera utilisée.
+d032,"Il manque {1} à la Release {0}, elle ne peut donc pas servir à l'installation. La version fournie avec Aura Studio sera utilisée."
+d033,L'iPod n'est pas formaté en FAT32. Convertissez-le avant de continuer.
+d034,Vous avez annulé l'autorisation. Cette étape ne peut pas continuer sans cette permission.
+d035,Le numéro de disque {0} est hors limites.
+d036,Simulation terminée : le disque a été vérifié à nouveau et le plan de formatage est valide. Rien n'a été écrit.
+d037,Le nom du volume est resté vide.
+d038,L'iPod est maintenant formaté en FAT32.
+d039,"La demande ne contient pas la taille attendue du disque, elle ne peut donc pas être revérifiée."
+d040,La tolérance de taille ne peut pas être négative.
+d041,"L'opération avec les droits d'administrateur s'est terminée sans laisser de résultat. Impossible de savoir si elle a fait quelque chose, on ne continue donc pas."
+d042,Impossible de demander l'autorisation d'administrateur : {0}
+d043,La demande n'a pas pu être lue.
+d044,Le résultat de l'opération n'a pas pu être lu.
+d045,"La réactivation automatique n'a pas pu être préparée, aucun service n'a donc été arrêté."
+d046,Le service Apple était déjà en cours d'exécution.
+d047,Le service Apple était déjà arrêté.
+d048,Le service Apple ne peut pas être arrêté.
+d049,Il n'y a aucun service Apple à suspendre sur cet ordinateur.
+d050,Le service Apple a été redémarré.
+d051,Le service Apple a été arrêté pendant l'écriture.
+d052,Le service Apple n'a pas répondu à temps.
+d053,Opération privilégiée inconnue.

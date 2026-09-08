@@ -43,6 +43,15 @@ public class PlatformNamesTests
         [
             "app-strings.dfu-driver-missing",
             "app-strings.dfu-driver-package-missing",
+
+            // Los tres errores del instalador que mandan a la tienda (B7d).
+            // En español decían "Apple Devices" mientras las dos claves de
+            // arriba decían «Dispositivos Apple»: la misma app mandaba a
+            // buscar dos nombres distintos para lo mismo, y solo uno existe
+            // en la tienda en español.
+            "installer-error.dual-boot-requires-winpod",
+            "installer-error.device-stuck-in-dfu",
+            "installer-error.dfu-driver-missing",
         ]),
     ];
 

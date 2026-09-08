@@ -71,7 +71,11 @@ public sealed partial class ArtistTrackRow(LibraryItem item, int position, strin
     /// sirven a nadie que no vea la fila.
     /// </summary>
     public string FavoriteLabel =>
-        (IsFavorite ? "Quitar de favoritos: " : "Marcar como favorito: ") + Title;
+        Strings.Format(
+            IsFavorite
+                ? "artists-view-model.favorite-label-remove"
+                : "artists-view-model.favorite-label-add",
+            Title);
 
     partial void OnIsFavoriteChanged(bool value)
     {
@@ -212,7 +216,8 @@ public sealed partial class ArtistsViewModel : ViewModelBase
 
     public bool ShowsEmptyDetail => Selection.Count == 0;
 
-    public string SelectionSummary => $"{Selection.Count} artistas seleccionados";
+    public string SelectionSummary =>
+        Strings.Plural("artists-view-model.selection-summary", Selection.Count);
 
     public bool SelectionAllFavorite
     {
@@ -223,7 +228,9 @@ public sealed partial class ArtistsViewModel : ViewModelBase
         }
     }
 
-    public string FavoriteButtonText => SelectionAllFavorite ? "Quitar favorito" : "Marcar como favorito";
+    public string FavoriteButtonText => Strings.Get(SelectionAllFavorite
+        ? "artists-view-model.favorite-button-remove"
+        : "artists-view-model.favorite-button-add");
 
     public IReadOnlyList<LibraryItem> SelectedItems => [.. Selection.SelectMany(row => row.Group.Items)];
 

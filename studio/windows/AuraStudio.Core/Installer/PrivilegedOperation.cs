@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.Core.Installer;
 
@@ -75,13 +76,13 @@ public sealed record PrivilegedOperation
         {
             case PrivilegedOperationKind.FormatIPodFat32:
                 if (DiskNumber < 0 || DiskNumber > 99)
-                    return $"El número de disco {DiskNumber} está fuera de rango.";
+                    return Strings.Format("privileged.disk-number-out-of-range", DiskNumber);
                 if (ExpectedSizeBytes <= 0)
-                    return "La petición no trae el tamaño esperado del disco, así que no se puede re-verificar.";
+                    return Strings.Get("privileged.missing-expected-size");
                 if (SizeToleranceBytes < 0)
-                    return "La tolerancia de tamaño no puede ser negativa.";
+                    return Strings.Get("privileged.negative-tolerance");
                 if (Fat32Formatter.NormalizeLabel(VolumeLabel).Trim().Length == 0)
-                    return "La etiqueta del volumen quedó vacía.";
+                    return Strings.Get("privileged.empty-volume-label");
                 return null;
 
             case PrivilegedOperationKind.PauseAppleMobileDeviceService:
@@ -89,7 +90,7 @@ public sealed record PrivilegedOperation
                 return null;
 
             default:
-                return "Operación privilegiada desconocida.";
+                return Strings.Get("privileged.unknown-operation");
         }
     }
 

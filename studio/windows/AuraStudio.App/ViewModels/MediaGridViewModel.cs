@@ -340,13 +340,13 @@ public sealed partial class MediaGridViewModel : ViewModelBase
 
     private static string SubtitleFor(MediaGridKind kind) => kind switch
     {
-        MediaGridKind.Albums => "Los álbumes de tu biblioteca, armados con la metadata de cada canción.",
-        MediaGridKind.Movies => "Tus películas.",
-        MediaGridKind.Series => "Tus series, con sus temporadas.",
-        MediaGridKind.PhotoCollection => "Álbumes de esta colección. Los álbumes son locales: al iPod las fotos viajan sin carpetas.",
-        MediaGridKind.AllPhotos => "Todas tus imágenes.",
-        MediaGridKind.Clips => "Videos que no son película ni serie.",
-        _ => "Todos tus videos."
+        MediaGridKind.Albums => Strings.Get("media-grid-view-model.albums-detail"),
+        MediaGridKind.Movies => Strings.Get("media-grid-view-model.movies-detail"),
+        MediaGridKind.Series => Strings.Get("media-grid-view-model.series-detail"),
+        MediaGridKind.PhotoCollection => Strings.Get("media-grid-view-model.photo-collection-detail"),
+        MediaGridKind.AllPhotos => Strings.Get("media-grid-view-model.all-photos-detail"),
+        MediaGridKind.Clips => Strings.Get("media-grid-view-model.clips-detail"),
+        _ => Strings.Get("media-grid-view-model.videos-detail")
     };
 
     /// <summary>

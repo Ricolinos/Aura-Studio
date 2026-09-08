@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Library;
 
 /// <summary>
@@ -370,7 +372,7 @@ public static class LibraryCatalogStore
         if (!LibraryRoot.VolumeIsMounted(libraryRoot))
         {
             return new CatalogLoad(new PersistedLibrary(),
-                $"La biblioteca no está disponible: {libraryRoot}");
+                Strings.Format("library-root.unavailable", libraryRoot));
         }
 
         try
@@ -380,7 +382,9 @@ public static class LibraryCatalogStore
         }
         catch (ArgumentException ex)
         {
-            return new CatalogLoad(new PersistedLibrary(), $"La ruta de la biblioteca no es válida: {ex.Message}");
+            return new CatalogLoad(
+                new PersistedLibrary(),
+                Strings.Format("library-persistence.invalid-path", ex.Message));
         }
 
         try
@@ -389,18 +393,20 @@ public static class LibraryCatalogStore
                 JsonSerializer.Deserialize<PersistedLibrary>(File.ReadAllText(path), Options);
 
             return catalog is null
-                ? new CatalogLoad(new PersistedLibrary(), "El catálogo de la biblioteca está vacío o dañado.")
+                ? new CatalogLoad(
+                    new PersistedLibrary(),
+                    Strings.Get("library-persistence.catalog-empty-or-damaged"))
                 : new CatalogLoad(catalog, null);
         }
         catch (JsonException ex)
         {
             return new CatalogLoad(new PersistedLibrary(),
-                $"No se pudo leer el catálogo de la biblioteca: {ex.Message}");
+                Strings.Format("library-persistence.catalog-unreadable", ex.Message));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             return new CatalogLoad(new PersistedLibrary(),
-                $"No se pudo abrir el catálogo de la biblioteca: {ex.Message}");
+                Strings.Format("library-persistence.catalog-unopenable", ex.Message));
         }
     }
 

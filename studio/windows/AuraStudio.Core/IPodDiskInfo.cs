@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core;
 
 /// <summary>
@@ -41,7 +43,9 @@ public sealed record IPodDiskInfo
     /// destino de la sincronización. Qué firmware corre se dice con palabras, y
     /// eso es trabajo de <see cref="FirmwareSummary"/> (R3-3).</para>
     /// </summary>
-    public string DisplayName => $"iPod Classic ({(string.IsNullOrWhiteSpace(VolumeName) ? VolumePath : VolumeName)})";
+    public string DisplayName => Strings.Format(
+        "ipod-disk.display-name",
+        string.IsNullOrWhiteSpace(VolumeName) ? VolumePath : VolumeName);
 
     /// <summary>La frase que explica qué firmware tiene, en español y sin jerga.</summary>
     public string FirmwareSummary => DeviceFirmwareLabel.For(this);
@@ -52,7 +56,9 @@ public sealed record IPodDiskInfo
     public string FreeDisplay => FormatBytes(FreeBytes);
     public bool HasLibrarySummary => LibrarySummary.HasValue;
     public string FirmwareDisplay => DeclaredFamily is null
-        ? (HasAuraConfig ? "Archivos Aura detectados (familia no declarada)" : "No se detectó una instalación Aura")
+        ? Strings.Get(HasAuraConfig
+            ? "ipod-disk.aura-files-undeclared"
+            : "ipod-disk.no-aura")
         : DeclaredFamily.DisplayName;
     public string SummaryMusicDisplay => SummaryValue(LibrarySummary?.Music);
     public string SummaryVideoDisplay => SummaryValue(LibrarySummary?.Video);

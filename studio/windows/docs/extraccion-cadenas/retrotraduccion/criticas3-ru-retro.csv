@@ -1,0 +1,31 @@
+id,ru,retro_es,nota
+e001,Не удалось запустить mks5lboot.exe: {0},No se pudo iniciar mks5lboot.exe: {0},
+e002,диск не помещается в 32-битную адресацию MBR,el disco no cabe en el direccionamiento de 32 bits del MBR,fragmento (ver nota de e010)
+e003,на этом диске нельзя создать FAT32: {0},en este disco no se puede crear un FAT32: {0},fragmento (ver nota de e010)
+e004,диска {0} больше нет,el disco {0} ya no existe,"fragmento (ver nota de e010); ""диска"" en genitivo tras la negación ""больше нет"", construcción rusa habitual, no error"
+e005,модель диска изменилась (теперь указано «{0}»),el modelo del disco cambió (ahora indica «{0}»),fragmento (ver nota de e010)
+e006,в диске больше нет носителя,el disco ya no tiene ningún medio,"fragmento (ver nota de e010); ""носителя"" en genitivo tras la negación, mismo patrón que e004"
+e007,диск больше не отображается подключённым по USB (шина {0}),el disco ya no aparece conectado por USB (bus {0}),fragmento (ver nota de e010)
+e008,не удалось повторно опросить диск ({0}),no se pudo volver a consultar el disco ({0}),fragmento (ver nota de e010)
+e009,размер диска больше не совпадает ({0} байт),el tamaño del disco ya no coincide ({0} bytes),fragmento (ver nota de e010)
+e010,Не удалось записать на диск: {0},No se pudo escribir en el disco: {0},"Envoltura de la familia de 9 (e002-e010): {0} recibe una de las 8 razones (e002-e009). La frase compuesta deja claro que no se escribió nada y por qué -- verificado que las 9 encajan gramaticalmente en ruso (el ruso no distingue mayúscula/minúscula para esto, pero la construcción con "":"" funciona igual)"
+e011,"Папки {0} нет, а именно там должны лежать файлы {1}.","No existe la carpeta {0}, y justo ahí deberían estar los archivos de {1}.",
+e012,"{0} нельзя проверить: Release не публикует {1}, и рядом с двоичным файлом нет {2}.","{0} no se puede verificar: el Release no publica {1}, y junto al archivo binario no hay {2}.",
+e013,{0} уже является активной прошивкой.,{0} ya es el firmware activo.,
+e014,На этом iPod нет спящего дерева {0}.,En este iPod no hay ningún árbol de {0} dormido.,
+e015,Не удалось сменить прошивку.,No se pudo cambiar el firmware.,
+e016,Aura Studio не умеет усыплять и будить {0}.,Aura Studio no sabe cómo dormir ni despertar a {0}.,
+e017,Копирование прервалось — повтор…,La copia se interrumpió — reintento…,
+e018,Копирование прошивки на iPod…,Copiando el firmware al iPod…,
+e019,Выборочное обновление не удалось; ставится полное…,La actualización selectiva no funcionó; se está instalando la completa…,
+e020,{0} на удаление,{0} para eliminar,forma nominativa/base
+e021.few,{0} на удаление,{0} para eliminar,"idéntica a e020 y a .many -- sin distinción de forma pese a .few/.many, esperado: no hay sustantivo contable flexionado en la frase (""на удаление"" no concuerda con número)"
+e021.many,{0} на удаление,{0} para eliminar,idéntica a e020 y a .few (ver nota de e021.few)
+e022,{0} файл для записи,{0} archivo para escribir,forma nominativa singular (1)
+e023.few,{0} файла для записи,{0} archivos para escribir,"""файла"" genitivo singular, forma paucal 2-4"
+e023.many,{0} файлов для записи,{0} archivos para escribir,"""файлов"" genitivo plural, 5+ -- concordancia correcta, mismo patrón que B7c/B7d"
+e024,"Установка {0} на iPod (шрифты, значки, кодеки)… По USB это может занять несколько минут — не отключайте iPod.","Instalación de {0} en el iPod (fuentes, íconos, códecs)… Por USB esto puede tardar varios minutos — no desconecte el iPod.",
+e025,"Сохранение {0}, чтобы к ней можно было вернуться…","Guardando {0}, para poder volver a ella…","""к ней"" (pronombre femenino) -- concuerda con {0} si es una palabra femenina (p. ej. ""прошивка""/firmware, femenino en ruso); concordancia de género real, no error"
+e026,"Обновление {0}: {1}, {2}…","Actualización de {0}: {1}, {2}…",
+e027,Проверка целостности файлов…,Verificación de la integridad de los archivos…,
+e028,Занято {0} из {1} — свободно {2},Ocupado {0} de {1} — libre {2},

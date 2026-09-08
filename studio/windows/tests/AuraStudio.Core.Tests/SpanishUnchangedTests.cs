@@ -273,6 +273,422 @@ public class SpanishUnchangedTests
         // grupo era el cajón. El texto en español es el mismo que decían.
         "library-grouping.unknown-album", "library-grouping.unknown-artist",
         "library-grouping.unknown-photo-album",
+
+        // B7d, paso 2: los dieciséis errores del instalador. El texto vivía
+        // junto a cada caso —eso no cambia, lo que cambia es de dónde sale— y
+        // el borrador de B7a no lo vio porque no está en ningún XAML. El
+        // español es el que decía, palabra por palabra, salvo lo anotado abajo.
+        // Dos de ellas llevan el español que decidió la Maestra en B7d, no el
+        // que estaba, y por eso quedan dichas aquí:
+        //
+        // `installer-error.authorization-cancelled` y su hermana de la familia
+        // privilegiada contaban el MISMO clic del usuario —cerrar el diálogo de
+        // UAC— con dos frases distintas: «Cancelaste la autorización» y
+        // «Cancelaste el permiso de administrador». Queda la segunda en las dos
+        // y «autorización» sale de la familia. Que no vuelvan a separarse lo
+        // comprueba SameEventSameWordsTests.
+        //
+        // `privileged.resume-guard-failed` decía "la reactivación automática"
+        // sin decir de qué, y las cuatro traducciones —cada una a su manera—
+        // dijeron cosas distintas: reinicio, reactivación, reanudación,
+        // mecanismo para revertir. Se fue a ver qué hace el código
+        // (ScheduleResumeGuard vuelve a arrancar el servicio de Apple) y ahora
+        // lo dicen los seis idiomas.
+        "installer-error.device-not-found", "installer-error.wrong-disk-format",
+        "installer-error.dfu-timeout", "installer-error.checksum-mismatch",
+        "installer-error.incomplete-rockbox-tree", "installer-error.process-failed",
+        "installer-error.missing-artifact",
+        "installer-error.authorization-cancelled",
+        "installer-error.device-disconnected-during-copy",
+        "installer-error.bootloader-not-applied",
+        "installer-error.release-download-failed", "installer-error.release-missing-asset",
+
+        // "Se encontraron {0} discos" pasa a tener formas de plural. La forma
+        // `.other` es el texto de antes; la `.one` es nueva y en español no se
+        // ve nunca —ambiguo quiere decir dos o más—, pero el ruso sí necesita
+        // sus tres formas: "2 диска" y "5 дисков" no se escriben igual.
+        "installer-error.disk-ambiguous.one", "installer-error.disk-ambiguous.other",
+
+        // Tres donde el español SÍ cambia, y en las tres es lo mismo: decían
+        // "Apple Devices" y la ficha de la Microsoft Store en español se llama
+        // "Dispositivos Apple", que es como ya la nombraban las otras dos
+        // pantallas de la app. Es el mismo defecto que el espacio de más del
+        // japonés en B7c: el usuario copia al buscador lo que la app le puso y
+        // no encuentra nada. Ahora las vigila PlatformNamesTests.
+        "installer-error.dual-boot-requires-winpod",
+        "installer-error.device-stuck-in-dfu",
+        "installer-error.dfu-driver-missing",
+
+        // B7d, paso 2: la familia privilegiada — lo que valida la petición
+        // (PrivilegedOperation), lo que responde el proceso elevado
+        // (PrivilegedHost) y lo que dice el lado que lo lanza
+        // (PrivilegedRunner). El español es el que decía, palabra por palabra.
+        "privileged.disk-number-out-of-range", "privileged.missing-expected-size",
+        "privileged.negative-tolerance", "privileged.empty-volume-label",
+        "privileged.unknown-operation", "privileged.request-unreadable",
+        "privileged.dry-run-complete", "privileged.format-done",
+        "privileged.service-already-running", "privileged.service-restarted",
+        "privileged.service-already-stopped", "privileged.service-cannot-stop",
+        "privileged.resume-guard-failed", "privileged.service-stopped",
+        "privileged.service-not-installed", "privileged.service-timeout",
+        "privileged.authorization-cancelled", "privileged.no-result",
+        "privileged.result-unreadable", "privileged.request-failed",
+
+        // B7d, paso 2: la verificación de los artefactos del firmware y el
+        // grabado por DFU. Son las dos últimas familias críticas.
+        "firmware-artifacts.missing-checksums", "firmware-artifacts.missing-bootloader",
+        "firmware-artifacts.missing-tool", "firmware-artifacts.checksum-mismatch-release",
+        "firmware-artifacts.pin-mismatch", "firmware-artifacts.not-described",
+        "firmware-artifacts.checksum-mismatch", "firmware-artifacts.checksums-invalid-line",
+        "firmware-artifacts.checksums-unsafe-path", "firmware-artifacts.zip-unsafe-path",
+        "firmware-artifacts.zip-incomplete", "firmware-artifacts.zip-invalid",
+        "dfu-flash.still-in-dfu", "dfu-flash.waiting-for-dfu",
+        "dfu-flash.tool-not-started", "dfu-flash.tool-not-found",
+
+        // B7d, paso 2: las explicaciones de Ajustes. Texto largo que decide
+        // cosas —si Aura copia tus archivos o los referencia, en qué formato
+        // queda tu música— y que por eso ya estaba marcado como crítico.
+        "settings-view-model.library-empty",
+        "settings-view-model.copy-media-on", "settings-view-model.copy-media-off",
+        "settings-view-model.migration-idle",
+        "settings-view-model.cover-art-album-only", "settings-view-model.cover-art-per-track",
+        "settings-view-model.music-organization-album",
+        "settings-view-model.music-organization-artist",
+        "settings-view-model.music-organization-artist-album",
+        "settings-view-model.audio-quality-original",
+        "settings-view-model.audio-quality-compressed",
+        "settings-view-model.provider-off", "settings-view-model.provider-no-key",
+        "settings-view-model.key-removed", "settings-view-model.key-saved",
+        "settings-view-model.key-save-failed",
+
+        // La frase de la conversión de audio se parte en tres claves porque
+        // tenía DOS cosas metidas adentro: el códec, elegido por un ternario, y
+        // el nombre de la sección "Cómo guardar tu música", escrito a mano. El
+        // nombre ahora se pide, para que la frase mande a una sección que en ese
+        // idioma se llame así.
+        "settings-view-model.audio-conversion-detail",
+        "settings-view-model.audio-codec-alac", "settings-view-model.audio-codec-mp3",
+
+        // Y la de las colaboraciones enumera los separadores desde el código.
+        // El texto escrito a mano ya se había quedado viejo: decía «vs.» y
+        // «versus», y se olvidaba de «vs». Las comillas y el separador de la
+        // lista son claves porque en alemán se abren abajo, en francés llevan
+        // espacio adentro y en japonés son otras.
+        "settings-view-model.group-collaborations-detail",
+        "settings-view-model.quoted-term", "settings-view-model.term-joiner",
+
+        // Dos que pasan a tener formas de plural. El `.other` de la primera es
+        // el texto de antes; en la segunda cambia un poco («otros N» → «N más»)
+        // porque la misma oración tiene que servir para uno y para muchos.
+        "settings-view-model.library-empty-missing.one",
+        "settings-view-model.library-empty-missing.other",
+        "settings-view-model.library-summary-missing.one",
+        "settings-view-model.library-summary-missing.other",
+
+        // B7d, paso 2: la etiqueta de firmware que se lee bajo el nombre del
+        // iPod, y la pantalla de Extras. El sufijo " (dual boot con Apple)" era
+        // una cadena que se PEGABA al final de siete frases distintas; ahora
+        // cada una tiene su hueco, porque pegar texto al final de una oración
+        // funciona en español y no tiene por qué funcionar en otro idioma.
+        "device-firmware.dual-suffix",
+        "device-firmware.stock-usb-rockbox", "device-firmware.stock",
+        "device-firmware.empty-usb-rockbox", "device-firmware.empty",
+        "device-firmware.aura-booted-from-firmware", "device-firmware.aura-not-configured",
+        "device-firmware.aura-booted-from-apple-disk", "device-firmware.aura-files-apple-running",
+        "device-firmware.aura-installed", "device-firmware.aura-files-not-booted",
+        "device-firmware.rockbox-from-rockbox", "device-firmware.rockbox-installed",
+        "device-firmware.rockbox-files-apple-running", "device-firmware.rockbox-files-not-booted",
+        "extras-view-model.visual-metro", "extras-view-model.visual-moonlit",
+        "extras-view-model.visual-aura", "extras-view-model.firmware-intro",
+        "extras-view-model.checking-github", "extras-view-model.versions-from-github",
+        "extras-view-model.versions-bundled", "extras-view-model.themes-need-aura",
+        "extras-view-model.themes-unsupported", "extras-view-model.this-firmware",
+        "extras-view-model.themes-detail", "extras-view-model.animations-detail",
+        "extras-view-model.planned-intro", "extras-view-model.not-implemented",
+        "extras-view-model.licenses-detail",
+
+        // B7d, paso 2: la ficha de sincronización. El español de los conteos SÍ
+        // cambia, y era el objetivo: estaban pluralizados con paréntesis —«{0}
+        // archivo(s) copiado(s)», «no se pudo(ieron) copiar»—, un truco que ya
+        // en español se lee mal y que en los otros cinco idiomas no existe.
+        // Ahora son formas de plural de verdad.
+        //
+        // Y el «1 =>» escrito a mano de "1 archivo listo para sincronizar"
+        // habría dicho "21 archivo" en ruso. El cero se queda como mensaje
+        // aparte, que es lo que es: no hay nada, no "0 archivos".
+        "sync-summary.copied.one", "sync-summary.copied.other",
+        "sync-summary.removed.one", "sync-summary.removed.other",
+        "sync-summary.failed-count.one", "sync-summary.failed-count.other",
+        "sync-view-model.will-copy.one", "sync-view-model.will-copy.other",
+        "sync-view-model.already-current.one", "sync-view-model.already-current.other",
+        "sync-view-model.ready.one", "sync-view-model.ready.other",
+        "sync-summary.not-completed", "sync-summary.joiner",
+        "sync-summary.done", "sync-summary.done-with-failures",
+        "sync-summary.cancelled", "sync-summary.cancelled-with-failures",
+        "sync-view-model.destination", "sync-view-model.device-no-aura",
+        "sync-view-model.connect-ipod", "sync-view-model.preview",
+        "sync-view-model.up-to-date", "sync-view-model.ejected",
+        "sync-view-model.eject-failed", "sync-view-model.nothing-ready",
+        "sync-view-model.phase-scanning", "sync-view-model.phase-comparing",
+        "sync-view-model.phase-copying", "sync-view-model.phase-writing-manifest",
+        "sync-view-model.phase-writing-marker",
+
+        // B7d, paso 2: los temas. Los motivos de `theme-validation` son medias
+        // oraciones —«le falta el archivo theme.cfg.»— hechas para ir detrás de
+        // dos puntos, y van a DOS frases distintas: la de instalar y la de
+        // activar. Por eso siguen siendo motivos y no frases enteras; lo que
+        // cambia es que la parte que los envuelve también sale del recurso.
+        "theme-validation.manifest-missing", "theme-validation.manifest-unreadable",
+        "theme-validation.invalid-id", "theme-validation.format-unsupported",
+        "theme-validation.unknown",
+        "theme-installer.cannot-review", "theme-installer.cannot-install",
+        "theme-installer.invalid-theme-id", "theme-installer.not-on-ipod",
+        "theme-installer.cannot-read-to-export", "theme-installer.personal-use",
+        "theme-packager.source-font-missing", "theme-packager.source-masks-missing",
+        "theme-packager.write-failed",
+        "themes-view-model.share-blocked-reason", "themes-view-model.state-active",
+        "themes-view-model.state-not-loading", "themes-view-model.device-themes-of",
+        "themes-view-model.device-no-aura", "themes-view-model.connect-ipod",
+        "themes-view-model.pick-assets-folder", "themes-view-model.name-the-theme",
+        "themes-view-model.will-install-with-id", "themes-view-model.invalid-id",
+        "themes-view-model.built-in-name", "themes-view-model.no-themes-installed",
+        "themes-view-model.cannot-activate", "themes-view-model.cannot-remove",
+
+        // Otro «(s)» que no era plural de nadie: «le faltan {0} fuente(s)».
+        // Y el conteo de máscaras, que además lleva dos números en la misma
+        // frase — el que tiene y el que hacen falta.
+        "theme-validation.missing-fonts.one", "theme-validation.missing-fonts.other",
+        "theme-validation.missing-masks.one", "theme-validation.missing-masks.other",
+
+        // B7d, paso 2: el detector de elementos parecidos. Los motivos son
+        // renglones sueltos —la hoja los lista uno por uno—, así que cada uno
+        // es su clave. La sugerencia, en cambio, se armaba de pedazos: el
+        // formato con «sin pérdida» pegado detrás, los adjetivos unidos con
+        // coma, y una frase sobre el artista pegada al final.
+        //
+        // Los tres nombres de campo (Título, Artista, Álbum) ya no se escriben
+        // acá: se piden a la hoja de metadata, que los rotula igual. Tener la
+        // misma palabra dos veces en seis idiomas es esperar a que una cambie.
+        "similarity.detail-duplicate", "similarity.detail-probable",
+        "similarity.detail-possible", "similarity.missing-artist",
+        "similarity.same-duration", "similarity.similar-duration",
+        "similarity.same-file-size", "similarity.same-episode",
+        "similarity.same-title", "similarity.almost-same-title",
+        "similarity.different-formats", "similarity.different-categories",
+        "similarity.no-category", "similarity.lossless",
+        "similarity.with-cover", "similarity.with-poster", "similarity.with-lyrics",
+        "similarity.edited-by-hand", "similarity.largest", "similarity.bits-joiner",
+        "similarity.suggest-duplicate", "similarity.suggest-probable",
+        "similarity.suggest-possible", "similarity.canonical-artist",
+
+        // B7d, paso 2: los rótulos de la tabla de Canciones, los estados de la
+        // biblioteca y los tres avisos de alcance de la sincronización.
+        //
+        // `SyncScopeResolver.NothingReady` NO estrena clave: dice exactamente
+        // lo mismo que la ficha de sincronización, así que usa la de ella. Dos
+        // claves con el mismo texto son dos textos esperando a que uno cambie.
+        "music-column-group.music", "music-column-group.personal",
+        "music-column-group.statistics", "music-column-group.file",
+        "music-column-group.other-columns",
+
+        // La clave del grupo "Otros" se llama `other-columns` y no `other` por
+        // una razón que costó un minuto encontrar: una clave que TERMINA en
+        // `.other` es, por convención, la forma plural de otra. Llamándola
+        // `music-column-group.other` fallaron cinco pruebas a la vez — pedían
+        // su `.one`, su `.few` y su `{0}` — y ninguna hablaba de columnas.
+        "music-column.album", "music-column.album-artist", "music-column.artist",
+        "music-column.composer", "music-column.disc-number", "music-column.duration",
+        "music-column.genre", "music-column.track-number", "music-column.year",
+        "music-column.favorite", "music-column.rating", "music-column.date-added",
+        "music-column.file-format", "music-column.file-size", "music-column.status",
+        "music-column.header-disc-number", "music-column.header-track-number",
+        "music-column.header-date-added",
+        "media-table-row.status-synced", "media-table-row.status-ready",
+        "media-table-row.status-pending", "media-table-row.status-changed-locally",
+        "media-table-row.status-modified-on-device",
+        "media-table-row.status-deleted-on-device", "media-table-row.status-queued",
+        "media-table-row.status-enriching", "media-table-row.status-transcoding",
+        "sync-scope.nothing-selected", "sync-scope.selection-not-ready",
+
+        // B7d, paso 2: la biblioteca, las cuadrículas y la sección de claves de
+        // Ajustes.
+        //
+        // El resumen de las tapas recomendadas eran SIETE ramas escritas a mano
+        // para dos conteos, con el 1 puesto en el patrón —`(1, 0) =>`—: en ruso
+        // el 21 también va con la forma del uno, así que esas ramas no
+        // alcanzaban. Ahora cada conteo elige su forma y la oración con los dos
+        // se arma de las dos. La rama (0,1) decía "para ese álbum" y ahora dice
+        // "para {0} álbum": una forma de plural lleva su número adentro.
+        //
+        // Y otros dos «(s)»: "Se consiguieron {0} póster(s)" y "{0} letra(s)".
+        "album-cover-batch.nothing-to-do", "album-cover-batch.applied-with-pending",
+        "album-cover-batch.none-safe.one", "album-cover-batch.none-safe.other",
+        "album-cover-batch.applied.one", "album-cover-batch.applied.other",
+        "album-cover-batch.pending.one", "album-cover-batch.pending.other",
+        "library-view-model.posters-none",
+        "library-view-model.posters-found.one", "library-view-model.posters-found.other",
+        "library-view-model.lyrics-none",
+        "library-view-model.lyrics-found.one", "library-view-model.lyrics-found.other",
+        "library-view-model.loading-library", "library-view-model.measuring-files",
+        "library-view-model.normalizing-covers", "library-view-model.migrating-library",
+        "library-view-model.poster-none-to-remove", "library-view-model.poster-removed",
+        "media-grid-view-model.albums-detail", "media-grid-view-model.movies-detail",
+        "media-grid-view-model.series-detail", "media-grid-view-model.photo-collection-detail",
+        "media-grid-view-model.all-photos-detail", "media-grid-view-model.clips-detail",
+        "media-grid-view-model.videos-detail",
+        "settings-page.key-saved-short", "settings-page.key-not-set",
+        "settings-page.key-placeholder-existing", "settings-page.key-placeholder-new",
+        "settings-page.get-the-key",
+
+        // El botón "Guardar" de la sección de claves. Es la quinta clave con
+        // ese mismo texto —device-list-page, media-grid-page, media-info-dialog
+        // y songs-page ya tienen la suya—, y sigue la convención de B7a de una
+        // clave por pantalla. Queda dicho que son cinco: cinco oportunidades de
+        // que el mismo botón diga cosas distintas. Unificarlas es una decisión
+        // que abarca todo el archivo, no algo que arreglar de paso.
+        "settings-page.guardar",
+
+        // B7d, paso 2: la cola de Core. El aviso de versión del firmware era
+        // ocho oraciones armadas con cuatro datos —familia, lo instalado, lo
+        // publicado, lo que trae Studio—, y una de ellas se hacía pegando una
+        // frase entera detrás de otra (`NoNetworkMessage + " Lo instalado…"`).
+        // Ahora cada caso es una frase completa con sus huecos.
+        "firmware-update.no-network", "firmware-update.no-network-matches-bundled",
+        "firmware-update.up-to-date-tag", "firmware-update.up-to-date-hash",
+        "firmware-update.bundled-newer-than-ipod", "firmware-update.update-available",
+        "firmware-update.newer-than-bundled", "firmware-update.older-version",
+        "firmware-update.another-version", "firmware-update.ipod-older-than-bundled",
+        "firmware-update.bundled-newer-hash",
+
+        // Y el resumen de las fotos de artista, con cinco ramas que llevaban
+        // «foto(s)» y «artista(s)» adentro.
+        "artist-image.missing-key", "artist-image.no-match", "artist-image.no-image",
+        "artist-image.musicbrainz-busy", "artist-image.failed-musicbrainz-busy",
+        "artist-image.none-new", "artist-image.summary-found-with-failures",
+        "artist-image.summary-stopped-some.one", "artist-image.summary-stopped-some.other",
+        "artist-image.summary-found.one", "artist-image.summary-found.other",
+        "artist-image.summary-failed.one", "artist-image.summary-failed.other",
+        "artist-image.summary-none-with-failures.one",
+        "artist-image.summary-none-with-failures.other",
+
+        "album-cover-search.no-results", "album-cover-search.try-deezer",
+        "video-artwork.missing-key", "video-artwork.no-match",
+        "ffmpeg-locator.not-found", "networking.no-results",
+        "device-config.name-set-elsewhere", "install-manifest.empty",
+        "firmware-switcher.failed", "catalog-persister.unavailable",
+        "ipod-disk.aura-files-undeclared", "ipod-disk.no-aura",
+        "firmware-tree.verifying", "firmware-tree.copying",
+        "firmware-tree.falling-back-to-full", "firmware-tree.copy-interrupted",
+
+        // "El volumen del iPod ya no está disponible" lo decían tres sitios con
+        // el mismo texto escrito tres veces. Una sola clave.
+        "volume.ipod-unavailable",
+
+        // B7d, paso 2: la cola de la app. Las descripciones de los servicios
+        // con clave, los avisos de actualización, los elementos parecidos, los
+        // favoritos, y las hojas que quedaban.
+        //
+        // `AppUpdateService` decía la misma frase que el aviso del firmware
+        // —"No se pudo consultar GitHub…"— escrita otra vez. Usa la de él.
+        "credential-store.fanart-summary", "credential-store.fanart-guide",
+        "credential-store.tmdb-summary", "credential-store.tmdb-guide",
+        "credential-store.github-summary", "credential-store.github-guide",
+        "app-update.download-stopped", "app-update.installer-opening",
+        "app-update.checksum-mismatch", "app-update.size-mismatch",
+        "app-update-service.announcement-missing-asset",
+        "similar-items.nothing-new-with-hidden", "similar-items.nothing-similar",
+        "similar-items.hidden-reset",
+        "artists-view-model.favorite-label-add", "artists-view-model.favorite-label-remove",
+        "artists-view-model.favorite-button-add", "artists-view-model.favorite-button-remove",
+        "artists-page.album-favorite-add", "artists-page.album-favorite-remove",
+        "songs-view-model.favorite", "songs-view-model.not-favorite",
+        "songs-view-model.no-favorites",
+        "device-list-view-model.check-updates-hint", "device-list-view-model.firmware-updated",
+        "device-list-page.orphans-stay",
+        "installer-view-model.the-device", "installer-view-model.unknown-firmware",
+        "playlists-page.rename-title", "playlists-page.name-placeholder",
+        "songs-page.all-music", "songs-page.edit-hint",
+        "themes-page.remove-active", "themes-page.remove-inactive",
+        "media-grid-page.no-tree", "library-processor.unsupported",
+        "enrichment.online-off",
+        "audio-transcoder.no-encoder", "audio-transcoder.cannot-read",
+        "volume-lock.close-explorer",
+
+        // Y una que se escapó dos veces: el detector de parecidos tiene TRES
+        // variantes de "mismo título" y yo había visto dos. La tercera —la que
+        // ignora el número de pista y los paréntesis— salió al medir el
+        // trinquete, no al leer el archivo.
+        "similarity.same-title-ignoring-track",
+        "similarity.same-file-size-with-size", "similarity.artist-spelled-differently",
+        "similarity.artist-similar", "similarity.other-version",
+        "similarity.same-filename-ignoring-copy", "similarity.almost-same-filename",
+
+        // B7d, paso 2 (barrida final): lo que el trinquete no veía. Las nueve
+        // RAZONES POR LAS QUE NO SE ESCRIBE EN EL DISCO son las más importantes
+        // del lote —CriticalStrings ya nombra esa familia— y estaban
+        // clasificadas como bitácora en el triaje: se devuelven como motivo de
+        // un Abort, o sea que el usuario las lee cuando el formateo se detiene.
+        "disk-abort.requery-failed", "disk-abort.gone", "disk-abort.not-usb",
+        "disk-abort.no-media", "disk-abort.size-changed", "disk-abort.model-changed",
+        "disk-abort.beyond-mbr", "disk-abort.fat32-layout", "disk-abort.write-failed",
+        "app-update.download-failed", "app-update.cannot-open",
+        "dfu-flash.tool-start-failed", "audio-transcoder.convert-failed",
+        "theme-packager.source-file-missing", "networking.http-error",
+        "storage-breakdown.usage-line",
+
+        // B7d, paso 2 (cierre de la barrida): lo último que el trinquete no
+        // contaba. Dos frases se decían dos veces y ahora se dicen una:
+        // "El árbol de X en el iPod está incompleto" (la lista de aparatos y el
+        // aviso de versión) y "Hay una versión más nueva de X (tag)".
+        "device-list-view-model.matches-bundled", "device-list-view-model.unknown-newer",
+        "device-list-view-model.my-ipod", "device-list-view-model.ipod-of",
+        "firmware-update.tree-incomplete", "firmware-update.unknown-source",
+        "extras-view-model.choice-already-active", "extras-view-model.choice-adds",
+        "extras-view-model.choice-will-install",
+        "library-view-model.checking-files", "library-view-model.read-failed",
+        "library-view-model.tags-write-failed", "library-view-model.searching-lyrics-for",
+        "playlists-view-model.deleted", "playlists-view-model.read-failed",
+        "playlists-view-model.imported-and-missing",
+        "playlists-view-model.subtitle-missing.one", "playlists-view-model.subtitle-missing.other",
+        "playlists-view-model.imported.one", "playlists-view-model.imported.other",
+        "playlists-view-model.still-missing.one", "playlists-view-model.still-missing.other",
+        "playlists-page.new-playlist", "playlists-page.file-type", "playlists-page.export-failed",
+        "settings-view-model.ffmpeg-found",
+        "settings-view-model.filename-example-track-title",
+        "settings-view-model.filename-example-title-artist",
+        "settings-view-model.filename-example-title-album",
+        "settings-view-model.filename-example-title",
+        "sync-view-model.selection-only", "sync-view-model.selection-only-count",
+        "artists-view-model.selection-summary.one", "artists-view-model.selection-summary.other",
+        "artists-page.enrich-online",
+        "theme-manifest.license-open", "theme-manifest.license-personal",
+        "firmware-artifacts.missing-directory", "firmware-artifacts.tool-unverifiable",
+        "ipod-disk.display-name",
+        "firmware-switcher.dormant-missing", "firmware-switcher.already-active",
+        "firmware-switcher.not-switchable",
+        "firmware-tree.parking", "firmware-tree.updating", "firmware-tree.installing",
+        "firmware-tree.files-to-write.one", "firmware-tree.files-to-write.other",
+        "firmware-tree.files-to-delete.one", "firmware-tree.files-to-delete.other",
+        "catalog-persister.save-failed", "library-persistence.catalog-empty-or-damaged",
+        "library-migrator.orphans-delete-failed", "library-root.unavailable",
+        "library-persistence.invalid-path", "status-summary.without-album",
+
+        // Las dos ramas del aviso de catálogo que sí se leen en pantalla:
+        // `CatalogLoad.Error` sale tal cual como `LibraryChangedNotice` en
+        // Ajustes. La tercera rama de ese mismo bloque ya estaba en recursos —
+        // eran dos de tres, y por eso ninguna prueba lo notó.
+        "library-persistence.catalog-unreadable",
+        "library-persistence.catalog-unopenable",
+
+        // Y los últimos que la barrida señaló como frases enteras: la franja de
+        // actualización de la app, el resumen de "Completar en línea" (con dos
+        // «(s)» en dos ramas) y tres fallos que el usuario lee tal cual.
+        "app-update-service.announcement", "enrichment.poster-save-failed",
+        "enrichment.summary-with-error", "enrichment.summary-joiner",
+        "enrichment.completed.one", "enrichment.completed.other",
+        "enrichment.lyrics.one", "enrichment.lyrics.other",
+        "library-processor.copy-failed", "library-processor.mp3-failed",
+        "sync-summary.sync-failed",
     ];
 
     /// <summary>

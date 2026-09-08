@@ -25,6 +25,21 @@ trinquete de `HardcodedSpanishTests`, y acá queda dicho por qué.
 | trampa 1, `MediaInfoDialog` | 372 | los 27 textos de la hoja "Más información" a recursos en los seis idiomas, después de cambiar la llave del diccionario |
 | trampas 2 y 3, `PreparedMusic` | 371 | desenlace tipado en vez de `Contains("no se pudo")`, y tres frases enteras en lugar de una a medias |
 | trampa 4, `LibraryGrouping` | 369 | los rótulos de los cajones a recursos, `IsUnknownArtist` como campo, y fuera las dos comparaciones contra el rótulo en `AlbumCoverSearch` |
+| paso 2, `InstallerError` | 344 | los 16 errores del asistente a recursos en los seis idiomas |
+| paso 2, familia privilegiada | 324 | los 20 mensajes de `PrivilegedOperation`, `PrivilegedHost` y `PrivilegedRunner`, y el idioma viajando al proceso elevado |
+| paso 2, `FirmwareArtifacts` y `DfuFlashRunner` | 309 | las dos últimas familias críticas: verificación de artefactos y grabado por DFU |
+| paso 2, `SettingsViewModel` | 277 | las explicaciones de Ajustes; la de colaboraciones pasa a enumerar los separadores desde el código |
+| paso 2, `DeviceFirmwareLabel` y `ExtrasViewModel` | 250 | la etiqueta de firmware con su sufijo de dual boot como hueco, y la pantalla de Extras |
+| paso 2, `SyncViewModel` | 240 | la ficha de sincronización; los conteos con «archivo(s)» pasan a formas de plural de verdad |
+| paso 2, temas | 218 | `ThemeInstaller`, `ThemePackager` y `ThemesViewModel`; otro «fuente(s)» a formas de plural |
+| paso 2, `SimilarItemsDetector` | 206 | los motivos y la sugerencia; los nombres de campo se piden a la hoja de metadata |
+| paso 2, rótulos de tabla | 194 | columnas de Canciones, estados de la biblioteca y los avisos de alcance |
+| paso 2, biblioteca y cuadrículas | 168 | `LibraryViewModel`, `MediaGridViewModel` y la sección de claves de Ajustes |
+| paso 2, cola de Core y de la app | 93 | aviso de versión del firmware, servicios de red, credenciales, actualizaciones, hojas y vistas sueltas |
+| paso 2, razones de Abort | 91 | las nueve razones por las que NO se escribe en el disco, más lo que la segunda barrida sacó con ellas |
+| paso 2, cierre de la barrida | 91 | ~45 frases que el trinquete **no cuenta**: el trinquete no baja, y por eso hizo falta la barrida |
+| paso 3, las 11 DATO | 91 | comprobadas: su valor no cambia con el idioma, y por eso el trinquete tampoco baja |
+| cierre, las seis que solo vio la barrida | 90 | cuatro sueltas más las dos ramas del aviso de catálogo; el trinquete baja uno y el tope se aprieta a 90 |
 
 El trinquete baja poco en el segundo paso y eso es correcto: **doce literales
 cambiaron de clase, no de sitio.** Las razones de `PreparedMusic` estaban como
@@ -33,6 +48,35 @@ mensaje se elige por el desenlace, esas razones son lo que siempre debieron ser
 —diagnóstico— y se quedan en español a propósito. Cuentan igual en el
 trinquete, que mide literales en español y no si están bien puestos; lo que
 bajó de la deuda de traducción son doce, aunque el número de arriba diga uno.
+
+## El trinquete es un piso, no un censo
+
+**Este triaje salió de `HardcodedSpanishTests`, y por eso heredó su ceguera.**
+
+El trinquete decide qué es español con una **lista de palabras** —«archivo»,
+«canción», «álbum», «biblioteca»…—. Una frase que no contenga ninguna de ellas
+no la ve, y hay muchas: «Formatos distintos», «Misma duración», «El árbol de X
+en el iPod está incompleto», «Se importó «X» con N canciones».
+
+Así que **las 303 de la tabla de abajo eran un subconteo**. No era la lista de
+todo lo que el usuario lee; era la lista de lo que ese léxico alcanzaba.
+
+Se descubrió por un error de método: las sustituciones se venían haciendo con
+`s///` **sin `/g`**, y el detector de parecidos repite los mismos motivos en
+tres bloques —música, video, foto—. La primera pasada convirtió solo la primera
+aparición de cada frase. **El trinquete no vio ninguna de las diez que quedaron
+sin convertir.**
+
+Lo que sí las vio fue una segunda barrida con otra señal:
+`barrida-frases.pl`, que busca literales de **dos o más palabras** que no
+parezcan ruta, identificador ni clave. Da más ruido a propósito — es para leer,
+no para contar, y ningún número suyo entra en un trinquete. Encontró, entre
+otras, **las nueve razones por las que Aura Studio se niega a escribir en el
+disco**, que este triaje había clasificado como bitácora y que el usuario lee
+justo cuando el formateo se detiene.
+
+La regla que queda: **el trinquete sirve para que no crezca; no sirve para dar
+por terminado un archivo.** Eso hay que hacerlo leyendo el archivo.
 
 ## Conteo
 
@@ -152,3 +196,32 @@ la etiqueta de revisado y sin la revisión.
 
 Las trampas sí conviene arreglarlas antes, y no por la traducción: cuatro de
 las cinco son bugs latentes con el texto en español intacto.
+
+## Cómo quedó al cerrar B7d
+
+La barrida señala **179 literales**. Ninguno es de pantalla, y cada uno se
+comprobó siguiendo a quien lo consume, no leyéndolo en su sitio:
+
+| qué son | cuántos |
+|---|---:|
+| la tabla de familias de `CriticalStrings` — su propia documentación | 38 |
+| razones internas tipadas: quien las atrapa mira el **tipo**, no el mensaje | 37 |
+| excepciones internas de conversión, formateo y disco | 34 |
+| bitácora del proceso con permisos (`log.Add`) | 28 |
+| trazas de diagnóstico (perro guardián, marquesina, reportador de caídas) | 23 |
+| nombres propios y datos (Cover Art Archive, TMDB, salida de `mks5lboot`) | 13 |
+| consultas WMI/SQL y el nombre del servicio de Windows | 6 |
+| **total** | **179** |
+
+El trinquete queda en **90**: **11 DATO** (con su prueba) y **79 INTERNO**. Los
+dos números no se comparan entre sí y no tienen por qué coincidir — miden cosas
+distintas con detectores distintos, y esa es toda la razón de que existan los
+dos.
+
+**Las seis del final valen como lección.** Al armar la PARADA se corrió la
+barrida una vez más y aparecieron seis frases de pantalla que ni el trinquete
+ni las lecturas por archivo habían visto. Dos de ellas —las ramas del aviso de
+catálogo— estaban en un bloque de tres donde la primera rama **ya usaba
+`Strings.Get`**: al leer el archivo, ese `Strings.Get` de arriba hizo que el
+bloque entero pasara por convertido. Un archivo medio convertido se lee como un
+archivo convertido.

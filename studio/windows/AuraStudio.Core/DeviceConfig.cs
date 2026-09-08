@@ -1,6 +1,8 @@
 using System.Globalization;
 using System.Text;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core;
 
 /// <summary>
@@ -121,8 +123,8 @@ public static class DeviceNameStore
     /// <b>Se explica, no se esconde el campo</b>: un campo que desaparece sin
     /// motivo parece un error de la app.
     /// </summary>
-    public const string NotOwnerExplanation =
-        "El nombre de este iPod se puso desde otra computadora; solo desde ahí se puede cambiar.";
+    public static string NotOwnerExplanation =>
+        Strings.Get("device-config.name-set-elsewhere");
 
     private static void Write(string volumeRoot, DeviceConfig config)
     {

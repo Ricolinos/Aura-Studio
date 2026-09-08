@@ -1,0 +1,27 @@
+id,ja,retro_es,nota
+e001,mks5lboot.exe を起動できませんでした: {0},No se pudo iniciar mks5lboot.exe: {0},
+e002,このディスクは MBR の 32 ビットのアドレス範囲に収まりません,Este disco no cabe en el rango de direcciones de 32 bits del MBR,"fragmento (ver nota de e010); el japonés no distingue mayúscula/minúscula, así que no aplica esa parte de la comprobación, pero la construcción con "":"" en e010 funciona igual"
+e003,このディスクには FAT32 を作れません: {0},En este disco no se puede crear un FAT32: {0},fragmento (ver nota de e010)
+e004,ディスク {0} はもうありません,El disco {0} ya no existe,fragmento (ver nota de e010)
+e005,ディスクのモデルが変わりました（いまは「{0}」）,El modelo del disco cambió (ahora es «{0}»),"fragmento (ver nota de e010); （）y「」fullwidth traducidos a paréntesis y comillas angulares latinas"
+e006,ディスクにメディアが入っていません,El disco no tiene ningún medio insertado,fragmento (ver nota de e010)
+e007,ディスクが USB 接続として見えなくなりました（バス {0}）,El disco dejó de verse como conectado por USB (bus {0}),fragmento (ver nota de e010)
+e008,ディスクを再度確認できませんでした（{0}）,No se pudo volver a comprobar el disco ({0}),fragmento (ver nota de e010)
+e009,ディスクのサイズが一致しません（{0} バイト）,El tamaño del disco no coincide ({0} bytes),fragmento (ver nota de e010)
+e010,ディスクに書き込めませんでした: {0},No se pudo escribir en el disco: {0},"Envoltura de la familia de 9 (e002-e010): {0} recibe una de las 8 razones (e002-e009). La frase compuesta deja claro que no se escribió nada y por qué -- verificado que las 9 encajan gramaticalmente en japonés (con "":"" igual que en los otros tres idiomas)"
+e011,フォルダー {0} がありません。{1} のファイルはそこにあるはずです。,No existe la carpeta {0}. Ahí deberían estar los archivos de {1}.,
+e012,{0} は検証できません。Release は {1} を公開しておらず、バイナリの隣に {2} もありません。,"{0} no se puede verificar. El Release no publica {1}, y tampoco hay {2} junto al binario.",
+e013,{0} はすでに使用中のファームウェアです。,{0} ya es el firmware en uso.,
+e014,この iPod に、休止状態の {0} のツリーはありません。,En este iPod no hay ningún árbol de {0} en reposo.,
+e015,ファームウェアを切り替えられませんでした。,No se pudo cambiar el firmware.,
+e016,Aura Studio は、{0} を休止させたり復帰させたりする方法を知りません。,Aura Studio no sabe cómo poner en reposo ni reactivar a {0}.,
+e017,コピーが中断しました — 再試行しています…,La copia se interrumpió — reintentando…,
+e018,ファームウェアを iPod にコピーしています…,Copiando el firmware al iPod…,
+e019,選択的な更新ができませんでした。全体をインストールしています…,No se pudo hacer la actualización selectiva. Se está instalando todo…,
+e021,取り除くもの {0} 件,{0} elemento(s) por quitar,"contador 件; sin fila ""e020""/.one, esperado (el japonés no distingue número)"
+e023,書き込むファイル {0} 件,{0} archivo(s) por escribir,"contador 件; sin fila ""e022""/.one, esperado"
+e024,{0} を iPod にインストールしています（書体・アイコン・コーデック）。USB では数分かかることがあります。iPod を外さないでください。,Se está instalando {0} en el iPod (tipografías・iconos・códecs). Por USB esto puede tardar varios minutos. No desconecte el iPod.,"・(punto medio japonés) usado como separador de lista en vez de comas -- convención correcta, no error"
+e025,{0} に戻れるように保存しています…,"Guardando {0}, para poder volver a él…",
+e026,{0} を更新しています: {1}、{2}…,"Actualizando {0}: {1}, {2}…",、fullwidth → coma latina
+e027,ファイルの整合性を確認しています…,Comprobando la integridad de los archivos…,
+e028,{1} 中 {0} を使用 — 空き {2},{0} usado(s) de {1} — {2} libre(s),"orden distinto al de los otros tres idiomas ({1} aparece primero en japonés, ""{1} 中 {0}"" = ""de {1}, {0}""), pero el resultado formateado es equivalente; orden japonés normal para esta construcción, no error"

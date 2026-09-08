@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core;
 
 /// <summary>Un tramo de la barra de capacidad: cuánto ocupa y cómo se llama.</summary>
@@ -75,5 +77,6 @@ public static class StorageBreakdown
 
     /// <summary>"12.3 GB usados de 125.0 GB — 112.7 GB libres".</summary>
     public static string UsageLine(IPodDiskInfo device) =>
-        $"{device.UsedDisplay} usados de {device.CapacityDisplay} — {device.FreeDisplay} libres";
+        Strings.Format("storage-breakdown.usage-line",
+            device.UsedDisplay, device.CapacityDisplay, device.FreeDisplay);
 }

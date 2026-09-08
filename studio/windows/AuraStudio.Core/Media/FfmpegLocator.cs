@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Media;
 
 /// <summary>
@@ -121,9 +123,8 @@ public static class FfmpegLocator
     /// Qué decirle al usuario cuando no está. Nombra el comando exacto: es más
     /// útil que "instala ffmpeg" y no obliga a nadie a buscarlo.
     /// </summary>
-    public const string NotFoundMessage =
-        "No se encontró ffmpeg en esta computadora. Instálalo con "
-        + "\"winget install Gyan.FFmpeg\", o elige dónde está en Ajustes › Video.";
+    public static string NotFoundMessage =>
+        Strings.Get("ffmpeg-locator.not-found");
 
     private static IEnumerable<string> Combine(string? root, string relativeDirectory, string fileName) =>
         root is { Length: > 0 } ? [Path.Combine(root, relativeDirectory, fileName)] : [];

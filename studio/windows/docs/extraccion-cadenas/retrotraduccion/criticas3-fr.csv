@@ -1,0 +1,29 @@
+id,fr
+e001,mks5lboot.exe n'a pas pu être démarré : {0}
+e002,le disque ne tient pas dans l'adressage 32 bits du MBR
+e003,impossible de construire un FAT32 sur ce disque : {0}
+e004,le disque {0} n'existe plus
+e005,le modèle du disque a changé (il indique maintenant « {0} »)
+e006,le disque n'a plus de support monté
+e007,le disque n'apparaît plus connecté en USB (bus {0})
+e008,le disque n'a pas pu être interrogé à nouveau ({0})
+e009,la taille du disque ne correspond plus ({0} octets)
+e010,Impossible d'écrire sur le disque : {0}
+e011,"Le dossier {0} n'existe pas, et c'est là que devraient se trouver les fichiers de {1}."
+e012,{0} ne peut pas être vérifié : la Release ne publie pas {1} et il n'y a pas de {2} à côté du binaire.
+e013,{0} est déjà le microprogramme actif.
+e014,Il n'y a pas d'arborescence {0} en veille sur cet iPod.
+e015,Le microprogramme n'a pas pu être changé.
+e016,Aura Studio ne sait pas comment mettre en veille ni réveiller {0}.
+e017,La copie a été interrompue — nouvelle tentative…
+e018,Copie du microprogramme sur l'iPod…
+e019,La mise à jour sélective n'a pas fonctionné ; installation complète en cours…
+e020,{0} à retirer
+e021,{0} à retirer
+e022,{0} fichier à écrire
+e023,{0} fichiers à écrire
+e024,"Installation de {0} sur l'iPod (polices, icônes, codecs)… Cela peut prendre plusieurs minutes en USB — ne débranchez pas l'iPod."
+e025,Sauvegarde de {0} pour pouvoir y revenir…
+e026,"Mise à jour de {0} : {1}, {2}…"
+e027,Vérification de l'intégrité des fichiers…
+e028,{0} utilisés sur {1} — {2} libres

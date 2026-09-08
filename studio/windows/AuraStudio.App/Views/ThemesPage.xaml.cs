@@ -54,8 +54,8 @@ public sealed partial class ThemesPage : Page
             XamlRoot = XamlRoot,
             Title = Strings.Format("themes-page.xaml.quitar-row-name-ipod", row.Name),
             Content = row.IsActive
-                ? "Es el tema activo: el iPod vuelve al tema integrado de Aura."
-                : "Se borra del iPod. Puedes volver a instalarlo si conservas la carpeta de assets.",
+                ? Strings.Get("themes-page.remove-active")
+                : Strings.Get("themes-page.remove-inactive"),
             PrimaryButtonText = Strings.Get("themes-page.xaml.quitar"),
             CloseButtonText = Strings.Get("themes-page.xaml.cancelar"),
             DefaultButton = ContentDialogButton.Close

@@ -55,8 +55,8 @@ public sealed partial class SimilarItemsViewModel : ViewModelBase
     public bool IsEmpty => Groups.Count == 0;
 
     public string EmptyMessage => _preferences.IgnoredSimilarGroups.Count > 0
-        ? "No se encontró nada nuevo. Hay grupos que ya marcaste como \"no son lo mismo\": puedes volver a mostrarlos abajo."
-        : "No se encontraron elementos parecidos en tu biblioteca.";
+        ? Strings.Get("similar-items.nothing-new-with-hidden")
+        : Strings.Get("similar-items.nothing-similar");
 
     public bool HasIgnored => _preferences.IgnoredSimilarGroups.Count > 0;
 
@@ -172,7 +172,7 @@ public sealed partial class SimilarItemsViewModel : ViewModelBase
     {
         _preferences.IgnoredSimilarGroups = [.. _preferences.IgnoredSimilarGroups, groupId];
         Remove(groupId);
-        LastMessage = "Listo, no se vuelve a mostrar. Puedes restablecerlo abajo.";
+        LastMessage = Strings.Get("similar-items.hidden-reset");
         OnPropertyChanged(nameof(HasIgnored));
     }
 

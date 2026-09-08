@@ -4,6 +4,8 @@ using Windows.Media.MediaProperties;
 using Windows.Media.Transcoding;
 using Windows.Storage;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.App.Platform;
 
 /// <summary>Un audio que no se pudo convertir, con el motivo dicho.</summary>
@@ -184,7 +186,7 @@ public static class AudioTranscoder
         catch (Exception ex) when (ex is not (OperationCanceledException or AudioTranscodeException
                                        or OutOfMemoryException))
         {
-            throw new AudioTranscodeException($"no se pudo convertir a {NameOf(codec)}: {ex.Message}");
+            throw new AudioTranscodeException(Strings.Format("audio-transcoder.convert-failed", NameOf(codec), ex.Message));
         }
         finally
         {
@@ -215,8 +217,7 @@ public static class AudioTranscoder
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             throw new AudioTranscodeException(
-                $"Esta versión de Windows no trae el codificador {NameOf(codec)} ({ex.Message}). "
-                + "ALAC necesita Windows 10 versión 1803 o más nuevo.");
+                Strings.Format("audio-transcoder.no-encoder", NameOf(codec), ex.Message));
         }
     }
 
@@ -299,9 +300,8 @@ public static class AudioTranscoder
             // archivo está dañado o no es del formato que dice su extensión—,
             // dicho como lo probable y no como algo comprobado (ST-246).
             throw new AudioTranscodeException(
-                $"Windows no pudo leer «{Path.GetFileName(sourcePath)}» para convertirlo "
-                + $"(motivo: {prepared.FailureReason}). Suele ser un archivo dañado, o que no es "
-                + "del formato que dice su extensión.");
+                Strings.Format("audio-transcoder.cannot-read",
+                    Path.GetFileName(sourcePath), prepared.FailureReason));
         }
 
         await prepared.TranscodeAsync().AsTask(ct).ConfigureAwait(false);

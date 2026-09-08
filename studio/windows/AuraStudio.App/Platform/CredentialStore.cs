@@ -2,6 +2,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using AuraStudio.Core.Networking;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.App.Platform;
 
 /// <summary>
@@ -139,15 +141,15 @@ public sealed record ApiKeyService(string Key, string DisplayName, string Summar
     public static readonly ApiKeyService FanartTV = new(
         "fanarttv",
         "fanart.tv",
-        "Carátulas y arte de disco en alta resolución (~1000 px), fotos de artista, y pósters curados de películas y series (estos últimos necesitan además la clave de TMDB para encontrar el título).",
-        "Crea una cuenta gratuita en fanart.tv, entra a tu perfil y copia la \"Personal API Key\" (no la de proyecto).",
+        Strings.Get("credential-store.fanart-summary"),
+        Strings.Get("credential-store.fanart-guide"),
         "https://fanart.tv/get-an-api-key/");
 
     public static readonly ApiKeyService Tmdb = new(
         "tmdb",
         "TMDB (The Movie Database)",
-        "Pósters de películas y series. Encuentra el título y su identificador; con fanart.tv configurado se prefiere el póster curado de allá, y si no, el de TMDB.",
-        "Crea una cuenta gratuita en themoviedb.org, entra a Ajustes › API y copia la \"API Key (v3 auth)\".",
+        Strings.Get("credential-store.tmdb-summary"),
+        Strings.Get("credential-store.tmdb-guide"),
         "https://www.themoviedb.org/settings/api");
 
     /// <summary>
@@ -161,8 +163,8 @@ public sealed record ApiKeyService(string Key, string DisplayName, string Summar
     public static readonly ApiKeyService GitHub = new(
         "github",
         "GitHub (opcional)",
-        "Los repositorios de los firmwares son públicos: Aura Studio ya avisa de versiones nuevas sin necesitar nada de esto. Un token de solo lectura solo eleva el límite de consultas a la API de GitHub; instalar el firmware nunca depende de esto, porque viene incluido en la app.",
-        "Si de todas formas quieres uno: crea un token de acceso personal \"fine-grained\" en github.com › Settings › Developer settings, con acceso solo a Aura-Firmware, Metro-Aura y moonlit-aura, y permiso Contents: Read-only.",
+        Strings.Get("credential-store.github-summary"),
+        Strings.Get("credential-store.github-guide"),
         "https://github.com/settings/personal-access-tokens/new");
 
     public static readonly IReadOnlyList<ApiKeyService> MetadataServices = [FanartTV, Tmdb];

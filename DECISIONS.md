@@ -18123,3 +18123,181 @@ acento -- lo que muestra lo arbitrario que era el criterio.)
 Nada de esto se corrige en A7c: es inventario, y entra en A7d con el
 resto. Lo que sí cambia es **el número de partida**, que ahora no depende
 de que alguien haya puesto una tilde.
+## ST-247 (B7d) — Windows: retrotraducción ciega ronda 3 — las 28 últimas críticas: árbol del firmware, DFU, y por qué NO se escribió en el disco
+
+Tercera y última ronda de retrotraducción ciega de B7d, sobre 28 claves
+nuevas (`e001…`) de las familias: árbol del firmware en el iPod (11),
+razones por las que el proceso elevado se niega a escribir en el disco
+(9, `e002`-`e010`), cambio de firmware (4), artefactos (2), DFU (1) y
+una línea de uso de disco. En `windows/b8`, ya a la altura de
+`origin/main = bc426c7` (sin rebase necesario).
+
+**Método, igual que en las dos rondas anteriores**: de `windows/b2`
+(`18cea14`) se leyó SOLO `criticas3-de.csv`, `criticas3-fr.csv`,
+`criticas3-ru.csv`, `criticas3-ja.csv` y `glosario-plataforma.csv`
+(sin cambios desde la ronda 2, diff vacío) -- nunca `mapa3-criticas.csv`
+ni ningún `Resources*.resx`. Sin términos nuevos en el glosario, así
+que `glosario-veredicto.csv` no se tocó esta vez. Filas: 28 en alemán y
+francés, 30 en ruso (`e021`/`e023` se abren en `.few`/`.many`, `e020`/
+`e022` conservan el id a secas), 26 en japonés (faltan `e020` y `e022`,
+las dos filas ".one", esperado).
+
+**Las 9 de "no se escribió en el disco" (`e002`-`e010`), lo que pidió
+el coordinador verificar**: `e010` es la envoltura ("No se pudo
+escribir en el disco: {0}") y `e002`-`e009` son las 8 razones que se
+insertan en su `{0}` -- confirmado que las 8 empiezan en minúscula en
+alemán, francés y ruso (pensadas para encadenar tras el "`:`" de e010,
+no para ser leídas solas; el japonés no distingue mayúscula/minúscula,
+así que esa parte de la comprobación no aplica ahí, pero la
+construcción con "`:`" funciona igual). La frase COMPUESTA
+(envoltura + razón) sí deja claro, en los cuatro idiomas, que no se
+escribió nada y por qué -- verificado armando las 8 combinaciones
+completas en cada idioma, no solo leyendo los fragmentos sueltos.
+
+**Dos concordancias reales, no errores, encontradas al armar las
+frases en ruso**: `e004`/`e006` usan el genitivo tras una negación
+(""диска… больше нет"", ""больше нет носителя"") en vez del nominativo,
+regla rusa estándar cuando se niega la existencia de algo. `e025`
+("Сохранение {0}, чтобы к ней можно было вернуться…") usa el pronombre
+femenino "к ней" -- concuerda en género con la palabra que probablemente
+ocupe `{0}` (firmware, "прошивка", femenino en ruso), no es un
+descuido.
+
+**Un orden distinto, no un error, en japonés**: `e028` (uso de disco)
+pone el total antes que el usado (`"{1} 中 {0} を使用"`, literalmente
+"de {1}, {0} en uso"), al revés que en de/fr/ru (usado, luego total).
+El resultado formateado dice lo mismo; es el orden natural japonés para
+esta construcción con 中 ("dentro de/de entre").
+
+### Verificación
+
+Contador de campos por línea: encontró y corrigió 2 filas con una coma
+sin entrecomillar (`criticas3-ja-retro.csv` `e012` en el campo
+`retro_es`, `e024` en el campo `nota`) ANTES de comprometer. Las
+columnas de idioma coinciden carácter por carácter contra los cuatro
+`criticas3-<idioma>.csv` originales: 0 mismatches, 0 ids duplicados,
+conteos exactos 28/28/30/26 contra los 28/28/30/26 esperados.
+`glosario-veredicto.csv` no se tocó (sin términos nuevos que agregar).
+0 CR bytes en los cuatro archivos. Sin builds: trabajo de solo texto.
+## ST-247 (addendum) — El defecto de `PreparedMusic` salió en 0.4.0
+
+Para las notas de 0.4.1, y para que no haya que reconstruirlo después.
+
+El fallo silencioso que B7d encontró —una canción que había que convertir se
+sincronizaba con las etiquetas viejas **sin decir nada**— **existía en 0.4.0
+tal como salió**. Está comprobado en el árbol, no deducido: en `f6dd461` están
+las dos mitades que lo forman.
+
+- `LibraryViewModel` decidía si avisar con
+  `result.Reason.Contains("no se pudo")`.
+- `PreparedMusicBuilder` devolvía `"hay que convertirlo y no hay convertidor"`,
+  que no contiene esa frase.
+
+Así que el aviso no salía. Queda **corregido tras `f6dd461`**.
+
+Los instalables de 0.4.0 **no se rehacen por esto**, salvo que el dueño lo
+pida. El alcance real es acotado: hace falta una biblioteca en modo referencia,
+una canción que necesite conversión, y que el convertidor no esté disponible;
+lo que se pierde no son los archivos sino las etiquetas corregidas, que vuelven
+a escribirse en la siguiente sincronización con el arreglo puesto.
+
+## ST-247 (B7d, pasos 2 y 3) — Las 303 de pantalla a seis idiomas, y las 11 que no son texto
+
+### Lo que se hizo
+
+**Paso 2.** Las 303 de PANTALLA salieron a recurso y se tradujeron a los seis
+idiomas, empezando por las cuatro familias críticas que hasta entonces vivían
+como literal dentro del código del instalador — `InstallerError`,
+`PrivilegedHost`, `FirmwareArtifacts` y `DfuFlashRunner` —, todas declaradas en
+`CriticalStrings` **el mismo día que salieron**. Una familia crítica que se
+extrae y no se declara crítica es una que se traduce sin que nadie la
+retrotraduzca.
+
+**Paso 3.** Once literales que parecen español y no lo son: la categoría que se
+guarda en `item.category`, los nombres de carpeta en disco, las claves del
+desglose de almacenamiento, la lista de artículos con la que se ordena
+ignorando el «el/la», y la salida en inglés de `mks5lboot.exe`.
+
+`DataNotTranslatedTests` no comprueba que no estén en el archivo de recursos
+—eso sería fácil y no probaría nada—. Corre **todo con la interfaz en japonés**
+y mira que el valor salga idéntico. Y comprueba la otra mitad: que
+`LocalizedName()` **sí** cambia. Sin esa segunda mitad, la prueba pasaría igual
+con una función que devolviera siempre la misma constante.
+
+### La ronda 3 de retrotraducción
+
+28 claves, cuatro idiomas, ids `e001`… (la 'c' fue B7c, la 'd' la ronda 2; una
+fila `e012` no se confunde con ninguna de las dos). El mecánico retrotradujo a
+ciegas. **Sin inversiones de sentido, un ajuste**: en japonés `e006` y `e009`
+perdían el «ya no» del español —decían que no hay medio, no que **dejó de**
+haberlo—, mientras `e004` y `e007` sí lo traían. Corregido a
+「もう…なくなった」/「…ではなくなった」, la misma construcción que ya usaban las otras dos.
+
+Esta ronda existe porque la segunda barrida encontró familias críticas que el
+trinquete no contaba: las razones por las que NO se escribe en el disco, el
+conmutador de firmware y la escritura del árbol.
+
+### El trinquete es un piso, no un censo
+
+**El triaje de las 303 salió de `HardcodedSpanishTests`, y por eso heredó su
+ceguera.** El trinquete decide qué es español con una **lista de palabras**
+—«archivo», «canción», «álbum», «biblioteca»…—. Una frase que no contenga
+ninguna no la ve, y hay muchas: «Formatos distintos», «Misma duración», «El
+árbol de X en el iPod está incompleto».
+
+Así que **las 303 eran un subconteo**: no la lista de todo lo que el usuario
+lee, sino la de lo que ese léxico alcanzaba.
+
+Se descubrió por un error de método. Las sustituciones se venían haciendo con
+`s///` **sin `/g`**, y `SimilarItemsDetector` repite los mismos motivos en tres
+bloques —música, video, foto—; la primera pasada convirtió solo la primera
+aparición de cada frase. **El trinquete no vio ninguna de las diez que quedaron
+sin convertir.** Lo que sí las vio fue `barrida-frases.pl`, con otra señal:
+literales de dos o más palabras que no parezcan ruta, identificador ni clave.
+Da más ruido a propósito — **es para leer, no para contar**, y ningún número
+suyo entra en un trinquete. Encontró, entre otras cosas, **las nueve razones
+por las que Aura Studio se niega a escribir en el disco**, que el triaje había
+clasificado como bitácora y que el usuario lee justo cuando el formateo se
+detiene: exactamente la familia que la tabla de `CriticalStrings` ya nombraba
+dos renglones más arriba.
+
+La regla que queda: **el trinquete sirve para que no crezca; no sirve para dar
+por terminado un archivo.** Eso hay que hacerlo leyendo el archivo — y ni eso
+alcanza: las dos últimas frases que aparecieron estaban en un bloque de tres
+cuya primera rama **ya usaba `Strings.Get`**, así que al leer el archivo el
+bloque entero pasó por convertido. Un archivo medio convertido se lee como un
+archivo convertido.
+
+`barrida-frases.pl` queda commiteada como herramienta, con dos pruebas: que
+existe y que corre. **Deliberadamente no se comprueba cuántas encuentra** —
+sería convertir en trinquete lo que es un instrumento de lectura.
+
+### La lista de prefijos también sobre-captura
+
+`CriticalStrings` es una lista de **prefijos**, no de claves. Se eligió así para
+que una clave nueva de una familia crítica entre sola, y eso funciona; el costo
+es que también entran claves que no son críticas: `storage-breakdown.usage-line`
+—un rótulo de «X de Y en uso»— entró a la retrotraducción por el prefijo
+`storage-`, que está ahí por los ajustes que deciden si Aura copia los archivos
+del usuario. Se retrotradujo de más y no pasó nada. El error contrario —una
+clave crítica que queda fuera en silencio— no se puede permitir en este grupo,
+y por eso el criterio no cambia.
+
+### Cómo quedó
+
+- **Barrida: 179 literales, ninguno de pantalla.** Cada uno comprobado siguiendo
+  a quien lo consume, no leyéndolo en su sitio: la tabla de familias de
+  `CriticalStrings` (38, su propia documentación), razones internas tipadas
+  donde quien atrapa mira el **tipo** y no el mensaje (37), excepciones internas
+  de conversión, formateo y disco (34), bitácora del proceso con permisos (28),
+  trazas de diagnóstico (23), nombres propios y datos (13), consultas WMI/SQL y
+  el nombre del servicio de Windows (6).
+- **Trinquete: 90, con el tope pegado en 90.** 11 DATO y 79 INTERNO. Estaba en
+  91 con el número real en 90: un tope con holgura deja entrar un literal nuevo
+  sin que nada se ponga rojo.
+- **Los dos números no se comparan.** Miden cosas distintas con detectores
+  distintos, y esa es toda la razón de que existan los dos.
+- **Claves:** 1 108 en es, en, de y fr; 1 034 en ja; 1 182 en ru. La diferencia
+  no es un faltante: son **74 familias de plural** por la matemática CLDR —el
+  japonés tiene una sola forma (74 claves menos), el ruso tres (74 más).
+- `Offered` sigue en `false` para de, fr, ja y ru. **Nada cambia en 0.4.0.**

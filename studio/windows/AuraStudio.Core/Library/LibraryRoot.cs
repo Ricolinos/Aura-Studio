@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Library;
 
 /// <summary>
@@ -9,7 +11,7 @@ namespace AuraStudio.Core.Library;
 /// de entrada/salida de verdad.</para>
 /// </summary>
 public sealed class LibraryRootUnavailableException(string root)
-    : IOException($"La biblioteca no está disponible: {root}")
+    : IOException(Strings.Format("library-root.unavailable", root))
 {
     public string Root { get; } = root;
 }

@@ -1,5 +1,7 @@
 using System.IO.Compression;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Installer;
 
 /// <summary>Avance de la escritura del firmware, para la barra de progreso y el texto de estado.</summary>
@@ -78,7 +80,7 @@ public static class FirmwareTreeWriter
             throw new InstallerException(new InstallerError.DeviceDisconnectedDuringCopy());
         }
 
-        progress?.Report(new("Verificando integridad de los archivos…", null));
+        progress?.Report(new(Strings.Get("firmware-tree.verifying"), null));
         ArtifactVerificationResult verification =
             FirmwareArtifactVerifier.Verify(artifacts, ArtifactScope.FirmwareTree);
         if (!verification.IsValid)
@@ -95,12 +97,13 @@ public static class FirmwareTreeWriter
         bool sameFamilyUpdate = installedFamily is not null && Equals(installedFamily, targetFamily);
         if (installedFamily is { } detected && !Equals(detected, targetFamily) && detected.IsInstallable)
         {
-            progress?.Report(new($"Guardando {detected.DisplayName} para poder volver a él…", null));
+            progress?.Report(new(
+                Strings.Format("firmware-tree.parking", detected.DisplayName), null));
             FirmwareSwitcher.ParkActiveTree(detected, volumeRoot);
             parked = detected;
         }
 
-        progress?.Report(new("Copiando el firmware al iPod…", null));
+        progress?.Report(new(Strings.Get("firmware-tree.copying"), null));
         string rootBinary = Path.Combine(volumeRoot, FirmwareSwitcher.RootFirmwareBinaryName);
         File.Copy(firmwarePath, rootBinary, overwrite: true);
         if (!File.Exists(rootBinary))
@@ -122,7 +125,11 @@ public static class FirmwareTreeWriter
             if (DeltaIsWorthIt(delta, newEntries.Count))
             {
                 progress?.Report(new(
-                    $"Actualizando {targetFamily.DisplayName}: {delta.ToExtract.Count} archivo(s) por escribir, {delta.ToDelete.Count} por quitar…",
+                    Strings.Format(
+                        "firmware-tree.updating",
+                        targetFamily.DisplayName,
+                        Strings.Plural("firmware-tree.files-to-write", delta.ToExtract.Count),
+                        Strings.Plural("firmware-tree.files-to-delete", delta.ToDelete.Count)),
                     0));
                 try
                 {
@@ -137,7 +144,7 @@ public static class FirmwareTreeWriter
                 {
                     // Ni idea de en qué quedó el árbol: extracción completa encima
                     // (merge), que lo repara todo.
-                    progress?.Report(new("La actualización selectiva no pudo; instalando completo…", null));
+                    progress?.Report(new(Strings.Get("firmware-tree.falling-back-to-full"), null));
                     usedDelta = false;
                 }
             }
@@ -146,8 +153,7 @@ public static class FirmwareTreeWriter
         if (!usedDelta)
         {
             progress?.Report(new(
-                $"Instalando {targetFamily.DisplayName} en el iPod (tipografías, iconos, códecs)… Puede tardar varios minutos por USB — no desconectes el iPod.",
-                0));
+                Strings.Format("firmware-tree.installing", targetFamily.DisplayName), 0));
             written = await ExtractFullAsync(zipPath, volumeRoot, newEntries.Count, progress, ct).ConfigureAwait(false);
         }
 
@@ -267,7 +273,7 @@ public static class FirmwareTreeWriter
                 last = ex;
                 if (!Directory.Exists(volumeRoot)) break;
                 if (attempt == 2) break;
-                progress?.Report(new("La copia se interrumpió — reintentando…", null));
+                progress?.Report(new(Strings.Get("firmware-tree.copy-interrupted"), null));
             }
         }
 

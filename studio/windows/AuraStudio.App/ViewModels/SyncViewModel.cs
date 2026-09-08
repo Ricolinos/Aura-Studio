@@ -74,8 +74,10 @@ public sealed partial class SyncViewModel : ViewModelBase
     }
 
     public string DeviceMessage => _session.Device is { } device
-        ? device.SupportsAuraContract ? $"Destino: {device.DisplayName}" : "El iPod detectado no tiene Aura activo."
-        : "Conecta un iPod para sincronizar.";
+        ? device.SupportsAuraContract
+            ? Strings.Format("sync-view-model.destination", device.DisplayName)
+            : Strings.Get("sync-view-model.device-no-aura")
+        : Strings.Get("sync-view-model.connect-ipod");
 
     public bool HasOrphans => Orphans.Count > 0;
 
@@ -121,8 +123,11 @@ public sealed partial class SyncViewModel : ViewModelBase
 
             HasPreview = true;
             StatusMessage = plan.HasChanges
-                ? $"Se van a copiar {plan.ToCopy.Count()} archivo(s); {plan.SkipCount} ya están al día."
-                : "El iPod ya está al día con tu biblioteca.";
+                ? Strings.Format(
+                    "sync-view-model.preview",
+                    Strings.Plural("sync-view-model.will-copy", plan.ToCopy.Count()),
+                    Strings.Plural("sync-view-model.already-current", plan.SkipCount))
+                : Strings.Get("sync-view-model.up-to-date");
         }
         catch (OperationCanceledException) { StatusMessage = Strings.Get("sync-view-model.revision-cancelada"); }
         finally { Done(); }
@@ -173,9 +178,9 @@ public sealed partial class SyncViewModel : ViewModelBase
     {
         if (_session.Device?.VolumePath is not { Length: > 0 } volume) return;
 
-        StatusMessage = Platform.VolumeManager.Eject(volume)
-            ? "Ya puedes desconectar el iPod."
-            : "No se pudo expulsar el iPod. Ciérralo desde el Explorador antes de desconectarlo.";
+        StatusMessage = Strings.Get(Platform.VolumeManager.Eject(volume)
+            ? "sync-view-model.ejected"
+            : "sync-view-model.eject-failed");
 
         CanEject = false;
     }
@@ -233,7 +238,9 @@ public sealed partial class SyncViewModel : ViewModelBase
     public bool HasSelection => SelectionCount > 0;
 
     public string SelectionScopeLabel =>
-        HasSelection ? $"Solo la selección ({SelectionCount})" : "Solo la selección";
+        HasSelection
+            ? Strings.Format("sync-view-model.selection-only-count", SelectionCount)
+            : Strings.Get("sync-view-model.selection-only");
 
     /// <summary>
     /// Lo que está listo para viajar, dicho antes de comparar contra el iPod.
@@ -247,12 +254,12 @@ public sealed partial class SyncViewModel : ViewModelBase
         {
             int pending = _library?.PendingCount ?? 0;
 
-            return pending switch
-            {
-                0 => "No hay nada listo para sincronizar.",
-                1 => "1 archivo listo para sincronizar.",
-                _ => $"{pending} archivos listos para sincronizar."
-            };
+            // El cero es un mensaje aparte, no una forma de plural: dice que
+            // no hay nada, no "0 archivos". El resto sí es plural de verdad —
+            // el `1 =>` escrito a mano habría dicho "21 archivo" en ruso.
+            return pending == 0
+                ? Strings.Get("sync-view-model.nothing-ready")
+                : Strings.Plural("sync-view-model.ready", pending);
         }
     }
 
@@ -341,22 +348,11 @@ public sealed partial class SyncViewModel : ViewModelBase
         return true;
     }
 
-    private static string Describe(SyncResult result)
-    {
-        if (!result.Success) return result.ErrorMessage ?? "La sincronización no se completó.";
-
-        string copied = $"{result.FilesCopied} archivo(s) copiado(s)";
-        string removed = result.FilesDeleted == 0 ? "" : $" y {result.FilesDeleted} quitado(s) del iPod";
-        string failures = result.Failures.Count == 0
-            ? ""
-            : $" {result.Failures.Count} no se pudo(ieron) copiar.";
-
-        // Cancelar no pierde nada: lo copiado ya está completo en el iPod y el
-        // firmware ya sabe que tiene que reconstruir sus índices.
-        return result.Cancelled
-            ? $"Cancelaste la sincronización. {copied}{removed} antes de detenerla.{failures}"
-            : $"Listo: {copied}{removed}.{failures}";
-    }
+    // Cancelar no pierde nada: lo copiado ya está completo en el iPod y el
+    // firmware ya sabe que tiene que reconstruir sus índices.
+    private static string Describe(SyncResult result) => SyncSummaryText.Describe(
+        result.Success, result.ErrorMessage,
+        result.FilesCopied, result.FilesDeleted, result.Failures.Count, result.Cancelled);
 
     /// <summary>
     /// El avance llega desde <b>otro hilo</b>: el servicio de sincronización
@@ -396,11 +392,12 @@ public sealed partial class SyncViewModel : ViewModelBase
 
         StatusMessage = e.Phase switch
         {
-            SyncPhase.Scanning => "Analizando la biblioteca…",
-            SyncPhase.Comparing => "Comparando cambios…",
-            SyncPhase.Copying => $"Copiando {e.ProcessedFiles} de {e.TotalFiles}…",
-            SyncPhase.WritingManifest => "Guardando letras, carátulas e índices…",
-            SyncPhase.WritingSyncMarker => "Preparando la actualización del iPod…",
+            SyncPhase.Scanning => Strings.Get("sync-view-model.phase-scanning"),
+            SyncPhase.Comparing => Strings.Get("sync-view-model.phase-comparing"),
+            SyncPhase.Copying => Strings.Format(
+                "sync-view-model.phase-copying", e.ProcessedFiles, e.TotalFiles),
+            SyncPhase.WritingManifest => Strings.Get("sync-view-model.phase-writing-manifest"),
+            SyncPhase.WritingSyncMarker => Strings.Get("sync-view-model.phase-writing-marker"),
             _ => StatusMessage
         };
     }
