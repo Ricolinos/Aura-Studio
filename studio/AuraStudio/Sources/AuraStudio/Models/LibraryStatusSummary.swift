@@ -127,7 +127,10 @@ enum LibraryStats {
     private static let numberFormatter: NumberFormatter = {
         let f = NumberFormatter()
         f.numberStyle = .decimal
-        f.locale = Locale(identifier: "es_MX")
+        // ST-227 (A7c): sigue al idioma de la app. Estaba fijo en es_MX,
+        // así que con Aura Studio en alemán los miles salían con el
+        // separador mexicano ("12,345" donde el alemán escribe "12.345").
+        f.locale = .autoupdatingCurrent
         return f
     }()
 

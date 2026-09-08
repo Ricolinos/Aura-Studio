@@ -60,14 +60,28 @@ struct TMDBClient {
     private let baseURL: URL
     private let imageBaseURL: URL
     private let apiKeyProvider: @Sendable () -> String?
-    /// Idioma de títulos/pósters: los pósters "es-MX" existen para casi
-    /// todo lo popular y caen a los originales cuando no.
+    /// Idioma de títulos/pósters. Sigue al idioma de la app (ST-227, A7c):
+    /// estaba fijo en "es-MX", así que un usuario con Aura Studio en
+    /// alemán recibía los títulos y los pósters en español mexicano. TMDB
+    /// cae solo a los originales cuando no tiene el idioma pedido, así
+    /// que no hay nada que perder.
     private let language: String
+
+    /// El idioma que se le pide a TMDB, en la forma que espera
+    /// (`ll` o `ll-CC`). Sale de `Locale.current`, que en esta app es el
+    /// idioma elegido en Ajustes: `AppLanguageApplier` lo escribe en
+    /// `AppleLanguages` y el sistema lo aplica al arrancar.
+    static var preferredLanguage: String {
+        let locale = Locale.current
+        guard let code = locale.language.languageCode?.identifier else { return "en" }
+        guard let region = locale.region?.identifier else { return code }
+        return "\(code)-\(region)"
+    }
 
     init(session: URLSession = .shared,
          baseURL: URL = URL(string: "https://api.themoviedb.org/3")!,
          imageBaseURL: URL = URL(string: "https://image.tmdb.org/t/p/w780")!,
-         language: String = "es-MX",
+         language: String = TMDBClient.preferredLanguage,
          apiKeyProvider: @escaping @Sendable () -> String? = { APIKeyStore.load(for: .tmdb) }) {
         self.session = session
         self.baseURL = baseURL

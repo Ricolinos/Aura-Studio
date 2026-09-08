@@ -330,7 +330,7 @@ final class AppPreferences: ObservableObject {
     /// Mismos tres nombres que sugiere `MediaCategoryHeuristics.
     /// classifyPhoto` -- asi "recien instalado, sin tocar nada" clasifica
     /// igual que antes de que esto fuera editable.
-    static let defaultPhotoCollections = ["Imágenes", "Fotos", "IA"]
+    static let defaultPhotoCollections = PhotoCollection.all
 
     /// Ignora nombres vacios/duplicados -- una coleccion repetida no
     /// tendria sentido en el picker (dos filas identicas para elegir).
@@ -719,6 +719,26 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         case .japanese, .german, .russian, .french: return true
         case .system, .spanish, .english: return false
         }
+    }
+
+    /// ST-227 (A7c, cierre): **los que se OFRECEN en Ajustes.**
+    ///
+    /// El catálogo tiene los seis idiomas y los `.lproj` viajan en la
+    /// app, pero A7a solo alcanzó a lo que el detector veía: quedan
+    /// cientos de textos de pantalla fuera del catálogo --el instalador
+    /// de firmware, el modo DFU, los errores-- que se verían en español
+    /// aunque el resto estuviera traducido. Ofrecer japonés hoy sería
+    /// prometer una app en japonés y entregar una mitad.
+    ///
+    /// Así que los cuatro **no se listan** hasta que A7d cierre esos
+    /// huecos. No se borran ni se esconden del catálogo: están
+    /// traducidos, probados y compilados dentro del `.app`; lo único que
+    /// falta es no ofrecerlos antes de tiempo. Quitar un `case` de acá
+    /// es todo lo que hace falta para publicarlos.
+    ///
+    /// 0.4.0 sale con español e inglés; los cuatro entran en 0.4.1.
+    static var selectable: [AppLanguage] {
+        allCases.filter { !$0.isMachineTranslated }
     }
 }
 

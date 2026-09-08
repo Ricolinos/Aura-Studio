@@ -17201,3 +17201,92 @@ final del ruso, el triaje de las 392) las reporta el coordinador/la
 Maestra desde información que no está en este worktree; no se
 remidieron desde cero. 0 CR bytes, 0 marcadores de conflicto en
 `DECISIONS.md` y `ESTADO-PORT.md` antes de comprometer.
+
+## ST-227 (A7c, cierre 2) — Los cuatro idiomas no se ofrecen todavía, y el triaje de lo que quedó fuera
+
+### Los idiomas nuevos existen, pero no se listan
+
+A7a solo alcanzó a lo que su detector veía --`Text("`/`Label("`/`Button("`
+con acento-- y el triaje de abajo dice cuánto quedó fuera: **593 textos
+de pantalla** que un usuario ve y que no están en el catálogo (el
+instalador de firmware, el modo DFU, los errores lanzados, los
+`LocalizedError`). Ofrecer japonés hoy sería prometer una app en japonés
+y entregar una mitad: los menús traducidos y el instalador --lo más
+delicado que hace esta app-- en español.
+
+Así que `AppLanguage.selectable` filtra los traducidos a máquina y el
+selector ofrece **español e inglés**. Los cuatro **no se borran ni se
+esconden**: siguen en el catálogo, en los `.lproj` y compilados dentro
+del `.app`, con sus pruebas. Publicarlos es quitar un `case` de
+`isMachineTranslated`. Una prueba mira las dos mitades --que no se
+ofrezcan **y** que sigan resolviendo desde el bundle--, porque si alguien
+"limpiara" los recursos creyendo que sobran habría que enterarse.
+
+Si alguien ya tenía uno elegido (una versión de prueba), su fila se le
+sigue mostrando hasta que elija otro: dejarle el `Picker` en blanco sería
+peor. 0.4.0 sale con es + en; los cuatro entran en 0.4.1 con A7d.
+
+### El triaje: `docs/extraccion-cadenas/triaje-fuera-de-a7a.tsv`
+
+600 entradas, con archivo y línea:
+
+| clase | cuántas | qué son |
+|---|---|---|
+| PANTALLA | 593 | texto que el usuario ve y no está en el catálogo |
+| INTERNO | 4 | `MainThreadWatchdog` y un `init(coder:)` |
+| DATO | 1 | un valor que se persiste |
+| TRAMPA | 2 | el código decide por el texto |
+
+Los 593 de pantalla no son "vistas sin traducir": el detector no los veía
+porque **no son literales de constructor**. Son `lastError = "..."`,
+`errorDescription` de los `LocalizedError` (`AppleLosslessEncoder`,
+`AudioTranscoder`, `CatalogPersister`), los pasos del instalador
+(`InstallerStep`: `explanationBody`, `cancelConsequence`), los `.help(...)`
+y los argumentos de ayudantes (`infoRow`, `SourceRow`, `emptyState`).
+Corregirlos es A7d.
+
+Se excluyó a propósito el nombre de cada idioma en su propio idioma
+("Español", "日本語"…): es texto de pantalla que **no** se traduce nunca.
+
+### Las trampas, y una de ellas era un bug vivo
+
+**La que estaba rota:** `coverContaminationCandidates()` comparaba
+`item.category == "Fotografías"` para no proponer jamás una fotografía de
+cámara como carátula contaminante. **El clasificador nunca devuelve
+"Fotografías"** -- devuelve "Fotos" (`MediaCategoryHeuristics.classifyPhoto`).
+La guarda no se cumplía nunca, y una foto de cámara llamada `cover.jpg`
+en una carpeta con música **sí** se ofrecía para quitarla de Imágenes --
+justo lo que el comentario de arriba promete que no pasa. No hubo pérdida
+de datos porque todo eso pasa por la hoja de revisión con vista previa,
+pero la app proponía lo contrario de lo que declara.
+
+Peor: **la prueba que lo cubría sembraba el catálogo con "Fotografías" a
+mano**, así que pasaba en verde sin tocar el camino real. Ahora siembra
+el valor que pone el clasificador y afirma cuál es ese valor, para que
+cambiarlo rompa la prueba en vez de vaciarla. Comprobado al revés: con el
+literal viejo, la prueba falla y la foto aparece como tercera candidata.
+
+Las categorías pasaron a `PhotoCollection` (`images`/`photos`/`ai`):
+siguen siendo español guardado (D-283), pero como símbolos, y así el
+compilador no deja volver a escribir un nombre que no existe.
+
+**Las dos que quedan** (inventario, se corrigen en A7d):
+`LibraryViewModel:557` y `:1372` hacen `reason.hasPrefix("no se pudieron
+escribir")` sobre el texto que produce `LocalTagWriter.skipped(...)`. Es
+una decisión de control tomada sobre una frase en español: el día que ese
+mensaje se traduzca o le cambien una palabra, la rama deja de entrar y
+nadie se entera. La forma correcta es un motivo tipado en
+`LocalTagWriter.Result`, no un prefijo de texto.
+
+### Idioma fijo en consultas y formatos
+
+`TMDBClient` pedía títulos y pósters con `language: "es-MX"` fijo: un
+usuario con la app en alemán recibía todo en español mexicano. Ahora sale
+de `Locale.current` --que en esta app es el idioma elegido en Ajustes--
+en la forma que TMDB espera (`ll` o `ll-CC`), y TMDB cae solo a los
+originales cuando no tiene el idioma pedido.
+
+`LibraryStatusSummary.numberFormatter` estaba fijado a `es_MX`: con la
+app en alemán los miles salían con el separador mexicano ("12,345" donde
+el alemán escribe "12.345"). Ahora es `.autoupdatingCurrent`. Las dos
+eran una línea, así que entran acá y no en A7d.

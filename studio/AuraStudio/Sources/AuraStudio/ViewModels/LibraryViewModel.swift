@@ -1044,13 +1044,19 @@ final class LibraryViewModel: ObservableObject {
 
     /// Candidatas ordenadas: primero las de evidencia fuerte. Criterio
     /// conservador: una imagen con EXIF de camara (categoria
-    /// "Fotografias", `MediaCategoryClassifier`) nunca es candidata,
-    /// aunque se llame `cover.jpg`.
+    /// `PhotoCollection.photos`, la que pone `MediaCategoryClassifier`)
+    /// nunca es candidata, aunque se llame `cover.jpg`.
     func coverContaminationCandidates() -> [CoverContaminationCandidate] {
         let context = CoverArtAssets.DropContext(urls: items.filter { $0.kind != .photo }.map(\.sourceURL))
         var out: [CoverContaminationCandidate] = []
         for item in items where item.kind == .photo {
-            if item.category == "Fotografías" { continue }
+            // La categoría real que pone `MediaCategoryClassifier` a una
+            // foto con EXIF de cámara es `PhotoCollection.photos`. Acá
+            // decía `"Fotografías"`, que el clasificador no devuelve
+            // nunca: la guarda no se cumplía jamás y una fotografía de
+            // cámara llamada `cover.jpg` sí se ofrecía como candidata,
+            // justo lo que el comentario de arriba promete que no pasa.
+            if item.category == PhotoCollection.photos { continue }
             guard CoverArtAssets.hasCoverLikeName(item.sourceURL) else { continue }
             let dir = item.sourceURL.deletingLastPathComponent().standardizedFileURL.path
             let strong = context.audioDirectories.contains(dir)

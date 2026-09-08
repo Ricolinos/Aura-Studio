@@ -146,6 +146,32 @@ final class LocalizationEnglishTests: XCTestCase {
                           "la advertencia no está en el catálogo")
     }
 
+    /// ST-227 (A7c, cierre): **el selector ofrece solo español e
+    /// inglés.**
+    ///
+    /// Los cuatro traducidos a máquina están completos en el catálogo y
+    /// compilados dentro del `.app`, pero A7a solo alcanzó a lo que el
+    /// detector veía: quedan cientos de textos de pantalla fuera del
+    /// catálogo (instalador de firmware, DFU, errores) que se verían en
+    /// español igual. Ofrecer japonés hoy sería prometer una app en
+    /// japonés y entregar una mitad. Entran en 0.4.1, cuando A7d cierre
+    /// esos huecos.
+    ///
+    /// La prueba mira las dos mitades: que no se ofrezcan **y** que
+    /// sigan estando -- si alguien "limpiara" los recursos creyendo que
+    /// sobran, esto lo diría.
+    func testOnlySpanishAndEnglishAreOfferedWhileTheRestStayInTheBundle() throws {
+        XCTAssertEqual(AppLanguage.selectable, [.system, .spanish, .english])
+        for language in [AppLanguage.japanese, .german, .russian, .french] {
+            XCTAssertFalse(AppLanguage.selectable.contains(language), "\(language) no se ofrece todavía")
+            let table = AuraBundle.strings.path(forResource: language.rawValue, ofType: "lproj")
+            XCTAssertNotNil(table, "\(language): el recurso tiene que seguir en el bundle aunque no se ofrezca")
+            let bundle = try XCTUnwrap(table.flatMap(Bundle.init(path:)))
+            let value = String(localized: "settings.language", bundle: bundle)
+            XCTAssertNotEqual(value, "settings.language", "\(language): la tabla está pero no resuelve")
+        }
+    }
+
     /// ST-227: lo que se GUARDA como categoría es el español, siempre --
     /// aunque la app esté en otro idioma. Es un dato del catálogo, no un
     /// texto de pantalla, y una categoría guardada como "Filme" no

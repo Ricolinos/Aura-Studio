@@ -96,10 +96,10 @@ enum MediaCategoryHeuristics {
         if let softwareTag {
             let lowered = softwareTag.lowercased()
             if aiGeneratorSoftwareNames.contains(where: { lowered.contains($0) }) {
-                return "IA"
+                return PhotoCollection.ai
             }
         }
-        return hasCameraExif ? "Fotos" : "Imágenes"
+        return hasCameraExif ? PhotoCollection.photos : PhotoCollection.images
     }
 
     /// D-228: se elimino el corte de "casero" (<= 3 min) -- no hay
@@ -111,4 +111,27 @@ enum MediaCategoryHeuristics {
         if durationSeconds > 2400 { return .movies }
         return .videos
     }
+}
+
+/// Las tres colecciones de fotos, **como valores del catálogo**.
+///
+/// Siguen siendo español y así se quedan (D-283: lo que se guarda es
+/// dato del usuario, no texto de pantalla; lo que se muestra sale del
+/// catálogo). Lo que cambia es que dejan de ser literales sueltos
+/// repetidos por el código.
+///
+/// **Por qué existe este tipo.** `LibraryViewModel` comparaba
+/// `item.category == "Fotografías"` para no proponer nunca una
+/// fotografía de cámara como carátula contaminante. El clasificador
+/// nunca devolvió "Fotografías" -- devuelve "Fotos" -- así que la guarda
+/// no se cumplía jamás y la promesa del comentario era falsa. La prueba
+/// que la cubría sembraba el catálogo con "Fotografías" a mano, así que
+/// pasaba en verde sin tocar el camino real. Con un símbolo en vez de un
+/// literal, el compilador no deja escribir un nombre que no existe.
+enum PhotoCollection {
+    static let images = "Imágenes"
+    static let photos = "Fotos"
+    static let ai = "IA"
+
+    static let all = [images, photos, ai]
 }

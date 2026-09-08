@@ -1,0 +1,601 @@
+clase	archivo	linea	texto
+DATO	Models/MediaCategory.swift	132	Imágenes
+INTERNO	Services/MainThreadWatchdog.swift	66	[MainThreadWatchdog] activo -- avisa de bloqueos del hilo principal > \(Int(thresholdSeconds * 1000)) ms
+INTERNO	Services/MainThreadWatchdog.swift	158	[MainThreadWatchdog] bloqueo de ~\(durationMs) ms en el hilo principal
+INTERNO	Services/MainThreadWatchdog.swift	160	    (no se alcanzó a capturar la pila -- el bloqueo terminó antes de que la señal llegara)
+INTERNO	Views/TableHeaderMenu.swift	146	init(coder:) no se usa
+PANTALLA	Models/InstallerStep.swift	91	Pausar servicios de macOS
+PANTALLA	Models/InstallerStep.swift	92	Aura Studio necesita pausar temporalmente dos servicios de macOS que a veces interfieren con la conexión del iPod (AMPDevicesAgent y AMPDeviceDiscoveryAgent). Se reactivan automáticamente al terminar,
+PANTALLA	Models/InstallerStep.swift	93	Si cancelas, Aura Studio va a seguir intentando detectar el iPod igual -- en la mayoría de las Mac esto no hace falta, pero si la detección falla repetidamente, puede ser la causa.
+PANTALLA	Models/InstallerStep.swift	100	Preparar el disco para Finder
+PANTALLA	Models/InstallerStep.swift	101	Para que Finder pueda restaurar el firmware original de Apple, el disco del iPod (\(diskIdentifier)) se va a formatear dos veces: primero un formato puente (FAT con esquema MBR) y despues Mac OS Plus 
+PANTALLA	Models/InstallerStep.swift	102	Si cancelas, el iPod queda sin el bootloader de Aura pero con el disco sin preparar -- Finder podria no reconocerlo para restaurar. Puedes reintentar cuando quieras.
+PANTALLA	Models/InstallerStep.swift	109	Preparar el disco del iPod
+PANTALLA	Models/InstallerStep.swift	110	"Vamos a formatear la partición de datos de tu iPod (identificada como \""\(volumeName)\"", disco \(diskIdentifier)) para que pueda arrancar Aura. Esto borra TODO el contenido actual del iPod -- solo del"
+PANTALLA	Models/InstallerStep.swift	111	Si cancelas, la instalación se detiene acá. El iPod queda como estaba, sin ningún cambio -- puedes reintentar cuando quieras.
+PANTALLA	Models/InstallerStep.swift	175	No se detecto ningun iPod conectado.
+PANTALLA	Models/InstallerStep.swift	177	El iPod no esta formateado en FAT32. Conviértelo antes de continuar.
+PANTALLA	Models/InstallerStep.swift	179	No se detecto el iPod en modo DFU a tiempo. Vuelve a intentar la combinacion de botones.
+PANTALLA	Models/InstallerStep.swift	181	El archivo \(file) no supero la verificacion de integridad.
+PANTALLA	Models/InstallerStep.swift	183	No se pudo descargar la versión más reciente de \(family): \(reason). Se usará la versión que trae Aura Studio.
+PANTALLA	Models/InstallerStep.swift	185	Al Release \(tag) le falta \(asset), así que no se puede instalar desde él. Se usará la versión que trae Aura Studio.
+PANTALLA	Models/InstallerStep.swift	187	El firmware de este Release está incompleto: a rockbox.zip le faltan \(missing.joined(separator: 
+PANTALLA	Models/InstallerStep.swift	187	)) -- el iPod quedaría sin video o sin audio. No es un problema de tu conexión; vuelve a intentar más tarde o avisa que este Release salió mal.
+PANTALLA	Models/InstallerStep.swift	193	La operación terminó con código \(exitCode): \(output)
+PANTALLA	Models/InstallerStep.swift	195	Falta el artefacto \(name) dentro de la app. Reinstala Aura Studio.
+PANTALLA	Models/InstallerStep.swift	197	Se encontraron \(count) discos que podrian ser tu iPod. Por seguridad, Aura Studio no elige uno solo -- desconecta los demas discos externos y vuelve a intentar.
+PANTALLA	Models/InstallerStep.swift	199	Cancelaste la autorización de administrador. Este paso no puede continuar sin ese permiso.
+PANTALLA	Models/InstallerStep.swift	203	"macOS bloqueó el acceso directo al disco del iPod. Concede \""Acceso total al disco\"" a Aura Studio en Ajustes del Sistema (Privacidad y seguridad), cierra la app por completo, vuelve a abrirla y reint"
+PANTALLA	Models/InstallerStep.swift	205	"Para dual boot, el iPod debe conservar el firmware original de Apple en formato \""winpod\"": tabla de particiones MBR con la partición de firmware de Apple intacta más una partición FAT32 -- el formato"
+PANTALLA	Models/InstallerStep.swift	207	Tu iPod se desconectó durante la copia de archivos. Copiar el firmware completo son miles de archivos chicos y puede tardar varios minutos por USB -- revisa el cable (evita hubs USB si usas uno) y vue
+PANTALLA	Models/InstallerStep.swift	209	El iPod volvió a aparecer con el firmware original de Apple atendiendo el USB: el bootloader de Aura no quedó grabado. Vuelve a intentar el paso de DFU (el disco ya está preparado, no hace falta forma
+PANTALLA	Models/InstallerStep.swift	211	"El iPod recibió el envío del firmware, pero nunca confirmó haberlo aplicado -- sigue en modo DFU. Si se abrió Finder mostrando \""Modo DFU del iPod\"", ciérralo SIN tocar el botón Restaurar (eso reinsta"
+PANTALLA	Models/LibraryGrouping.swift	65	Sin álbum
+PANTALLA	Models/LibraryGrouping.swift	214	los 
+PANTALLA	Models/LibraryGrouping.swift	214	las 
+PANTALLA	Models/LibraryGrouping.swift	214	una 
+PANTALLA	Models/LibraryGrouping.swift	424	Sin álbum
+PANTALLA	Models/LibraryPersistence.swift	30	Música
+PANTALLA	Models/LibraryPersistence.swift	31	Imágenes
+PANTALLA	Models/LibraryPersistence.swift	212	Imágenes
+PANTALLA	Models/LibraryPersistence.swift	217	Películas
+PANTALLA	Models/LibraryStatusSummary.swift	229	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionadas
+PANTALLA	Models/LibraryStatusSummary.swift	231	álbum
+PANTALLA	Models/LibraryStatusSummary.swift	231	álbumes
+PANTALLA	Models/LibraryStatusSummary.swift	239	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados
+PANTALLA	Models/LibraryStatusSummary.swift	248	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionadas
+PANTALLA	Models/LibraryStatusSummary.swift	259	canción
+PANTALLA	Models/LibraryStatusSummary.swift	261	álbum
+PANTALLA	Models/LibraryStatusSummary.swift	261	álbumes
+PANTALLA	Models/LibraryStatusSummary.swift	266	\(formatted(selected.count)) de \(formatted(items.count)) seleccionadas
+PANTALLA	Models/LibraryStatusSummary.swift	268	álbum
+PANTALLA	Models/LibraryStatusSummary.swift	268	álbumes
+PANTALLA	Models/LibraryStatusSummary.swift	293	álbum
+PANTALLA	Models/LibraryStatusSummary.swift	293	álbumes
+PANTALLA	Models/LibraryStatusSummary.swift	295	canción
+PANTALLA	Models/LibraryStatusSummary.swift	304	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados
+PANTALLA	Models/LibraryStatusSummary.swift	306	canción
+PANTALLA	Models/LibraryStatusSummary.swift	322	álbum
+PANTALLA	Models/LibraryStatusSummary.swift	322	álbumes
+PANTALLA	Models/LibraryStatusSummary.swift	323	canción
+PANTALLA	Models/LibraryStatusSummary.swift	332	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados
+PANTALLA	Models/LibraryStatusSummary.swift	333	álbum
+PANTALLA	Models/LibraryStatusSummary.swift	333	álbumes
+PANTALLA	Models/LibraryStatusSummary.swift	334	canción
+PANTALLA	Models/LibraryStatusSummary.swift	348	canción
+PANTALLA	Models/LibraryStatusSummary.swift	358	canción
+PANTALLA	Models/LibraryStatusSummary.swift	378	película
+PANTALLA	Models/LibraryStatusSummary.swift	378	películas
+PANTALLA	Models/LibraryStatusSummary.swift	385	\(formatted(selected.count)) de \(formatted(items.count)) seleccionados
+PANTALLA	Models/LibraryStatusSummary.swift	398	película
+PANTALLA	Models/LibraryStatusSummary.swift	398	películas
+PANTALLA	Models/LibraryStatusSummary.swift	407	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionadas
+PANTALLA	Models/LibraryStatusSummary.swift	435	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionadas
+PANTALLA	Models/LibraryStatusSummary.swift	462	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados
+PANTALLA	Models/LibraryStatusSummary.swift	480	\(formatted(n)) en \(collection)
+PANTALLA	Models/LibraryStatusSummary.swift	484	álbum
+PANTALLA	Models/LibraryStatusSummary.swift	484	álbumes
+PANTALLA	Models/LibraryStatusSummary.swift	488	\(formatted(selected.count)) de \(formatted(items.count)) seleccionadas
+PANTALLA	Models/LibraryStatusSummary.swift	502	álbum
+PANTALLA	Models/LibraryStatusSummary.swift	502	álbumes
+PANTALLA	Models/LibraryStatusSummary.swift	504	\(formatted(loose)) sin álbum
+PANTALLA	Models/LibraryStatusSummary.swift	513	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados
+PANTALLA	Models/MediaCategory.swift	37	Películas
+PANTALLA	Models/MusicTableColumn.swift	45	Música
+PANTALLA	Models/MusicTableColumn.swift	47	Estadísticas
+PANTALLA	Models/MusicTableColumn.swift	48	Archivo
+PANTALLA	Models/MusicTableColumn.swift	72	Álbum
+PANTALLA	Models/MusicTableColumn.swift	73	Artista del álbum
+PANTALLA	Models/MusicTableColumn.swift	76	Número de disco
+PANTALLA	Models/MusicTableColumn.swift	77	Duración
+PANTALLA	Models/MusicTableColumn.swift	78	Género
+PANTALLA	Models/MusicTableColumn.swift	79	Número de pista
+PANTALLA	Models/MusicTableColumn.swift	82	Calificación
+PANTALLA	Models/MusicTableColumn.swift	83	Fecha en que se agregó
+PANTALLA	Models/MusicTableColumn.swift	85	Tamaño
+PANTALLA	Models/MusicTableColumn.swift	94	Disco
+PANTALLA	Models/MusicTableColumn.swift	171	Título
+PANTALLA	Models/PreparedMusicPlan.swift	68	el archivo de origen ya sirve tal como está
+PANTALLA	Models/PreparedMusicPlan.swift	71	todavía no hay preparado
+PANTALLA	Models/PreparedMusicPlan.swift	74	el archivo de origen cambió de tamaño
+PANTALLA	Models/PreparedMusicPlan.swift	80	no se pudo leer la fecha de los archivos
+PANTALLA	Models/PreparedMusicPlan.swift	83	el archivo de origen es más nuevo que el preparado
+PANTALLA	Models/PreparedMusicPlan.swift	85	el preparado sigue sirviendo
+PANTALLA	Services/APIKeyStore.swift	31	Caratulas y arte de disco en alta resolucion (~1000px), fotos de artista, y posters curados de peliculas y series (estos ultimos necesitan tambien la key de TMDB para encontrar el titulo).
+PANTALLA	Services/APIKeyStore.swift	32	Posters de peliculas y series (biblioteca de Video). Encuentra el titulo y su identificador; con fanart.tv configurado se prefiere el poster curado de alli, si no, el de TMDB.
+PANTALLA	Services/APIKeyStore.swift	42	"Crea una cuenta gratuita en fanart.tv, entra a tu perfil y copia la \""Personal API Key\"" (no la de proyecto)."
+PANTALLA	Services/APIKeyStore.swift	44	"Crea una cuenta gratuita en themoviedb.org, ve a Ajustes › API y copia la \""Clave de la API\"" (la corta, v3), no el token de lectura."
+PANTALLA	Services/AppleLosslessEncoder.swift	33	Este AIFF está comprimido (\(compression)) y Aura Studio no lo convierte. Expórtalo como AIFF o WAV sin comprimir y vuelve a importarlo.
+PANTALLA	Services/AppleLosslessEncoder.swift	35	El archivo no tiene pista de audio que convertir.
+PANTALLA	Services/AppleLosslessEncoder.swift	37	El archivo declara un formato de audio que no se puede usar (\(detail)). Puede estar truncado o mal escrito.
+PANTALLA	Services/AppleLosslessEncoder.swift	39	No se pudo leer el audio para convertirlo: \(message)
+PANTALLA	Services/AppleLosslessEncoder.swift	41	No se pudo escribir el archivo convertido: \(message)
+PANTALLA	Services/AppleLosslessEncoder.swift	68	tasa de muestreo \(Int(sampleRate)) Hz
+PANTALLA	Services/AudioTranscoder.swift	17	"No se encontro ffmpeg instalado. Instálalo con \""brew install ffmpeg\"" y vuelve a intentar."
+PANTALLA	Services/AudioTranscoder.swift	19	ffmpeg fallo al comprimir el audio: \(output)
+PANTALLA	Services/CatalogPersister.swift	211	No se pudo guardar el catalogo de la biblioteca: \(error.localizedDescription)
+PANTALLA	Services/CoverNormalizationMigration.swift	61	Normalizando carátulas… \(completed) de \(total)
+PANTALLA	Services/DeviceNameStore.swift	104	iPod de \(full)
+PANTALLA	Services/DeviceNameStore.swift	106	iPod de \(short)
+PANTALLA	Services/DeviceNameStore.swift	107	iPod
+PANTALLA	Services/FFmpegTranscoder.swift	39	"No se encontro ffmpeg instalado. Instálalo con \""brew install ffmpeg\"" y vuelve a intentar."
+PANTALLA	Services/FFmpegTranscoder.swift	301	crop=\(crop.w):\(crop.h):\(crop.x):\(crop.y)
+PANTALLA	Services/FFmpegTranscoder.swift	307	crop=\(crop.w):\(crop.h):\(crop.x):\(crop.y)
+PANTALLA	Services/FFmpegTranscoder.swift	321	crop=\(c.w):\(c.h):\(c.x):\(c.y)
+PANTALLA	Services/FirmwareReleaseDownloader.swift	100	esta versión de Aura Studio no instala esa familia
+PANTALLA	Services/FirmwareReleaseDownloader.swift	102	Buscando la versión más reciente de \(family.displayName)...
+PANTALLA	Services/FirmwareReleaseDownloader.swift	110	el token de GitHub no tiene acceso a ese repositorio
+PANTALLA	Services/FirmwareReleaseDownloader.swift	111	GitHub no devolvió ningún Release utilizable
+PANTALLA	Services/FirmwareReleaseDownloader.swift	116	el tag \(latest.tagName) no es un nombre de carpeta válido
+PANTALLA	Services/FirmwareReleaseDownloader.swift	119	\(family.displayName) \(latest.tagName) ya estaba descargado.
+PANTALLA	Services/FirmwareReleaseDownloader.swift	137	Descargando \(name.rawValue) de \(family.displayName) \(latest.tagName)...
+PANTALLA	Services/FirmwareReleaseDownloader.swift	161	Verificando integridad de \(family.displayName) \(latest.tagName)...
+PANTALLA	Services/FirmwareReleaseDownloader.swift	185	la URL de \(asset.name) no es válida
+PANTALLA	Services/FirmwareReleaseDownloader.swift	207	GitHub respondió \(code) al pedir \(asset.name) de \(tag)
+PANTALLA	Services/FirmwareReleaseDownloader.swift	215	\(asset.name) llegó incompleto (\(data.count) de \(asset.size) bytes)
+PANTALLA	Services/IPodDiskIdentifier.swift	67	iPod
+PANTALLA	Services/IPodMonitor.swift	305	No se pudo ejecutar la herramienta de detección DFU (mks5lboot): \(error.localizedDescription)
+PANTALLA	Services/ImageResizer.swift	19	No se pudo leer la imagen de origen.
+PANTALLA	Services/ImageResizer.swift	20	No se pudo generar el JPEG de salida.
+PANTALLA	Services/InstallManifest.swift	58	unzip -lv falló
+PANTALLA	Services/InstallManifest.swift	63	unzip -lv no devolvió entradas
+PANTALLA	Services/LibraryFileWorker.swift	108	el archivo de origen no está
+PANTALLA	Services/LibraryFileWorker.swift	119	este formato viaja tal cual
+PANTALLA	Services/LibrarySync.swift	374	No se pudo crear el archivo temporal en \(path)
+PANTALLA	Services/LocalTagWriter.swift	70	el formato .\(ext) no lleva etiquetas (al importarlo en copia se convierte, ver AudioConversionRule)
+PANTALLA	Services/LocalTagWriter.swift	73	no hay ningún campo que escribir
+PANTALLA	Services/LocalTagWriter.swift	87	no se pudieron escribir las etiquetas de \(url.lastPathComponent): \(error)
+PANTALLA	Services/LocalTagWriter.swift	118	título
+PANTALLA	Services/LocalTagWriter.swift	120	álbum
+PANTALLA	Services/LocalTagWriter.swift	121	artista del álbum
+PANTALLA	Services/LocalTagWriter.swift	123	género
+PANTALLA	Services/LocalTagWriter.swift	134	carátula
+PANTALLA	Services/MKS5LBootRunner.swift	28	No se encontró la herramienta mks5lboot dentro de Aura Studio.
+PANTALLA	Services/MKS5LBootRunner.swift	30	La herramienta mks5lboot que trae Aura Studio no tiene permiso de ejecución (\(path)). Vuelve a instalar Aura Studio o, si compilas desde el código, corre scripts/fetch-firmware.sh de nuevo.
+PANTALLA	Services/MediaCategoryClassifier.swift	11	Imágenes
+PANTALLA	Services/MusicBrainzClient.swift	238	Error de red (HTTP \(code))
+PANTALLA	Services/MusicBrainzClient.swift	240	No se encontro ningun resultado
+PANTALLA	Services/PrivilegedExecutor.swift	34	Cancelaste la autorización. Este paso no puede continuar sin ese permiso.
+PANTALLA	Services/PrivilegedExecutor.swift	38	Aura Studio se detuvo por seguridad antes de tocar el disco: \(reason)
+PANTALLA	Services/PrivilegedExecutor.swift	40	macOS bloqueó el acceso directo al disco del iPod.
+PANTALLA	Services/PrivilegedExecutor.swift	71	No se pudo construir el script de autorización.
+PANTALLA	Services/PrivilegedExecutor.swift	72	error: no se pudo construir el script
+PANTALLA	Services/PrivilegedExecutor.swift	82	Error desconocido
+PANTALLA	Services/PrivilegedExecutor.swift	91	cancelado por el usuario
+PANTALLA	Services/PrivilegedExecutor.swift	94	bloqueado por TCC (falta Acceso total al disco)
+PANTALLA	Services/PrivilegedExecutor.swift	97	abortado por seguridad: \(message)
+PANTALLA	Services/PrivilegedExecutor.swift	100	error \(number): \(message)
+PANTALLA	Services/PrivilegedExecutor.swift	203	el candidato no cumple los criterios de identificacion del iPod
+PANTALLA	Services/PrivilegedExecutor.swift	219	AURA_SAFETY_ABORT: el disco ya no aparece como removible
+PANTALLA	Services/PrivilegedExecutor.swift	222	AURA_SAFETY_ABORT: el disco aparece como interno
+PANTALLA	Services/PrivilegedExecutor.swift	225	AURA_SAFETY_ABORT: el tamaño del disco ya no coincide ($SIZE bytes)
+PANTALLA	Services/PrivilegedExecutor.swift	238	No partition found
+PANTALLA	Services/PrivilegedExecutor.swift	254	AURA_FDA_REQUIRED: macOS bloqueo la escritura directa al disco
+PANTALLA	Services/PrivilegedExecutor.swift	259	formatear disco \(candidate.bsdName)
+PANTALLA	Services/PrivilegedExecutor.swift	272	el candidato no cumple los criterios de identificacion del iPod
+PANTALLA	Services/PrivilegedExecutor.swift	287	AURA_SAFETY_ABORT: el disco ya no aparece como removible
+PANTALLA	Services/PrivilegedExecutor.swift	290	AURA_SAFETY_ABORT: el disco aparece como interno
+PANTALLA	Services/PrivilegedExecutor.swift	293	AURA_SAFETY_ABORT: el tamaño del disco ya no coincide ($SIZE bytes)
+PANTALLA	Services/PrivilegedExecutor.swift	299	preparar disco \(candidate.bsdName) para restauracion de Apple
+PANTALLA	Services/PrivilegedExecutor.swift	310	valor con caracteres no seguros para interpolar en shell: \(value)
+PANTALLA	Services/SimilarItemsDetector.swift	65	Título
+PANTALLA	Services/SimilarItemsDetector.swift	67	Álbum
+PANTALLA	Services/SimilarItemsDetector.swift	384	Mismo título sin contar el número de pista o los paréntesis: «\(a.rawTitle)» / «\(b.rawTitle)»
+PANTALLA	Services/SimilarItemsDetector.swift	386	Mismo título: «\(a.rawTitle)»
+PANTALLA	Services/SimilarItemsDetector.swift	389	Título casi igual: «\(a.rawTitle)» / «\(b.rawTitle)»
+PANTALLA	Services/SimilarItemsDetector.swift	400	A uno le falta el artista
+PANTALLA	Services/SimilarItemsDetector.swift	403	Misma duración (\(clock(a.duration)))
+PANTALLA	Services/SimilarItemsDetector.swift	404	Duración parecida (\(clock(a.duration)) / \(clock(b.duration)))
+PANTALLA	Services/SimilarItemsDetector.swift	406	Mismo tamaño exacto de archivo (\(ByteCountFormatter.string(fromByteCount: a.fileSize, countStyle: .file)))
+PANTALLA	Services/SimilarItemsDetector.swift	410	Una parece otra versión (\(qualifierDiff.sorted().joined(separator: 
+PANTALLA	Services/SimilarItemsDetector.swift	435	Misma duración (\(clock(a.duration)))
+PANTALLA	Services/SimilarItemsDetector.swift	436	Mismo tamaño exacto de archivo
+PANTALLA	Services/SimilarItemsDetector.swift	442	Mismo título: «\(a.rawTitle)»
+PANTALLA	Services/SimilarItemsDetector.swift	442	Título casi igual: «\(a.rawTitle)» / «\(b.rawTitle)»
+PANTALLA	Services/SimilarItemsDetector.swift	444	Misma duración (\(clock(a.duration)))
+PANTALLA	Services/SimilarItemsDetector.swift	445	Duración parecida (\(clock(a.duration)) / \(clock(b.duration)))
+PANTALLA	Services/SimilarItemsDetector.swift	447	Mismo tamaño exacto de archivo
+PANTALLA	Services/SimilarItemsDetector.swift	450	Categorías distintas: \(a.item.category ?? 
+PANTALLA	Services/SimilarItemsDetector.swift	469	Mismo nombre de archivo sin contar «copia»/«(1)»: \(a.item.sourceURL.lastPathComponent) / \(b.item.sourceURL.lastPathComponent)
+PANTALLA	Services/SimilarItemsDetector.swift	471	Nombre de archivo casi igual: \(a.item.sourceURL.lastPathComponent) / \(b.item.sourceURL.lastPathComponent)
+PANTALLA	Services/SimilarItemsDetector.swift	474	Mismo tamaño exacto de archivo (\(ByteCountFormatter.string(fromByteCount: a.fileSize, countStyle: .file)))
+PANTALLA	Services/SimilarItemsDetector.swift	561	 sin pérdida
+PANTALLA	Services/SimilarItemsDetector.swift	562	con carátula
+PANTALLA	Services/SimilarItemsDetector.swift	562	con póster
+PANTALLA	Services/SimilarItemsDetector.swift	563	con letra
+PANTALLA	Services/SimilarItemsDetector.swift	565	el más grande
+PANTALLA	Services/SimilarItemsDetector.swift	571	Parecen el mismo archivo repetido. Sugerencia: conservar «\(keep.rawTitle)» (\(keepDescription)) y eliminar el resto.
+PANTALLA	Services/SimilarItemsDetector.swift	573	Probablemente es el mismo elemento con la metadata escrita distinto. Sugerencia: conservar «\(keep.rawTitle)» (\(keepDescription)) y eliminar el resto, o unificar la metadata si prefieres quedarte con
+PANTALLA	Services/SimilarItemsDetector.swift	575	Podrían ser versiones distintas. Sugerencia: revisar antes de eliminar. Si resultan ser la misma, conservar «\(keep.rawTitle)» (\(keepDescription)).
+PANTALLA	Services/SimilarItemsDetector.swift	588	 El artista que más se usa en tu biblioteca es «\(canonical)».
+PANTALLA	Services/ThemeInstaller.swift	14	No hay un iPod montado en una ruta válida.
+PANTALLA	Services/ThemeInstaller.swift	16	"\""\(id)\"" no es un id válido de tema."
+PANTALLA	Services/ThemeInstaller.swift	20	Ya hay otra operación escribiendo en el iPod -- espera a que termine.
+PANTALLA	Services/ThemeInstaller.swift	22	No se pudo copiar el tema al iPod: \(reason).
+PANTALLA	Services/ThemeInstaller.swift	24	"\""Aura\"" es el tema integrado del firmware -- no se puede eliminar."
+PANTALLA	Services/ThemeInstaller.swift	108	no se encontró theme.cfg en \(manifest.id)/ después de copiar
+PANTALLA	Services/ThemeInstaller.swift	215	código \(finished.terminationStatus)
+PANTALLA	Services/ThemePackager.swift	11	No se encontró \(file) en la carpeta de origen.
+PANTALLA	Services/ThemePackager.swift	13	La carpeta de origen no tiene icons/masks/.
+PANTALLA	Services/ThemePackager.swift	15	No se pudo escribir el paquete: \(reason).
+PANTALLA	Services/ThemeValidator.swift	18	Falta theme.cfg en el paquete.
+PANTALLA	Services/ThemeValidator.swift	20	theme.cfg no se pudo leer, o no declara theme_format.
+PANTALLA	Services/ThemeValidator.swift	22	"\""\(id)\"" no es un id valido de tema (theme_id en theme.cfg)."
+PANTALLA	Services/ThemeValidator.swift	24	Este tema requiere el formato \(found); el firmware instalado en el iPod soporta hasta el \(supported).
+PANTALLA	Services/ThemeValidator.swift	26	Faltan fuentes en el paquete: \(roles.joined(separator: 
+PANTALLA	Services/ThemeValidator.swift	28	Faltan mascaras de icono: el paquete trae \(found), se necesitan \(required).
+PANTALLA	ViewModels/InstallerViewModel.swift	180	mks5lboot descargado no quedó ejecutable
+PANTALLA	ViewModels/InstallerViewModel.swift	184	Instalando \(family.displayName) \(prepared.tag), descargado de GitHub.
+PANTALLA	ViewModels/InstallerViewModel.swift	189	\(why) Se instalará la versión incluida en Aura Studio\(versionText).
+PANTALLA	ViewModels/InstallerViewModel.swift	572	iPod
+PANTALLA	ViewModels/InstallerViewModel.swift	753	iPod
+PANTALLA	ViewModels/InstallerViewModel.swift	789	Formateando el disco (puente FAT y despues Mac OS Plus)...
+PANTALLA	ViewModels/InstallerViewModel.swift	819	Verificando integridad de los archivos...
+PANTALLA	ViewModels/InstallerViewModel.swift	828	Instalando el bootloader de \(targetName)...
+PANTALLA	ViewModels/InstallerViewModel.swift	844	Firmware enviado. Esperando a que el iPod confirme y reinicie...
+PANTALLA	ViewModels/InstallerViewModel.swift	860	Arranque grabado. Esperando a que el iPod reaparezca como disco...
+PANTALLA	ViewModels/InstallerViewModel.swift	877	Actualizando el arranque de \(targetName)...
+PANTALLA	ViewModels/InstallerViewModel.swift	882	Arranque enviado. Esperando a que el iPod confirme y reinicie...
+PANTALLA	ViewModels/InstallerViewModel.swift	894	Quitando el bootloader de \(targetName)...
+PANTALLA	ViewModels/InstallerViewModel.swift	902	Firmware enviado. Esperando a que el iPod confirme y reinicie...
+PANTALLA	ViewModels/InstallerViewModel.swift	913	Bootloader eliminado. Esperando a que el iPod reaparezca como disco... Si no aparece solo, mantén SELECT + PLAY al encenderlo para entrar a modo disco.
+PANTALLA	ViewModels/InstallerViewModel.swift	950	Formateando el disco...
+PANTALLA	ViewModels/InstallerViewModel.swift	960	Disco listo. Ahora hace falta grabar el arranque por DFU.
+PANTALLA	ViewModels/InstallerViewModel.swift	964	Disco listo. Copiando archivos...
+PANTALLA	ViewModels/InstallerViewModel.swift	1031	Verificando integridad de los archivos...
+PANTALLA	ViewModels/InstallerViewModel.swift	1033	Copiando el firmware al iPod...
+PANTALLA	ViewModels/InstallerViewModel.swift	1059	Guardando \(detected.displayName) para poder volver a él...
+PANTALLA	ViewModels/InstallerViewModel.swift	1064	no se pudo verificar rockbox.ipod tras copiarlo
+PANTALLA	ViewModels/InstallerViewModel.swift	1067	Instalando \(targetName) en el iPod (tipografías, iconos, códecs)... Puede tardar varios minutos por USB -- no desconectes el iPod.
+PANTALLA	ViewModels/InstallerViewModel.swift	1097	Actualizando \(targetName): \(delta.toExtract.count) archivo(s) por escribir, \(delta.toDelete.count) por quitar...
+PANTALLA	ViewModels/InstallerViewModel.swift	1104	La actualización selectiva no pudo; instalando completo...
+PANTALLA	ViewModels/InstallerViewModel.swift	1137	La copia se interrumpió -- reintentando...
+PANTALLA	ViewModels/InstallerViewModel.swift	1164	el árbol .rockbox no quedó completo tras extraerlo (falta \(sentinel.lastPathComponent))
+PANTALLA	ViewModels/InstallerViewModel.swift	1235	Archivos copiados. Ahora hace falta flashear el arranque por DFU.
+PANTALLA	ViewModels/InstallerViewModel.swift	1276	el zip no trae \(path)
+PANTALLA	ViewModels/LibraryViewModel.swift	452	No se pudo copiar \(fileName) a la biblioteca: \(error.localizedDescription)
+PANTALLA	ViewModels/LibraryViewModel.swift	519	No se pudo importar \(item.sourceURL.lastPathComponent): \(error.localizedDescription)
+PANTALLA	ViewModels/LibraryViewModel.swift	550	No se pudo preparar \(item.sourceURL.lastPathComponent): \(failure)
+PANTALLA	ViewModels/LibraryViewModel.swift	557	no se pudieron escribir
+PANTALLA	ViewModels/LibraryViewModel.swift	571	Convirtiendo en copias… \(completed) de \(total)
+PANTALLA	ViewModels/LibraryViewModel.swift	791	Formato no soportado
+PANTALLA	ViewModels/LibraryViewModel.swift	808	Falta ffmpeg
+PANTALLA	ViewModels/LibraryViewModel.swift	1221	No se pudo mover 1 archivo a la Papelera; el elemento sí se quitó de la biblioteca.
+PANTALLA	ViewModels/LibraryViewModel.swift	1222	No se pudieron mover \(failures) archivos a la Papelera; los elementos sí se quitaron de la biblioteca.
+PANTALLA	ViewModels/LibraryViewModel.swift	1301	Migrando biblioteca… \(completed) de \(total)
+PANTALLA	ViewModels/LibraryViewModel.swift	1372	no se pudieron escribir
+PANTALLA	ViewModels/LibraryViewModel.swift	1607	Para buscar pósters hace falta una API key de TMDB (gratuita). Agrégala en Ajustes › Servicios; con fanart.tv configurado además se usará su póster curado cuando exista.
+PANTALLA	ViewModels/LibraryViewModel.swift	1632	No se pudo guardar el póster de \(items[index].sourceURL.lastPathComponent): \(error.localizedDescription)
+PANTALLA	ViewModels/LibraryViewModel.swift	1691	No se pudo guardar la foto de \(artist.name): \(error.localizedDescription)
+PANTALLA	ViewModels/LibraryViewModel.swift	1700	Todos los artistas seleccionados ya tienen foto.
+PANTALLA	ViewModels/LibraryViewModel.swift	1701	No hay artistas para buscar.
+PANTALLA	ViewModels/LibraryViewModel.swift	1837	\(completed + 1) de \(targets.count)
+PANTALLA	ViewModels/LibraryViewModel.swift	1852	Carátula aplicada a 1 canción.
+PANTALLA	ViewModels/LibraryViewModel.swift	1853	Carátula aplicada a \(changed) canciones.
+PANTALLA	ViewModels/LibraryViewModel.swift	1898	Buscando carátula recomendada…
+PANTALLA	ViewModels/LibraryViewModel.swift	1899	Buscando carátulas de \(requests.count) álbumes…
+PANTALLA	ViewModels/LibraryViewModel.swift	1919	«\(request.albumTitle)» — \(completed + 1) de \(requests.count)
+PANTALLA	ViewModels/LibraryViewModel.swift	1990	\(completed + 1) de \(targets.count)
+PANTALLA	ViewModels/LibraryViewModel.swift	2065	\(completed + 1) de \(targets.count)
+PANTALLA	ViewModels/LibraryViewModel.swift	2131	Buscando información en línea…
+PANTALLA	ViewModels/LibraryViewModel.swift	2149	\(completed + 1) de \(targets.count)
+PANTALLA	ViewModels/LibraryViewModel.swift	2172	No se pudo completar la busqueda para \(networkErrors.count) de \(attempted) cancion(es): \(networkErrors[0])
+PANTALLA	ViewModels/LibraryViewModel.swift	2175	No se encontro informacion nueva para ninguna de las \(attempted) cancion(es) seleccionadas.
+PANTALLA	ViewModels/LibraryViewModel.swift	2176	Se encontro informacion nueva para \(found) de \(attempted) cancion(es).
+PANTALLA	ViewModels/LibraryViewModel.swift	2236	No habia nada que actualizar en \(attempted) cancion(es): ya tenian lo que traen sus archivos.
+PANTALLA	ViewModels/LibraryViewModel.swift	2237	Se actualizaron \(updated) de \(attempted) cancion(es) con lo que traen sus archivos.
+PANTALLA	ViewModels/LibraryViewModel.swift	2362	No hay ningún elemento seleccionado para sincronizar.
+PANTALLA	ViewModels/LibraryViewModel.swift	2367	Los elementos seleccionados todavía no están listos para sincronizar.
+PANTALLA	ViewModels/LibraryViewModel.swift	2374	No hay nada listo para sincronizar.
+PANTALLA	ViewModels/LibraryViewModel.swift	2379	Hay otra operación en curso con el iPod -- espera a que termine antes de sincronizar.
+PANTALLA	ViewModels/LibraryViewModel.swift	2426	Sincronización cancelada. Se copiaron \(result.filesCopied) archivo(s); \(result.filesRemaining) quedaron pendientes.\(playlistsNote)
+PANTALLA	ViewModels/LibraryViewModel.swift	2429	Ya estaba todo sincronizado, no habia nada nuevo.\(playlistsNote)
+PANTALLA	ViewModels/LibraryViewModel.swift	2430	Se copiaron \(result.filesCopied) de \(allReady.count) archivo(s). El indice de la biblioteca se va a reconstruir la proxima vez que arranque Aura.\(playlistsNote)
+PANTALLA	ViewModels/LibraryViewModel.swift	2443	\n… y \(result.failures.count - shown.count) más.
+PANTALLA	ViewModels/LibraryViewModel.swift	2444	\(result.failures.count) archivo(s) no se pudieron copiar (el resto de la biblioteca sí se sincronizó):\n\(list)\(more)
+PANTALLA	ViewModels/LibraryViewModel.swift	2459	No se pudo sincronizar en \(volumeRoot.path): \(error.localizedDescription)
+PANTALLA	ViewModels/LibraryViewModel.swift	2481	Hay otra operación en curso con el iPod -- espera a que termine antes de borrar.
+PANTALLA	ViewModels/LibraryViewModel.swift	2492	No había nada que borrar.
+PANTALLA	ViewModels/LibraryViewModel.swift	2493	Se eliminaron \(deleted) archivo(s) del iPod. El índice de la biblioteca se va a reconstruir la próxima vez que arranque Aura.
+PANTALLA	ViewModels/LibraryViewModel.swift	2495	No se pudo borrar en \(volumeRoot.path): \(error.localizedDescription)
+PANTALLA	ViewModels/LibraryViewModel.swift	2571	No se pudo usar esa imagen para la playlist: \(error.localizedDescription)
+PANTALLA	ViewModels/LibraryViewModel.swift	2816	Se normalizó 1 carátula: ahora es cuadrada.
+PANTALLA	ViewModels/LibraryViewModel.swift	2817	Se normalizaron \(result.normalized) carátulas: ahora son cuadradas.
+PANTALLA	Views/AlbumCoverPickerView.swift	146	Se aplicará a 1 canción del álbum.
+PANTALLA	Views/AlbumCoverPickerView.swift	147	Se aplicará a \(request.trackCount) canciones del álbum.
+PANTALLA	Views/AlbumCoverPickerView.swift	151	Cancelar el resto
+PANTALLA	Views/AlbumsView.swift	76	Título
+PANTALLA	Views/AlbumsView.swift	100	Sin álbum
+PANTALLA	Views/AlbumsView.swift	358	Álbumes
+PANTALLA	Views/AlbumsView.swift	365	Todavía no hay música en la biblioteca.
+PANTALLA	Views/AlbumsView.swift	366	"Suelta canciones en \""Canciones\"" y aquí aparecerán agrupadas por álbum."
+PANTALLA	Views/AlbumsView.swift	368	"Sin resultados para \""\(searchText)\""."
+PANTALLA	Views/AlbumsView.swift	519	Marcar como favorito
+PANTALLA	Views/AlbumsView.swift	574	Marcar como favorito
+PANTALLA	Views/AlbumsView.swift	602	Eliminar álbumes
+PANTALLA	Views/AlbumsView.swift	602	Eliminar álbum
+PANTALLA	Views/AppMenuCommands.swift	152	Álbumes
+PANTALLA	Views/AppMenuCommands.swift	155	Todos los videos
+PANTALLA	Views/AppMenuCommands.swift	156	Películas
+PANTALLA	Views/AppMenuCommands.swift	158	Todas las fotos
+PANTALLA	Views/ArtistsView.swift	250	Marcar como favorito
+PANTALLA	Views/ArtistsView.swift	330	Quitar favorito del álbum
+PANTALLA	Views/ArtistsView.swift	330	Marcar álbum como favorito
+PANTALLA	Views/ArtistsView.swift	387	Quitar de favoritos
+PANTALLA	Views/ArtistsView.swift	387	Marcar como favorito
+PANTALLA	Views/ArtistsView.swift	393	Quitar de favoritos
+PANTALLA	Views/ArtistsView.swift	393	Marcar como favorito
+PANTALLA	Views/ArtistsView.swift	413	Marcar como favorito
+PANTALLA	Views/ArtistsView.swift	420	Buscar fotos de los artistas
+PANTALLA	Views/ArtistsView.swift	420	Buscar foto del artista
+PANTALLA	Views/ArtistsView.swift	427	Quitar fotos de los artistas
+PANTALLA	Views/ArtistsView.swift	427	Quitar foto del artista
+PANTALLA	Views/AwaitBootloaderUSBView.swift	26	"Deja el cable USB conectado. El iPod se reinicia solo y, como todavía no tiene Aura, su pantalla dice \""Bootloader USB mode\"" y aparece como disco."
+PANTALLA	Views/AwaitBootloaderUSBView.swift	27	Si en unos 30 segundos la pantalla del iPod sigue negra o no aparece como disco, mantén SELECT + MENU unos 5 segundos para reiniciarlo, sin desconectar el cable.
+PANTALLA	Views/AwaitBootloaderUSBView.swift	28	Aura Studio detecta el disco y copia Aura automáticamente -- no hay que tocar nada más.
+PANTALLA	Views/BatchMediaInfoView.swift	212	Título
+PANTALLA	Views/BatchMediaInfoView.swift	219	N.º de pista
+PANTALLA	Views/BatchMediaInfoView.swift	219	Distinto por canción
+PANTALLA	Views/BatchMediaInfoView.swift	234	Álbum
+PANTALLA	Views/BatchMediaInfoView.swift	235	Artista del álbum
+PANTALLA	Views/BatchMediaInfoView.swift	237	Género
+PANTALLA	Views/ContentView.swift	289	El nombre de este iPod se puso desde otra Mac; solo desde ahí se puede cambiar.
+PANTALLA	Views/ContentView.swift	299	No se pudo guardar el nombre en el iPod.
+PANTALLA	Views/ContentView.swift	404	Imágenes
+PANTALLA	Views/ContentView.swift	429	Usar esta carpeta
+PANTALLA	Views/ContentView.swift	430	Elige (o crea) la carpeta donde vivira tu biblioteca Aura.
+PANTALLA	Views/ContentView.swift	456	Elige archivos o carpetas para agregar a la biblioteca de Aura Studio.
+PANTALLA	Views/ContentView.swift	466	Imágenes
+PANTALLA	Views/ContentView.swift	502	No hay un iPod con firmware de la familia Aura conectado.
+PANTALLA	Views/ContentView.swift	505	Hay una instalación en curso; espera a que termine.
+PANTALLA	Views/ContentView.swift	513	\(f.displayName) no está instalado en el iPod; instálalo desde el Instalador.
+PANTALLA	Views/ContentView.swift	515	No se pudo cambiar de firmware: \(error.localizedDescription)
+PANTALLA	Views/ContentView.swift	696	Imágenes
+PANTALLA	Views/ContentView.swift	802	Imágenes
+PANTALLA	Views/CoverContaminationSheet.swift	45	Junto a música o video
+PANTALLA	Views/CoverContaminationSheet.swift	45	Solo por el nombre
+PANTALLA	Views/DeviceActivityBar.swift	88	Solo la selección (\(selectionCount))
+PANTALLA	Views/DeviceActivityBar.swift	88	Solo la selección
+PANTALLA	Views/DeviceActivityBar.swift	235	Música
+PANTALLA	Views/DeviceGeneralView.swift	157	¿Eliminar \($0.label) del iPod?
+PANTALLA	Views/DeviceGeneralView.swift	175	Disco expulsado. Ya puedes desconectar el cable.
+PANTALLA	Views/DeviceGeneralView.swift	176	No se pudo expulsar -- cierra cualquier app que este usando el iPod y reintenta.
+PANTALLA	Views/DeviceGeneralView.swift	227	El iPod no puede mostrar emoji; se guardó sin ellos.
+PANTALLA	Views/DeviceGeneralView.swift	291	\(name) está al día con esta versión de Aura Studio.
+PANTALLA	Views/DeviceGeneralView.swift	292	\(name) está al día.
+PANTALLA	Views/DeviceGeneralView.swift	310	 (dual boot con Apple)
+PANTALLA	Views/DeviceGeneralView.swift	323	)) también instalado, dormido
+PANTALLA	Views/DeviceGeneralView.swift	326	Firmware \(name) instalado -- conectado desde \(name)
+PANTALLA	Views/DeviceGeneralView.swift	328	Firmware de la familia Aura instalado -- conectado desde el firmware, todavía sin escribir su configuración
+PANTALLA	Views/DeviceGeneralView.swift	330	Firmware \(name) instalado -- conectado desde el modo disco de Apple
+PANTALLA	Views/DeviceGeneralView.swift	334	Archivos de la familia Aura en el disco, pero el iPod está corriendo el firmware de Apple y ese firmware nunca ha arrancado aquí -- no hay evidencia de que esté instalado
+PANTALLA	Views/DeviceGeneralView.swift	336	Archivos de la familia Aura en el disco -- todavía sin arrancar (sin evidencia de que el bootloader esté instalado)
+PANTALLA	Views/DeviceGeneralView.swift	341	Rockbox instalado (no es Aura) -- conectado desde Rockbox
+PANTALLA	Views/DeviceGeneralView.swift	343	Rockbox instalado (no es Aura)
+PANTALLA	Views/DeviceGeneralView.swift	345	Archivos de Rockbox en el disco (no es Aura), pero el iPod está corriendo el firmware de Apple y Rockbox nunca ha arrancado aquí
+PANTALLA	Views/DeviceGeneralView.swift	347	Archivos de Rockbox en el disco (no es Aura) -- sin evidencia de arranque
+PANTALLA	Views/DeviceGeneralView.swift	351	Firmware original de Apple en el disco -- pero el USB lo atiende el bootloader de Aura/Rockbox (modo USB del bootloader)
+PANTALLA	Views/DeviceGeneralView.swift	352	Firmware original de Apple
+PANTALLA	Views/DeviceGeneralView.swift	355	Disco vacío -- el USB lo atiende el bootloader de Aura/Rockbox (modo USB del bootloader)
+PANTALLA	Views/DeviceGeneralView.swift	356	Disco vacio, sin firmware
+PANTALLA	Views/DeviceGeneralView.swift	461	todo el contenido (música, videos y fotos)
+PANTALLA	Views/DeviceGeneralView.swift	462	toda la música
+PANTALLA	Views/DeviceGeneralView.swift	463	todos los videos
+PANTALLA	Views/DeviceGeneralView.swift	464	todas las fotos
+PANTALLA	Views/DeviceGeneralView.swift	465	el contenido seleccionado
+PANTALLA	Views/DeviceGeneralView.swift	532	El iPod esta en modo DFU. Usa la seccion Instalador para instalar o restaurar el firmware.
+PANTALLA	Views/DeviceGeneralView.swift	534	El disco del iPod no tiene un sistema de archivos legible. Usa la seccion Instalador para prepararlo e instalar Aura.
+PANTALLA	Views/DeviceGeneralView.swift	536	Hay un dispositivo Apple conectado, pero no se pudo identificar como un iPod Classic.
+PANTALLA	Views/DeviceGeneralView.swift	540	Conéctalo por USB y espera a que aparezca como disco.
+PANTALLA	Views/DeviceNameField.swift	18	Nombre del iPod
+PANTALLA	Views/DoneView.swift	32	iPod restaurado
+PANTALLA	Views/DoneView.swift	42	Tu iPod va a reiniciar y arrancar con el firmware original de Apple. Ya puedes desconectar el cable.
+PANTALLA	Views/DoneView.swift	44	"\(firmwareName) quedó instalado. Ya puedes desconectar el cable con seguridad. El iPod se quedó esperando en \""Bootloader USB mode\"": mantén SELECT + MENU unos 5 segundos para reiniciarlo y arranca co"
+PANTALLA	Views/DoneView.swift	46	El arranque quedó actualizado. Tu música, tus fotos y tus ajustes siguen exactamente donde estaban -- esto no tocó el disco. Ya puedes desconectar el cable; si el iPod no reinicia solo, mantén SELECT 
+PANTALLA	Views/DoneView.swift	48	Todos los archivos quedaron instalados: ya puedes desconectar el cable con seguridad. El iPod va a arrancar con \(firmwareName) -- si no reinicia solo, mantén SELECT + MENU unos segundos. Despues pued
+PANTALLA	Views/DoneView.swift	120	Este iPod no está listo para dual boot
+PANTALLA	Views/DoneView.swift	122	Error desconocido.
+PANTALLA	Views/EnterDFUView.swift	25	Si tu iPod esta reproduciendo musica, deten la reproduccion.
+PANTALLA	Views/EnterDFUView.swift	26	Manten presionados SELECT + MENU al mismo tiempo.
+PANTALLA	Views/EnterDFUView.swift	27	Segui presionando ambos botones durante unos 12 segundos, hasta despues de que la pantalla se ponga negra.
+PANTALLA	Views/EnterDFUView.swift	28	Soltalos. Aura Studio va a detectar el modo DFU automaticamente.
+PANTALLA	Views/ExtrasView.swift	53	Conecta tu iPod con Aura instalado para instalar, activar o construir temas.
+PANTALLA	Views/ExtrasView.swift	56	Este firmware no admite temas (\(device.declaredFamily.displayName) no tiene sistema de temas).
+PANTALLA	Views/ExtrasView.swift	58	Tema integrado (Claro/Oscuro) más los que instales -- Ajustes > Estilo, en el iPod.
+PANTALLA	Views/ExtrasView.swift	101	"Lenguaje visual \""Apple 2026\"": tipografías SF, temas claro/oscuro y temas instalables, Cover Flow."
+PANTALLA	Views/ExtrasView.swift	108	Lenguaje visual Metro (Windows Phone 7 / Zune): tipografía Selawik, hub de tiles, acentos de color, transiciones de pivote.
+PANTALLA	Views/ExtrasView.swift	115	Lenguaje visual Waning Crescent: calma nocturna, Material Design 3 adaptado al iPod, sin sistema de temas.
+PANTALLA	Views/ExtrasView.swift	140	Las versiones son las más recientes publicadas en GitHub: instalar desde cero descarga esa.
+PANTALLA	Views/ExtrasView.swift	141	No se pudo consultar GitHub (revisa el token en Ajustes › General): se muestran las versiones incluidas en Aura Studio, que son las que se instalarían.
+PANTALLA	Views/ExtrasView.swift	234	Todos los firmwares son GPL v2. Aquí están sus fuentes, versiones exactas y cambios.
+PANTALLA	Views/ExtrasView.swift	250	Animaciones y graficos
+PANTALLA	Views/ExtrasView.swift	251	Tres niveles cada uno. Se eligen en Ajustes, en el iPod.
+PANTALLA	Views/ExtrasView.swift	262	No implementados.
+PANTALLA	Views/ExtrasView.swift	263	Cronometro y bloqueo de pantalla
+PANTALLA	Views/ExtrasView.swift	264	No implementados.
+PANTALLA	Views/GitHubTokenSettingsView.swift	64	Pega el token aquí (github_pat_… o ghp_…)
+PANTALLA	Views/GitHubTokenSettingsView.swift	74	Token quitado del Llavero.
+PANTALLA	Views/GitHubTokenSettingsView.swift	104	El token no es válido o expiró. Crea uno nuevo y guárdalo.
+PANTALLA	Views/GitHubTokenSettingsView.swift	112	Pega el token en el campo antes de guardar.
+PANTALLA	Views/GitHubTokenSettingsView.swift	116	Eso no parece un token de GitHub: debe empezar con github_pat_ o ghp_ y no llevar espacios.
+PANTALLA	Views/GitHubTokenSettingsView.swift	124	Guardado en el Llavero.
+PANTALLA	Views/GitHubTokenSettingsView.swift	136	GitHub rechazó el token: no es válido, expiró o no tiene acceso a Aura-Firmware.
+PANTALLA	Views/GitHubTokenSettingsView.swift	138	Funciona. Versión más nueva de Aura: \(latest.tagName).
+PANTALLA	Views/GitHubTokenSettingsView.swift	140	GitHub respondió, pero no hay ningún Release con versión reconocible.
+PANTALLA	Views/GitHubTokenSettingsView.swift	146	No se pudo consultar GitHub (¿sin conexión, o se agotó el límite de peticiones sin token?): \(error.localizedDescription)
+PANTALLA	Views/InstallerHomeView.swift	114	Esta versión trae un arranque más nuevo que el que tiene grabado tu iPod. No borra nada: tu música y tus ajustes se quedan igual.
+PANTALLA	Views/InstallerHomeView.swift	115	Aura Studio no sabe qué versión del arranque tiene tu iPod (lo instaló otra computadora, o una versión anterior de la app). Actualizarlo no borra nada.
+PANTALLA	Views/InstallerHomeView.swift	166	Tu iPod esta conectado, pero su disco no tiene un sistema de archivos legible -- instalar \(name) lo prepara desde cero.
+PANTALLA	Views/InstallerHomeView.swift	169	Tu iPod esta conectado en modo DFU, listo para flashear.
+PANTALLA	Views/InstallerHomeView.swift	172	Instala el firmware \(name) en tu iPod Classic 6G, o restaura el firmware original si quieres volver atras.
+PANTALLA	Views/InstallerHomeView.swift	179	Tu iPod tiene el firmware original de Apple en el disco, pero el USB lo atiende el bootloader de Aura/Rockbox.
+PANTALLA	Views/InstallerHomeView.swift	180	Tu iPod tiene el firmware original de Apple.
+PANTALLA	Views/InstallerHomeView.swift	185	, en dual boot con el firmware original de Apple
+PANTALLA	Views/InstallerHomeView.swift	187	Tu iPod ya tiene \(installed) instalado\(dual).
+PANTALLA	Views/InstallerHomeView.swift	189	Tu iPod tiene \(installed) instalado\(dual). Instalar \(name) lo reemplaza.
+PANTALLA	Views/InstallerHomeView.swift	192	Tu iPod tiene archivos de Aura en el disco, pero está corriendo el firmware de Apple y Aura nunca ha arrancado aquí -- no hay evidencia de que esté instalado.
+PANTALLA	Views/InstallerHomeView.swift	193	Tu iPod tiene archivos de Aura en el disco, pero Aura nunca ha arrancado aquí -- no hay evidencia de que esté instalado.
+PANTALLA	Views/InstallerHomeView.swift	196	Tu iPod tiene Rockbox instalado (no es Aura), en dual boot con el firmware original.
+PANTALLA	Views/InstallerHomeView.swift	197	Tu iPod tiene Rockbox instalado (no es Aura).
+PANTALLA	Views/InstallerHomeView.swift	199	Tu iPod tiene archivos de Rockbox en el disco (no es Aura), sin evidencia de que arranquen.
+PANTALLA	Views/InstallerHomeView.swift	202	El disco de tu iPod esta vacio, pero el USB lo atiende el bootloader de Aura/Rockbox.
+PANTALLA	Views/InstallerHomeView.swift	203	El disco de tu iPod esta vacio, sin ningun firmware.
+PANTALLA	Views/InstallerHomeView.swift	220	Reinstalar solo reemplaza los archivos del firmware en el disco -- no hace falta flashear por DFU. Tus ajustes de \(name) se conservan. Si al terminar tu iPod no arranca con \(name), la pantalla final
+PANTALLA	Views/InstallerHomeView.swift	221	Reinstalar reemplaza los archivos del firmware y, como Aura Studio no puede confirmar desde aquí que el bootloader siga grabado, vuelve a flashear el arranque por DFU (reflashear es inofensivo). Tus a
+PANTALLA	Views/InstallerHomeView.swift	229	Instalar \(name) reemplaza \(installed) en el disco -- no hace falta flashear por DFU, es el mismo arranque. Tu música y tus fotos no se tocan; los ajustes de \(installed) se pierden.
+PANTALLA	Views/InstallerHomeView.swift	230	Instalar \(name) reemplaza \(installed) en el disco y vuelve a flashear el arranque por DFU, porque Aura Studio no puede confirmar desde aquí que el bootloader siga grabado (reflashear es inofensivo).
+PANTALLA	Views/InstallerHomeView.swift	232	Hay archivos de Aura en el disco pero ninguna evidencia de que arranquen: instalar flashea el arranque por modo DFU y vuelve a copiar los archivos -- el asistente te guia paso a paso.
+PANTALLA	Views/InstallerHomeView.swift	235	Instalar \(name) no requiere flashear ni entrar a modo DFU: solo se reemplaza la carpeta .rockbox del disco por la de \(name).
+PANTALLA	Views/InstallerHomeView.swift	236	Instalar \(name) reemplaza la carpeta .rockbox del disco por la de \(name) y flashea el arranque por modo DFU, porque no hay evidencia suficiente de que el bootloader ya esté grabado. Para saltarte el
+PANTALLA	Views/InstallerHomeView.swift	239	El bootloader de Aura/Rockbox ya está atendiendo el USB: instalar solo copia los archivos, sin flashear.
+PANTALLA	Views/InstallerHomeView.swift	240	Instalar \(name) requiere flashear el arranque por modo DFU -- el asistente te guia paso a paso.
+PANTALLA	Views/InstallerHomeView.swift	243	El bootloader de Aura/Rockbox ya está atendiendo el USB: instalar solo copia los archivos, sin flashear.
+PANTALLA	Views/InstallerWizardView.swift	92	Preparando el disco
+PANTALLA	Views/InstallerWizardView.swift	96	Preparando para Finder
+PANTALLA	Views/InstallingView.swift	10	Restaurando iPod original...
+PANTALLA	Views/InstallingView.swift	13	Actualizando el arranque...
+PANTALLA	Views/LibraryBrowsingComponents.swift	524	Quitar de la selección
+PANTALLA	Views/LibraryBrowsingComponents.swift	524	Agregar a la selección
+PANTALLA	Views/LibraryBrowsingComponents.swift	525	Quitar de la selección
+PANTALLA	Views/LibraryBrowsingComponents.swift	525	Agregar a la selección
+PANTALLA	Views/LibraryBrowsingComponents.swift	539	Buscar en \(scopeTitle)
+PANTALLA	Views/LibraryUnavailableView.swift	35	El disco «\($0)» no está conectado
+PANTALLA	Views/LibraryUnavailableView.swift	36	La biblioteca está en un disco que no está conectado
+PANTALLA	Views/LicensesView.swift	49	Texto de la GPL v2
+PANTALLA	Views/LicensesView.swift	86	Código fuente
+PANTALLA	Views/LicensesView.swift	89	Fuente exacta de esta versión (\(tag))
+PANTALLA	Views/LicensesView.swift	97	Avisos de terceros (tipografías e iconos)
+PANTALLA	Views/MainWindowPlacer.swift	112	(\(Int(rect.origin.x)), \(Int(rect.origin.y)) \(Int(rect.width))×\(Int(rect.height)))
+PANTALLA	Views/MediaInfoView.swift	163	Título
+PANTALLA	Views/MediaInfoView.swift	165	Álbum
+PANTALLA	Views/MediaInfoView.swift	166	Artista del álbum (opcional)
+PANTALLA	Views/MediaInfoView.swift	167	Número de pista (opcional)
+PANTALLA	Views/MediaInfoView.swift	171	Año (opcional)
+PANTALLA	Views/MediaInfoView.swift	172	Género (opcional)
+PANTALLA	Views/MediaInfoView.swift	205	Título
+PANTALLA	Views/MediaInfoView.swift	207	Nombre de la serie
+PANTALLA	Views/MediaInfoView.swift	245	Ubicación
+PANTALLA	Views/MediaInfoView.swift	247	Tamaño
+PANTALLA	Views/MediaInfoView.swift	249	Duración
+PANTALLA	Views/MediaInfoView.swift	277	En cola
+PANTALLA	Views/MediaInfoView.swift	278	Buscando información...
+PANTALLA	Views/MediaInfoView.swift	280	Listo para sincronizar
+PANTALLA	Views/MediaInfoView.swift	281	Falta completar información
+PANTALLA	Views/MediaInfoView.swift	282	Error: \(message)
+PANTALLA	Views/MediaSectionView.swift	105	Buscando información en línea...
+PANTALLA	Views/MediaSectionView.swift	527	Leyendo etiquetas del archivo...
+PANTALLA	Views/MediaSectionView.swift	591	Buscando información en línea...
+PANTALLA	Views/MediaSectionView.swift	644	Título
+PANTALLA	Views/MediaSectionView.swift	700	Quitar de favoritos
+PANTALLA	Views/MediaSectionView.swift	700	Marcar como favorito
+PANTALLA	Views/MediaSectionView.swift	723	Todas las canciones
+PANTALLA	Views/MediaSectionView.swift	730	Opciones para ordenar
+PANTALLA	Views/MediaSectionView.swift	732	Mostrar opciones de visualización
+PANTALLA	Views/MediaSectionView.swift	745	No hay favoritos todavía.
+PANTALLA	Views/MediaSectionView.swift	745	"Sin resultados para \""\(searchText)\""."
+PANTALLA	Views/MediaSectionView.swift	803	Título
+PANTALLA	Views/MediaSectionView.swift	805	Categoría
+PANTALLA	Views/MediaSectionView.swift	805	Sin categoría
+PANTALLA	Views/MediaSectionView.swift	807	Duración
+PANTALLA	Views/MediaSectionView.swift	814	Tamaño
+PANTALLA	Views/MediaSectionView.swift	1017	Leyendo etiquetas del archivo...
+PANTALLA	Views/MediaSectionView.swift	1066	Buscando pósters en línea...
+PANTALLA	Views/MediaSectionView.swift	1183	Suelta archivos aqui
+PANTALLA	Views/MediaSectionView.swift	1239	Imágenes
+PANTALLA	Views/MediaSectionView.swift	1371	Tamaño
+PANTALLA	Views/MediaSectionView.swift	1438	Nombre del álbum
+PANTALLA	Views/MediaSectionView.swift	1485	Álbum (opcional)
+PANTALLA	Views/MoviesView.swift	70	Título
+PANTALLA	Views/MoviesView.swift	245	Películas
+PANTALLA	Views/MoviesView.swift	252	Todavía no hay películas en la biblioteca.
+PANTALLA	Views/MoviesView.swift	253	"Arrastra videos a \""Películas\"" en la barra lateral y aquí aparecerán con su póster."
+PANTALLA	Views/MoviesView.swift	255	"Sin resultados para \""\(searchText)\""."
+PANTALLA	Views/MoviesView.swift	426	Marcar como favorito
+PANTALLA	Views/MoviesView.swift	443	Eliminar películas
+PANTALLA	Views/MoviesView.swift	443	Eliminar película
+PANTALLA	Views/MusicSettingsView.swift	102	Nombre del artista tal como aparece
+PANTALLA	Views/MusicSettingsView.swift	139	Music/Artista/Álbum/ -- una carpeta por álbum dentro de cada artista.
+PANTALLA	Views/MusicSettingsView.swift	140	Music/Álbum/ -- todas las canciones agrupadas solo por álbum, sin carpeta de artista.
+PANTALLA	Views/MusicSettingsView.swift	141	Music/Artista/ -- todas las canciones del artista juntas, sin carpeta de álbum.
+PANTALLA	Views/PermissionsView.swift	21	Aura Studio necesita ver y desmontar el iPod apenas lo conectas -- si no, macOS lo deja montado en Finder y el instalador no puede escribir en el. macOS pide confirmar esto la primera vez que la app i
+PANTALLA	Views/PermissionsView.swift	26	Acceso total al disco (opcional, recomendado)
+PANTALLA	Views/PermissionsView.swift	27	Si macOS bloquea la lectura/escritura del iPod incluso despues de aceptar el permiso anterior, activa Acceso total al disco para Aura Studio en Ajustes del Sistema > Privacidad y Seguridad. Es un perm
+PANTALLA	Views/PermissionsView.swift	32	Contraseña de administrador (en pasos puntuales)
+PANTALLA	Views/PermissionsView.swift	33	En algunos pasos -- pausar servicios que interfieren con la deteccion del iPod, o preparar el disco antes de instalar -- macOS te va a pedir tu contraseña con su propio dialogo nativo. Aura Studio sie
+PANTALLA	Views/PhotoAlbumsView.swift	275	Suelta fotos aquí
+PANTALLA	Views/PhotoAlbumsView.swift	279	Suelta fotos aquí
+PANTALLA	Views/PhotoAlbumsView.swift	284	"Sin resultados para \""\(searchText)\""."
+PANTALLA	Views/PhotoAlbumsView.swift	396	Disolver álbumes
+PANTALLA	Views/PhotoAlbumsView.swift	396	Disolver álbum
+PANTALLA	Views/PhotoAlbumsView.swift	448	Suelta fotos aquí para agregarlas a este álbum
+PANTALLA	Views/PhotoAlbumsView.swift	454	Este álbum se quedó sin fotos.
+PANTALLA	Views/PhotoAlbumsView.swift	560	Nombre del álbum
+PANTALLA	Views/PhotoSettingsView.swift	62	Nueva colección
+PANTALLA	Views/PlaylistsView.swift	102	Elige una playlist M3U/M3U8 exportada de otro programa o servicio.
+PANTALLA	Views/PlaylistsView.swift	106	No se pudo leer \(fileURL.lastPathComponent).
+PANTALLA	Views/PlaylistsView.swift	111	\(fileURL.lastPathComponent) no tiene pistas.
+PANTALLA	Views/PlaylistsView.swift	118	"\""\(name)\"" importada: \(result.matchedCount) de \(paths.count) pista(s) ligadas."
+PANTALLA	Views/PlaylistsView.swift	119	"\""\(name)\"" importada: \(result.matchedCount) de \(paths.count) pista(s) ligadas. \(result.unmatchedPaths.count) no están en tu biblioteca Aura todavía -- suéltalas en Música y vuelve a importar para "
+PANTALLA	Views/PlaylistsView.swift	259	Elige una imagen para esta playlist.
+PANTALLA	Views/RestoreHandoffView.swift	24	Cierra Aura Studio con el boton de abajo -- si sigue abierto, su deteccion USB puede interferir con Finder.
+PANTALLA	Views/RestoreHandoffView.swift	25	Abre una ventana de Finder: el iPod aparece en la barra lateral, bajo Ubicaciones.
+PANTALLA	Views/RestoreHandoffView.swift	26	"Selecciona el iPod y elige \""Restaurar iPod...\"" -- Finder descarga e instala el firmware original de Apple."
+PANTALLA	Views/SeriesView.swift	224	Todavía no hay series en la biblioteca.
+PANTALLA	Views/SeriesView.swift	225	"Arrastra episodios a \""Series\"" en la barra lateral -- si el nombre trae SxxEyy se agrupan solos."
+PANTALLA	Views/SeriesView.swift	227	"Sin resultados para \""\(searchText)\""."
+PANTALLA	Views/SeriesView.swift	410	Sin temporada
+PANTALLA	Views/SeriesView.swift	461	Marcar como favorito
+PANTALLA	Views/SeriesView.swift	494	Marcar como favorito
+PANTALLA	Views/ServicesSettingsView.swift	41	Metadata: artista, album, ano, numero de pista
+PANTALLA	Views/ServicesSettingsView.swift	42	Base abierta y colaborativa, datos en CC0. Sin key. Limite estricto de 1 pedido por segundo, ya respetado por la app.
+PANTALLA	Views/ServicesSettingsView.swift	48	Caratulas de album
+PANTALLA	Views/ServicesSettingsView.swift	49	Sin key y sin limite de tasa. Primer intento para caratula (ver orden de busqueda abajo).
+PANTALLA	Views/ServicesSettingsView.swift	56	Sin key ni registro. Devuelve LRC real con tiempos. Codigo abierto MIT.
+PANTALLA	Views/ServicesSettingsView.swift	113	sin key configurada abajo
+PANTALLA	Views/ServicesSettingsView.swift	142	Musica, video y audio de dominio publico
+PANTALLA	Views/ServicesSettingsView.swift	143	Sin key para buscar y descargar. Sirve para ENCONTRAR contenido nuevo de dominio publico, no para completar metadata de tu biblioteca -- todavia no tiene ninguna integracion en Aura Studio.
+PANTALLA	Views/ServicesSettingsView.swift	149	Fotos con licencia libre
+PANTALLA	Views/ServicesSettingsView.swift	150	Sin registro. Mismo caso que Internet Archive: es para buscar fotos nuevas, no para enriquecer canciones -- todavia sin conectar.
+PANTALLA	Views/ServicesSettingsView.swift	165	Su API oficial no tiene letras, ni sincronizadas ni planas: la unica via es scrapear la web, contra sus terminos.
+PANTALLA	Views/ServicesSettingsView.swift	172	El plan gratuito solo devuelve un fragmento de vista previa; las letras completas y sincronizadas requieren licencia comercial paga.
+PANTALLA	Views/ServicesSettingsView.swift	178	Metadata y caratulas
+PANTALLA	Views/ServicesSettingsView.swift	179	Exige OAuth y, desde 2026, cuenta Premium activa del desarrollador con usuarios en lista blanca. Inviable para una app personal.
+PANTALLA	Views/ServicesSettingsView.swift	186	Sus terminos excluyen expresamente las imagenes y el arte de album del uso permitido de la API.
+PANTALLA	Views/ServicesSettingsView.swift	193	Tecnicamente la mejor opcion de musica libre, pero sus terminos prohiben las apps disenadas para cachear contenido u ofrecer acceso offline -- que es literalmente lo que hace Aura Studio.
+PANTALLA	Views/ServicesSettingsView.swift	200	Obliga a enlazar las imagenes desde sus servidores en vez de guardarlas. Una biblioteca local rompe esa condicion por definicion.
+PANTALLA	Views/ServicesSettingsView.swift	276	Pega tu API key aquí
+PANTALLA	Views/SettingsSectionView.swift	240	\(scan.count) archivos, \(ByteCountFormatter.string(fromByteCount: Int64(scan.totalBytes), countStyle: .file))
+PANTALLA	Views/SettingsSectionView.swift	408	Usar esta carpeta
+PANTALLA	Views/SettingsSectionView.swift	409	Elige (o crea) la carpeta donde vivira tu biblioteca Aura.
+PANTALLA	Views/SimilarItemsView.swift	227	No se encontraron elementos parecidos en tu biblioteca.
+PANTALLA	Views/SimilarItemsView.swift	227	Nada que mostrar con este filtro.
+PANTALLA	Views/SimilarItemsView.swift	415	Este es el que se conserva
+PANTALLA	Views/SimilarItemsView.swift	415	Conservar este en lugar del marcado
+PANTALLA	Views/SimilarItemsView.swift	445	Sin artista
+PANTALLA	Views/SimilarItemsView.swift	445	Sin álbum
+PANTALLA	Views/SimilarItemsView.swift	451	Sin categoría
+PANTALLA	Views/SimilarItemsView.swift	464	carátula
+PANTALLA	Views/SimilarItemsView.swift	464	póster
+PANTALLA	Views/SimilarItemsView.swift	495	Se quitó «\(displayTitle(item))» de la biblioteca.
+PANTALLA	Views/SimilarItemsView.swift	544	Elementos quitados de la biblioteca: \(losers.count). Se conservó «\(kept)».
+PANTALLA	Views/SyncSheets.swift	130	¿Eliminar \(pendingDeletion?.count ?? 0) archivo(s) del iPod?
+PANTALLA	Views/ThemesView.swift	54	Ponle un nombre al tema.
+PANTALLA	Views/ThemesView.swift	59	"\""\(trimmedName)\"" no produce un id válido -- usa letras, números y espacios."
+PANTALLA	Views/ThemesView.swift	163	"¿Eliminar \""\(pendingDelete?.name ?? "
+PANTALLA	Views/ThemesView.swift	275	Elige la carpeta con fonts/ e icons/masks/ ya generados.
+PANTALLA	Views/UpdateBootloaderView.swift	36	Qué es el arranque
+PANTALLA	Views/UpdateBootloaderView.swift	37	El programa diminuto que corre apenas enciendes el iPod, antes que \(firmwareName): dibuja la pantalla de arranque y decide qué sistema iniciar. Vive en un chip aparte, no en el disco.
+PANTALLA	Views/UpdateBootloaderView.swift	39	Por qué hace falta el modo DFU
+PANTALLA	Views/UpdateBootloaderView.swift	40	Ese chip solo se puede escribir con el iPod en modo DFU. Es el mismo paso que hiciste al instalar; la app te va a guiar y son unos segundos.
+PANTALLA	Views/UpdateBootloaderView.swift	42	Qué no se toca
+PANTALLA	Views/UpdateBootloaderView.swift	43	Nada del disco: tu música, tus fotos, tus listas y tus ajustes se quedan exactamente como están. No se formatea ni se copia ningún archivo.
+PANTALLA	Views/UpdateBootloaderView.swift	45	No es obligatorio
+PANTALLA	Views/UpdateBootloaderView.swift	46	\(firmwareName) funciona igual con el arranque que ya tienes: lo único que cambia es la pantalla que ves al encender.
+PANTALLA	Views/UpdateBootloaderView.swift	50	Actualizar el arranque
+PANTALLA	Views/UpdateBootloaderView.swift	61	Esta versión de Aura Studio trae un arranque más nuevo que el que tiene grabado tu iPod.
+PANTALLA	Views/UpdateBootloaderView.swift	63	Aura Studio no sabe qué versión del arranque tiene grabada tu iPod -- lo instaló otra computadora, o una versión anterior de esta app que no lo anotaba. Actualizarlo lo deja al día; si ya lo estaba, n
+PANTALLA	Views/WelcomeView.swift	27	Restaurar iPod original
+PANTALLA	Views/WelcomeView.swift	31	Este asistente va a instalar el bootloader y el firmware \(firmwareName) en tu iPod Classic 6G. Vas a necesitar el dispositivo conectado por USB en los proximos pasos.
+PANTALLA	Views/WelcomeView.swift	32	Este asistente va a quitar el bootloader y devolver tu iPod al arranque original de Apple. El firmware no se borra del disco, solo dejas de arrancarlo.
+TRAMPA	ViewModels/LibraryViewModel.swift	557	".hasPrefix(""no se pudieron escribir"")  ←  if !result.written, let reason = result.reason, reason.hasPrefix(""no se pudieron escribir"") {"
+TRAMPA	ViewModels/LibraryViewModel.swift	1372	".hasPrefix(""no se pudieron escribir"")  ←  } else if let reason = result.reason, reason.hasPrefix(""no se pudieron escribir"") {"

@@ -91,6 +91,19 @@ struct SettingsSectionView: View {
     /// Si hay algo corriendo que no se puede cortar a la ligera. El
     /// centro de tareas es la única fuente: si algo no está ahí, es que
     /// no le avisa al usuario tampoco, y eso sería otro bug.
+    /// Los publicables, más el que el usuario ya tenga elegido aunque no
+    /// esté en la lista. Si alguien probó japonés en una versión
+    /// anterior, su `Picker` no puede quedarse en blanco: se lo sigue
+    /// mostrando --con su "(beta)" y su advertencia-- hasta que elija
+    /// otro. Quitarle de la vista lo que él eligió sería peor que
+    /// mantener la fila.
+    private var offeredLanguages: [AppLanguage] {
+        let publicables = AppLanguage.selectable
+        return publicables.contains(preferences.language)
+            ? publicables
+            : publicables + [preferences.language]
+    }
+
     private var hasWorkInFlight: Bool {
         !library.taskCenter.isEmpty
     }
@@ -120,7 +133,12 @@ struct SettingsSectionView: View {
             // entiende tiene que poder encontrar el suyo, y "Japonés"
             // escrito en español no le sirve de nada.
             Picker(LS("settings.language"), selection: $preferences.language) {
-                ForEach(AppLanguage.allCases) { language in
+                // ST-227 (A7c, cierre): solo los publicables. Los cuatro
+                // traducidos a máquina existen en el catálogo y en el
+                // `.app`, pero no se ofrecen hasta que A7d traduzca lo
+                // que quedó fuera del catálogo (instalador, DFU,
+                // errores) -- media app en japonés es peor que ninguna.
+                ForEach(offeredLanguages) { language in
                     Text(language.nativeName).tag(language)
                 }
             }
@@ -154,7 +172,7 @@ struct SettingsSectionView: View {
             // línea aparece siempre, no solo con uno de esos idiomas
             // elegido: quien está por elegir japonés tiene que verlo
             // ANTES de elegirlo, no después.
-            if AppLanguage.allCases.contains(where: \.isMachineTranslated) {
+            if offeredLanguages.contains(where: \.isMachineTranslated) {
                 Text(LS("settings.language-machine-translated"))
                     .font(.caption)
                     .foregroundStyle(.secondary)

@@ -152,7 +152,14 @@ final class CoverArtAssetsTests: XCTestCase {
         // Biblioteca mixta: dos fotos personales, una caratula fuerte
         // (convive con musica), una caratula solo por nombre, y una
         // "cover.jpg" que es una fotografia real (EXIF de camara ->
-        // categoria "Fotografias").
+        // categoria `PhotoCollection.photos`).
+        //
+        // ST-227 (A7c, cierre): esta prueba sembraba la categoria
+        // "Fotografías", que el clasificador NO devuelve nunca. Pasaba en
+        // verde sin ejercitar el camino real, y en produccion la guarda
+        // de `coverContaminationCandidates()` no se cumplia: una foto de
+        // camara llamada cover.jpg si se ofrecia. Ahora se siembra el
+        // valor que pone `MediaCategoryClassifier` de verdad.
         let song = try write("Album/01.mp3")
         let strongCover = try write("Album/cover.jpg")
         let nameOnly = try write("Descargas/folder.jpg")
@@ -160,7 +167,8 @@ final class CoverArtAssetsTests: XCTestCase {
         let photo2 = try write("Viaje/playa.jpg")
         let realPhotoNamedCover = try write("Camara/cover.jpg")
         try seedCatalog([(song, "music", nil), (strongCover, "photo", nil), (nameOnly, "photo", nil),
-                         (photo1, "photo", nil), (photo2, "photo", nil), (realPhotoNamedCover, "photo", "Fotografías")])
+                         (photo1, "photo", nil), (photo2, "photo", nil),
+                         (realPhotoNamedCover, "photo", PhotoCollection.photos)])
         let vm = LibraryViewModel(libraryRoot: libraryRoot, preferences: freshPreferences())
         XCTAssertEqual(vm.items.count, 6)
 
@@ -175,6 +183,9 @@ final class CoverArtAssetsTests: XCTestCase {
         XCTAssertFalse(candidates.contains { $0.item.sourceURL.path == photo2.path })
         XCTAssertFalse(candidates.contains { $0.item.sourceURL.path == realPhotoNamedCover.path },
                        "una fotografia real (EXIF de camara) nunca es candidata aunque se llame cover.jpg")
+        XCTAssertEqual(MediaCategoryHeuristics.classifyPhoto(softwareTag: nil, hasCameraExif: true),
+                       PhotoCollection.photos,
+                       "la guarda de arriba compara contra ESTE valor: si el clasificador cambiara, la prueba de arriba pasaría sin proteger nada")
         XCTAssertEqual(vm.coverContaminationOfferCount, 2, "la oferta se anuncia al cargar")
     }
 
