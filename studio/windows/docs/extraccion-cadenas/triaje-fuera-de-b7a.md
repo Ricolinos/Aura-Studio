@@ -26,6 +26,7 @@ trinquete de `HardcodedSpanishTests`, y acá queda dicho por qué.
 | trampas 2 y 3, `PreparedMusic` | 371 | desenlace tipado en vez de `Contains("no se pudo")`, y tres frases enteras en lugar de una a medias |
 | trampa 4, `LibraryGrouping` | 369 | los rótulos de los cajones a recursos, `IsUnknownArtist` como campo, y fuera las dos comparaciones contra el rótulo en `AlbumCoverSearch` |
 | paso 2, `InstallerError` | 344 | los 16 errores del asistente a recursos en los seis idiomas |
+| paso 2, familia privilegiada | 324 | los 20 mensajes de `PrivilegedOperation`, `PrivilegedHost` y `PrivilegedRunner`, y el idioma viajando al proceso elevado |
 
 El trinquete baja poco en el segundo paso y eso es correcto: **doce literales
 cambiaron de clase, no de sitio.** Las razones de `PreparedMusic` estaban como

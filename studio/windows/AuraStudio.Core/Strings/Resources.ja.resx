@@ -363,6 +363,66 @@
   <data name="installer-error.device-not-found" xml:space="preserve">
     <value>接続された iPod が見つかりませんでした。</value>
   </data>
+  <data name="privileged.disk-number-out-of-range" xml:space="preserve">
+    <value>ディスク番号 {0} は範囲外です。</value>
+  </data>
+  <data name="privileged.missing-expected-size" xml:space="preserve">
+    <value>要求に想定されるディスクのサイズが入っていないため、再確認できません。</value>
+  </data>
+  <data name="privileged.negative-tolerance" xml:space="preserve">
+    <value>サイズの許容範囲を負の値にはできません。</value>
+  </data>
+  <data name="privileged.empty-volume-label" xml:space="preserve">
+    <value>ボリュームのラベルが空になりました。</value>
+  </data>
+  <data name="privileged.unknown-operation" xml:space="preserve">
+    <value>不明な特権操作です。</value>
+  </data>
+  <data name="privileged.request-unreadable" xml:space="preserve">
+    <value>要求を読み取れませんでした。</value>
+  </data>
+  <data name="privileged.dry-run-complete" xml:space="preserve">
+    <value>確認が完了しました。ディスクを再確認し、フォーマットの計画も問題ありません。何も書き込んでいません。</value>
+  </data>
+  <data name="privileged.format-done" xml:space="preserve">
+    <value>iPod を FAT32 でフォーマットしました。</value>
+  </data>
+  <data name="privileged.service-already-running" xml:space="preserve">
+    <value>Apple のサービスはすでに動いていました。</value>
+  </data>
+  <data name="privileged.service-restarted" xml:space="preserve">
+    <value>Apple のサービスを再び開始しました。</value>
+  </data>
+  <data name="privileged.service-already-stopped" xml:space="preserve">
+    <value>Apple のサービスはすでに停止していました。</value>
+  </data>
+  <data name="privileged.service-cannot-stop" xml:space="preserve">
+    <value>Apple のサービスは停止できません。</value>
+  </data>
+  <data name="privileged.resume-guard-failed" xml:space="preserve">
+    <value>自動で戻す仕組みを用意できなかったため、サービスは停止していません。</value>
+  </data>
+  <data name="privileged.service-stopped" xml:space="preserve">
+    <value>書き込みのあいだ、Apple のサービスを停止しました。</value>
+  </data>
+  <data name="privileged.service-not-installed" xml:space="preserve">
+    <value>このコンピューターには、一時停止する Apple のサービスがありません。</value>
+  </data>
+  <data name="privileged.service-timeout" xml:space="preserve">
+    <value>Apple のサービスから時間内に応答がありませんでした。</value>
+  </data>
+  <data name="privileged.authorization-cancelled" xml:space="preserve">
+    <value>認証をキャンセルしました。この許可がないと、この手順は続けられません。</value>
+  </data>
+  <data name="privileged.no-result" xml:space="preserve">
+    <value>管理者権限での処理が、結果を残さずに終わりました。何かを行ったかどうかを確かめられないため、続行しません。</value>
+  </data>
+  <data name="privileged.result-unreadable" xml:space="preserve">
+    <value>処理の結果を読み取れませんでした。</value>
+  </data>
+  <data name="privileged.request-failed" xml:space="preserve">
+    <value>管理者の許可を要求できませんでした: {0}</value>
+  </data>
   <data name="installer-error.wrong-disk-format" xml:space="preserve">
     <value>iPod が FAT32 でフォーマットされていません。続ける前に変換してください。</value>
   </data>

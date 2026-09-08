@@ -393,6 +393,66 @@
   <data name="installer-error.device-not-found" xml:space="preserve">
     <value>Подключённый iPod не обнаружен.</value>
   </data>
+  <data name="privileged.disk-number-out-of-range" xml:space="preserve">
+    <value>Номер диска {0} вне допустимого диапазона.</value>
+  </data>
+  <data name="privileged.missing-expected-size" xml:space="preserve">
+    <value>В запросе нет ожидаемого размера диска, поэтому перепроверить его нельзя.</value>
+  </data>
+  <data name="privileged.negative-tolerance" xml:space="preserve">
+    <value>Допуск по размеру не может быть отрицательным.</value>
+  </data>
+  <data name="privileged.empty-volume-label" xml:space="preserve">
+    <value>Метка тома осталась пустой.</value>
+  </data>
+  <data name="privileged.unknown-operation" xml:space="preserve">
+    <value>Неизвестная операция с повышенными правами.</value>
+  </data>
+  <data name="privileged.request-unreadable" xml:space="preserve">
+    <value>Не удалось прочитать запрос.</value>
+  </data>
+  <data name="privileged.dry-run-complete" xml:space="preserve">
+    <value>Проверка завершена: диск проверен ещё раз, план форматирования верный. Ничего не записано.</value>
+  </data>
+  <data name="privileged.format-done" xml:space="preserve">
+    <value>iPod отформатирован в FAT32.</value>
+  </data>
+  <data name="privileged.service-already-running" xml:space="preserve">
+    <value>Служба Apple уже была запущена.</value>
+  </data>
+  <data name="privileged.service-restarted" xml:space="preserve">
+    <value>Служба Apple снова запущена.</value>
+  </data>
+  <data name="privileged.service-already-stopped" xml:space="preserve">
+    <value>Служба Apple уже была остановлена.</value>
+  </data>
+  <data name="privileged.service-cannot-stop" xml:space="preserve">
+    <value>Службу Apple нельзя остановить.</value>
+  </data>
+  <data name="privileged.resume-guard-failed" xml:space="preserve">
+    <value>Не удалось подготовить автоматическое возобновление, поэтому ни одна служба не остановлена.</value>
+  </data>
+  <data name="privileged.service-stopped" xml:space="preserve">
+    <value>Служба Apple остановлена на время записи.</value>
+  </data>
+  <data name="privileged.service-not-installed" xml:space="preserve">
+    <value>На этом компьютере нет службы Apple, которую нужно приостанавливать.</value>
+  </data>
+  <data name="privileged.service-timeout" xml:space="preserve">
+    <value>Служба Apple не ответила вовремя.</value>
+  </data>
+  <data name="privileged.authorization-cancelled" xml:space="preserve">
+    <value>Вы отменили авторизацию. Без этого разрешения шаг продолжить нельзя.</value>
+  </data>
+  <data name="privileged.no-result" xml:space="preserve">
+    <value>Операция с правами администратора завершилась, не оставив результата. Узнать, успела ли она что-то сделать, нельзя, поэтому продолжения не будет.</value>
+  </data>
+  <data name="privileged.result-unreadable" xml:space="preserve">
+    <value>Не удалось прочитать результат операции.</value>
+  </data>
+  <data name="privileged.request-failed" xml:space="preserve">
+    <value>Не удалось запросить права администратора: {0}</value>
+  </data>
   <data name="installer-error.wrong-disk-format" xml:space="preserve">
     <value>iPod не отформатирован в FAT32. Преобразуйте его, прежде чем продолжать.</value>
   </data>

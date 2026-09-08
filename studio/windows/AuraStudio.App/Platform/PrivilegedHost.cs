@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Win32.SafeHandles;
 using AuraStudio.Core;
 using AuraStudio.Core.Installer;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App.Platform;
 
@@ -42,6 +43,12 @@ internal static class PrivilegedHost
 
         string requestPath = args[1];
         string resultPath = args[2];
+
+        // El idioma con el que responder, si el lado no elevado lo mandó
+        // (ST-247, B7d). Se aplica antes de todo lo demás porque el primer
+        // mensaje que puede hacer falta es "la petición no se pudo leer".
+        if (args.Length > 3) UiCulture.Apply(args[3]);
+
         var log = new List<string>();
 
         PrivilegedOperationResult result;
@@ -52,7 +59,7 @@ internal static class PrivilegedHost
 
             if (operation is null)
             {
-                result = PrivilegedOperationResult.Failure("La petición no se pudo leer.");
+                result = PrivilegedOperationResult.Failure(Strings.Get("privileged.request-unreadable"));
             }
             else if (operation.Validate() is { } invalid)
             {
@@ -87,7 +94,7 @@ internal static class PrivilegedHost
             PrivilegedOperationKind.FormatIPodFat32 => FormatIPod(operation, log),
             PrivilegedOperationKind.PauseAppleMobileDeviceService => SetAppleService(start: false, log),
             PrivilegedOperationKind.ResumeAppleMobileDeviceService => SetAppleService(start: true, log),
-            _ => PrivilegedOperationResult.Abort("Operación privilegiada desconocida.")
+            _ => PrivilegedOperationResult.Abort(Strings.Get("privileged.unknown-operation"))
         };
 
     // MARK: - Re-verificación del disco
@@ -199,9 +206,7 @@ internal static class PrivilegedHost
                 log.Add($"se bloquearía y desmontaría: {volume}");
             }
             log.Add("ENSAYO: no se escribió nada.");
-            return PrivilegedOperationResult.Ok(
-                "Ensayo completo: el disco se volvió a verificar y el plan de formateo es válido. " +
-                "No se escribió nada.", log);
+            return PrivilegedOperationResult.Ok(Strings.Get("privileged.dry-run-complete"), log);
         }
 
         // Re-verificar OTRA VEZ, ya sin nada entre medias: es la última lectura
@@ -261,7 +266,7 @@ internal static class PrivilegedHost
         }
 
         log.Add("listo");
-        return PrivilegedOperationResult.Ok("El iPod quedó formateado en FAT32.", log);
+        return PrivilegedOperationResult.Ok(Strings.Get("privileged.format-done"), log);
     }
 
     /// <summary>
@@ -404,21 +409,25 @@ internal static class PrivilegedHost
                     // Se borra igual: puede haber quedado programada de una
                     // corrida anterior que sí lo detuvo.
                     RemoveResumeGuard(log);
-                    return PrivilegedOperationResult.Ok("El servicio de Apple ya estaba en marcha.", log);
+                    return PrivilegedOperationResult.Ok(
+                        Strings.Get("privileged.service-already-running"), log);
                 }
                 service.Start();
                 service.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(20));
                 RemoveResumeGuard(log);
-                return PrivilegedOperationResult.Ok("Se volvió a arrancar el servicio de Apple.", log);
+                return PrivilegedOperationResult.Ok(
+                    Strings.Get("privileged.service-restarted"), log);
             }
 
             if (status is ServiceControllerStatus.Stopped or ServiceControllerStatus.StopPending)
             {
-                return PrivilegedOperationResult.Ok("El servicio de Apple ya estaba detenido.", log);
+                return PrivilegedOperationResult.Ok(
+                    Strings.Get("privileged.service-already-stopped"), log);
             }
             if (!service.CanStop)
             {
-                return PrivilegedOperationResult.Failure("El servicio de Apple no se puede detener.", log);
+                return PrivilegedOperationResult.Failure(
+                    Strings.Get("privileged.service-cannot-stop"), log);
             }
 
             // ST-169: PRIMERO la red, DESPUÉS el salto. Si no se pudo programar
@@ -429,25 +438,26 @@ internal static class PrivilegedHost
             if (!AppleServiceGuard.CanPause(ScheduleResumeGuard(log)))
             {
                 return PrivilegedOperationResult.Failure(
-                    "No se pudo preparar la reactivación automática, así que no se detuvo ningún servicio.",
-                    log);
+                    Strings.Get("privileged.resume-guard-failed"), log);
             }
 
             service.Stop();
             service.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(20));
-            return PrivilegedOperationResult.Ok("Se detuvo el servicio de Apple durante el grabado.", log);
+            return PrivilegedOperationResult.Ok(
+                Strings.Get("privileged.service-stopped"), log);
         }
         catch (InvalidOperationException)
         {
             // El servicio no existe: sin iTunes ni "Dispositivos Apple" instalados.
             // No es un fallo — no hay nada que pausar.
             log.Add("el servicio de Apple no está instalado");
-            return PrivilegedOperationResult.Ok("No hay servicio de Apple que pausar en este equipo.", log);
+            return PrivilegedOperationResult.Ok(
+                Strings.Get("privileged.service-not-installed"), log);
         }
         catch (System.ServiceProcess.TimeoutException)
         {
             return PrivilegedOperationResult.Failure(
-                "El servicio de Apple no respondió a tiempo.", log);
+                Strings.Get("privileged.service-timeout"), log);
         }
     }
 

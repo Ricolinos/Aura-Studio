@@ -302,6 +302,21 @@ public class SpanishUnchangedTests
         "installer-error.dual-boot-requires-winpod",
         "installer-error.device-stuck-in-dfu",
         "installer-error.dfu-driver-missing",
+
+        // B7d, paso 2: la familia privilegiada — lo que valida la petición
+        // (PrivilegedOperation), lo que responde el proceso elevado
+        // (PrivilegedHost) y lo que dice el lado que lo lanza
+        // (PrivilegedRunner). El español es el que decía, palabra por palabra.
+        "privileged.disk-number-out-of-range", "privileged.missing-expected-size",
+        "privileged.negative-tolerance", "privileged.empty-volume-label",
+        "privileged.unknown-operation", "privileged.request-unreadable",
+        "privileged.dry-run-complete", "privileged.format-done",
+        "privileged.service-already-running", "privileged.service-restarted",
+        "privileged.service-already-stopped", "privileged.service-cannot-stop",
+        "privileged.resume-guard-failed", "privileged.service-stopped",
+        "privileged.service-not-installed", "privileged.service-timeout",
+        "privileged.authorization-cancelled", "privileged.no-result",
+        "privileged.result-unreadable", "privileged.request-failed",
     ];
 
     /// <summary>

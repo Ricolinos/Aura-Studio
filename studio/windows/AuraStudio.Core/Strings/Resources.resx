@@ -408,6 +408,66 @@
   <data name="installer-error.device-not-found" xml:space="preserve">
     <value>No se detectó ningún iPod conectado.</value>
   </data>
+  <data name="privileged.disk-number-out-of-range" xml:space="preserve">
+    <value>El número de disco {0} está fuera de rango.</value>
+  </data>
+  <data name="privileged.missing-expected-size" xml:space="preserve">
+    <value>La petición no trae el tamaño esperado del disco, así que no se puede re-verificar.</value>
+  </data>
+  <data name="privileged.negative-tolerance" xml:space="preserve">
+    <value>La tolerancia de tamaño no puede ser negativa.</value>
+  </data>
+  <data name="privileged.empty-volume-label" xml:space="preserve">
+    <value>La etiqueta del volumen quedó vacía.</value>
+  </data>
+  <data name="privileged.unknown-operation" xml:space="preserve">
+    <value>Operación privilegiada desconocida.</value>
+  </data>
+  <data name="privileged.request-unreadable" xml:space="preserve">
+    <value>La petición no se pudo leer.</value>
+  </data>
+  <data name="privileged.dry-run-complete" xml:space="preserve">
+    <value>Ensayo completo: el disco se volvió a verificar y el plan de formateo es válido. No se escribió nada.</value>
+  </data>
+  <data name="privileged.format-done" xml:space="preserve">
+    <value>El iPod quedó formateado en FAT32.</value>
+  </data>
+  <data name="privileged.service-already-running" xml:space="preserve">
+    <value>El servicio de Apple ya estaba en marcha.</value>
+  </data>
+  <data name="privileged.service-restarted" xml:space="preserve">
+    <value>Se volvió a arrancar el servicio de Apple.</value>
+  </data>
+  <data name="privileged.service-already-stopped" xml:space="preserve">
+    <value>El servicio de Apple ya estaba detenido.</value>
+  </data>
+  <data name="privileged.service-cannot-stop" xml:space="preserve">
+    <value>El servicio de Apple no se puede detener.</value>
+  </data>
+  <data name="privileged.resume-guard-failed" xml:space="preserve">
+    <value>No se pudo preparar la reactivación automática, así que no se detuvo ningún servicio.</value>
+  </data>
+  <data name="privileged.service-stopped" xml:space="preserve">
+    <value>Se detuvo el servicio de Apple durante el grabado.</value>
+  </data>
+  <data name="privileged.service-not-installed" xml:space="preserve">
+    <value>No hay servicio de Apple que pausar en este equipo.</value>
+  </data>
+  <data name="privileged.service-timeout" xml:space="preserve">
+    <value>El servicio de Apple no respondió a tiempo.</value>
+  </data>
+  <data name="privileged.authorization-cancelled" xml:space="preserve">
+    <value>Cancelaste la autorización. Este paso no puede continuar sin ese permiso.</value>
+  </data>
+  <data name="privileged.no-result" xml:space="preserve">
+    <value>La operación con permisos de administrador terminó sin dejar resultado. No se puede saber si alcanzó a hacer algo, así que no se continúa.</value>
+  </data>
+  <data name="privileged.result-unreadable" xml:space="preserve">
+    <value>No se pudo leer el resultado de la operación.</value>
+  </data>
+  <data name="privileged.request-failed" xml:space="preserve">
+    <value>No se pudo pedir permiso de administrador: {0}</value>
+  </data>
   <data name="installer-error.wrong-disk-format" xml:space="preserve">
     <value>El iPod no está formateado en FAT32. Conviértelo antes de continuar.</value>
   </data>

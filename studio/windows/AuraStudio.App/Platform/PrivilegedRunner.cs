@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Security.Principal;
 using System.Text;
 using AuraStudio.Core.Installer;
+using AuraStudio.Core.Resources;
 using AuraStudio.App.Services;
 
 namespace AuraStudio.App.Platform;
@@ -76,20 +77,18 @@ public sealed class PrivilegedRunner : IPrivilegedRunner
             {
                 _log.Append(operation.Kind.ToString(), "cancelada por el usuario");
                 return PrivilegedOperationResult.Failure(
-                    "Cancelaste la autorización. Este paso no puede continuar sin ese permiso.");
+                    Strings.Get("privileged.authorization-cancelled"));
             }
 
             if (!File.Exists(resultPath))
             {
                 _log.Append(operation.Kind.ToString(), $"sin resultado (código {exitCode})");
-                return PrivilegedOperationResult.Failure(
-                    "La operación con permisos de administrador terminó sin dejar resultado. " +
-                    "No se puede saber si alcanzó a hacer algo, así que no se continúa.");
+                return PrivilegedOperationResult.Failure(Strings.Get("privileged.no-result"));
             }
 
             string json = await File.ReadAllTextAsync(resultPath, ct);
             PrivilegedOperationResult result = PrivilegedOperationResult.FromJson(json)
-                ?? PrivilegedOperationResult.Failure("No se pudo leer el resultado de la operación.");
+                ?? PrivilegedOperationResult.Failure(Strings.Get("privileged.result-unreadable"));
 
             _log.Append(operation.Kind.ToString(),
                 result.Success ? "ok" : result.SafetyAbort ? $"abortada por seguridad: {result.Message}" : $"error: {result.Message}");
@@ -100,14 +99,13 @@ public sealed class PrivilegedRunner : IPrivilegedRunner
         {
             // El usuario cerró el diálogo de UAC. No es un fallo.
             _log.Append(operation.Kind.ToString(), "cancelada por el usuario");
-            return PrivilegedOperationResult.Failure(
-                "Cancelaste la autorización. Este paso no puede continuar sin ese permiso.");
+            return PrivilegedOperationResult.Failure(Strings.Get("privileged.authorization-cancelled"));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception)
         {
             _log.Append(operation.Kind.ToString(), $"error: {ex.Message}");
             return PrivilegedOperationResult.Failure(
-                $"No se pudo pedir permiso de administrador: {ex.Message}");
+                Strings.Format("privileged.request-failed", ex.Message));
         }
         finally
         {
@@ -134,6 +132,20 @@ public sealed class PrivilegedRunner : IPrivilegedRunner
         psi.ArgumentList.Add(Switch);
         psi.ArgumentList.Add(requestPath);
         psi.ArgumentList.Add(resultPath);
+
+        // El idioma que el usuario está viendo, para que lo que vuelva de allá
+        // esté en el mismo (ST-247, B7d).
+        //
+        // El proceso elevado arranca antes de que exista `App`, así que nunca
+        // corre ApplyLanguage y se queda con la cultura del sistema. Mientras
+        // sus mensajes estuvieron en español eso no se notaba; traducidos, a
+        // alguien con Windows en alemán y la app en inglés le volvería el
+        // resultado del formateo en alemán, en medio de una pantalla en inglés.
+        //
+        // Va por la línea de comandos y no dentro de la petición porque el
+        // primer mensaje que puede hacer falta es justamente "la petición no se
+        // pudo leer".
+        psi.ArgumentList.Add(UiCulture.Current);
 
         using Process process = Process.Start(psi)
             ?? throw new InvalidOperationException("No se pudo iniciar el proceso con permisos de administrador.");
