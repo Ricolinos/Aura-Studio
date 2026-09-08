@@ -399,6 +399,57 @@
   <data name="app-strings.installer-title" xml:space="preserve">
     <value>Programme d'installation</value>
   </data>
+  <data name="installer-error.disk-ambiguous.one" xml:space="preserve">
+    <value>{0} disque pouvant être votre iPod a été trouvé. Par sécurité, Aura Studio n'en choisit aucun — débranchez les autres disques externes et réessayez.</value>
+  </data>
+  <data name="installer-error.disk-ambiguous.other" xml:space="preserve">
+    <value>{0} disques pouvant être votre iPod ont été trouvés. Par sécurité, Aura Studio n'en choisit aucun — débranchez les autres disques externes et réessayez.</value>
+  </data>
+  <data name="installer-error.device-not-found" xml:space="preserve">
+    <value>Aucun iPod connecté n'a été détecté.</value>
+  </data>
+  <data name="installer-error.wrong-disk-format" xml:space="preserve">
+    <value>L'iPod n'est pas formaté en FAT32. Convertissez-le avant de continuer.</value>
+  </data>
+  <data name="installer-error.dfu-timeout" xml:space="preserve">
+    <value>L'iPod en mode DFU n'a pas été détecté à temps. Refaites la combinaison de boutons.</value>
+  </data>
+  <data name="installer-error.checksum-mismatch" xml:space="preserve">
+    <value>Le fichier {0} n'a pas passé la vérification d'intégrité.</value>
+  </data>
+  <data name="installer-error.incomplete-rockbox-tree" xml:space="preserve">
+    <value>Le microprogramme de cette Release est incomplet : il manque {0} dans rockbox.zip — l'iPod se retrouverait sans vidéo ou sans audio. Ce n'est pas un problème de connexion ; réessayez plus tard ou signalez que cette Release est défectueuse.</value>
+  </data>
+  <data name="installer-error.process-failed" xml:space="preserve">
+    <value>L'opération s'est terminée avec le code {0} : {1}</value>
+  </data>
+  <data name="installer-error.missing-artifact" xml:space="preserve">
+    <value>L'artefact {0} manque parmi les fichiers du microprogramme. Relancez scripts\FirmwareFetch.ps1.</value>
+  </data>
+  <data name="installer-error.authorization-cancelled" xml:space="preserve">
+    <value>Vous avez annulé l'autorisation d'administrateur. Cette étape ne peut pas continuer sans cette autorisation.</value>
+  </data>
+  <data name="installer-error.dual-boot-requires-winpod" xml:space="preserve">
+    <value>Pour le double démarrage, l'iPod doit conserver le microprogramme d'origine d'Apple au format "winpod" : une table de partitions MBR avec la partition de microprogramme d'Apple intacte plus une partition FAT32 — le format que crée iTunes lors d'une restauration sur un PC Windows. Cet iPod est au format Mac (partitions Apple/HFS, que Rockbox ne sait pas lire) ou son disque n'est pas lisible, et le préparer d'ici effacerait tout le disque, y compris le microprogramme d'origine. Options : restaurez l'iPod avec iTunes/Appareils Apple et réessayez le double démarrage, ou installez seulement le microprogramme si vous n'avez pas besoin de conserver celui d'Apple.</value>
+  </data>
+  <data name="installer-error.device-disconnected-during-copy" xml:space="preserve">
+    <value>Votre iPod s'est déconnecté pendant la copie des fichiers. Copier le microprogramme complet représente des milliers de petits fichiers et peut prendre plusieurs minutes en USB — vérifiez le câble (évitez les concentrateurs USB si vous en utilisez un) et réessayez : ce qui a déjà été copié n'est pas perdu, la copie reprend là où elle s'est arrêtée.</value>
+  </data>
+  <data name="installer-error.device-stuck-in-dfu" xml:space="preserve">
+    <value>L'iPod a reçu le microprogramme, mais n'a jamais confirmé l'avoir appliqué — il est toujours en mode DFU. Si Windows a ouvert iTunes ou Appareils Apple en affichant l'iPod en mode de récupération, fermez-le SANS toucher à « Restaurer » (cela réinstallerait le microprogramme d'origine d'Apple). Réessayez ensuite : l'iPod est déjà en mode DFU, la nouvelle tentative devrait donc revenir vite à cette même étape.</value>
+  </data>
+  <data name="installer-error.bootloader-not-applied" xml:space="preserve">
+    <value>L'iPod est réapparu avec le microprogramme d'origine d'Apple sur l'USB : le bootloader n'a pas été écrit. Refaites l'étape DFU (le disque est déjà préparé, inutile de le formater à nouveau).</value>
+  </data>
+  <data name="installer-error.release-download-failed" xml:space="preserve">
+    <value>La version la plus récente de {0} n'a pas pu être téléchargée : {1} La version fournie avec Aura Studio sera utilisée.</value>
+  </data>
+  <data name="installer-error.release-missing-asset" xml:space="preserve">
+    <value>Il manque {1} à la Release {0}, elle ne peut donc pas servir à l'installation. La version fournie avec Aura Studio sera utilisée.</value>
+  </data>
+  <data name="installer-error.dfu-driver-missing" xml:space="preserve">
+    <value>Windows n'a pas de pilote pour votre iPod en mode DFU, Aura Studio ne peut donc pas lui parler. Installez Appareils Apple (ou iTunes) depuis le Microsoft Store, ou attribuez le pilote WinUSB à l'appareil avec Zadig ; l'étape des autorisations explique les deux options.</value>
+  </data>
   <data name="app-strings.installer-unknown-disk" xml:space="preserve">
     <value>Le numéro de disque de « {0} » n'a pas pu être identifié, donc rien n'est touché.</value>
   </data>

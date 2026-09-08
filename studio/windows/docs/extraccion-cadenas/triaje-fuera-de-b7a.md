@@ -25,6 +25,7 @@ trinquete de `HardcodedSpanishTests`, y acá queda dicho por qué.
 | trampa 1, `MediaInfoDialog` | 372 | los 27 textos de la hoja "Más información" a recursos en los seis idiomas, después de cambiar la llave del diccionario |
 | trampas 2 y 3, `PreparedMusic` | 371 | desenlace tipado en vez de `Contains("no se pudo")`, y tres frases enteras en lugar de una a medias |
 | trampa 4, `LibraryGrouping` | 369 | los rótulos de los cajones a recursos, `IsUnknownArtist` como campo, y fuera las dos comparaciones contra el rótulo en `AlbumCoverSearch` |
+| paso 2, `InstallerError` | 344 | los 16 errores del asistente a recursos en los seis idiomas |
 
 El trinquete baja poco en el segundo paso y eso es correcto: **doce literales
 cambiaron de clase, no de sitio.** Las razones de `PreparedMusic` estaban como

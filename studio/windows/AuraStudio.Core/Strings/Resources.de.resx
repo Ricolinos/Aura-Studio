@@ -399,6 +399,57 @@
   <data name="app-strings.installer-title" xml:space="preserve">
     <value>Installationsprogramm</value>
   </data>
+  <data name="installer-error.disk-ambiguous.one" xml:space="preserve">
+    <value>Es wurde {0} Datenträger gefunden, der dein iPod sein könnte. Aus Sicherheitsgründen wählt Aura Studio keinen davon aus — trenne die anderen externen Datenträger und versuche es erneut.</value>
+  </data>
+  <data name="installer-error.disk-ambiguous.other" xml:space="preserve">
+    <value>Es wurden {0} Datenträger gefunden, die dein iPod sein könnten. Aus Sicherheitsgründen wählt Aura Studio keinen davon aus — trenne die anderen externen Datenträger und versuche es erneut.</value>
+  </data>
+  <data name="installer-error.device-not-found" xml:space="preserve">
+    <value>Es wurde kein angeschlossener iPod erkannt.</value>
+  </data>
+  <data name="installer-error.wrong-disk-format" xml:space="preserve">
+    <value>Der iPod ist nicht mit FAT32 formatiert. Wandle ihn um, bevor du fortfährst.</value>
+  </data>
+  <data name="installer-error.dfu-timeout" xml:space="preserve">
+    <value>Der iPod im DFU-Modus wurde nicht rechtzeitig erkannt. Versuche die Tastenkombination erneut.</value>
+  </data>
+  <data name="installer-error.checksum-mismatch" xml:space="preserve">
+    <value>Die Datei {0} hat die Integritätsprüfung nicht bestanden.</value>
+  </data>
+  <data name="installer-error.incomplete-rockbox-tree" xml:space="preserve">
+    <value>Die Firmware dieses Releases ist unvollständig: In rockbox.zip fehlen {0} — der iPod bliebe ohne Video oder ohne Audio. Es liegt nicht an deiner Verbindung; versuche es später erneut oder melde, dass dieses Release fehlerhaft ist.</value>
+  </data>
+  <data name="installer-error.process-failed" xml:space="preserve">
+    <value>Der Vorgang endete mit Code {0}: {1}</value>
+  </data>
+  <data name="installer-error.missing-artifact" xml:space="preserve">
+    <value>Das Artefakt {0} fehlt in den Firmware-Dateien. Führe scripts\FirmwareFetch.ps1 erneut aus.</value>
+  </data>
+  <data name="installer-error.authorization-cancelled" xml:space="preserve">
+    <value>Du hast die Administratorberechtigung abgebrochen. Ohne diese Berechtigung kann dieser Schritt nicht fortfahren.</value>
+  </data>
+  <data name="installer-error.dual-boot-requires-winpod" xml:space="preserve">
+    <value>Für Dual-Boot muss der iPod Apples ursprüngliche Firmware im Format "winpod" behalten: eine MBR-Partitionstabelle mit intakter Apple-Firmware-Partition plus einer FAT32-Partition — das Format, das iTunes beim Wiederherstellen auf einem Windows-PC erzeugt. Dieser iPod ist im Mac-Format (Apple/HFS-Partitionen, die Rockbox nicht lesen kann) oder sein Datenträger ist nicht lesbar, und ihn von hier aus vorzubereiten würde den ganzen Datenträger löschen, einschließlich der ursprünglichen Firmware. Möglichkeiten: Stelle den iPod mit iTunes/Apple-Geräte wieder her und versuche Dual-Boot erneut, oder installiere nur die Firmware, wenn du Apples nicht behalten musst.</value>
+  </data>
+  <data name="installer-error.device-disconnected-during-copy" xml:space="preserve">
+    <value>Dein iPod wurde während des Kopierens getrennt. Die vollständige Firmware sind Tausende kleiner Dateien und kann über USB mehrere Minuten dauern — prüfe das Kabel (vermeide USB-Hubs, falls du einen verwendest) und versuche es erneut: Was schon kopiert wurde, geht nicht verloren, das Kopieren geht dort weiter, wo es aufgehört hat.</value>
+  </data>
+  <data name="installer-error.device-stuck-in-dfu" xml:space="preserve">
+    <value>Der iPod hat die Firmware empfangen, aber nie bestätigt, dass er sie angewendet hat — er ist weiterhin im DFU-Modus. Falls Windows iTunes oder Apple-Geräte geöffnet hat und den iPod im Wiederherstellungsmodus zeigt, schließe es, OHNE "Wiederherstellen" anzutippen (das würde Apples ursprüngliche Firmware neu installieren). Versuche es danach erneut: Der iPod ist bereits im DFU-Modus, der zweite Versuch sollte also schnell wieder hier ankommen.</value>
+  </data>
+  <data name="installer-error.bootloader-not-applied" xml:space="preserve">
+    <value>Der iPod ist wieder mit Apples ursprünglicher Firmware am USB erschienen: Der Bootloader wurde nicht geschrieben. Versuche den DFU-Schritt erneut (der Datenträger ist bereits vorbereitet, er muss nicht noch einmal formatiert werden).</value>
+  </data>
+  <data name="installer-error.release-download-failed" xml:space="preserve">
+    <value>Die neueste Version von {0} konnte nicht heruntergeladen werden: {1} Es wird die Version verwendet, die Aura Studio mitbringt.</value>
+  </data>
+  <data name="installer-error.release-missing-asset" xml:space="preserve">
+    <value>Dem Release {0} fehlt {1}, deshalb kann daraus nicht installiert werden. Es wird die Version verwendet, die Aura Studio mitbringt.</value>
+  </data>
+  <data name="installer-error.dfu-driver-missing" xml:space="preserve">
+    <value>Windows hat keinen Treiber für deinen iPod im DFU-Modus, deshalb kann Aura Studio nicht mit ihm sprechen. Installiere Apple-Geräte (oder iTunes) aus dem Microsoft Store, oder weise dem Gerät mit Zadig den WinUSB-Treiber zu; der Schritt mit den Berechtigungen erklärt beide Möglichkeiten.</value>
+  </data>
   <data name="app-strings.installer-unknown-disk" xml:space="preserve">
     <value>Die Datenträgernummer von „{0}“ konnte nicht ermittelt werden, also wird nichts angetastet.</value>
   </data>

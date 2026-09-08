@@ -381,6 +381,60 @@
   <data name="app-strings.installer-title" xml:space="preserve">
     <value>Установщик</value>
   </data>
+  <data name="installer-error.disk-ambiguous.one" xml:space="preserve">
+    <value>Найден {0} диск, который может быть вашим iPod. В целях безопасности Aura Studio не выбирает сам — отключите остальные внешние диски и повторите.</value>
+  </data>
+  <data name="installer-error.disk-ambiguous.few" xml:space="preserve">
+    <value>Найдено {0} диска, которые могут быть вашим iPod. В целях безопасности Aura Studio не выбирает сам — отключите остальные внешние диски и повторите.</value>
+  </data>
+  <data name="installer-error.disk-ambiguous.many" xml:space="preserve">
+    <value>Найдено {0} дисков, которые могут быть вашим iPod. В целях безопасности Aura Studio не выбирает сам — отключите остальные внешние диски и повторите.</value>
+  </data>
+  <data name="installer-error.device-not-found" xml:space="preserve">
+    <value>Подключённый iPod не обнаружен.</value>
+  </data>
+  <data name="installer-error.wrong-disk-format" xml:space="preserve">
+    <value>iPod не отформатирован в FAT32. Преобразуйте его, прежде чем продолжать.</value>
+  </data>
+  <data name="installer-error.dfu-timeout" xml:space="preserve">
+    <value>iPod в режиме DFU не обнаружен вовремя. Повторите комбинацию кнопок.</value>
+  </data>
+  <data name="installer-error.checksum-mismatch" xml:space="preserve">
+    <value>Файл {0} не прошёл проверку целостности.</value>
+  </data>
+  <data name="installer-error.incomplete-rockbox-tree" xml:space="preserve">
+    <value>Прошивка в этом Release неполная: в rockbox.zip не хватает {0} — iPod остался бы без видео или без звука. Дело не в вашем подключении; повторите позже или сообщите, что этот Release выпущен с ошибкой.</value>
+  </data>
+  <data name="installer-error.process-failed" xml:space="preserve">
+    <value>Операция завершилась с кодом {0}: {1}</value>
+  </data>
+  <data name="installer-error.missing-artifact" xml:space="preserve">
+    <value>Среди файлов прошивки нет артефакта {0}. Запустите scripts\FirmwareFetch.ps1 ещё раз.</value>
+  </data>
+  <data name="installer-error.authorization-cancelled" xml:space="preserve">
+    <value>Вы отменили запрос прав администратора. Без них этот шаг продолжить нельзя.</value>
+  </data>
+  <data name="installer-error.dual-boot-requires-winpod" xml:space="preserve">
+    <value>Для двойной загрузки iPod должен сохранить исходную прошивку Apple в формате "winpod": таблицу разделов MBR с нетронутым разделом прошивки Apple плюс раздел FAT32 — формат, который создаёт iTunes при восстановлении на ПК с Windows. Этот iPod в формате Mac (разделы Apple/HFS, которые Rockbox не читает) или его диск не читается, и подготовка отсюда стёрла бы диск целиком, вместе с исходной прошивкой. Варианты: восстановите iPod через iTunes/Устройства Apple и повторите двойную загрузку, либо установите только прошивку, если сохранять прошивку Apple не нужно.</value>
+  </data>
+  <data name="installer-error.device-disconnected-during-copy" xml:space="preserve">
+    <value>iPod отключился во время копирования файлов. Полная прошивка — это тысячи мелких файлов, и по USB это может занять несколько минут. Проверьте кабель (не используйте USB-концентратор, если он подключён) и повторите: скопированное не пропадает, копирование продолжится с того же места.</value>
+  </data>
+  <data name="installer-error.device-stuck-in-dfu" xml:space="preserve">
+    <value>iPod получил прошивку, но так и не подтвердил, что применил её, — он всё ещё в режиме DFU. Если Windows открыла iTunes или Устройства Apple и показывает iPod в режиме восстановления, закройте это окно, НЕ нажимая «Восстановить» (это переустановит исходную прошивку Apple). Потом повторите: iPod уже в режиме DFU, так что попытка быстро дойдёт до этого же шага.</value>
+  </data>
+  <data name="installer-error.bootloader-not-applied" xml:space="preserve">
+    <value>iPod снова появился с исходной прошивкой Apple на USB: загрузчик не записался. Повторите шаг DFU (диск уже подготовлен, форматировать его заново не нужно).</value>
+  </data>
+  <data name="installer-error.release-download-failed" xml:space="preserve">
+    <value>Не удалось скачать последнюю версию {0}: {1} Будет использована версия, входящая в Aura Studio.</value>
+  </data>
+  <data name="installer-error.release-missing-asset" xml:space="preserve">
+    <value>В Release {0} нет {1}, поэтому установить из него нельзя. Будет использована версия, входящая в Aura Studio.</value>
+  </data>
+  <data name="installer-error.dfu-driver-missing" xml:space="preserve">
+    <value>У Windows нет драйвера для вашего iPod в режиме DFU, поэтому Aura Studio не может с ним общаться. Установите Устройства Apple (или iTunes) из Microsoft Store либо назначьте устройству драйвер WinUSB с помощью Zadig; шаг с разрешениями объясняет оба варианта.</value>
+  </data>
   <data name="app-strings.installer-unknown-disk" xml:space="preserve">
     <value>Не удалось определить номер диска «{0}», поэтому ничего не затрагивается.</value>
   </data>

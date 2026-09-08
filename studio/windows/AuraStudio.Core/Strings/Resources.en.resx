@@ -399,6 +399,57 @@
   <data name="app-strings.installer-title" xml:space="preserve">
     <value>Installer</value>
   </data>
+  <data name="installer-error.disk-ambiguous.one" xml:space="preserve">
+    <value>{0} disk that could be your iPod was found. For safety, Aura Studio does not pick one on its own — disconnect the other external disks and try again.</value>
+  </data>
+  <data name="installer-error.disk-ambiguous.other" xml:space="preserve">
+    <value>{0} disks that could be your iPod were found. For safety, Aura Studio does not pick one on its own — disconnect the other external disks and try again.</value>
+  </data>
+  <data name="installer-error.device-not-found" xml:space="preserve">
+    <value>No connected iPod was detected.</value>
+  </data>
+  <data name="installer-error.wrong-disk-format" xml:space="preserve">
+    <value>The iPod is not formatted as FAT32. Convert it before continuing.</value>
+  </data>
+  <data name="installer-error.dfu-timeout" xml:space="preserve">
+    <value>The iPod in DFU mode was not detected in time. Try the button combination again.</value>
+  </data>
+  <data name="installer-error.checksum-mismatch" xml:space="preserve">
+    <value>File {0} failed the integrity check.</value>
+  </data>
+  <data name="installer-error.incomplete-rockbox-tree" xml:space="preserve">
+    <value>The firmware in this Release is incomplete: rockbox.zip is missing {0} — the iPod would end up without video or without audio. This is not a problem with your connection; try again later or report that this Release came out wrong.</value>
+  </data>
+  <data name="installer-error.process-failed" xml:space="preserve">
+    <value>The operation ended with code {0}: {1}</value>
+  </data>
+  <data name="installer-error.missing-artifact" xml:space="preserve">
+    <value>Artifact {0} is missing from the firmware files. Run scripts\FirmwareFetch.ps1 again.</value>
+  </data>
+  <data name="installer-error.authorization-cancelled" xml:space="preserve">
+    <value>You cancelled the administrator permission. This step cannot continue without it.</value>
+  </data>
+  <data name="installer-error.dual-boot-requires-winpod" xml:space="preserve">
+    <value>For dual boot, the iPod must keep Apple's original firmware in "winpod" format: an MBR partition table with Apple's firmware partition intact plus a FAT32 partition — the format iTunes creates when restoring on a Windows PC. This iPod is in Mac format (Apple/HFS partitions, which Rockbox cannot read) or its disk is unreadable, and preparing it from here would erase the whole disk, including the original firmware. Options: restore the iPod with iTunes/Apple Devices and try dual boot again, or install only the firmware if you do not need to keep Apple's.</value>
+  </data>
+  <data name="installer-error.device-disconnected-during-copy" xml:space="preserve">
+    <value>Your iPod disconnected while files were being copied. Copying the complete firmware is thousands of small files and can take several minutes over USB — check the cable (avoid USB hubs if you are using one) and try again: what was already copied is not lost, the copy continues from where it stopped.</value>
+  </data>
+  <data name="installer-error.device-stuck-in-dfu" xml:space="preserve">
+    <value>The iPod received the firmware, but never confirmed applying it — it is still in DFU mode. If Windows opened iTunes or Apple Devices showing the iPod in recovery mode, close it WITHOUT touching "Restore" (that would reinstall Apple's original firmware). Then try again: the iPod is already in DFU mode, so the retry should reach this same step quickly.</value>
+  </data>
+  <data name="installer-error.bootloader-not-applied" xml:space="preserve">
+    <value>The iPod came back with Apple's original firmware handling USB: the bootloader was not written. Try the DFU step again (the disk is already prepared, there is no need to format it again).</value>
+  </data>
+  <data name="installer-error.release-download-failed" xml:space="preserve">
+    <value>The latest version of {0} could not be downloaded: {1} The version bundled with Aura Studio will be used.</value>
+  </data>
+  <data name="installer-error.release-missing-asset" xml:space="preserve">
+    <value>Release {0} is missing {1}, so it cannot be installed from. The version bundled with Aura Studio will be used.</value>
+  </data>
+  <data name="installer-error.dfu-driver-missing" xml:space="preserve">
+    <value>Windows has no driver for your iPod in DFU mode, so Aura Studio cannot talk to it. Install Apple Devices (or iTunes) from the Microsoft Store, or assign the WinUSB driver to the device with Zadig; the permissions step explains both options.</value>
+  </data>
   <data name="app-strings.installer-unknown-disk" xml:space="preserve">
     <value>The disk number for "{0}" could not be identified, so nothing is touched.</value>
   </data>

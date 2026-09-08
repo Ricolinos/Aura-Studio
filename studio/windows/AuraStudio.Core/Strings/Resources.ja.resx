@@ -357,6 +357,54 @@
   <data name="app-strings.installer-title" xml:space="preserve">
     <value>インストーラー</value>
   </data>
+  <data name="installer-error.disk-ambiguous.other" xml:space="preserve">
+    <value>あなたの iPod かもしれないディスクが {0} 台見つかりました。安全のため、Aura Studio はどれかを勝手に選びません。ほかの外付けディスクを取り外して、もう一度お試しください。</value>
+  </data>
+  <data name="installer-error.device-not-found" xml:space="preserve">
+    <value>接続された iPod が見つかりませんでした。</value>
+  </data>
+  <data name="installer-error.wrong-disk-format" xml:space="preserve">
+    <value>iPod が FAT32 でフォーマットされていません。続ける前に変換してください。</value>
+  </data>
+  <data name="installer-error.dfu-timeout" xml:space="preserve">
+    <value>DFUモードの iPod を時間内に検出できませんでした。ボタン操作をもう一度お試しください。</value>
+  </data>
+  <data name="installer-error.checksum-mismatch" xml:space="preserve">
+    <value>ファイル {0} は整合性の確認に通りませんでした。</value>
+  </data>
+  <data name="installer-error.incomplete-rockbox-tree" xml:space="preserve">
+    <value>この Release のファームウェアは不完全です。rockbox.zip に {0} がありません。このままでは iPod で映像か音声が使えません。接続の問題ではありません。後でもう一度試すか、この Release に不備があることを知らせてください。</value>
+  </data>
+  <data name="installer-error.process-failed" xml:space="preserve">
+    <value>処理はコード {0} で終了しました: {1}</value>
+  </data>
+  <data name="installer-error.missing-artifact" xml:space="preserve">
+    <value>ファームウェアのファイルに成果物 {0} がありません。scripts\FirmwareFetch.ps1 をもう一度実行してください。</value>
+  </data>
+  <data name="installer-error.authorization-cancelled" xml:space="preserve">
+    <value>管理者の許可をキャンセルしました。この許可がないと、この手順は続けられません。</value>
+  </data>
+  <data name="installer-error.dual-boot-requires-winpod" xml:space="preserve">
+    <value>デュアルブートには、iPod が Apple の元のファームウェアを "winpod" 形式で保持している必要があります。つまり、Apple のファームウェアのパーティションがそのまま残った MBR のパーティションテーブルと、FAT32 のパーティションです。これは、Windows の PC で iTunes が復元したときに作られる形式です。この iPod は Mac の形式（Rockbox が読めない Apple/HFS のパーティション）か、ディスクが読み取れない状態です。ここから準備すると、元のファームウェアも含めてディスク全体が消えます。iTunes か Appleデバイスで iPod を復元してからデュアルブートをやり直すか、Apple のファームウェアを残す必要がなければファームウェアだけをインストールしてください。</value>
+  </data>
+  <data name="installer-error.device-disconnected-during-copy" xml:space="preserve">
+    <value>ファイルのコピー中に iPod が外れました。ファームウェア一式は小さなファイルが数千個あり、USB では数分かかることがあります。ケーブルを確認し（USB ハブを使っている場合は外してください）、もう一度お試しください。すでにコピーした分は失われず、続きから再開します。</value>
+  </data>
+  <data name="installer-error.device-stuck-in-dfu" xml:space="preserve">
+    <value>iPod はファームウェアを受け取りましたが、適用したという確認は返ってきませんでした。まだ DFUモードのままです。Windows が iTunes か Appleデバイスを開いて iPod を復元モードで表示している場合は、「復元」に触れずに閉じてください（触れると Apple の元のファームウェアが再インストールされます）。そのうえで、もう一度お試しください。iPod はすでに DFUモードなので、次はすぐこの手順まで進むはずです。</value>
+  </data>
+  <data name="installer-error.bootloader-not-applied" xml:space="preserve">
+    <value>iPod は Apple の元のファームウェアで USB に現れました。ブートローダーは書き込まれていません。DFU の手順をもう一度お試しください（ディスクは準備済みなので、フォーマットし直す必要はありません）。</value>
+  </data>
+  <data name="installer-error.release-download-failed" xml:space="preserve">
+    <value>{0} の最新バージョンをダウンロードできませんでした: {1} Aura Studio に含まれているバージョンを使います。</value>
+  </data>
+  <data name="installer-error.release-missing-asset" xml:space="preserve">
+    <value>Release {0} には {1} がないため、そこからはインストールできません。Aura Studio に含まれているバージョンを使います。</value>
+  </data>
+  <data name="installer-error.dfu-driver-missing" xml:space="preserve">
+    <value>Windows には DFUモードの iPod 用のドライバーがないため、Aura Studio は通信できません。Microsoft Store から Appleデバイス（または iTunes）をインストールするか、Zadig でこのデバイスに WinUSB ドライバーを割り当ててください。権限の手順で、どちらの方法も説明しています。</value>
+  </data>
   <data name="app-strings.installer-unknown-disk" xml:space="preserve">
     <value>「{0}」のディスク番号を特定できなかったため、何も変更しません。</value>
   </data>

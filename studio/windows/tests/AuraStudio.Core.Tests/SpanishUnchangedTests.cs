@@ -273,6 +273,35 @@ public class SpanishUnchangedTests
         // grupo era el cajón. El texto en español es el mismo que decían.
         "library-grouping.unknown-album", "library-grouping.unknown-artist",
         "library-grouping.unknown-photo-album",
+
+        // B7d, paso 2: los dieciséis errores del instalador. El texto vivía
+        // junto a cada caso —eso no cambia, lo que cambia es de dónde sale— y
+        // el borrador de B7a no lo vio porque no está en ningún XAML. El
+        // español es el que decía, palabra por palabra, salvo lo anotado abajo.
+        "installer-error.device-not-found", "installer-error.wrong-disk-format",
+        "installer-error.dfu-timeout", "installer-error.checksum-mismatch",
+        "installer-error.incomplete-rockbox-tree", "installer-error.process-failed",
+        "installer-error.missing-artifact",
+        "installer-error.authorization-cancelled",
+        "installer-error.device-disconnected-during-copy",
+        "installer-error.bootloader-not-applied",
+        "installer-error.release-download-failed", "installer-error.release-missing-asset",
+
+        // "Se encontraron {0} discos" pasa a tener formas de plural. La forma
+        // `.other` es el texto de antes; la `.one` es nueva y en español no se
+        // ve nunca —ambiguo quiere decir dos o más—, pero el ruso sí necesita
+        // sus tres formas: "2 диска" y "5 дисков" no se escriben igual.
+        "installer-error.disk-ambiguous.one", "installer-error.disk-ambiguous.other",
+
+        // Tres donde el español SÍ cambia, y en las tres es lo mismo: decían
+        // "Apple Devices" y la ficha de la Microsoft Store en español se llama
+        // "Dispositivos Apple", que es como ya la nombraban las otras dos
+        // pantallas de la app. Es el mismo defecto que el espacio de más del
+        // japonés en B7c: el usuario copia al buscador lo que la app le puso y
+        // no encuentra nada. Ahora las vigila PlatformNamesTests.
+        "installer-error.dual-boot-requires-winpod",
+        "installer-error.device-stuck-in-dfu",
+        "installer-error.dfu-driver-missing",
     ];
 
     /// <summary>

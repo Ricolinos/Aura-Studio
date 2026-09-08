@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Installer;
 
 /// <summary>
@@ -19,25 +21,22 @@ public abstract record InstallerError
 
     public sealed record DeviceNotFound : InstallerError
     {
-        public override string Message => "No se detectó ningún iPod conectado.";
+        public override string Message => Strings.Get("installer-error.device-not-found");
     }
 
     public sealed record WrongDiskFormat : InstallerError
     {
-        public override string Message =>
-            "El iPod no está formateado en FAT32. Conviértelo antes de continuar.";
+        public override string Message => Strings.Get("installer-error.wrong-disk-format");
     }
 
     public sealed record DfuTimeout : InstallerError
     {
-        public override string Message =>
-            "No se detectó el iPod en modo DFU a tiempo. Vuelve a intentar la combinación de botones.";
+        public override string Message => Strings.Get("installer-error.dfu-timeout");
     }
 
     public sealed record ChecksumMismatch(string File) : InstallerError
     {
-        public override string Message =>
-            $"El archivo {File} no superó la verificación de integridad.";
+        public override string Message => Strings.Format("installer-error.checksum-mismatch", File);
     }
 
     /// <summary>
@@ -49,9 +48,7 @@ public abstract record InstallerError
     public sealed record IncompleteRockboxTree(IReadOnlyList<string> Missing) : InstallerError
     {
         public override string Message =>
-            $"El firmware de este Release está incompleto: a rockbox.zip le faltan {string.Join(", ", Missing)} " +
-            "— el iPod quedaría sin video o sin audio. No es un problema de tu conexión; vuelve a intentar más " +
-            "tarde o avisa que este Release salió mal.";
+            Strings.Format("installer-error.incomplete-rockbox-tree", string.Join(", ", Missing));
     }
 
     /// <summary>
@@ -61,27 +58,23 @@ public abstract record InstallerError
     /// </summary>
     public sealed record ProcessFailed(int ExitCode, string Output) : InstallerError
     {
-        public override string Message => $"La operación terminó con código {ExitCode}: {Output}";
+        public override string Message => Strings.Format("installer-error.process-failed", ExitCode, Output);
     }
 
     public sealed record MissingArtifact(string Name) : InstallerError
     {
-        public override string Message =>
-            $"Falta el artefacto {Name} entre los archivos del firmware. Vuelve a correr scripts\\FirmwareFetch.ps1.";
+        public override string Message => Strings.Format("installer-error.missing-artifact", Name);
     }
 
     public sealed record DiskAmbiguous(int Count) : InstallerError
     {
-        public override string Message =>
-            $"Se encontraron {Count} discos que podrían ser tu iPod. Por seguridad, Aura Studio no elige uno " +
-            "solo — desconecta los demás discos externos y vuelve a intentar.";
+        public override string Message => Strings.Plural("installer-error.disk-ambiguous", Count);
     }
 
     /// <summary>El usuario cerró el diálogo de Control de cuentas de usuario (UAC).</summary>
     public sealed record AuthorizationCancelled : InstallerError
     {
-        public override string Message =>
-            "Cancelaste el permiso de administrador. Este paso no puede continuar sin ese permiso.";
+        public override string Message => Strings.Get("installer-error.authorization-cancelled");
     }
 
     public sealed record PrivilegedOperationFailed(string Detail) : InstallerError
@@ -96,21 +89,12 @@ public abstract record InstallerError
     /// </summary>
     public sealed record DualBootRequiresWinpod : InstallerError
     {
-        public override string Message =>
-            "Para dual boot, el iPod debe conservar el firmware original de Apple en formato \"winpod\": tabla de " +
-            "particiones MBR con la partición de firmware de Apple intacta más una partición FAT32 — el formato que " +
-            "crea iTunes al restaurar en una PC con Windows. Este iPod está en formato de Mac (particiones " +
-            "Apple/HFS, que Rockbox no puede leer) o su disco no es legible, y prepararlo desde aquí borraría el " +
-            "disco completo, incluido el firmware original. Opciones: restaura el iPod con iTunes/Apple Devices y " +
-            "vuelve a intentar dual boot, o instala solo el firmware si no necesitas conservar el de Apple.";
+        public override string Message => Strings.Get("installer-error.dual-boot-requires-winpod");
     }
 
     public sealed record DeviceDisconnectedDuringCopy : InstallerError
     {
-        public override string Message =>
-            "Tu iPod se desconectó durante la copia de archivos. Copiar el firmware completo son miles de archivos " +
-            "chicos y puede tardar varios minutos por USB — revisa el cable (evita concentradores USB si usas uno) " +
-            "y vuelve a intentar: lo que ya se copió no se pierde, la copia sigue desde donde quedó.";
+        public override string Message => Strings.Get("installer-error.device-disconnected-during-copy");
     }
 
     /// <summary>
@@ -119,11 +103,7 @@ public abstract record InstallerError
     /// </summary>
     public sealed record DeviceStuckInDfu : InstallerError
     {
-        public override string Message =>
-            "El iPod recibió el envío del firmware, pero nunca confirmó haberlo aplicado — sigue en modo DFU. Si " +
-            "Windows abrió iTunes o Apple Devices mostrando el iPod en modo de recuperación, ciérralo SIN tocar " +
-            "\"Restaurar\" (eso reinstalaría el firmware original de Apple). Después vuelve a intentar: el iPod ya " +
-            "está en modo DFU, así que el reintento debería llegar rápido a este mismo paso.";
+        public override string Message => Strings.Get("installer-error.device-stuck-in-dfu");
     }
 
     /// <summary>
@@ -133,9 +113,7 @@ public abstract record InstallerError
     /// </summary>
     public sealed record BootloaderNotApplied : InstallerError
     {
-        public override string Message =>
-            "El iPod volvió a aparecer con el firmware original de Apple atendiendo el USB: el bootloader no quedó " +
-            "grabado. Vuelve a intentar el paso de DFU (el disco ya está preparado, no hace falta formatearlo otra vez).";
+        public override string Message => Strings.Get("installer-error.bootloader-not-applied");
     }
 
     /// <summary>
@@ -147,14 +125,14 @@ public abstract record InstallerError
     public sealed record ReleaseDownloadFailed(string Family, string Reason) : InstallerError
     {
         public override string Message =>
-            $"No se pudo descargar la versión más reciente de {Family}: {Reason} Se usará la versión que trae Aura Studio.";
+            Strings.Format("installer-error.release-download-failed", Family, Reason);
     }
 
     /// <summary>ST-077: al Release publicado le falta un asset de la tabla §A del contrato.</summary>
     public sealed record ReleaseMissingAsset(string Tag, string Asset) : InstallerError
     {
         public override string Message =>
-            $"Al Release {Tag} le falta {Asset}, así que no se puede instalar desde él. Se usará la versión que trae Aura Studio.";
+            Strings.Format("installer-error.release-missing-asset", Tag, Asset);
     }
 
     /// <summary>
@@ -165,10 +143,7 @@ public abstract record InstallerError
     /// </summary>
     public sealed record DfuDriverMissing : InstallerError
     {
-        public override string Message =>
-            "Windows no tiene un controlador para tu iPod en modo DFU, así que Aura Studio no puede hablarle. " +
-            "Instala Apple Devices (o iTunes) desde la Microsoft Store, o asigna el controlador WinUSB al " +
-            "dispositivo con Zadig; el paso de permisos explica ambas opciones.";
+        public override string Message => Strings.Get("installer-error.dfu-driver-missing");
     }
 }
 
