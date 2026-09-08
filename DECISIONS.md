@@ -18055,3 +18055,71 @@ Es un cambio de español: la clave ya estaba en la lista `corrected` de
 `testTheSpanishInTheCatalogIsWhatTheSourcesSaidBefore` por el motivo
 original (el borrador de la extracción se había comido el trozo
 calculado), y el comentario se amplió con este segundo motivo.
+
+## ST-227 (A7c, cierre 7) — La barrida sin léxico, y lo que el acento no veía
+
+Corrección de método que vino de Windows y que valía igual acá. Mi
+detector de A7a reconoce el español **por el acento y la ñ**; el triaje de
+`triaje-fuera-de-a7a.tsv` añadía una lista de palabras funcionales. Los
+dos comparten el mismo agujero: **una frase en español sin acento y sin
+ninguna de esas palabras es invisible**.
+
+### La herramienta
+
+`tools/barrido-literales.py` **no tiene léxico**. No decide si algo es
+español: saca todo literal de dos o más palabras y deja el juicio a una
+persona. Es para **leer**, no para contar, y que sobren candidatos es el
+punto. Solo descarta lo que no es prosa **por su forma**: rutas, URLs,
+identificadores, reverse-DNS, nombres de símbolo SF, claves de
+configuración, formatos de fecha o printf, nombres de archivo con
+extensión conocida, y lo que ya pasa por `LS`/`LSf`. Sugiere una clase
+(`¿PANTALLA?`/`¿INTERNO?`/`¿DATO?`) pero deja la columna `clase` vacía:
+la sugerencia es una pista, no la clasificación.
+
+Salida en `docs/extraccion-cadenas/barrido-sin-lexico.tsv`.
+
+### El conteo, y la corrección al mío
+
+| | literales |
+|---|---|
+| Barrida **sin léxico** | **800** (865 líneas, 800 tras unir repetidos) |
+| Triaje **con léxico** (el mío de antes) | 530 |
+| **Invisibles para el léxico** | **333** |
+
+Así que sí: mi triaje era un subconteo, igual que el de Windows. La
+mayoría de los 333 no son español (nombres propios, cadenas solo de
+interpolación, listas de detección en inglés), pero el conteo honesto es
+el de la barrida sin léxico.
+
+**El agujero exacto** --español **sin acento y sin palabra funcional**--
+son **8 literales**, y golpean la misma función que en Windows: las
+razones de "por qué se parecen" de `SimilarItemsDetector`. "Formatos
+distintos", "Mismo episodio", "Artista escrito distinto". El usuario las
+lee justo cuando decide si borra un archivo duplicado, y ninguna de las
+dos barridas anteriores las veía. ("Misma duración" sí se veía, por el
+acento -- lo que muestra lo arbitrario que era el criterio.)
+
+### Los cuatro sitios que pidió mirar
+
+- **Razones de abortar del instalador**: ya estaban en el triaje; llevan
+  acentos o palabras funcionales, así que el léxico las veía. Son las de
+  `InstallerStep.errorDescription` (checksum, DFU, desconexión a mitad de
+  copia, winpod, envío no confirmado).
+- **mks5lboot / ipodpatcher envueltos**: **3** textos de cara al usuario
+  (`IPodMonitor:305`, `MKS5LBootRunner:28` y `:30`), los tres ya
+  envueltos en una frase nuestra, con la salida cruda dentro. En el
+  inventario para A7d.
+- **Errores de red con su HTTP**: **el código no se pega a mano en
+  ningún texto**. Viaja en un error tipado
+  (`EnrichmentError.httpError(statusCode:)`,
+  `FirmwareReleaseDownloader`), y solo la frase que lo muestra ("Error de
+  red (HTTP %d)") está en español, ya inventariada.
+- **La línea de uso del disco**: **ya está en el catálogo**, con tres
+  marcadores posicionales, traducida a los seis idiomas. Y es el mejor
+  ejemplo de por qué los posicionales importan: el español dice "%@
+  usados de %@ -- %@ libres" y el alemán "%@ von %@ belegt – %@ frei",
+  que reordena.
+
+Nada de esto se corrige en A7c: es inventario, y entra en A7d con el
+resto. Lo que sí cambia es **el número de partida**, que ahora no depende
+de que alguien haya puesto una tilde.

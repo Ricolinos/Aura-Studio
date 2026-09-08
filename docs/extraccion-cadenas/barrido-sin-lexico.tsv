@@ -1,0 +1,866 @@
+clase	archivo	linea	palabras	sugerencia	texto
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	19	3	¿PANTALLA?	Cover Art Archive
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	541	2	¿PANTALLA?	Aura Library
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	548	2	¿PANTALLA?	aura.coverArtPolicy
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	549	2	¿PANTALLA?	aura.firmwareFamilyToInstall
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	550	2	¿PANTALLA?	aura.fetchSyncedLyrics
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	551	2	¿PANTALLA?	aura.enrichOnline
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	553	2	¿PANTALLA?	aura.legacyMetadataBannerShown
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	554	2	¿PANTALLA?	aura.coverContaminationReviewShown
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	555	2	¿PANTALLA?	aura.installationID
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	556	2	¿PANTALLA?	aura.knownDeviceNames
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	557	2	¿PANTALLA?	aura.bootloaderVerifiedDisks
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	558	2	¿PANTALLA?	aura.libraryFolderPath
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	559	2	¿PANTALLA?	aura.lastAppUpdateCheckAt
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	560	2	¿PANTALLA?	aura.dismissedAppUpdateTag
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	561	2	¿PANTALLA?	aura.appUpdatesIncludePrereleases
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	562	2	¿PANTALLA?	aura.copyMediaIntoLibrary
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	563	2	¿PANTALLA?	aura.musicOrganization
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	564	2	¿PANTALLA?	aura.musicFilenameFormat
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	565	2	¿PANTALLA?	aura.audioQuality
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	566	2	¿PANTALLA?	aura.photoQuality
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	567	2	¿PANTALLA?	aura.organizePhotosByCategory
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	568	2	¿PANTALLA?	aura.organizeVideosByCategory
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	569	2	¿PANTALLA?	aura.photoCollections
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	570	2	¿PANTALLA?	aura.coverArtProviderOrder
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	571	2	¿PANTALLA?	aura.deezerEnabled
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	572	2	¿PANTALLA?	aura.linkedLibraryFolders
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	573	2	¿PANTALLA?	aura.homologateArtistCollaborations
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	574	2	¿PANTALLA?	aura.artistHomologationExceptions
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	575	2	¿PANTALLA?	aura.musicVisibleColumns
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	576	2	¿PANTALLA?	aura.musicSortField
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	577	2	¿PANTALLA?	aura.musicSortAscending
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	578	2	¿PANTALLA?	aura.musicShowOnlyFavorites
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	579	2	¿PANTALLA?	aura.showStatusBar
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	580	2	¿PANTALLA?	aura.ignoredSimilarGroups
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	582	3	¿PANTALLA?	aura.visibleColumns.music
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	700	2	¿PANTALLA?	Deutsch (beta)
+	studio/AuraStudio/Sources/AuraStudio/Models/AppPreferences.swift	702	2	¿PANTALLA?	Français (beta)
+	studio/AuraStudio/Sources/AuraStudio/Models/AppUpdateDecision.swift	32	3	¿PANTALLA?	Ricolinos/Aura-Studio
+	studio/AuraStudio/Sources/AuraStudio/Models/AppUpdateDecision.swift	135	4	¿PANTALLA?	AuraStudio-\(version.releaseString).dmg
+	studio/AuraStudio/Sources/AuraStudio/Models/AppUpdateDecision.swift	136	5	¿PANTALLA?	AuraStudioSetup-\(version.releaseString)-arm64.exe
+	studio/AuraStudio/Sources/AuraStudio/Models/AppUpdateDecision.swift	137	4	¿PANTALLA?	AuraStudioSetup-\(version.releaseString)-x64.exe
+	studio/AuraStudio/Sources/AuraStudio/Models/AppUpdateDecision.swift	146	3	¿PANTALLA?	\(major).\(minor).\(patch)
+	studio/AuraStudio/Sources/AuraStudio/Models/AuraTheme.swift	101	2	¿PANTALLA?	Uso personal
+	studio/AuraStudio/Sources/AuraStudio/Models/AuraTheme.swift	218	3	¿DATO?	theme_redistributable: \(redistributable ? 
+	studio/AuraStudio/Sources/AuraStudio/Models/AuraTheme.swift	220	5	¿DATO?	palette_light_\(role.rawValue): \(hex)
+	studio/AuraStudio/Sources/AuraStudio/Models/AuraTheme.swift	223	5	¿DATO?	palette_dark_\(role.rawValue): \(hex)
+	studio/AuraStudio/Sources/AuraStudio/Models/AuraTheme.swift	226	4	¿DATO?	category_\(key.rawValue): \(hex)
+	studio/AuraStudio/Sources/AuraStudio/Models/FirmwareFamily.swift	79	3	¿PANTALLA?	Ricolinos/Aura-Firmware
+	studio/AuraStudio/Sources/AuraStudio/Models/FirmwareFamily.swift	80	3	¿PANTALLA?	Ricolinos/Metro-Aura
+	studio/AuraStudio/Sources/AuraStudio/Models/FirmwareFamily.swift	81	3	¿PANTALLA?	Ricolinos/moonlit-aura
+	studio/AuraStudio/Sources/AuraStudio/Models/FirmwareFamily.swift	114	4	¿PANTALLA?	.rockbox/fonts/a26-title-20.fnt
+	studio/AuraStudio/Sources/AuraStudio/Models/FirmwareFamily.swift	115	5	¿PANTALLA?	.rockbox/fonts/metro-list-20.fnt
+	studio/AuraStudio/Sources/AuraStudio/Models/FirmwareFamily.swift	116	5	¿PANTALLA?	.rockbox/fonts/moonlit-body-18.fnt
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	91	4	¿PANTALLA?	Pausar servicios de macOS
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	100	34	¿PANTALLA?	Aura Studio necesita pausar temporalmente los servicios de macOS que a veces interfieren con la conexión del iPod (\(Sentence.list(PrivilegedExecutor.ampAgentNames))). Se reactivan automáticamente al terminar, o solos después de unos minutos si algo falla.
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	101	31	¿PANTALLA?	Si cancelas, Aura Studio va a seguir intentando detectar el iPod igual -- en la mayoría de las Mac esto no hace falta, pero si la detección falla repetidamente, puede ser la causa.
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	108	5	¿PANTALLA?	Preparar el disco para Finder
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	109	51	¿PANTALLA?	Para que Finder pueda restaurar el firmware original de Apple, el disco del iPod (\(diskIdentifier)) se va a formatear dos veces: primero un formato puente (FAT con esquema MBR) y despues Mac OS Plus con registro con mapa de particiones GUID -- el estado que Finder espera. Esto borra todo el conteni
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	110	26	¿PANTALLA?	Si cancelas, el iPod queda sin el bootloader de Aura pero con el disco sin preparar -- Finder podria no reconocerlo para restaurar. Puedes reintentar cuando quieras.
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	117	5	¿PANTALLA?	Preparar el disco del iPod
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	118	47	¿PANTALLA?	"Vamos a formatear la partición de datos de tu iPod (identificada como \""\(volumeName)\"", disco \(diskIdentifier)) para que pueda arrancar Aura. Esto borra TODO el contenido actual del iPod -- solo del iPod, Aura Studio ya verificó su identidad por tamaño, fabricante y tipo de disco antes de llegar a"
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	119	19	¿PANTALLA?	Si cancelas, la instalación se detiene acá. El iPod queda como estaba, sin ningún cambio -- puedes reintentar cuando quieras.
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	183	6	¿PANTALLA?	No se detecto ningun iPod conectado.
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	185	11	¿PANTALLA?	El iPod no esta formateado en FAT32. Conviértelo antes de continuar.
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	187	15	¿PANTALLA?	No se detecto el iPod en modo DFU a tiempo. Vuelve a intentar la combinacion de botones.
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	189	9	¿PANTALLA?	El archivo \(file) no supero la verificacion de integridad.
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	191	19	¿PANTALLA?	No se pudo descargar la versión más reciente de \(family): \(reason). Se usará la versión que trae Aura Studio.
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	193	22	¿PANTALLA?	Al Release \(tag) le falta \(asset), así que no se puede instalar desde él. Se usará la versión que trae Aura Studio.
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	195	14	¿PANTALLA?	El firmware de este Release está incompleto: a rockbox.zip le faltan \(missing.joined(separator: 
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	195	24	¿PANTALLA?	)) -- el iPod quedaría sin video o sin audio. No es un problema de tu conexión; vuelve a intentar más tarde o avisa que este Release salió mal.
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	201	7	¿PANTALLA?	La operación terminó con código \(exitCode): \(output)
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	203	11	¿PANTALLA?	Falta el artefacto \(name) dentro de la app. Reinstala Aura Studio.
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	205	24	¿PANTALLA?	Se encontraron \(count) discos que podrian ser tu iPod. Por seguridad, Aura Studio no elige uno solo -- desconecta los demas discos externos y vuelve a intentar.
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	207	12	¿PANTALLA?	Cancelaste el permiso de administrador. Este paso no puede continuar sin él.
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	211	56	¿PANTALLA?	"macOS bloqueó el acceso directo al disco del iPod. Concede \""Acceso total al disco\"" a Aura Studio en Ajustes del Sistema (Privacidad y seguridad), cierra la app por completo, vuelve a abrirla y reintenta. Si Aura Studio ya aparece en la lista, quítala con el botón \""−\"" y agrégala de nuevo -- el pe"
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	213	126	¿PANTALLA?	"Para dual boot, el iPod debe conservar el firmware original de Apple en formato \""winpod\"": tabla de particiones MBR con la partición de firmware de Apple intacta más una partición FAT32 -- el formato que crea iTunes al restaurar en una PC con WINDOWS. Este iPod está en formato de Mac (particiones A"
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	215	49	¿PANTALLA?	Tu iPod se desconectó durante la copia de archivos. Copiar el firmware completo son miles de archivos chicos y puede tardar varios minutos por USB -- revisa el cable (evita hubs USB si usas uno) y vuelve a intentar: lo que ya se copió no se pierde, la copia sigue desde donde quedó.
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	217	37	¿PANTALLA?	El iPod volvió a aparecer con el firmware original de Apple atendiendo el USB: el bootloader de Aura no quedó grabado. Vuelve a intentar el paso de DFU (el disco ya está preparado, no hace falta formatearlo otra vez).
+	studio/AuraStudio/Sources/AuraStudio/Models/InstallerStep.swift	219	58	¿PANTALLA?	"El iPod recibió el envío del firmware, pero nunca confirmó haberlo aplicado -- sigue en modo DFU. Si se abrió Finder mostrando \""Modo DFU del iPod\"", ciérralo SIN tocar el botón Restaurar (eso reinstalaría el firmware original de Apple). Después vuelve a intentar: el iPod ya está en modo DFU, así qu"
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryDeletionPlan.swift	86	4	¿PANTALLA?	\(item.id.uuidString).jpg
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryGrouping.swift	65	2	¿PANTALLA?	Sin álbum
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryGrouping.swift	66	2	¿PANTALLA?	Artista desconocido
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryGrouping.swift	101	10	¿PANTALLA?	\(normalize(item.metadata?.album))\u{1F}\(normalize(albumArtist(of: item, options: options)))
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryGrouping.swift	239	2	¿PANTALLA?	\(albumsText), \(songsText)
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryGrouping.swift	344	3	¿PANTALLA?	series\u{1F}\(normalize(seriesName))
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryGrouping.swift	348	3	¿PANTALLA?	movie\u{1F}\(normalize(title))
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryGrouping.swift	350	4	¿PANTALLA?	movie\u{1F}\(item.id.uuidString)
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryGrouping.swift	424	2	¿PANTALLA?	Sin álbum
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryGrouping.swift	431	5	¿PANTALLA?	\(normalize(category))\u{1F}\(normalize(item.photoAlbum))
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryMigrationNeed.swift	76	5	¿PANTALLA?	\(item.id.uuidString).\(prepared.pathExtension)
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	120	3	¿PANTALLA?	\(formatted(n)) \(n == 1 ? singular : plural)
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	147	3	¿PANTALLA?	\(hours) h \(minutes) min
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	148	2	¿PANTALLA?	\(minutes) min
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	229	7	¿PANTALLA?	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionadas
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	239	7	¿PANTALLA?	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	248	7	¿PANTALLA?	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionadas
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	266	8	¿PANTALLA?	\(formatted(selected.count)) de \(formatted(items.count)) seleccionadas
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	304	7	¿PANTALLA?	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	332	7	¿PANTALLA?	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	357	2	¿PANTALLA?	«\(selected.name)»
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	385	8	¿PANTALLA?	\(formatted(selected.count)) de \(formatted(items.count)) seleccionados
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	407	7	¿PANTALLA?	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionadas
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	435	7	¿PANTALLA?	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionadas
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	452	2	¿PANTALLA?	«\(show.title)»
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	462	7	¿PANTALLA?	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	480	3	¿PANTALLA?	\(formatted(n)) en \(collection)
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	488	8	¿PANTALLA?	\(formatted(selected.count)) de \(formatted(items.count)) seleccionadas
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	504	4	¿PANTALLA?	\(formatted(loose)) sin álbum
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	513	7	¿PANTALLA?	\(formatted(selected.count)) de \(formatted(totalCount)) seleccionados
+	studio/AuraStudio/Sources/AuraStudio/Models/LibraryStatusSummary.swift	528	2	¿PANTALLA?	«\(album.title)»
+	studio/AuraStudio/Sources/AuraStudio/Models/MediaCategory.swift	81	2	¿PANTALLA?	stable diffusion
+	studio/AuraStudio/Sources/AuraStudio/Models/MediaCategory.swift	82	2	¿PANTALLA?	leonardo ai
+	studio/AuraStudio/Sources/AuraStudio/Models/MusicTableColumn.swift	73	3	¿PANTALLA?	Artista del álbum
+	studio/AuraStudio/Sources/AuraStudio/Models/MusicTableColumn.swift	76	3	¿PANTALLA?	Número de disco
+	studio/AuraStudio/Sources/AuraStudio/Models/MusicTableColumn.swift	79	3	¿PANTALLA?	Número de pista
+	studio/AuraStudio/Sources/AuraStudio/Models/MusicTableColumn.swift	83	5	¿PANTALLA?	Fecha en que se agregó
+	studio/AuraStudio/Sources/AuraStudio/Models/OrphanScan.swift	66	4	¿PANTALLA?	\(item.id.uuidString).jpg
+	studio/AuraStudio/Sources/AuraStudio/Models/PreparedMusicPlan.swift	68	9	¿PANTALLA?	el archivo de origen ya sirve tal como está
+	studio/AuraStudio/Sources/AuraStudio/Models/PreparedMusicPlan.swift	71	4	¿PANTALLA?	todavía no hay preparado
+	studio/AuraStudio/Sources/AuraStudio/Models/PreparedMusicPlan.swift	74	7	¿PANTALLA?	el archivo de origen cambió de tamaño
+	studio/AuraStudio/Sources/AuraStudio/Models/PreparedMusicPlan.swift	80	9	¿PANTALLA?	no se pudo leer la fecha de los archivos
+	studio/AuraStudio/Sources/AuraStudio/Models/PreparedMusicPlan.swift	83	10	¿PANTALLA?	el archivo de origen es más nuevo que el preparado
+	studio/AuraStudio/Sources/AuraStudio/Models/PreparedMusicPlan.swift	85	4	¿PANTALLA?	el preparado sigue sirviendo
+	studio/AuraStudio/Sources/AuraStudio/Models/SharedCatalogPath.swift	115	5	¿PANTALLA?	\(PersistedLibrary.coversDirName)/\(itemID.uuidString).jpg
+	studio/AuraStudio/Sources/AuraStudio/Models/UITestEnvironment.swift	27	3	¿PANTALLA?	AURA_UITEST_LIBRARY
+	studio/AuraStudio/Sources/AuraStudio/Models/UITestEnvironment.swift	29	4	¿PANTALLA?	AURA_UITEST_DEFAULTS_SUITE
+	studio/AuraStudio/Sources/AuraStudio/Models/UITestEnvironment.swift	40	4	¿PANTALLA?	AURA_UITEST_MAIN_SCREEN
+	studio/AuraStudio/Sources/AuraStudio/Models/UITestEnvironment.swift	79	2	¿PANTALLA?	biblioteca.barraEstado
+	studio/AuraStudio/Sources/AuraStudio/Models/UITestEnvironment.swift	88	3	¿PANTALLA?	biblioteca.barraLateral.\(key)
+	studio/AuraStudio/Sources/AuraStudio/Models/UITestEnvironment.swift	96	3	¿PANTALLA?	albumes.tarjeta.\(index)
+	studio/AuraStudio/Sources/AuraStudio/Models/UITestEnvironment.swift	121	6	¿PANTALLA?	\(ISO8601DateFormatter().string(from: Date()))  \(message)\n
+	studio/AuraStudio/Sources/AuraStudio/Services/APIKeyStore.swift	25	4	¿PANTALLA?	TMDB (The Movie Database)
+	studio/AuraStudio/Sources/AuraStudio/Services/APIKeyStore.swift	31	28	¿PANTALLA?	Caratulas y arte de disco en alta resolucion (~1000px), fotos de artista, y posters curados de peliculas y series (estos ultimos necesitan tambien la key de TMDB para encontrar el titulo).
+	studio/AuraStudio/Sources/AuraStudio/Services/APIKeyStore.swift	32	28	¿PANTALLA?	Posters de peliculas y series (biblioteca de Video). Encuentra el titulo y su identificador; con fanart.tv configurado se prefiere el poster curado de alli, si no, el de TMDB.
+	studio/AuraStudio/Sources/AuraStudio/Services/APIKeyStore.swift	42	19	¿PANTALLA?	"Crea una cuenta gratuita en fanart.tv, entra a tu perfil y copia la \""Personal API Key\"" (no la de proyecto)."
+	studio/AuraStudio/Sources/AuraStudio/Services/APIKeyStore.swift	44	23	¿PANTALLA?	"Crea una cuenta gratuita en themoviedb.org, ve a Ajustes › API y copia la \""Clave de la API\"" (la corta, v3), no el token de lectura."
+	studio/AuraStudio/Sources/AuraStudio/Services/AlbumCoverSearch.swift	42	3	¿PANTALLA?	Cover Art Archive
+	studio/AuraStudio/Sources/AuraStudio/Services/AppleLosslessEncoder.swift	33	18	¿PANTALLA?	Este AIFF está comprimido (\(compression)) y Aura Studio no lo convierte. Expórtalo como AIFF o WAV sin comprimir y vuelve a importarlo.
+	studio/AuraStudio/Sources/AuraStudio/Services/AppleLosslessEncoder.swift	35	9	¿PANTALLA?	El archivo no tiene pista de audio que convertir.
+	studio/AuraStudio/Sources/AuraStudio/Services/AppleLosslessEncoder.swift	37	18	¿PANTALLA?	El archivo declara un formato de audio que no se puede usar (\(detail)). Puede estar truncado o mal escrito.
+	studio/AuraStudio/Sources/AuraStudio/Services/AppleLosslessEncoder.swift	39	9	¿PANTALLA?	No se pudo leer el audio para convertirlo: \(message)
+	studio/AuraStudio/Sources/AuraStudio/Services/AppleLosslessEncoder.swift	41	8	¿PANTALLA?	No se pudo escribir el archivo convertido: \(message)
+	studio/AuraStudio/Sources/AuraStudio/Services/AppleLosslessEncoder.swift	68	6	¿PANTALLA?	tasa de muestreo \(Int(sampleRate)) Hz
+	studio/AuraStudio/Sources/AuraStudio/Services/AppleLosslessEncoder.swift	71	2	¿PANTALLA?	\(channels) canales
+	studio/AuraStudio/Sources/AuraStudio/Services/AudioTag.swift	42	2	¿PANTALLA?	image/jpeg
+	studio/AuraStudio/Sources/AuraStudio/Services/AudioTag.swift	47	2	¿PANTALLA?	image/jpeg
+	studio/AuraStudio/Sources/AuraStudio/Services/AudioTranscoder.swift	17	12	¿PANTALLA?	"No se encontro ffmpeg instalado. Instálalo con \""brew install ffmpeg\"" y vuelve a intentar."
+	studio/AuraStudio/Sources/AuraStudio/Services/AudioTranscoder.swift	19	7	¿PANTALLA?	ffmpeg fallo al comprimir el audio: \(output)
+	studio/AuraStudio/Sources/AuraStudio/Services/AuraDeviceProbe.swift	32	2	¿PANTALLA?	.rockbox/aura
+	studio/AuraStudio/Sources/AuraStudio/Services/AuraDeviceProbe.swift	33	4	¿PANTALLA?	.rockbox/aura/aura.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/AuraDeviceProbe.swift	39	3	¿PANTALLA?	.rockbox/icons/aura
+	studio/AuraStudio/Sources/AuraStudio/Services/AuraDeviceProbe.swift	44	3	¿PANTALLA?	.rockbox/.resume.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/AuraDeviceProbe.swift	45	3	¿PANTALLA?	.rockbox/config.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/AuraDeviceProbe.swift	50	2	¿PANTALLA?	iPod_Control
+	studio/AuraStudio/Sources/AuraStudio/Services/AuraUpdateChecker.swift	29	3	¿PANTALLA?	.rockbox/rockbox.ipod
+	studio/AuraStudio/Sources/AuraStudio/Services/AuraUpdateChecker.swift	35	4	¿PANTALLA?	.rockbox/aura/version.txt
+	studio/AuraStudio/Sources/AuraStudio/Services/AuraUpdateChecker.swift	173	2	¿PANTALLA?	AuraUpdateChecker.cachedReleases
+	studio/AuraStudio/Sources/AuraStudio/Services/AuraUpdateChecker.swift	174	2	¿PANTALLA?	AuraUpdateChecker.cachedReleasesTimestamp
+	studio/AuraStudio/Sources/AuraStudio/Services/AuraUpdateChecker.swift	178	2	¿PANTALLA?	\(dataKey).\(suffix)
+	studio/AuraStudio/Sources/AuraStudio/Services/AuraUpdateChecker.swift	183	2	¿PANTALLA?	\(timestampKey).\(suffix)
+	studio/AuraStudio/Sources/AuraStudio/Services/BundledArtifacts.swift	123	5	¿PANTALLA?	.rockbox/rocks/viewers/mpegplayer.rock
+	studio/AuraStudio/Sources/AuraStudio/Services/BundledArtifacts.swift	124	4	¿PANTALLA?	.rockbox/codecs/mpa.codec
+	studio/AuraStudio/Sources/AuraStudio/Services/CatalogPersister.swift	211	11	¿PANTALLA?	No se pudo guardar el catalogo de la biblioteca: \(error.localizedDescription)
+	studio/AuraStudio/Sources/AuraStudio/Services/ClockSyncWriter.swift	12	4	¿PANTALLA?	.rockbox/aura/aura.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/ClockSyncWriter.swift	36	2	¿PANTALLA?	\(key): \(value)
+	studio/AuraStudio/Sources/AuraStudio/Services/ClockSyncWriter.swift	38	2	¿PANTALLA?	\(key): \(value)
+	studio/AuraStudio/Sources/AuraStudio/Services/CoverArtArchiveClient.swift	44	2	¿PANTALLA?	release/\(releaseID)
+	studio/AuraStudio/Sources/AuraStudio/Services/CoverArtArchiveClient.swift	45	2	¿PANTALLA?	User-Agent
+	studio/AuraStudio/Sources/AuraStudio/Services/CoverArtArchiveClient.swift	69	2	¿PANTALLA?	User-Agent
+	studio/AuraStudio/Sources/AuraStudio/Services/CoverNormalizationMigration.swift	61	5	¿PANTALLA?	Normalizando carátulas… \(completed) de \(total)
+	studio/AuraStudio/Sources/AuraStudio/Services/CoverStore.swift	34	3	¿PANTALLA?	\(id.uuidString).jpg
+	studio/AuraStudio/Sources/AuraStudio/Services/CoverStore.swift	38	5	¿PANTALLA?	\(PersistedLibrary.coversDirName)/\(id.uuidString).jpg
+	studio/AuraStudio/Sources/AuraStudio/Services/CoverThumbnailCache.swift	150	3	¿PANTALLA?	\(id)@\(Int(side))
+	studio/AuraStudio/Sources/AuraStudio/Services/CoverThumbnailCache.swift	175	2	¿PANTALLA?	\(count)-\(digest)
+	studio/AuraStudio/Sources/AuraStudio/Services/DeezerClient.swift	37	6	¿PANTALLA?	"artist:\""\(escapeQuoted(artist))\"" track:\""\(escapeQuoted(title))\"""
+	studio/AuraStudio/Sources/AuraStudio/Services/DeezerClient.swift	42	2	¿PANTALLA?	User-Agent
+	studio/AuraStudio/Sources/AuraStudio/Services/DeezerClient.swift	84	2	¿PANTALLA?	User-Agent
+	studio/AuraStudio/Sources/AuraStudio/Services/DeezerClient.swift	144	2	¿PANTALLA?	\(max(1, limit))
+	studio/AuraStudio/Sources/AuraStudio/Services/DeezerClient.swift	148	2	¿PANTALLA?	User-Agent
+	studio/AuraStudio/Sources/AuraStudio/Services/DeviceNameStore.swift	39	4	¿PANTALLA?	.rockbox/aura/device.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/DeviceNameStore.swift	104	3	¿PANTALLA?	iPod de \(full)
+	studio/AuraStudio/Sources/AuraStudio/Services/DeviceNameStore.swift	106	3	¿PANTALLA?	iPod de \(short)
+	studio/AuraStudio/Sources/AuraStudio/Services/FFmpegTranscoder.swift	22	2	¿PANTALLA?	\(dir)/ffmpeg
+	studio/AuraStudio/Sources/AuraStudio/Services/FFmpegTranscoder.swift	39	12	¿PANTALLA?	"No se encontro ffmpeg instalado. Instálalo con \""brew install ffmpeg\"" y vuelve a intentar."
+	studio/AuraStudio/Sources/AuraStudio/Services/FFmpegTranscoder.swift	41	3	¿PANTALLA?	ffmpeg fallo: \(output)
+	studio/AuraStudio/Sources/AuraStudio/Services/FFmpegTranscoder.swift	107	9	¿PANTALLA?	scale=320:240:force_original_aspect_ratio=decrease:force_divisible_by=2
+	studio/AuraStudio/Sources/AuraStudio/Services/FFmpegTranscoder.swift	193	3	¿PANTALLA?	codigo \(process.terminationStatus)
+	studio/AuraStudio/Sources/AuraStudio/Services/FFmpegTranscoder.swift	227	3	¿PANTALLA?	codigo \(process.terminationStatus)
+	studio/AuraStudio/Sources/AuraStudio/Services/FFmpegTranscoder.swift	301	5	¿PANTALLA?	crop=\(crop.w):\(crop.h):\(crop.x):\(crop.y)
+	studio/AuraStudio/Sources/AuraStudio/Services/FFmpegTranscoder.swift	307	5	¿PANTALLA?	crop=\(crop.w):\(crop.h):\(crop.x):\(crop.y)
+	studio/AuraStudio/Sources/AuraStudio/Services/FFmpegTranscoder.swift	474	3	¿PANTALLA?	out_time_ms=
+	studio/AuraStudio/Sources/AuraStudio/Services/FFmpegTranscoder.swift	475	3	¿PANTALLA?	out_time_ms=
+	studio/AuraStudio/Sources/AuraStudio/Services/FLACTagWriter.swift	54	2	¿PANTALLA?	Aura Studio
+	studio/AuraStudio/Sources/AuraStudio/Services/FLACTagWriter.swift	213	2	¿PANTALLA?	\(key)=\(value)
+	studio/AuraStudio/Sources/AuraStudio/Services/FanartTVClient.swift	68	2	¿PANTALLA?	User-Agent
+	studio/AuraStudio/Sources/AuraStudio/Services/FanartTVClient.swift	85	2	¿PANTALLA?	music/\(musicBrainzArtistID)
+	studio/AuraStudio/Sources/AuraStudio/Services/FanartTVClient.swift	92	2	¿PANTALLA?	movies/\(tmdbOrIMDbID)
+	studio/AuraStudio/Sources/AuraStudio/Services/FanartTVClient.swift	99	2	¿PANTALLA?	tv/\(tvdbID)
+	studio/AuraStudio/Sources/AuraStudio/Services/FanartTVClient.swift	110	2	¿PANTALLA?	User-Agent
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	100	9	¿PANTALLA?	esta versión de Aura Studio no instala esa familia
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	102	8	¿PANTALLA?	Buscando la versión más reciente de \(family.displayName)...
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	110	9	¿PANTALLA?	el token de GitHub no tiene acceso a ese repositorio
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	111	6	¿PANTALLA?	GitHub no devolvió ningún Release utilizable
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	116	11	¿PANTALLA?	el tag \(latest.tagName) no es un nombre de carpeta válido
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	119	7	¿PANTALLA?	\(family.displayName) \(latest.tagName) ya estaba descargado.
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	128	3	¿PANTALLA?	.descarga-\(latest.tagName)
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	137	8	¿PANTALLA?	Descargando \(name.rawValue) de \(family.displayName) \(latest.tagName)...
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	154	2	¿DATO?	\(latest.tagName)\n
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	161	7	¿PANTALLA?	Verificando integridad de \(family.displayName) \(latest.tagName)...
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	185	8	¿PANTALLA?	la URL de \(asset.name) no es válida
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	188	2	¿PANTALLA?	User-Agent
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	189	3	¿PANTALLA?	application/octet-stream
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	190	3	¿PANTALLA?	X-GitHub-Api-Version
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	192	2	¿PANTALLA?	Bearer \(token)
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	207	9	¿PANTALLA?	GitHub respondió \(code) al pedir \(asset.name) de \(tag)
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareReleaseDownloader.swift	215	10	¿PANTALLA?	\(asset.name) llegó incompleto (\(data.count) de \(asset.size) bytes)
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareSwitcher.swift	33	3	¿PANTALLA?	.aura/library-stamp
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareSwitcher.swift	39	4	¿PANTALLA?	aura/db_stamp.txt
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareSwitcher.swift	232	4	¿PANTALLA?	aura/sync_summary.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareSwitcher.swift	233	4	¿PANTALLA?	aura/sync_manifest.json
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareSwitcher.swift	234	4	¿PANTALLA?	aura/artist_images.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareSwitcher.swift	235	2	¿PANTALLA?	aura/artists
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareSwitcher.swift	236	4	¿PANTALLA?	aura/video_categories.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareSwitcher.swift	237	4	¿PANTALLA?	aura/photo_categories.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareSwitcher.swift	238	3	¿PANTALLA?	aura/ratings.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareSwitcher.swift	239	3	¿PANTALLA?	aura/device.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareSwitcher.swift	255	4	¿PANTALLA?	aura/sync_summary.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/FirmwareSwitcher.swift	261	4	¿PANTALLA?	aura/sync_summary.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/GitHubReleaseChecker.swift	219	2	¿PANTALLA?	User-Agent
+	studio/AuraStudio/Sources/AuraStudio/Services/GitHubReleaseChecker.swift	221	2	¿PANTALLA?	Bearer \(token)
+	studio/AuraStudio/Sources/AuraStudio/Services/GitHubReleaseChecker.swift	222	4	¿PANTALLA?	application/vnd.github+json
+	studio/AuraStudio/Sources/AuraStudio/Services/GitHubReleaseChecker.swift	223	3	¿PANTALLA?	X-GitHub-Api-Version
+	studio/AuraStudio/Sources/AuraStudio/Services/IPodMonitor.swift	305	13	¿PANTALLA?	No se pudo ejecutar la herramienta de detección DFU (mks5lboot): \(error.localizedDescription)
+	studio/AuraStudio/Sources/AuraStudio/Services/ImageResizer.swift	19	8	¿PANTALLA?	No se pudo leer la imagen de origen.
+	studio/AuraStudio/Sources/AuraStudio/Services/ImageResizer.swift	20	8	¿PANTALLA?	No se pudo generar el JPEG de salida.
+	studio/AuraStudio/Sources/AuraStudio/Services/InstallManifest.swift	32	3	¿PANTALLA?	# aura-install-manifest v1
+	studio/AuraStudio/Sources/AuraStudio/Services/InstallManifest.swift	33	5	¿PANTALLA?	.rockbox/aura/install_manifest.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/InstallManifest.swift	58	3	¿PANTALLA?	unzip -lv falló
+	studio/AuraStudio/Sources/AuraStudio/Services/InstallManifest.swift	63	5	¿PANTALLA?	unzip -lv no devolvió entradas
+	studio/AuraStudio/Sources/AuraStudio/Services/LRCLIBClient.swift	47	2	¿PANTALLA?	User-Agent
+	studio/AuraStudio/Sources/AuraStudio/Services/LRCLIBClient.swift	52	2	¿PANTALLA?	Lrclib-Client
+	studio/AuraStudio/Sources/AuraStudio/Services/LibraryFileWorker.swift	108	6	¿PANTALLA?	el archivo de origen no está
+	studio/AuraStudio/Sources/AuraStudio/Services/LibraryFileWorker.swift	119	5	¿PANTALLA?	este formato viaja tal cual
+	studio/AuraStudio/Sources/AuraStudio/Services/LibraryFileWorker.swift	176	4	¿PANTALLA?	\(UUID().uuidString).aura-tmp
+	studio/AuraStudio/Sources/AuraStudio/Services/LibraryFileWorker.swift	266	4	¿PANTALLA?	\(UUID().uuidString).aura-tmp
+	studio/AuraStudio/Sources/AuraStudio/Services/LibraryFileWorker.swift	321	5	¿PANTALLA?	aura-import-\(UUID().uuidString).\(scratchExtension)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	194	5	¿PANTALLA?	.rockbox/aura/sync_manifest.json
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	195	5	¿PANTALLA?	.rockbox/aura/sync_summary.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	196	4	¿PANTALLA?	.rockbox/aura/ratings.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	201	5	¿PANTALLA?	.rockbox/aura/video_categories.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	202	5	¿PANTALLA?	.rockbox/aura/photo_categories.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	207	3	¿PANTALLA?	.rockbox/aura/artists
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	208	5	¿PANTALLA?	.rockbox/aura/artist_images.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	233	5	¿PANTALLA?	.rockbox/aura/sync_in_progress
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	255	4	¿PANTALLA?	.rockbox/database_idx.tcd
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	256	3	¿PANTALLA?	.rockbox/database_0.tcd
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	257	3	¿PANTALLA?	.rockbox/database_1.tcd
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	258	3	¿PANTALLA?	.rockbox/database_2.tcd
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	259	3	¿PANTALLA?	.rockbox/database_3.tcd
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	260	3	¿PANTALLA?	.rockbox/database_4.tcd
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	261	3	¿PANTALLA?	.rockbox/database_5.tcd
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	262	3	¿PANTALLA?	.rockbox/database_6.tcd
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	298	2	¿PANTALLA?	.aura/tagcache
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	299	2	¿PANTALLA?	.aura/thumbs
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	300	2	¿PANTALLA?	.aura/art
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	301	3	¿PANTALLA?	.aura/settings.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	374	9	¿PANTALLA?	No se pudo crear el archivo temporal en \(path)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1088	6	¿PANTALLA?	\((relative as NSString).lastPathComponent.firmwareNFC): \(code)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1090	3	¿PANTALLA?	# aura-video-categories v1
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1101	6	¿PANTALLA?	\((relative as NSString).lastPathComponent.firmwareNFC): \(code)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1103	3	¿PANTALLA?	# aura-photo-categories v1
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1173	2	¿DATO?	\(fileName): \(raw)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1183	3	¿DATO?	# aura-artist-images v1\n
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1202	2	¿PANTALLA?	\(seriesName)\u{1}\(season)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1246	2	¿PANTALLA?	\(artist)/\(album)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1251	8	¿PANTALLA?	Music/\(folder)/\(musicFileName(for: item, filenameFormat: filenameFormat)).\(ext)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1286	2	¿PANTALLA?	\(title) - \(artist)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1288	2	¿PANTALLA?	\(title) - \(album)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1320	5	¿PANTALLA?	\(PersistedLibrary.musicDirName)/\(artist)/\(album)/\(fileName)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1329	9	¿PANTALLA?	\(PersistedLibrary.imagesDirName)/\(PathSanitizer.sanitize(category))/\(PathSanitizer.sanitize(album))/\(fileName)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1331	6	¿PANTALLA?	\(PersistedLibrary.imagesDirName)/\(PathSanitizer.sanitize(category))/\(fileName)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1333	3	¿PANTALLA?	\(PersistedLibrary.imagesDirName)/\(fileName)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1336	6	¿PANTALLA?	\(PersistedLibrary.videosDirName)/\(PathSanitizer.sanitize(category))/\(fileName)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1338	3	¿PANTALLA?	\(PersistedLibrary.videosDirName)/\(fileName)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1366	2	¿PANTALLA?	\(deviceBaseName).\(deviceExt)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1386	11	¿PANTALLA?	Videos/\(Self.seriesEpisodeFilename(seriesName: seriesName, season: season, episode: episode, ext: ext))
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1388	7	¿PANTALLA?	Videos/\(PathSanitizer.sanitizeFilename(filename, maxBytes: Self.deviceFilenameMaxBytes))
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1389	7	¿PANTALLA?	Photos/\(PathSanitizer.sanitizeFilename(filename, maxBytes: Self.deviceFilenameMaxBytes))
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1390	2	¿PANTALLA?	Unsupported/\(filename)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1448	2	¿PANTALLA?	\(directory)/\(candidateName)
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1457	3	¿PANTALLA?	 \(itemID.uuidString.prefix(8))
+	studio/AuraStudio/Sources/AuraStudio/Services/LibrarySync.swift	1532	4	¿PANTALLA?	Videos/\(base)\(suffix)\(extSuffix)
+	studio/AuraStudio/Sources/AuraStudio/Services/LocalTagWriter.swift	111	14	¿PANTALLA?	el formato .\(ext) no lleva etiquetas (al importarlo en copia se convierte, ver AudioConversionRule)
+	studio/AuraStudio/Sources/AuraStudio/Services/LocalTagWriter.swift	114	6	¿PANTALLA?	no hay ningún campo que escribir
+	studio/AuraStudio/Sources/AuraStudio/Services/LocalTagWriter.swift	128	10	¿PANTALLA?	no se pudieron escribir las etiquetas de \(url.lastPathComponent): \(error)
+	studio/AuraStudio/Sources/AuraStudio/Services/LocalTagWriter.swift	162	3	¿PANTALLA?	artista del álbum
+	studio/AuraStudio/Sources/AuraStudio/Services/MKS5LBootRunner.swift	28	11	¿PANTALLA?	No se encontró la herramienta mks5lboot dentro de Aura Studio.
+	studio/AuraStudio/Sources/AuraStudio/Services/MKS5LBootRunner.swift	30	30	¿PANTALLA?	La herramienta mks5lboot que trae Aura Studio no tiene permiso de ejecución (\(path)). Vuelve a instalar Aura Studio o, si compilas desde el código, corre scripts/fetch-firmware.sh de nuevo.
+	studio/AuraStudio/Sources/AuraStudio/Services/MKS5LBootRunner.swift	100	3	¿PANTALLA?	DFU device state: 
+	studio/AuraStudio/Sources/AuraStudio/Services/MainThreadWatchdog.swift	58	2	¿PANTALLA?	AURA_WATCHDOG
+	studio/AuraStudio/Sources/AuraStudio/Services/MainThreadWatchdog.swift	64	2	¿PANTALLA?	AuraStudio.MainThreadWatchdog
+	studio/AuraStudio/Sources/AuraStudio/Services/MainThreadWatchdog.swift	66	11	¿INTERNO?	[MainThreadWatchdog] activo -- avisa de bloqueos del hilo principal > \(Int(thresholdSeconds * 1000)) ms
+	studio/AuraStudio/Sources/AuraStudio/Services/MainThreadWatchdog.swift	158	9	¿INTERNO?	[MainThreadWatchdog] bloqueo de ~\(durationMs) ms en el hilo principal
+	studio/AuraStudio/Sources/AuraStudio/Services/MainThreadWatchdog.swift	160	15	¿INTERNO?	    (no se alcanzó a capturar la pila -- el bloqueo terminó antes de que la señal llegara)
+	studio/AuraStudio/Sources/AuraStudio/Services/MusicBrainzClient.swift	108	2	¿PANTALLA?	User-Agent
+	studio/AuraStudio/Sources/AuraStudio/Services/MusicBrainzClient.swift	127	5	¿PANTALLA?	" AND artist:\""\(Self.escapeLuceneQuoted(artist))\"""
+	studio/AuraStudio/Sources/AuraStudio/Services/MusicBrainzClient.swift	134	2	¿PANTALLA?	\(max(1, limit))
+	studio/AuraStudio/Sources/AuraStudio/Services/MusicBrainzClient.swift	138	2	¿PANTALLA?	User-Agent
+	studio/AuraStudio/Sources/AuraStudio/Services/MusicBrainzClient.swift	158	2	¿PANTALLA?	User-Agent
+	studio/AuraStudio/Sources/AuraStudio/Services/MusicBrainzClient.swift	238	5	¿PANTALLA?	Error de red (HTTP \(code))
+	studio/AuraStudio/Sources/AuraStudio/Services/MusicBrainzClient.swift	240	5	¿PANTALLA?	No se encontro ningun resultado
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	37	12	¿PANTALLA?	Cancelaste el permiso de administrador. Este paso no puede continuar sin él.
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	41	12	¿PANTALLA?	Aura Studio se detuvo por seguridad antes de tocar el disco: \(reason)
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	43	9	¿PANTALLA?	macOS bloqueó el acceso directo al disco del iPod.
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	65	7	¿PANTALLA?	"do shell script \""\(escaped)\"" with administrator privileges"
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	74	8	¿PANTALLA?	No se pudo construir el script de autorización.
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	75	7	¿PANTALLA?	error: no se pudo construir el script
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	85	2	¿PANTALLA?	Error desconocido
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	94	4	¿PANTALLA?	cancelado por el usuario
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	96	3	¿PANTALLA?	AURA_FDA_REQUIRED
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	97	8	¿PANTALLA?	bloqueado por TCC (falta Acceso total al disco)
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	99	3	¿PANTALLA?	AURA_SAFETY_ABORT
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	100	4	¿PANTALLA?	abortado por seguridad: \(message)
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	103	3	¿PANTALLA?	error \(number): \(message)
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	146	13	¿PANTALLA?	"for name in \(names); do pkill -CONT -x \""$name\"" 2>/dev/null || true; done; exit 0"
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	160	3	¿PANTALLA?	pausar agentes AMP
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	164	3	¿PANTALLA?	reanudar agentes AMP
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	206	10	¿PANTALLA?	el candidato no cumple los criterios de identificacion del iPod
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	222	10	¿PANTALLA?	AURA_SAFETY_ABORT: el disco ya no aparece como removible
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	225	8	¿PANTALLA?	AURA_SAFETY_ABORT: el disco aparece como interno
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	228	12	¿PANTALLA?	AURA_SAFETY_ABORT: el tamaño del disco ya no coincide ($SIZE bytes)
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	241	3	¿PANTALLA?	No partition found
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	245	2	¿PANTALLA?	$SECTOR_SIZE
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	256	2	¿PANTALLA?	$SECTOR_SIZE
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	257	10	¿PANTALLA?	AURA_FDA_REQUIRED: macOS bloqueo la escritura directa al disco
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	262	4	¿PANTALLA?	formatear disco \(candidate.bsdName)
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	275	10	¿PANTALLA?	el candidato no cumple los criterios de identificacion del iPod
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	290	10	¿PANTALLA?	AURA_SAFETY_ABORT: el disco ya no aparece como removible
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	293	8	¿PANTALLA?	AURA_SAFETY_ABORT: el disco aparece como interno
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	296	12	¿PANTALLA?	AURA_SAFETY_ABORT: el tamaño del disco ya no coincide ($SIZE bytes)
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	302	8	¿PANTALLA?	preparar disco \(candidate.bsdName) para restauracion de Apple
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedExecutor.swift	313	10	¿PANTALLA?	valor con caracteres no seguros para interpolar en shell: \(value)
+	studio/AuraStudio/Sources/AuraStudio/Services/PrivilegedOperationLog.swift	26	3	¿PANTALLA?	[\(timestamp)] \(operation) -> \(result)\n
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	61	4	¿PANTALLA?	\(itemID.uuidString)/\(field.rawValue)
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	118	2	¿PANTALLA?	(\s*(copia|copy)(\s*\d+)?|\s*\(\d+\)|[\s_-]+\d{1,2})$
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	250	5	¿PANTALLA?	\(SimilarItemsDetector.alnum(series))/\(season)/\(episode)
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	384	12	¿PANTALLA?	Mismo título sin contar el número de pista o los paréntesis: «\(a.rawTitle)» / «\(b.rawTitle)»
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	386	3	¿PANTALLA?	Mismo título: «\(a.rawTitle)»
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	389	5	¿PANTALLA?	Título casi igual: «\(a.rawTitle)» / «\(b.rawTitle)»
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	394	6	¿PANTALLA?	Artista escrito distinto: «\(a.item.metadata?.artist ?? 
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	394	3	¿PANTALLA?	)» / «\(b.item.metadata?.artist ?? 
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	397	5	¿PANTALLA?	Artista parecido: «\(a.item.metadata?.artist ?? 
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	397	3	¿PANTALLA?	)» / «\(b.item.metadata?.artist ?? 
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	400	5	¿PANTALLA?	A uno le falta el artista
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	403	4	¿PANTALLA?	Misma duración (\(clock(a.duration)))
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	404	6	¿PANTALLA?	Duración parecida (\(clock(a.duration)) / \(clock(b.duration)))
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	406	11	¿PANTALLA?	Mismo tamaño exacto de archivo (\(ByteCountFormatter.string(fromByteCount: a.fileSize, countStyle: .file)))
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	407	6	¿PANTALLA?	Formatos distintos: \(a.ext.uppercased()) / \(b.ext.uppercased())
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	410	8	¿PANTALLA?	Una parece otra versión (\(qualifierDiff.sorted().joined(separator: 
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	434	4	¿PANTALLA?	Mismo episodio: \(a.item.seriesName ?? 
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	434	4	¿PANTALLA?	) T\(a.item.season ?? 0)E\(a.item.episode ?? 0)
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	435	4	¿PANTALLA?	Misma duración (\(clock(a.duration)))
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	436	5	¿PANTALLA?	Mismo tamaño exacto de archivo
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	442	3	¿PANTALLA?	Mismo título: «\(a.rawTitle)»
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	442	5	¿PANTALLA?	Título casi igual: «\(a.rawTitle)» / «\(b.rawTitle)»
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	444	4	¿PANTALLA?	Misma duración (\(clock(a.duration)))
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	445	6	¿PANTALLA?	Duración parecida (\(clock(a.duration)) / \(clock(b.duration)))
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	447	5	¿PANTALLA?	Mismo tamaño exacto de archivo
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	448	6	¿PANTALLA?	Formatos distintos: \(a.ext.uppercased()) / \(b.ext.uppercased())
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	450	4	¿PANTALLA?	Categorías distintas: \(a.item.category ?? 
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	450	2	¿PANTALLA?	) / \(b.item.category ?? 
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	469	13	¿PANTALLA?	Mismo nombre de archivo sin contar «copia»/«(1)»: \(a.item.sourceURL.lastPathComponent) / \(b.item.sourceURL.lastPathComponent)
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	471	11	¿PANTALLA?	Nombre de archivo casi igual: \(a.item.sourceURL.lastPathComponent) / \(b.item.sourceURL.lastPathComponent)
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	474	11	¿PANTALLA?	Mismo tamaño exacto de archivo (\(ByteCountFormatter.string(fromByteCount: a.fileSize, countStyle: .file)))
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	476	6	¿PANTALLA?	Formatos distintos: \(a.ext.uppercased()) / \(b.ext.uppercased())
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	561	2	¿PANTALLA?	 sin pérdida
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	562	2	¿PANTALLA?	con carátula
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	562	2	¿PANTALLA?	con póster
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	563	2	¿PANTALLA?	con letra
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	564	2	¿PANTALLA?	corregido a mano
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	565	3	¿PANTALLA?	el más grande
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	571	13	¿PANTALLA?	Parecen el mismo archivo repetido. Sugerencia: conservar «\(keep.rawTitle)» (\(keepDescription)) y eliminar el resto.
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	573	26	¿PANTALLA?	Probablemente es el mismo elemento con la metadata escrita distinto. Sugerencia: conservar «\(keep.rawTitle)» (\(keepDescription)) y eliminar el resto, o unificar la metadata si prefieres quedarte con ambos.
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	575	18	¿PANTALLA?	Podrían ser versiones distintas. Sugerencia: revisar antes de eliminar. Si resultan ser la misma, conservar «\(keep.rawTitle)» (\(keepDescription)).
+	studio/AuraStudio/Sources/AuraStudio/Services/SimilarItemsDetector.swift	588	11	¿PANTALLA?	 El artista que más se usa en tu biblioteca es «\(canonical)».
+	studio/AuraStudio/Sources/AuraStudio/Services/SyncMarker.swift	25	4	¿PANTALLA?	.aura/sync-pending.json
+	studio/AuraStudio/Sources/AuraStudio/Services/SyncMarker.swift	69	4	¿PANTALLA?	.rockbox/aura/aura.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/SyncMarker.swift	158	2	¿PANTALLA?	\(key) \(value)
+	studio/AuraStudio/Sources/AuraStudio/Services/TMDBClient.swift	78	2	¿PANTALLA?	\(code)-\(region)
+	studio/AuraStudio/Sources/AuraStudio/Services/TMDBClient.swift	101	2	¿PANTALLA?	search/movie
+	studio/AuraStudio/Sources/AuraStudio/Services/TMDBClient.swift	108	2	¿PANTALLA?	search/tv
+	studio/AuraStudio/Sources/AuraStudio/Services/TMDBClient.swift	114	4	¿PANTALLA?	tv/\(id)/external_ids
+	studio/AuraStudio/Sources/AuraStudio/Services/TMDBClient.swift	137	2	¿PANTALLA?	User-Agent
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeInstaller.swift	14	9	¿PANTALLA?	No hay un iPod montado en una ruta válida.
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeInstaller.swift	16	8	¿PANTALLA?	"\""\(id)\"" no es un id válido de tema."
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeInstaller.swift	20	11	¿PANTALLA?	Ya hay otra operación escribiendo en el iPod -- espera a que termine.
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeInstaller.swift	22	9	¿PANTALLA?	No se pudo copiar el tema al iPod: \(reason).
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeInstaller.swift	24	11	¿PANTALLA?	"\""Aura\"" es el tema integrado del firmware -- no se puede eliminar."
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeInstaller.swift	40	3	¿PANTALLA?	.rockbox/aura/themes
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeInstaller.swift	41	4	¿PANTALLA?	.rockbox/aura/aura.cfg
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeInstaller.swift	108	11	¿PANTALLA?	no se encontró theme.cfg en \(manifest.id)/ después de copiar
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeInstaller.swift	215	3	¿PANTALLA?	código \(finished.terminationStatus)
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemePackager.swift	11	9	¿PANTALLA?	No se encontró \(file) en la carpeta de origen.
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemePackager.swift	13	8	¿PANTALLA?	La carpeta de origen no tiene icons/masks/.
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemePackager.swift	15	7	¿PANTALLA?	No se pudo escribir el paquete: \(reason).
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemePackager.swift	45	3	¿PANTALLA?	a26-\(role)-\(px).fnt
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemePackager.swift	50	2	¿PANTALLA?	\(role).fnt
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemePackager.swift	53	2	¿PANTALLA?	icons/masks
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemePackager.swift	57	2	¿PANTALLA?	icons/masks
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemePackager.swift	59	2	¿PANTALLA?	icons/light
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemePackager.swift	60	2	¿PANTALLA?	icons/light
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemePackager.swift	61	2	¿PANTALLA?	icons/dark
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemePackager.swift	62	2	¿PANTALLA?	icons/dark
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemePackager.swift	63	3	¿PANTALLA?	icons/aura/backgrounds
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemePackager.swift	65	4	¿PANTALLA?	icons/aura/tile-icons
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeValidator.swift	18	6	¿PANTALLA?	Falta theme.cfg en el paquete.
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeValidator.swift	20	10	¿PANTALLA?	theme.cfg no se pudo leer, o no declara theme_format.
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeValidator.swift	22	13	¿PANTALLA?	"\""\(id)\"" no es un id valido de tema (theme_id en theme.cfg)."
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeValidator.swift	24	16	¿PANTALLA?	Este tema requiere el formato \(found); el firmware instalado en el iPod soporta hasta el \(supported).
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeValidator.swift	26	8	¿PANTALLA?	Faltan fuentes en el paquete: \(roles.joined(separator: 
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeValidator.swift	28	11	¿PANTALLA?	Faltan mascaras de icono: el paquete trae \(found), se necesitan \(required).
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeValidator.swift	74	2	¿PANTALLA?	\(role).fnt
+	studio/AuraStudio/Sources/AuraStudio/Services/ThemeValidator.swift	80	2	¿PANTALLA?	icons/masks
+	studio/AuraStudio/Sources/AuraStudio/Services/USBDeviceIdentity.swift	138	3	¿PANTALLA?	USB Vendor Name
+	studio/AuraStudio/Sources/AuraStudio/Services/USBDeviceIdentity.swift	139	3	¿PANTALLA?	USB Product Name
+	studio/AuraStudio/Sources/AuraStudio/Services/USBDeviceIdentity.swift	140	3	¿PANTALLA?	USB Serial Number
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	180	6	¿PANTALLA?	mks5lboot descargado no quedó ejecutable
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	184	8	¿PANTALLA?	Instalando \(family.displayName) \(prepared.tag), descargado de GitHub.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	189	10	¿PANTALLA?	\(why) Se instalará la versión incluida en Aura Studio\(versionText).
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	789	9	¿PANTALLA?	Formateando el disco (puente FAT y despues Mac OS Plus)...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	819	5	¿PANTALLA?	Verificando integridad de los archivos...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	828	5	¿PANTALLA?	Instalando el bootloader de \(targetName)...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	844	8	¿PANTALLA?	Firmware enviado. Esperando a que el iPod confirme y reinicie...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	860	9	¿PANTALLA?	Arranque grabado. Esperando a que el iPod reaparezca como disco...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	877	5	¿PANTALLA?	Actualizando el arranque de \(targetName)...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	882	8	¿PANTALLA?	Arranque enviado. Esperando a que el iPod confirme y reinicie...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	894	5	¿PANTALLA?	Quitando el bootloader de \(targetName)...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	902	8	¿PANTALLA?	Firmware enviado. Esperando a que el iPod confirme y reinicie...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	913	22	¿PANTALLA?	Bootloader eliminado. Esperando a que el iPod reaparezca como disco... Si no aparece solo, mantén SELECT + PLAY al encenderlo para entrar a modo disco.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	950	3	¿PANTALLA?	Formateando el disco...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	960	10	¿PANTALLA?	Disco listo. Ahora hace falta grabar el arranque por DFU.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	964	4	¿PANTALLA?	Disco listo. Copiando archivos...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	1031	5	¿PANTALLA?	Verificando integridad de los archivos...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	1033	5	¿PANTALLA?	Copiando el firmware al iPod...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	1059	7	¿PANTALLA?	Guardando \(detected.displayName) para poder volver a él...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	1064	8	¿PANTALLA?	no se pudo verificar rockbox.ipod tras copiarlo
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	1067	18	¿PANTALLA?	Instalando \(targetName) en el iPod (tipografías, iconos, códecs)... Puede tardar varios minutos por USB -- no desconectes el iPod.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	1097	13	¿PANTALLA?	Actualizando \(targetName): \(delta.toExtract.count) archivo(s) por escribir, \(delta.toDelete.count) por quitar...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	1104	7	¿PANTALLA?	La actualización selectiva no pudo; instalando completo...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	1137	5	¿PANTALLA?	La copia se interrumpió -- reintentando...
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	1162	3	¿PANTALLA?	.rockbox/rockbox.ipod
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	1164	11	¿PANTALLA?	el árbol .rockbox no quedó completo tras extraerlo (falta \(sentinel.lastPathComponent))
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	1235	10	¿PANTALLA?	Archivos copiados. Ahora hace falta flashear el arranque por DFU.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	1263	4	¿PANTALLA?	aura-update-\(UUID().uuidString)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	1276	5	¿PANTALLA?	el zip no trae \(path)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/InstallerViewModel.swift	1414	2	¿PANTALLA?	copying file 
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	336	2	¿PANTALLA?	\(base) \(counter)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	336	3	¿PANTALLA?	\(base) \(counter).\(ext)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	377	3	¿PANTALLA?	\(id.uuidString).\(ext)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	452	9	¿PANTALLA?	No se pudo copiar \(fileName) a la biblioteca: \(error.localizedDescription)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	494	2	¿PANTALLA?	\(baseName).\(destinationExtension)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	511	4	¿PANTALLA?	\(imported.url.lastPathComponent): \(reason)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	519	9	¿PANTALLA?	No se pudo importar \(item.sourceURL.lastPathComponent): \(error.localizedDescription)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	550	8	¿PANTALLA?	No se pudo preparar \(item.sourceURL.lastPathComponent): \(failure)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	573	6	¿PANTALLA?	Convirtiendo en copias… \(completed) de \(total)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	793	3	¿PANTALLA?	Formato no soportado
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	810	2	¿PANTALLA?	Falta ffmpeg
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1223	15	¿PANTALLA?	No se pudo mover 1 archivo a la Papelera; el elemento sí se quitó de la biblioteca.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1224	16	¿PANTALLA?	No se pudieron mover \(failures) archivos a la Papelera; los elementos sí se quitaron de la biblioteca.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1303	5	¿PANTALLA?	Migrando biblioteca… \(completed) de \(total)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1392	4	¿PANTALLA?	\(item.sourceURL.lastPathComponent): \(failure)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1609	27	¿PANTALLA?	Para buscar pósters hace falta una API key de TMDB (gratuita). Agrégala en Ajustes › Servicios; con fanart.tv configurado además se usará su póster curado cuando exista.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1634	13	¿PANTALLA?	No se pudo guardar el póster de \(items[index].sourceURL.lastPathComponent): \(error.localizedDescription)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1693	11	¿PANTALLA?	No se pudo guardar la foto de \(artist.name): \(error.localizedDescription)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1702	7	¿PANTALLA?	Todos los artistas seleccionados ya tienen foto.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1703	5	¿PANTALLA?	No hay artistas para buscar.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1839	4	¿PANTALLA?	\(completed + 1) de \(targets.count)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1854	3	¿PANTALLA?	Carátula aplicada a 1 canción.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1855	4	¿PANTALLA?	Carátula aplicada a \(changed) canciones.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1900	3	¿PANTALLA?	Buscando carátula recomendada…
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1901	6	¿PANTALLA?	Buscando carátulas de \(requests.count) álbumes…
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1921	6	¿PANTALLA?	«\(request.albumTitle)» — \(completed + 1) de \(requests.count)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	1992	4	¿PANTALLA?	\(completed + 1) de \(targets.count)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2067	4	¿PANTALLA?	\(completed + 1) de \(targets.count)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2133	4	¿PANTALLA?	Buscando información en línea…
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2151	4	¿PANTALLA?	\(completed + 1) de \(targets.count)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2174	14	¿PANTALLA?	No se pudo completar la busqueda para \(networkErrors.count) de \(attempted) cancion(es): \(networkErrors[0])
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2177	13	¿PANTALLA?	No se encontro informacion nueva para ninguna de las \(attempted) cancion(es) seleccionadas.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2178	10	¿PANTALLA?	Se encontro informacion nueva para \(found) de \(attempted) cancion(es).
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2238	16	¿PANTALLA?	No habia nada que actualizar en \(attempted) cancion(es): ya tenian lo que traen sus archivos.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2239	13	¿PANTALLA?	Se actualizaron \(updated) de \(attempted) cancion(es) con lo que traen sus archivos.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2364	7	¿PANTALLA?	No hay ningún elemento seleccionado para sincronizar.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2369	9	¿PANTALLA?	Los elementos seleccionados todavía no están listos para sincronizar.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2376	6	¿PANTALLA?	No hay nada listo para sincronizar.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2381	14	¿PANTALLA?	Hay otra operación en curso con el iPod -- espera a que termine antes de sincronizar.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2426	4	¿PANTALLA?	 \(result.playlistsWritten) playlist(s) actualizada(s).
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2428	12	¿PANTALLA?	Sincronización cancelada. Se copiaron \(result.filesCopied) archivo(s); \(result.filesRemaining) quedaron pendientes.\(playlistsNote)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2431	9	¿PANTALLA?	Ya estaba todo sincronizado, no habia nada nuevo.\(playlistsNote)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2432	23	¿PANTALLA?	Se copiaron \(result.filesCopied) de \(allReady.count) archivo(s). El indice de la biblioteca se va a reconstruir la proxima vez que arranque Aura.\(playlistsNote)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2444	2	¿PANTALLA?	• \($0.destinationRelativePath): \($0.message)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2445	6	¿PANTALLA?	\n… y \(result.failures.count - shown.count) más.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2446	18	¿PANTALLA?	\(result.failures.count) archivo(s) no se pudieron copiar (el resto de la biblioteca sí se sincronizó):\n\(list)\(more)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2461	9	¿PANTALLA?	No se pudo sincronizar en \(volumeRoot.path): \(error.localizedDescription)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2483	14	¿PANTALLA?	Hay otra operación en curso con el iPod -- espera a que termine antes de borrar.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2494	5	¿PANTALLA?	No había nada que borrar.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2495	20	¿PANTALLA?	Se eliminaron \(deleted) archivo(s) del iPod. El índice de la biblioteca se va a reconstruir la próxima vez que arranque Aura.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2497	9	¿PANTALLA?	No se pudo borrar en \(volumeRoot.path): \(error.localizedDescription)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2565	6	¿PANTALLA?	\(PersistedLibrary.coversDirName)/playlist-\(id.uuidString).jpg
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2573	11	¿PANTALLA?	No se pudo usar esa imagen para la playlist: \(error.localizedDescription)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2740	4	¿PANTALLA?	\(item.id.uuidString).jpg
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2818	6	¿PANTALLA?	Se normalizó 1 carátula: ahora es cuadrada.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2819	8	¿PANTALLA?	Se normalizaron \(result.normalized) carátulas: ahora son cuadradas.
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2881	2	¿PANTALLA?	\(PersistedLibrary.legacyOriginalsDirName)/
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2882	2	¿PANTALLA?	\(PersistedLibrary.legacyPreparedDirName)/
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2883	2	¿PANTALLA?	\(PersistedLibrary.legacyCoversDirName)/
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2903	3	¿PANTALLA?	\(PersistedLibrary.preparedDirName)/\(suffix)
+	studio/AuraStudio/Sources/AuraStudio/ViewModels/LibraryViewModel.swift	2912	3	¿PANTALLA?	\(PersistedLibrary.coversDirName)/\(suffix)
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumCoverPickerView.swift	146	5	¿PANTALLA?	Se aplicará a 1 canción del álbum.
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumCoverPickerView.swift	147	7	¿PANTALLA?	Se aplicará a \(request.trackCount) canciones del álbum.
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumCoverPickerView.swift	151	3	¿PANTALLA?	Cancelar el resto
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumsView.swift	69	2	¿PANTALLA?	aura.albumsSort
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumsView.swift	79	2	¿PANTALLA?	Agregado recientemente
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumsView.swift	100	2	¿PANTALLA?	Sin álbum
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumsView.swift	365	7	¿PANTALLA?	Todavía no hay música en la biblioteca.
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumsView.swift	366	9	¿PANTALLA?	"Suelta canciones en \""Canciones\"" y aquí aparecerán agrupadas por álbum."
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumsView.swift	368	4	¿PANTALLA?	"Sin resultados para \""\(searchText)\""."
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumsView.swift	519	2	¿PANTALLA?	Quitar favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumsView.swift	519	3	¿PANTALLA?	Marcar como favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumsView.swift	546	3	¿PANTALLA?	\(songs), \(minutes) min
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumsView.swift	574	2	¿PANTALLA?	Quitar favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumsView.swift	574	3	¿PANTALLA?	Marcar como favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumsView.swift	602	2	¿PANTALLA?	Eliminar álbumes
+	studio/AuraStudio/Sources/AuraStudio/Views/AlbumsView.swift	602	2	¿PANTALLA?	Eliminar álbum
+	studio/AuraStudio/Sources/AuraStudio/Views/AppMenuCommands.swift	155	3	¿PANTALLA?	Todos los videos
+	studio/AuraStudio/Sources/AuraStudio/Views/AppMenuCommands.swift	158	3	¿PANTALLA?	Todas las fotos
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	250	2	¿PANTALLA?	Quitar favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	250	3	¿PANTALLA?	Marcar como favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	330	4	¿PANTALLA?	Quitar favorito del álbum
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	330	4	¿PANTALLA?	Marcar álbum como favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	387	3	¿PANTALLA?	Quitar de favoritos
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	387	3	¿PANTALLA?	Marcar como favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	393	3	¿PANTALLA?	Quitar de favoritos
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	393	3	¿PANTALLA?	Marcar como favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	413	2	¿PANTALLA?	Quitar favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	413	3	¿PANTALLA?	Marcar como favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	420	5	¿PANTALLA?	Buscar fotos de los artistas
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	420	4	¿PANTALLA?	Buscar foto del artista
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	427	5	¿PANTALLA?	Quitar fotos de los artistas
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	427	4	¿PANTALLA?	Quitar foto del artista
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	436	2	¿PANTALLA?	Eliminar artistas
+	studio/AuraStudio/Sources/AuraStudio/Views/ArtistsView.swift	436	2	¿PANTALLA?	Eliminar artista
+	studio/AuraStudio/Sources/AuraStudio/Views/AutomaticUpdateView.swift	51	3	¿PANTALLA?	Actualizando \(viewModel.targetName)
+	studio/AuraStudio/Sources/AuraStudio/Views/AwaitBootloaderUSBView.swift	26	24	¿PANTALLA?	"Deja el cable USB conectado. El iPod se reinicia solo y, como todavía no tiene Aura, su pantalla dice \""Bootloader USB mode\"" y aparece como disco."
+	studio/AuraStudio/Sources/AuraStudio/Views/AwaitBootloaderUSBView.swift	27	25	¿PANTALLA?	Si en unos 30 segundos la pantalla del iPod sigue negra o no aparece como disco, mantén SELECT + MENU unos 5 segundos para reiniciarlo, sin desconectar el cable.
+	studio/AuraStudio/Sources/AuraStudio/Views/AwaitBootloaderUSBView.swift	28	14	¿PANTALLA?	Aura Studio detecta el disco y copia Aura automáticamente -- no hay que tocar nada más.
+	studio/AuraStudio/Sources/AuraStudio/Views/BatchMediaInfoView.swift	219	2	¿PANTALLA?	N.º de pista
+	studio/AuraStudio/Sources/AuraStudio/Views/BatchMediaInfoView.swift	219	3	¿PANTALLA?	Distinto por canción
+	studio/AuraStudio/Sources/AuraStudio/Views/BatchMediaInfoView.swift	235	3	¿PANTALLA?	Artista del álbum
+	studio/AuraStudio/Sources/AuraStudio/Views/ContentView.swift	289	16	¿PANTALLA?	El nombre de este iPod se puso desde otra Mac; solo desde ahí se puede cambiar.
+	studio/AuraStudio/Sources/AuraStudio/Views/ContentView.swift	299	9	¿PANTALLA?	No se pudo guardar el nombre en el iPod.
+	studio/AuraStudio/Sources/AuraStudio/Views/ContentView.swift	429	3	¿PANTALLA?	Usar esta carpeta
+	studio/AuraStudio/Sources/AuraStudio/Views/ContentView.swift	430	9	¿PANTALLA?	Elige (o crea) la carpeta donde vivira tu biblioteca Aura.
+	studio/AuraStudio/Sources/AuraStudio/Views/ContentView.swift	456	10	¿PANTALLA?	Elige archivos o carpetas para agregar a la biblioteca de Aura Studio.
+	studio/AuraStudio/Sources/AuraStudio/Views/ContentView.swift	502	11	¿PANTALLA?	No hay un iPod con firmware de la familia Aura conectado.
+	studio/AuraStudio/Sources/AuraStudio/Views/ContentView.swift	505	8	¿PANTALLA?	Hay una instalación en curso; espera a que termine.
+	studio/AuraStudio/Sources/AuraStudio/Views/ContentView.swift	513	11	¿PANTALLA?	\(f.displayName) no está instalado en el iPod; instálalo desde el Instalador.
+	studio/AuraStudio/Sources/AuraStudio/Views/ContentView.swift	515	8	¿PANTALLA?	No se pudo cambiar de firmware: \(error.localizedDescription)
+	studio/AuraStudio/Sources/AuraStudio/Views/ContentView.swift	938	2	¿PANTALLA?	franja.migrarBiblioteca
+	studio/AuraStudio/Sources/AuraStudio/Views/ContentView.swift	965	2	¿PANTALLA?	Ver similares
+	studio/AuraStudio/Sources/AuraStudio/Views/CoverContaminationSheet.swift	45	3	¿PANTALLA?	Junto a música o video
+	studio/AuraStudio/Sources/AuraStudio/Views/CoverContaminationSheet.swift	45	4	¿PANTALLA?	Solo por el nombre
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceActivityBar.swift	88	4	¿PANTALLA?	Solo la selección (\(selectionCount))
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceActivityBar.swift	88	3	¿PANTALLA?	Solo la selección
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceActivityBar.swift	205	2	¿PANTALLA?	\(Int(seconds))s
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceActivityBar.swift	206	2	¿PANTALLA?	\(text) restante(s)
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	157	4	¿PANTALLA?	¿Eliminar \($0.label) del iPod?
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	175	7	¿PANTALLA?	Disco expulsado. Ya puedes desconectar el cable.
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	176	13	¿PANTALLA?	No se pudo expulsar -- cierra cualquier app que este usando el iPod y reintenta.
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	227	10	¿PANTALLA?	El iPod no puede mostrar emoji; se guardó sin ellos.
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	291	10	¿PANTALLA?	\(name) está al día con esta versión de Aura Studio.
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	292	4	¿PANTALLA?	\(name) está al día.
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	310	4	¿PANTALLA?	 (dual boot con Apple)
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	323	6	¿PANTALLA?	 -- \(device.dormantFamilies.map(\.displayName).joined(separator: 
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	323	3	¿PANTALLA?	)) también instalado, dormido
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	326	6	¿PANTALLA?	Firmware \(name) instalado -- conectado desde \(name)
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	328	15	¿PANTALLA?	Firmware de la familia Aura instalado -- conectado desde el firmware, todavía sin escribir su configuración
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	330	10	¿PANTALLA?	Firmware \(name) instalado -- conectado desde el modo disco de Apple
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	332	3	¿PANTALLA?	Firmware \(name) instalado
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	334	30	¿PANTALLA?	Archivos de la familia Aura en el disco, pero el iPod está corriendo el firmware de Apple y ese firmware nunca ha arrancado aquí -- no hay evidencia de que esté instalado
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	336	19	¿PANTALLA?	Archivos de la familia Aura en el disco -- todavía sin arrancar (sin evidencia de que el bootloader esté instalado)
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	341	8	¿PANTALLA?	Rockbox instalado (no es Aura) -- conectado desde Rockbox
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	343	5	¿PANTALLA?	Rockbox instalado (no es Aura)
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	345	23	¿PANTALLA?	Archivos de Rockbox en el disco (no es Aura), pero el iPod está corriendo el firmware de Apple y Rockbox nunca ha arrancado aquí
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	347	13	¿PANTALLA?	Archivos de Rockbox en el disco (no es Aura) -- sin evidencia de arranque
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	351	21	¿PANTALLA?	Firmware original de Apple en el disco -- pero el USB lo atiende el bootloader de Aura/Rockbox (modo USB del bootloader)
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	352	4	¿PANTALLA?	Firmware original de Apple
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	355	15	¿PANTALLA?	Disco vacío -- el USB lo atiende el bootloader de Aura/Rockbox (modo USB del bootloader)
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	356	4	¿PANTALLA?	Disco vacio, sin firmware
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	461	6	¿PANTALLA?	todo el contenido (música, videos y fotos)
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	462	3	¿PANTALLA?	toda la música
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	463	3	¿PANTALLA?	todos los videos
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	464	3	¿PANTALLA?	todas las fotos
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	465	3	¿PANTALLA?	el contenido seleccionado
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	534	15	¿PANTALLA?	El iPod esta en modo DFU. Usa la seccion Instalador para instalar o restaurar el firmware.
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	536	19	¿PANTALLA?	El disco del iPod no tiene un sistema de archivos legible. Usa la seccion Instalador para prepararlo e instalar Aura.
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	538	14	¿PANTALLA?	Hay un dispositivo Apple conectado, pero no se pudo identificar como un iPod Classic.
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	540	2	¿PANTALLA?	Buscando dispositivos...
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceGeneralView.swift	542	8	¿PANTALLA?	Conéctalo por USB y espera a que aparezca como disco.
+	studio/AuraStudio/Sources/AuraStudio/Views/DeviceNameField.swift	18	3	¿PANTALLA?	Nombre del iPod
+	studio/AuraStudio/Sources/AuraStudio/Views/DoneView.swift	31	2	¿PANTALLA?	\(firmwareName) instalado
+	studio/AuraStudio/Sources/AuraStudio/Views/DoneView.swift	32	2	¿PANTALLA?	iPod restaurado
+	studio/AuraStudio/Sources/AuraStudio/Views/DoneView.swift	35	2	¿PANTALLA?	Arranque actualizado
+	studio/AuraStudio/Sources/AuraStudio/Views/DoneView.swift	42	16	¿PANTALLA?	Tu iPod va a reiniciar y arrancar con el firmware original de Apple. Ya puedes desconectar el cable.
+	studio/AuraStudio/Sources/AuraStudio/Views/DoneView.swift	44	43	¿PANTALLA?	"\(firmwareName) quedó instalado. Ya puedes desconectar el cable con seguridad. El iPod se quedó esperando en \""Bootloader USB mode\"": mantén SELECT + MENU unos 5 segundos para reiniciarlo y arranca con \(firmwareName). Después puedes usar la biblioteca de Aura Studio para sincronizar tu música, foto"
+	studio/AuraStudio/Sources/AuraStudio/Views/DoneView.swift	46	35	¿PANTALLA?	El arranque quedó actualizado. Tu música, tus fotos y tus ajustes siguen exactamente donde estaban -- esto no tocó el disco. Ya puedes desconectar el cable; si el iPod no reinicia solo, mantén SELECT + MENU unos segundos.
+	studio/AuraStudio/Sources/AuraStudio/Views/DoneView.swift	48	42	¿PANTALLA?	Todos los archivos quedaron instalados: ya puedes desconectar el cable con seguridad. El iPod va a arrancar con \(firmwareName) -- si no reinicia solo, mantén SELECT + MENU unos segundos. Despues puedes usar la pestana Biblioteca de Aura Studio para sincronizar tu musica, fotos y videos.
+	studio/AuraStudio/Sources/AuraStudio/Views/DoneView.swift	120	8	¿PANTALLA?	Este iPod no está listo para dual boot
+	studio/AuraStudio/Sources/AuraStudio/Views/DoneView.swift	120	3	¿PANTALLA?	Algo salio mal
+	studio/AuraStudio/Sources/AuraStudio/Views/DoneView.swift	122	2	¿PANTALLA?	Error desconocido.
+	studio/AuraStudio/Sources/AuraStudio/Views/DoneView.swift	128	8	¿PANTALLA?	x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles
+	studio/AuraStudio/Sources/AuraStudio/Views/EnterDFUView.swift	25	9	¿PANTALLA?	Si tu iPod esta reproduciendo musica, deten la reproduccion.
+	studio/AuraStudio/Sources/AuraStudio/Views/EnterDFUView.swift	26	7	¿PANTALLA?	Manten presionados SELECT + MENU al mismo tiempo.
+	studio/AuraStudio/Sources/AuraStudio/Views/EnterDFUView.swift	27	16	¿PANTALLA?	Segui presionando ambos botones durante unos 12 segundos, hasta despues de que la pantalla se ponga negra.
+	studio/AuraStudio/Sources/AuraStudio/Views/EnterDFUView.swift	28	9	¿PANTALLA?	Soltalos. Aura Studio va a detectar el modo DFU automaticamente.
+	studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift	53	11	¿PANTALLA?	Conecta tu iPod con Aura instalado para instalar, activar o construir temas.
+	studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift	56	13	¿PANTALLA?	Este firmware no admite temas (\(device.declaredFamily.displayName) no tiene sistema de temas).
+	studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift	58	13	¿PANTALLA?	Tema integrado (Claro/Oscuro) más los que instales -- Ajustes > Estilo, en el iPod.
+	studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift	101	12	¿PANTALLA?	"Lenguaje visual \""Apple 2026\"": tipografías SF, temas claro/oscuro y temas instalables, Cover Flow."
+	studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift	108	17	¿PANTALLA?	Lenguaje visual Metro (Windows Phone 7 / Zune): tipografía Selawik, hub de tiles, acentos de color, transiciones de pivote.
+	studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift	115	15	¿PANTALLA?	Lenguaje visual Waning Crescent: calma nocturna, Material Design 3 adaptado al iPod, sin sistema de temas.
+	studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift	140	14	¿PANTALLA?	Las versiones son las más recientes publicadas en GitHub: instalar desde cero descarga esa.
+	studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift	141	25	¿PANTALLA?	No se pudo consultar GitHub (revisa el token en Ajustes › General): se muestran las versiones incluidas en Aura Studio, que son las que se instalarían.
+	studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift	233	3	¿PANTALLA?	Software libre incluido
+	studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift	234	12	¿PANTALLA?	Todos los firmwares son GPL v2. Aquí están sus fuentes, versiones exactas y cambios.
+	studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift	250	2	¿PANTALLA?	Animaciones y graficos
+	studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift	251	11	¿PANTALLA?	Tres niveles cada uno. Se eligen en Ajustes, en el iPod.
+	studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift	262	2	¿PANTALLA?	No implementados.
+	studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift	263	4	¿PANTALLA?	Cronometro y bloqueo de pantalla
+	studio/AuraStudio/Sources/AuraStudio/Views/ExtrasView.swift	264	2	¿PANTALLA?	No implementados.
+	studio/AuraStudio/Sources/AuraStudio/Views/GitHubTokenSettingsView.swift	64	7	¿PANTALLA?	Pega el token aquí (github_pat_… o ghp_…)
+	studio/AuraStudio/Sources/AuraStudio/Views/GitHubTokenSettingsView.swift	74	4	¿PANTALLA?	Token quitado del Llavero.
+	studio/AuraStudio/Sources/AuraStudio/Views/GitHubTokenSettingsView.swift	104	10	¿PANTALLA?	El token no es válido o expiró. Crea uno nuevo y guárdalo.
+	studio/AuraStudio/Sources/AuraStudio/Views/GitHubTokenSettingsView.swift	112	9	¿PANTALLA?	Pega el token en el campo antes de guardar.
+	studio/AuraStudio/Sources/AuraStudio/Views/GitHubTokenSettingsView.swift	116	16	¿PANTALLA?	Eso no parece un token de GitHub: debe empezar con github_pat_ o ghp_ y no llevar espacios.
+	studio/AuraStudio/Sources/AuraStudio/Views/GitHubTokenSettingsView.swift	124	4	¿PANTALLA?	Guardado en el Llavero.
+	studio/AuraStudio/Sources/AuraStudio/Views/GitHubTokenSettingsView.swift	136	13	¿PANTALLA?	GitHub rechazó el token: no es válido, expiró o no tiene acceso a Aura-Firmware.
+	studio/AuraStudio/Sources/AuraStudio/Views/GitHubTokenSettingsView.swift	138	8	¿PANTALLA?	Funciona. Versión más nueva de Aura: \(latest.tagName).
+	studio/AuraStudio/Sources/AuraStudio/Views/GitHubTokenSettingsView.swift	140	10	¿PANTALLA?	GitHub respondió, pero no hay ningún Release con versión reconocible.
+	studio/AuraStudio/Sources/AuraStudio/Views/GitHubTokenSettingsView.swift	146	17	¿PANTALLA?	No se pudo consultar GitHub (¿sin conexión, o se agotó el límite de peticiones sin token?): \(error.localizedDescription)
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	114	24	¿PANTALLA?	Esta versión trae un arranque más nuevo que el que tiene grabado tu iPod. No borra nada: tu música y tus ajustes se quedan igual.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	115	25	¿PANTALLA?	Aura Studio no sabe qué versión del arranque tiene tu iPod (lo instaló otra computadora, o una versión anterior de la app). Actualizarlo no borra nada.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	161	2	¿PANTALLA?	Reinstalar \(name)
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	161	2	¿PANTALLA?	Instalar \(name)
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	166	20	¿PANTALLA?	Tu iPod esta conectado, pero su disco no tiene un sistema de archivos legible -- instalar \(name) lo prepara desde cero.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	169	10	¿PANTALLA?	Tu iPod esta conectado en modo DFU, listo para flashear.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	172	16	¿PANTALLA?	Instala el firmware \(name) en tu iPod Classic 6G, o restaura el firmware original si quieres volver atras.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	179	21	¿PANTALLA?	Tu iPod tiene el firmware original de Apple en el disco, pero el USB lo atiende el bootloader de Aura/Rockbox.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	180	8	¿PANTALLA?	Tu iPod tiene el firmware original de Apple.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	185	9	¿PANTALLA?	, en dual boot con el firmware original de Apple
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	187	7	¿PANTALLA?	Tu iPod ya tiene \(installed) instalado\(dual).
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	189	10	¿PANTALLA?	Tu iPod tiene \(installed) instalado\(dual). Instalar \(name) lo reemplaza.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	192	28	¿PANTALLA?	Tu iPod tiene archivos de Aura en el disco, pero está corriendo el firmware de Apple y Aura nunca ha arrancado aquí -- no hay evidencia de que esté instalado.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	193	22	¿PANTALLA?	Tu iPod tiene archivos de Aura en el disco, pero Aura nunca ha arrancado aquí -- no hay evidencia de que esté instalado.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	196	15	¿PANTALLA?	Tu iPod tiene Rockbox instalado (no es Aura), en dual boot con el firmware original.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	197	8	¿PANTALLA?	Tu iPod tiene Rockbox instalado (no es Aura).
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	199	17	¿PANTALLA?	Tu iPod tiene archivos de Rockbox en el disco (no es Aura), sin evidencia de que arranquen.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	202	17	¿PANTALLA?	El disco de tu iPod esta vacio, pero el USB lo atiende el bootloader de Aura/Rockbox.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	203	10	¿PANTALLA?	El disco de tu iPod esta vacio, sin ningun firmware.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	220	38	¿PANTALLA?	Reinstalar solo reemplaza los archivos del firmware en el disco -- no hace falta flashear por DFU. Tus ajustes de \(name) se conservan. Si al terminar tu iPod no arranca con \(name), la pantalla final ofrece completar el flasheo.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	221	46	¿PANTALLA?	Reinstalar reemplaza los archivos del firmware y, como Aura Studio no puede confirmar desde aquí que el bootloader siga grabado, vuelve a flashear el arranque por DFU (reflashear es inofensivo). Tus ajustes de \(name) se conservan. Para saltarte el DFU, conecta el iPod mientras está encendido con \(
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	229	30	¿PANTALLA?	Instalar \(name) reemplaza \(installed) en el disco -- no hace falta flashear por DFU, es el mismo arranque. Tu música y tus fotos no se tocan; los ajustes de \(installed) se pierden.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	230	42	¿PANTALLA?	Instalar \(name) reemplaza \(installed) en el disco y vuelve a flashear el arranque por DFU, porque Aura Studio no puede confirmar desde aquí que el bootloader siga grabado (reflashear es inofensivo). Tu música y tus fotos no se tocan; los ajustes de \(installed) se pierden.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	232	30	¿PANTALLA?	Hay archivos de Aura en el disco pero ninguna evidencia de que arranquen: instalar flashea el arranque por modo DFU y vuelve a copiar los archivos -- el asistente te guia paso a paso.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	235	21	¿PANTALLA?	Instalar \(name) no requiere flashear ni entrar a modo DFU: solo se reemplaza la carpeta .rockbox del disco por la de \(name).
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	236	42	¿PANTALLA?	Instalar \(name) reemplaza la carpeta .rockbox del disco por la de \(name) y flashea el arranque por modo DFU, porque no hay evidencia suficiente de que el bootloader ya esté grabado. Para saltarte el DFU, conecta el iPod mientras está encendido con Rockbox.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	239	17	¿PANTALLA?	El bootloader de Aura/Rockbox ya está atendiendo el USB: instalar solo copia los archivos, sin flashear.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	240	15	¿PANTALLA?	Instalar \(name) requiere flashear el arranque por modo DFU -- el asistente te guia paso a paso.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerHomeView.swift	243	17	¿PANTALLA?	El bootloader de Aura/Rockbox ya está atendiendo el USB: instalar solo copia los archivos, sin flashear.
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerWizardView.swift	92	3	¿PANTALLA?	Preparando el disco
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerWizardView.swift	94	3	¿PANTALLA?	Instalando \(viewModel.targetName)
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallerWizardView.swift	96	3	¿PANTALLA?	Preparando para Finder
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallingView.swift	9	2	¿PANTALLA?	Instalando Aura...
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallingView.swift	10	3	¿PANTALLA?	Restaurando iPod original...
+	studio/AuraStudio/Sources/AuraStudio/Views/InstallingView.swift	13	3	¿PANTALLA?	Actualizando el arranque...
+	studio/AuraStudio/Sources/AuraStudio/Views/LibraryBrowsingComponents.swift	54	4	¿PANTALLA?	\(id)#\(CoverThumbnailCache.fingerprint(data))
+	studio/AuraStudio/Sources/AuraStudio/Views/LibraryBrowsingComponents.swift	127	3	¿PANTALLA?	\(cacheID)@\(Int(side))
+	studio/AuraStudio/Sources/AuraStudio/Views/LibraryBrowsingComponents.swift	188	3	¿PANTALLA?	\(cacheID)@\(Int(side))
+	studio/AuraStudio/Sources/AuraStudio/Views/LibraryBrowsingComponents.swift	340	3	¿PANTALLA?	albumFotos:\(album.id)
+	studio/AuraStudio/Sources/AuraStudio/Views/LibraryBrowsingComponents.swift	367	9	¿PANTALLA?	foto:\(item.id.uuidString)#\((item.preparedURL ?? item.sourceURL).path)
+	studio/AuraStudio/Sources/AuraStudio/Views/LibraryBrowsingComponents.swift	524	4	¿PANTALLA?	Quitar de la selección
+	studio/AuraStudio/Sources/AuraStudio/Views/LibraryBrowsingComponents.swift	524	3	¿PANTALLA?	Agregar a la selección
+	studio/AuraStudio/Sources/AuraStudio/Views/LibraryBrowsingComponents.swift	525	4	¿PANTALLA?	Quitar de la selección
+	studio/AuraStudio/Sources/AuraStudio/Views/LibraryBrowsingComponents.swift	525	3	¿PANTALLA?	Agregar a la selección
+	studio/AuraStudio/Sources/AuraStudio/Views/LibraryBrowsingComponents.swift	539	3	¿PANTALLA?	Buscar en \(scopeTitle)
+	studio/AuraStudio/Sources/AuraStudio/Views/LibraryUnavailableView.swift	35	5	¿PANTALLA?	El disco «\($0)» no está conectado
+	studio/AuraStudio/Sources/AuraStudio/Views/LibraryUnavailableView.swift	36	10	¿PANTALLA?	La biblioteca está en un disco que no está conectado
+	studio/AuraStudio/Sources/AuraStudio/Views/LicensesView.swift	49	4	¿PANTALLA?	Texto de la GPL v2
+	studio/AuraStudio/Sources/AuraStudio/Views/LicensesView.swift	86	2	¿PANTALLA?	Código fuente
+	studio/AuraStudio/Sources/AuraStudio/Views/LicensesView.swift	88	4	¿PANTALLA?	\(repo.absoluteString)/tree/\(tag)
+	studio/AuraStudio/Sources/AuraStudio/Views/LicensesView.swift	89	6	¿PANTALLA?	Fuente exacta de esta versión (\(tag))
+	studio/AuraStudio/Sources/AuraStudio/Views/LicensesView.swift	92	7	¿PANTALLA?	\(repo.absoluteString)/releases/download/\(tag)/MODIFICATIONS.md
+	studio/AuraStudio/Sources/AuraStudio/Views/LicensesView.swift	93	5	¿PANTALLA?	Cambios respecto a Rockbox (MODIFICATIONS.md)
+	studio/AuraStudio/Sources/AuraStudio/Views/LicensesView.swift	96	9	¿PANTALLA?	\(repo.absoluteString)/releases/download/\(tag)/THIRD-PARTY-NOTICES.txt
+	studio/AuraStudio/Sources/AuraStudio/Views/LicensesView.swift	97	5	¿PANTALLA?	Avisos de terceros (tipografías e iconos)
+	studio/AuraStudio/Sources/AuraStudio/Views/MainWindowPlacer.swift	81	2	¿PANTALLA?	siguiente ciclo
+	studio/AuraStudio/Sources/AuraStudio/Views/MainWindowPlacer.swift	107	7	¿INTERNO?	[MainWindowPlacer] \(reason): \(describe(before)) → \(describe(window.frame))
+	studio/AuraStudio/Sources/AuraStudio/Views/MainWindowPlacer.swift	108	5	¿PANTALLA?	  (pantalla principal: \(describe(screen.frame)))
+	studio/AuraStudio/Sources/AuraStudio/Views/MainWindowPlacer.swift	112	12	¿PANTALLA?	(\(Int(rect.origin.x)), \(Int(rect.origin.y)) \(Int(rect.width))×\(Int(rect.height)))
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaInfoView.swift	166	4	¿PANTALLA?	Artista del álbum (opcional)
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaInfoView.swift	167	4	¿PANTALLA?	Número de pista (opcional)
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaInfoView.swift	171	2	¿PANTALLA?	Año (opcional)
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaInfoView.swift	172	2	¿PANTALLA?	Género (opcional)
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaInfoView.swift	173	2	¿PANTALLA?	Autor (opcional)
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaInfoView.swift	207	4	¿PANTALLA?	Nombre de la serie
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaInfoView.swift	277	2	¿PANTALLA?	En cola
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaInfoView.swift	278	2	¿PANTALLA?	Buscando información...
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaInfoView.swift	280	3	¿PANTALLA?	Listo para sincronizar
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaInfoView.swift	281	3	¿PANTALLA?	Falta completar información
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaInfoView.swift	282	2	¿PANTALLA?	Error: \(message)
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	105	4	¿PANTALLA?	Buscando información en línea...
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	444	3	¿PANTALLA?	aura.visibleColumns.\(kindKey)
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	499	2	¿PANTALLA?	aura.batchEditWarningSuppressed
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	527	4	¿PANTALLA?	Leyendo etiquetas del archivo...
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	591	4	¿PANTALLA?	Buscando información en línea...
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	700	3	¿PANTALLA?	Quitar de favoritos
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	700	3	¿PANTALLA?	Marcar como favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	723	3	¿PANTALLA?	Todas las canciones
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	726	2	¿PANTALLA?	Solo favoritos
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	730	3	¿PANTALLA?	Opciones para ordenar
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	732	4	¿PANTALLA?	Mostrar opciones de visualización
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	745	4	¿PANTALLA?	No hay favoritos todavía.
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	745	4	¿PANTALLA?	"Sin resultados para \""\(searchText)\""."
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	805	2	¿PANTALLA?	Sin categoría
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	1017	4	¿PANTALLA?	Leyendo etiquetas del archivo...
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	1066	4	¿PANTALLA?	Buscando pósters en línea...
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	1180	3	¿PANTALLA?	Suelta canciones aqui
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	1181	3	¿PANTALLA?	Suelta videos aqui
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	1182	3	¿PANTALLA?	Suelta fotos aqui
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	1183	3	¿PANTALLA?	Suelta archivos aqui
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	1438	3	¿PANTALLA?	Nombre del álbum
+	studio/AuraStudio/Sources/AuraStudio/Views/MediaSectionView.swift	1485	2	¿PANTALLA?	Álbum (opcional)
+	studio/AuraStudio/Sources/AuraStudio/Views/MoviesView.swift	63	2	¿PANTALLA?	aura.moviesSort
+	studio/AuraStudio/Sources/AuraStudio/Views/MoviesView.swift	72	2	¿PANTALLA?	Agregado recientemente
+	studio/AuraStudio/Sources/AuraStudio/Views/MoviesView.swift	252	7	¿PANTALLA?	Todavía no hay películas en la biblioteca.
+	studio/AuraStudio/Sources/AuraStudio/Views/MoviesView.swift	253	12	¿PANTALLA?	"Arrastra videos a \""Películas\"" en la barra lateral y aquí aparecerán con su póster."
+	studio/AuraStudio/Sources/AuraStudio/Views/MoviesView.swift	255	4	¿PANTALLA?	"Sin resultados para \""\(searchText)\""."
+	studio/AuraStudio/Sources/AuraStudio/Views/MoviesView.swift	426	2	¿PANTALLA?	Quitar favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/MoviesView.swift	426	3	¿PANTALLA?	Marcar como favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/MoviesView.swift	443	2	¿PANTALLA?	Eliminar películas
+	studio/AuraStudio/Sources/AuraStudio/Views/MoviesView.swift	443	2	¿PANTALLA?	Eliminar película
+	studio/AuraStudio/Sources/AuraStudio/Views/MusicSettingsView.swift	108	6	¿PANTALLA?	Nombre del artista tal como aparece
+	studio/AuraStudio/Sources/AuraStudio/Views/MusicSettingsView.swift	145	11	¿PANTALLA?	Music/Artista/Álbum/ -- una carpeta por álbum dentro de cada artista.
+	studio/AuraStudio/Sources/AuraStudio/Views/MusicSettingsView.swift	146	13	¿PANTALLA?	Music/Álbum/ -- todas las canciones agrupadas solo por álbum, sin carpeta de artista.
+	studio/AuraStudio/Sources/AuraStudio/Views/MusicSettingsView.swift	147	12	¿PANTALLA?	Music/Artista/ -- todas las canciones del artista juntas, sin carpeta de álbum.
+	studio/AuraStudio/Sources/AuraStudio/Views/MusicSettingsView.swift	153	4	¿PANTALLA?	Ejemplo: Bohemian Rhapsody.mp3
+	studio/AuraStudio/Sources/AuraStudio/Views/MusicSettingsView.swift	154	4	¿PANTALLA?	Ejemplo: 11 Bohemian Rhapsody.mp3
+	studio/AuraStudio/Sources/AuraStudio/Views/MusicSettingsView.swift	155	5	¿PANTALLA?	Ejemplo: Bohemian Rhapsody - Queen.mp3
+	studio/AuraStudio/Sources/AuraStudio/Views/MusicSettingsView.swift	156	8	¿PANTALLA?	Ejemplo: Bohemian Rhapsody - A Night at the Opera.mp3
+	studio/AuraStudio/Sources/AuraStudio/Views/PermissionsView.swift	20	3	¿PANTALLA?	Acceso a volumenes removibles
+	studio/AuraStudio/Sources/AuraStudio/Views/PermissionsView.swift	21	40	¿PANTALLA?	Aura Studio necesita ver y desmontar el iPod apenas lo conectas -- si no, macOS lo deja montado en Finder y el instalador no puede escribir en el. macOS pide confirmar esto la primera vez que la app intenta acceder a un disco removible.
+	studio/AuraStudio/Sources/AuraStudio/Views/PermissionsView.swift	26	6	¿PANTALLA?	Acceso total al disco (opcional, recomendado)
+	studio/AuraStudio/Sources/AuraStudio/Views/PermissionsView.swift	27	42	¿PANTALLA?	Si macOS bloquea la lectura/escritura del iPod incluso despues de aceptar el permiso anterior, activa Acceso total al disco para Aura Studio en Ajustes del Sistema > Privacidad y Seguridad. Es un permiso amplio: solo lo necesitas si el paso de deteccion falla.
+	studio/AuraStudio/Sources/AuraStudio/Views/PermissionsView.swift	32	6	¿PANTALLA?	Contraseña de administrador (en pasos puntuales)
+	studio/AuraStudio/Sources/AuraStudio/Views/PermissionsView.swift	33	59	¿PANTALLA?	En algunos pasos -- pausar servicios que interfieren con la deteccion del iPod, o preparar el disco antes de instalar -- macOS te va a pedir tu contraseña con su propio dialogo nativo. Aura Studio siempre te explica antes que va a hacer y por que, en una pantalla propia, antes de que aparezca ese di
+	studio/AuraStudio/Sources/AuraStudio/Views/PermissionsView.swift	37	6	¿PANTALLA?	x-apple.systempreferences:com.apple.preference.security
+	studio/AuraStudio/Sources/AuraStudio/Views/PhotoAlbumsView.swift	275	3	¿PANTALLA?	Suelta fotos aquí
+	studio/AuraStudio/Sources/AuraStudio/Views/PhotoAlbumsView.swift	279	3	¿PANTALLA?	Suelta fotos aquí
+	studio/AuraStudio/Sources/AuraStudio/Views/PhotoAlbumsView.swift	284	4	¿PANTALLA?	"Sin resultados para \""\(searchText)\""."
+	studio/AuraStudio/Sources/AuraStudio/Views/PhotoAlbumsView.swift	396	2	¿PANTALLA?	Disolver álbumes
+	studio/AuraStudio/Sources/AuraStudio/Views/PhotoAlbumsView.swift	396	2	¿PANTALLA?	Disolver álbum
+	studio/AuraStudio/Sources/AuraStudio/Views/PhotoAlbumsView.swift	448	7	¿PANTALLA?	Suelta fotos aquí para agregarlas a este álbum
+	studio/AuraStudio/Sources/AuraStudio/Views/PhotoAlbumsView.swift	454	6	¿PANTALLA?	Este álbum se quedó sin fotos.
+	studio/AuraStudio/Sources/AuraStudio/Views/PhotoAlbumsView.swift	560	3	¿PANTALLA?	Nombre del álbum
+	studio/AuraStudio/Sources/AuraStudio/Views/PhotoSettingsView.swift	62	2	¿PANTALLA?	Nueva colección
+	studio/AuraStudio/Sources/AuraStudio/Views/PlaylistsView.swift	102	8	¿PANTALLA?	Elige una playlist M3U/M3U8 exportada de otro programa o servicio.
+	studio/AuraStudio/Sources/AuraStudio/Views/PlaylistsView.swift	106	6	¿PANTALLA?	No se pudo leer \(fileURL.lastPathComponent).
+	studio/AuraStudio/Sources/AuraStudio/Views/PlaylistsView.swift	111	5	¿PANTALLA?	\(fileURL.lastPathComponent) no tiene pistas.
+	studio/AuraStudio/Sources/AuraStudio/Views/PlaylistsView.swift	118	9	¿PANTALLA?	"\""\(name)\"" importada: \(result.matchedCount) de \(paths.count) pista(s) ligadas."
+	studio/AuraStudio/Sources/AuraStudio/Views/PlaylistsView.swift	119	26	¿PANTALLA?	"\""\(name)\"" importada: \(result.matchedCount) de \(paths.count) pista(s) ligadas. \(result.unmatchedPaths.count) no están en tu biblioteca Aura todavía -- suéltalas en Música y vuelve a importar para completarlas."
+	studio/AuraStudio/Sources/AuraStudio/Views/PlaylistsView.swift	130	2	¿PANTALLA?	Nueva playlist
+	studio/AuraStudio/Sources/AuraStudio/Views/PlaylistsView.swift	259	6	¿PANTALLA?	Elige una imagen para esta playlist.
+	studio/AuraStudio/Sources/AuraStudio/Views/RestoreHandoffView.swift	24	18	¿PANTALLA?	Cierra Aura Studio con el boton de abajo -- si sigue abierto, su deteccion USB puede interferir con Finder.
+	studio/AuraStudio/Sources/AuraStudio/Views/RestoreHandoffView.swift	25	14	¿PANTALLA?	Abre una ventana de Finder: el iPod aparece en la barra lateral, bajo Ubicaciones.
+	studio/AuraStudio/Sources/AuraStudio/Views/RestoreHandoffView.swift	26	14	¿PANTALLA?	"Selecciona el iPod y elige \""Restaurar iPod...\"" -- Finder descarga e instala el firmware original de Apple."
+	studio/AuraStudio/Sources/AuraStudio/Views/SeriesView.swift	224	7	¿PANTALLA?	Todavía no hay series en la biblioteca.
+	studio/AuraStudio/Sources/AuraStudio/Views/SeriesView.swift	225	15	¿PANTALLA?	"Arrastra episodios a \""Series\"" en la barra lateral -- si el nombre trae SxxEyy se agrupan solos."
+	studio/AuraStudio/Sources/AuraStudio/Views/SeriesView.swift	227	4	¿PANTALLA?	"Sin resultados para \""\(searchText)\""."
+	studio/AuraStudio/Sources/AuraStudio/Views/SeriesView.swift	410	2	¿PANTALLA?	Sin temporada
+	studio/AuraStudio/Sources/AuraStudio/Views/SeriesView.swift	410	3	¿PANTALLA?	Temporada \(season.number)
+	studio/AuraStudio/Sources/AuraStudio/Views/SeriesView.swift	461	2	¿PANTALLA?	Quitar favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/SeriesView.swift	461	3	¿PANTALLA?	Marcar como favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/SeriesView.swift	475	2	¿PANTALLA?	Eliminar episodios
+	studio/AuraStudio/Sources/AuraStudio/Views/SeriesView.swift	475	2	¿PANTALLA?	Eliminar episodio
+	studio/AuraStudio/Sources/AuraStudio/Views/SeriesView.swift	494	2	¿PANTALLA?	Quitar favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/SeriesView.swift	494	3	¿PANTALLA?	Marcar como favorito
+	studio/AuraStudio/Sources/AuraStudio/Views/SeriesView.swift	511	2	¿PANTALLA?	Eliminar series
+	studio/AuraStudio/Sources/AuraStudio/Views/SeriesView.swift	511	2	¿PANTALLA?	Eliminar serie
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	41	7	¿PANTALLA?	Metadata: artista, album, ano, numero de pista
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	42	19	¿PANTALLA?	Base abierta y colaborativa, datos en CC0. Sin key. Limite estricto de 1 pedido por segundo, ya respetado por la app.
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	47	3	¿PANTALLA?	Cover Art Archive
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	48	3	¿PANTALLA?	Caratulas de album
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	49	15	¿PANTALLA?	Sin key y sin limite de tasa. Primer intento para caratula (ver orden de busqueda abajo).
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	55	2	¿PANTALLA?	Letras sincronizadas
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	56	12	¿PANTALLA?	Sin key ni registro. Devuelve LRC real con tiempos. Codigo abierto MIT.
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	113	4	¿PANTALLA?	sin key configurada abajo
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	114	2	¿PANTALLA?	apagado abajo
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	141	2	¿PANTALLA?	Internet Archive
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	142	6	¿PANTALLA?	Musica, video y audio de dominio publico
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	143	28	¿PANTALLA?	Sin key para buscar y descargar. Sirve para ENCONTRAR contenido nuevo de dominio publico, no para completar metadata de tu biblioteca -- todavia no tiene ninguna integracion en Aura Studio.
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	148	3	¿PANTALLA?	Openverse / Wikimedia Commons
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	149	4	¿PANTALLA?	Fotos con licencia libre
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	150	19	¿PANTALLA?	Sin registro. Mismo caso que Internet Archive: es para buscar fotos nuevas, no para enriquecer canciones -- todavia sin conectar.
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	165	20	¿PANTALLA?	Su API oficial no tiene letras, ni sincronizadas ni planas: la unica via es scrapear la web, contra sus terminos.
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	171	2	¿PANTALLA?	Letras sincronizadas
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	172	18	¿PANTALLA?	El plan gratuito solo devuelve un fragmento de vista previa; las letras completas y sincronizadas requieren licencia comercial paga.
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	178	2	¿PANTALLA?	Metadata y caratulas
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	179	18	¿PANTALLA?	Exige OAuth y, desde 2026, cuenta Premium activa del desarrollador con usuarios en lista blanca. Inviable para una app personal.
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	184	2	¿PANTALLA?	Last.fm
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	186	16	¿PANTALLA?	Sus terminos excluyen expresamente las imagenes y el arte de album del uso permitido de la API.
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	192	2	¿PANTALLA?	Musica libre
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	193	28	¿PANTALLA?	Tecnicamente la mejor opcion de musica libre, pero sus terminos prohiben las apps disenadas para cachear contenido u ofrecer acceso offline -- que es literalmente lo que hace Aura Studio.
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	200	19	¿PANTALLA?	Obliga a enlazar las imagenes desde sus servidores en vez de guardarlas. Una biblioteca local rompe esa condicion por definicion.
+	studio/AuraStudio/Sources/AuraStudio/Views/ServicesSettingsView.swift	276	5	¿PANTALLA?	Pega tu API key aquí
+	studio/AuraStudio/Sources/AuraStudio/Views/SettingsSectionView.swift	165	4	¿PANTALLA?	ajustes.general.idioma.masTarde
+	studio/AuraStudio/Sources/AuraStudio/Views/SettingsSectionView.swift	240	11	¿PANTALLA?	\(scan.count) archivos, \(ByteCountFormatter.string(fromByteCount: Int64(scan.totalBytes), countStyle: .file))
+	studio/AuraStudio/Sources/AuraStudio/Views/SettingsSectionView.swift	252	3	¿PANTALLA?	ajustes.almacenamiento.limpiarHuerfanos
+	studio/AuraStudio/Sources/AuraStudio/Views/SettingsSectionView.swift	258	3	¿PANTALLA?	ajustes.almacenamiento.buscarHuerfanos
+	studio/AuraStudio/Sources/AuraStudio/Views/SettingsSectionView.swift	408	3	¿PANTALLA?	Usar esta carpeta
+	studio/AuraStudio/Sources/AuraStudio/Views/SettingsSectionView.swift	409	9	¿PANTALLA?	Elige (o crea) la carpeta donde vivira tu biblioteca Aura.
+	studio/AuraStudio/Sources/AuraStudio/Views/SimilarItemsView.swift	227	8	¿PANTALLA?	No se encontraron elementos parecidos en tu biblioteca.
+	studio/AuraStudio/Sources/AuraStudio/Views/SimilarItemsView.swift	227	6	¿PANTALLA?	Nada que mostrar con este filtro.
+	studio/AuraStudio/Sources/AuraStudio/Views/SimilarItemsView.swift	415	6	¿PANTALLA?	Este es el que se conserva
+	studio/AuraStudio/Sources/AuraStudio/Views/SimilarItemsView.swift	415	6	¿PANTALLA?	Conservar este en lugar del marcado
+	studio/AuraStudio/Sources/AuraStudio/Views/SimilarItemsView.swift	445	2	¿PANTALLA?	Sin artista
+	studio/AuraStudio/Sources/AuraStudio/Views/SimilarItemsView.swift	445	2	¿PANTALLA?	Sin álbum
+	studio/AuraStudio/Sources/AuraStudio/Views/SimilarItemsView.swift	451	2	¿PANTALLA?	Sin categoría
+	studio/AuraStudio/Sources/AuraStudio/Views/SimilarItemsView.swift	452	4	¿PANTALLA?	\($0) T\(item.season ?? 0)E\(item.episode ?? 0)
+	studio/AuraStudio/Sources/AuraStudio/Views/SimilarItemsView.swift	466	2	¿PANTALLA?	corregido a mano
+	studio/AuraStudio/Sources/AuraStudio/Views/SimilarItemsView.swift	495	7	¿PANTALLA?	Se quitó «\(displayTitle(item))» de la biblioteca.
+	studio/AuraStudio/Sources/AuraStudio/Views/SimilarItemsView.swift	544	10	¿PANTALLA?	Elementos quitados de la biblioteca: \(losers.count). Se conservó «\(kept)».
+	studio/AuraStudio/Sources/AuraStudio/Views/SyncSheets.swift	130	6	¿PANTALLA?	¿Eliminar \(pendingDeletion?.count ?? 0) archivo(s) del iPod?
+	studio/AuraStudio/Sources/AuraStudio/Views/TableHeaderMenu.swift	146	5	¿INTERNO?	init(coder:) no se usa
+	studio/AuraStudio/Sources/AuraStudio/Views/ThemesView.swift	54	5	¿PANTALLA?	Ponle un nombre al tema.
+	studio/AuraStudio/Sources/AuraStudio/Views/ThemesView.swift	59	10	¿PANTALLA?	"\""\(trimmedName)\"" no produce un id válido -- usa letras, números y espacios."
+	studio/AuraStudio/Sources/AuraStudio/Views/ThemesView.swift	71	3	¿PANTALLA?	AuraThemeBuild-\(UUID().uuidString)
+	studio/AuraStudio/Sources/AuraStudio/Views/ThemesView.swift	141	2	¿PANTALLA?	Construyendo e instalando…
+	studio/AuraStudio/Sources/AuraStudio/Views/ThemesView.swift	163	3	¿PANTALLA?	"¿Eliminar \""\(pendingDelete?.name ?? "
+	studio/AuraStudio/Sources/AuraStudio/Views/ThemesView.swift	229	2	¿PANTALLA?	Ninguna elegida
+	studio/AuraStudio/Sources/AuraStudio/Views/ThemesView.swift	242	2	¿PANTALLA?	Autor (opcional)
+	studio/AuraStudio/Sources/AuraStudio/Views/ThemesView.swift	275	9	¿PANTALLA?	Elige la carpeta con fonts/ e icons/masks/ ya generados.
+	studio/AuraStudio/Sources/AuraStudio/Views/UpdateBootloaderView.swift	36	4	¿PANTALLA?	Qué es el arranque
+	studio/AuraStudio/Sources/AuraStudio/Views/UpdateBootloaderView.swift	37	30	¿PANTALLA?	El programa diminuto que corre apenas enciendes el iPod, antes que \(firmwareName): dibuja la pantalla de arranque y decide qué sistema iniciar. Vive en un chip aparte, no en el disco.
+	studio/AuraStudio/Sources/AuraStudio/Views/UpdateBootloaderView.swift	39	7	¿PANTALLA?	Por qué hace falta el modo DFU
+	studio/AuraStudio/Sources/AuraStudio/Views/UpdateBootloaderView.swift	40	28	¿PANTALLA?	Ese chip solo se puede escribir con el iPod en modo DFU. Es el mismo paso que hiciste al instalar; la app te va a guiar y son unos segundos.
+	studio/AuraStudio/Sources/AuraStudio/Views/UpdateBootloaderView.swift	42	4	¿PANTALLA?	Qué no se toca
+	studio/AuraStudio/Sources/AuraStudio/Views/UpdateBootloaderView.swift	43	24	¿PANTALLA?	Nada del disco: tu música, tus fotos, tus listas y tus ajustes se quedan exactamente como están. No se formatea ni se copia ningún archivo.
+	studio/AuraStudio/Sources/AuraStudio/Views/UpdateBootloaderView.swift	45	3	¿PANTALLA?	No es obligatorio
+	studio/AuraStudio/Sources/AuraStudio/Views/UpdateBootloaderView.swift	46	20	¿PANTALLA?	\(firmwareName) funciona igual con el arranque que ya tienes: lo único que cambia es la pantalla que ves al encender.
+	studio/AuraStudio/Sources/AuraStudio/Views/UpdateBootloaderView.swift	50	3	¿PANTALLA?	Actualizar el arranque
+	studio/AuraStudio/Sources/AuraStudio/Views/UpdateBootloaderView.swift	61	17	¿PANTALLA?	Esta versión de Aura Studio trae un arranque más nuevo que el que tiene grabado tu iPod.
+	studio/AuraStudio/Sources/AuraStudio/Views/UpdateBootloaderView.swift	63	38	¿PANTALLA?	Aura Studio no sabe qué versión del arranque tiene grabada tu iPod -- lo instaló otra computadora, o una versión anterior de esta app que no lo anotaba. Actualizarlo lo deja al día; si ya lo estaba, no cambia nada.
+	studio/AuraStudio/Sources/AuraStudio/Views/WelcomeView.swift	27	2	¿PANTALLA?	Instalar \(firmwareName)
+	studio/AuraStudio/Sources/AuraStudio/Views/WelcomeView.swift	27	3	¿PANTALLA?	Restaurar iPod original
+	studio/AuraStudio/Sources/AuraStudio/Views/WelcomeView.swift	31	24	¿PANTALLA?	Este asistente va a instalar el bootloader y el firmware \(firmwareName) en tu iPod Classic 6G. Vas a necesitar el dispositivo conectado por USB en los proximos pasos.
+	studio/AuraStudio/Sources/AuraStudio/Views/WelcomeView.swift	32	25	¿PANTALLA?	Este asistente va a quitar el bootloader y devolver tu iPod al arranque original de Apple. El firmware no se borra del disco, solo dejas de arrancarlo.
