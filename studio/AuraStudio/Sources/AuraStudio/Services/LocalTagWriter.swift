@@ -21,19 +21,60 @@ enum LocalTagWriter {
     /// Qué pasó al intentar escribir. Mismo contrato que
     /// `TagWriteResult` de Windows: `written == false` significa que **el
     /// archivo no se tocó**, y `reason` dice por qué.
+    /// Por qué NO se escribió, **tipado** (ST-227, A7c cierre 2).
+    ///
+    /// Antes esto era solo texto, y dos sitios de `LibraryViewModel`
+    /// decidían con `reason.hasPrefix("no se pudieron escribir")` si
+    /// avisarle al usuario. Windows encontró de su lado que esa misma
+    /// forma ya fallaba en producción, y acá era cuestión de tiempo:
+    /// cambiarle una palabra al mensaje --traducirlo, sin ir más lejos--
+    /// apagaba las dos ramas **en silencio**. Los errores de escritura
+    /// dejarían de mostrarse y la migración dejaría de contarlos, con
+    /// todo en verde.
+    ///
+    /// El texto sigue viajando, porque es lo que se le enseña al
+    /// usuario; lo que ya no viaja es la DECISIÓN metida dentro del
+    /// texto.
+    enum Skip: Equatable {
+        /// El formato no lleva etiquetas. No es un fallo.
+        case formatCarriesNoTags(String)
+        /// No había ningún campo que escribir. No es un fallo.
+        case nothingToWrite(String)
+        /// Se intentó escribir y no se pudo. **Esto sí se le dice al
+        /// usuario**: su edición no llegó al archivo.
+        case writeFailed(String)
+
+        var text: String {
+            switch self {
+            case let .formatCarriesNoTags(t), let .nothingToWrite(t), let .writeFailed(t): return t
+            }
+        }
+
+        var isFailure: Bool {
+            if case .writeFailed = self { return true }
+            return false
+        }
+    }
+
     struct Result: Equatable {
         /// Se pudo escribir (o no hacía falta). `false` = el archivo no
-        /// se tocó y `reason` dice por qué.
+        /// se tocó y `skip` dice por qué.
         var written: Bool
         /// Si el archivo **cambió de verdad**. ST-226: `written` sin esto
         /// no alcanza -- un resumen de migración que cuenta "1 con
         /// etiquetas nuevas" cuando el archivo ya decía lo mismo le está
         /// contando al usuario algo que no pasó.
         var changed: Bool = false
-        var reason: String?
+        var skip: Skip?
 
-        static func wroteFile(changed: Bool) -> Result { Result(written: true, changed: changed, reason: nil) }
-        static func skipped(_ reason: String) -> Result { Result(written: false, changed: false, reason: reason) }
+        /// El texto del motivo, para mostrarlo. Nadie decide con esto.
+        var reason: String? { skip?.text }
+        /// Si hay que avisarle al usuario. **Ésta es la pregunta que
+        /// antes se hacía comparando prefijos de una frase en español.**
+        var isFailure: Bool { skip?.isFailure == true }
+
+        static func wroteFile(changed: Bool) -> Result { Result(written: true, changed: changed, skip: nil) }
+        static func skipped(_ skip: Skip) -> Result { Result(written: false, changed: false, skip: skip) }
     }
 
     /// Los formatos en los que esta app sabe escribir etiquetas.
@@ -67,10 +108,10 @@ enum LocalTagWriter {
     static func write(_ tag: AudioTag, toFileAt url: URL, as formatExtension: String) -> Result {
         let ext = formatExtension.lowercased()
         guard taggableExtensions.contains(ext) else {
-            return .skipped("el formato .\(ext) no lleva etiquetas (al importarlo en copia se convierte, ver AudioConversionRule)")
+            return .skipped(.formatCarriesNoTags("el formato .\(ext) no lleva etiquetas (al importarlo en copia se convierte, ver AudioConversionRule)"))
         }
         guard !tag.isEmpty else {
-            return .skipped("no hay ningún campo que escribir")
+            return .skipped(.nothingToWrite("no hay ningún campo que escribir"))
         }
         do {
             let changed: Bool
@@ -84,7 +125,7 @@ enum LocalTagWriter {
             }
             return .wroteFile(changed: changed)
         } catch {
-            return .skipped("no se pudieron escribir las etiquetas de \(url.lastPathComponent): \(error)")
+            return .skipped(.writeFailed("no se pudieron escribir las etiquetas de \(url.lastPathComponent): \(error)"))
         }
     }
 

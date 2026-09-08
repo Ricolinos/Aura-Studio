@@ -554,7 +554,9 @@ final class LibraryViewModel: ObservableObject {
         let result = await fileWorker.rewriteTags(metadata: metadata,
                                                   coverArtPolicy: preferences.coverArtPolicy,
                                                   at: item.sourceURL)
-        if !result.written, let reason = result.reason, reason.hasPrefix("no se pudieron escribir") {
+        // ST-227 (A7c cierre 2): la pregunta es tipada, no un prefijo de
+        // una frase en español. Traducir ese mensaje apagaba el aviso.
+        if result.isFailure, let reason = result.reason {
             lastError = reason
         }
         return item.sourceURL
@@ -1369,7 +1371,7 @@ final class LibraryViewModel: ObservableObject {
                 // que la segunda corrida tiene que poder demostrar.
                 if result.changed {
                     summary.tagged += 1
-                } else if let reason = result.reason, reason.hasPrefix("no se pudieron escribir") {
+                } else if result.isFailure, let reason = result.reason {
                     summary.errors.append(reason)
                 }
                 items[index].preparedURL = items[index].sourceURL

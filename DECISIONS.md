@@ -17623,3 +17623,70 @@ Verificado de forma independiente: `origin/main = abafec3` contiene la
 punta anterior de `windows/b8` (`7ad36c5`) como ancestro (`pull --rebase`
 resolvió en fast-forward, sin conflictos); 0 CR bytes y 0 marcadores de
 conflicto en `DECISIONS.md` y `ESTADO-PORT.md` antes de comprometer.
+
+## ST-227 (A7c, cierre 3) — Los cuatro sitios hermanos de las trampas de Windows
+
+Windows cerró sus cinco trampas y **cuatro eran bugs reales ya con la app
+en español**. La Mac tiene código hermano en los cuatro sitios; se
+revisaron uno por uno, con prueba en cada caso — también en los que no
+estaban afectados, porque "lo miré y está bien" no sobrevive al próximo
+que toque el archivo.
+
+### (1) Hojas de metadatos — **no afectado**
+
+`MediaInfoView` y `BatchMediaInfoView` no usan la etiqueta visible como
+llave de nada. Cada campo es su propio `@State` (`title`, `artist`,
+`album`, `albumArtist`, `year`, `genre`, `composer`…) y el ayudante
+`batchTextField(_:field:)` recibe un `Binding` explícito: la etiqueta
+solo llega como marcador de posición del `TextField`. Dos campos con la
+misma etiqueta no podrían pisarse porque el valor viaja por el binding,
+no por el nombre.
+
+### (2) El motivo de no escribir etiquetas — **afectado, arreglado**
+
+No era `PreparedMusicPlan` --ése ya decidía con un enum
+(`PreparedMusicAction`), y su `reason` es solo la explicación que
+acompaña-- sino `LocalTagWriter.Result`. Dos sitios de
+`LibraryViewModel` (`:557` y `:1372`) preguntaban
+`reason.hasPrefix("no se pudieron escribir")` para distinguir un **fallo
+real de escritura** de los dos saltos benignos (formato sin etiquetas,
+nada que escribir).
+
+Eso ya era frágil y A7d lo habría roto seguro: al traducir ese mensaje,
+las dos ramas se apagan **en silencio**. El usuario dejaría de ver que su
+edición no llegó al archivo, y la migración dejaría de contar los
+errores — todo en verde.
+
+Ahora `Result` lleva un `Skip` tipado (`formatCarriesNoTags`,
+`nothingToWrite`, `writeFailed`) y la pregunta es `result.isFailure`. El
+texto sigue viajando, porque es lo que se le enseña al usuario; lo que ya
+no viaja es la decisión metida dentro del texto. Comprobado al revés:
+volviendo `isFailure` a comparar prefijos, la prueba falla sobre un fallo
+cuyo mensaje está redactado en otro idioma.
+
+### (3) El cajón "Sin álbum" — **no afectado**
+
+El centinela es `AlbumGroup.isUnknown`, un booleano que sale del **dato**
+(`albumTitle.isEmpty`), y la clave de grupo es
+`albumKey(of:)`, que normaliza la **etiqueta cruda**, no el título que se
+muestra. `unknownAlbumTitle` solo se usa para dibujar. Todos los
+consumidores (`LibraryStatusSummary`, `PhotoAlbumsView`,
+`AlbumCoverPickerView`) preguntan por `isUnknown`, nunca por el texto.
+
+La prueba usa el caso que en Windows sí se rompía: un álbum de verdad
+llamado exactamente "Sin álbum" junto a otro con la etiqueta vacía.
+Salen dos grupos, el real conserva su nombre y las claves difieren.
+Igual para un artista llamado "Artista desconocido".
+
+Esto importa más ahora que antes: ese texto **ya se localiza**, así que
+un centinela de texto se habría roto de tres formas distintas según el
+idioma.
+
+### (4) `AlbumCoverSearch` — **no afectado**
+
+No hay ninguna comparación contra una frase en español, ni en la búsqueda
+ni en la puntuación; el único `==` contra un literal es
+`status == "Official"`, dentro de un comentario, y es un valor de la API
+de MusicBrainz, no texto de pantalla. Queda una prueba que lee esos dos
+fuentes y falla si aparece una comparación con acentos: es donde volvería
+a colarse.
