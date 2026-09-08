@@ -288,7 +288,7 @@
 "music-settings-view.nombres-que-no-se-deben-recortar" = "Имена, которые нельзя обрезать, даже если в них есть разделитель, например «Simon + Garfunkel» или «Café con Leche».";
 "music-settings-view.numero-pista-titulo" = "Номер трека и название";
 "music-settings-view.quitar-excepciones" = "Убрать «%@» из исключений";
-"music-settings-view.separadores-que-agrupan-vs-versus-nunca" = "Разделители, которые объединяют: %@. «vs.» и «versus» не объединяют никогда, потому что там у совместной работы своё собственное имя.";
+"music-settings-view.separadores-que-agrupan-vs-versus-nunca" = "Разделители, объединяющие исполнителей: %1$@. А вот %2$@ не объединяют никогда — там у совместной работы своё собственное имя.";
 "music-settings-view.solo-album" = "Только альбом";
 "music-settings-view.solo-artista" = "Только исполнитель";
 "music-settings-view.solo-titulo-recomendado" = "Только название (рекомендуется)";

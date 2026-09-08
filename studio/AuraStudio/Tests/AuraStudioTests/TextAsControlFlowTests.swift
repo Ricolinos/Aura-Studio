@@ -183,6 +183,30 @@ final class TextAsControlFlowTests: XCTestCase {
                        "no se mezcla «autorización» con «permiso» en la misma familia")
     }
 
+    /// ST-227 (A7c, cierre 6): **la explicación de los separadores nombra
+    /// los que el código usa de verdad, las dos listas.**
+    ///
+    /// La mitad de "sí agrupan" ya salía de `collaborationSeparators`;
+    /// la de "nunca agrupan" estaba escrita a mano en el texto y **ya se
+    /// había desfasado**: decía «vs.» y «versus», y `neverSeparators`
+    /// tiene tres entradas -- también el «vs» sin punto. Mismo defecto
+    /// que Windows encontró de su lado, y el mismo arreglo: armarla desde
+    /// el código.
+    func testTheSeparatorExplanationNamesEverySeparatorTheCodeUses() {
+        let texto = LSf("music-settings-view.separadores-que-agrupan-vs-versus-nunca",
+                        Sentence.commaList(ArtistNameNormalizer.collaborationSeparators),
+                        Sentence.list(ArtistNameNormalizer.neverSeparators))
+
+        XCTAssertFalse(ArtistNameNormalizer.collaborationSeparators.isEmpty)
+        XCTAssertFalse(ArtistNameNormalizer.neverSeparators.isEmpty)
+        for separador in ArtistNameNormalizer.collaborationSeparators {
+            XCTAssertTrue(texto.contains(separador), "la explicación no nombra «\(separador)», que sí agrupa: \(texto)")
+        }
+        for separador in ArtistNameNormalizer.neverSeparators {
+            XCTAssertTrue(texto.contains(separador), "la explicación no nombra «\(separador)», que nunca agrupa: \(texto)")
+        }
+    }
+
     // MARK: - Fixture
 
     private func item(album: String, artist: String, title: String) -> AuraStudio.LibraryItem {

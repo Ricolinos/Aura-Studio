@@ -288,7 +288,7 @@
 "music-settings-view.nombres-que-no-se-deben-recortar" = "区切り文字が含まれていても切り詰めてはいけない名前です。たとえば「Simon + Garfunkel」や「Café con Leche」。";
 "music-settings-view.numero-pista-titulo" = "トラック番号とタイトル";
 "music-settings-view.quitar-excepciones" = "「%@」を例外から外す";
-"music-settings-view.separadores-que-agrupan-vs-versus-nunca" = "まとめる区切り文字: %@。「vs.」と「versus」はまとめません。その場合、共演そのものが固有の名前だからです。";
+"music-settings-view.separadores-que-agrupan-vs-versus-nunca" = "まとめる区切り文字: %1$@。一方 %2$@ はまとめません。その場合、共演そのものが固有の名前だからです。";
 "music-settings-view.solo-album" = "アルバムのみ";
 "music-settings-view.solo-artista" = "アーティストのみ";
 "music-settings-view.solo-titulo-recomendado" = "タイトルのみ（推奨）";

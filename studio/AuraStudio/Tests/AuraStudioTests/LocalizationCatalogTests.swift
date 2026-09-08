@@ -98,6 +98,10 @@ final class LocalizationCatalogTests: XCTestCase {
         // separadores), así que su texto quedó sin `%@`. Dejarlo así
         // habría hecho desaparecer la lista de la pantalla -- que es
         // justo el cambio de español que esta prueba existe para evitar.
+        // A7c cierre 6: además pasó a DOS marcadores. La lista de "nunca
+        // agrupan" estaba escrita a mano y ya se había desfasado de
+        // `neverSeparators` (nombraba dos de tres); ahora las dos salen
+        // del código.
         //
         // `enter-d-f-u-view.pedira-...`: decía "Se reactivan solos al
         // terminar" sin decir QUÉ se reactiva. En una pantalla que acaba

@@ -85,8 +85,14 @@ struct MusicSettingsView: View {
             // CALCULADO del medio (la lista de separadores), así que su
             // texto con marcadores no tenía `%@` y la lista habría
             // desaparecido de la pantalla. La clave lleva el marcador.
+            // ST-227 (A7c, cierre 6): las DOS listas salen del código.
+            // La de "nunca agrupan" estaba escrita a mano en el texto y
+            // ya se había desfasado: nombraba «vs.» y «versus», y
+            // `neverSeparators` tiene tres entradas -- también el «vs»
+            // sin punto. Mismo defecto que Windows encontró de su lado.
             Text(LSf("music-settings-view.separadores-que-agrupan-vs-versus-nunca",
-                     ArtistNameNormalizer.collaborationSeparators.joined(separator: ", ")))
+                     Sentence.commaList(ArtistNameNormalizer.collaborationSeparators),
+                     Sentence.list(ArtistNameNormalizer.neverSeparators)))
                 .font(.caption)
                 .foregroundStyle(.tertiary)
                 .fixedSize(horizontal: false, vertical: true)

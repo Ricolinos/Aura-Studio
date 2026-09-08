@@ -16296,37 +16296,37 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Trennzeichen, die zusammenfassen: %@. „vs.“ und „versus“ fassen nie zusammen, weil die Kollaboration dort einen eigenen Namen hat."
+            "value": "Trennzeichen, die zusammenfassen: %1$@. Dagegen fassen %2$@ nie zusammen, weil die Zusammenarbeit dort einen eigenen Namen hat."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Separators that group: %@. “vs.” and “versus” never group, because there the collaboration has a name of its own."
+            "value": "Separators that group: %1$@. By contrast %2$@ never group, because there the collaboration has a name of its own."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Separadores que agrupan: %@. «vs.» y «versus» nunca agrupan, porque ahí la colaboración tiene nombre propio."
+            "value": "Separadores que agrupan: %1$@. En cambio %2$@ nunca agrupan, porque ahí la colaboración tiene nombre propio."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Séparateurs qui regroupent : %@. « vs. » et « versus » ne regroupent jamais, car la collaboration y porte un nom propre."
+            "value": "Séparateurs qui regroupent : %1$@. En revanche %2$@ ne regroupent jamais, car la collaboration y a un nom qui lui est propre."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "まとめる区切り文字: %@。「vs.」と「versus」はまとめません。その場合、共演そのものが固有の名前だからです。"
+            "value": "まとめる区切り文字: %1$@。一方 %2$@ はまとめません。その場合、共演そのものが固有の名前だからです。"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Разделители, которые объединяют: %@. «vs.» и «versus» не объединяют никогда, потому что там у совместной работы своё собственное имя."
+            "value": "Разделители, объединяющие исполнителей: %1$@. А вот %2$@ не объединяют никогда — там у совместной работы своё собственное имя."
           }
         }
       }

@@ -288,7 +288,7 @@
 "music-settings-view.nombres-que-no-se-deben-recortar" = "Namen, die nicht gekürzt werden dürfen, auch wenn sie ein Trennzeichen enthalten, etwa „Simon + Garfunkel“ oder „Café con Leche“.";
 "music-settings-view.numero-pista-titulo" = "Titelnummer und Titel";
 "music-settings-view.quitar-excepciones" = "„%@“ aus den Ausnahmen entfernen";
-"music-settings-view.separadores-que-agrupan-vs-versus-nunca" = "Trennzeichen, die zusammenfassen: %@. „vs.“ und „versus“ fassen nie zusammen, weil die Kollaboration dort einen eigenen Namen hat.";
+"music-settings-view.separadores-que-agrupan-vs-versus-nunca" = "Trennzeichen, die zusammenfassen: %1$@. Dagegen fassen %2$@ nie zusammen, weil die Zusammenarbeit dort einen eigenen Namen hat.";
 "music-settings-view.solo-album" = "Nur Album";
 "music-settings-view.solo-artista" = "Nur Interpret";
 "music-settings-view.solo-titulo-recomendado" = "Nur der Titel (empfohlen)";

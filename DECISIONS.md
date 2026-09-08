@@ -17996,3 +17996,62 @@ existentes quedaron sin cambio (comparación columna por columna contra
 la versión anterior a esta corrida), 3 filas nuevas agregadas, 0 campos
 vacíos. 0 CR bytes en los cinco archivos. Sin builds: trabajo de solo
 texto y un `WebFetch` real.
+
+## ST-227 (A7c, cierre 6) — El barrido de los seis patrones de Windows
+
+Con el conteo de cada uno, que es lo que pidió la maestra. Uno se arregló
+acá porque era un dato desfasado, como el de los servicios; el resto entra
+en A7d con el resto del residuo, y queda dicho por qué.
+
+| patrón | encontrados | qué se hizo |
+|---|---|---|
+| Plurales con paréntesis `(s)` / `(es)` | **18** en 6 archivos | A7d |
+| Plural a mano con `n == 1` fuera del catálogo | **1** real | A7d (`LibraryStatusSummary.count`) |
+| Calificativo pegado detrás de un número formateado | **0** | — |
+| Comas y separadores de lista escritos en el código | **13** | A7d |
+| Nombrar una sección o botón a mano en vez de su clave | **10** | A7d |
+| Enumeración de datos reales escrita a mano | **1** | **arreglado acá** |
+
+**Los 18 paréntesis** se reparten así: `LibraryViewModel` 11,
+`LibraryStatusSummary` 2, `PlaylistsView` 2, y uno cada uno en
+`InstallerViewModel`, `DeviceActivityBar` y `SyncSheets`. Son
+`"%lld archivo(s) copiado(s)"` y parientes: en ruso ni siquiera hay una
+forma que sirva para los tres casos, así que cada uno pasa a variante de
+plural real.
+
+**El `n == 1` a mano es uno solo** y ya estaba inventariado:
+`LibraryStatusSummary.count(_:singular:plural:)`. Los otros tres que
+marcó el barrido (`SimilarItemsDetector`, `duration == 1`) son falsos
+positivos: ahí el `1` cuenta criterios coincidentes, no elementos, y no
+hay nada que pluralizar.
+
+**Cero del tercer patrón.** No hay ningún calificativo pegado detrás de un
+número formateado; los que había ya cayeron en el addendum 3.
+
+**Los 10 del quinto** nombran a mano cosas que existen como clave propia
+("Servicios", "Mixto", "Firmware", "Sincronizar la selección", "Más
+información", "Sin álbum", "Más tarde", "Videos", "Series"). El riesgo es
+de deriva --renombrar el botón y dejar la frase nombrando el viejo--, no
+de idioma: al traducir, el traductor ve la frase entera. Se arregla en
+A7d, cuando esas frases pasen al catálogo, con marcador posicional para
+el nombre.
+
+### El que sí era un dato desfasado
+
+`music-settings-view.separadores-que-agrupan-vs-versus-nunca` tenía **dos
+listas y solo una salía del código**. La de "sí agrupan" venía de
+`ArtistNameNormalizer.collaborationSeparators`; la de "nunca agrupan"
+estaba escrita a mano en el texto y **ya se había desfasado**: decía
+«vs.» y «versus», y `neverSeparators` tiene **tres** entradas -- también
+el «vs» sin punto. Exactamente lo que Windows encontró de su lado.
+
+Ahora la frase lleva dos marcadores posicionales y las dos listas salen
+del código, unidas con los separadores del catálogo (`Sentence`). La
+prueba recorre **las dos listas reales** y falla si la explicación deja
+alguna fuera, así que agregar un separador y olvidarse del texto vuelve a
+romper.
+
+Es un cambio de español: la clave ya estaba en la lista `corrected` de
+`testTheSpanishInTheCatalogIsWhatTheSourcesSaidBefore` por el motivo
+original (el borrador de la extracción se había comido el trozo
+calculado), y el comentario se amplió con este segundo motivo.

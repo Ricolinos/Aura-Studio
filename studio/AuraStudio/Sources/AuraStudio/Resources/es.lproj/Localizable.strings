@@ -288,7 +288,7 @@
 "music-settings-view.nombres-que-no-se-deben-recortar" = "Nombres que no se deben recortar aunque traigan un separador, como «Simon + Garfunkel» o «Café con Leche».";
 "music-settings-view.numero-pista-titulo" = "Número de pista y título";
 "music-settings-view.quitar-excepciones" = "Quitar «%@» de las excepciones";
-"music-settings-view.separadores-que-agrupan-vs-versus-nunca" = "Separadores que agrupan: %@. «vs.» y «versus» nunca agrupan, porque ahí la colaboración tiene nombre propio.";
+"music-settings-view.separadores-que-agrupan-vs-versus-nunca" = "Separadores que agrupan: %1$@. En cambio %2$@ nunca agrupan, porque ahí la colaboración tiene nombre propio.";
 "music-settings-view.solo-album" = "Solo álbum";
 "music-settings-view.solo-artista" = "Solo artista";
 "music-settings-view.solo-titulo-recomendado" = "Solo el título (recomendado)";
