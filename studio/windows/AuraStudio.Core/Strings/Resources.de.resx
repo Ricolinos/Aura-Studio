@@ -1615,7 +1615,7 @@
     <value>{0} verwaiste Dateien gelöscht.</value>
   </data>
   <data name="orphans-confirm-message" xml:space="preserve">
-    <value>Sie gehören zu keinem Eintrag deiner Mediathek; sie zu löschen betrifft keinen Titel, kein Foto und kein Video, das du hast.</value>
+    <value>Sie gehören zu keinem Objekt deiner Mediathek; sie zu löschen betrifft keinen Titel, kein Foto und kein Video, das du hast.</value>
   </data>
   <data name="app-strings.orphans-confirm-title.one" xml:space="preserve">
     <value>{0} verwaiste Datei löschen?</value>
@@ -1624,7 +1624,7 @@
     <value>{0} verwaiste Dateien löschen?</value>
   </data>
   <data name="orphans-detail" xml:space="preserve">
-    <value>Vorbereitete Dateien und Cover, die zu keinem Eintrag deiner Mediathek mehr gehören — von Einträgen, die vor dieser Version gelöscht wurden, oder aus einer erneuten Verarbeitung. Es sind nicht deine Originaldateien: es sind technische Kopien, die Aura selbst anlegt und bei Bedarf wieder anlegen kann.</value>
+    <value>Vorbereitete Dateien und Cover, die zu keinem Objekt deiner Mediathek mehr gehören – von Objekten, die vor dieser Version gelöscht wurden, oder von einer erneuten Verarbeitung. Es sind nicht deine Originaldateien: Es sind technische Kopien, die Aura selbst anlegt und bei Bedarf neu anlegen kann.</value>
   </data>
   <data name="app-strings.orphans-found.one" xml:space="preserve">
     <value>{0} verwaiste Datei ({1}).</value>
@@ -1633,7 +1633,7 @@
     <value>{0} verwaiste Dateien ({1}).</value>
   </data>
   <data name="orphans-none-found" xml:space="preserve">
-    <value>Es gibt keine verwaisten Dateien: es ist nichts aufzuräumen.</value>
+    <value>Es gibt keine verwaisten Dateien: Es ist nichts aufzuräumen.</value>
   </data>
   <data name="orphans-title" xml:space="preserve">
     <value>Verwaiste Dateien</value>
@@ -1654,7 +1654,7 @@
     <value>Hierfür wirst du nach Administratorrechten gefragt.</value>
   </data>
   <data name="app-strings.service-pause-button" xml:space="preserve">
-    <value>Apple-Dienste anhalten</value>
+    <value>Apple-Dienst anhalten</value>
   </data>
   <data name="app-strings.service-pause-detail" xml:space="preserve">
     <value>Windows hat vielleicht den Apple-Dienst, der den iPod belegt. Wir können ihn währenddessen anhalten und danach wieder starten.</value>
@@ -1693,13 +1693,13 @@
     <value>Nach oben</value>
   </data>
   <data name="storage-change-only-affects-future" xml:space="preserve">
-    <value>Diese Änderung wirkt sich nur auf das aus, was du ab jetzt importierst: was schon in deiner Mediathek ist, bleibt, wie es ist.</value>
+    <value>Diese Änderung gilt nur für das, was du ab jetzt importierst: Was schon in deiner Mediathek ist, bleibt, wie es ist.</value>
   </data>
   <data name="storage-copy-explainer" xml:space="preserve">
     <value>In die Aura-Mediathek kopieren: Aura verwaltet die Dateien, bearbeitet ihre Tags und synchronisiert sie direkt; das braucht Speicherplatz (eine Kopie); deine Originale kannst du danach löschen.</value>
   </data>
   <data name="storage-reference-explainer" xml:space="preserve">
-    <value>Am Ort belassen und darauf verweisen: kein zusätzlicher Speicherplatz, deine Dateien werden nie angetastet; Aura hält eine vorbereitete Fassung daneben (.preparados/), Änderungen leben nur in Aura und auf dem iPod, und wenn der ursprüngliche Datenträger fehlt, lassen sich diese Titel nicht synchronisieren.</value>
+    <value>An Ort und Stelle referenzieren: kein zusätzlicher Speicherplatz, und deine Dateien werden nie angerührt; Aura hält eine vorbereitete Fassung separat (.preparados/), Änderungen leben nur in Aura und auf dem iPod, und wenn die ursprüngliche Festplatte fehlt, lassen sich diese Titel nicht synchronisieren.</value>
   </data>
   <data name="storage-section-title" xml:space="preserve">
     <value>Wie deine Musik gespeichert wird</value>
@@ -2021,6 +2021,15 @@
   </data>
   <data name="crash-reporter.entendido" xml:space="preserve">
     <value>Verstanden</value>
+  </data>
+  <data name="crash-reporter.unexpected-error-body" xml:space="preserve">
+    <value>Aura Studio ist auf einen unerwarteten Fehler gestoßen und hat ihn notiert in:
+{0}
+
+{1}</value>
+  </data>
+  <data name="theme-installer.name-yields-invalid-id" xml:space="preserve">
+    <value>Dieser Name ergibt keine gültige Themen-ID: „{0}“.</value>
   </data>
   <data name="device-list-page.buscar-actualizaciones" xml:space="preserve">
     <value>Nach Updates suchen</value>
@@ -2701,7 +2710,7 @@
     <value>Mediathek migrieren</value>
   </data>
   <data name="settings-page.migrar-version-anterior" xml:space="preserve">
-    <value>Von einer früheren Version migrieren</value>
+    <value>Von einer älteren Version migrieren</value>
   </data>
   <data name="settings-page.musica" xml:space="preserve">
     <value>Musik</value>

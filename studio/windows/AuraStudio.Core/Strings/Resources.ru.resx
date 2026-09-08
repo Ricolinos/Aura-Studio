@@ -1612,7 +1612,7 @@
     <value>Вот здесь будут запрошены права администратора.</value>
   </data>
   <data name="app-strings.service-pause-button" xml:space="preserve">
-    <value>Приостановить службы Apple</value>
+    <value>Приостановить службу Apple</value>
   </data>
   <data name="app-strings.service-pause-detail" xml:space="preserve">
     <value>Возможно, служба Apple в Windows занимает iPod. Мы можем остановить её на время операции и снова запустить, когда закончим.</value>
@@ -2009,6 +2009,15 @@
   </data>
   <data name="crash-reporter.entendido" xml:space="preserve">
     <value>Понятно</value>
+  </data>
+  <data name="crash-reporter.unexpected-error-body" xml:space="preserve">
+    <value>Aura Studio столкнулась с непредвиденной ошибкой и записала её в:
+{0}
+
+{1}</value>
+  </data>
+  <data name="theme-installer.name-yields-invalid-id" xml:space="preserve">
+    <value>Это имя не даёт допустимый идентификатор темы: «{0}».</value>
   </data>
   <data name="device-general-view.instalar-actualizacion" xml:space="preserve">
     <value>Установить обновление</value>
@@ -2692,13 +2701,13 @@
     <value>Очистить неиспользуемые файлы</value>
   </data>
   <data name="orphans-confirm-message" xml:space="preserve">
-    <value>Они не связаны ни с одним элементом вашей медиатеки; их удаление не затронет ни одного трека, ни одного фото и ни одного видео из ваших.</value>
+    <value>Они не связаны ни с одним объектом вашей медиатеки; их удаление не затронет ни один трек, фото или видео.</value>
   </data>
   <data name="orphans-detail" xml:space="preserve">
-    <value>Подготовленные файлы и обложки, которые больше не принадлежат ни одному элементу вашей медиатеки — от элементов, удалённых до этой версии, или от повторной обработки. Это не ваши исходные файлы: это технические копии, которые Aura делает сама и может сделать заново, если понадобится.</value>
+    <value>Подготовленные файлы и обложки, которые больше не принадлежат ни одному объекту вашей медиатеки — от объектов, удалённых до этой версии, или после повторной обработки. Это не ваши исходные файлы: это технические копии, которые Aura создаёт сама и при необходимости создаст заново.</value>
   </data>
   <data name="orphans-none-found" xml:space="preserve">
-    <value>Неиспользуемых файлов нет: очищать нечего.</value>
+    <value>Неиспользуемых файлов нет: чистить нечего.</value>
   </data>
   <data name="orphans-title" xml:space="preserve">
     <value>Неиспользуемые файлы</value>
@@ -2866,10 +2875,10 @@
     <value>Сохранять исходный формат (рекомендуется)</value>
   </data>
   <data name="settings-page.migrar-biblioteca" xml:space="preserve">
-    <value>Перенести медиатеку</value>
+    <value>Мигрировать медиатеку</value>
   </data>
   <data name="settings-page.migrar-version-anterior" xml:space="preserve">
-    <value>Перенести из более ранней версии</value>
+    <value>Миграция с предыдущей версии</value>
   </data>
   <data name="settings-page.musica" xml:space="preserve">
     <value>Музыка</value>
@@ -3055,13 +3064,13 @@
     <value>Сохранить</value>
   </data>
   <data name="storage-change-only-affects-future" xml:space="preserve">
-    <value>Изменение этой настройки влияет только на то, что вы импортируете начиная с этого момента: то, что уже в вашей медиатеке, остаётся как есть.</value>
+    <value>Изменение этой настройки влияет только на то, что вы импортируете дальше: то, что уже в медиатеке, остаётся как есть.</value>
   </data>
   <data name="storage-copy-explainer" xml:space="preserve">
-    <value>Копировать в медиатеку Aura: Aura управляет файлами, правит их теги и синхронизирует напрямую; занимает место на диске (одна копия); свои оригиналы вы можете удалить потом.</value>
+    <value>Копировать в медиатеку Aura: Aura управляет файлами, правит их теги и синхронизирует напрямую; это занимает место на диске (одна копия); свои оригиналы потом можно удалить.</value>
   </data>
   <data name="storage-reference-explainer" xml:space="preserve">
-    <value>Ссылаться на месте: не занимает лишнего места и не трогает ваши файлы; Aura держит подготовленную версию рядом (.preparados/), правки живут только в Aura и на iPod, а если исходного диска нет, эти треки нельзя синхронизировать.</value>
+    <value>Ссылаться на них на месте: не занимает лишнего места и не трогает ваши файлы; Aura хранит подготовленную версию отдельно (.preparados/), правки живут только в Aura и на iPod, а если исходный диск недоступен, эти треки синхронизировать не получится.</value>
   </data>
   <data name="storage-section-title" xml:space="preserve">
     <value>Как хранить вашу музыку</value>

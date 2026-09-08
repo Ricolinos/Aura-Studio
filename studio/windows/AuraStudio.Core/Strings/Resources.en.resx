@@ -1654,7 +1654,7 @@
     <value>This one will ask for administrator permission.</value>
   </data>
   <data name="app-strings.service-pause-button" xml:space="preserve">
-    <value>Pause Apple's services</value>
+    <value>Pause the Apple service</value>
   </data>
   <data name="app-strings.service-pause-detail" xml:space="preserve">
     <value>Windows may have Apple's service holding on to the iPod. We can stop it while this lasts and turn it back on when we're done.</value>
@@ -2021,6 +2021,15 @@
   </data>
   <data name="crash-reporter.entendido" xml:space="preserve">
     <value>Got it</value>
+  </data>
+  <data name="crash-reporter.unexpected-error-body" xml:space="preserve">
+    <value>Aura Studio ran into an unexpected error and wrote it down in:
+{0}
+
+{1}</value>
+  </data>
+  <data name="theme-installer.name-yields-invalid-id" xml:space="preserve">
+    <value>That name does not produce a valid theme id: “{0}”.</value>
   </data>
   <data name="device-list-page.buscar-actualizaciones" xml:space="preserve">
     <value>Check for updates</value>

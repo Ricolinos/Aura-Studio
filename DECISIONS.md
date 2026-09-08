@@ -18602,3 +18602,164 @@ A7c, en los dos sitios.
   sin traducir son los **nombres de las colecciones**, que son **datos del
   usuario** y no se traducen por decisión explícita (D-283) -- la propia
   app se lo dice en Ajustes › Idioma. No es un defecto: es lo prometido.
+## ST-248 (addendum, 0.4.1) — Windows: guion del dueño con los seis idiomas, antes de que el trinquete real y `Offered` lleguen
+
+Encargo de la Maestra: adelantar lo que no depende de la entrega
+pendiente del Experto (trinquete real de la barrida de B7d y
+`Offered: true` para de/fr/ja/ru). En `windows/b8`, sobre
+`origin/main = 9ee3557` (fast-forward limpio; capturas y guion del
+lado de la Mac, `claves-compartidas.csv` sin cambios desde `cb5ecc4`).
+Sin build de `AuraStudio.App`.
+
+`docs/ESTADO-PORT.md`, paso 11 del guion del dueño reescrito para
+0.4.1 (reemplaza la versión "0.4.0: solo es+en" de la entrada anterior,
+que queda como historia de esa ronda, no se edita):
+
+- El selector debe mostrar **seis** entradas una vez `Offered: true`
+  esté puesto para los cuatro -- "Igual que el sistema" más los seis
+  idiomas, cuatro con la marca "(beta)" y su línea explicativa;
+  contarlas es el primer chequeo (menos de seis = alguno quedó
+  apagado sin avisar).
+- Por cada uno de los seis, empezando por 日本語 y Русский (estructura
+  de plural distinta al resto -- sin `.one`/con tercera forma -- y los
+  dos idiomas con hallazgos de terminología propios en B7c/B7d, así
+  que son los que más vale confirmar en pantalla real y no solo en el
+  archivo de texto): Ajustes completo, barra de estado con la
+  biblioteca cargada, menús contextuales de Álbumes y Canciones, e
+  Instalador en su primer paso.
+- El diálogo "Cerrar ahora"/"Más tarde" y la ausencia del botón
+  "Cerrar ahora" con una tarea en curso, igual que en la entrada de
+  0.4.0 -- sin cambios en ese comportamiento.
+- Categorías de video del catálogo en español pase lo que pase con el
+  idioma de la UI (dato del catálogo, no cadena de interfaz) -- mismo
+  punto que 0.4.0, repetido a propósito para los cuatro idiomas nuevos.
+- Nota explícita de que los cuatro son traducción automática sin
+  revisar por hablantes nativos, y de que un error encontrado durante
+  este guion se reporta como addendum a `DECISIONS.md` (idioma,
+  pantalla, clave si se conoce), nunca corrigiendo el `.resx` a mano
+  desde la sesión de verificación.
+
+### Lo que sigue pendiente, explícito
+
+Las capturas por idioma (`docs/capturas/idiomas/<idioma>-<pantalla>.png`,
+japonés y ruso primero) y la comprobación automatizada de los seis
+`Offered` arrancan recién cuando el coordinador dé los hashes del
+trinquete real de B7d y de `Offered: true` -- sin esos dos, el selector
+todavía no muestra los cuatro idiomas nuevos y no hay nada que
+capturar. Plan de captura ya acordado con el coordinador (mensaje
+previo a esta entrada): `preferences.json` por idioma con
+`AURA_STUDIO_PREFERENCES` sobre la biblioteca sintética del arnés,
+nunca la del dueño; esqueleto de w7 (`SetProcessDPIAware`, `MoveWindow`,
+gestos con `mouse_event`/`keybd_event`, navegación por UI Automation,
+`CopyFromScreen` a mitad de resolución).
+
+### Verificación
+
+Sin builds. Cambio de solo documentación (`ESTADO-PORT.md`,
+`DECISIONS.md`); 0 archivos de código ni `.resx` tocados.
+
+## ST-247 (B7d, cierre) — La barrida deja de ser una foto, y se encienden los cuatro idiomas
+
+### El agujero que tenía la barrida
+
+Antes de convertir la barrida en trinquete había que tapar lo que no veía, o el
+trinquete habría consagrado el agujero.
+
+Su filtro de rutas descartaba **todo literal con una barra invertida adentro**.
+Un `\n` **es** una barra invertida: la barrida estaba ciega a cualquier texto de
+varios renglones, que son justamente los de los diálogos. Con las secuencias de
+escape quitadas antes de decidir si algo parece una ruta aparecieron siete
+literales más, y **dos eran de pantalla**:
+
+- El **cuerpo** del diálogo de «algo salió mal» del reportador de caídas. Su
+  título y su botón ya estaban en recursos. Dos de tres.
+- `ThemeInstaller:83`, que viaja como `ThemeInstallException.Message` hasta
+  `ThemesViewModel.ErrorMessage`. La línea 153 del **mismo archivo** ya usaba una
+  clave para el mismo concepto.
+
+### El trinquete de verdad
+
+«PANTALLA en cero» era el resultado de **una corrida**. Se llegó a ese cero tres
+veces, y las tres veces la corrida siguiente destapó frases que nadie había
+visto: cuatro sueltas, dos ramas de un aviso de catálogo, el cuerpo del diálogo
+de caídas. **Un cero que hay que volver a ganar cada vez que alguien mira no es
+un cero: es una foto.**
+
+Ahora `barrida-inventario.tsv` lista los 184 literales con su clase —INTERNO
+127, DATO 19, DOC 38— y `PhraseSweepRatchetTests` compara el árbol contra esa
+lista. **No hay clase PANTALLA**: si lo que aparece es texto de usuario, no hay
+dónde declararlo, y el único camino es sacarlo a recurso en los seis idiomas.
+
+Tres decisiones de diseño que costaron y conviene no volver a discutir:
+
+- **La detección se portó a C#; el trinquete no invoca el guion.** La prueba
+  anterior corría `barrida-frases.pl` y hacía `return` cuando no había perl. Un
+  trinquete con esa salida pasa en verde sin mirar nada — el modo de falla exacto
+  que este trabajo viene persiguiendo. El guion se queda y se sigue usando a
+  mano; una **tercera** prueba compara las dos implementaciones, y **esa** sí
+  puede saltarse sin peligro.
+- **Se comparan multiconjuntos, no conjuntos.** Fue exactamente en las
+  repeticiones donde una tanda de sustituciones sin `/g` convirtió la primera
+  aparición y dejó dos. Con conjuntos, eso pasa en verde.
+- **Por archivo y texto, no por renglón.** Guardar la línea haría fallar el
+  trinquete al mover código sin que nada de fondo cambie, y un trinquete que
+  grita por nada se apaga. El renglón de **hoy** va en el mensaje de error, que
+  es cuando hace falta. (Se aparta de la letra de lo pedido —«archivo:línea»— y
+  por eso queda anotado.)
+
+Comprobado en rojo en las cuatro direcciones: literal nuevo sin declarar, entrada
+fantasma, clase inventada, y divergencia entre perl y C#.
+
+### El cotejo con la Mac
+
+25 celdas adoptadas verbatim de la Mac en filas de estado «igual»: ja 4, de 6,
+ru 8, fr 7.
+
+**Son 25 y no 24.** La 25ª la encontró la propia prueba del mecánico al correrla
+sin su `Skip`: `orphans-none-found` en alemán difiere por **una mayúscula** y el
+cotejo la marcó «igual». Se barrieron las 41 filas «igual» buscando pares que
+solo difieran en mayúsculas o espacios: es la única. Queda dicho porque importa
+más el instrumento que la letra — si una comparación no distingue mayúsculas,
+puede haber callado otras cosas en otra tanda.
+
+Las 31 celdas «distinto-manda-Mac» de filas «clave distinta» no se tocaron: su
+texto sale del español de Windows. `background-task-center-indicator.cancelar` en
+ruso queda en «Отмена», y **no hizo falta la excepción de plataforma para eso**:
+esa fila ya es «clave distinta», así que la regla general la protegía. La
+excepción sigue siendo correcta como criterio; simplemente no se ejerció acá.
+
+### Los tres hallazgos de la Mac, espejados
+
+1. **Separadores de colaboraciones**: ya estaba cubierto y con prueba.
+   `ArtistGroupingText` arma la enumeración desde el código y el test recorre
+   `Separators` ∪ `NeverJoined` en los seis idiomas, con una aserción explícita
+   de «vs» — la tercera entrada que a la Mac se le había quedado fuera.
+2. **Servicios**: Windows pausa **uno** y nunca enumera nombres, así que el bug
+   no se reproduce. Pero el botón decía «Pausar los servicios» mientras el
+   renglón de abajo, en la misma pantalla, decía «el servicio». Corregido a
+   singular en es/en/de/fr/ru (el japonés no marca número). La prueba cuenta los
+   `PrivilegedOperationKind` que pausan un servicio y exige uno.
+3. **Contaminación de carátulas**: en Windows las comparaciones son contra
+   «Fotos» y «IA», que **sí** existen (`LiveCategory` mapea `photos`→Fotos,
+   `aiGenerated`→IA). No hay guarda muerta. La prueba lee los literales del
+   fuente de `LibrarySyncFinalizer` y exige que cada uno esté en
+   `LibraryOptions.DefaultPhotoCollections`. Verificada reproduciendo el bug
+   exacto de la Mac: con «Fotografías» se pone roja.
+
+### Se encienden los cuatro idiomas
+
+`Offered` pasa a `true` para de, fr, ja y ru, con las cinco condiciones de la
+Maestra cumplidas. **`ReviewedByHumans` sigue en `false`**: nadie en el proyecto
+lee estos cuatro idiomas, así que salen marcados «(beta)». Encender el selector y
+dar por revisada la traducción son dos decisiones distintas.
+
+Al encenderlos, una prueba vieja se volvió peligrosa y hubo que rehacerla:
+`ElInstaladorExigeLoQueSeGeneraYNoLoQueSeOfrece` comprobaba la derivación
+mirando que las dos listas **difirieran** en la tabla real, y al encender los
+cuatro dejaron de diferir. Comparar dos listas que hoy coinciden no dice de cuál
+se derivó la otra. El comentario que estaba ahí lo anticipaba palabra por
+palabra —«si un día no existiera, estaría comparando dos veces la misma lista sin
+que nadie lo note»— y ese día llegó: ahora la diferencia **se construye** en la
+prueba en vez de buscarse en la tabla.
+
+Nada de esto toca 0.4.0. El conjunto va a 0.4.1.

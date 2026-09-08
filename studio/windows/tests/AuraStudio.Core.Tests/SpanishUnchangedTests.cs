@@ -680,6 +680,14 @@ public class SpanishUnchangedTests
         "library-persistence.catalog-unreadable",
         "library-persistence.catalog-unopenable",
 
+        // Las dos que la barrida no veía por tener una barra invertida adentro
+        // (un salto de línea cuenta como barra invertida y el filtro de rutas
+        // las descartaba). El cuerpo del diálogo de "algo salió mal" —cuyo
+        // título y botón YA estaban en recursos— y el id de tema inválido, que
+        // viaja como ThemeInstallException.Message hasta ErrorMessage.
+        "crash-reporter.unexpected-error-body",
+        "theme-installer.name-yields-invalid-id",
+
         // Y los últimos que la barrida señaló como frases enteras: la franja de
         // actualización de la app, el resumen de "Completar en línea" (con dos
         // «(s)» en dos ramas) y tres fallos que el usuario lee tal cual.
@@ -757,6 +765,16 @@ public class SpanishUnchangedTests
         ("app-strings.settings-language-detail",
             ["app-strings.settings-language-detail"],
             "Aura Studio para Windows está en español de México. No hay selector de idioma: a diferencia de la versión para Mac, esta app se hizo en un solo idioma."),
+
+        // Decía "los servicios" y Aura Studio pausa uno solo — el renglón de
+        // abajo, en la misma pantalla, ya decía "el servicio". Salió del espejo
+        // de un hallazgo de la Mac, donde el desfase iba al revés: la pantalla
+        // nombraba dos servicios y se pausaban tres. Acá no había nada roto,
+        // solo una promesa mal contada; `ServicePromiseTests` la deja amarrada
+        // al enum de operaciones privilegiadas para que no vuelva a desfasarse.
+        ("app-strings.service-pause-button",
+            ["app-strings.service-pause-button"],
+            "Pausar los servicios de Apple"),
     ];
 
     /// <summary>
