@@ -17,31 +17,36 @@
 # (`screencapture -l <windowID>`, no pantalla completa) para no
 # necesitar XCUITest ni estorbar a quien esté usando la Mac.
 #
-# QUÉ FUNCIONA HOY (2026-09-07): solo "es" produce contenido real --
-# CFBundleLocalizations declara únicamente español (ver
-# docs/auditoria-idiomas.md), así que -AppleLanguages con cualquier
-# otro código hoy cae al mismo español fijo. El resto de los idiomas
-# queda PARAMETRIZADO (se puede invocar, corre el mismo mecanismo) para
-# cuando A7b/A7c agreguen contenido real -- no producen capturas
-# distintas todavía, y este script no finge que sí.
+# QUÉ FUNCIONA HOY (2026-09-07, tras A7c/662fbb7): los seis idiomas
+# (es/en/ja/de/ru/fr) producen contenido real -- CFBundleLocalizations
+# ya los declara todos.
 #
 # QUÉ PANTALLAS CAPTURA HOY, y cuáles no:
-#   - albumes, canciones, ajustes, dispositivos: sí, por
-#     accessibilityIdentifier de la barra lateral (estables, ver
-#     UITestEnvironment.ID.sidebarRow -- Sources/AuraStudio/Models/
-#     UITestEnvironment.swift). VERIFICADAS en vivo contra la app real
-#     (2026-09-07) -- ver docs/capturas/idiomas/README.md.
+#   - albumes, canciones: sí, por accessibilityIdentifier de la barra
+#     lateral (estables, ver UITestEnvironment.ID.sidebarRow --
+#     Sources/AuraStudio/Models/UITestEnvironment.swift). VERIFICADAS
+#     en vivo contra la app real para los SEIS idiomas (2026-09-07) --
+#     ver docs/capturas/idiomas/README.md.
+#   - ajustes, dispositivos: NO -- select_sidebar_row's `select`
+#     AppleScript no dispara el cambio de selección de SwiftUI para
+#     estas dos filas (misma estructura de AXRow que albumes/
+#     canciones, comprobado con un volcado del árbol -- la diferencia
+#     no está identificada todavía). La llamada "tiene éxito" sin
+#     error, pero la pantalla se queda en la que estaba antes --
+#     confirmado en vivo dos veces (2026-09-07), ver "Qué falta" en
+#     docs/capturas/idiomas/README.md antes de confiar en esto.
 #   - ajustes-almacenamiento: por `ajustes.pestana.almacenamiento`
 #     (ST-225/A5, ya en Sources/) -- el mecanismo de clic es
 #     GENÉRICO (`press_element_by_identifier`, AXPress directo), NO el
-#     mismo `select` de fila que usan albumes/canciones/ajustes/
-#     dispositivos (un Picker segmentado es un control distinto a una
-#     fila de `AXOutline`) -- sin confirmar en vivo todavía, ver el
-#     comentario de la función.
-#   - acerca-de: sí, pero por POSICIÓN de menú (primer ítem del menú de
-#     la app, "Acerca de <app>" -- convención estándar de macOS, nunca
-#     cambia de posición aunque cambie el idioma), no por identificador
-#     ni por texto.
+#     mismo `select` de fila que usan albumes/canciones -- de todos
+#     modos no alcanzable hoy porque depende de llegar a Ajustes
+#     primero (ver punto anterior).
+#   - acerca-de: por POSICIÓN de menú (primer ítem del menú de la app,
+#     "Acerca de <app>" -- convención estándar de macOS, nunca cambia
+#     de posición aunque cambie el idioma), no por identificador ni por
+#     texto -- tampoco confirmado en vivo todavía (falló en la corrida
+#     de hoy, pero partiendo ya de un estado equivocado por el punto
+#     anterior; no se pudo aislar la causa).
 #   - barra-estado-mensaje-largo: NO -- necesita disparar una operación
 #     real (importar/sincronizar en curso) para que la barra de estado
 #     muestre un mensaje largo, y eso es frágil de reproducir sin mirar
@@ -320,6 +325,44 @@ end tell
 EOF
 }
 
+# ST-227 (addendum, 2026-09-07): `select_sidebar_row "ajustes"` "tiene
+# éxito" (el AppleScript `select` no tira error) SIN cambiar la
+# selección real de SwiftUI -- confirmado en vivo dos veces, ver
+# docs/capturas/idiomas/README.md ("Estado"). Este chequeo es
+# INDEPENDIENTE del `select` (busca un identificador que solo existe
+# cuando la pantalla de verdad cambió, sin volver a hacer clic en
+# nada) -- por eso sirve para detectar el falso positivo, aunque no
+# explique su causa. Reusa el mismo patrón de `containsIdentifier` que
+# ya se sabe que funciona como chequeo de existencia (independiente del
+# `select`, que es lo que falla).
+window_contains_identifier() {
+  local process_name="$1" identifier="$2"
+  osascript <<EOF 2>/dev/null
+on containsIdentifier(elem, targetID)
+  tell application "System Events"
+    try
+      if (value of attribute "AXIdentifier" of elem) as string is targetID then return true
+    end try
+    try
+      set kids to UI elements of elem
+      repeat with k in kids
+        if my containsIdentifier(k, targetID) then return true
+      end repeat
+    end try
+    return false
+  end tell
+end containsIdentifier
+
+tell application "System Events"
+  tell process "$process_name"
+    set ok to my containsIdentifier(window 1, "$identifier")
+    if ok is false then error "no se encontró '$identifier' -- la pantalla no cambió de verdad"
+    return ok
+  end tell
+end tell
+EOF
+}
+
 press_element_by_identifier() {
   # Genérico -- a diferencia de `select_sidebar_row` (filas de un
   # `AXOutline`, que se activan con `select` sobre el `AXRow`, nunca
@@ -439,16 +482,16 @@ capture_language() {
     log "  aviso: no se pudo navegar a Canciones"
   fi
 
-  # Ajustes/Dispositivos/Acerca de: MISMO mecanismo que Álbumes/
-  # Canciones (fila de barra lateral idéntica, o menú posicional para
-  # Acerca de), pero no reconfirmadas visualmente hoy -- una prueba en
-  # vivo se interrumpió porque la Mac dejó de estar libre a mitad de
-  # la corrida (`frontmost` pasó a otro proceso; ver DECISIONS.md) y
-  # se cortó la sesión interactiva por precaución, mismo criterio que
-  # ST-187 con XCUITest. Debería andar igual -- confirmarlo la próxima
-  # vez que la Mac esté libre, antes de confiar ciegamente en esto para
-  # los seis idiomas cuando A7c cierre.
-  if select_sidebar_row "AuraStudio" "biblioteca.barraLateral.ajustes" 2>/dev/null; then
+  # Ajustes: `select_sidebar_row` puede devolver éxito sin haber
+  # cambiado la pantalla de verdad (ST-227 addendum, 2026-09-07 --
+  # falso positivo confirmado en vivo, ver docs/capturas/idiomas/
+  # README.md). `window_contains_identifier` sobre "ajustes.pestanas"
+  # (el Picker de pestañas, siempre presente en la pantalla real de
+  # Ajustes -- ver SettingsSectionView.swift) es la verificación
+  # independiente: si no está, NO se escribe ajustes.png con el
+  # contenido de la pantalla anterior mal etiquetado.
+  if select_sidebar_row "AuraStudio" "biblioteca.barraLateral.ajustes" 2>/dev/null \
+     && window_contains_identifier "AuraStudio" "ajustes.pestanas" 2>/dev/null; then
     sleep 0.8
     capture_window "AuraStudio" "$pid" "$lang_out/ajustes.png"
 
@@ -465,7 +508,7 @@ capture_language() {
       log "  aviso: no se pudo navegar a Ajustes > Almacenamiento"
     fi
   else
-    log "  aviso: no se pudo navegar a Ajustes"
+    log "  aviso: no se pudo navegar a Ajustes (select_sidebar_row tuvo éxito sin cambiar de pantalla -- ver README)"
   fi
 
   if select_sidebar_row "AuraStudio" "biblioteca.barraLateral.general" 2>/dev/null; then
