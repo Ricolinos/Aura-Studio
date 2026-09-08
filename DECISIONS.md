@@ -18962,3 +18962,63 @@ persona.
 - **La prueba ejecuta la detección de verdad.** Que no es retórica: en el
   addendum de ST-224 escribí una prueba que pasaba en verde **con el
   defecto puesto**, y solo me enteré al comprobarla al revés.
+
+## ST-247 (addendum) — «Activado» y «Título» salían igual con la app en inglés
+
+Dos hallazgos de las capturas del mecánico, del 8 de septiembre de 2026.
+Entraron pese a la congelación de `main` porque afectan a 0.4.0 **en inglés
+sobre un Windows en español**, que es una combinación real y no un caso de
+laboratorio.
+
+### Los cinco ToggleSwitch de Ajustes
+
+Sin `OnContent`/`OffContent`, WinUI pone «Activado»/«Desactivado» por su cuenta —
+y los toma del **idioma de Windows**, no del de la app. Con Windows en español y
+Aura Studio en inglés, los cinco interruptores decían «Activado».
+
+`toggle.on` / `toggle.off` en los seis idiomas, con los cinco controles
+pidiéndolos. No hay equivalente en `claves-compartidas.csv`: son «solo Windows».
+Los valores siguen la convención de cada Windows y no una traducción literal
+(«Вкл.» en ruso, «Ein» en alemán, «オン» en japonés) — la misma regla que la
+Maestra fijó para «Отмена».
+
+### «Título», el encabezado fijo de la tabla de Canciones
+
+Son **dos** sitios y ninguno pasaba por `Strings.Get`, así que salía «Título» en
+los seis idiomas: `SongsViewModel.TitleHeader` y `MusicSortField.Title` —el
+criterio que se lee en «Opciones para ordenar»—. Los dos pasan a
+`music-column.title`. Se comprobó que era literal fijo **antes** de decidir que
+entraba: si solo hubiera fallado en ja/ru habría esperado a 0.4.1.
+
+### Las dos lecciones, que valen más que el arreglo
+
+**Lo de los ToggleSwitch no era una traducción que faltaba: era una traducción
+que nadie pedía.** En el árbol no había ninguna cadena que revisar, así que ni el
+trinquete, ni `barrida-frases.pl`, ni el cotejo con la Mac, ni las tres rondas de
+retrotraducción a ciegas podían verlo — **todos ellos miran texto que existe**.
+Un control que hereda su texto de la plataforma es invisible para cualquier
+herramienta que barra el código fuente. Y la combinación que lo destapa —app en
+un idioma, sistema en otro— no la prueba nadie por casualidad.
+
+**Y «Título» expone un límite del instrumento**: es *una* palabra, y la barrida
+solo mira literales de dos o más. No fue un descuido de la lista, fue el diseño
+del detector; el mismo hueco tapa cualquier rótulo de una sola palabra. Queda
+anotado acá porque es la clase de cosa que, sin escribirla, se vuelve a descubrir
+dentro de seis meses.
+
+### `ToggleSwitchContentTests`
+
+Recorre los `.xaml` y exige que todo `ToggleSwitch` traiga `OnContent` **y**
+`OffContent`, más que las dos claves existan en los seis idiomas: pedir una
+etiqueta que no existe deja el interruptor en blanco, que es peor que tenerlo en
+el idioma equivocado. Y falla si deja de encontrar `ToggleSwitch` — un patrón
+roto se ve igual que un árbol limpio. Verificado en rojo quitando un `OnContent`.
+
+### Una nota sobre las dos redes
+
+Dos de los cinco controles cerraban su etiqueta en el mismo renglón del `IsOn`, y
+la primera pasada dejó los atributos **después** del `/>`. Eso lo atrapó el
+compilador de XAML (`WMC0020`), no las pruebas — y es exactamente lo contrario
+del defecto de `InvertBool`, donde el compilador no dijo una palabra y hubo que
+inventar el guardián. Las dos redes atrapan cosas distintas y ninguna sustituye a
+la otra: la del compilador ve la forma, la de las pruebas ve el sentido.
