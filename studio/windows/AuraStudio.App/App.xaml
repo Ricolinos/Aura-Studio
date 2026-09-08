@@ -8,6 +8,14 @@
             <ResourceDictionary.MergedDictionaries>
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <ResourceDictionary Source="ms-appx:///Resources/Styles.xaml" />
+
+                <!-- ST-247: los convertidores compartidos viven acá y no en cada
+                     Page.Resources. Estaban repetidos trece veces y a Ajustes se
+                     le olvidó uno: abrir esa pantalla lanzaba "Cannot find a
+                     resource with the given key: InvertBool." y la página quedaba
+                     a medio cargar. Un x:Key se resuelve al CARGAR la página, así
+                     que eso no lo ve el compilador — lo ve el usuario. -->
+                <ResourceDictionary Source="ms-appx:///Resources/Converters.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
