@@ -67,12 +67,22 @@ final class LocalizationLanguagesTests: XCTestCase {
     /// español -- se muestra como nada, y el usuario ve un botón en
     /// blanco.
     func testNoTranslationIsEmpty() throws {
+        // La única cadena cuyo valor CORRECTO es la cadena vacía: el
+        // separador entre dos oraciones seguidas. En español, inglés,
+        // alemán, francés y ruso es un espacio; en japonés el `。` ya
+        // cierra la oración y meterle un espacio detrás sería un error
+        // de tipografía. Se declara acá, con el motivo, en vez de
+        // aflojar la prueba para todas.
+        let vacioCorrecto: Set<String> = ["sentence.separator-sentence [ja]"]
+
         var empties: [String] = []
         for (key, entry) in try catalogStrings() {
             for language in Self.languages {
                 let localization = localizations(entry)[language]
                 if let simple = simpleValue(localization) {
-                    if simple.isEmpty { empties.append("\(key) [\(language)]") }
+                    if simple.isEmpty, !vacioCorrecto.contains("\(key) [\(language)]") {
+                        empties.append("\(key) [\(language)]")
+                    }
                 } else {
                     for (form, text) in pluralForms(localization) where text.isEmpty {
                         empties.append("\(key) [\(language).\(form)]")

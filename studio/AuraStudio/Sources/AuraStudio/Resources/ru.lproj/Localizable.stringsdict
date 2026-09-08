@@ -142,6 +142,46 @@
 			<string>%lld удалено с iPod</string>
 		</dict>
 	</dict>
+	<key>installer.plural.files-to-delete</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld для удаления</string>
+			<key>many</key>
+			<string>%lld для удаления</string>
+			<key>one</key>
+			<string>%lld для удаления</string>
+			<key>other</key>
+			<string>%lld для удаления</string>
+		</dict>
+	</dict>
+	<key>installer.plural.files-to-write</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld файла для записи</string>
+			<key>many</key>
+			<string>%lld файлов для записи</string>
+			<key>one</key>
+			<string>%lld файл для записи</string>
+			<key>other</key>
+			<string>%lld файла для записи</string>
+		</dict>
+	</dict>
 	<key>library-browsing.plural.fotos</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

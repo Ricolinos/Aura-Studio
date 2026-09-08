@@ -177,16 +177,18 @@ final class InstallerViewModel: ObservableObject {
             guard let freshRunner = try? MKS5LBootRunner(artifacts: downloaded) else {
                 throw InstallerError.releaseDownloadFailed(
                     family: family.displayName,
-                    reason: "mks5lboot descargado no quedó ejecutable")
+                    reason: LS("installer.reason.mks5lboot-not-executable"))
             }
             downloadedArtifacts = downloaded
             runner = freshRunner
-            releaseSourceNote = "Instalando \(family.displayName) \(prepared.tag), descargado de GitHub."
+            releaseSourceNote = LSf("installer.release-note.from-github",
+                                    family.displayName, prepared.tag)
         } catch {
             let bundledTag = BundledArtifacts.forFamily(family).releaseTag
-            let versionText = bundledTag.map { " (\($0))" } ?? ""
             let why = (error as? InstallerError)?.errorDescription ?? error.localizedDescription
-            releaseSourceNote = "\(why) Se instalará la versión incluida en Aura Studio\(versionText)."
+            let aviso = bundledTag.map { LSf("installer.release-note.bundled-fallback", $0) }
+                ?? LS("installer.release-note.bundled-fallback-unknown")
+            releaseSourceNote = Sentence.sentences([why, aviso])
         }
     }
 
@@ -786,7 +788,7 @@ final class InstallerViewModel: ObservableObject {
                   candidate.bsdName == diskIdentifier else {
                 throw InstallerError.deviceNotFound
             }
-            progressMessage = "Formateando el disco (puente FAT y despues Mac OS Plus)..."
+            progressMessage = LS("installer.progress.formatting-bridge")
             formatInFlight = true
             defer { formatInFlight = false }
             try await executor.formatDiskForAppleRestore(candidate: candidate)
@@ -816,7 +818,7 @@ final class InstallerViewModel: ObservableObject {
         // bootloader y ahi conviene el mks5lboot mas reciente.
         await ensureLatestArtifacts()
         do {
-            progressMessage = "Verificando integridad de los archivos..."
+            progressMessage = LS("installer.progress.verifying")
             try artifacts.verifyAll()
 
             guard let runner else {
@@ -825,7 +827,7 @@ final class InstallerViewModel: ObservableObject {
 
             switch mode {
             case .install:
-                progressMessage = "Instalando el bootloader de \(targetName)..."
+                progressMessage = LSf("installer.progress.installing-bootloader", targetName)
                 let result = try runner.installBootloader(single: destroyOriginalFirmware)
                 guard result.exitCode == 0 else {
                     throw InstallerError.processFailed(exitCode: result.exitCode, output: result.stdout + result.stderr)
@@ -841,7 +843,7 @@ final class InstallerViewModel: ObservableObject {
                 // iPod en pantalla negra. Se espera aca a que el
                 // aparato realmente ABANDONE el modo DFU antes de
                 // declarar exito.
-                progressMessage = "Firmware enviado. Esperando a que el iPod confirme y reinicie..."
+                progressMessage = LS("installer.progress.firmware-sent")
                 guard await waitForDeviceToLeaveDFU(timeoutSeconds: 45) else {
                     throw InstallerError.deviceStuckInDFU
                 }
@@ -857,7 +859,7 @@ final class InstallerViewModel: ObservableObject {
                     // faltan los archivos. El iPod se reinicia solo,
                     // no encuentra rockbox.ipod y su bootloader entra a
                     // "Bootloader USB mode" -- se espera ese disco.
-                    progressMessage = "Arranque grabado. Esperando a que el iPod reaparezca como disco..."
+                    progressMessage = LS("installer.progress.bootloader-written")
                     step = .awaitingBootloaderUSB
                     // Si el disco ya monto mientras se salia de DFU, el
                     // evento ya paso -- reaccionar ahora.
@@ -874,12 +876,12 @@ final class InstallerViewModel: ObservableObject {
                 // de lo que ya estaba destruido -- en un iPod instalado
                 // con Solo firmware el de Apple ya no esta, y en uno con
                 // dual boot no hay por que quitarselo ahora.
-                progressMessage = "Actualizando el arranque de \(targetName)..."
+                progressMessage = LSf("installer.progress.updating-bootloader", targetName)
                 let result = try runner.installBootloader(single: false)
                 guard result.exitCode == 0 else {
                     throw InstallerError.processFailed(exitCode: result.exitCode, output: result.stdout + result.stderr)
                 }
-                progressMessage = "Arranque enviado. Esperando a que el iPod confirme y reinicie..."
+                progressMessage = LS("installer.progress.bootloader-sent")
                 guard await waitForDeviceToLeaveDFU(timeoutSeconds: 45) else {
                     throw InstallerError.deviceStuckInDFU
                 }
@@ -891,7 +893,7 @@ final class InstallerViewModel: ObservableObject {
                 step = .done
 
             case .restore:
-                progressMessage = "Quitando el bootloader de \(targetName)..."
+                progressMessage = LSf("installer.progress.removing-bootloader", targetName)
                 let result = try runner.uninstallBootloader()
                 guard result.exitCode == 0 else {
                     throw InstallerError.processFailed(exitCode: result.exitCode, output: result.stdout + result.stderr)
@@ -899,7 +901,7 @@ final class InstallerViewModel: ObservableObject {
                 // Misma verificacion que en install (arriba): el exito
                 // de mks5lboot solo confirma el envio por USB, no que
                 // el aparato aplico el cambio y reinicio.
-                progressMessage = "Firmware enviado. Esperando a que el iPod confirme y reinicie..."
+                progressMessage = LS("installer.progress.firmware-sent")
                 guard await waitForDeviceToLeaveDFU(timeoutSeconds: 45) else {
                     throw InstallerError.deviceStuckInDFU
                 }
@@ -910,7 +912,7 @@ final class InstallerViewModel: ObservableObject {
                 // pero la restauracion COMPLETA la termina Finder
                 // (D-184): falta preparar el disco (doble formateo) y
                 // entregarle el aparato.
-                progressMessage = "Bootloader eliminado. Esperando a que el iPod reaparezca como disco... Si no aparece solo, mantén SELECT + PLAY al encenderlo para entrar a modo disco."
+                progressMessage = LS("installer.progress.bootloader-removed")
                 step = .restoreFormatting
             }
         } catch let error as InstallerError {
@@ -947,7 +949,7 @@ final class InstallerViewModel: ObservableObject {
                   candidate.bsdName == diskIdentifier else {
                 throw InstallerError.deviceNotFound
             }
-            progressMessage = "Formateando el disco..."
+            progressMessage = LS("installer.progress.formatting")
             formatInFlight = true
             defer { formatInFlight = false }
             try await executor.eraseAndFormatDisk(candidate: candidate, volumeName: volumeName)
@@ -957,7 +959,7 @@ final class InstallerViewModel: ObservableObject {
                 // ST-017 (Solo Aura): disco listo -- ahora el flasheo.
                 // La copia va despues, cuando el iPod reaparezca en
                 // "Bootloader USB mode".
-                progressMessage = "Disco listo. Ahora hace falta grabar el arranque por DFU."
+                progressMessage = LS("installer.progress.disk-ready-needs-dfu")
                 proceedToDFU()
                 return
             }
@@ -1028,9 +1030,9 @@ final class InstallerViewModel: ObservableObject {
             // En el camino de recuperacion (sin DFU) este es el unico
             // punto que escribe en el iPod -- la verificacion de
             // integridad no puede quedar solo en runInstallOrRestore().
-            progressMessage = "Verificando integridad de los archivos..."
+            progressMessage = LS("installer.progress.verifying")
             try artifacts.verifyAll()
-            progressMessage = "Copiando el firmware al iPod..."
+            progressMessage = LS("installer.progress.copying-firmware")
 
             let destination = URL(fileURLWithPath: mountPath).appendingPathComponent("rockbox.ipod")
             let fm = FileManager.default
@@ -1056,15 +1058,15 @@ final class InstallerViewModel: ObservableObject {
             if let detected = monitor.device?.declaredFamily,
                monitor.device?.supportsAuraContract == true,
                detected != targetFamily, detected.isInstallable {
-                progressMessage = "Guardando \(detected.displayName) para poder volver a él..."
+                progressMessage = LSf("installer.progress.saving-previous", detected.displayName)
                 try FirmwareSwitcher.parkActiveTree(as: detected, volumeRoot: volumeRoot, fileManager: fm)
             }
 
             guard fm.fileExists(atPath: destination.path) else {
-                throw InstallerError.processFailed(exitCode: -1, output: "no se pudo verificar rockbox.ipod tras copiarlo")
+                throw InstallerError.processFailed(exitCode: -1, output: LS("installer.reason.rockbox-ipod-unverified"))
             }
 
-            progressMessage = "Instalando \(targetName) en el iPod (tipografías, iconos, códecs)... Puede tardar varios minutos por USB -- no desconectes el iPod."
+            progressMessage = LSf("installer.progress.installing-tree", targetName)
 
             // Barra de progreso real (D-191): se cuentan los archivos
             // que `ditto -V` va confirmando por stderr A MEDIDA que
@@ -1094,14 +1096,19 @@ final class InstallerViewModel: ObservableObject {
                 // escribir, la extraccion completa es igual de rapida y
                 // mas simple de razonar.
                 if delta.toExtract.count + delta.toDelete.count <= max(50, entries.count / 4) {
-                    progressMessage = "Actualizando \(targetName): \(delta.toExtract.count) archivo(s) por escribir, \(delta.toDelete.count) por quitar..."
+                    progressMessage = LSf("installer.progress.selective-update",
+                        targetName,
+                        Sentence.commaList([
+                            LSf("installer.plural.files-to-write", delta.toExtract.count),
+                            LSf("installer.plural.files-to-delete", delta.toDelete.count),
+                        ]))
                     do {
                         try await applySelectiveUpdate(delta, zipURL: treeURL, volumeRoot: volumeRoot)
                         deltaApplied = true
                     } catch {
                         // Ni idea de en que quedo el arbol: extraccion
                         // completa encima (merge), que lo repara todo.
-                        progressMessage = "La actualización selectiva no pudo; instalando completo..."
+                        progressMessage = LS("installer.progress.selective-failed")
                         deltaApplied = false
                     }
                 }
@@ -1134,7 +1141,7 @@ final class InstallerViewModel: ObservableObject {
                     lastExtractError = error
                     let stillReachable = FileManager.default.fileExists(atPath: mountPath)
                     if !stillReachable || attempt == 2 { break }
-                    progressMessage = "La copia se interrumpió -- reintentando..."
+                    progressMessage = LS("installer.progress.copy-retry")
                 }
             }
 
@@ -1161,7 +1168,7 @@ final class InstallerViewModel: ObservableObject {
             let sentinel = URL(fileURLWithPath: mountPath)
                 .appendingPathComponent(targetFamily.installedTreeSentinel ?? ".rockbox/rockbox.ipod")
             guard fm.fileExists(atPath: sentinel.path) else {
-                throw InstallerError.processFailed(exitCode: -1, output: "el árbol .rockbox no quedó completo tras extraerlo (falta \(sentinel.lastPathComponent))")
+                throw InstallerError.processFailed(exitCode: -1, output: LSf("installer.reason.incomplete-tree-after-extract", sentinel.lastPathComponent))
             }
 
             // ST-056: la familia recien instalada es la activa; un arbol
@@ -1232,7 +1239,7 @@ final class InstallerViewModel: ObservableObject {
                 flashFirst = false
                 step = .done
             } else {
-                progressMessage = "Archivos copiados. Ahora hace falta flashear el arranque por DFU."
+                progressMessage = LS("installer.progress.files-copied-needs-dfu")
                 proceedToDFU()
             }
         } catch let error as InstallerError {
@@ -1273,7 +1280,7 @@ final class InstallerViewModel: ObservableObject {
             let src = tmp.appendingPathComponent(path)
             let dst = volumeRoot.appendingPathComponent(path)
             guard fm.fileExists(atPath: src.path) else {
-                throw InstallerError.processFailed(exitCode: -1, output: "el zip no trae \(path)")
+                throw InstallerError.processFailed(exitCode: -1, output: LSf("installer.reason.zip-missing-entry", path))
             }
             try fm.createDirectory(at: dst.deletingLastPathComponent(), withIntermediateDirectories: true)
             if fm.fileExists(atPath: dst.path) {
