@@ -1497,6 +1497,87 @@
   <data name="media-info-dialog.mas-informacion" xml:space="preserve">
     <value>Plus d'informations</value>
   </data>
+  <data name="media-info-dialog.field-title" xml:space="preserve">
+    <value>Titre</value>
+  </data>
+  <data name="media-info-dialog.field-artist" xml:space="preserve">
+    <value>Artiste</value>
+  </data>
+  <data name="media-info-dialog.field-album" xml:space="preserve">
+    <value>Album</value>
+  </data>
+  <data name="media-info-dialog.field-album-artist" xml:space="preserve">
+    <value>Artiste de l'album (facultatif)</value>
+  </data>
+  <data name="media-info-dialog.field-track-number" xml:space="preserve">
+    <value>Numéro de piste (facultatif)</value>
+  </data>
+  <data name="media-info-dialog.field-year" xml:space="preserve">
+    <value>Année (facultatif)</value>
+  </data>
+  <data name="media-info-dialog.field-genre" xml:space="preserve">
+    <value>Genre (facultatif)</value>
+  </data>
+  <data name="media-info-dialog.field-composer" xml:space="preserve">
+    <value>Compositeur (facultatif)</value>
+  </data>
+  <data name="media-info-dialog.field-series-name" xml:space="preserve">
+    <value>Nom de la série</value>
+  </data>
+  <data name="media-info-dialog.field-season" xml:space="preserve">
+    <value>Saison</value>
+  </data>
+  <data name="media-info-dialog.field-episode" xml:space="preserve">
+    <value>Épisode</value>
+  </data>
+  <data name="media-info-dialog.section-rating" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="media-info-dialog.section-information" xml:space="preserve">
+    <value>Informations</value>
+  </data>
+  <data name="media-info-dialog.section-lyrics" xml:space="preserve">
+    <value>Paroles (facultatif)</value>
+  </data>
+  <data name="media-info-dialog.section-category" xml:space="preserve">
+    <value>Catégorie</value>
+  </data>
+  <data name="media-info-dialog.section-file" xml:space="preserve">
+    <value>Fichier</value>
+  </data>
+  <data name="media-info-dialog.rating-caption" xml:space="preserve">
+    <value>Se synchronise avec l'iPod : la même note que vous mettez ici ou sur l'appareil.</value>
+  </data>
+  <data name="media-info-dialog.lyrics-caption" xml:space="preserve">
+    <value>Enregistrées à côté du morceau et affichées sur l'iPod pendant la lecture.</value>
+  </data>
+  <data name="media-info-dialog.series-caption" xml:space="preserve">
+    <value>Le nom sous lequel l'épisode arrive sur l'iPod est composé de ces trois champs : modifiez-les et synchronisez à nouveau pour le regrouper.</value>
+  </data>
+  <data name="media-info-dialog.series-hint" xml:space="preserve">
+    <value>Les champs de série apparaissent en choisissant la catégorie {0} ci-dessous puis en rouvrant cette feuille.</value>
+  </data>
+  <data name="media-info-dialog.info-location" xml:space="preserve">
+    <value>Emplacement</value>
+  </data>
+  <data name="media-info-dialog.info-format" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="media-info-dialog.info-size" xml:space="preserve">
+    <value>Taille</value>
+  </data>
+  <data name="media-info-dialog.info-duration" xml:space="preserve">
+    <value>Durée</value>
+  </data>
+  <data name="media-info-dialog.info-status" xml:space="preserve">
+    <value>État</value>
+  </data>
+  <data name="media-info-dialog.star-of-five" xml:space="preserve">
+    <value>{0} sur 5</value>
+  </data>
+  <data name="media-info-edit.incomplete-reason" xml:space="preserve">
+    <value>Le titre, l'artiste et l'album sont obligatoires pour synchroniser.</value>
+  </data>
   <data name="playlists-page.crea-nueva-o-importa-archivo-m3u" xml:space="preserve">
     <value>Créez-en une nouvelle, ou importez un fichier .m3u/.m3u8 d'un autre programme. Les morceaux absents de votre bibliothèque sont comptés à part, pas perdus en silence.</value>
   </data>

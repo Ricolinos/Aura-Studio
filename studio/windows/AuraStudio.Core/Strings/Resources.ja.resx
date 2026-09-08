@@ -1332,6 +1332,87 @@
   <data name="media-info-dialog.mas-informacion" xml:space="preserve">
     <value>詳細</value>
   </data>
+  <data name="media-info-dialog.field-title" xml:space="preserve">
+    <value>タイトル</value>
+  </data>
+  <data name="media-info-dialog.field-artist" xml:space="preserve">
+    <value>アーティスト</value>
+  </data>
+  <data name="media-info-dialog.field-album" xml:space="preserve">
+    <value>アルバム</value>
+  </data>
+  <data name="media-info-dialog.field-album-artist" xml:space="preserve">
+    <value>アルバムアーティスト（省略可）</value>
+  </data>
+  <data name="media-info-dialog.field-track-number" xml:space="preserve">
+    <value>トラック番号（省略可）</value>
+  </data>
+  <data name="media-info-dialog.field-year" xml:space="preserve">
+    <value>年（省略可）</value>
+  </data>
+  <data name="media-info-dialog.field-genre" xml:space="preserve">
+    <value>ジャンル（省略可）</value>
+  </data>
+  <data name="media-info-dialog.field-composer" xml:space="preserve">
+    <value>作曲者（省略可）</value>
+  </data>
+  <data name="media-info-dialog.field-series-name" xml:space="preserve">
+    <value>シリーズ名</value>
+  </data>
+  <data name="media-info-dialog.field-season" xml:space="preserve">
+    <value>シーズン</value>
+  </data>
+  <data name="media-info-dialog.field-episode" xml:space="preserve">
+    <value>エピソード</value>
+  </data>
+  <data name="media-info-dialog.section-rating" xml:space="preserve">
+    <value>評価</value>
+  </data>
+  <data name="media-info-dialog.section-information" xml:space="preserve">
+    <value>情報</value>
+  </data>
+  <data name="media-info-dialog.section-lyrics" xml:space="preserve">
+    <value>歌詞（省略可）</value>
+  </data>
+  <data name="media-info-dialog.section-category" xml:space="preserve">
+    <value>カテゴリ</value>
+  </data>
+  <data name="media-info-dialog.section-file" xml:space="preserve">
+    <value>ファイル</value>
+  </data>
+  <data name="media-info-dialog.rating-caption" xml:space="preserve">
+    <value>iPod と同期します。ここで付けた評価も、本体で付けた評価も同じものです。</value>
+  </data>
+  <data name="media-info-dialog.lyrics-caption" xml:space="preserve">
+    <value>曲と同じ場所に保存され、再生中に iPod に表示されます。</value>
+  </data>
+  <data name="media-info-dialog.series-caption" xml:space="preserve">
+    <value>エピソードが iPod に届くときの名前は、この3つの項目から作られます。変更してもう一度同期すると、グループが作り直されます。</value>
+  </data>
+  <data name="media-info-dialog.series-hint" xml:space="preserve">
+    <value>シリーズの項目は、下でカテゴリ「{0}」を選んでこのシートを開き直すと表示されます。</value>
+  </data>
+  <data name="media-info-dialog.info-location" xml:space="preserve">
+    <value>場所</value>
+  </data>
+  <data name="media-info-dialog.info-format" xml:space="preserve">
+    <value>フォーマット</value>
+  </data>
+  <data name="media-info-dialog.info-size" xml:space="preserve">
+    <value>サイズ</value>
+  </data>
+  <data name="media-info-dialog.info-duration" xml:space="preserve">
+    <value>長さ</value>
+  </data>
+  <data name="media-info-dialog.info-status" xml:space="preserve">
+    <value>状態</value>
+  </data>
+  <data name="media-info-dialog.star-of-five" xml:space="preserve">
+    <value>5 段階中 {0}</value>
+  </data>
+  <data name="media-info-edit.incomplete-reason" xml:space="preserve">
+    <value>同期するには、タイトル・アーティスト・アルバムが必要です。</value>
+  </data>
   <data name="music-settings-view.calidad-audio" xml:space="preserve">
     <value>音質</value>
   </data>

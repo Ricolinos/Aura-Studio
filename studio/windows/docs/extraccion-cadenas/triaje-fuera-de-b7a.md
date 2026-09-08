@@ -13,6 +13,17 @@ La lista línea por línea está en `triaje-fuera-de-b7a.tsv`, con la línea de
 código de cada una — el texto solo no alcanza para decidir, porque «No se pudo
 leer el disco» puede ser un diálogo o una entrada de bitácora.
 
+## Avance de B7d
+
+El `.tsv` es la foto del triaje al cerrar B7c y **no se regenera**: es contra lo
+que se comprueba que la clasificación fue la que fue. Lo que va bajando es el
+trinquete de `HardcodedSpanishTests`, y acá queda dicho por qué.
+
+| paso | trinquete | qué se hizo |
+|---|---:|---|
+| cierre de B7c | 386 | — |
+| trampa 1, `MediaInfoDialog` | 372 | los 27 textos de la hoja "Más información" a recursos en los seis idiomas, después de cambiar la llave del diccionario |
+
 ## Conteo
 
 | clase | cuántas | qué se hace |

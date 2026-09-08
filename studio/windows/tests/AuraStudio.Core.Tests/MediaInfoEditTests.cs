@@ -1,4 +1,6 @@
+using System.Globalization;
 using AuraStudio.Core.Library;
+using AuraStudio.Core.Resources;
 using Xunit;
 
 namespace AuraStudio.Core.Tests;
@@ -97,7 +99,22 @@ public class MediaInfoEditTests
     public void TheReasonIsSaidOutLoudNotJustImplied()
     {
         // Un botón gris sin explicación es un error de diseño, no una decisión.
-        Assert.Contains("obligatorios", MediaInfoEdit.IncompleteReason);
+        //
+        // La cultura se fija porque desde B7d el texto sale del recurso: sin
+        // fijarla, esta prueba pasaría en una máquina en español y fallaría en
+        // una en inglés, por el idioma y no por el bug. Que el aviso nombre los
+        // tres campos igual que sus etiquetas, en los seis idiomas, lo
+        // comprueba MediaInfoFieldsTests.
+        CultureInfo before = CultureInfo.CurrentUICulture;
+        try
+        {
+            CultureInfo.CurrentUICulture = new CultureInfo(AppLanguages.NeutralCulture);
+            Assert.Contains("obligatorios", MediaInfoEdit.IncompleteReason);
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = before;
+        }
     }
 
     // MARK: - Qué se guarda
