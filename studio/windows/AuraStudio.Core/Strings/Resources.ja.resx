@@ -235,7 +235,7 @@
     <value>離してください。Aura Studio が DFU モードを自動で検出します。</value>
   </data>
   <data name="app-strings.installer-dfu-timing-warning" xml:space="preserve">
-    <value>約12秒より早く離すと、iPod は通常どおり再起動し、DFU モードには入りません。画面が暗くなるのは離す合図ではありません。その後も押し続けてください。</value>
+    <value>約12秒より早く離すと、iPod は通常どおり再起動し、「DFU モードには入りません」。画面が暗くなるのは離す合図ではありません。その後も押し続けてください。</value>
   </data>
   <data name="app-strings.installer-dfu-unreadable" xml:space="preserve">
     <value>iPod の状態を読み取れませんでした。Apple のドライバーが不足していないか、下で確認してください。</value>
