@@ -18962,3 +18962,274 @@ persona.
 - **La prueba ejecuta la detección de verdad.** Que no es retórica: en el
   addendum de ST-224 escribí una prueba que pasaba en verde **con el
   defecto puesto**, y solo me enteré al comprobarla al revés.
+
+## ST-247 (addendum) — «Activado» y «Título» salían igual con la app en inglés
+
+Dos hallazgos de las capturas del mecánico, del 8 de septiembre de 2026.
+Entraron pese a la congelación de `main` porque afectan a 0.4.0 **en inglés
+sobre un Windows en español**, que es una combinación real y no un caso de
+laboratorio.
+
+### Los cinco ToggleSwitch de Ajustes
+
+Sin `OnContent`/`OffContent`, WinUI pone «Activado»/«Desactivado» por su cuenta —
+y los toma del **idioma de Windows**, no del de la app. Con Windows en español y
+Aura Studio en inglés, los cinco interruptores decían «Activado».
+
+`toggle.on` / `toggle.off` en los seis idiomas, con los cinco controles
+pidiéndolos. No hay equivalente en `claves-compartidas.csv`: son «solo Windows».
+Los valores siguen la convención de cada Windows y no una traducción literal
+(«Вкл.» en ruso, «Ein» en alemán, «オン» en japonés) — la misma regla que la
+Maestra fijó para «Отмена».
+
+### «Título», el encabezado fijo de la tabla de Canciones
+
+Son **dos** sitios y ninguno pasaba por `Strings.Get`, así que salía «Título» en
+los seis idiomas: `SongsViewModel.TitleHeader` y `MusicSortField.Title` —el
+criterio que se lee en «Opciones para ordenar»—. Los dos pasan a
+`music-column.title`. Se comprobó que era literal fijo **antes** de decidir que
+entraba: si solo hubiera fallado en ja/ru habría esperado a 0.4.1.
+
+### Las dos lecciones, que valen más que el arreglo
+
+**Lo de los ToggleSwitch no era una traducción que faltaba: era una traducción
+que nadie pedía.** En el árbol no había ninguna cadena que revisar, así que ni el
+trinquete, ni `barrida-frases.pl`, ni el cotejo con la Mac, ni las tres rondas de
+retrotraducción a ciegas podían verlo — **todos ellos miran texto que existe**.
+Un control que hereda su texto de la plataforma es invisible para cualquier
+herramienta que barra el código fuente. Y la combinación que lo destapa —app en
+un idioma, sistema en otro— no la prueba nadie por casualidad.
+
+**Y «Título» expone un límite del instrumento**: es *una* palabra, y la barrida
+solo mira literales de dos o más. No fue un descuido de la lista, fue el diseño
+del detector; el mismo hueco tapa cualquier rótulo de una sola palabra. Queda
+anotado acá porque es la clase de cosa que, sin escribirla, se vuelve a descubrir
+dentro de seis meses.
+
+### `ToggleSwitchContentTests`
+
+Recorre los `.xaml` y exige que todo `ToggleSwitch` traiga `OnContent` **y**
+`OffContent`, más que las dos claves existan en los seis idiomas: pedir una
+etiqueta que no existe deja el interruptor en blanco, que es peor que tenerlo en
+el idioma equivocado. Y falla si deja de encontrar `ToggleSwitch` — un patrón
+roto se ve igual que un árbol limpio. Verificado en rojo quitando un `OnContent`.
+
+### Una nota sobre las dos redes
+
+Dos de los cinco controles cerraban su etiqueta en el mismo renglón del `IsOn`, y
+la primera pasada dejó los atributos **después** del `/>`. Eso lo atrapó el
+compilador de XAML (`WMC0020`), no las pruebas — y es exactamente lo contrario
+del defecto de `InvertBool`, donde el compilador no dijo una palabra y hubo que
+inventar el guardián. Las dos redes atrapan cosas distintas y ninguna sustituye a
+la otra: la del compilador ve la forma, la de las pruebas ve el sentido.
+
+## ST-248 — Windows: capturas por idioma (0.4.1), el bloqueador de Ajustes encontrado y confirmado arreglado en los seis, y el Skip del cotejo con la Mac
+
+Encargo de la Maestra, en `windows/b8`, rebasada varias veces durante la
+corrida hasta `origin/main = 51c283a` (fast-forward limpio en cada
+paso; ver la lista de hashes intermedios en la conversación con el
+coordinador -- edaf9bf → 58fa5b5 → 51c283a). Con build de la App
+(`dotnet build AuraStudio.App -c Release -p:Platform=ARM64`, avisado al
+coordinador antes y después para no compilar a la vez que el Experto).
+
+### El hallazgo que interrumpió las capturas: `InvertBool`
+
+Al abrir Ajustes en japonés para la primera captura, la app tiró un
+diálogo de error real -- "Cannot find a resource with the given key:
+InvertBool." -- en vez de mostrar la página. Antes de asumir que era un
+problema de idioma, se probó sistemáticamente:
+
+| Idioma | Resultado sobre `edaf9bf` |
+|---|---|
+| ja | rompe |
+| ru | rompe |
+| de | rompe |
+| fr | rompe |
+| en | rompe |
+| es (sin ninguna preferencia de idioma tocada) | rompe |
+
+Rompía en los SEIS, incluido español -- no era un defecto de B7c/B7d ni
+de las traducciones nuevas, era una regresión general de Ajustes.
+Reportado de inmediato al coordinador en vez de seguir capturando algo
+roto. Confirmado además contra el **0.4.0 instalado del dueño**
+(`C:\Users\ricolinos\AppData\Local\Programs\Aura Studio`, ProductVersion
+`0.4.0+f6dd461c1279753ae88d2e610cbe344b81ea48e2`) con las mismas
+preferencias sintéticas (nunca las reales del dueño, nunca su
+biblioteca): rompe igual en español e inglés, los dos idiomas que ese
+build ofrece -- así que el defecto viene de antes de 0.4.0, no de esta
+ronda.
+
+El Experto lo rastreó a `SettingsPage.xaml` usando
+`{StaticResource InvertBool}` sin definirlo desde ST-211 (ver la
+entrada de arriba, "Ajustes reventaba por un recurso que nadie
+definió") y lo arregló en `58fa5b5`. Verificado por esta sesión, con
+worktree desacoplado y bloqueado en `X:\codigo\github\Aura-Studio-fix`
+(`git worktree add --detach` + `lock`, build ahí, retirado con
+`unlock`+`remove` al terminar): **Ajustes abre limpio en los seis
+idiomas sobre `58fa5b5`** -- es, en, de, fr, ru, ja, sin excepción, con
+el contenido completo (Apariencia/Tema, Idioma con el selector y su
+explicación, pestañas General/Biblioteca/Música/Fotos/Video/Servicios).
+Capturas en `docs/capturas/idiomas/<idioma>-ajustes.png`.
+
+### Las capturas que sí se completaron
+
+Método y biblioteca sintética documentados en `ESTADO-PORT.md` (nueva
+sección arriba de todo, con el índice completo archivo por archivo).
+`tools/CapturasIdiomas` es una herramienta nueva, mínima, que genera esa
+biblioteca UNA VEZ y la deja persistente (a diferencia de
+`LibraryPerfCheck`/`StorageFixtureCheck`, que la borran al terminar) --
+seis álbumes con carátula JPEG real (mismo mecanismo que
+`CoverFixtureGenerator` de `LibraryPerfCheck`, copiado y reducido para
+no cruzar una referencia entre dos proyectos de herramientas) y un
+archivo mínimo de verdad en cada `SourcePath` (sin esto, `Álbumes`
+mostraba "0 álbumes" con el catálogo lleno: la vista filtra a
+`AvailableItems`, que exige que el archivo exista).
+
+**Tres trampas de la propia captura, para quien la repita:**
+
+1. **`GetWindowRect` incluye el margen invisible de la sombra** que
+   Windows agrega a una ventana moderna. Con eso, un filo de un par de
+   píxeles en el borde de cada captura mostraba lo que hubiera detrás
+   -- en una corrida de prueba, la propia terminal del coordinador,
+   con contenido real de la conversación (capturas borradas de
+   inmediato, nunca comprometidas). Se corrigió leyendo
+   `DwmGetWindowAttribute(DWMWA_EXTENDED_FRAME_BOUNDS)` en vez de
+   `GetWindowRect` para el rectángulo de la captura (`GetWindowRect`
+   crudo se sigue usando solo para confirmar que `MoveWindow` surtió
+   efecto, comparando tamaño).
+2. **`SetForegroundWindow` sola no alcanza** cuando otra ventana está
+   activa de verdad (la terminal del coordinador, mientras escribía) --
+   trampa ya conocida (ronda de ajustes 1, ESTADO-PORT) por la
+   heurística antirrobo de foco de Windows. Se resolvió con
+   `AttachThreadInput` al hilo de la ventana en primer plano antes de
+   pedir el cambio.
+3. **Redimensionar una tabla ya renderizada** (Canciones, con
+   `MoveWindow` en caliente) dejaba texto superpuesto/fantasma en el
+   encabezado. Redimensionar ANTES de navegar a esa pantalla (mientras
+   la app todavía muestra General) lo evita.
+
+Cada captura final se verificó dos veces: por estabilidad de píxeles
+(dos capturas separadas 350 ms, solo se acepta si son idénticas) y a
+ojo, leída con la herramienta de lectura de imágenes antes de
+comprometer, confirmando que se ve solo Aura Studio.
+
+### Hallazgos de traducción (anotados en ESTADO-PORT, no corregidos)
+
+Detalle completo con capturas en `ESTADO-PORT.md`. Resumen: la columna
+"Título" de la tabla de Canciones queda sin traducir (probablemente un
+encabezado que no pasó por la extracción de B7a/B7d, a diferencia de
+los literales de texto corrido); el texto de estado "Activado" de los
+interruptores (`ToggleSwitch`) queda igual, en las dos tarjetas donde
+aparece en Ajustes; y Canciones en ruso no siempre pintó filas en esta
+sesión de captura (no concluyente -- puede ser la automatización, no la
+app; queda para verlo en pantalla real).
+
+### El Skip del cotejo con la Mac, retirado
+
+`TodaClaveIgualTieneElMismoTextoEnLosCuatroIdiomasDeLaMac`
+(`LocalizationDraftTests.cs`, agregada en la entrada anterior de
+ST-247): el Experto aplicó los 24 textos de la Mac que diferían a
+`Resources.*.resx`. Antes de quitar el `Skip`, se volvió a comparar
+las 48 combinaciones (12 filas "igual" × 4 idiomas) con comparación
+**sensible a mayúsculas y espacios** -- la corrida anterior (el
+cotejo informativo de la entrada de `cb5ecc4`) se había hecho con un
+script de PowerShell aparte que usaba `-eq`, que en PowerShell compara
+cadenas SIN distinguir mayúsculas por omisión, y dejó pasar como
+"igual" una fila de alemán (`orphans-none-found`) que en realidad
+difería solo en la mayúscula inicial tras dos puntos ("Es"/"es"). El
+`!=` de C# en esta prueba SÍ es sensible desde el principio -- nunca
+tuvo ese defecto, era el cotejo informativo el que lo tenía --, así
+que no hizo falta cambiar la lógica de comparación, solo repetir la
+verificación con la herramienta correcta antes de confiar en el
+resultado (misma disciplina que "antes de confiar en una comprobación
+en verde, comprobar que puede ponerse en rojo" de B7d).
+
+Resultado: **0 de 48 difieren**. `background-task-center-indicator.cancelar`
+pasó a `estado: "convención de plataforma"` en `claves-compartidas.csv`
+(decisión de la Maestra: las etiquetas que fija el sistema operativo
+por idioma -- Cancelar y semejantes -- siguen la convención de su
+plataforma aunque la fila fuera "igual") y queda fuera del alcance de
+esta prueba sin necesitar código nuevo: el filtro ya exige
+`estado == "igual"` a secas, y esa fila ya no lo es.
+
+### Verificación
+
+`dotnet test tests/AuraStudio.Core.Tests` (Debug, sin filtro):
+**2 068 en verde, 0 omitidas, 0 con error** -- incluida
+`TodaClaveIgualTieneElMismoTextoEnLosCuatroIdiomasDeLaMac` ya sin
+`Skip`. `dotnet build AuraStudio.App -c Release -p:Platform=ARM64`: 0
+advertencias, 0 errores, tanto en `windows/b8` como en el worktree
+desacoplado de `58fa5b5` (ya retirado). 16 capturas en
+`docs/capturas/idiomas/`, cada una releída con la herramienta de
+lectura de imágenes antes de comprometer. Seis capturas de diagnóstico
+del error `InvertBool` (es/en/de/fr/ru/ja, contra `edaf9bf` y contra el
+0.4.0 instalado) quedaron en la carpeta temporal de la sesión, sin
+comprometer -- eran para diagnóstico, no parte del entregable.
+
+## ST-247 (addendum 0.4.1) — La explicación del selector, «Треки», y una guarda que se apagaba sola
+
+### La explicación del selector envejeció, por segunda vez
+
+Decía que «el español y el inglés los revisó una persona; **los demás llegan
+después**». Era cierto mientras se ofrecían dos idiomas y dejó de serlo el día
+que se encendieron los cuatro: ya estaban ahí, y la app seguía diciendo que
+estaban por venir. En japonés era todavía más literal
+—「ほかの言語は後から届きます」, «los demás idiomas llegarán más tarde»— y así
+salió en las capturas.
+
+Ahora dice que los demás son traducción automática y salen marcados, y **cada
+idioma cita su propia marca** tal como la escribe
+`app-strings.language-beta-mark`. Una prueba lo comprueba, así que las dos
+cadenas quedan atadas: renombrar la marca en un idioma pone en rojo la
+explicación de ese idioma, en vez de dejar dos textos sueltos que hoy coinciden.
+
+**No enumera los cuatro idiomas a propósito.** Nombrarlos habría creado una lista
+escrita a mano al lado de la lista de verdad — exactamente cómo se separaron los
+separadores de colaboraciones. Dice «los demás»: mientras los revisados sean
+español e inglés, y eso ya lo fija `AppLanguagesTests`, la frase no puede quedar
+vieja por mucho que cambie el resto de la tabla.
+
+Es la **segunda** vez que esta clave envejece; en B7b decía que Windows no tenía
+selector de idioma. Una frase que describe a la app envejece cuando la app
+cambia, y no hay compilador que avise.
+
+### En ruso una canción es un «трек»
+
+La barra lateral decía «Композиции» mientras el glosario fija «трек»
+(`glosario-plataforma.csv`, el término dominante en los reproductores).
+Cambiadas las dos que había.
+
+Lo que **no** se toca, comprobado uno por uno: «Композитор» (×2) es *compositor*,
+otra palabra; y «текст песни» (×6) es la colocación fija de *letra* en ruso, no
+otra forma de decir canción. Una prueba que solo prohibiera la raíz habría
+barrido las dos cosas y nadie habría entendido por qué.
+
+**Un falso negativo que vale anotar:** la primera búsqueda fue
+`grep -i "композиц"` y dijo que no había ninguna; la misma búsqueda sin `-i`
+encontró las dos. Sin repetirla se habría cerrado este punto diciendo que no
+había nada que cambiar. Un cero de una herramienta es un resultado, no un hecho.
+
+### Una redacción declarada dejaba la clave sin vigilancia para siempre
+
+Se encontró por sospecha, no por una prueba roja: al cambiar el texto español de
+la explicación, **la suite dio verde**. No tenía que darlo.
+
+`SpanishUnchangedTests` compara cada texto contra el borrador de B7a, y las
+redacciones deliberadas se declaran en `Redacted` con lo que decía antes. Pero el
+bucle principal hacía `continue` sobre cualquier clave declarada ahí, así que
+**declarar una redacción una vez sacaba esa clave de la vigilancia para
+siempre**: desde entonces podía cambiar cuantas veces quisiera, en silencio. Es
+justo lo contrario de para qué existe la lista, cuyo propio comentario promete
+que un cambio de texto cuesta «un renglón de trabajo y una decisión visible en el
+diff».
+
+Tres claves estaban así desde B7b y B7d. `Redacted` lleva ahora también el texto
+de **ahora**, en paralelo a sus claves, y la prueba lo compara: un segundo cambio
+vuelve a costar un renglón y vuelve a verse en el diff.
+
+Es el mismo patrón que ya apareció con la prueba que se saltaba sin `perl`, con
+el cotejo que no distinguía mayúsculas y con la prueba de satélites que comparaba
+dos listas que habían dejado de diferir: **una guarda que deja de guardar se ve
+idéntica a una que guarda y pasa.** La diferencia es que ésta no se descubrió
+poniéndola en rojo a propósito, sino notando que un cambio que debía costar algo
+no costó nada.

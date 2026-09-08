@@ -1672,7 +1672,7 @@
     <value>Apariencia</value>
   </data>
   <data name="app-strings.settings-language-detail" xml:space="preserve">
-    <value>Aura Studio habla el idioma que elijas aquí. El español y el inglés los revisó una persona; los demás llegan después.</value>
+    <value>Aura Studio habla el idioma que elijas aquí. El español y el inglés los revisó una persona; los demás son traducción automática y salen marcados «(beta)».</value>
   </data>
   <data name="app-strings.settings-subtitle" xml:space="preserve">
     <value>Preferencias de Aura Studio</value>
@@ -3095,6 +3095,15 @@
   </data>
   <data name="music-column-group.other-columns" xml:space="preserve">
     <value>Otros</value>
+  </data>
+  <data name="music-column.title" xml:space="preserve">
+    <value>Título</value>
+  </data>
+  <data name="toggle.off" xml:space="preserve">
+    <value>Desactivado</value>
+  </data>
+  <data name="toggle.on" xml:space="preserve">
+    <value>Activado</value>
   </data>
   <data name="music-column.album" xml:space="preserve">
     <value>Álbum</value>

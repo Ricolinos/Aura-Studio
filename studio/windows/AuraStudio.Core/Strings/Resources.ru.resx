@@ -1552,7 +1552,7 @@
     <value>Параметры</value>
   </data>
   <data name="app-strings.nav-songs" xml:space="preserve">
-    <value>Композиции</value>
+    <value>Треки</value>
   </data>
   <data name="app-strings.nav-themes" xml:space="preserve">
     <value>Темы</value>
@@ -1630,7 +1630,7 @@
     <value>Оформление</value>
   </data>
   <data name="app-strings.settings-language-detail" xml:space="preserve">
-    <value>Aura Studio говорит на том языке, который вы выберете здесь. Испанский и английский проверил человек; остальные придут позже.</value>
+    <value>Aura Studio говорит на том языке, который вы выберете здесь. Испанский и английский проверил человек; остальные — машинный перевод, они отмечены «(бета)».</value>
   </data>
   <data name="app-strings.settings-subtitle" xml:space="preserve">
     <value>Настройки Aura Studio</value>
@@ -2713,7 +2713,7 @@
     <value>Неиспользуемые файлы</value>
   </data>
   <data name="playlists-page.crea-nueva-o-importa-archivo-m3u" xml:space="preserve">
-    <value>Создайте новый или импортируйте файл .m3u/.m3u8 из другой программы. Композиции, которых нет в вашей медиатеке, считаются отдельно, а не теряются молча.</value>
+    <value>Создайте новый или импортируйте файл .m3u/.m3u8 из другой программы. Треки, которых нет в вашей медиатеке, считаются отдельно, а не теряются молча.</value>
   </data>
   <data name="playlists-page.eliminar" xml:space="preserve">
     <value>Удалить</value>
@@ -3317,6 +3317,15 @@
   </data>
   <data name="music-column-group.other-columns" xml:space="preserve">
     <value>Прочее</value>
+  </data>
+  <data name="music-column.title" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="toggle.off" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="toggle.on" xml:space="preserve">
+    <value>Вкл.</value>
   </data>
   <data name="music-column.album" xml:space="preserve">
     <value>Альбом</value>

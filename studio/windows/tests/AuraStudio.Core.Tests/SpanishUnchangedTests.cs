@@ -688,6 +688,23 @@ public class SpanishUnchangedTests
         "crash-reporter.unexpected-error-body",
         "theme-installer.name-yields-invalid-id",
 
+        // Las tres del hallazgo de las capturas del mecánico. Ninguna la vieron
+        // el trinquete ni la barrida, y por motivos distintos que conviene
+        // dejar anotados:
+        //
+        //   music-column.title — "Título" es UNA palabra, y la barrida solo
+        //     mira literales de dos o más. El encabezado fijo de la tabla de
+        //     Canciones estaba escrito a mano y salía igual con la app en
+        //     inglés.
+        //
+        //   toggle.on / toggle.off — no había ninguna cadena que encontrar. Un
+        //     ToggleSwitch sin OnContent/OffContent dice "Activado" por su
+        //     cuenta, y lo toma del idioma de WINDOWS: con Windows en español y
+        //     la app en inglés se leía "Activado". Lo que faltaba no era una
+        //     traducción, era pedirla.
+        "music-column.title",
+        "toggle.on", "toggle.off",
+
         // Y los últimos que la barrida señaló como frases enteras: la franja de
         // actualización de la app, el resumen de "Completar en línea" (con dos
         // «(s)» en dos ramas) y tres fallos que el usuario lee tal cual.
@@ -749,14 +766,15 @@ public class SpanishUnchangedTests
     /// de trabajo y una decisión visible en el diff, que es exactamente lo que
     /// se quiere que cueste.</para>
     /// </summary>
-    private static readonly (string DraftKey, string[] ResourceKeys, string Before)[] Redacted =
+    private static readonly (string DraftKey, string[] ResourceKeys, string Before, string[] Now)[] Redacted =
     [
         // Decía "1 archivos escritos en el iPod" con un solo archivo: el plural
         // del español escrito a mano dentro de la frase. B7a lo dejó así a
         // propósito y B7b lo arregla, que es cuando toca. Ahora son dos formas.
         ("app-strings.installer-copied-files",
             ["app-strings.installer-copied-files.one", "app-strings.installer-copied-files.other"],
-            "{0} archivos escritos en el iPod."),
+            "{0} archivos escritos en el iPod.",
+            ["{0} archivo escrito en el iPod.", "{0} archivos escritos en el iPod."]),
 
         // Decía que NO hay selector de idioma y que la app se hizo en uno solo.
         // B7b lo vuelve falso: el selector existe. Un texto que describe la app
@@ -764,7 +782,12 @@ public class SpanishUnchangedTests
         // frase que se queda vieja en silencio si nadie la vigila.
         ("app-strings.settings-language-detail",
             ["app-strings.settings-language-detail"],
-            "Aura Studio para Windows está en español de México. No hay selector de idioma: a diferencia de la versión para Mac, esta app se hizo en un solo idioma."),
+            "Aura Studio para Windows está en español de México. No hay selector de idioma: a diferencia de la versión para Mac, esta app se hizo en un solo idioma.",
+            // Segunda redacción (0.4.1): decía que los demás idiomas «llegan
+            // después» y ya llegaron. Que haga falta tocar este renglón otra vez
+            // es el punto — sin `Now`, este cambio pasó en verde sin que nada lo
+            // mirara.
+            ["Aura Studio habla el idioma que elijas aquí. El español y el inglés los revisó una persona; los demás son traducción automática y salen marcados «(beta)»."]),
 
         // Decía "los servicios" y Aura Studio pausa uno solo — el renglón de
         // abajo, en la misma pantalla, ya decía "el servicio". Salió del espejo
@@ -774,7 +797,8 @@ public class SpanishUnchangedTests
         // al enum de operaciones privilegiadas para que no vuelva a desfasarse.
         ("app-strings.service-pause-button",
             ["app-strings.service-pause-button"],
-            "Pausar los servicios de Apple"),
+            "Pausar los servicios de Apple",
+            ["Pausar el servicio de Apple"]),
     ];
 
     /// <summary>
@@ -937,16 +961,33 @@ public class SpanishUnchangedTests
 
         List<string> problems = [];
 
-        foreach ((string draftKey, string[] resourceKeys, string before) in Redacted)
+        foreach ((string draftKey, string[] resourceKeys, string before, string[] now) in Redacted)
         {
             if (!draft.TryGetValue(draftKey, out string? original))
                 problems.Add($"{draftKey}: no está en el borrador, así que no hay nada que redactar");
             else if (original != before)
                 problems.Add($"{draftKey}: el «antes» declarado no es el del borrador\n  borrador: {original}\n  declarado: {before}");
 
-            foreach (string key in resourceKeys)
-                if (!resources.ContainsKey(key))
+            if (now.Length != resourceKeys.Length)
+            {
+                problems.Add($"{draftKey}: declara {resourceKeys.Length} claves y {now.Length} textos «ahora»; van en paralelo");
+                continue;
+            }
+
+            for (int index = 0; index < resourceKeys.Length; index++)
+            {
+                string key = resourceKeys[index];
+
+                if (!resources.TryGetValue(key, out string? text))
+                {
                     problems.Add($"{key}: la redacción dice que reemplaza a «{draftKey}» y esa clave no está en el recurso");
+                    continue;
+                }
+
+                if (text != now[index])
+                    problems.Add($"{key}: el texto cambió otra vez y la redacción no lo dice"
+                        + $"\n  declarado: {now[index]}\n  ahora:     {text}");
+            }
         }
 
         Assert.True(problems.Count == 0, string.Join("\n\n", problems));

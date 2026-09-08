@@ -141,7 +141,7 @@ public sealed partial class SongsViewModel : ViewModelBase
         + Headers.Sum(header => header.Width + ColumnSpacing)
         + ColumnSpacing * 2;
 
-    public string TitleHeader => "Título";
+    public string TitleHeader => Strings.Get("music-column.title");
 
     public bool TitleIsSorted => _library.SortField.Column is null;
 

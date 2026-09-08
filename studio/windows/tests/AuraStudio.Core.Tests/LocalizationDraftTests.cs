@@ -378,20 +378,29 @@ public class LocalizationDraftTests
     /// clave que <see cref="TodaClaveCompartidaExisteEnResourcesResx"/>
     /// (directa, o por el paréntesis de "sitio Windows").
     ///
-    /// <para><b>Hoy falla a propósito</b> (ST-247, cotejo
+    /// <para><b>Ya no está en Skip</b> (ST-247, cotejo
     /// <c>docs/extraccion-cadenas/cotejo-mac-ja-de-ru-fr.csv</c>, 2026-09):
-    /// de las 12 filas "igual" con texto en los cuatro idiomas (48
-    /// comparaciones), 24 no coinciden -- las tradujo cada plataforma por su
-    /// lado a partir del mismo español, y no siempre llegaron a la misma
-    /// frase. Regla de la Maestra: donde difieran manda la Mac, salvo un
-    /// error evidente (ninguno encontrado en este cotejo). <c>Skip</c>
-    /// hasta que el Experto aplique los textos de la Mac a
-    /// <c>Resources.*.resx</c>, como se hizo con
-    /// <c>orphans-confirm-message</c> en el cierre de B7a.</para>
+    /// las 24 de 48 comparaciones que diferían (ja 4, de 5, ru 8, fr 7) las
+    /// aplicó el Experto a <c>Resources.*.resx</c>, igual que se hizo con
+    /// <c>orphans-confirm-message</c> en el cierre de B7a. Verificado de
+    /// nuevo antes de quitar el <c>Skip</c>, esta vez con comparación
+    /// SENSIBLE a mayúsculas y espacios (la corrida anterior, hecha con un
+    /// script aparte en PowerShell, usó <c>-eq</c> -- que en PowerShell
+    /// compara cadenas SIN distinguir mayúsculas por omisión -- y dejó
+    /// pasar como "igual" una fila de alemán que en realidad difería solo
+    /// en la mayúscula inicial de una palabra tras dos puntos
+    /// (<c>orphans-none-found</c>, "Es"/"es"); el <c>!=</c> de C# de este
+    /// método SÍ es sensible desde el principio, así que esta prueba nunca
+    /// tuvo ese defecto -- fue el cotejo informativo el que lo tenía).
+    /// <c>background-task-center-indicator.cancelar</c> pasó a
+    /// <c>"convención de plataforma"</c> en <c>claves-compartidas.csv</c>
+    /// (decisión de la Maestra: las etiquetas que fija el sistema operativo
+    /// por idioma siguen la convención de su plataforma aunque la fila
+    /// fuera "igual") y por eso queda FUERA del filtro de esta prueba sin
+    /// necesitar código nuevo: el filtro ya exige <c>estado == "igual"</c>
+    /// a secas.</para>
     /// </summary>
-    [Fact(Skip = "ST-247: 24 de 48 comparaciones difieren de la Mac (ja 4, de 5, ru 8, fr 7) -- " +
-                 "ver docs/extraccion-cadenas/cotejo-mac-ja-de-ru-fr.csv; se reactiva cuando el Experto " +
-                 "aplique los textos de la Mac a Resources.*.resx")]
+    [Fact]
     public void TodaClaveIgualTieneElMismoTextoEnLosCuatroIdiomasDeLaMac()
     {
         string sharedPath = RequireFile("claves-compartidas.csv");

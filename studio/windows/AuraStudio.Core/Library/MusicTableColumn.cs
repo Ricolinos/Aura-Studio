@@ -197,7 +197,7 @@ public readonly record struct MusicSortField(MusicTableColumn? Column)
 
     public static MusicSortField By(MusicTableColumn column) => new(column);
 
-    public string Title => Column?.Title() ?? "Título";
+    public string Title => Column?.Title() ?? Strings.Get("music-column.title");
 
     public string RawValue => Column?.RawValue() ?? "title";
 
