@@ -1,6 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Library;
 
 /// <summary>
@@ -389,7 +391,9 @@ public static class LibraryCatalogStore
                 JsonSerializer.Deserialize<PersistedLibrary>(File.ReadAllText(path), Options);
 
             return catalog is null
-                ? new CatalogLoad(new PersistedLibrary(), "El catálogo de la biblioteca está vacío o dañado.")
+                ? new CatalogLoad(
+                    new PersistedLibrary(),
+                    Strings.Get("library-persistence.catalog-empty-or-damaged"))
                 : new CatalogLoad(catalog, null);
         }
         catch (JsonException ex)

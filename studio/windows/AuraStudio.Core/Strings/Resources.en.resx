@@ -822,6 +822,9 @@
   <data name="catalog-persister.unavailable" xml:space="preserve">
     <value>The library is not available: it could not be saved.</value>
   </data>
+  <data name="library-persistence.catalog-empty-or-damaged" xml:space="preserve">
+    <value>The library catalog is empty or damaged.</value>
+  </data>
   <data name="ipod-disk.aura-files-undeclared" xml:space="preserve">
     <value>Aura files detected (family not declared)</value>
   </data>

@@ -21,10 +21,19 @@ public sealed record ThemeOption(AppTheme Theme, string Label);
 /// </summary>
 public sealed record LanguageOption(string Culture, string Label, bool ReviewedByHumans)
 {
-    /// <summary>La marca "(beta)" de un idioma que todavía nadie revisó.</summary>
-    public string Mark => ReviewedByHumans ? "" : AppStrings.LanguageBetaMark;
+    /// <summary>
+    /// La marca "(beta)" de un idioma que todavía nadie revisó. La decisión
+    /// vive en Core (LanguageBadge) para poder comprobarla sin abrir una
+    /// ventana: es lo que hace que la app admita delante del usuario que ese
+    /// idioma no lo revisó nadie.
+    /// </summary>
+    public string Mark => LanguageBadge.Mark(AsLanguage);
 
-    public bool ShowsMark => !ReviewedByHumans;
+    public bool ShowsMark => LanguageBadge.ShowsMark(AsLanguage);
+
+    /// <summary>Lo que LanguageBadge necesita saber de esta fila.</summary>
+    private AppLanguage AsLanguage =>
+        new(Culture, Label, Built: true, Offered: true, ReviewedByHumans);
 }
 
 /// <summary>

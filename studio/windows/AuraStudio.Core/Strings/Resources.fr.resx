@@ -822,6 +822,9 @@
   <data name="catalog-persister.unavailable" xml:space="preserve">
     <value>La bibliothèque n'est pas disponible : l'enregistrement a échoué.</value>
   </data>
+  <data name="library-persistence.catalog-empty-or-damaged" xml:space="preserve">
+    <value>Le catalogue de la bibliothèque est vide ou endommagé.</value>
+  </data>
   <data name="ipod-disk.aura-files-undeclared" xml:space="preserve">
     <value>Fichiers Aura détectés (famille non déclarée)</value>
   </data>

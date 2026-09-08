@@ -741,6 +741,9 @@
   <data name="catalog-persister.unavailable" xml:space="preserve">
     <value>ライブラリを利用できないため、保存できませんでした。</value>
   </data>
+  <data name="library-persistence.catalog-empty-or-damaged" xml:space="preserve">
+    <value>ライブラリのカタログが空か、壊れています。</value>
+  </data>
   <data name="ipod-disk.aura-files-undeclared" xml:space="preserve">
     <value>Aura のファイルを検出しました（ファミリーの宣言なし）</value>
   </data>
@@ -952,10 +955,10 @@
     <value>ディスクが USB 接続として見えなくなりました（バス {0}）</value>
   </data>
   <data name="disk-abort.no-media" xml:space="preserve">
-    <value>ディスクにメディアが入っていません</value>
+    <value>ディスクにメディアがもう入っていません</value>
   </data>
   <data name="disk-abort.size-changed" xml:space="preserve">
-    <value>ディスクのサイズが一致しません（{0} バイト）</value>
+    <value>ディスクのサイズが一致しなくなりました（{0} バイト）</value>
   </data>
   <data name="disk-abort.model-changed" xml:space="preserve">
     <value>ディスクのモデルが変わりました（いまは「{0}」）</value>

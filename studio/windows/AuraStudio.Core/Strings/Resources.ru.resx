@@ -843,6 +843,9 @@
   <data name="catalog-persister.unavailable" xml:space="preserve">
     <value>Медиатека недоступна: сохранить не удалось.</value>
   </data>
+  <data name="library-persistence.catalog-empty-or-damaged" xml:space="preserve">
+    <value>Каталог медиатеки пуст или повреждён.</value>
+  </data>
   <data name="ipod-disk.aura-files-undeclared" xml:space="preserve">
     <value>Обнаружены файлы Aura (семейство не объявлено)</value>
   </data>

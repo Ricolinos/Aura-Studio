@@ -669,7 +669,7 @@ public class SpanishUnchangedTests
         "firmware-tree.parking", "firmware-tree.updating", "firmware-tree.installing",
         "firmware-tree.files-to-write.one", "firmware-tree.files-to-write.other",
         "firmware-tree.files-to-delete.one", "firmware-tree.files-to-delete.other",
-        "catalog-persister.save-failed",
+        "catalog-persister.save-failed", "library-persistence.catalog-empty-or-damaged",
 
         // Y los últimos que la barrida señaló como frases enteras: la franja de
         // actualización de la app, el resumen de "Completar en línea" (con dos
