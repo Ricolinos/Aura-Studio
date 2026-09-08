@@ -1654,7 +1654,7 @@
     <value>This one will ask for administrator permission.</value>
   </data>
   <data name="app-strings.service-pause-button" xml:space="preserve">
-    <value>Pause Apple's services</value>
+    <value>Pause the Apple service</value>
   </data>
   <data name="app-strings.service-pause-detail" xml:space="preserve">
     <value>Windows may have Apple's service holding on to the iPod. We can stop it while this lasts and turn it back on when we're done.</value>

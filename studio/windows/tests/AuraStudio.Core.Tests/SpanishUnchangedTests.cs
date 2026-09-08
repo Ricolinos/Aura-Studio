@@ -765,6 +765,16 @@ public class SpanishUnchangedTests
         ("app-strings.settings-language-detail",
             ["app-strings.settings-language-detail"],
             "Aura Studio para Windows está en español de México. No hay selector de idioma: a diferencia de la versión para Mac, esta app se hizo en un solo idioma."),
+
+        // Decía "los servicios" y Aura Studio pausa uno solo — el renglón de
+        // abajo, en la misma pantalla, ya decía "el servicio". Salió del espejo
+        // de un hallazgo de la Mac, donde el desfase iba al revés: la pantalla
+        // nombraba dos servicios y se pausaban tres. Acá no había nada roto,
+        // solo una promesa mal contada; `ServicePromiseTests` la deja amarrada
+        // al enum de operaciones privilegiadas para que no vuelva a desfasarse.
+        ("app-strings.service-pause-button",
+            ["app-strings.service-pause-button"],
+            "Pausar los servicios de Apple"),
     ];
 
     /// <summary>

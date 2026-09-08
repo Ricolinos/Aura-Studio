@@ -1603,7 +1603,7 @@
     <value>Non disponible</value>
   </data>
   <data name="orphans-button" xml:space="preserve">
-    <value>Rechercher les orphelins</value>
+    <value>Chercher les fichiers orphelins</value>
   </data>
   <data name="orphans-clean-button" xml:space="preserve">
     <value>Nettoyer les fichiers orphelins</value>
@@ -1615,7 +1615,7 @@
     <value>{0} fichiers orphelins supprimés.</value>
   </data>
   <data name="orphans-confirm-message" xml:space="preserve">
-    <value>Ils ne sont liés à aucun élément de votre bibliothèque ; les supprimer n'affecte aucun morceau, aucune photo et aucune vidéo que vous ayez.</value>
+    <value>Ils ne sont liés à aucun élément de votre bibliothèque ; les supprimer n’affecte aucun morceau, photo ou vidéo que vous possédez.</value>
   </data>
   <data name="app-strings.orphans-confirm-title.one" xml:space="preserve">
     <value>Supprimer {0} fichier orphelin ?</value>
@@ -1624,7 +1624,7 @@
     <value>Supprimer {0} fichiers orphelins ?</value>
   </data>
   <data name="orphans-detail" xml:space="preserve">
-    <value>Fichiers préparés et pochettes qui n'appartiennent plus à aucun élément de votre bibliothèque — issus d'éléments supprimés avant cette version, ou d'un retraitement. Ce ne sont pas vos fichiers d'origine : ce sont des copies techniques qu'Aura crée toute seule et peut recréer si besoin.</value>
+    <value>Fichiers préparés et pochettes qui n’appartiennent plus à aucun élément de votre bibliothèque — issus d’éléments supprimés avant cette version, ou d’un retraitement. Ce ne sont pas vos fichiers d’origine : ce sont des copies techniques qu’Aura crée seul et peut recréer si besoin.</value>
   </data>
   <data name="app-strings.orphans-found.one" xml:space="preserve">
     <value>{0} fichier orphelin ({1}).</value>
@@ -1633,7 +1633,7 @@
     <value>{0} fichiers orphelins ({1}).</value>
   </data>
   <data name="orphans-none-found" xml:space="preserve">
-    <value>Il n'y a aucun fichier orphelin : rien à nettoyer.</value>
+    <value>Il n’y a pas de fichiers orphelins : rien à nettoyer.</value>
   </data>
   <data name="orphans-title" xml:space="preserve">
     <value>Fichiers orphelins</value>
@@ -1654,7 +1654,7 @@
     <value>Là, les droits d'administrateur vous seront demandés.</value>
   </data>
   <data name="app-strings.service-pause-button" xml:space="preserve">
-    <value>Suspendre les services Apple</value>
+    <value>Suspendre le service Apple</value>
   </data>
   <data name="app-strings.service-pause-detail" xml:space="preserve">
     <value>Windows a peut-être le service Apple qui occupe l'iPod. Nous pouvons l'arrêter le temps de l'opération et le rallumer ensuite.</value>
@@ -1693,13 +1693,13 @@
     <value>Monter</value>
   </data>
   <data name="storage-change-only-affects-future" xml:space="preserve">
-    <value>Modifier ce réglage n'affecte que ce que vous importerez à partir de maintenant : ce qui est déjà dans votre bibliothèque reste tel quel.</value>
+    <value>Modifier ce réglage n’affecte que ce que vous importerez désormais : ce qui est déjà dans votre bibliothèque reste tel quel.</value>
   </data>
   <data name="storage-copy-explainer" xml:space="preserve">
-    <value>Copier dans la bibliothèque Aura : Aura gère les fichiers, modifie leurs étiquettes et les synchronise directement ; cela occupe de l'espace disque (une copie) ; vous pouvez supprimer vos originaux ensuite.</value>
+    <value>Copier dans la bibliothèque Aura : Aura gère les fichiers, modifie leurs tags et les synchronise directement ; cela occupe de l’espace disque (une copie) ; vous pouvez supprimer vos originaux ensuite.</value>
   </data>
   <data name="storage-reference-explainer" xml:space="preserve">
-    <value>Les référencer sur place : aucun espace supplémentaire et vos fichiers ne sont jamais touchés ; Aura garde une version préparée à côté (.preparados/), les modifications ne vivent que dans Aura et sur l'iPod, et si le disque d'origine est absent, ces morceaux ne peuvent pas être synchronisés.</value>
+    <value>Les référencer sur place : aucun espace supplémentaire et vos fichiers ne sont jamais touchés ; Aura conserve une version préparée à part (.preparados/), les modifications ne vivent que dans Aura et sur l’iPod, et si le disque d’origine est absent, ces morceaux ne peuvent pas être synchronisés.</value>
   </data>
   <data name="storage-section-title" xml:space="preserve">
     <value>Comment stocker votre musique</value>

@@ -2326,7 +2326,7 @@
     <value>これらはライブラリのどの項目にも結び付いていません。削除しても、お持ちの曲・写真・ビデオには影響しません。</value>
   </data>
   <data name="orphans-detail" xml:space="preserve">
-    <value>ライブラリのどの項目にも属さなくなった準備済みファイルとアートワークです。このバージョンより前に削除した項目や、再処理によって生じたものです。あなたの元のファイルではありません。Aura が自分で作る技術的なコピーで、必要ならまた作り直せます。</value>
+    <value>ライブラリのどの項目にも属さなくなった準備済みファイルとアートワークです。このバージョンより前に削除された項目や、再処理の結果として残ったものです。元のファイルではありません。Aura が自分で作る技術的なコピーで、必要になればまた作れます。</value>
   </data>
   <data name="orphans-none-found" xml:space="preserve">
     <value>孤立ファイルはありません。整理するものはありません。</value>
@@ -2674,13 +2674,13 @@
     <value>保存</value>
   </data>
   <data name="storage-change-only-affects-future" xml:space="preserve">
-    <value>この設定を変えても、影響するのはこれから取り込むものだけです。すでにライブラリにあるものはそのまま残ります。</value>
+    <value>この設定を変更しても、影響するのはこれから読み込むものだけです。すでにライブラリにあるものはそのままです。</value>
   </data>
   <data name="storage-copy-explainer" xml:space="preserve">
-    <value>Aura のライブラリにコピー：Aura がファイルを管理し、タグを編集し、そのまま同期します。ディスク容量を使います（コピー1つ分）。元のファイルは後で削除できます。</value>
+    <value>Aura ライブラリにコピー: Aura がファイルを管理し、タグを編集し、そのまま同期します。ディスク容量を使います（コピーが 1 つ）。元のファイルはあとで削除できます。</value>
   </data>
   <data name="storage-reference-explainer" xml:space="preserve">
-    <value>その場を参照：追加の容量を使わず、ファイルにも触れません。Aura は準備済みのバージョンを別に持ちます（.preparados/）。編集内容は Aura と iPod の中だけに存在し、元のディスクがないとその曲は同期できません。</value>
+    <value>その場所のまま参照: 追加の容量を使わず、あなたのファイルにも触れません。Aura は準備済みのバージョンを別に保持し（.preparados/）、編集内容は Aura と iPod の中だけに存在します。元のディスクがない場合、それらの曲は同期できません。</value>
   </data>
   <data name="storage-section-title" xml:space="preserve">
     <value>音楽の保存方法</value>
