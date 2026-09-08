@@ -744,6 +744,18 @@
   <data name="library-persistence.catalog-empty-or-damaged" xml:space="preserve">
     <value>ライブラリのカタログが空か、壊れています。</value>
   </data>
+  <data name="library-migrator.orphans-delete-failed" xml:space="preserve">
+    <value>使われていないファイルを削除できませんでした: {0}</value>
+  </data>
+  <data name="library-root.unavailable" xml:space="preserve">
+    <value>ライブラリを利用できません: {0}</value>
+  </data>
+  <data name="library-persistence.invalid-path" xml:space="preserve">
+    <value>ライブラリのパスが正しくありません: {0}</value>
+  </data>
+  <data name="status-summary.without-album" xml:space="preserve">
+    <value>アルバムなし {0}</value>
+  </data>
   <data name="ipod-disk.aura-files-undeclared" xml:space="preserve">
     <value>Aura のファイルを検出しました（ファミリーの宣言なし）</value>
   </data>

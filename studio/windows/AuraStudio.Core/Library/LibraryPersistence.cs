@@ -372,7 +372,7 @@ public static class LibraryCatalogStore
         if (!LibraryRoot.VolumeIsMounted(libraryRoot))
         {
             return new CatalogLoad(new PersistedLibrary(),
-                $"La biblioteca no está disponible: {libraryRoot}");
+                Strings.Format("library-root.unavailable", libraryRoot));
         }
 
         try
@@ -382,7 +382,9 @@ public static class LibraryCatalogStore
         }
         catch (ArgumentException ex)
         {
-            return new CatalogLoad(new PersistedLibrary(), $"La ruta de la biblioteca no es válida: {ex.Message}");
+            return new CatalogLoad(
+                new PersistedLibrary(),
+                Strings.Format("library-persistence.invalid-path", ex.Message));
         }
 
         try

@@ -825,6 +825,18 @@
   <data name="library-persistence.catalog-empty-or-damaged" xml:space="preserve">
     <value>Der Katalog der Mediathek ist leer oder beschädigt.</value>
   </data>
+  <data name="library-migrator.orphans-delete-failed" xml:space="preserve">
+    <value>Die nicht mehr benötigten Dateien konnten nicht gelöscht werden: {0}</value>
+  </data>
+  <data name="library-root.unavailable" xml:space="preserve">
+    <value>Die Mediathek ist nicht verfügbar: {0}</value>
+  </data>
+  <data name="library-persistence.invalid-path" xml:space="preserve">
+    <value>Der Pfad der Mediathek ist nicht gültig: {0}</value>
+  </data>
+  <data name="status-summary.without-album" xml:space="preserve">
+    <value>{0} ohne Album</value>
+  </data>
   <data name="ipod-disk.aura-files-undeclared" xml:space="preserve">
     <value>Aura-Dateien erkannt (Familie nicht deklariert)</value>
   </data>

@@ -825,6 +825,18 @@
   <data name="library-persistence.catalog-empty-or-damaged" xml:space="preserve">
     <value>The library catalog is empty or damaged.</value>
   </data>
+  <data name="library-migrator.orphans-delete-failed" xml:space="preserve">
+    <value>The unused files could not be deleted: {0}</value>
+  </data>
+  <data name="library-root.unavailable" xml:space="preserve">
+    <value>The library is not available: {0}</value>
+  </data>
+  <data name="library-persistence.invalid-path" xml:space="preserve">
+    <value>The library path is not valid: {0}</value>
+  </data>
+  <data name="status-summary.without-album" xml:space="preserve">
+    <value>{0} with no album</value>
+  </data>
   <data name="ipod-disk.aura-files-undeclared" xml:space="preserve">
     <value>Aura files detected (family not declared)</value>
   </data>

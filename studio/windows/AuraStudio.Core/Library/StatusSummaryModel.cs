@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Library;
 
 /// <summary>
@@ -307,7 +309,9 @@ public sealed class StatusSummaryModel
             LibraryStats.Join(
                 LibraryStats.Count(named, "conteo.albumes"),
                 LibraryStats.Count(photos.Count, "conteo.fotos"),
-                loose > 0 ? $"{LibraryStats.Formatted(loose)} sin álbum" : null),
+                loose > 0
+                    ? Strings.Format("status-summary.without-album", LibraryStats.Formatted(loose))
+                    : null),
             "",
             LibraryStats.SizeText(LibraryStats.TotalSize(photos)));
     }

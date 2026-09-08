@@ -846,6 +846,18 @@
   <data name="library-persistence.catalog-empty-or-damaged" xml:space="preserve">
     <value>Каталог медиатеки пуст или повреждён.</value>
   </data>
+  <data name="library-migrator.orphans-delete-failed" xml:space="preserve">
+    <value>Не удалось удалить неиспользуемые файлы: {0}</value>
+  </data>
+  <data name="library-root.unavailable" xml:space="preserve">
+    <value>Медиатека недоступна: {0}</value>
+  </data>
+  <data name="library-persistence.invalid-path" xml:space="preserve">
+    <value>Путь к медиатеке недопустим: {0}</value>
+  </data>
+  <data name="status-summary.without-album" xml:space="preserve">
+    <value>{0} без альбома</value>
+  </data>
   <data name="ipod-disk.aura-files-undeclared" xml:space="preserve">
     <value>Обнаружены файлы Aura (семейство не объявлено)</value>
   </data>
