@@ -7,7 +7,31 @@
     <RootNamespace>AuraStudio.Core</RootNamespace>
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- ST-247: si esta compilación OFRECE los cuatro idiomas que nadie revisó.
+         Se apaga con -p:OfferMachineTranslations=false, y Make-Installer.ps1 lo
+         expone como -OfferMachineTranslations $false.
+
+         Por omisión true, o sea el estado de main. Existe para que el release
+         0.4.0 —un solo commit para las dos plataformas— pueda salir con español
+         e inglés nada más, sin revertir nada ni abrir una rama.
+
+         NO toca los satélites: los cinco se generan igual y el instalador los
+         sigue exigiendo. Apagar el ofrecimiento no saca archivos del paquete. -->
+    <OfferMachineTranslations Condition="'$(OfferMachineTranslations)' == ''">true</OfferMachineTranslations>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- La decisión queda grabada en el ensamblado que se publica.
+         `_Parameter1_IsLiteral` hace que se emita como `true`/`false` y no como
+         la cadena "true": sin eso no compila contra un constructor que toma
+         bool, que es justo el aviso que conviene tener al compilar y no en
+         tiempo de ejecución. -->
+    <AssemblyAttribute Include="AuraStudio.Core.Resources.OfferMachineTranslationsAttribute">
+      <_Parameter1>$(OfferMachineTranslations)</_Parameter1>
+      <_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
+    </AssemblyAttribute>
+  </ItemGroup>
 
   <ItemGroup>
     <!-- Lectura de etiquetas (ID3v2.3/2.4, Vorbis de FLAC, átomos MP4 y

@@ -18763,3 +18763,138 @@ que nadie lo note»— y ese día llegó: ahora la diferencia **se construye** e
 prueba en vez de buscarse en la tabla.
 
 Nada de esto toca 0.4.0. El conjunto va a 0.4.1.
+
+## ST-247 (addendum) — `OfferMachineTranslations`, para que 0.4.0 pueda salir con dos idiomas
+
+El release 0.4.0 sale de **un solo commit para las dos plataformas**, posterior
+al cierre de B7d. Si el dueño decide que salga con español e inglés nada más,
+Windows tiene que poder construirse desde ese mismo commit sin ofrecer los
+cuatro: sin revertir nada, sin una rama aparte y sin tocar `AppLanguages.All`.
+
+    -p:OfferMachineTranslations=false
+    Make-Installer.ps1 -OfferMachineTranslations $false
+
+**Por omisión, `true`** — o sea el estado de `main`, que sigue siendo 0.4.1 con
+los seis. Apagarlo tiene que ser un acto deliberado: al revés, un error de
+compilación se vería igual que una decisión, la app saldría con dos idiomas y
+nadie sabría si alguien lo pidió.
+
+### Atributo de ensamblado, y no un archivo ni un `#if`
+
+**No un archivo en disco**, porque la decisión es de la compilación y no del
+equipo donde corre la app: un archivo se borra, se copia de otro paquete, y deja
+al mismo binario comportándose distinto según dónde aterrice.
+
+**Y no `#if`**, por una razón que vale para cualquier interruptor de este tipo:
+con compilación condicional solo existe una de las dos ramas en cada binario, así
+que las pruebas de una compilación no pueden ejercitar la otra — y la que no se
+prueba es justamente la que se va a usar **una sola vez, el día del release, sin
+nadie mirando**. Siendo un atributo, la regla es una función pura
+(`AppLanguages.Offering`) que se prueba con los dos valores en la misma corrida,
+más una prueba de que la compilación está enchufada a esa función y no a otra
+cosa.
+
+`Built` no cambia: los cinco satélites se generan y viajan igual, y el instalador
+los sigue exigiendo. Apagar el ofrecimiento no puede sacar archivos del paquete,
+o volver a encenderlo dejaría de ser una decisión de una línea.
+
+### Dos cosas que aparecieron al hacerlo
+
+1. **`For()` resolvía sobre la tabla entera y no sobre lo ofrecido.** Con la
+   propiedad apagada, alguien con Windows en alemán habría abierto la app en
+   alemán, en un paquete que decidió no ofrecer alemán, con el selector mostrando
+   dos idiomas y ninguna forma de entender qué pasó. Es la trampa clásica de este
+   tipo de interruptor: se apaga la lista que se dibuja y se olvida la resolución
+   automática.
+2. **Con la propiedad apagada quedaban nueve pruebas rojas**, las que fijaban el
+   estado por omisión. Quien compilara el release habría visto rojo y tenido que
+   adivinar cuáles eran esperadas — que es como se termina ignorando una suite.
+   Ahora esas nueve dicen lo que **esta** compilación ofrece, y siguen siendo
+   exactas en las dos posiciones: no se aflojaron a «los que haya».
+
+### El log del instalador
+
+Imprime **«Idiomas ofrecidos:» además de «Idiomas incluidos:»**, porque desde
+ST-247 ya no son la misma lista y quien lea el log tiene que poder distinguir una
+decisión de un satélite perdido. La partición revisados / sin revisar está
+escrita a mano en PowerShell —no lee C#— y una prueba la ata a `AppLanguages` por
+`ReviewedByHumans`, igual que con los satélites.
+
+`-OfferMachineTranslations $false` **aborta** si se combina con `-SkipPublish`:
+la decisión se graba al publicar, así que saltarse el publish empaquetaría lo que
+ya estaba compilado mientras el guion informa otra cosa.
+
+### Verificado en las dos compilaciones
+
+Por omisión y con `-p:OfferMachineTranslations=false`: **2 065 verdes** en las
+dos, 1 en Skip. Y el interruptor está conectado de verdad — con las pruebas
+viejas, la compilación apagada ponía en rojo exactamente las nueve que fijaban
+los seis idiomas. La versión no se subió.
+
+## ST-247 (defecto) — Ajustes reventaba por un recurso que nadie definió
+
+Abrir Ajustes lanzaba «Cannot find a resource with the given key: InvertBool.» y
+la página quedaba a medio cargar, en los seis idiomas incluido el español. Lo
+encontró el mecánico el 8 de septiembre de 2026 capturando en `edaf9bf`.
+
+`SettingsPage.xaml` usa `{StaticResource InvertBool}` en el botón de «Buscar
+actualizaciones» y sus `Page.Resources` solo declaraban `BoolToVisibility`.
+
+### Dónde estuvo, y desde cuándo
+
+**No es una regresión de B7.** Entró con **ST-211** (`5cfb731`, 6 de septiembre
+de 2026) y está igual en:
+
+| versión | usa `InvertBool` | lo declara |
+|---|---|---|
+| `v0.3.0` (`6e3a371`, 6-sep-2026) | línea 102 | no |
+| `f6dd461` (7-sep-2026, los instalables 0.4.0 del dueño) | línea 147 | no |
+| `origin/main` | línea 147 | no |
+
+Comprobado clave por clave contra cada revisión, no deducido de una. Doce páginas
+declaraban `InvertBool` en sus propios `Page.Resources` y a ésta se le olvidó;
+nadie volvió a abrir Ajustes con ese botón desde entonces.
+
+### Por qué no lo vio nadie, que es lo que importa
+
+**Un `x:Key` se resuelve al CARGAR la página, no al compilar.** El proyecto
+compila con cero advertencias, la app arranca bien, y el error aparece solo
+cuando alguien navega a esa pantalla concreta. Trece copias de las mismas dos
+líneas y ningún mecanismo que notara la que faltaba: es el modo de falla exacto
+de una lista repetida a mano, el mismo que ya había mordido con los separadores
+de colaboraciones y con los idiomas del instalador.
+
+### El arreglo
+
+`Resources/Converters.xaml` define los cuatro convertidores **una sola vez** y
+`App.xaml` lo fusiona. Se quitaron las 26 declaraciones por página, los bloques
+de recursos que quedaron vacíos y los `xmlns:conv` huérfanos: una página ya no
+puede olvidarse de declararlo porque no tiene que declarar nada. Queda
+`BoolToVisibilityOverlay` en `LibraryUnavailableView` — el mismo convertidor con
+otra clave, para una superposición concreta.
+
+### El guardián
+
+`XamlResourceTests` recorre todos los `.xaml`, saca cada `{StaticResource}` y
+`{ThemeResource}` —incluidos los de `Converter=` dentro de un `x:Bind`, que es
+justo la forma que tenía el defecto— y exige que la clave esté en el archivo, en
+lo que ese archivo fusiona, en `App.xaml` siguiendo sus diccionarios de forma
+transitiva, o en una lista **explícita** de 21 claves de WinUI/Fluent. Lista
+explícita y no un patrón: aceptar cualquier nombre que *parezca* de Fluent es
+como se vuelve a abrir este agujero.
+
+Una segunda prueba impide que los convertidores vuelvan a declararse por página,
+que es lo único que mantiene suficiente a la primera.
+
+Verificado en rojo antes y después: con el árbol como estaba señalaba
+`Views/SettingsPage.xaml:147 «InvertBool»` con archivo y línea; quitando el merge
+de `App.xaml` e inyectando un recurso inventado, 27 sin definir. Y se comprobó
+que `Converters.xbf` se genera y viaja en el publish, mirando `bin/` — un
+diccionario que compila pero no se empaqueta habría dejado el mismo error en
+pantalla con la suite en verde.
+
+**Revisión del resto:** ningún otro control, vista o diálogo pide un recurso sin
+definir. `InvertBool` en Ajustes era el único.
+
+El release 0.4.0 lleva este arreglo; los Setup de `f6dd461` se regeneran desde el
+commit de release.

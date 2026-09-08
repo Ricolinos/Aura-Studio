@@ -1,0 +1,34 @@
+<!--
+    Los convertidores compartidos, definidos UNA sola vez.
+
+    Hasta ST-247 cada página se los declaraba en sus propios `Page.Resources`:
+    trece copias de las mismas dos o tres líneas. `SettingsPage` usaba
+    `{StaticResource InvertBool}` en el botón de "Buscar actualizaciones" y no lo
+    había declarado, así que abrir Ajustes lanzaba «Cannot find a resource with
+    the given key: InvertBool.» y la página quedaba a medio cargar.
+
+    Un `x:Key` se resuelve al CARGAR la página, no al compilar: el proyecto
+    compilaba sin una advertencia, la app arrancaba bien, y el error solo
+    aparecía cuando alguien navegaba a esa pantalla. Entró con ST-211 y estuvo
+    así en 0.3.0 y en los instalables 0.4.0.
+
+    Con la definición acá —y `App.xaml` fusionando este archivo— una página no
+    puede olvidarse de declararlo, porque ya no tiene que declarar nada.
+    `XamlResourceTests` comprueba las dos mitades: que todo `{StaticResource}`
+    resuelva, y que no vuelvan a aparecer copias por página.
+
+    Excepción declarada: `LibraryUnavailableView` mantiene su propio
+    `BoolToVisibilityOverlay` — es el mismo convertidor con otra clave para una
+    superposición concreta, no una copia de ésta.
+-->
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:conv="using:AuraStudio.App.Converters">
+
+    <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+    <conv:InvertBoolConverter x:Key="InvertBool" />
+    <conv:NotNullToBoolConverter x:Key="NotNullToBool" />
+    <conv:BoolToOpacityConverter x:Key="BoolToOpacity" />
+
+</ResourceDictionary>

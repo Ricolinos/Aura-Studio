@@ -99,9 +99,13 @@ public class AppLanguagesTests
     {
         Assert.DoesNotContain(AppLanguages.Translated, language => !language.Offered);
 
+        // Sobre `All` y no sobre `Available`: lo que esta prueba fija es la
+        // TABLA —quién está revisado y quién no—, y eso no cambia con la
+        // propiedad de compilación. Lo que sí cambia, qué se ofrece, lo
+        // comprueban LanguageSelectorTests y OfferMachineTranslationsTests.
         Assert.Equal(
             ["de", "fr", "ja", "ru"],
-            AppLanguages.Available.Where(language => !language.ReviewedByHumans)
+            AppLanguages.All.Where(language => !language.ReviewedByHumans)
                 .Select(language => language.Culture).Order(StringComparer.Ordinal));
     }
 
@@ -166,9 +170,16 @@ public class AppLanguagesTests
         Assert.Null(AppLanguages.For(new CultureInfo(culture)));
 
     /// <summary>
-    /// Los cuatro de B7c ya resuelven, y por su idioma y no por su país: quien
-    /// tiene Windows en <c>de-AT</c> o en <c>fr-CA</c> quiere su idioma, no el
-    /// español porque no exista una entrada para su región.
+    /// Los cuatro de B7c resuelven —si esta compilación los ofrece— por su
+    /// idioma y no por su país: quien tiene Windows en <c>de-AT</c> o en
+    /// <c>fr-CA</c> quiere su idioma, no el español porque no exista una entrada
+    /// para su región.
+    ///
+    /// <para>Y si <c>OfferMachineTranslations</c> está apagado, no resuelven a
+    /// nada. Esa mitad importa tanto como la otra: apagar la lista que se dibuja
+    /// y olvidar la resolución automática dejaría a alguien con Windows en
+    /// alemán usando la app en alemán, en un paquete que decidió no ofrecer
+    /// alemán y cuyo selector muestra dos idiomas.</para>
     /// </summary>
     [Theory]
     [InlineData("de-DE", "de")]
@@ -177,8 +188,10 @@ public class AppLanguagesTests
     [InlineData("fr-CA", "fr")]
     [InlineData("ja-JP", "ja")]
     [InlineData("ru-RU", "ru")]
-    public void LosCuatroDeB7cYaResuelven(string culture, string expected) =>
-        Assert.Equal(expected, AppLanguages.For(new CultureInfo(culture))?.Culture);
+    public void LosCuatroDeB7cResuelvenSiEstaCompilacionLosOfrece(string culture, string expected) =>
+        Assert.Equal(
+            AppLanguages.OffersMachineTranslations ? expected : null,
+            AppLanguages.For(new CultureInfo(culture))?.Culture);
 
     /// <summary>
     /// Ninguna cultura declarada dos veces, y todas válidas para .NET. Una
