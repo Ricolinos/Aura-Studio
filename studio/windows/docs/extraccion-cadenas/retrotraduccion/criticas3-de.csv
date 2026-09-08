@@ -1,0 +1,29 @@
+id,de
+e001,mks5lboot.exe konnte nicht gestartet werden: {0}
+e002,der Datenträger passt nicht in die 32-Bit-Adressierung des MBR
+e003,auf diesem Datenträger lässt sich kein FAT32 anlegen: {0}
+e004,der Datenträger {0} existiert nicht mehr
+e005,das Modell des Datenträgers hat sich geändert (jetzt steht dort „{0}“)
+e006,im Datenträger ist kein Medium mehr eingelegt
+e007,der Datenträger erscheint nicht mehr über USB verbunden (Bus {0})
+e008,der Datenträger konnte nicht erneut abgefragt werden ({0})
+e009,die Größe des Datenträgers stimmt nicht mehr überein ({0} Bytes)
+e010,Auf den Datenträger konnte nicht geschrieben werden: {0}
+e011,"Der Ordner {0} existiert nicht, und dort sollten die Dateien von {1} liegen."
+e012,{0} lässt sich nicht prüfen: Das Release veröffentlicht {1} nicht und neben der Binärdatei gibt es kein {2}.
+e013,{0} ist bereits die aktive Firmware.
+e014,Auf diesem iPod gibt es keinen schlafenden {0}-Baum.
+e015,Die Firmware konnte nicht gewechselt werden.
+e016,"Aura Studio weiß nicht, wie sich {0} parken oder aufwecken lässt."
+e017,Das Kopieren wurde unterbrochen — neuer Versuch…
+e018,Die Firmware wird auf den iPod kopiert…
+e019,Das selektive Update hat nicht funktioniert; die vollständige Installation läuft…
+e020,{0} zu entfernen
+e021,{0} zu entfernen
+e022,{0} Datei zu schreiben
+e023,{0} Dateien zu schreiben
+e024,"{0} wird auf dem iPod installiert (Schriften, Symbole, Codecs)… Über USB kann das mehrere Minuten dauern — trenne den iPod nicht."
+e025,"{0} wird gesichert, damit du dorthin zurück kannst…"
+e026,"{0} wird aktualisiert: {1}, {2}…"
+e027,Die Integrität der Dateien wird geprüft…
+e028,{0} von {1} belegt — {2} frei
