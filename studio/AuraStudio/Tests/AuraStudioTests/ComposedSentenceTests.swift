@@ -168,4 +168,38 @@ final class ComposedSentenceTests: XCTestCase {
         XCTAssertTrue(spanishOnlyWords.contains("biblioteca"))
         XCTAssertTrue(spanishOnlyWords.contains("elementos"))
     }
+
+    // MARK: - Dos oraciones seguidas
+
+    /// `Sentence.sentences(_:)` (ST-227, A7d): el espacio entre dos
+    /// oraciones **también es tipografía del idioma**. Donde el
+    /// instalador dice "no se pudo descargar. Se instalará la versión
+    /// incluida", el español pega las dos con un espacio y el japonés
+    /// no pega nada, porque el `。` ya cerró la primera.
+    ///
+    /// La prueba se hace contra el catálogo, no contra literales: si
+    /// mañana alguien le pone un espacio al japonés, falla acá y no en
+    /// una captura de pantalla.
+    func testTwoSentencesJoinWithTheTypographyOfEachLanguage() throws {
+        for (idioma, esperado) in [("es", " "), ("en", " "), ("de", " "),
+                                   ("fr", " "), ("ru", " "), ("ja", "")] {
+            let bundle = try XCTUnwrap(
+                Bundle(path: try XCTUnwrap(AuraBundle.strings.path(forResource: idioma, ofType: "lproj"))))
+            let unidas = composed(in: bundle) { Sentence.sentences(["A.", "B."]) }
+            XCTAssertEqual(unidas, "A." + esperado + "B.",
+                           "el separador entre oraciones de \(idioma) no es el del catálogo")
+        }
+    }
+
+    /// Y no apila cierres: una primera frase que ya venía con punto no
+    /// recibe otro. Es la misma regla de `ended(_:)`, comprobada donde
+    /// de verdad se usa -- el aviso de respaldo del instalador arma
+    /// `errorDescription` (que trae punto) con la frase siguiente.
+    func testJoiningSentencesNeverStacksTwoPeriods() {
+        let unidas = composed(in: english) {
+            Sentence.sentences(["The download failed.", "The bundled version will be installed."])
+        }
+        XCTAssertFalse(unidas.contains(".."), unidas)
+        XCTAssertEqual(unidas, "The download failed. The bundled version will be installed.")
+    }
 }

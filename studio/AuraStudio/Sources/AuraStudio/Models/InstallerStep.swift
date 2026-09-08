@@ -88,7 +88,7 @@ struct PendingAuthorization: Identifiable {
     static func pauseAMPAgents() -> PendingAuthorization {
         PendingAuthorization(
             kind: .pauseAMPAgents,
-            explanationTitle: "Pausar servicios de macOS",
+            explanationTitle: LS("installer.pause-services.title"),
             // ST-227 (A7c, cierre 5): la lista sale de `ampAgentNames`,
             // que es quien de verdad los pausa. Acá decía "dos servicios
             // ... (AMPDevicesAgent y AMPDeviceDiscoveryAgent)" y se
@@ -97,26 +97,27 @@ struct PendingAuthorization: Identifiable {
             // hacer con permisos de administrador antes de que macOS le
             // pida la contraseña; nombrar dos de tres es justo lo que no
             // puede pasar acá.
-            explanationBody: "Aura Studio necesita pausar temporalmente los servicios de macOS que a veces interfieren con la conexión del iPod (\(Sentence.list(PrivilegedExecutor.ampAgentNames))). Se reactivan automáticamente al terminar, o solos después de unos minutos si algo falla.",
-            cancelConsequence: "Si cancelas, Aura Studio va a seguir intentando detectar el iPod igual -- en la mayoría de las Mac esto no hace falta, pero si la detección falla repetidamente, puede ser la causa."
+            explanationBody: LSf("installer.pause-services.body",
+                                 Sentence.list(PrivilegedExecutor.ampAgentNames)),
+            cancelConsequence: LS("installer.pause-services.cancel")
         )
     }
 
     static func restoreFormatDisk(diskIdentifier: String) -> PendingAuthorization {
         PendingAuthorization(
             kind: .restoreFormatDisk(diskIdentifier: diskIdentifier),
-            explanationTitle: "Preparar el disco para Finder",
-            explanationBody: "Para que Finder pueda restaurar el firmware original de Apple, el disco del iPod (\(diskIdentifier)) se va a formatear dos veces: primero un formato puente (FAT con esquema MBR) y despues Mac OS Plus con registro con mapa de particiones GUID -- el estado que Finder espera. Esto borra todo el contenido del iPod.",
-            cancelConsequence: "Si cancelas, el iPod queda sin el bootloader de Aura pero con el disco sin preparar -- Finder podria no reconocerlo para restaurar. Puedes reintentar cuando quieras."
+            explanationTitle: LS("installer.restore-format.title"),
+            explanationBody: LSf("installer.restore-format.body", diskIdentifier),
+            cancelConsequence: LS("installer.restore-format.cancel")
         )
     }
 
     static func formatDisk(volumeName: String, diskIdentifier: String) -> PendingAuthorization {
         PendingAuthorization(
             kind: .formatDisk(volumeName: volumeName, diskIdentifier: diskIdentifier),
-            explanationTitle: "Preparar el disco del iPod",
-            explanationBody: "Vamos a formatear la partición de datos de tu iPod (identificada como \"\(volumeName)\", disco \(diskIdentifier)) para que pueda arrancar Aura. Esto borra TODO el contenido actual del iPod -- solo del iPod, Aura Studio ya verificó su identidad por tamaño, fabricante y tipo de disco antes de llegar a este paso.",
-            cancelConsequence: "Si cancelas, la instalación se detiene acá. El iPod queda como estaba, sin ningún cambio -- puedes reintentar cuando quieras."
+            explanationTitle: LS("installer.format-disk.title"),
+            explanationBody: LSf("installer.format-disk.body", volumeName, diskIdentifier),
+            cancelConsequence: LS("installer.format-disk.cancel")
         )
     }
 }
@@ -180,43 +181,43 @@ enum InstallerError: Error, LocalizedError, Equatable {
     var errorDescription: String? {
         switch self {
         case .deviceNotFound:
-            return "No se detecto ningun iPod conectado."
+            return LS("installer.error.device-not-found")
         case .wrongDiskFormat:
-            return "El iPod no esta formateado en FAT32. Conviértelo antes de continuar."
+            return LS("installer.error.wrong-disk-format")
         case .dfuTimeout:
-            return "No se detecto el iPod en modo DFU a tiempo. Vuelve a intentar la combinacion de botones."
+            return LS("installer.error.dfu-timeout")
         case .checksumMismatch(let file):
-            return "El archivo \(file) no supero la verificacion de integridad."
+            return LSf("installer.error.checksum-mismatch", file)
         case .releaseDownloadFailed(let family, let reason):
-            return "No se pudo descargar la versión más reciente de \(family): \(reason). Se usará la versión que trae Aura Studio."
+            return LSf("installer.error.release-download-failed", family, reason)
         case .releaseMissingAsset(let tag, let asset):
-            return "Al Release \(tag) le falta \(asset), así que no se puede instalar desde él. Se usará la versión que trae Aura Studio."
+            return LSf("installer.error.release-missing-asset", tag, asset)
         case .incompleteRockboxTree(let missing):
-            return "El firmware de este Release está incompleto: a rockbox.zip le faltan \(missing.joined(separator: ", ")) -- el iPod quedaría sin video o sin audio. No es un problema de tu conexión; vuelve a intentar más tarde o avisa que este Release salió mal."
+            return LSf("installer.error.incomplete-rockbox-tree", Sentence.commaList(missing))
         case .processFailed(let exitCode, let output):
             // Sin nombrar herramienta: este error lo producen tanto
             // mks5lboot como la extraccion de archivos (ditto) -- el
             // texto viejo culpaba a mks5lboot de fallas que no eran
             // suyas (visto en vivo, D-185).
-            return "La operación terminó con código \(exitCode): \(output)"
+            return LSf("installer.error.process-failed", exitCode, output)
         case .missingBundledArtifact(let name):
-            return "Falta el artefacto \(name) dentro de la app. Reinstala Aura Studio."
+            return LSf("installer.error.missing-bundled-artifact", name)
         case .diskAmbiguous(let count):
-            return "Se encontraron \(count) discos que podrian ser tu iPod. Por seguridad, Aura Studio no elige uno solo -- desconecta los demas discos externos y vuelve a intentar."
+            return LSf("installer.error.disk-ambiguous", count)
         case .authorizationCancelled:
-            return "Cancelaste el permiso de administrador. Este paso no puede continuar sin él."
+            return LS("installer.error.authorization-cancelled")
         case .privilegedOperationFailed(let message):
             return message
         case .fullDiskAccessDenied:
-            return "macOS bloqueó el acceso directo al disco del iPod. Concede \"Acceso total al disco\" a Aura Studio en Ajustes del Sistema (Privacidad y seguridad), cierra la app por completo, vuelve a abrirla y reintenta. Si Aura Studio ya aparece en la lista, quítala con el botón \"−\" y agrégala de nuevo -- el permiso puede quedar atado a una versión anterior de la app."
+            return LS("installer.error.full-disk-access-denied")
         case .dualBootRequiresWinpod:
-            return "Para dual boot, el iPod debe conservar el firmware original de Apple en formato \"winpod\": tabla de particiones MBR con la partición de firmware de Apple intacta más una partición FAT32 -- el formato que crea iTunes al restaurar en una PC con WINDOWS. Este iPod está en formato de Mac (particiones Apple/HFS, que Rockbox no puede leer) o su disco no es legible, y prepararlo desde aquí borraría el disco completo, incluido el firmware original -- exactamente lo que dual boot promete conservar. Por eso no se te pidió la contraseña de administrador como en una instalación normal: no hay nada seguro que formatear todavía. Opciones: restaura el iPod con iTunes en Windows y vuelve a intentar dual boot, o instala solo Aura si no necesitas conservar el firmware de Apple."
+            return LS("installer.error.dual-boot-requires-winpod")
         case .deviceDisconnectedDuringCopy:
-            return "Tu iPod se desconectó durante la copia de archivos. Copiar el firmware completo son miles de archivos chicos y puede tardar varios minutos por USB -- revisa el cable (evita hubs USB si usas uno) y vuelve a intentar: lo que ya se copió no se pierde, la copia sigue desde donde quedó."
+            return LS("installer.error.disconnected-during-copy")
         case .bootloaderNotApplied:
-            return "El iPod volvió a aparecer con el firmware original de Apple atendiendo el USB: el bootloader de Aura no quedó grabado. Vuelve a intentar el paso de DFU (el disco ya está preparado, no hace falta formatearlo otra vez)."
+            return LS("installer.error.bootloader-not-applied")
         case .deviceStuckInDFU:
-            return "El iPod recibió el envío del firmware, pero nunca confirmó haberlo aplicado -- sigue en modo DFU. Si se abrió Finder mostrando \"Modo DFU del iPod\", ciérralo SIN tocar el botón Restaurar (eso reinstalaría el firmware original de Apple). Después vuelve a intentar: el iPod ya está en modo DFU, así que el reintento debería llegar rápido a este mismo paso."
+            return LS("installer.error.stuck-in-dfu")
         }
     }
 }

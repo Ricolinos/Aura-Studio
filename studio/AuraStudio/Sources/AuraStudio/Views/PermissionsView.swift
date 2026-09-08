@@ -17,20 +17,20 @@ struct PermissionsView: View {
 
             PermissionRow(
                 icon: "externaldrive",
-                title: "Acceso a volumenes removibles",
-                explanation: "Aura Studio necesita ver y desmontar el iPod apenas lo conectas -- si no, macOS lo deja montado en Finder y el instalador no puede escribir en el. macOS pide confirmar esto la primera vez que la app intenta acceder a un disco removible."
+                title: LS("permissions.removable.title"),
+                explanation: LS("permissions.removable.body")
             )
 
             PermissionRow(
                 icon: "lock.shield",
-                title: "Acceso total al disco (opcional, recomendado)",
-                explanation: "Si macOS bloquea la lectura/escritura del iPod incluso despues de aceptar el permiso anterior, activa Acceso total al disco para Aura Studio en Ajustes del Sistema > Privacidad y Seguridad. Es un permiso amplio: solo lo necesitas si el paso de deteccion falla."
+                title: LS("permissions.full-disk.title"),
+                explanation: LS("permissions.full-disk.body")
             )
 
             PermissionRow(
                 icon: "person.badge.key",
-                title: "Contraseña de administrador (en pasos puntuales)",
-                explanation: "En algunos pasos -- pausar servicios que interfieren con la deteccion del iPod, o preparar el disco antes de instalar -- macOS te va a pedir tu contraseña con su propio dialogo nativo. Aura Studio siempre te explica antes que va a hacer y por que, en una pantalla propia, antes de que aparezca ese dialogo. Nunca vas a necesitar abrir Terminal ni escribir ningun comando."
+                title: LS("permissions.admin.title"),
+                explanation: LS("permissions.admin.body")
             )
 
             Button(LS("permissions-view.abrir-ajustes-sistema-privacidad-segurid")) {
@@ -42,7 +42,7 @@ struct PermissionsView: View {
 
             Spacer()
 
-            BackContinueRow(onBack: onBack, continueTitle: "Continuar", onContinue: onContinue)
+            BackContinueRow(onBack: onBack, continueTitle: LS("installer-wizard-view.continuar"), onContinue: onContinue)
         }
     }
 }

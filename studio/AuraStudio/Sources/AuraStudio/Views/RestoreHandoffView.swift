@@ -21,9 +21,9 @@ struct RestoreHandoffView: View {
                 .frame(maxWidth: 460)
 
             VStack(alignment: .leading, spacing: 10) {
-                HandoffStep(number: 1, text: "Cierra Aura Studio con el boton de abajo -- si sigue abierto, su deteccion USB puede interferir con Finder.")
-                HandoffStep(number: 2, text: "Abre una ventana de Finder: el iPod aparece en la barra lateral, bajo Ubicaciones.")
-                HandoffStep(number: 3, text: "Selecciona el iPod y elige \"Restaurar iPod...\" -- Finder descarga e instala el firmware original de Apple.")
+                HandoffStep(number: 1, text: LS("restore-handoff.step.close-app"))
+                HandoffStep(number: 2, text: LS("restore-handoff.step.open-finder"))
+                HandoffStep(number: 3, text: LS("restore-handoff.step.restore"))
             }
             .frame(maxWidth: 460, alignment: .leading)
             .padding(14)

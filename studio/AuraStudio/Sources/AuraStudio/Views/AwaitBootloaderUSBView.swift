@@ -23,9 +23,9 @@ struct AwaitBootloaderUSBView: View {
                 .frame(maxWidth: 460)
 
             VStack(alignment: .leading, spacing: 14) {
-                StepRow(number: 1, text: "Deja el cable USB conectado. El iPod se reinicia solo y, como todavía no tiene Aura, su pantalla dice \"Bootloader USB mode\" y aparece como disco.")
-                StepRow(number: 2, text: "Si en unos 30 segundos la pantalla del iPod sigue negra o no aparece como disco, mantén SELECT + MENU unos 5 segundos para reiniciarlo, sin desconectar el cable.")
-                StepRow(number: 3, text: "Aura Studio detecta el disco y copia Aura automáticamente -- no hay que tocar nada más.")
+                StepRow(number: 1, text: LS("await-bootloader.step.keep-cable"))
+                StepRow(number: 2, text: LS("await-bootloader.step.if-black"))
+                StepRow(number: 3, text: LS("await-bootloader.step.automatic"))
             }
             .frame(maxWidth: 460, alignment: .leading)
 

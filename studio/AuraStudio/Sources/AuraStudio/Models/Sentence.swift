@@ -51,6 +51,15 @@ enum Sentence {
         return text + LS("sentence.period")
     }
 
+    /// Dos oraciones seguidas. En español, inglés, alemán, francés y
+    /// ruso van separadas por un espacio; en japonés el `。` ya cierra y
+    /// no se agrega nada, así que el separador es la clave
+    /// `sentence.separator-sentence` y no un `" "` incrustado.
+    static func sentences(_ parts: [String]) -> String {
+        parts.filter { !$0.isEmpty }.map(ended)
+            .joined(separator: LS("sentence.separator-sentence"))
+    }
+
     /// "Encabezado: resto".
     static func titled(_ title: String, _ rest: String) -> String {
         title + LS("sentence.colon") + rest

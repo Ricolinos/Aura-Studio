@@ -28,24 +28,24 @@ struct DoneView: View {
 
     private var doneTitle: String {
         switch mode {
-        case .install: return "\(firmwareName) instalado"
-        case .restore: return "iPod restaurado"
+        case .install: return LSf("done.title.install", firmwareName)
+        case .restore: return LS("done.title.restore")
         // ST-143: no se instaló ni se restauró nada -- solo cambió el
         // arranque, y decirle "restaurado" al usuario sería mentirle.
-        case .updateBootloader: return "Arranque actualizado"
+        case .updateBootloader: return LS("done.title.update-bootloader")
         }
     }
 
     private var doneMessage: String {
         switch (mode, needsManualReboot) {
         case (.restore, _):
-            return "Tu iPod va a reiniciar y arrancar con el firmware original de Apple. Ya puedes desconectar el cable."
+            return LS("done.message.restore")
         case (.install, true):
-            return "\(firmwareName) quedó instalado. Ya puedes desconectar el cable con seguridad. El iPod se quedó esperando en \"Bootloader USB mode\": mantén SELECT + MENU unos 5 segundos para reiniciarlo y arranca con \(firmwareName). Después puedes usar la biblioteca de Aura Studio para sincronizar tu música, fotos y videos."
+            return LSf("done.message.install-manual-reboot", firmwareName)
         case (.updateBootloader, _):
-            return "El arranque quedó actualizado. Tu música, tus fotos y tus ajustes siguen exactamente donde estaban -- esto no tocó el disco. Ya puedes desconectar el cable; si el iPod no reinicia solo, mantén SELECT + MENU unos segundos."
+            return LS("done.message.update-bootloader")
         case (.install, false):
-            return "Todos los archivos quedaron instalados: ya puedes desconectar el cable con seguridad. El iPod va a arrancar con \(firmwareName) -- si no reinicia solo, mantén SELECT + MENU unos segundos. Despues puedes usar la pestana Biblioteca de Aura Studio para sincronizar tu musica, fotos y videos."
+            return LSf("done.message.install", firmwareName)
         }
     }
 
@@ -117,9 +117,11 @@ struct FailedView: View {
             Image(systemName: isCalmDecision ? "arrow.triangle.branch" : "xmark.circle.fill")
                 .font(.system(size: 56))
                 .foregroundStyle(isCalmDecision ? Color.accentColor : Color.red)
-            Text(isCalmDecision ? "Este iPod no está listo para dual boot" : "Algo salio mal")
+            Text(isCalmDecision
+                 ? LS("done.failure.title.not-ready")
+                 : LS("done.failure.title.generic"))
                 .font(.title.bold())
-            Text(error?.localizedDescription ?? "Error desconocido.")
+            Text(error?.localizedDescription ?? LS("done.failure.unknown-error"))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: 440)

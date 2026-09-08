@@ -24,12 +24,14 @@ struct WelcomeView: View {
                 .font(.system(size: 48))
                 .foregroundStyle(.tint)
 
-            Text(mode == .install ? "Instalar \(firmwareName)" : "Restaurar iPod original")
+            Text(mode == .install
+                 ? LSf("welcome.title.install", firmwareName)
+                 : LS("welcome.title.restore"))
                 .font(.title.bold())
 
             Text(mode == .install
-                 ? "Este asistente va a instalar el bootloader y el firmware \(firmwareName) en tu iPod Classic 6G. Vas a necesitar el dispositivo conectado por USB en los proximos pasos."
-                 : "Este asistente va a quitar el bootloader y devolver tu iPod al arranque original de Apple. El firmware no se borra del disco, solo dejas de arrancarlo.")
+                 ? LSf("welcome.body.install", firmwareName)
+                 : LS("welcome.body.restore"))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: 460)
@@ -61,7 +63,7 @@ struct WelcomeView: View {
 
             Spacer()
 
-            BackContinueRow(onBack: onBack, continueTitle: "Continuar", onContinue: {
+            BackContinueRow(onBack: onBack, continueTitle: LS("installer-wizard-view.continuar"), onContinue: {
                 if mode == .install && !acknowledgedErase {
                     withAnimation { showAcknowledgeHint = true }
                 } else {

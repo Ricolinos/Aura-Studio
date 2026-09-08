@@ -33,21 +33,21 @@ struct UpdateBootloaderView: View {
 
             VStack(alignment: .leading, spacing: 14) {
                 point("questionmark.circle",
-                      "Qué es el arranque",
-                      "El programa diminuto que corre apenas enciendes el iPod, antes que \(firmwareName): dibuja la pantalla de arranque y decide qué sistema iniciar. Vive en un chip aparte, no en el disco.")
+                      LS("update-bootloader.what-is.title"),
+                      LSf("update-bootloader.what-is.body", firmwareName))
                 point("cable.connector",
-                      "Por qué hace falta el modo DFU",
-                      "Ese chip solo se puede escribir con el iPod en modo DFU. Es el mismo paso que hiciste al instalar; la app te va a guiar y son unos segundos.")
+                      LS("update-bootloader.why-dfu.title"),
+                      LS("update-bootloader.why-dfu.body"))
                 point("music.note.list",
-                      "Qué no se toca",
-                      "Nada del disco: tu música, tus fotos, tus listas y tus ajustes se quedan exactamente como están. No se formatea ni se copia ningún archivo.")
+                      LS("update-bootloader.untouched.title"),
+                      LS("update-bootloader.untouched.body"))
                 point("checkmark.shield",
-                      "No es obligatorio",
-                      "\(firmwareName) funciona igual con el arranque que ya tienes: lo único que cambia es la pantalla que ves al encender.")
+                      LS("update-bootloader.optional.title"),
+                      LSf("update-bootloader.optional.body", firmwareName))
             }
             .frame(maxWidth: 460, alignment: .leading)
 
-            BackContinueRow(onBack: onBack, continueTitle: "Actualizar el arranque",
+            BackContinueRow(onBack: onBack, continueTitle: LS("installer-home-view.actualizar-arranque"),
                             onContinue: onContinue)
                 .frame(maxWidth: 460)
         }
@@ -58,9 +58,9 @@ struct UpdateBootloaderView: View {
     private var reasonText: String {
         switch reason {
         case .differentBootloader:
-            return "Esta versión de Aura Studio trae un arranque más nuevo que el que tiene grabado tu iPod."
+            return LS("update-bootloader.reason.newer")
         case .unknownBootloader:
-            return "Aura Studio no sabe qué versión del arranque tiene grabada tu iPod -- lo instaló otra computadora, o una versión anterior de esta app que no lo anotaba. Actualizarlo lo deja al día; si ya lo estaba, no cambia nada."
+            return LS("update-bootloader.reason.unknown")
         }
     }
 

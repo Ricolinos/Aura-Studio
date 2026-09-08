@@ -85,15 +85,16 @@ struct InstallerWizardView: View {
                                  canPauseServices: viewModel.offersServicePauseInDFU,
                                  onPauseServices: viewModel.pauseServicesForDFU)
                 case .installing:
-                    InstallingView(mode: viewModel.mode, message: viewModel.progressMessage)
+                    InstallingView(mode: viewModel.mode, message: viewModel.progressMessage,
+                                   firmwareName: viewModel.targetName)
                 case .awaitingBootloaderUSB:
                     AwaitBootloaderUSBView(monitor: viewModel.monitor)
                 case .preparingDisk:
-                    SimpleProgressView(title: "Preparando el disco", message: viewModel.progressMessage, progress: nil)
+                    SimpleProgressView(title: LS("installer.progress.preparing-disk"), message: viewModel.progressMessage, progress: nil)
                 case .copyingFiles:
-                    SimpleProgressView(title: "Instalando \(viewModel.targetName)", message: viewModel.progressMessage, progress: viewModel.copyProgress)
+                    SimpleProgressView(title: LSf("installer.progress.copying", viewModel.targetName), message: viewModel.progressMessage, progress: viewModel.copyProgress)
                 case .restoreFormatting:
-                    SimpleProgressView(title: "Preparando para Finder", message: viewModel.progressMessage, progress: nil)
+                    SimpleProgressView(title: LS("installer.progress.preparing-finder"), message: viewModel.progressMessage, progress: nil)
                 case .restoreHandoff:
                     RestoreHandoffView()
                 case .done:
