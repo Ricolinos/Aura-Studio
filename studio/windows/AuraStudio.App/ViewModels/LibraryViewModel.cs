@@ -43,15 +43,19 @@ public sealed record AlbumCoverBatchResult(
     {
         int pending = Pending.Count;
 
+        // Eran siete ramas escritas a mano para dos conteos, con el 1 puesto
+        // en el patrón: en ruso el 21 también va con la forma del uno, así que
+        // esas ramas no alcanzaban. Ahora cada conteo elige su forma y la
+        // oración con los dos se arma de las dos (ST-247, B7d).
         string done = (Applied, pending) switch
         {
-            (0, 0) => "No había ningún álbum con título al que aplicarle una tapa.",
-            (0, 1) => "No se encontró una tapa segura para ese álbum.",
-            (0, _) => $"No se encontró una tapa segura para {pending} álbumes.",
-            (1, 0) => "Se aplicó la tapa recomendada a 1 álbum.",
-            (_, 0) => $"Se aplicó la tapa recomendada a {Applied} álbumes.",
-            (1, _) => $"Se aplicó la tapa recomendada a 1 álbum; {pending} quedaron sin una opción segura.",
-            _ => $"Se aplicó la tapa recomendada a {Applied} álbumes; {pending} quedaron sin una opción segura."
+            (0, 0) => Strings.Get("album-cover-batch.nothing-to-do"),
+            (0, _) => Strings.Plural("album-cover-batch.none-safe", pending),
+            (_, 0) => Strings.Plural("album-cover-batch.applied", Applied),
+            _ => Strings.Format(
+                "album-cover-batch.applied-with-pending",
+                Strings.Plural("album-cover-batch.applied", Applied),
+                Strings.Plural("album-cover-batch.pending", pending))
         };
 
         // Cancelar no deshace lo aplicado: deja de empezar lo que falta. Decirlo
@@ -551,8 +555,8 @@ public sealed partial class LibraryViewModel : ViewModelBase
             if (found > 0) Save();
 
             StatusMessage = found == 0
-                ? "No se consiguió ningún póster nuevo."
-                : $"Se consiguieron {found} póster(s).";
+                ? Strings.Get("library-view-model.posters-none")
+                : Strings.Plural("library-view-model.posters-found", found);
         }
         catch (OperationCanceledException) { StatusMessage = Strings.Get("library-view-model.se-detuvo-busqueda-posters"); }
         finally { IsEnriching = false; }
@@ -747,7 +751,8 @@ public sealed partial class LibraryViewModel : ViewModelBase
         IsLoading = true;
 
         BackgroundTaskHandle task = _tasks.Begin(
-            "Cargando biblioteca…", BackgroundTaskProgress.Indeterminate, cancellation.Cancel);
+            Strings.Get("library-view-model.loading-library"),
+            BackgroundTaskProgress.Indeterminate, cancellation.Cancel);
 
         LibraryLoad load;
         Dictionary<string, bool> availability = [];
@@ -890,7 +895,8 @@ public sealed partial class LibraryViewModel : ViewModelBase
         // biblioteca grande hacía trabajo por red que nadie veía ni podía
         // detener. En el centro de tareas se ve, y se detiene.
         BackgroundTaskHandle task = _tasks.Begin(
-            "Midiendo archivos…", BackgroundTaskProgress.Of(0, pending.Count), cancellation.Cancel);
+            Strings.Get("library-view-model.measuring-files"),
+            BackgroundTaskProgress.Of(0, pending.Count), cancellation.Cancel);
 
         _ = Task.Run(() =>
         {
@@ -1032,7 +1038,8 @@ public sealed partial class LibraryViewModel : ViewModelBase
         // y ese renglón es donde el usuario lee la respuesta a lo que ACABA de
         // pedir.
         BackgroundTaskHandle task = _tasks.Begin(
-            "Normalizando carátulas…", BackgroundTaskProgress.Of(0, files.Count), cancellation.Cancel);
+            Strings.Get("library-view-model.normalizing-covers"),
+            BackgroundTaskProgress.Of(0, files.Count), cancellation.Cancel);
 
         _ = Task.Run(() =>
         {
@@ -1674,7 +1681,8 @@ public sealed partial class LibraryViewModel : ViewModelBase
         IReadOnlyList<LibraryItem> items = Items;
 
         BackgroundTaskHandle task = _tasks.Begin(
-            "Migrando la biblioteca…", BackgroundTaskProgress.Of(0, items.Count));
+            Strings.Get("library-view-model.migrating-library"),
+            BackgroundTaskProgress.Of(0, items.Count));
 
         IsMigrating = true;
 
@@ -2020,7 +2028,9 @@ public sealed partial class LibraryViewModel : ViewModelBase
 
         Save();
         OnPropertyChanged(nameof(Items));
-        StatusMessage = removed == 0 ? "No había ningún póster que quitar." : "Se quitó el póster.";
+        StatusMessage = Strings.Get(removed == 0
+            ? "library-view-model.poster-none-to-remove"
+            : "library-view-model.poster-removed");
     }
 
     /// <summary>
@@ -2086,8 +2096,8 @@ public sealed partial class LibraryViewModel : ViewModelBase
             OnPropertyChanged(nameof(Items));
 
             StatusMessage = report.Lyrics == 0
-                ? "No se encontró letra para lo seleccionado."
-                : $"Se consiguieron {report.Lyrics} letra(s).";
+                ? Strings.Get("library-view-model.lyrics-none")
+                : Strings.Plural("library-view-model.lyrics-found", report.Lyrics);
         }
         catch (OperationCanceledException) { StatusMessage = Strings.Get("library-view-model.se-detuvo-busqueda-letra"); }
         finally { IsEnriching = false; }

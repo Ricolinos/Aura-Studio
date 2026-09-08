@@ -214,23 +214,27 @@ public sealed partial class SettingsPage : Page
         {
             Style = (Style)Application.Current.Resources["AuraCaptionTextStyle"],
             TextWrapping = TextWrapping.Wrap,
-            Text = ViewModel.HasKey(service)
-                ? "Guardada en el Administrador de credenciales."
-                : "Sin configurar."
+            Text = Strings.Get(ViewModel.HasKey(service)
+                ? "settings-page.key-saved-short"
+                : "settings-page.key-not-set")
         };
 
         var input = new PasswordBox
         {
-            PlaceholderText = ViewModel.HasKey(service) ? "Ya hay una guardada" : "Pega la clave aquí",
+            PlaceholderText = Strings.Get(ViewModel.HasKey(service)
+                ? "settings-page.key-placeholder-existing"
+                : "settings-page.key-placeholder-new"),
             MinWidth = 260
         };
 
-        var save = new Button { Content = "Guardar" };
+        var save = new Button { Content = Strings.Get("settings-page.guardar") };
         save.Click += (_, _) =>
         {
             status.Text = ViewModel.SaveKey(service, input.Password);
             input.Password = "";
-            input.PlaceholderText = ViewModel.HasKey(service) ? "Ya hay una guardada" : "Pega la clave aquí";
+            input.PlaceholderText = Strings.Get(ViewModel.HasKey(service)
+                ? "settings-page.key-placeholder-existing"
+                : "settings-page.key-placeholder-new");
         };
 
         var remove = new Button { Content = Strings.Get("settings-page.quitar") };
@@ -238,10 +242,14 @@ public sealed partial class SettingsPage : Page
         {
             status.Text = ViewModel.DeleteKey(service);
             input.Password = "";
-            input.PlaceholderText = "Pega la clave aquí";
+            input.PlaceholderText = Strings.Get("settings-page.key-placeholder-new");
         };
 
-        var open = new HyperlinkButton { Content = "Conseguir la clave", NavigateUri = new Uri(service.Url) };
+        var open = new HyperlinkButton
+        {
+            Content = Strings.Get("settings-page.get-the-key"),
+            NavigateUri = new Uri(service.Url)
+        };
 
         var controls = new Grid { ColumnSpacing = 8, Margin = new Thickness(0, 8, 0, 0) };
         controls.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });

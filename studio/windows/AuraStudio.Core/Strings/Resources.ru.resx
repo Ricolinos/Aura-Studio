@@ -1761,6 +1761,120 @@
   <data name="library-view-model.completando-title" xml:space="preserve">
     <value>Дополнение сведений: {0}…</value>
   </data>
+  <data name="album-cover-batch.none-safe.one" xml:space="preserve">
+    <value>Для {0} альбома не нашлось надёжной обложки.</value>
+  </data>
+  <data name="album-cover-batch.none-safe.few" xml:space="preserve">
+    <value>Для {0} альбомов не нашлось надёжной обложки.</value>
+  </data>
+  <data name="album-cover-batch.none-safe.many" xml:space="preserve">
+    <value>Для {0} альбомов не нашлось надёжной обложки.</value>
+  </data>
+  <data name="album-cover-batch.applied.one" xml:space="preserve">
+    <value>Рекомендованная обложка поставлена {0} альбому.</value>
+  </data>
+  <data name="album-cover-batch.applied.few" xml:space="preserve">
+    <value>Рекомендованная обложка поставлена {0} альбомам.</value>
+  </data>
+  <data name="album-cover-batch.applied.many" xml:space="preserve">
+    <value>Рекомендованная обложка поставлена {0} альбомам.</value>
+  </data>
+  <data name="album-cover-batch.pending.one" xml:space="preserve">
+    <value>{0} остался без надёжного варианта.</value>
+  </data>
+  <data name="album-cover-batch.pending.few" xml:space="preserve">
+    <value>{0} остались без надёжного варианта.</value>
+  </data>
+  <data name="album-cover-batch.pending.many" xml:space="preserve">
+    <value>{0} остались без надёжного варианта.</value>
+  </data>
+  <data name="library-view-model.posters-found.one" xml:space="preserve">
+    <value>Найден {0} постер.</value>
+  </data>
+  <data name="library-view-model.posters-found.few" xml:space="preserve">
+    <value>Найдено {0} постера.</value>
+  </data>
+  <data name="library-view-model.posters-found.many" xml:space="preserve">
+    <value>Найдено {0} постеров.</value>
+  </data>
+  <data name="library-view-model.lyrics-found.one" xml:space="preserve">
+    <value>Текст найден для {0} трека.</value>
+  </data>
+  <data name="library-view-model.lyrics-found.few" xml:space="preserve">
+    <value>Тексты найдены для {0} треков.</value>
+  </data>
+  <data name="library-view-model.lyrics-found.many" xml:space="preserve">
+    <value>Тексты найдены для {0} треков.</value>
+  </data>
+  <data name="album-cover-batch.nothing-to-do" xml:space="preserve">
+    <value>Не нашлось ни одного альбома с названием, которому можно поставить обложку.</value>
+  </data>
+  <data name="album-cover-batch.applied-with-pending" xml:space="preserve">
+    <value>{0}; {1}</value>
+  </data>
+  <data name="library-view-model.posters-none" xml:space="preserve">
+    <value>Новых постеров не нашлось.</value>
+  </data>
+  <data name="library-view-model.loading-library" xml:space="preserve">
+    <value>Загрузка медиатеки…</value>
+  </data>
+  <data name="library-view-model.measuring-files" xml:space="preserve">
+    <value>Измерение файлов…</value>
+  </data>
+  <data name="library-view-model.normalizing-covers" xml:space="preserve">
+    <value>Приведение обложек к единому виду…</value>
+  </data>
+  <data name="library-view-model.migrating-library" xml:space="preserve">
+    <value>Миграция медиатеки…</value>
+  </data>
+  <data name="library-view-model.poster-none-to-remove" xml:space="preserve">
+    <value>Постеров для удаления не было.</value>
+  </data>
+  <data name="library-view-model.poster-removed" xml:space="preserve">
+    <value>Постер убран.</value>
+  </data>
+  <data name="library-view-model.lyrics-none" xml:space="preserve">
+    <value>Для выбранного текст песни не найден.</value>
+  </data>
+  <data name="media-grid-view-model.albums-detail" xml:space="preserve">
+    <value>Альбомы вашей медиатеки, собранные из метаданных каждого трека.</value>
+  </data>
+  <data name="media-grid-view-model.movies-detail" xml:space="preserve">
+    <value>Ваши фильмы.</value>
+  </data>
+  <data name="media-grid-view-model.series-detail" xml:space="preserve">
+    <value>Ваши сериалы, с их сезонами.</value>
+  </data>
+  <data name="media-grid-view-model.photo-collection-detail" xml:space="preserve">
+    <value>Альбомы этой коллекции. Альбомы — локальные: на iPod фотографии попадают без папок.</value>
+  </data>
+  <data name="media-grid-view-model.all-photos-detail" xml:space="preserve">
+    <value>Все ваши изображения.</value>
+  </data>
+  <data name="media-grid-view-model.clips-detail" xml:space="preserve">
+    <value>Видео, которые не фильмы и не сериалы.</value>
+  </data>
+  <data name="media-grid-view-model.videos-detail" xml:space="preserve">
+    <value>Все ваши видео.</value>
+  </data>
+  <data name="settings-page.key-saved-short" xml:space="preserve">
+    <value>Сохранён в Диспетчере учетных данных.</value>
+  </data>
+  <data name="settings-page.key-not-set" xml:space="preserve">
+    <value>Не настроен.</value>
+  </data>
+  <data name="settings-page.guardar" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="settings-page.key-placeholder-existing" xml:space="preserve">
+    <value>Ключ уже сохранён</value>
+  </data>
+  <data name="settings-page.key-placeholder-new" xml:space="preserve">
+    <value>Вставьте ключ сюда</value>
+  </data>
+  <data name="settings-page.get-the-key" xml:space="preserve">
+    <value>Получить ключ</value>
+  </data>
   <data name="library-view-model.prepared-no-transcoder" xml:space="preserve">
     <value>Не удалось подготовить «{0}» для iPod: трек нужно преобразовать, а преобразователь недоступен. Он синхронизируется как есть, без исправленных тегов.</value>
   </data>

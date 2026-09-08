@@ -1563,6 +1563,90 @@
   <data name="library-view-model.completando-title" xml:space="preserve">
     <value>{0} の情報を補完しています…</value>
   </data>
+  <data name="album-cover-batch.none-safe.other" xml:space="preserve">
+    <value>{0} 枚のアルバムで、確実なカバーが見つかりませんでした。</value>
+  </data>
+  <data name="album-cover-batch.applied.other" xml:space="preserve">
+    <value>{0} 枚のアルバムに、おすすめのカバーを適用しました。</value>
+  </data>
+  <data name="album-cover-batch.pending.other" xml:space="preserve">
+    <value>{0} 枚は確実な候補がないままです。</value>
+  </data>
+  <data name="library-view-model.posters-found.other" xml:space="preserve">
+    <value>ポスターが {0} 枚見つかりました。</value>
+  </data>
+  <data name="library-view-model.lyrics-found.other" xml:space="preserve">
+    <value>{0} 曲の歌詞が見つかりました。</value>
+  </data>
+  <data name="album-cover-batch.nothing-to-do" xml:space="preserve">
+    <value>タイトルのあるアルバムがなく、カバーを適用できませんでした。</value>
+  </data>
+  <data name="album-cover-batch.applied-with-pending" xml:space="preserve">
+    <value>{0}。{1}</value>
+  </data>
+  <data name="library-view-model.posters-none" xml:space="preserve">
+    <value>新しいポスターは見つかりませんでした。</value>
+  </data>
+  <data name="library-view-model.loading-library" xml:space="preserve">
+    <value>ライブラリを読み込んでいます…</value>
+  </data>
+  <data name="library-view-model.measuring-files" xml:space="preserve">
+    <value>ファイルのサイズを調べています…</value>
+  </data>
+  <data name="library-view-model.normalizing-covers" xml:space="preserve">
+    <value>アルバムアートを整えています…</value>
+  </data>
+  <data name="library-view-model.migrating-library" xml:space="preserve">
+    <value>ライブラリを移行しています…</value>
+  </data>
+  <data name="library-view-model.poster-none-to-remove" xml:space="preserve">
+    <value>外すポスターはありませんでした。</value>
+  </data>
+  <data name="library-view-model.poster-removed" xml:space="preserve">
+    <value>ポスターを外しました。</value>
+  </data>
+  <data name="library-view-model.lyrics-none" xml:space="preserve">
+    <value>選んだものの歌詞は見つかりませんでした。</value>
+  </data>
+  <data name="media-grid-view-model.albums-detail" xml:space="preserve">
+    <value>ライブラリのアルバムです。曲ごとのメタデータから組み立てています。</value>
+  </data>
+  <data name="media-grid-view-model.movies-detail" xml:space="preserve">
+    <value>あなたの映画です。</value>
+  </data>
+  <data name="media-grid-view-model.series-detail" xml:space="preserve">
+    <value>あなたのシリーズと、そのシーズンです。</value>
+  </data>
+  <data name="media-grid-view-model.photo-collection-detail" xml:space="preserve">
+    <value>このコレクションのアルバムです。アルバムはこのコンピューターだけのもので、iPod へはフォルダーなしで写真が送られます。</value>
+  </data>
+  <data name="media-grid-view-model.all-photos-detail" xml:space="preserve">
+    <value>すべての画像です。</value>
+  </data>
+  <data name="media-grid-view-model.clips-detail" xml:space="preserve">
+    <value>映画でもシリーズでもないビデオです。</value>
+  </data>
+  <data name="media-grid-view-model.videos-detail" xml:space="preserve">
+    <value>すべてのビデオです。</value>
+  </data>
+  <data name="settings-page.key-saved-short" xml:space="preserve">
+    <value>資格情報マネージャーに保存済み。</value>
+  </data>
+  <data name="settings-page.key-not-set" xml:space="preserve">
+    <value>未設定です。</value>
+  </data>
+  <data name="settings-page.guardar" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="settings-page.key-placeholder-existing" xml:space="preserve">
+    <value>すでに保存されています</value>
+  </data>
+  <data name="settings-page.key-placeholder-new" xml:space="preserve">
+    <value>ここに鍵を貼り付けてください</value>
+  </data>
+  <data name="settings-page.get-the-key" xml:space="preserve">
+    <value>鍵を取得する</value>
+  </data>
   <data name="library-view-model.prepared-no-transcoder" xml:space="preserve">
     <value>「{0}」を iPod 用に準備できませんでした。変換が必要ですが、変換ツールがありません。この曲は、修正したタグなしでそのまま同期されます。</value>
   </data>

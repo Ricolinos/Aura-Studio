@@ -1698,6 +1698,105 @@
   <data name="library-view-model.completando-title" xml:space="preserve">
     <value>Filling in {0}…</value>
   </data>
+  <data name="album-cover-batch.none-safe.one" xml:space="preserve">
+    <value>No safe cover was found for {0} album.</value>
+  </data>
+  <data name="album-cover-batch.none-safe.other" xml:space="preserve">
+    <value>No safe cover was found for {0} albums.</value>
+  </data>
+  <data name="album-cover-batch.applied.one" xml:space="preserve">
+    <value>The recommended cover was applied to {0} album.</value>
+  </data>
+  <data name="album-cover-batch.applied.other" xml:space="preserve">
+    <value>The recommended cover was applied to {0} albums.</value>
+  </data>
+  <data name="album-cover-batch.pending.one" xml:space="preserve">
+    <value>{0} was left without a safe option.</value>
+  </data>
+  <data name="album-cover-batch.pending.other" xml:space="preserve">
+    <value>{0} were left without a safe option.</value>
+  </data>
+  <data name="library-view-model.posters-found.one" xml:space="preserve">
+    <value>{0} poster was found.</value>
+  </data>
+  <data name="library-view-model.posters-found.other" xml:space="preserve">
+    <value>{0} posters were found.</value>
+  </data>
+  <data name="library-view-model.lyrics-found.one" xml:space="preserve">
+    <value>Lyrics were found for {0} song.</value>
+  </data>
+  <data name="library-view-model.lyrics-found.other" xml:space="preserve">
+    <value>Lyrics were found for {0} songs.</value>
+  </data>
+  <data name="album-cover-batch.nothing-to-do" xml:space="preserve">
+    <value>There was no album with a title to apply a cover to.</value>
+  </data>
+  <data name="album-cover-batch.applied-with-pending" xml:space="preserve">
+    <value>{0}; {1}</value>
+  </data>
+  <data name="library-view-model.posters-none" xml:space="preserve">
+    <value>No new poster was found.</value>
+  </data>
+  <data name="library-view-model.loading-library" xml:space="preserve">
+    <value>Loading library…</value>
+  </data>
+  <data name="library-view-model.measuring-files" xml:space="preserve">
+    <value>Measuring files…</value>
+  </data>
+  <data name="library-view-model.normalizing-covers" xml:space="preserve">
+    <value>Normalising cover art…</value>
+  </data>
+  <data name="library-view-model.migrating-library" xml:space="preserve">
+    <value>Migrating the library…</value>
+  </data>
+  <data name="library-view-model.poster-none-to-remove" xml:space="preserve">
+    <value>There was no poster to remove.</value>
+  </data>
+  <data name="library-view-model.poster-removed" xml:space="preserve">
+    <value>The poster was removed.</value>
+  </data>
+  <data name="library-view-model.lyrics-none" xml:space="preserve">
+    <value>No lyrics were found for the selection.</value>
+  </data>
+  <data name="media-grid-view-model.albums-detail" xml:space="preserve">
+    <value>The albums in your library, built from each song's metadata.</value>
+  </data>
+  <data name="media-grid-view-model.movies-detail" xml:space="preserve">
+    <value>Your movies.</value>
+  </data>
+  <data name="media-grid-view-model.series-detail" xml:space="preserve">
+    <value>Your series, with their seasons.</value>
+  </data>
+  <data name="media-grid-view-model.photo-collection-detail" xml:space="preserve">
+    <value>Albums in this collection. Albums are local: photos travel to the iPod without folders.</value>
+  </data>
+  <data name="media-grid-view-model.all-photos-detail" xml:space="preserve">
+    <value>All your images.</value>
+  </data>
+  <data name="media-grid-view-model.clips-detail" xml:space="preserve">
+    <value>Videos that are neither movies nor series.</value>
+  </data>
+  <data name="media-grid-view-model.videos-detail" xml:space="preserve">
+    <value>All your videos.</value>
+  </data>
+  <data name="settings-page.key-saved-short" xml:space="preserve">
+    <value>Saved in Credential Manager.</value>
+  </data>
+  <data name="settings-page.key-not-set" xml:space="preserve">
+    <value>Not set up.</value>
+  </data>
+  <data name="settings-page.guardar" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="settings-page.key-placeholder-existing" xml:space="preserve">
+    <value>One is already saved</value>
+  </data>
+  <data name="settings-page.key-placeholder-new" xml:space="preserve">
+    <value>Paste the key here</value>
+  </data>
+  <data name="settings-page.get-the-key" xml:space="preserve">
+    <value>Get the key</value>
+  </data>
   <data name="library-view-model.prepared-no-transcoder" xml:space="preserve">
     <value>Couldn't prepare "{0}" for the iPod: it needs converting and there is no converter available. It syncs as is, without the corrected tags.</value>
   </data>

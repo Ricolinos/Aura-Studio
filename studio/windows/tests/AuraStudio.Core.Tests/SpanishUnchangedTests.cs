@@ -509,6 +509,44 @@ public class SpanishUnchangedTests
         "media-table-row.status-deleted-on-device", "media-table-row.status-queued",
         "media-table-row.status-enriching", "media-table-row.status-transcoding",
         "sync-scope.nothing-selected", "sync-scope.selection-not-ready",
+
+        // B7d, paso 2: la biblioteca, las cuadrículas y la sección de claves de
+        // Ajustes.
+        //
+        // El resumen de las tapas recomendadas eran SIETE ramas escritas a mano
+        // para dos conteos, con el 1 puesto en el patrón —`(1, 0) =>`—: en ruso
+        // el 21 también va con la forma del uno, así que esas ramas no
+        // alcanzaban. Ahora cada conteo elige su forma y la oración con los dos
+        // se arma de las dos. La rama (0,1) decía "para ese álbum" y ahora dice
+        // "para {0} álbum": una forma de plural lleva su número adentro.
+        //
+        // Y otros dos «(s)»: "Se consiguieron {0} póster(s)" y "{0} letra(s)".
+        "album-cover-batch.nothing-to-do", "album-cover-batch.applied-with-pending",
+        "album-cover-batch.none-safe.one", "album-cover-batch.none-safe.other",
+        "album-cover-batch.applied.one", "album-cover-batch.applied.other",
+        "album-cover-batch.pending.one", "album-cover-batch.pending.other",
+        "library-view-model.posters-none",
+        "library-view-model.posters-found.one", "library-view-model.posters-found.other",
+        "library-view-model.lyrics-none",
+        "library-view-model.lyrics-found.one", "library-view-model.lyrics-found.other",
+        "library-view-model.loading-library", "library-view-model.measuring-files",
+        "library-view-model.normalizing-covers", "library-view-model.migrating-library",
+        "library-view-model.poster-none-to-remove", "library-view-model.poster-removed",
+        "media-grid-view-model.albums-detail", "media-grid-view-model.movies-detail",
+        "media-grid-view-model.series-detail", "media-grid-view-model.photo-collection-detail",
+        "media-grid-view-model.all-photos-detail", "media-grid-view-model.clips-detail",
+        "media-grid-view-model.videos-detail",
+        "settings-page.key-saved-short", "settings-page.key-not-set",
+        "settings-page.key-placeholder-existing", "settings-page.key-placeholder-new",
+        "settings-page.get-the-key",
+
+        // El botón "Guardar" de la sección de claves. Es la quinta clave con
+        // ese mismo texto —device-list-page, media-grid-page, media-info-dialog
+        // y songs-page ya tienen la suya—, y sigue la convención de B7a de una
+        // clave por pantalla. Queda dicho que son cinco: cinco oportunidades de
+        // que el mismo botón diga cosas distintas. Unificarlas es una decisión
+        // que abarca todo el archivo, no algo que arreglar de paso.
+        "settings-page.guardar",
     ];
 
     /// <summary>

@@ -1698,6 +1698,105 @@
   <data name="library-view-model.completando-title" xml:space="preserve">
     <value>Complément de {0}…</value>
   </data>
+  <data name="album-cover-batch.none-safe.one" xml:space="preserve">
+    <value>Aucune pochette sûre n'a été trouvée pour {0} album.</value>
+  </data>
+  <data name="album-cover-batch.none-safe.other" xml:space="preserve">
+    <value>Aucune pochette sûre n'a été trouvée pour {0} albums.</value>
+  </data>
+  <data name="album-cover-batch.applied.one" xml:space="preserve">
+    <value>La pochette recommandée a été appliquée à {0} album.</value>
+  </data>
+  <data name="album-cover-batch.applied.other" xml:space="preserve">
+    <value>La pochette recommandée a été appliquée à {0} albums.</value>
+  </data>
+  <data name="album-cover-batch.pending.one" xml:space="preserve">
+    <value>{0} est resté sans option sûre.</value>
+  </data>
+  <data name="album-cover-batch.pending.other" xml:space="preserve">
+    <value>{0} sont restés sans option sûre.</value>
+  </data>
+  <data name="library-view-model.posters-found.one" xml:space="preserve">
+    <value>{0} affiche a été trouvée.</value>
+  </data>
+  <data name="library-view-model.posters-found.other" xml:space="preserve">
+    <value>{0} affiches ont été trouvées.</value>
+  </data>
+  <data name="library-view-model.lyrics-found.one" xml:space="preserve">
+    <value>Des paroles ont été trouvées pour {0} morceau.</value>
+  </data>
+  <data name="library-view-model.lyrics-found.other" xml:space="preserve">
+    <value>Des paroles ont été trouvées pour {0} morceaux.</value>
+  </data>
+  <data name="album-cover-batch.nothing-to-do" xml:space="preserve">
+    <value>Il n'y avait aucun album avec un titre auquel appliquer une pochette.</value>
+  </data>
+  <data name="album-cover-batch.applied-with-pending" xml:space="preserve">
+    <value>{0} ; {1}</value>
+  </data>
+  <data name="library-view-model.posters-none" xml:space="preserve">
+    <value>Aucune nouvelle affiche n'a été trouvée.</value>
+  </data>
+  <data name="library-view-model.loading-library" xml:space="preserve">
+    <value>Chargement de la bibliothèque…</value>
+  </data>
+  <data name="library-view-model.measuring-files" xml:space="preserve">
+    <value>Mesure des fichiers…</value>
+  </data>
+  <data name="library-view-model.normalizing-covers" xml:space="preserve">
+    <value>Normalisation des pochettes…</value>
+  </data>
+  <data name="library-view-model.migrating-library" xml:space="preserve">
+    <value>Migration de la bibliothèque…</value>
+  </data>
+  <data name="library-view-model.poster-none-to-remove" xml:space="preserve">
+    <value>Il n'y avait aucune affiche à retirer.</value>
+  </data>
+  <data name="library-view-model.poster-removed" xml:space="preserve">
+    <value>L'affiche a été retirée.</value>
+  </data>
+  <data name="library-view-model.lyrics-none" xml:space="preserve">
+    <value>Aucune parole n'a été trouvée pour la sélection.</value>
+  </data>
+  <data name="media-grid-view-model.albums-detail" xml:space="preserve">
+    <value>Les albums de votre bibliothèque, constitués à partir des métadonnées de chaque morceau.</value>
+  </data>
+  <data name="media-grid-view-model.movies-detail" xml:space="preserve">
+    <value>Vos films.</value>
+  </data>
+  <data name="media-grid-view-model.series-detail" xml:space="preserve">
+    <value>Vos séries, avec leurs saisons.</value>
+  </data>
+  <data name="media-grid-view-model.photo-collection-detail" xml:space="preserve">
+    <value>Albums de cette collection. Les albums sont locaux : les photos partent vers l'iPod sans dossiers.</value>
+  </data>
+  <data name="media-grid-view-model.all-photos-detail" xml:space="preserve">
+    <value>Toutes vos images.</value>
+  </data>
+  <data name="media-grid-view-model.clips-detail" xml:space="preserve">
+    <value>Vidéos qui ne sont ni des films ni des séries.</value>
+  </data>
+  <data name="media-grid-view-model.videos-detail" xml:space="preserve">
+    <value>Toutes vos vidéos.</value>
+  </data>
+  <data name="settings-page.key-saved-short" xml:space="preserve">
+    <value>Enregistrée dans le Gestionnaire d'informations d'identification.</value>
+  </data>
+  <data name="settings-page.key-not-set" xml:space="preserve">
+    <value>Non configurée.</value>
+  </data>
+  <data name="settings-page.guardar" xml:space="preserve">
+    <value>Enregistrer</value>
+  </data>
+  <data name="settings-page.key-placeholder-existing" xml:space="preserve">
+    <value>Une clé est déjà enregistrée</value>
+  </data>
+  <data name="settings-page.key-placeholder-new" xml:space="preserve">
+    <value>Collez la clé ici</value>
+  </data>
+  <data name="settings-page.get-the-key" xml:space="preserve">
+    <value>Obtenir la clé</value>
+  </data>
   <data name="library-view-model.prepared-no-transcoder" xml:space="preserve">
     <value>Impossible de préparer « {0} » pour l'iPod : il faut le convertir et aucun convertisseur n'est disponible. Le morceau est synchronisé tel quel, sans les tags corrigés.</value>
   </data>
