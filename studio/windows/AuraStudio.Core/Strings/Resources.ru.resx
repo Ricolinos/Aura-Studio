@@ -846,6 +846,54 @@
   <data name="privileged.request-unreadable" xml:space="preserve">
     <value>Не удалось прочитать запрос.</value>
   </data>
+  <data name="disk-abort.requery-failed" xml:space="preserve">
+    <value>не удалось повторно опросить диск ({0})</value>
+  </data>
+  <data name="disk-abort.gone" xml:space="preserve">
+    <value>диска {0} больше нет</value>
+  </data>
+  <data name="disk-abort.not-usb" xml:space="preserve">
+    <value>диск больше не отображается подключённым по USB (шина {0})</value>
+  </data>
+  <data name="disk-abort.no-media" xml:space="preserve">
+    <value>в диске больше нет носителя</value>
+  </data>
+  <data name="disk-abort.size-changed" xml:space="preserve">
+    <value>размер диска больше не совпадает ({0} байт)</value>
+  </data>
+  <data name="disk-abort.model-changed" xml:space="preserve">
+    <value>модель диска изменилась (теперь указано «{0}»)</value>
+  </data>
+  <data name="disk-abort.beyond-mbr" xml:space="preserve">
+    <value>диск не помещается в 32-битную адресацию MBR</value>
+  </data>
+  <data name="disk-abort.fat32-layout" xml:space="preserve">
+    <value>на этом диске нельзя создать FAT32: {0}</value>
+  </data>
+  <data name="disk-abort.write-failed" xml:space="preserve">
+    <value>Не удалось записать на диск: {0}</value>
+  </data>
+  <data name="app-update.download-failed" xml:space="preserve">
+    <value>Не удалось скачать установщик: {0}</value>
+  </data>
+  <data name="app-update.cannot-open" xml:space="preserve">
+    <value>Установщик скачан в {0}, но открыть его не удалось: {1}</value>
+  </data>
+  <data name="dfu-flash.tool-start-failed" xml:space="preserve">
+    <value>Не удалось запустить mks5lboot.exe: {0}</value>
+  </data>
+  <data name="audio-transcoder.convert-failed" xml:space="preserve">
+    <value>не удалось преобразовать в {0}: {1}</value>
+  </data>
+  <data name="theme-packager.source-file-missing" xml:space="preserve">
+    <value>В исходной папке нет {0}.</value>
+  </data>
+  <data name="networking.http-error" xml:space="preserve">
+    <value>Ошибка сети (HTTP {0})</value>
+  </data>
+  <data name="storage-breakdown.usage-line" xml:space="preserve">
+    <value>Занято {0} из {1} — свободно {2}</value>
+  </data>
   <data name="firmware-artifacts.missing-checksums" xml:space="preserve">
     <value>Нет {0}: файлы прошивки не с чем сверить.</value>
   </data>

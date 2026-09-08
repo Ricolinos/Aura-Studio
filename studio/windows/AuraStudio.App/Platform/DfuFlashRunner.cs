@@ -174,7 +174,7 @@ public sealed class DfuFlashRunner : IDfuFlashRunner
             }
             catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
             {
-                return new ProcessResult(-1, $"No se pudo iniciar mks5lboot.exe: {ex.Message}");
+                return new ProcessResult(-1, Strings.Format("dfu-flash.tool-start-failed", ex.Message));
             }
 
             process.BeginOutputReadLine();

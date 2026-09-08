@@ -150,7 +150,7 @@ public static class ThemeInstaller
         Task.Run(() =>
         {
             if (!AuraThemeID.IsValid(themeId))
-                throw new ThemeInstallException($"Id de tema inválido: {themeId}");
+                throw new ThemeInstallException(Strings.Format("theme-installer.invalid-theme-id", themeId));
 
             string source = ThemeDirectory(volumeRoot, themeId);
             if (!Directory.Exists(source))

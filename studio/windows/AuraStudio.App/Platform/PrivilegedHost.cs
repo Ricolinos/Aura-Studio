@@ -126,12 +126,12 @@ internal static class PrivilegedHost
         }
         catch (ManagementException ex)
         {
-            return (null, $"no se pudo volver a consultar el disco ({ex.Message})");
+            return (null, Strings.Format("disk-abort.requery-failed", ex.Message));
         }
 
         if (facts is null)
         {
-            return (null, $"el disco {operation.DiskNumber} ya no existe");
+            return (null, Strings.Format("disk-abort.gone", operation.DiskNumber));
         }
 
         log.Add($"disco {facts.Number}: {facts.Model}, {facts.SizeBytes} bytes, " +
@@ -141,23 +141,23 @@ internal static class PrivilegedHost
         // y esta es la última barrera antes de borrar.
         if (!facts.InterfaceType.Equals("USB", StringComparison.OrdinalIgnoreCase))
         {
-            return (null, $"el disco ya no aparece conectado por USB (bus {facts.InterfaceType})");
+            return (null, Strings.Format("disk-abort.not-usb", facts.InterfaceType));
         }
         if (!facts.MediaLoaded)
         {
-            return (null, "el disco ya no tiene medio montado");
+            return (null, Strings.Get("disk-abort.no-media"));
         }
 
         long difference = Math.Abs(facts.SizeBytes - operation.ExpectedSizeBytes);
         if (difference > operation.SizeToleranceBytes)
         {
-            return (null, $"el tamaño del disco ya no coincide ({facts.SizeBytes} bytes)");
+            return (null, Strings.Format("disk-abort.size-changed", facts.SizeBytes));
         }
 
         if (operation.ExpectedModel.Length > 0
             && !facts.Model.Equals(operation.ExpectedModel, StringComparison.OrdinalIgnoreCase))
         {
-            return (null, $"el modelo del disco cambió (ahora dice «{facts.Model}»)");
+            return (null, Strings.Format("disk-abort.model-changed", facts.Model));
         }
 
         return (facts, null);
@@ -178,7 +178,7 @@ internal static class PrivilegedHost
         if (partitionSectors <= 0 || partitionSectors > uint.MaxValue)
         {
             return PrivilegedOperationResult.Abort(
-                "el disco no entra en el direccionamiento de 32 bits del MBR", log);
+                Strings.Get("disk-abort.beyond-mbr"), log);
         }
 
         Fat32Layout layout;
@@ -188,7 +188,7 @@ internal static class PrivilegedHost
         }
         catch (ArgumentOutOfRangeException ex)
         {
-            return PrivilegedOperationResult.Abort($"no se puede armar un FAT32 en este disco: {ex.Message}", log);
+            return PrivilegedOperationResult.Abort(Strings.Format("disk-abort.fat32-layout", ex.Message), log);
         }
 
         log.Add($"plan: partición en LBA {firstLba}, {partitionSectors} sectores, " +
@@ -238,7 +238,7 @@ internal static class PrivilegedHost
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             return PrivilegedOperationResult.Failure(
-                $"No se pudo escribir en el disco: {ex.Message}", log);
+                Strings.Format("disk-abort.write-failed", ex.Message), log);
         }
         finally
         {

@@ -843,6 +843,54 @@
   <data name="privileged.request-unreadable" xml:space="preserve">
     <value>La petición no se pudo leer.</value>
   </data>
+  <data name="disk-abort.requery-failed" xml:space="preserve">
+    <value>no se pudo volver a consultar el disco ({0})</value>
+  </data>
+  <data name="disk-abort.gone" xml:space="preserve">
+    <value>el disco {0} ya no existe</value>
+  </data>
+  <data name="disk-abort.not-usb" xml:space="preserve">
+    <value>el disco ya no aparece conectado por USB (bus {0})</value>
+  </data>
+  <data name="disk-abort.no-media" xml:space="preserve">
+    <value>el disco ya no tiene medio montado</value>
+  </data>
+  <data name="disk-abort.size-changed" xml:space="preserve">
+    <value>el tamaño del disco ya no coincide ({0} bytes)</value>
+  </data>
+  <data name="disk-abort.model-changed" xml:space="preserve">
+    <value>el modelo del disco cambió (ahora dice «{0}»)</value>
+  </data>
+  <data name="disk-abort.beyond-mbr" xml:space="preserve">
+    <value>el disco no entra en el direccionamiento de 32 bits del MBR</value>
+  </data>
+  <data name="disk-abort.fat32-layout" xml:space="preserve">
+    <value>no se puede armar un FAT32 en este disco: {0}</value>
+  </data>
+  <data name="disk-abort.write-failed" xml:space="preserve">
+    <value>No se pudo escribir en el disco: {0}</value>
+  </data>
+  <data name="app-update.download-failed" xml:space="preserve">
+    <value>No se pudo descargar el instalador: {0}</value>
+  </data>
+  <data name="app-update.cannot-open" xml:space="preserve">
+    <value>El instalador se descargó en {0}, pero no se pudo abrir: {1}</value>
+  </data>
+  <data name="dfu-flash.tool-start-failed" xml:space="preserve">
+    <value>No se pudo iniciar mks5lboot.exe: {0}</value>
+  </data>
+  <data name="audio-transcoder.convert-failed" xml:space="preserve">
+    <value>no se pudo convertir a {0}: {1}</value>
+  </data>
+  <data name="theme-packager.source-file-missing" xml:space="preserve">
+    <value>No se encontró {0} en la carpeta de origen.</value>
+  </data>
+  <data name="networking.http-error" xml:space="preserve">
+    <value>Error de red (HTTP {0})</value>
+  </data>
+  <data name="storage-breakdown.usage-line" xml:space="preserve">
+    <value>{0} usados de {1} — {2} libres</value>
+  </data>
   <data name="firmware-artifacts.missing-checksums" xml:space="preserve">
     <value>Falta {0}: no hay con qué verificar los archivos del firmware.</value>
   </data>

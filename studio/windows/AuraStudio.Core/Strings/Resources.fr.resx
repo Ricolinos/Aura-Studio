@@ -843,6 +843,54 @@
   <data name="privileged.request-unreadable" xml:space="preserve">
     <value>La demande n'a pas pu être lue.</value>
   </data>
+  <data name="disk-abort.requery-failed" xml:space="preserve">
+    <value>le disque n'a pas pu être interrogé à nouveau ({0})</value>
+  </data>
+  <data name="disk-abort.gone" xml:space="preserve">
+    <value>le disque {0} n'existe plus</value>
+  </data>
+  <data name="disk-abort.not-usb" xml:space="preserve">
+    <value>le disque n'apparaît plus connecté en USB (bus {0})</value>
+  </data>
+  <data name="disk-abort.no-media" xml:space="preserve">
+    <value>le disque n'a plus de support monté</value>
+  </data>
+  <data name="disk-abort.size-changed" xml:space="preserve">
+    <value>la taille du disque ne correspond plus ({0} octets)</value>
+  </data>
+  <data name="disk-abort.model-changed" xml:space="preserve">
+    <value>le modèle du disque a changé (il indique maintenant « {0} »)</value>
+  </data>
+  <data name="disk-abort.beyond-mbr" xml:space="preserve">
+    <value>le disque ne tient pas dans l'adressage 32 bits du MBR</value>
+  </data>
+  <data name="disk-abort.fat32-layout" xml:space="preserve">
+    <value>impossible de construire un FAT32 sur ce disque : {0}</value>
+  </data>
+  <data name="disk-abort.write-failed" xml:space="preserve">
+    <value>Impossible d'écrire sur le disque : {0}</value>
+  </data>
+  <data name="app-update.download-failed" xml:space="preserve">
+    <value>L'installateur n'a pas pu être téléchargé : {0}</value>
+  </data>
+  <data name="app-update.cannot-open" xml:space="preserve">
+    <value>L'installateur a été téléchargé dans {0}, mais n'a pas pu être ouvert : {1}</value>
+  </data>
+  <data name="dfu-flash.tool-start-failed" xml:space="preserve">
+    <value>mks5lboot.exe n'a pas pu être démarré : {0}</value>
+  </data>
+  <data name="audio-transcoder.convert-failed" xml:space="preserve">
+    <value>la conversion en {0} a échoué : {1}</value>
+  </data>
+  <data name="theme-packager.source-file-missing" xml:space="preserve">
+    <value>{0} est introuvable dans le dossier source.</value>
+  </data>
+  <data name="networking.http-error" xml:space="preserve">
+    <value>Erreur réseau (HTTP {0})</value>
+  </data>
+  <data name="storage-breakdown.usage-line" xml:space="preserve">
+    <value>{0} utilisés sur {1} — {2} libres</value>
+  </data>
   <data name="firmware-artifacts.missing-checksums" xml:space="preserve">
     <value>{0} manque : il n'y a rien pour vérifier les fichiers du microprogramme.</value>
   </data>

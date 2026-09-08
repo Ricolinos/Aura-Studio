@@ -780,6 +780,54 @@
   <data name="privileged.request-unreadable" xml:space="preserve">
     <value>要求を読み取れませんでした。</value>
   </data>
+  <data name="disk-abort.requery-failed" xml:space="preserve">
+    <value>ディスクを再度確認できませんでした（{0}）</value>
+  </data>
+  <data name="disk-abort.gone" xml:space="preserve">
+    <value>ディスク {0} はもうありません</value>
+  </data>
+  <data name="disk-abort.not-usb" xml:space="preserve">
+    <value>ディスクが USB 接続として見えなくなりました（バス {0}）</value>
+  </data>
+  <data name="disk-abort.no-media" xml:space="preserve">
+    <value>ディスクにメディアが入っていません</value>
+  </data>
+  <data name="disk-abort.size-changed" xml:space="preserve">
+    <value>ディスクのサイズが一致しません（{0} バイト）</value>
+  </data>
+  <data name="disk-abort.model-changed" xml:space="preserve">
+    <value>ディスクのモデルが変わりました（いまは「{0}」）</value>
+  </data>
+  <data name="disk-abort.beyond-mbr" xml:space="preserve">
+    <value>このディスクは MBR の 32 ビットのアドレス範囲に収まりません</value>
+  </data>
+  <data name="disk-abort.fat32-layout" xml:space="preserve">
+    <value>このディスクには FAT32 を作れません: {0}</value>
+  </data>
+  <data name="disk-abort.write-failed" xml:space="preserve">
+    <value>ディスクに書き込めませんでした: {0}</value>
+  </data>
+  <data name="app-update.download-failed" xml:space="preserve">
+    <value>インストーラーをダウンロードできませんでした: {0}</value>
+  </data>
+  <data name="app-update.cannot-open" xml:space="preserve">
+    <value>インストーラーは {0} にダウンロードしましたが、開けませんでした: {1}</value>
+  </data>
+  <data name="dfu-flash.tool-start-failed" xml:space="preserve">
+    <value>mks5lboot.exe を起動できませんでした: {0}</value>
+  </data>
+  <data name="audio-transcoder.convert-failed" xml:space="preserve">
+    <value>{0} に変換できませんでした: {1}</value>
+  </data>
+  <data name="theme-packager.source-file-missing" xml:space="preserve">
+    <value>元のフォルダーに {0} が見つかりませんでした。</value>
+  </data>
+  <data name="networking.http-error" xml:space="preserve">
+    <value>ネットワークエラー（HTTP {0}）</value>
+  </data>
+  <data name="storage-breakdown.usage-line" xml:space="preserve">
+    <value>{1} 中 {0} を使用 — 空き {2}</value>
+  </data>
   <data name="firmware-artifacts.missing-checksums" xml:space="preserve">
     <value>{0} がありません。ファームウェアのファイルを検証する手がかりがありません。</value>
   </data>

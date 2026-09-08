@@ -843,6 +843,54 @@
   <data name="privileged.request-unreadable" xml:space="preserve">
     <value>Die Anfrage konnte nicht gelesen werden.</value>
   </data>
+  <data name="disk-abort.requery-failed" xml:space="preserve">
+    <value>der Datenträger konnte nicht erneut abgefragt werden ({0})</value>
+  </data>
+  <data name="disk-abort.gone" xml:space="preserve">
+    <value>der Datenträger {0} existiert nicht mehr</value>
+  </data>
+  <data name="disk-abort.not-usb" xml:space="preserve">
+    <value>der Datenträger erscheint nicht mehr über USB verbunden (Bus {0})</value>
+  </data>
+  <data name="disk-abort.no-media" xml:space="preserve">
+    <value>im Datenträger ist kein Medium mehr eingelegt</value>
+  </data>
+  <data name="disk-abort.size-changed" xml:space="preserve">
+    <value>die Größe des Datenträgers stimmt nicht mehr überein ({0} Bytes)</value>
+  </data>
+  <data name="disk-abort.model-changed" xml:space="preserve">
+    <value>das Modell des Datenträgers hat sich geändert (jetzt steht dort „{0}“)</value>
+  </data>
+  <data name="disk-abort.beyond-mbr" xml:space="preserve">
+    <value>der Datenträger passt nicht in die 32-Bit-Adressierung des MBR</value>
+  </data>
+  <data name="disk-abort.fat32-layout" xml:space="preserve">
+    <value>auf diesem Datenträger lässt sich kein FAT32 anlegen: {0}</value>
+  </data>
+  <data name="disk-abort.write-failed" xml:space="preserve">
+    <value>Auf den Datenträger konnte nicht geschrieben werden: {0}</value>
+  </data>
+  <data name="app-update.download-failed" xml:space="preserve">
+    <value>Der Installer konnte nicht heruntergeladen werden: {0}</value>
+  </data>
+  <data name="app-update.cannot-open" xml:space="preserve">
+    <value>Der Installer wurde nach {0} heruntergeladen, ließ sich aber nicht öffnen: {1}</value>
+  </data>
+  <data name="dfu-flash.tool-start-failed" xml:space="preserve">
+    <value>mks5lboot.exe konnte nicht gestartet werden: {0}</value>
+  </data>
+  <data name="audio-transcoder.convert-failed" xml:space="preserve">
+    <value>es konnte nicht in {0} umgewandelt werden: {1}</value>
+  </data>
+  <data name="theme-packager.source-file-missing" xml:space="preserve">
+    <value>{0} wurde im Quellordner nicht gefunden.</value>
+  </data>
+  <data name="networking.http-error" xml:space="preserve">
+    <value>Netzwerkfehler (HTTP {0})</value>
+  </data>
+  <data name="storage-breakdown.usage-line" xml:space="preserve">
+    <value>{0} von {1} belegt — {2} frei</value>
+  </data>
   <data name="firmware-artifacts.missing-checksums" xml:space="preserve">
     <value>{0} fehlt: Es gibt nichts, womit sich die Firmware-Dateien prüfen ließen.</value>
   </data>

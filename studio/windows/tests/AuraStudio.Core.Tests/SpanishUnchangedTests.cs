@@ -622,6 +622,19 @@ public class SpanishUnchangedTests
         "similarity.same-file-size-with-size", "similarity.artist-spelled-differently",
         "similarity.artist-similar", "similarity.other-version",
         "similarity.same-filename-ignoring-copy", "similarity.almost-same-filename",
+
+        // B7d, paso 2 (barrida final): lo que el trinquete no veía. Las nueve
+        // RAZONES POR LAS QUE NO SE ESCRIBE EN EL DISCO son las más importantes
+        // del lote —CriticalStrings ya nombra esa familia— y estaban
+        // clasificadas como bitácora en el triaje: se devuelven como motivo de
+        // un Abort, o sea que el usuario las lee cuando el formateo se detiene.
+        "disk-abort.requery-failed", "disk-abort.gone", "disk-abort.not-usb",
+        "disk-abort.no-media", "disk-abort.size-changed", "disk-abort.model-changed",
+        "disk-abort.beyond-mbr", "disk-abort.fat32-layout", "disk-abort.write-failed",
+        "app-update.download-failed", "app-update.cannot-open",
+        "dfu-flash.tool-start-failed", "audio-transcoder.convert-failed",
+        "theme-packager.source-file-missing", "networking.http-error",
+        "storage-breakdown.usage-line",
     ];
 
     /// <summary>

@@ -81,7 +81,7 @@ internal static class AppUpdateInstaller
             Discard(destination);
             return new AppUpdateDownloadResult(
                 AppUpdateDownloadOutcome.DownloadFailed,
-                $"No se pudo descargar el instalador: {ex.Message}");
+                Strings.Format("app-update.download-failed", ex.Message));
         }
 
         if (await VerifyAsync(destination, asset, ct).ConfigureAwait(false) is { } problem)
@@ -101,7 +101,7 @@ internal static class AppUpdateInstaller
         {
             return new AppUpdateDownloadResult(
                 AppUpdateDownloadOutcome.LaunchFailed,
-                $"El instalador se descargó en {destination}, pero no se pudo abrir: {ex.Message}");
+                Strings.Format("app-update.cannot-open", destination, ex.Message));
         }
 
         return new AppUpdateDownloadResult(

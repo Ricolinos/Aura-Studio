@@ -186,7 +186,7 @@ public static class AudioTranscoder
         catch (Exception ex) when (ex is not (OperationCanceledException or AudioTranscodeException
                                        or OutOfMemoryException))
         {
-            throw new AudioTranscodeException($"no se pudo convertir a {NameOf(codec)}: {ex.Message}");
+            throw new AudioTranscodeException(Strings.Format("audio-transcoder.convert-failed", NameOf(codec), ex.Message));
         }
         finally
         {

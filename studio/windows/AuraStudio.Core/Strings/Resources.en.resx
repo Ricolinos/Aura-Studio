@@ -843,6 +843,54 @@
   <data name="privileged.request-unreadable" xml:space="preserve">
     <value>The request could not be read.</value>
   </data>
+  <data name="disk-abort.requery-failed" xml:space="preserve">
+    <value>the disk could not be queried again ({0})</value>
+  </data>
+  <data name="disk-abort.gone" xml:space="preserve">
+    <value>disk {0} no longer exists</value>
+  </data>
+  <data name="disk-abort.not-usb" xml:space="preserve">
+    <value>the disk no longer appears connected over USB (bus {0})</value>
+  </data>
+  <data name="disk-abort.no-media" xml:space="preserve">
+    <value>the disk no longer has media loaded</value>
+  </data>
+  <data name="disk-abort.size-changed" xml:space="preserve">
+    <value>the disk size no longer matches ({0} bytes)</value>
+  </data>
+  <data name="disk-abort.model-changed" xml:space="preserve">
+    <value>the disk model changed (it now says "{0}")</value>
+  </data>
+  <data name="disk-abort.beyond-mbr" xml:space="preserve">
+    <value>the disk does not fit in the MBR's 32-bit addressing</value>
+  </data>
+  <data name="disk-abort.fat32-layout" xml:space="preserve">
+    <value>a FAT32 cannot be built on this disk: {0}</value>
+  </data>
+  <data name="disk-abort.write-failed" xml:space="preserve">
+    <value>The disk could not be written to: {0}</value>
+  </data>
+  <data name="app-update.download-failed" xml:space="preserve">
+    <value>The installer could not be downloaded: {0}</value>
+  </data>
+  <data name="app-update.cannot-open" xml:space="preserve">
+    <value>The installer was downloaded to {0}, but it could not be opened: {1}</value>
+  </data>
+  <data name="dfu-flash.tool-start-failed" xml:space="preserve">
+    <value>mks5lboot.exe could not be started: {0}</value>
+  </data>
+  <data name="audio-transcoder.convert-failed" xml:space="preserve">
+    <value>it could not be converted to {0}: {1}</value>
+  </data>
+  <data name="theme-packager.source-file-missing" xml:space="preserve">
+    <value>{0} was not found in the source folder.</value>
+  </data>
+  <data name="networking.http-error" xml:space="preserve">
+    <value>Network error (HTTP {0})</value>
+  </data>
+  <data name="storage-breakdown.usage-line" xml:space="preserve">
+    <value>{0} used of {1} — {2} free</value>
+  </data>
   <data name="firmware-artifacts.missing-checksums" xml:space="preserve">
     <value>{0} is missing: there is nothing to verify the firmware files against.</value>
   </data>

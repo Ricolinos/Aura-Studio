@@ -23,7 +23,7 @@ public sealed class EnrichmentError : Exception
     public bool IsNoMatch { get; private init; }
 
     public static EnrichmentError Http(int statusCode) =>
-        new($"Error de red (HTTP {statusCode})") { StatusCode = statusCode };
+        new(Strings.Format("networking.http-error", statusCode)) { StatusCode = statusCode };
 
     public static EnrichmentError NoMatch =>
         new(Strings.Get("networking.no-results")) { IsNoMatch = true };
