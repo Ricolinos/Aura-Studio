@@ -1416,6 +1416,15 @@
   <data name="library-view-model.completando-title" xml:space="preserve">
     <value>Дополнение сведений: {0}…</value>
   </data>
+  <data name="library-view-model.prepared-no-transcoder" xml:space="preserve">
+    <value>Не удалось подготовить «{0}» для iPod: трек нужно преобразовать, а преобразователь недоступен. Он синхронизируется как есть, без исправленных тегов.</value>
+  </data>
+  <data name="library-view-model.prepared-transcode-failed" xml:space="preserve">
+    <value>Не удалось подготовить «{0}» для iPod: преобразование не удалось. Трек синхронизируется как есть, без исправленных тегов.</value>
+  </data>
+  <data name="library-view-model.prepared-copy-failed" xml:space="preserve">
+    <value>Не удалось подготовить «{0}» для iPod: не удалось скопировать файл. Трек синхронизируется как есть, без исправленных тегов.</value>
+  </data>
   <data name="library-view-model.copied-files.few" xml:space="preserve">
     <value>{0} файла скопировано в медиатеку.</value>
   </data>

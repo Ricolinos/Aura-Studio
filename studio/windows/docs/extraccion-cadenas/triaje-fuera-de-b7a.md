@@ -23,6 +23,15 @@ trinquete de `HardcodedSpanishTests`, y acá queda dicho por qué.
 |---|---:|---|
 | cierre de B7c | 386 | — |
 | trampa 1, `MediaInfoDialog` | 372 | los 27 textos de la hoja "Más información" a recursos en los seis idiomas, después de cambiar la llave del diccionario |
+| trampas 2 y 3, `PreparedMusic` | 371 | desenlace tipado en vez de `Contains("no se pudo")`, y tres frases enteras en lugar de una a medias |
+
+El trinquete baja poco en el segundo paso y eso es correcto: **doce literales
+cambiaron de clase, no de sitio.** Las razones de `PreparedMusic` estaban como
+PANTALLA porque salían a la barra de estado pegadas a otra frase; ahora que el
+mensaje se elige por el desenlace, esas razones son lo que siempre debieron ser
+—diagnóstico— y se quedan en español a propósito. Cuentan igual en el
+trinquete, que mide literales en español y no si están bien puestos; lo que
+bajó de la deuda de traducción son doce, aunque el número de arriba diga uno.
 
 ## Conteo
 

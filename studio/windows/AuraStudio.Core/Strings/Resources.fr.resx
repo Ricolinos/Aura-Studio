@@ -1362,6 +1362,15 @@
   <data name="library-view-model.completando-title" xml:space="preserve">
     <value>Complément de {0}…</value>
   </data>
+  <data name="library-view-model.prepared-no-transcoder" xml:space="preserve">
+    <value>Impossible de préparer « {0} » pour l'iPod : il faut le convertir et aucun convertisseur n'est disponible. Le morceau est synchronisé tel quel, sans les tags corrigés.</value>
+  </data>
+  <data name="library-view-model.prepared-transcode-failed" xml:space="preserve">
+    <value>Impossible de préparer « {0} » pour l'iPod : la conversion a échoué. Le morceau est synchronisé tel quel, sans les tags corrigés.</value>
+  </data>
+  <data name="library-view-model.prepared-copy-failed" xml:space="preserve">
+    <value>Impossible de préparer « {0} » pour l'iPod : le fichier n'a pas pu être copié. Le morceau est synchronisé tel quel, sans les tags corrigés.</value>
+  </data>
   <data name="library-view-model.copied-files.one" xml:space="preserve">
     <value>{0} fichier copié dans la bibliothèque.</value>
   </data>

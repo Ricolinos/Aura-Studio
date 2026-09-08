@@ -1362,6 +1362,15 @@
   <data name="library-view-model.completando-title" xml:space="preserve">
     <value>Filling in {0}…</value>
   </data>
+  <data name="library-view-model.prepared-no-transcoder" xml:space="preserve">
+    <value>Couldn't prepare "{0}" for the iPod: it needs converting and there is no converter available. It syncs as is, without the corrected tags.</value>
+  </data>
+  <data name="library-view-model.prepared-transcode-failed" xml:space="preserve">
+    <value>Couldn't prepare "{0}" for the iPod: the conversion failed. It syncs as is, without the corrected tags.</value>
+  </data>
+  <data name="library-view-model.prepared-copy-failed" xml:space="preserve">
+    <value>Couldn't prepare "{0}" for the iPod: the file couldn't be copied. It syncs as is, without the corrected tags.</value>
+  </data>
   <data name="library-view-model.copied-files.one" xml:space="preserve">
     <value>{0} file copied into the library.</value>
   </data>

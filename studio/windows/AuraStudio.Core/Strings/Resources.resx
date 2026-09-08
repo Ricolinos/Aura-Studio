@@ -1362,6 +1362,15 @@
   <data name="library-view-model.completando-title" xml:space="preserve">
     <value>Completando {0}…</value>
   </data>
+  <data name="library-view-model.prepared-no-transcoder" xml:space="preserve">
+    <value>No se pudo preparar «{0}» para el iPod: hay que convertirla y no hay convertidor disponible. Se sincroniza como está, sin las etiquetas corregidas.</value>
+  </data>
+  <data name="library-view-model.prepared-transcode-failed" xml:space="preserve">
+    <value>No se pudo preparar «{0}» para el iPod: falló la conversión. Se sincroniza como está, sin las etiquetas corregidas.</value>
+  </data>
+  <data name="library-view-model.prepared-copy-failed" xml:space="preserve">
+    <value>No se pudo preparar «{0}» para el iPod: no se pudo copiar el archivo. Se sincroniza como está, sin las etiquetas corregidas.</value>
+  </data>
   <data name="library-view-model.copied-files.one" xml:space="preserve">
     <value>Se copió {0} archivo a la biblioteca.</value>
   </data>

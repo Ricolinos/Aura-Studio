@@ -1848,10 +1848,26 @@ public sealed partial class LibraryViewModel : ViewModelBase
             if (result.Path is not { Length: > 0 } prepared)
             {
                 // "No hacía falta" es la respuesta más común y no es una falla.
-                if (result.Action != PreparedMusicAction.None || result.Reason.Contains("no se pudo"))
+                //
+                // Esto preguntaba `result.Reason.Contains("no se pudo")`. No
+                // hacía falta traducir nada para romperlo: bastaba con que
+                // alguien reescribiera esa razón en español y dijera "no fue
+                // posible". Ahora el desenlace es un valor (ST-247, B7d).
+                //
+                // Y el mensaje ya no le pega la razón interna a una frase
+                // propia — era media oración del recurso y media escrita en
+                // Core, o sea media oración en cada idioma. Cada desenlace
+                // tiene la suya y dice qué hacer al respecto.
+                if (result.Failed)
                 {
-                    Dispatch(() => StatusMessage =
-                        $"No se pudo preparar «{name}» para el iPod: {result.Reason}");
+                    string key = result.Outcome switch
+                    {
+                        PreparedMusicOutcome.NoTranscoder => "library-view-model.prepared-no-transcoder",
+                        PreparedMusicOutcome.TranscodeFailed => "library-view-model.prepared-transcode-failed",
+                        _ => "library-view-model.prepared-copy-failed"
+                    };
+
+                    Dispatch(() => StatusMessage = Strings.Format(key, name));
                 }
 
                 return;

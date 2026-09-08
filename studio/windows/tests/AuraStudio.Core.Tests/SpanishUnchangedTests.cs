@@ -251,6 +251,21 @@ public class SpanishUnchangedTests
         // 「シリーズ」. Ahora el nombre es un hueco. Y el nombre de cada estrella
         // para el lector de pantalla era una interpolación, "{índice} de 5".
         "media-info-dialog.series-hint", "media-info-dialog.star-of-five",
+
+        // B7d, trampa 2: acá el español SÍ cambia, y es lo que se quería.
+        //
+        // El aviso era una frase armada a la mitad: "No se pudo preparar «X»
+        // para el iPod: " del código, y detrás la razón interna que devolvía
+        // Core —"hay que convertirlo y no hay convertidor"—. Traducida la
+        // primera mitad, la oración salía en dos idiomas. Y peor: para decidir
+        // si mostrarla se buscaba "no se pudo" DENTRO de esa razón.
+        //
+        // Ahora el desenlace es un valor y hay una frase entera por cada uno,
+        // que además dice lo que la anterior no decía: que la canción se
+        // sincroniza igual, sin las etiquetas corregidas.
+        "library-view-model.prepared-no-transcoder",
+        "library-view-model.prepared-transcode-failed",
+        "library-view-model.prepared-copy-failed",
     ];
 
     /// <summary>

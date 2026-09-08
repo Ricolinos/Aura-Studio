@@ -1362,6 +1362,15 @@
   <data name="library-view-model.completando-title" xml:space="preserve">
     <value>{0} wird ergänzt…</value>
   </data>
+  <data name="library-view-model.prepared-no-transcoder" xml:space="preserve">
+    <value>„{0}“ konnte nicht für den iPod vorbereitet werden: Der Titel muss umgewandelt werden und es ist kein Umwandler verfügbar. Er wird unverändert synchronisiert, ohne die korrigierten Tags.</value>
+  </data>
+  <data name="library-view-model.prepared-transcode-failed" xml:space="preserve">
+    <value>„{0}“ konnte nicht für den iPod vorbereitet werden: Die Umwandlung ist fehlgeschlagen. Der Titel wird unverändert synchronisiert, ohne die korrigierten Tags.</value>
+  </data>
+  <data name="library-view-model.prepared-copy-failed" xml:space="preserve">
+    <value>„{0}“ konnte nicht für den iPod vorbereitet werden: Die Datei konnte nicht kopiert werden. Der Titel wird unverändert synchronisiert, ohne die korrigierten Tags.</value>
+  </data>
   <data name="library-view-model.copied-files.one" xml:space="preserve">
     <value>{0} Datei in die Mediathek kopiert.</value>
   </data>

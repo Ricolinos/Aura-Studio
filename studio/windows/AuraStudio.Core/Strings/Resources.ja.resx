@@ -1236,6 +1236,15 @@
   <data name="library-view-model.completando-title" xml:space="preserve">
     <value>{0} の情報を補完しています…</value>
   </data>
+  <data name="library-view-model.prepared-no-transcoder" xml:space="preserve">
+    <value>「{0}」を iPod 用に準備できませんでした。変換が必要ですが、変換ツールがありません。この曲は、修正したタグなしでそのまま同期されます。</value>
+  </data>
+  <data name="library-view-model.prepared-transcode-failed" xml:space="preserve">
+    <value>「{0}」を iPod 用に準備できませんでした。変換に失敗しました。この曲は、修正したタグなしでそのまま同期されます。</value>
+  </data>
+  <data name="library-view-model.prepared-copy-failed" xml:space="preserve">
+    <value>「{0}」を iPod 用に準備できませんでした。ファイルをコピーできませんでした。この曲は、修正したタグなしでそのまま同期されます。</value>
+  </data>
   <data name="library-view-model.copied-files.other" xml:space="preserve">
     <value>{0}件のファイルをライブラリにコピーしました。</value>
   </data>
