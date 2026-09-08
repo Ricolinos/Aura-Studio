@@ -22,10 +22,10 @@ struct EnterDFUView: View {
                 .font(.title.bold())
 
             VStack(alignment: .leading, spacing: 14) {
-                DFUStepRow(number: 1, text: "Si tu iPod esta reproduciendo musica, deten la reproduccion.")
-                DFUStepRow(number: 2, text: "Manten presionados SELECT + MENU al mismo tiempo.")
-                DFUStepRow(number: 3, text: "Segui presionando ambos botones durante unos 12 segundos, hasta despues de que la pantalla se ponga negra.")
-                DFUStepRow(number: 4, text: "Soltalos. Aura Studio va a detectar el modo DFU automaticamente.")
+                DFUStepRow(number: 1, text: LS("dfu.step.stop-playback"))
+                DFUStepRow(number: 2, text: LS("dfu.step.hold-buttons"))
+                DFUStepRow(number: 3, text: LS("dfu.step.keep-holding"))
+                DFUStepRow(number: 4, text: LS("dfu.step.release"))
             }
             .frame(maxWidth: 460, alignment: .leading)
 

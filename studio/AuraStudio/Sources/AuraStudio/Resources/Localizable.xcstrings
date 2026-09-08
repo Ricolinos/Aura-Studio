@@ -2658,6 +2658,129 @@
         }
       }
     },
+    "await-bootloader.step.automatic": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio erkennt den Datenträger und kopiert Aura automatisch -- du musst nichts weiter tun."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio detects the disk and copies Aura automatically -- there’s nothing else to do."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio detecta el disco y copia Aura automáticamente -- no hay que tocar nada más."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio détecte le disque et copie Aura automatiquement -- il n’y a rien d’autre à faire."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio がディスクを検出し、自動的に Aura をコピーします。ほかに操作は必要ありません。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio обнаружит диск и скопирует Aura автоматически — больше ничего делать не нужно."
+          }
+        }
+      }
+    },
+    "await-bootloader.step.if-black": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wenn der Bildschirm des iPod nach etwa 30 Sekunden weiterhin schwarz bleibt oder er nicht als Datenträger erscheint, halte SELECT + MENU etwa 5 Sekunden gedrückt, um ihn neu zu starten -- ohne das Kabel abzuziehen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If after about 30 seconds the iPod’s screen is still black or it doesn’t show up as a disk, hold SELECT + MENU for about 5 seconds to restart it, without unplugging the cable."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si en unos 30 segundos la pantalla del iPod sigue negra o no aparece como disco, mantén SELECT + MENU unos 5 segundos para reiniciarlo, sin desconectar el cable."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si au bout d’environ 30 secondes l’écran de l’iPod est toujours noir ou qu’il n’apparaît pas comme disque, maintenez SELECT + MENU environ 5 secondes pour le redémarrer, sans débrancher le câble."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "30 秒ほど経っても iPod の画面が暗いまま、またはディスクとして表示されない場合は、ケーブルを抜かずに SELECT と MENU を 5 秒ほど押し続けて再起動してください。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если примерно через 30 секунд экран iPod всё ещё чёрный или он не появился как диск, удерживайте SELECT + MENU около 5 секунд, чтобы перезапустить его, не отключая кабель."
+          }
+        }
+      }
+    },
+    "await-bootloader.step.keep-cable": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lass das USB-Kabel angeschlossen. Der iPod startet von selbst neu und zeigt, da Aura noch nicht installiert ist, „Bootloader USB mode“ an und erscheint als Datenträger."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave the USB cable connected. The iPod restarts on its own and, since it doesn’t have Aura yet, its screen says “Bootloader USB mode” and it shows up as a disk."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deja el cable USB conectado. El iPod se reinicia solo y, como todavía no tiene Aura, su pantalla dice «Bootloader USB mode» y aparece como disco."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Laissez le câble USB branché. L’iPod redémarre tout seul et, comme Aura n’est pas encore installé, son écran affiche « Bootloader USB mode » et il apparaît comme un disque."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "USB ケーブルはつないだままにしてください。iPod はひとりでに再起動し、まだ Aura が入っていないため画面に「Bootloader USB mode」と表示され、ディスクとして認識されます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Оставьте USB-кабель подключённым. iPod перезапустится сам и, поскольку Aura ещё не установлена, покажет на экране «Bootloader USB mode» и появится как диск."
+          }
+        }
+      }
+    },
     "back-continue-row.atras": {
       "extractionState": "manual",
       "localizations": {
@@ -6615,6 +6738,170 @@
         }
       }
     },
+    "dfu.step.hold-buttons": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Halte SELECT + MENU gleichzeitig gedrückt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hold SELECT + MENU at the same time."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantén presionados SELECT + MENU al mismo tiempo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Maintenez SELECT + MENU en même temps."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SELECT と MENU を同時に押し続けます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Одновременно удерживайте SELECT + MENU."
+          }
+        }
+      }
+    },
+    "dfu.step.keep-holding": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Halte beide Tasten etwa 12 Sekunden lang gedrückt, bis nach dem Schwarzwerden des Bildschirms."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep both buttons held for about 12 seconds, until after the screen goes black."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sigue presionando ambos botones durante unos 12 segundos, hasta después de que la pantalla se ponga negra."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuez d’appuyer sur les deux boutons pendant environ 12 secondes, jusqu’après l’extinction de l’écran."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "画面が真っ暗になったあとも含めて、両方のボタンを約 12 秒間押し続けます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Удерживайте обе кнопки около 12 секунд — до момента после того, как экран погаснет."
+          }
+        }
+      }
+    },
+    "dfu.step.release": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lass los. Aura Studio erkennt den DFU-Modus automatisch."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Let go. Aura Studio will detect DFU mode automatically."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suéltalos. Aura Studio va a detectar el modo DFU automáticamente."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Relâchez. Aura Studio détectera le mode DFU automatiquement."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "手を離してください。Aura Studio が自動的に DFU モードを検出します。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Отпустите. Aura Studio обнаружит режим DFU автоматически."
+          }
+        }
+      }
+    },
+    "dfu.step.stop-playback": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wenn dein iPod gerade Musik abspielt, stoppe die Wiedergabe."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If your iPod is playing music, stop playback."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si tu iPod está reproduciendo música, detén la reproducción."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si votre iPod lit de la musique, arrêtez la lecture."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod で音楽を再生中なら、再生を停止してください。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если на iPod играет музыка, остановите воспроизведение."
+          }
+        }
+      }
+    },
     "done-view.abrir-acceso-total-al-disco": {
       "extractionState": "manual",
       "localizations": {
@@ -6980,6 +7267,416 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ваш iPod по-прежнему показывает оригинальную прошивку?"
+          }
+        }
+      }
+    },
+    "done.failure.title.generic": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Etwas ist schiefgelaufen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Algo salio mal"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une erreur s’est produite"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "問題が発生しました"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Что-то пошло не так"
+          }
+        }
+      }
+    },
+    "done.failure.title.not-ready": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser iPod ist nicht bereit für Dual Boot"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This iPod isn’t ready for dual boot"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este iPod no está listo para dual boot"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cet iPod n’est pas prêt pour le dual boot"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "この iPod はデュアルブートの準備ができていません"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Этот iPod не готов к двойной загрузке"
+          }
+        }
+      }
+    },
+    "done.failure.unknown-error": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unbekannter Fehler."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown error."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Error desconocido."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erreur inconnue."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不明なエラーです。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Неизвестная ошибка."
+          }
+        }
+      }
+    },
+    "done.message.install": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alle Dateien sind installiert: Du kannst das Kabel jetzt sicher abziehen. Der iPod bootet mit %@ – startet er nicht von selbst neu, halte SELECT + MENU ein paar Sekunden gedrückt. Danach kannst du im Tab „Mediathek“ von Aura Studio deine Musik, Fotos und Videos synchronisieren."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All the files are installed: you can safely unplug the cable now. The iPod will boot with %@ — if it doesn’t restart on its own, hold SELECT + MENU for a few seconds. After that you can use the Library tab in Aura Studio to sync your music, photos and videos."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Todos los archivos quedaron instalados: ya puedes desconectar el cable con seguridad. El iPod va a arrancar con %@ -- si no reinicia solo, mantén SELECT + MENU unos segundos. Despues puedes usar la pestana Biblioteca de Aura Studio para sincronizar tu musica, fotos y videos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tous les fichiers sont installés : vous pouvez débrancher le câble en toute sécurité. L’iPod va démarrer avec %@ — s’il ne redémarre pas tout seul, maintenez SELECT + MENU quelques secondes. Ensuite, vous pourrez utiliser l’onglet Bibliothèque d’Aura Studio pour synchroniser votre musique, vos photos et vos vidéos."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すべてのファイルのインストールが完了しました。ケーブルは安全に外せます。iPod は %@ で起動します。ひとりでに再起動しない場合は、SELECT + MENU を数秒間押し続けてください。そのあとは Aura Studio の「ライブラリ」タブで音楽・写真・ビデオを同期できます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Все файлы установлены: кабель можно безопасно отключить. iPod загрузится с %@ — если он не перезапустится сам, удерживайте SELECT + MENU несколько секунд. После этого вы сможете синхронизировать музыку, фото и видео на вкладке «Медиатека» в Aura Studio."
+          }
+        }
+      }
+    },
+    "done.message.install-manual-reboot": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ ist installiert. Du kannst das Kabel jetzt sicher abziehen. Der iPod wartet im „Bootloader USB mode“: Halte SELECT + MENU etwa 5 Sekunden gedrückt, um ihn neu zu starten; danach bootet er mit %1$@. Anschließend kannst du die Mediathek von Aura Studio nutzen, um deine Musik, Fotos und Videos zu synchronisieren."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ is installed. You can safely unplug the cable now. The iPod is waiting in “Bootloader USB mode”: hold SELECT + MENU for about 5 seconds to restart it and it will boot with %1$@. After that you can use the Aura Studio library to sync your music, photos and videos."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ quedó instalado. Ya puedes desconectar el cable con seguridad. El iPod se quedó esperando en \"Bootloader USB mode\": mantén SELECT + MENU unos 5 segundos para reiniciarlo y arranca con %1$@. Después puedes usar la biblioteca de Aura Studio para sincronizar tu música, fotos y videos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ est installé. Vous pouvez débrancher le câble en toute sécurité. L’iPod est resté en attente dans « Bootloader USB mode » : maintenez SELECT + MENU environ 5 secondes pour le redémarrer, et il démarrera avec %1$@. Ensuite, vous pourrez utiliser la bibliothèque d’Aura Studio pour synchroniser votre musique, vos photos et vos vidéos."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ のインストールが完了しました。ケーブルは安全に外せます。iPod は「Bootloader USB mode」で待機しています。SELECT + MENU を 5 秒ほど押し続けると再起動し、%1$@ で起動します。そのあとは Aura Studio のライブラリで音楽・写真・ビデオを同期できます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установка %1$@ завершена. Кабель можно безопасно отключить. iPod остался ждать в режиме «Bootloader USB mode»: удерживайте SELECT + MENU около 5 секунд, чтобы перезапустить его — он загрузится с %1$@. После этого вы сможете синхронизировать музыку, фото и видео через медиатеку Aura Studio."
+          }
+        }
+      }
+    },
+    "done.message.restore": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein iPod startet neu und bootet mit Apples Original-Firmware. Du kannst das Kabel jetzt abziehen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod will restart and boot with Apple’s original firmware. You can unplug the cable now."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod va a reiniciar y arrancar con el firmware original de Apple. Ya puedes desconectar el cable."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre iPod va redémarrer et démarrer avec le firmware d’origine d’Apple. Vous pouvez débrancher le câble."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod は再起動し、Apple 純正のファームウェアで起動します。ケーブルを外して問題ありません。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваш iPod перезапустится и загрузится с оригинальной прошивкой Apple. Теперь кабель можно отключить."
+          }
+        }
+      }
+    },
+    "done.message.update-bootloader": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Bootloader ist aktualisiert. Deine Musik, deine Fotos und deine Einstellungen sind genau dort, wo sie waren – die Festplatte wurde nicht angerührt. Du kannst das Kabel jetzt abziehen; startet der iPod nicht von selbst neu, halte SELECT + MENU ein paar Sekunden gedrückt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The boot loader is updated. Your music, your photos and your settings are exactly where they were — this didn’t touch the disk. You can unplug the cable now; if the iPod doesn’t restart on its own, hold SELECT + MENU for a few seconds."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El arranque quedó actualizado. Tu música, tus fotos y tus ajustes siguen exactamente donde estaban -- esto no tocó el disco. Ya puedes desconectar el cable; si el iPod no reinicia solo, mantén SELECT + MENU unos segundos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le bootloader est à jour. Votre musique, vos photos et vos réglages sont exactement là où ils étaient — le disque n’a pas été touché. Vous pouvez débrancher le câble ; si l’iPod ne redémarre pas tout seul, maintenez SELECT + MENU quelques secondes."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ブートローダーを更新しました。音楽、写真、設定は元のままです。ディスクには一切触れていません。ケーブルを外して構いません。iPod がひとりでに再起動しない場合は、SELECT + MENU を数秒間押し続けてください。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузчик обновлён. Ваша музыка, фотографии и настройки остались ровно там, где были, — диск не затрагивался. Кабель можно отключить; если iPod не перезапустится сам, удерживайте SELECT + MENU несколько секунд."
+          }
+        }
+      }
+    },
+    "done.title.install": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ installiert"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ installed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ instalado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ installé"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ をインストールしました"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установка %@ завершена"
+          }
+        }
+      }
+    },
+    "done.title.restore": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod wiederhergestellt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod restored"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod restaurado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod restauré"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod を復元しました"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod восстановлен"
+          }
+        }
+      }
+    },
+    "done.title.update-bootloader": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bootloader aktualisiert"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Boot loader updated"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arranque actualizado"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bootloader mis à jour"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ブートローダーを更新しました"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузчик обновлён"
           }
         }
       }
@@ -8706,6 +9403,1154 @@
         }
       }
     },
+    "installer.error.authorization-cancelled": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Du hast die Administratorberechtigung abgebrochen. Dieser Schritt kann ohne sie nicht fortfahren."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You cancelled the administrator permission. This step can’t continue without it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelaste el permiso de administrador. Este paso no puede continuar sin él."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vous avez annulé l’autorisation d’administrateur. Cette étape ne peut pas continuer sans elle."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "管理者の許可がキャンセルされました。この手順は許可なしでは続けられません。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Вы отменили разрешение администратора. Без него этот шаг продолжить нельзя."
+          }
+        }
+      }
+    },
+    "installer.error.bootloader-not-applied": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der iPod ist mit Apples Original-Firmware am USB zurückgekommen: Auras Bootloader wurde nicht geschrieben. Versuche den DFU-Schritt erneut (die Festplatte ist bereits vorbereitet, sie muss nicht noch einmal formatiert werden)."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The iPod came back with Apple’s original firmware handling USB: Aura’s boot loader wasn’t written. Try the DFU step again (the disk is already prepared, there’s no need to format it again)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El iPod volvió a aparecer con el firmware original de Apple atendiendo el USB: el bootloader de Aura no quedó grabado. Vuelve a intentar el paso de DFU (el disco ya está preparado, no hace falta formatearlo otra vez)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’iPod est revenu avec le firmware d’origine d’Apple sur l’USB : le bootloader d’Aura n’a pas été écrit. Réessayez l’étape DFU (le disque est déjà préparé, inutile de le reformater)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod が Apple 純正ファームウェアで USB を処理する状態に戻りました。Aura のブートローダーは書き込まれていません。DFU の手順をもう一度お試しください（ディスクは準備済みなので、再フォーマットは不要です）。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod снова определяется с оригинальной прошивкой Apple на USB: загрузчик Aura не записался. Повторите шаг DFU (диск уже подготовлен, форматировать его снова не нужно)."
+          }
+        }
+      }
+    },
+    "installer.error.checksum-mismatch": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Datei %@ hat die Integritätsprüfung nicht bestanden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The file %@ failed its integrity check."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El archivo %@ no superó la verificación de integridad."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le fichier %@ n’a pas passé la vérification d’intégrité."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ファイル %@ は整合性の検証に通りませんでした。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Файл %@ не прошёл проверку целостности."
+          }
+        }
+      }
+    },
+    "installer.error.device-not-found": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es wurde kein angeschlossener iPod erkannt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No iPod was detected."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se detectó ningún iPod conectado."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aucun iPod connecté n’a été détecté."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "接続された iPod が見つかりませんでした。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подключённый iPod не обнаружен."
+          }
+        }
+      }
+    },
+    "installer.error.dfu-timeout": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der iPod wurde nicht rechtzeitig im DFU-Modus erkannt. Versuche die Tastenkombination erneut."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The iPod wasn’t detected in DFU mode in time. Try the button combination again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se detectó el iPod en modo DFU a tiempo. Vuelve a intentar la combinación de botones."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’iPod n’a pas été détecté en mode DFU à temps. Réessayez la combinaison de touches."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "時間内に iPod を DFU モードで検出できませんでした。ボタンの組み合わせをもう一度お試しください。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod не был обнаружен в режиме DFU вовремя. Повторите комбинацию кнопок."
+          }
+        }
+      }
+    },
+    "installer.error.disconnected-during-copy": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein iPod wurde während des Kopierens getrennt. Die vollständige Firmware besteht aus Tausenden kleiner Dateien und kann über USB mehrere Minuten dauern -- prüfe das Kabel (vermeide USB-Hubs, falls du einen nutzt) und versuche es erneut: Bereits Kopiertes geht nicht verloren, das Kopieren macht dort weiter, wo es aufgehört hat."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod was disconnected while files were being copied. Copying the full firmware means thousands of small files and can take several minutes over USB -- check the cable (avoid USB hubs if you’re using one) and try again: what was already copied isn’t lost, copying resumes where it stopped."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod se desconectó durante la copia de archivos. Copiar el firmware completo son miles de archivos chicos y puede tardar varios minutos por USB -- revisa el cable (evita hubs USB si usas uno) y vuelve a intentar: lo que ya se copió no se pierde, la copia sigue desde donde quedó."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre iPod a été déconnecté pendant la copie des fichiers. Copier le firmware complet représente des milliers de petits fichiers et peut prendre plusieurs minutes en USB -- vérifiez le câble (évitez les concentrateurs USB si vous en utilisez un) et réessayez : ce qui a déjà été copié n’est pas perdu, la copie reprend là où elle s’est arrêtée."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ファイルのコピー中に iPod が取り外されました。ファームウェア全体のコピーは小さなファイル数千個ぶんで、USB では数分かかることがあります。ケーブルを確認し（USB ハブを使っている場合は避けてください）、もう一度お試しください。コピー済みのぶんは失われず、続きから再開します。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваш iPod отключился во время копирования файлов. Копирование прошивки целиком — это тысячи мелких файлов, по USB это может занять несколько минут. Проверьте кабель (если используете USB-хаб, лучше обойтись без него) и повторите: скопированное не теряется, копирование продолжится с того же места."
+          }
+        }
+      }
+    },
+    "installer.error.disk-ambiguous": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es wurden %lld Datenträger gefunden, die dein iPod sein könnten. Aus Sicherheitsgründen wählt Aura Studio keinen davon aus -- trenne die anderen externen Datenträger und versuche es erneut."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld disks were found that could be your iPod. For safety, Aura Studio doesn’t pick one on its own -- disconnect the other external disks and try again."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se encontraron %lld discos que podrían ser tu iPod. Por seguridad, Aura Studio no elige uno solo -- desconecta los demás discos externos y vuelve a intentar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld disques pouvant être votre iPod ont été trouvés. Par sécurité, Aura Studio n’en choisit aucun -- débranchez les autres disques externes et réessayez."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "あなたの iPod である可能性のあるディスクが %lld 台見つかりました。安全のため、Aura Studio が勝手に 1 台を選ぶことはしません。ほかの外付けディスクを取り外して、もう一度お試しください。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найдено %lld дисков, которые могут быть вашим iPod. Из соображений безопасности Aura Studio не выбирает один сама — отключите остальные внешние диски и повторите попытку."
+          }
+        }
+      }
+    },
+    "installer.error.dual-boot-requires-winpod": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Für Dual Boot muss der iPod Apples Original-Firmware im „winpod“-Format behalten: eine MBR-Partitionstabelle mit unversehrter Apple-Firmware-Partition plus eine FAT32-Partition -- das Format, das iTunes beim Wiederherstellen auf einem WINDOWS-PC erzeugt. Dieser iPod ist im Mac-Format (Apple/HFS-Partitionen, die Rockbox nicht lesen kann) oder seine Festplatte ist nicht lesbar, und ihn von hier aus vorzubereiten würde die ganze Festplatte löschen, samt Original-Firmware -- genau das, was Dual Boot zu erhalten verspricht. Deshalb wurdest du nicht wie bei einer normalen Installation nach dem Administratorpasswort gefragt: Es gibt noch nichts, das sich sicher formatieren ließe. Möglichkeiten: Stelle den iPod mit iTunes unter Windows wieder her und versuche Dual Boot erneut, oder installiere nur Aura, wenn du Apples Firmware nicht behalten musst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For dual boot, the iPod must keep Apple’s original firmware in “winpod” format: an MBR partition table with Apple’s firmware partition intact plus a FAT32 partition -- the format iTunes creates when restoring on a WINDOWS PC. This iPod is in Mac format (Apple/HFS partitions, which Rockbox can’t read) or its disk isn’t readable, and preparing it from here would erase the whole disk, including the original firmware -- exactly what dual boot promises to keep. That’s why you weren’t asked for the administrator password as in a normal install: there is nothing safe to format yet. Options: restore the iPod with iTunes on Windows and try dual boot again, or install only Aura if you don’t need to keep Apple’s firmware."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para dual boot, el iPod debe conservar el firmware original de Apple en formato «winpod»: tabla de particiones MBR con la partición de firmware de Apple intacta más una partición FAT32 -- el formato que crea iTunes al restaurar en una PC con WINDOWS. Este iPod está en formato de Mac (particiones Apple/HFS, que Rockbox no puede leer) o su disco no es legible, y prepararlo desde aquí borraría el disco completo, incluido el firmware original -- exactamente lo que dual boot promete conservar. Por eso no se te pidió la contraseña de administrador como en una instalación normal: no hay nada seguro que formatear todavía. Opciones: restaura el iPod con iTunes en Windows y vuelve a intentar dual boot, o instala solo Aura si no necesitas conservar el firmware de Apple."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pour le dual boot, l’iPod doit conserver le firmware d’origine d’Apple au format « winpod » : une table de partition MBR avec la partition de firmware Apple intacte et une partition FAT32 -- le format que crée iTunes lors d’une restauration sur un PC WINDOWS. Cet iPod est au format Mac (partitions Apple/HFS, que Rockbox ne sait pas lire) ou son disque est illisible, et le préparer depuis ici effacerait tout le disque, firmware d’origine compris -- exactement ce que le dual boot promet de conserver. C’est pourquoi le mot de passe administrateur ne vous a pas été demandé comme lors d’une installation normale : il n’y a encore rien à formater en toute sécurité. Options : restaurez l’iPod avec iTunes sous Windows puis réessayez le dual boot, ou installez uniquement Aura si vous n’avez pas besoin de conserver le firmware d’Apple."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "デュアルブートには、iPod が Apple 純正ファームウェアを「winpod」形式で保持している必要があります。MBR パーティションテーブルに Apple のファームウェア領域がそのまま残り、FAT32 領域があるという、Windows PC の iTunes で復元したときにできる形式です。この iPod は Mac の形式（Rockbox が読めない Apple/HFS 領域）か、ディスクが読み取れない状態です。ここから準備するとディスク全体が消去され、純正ファームウェアも失われます。それはデュアルブートが守ると約束しているものそのものです。通常のインストールのように管理者パスワードを求めなかったのはそのためで、まだ安全にフォーマットできるものがありません。選択肢: Windows の iTunes で iPod を復元してからデュアルブートをやり直すか、Apple のファームウェアを残す必要がなければ Aura だけをインストールしてください。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Для двойной загрузки iPod должен сохранять оригинальную прошивку Apple в формате «winpod»: таблица разделов MBR с нетронутым разделом прошивки Apple плюс раздел FAT32 — формат, который создаёт iTunes при восстановлении на ПК с WINDOWS. Этот iPod в формате Mac (разделы Apple/HFS, которые Rockbox не читает) либо его диск нечитаем, и подготовка отсюда стёрла бы диск целиком вместе с оригинальной прошивкой — ровно то, что двойная загрузка обещает сохранить. Поэтому пароль администратора не запрашивался, как при обычной установке: пока нечего безопасно форматировать. Варианты: восстановите iPod через iTunes в Windows и повторите двойную загрузку, либо установите только Aura, если сохранять прошивку Apple не нужно."
+          }
+        }
+      }
+    },
+    "installer.error.full-disk-access-denied": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS hat den direkten Zugriff auf die iPod-Festplatte blockiert. Gib Aura Studio in den Systemeinstellungen (Datenschutz & Sicherheit) „Festplattenvollzugriff“, beende die App vollständig, öffne sie erneut und versuche es noch einmal. Steht Aura Studio schon in der Liste, entferne es mit „−“ und füge es neu hinzu -- die Berechtigung kann an einer älteren Version der App hängen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS blocked direct access to the iPod’s disk. Grant “Full Disk Access” to Aura Studio in System Settings (Privacy & Security), quit the app completely, open it again and retry. If Aura Studio is already in the list, remove it with the “−” button and add it again -- the permission can stay tied to an older version of the app."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS bloqueó el acceso directo al disco del iPod. Concede «Acceso total al disco» a Aura Studio en Ajustes del Sistema (Privacidad y seguridad), cierra la app por completo, vuelve a abrirla y reintenta. Si Aura Studio ya aparece en la lista, quítala con el botón «−» y agrégala de nuevo -- el permiso puede quedar atado a una versión anterior de la app."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS a bloqué l’accès direct au disque de l’iPod. Accordez « Accès complet au disque » à Aura Studio dans Réglages Système (Confidentialité et sécurité), quittez complètement l’app, rouvrez-la et réessayez. Si Aura Studio figure déjà dans la liste, retirez-la avec le bouton « − » et ajoutez-la de nouveau -- l’autorisation peut rester liée à une version antérieure de l’app."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS が iPod のディスクへの直接アクセスをブロックしました。システム設定（プライバシーとセキュリティ）で Aura Studio に「フルディスクアクセス」を許可し、アプリを完全に終了してから開き直して再試行してください。すでに一覧に Aura Studio がある場合は「−」ボタンで削除して追加し直してください。許可が以前のバージョンに紐づいたままのことがあります。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS заблокировала прямой доступ к диску iPod. Предоставьте Aura Studio «Полный доступ к диску» в Системных настройках (Конфиденциальность и безопасность), полностью закройте приложение, откройте снова и повторите. Если Aura Studio уже есть в списке, удалите её кнопкой «−» и добавьте заново — разрешение может остаться привязанным к предыдущей версии приложения."
+          }
+        }
+      }
+    },
+    "installer.error.incomplete-rockbox-tree": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Firmware dieses Releases ist unvollständig: In rockbox.zip fehlen %@ -- der iPod bliebe ohne Video oder ohne Audio. Das liegt nicht an deiner Verbindung; versuche es später erneut oder melde, dass dieses Release fehlerhaft ist."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Release’s firmware is incomplete: rockbox.zip is missing %@ -- the iPod would be left without video or without audio. This isn’t a problem with your connection; try again later or report that this Release went out wrong."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El firmware de este Release está incompleto: a rockbox.zip le faltan %@ -- el iPod quedaría sin video o sin audio. No es un problema de tu conexión; vuelve a intentar más tarde o avisa que este Release salió mal."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le firmware de cette version est incomplet : il manque %@ à rockbox.zip -- l’iPod se retrouverait sans vidéo ou sans audio. Ce n’est pas un problème de connexion ; réessayez plus tard ou signalez que cette version est défectueuse."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このリリースのファームウェアは不完全です。rockbox.zip に %@ がありません。このままでは iPod でビデオまたはオーディオが使えなくなります。接続の問題ではありません。しばらくしてからやり直すか、このリリースに不備があることをお知らせください。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Прошивка этого релиза неполная: в rockbox.zip отсутствуют %@ — iPod остался бы без видео или без звука. Дело не в вашем соединении; повторите позже или сообщите, что этот релиз выпущен с ошибкой."
+          }
+        }
+      }
+    },
+    "installer.error.missing-bundled-artifact": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das Artefakt %@ fehlt in der App. Installiere Aura Studio neu."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The %@ artifact is missing from the app. Reinstall Aura Studio."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Falta el artefacto %@ dentro de la app. Reinstala Aura Studio."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’élément %@ est absent de l’app. Réinstallez Aura Studio."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "アプリ内に %@ がありません。Aura Studio を再インストールしてください。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В приложении отсутствует компонент %@. Переустановите Aura Studio."
+          }
+        }
+      }
+    },
+    "installer.error.process-failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Vorgang endete mit Code %1$lld: %2$@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The operation ended with code %1$lld: %2$@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La operación terminó con código %1$lld: %2$@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’opération s’est terminée avec le code %1$lld : %2$@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "処理はコード %1$lld で終了しました: %2$@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Операция завершилась с кодом %1$lld: %2$@"
+          }
+        }
+      }
+    },
+    "installer.error.release-download-failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die neueste Version von %1$@ konnte nicht geladen werden: %2$@. Es wird die mit Aura Studio gelieferte Version verwendet."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t download the latest version of %1$@: %2$@. The version bundled with Aura Studio will be used."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No se pudo descargar la versión más reciente de %1$@: %2$@. Se usará la versión que trae Aura Studio."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Impossible de télécharger la dernière version de %1$@ : %2$@. La version fournie avec Aura Studio sera utilisée."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ の最新バージョンをダウンロードできませんでした: %2$@。Aura Studio に同梱されているバージョンを使用します。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Не удалось загрузить последнюю версию %1$@: %2$@. Будет использована версия, входящая в состав Aura Studio."
+          }
+        }
+      }
+    },
+    "installer.error.release-missing-asset": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dem Release %1$@ fehlt %2$@, daher kann davon nicht installiert werden. Es wird die mit Aura Studio gelieferte Version verwendet."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Release %1$@ is missing %2$@, so it can’t be installed from. The version bundled with Aura Studio will be used."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al Release %1$@ le falta %2$@, así que no se puede instalar desde él. Se usará la versión que trae Aura Studio."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il manque %2$@ à la version %1$@, elle ne peut donc pas servir à l’installation. La version fournie avec Aura Studio sera utilisée."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "リリース %1$@ には %2$@ がないため、そこからインストールできません。Aura Studio に同梱されているバージョンを使用します。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В релизе %1$@ отсутствует %2$@, поэтому установить из него нельзя. Будет использована версия, входящая в состав Aura Studio."
+          }
+        }
+      }
+    },
+    "installer.error.stuck-in-dfu": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der iPod hat die Firmware empfangen, aber nie bestätigt, dass er sie angewendet hat -- er ist weiterhin im DFU-Modus. Falls sich der Finder mit „iPod im DFU-Modus“ geöffnet hat, schließe ihn, OHNE die Taste „Wiederherstellen“ zu berühren (das würde Apples Original-Firmware neu installieren). Versuche es danach erneut: Der iPod ist bereits im DFU-Modus, der neue Versuch sollte also schnell wieder hier ankommen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The iPod received the firmware but never confirmed applying it -- it’s still in DFU mode. If Finder opened showing “iPod in DFU mode”, close it WITHOUT touching the Restore button (that would reinstall Apple’s original firmware). Then try again: the iPod is already in DFU mode, so the retry should reach this same step quickly."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El iPod recibió el envío del firmware, pero nunca confirmó haberlo aplicado -- sigue en modo DFU. Si se abrió Finder mostrando «Modo DFU del iPod», ciérralo SIN tocar el botón Restaurar (eso reinstalaría el firmware original de Apple). Después vuelve a intentar: el iPod ya está en modo DFU, así que el reintento debería llegar rápido a este mismo paso."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’iPod a reçu le firmware mais n’a jamais confirmé l’avoir appliqué -- il est toujours en mode DFU. Si le Finder s’est ouvert en affichant « iPod en mode DFU », fermez-le SANS toucher au bouton Restaurer (cela réinstallerait le firmware d’origine d’Apple). Réessayez ensuite : l’iPod est déjà en mode DFU, la nouvelle tentative devrait donc revenir vite à cette même étape."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod はファームウェアを受け取りましたが、適用したという確認を返しませんでした。まだ DFU モードのままです。Finder が「DFU モードの iPod」と表示して開いた場合は、「復元」ボタンには触れずに閉じてください（触れると Apple 純正ファームウェアが再インストールされます）。そのうえでやり直してください。iPod はすでに DFU モードなので、再試行はこの手順まですぐ進むはずです。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod получил прошивку, но так и не подтвердил, что применил её, — он всё ещё в режиме DFU. Если открылся Finder с надписью «iPod в режиме DFU», закройте его, НЕ нажимая кнопку «Восстановить» (это переустановит оригинальную прошивку Apple). Затем повторите: iPod уже в режиме DFU, поэтому повторная попытка быстро дойдёт до этого же шага."
+          }
+        }
+      }
+    },
+    "installer.error.wrong-disk-format": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der iPod ist nicht als FAT32 formatiert. Wandle ihn um, bevor du fortfährst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The iPod isn’t formatted as FAT32. Convert it before continuing."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El iPod no está formateado en FAT32. Conviértelo antes de continuar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L’iPod n’est pas formaté en FAT32. Convertissez-le avant de continuer."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod が FAT32 でフォーマットされていません。続ける前に変換してください。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod не отформатирован в FAT32. Преобразуйте его, прежде чем продолжить."
+          }
+        }
+      }
+    },
+    "installer.format-disk.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wir formatieren die Datenpartition deines iPod (erkannt als „%1$@“, Volume %2$@), damit Aura starten kann. Dabei wird ALLES gelöscht, was gerade auf dem iPod ist -- nur auf dem iPod: Aura Studio hat seine Identität vorher über Größe, Hersteller und Festplattentyp bestätigt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "We’re going to format your iPod’s data partition (identified as “%1$@”, disk %2$@) so it can start Aura. This erases EVERYTHING currently on the iPod -- only on the iPod: Aura Studio already confirmed its identity by size, manufacturer and disk type before reaching this step."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vamos a formatear la partición de datos de tu iPod (identificada como «%1$@», disco %2$@) para que pueda arrancar Aura. Esto borra TODO el contenido actual del iPod -- solo del iPod, Aura Studio ya verificó su identidad por tamaño, fabricante y tipo de disco antes de llegar a este paso."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nous allons formater la partition de données de votre iPod (identifiée comme « %1$@ », disque %2$@) pour qu’il puisse démarrer Aura. Cela efface TOUT le contenu actuel de l’iPod -- uniquement de l’iPod : Aura Studio a déjà vérifié son identité par la taille, le fabricant et le type de disque avant d’arriver à cette étape."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura を起動できるように、iPod のデータ領域（「%1$@」、ディスク %2$@）をフォーマットします。iPod の現在の内容はすべて消去されます。消えるのは iPod だけです。Aura Studio はこの手順に進む前に、容量・製造元・ディスクの種類でその iPod を確認済みです。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Мы отформатируем раздел с данными вашего iPod (определён как «%1$@», диск %2$@), чтобы он мог загружать Aura. Это сотрёт ВСЁ, что сейчас есть на iPod, — только на iPod: Aura Studio уже подтвердила его подлинность по объёму, производителю и типу диска, прежде чем дойти до этого шага."
+          }
+        }
+      }
+    },
+    "installer.format-disk.cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wenn du abbrichst, hört die Installation hier auf. Der iPod bleibt genau so, wie er war, ohne Änderungen -- du kannst es jederzeit erneut versuchen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you cancel, the installation stops here. The iPod is left exactly as it was, with no changes -- you can try again whenever you want."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si cancelas, la instalación se detiene acá. El iPod queda como estaba, sin ningún cambio -- puedes reintentar cuando quieras."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si vous annulez, l’installation s’arrête ici. L’iPod reste exactement comme il était, sans aucun changement -- vous pouvez réessayer quand vous voulez."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キャンセルすると、インストールはここで止まります。iPod は元のまま、何も変わりません。いつでもやり直せます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если отменить, установка остановится здесь. iPod останется таким же, как был, без изменений — повторить можно в любой момент."
+          }
+        }
+      }
+    },
+    "installer.format-disk.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod-Festplatte vorbereiten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prepare the iPod’s disk"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparar el disco del iPod"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Préparer le disque de l’iPod"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod のディスクを準備"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подготовить диск iPod"
+          }
+        }
+      }
+    },
+    "installer.pause-services.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio muss die macOS-Dienste kurz pausieren, die die iPod-Verbindung manchmal stören (%@). Sie starten am Ende automatisch wieder, oder nach ein paar Minuten von selbst, falls etwas schiefgeht."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio needs to temporarily pause the macOS services that sometimes interfere with the iPod connection (%@). They start again automatically when it finishes, or on their own after a few minutes if something goes wrong."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio necesita pausar temporalmente los servicios de macOS que a veces interfieren con la conexión del iPod (%@). Se reactivan automáticamente al terminar, o solos después de unos minutos si algo falla."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio doit suspendre temporairement les services macOS qui gênent parfois la connexion de l’iPod (%@). Ils redémarrent automatiquement à la fin, ou tout seuls après quelques minutes en cas de problème."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio は、iPod の接続を妨げることがある macOS のサービス（%@）を一時的に停止する必要があります。終了時に自動で再開し、何か問題があっても数分後にひとりでに再開します。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio нужно временно приостановить службы macOS, которые иногда мешают подключению iPod (%@). Они возобновятся автоматически по завершении или сами через несколько минут, если что-то пойдёт не так."
+          }
+        }
+      }
+    },
+    "installer.pause-services.cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wenn du abbrichst, versucht Aura Studio trotzdem weiter, den iPod zu erkennen -- auf den meisten Macs ist das nicht nötig, aber wenn die Erkennung immer wieder fehlschlägt, kann es daran liegen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you cancel, Aura Studio will keep trying to detect the iPod anyway -- on most Macs this isn’t needed, but if detection keeps failing, this may be why."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si cancelas, Aura Studio va a seguir intentando detectar el iPod igual -- en la mayoría de las Mac esto no hace falta, pero si la detección falla repetidamente, puede ser la causa."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si vous annulez, Aura Studio continuera quand même à essayer de détecter l’iPod -- sur la plupart des Mac ce n’est pas nécessaire, mais si la détection échoue de façon répétée, cela peut en être la cause."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キャンセルしても、Aura Studio は iPod の検出を試み続けます。ほとんどの Mac では不要ですが、検出が何度も失敗する場合はこれが原因かもしれません。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если отменить, Aura Studio всё равно продолжит попытки обнаружить iPod — на большинстве Mac это не нужно, но если обнаружение раз за разом не удаётся, причина может быть в этом."
+          }
+        }
+      }
+    },
+    "installer.pause-services.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS-Dienste pausieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause macOS services"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pausar servicios de macOS"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suspendre des services macOS"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS のサービスを一時停止"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Приостановить службы macOS"
+          }
+        }
+      }
+    },
+    "installer.progress.copying": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ wird installiert"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installing %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalando %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installation de %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ をインストールしています"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установка %@"
+          }
+        }
+      }
+    },
+    "installer.progress.preparing-disk": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Festplatte wird vorbereitet"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparing the disk"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparando el disco"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Préparation du disque"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ディスクを準備しています"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подготовка диска"
+          }
+        }
+      }
+    },
+    "installer.progress.preparing-finder": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vorbereitung für den Finder"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Getting ready for the Finder"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparando para Finder"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Préparation pour le Finder"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder 用に準備しています"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подготовка для Finder"
+          }
+        }
+      }
+    },
+    "installer.restore-format.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Damit der Finder Apples Original-Firmware wiederherstellen kann, wird die iPod-Festplatte (%@) zweimal formatiert: zuerst ein Zwischenformat (FAT mit MBR-Schema) und danach Mac OS Extended (Journaled) mit GUID-Partitionstabelle -- der Zustand, den der Finder erwartet. Dabei wird der gesamte Inhalt des iPod gelöscht."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "So that Finder can restore Apple’s original firmware, the iPod’s disk (%@) will be formatted twice: first a bridge format (FAT with an MBR scheme) and then Mac OS Extended (Journaled) with a GUID partition map -- the state Finder expects. This erases everything on the iPod."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Para que Finder pueda restaurar el firmware original de Apple, el disco del iPod (%@) se va a formatear dos veces: primero un formato puente (FAT con esquema MBR) y despues Mac OS Plus con registro con mapa de particiones GUID -- el estado que Finder espera. Esto borra todo el contenido del iPod."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pour que le Finder puisse restaurer le firmware d’origine d’Apple, le disque de l’iPod (%@) sera formaté deux fois : d’abord un format intermédiaire (FAT avec schéma MBR), puis Mac OS étendu (journalisé) avec table de partition GUID -- l’état que le Finder attend. Cela efface tout le contenu de l’iPod."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder が Apple 純正ファームウェアを復元できるように、iPod のディスク（%@）を 2 回フォーマットします。まず中間の形式（MBR 方式の FAT）、次に GUID パーティションマップの Mac OS 拡張（ジャーナリング）— Finder が想定する状態です。iPod の内容はすべて消去されます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Чтобы Finder смог восстановить оригинальную прошивку Apple, диск iPod (%@) будет отформатирован дважды: сначала в промежуточный формат (FAT со схемой MBR), затем в Mac OS Extended (журналируемый) с картой разделов GUID — состояние, которое ожидает Finder. Всё содержимое iPod будет стёрто."
+          }
+        }
+      }
+    },
+    "installer.restore-format.cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wenn du abbrichst, bleibt der iPod ohne Aura-Bootloader, aber mit unvorbereiteter Festplatte -- der Finder erkennt ihn zum Wiederherstellen möglicherweise nicht. Du kannst es jederzeit erneut versuchen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you cancel, the iPod is left without Aura’s boot loader but with the disk unprepared -- Finder might not recognise it for restoring. You can try again whenever you want."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si cancelas, el iPod queda sin el bootloader de Aura pero con el disco sin preparar -- Finder podria no reconocerlo para restaurar. Puedes reintentar cuando quieras."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si vous annulez, l’iPod reste sans le bootloader d’Aura mais avec le disque non préparé -- le Finder pourrait ne pas le reconnaître pour la restauration. Vous pouvez réessayer quand vous voulez."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "キャンセルすると、iPod は Aura のブートローダーがない状態で、ディスクも準備されていないままになります。Finder が復元用に認識できないことがあります。いつでもやり直せます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если отменить, iPod останется без загрузчика Aura, но и с неподготовленным диском — Finder может не распознать его для восстановления. Повторить можно в любой момент."
+          }
+        }
+      }
+    },
+    "installer.restore-format.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Festplatte für den Finder vorbereiten"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prepare the disk for Finder"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparar el disco para Finder"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Préparer le disque pour le Finder"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder 用にディスクを準備"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Подготовить диск для Finder"
+          }
+        }
+      }
+    },
     "installing-view.no-desconectes-ipod-ni-cierres-aura": {
       "extractionState": "manual",
       "localizations": {
@@ -8743,6 +10588,129 @@
           "stringUnit": {
             "state": "translated",
             "value": "Не отключайте iPod и не закрывайте Aura Studio на этом шаге."
+          }
+        }
+      }
+    },
+    "installing.title.install": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ wird installiert …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installing %@…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalando %@..."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installation de %@…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ をインストールしています…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установка %@…"
+          }
+        }
+      }
+    },
+    "installing.title.restore": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Original-iPod wird wiederhergestellt …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restoring the original iPod…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurando iPod original..."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restauration de l’iPod d’origine…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod を元の状態に戻しています…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Восстановление оригинального iPod…"
+          }
+        }
+      }
+    },
+    "installing.title.update-bootloader": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bootloader wird aktualisiert …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Updating the boot loader…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actualizando el arranque..."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mise à jour du bootloader…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ブートローダーを更新しています…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Обновление загрузчика…"
           }
         }
       }
@@ -17315,6 +19283,252 @@
         }
       }
     },
+    "permissions.admin.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bei manchen Schritten – dem Pausieren von Diensten, die die Erkennung des iPod stören, oder dem Vorbereiten der Festplatte vor der Installation – fragt macOS in seinem eigenen nativen Dialog nach deinem Passwort. Aura Studio erklärt dir vorher immer auf einem eigenen Bildschirm, was es tun wird und warum, bevor dieser Dialog erscheint. Du wirst nie das Terminal öffnen oder einen Befehl eingeben müssen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "At some steps — pausing services that interfere with detecting the iPod, or preparing the disk before installing — macOS will ask for your password in its own native dialog. Aura Studio always explains what it is going to do and why, on a screen of its own, before that dialog appears. You will never need to open Terminal or type any command."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "En algunos pasos -- pausar servicios que interfieren con la deteccion del iPod, o preparar el disco antes de instalar -- macOS te va a pedir tu contraseña con su propio dialogo nativo. Aura Studio siempre te explica antes que va a hacer y por que, en una pantalla propia, antes de que aparezca ese dialogo. Nunca vas a necesitar abrir Terminal ni escribir ningun comando."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À certaines étapes — mettre en pause les services qui gênent la détection de l’iPod, ou préparer le disque avant l’installation — macOS demande votre mot de passe dans sa propre fenêtre native. Aura Studio vous explique toujours ce qu’il va faire et pourquoi, sur un écran dédié, avant l’apparition de cette fenêtre. Vous n’aurez jamais besoin d’ouvrir le Terminal ni de taper la moindre commande."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "一部の手順（iPod の検出を妨げるサービスの一時停止や、インストール前のディスクの準備）では、macOS が独自のダイアログでパスワードを求めます。Aura Studio は、そのダイアログが表示される前に、何をなぜ行うのかを専用の画面で必ず説明します。ターミナルを開いたり、コマンドを入力したりする必要はありません。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На некоторых шагах — приостановка служб, мешающих обнаружению iPod, или подготовка диска перед установкой — macOS запросит ваш пароль в собственном системном окне. Aura Studio всегда заранее объясняет на отдельном экране, что именно она собирается сделать и зачем, ещё до появления этого окна. Вам никогда не понадобится открывать Терминал или вводить команды."
+          }
+        }
+      }
+    },
+    "permissions.admin.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Administrator-Passwort (bei einzelnen Schritten)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Administrator password (at specific steps)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contraseña de administrador (en pasos puntuales)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mot de passe administrateur (à certaines étapes)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "管理者パスワード（特定の手順のみ）"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Пароль администратора (на отдельных шагах)"
+          }
+        }
+      }
+    },
+    "permissions.full-disk.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wenn macOS das Lesen und Schreiben auf dem iPod auch nach der vorherigen Freigabe blockiert, aktiviere Festplattenvollzugriff für Aura Studio unter Systemeinstellungen > Datenschutz & Sicherheit. Das ist eine weitreichende Berechtigung: Du brauchst sie nur, wenn der Erkennungsschritt fehlschlägt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If macOS blocks reading from or writing to the iPod even after you granted the previous permission, turn on Full Disk Access for Aura Studio in System Settings > Privacy & Security. It’s a broad permission: you only need it if the detection step fails."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si macOS bloquea la lectura/escritura del iPod incluso despues de aceptar el permiso anterior, activa Acceso total al disco para Aura Studio en Ajustes del Sistema > Privacidad y Seguridad. Es un permiso amplio: solo lo necesitas si el paso de deteccion falla."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Si macOS bloque la lecture et l’écriture sur l’iPod même après avoir accordé l’autorisation précédente, activez l’accès complet au disque pour Aura Studio dans Réglages Système > Confidentialité et sécurité. C’est une autorisation large : vous n’en avez besoin que si l’étape de détection échoue."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "前の許可を与えたあとでも macOS が iPod の読み書きをブロックする場合は、システム設定 > プライバシーとセキュリティで Aura Studio の「フルディスクアクセス」を有効にしてください。強い権限なので、検出の手順が失敗するときだけ必要です。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Если macOS блокирует чтение и запись на iPod даже после выдачи предыдущего разрешения, включите полный доступ к диску для Aura Studio в Системных настройках > Конфиденциальность и безопасность. Это широкое разрешение: оно нужно, только если шаг обнаружения не срабатывает."
+          }
+        }
+      }
+    },
+    "permissions.full-disk.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Festplattenvollzugriff (optional, empfohlen)"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Full Disk Access (optional, recommended)"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceso total al disco (opcional, recomendado)"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accès complet au disque (facultatif, recommandé)"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "フルディスクアクセス（任意、推奨）"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Полный доступ к диску (необязательно, рекомендуется)"
+          }
+        }
+      }
+    },
+    "permissions.removable.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio muss den iPod sehen und auswerfen können, sobald du ihn anschließt – sonst lässt macOS ihn im Finder eingehängt und das Installationsprogramm kann nicht darauf schreiben. macOS fragt beim ersten Zugriff der App auf ein Wechselmedium nach deiner Bestätigung."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio needs to see and unmount the iPod as soon as you connect it — otherwise macOS leaves it mounted in the Finder and the installer can’t write to it. macOS asks you to confirm this the first time the app tries to access a removable disk."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio necesita ver y desmontar el iPod apenas lo conectas -- si no, macOS lo deja montado en Finder y el instalador no puede escribir en el. macOS pide confirmar esto la primera vez que la app intenta acceder a un disco removible."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio doit pouvoir voir et démonter l’iPod dès que vous le branchez — sinon macOS le laisse monté dans le Finder et le programme d’installation ne peut pas y écrire. macOS demande de confirmer cela la première fois que l’app tente d’accéder à un disque amovible."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio は、iPod を接続した時点でそれを認識し、マウントを解除する必要があります。そうしないと macOS が Finder にマウントしたままにするため、インストーラが書き込めません。macOS は、アプリがリムーバブルディスクにアクセスしようとした最初の一度だけ確認を求めます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio нужно видеть и отключать iPod сразу после подключения — иначе macOS оставит его смонтированным в Finder, и установщик не сможет на него записать. macOS попросит подтвердить это при первой попытке приложения обратиться к съёмному диску."
+          }
+        }
+      }
+    },
+    "permissions.removable.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zugriff auf Wechselmedien"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Access to removable volumes"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acceso a volumenes removibles"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Accès aux volumes amovibles"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "リムーバブルボリュームへのアクセス"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Доступ к съёмным томам"
+          }
+        }
+      }
+    },
     "photo-albums-view.dejarlo-vacio-disuelve-album-fotos-vuelv": {
       "extractionState": "manual",
       "localizations": {
@@ -18373,6 +20587,129 @@
           "stringUnit": {
             "state": "translated",
             "value": "iPod готов: загрузчик Aura удалён, а диск подготовлен в формате, который ожидает Finder (Mac OS Extended с журналом, схема GUID)."
+          }
+        }
+      }
+    },
+    "restore-handoff.step.close-app": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Schließe Aura Studio mit der Taste unten -- bleibt es offen, kann seine USB-Erkennung den Finder stören."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close Aura Studio with the button below -- if it stays open, its USB detection can interfere with Finder."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cierra Aura Studio con el botón de abajo -- si sigue abierto, su detección USB puede interferir con Finder."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fermez Aura Studio avec le bouton ci-dessous -- s’il reste ouvert, sa détection USB peut gêner le Finder."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "下のボタンで Aura Studio を終了してください。開いたままだと、USB の検出が Finder の邪魔をすることがあります。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Закройте Aura Studio кнопкой ниже — если она останется открытой, её USB-обнаружение может помешать Finder."
+          }
+        }
+      }
+    },
+    "restore-handoff.step.open-finder": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Öffne ein Finder-Fenster: Der iPod erscheint in der Seitenleiste unter „Orte“."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open a Finder window: the iPod appears in the sidebar, under Locations."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abre una ventana de Finder: el iPod aparece en la barra lateral, bajo Ubicaciones."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvrez une fenêtre du Finder : l’iPod apparaît dans la barre latérale, sous « Emplacements »."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finder のウインドウを開きます。iPod はサイドバーの「場所」に表示されます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Откройте окно Finder: iPod появится в боковом меню, в разделе «Размещения»."
+          }
+        }
+      }
+    },
+    "restore-handoff.step.restore": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wähle den iPod aus und klicke auf „iPod wiederherstellen …“ -- der Finder lädt Apples Original-Firmware und installiert sie."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select the iPod and choose “Restore iPod…” -- Finder downloads and installs Apple’s original firmware."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selecciona el iPod y elige «Restaurar iPod…» -- Finder descarga e instala el firmware original de Apple."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sélectionnez l’iPod et choisissez « Restaurer l’iPod… » -- le Finder télécharge et installe le firmware d’origine d’Apple."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod を選び、「iPod を復元…」を選択します。Finder が Apple 純正ファームウェアをダウンロードしてインストールします。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Выберите iPod и нажмите «Восстановить iPod…» — Finder загрузит и установит оригинальную прошивку Apple."
           }
         }
       }
@@ -20935,7 +23272,7 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Des tâches sont en cours : synchronisation, conversion, migration ou micrologiciel. La langue reste enregistrée et s’appliquera à la prochaine ouverture d’Aura Studio."
+            "value": "Des tâches sont en cours : synchronisation, conversion, migration ou firmware. La langue reste enregistrée et s’appliquera à la prochaine ouverture d’Aura Studio."
           }
         },
         "ja": {
@@ -27805,6 +30142,416 @@
         }
       }
     },
+    "update-bootloader.optional.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ funktioniert mit dem Bootloader, den du schon hast, genauso: Das Einzige, was sich ändert, ist der Bildschirm beim Einschalten."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ works just the same with the boot loader you already have: the only thing that changes is the screen you see when you turn it on."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ funciona igual con el arranque que ya tienes: lo único que cambia es la pantalla que ves al encender."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ fonctionne aussi bien avec le bootloader que vous avez déjà : la seule chose qui change, c’est l’écran affiché à l’allumage."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ は今のブートローダーのままでも同じように動作します。変わるのは、電源を入れたときに表示される画面だけです。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ работает точно так же с тем загрузчиком, который у вас уже есть: меняется только экран, который вы видите при включении."
+          }
+        }
+      }
+    },
+    "update-bootloader.optional.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Es ist nicht zwingend"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It’s not required"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No es obligatorio"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce n’est pas obligatoire"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "必須ではありません"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Это не обязательно"
+          }
+        }
+      }
+    },
+    "update-bootloader.reason.newer": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Version von Aura Studio bringt einen neueren Bootloader mit als den, der auf deinem iPod geschrieben ist."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This version of Aura Studio ships a newer boot loader than the one written on your iPod."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta versión de Aura Studio trae un arranque más nuevo que el que tiene grabado tu iPod."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cette version d’Aura Studio contient un bootloader plus récent que celui écrit sur votre iPod."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このバージョンの Aura Studio には、お使いの iPod に書き込まれているものより新しいブートローダーが含まれています。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В этой версии Aura Studio есть загрузчик новее того, что записан на вашем iPod."
+          }
+        }
+      }
+    },
+    "update-bootloader.reason.unknown": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio weiß nicht, welche Bootloader-Version auf deinem iPod geschrieben ist – ein anderer Computer hat ihn installiert, oder eine frühere Version dieser App, die das nicht notiert hat. Ein Update bringt ihn auf den neuesten Stand; war er es schon, ändert sich nichts."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio doesn’t know which boot loader version is written on your iPod — another computer installed it, or an earlier version of this app that didn’t record it. Updating it brings it up to date; if it already was, nothing changes."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio no sabe qué versión del arranque tiene grabada tu iPod -- lo instaló otra computadora, o una versión anterior de esta app que no lo anotaba. Actualizarlo lo deja al día; si ya lo estaba, no cambia nada."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio ne sait pas quelle version du bootloader est écrite sur votre iPod — un autre ordinateur l’a installée, ou une version antérieure de cette app qui ne la notait pas. La mettre à jour la remet à niveau ; si elle l’était déjà, rien ne change."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio は、お使いの iPod にどのバージョンのブートローダーが書き込まれているかを把握していません。別のコンピュータでインストールされたか、それを記録していなかった以前のバージョンのこのアプリでインストールされたためです。更新すれば最新の状態になります。すでに最新だった場合は、何も変わりません。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio не знает, какая версия загрузчика записана на вашем iPod — его установил другой компьютер или более ранняя версия этого приложения, которая это не записывала. Обновление приведёт его к актуальной версии; если он уже был актуален, ничего не изменится."
+          }
+        }
+      }
+    },
+    "update-bootloader.untouched.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nichts auf der Festplatte: Deine Musik, deine Fotos, deine Wiedergabelisten und deine Einstellungen bleiben genau so, wie sie sind. Es wird nichts formatiert und keine Datei kopiert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing on the disk: your music, your photos, your playlists and your settings stay exactly as they are. Nothing is formatted and no file is copied."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada del disco: tu música, tus fotos, tus listas y tus ajustes se quedan exactamente como están. No se formatea ni se copia ningún archivo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rien sur le disque : votre musique, vos photos, vos listes de lecture et vos réglages restent exactement tels quels. Rien n’est formaté et aucun fichier n’est copié."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ディスクの中身は何も変わりません。音楽、写真、プレイリスト、設定はそのまま残ります。フォーマットもファイルのコピーも行いません。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ничего на диске: ваша музыка, фотографии, плейлисты и настройки останутся ровно такими, какие есть. Ничего не форматируется и ни один файл не копируется."
+          }
+        }
+      }
+    },
+    "update-bootloader.untouched.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Was unangetastet bleibt"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What is left untouched"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qué no se toca"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce qui n’est pas touché"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "変更されないもの"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Что остаётся нетронутым"
+          }
+        }
+      }
+    },
+    "update-bootloader.what-is.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Das winzige Programm, das läuft, sobald du den iPod einschaltest, noch vor %@: Es zeichnet den Startbildschirm und entscheidet, welches System gestartet wird. Es liegt auf einem eigenen Chip, nicht auf der Festplatte."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The tiny program that runs the moment you turn the iPod on, before %@: it draws the startup screen and decides which system to launch. It lives on a separate chip, not on the disk."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El programa diminuto que corre apenas enciendes el iPod, antes que %@: dibuja la pantalla de arranque y decide qué sistema iniciar. Vive en un chip aparte, no en el disco."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le tout petit programme qui s’exécute dès que vous allumez l’iPod, avant %@ : il affiche l’écran de démarrage et décide quel système lancer. Il réside sur une puce à part, pas sur le disque."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod の電源を入れた瞬間、%@ よりも先に動く小さなプログラムです。起動画面を表示し、どのシステムを起動するかを決めます。ディスクではなく、別のチップに保存されています。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Крошечная программа, которая запускается сразу при включении iPod, ещё до %@: она рисует стартовый экран и решает, какую систему запустить. Она находится в отдельной микросхеме, а не на диске."
+          }
+        }
+      }
+    },
+    "update-bootloader.what-is.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Was der Bootloader ist"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What the boot loader is"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Qué es el arranque"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ce qu’est le bootloader"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ブートローダーとは"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Что такое загрузчик"
+          }
+        }
+      }
+    },
+    "update-bootloader.why-dfu.body": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Chip lässt sich nur beschreiben, wenn der iPod im DFU-Modus ist. Es ist derselbe Schritt wie bei der Installation; die App führt dich hindurch und es dauert nur ein paar Sekunden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That chip can only be written to with the iPod in DFU mode. It’s the same step you did when installing; the app will guide you and it takes a few seconds."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ese chip solo se puede escribir con el iPod en modo DFU. Es el mismo paso que hiciste al instalar; la app te va a guiar y son unos segundos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cette puce ne peut être écrite qu’avec l’iPod en mode DFU. C’est la même étape que lors de l’installation ; l’app vous guide et cela prend quelques secondes."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このチップは、iPod が DFU モードのときにしか書き込めません。インストール時と同じ手順で、アプリが案内します。数秒で終わります。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Записать эту микросхему можно, только когда iPod находится в режиме DFU. Это тот же шаг, что и при установке; приложение вас проведёт, и это займёт несколько секунд."
+          }
+        }
+      }
+    },
+    "update-bootloader.why-dfu.title": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warum der DFU-Modus nötig ist"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Why DFU mode is needed"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por qué hace falta el modo DFU"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pourquoi le mode DFU est nécessaire"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DFU モードが必要な理由"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Зачем нужен режим DFU"
+          }
+        }
+      }
+    },
     "video-settings-view.formato-video": {
       "extractionState": "manual",
       "localizations": {
@@ -28088,6 +30835,170 @@
           "stringUnit": {
             "state": "translated",
             "value": "Отметьте флажок выше, чтобы продолжить."
+          }
+        }
+      }
+    },
+    "welcome.body.install": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Assistent installiert den Bootloader und die Firmware %@ auf deinem iPod Classic 6G. Für die nächsten Schritte muss das Gerät per USB angeschlossen sein."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This assistant will install the boot loader and the %@ firmware on your iPod Classic 6G. You’ll need the device connected over USB in the next steps."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este asistente va a instalar el bootloader y el firmware %@ en tu iPod Classic 6G. Vas a necesitar el dispositivo conectado por USB en los proximos pasos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cet assistant va installer le bootloader et le firmware %@ sur votre iPod Classic 6G. Vous aurez besoin de l’appareil connecté en USB pour les étapes suivantes."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このアシスタントは、お使いの iPod Classic 6G にブートローダーと %@ ファームウェアをインストールします。次の手順では、デバイスを USB で接続しておく必要があります。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Этот помощник установит загрузчик и прошивку %@ на ваш iPod Classic 6G. На следующих шагах устройство должно быть подключено по USB."
+          }
+        }
+      }
+    },
+    "welcome.body.restore": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dieser Assistent entfernt den Bootloader und setzt deinen iPod auf Apples ursprünglichen Start zurück. Die Firmware wird nicht von der Festplatte gelöscht, du startest sie nur nicht mehr."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This assistant will remove the boot loader and return your iPod to Apple’s original startup. The firmware isn’t erased from the disk; you just stop booting it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este asistente va a quitar el bootloader y devolver tu iPod al arranque original de Apple. El firmware no se borra del disco, solo dejas de arrancarlo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cet assistant va retirer le bootloader et rendre à votre iPod le démarrage d’origine d’Apple. Le firmware n’est pas effacé du disque, vous cessez simplement de le démarrer."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このアシスタントはブートローダーを取り除き、iPod を Apple 純正の起動に戻します。ファームウェアはディスクから消去されず、起動しなくなるだけです。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Этот помощник удалит загрузчик и вернёт вашему iPod оригинальный запуск Apple. Прошивка не удаляется с диска — вы просто перестаёте её запускать."
+          }
+        }
+      }
+    },
+    "welcome.title.install": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ installieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installer %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ をインストール"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установить %@"
+          }
+        }
+      }
+    },
+    "welcome.title.restore": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Original-iPod wiederherstellen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore the original iPod"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar iPod original"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurer l’iPod d’origine"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod を元の状態に戻す"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Восстановить оригинальный iPod"
           }
         }
       }
