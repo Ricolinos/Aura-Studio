@@ -562,7 +562,7 @@
     <value>Службу Apple нельзя остановить.</value>
   </data>
   <data name="privileged.resume-guard-failed" xml:space="preserve">
-    <value>Не удалось подготовить автоматическое возобновление, поэтому ни одна служба не остановлена.</value>
+    <value>Не удалось подготовить автоматический перезапуск службы, поэтому ни одна служба не остановлена.</value>
   </data>
   <data name="privileged.service-stopped" xml:space="preserve">
     <value>Служба Apple остановлена на время записи.</value>
@@ -574,7 +574,7 @@
     <value>Служба Apple не ответила вовремя.</value>
   </data>
   <data name="privileged.authorization-cancelled" xml:space="preserve">
-    <value>Вы отменили авторизацию. Без этого разрешения шаг продолжить нельзя.</value>
+    <value>Вы отменили выдачу прав. Без них этот шаг продолжить нельзя.</value>
   </data>
   <data name="privileged.no-result" xml:space="preserve">
     <value>Операция с правами администратора завершилась, не оставив результата. Узнать, успела ли она что-то сделать, нельзя, поэтому продолжения не будет.</value>

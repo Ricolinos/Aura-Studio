@@ -571,7 +571,7 @@
     <value>Le service Apple ne peut pas être arrêté.</value>
   </data>
   <data name="privileged.resume-guard-failed" xml:space="preserve">
-    <value>La réactivation automatique n'a pas pu être préparée, aucun service n'a donc été arrêté.</value>
+    <value>Le redémarrage automatique du service n'a pas pu être préparé, aucun service n'a donc été arrêté.</value>
   </data>
   <data name="privileged.service-stopped" xml:space="preserve">
     <value>Le service Apple a été arrêté pendant l'écriture.</value>
@@ -583,7 +583,7 @@
     <value>Le service Apple n'a pas répondu à temps.</value>
   </data>
   <data name="privileged.authorization-cancelled" xml:space="preserve">
-    <value>Vous avez annulé l'autorisation. Cette étape ne peut pas continuer sans cette permission.</value>
+    <value>Vous avez annulé l'autorisation. Cette étape ne peut pas continuer sans cette autorisation.</value>
   </data>
   <data name="privileged.no-result" xml:space="preserve">
     <value>L'opération avec les droits d'administrateur s'est terminée sans laisser de résultat. Impossible de savoir si elle a fait quelque chose, on ne continue donc pas.</value>

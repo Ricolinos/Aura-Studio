@@ -571,7 +571,7 @@
     <value>The Apple service cannot be stopped.</value>
   </data>
   <data name="privileged.resume-guard-failed" xml:space="preserve">
-    <value>The automatic restart could not be set up, so no service was stopped.</value>
+    <value>The automatic restart of the service could not be set up, so no service was stopped.</value>
   </data>
   <data name="privileged.service-stopped" xml:space="preserve">
     <value>The Apple service was stopped while writing.</value>
@@ -583,7 +583,7 @@
     <value>The Apple service did not respond in time.</value>
   </data>
   <data name="privileged.authorization-cancelled" xml:space="preserve">
-    <value>You cancelled the authorization. This step cannot continue without that permission.</value>
+    <value>You cancelled the permission. This step cannot continue without that permission.</value>
   </data>
   <data name="privileged.no-result" xml:space="preserve">
     <value>The operation with administrator permissions ended without leaving a result. There is no way to know whether it did anything, so it does not continue.</value>

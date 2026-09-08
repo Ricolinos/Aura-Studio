@@ -520,7 +520,7 @@
     <value>Apple のサービスは停止できません。</value>
   </data>
   <data name="privileged.resume-guard-failed" xml:space="preserve">
-    <value>自動で戻す仕組みを用意できなかったため、サービスは停止していません。</value>
+    <value>サービスを自動で再開する仕組みを用意できなかったため、サービスは停止していません。</value>
   </data>
   <data name="privileged.service-stopped" xml:space="preserve">
     <value>書き込みのあいだ、Apple のサービスを停止しました。</value>
@@ -532,7 +532,7 @@
     <value>Apple のサービスから時間内に応答がありませんでした。</value>
   </data>
   <data name="privileged.authorization-cancelled" xml:space="preserve">
-    <value>認証をキャンセルしました。この許可がないと、この手順は続けられません。</value>
+    <value>許可をキャンセルしました。この許可がないと、この手順は続けられません。</value>
   </data>
   <data name="privileged.no-result" xml:space="preserve">
     <value>管理者権限での処理が、結果を残さずに終わりました。何かを行ったかどうかを確かめられないため、続行しません。</value>
