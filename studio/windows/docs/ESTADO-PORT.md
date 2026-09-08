@@ -106,14 +106,24 @@ antes. Cada paso dice qué mirar; si algo no coincide, es hallazgo.
     lo que va a hacer, deja un resumen (etiquetados/renombrados/huérfanos
     borrados), y correrla una segunda vez no vuelve a tocar nada (mismo
     árbol, comprobable con el explorador o `Get-FileHash`).
-11. **Cambiar idioma en Ajustes (0.4.0: solo es+en).** Decisión de la
-    Maestra: en **0.4.0** el selector de idioma ofrece únicamente
-    "Igual que el sistema", Español y English — de/fr/ru/ja están
-    generados y viajan dentro del instalador (`Built: true`), pero
-    apagados en el selector (`Offered: false`) hasta B7d/0.4.1, porque
-    ~300 frases del instalador y de los errores de disco/permisos
-    todavía están en español aunque la UI esté en otro idioma (detalle
-    en `DECISIONS.md`, ST-247 B7c). Probar el cambio a English.
+11. **Cambiar idioma en Ajustes (0.4.1: los seis).** Con `Offered: true`
+    para de/fr/ja/ru (B7d), el selector ofrece SEIS entradas: "Igual que
+    el sistema", Español, English, y Deutsch/Français/日本語/Русский con
+    una marca **"(beta)"** junto al nombre y una línea explicativa debajo
+    del selector ("Traducción automática, aún sin revisar por hablantes
+    nativos") — presente en los cuatro nuevos, ausente en Español e
+    English. Contar las seis entradas es el primer chequeo: si aparecen
+    menos, alguno quedó con `Offered: false` sin avisar.
+    **Por cada uno de los seis** (empezar por 日本語 y Русский —
+    estructura de plural distinta al resto y con hallazgos de
+    terminología propios en B7c/B7d, así que son los que más vale mirar
+    en pantalla real): cambiar a ese idioma y revisar, en este orden,
+    Ajustes completo (el propio selector con su "(beta)" y línea,
+    "Cómo guardar tu música", calidad de audio con el InfoBar de
+    conversión, huérfanos), la barra de estado con la biblioteca cargada,
+    los menús contextuales de Álbumes y Canciones, y el Instalador en su
+    primer paso — ningún texto a medias en dos idiomas, ninguna cadena
+    en blanco.
     **Sin tareas en curso**: cambiar de idioma muestra el diálogo
     "Cerrar ahora" / "Más tarde" — no debe quedar texto a medias en dos
     idiomas tras reiniciar.
@@ -122,12 +132,18 @@ antes. Cada paso dice qué mirar; si algo no coincide, es hallazgo.
     mientras la tarea sigue corriendo (ST-247, B7b, addendum) — solo
     "Más tarde" debe estar disponible; verificar que el diálogo se
     comporta distinto con y sin trabajo pendiente.
-    **Para 0.4.1 (B7d, todavía no en esta ronda)**: probar el cambio a
-    cada uno de los cuatro idiomas nuevos, la marca "(beta)" junto al
-    nombre en el selector con su línea explicativa debajo, y que las
-    categorías de video del catálogo (Película, Serie, Episodio, etc.)
-    siguen en español pase lo que pase con el idioma de la UI, por ser
+    **Categorías de video.** Con la UI en cualquiera de los cuatro
+    idiomas nuevos, las categorías de video del catálogo (Película,
+    Serie, Episodio, etc.) siguen en español pase lo que pase, por ser
     datos del catálogo y no cadenas de interfaz.
+    **Los cuatro son traducción automática, sin revisar por hablantes
+    nativos** (de ahí el "(beta)") -- si algo se lee raro, incompleto o
+    con un término que no calza, no es necesariamente un bug de código:
+    es lo que este guion existe para encontrar. Reportarlo como
+    addendum a `DECISIONS.md` (idioma, pantalla, clave si se conoce y
+    qué se esperaba en su lugar), mismo formato que los hallazgos de
+    `glosario-veredicto.csv` en B7c/B7d -- no corregirlo a mano en el
+    `.resx` desde esta sesión de verificación.
 
 ## Ronda "ajustes 3", B7a (ensayo en seco) — Extracción de cadenas (2026-09-07)
 

@@ -18386,3 +18386,59 @@ quedan intocados). `cotejo-mac-ja-de-ru-fr.csv`: 152 filas de datos
 (38 × 4), contador de campos por línea limpio (7 campos en las 153
 líneas), 0 CR bytes (el export de PowerShell escribe CRLF por defecto;
 se convirtió a LF antes de comprometer). Sin builds ni `dotnet test`.
+
+## ST-248 (addendum, 0.4.1) — Windows: guion del dueño con los seis idiomas, antes de que el trinquete real y `Offered` lleguen
+
+Encargo de la Maestra: adelantar lo que no depende de la entrega
+pendiente del Experto (trinquete real de la barrida de B7d y
+`Offered: true` para de/fr/ja/ru). En `windows/b8`, sobre
+`origin/main = 9ee3557` (fast-forward limpio; capturas y guion del
+lado de la Mac, `claves-compartidas.csv` sin cambios desde `cb5ecc4`).
+Sin build de `AuraStudio.App`.
+
+`docs/ESTADO-PORT.md`, paso 11 del guion del dueño reescrito para
+0.4.1 (reemplaza la versión "0.4.0: solo es+en" de la entrada anterior,
+que queda como historia de esa ronda, no se edita):
+
+- El selector debe mostrar **seis** entradas una vez `Offered: true`
+  esté puesto para los cuatro -- "Igual que el sistema" más los seis
+  idiomas, cuatro con la marca "(beta)" y su línea explicativa;
+  contarlas es el primer chequeo (menos de seis = alguno quedó
+  apagado sin avisar).
+- Por cada uno de los seis, empezando por 日本語 y Русский (estructura
+  de plural distinta al resto -- sin `.one`/con tercera forma -- y los
+  dos idiomas con hallazgos de terminología propios en B7c/B7d, así
+  que son los que más vale confirmar en pantalla real y no solo en el
+  archivo de texto): Ajustes completo, barra de estado con la
+  biblioteca cargada, menús contextuales de Álbumes y Canciones, e
+  Instalador en su primer paso.
+- El diálogo "Cerrar ahora"/"Más tarde" y la ausencia del botón
+  "Cerrar ahora" con una tarea en curso, igual que en la entrada de
+  0.4.0 -- sin cambios en ese comportamiento.
+- Categorías de video del catálogo en español pase lo que pase con el
+  idioma de la UI (dato del catálogo, no cadena de interfaz) -- mismo
+  punto que 0.4.0, repetido a propósito para los cuatro idiomas nuevos.
+- Nota explícita de que los cuatro son traducción automática sin
+  revisar por hablantes nativos, y de que un error encontrado durante
+  este guion se reporta como addendum a `DECISIONS.md` (idioma,
+  pantalla, clave si se conoce), nunca corrigiendo el `.resx` a mano
+  desde la sesión de verificación.
+
+### Lo que sigue pendiente, explícito
+
+Las capturas por idioma (`docs/capturas/idiomas/<idioma>-<pantalla>.png`,
+japonés y ruso primero) y la comprobación automatizada de los seis
+`Offered` arrancan recién cuando el coordinador dé los hashes del
+trinquete real de B7d y de `Offered: true` -- sin esos dos, el selector
+todavía no muestra los cuatro idiomas nuevos y no hay nada que
+capturar. Plan de captura ya acordado con el coordinador (mensaje
+previo a esta entrada): `preferences.json` por idioma con
+`AURA_STUDIO_PREFERENCES` sobre la biblioteca sintética del arnés,
+nunca la del dueño; esqueleto de w7 (`SetProcessDPIAware`, `MoveWindow`,
+gestos con `mouse_event`/`keybd_event`, navegación por UI Automation,
+`CopyFromScreen` a mitad de resolución).
+
+### Verificación
+
+Sin builds. Cambio de solo documentación (`ESTADO-PORT.md`,
+`DECISIONS.md`); 0 archivos de código ni `.resx` tocados.
