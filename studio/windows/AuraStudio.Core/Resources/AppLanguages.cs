@@ -73,15 +73,28 @@ public static class AppLanguages
         new("en", "English", Built: true, Offered: true, ReviewedByHumans: true),
 
         // B7c los dejó traducidos, compilados y viajando en el instalador, y sin
-        // ofrecer. Lo que falta no es la traducción de B7a —esa está en los seis
-        // idiomas— sino las ~300 frases que quedaron fuera de esa extracción:
-        // instalador, errores de disco, permisos. Encenderlos ahora sería
-        // prometer una app en alemán que a mitad del formateo habla en español.
-        // Las enciende B7d, cambiando este Offered.
-        new("de", "Deutsch", Built: true, Offered: false, ReviewedByHumans: false),
-        new("fr", "Français", Built: true, Offered: false, ReviewedByHumans: false),
-        new("ja", "日本語", Built: true, Offered: false, ReviewedByHumans: false),
-        new("ru", "Русский", Built: true, Offered: false, ReviewedByHumans: false),
+        // ofrecer: lo que faltaba no era la traducción de B7a —esa estaba en los
+        // seis idiomas— sino las ~300 frases que habían quedado fuera de esa
+        // extracción (instalador, errores de disco, permisos). Ofrecerlos
+        // entonces habría sido prometer una app en alemán que a mitad del
+        // formateo habla en español.
+        //
+        // B7d las sacó, y la Maestra puso cinco condiciones para encenderlos;
+        // se cumplieron las cinco: la barrida sin léxico no señala una sola
+        // frase de pantalla y ahora es un trinquete (PhraseSweepRatchetTests,
+        // no una corrida a mano); las tres rondas de retrotraducción a ciegas
+        // están integradas, con el «ya no» japonés de la tercera; las once que
+        // parecen texto y son datos tienen su prueba; el instalador exige los
+        // cinco satélites GENERADOS y aborta si falta uno; y la marca "(beta)"
+        // con su línea depende de ReviewedByHumans y no de esto de acá, así que
+        // encenderlos no puede encenderlos sin su advertencia.
+        //
+        // Siguen en ReviewedByHumans: false —nadie en el proyecto lee estos
+        // cuatro idiomas— y por eso salen marcados. Eso no cambia hoy.
+        new("de", "Deutsch", Built: true, Offered: true, ReviewedByHumans: false),
+        new("fr", "Français", Built: true, Offered: true, ReviewedByHumans: false),
+        new("ja", "日本語", Built: true, Offered: true, ReviewedByHumans: false),
+        new("ru", "Русский", Built: true, Offered: true, ReviewedByHumans: false),
     ];
 
     /// <summary>Lo que el selector puede ofrecer hoy.</summary>
