@@ -16990,3 +16990,98 @@ texto de la app, `sed` lo leía como guion, y una `w` adentro del texto era su
 comando de escritura. Los archivos se borraron y quedó `RepositoryLayoutTests`
 con una **lista permitida explícita**: un patrón habría dejado pasar seis de
 los siete.
+
+## ST-248 (cierre, corrección) — Windows: conteos finales de B7c, satélites generados vs. ofrecidos en 0.4.0, y B7d en curso
+
+Corrige por append la tabla de la entrada anterior ("ST-248 (cierre)",
+más arriba), escrita con cifras preliminares antes de que B7c llegara a
+`origin/main`. En `windows/b8`, rebasada (fast-forward: la punta de
+`windows/b8` ya estaba contenida en `origin/main`) sobre
+`origin/main = abafec3` (B7c completo, ver "ST-247 — Windows: japonés,
+alemán, ruso y francés (B7c)" arriba para el detalle completo). Sin
+build de `AuraStudio.App`.
+
+### Conteos finales de claves -- 3 más de lo reportado antes
+
+| idioma | claves |
+|---|---:|
+| es, en, de, fr | **637** (no 634) |
+| ru | **683** (no 680) |
+| ja | **591** (no 588) |
+
+Las tres de más son `LibraryMigrationText.needed-intro`,
+`needed-joiner` y `needed-detail` -- las tres partes en las que quedó
+partida la segunda frase compuesta a medias que encontró la barrida de
+B7c (`5ce8d46`, ver "Una frase compuesta solo se puede leer entera" más
+arriba). `needed-joiner` es la coma con "y" que une las partes
+("...se leyeron, **y** se ordenaron..."): es clave y no código fijo
+porque alemán y japonés no necesariamente la escriben así (el japonés,
+en particular, no siempre necesita un conector explícito donde el
+español usa "y"). El resto de la tabla de la entrada anterior (críticas
+retrotraducidas 178/178/194/162, veredictos de terminología) sigue
+igual, sin corrección.
+
+### Satélites: generados 5, ofrecidos 2 en 0.4.0
+
+Decisión de la Maestra: **0.4.0 sale solo con español e inglés**. Los
+cuatro idiomas de B7c quedan generados y viajando dentro del
+instalador (`Built: true`), pero apagados en el selector
+(`Offered: false`) hasta B7d/0.4.1 -- el motivo completo (~300 frases
+del instalador/errores de disco/permisos que B7a no alcanzó a sacar a
+recursos) está en la entrada "ST-247 — Windows: japonés, alemán, ruso y
+francés (B7c)" de arriba, sección "Ofrecido y generado no son lo
+mismo".
+
+Tamaño de cada satélite generado (bytes, `Resources.<idioma>.resx`
+compilado): en 80 896, de 84 992, fr 86 016, ru 107 520, ja 86 016.
+
+**Setups de esta ronda** (con los 5 satélites generados, aunque solo
+2 ofrecidos): arm64 99 304 044 B, x64 101 971 775 B. Delta contra los
+Setups de 0.4.0 sobre `f6dd461` (es+en solamente, sin B7c): **+52 658 B
+(arm64) / +65 634 B (x64)** -- ese es el costo comprimido de llevar los
+cuatro idiomas apagados dentro del paquete, pagado ya en 0.4.0 aunque
+el usuario no pueda elegirlos todavía.
+
+### Triaje de las 386 (resumen; detalle completo en la entrada de B7c de arriba)
+
+| clase | cuántas |
+|---|---:|
+| PANTALLA -- lo lee el usuario | 303 |
+| INTERNO -- bitácora y excepciones | 67 |
+| DATO -- se compara o nombra una carpeta | 11 |
+| TRAMPA -- algo depende del texto en español | 5 |
+
+### B7d ya está en curso -- explícito, para no dar por cerrado lo que sigue abierto
+
+Orden de trabajo que el Experto ya empezó: (1) las cinco trampas en
+`AuraStudio.Core` primero (`MediaInfoDialog`, `LibraryViewModel`,
+`PreparedMusic`, `LibraryGrouping`, `TMDBClient` -- las cinco descritas
+en la entrada de B7c de arriba); (2) traducir las 303 PANTALLA a los
+cuatro idiomas, con retrotraducción ciega de mi parte sobre las 77 que
+caen en familias críticas (`InstallerError`, `PrivilegedHost`,
+`FirmwareArtifacts`, `DeviceFirmwareLabel`, `PrivilegedRunner`,
+`DfuFlashRunner`, `FirmwareTreeWriter`, `PrivilegedOperation`), con ids
+nuevos `d001…` (para no confundirlos con los `c001…` de las 178/194/162
+críticas ya cerradas de B7c); (3) las 11 DATO. El "(beta)" en pantalla,
+`Offered: true` para los cuatro, y las capturas por idioma (japonés y
+ruso primero) van con esa ronda -- **no con esta corrida de B8**, que
+no incluye ninguna de las tres cosas todavía.
+
+`docs/ESTADO-PORT.md`, paso 11 del guion del dueño: reescrito para
+reflejar que en **0.4.0** el selector ofrece únicamente "Igual que el
+sistema", Español y English -- probar el cambio a inglés y el diálogo
+"Cerrar ahora" / "Más tarde" (botón "Cerrar ahora" ausente con una
+sincronización en curso, ST-247 B7b addendum). La marca "(beta)" y los
+cuatro idiomas nuevos quedan explícitamente para el guion de 0.4.1,
+cuando B7d los encienda.
+
+### Verificación
+
+Sin builds. Cifras de esta entrada (claves 637/683/591, tamaños de
+satélite, tamaños y delta de los Setups) reportadas por el
+coordinador/la Maestra desde `abafec3` y la corrida de empaquetado que
+no está en este worktree -- no remedidas desde cero en esta corrida.
+Verificado de forma independiente: `origin/main = abafec3` contiene la
+punta anterior de `windows/b8` (`7ad36c5`) como ancestro (`pull --rebase`
+resolvió en fast-forward, sin conflictos); 0 CR bytes y 0 marcadores de
+conflicto en `DECISIONS.md` y `ESTADO-PORT.md` antes de comprometer.
