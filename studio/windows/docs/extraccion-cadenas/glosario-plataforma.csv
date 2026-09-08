@@ -1,0 +1,39 @@
+termino es,en,ja,de,ru,fr,fuente
+Papelera de reciclaje,Recycle Bin,ごみ箱,Papierkorb,Корзина,Corbeille,nombre oficial de Windows
+Explorador de archivos,File Explorer,エクスプローラー,Explorer,Проводник,Explorateur de fichiers,nombre oficial de Windows
+Administrador de credenciales,Credential Manager,資格情報マネージャー,Anmeldeinformationsverwaltung,Диспетчер учетных данных,Gestionnaire d'informations d'identification,"fr: nombre completo en Microsoft Learn; la forma corta (Gestionnaire d'identification) solo si el ancho lo exige"
+Microsoft Store,Microsoft Store,Microsoft Store,Microsoft Store,Microsoft Store,Microsoft Store,marca: no se traduce
+unidad,drive,ドライブ,Laufwerk,диск,lecteur,nombre oficial de Windows
+disco,disk,ディスク,Datenträger,диск,disque,nombre oficial de Windows
+carpeta,folder,フォルダー,Ordner,папка,dossier,nombre oficial de Windows
+archivo,file,ファイル,Datei,файл,fichier,nombre oficial de Windows
+expulsar,eject,取り出し,Auswerfen,Извлечь,Éjecter,nombre oficial de Windows
+administrador,administrator,管理者,Administrator,администратор,administrateur,nombre oficial de Windows
+dar formato,format,フォーマット,formatieren,форматировать,formater,nombre oficial de Windows
+controlador,driver,ドライバー,Treiber,драйвер,pilote,nombre oficial de Windows
+dispositivo,device,デバイス,Gerät,устройство,appareil,nombre oficial de Windows
+Ajustes,Settings,設定,Einstellungen,Параметры,Paramètres,nombre oficial de Windows
+actualización,update,更新,Update,обновление,mise à jour,"de: ""Update"" y no ""Aktualisierung"" -- es lo que usa Windows moderno en alemán (verificado en la retro)"
+tema,theme,テーマ,Design,тема,thème,"nombre oficial de Windows (de: ""Design"", no ""Thema"")"
+biblioteca,library,ライブラリ,Mediathek,медиатека,bibliothèque,"convención de reproductores de medios (de/ru: mediateca, no biblioteca de libros)"
+sincronizar,sync,同期,synchronisieren,синхронизировать,synchroniser,convención de reproductores de medios
+lista de reproducción,playlist,プレイリスト,Wiedergabeliste,плейлист,liste de lecture,convención de reproductores de medios
+canción,song,曲,Titel,трек,morceau,"ru: ""трек"" es el término dominante en reproductores (contrastado con Яндекс.Музыка); ""песня"" es la canción como obra, no la pista"
+álbum,album,アルバム,Album,альбом,album,convención de reproductores de medios
+carátula,cover art,アルバムアート,Albumcover,обложка,pochette,convención de reproductores de medios
+firmware,firmware,ファームウェア,Firmware,прошивка,microprogramme,"fr: es lo que usa Microsoft hoy en support.microsoft.com/fr-fr (título y cuerpo); ""micrologiciel"" aparece una sola vez en una nota menor. ru: uso corriente"
+arranque,bootloader,ブートローダー,Bootloader,загрузчик,bootloader,"el español evita el anglicismo Y LO EXPLICA; en de/ru/fr el término corriente es el técnico y se mantiene (decisión de la retro alemana)"
+modo DFU,DFU mode,DFUモード,DFU-Modus,режим DFU,mode DFU,"nombre de Apple: DFU no se traduce"
+iPod,iPod,iPod,iPod,iPod,iPod,marca: no se traduce
+Aura Studio,Aura Studio,Aura Studio,Aura Studio,Aura Studio,Aura Studio,marca: no se traduce
+Rockbox,Rockbox,Rockbox,Rockbox,Rockbox,Rockbox,marca: no se traduce
+Cancelar,Cancel,キャンセル,Abbrechen,Отмена,Annuler,botón estándar de Windows
+Guardar,Save,保存,Speichern,Сохранить,Enregistrer,botón estándar de Windows
+Eliminar,Delete,削除,Löschen,Удалить,Supprimer,botón estándar de Windows
+Quitar,Remove,外す,Entfernen,Убрать,Retirer,"distinto de Eliminar: saca de una lista, no borra"
+Abrir,Open,開く,Öffnen,Открыть,Ouvrir,botón estándar de Windows
+volumen,volume,ボリューム,Volume,том,volume,"volumen LÓGICO; distinto de disco/Datenträger, que es el físico (verificado en la retro alemana)"
+ensayar,rehearse,確認,proben,проверка,simuler,"fr: NO ""répéter"" -- se lee primero como ""repetir"", y un botón que parezca Repetir junto a operaciones de firmware es peligroso (hallazgo de la retro francesa)"
+huérfano,orphaned,孤立,verwaist,неиспользуемый,orphelin,"ru: NO ""потерянный"" (perdido) -- sugiere pérdida de datos, justo lo contrario de lo que la propia frase explica: son copias técnicas que Aura rehace (hallazgo de la retro rusa)"
+Dispositivos Apple,Apple Devices,Appleデバイス,Apple-Geräte,Устройства Apple,Appareils Apple,"título de la ficha 9NP83LWLPZ9K, leído en la tienda de cada idioma (apps.microsoft.com/detail/9np83lwlpz9k con hl/gl es-MX/MX, en-US/US, ja-JP/JP, de-DE/DE, ru-RU/RU, fr-FR/FR). El japonés va SIN espacio: 「Appleデバイス」"
+sección de la app,app section,アプリのセクション,App-Bereich,раздел приложения,section de l'app,"cuando una frase manda a una sección (General, Extras), la nombra igual que la etiqueta de esa sección EN EL MISMO IDIOMA; lo comprueba SectionNamesTests"

@@ -106,12 +106,14 @@ antes. Cada paso dice qué mirar; si algo no coincide, es hallazgo.
     lo que va a hacer, deja un resumen (etiquetados/renombrados/huérfanos
     borrados), y correrla una segunda vez no vuelve a tocar nada (mismo
     árbol, comprobable con el explorador o `Get-FileHash`).
-11. **Cambiar idioma en Ajustes.** Ajustes › selector de idioma: probar
-    "Igual que el sistema" → English, y por separado a uno de los otros
-    cuatro (de/fr/ru/ja). Los cuatro que no son español ni inglés llevan
-    una marca "(beta)" junto al nombre en el selector y una línea
-    explicativa debajo (traducción en revisión) — confirmar que aparece
-    para los cuatro y NO para español/inglés.
+11. **Cambiar idioma en Ajustes (0.4.0: solo es+en).** Decisión de la
+    Maestra: en **0.4.0** el selector de idioma ofrece únicamente
+    "Igual que el sistema", Español y English — de/fr/ru/ja están
+    generados y viajan dentro del instalador (`Built: true`), pero
+    apagados en el selector (`Offered: false`) hasta B7d/0.4.1, porque
+    ~300 frases del instalador y de los errores de disco/permisos
+    todavía están en español aunque la UI esté en otro idioma (detalle
+    en `DECISIONS.md`, ST-247 B7c). Probar el cambio a English.
     **Sin tareas en curso**: cambiar de idioma muestra el diálogo
     "Cerrar ahora" / "Más tarde" — no debe quedar texto a medias en dos
     idiomas tras reiniciar.
@@ -120,11 +122,12 @@ antes. Cada paso dice qué mirar; si algo no coincide, es hallazgo.
     mientras la tarea sigue corriendo (ST-247, B7b, addendum) — solo
     "Más tarde" debe estar disponible; verificar que el diálogo se
     comporta distinto con y sin trabajo pendiente.
-    **Categorías de video.** Con la UI en cualquiera de los otros cuatro
-    idiomas, las categorías de video del catálogo (Película, Serie,
-    Episodio, etc.) siguen apareciendo en español — son datos del
-    catálogo, no cadenas de interfaz, y no se traducen; confirmar que es
-    así a propósito y no un hueco de traducción.
+    **Para 0.4.1 (B7d, todavía no en esta ronda)**: probar el cambio a
+    cada uno de los cuatro idiomas nuevos, la marca "(beta)" junto al
+    nombre en el selector con su línea explicativa debajo, y que las
+    categorías de video del catálogo (Película, Serie, Episodio, etc.)
+    siguen en español pase lo que pase con el idioma de la UI, por ser
+    datos del catálogo y no cadenas de interfaz.
 
 ## Ronda "ajustes 3", B7a (ensayo en seco) — Extracción de cadenas (2026-09-07)
 

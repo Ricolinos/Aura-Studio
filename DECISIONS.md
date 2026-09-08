@@ -17290,3 +17290,336 @@ originales cuando no tiene el idioma pedido.
 app en alemán los miles salían con el separador mexicano ("12,345" donde
 el alemán escribe "12.345"). Ahora es `.autoupdatingCurrent`. Las dos
 eran una línea, así que entran acá y no en A7d.
+## ST-247 — Windows: japonés, alemán, ruso y francés (B7c)
+
+B7c de la ronda "ajustes 3". B7a sacó los textos del código, B7b agregó el
+inglés y el selector; esto agrega cuatro idiomas más, la forma de verificarlos
+sin hablarlos, y el triaje de todo lo que B7a no había alcanzado.
+
+Las claves de B7a están en los seis idiomas. **Los cuatro nuevos quedan
+apagados en el selector**, y el porqué está más abajo: no es que la traducción
+falte, es que hay unas trescientas frases que nunca entraron a B7a.
+
+### Cuántas claves, y por qué no son las mismas en todos
+
+| idioma | claves |
+|---|---:|
+| es, en, de, fr | 637 |
+| ru | 683 |
+| ja | 591 |
+
+No es un descuadre: es que las formas de plural no son las mismas. El ruso
+tiene tres donde el español tiene dos —`one`/`few`/`many`, con 11 a 14 yendo a
+`many` y 21 a `one`—, y el japonés tiene una sola, porque no distingue número.
+
+La prueba que compara las listas de claves **se escribió mal la primera vez**:
+exigía "las mismas claves que el español". Con esa regla el ruso habría viajado
+sin `.few` ni `.many`, y una forma que falta no falla: cae a la cultura neutra
+y muestra **español dentro de una interfaz en ruso**, en silencio. Ahora las
+claves esperadas se derivan de `PluralRules.SuffixesFor`, que es donde vive la
+regla de verdad.
+
+### Ofrecido y generado no son lo mismo
+
+`AppLanguage` tenía un solo campo, `Ships`, que mezclaba dos hechos distintos:
+que el archivo del idioma existe y que el usuario puede elegirlo. Se partió en
+`Built` y `Offered`.
+
+Los cuatro de B7c quedan `Built: true, Offered: false`. Están traducidos,
+compilados y viajando dentro del instalador —así se mide su tamaño y así
+encenderlos después no obliga a rehacer el paquete—, y el selector no los
+muestra. `RequiredSatelliteCultures` sale de `Built`, así que el instalador
+sigue exigiendo los cinco satélites y deteniéndose si falta uno: si no está, es
+porque algo salió mal, no porque alguien lo haya decidido.
+
+La razón de tenerlos apagados es el triaje de más abajo. La extracción de B7a
+está en los seis idiomas, pero ~300 frases quedaron fuera de esa extracción
+—instalador, errores de disco, permisos— y siguen en español. Ofrecer alemán
+así es prometer una app en alemán que a mitad del formateo cambia de idioma.
+Las enciende B7d cambiando `Offered`, con `ReviewedByHumans` todavía en `false`
+y el "(beta)" en pantalla.
+
+Dos detalles de las pruebas que importan más de lo que parecen:
+
+- Se comprueba que la diferencia entre generado y ofrecido **existe de
+  verdad**. Sin esa aserción, el día que las dos listas volvieran a coincidir
+  la prueba estaría comparando dos veces la misma lista, y pasaría por eso.
+- `PlatformNamesTests` y `SectionNamesTests` recorren `Translated`, no
+  `Available`. Con `Available`, apagar los cuatro habría apagado también su
+  verificación: cuatro archivos meses sin que nadie los mire, y el día que se
+  enciendan se publica lo que haya quedado ahí.
+
+### Verificar un idioma que no se habla
+
+Dos mecanismos, y resultaron complementarios de una forma que no era obvia.
+
+**Retrotraducción a ciegas.** El mecánico recibe un CSV con ids opacos
+(`c001`…) y el texto traducido, sin el original y sin acceso a `mapa-criticas.csv`
+ni a ningún `.resx`; lo devuelve al español. Se comparan sentidos, no palabras.
+Cubre las 178 claves que `CriticalStrings` marca como críticas: 31 prefijos, no
+claves sueltas, para que una clave nueva de una familia crítica entre sola.
+
+**Glosario de plataforma.** 38 términos por seis idiomas con su fuente
+(`glosario-plataforma.csv`), usado como restricción al traducir y como control
+después.
+
+Lo que encontró cada uno es distinto, y por eso van los dos:
+
+- La retrotraducción encontró **inversiones de sentido**. En ruso, "huérfano"
+  se había traducido **потерянный** (*perdido*), lo contrario de la frase de al
+  lado, que explica que son copias técnicas que Aura reconstruye. Corregido a
+  **неиспользуемый** en 14 lugares.
+- Y **lecturas peligrosas**: el francés usaba `Répéter` para el ensayo del
+  formateo, que se lee primero como *repetir*, al lado de operaciones que
+  borran un disco. Toda la familia pasó a `Simuler`.
+- El glosario encontró lo que la retrotraducción **no puede ver**: terminología
+  consistente pero equivocada. Una traducción coherente de "micrologiciel"
+  retrotraduce a "firmware" sin problema; que Microsoft use "microprogramme" no
+  se nota desde adentro. Igual el nombre completo del Administrador de
+  credenciales en francés.
+- Y el glosario también se equivocó, dos veces, y lo dijo el uso real: en ruso
+  "песня" → **трек** y "репетиция" → **проверка**.
+
+En japonés no apareció ningún error de sentido. Sí se agregó énfasis con 「」 al
+aviso de tiempos de DFU, porque el japonés no tiene mayúsculas y el aviso las
+usaba para marcar lo que no hay que hacer.
+
+### El exportador se rompió con el japonés, por una suposición
+
+`criticas.pl` estaba escrito como si una forma de plural que falta fuera
+siempre un error. Con el ruso está bien —tiene *más* formas: la fila de
+`.other` se abre en dos y la de `.one` conserva su id—, pero el japonés tiene
+*menos*: la fila de `.one` sencillamente no existe, y abortó. Ahora distingue
+los dos casos. Las filas por idioma: 178 en alemán y francés, 194 en ruso, 162
+en japonés, con los mismos ids.
+
+### Una frase compuesta solo se puede leer entera
+
+B7a había sacado a recursos los fragmentos que tenían plural y dejado como
+literales los que los rodean, que era lo correcto entonces. El resultado, con
+la app en alemán:
+
+> "Biblioteca migrada: die Tags von 3 Titeln wurden geschrieben, se ordenaron 2
+> preparados."
+
+No falla nada. Ninguna prueba podía verlo: todas miraban cadenas aisladas. Las
+dos frases (`SummarizeMigration` y `MigrationMessage`) se mudaron a
+`LibraryMigrationText`, en Core y no en una vista, para que una prueba pueda
+armarlas enteras en cada idioma y leerlas. Los separadores —`": "`, `", y "`,
+el punto final— son claves y no interpolaciones: en otro idioma podrían ir de
+otra forma.
+
+La prueba de esto se escribió mal **dos veces**: primero comparaba plantillas
+con el `{0}` quitado, y después formateaba el español con un conteo que la
+frase no usa, de modo que **no podía fallar**. Solo se aceptó cuando, apuntada
+al español, encontró los cinco fragmentos.
+
+### El nombre de la ficha de la Store: un espacio
+
+La app le dice al usuario que instale "Dispositivos Apple" desde la Microsoft
+Store. En japonés decía 「Apple デバイス」 y la ficha se llama 「Appleデバイス」,
+sin espacio.
+
+Nada falla. La frase se lee bien, la retrotraducción la dio por correcta
+—dice exactamente lo que tiene que decir— y el glosario la traía así. Lo único
+que pasa es que el usuario copia al buscador de la tienda lo que la app le puso
+entre comillas y no encuentra la app; y sin ese controlador no hay instalación
+en Windows.
+
+Los nombres verificados en la ficha 9NP83LWLPZ9K de cada tienda: es
+"Dispositivos Apple", en "Apple Devices", ja 「Appleデバイス」, de
+"Apple-Geräte", fr "Appareils Apple", ru "Устройства Apple".
+
+De ahí salió `PlatformNamesTests`, que es la única prueba que mira una cadena
+contra un **hecho de afuera** —cómo se llama esa ficha en esa tienda— en vez de
+contra sí misma. Ese hecho no vive en el código: vive en el glosario con su
+fuente, y de ahí lo lee. Su tabla es corta a propósito: solo nombres que el
+usuario va a *buscar* o *escribir* en otro programa. Un término que solo se lee
+no necesita esta vigilancia, y meterlo daría falsos positivos hasta que alguien
+apague la prueba.
+
+También `SectionNamesTests`: cuando una frase manda a una sección de la app
+("Expulsa el iPod desde **General**"), tiene que nombrarla igual que la
+etiqueta de esa sección **en el mismo idioma**. Los seis ya calzaban. En
+japonés la pestaña dice 「その他」; una frase que dijera "Extras" no lleva a
+ninguna parte.
+
+(De paso: General y Extras son secciones de Aura Studio, no menús del firmware
+del iPod. El encargo suponía lo contrario y habría mandado a leer el `.lang`
+del firmware, que además este repo no lee.)
+
+### El triaje de lo que B7a no alcanzó
+
+`HardcodedSpanishTests` traía un trinquete con 392 literales fuera de alcance.
+Hoy son 386 —B7c se llevó seis con las frases compuestas— y quedaron
+clasificados uno por uno en `docs/extraccion-cadenas/triaje-fuera-de-b7a.tsv`,
+cada uno con su línea de código: el texto solo no alcanza para decidir, porque
+"No se pudo leer el disco" puede ser un diálogo o una entrada de bitácora.
+
+| clase | cuántas |
+|---|---:|
+| PANTALLA — lo lee el usuario | 303 |
+| INTERNO — bitácora y excepciones | 67 |
+| DATO — se compara o nombra una carpeta | 11 |
+| TRAMPA — algo depende del texto en español | 5 |
+
+Las 303 no son 303 frases: una descripción larga partida en cinco líneas de
+fuente cuenta cinco veces.
+
+De esas 303, **77 caen en familias críticas** —`InstallerError` (25),
+`PrivilegedHost` (14), `FirmwareArtifacts` (11), `DeviceFirmwareLabel` (11),
+`PrivilegedRunner` (5), `DfuFlashRunner` (4), `FirmwareTreeWriter` (4),
+`PrivilegedOperation` (3)—: texto sobre formatear el disco, DFU y el
+bootloader. No salen a cuatro idiomas sin su ronda a ciegas; hacerlo sería
+quedarse con la etiqueta de revisado y sin la revisión. Eso es B7d.
+
+Las cinco trampas, que son bugs con el español intacto:
+
+- **`MediaInfoDialog`** guarda los campos del formulario en un diccionario **con
+  la etiqueta de pantalla como llave**. Si se traducen las etiquetas y una punta
+  queda distinta, `Text()` devuelve cadena vacía: el usuario edita el álbum,
+  guarda, y el álbum se borra. La línea 136 ni usa `TryGetValue`: ahí la hoja
+  revienta al abrirse.
+- **`LibraryViewModel`** decide si avisar de un fallo con
+  `Reason.Contains("no se pudo")`. No hace falta traducir nada para romperlo:
+  basta con reescribir esa razón en español y decir "no fue posible".
+- **`PreparedMusic`**: once razones que parecen internas y salen a pantalla
+  pegadas a otra frase. La misma frase a medias de arriba, esperando.
+- **`LibraryGrouping`**: `"Sin álbum"` es rótulo y centinela a la vez.
+- **`TMDBClient`**, que ya estaba mal y se arregla acá.
+
+### TMDB hablaba en español, siempre
+
+`TMDBClient` pedía todo con `language="es-MX"` fijo. De ahí salen los títulos y
+las sinopsis de películas y series, así que la app en japonés le mostraba al
+usuario **texto en español recién traído de la red**.
+
+No es una cadena de interfaz sino un parámetro de una consulta: ninguna prueba
+de extracción lo iba a ver nunca. Apareció leyendo el triaje, entre cosas que
+sí eran texto. Ahora sigue a `CultureInfo.CurrentUICulture`, resuelto al
+consultar y no al construir el cliente; la cultura invariante no tiene nombre y
+dejaría `&language=` vacío, así que ahí se pide la neutra.
+
+### Método: una verificación limpia y una que no verifica nada se ven igual
+
+Cuatro veces en esta ronda una comprobación dio "todo bien" porque no estaba
+mirando nada:
+
+- `grep -E "[áéíóú]"` compara **bytes**: las diéresis alemanas comparten el
+  byte inicial `0xC3` con las vocales acentuadas, así que dio 94 falsos
+  positivos y se perdió los de verdad.
+- `perl -CSD` decodifica la **entrada**, no el patrón del `-e`. Sin `-Mutf8`,
+  el patrón son bytes y la entrada son caracteres.
+- `$1` se pisa dentro de un `while(m{}g)` si hay un `=~` en el `if` de adentro.
+  La comparación de comillas informó cero diferencias; capturando a variables
+  léxicas aparecieron cuatro.
+- Y la prueba de las frases compuestas, que no podía fallar.
+
+De ahí la práctica que quedó: **antes de confiar en una comprobación en verde,
+comprobar que puede ponerse en rojo**. Es lo que se hizo con
+`PlatformNamesTests` (con el espacio de vuelta, falla el japonés y pasan los
+otros cinco), con `TMDBLanguageTests` (con `"es-MX"` de vuelta caen cinco de
+nueve casos) y con `SatelliteCulturesTests` (quitando `ja` del script, falla).
+
+Un caso relacionado, del lado de las herramientas: un bucle que hacía
+`sed -n "${l}p" "$f"` con `$l` sacado de partir por `:` dejó siete archivos
+basura en la raíz de `studio/windows/`. Las rutas con `:` hacían que `$l` fuera
+texto de la app, `sed` lo leía como guion, y una `w` adentro del texto era su
+comando de escritura. Los archivos se borraron y quedó `RepositoryLayoutTests`
+con una **lista permitida explícita**: un patrón habría dejado pasar seis de
+los siete.
+
+## ST-248 (cierre, corrección) — Windows: conteos finales de B7c, satélites generados vs. ofrecidos en 0.4.0, y B7d en curso
+
+Corrige por append la tabla de la entrada anterior ("ST-248 (cierre)",
+más arriba), escrita con cifras preliminares antes de que B7c llegara a
+`origin/main`. En `windows/b8`, rebasada (fast-forward: la punta de
+`windows/b8` ya estaba contenida en `origin/main`) sobre
+`origin/main = abafec3` (B7c completo, ver "ST-247 — Windows: japonés,
+alemán, ruso y francés (B7c)" arriba para el detalle completo). Sin
+build de `AuraStudio.App`.
+
+### Conteos finales de claves -- 3 más de lo reportado antes
+
+| idioma | claves |
+|---|---:|
+| es, en, de, fr | **637** (no 634) |
+| ru | **683** (no 680) |
+| ja | **591** (no 588) |
+
+Las tres de más son `LibraryMigrationText.needed-intro`,
+`needed-joiner` y `needed-detail` -- las tres partes en las que quedó
+partida la segunda frase compuesta a medias que encontró la barrida de
+B7c (`5ce8d46`, ver "Una frase compuesta solo se puede leer entera" más
+arriba). `needed-joiner` es la coma con "y" que une las partes
+("...se leyeron, **y** se ordenaron..."): es clave y no código fijo
+porque alemán y japonés no necesariamente la escriben así (el japonés,
+en particular, no siempre necesita un conector explícito donde el
+español usa "y"). El resto de la tabla de la entrada anterior (críticas
+retrotraducidas 178/178/194/162, veredictos de terminología) sigue
+igual, sin corrección.
+
+### Satélites: generados 5, ofrecidos 2 en 0.4.0
+
+Decisión de la Maestra: **0.4.0 sale solo con español e inglés**. Los
+cuatro idiomas de B7c quedan generados y viajando dentro del
+instalador (`Built: true`), pero apagados en el selector
+(`Offered: false`) hasta B7d/0.4.1 -- el motivo completo (~300 frases
+del instalador/errores de disco/permisos que B7a no alcanzó a sacar a
+recursos) está en la entrada "ST-247 — Windows: japonés, alemán, ruso y
+francés (B7c)" de arriba, sección "Ofrecido y generado no son lo
+mismo".
+
+Tamaño de cada satélite generado (bytes, `Resources.<idioma>.resx`
+compilado): en 80 896, de 84 992, fr 86 016, ru 107 520, ja 86 016.
+
+**Setups de esta ronda** (con los 5 satélites generados, aunque solo
+2 ofrecidos): arm64 99 304 044 B, x64 101 971 775 B. Delta contra los
+Setups de 0.4.0 sobre `f6dd461` (es+en solamente, sin B7c): **+52 658 B
+(arm64) / +65 634 B (x64)** -- ese es el costo comprimido de llevar los
+cuatro idiomas apagados dentro del paquete, pagado ya en 0.4.0 aunque
+el usuario no pueda elegirlos todavía.
+
+### Triaje de las 386 (resumen; detalle completo en la entrada de B7c de arriba)
+
+| clase | cuántas |
+|---|---:|
+| PANTALLA -- lo lee el usuario | 303 |
+| INTERNO -- bitácora y excepciones | 67 |
+| DATO -- se compara o nombra una carpeta | 11 |
+| TRAMPA -- algo depende del texto en español | 5 |
+
+### B7d ya está en curso -- explícito, para no dar por cerrado lo que sigue abierto
+
+Orden de trabajo que el Experto ya empezó: (1) las cinco trampas en
+`AuraStudio.Core` primero (`MediaInfoDialog`, `LibraryViewModel`,
+`PreparedMusic`, `LibraryGrouping`, `TMDBClient` -- las cinco descritas
+en la entrada de B7c de arriba); (2) traducir las 303 PANTALLA a los
+cuatro idiomas, con retrotraducción ciega de mi parte sobre las 77 que
+caen en familias críticas (`InstallerError`, `PrivilegedHost`,
+`FirmwareArtifacts`, `DeviceFirmwareLabel`, `PrivilegedRunner`,
+`DfuFlashRunner`, `FirmwareTreeWriter`, `PrivilegedOperation`), con ids
+nuevos `d001…` (para no confundirlos con los `c001…` de las 178/194/162
+críticas ya cerradas de B7c); (3) las 11 DATO. El "(beta)" en pantalla,
+`Offered: true` para los cuatro, y las capturas por idioma (japonés y
+ruso primero) van con esa ronda -- **no con esta corrida de B8**, que
+no incluye ninguna de las tres cosas todavía.
+
+`docs/ESTADO-PORT.md`, paso 11 del guion del dueño: reescrito para
+reflejar que en **0.4.0** el selector ofrece únicamente "Igual que el
+sistema", Español y English -- probar el cambio a inglés y el diálogo
+"Cerrar ahora" / "Más tarde" (botón "Cerrar ahora" ausente con una
+sincronización en curso, ST-247 B7b addendum). La marca "(beta)" y los
+cuatro idiomas nuevos quedan explícitamente para el guion de 0.4.1,
+cuando B7d los encienda.
+
+### Verificación
+
+Sin builds. Cifras de esta entrada (claves 637/683/591, tamaños de
+satélite, tamaños y delta de los Setups) reportadas por el
+coordinador/la Maestra desde `abafec3` y la corrida de empaquetado que
+no está en este worktree -- no remedidas desde cero en esta corrida.
+Verificado de forma independiente: `origin/main = abafec3` contiene la
+punta anterior de `windows/b8` (`7ad36c5`) como ancestro (`pull --rebase`
+resolvió en fast-forward, sin conflictos); 0 CR bytes y 0 marcadores de
+conflicto en `DECISIONS.md` y `ESTADO-PORT.md` antes de comprometer.

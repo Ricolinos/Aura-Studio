@@ -1,0 +1,387 @@
+clase	donde	codigo
+DATO	AuraStudio.Core\Library\LibraryFileLayout.cs:31	public const string UncategorizedFolder = "Sin categoría";
+DATO	AuraStudio.Core\Library\LibraryGrouping.cs:339	foreach (string article in (string[])["the ", "los ", "las ", "el ", "la ", "una ", "un ", "an ", "a "])
+DATO	AuraStudio.Core\Library\LibraryGrouping.cs:339	foreach (string article in (string[])["the ", "los ", "las ", "el ", "la ", "una ", "un ", "an ", "a "])
+DATO	AuraStudio.Core\Library\LibraryGrouping.cs:339	foreach (string article in (string[])["the ", "los ", "las ", "el ", "la ", "una ", "un ", "an ", "a "])
+DATO	AuraStudio.Core\Library\LibraryOptions.cs:164	public static readonly IReadOnlyList<string> DefaultPhotoCollections = ["Imágenes", "Fotos", "IA"];
+DATO	AuraStudio.Core\Library\LibraryPersistence.cs:228	["photos"] = "Fotos",
+DATO	AuraStudio.Core\Library\LibrarySyncFinalizer.cs:395	else if (item.Category == "Fotos") summary.PhotoPhotos++;
+DATO	AuraStudio.Core\Library\LibrarySyncFinalizer.cs:476	photos.Add($"{name}: {(item.Category == "IA" ? "ai" : item.Category == "Fotos" ? "photo" : "image")}");
+DATO	AuraStudio.Core\MediaCategory.cs:175	return hasCameraExif ? "Fotos" : "Imágenes";
+DATO	AuraStudio.Core\Mks5lbootOutput.cs:44	=> output.Contains("no DFU devices found", StringComparison.OrdinalIgnoreCase)
+DATO	AuraStudio.Core\StorageBreakdown.cs:25	public const string Photos = "Fotos";
+INTERNO	AuraStudio.App\Converters\BoolToVisibilityConverter.cs:25	=> throw new NotSupportedException("Conversión de un solo sentido.");
+INTERNO	AuraStudio.App\Converters\NotNullToBoolConverter.cs:16	=> throw new NotSupportedException("Conversión de un solo sentido.");
+INTERNO	AuraStudio.App\Platform\AudioTranscoder.cs:137	throw new AudioTranscodeException("no se pidió ninguna conversión");
+INTERNO	AuraStudio.App\Platform\AudioTranscoder.cs:173	if (bytes == 0) throw new AudioTranscodeException("la conversión no produjo audio");
+INTERNO	AuraStudio.App\Platform\FfmpegRunner.cs:169	return Process.Start(info) ?? throw new FfmpegException("No se pudo iniciar ffmpeg.");
+INTERNO	AuraStudio.App\Platform\ImageResizer.cs:114	if (source.Length == 0) throw new ImageResizeException("No se pudo leer la imagen de origen.");
+INTERNO	AuraStudio.App\Platform\ImageResizer.cs:141	throw new ImageResizeException("La imagen de origen no tiene un tamaño válido.");
+INTERNO	AuraStudio.App\Platform\ImageResizer.cs:203	"El JPEG generado no es baseline y el iPod no podría mostrarlo.");
+INTERNO	AuraStudio.App\Platform\ImageResizer.cs:53	if (source.Length == 0) throw new ImageResizeException("No se pudo leer la imagen de origen.");
+INTERNO	AuraStudio.App\Platform\ImageResizer.cs:80	throw new ImageResizeException("La imagen de origen no tiene un tamaño válido.");
+INTERNO	AuraStudio.App\Platform\PlaylistArtGenerator.cs:263	"La imagen de la lista no salió como JPEG baseline y el iPod no podría mostrarla.");
+INTERNO	AuraStudio.App\Platform\PrivilegedHost.cs:141	return (null, "el disco ya no tiene medio montado");
+INTERNO	AuraStudio.App\Platform\PrivilegedHost.cs:174	"el disco no entra en el direccionamiento de 32 bits del MBR", log);
+INTERNO	AuraStudio.App\Platform\PrivilegedHost.cs:201	log.Add("ENSAYO: no se escribió nada.");
+INTERNO	AuraStudio.App\Platform\PrivilegedHost.cs:342	throw new IOException("la tabla de particiones no quedó escrita (falta su firma)");
+INTERNO	AuraStudio.App\Platform\PrivilegedHost.cs:349	throw new IOException("la tabla de particiones que quedó en el disco no es la que se escribió");
+INTERNO	AuraStudio.App\Platform\PrivilegedHost.cs:353	throw new IOException("quedó más de una partición en la tabla");
+INTERNO	AuraStudio.App\Platform\PrivilegedHost.cs:360	throw new IOException("el sector de arranque del FAT32 no quedó escrito");
+INTERNO	AuraStudio.App\Platform\PrivilegedHost.cs:363	log.Add("relectura: tabla de particiones y sector de arranque FAT32 verificados en el disco");
+INTERNO	AuraStudio.App\Platform\PrivilegedHost.cs:444	log.Add("el servicio de Apple no está instalado");
+INTERNO	AuraStudio.App\Platform\PrivilegedHost.cs:532	if (process is null) return (-1, "no se pudo ejecutar schtasks.exe");
+INTERNO	AuraStudio.App\Platform\PrivilegedRunner.cs:102	_log.Append(operation.Kind.ToString(), "cancelada por el usuario");
+INTERNO	AuraStudio.App\Platform\PrivilegedRunner.cs:125	?? throw new InvalidOperationException("No se pudo determinar el ejecutable de Aura Studio.");
+INTERNO	AuraStudio.App\Platform\PrivilegedRunner.cs:139	?? throw new InvalidOperationException("No se pudo iniciar el proceso con permisos de administrador.");
+INTERNO	AuraStudio.App\Platform\PrivilegedRunner.cs:77	_log.Append(operation.Kind.ToString(), "cancelada por el usuario");
+INTERNO	AuraStudio.App\Platform\VolumeLock.cs:132	log.Add($"volumen {path}: bloqueado{(dismounted ? " y desmontado" : " (no se pudo desmontar)")}");
+INTERNO	AuraStudio.App\Platform\VolumeLock.cs:81	if (locks.Count == 0) log.Add("no había volúmenes montados que bloquear");
+INTERNO	AuraStudio.App\Services\CrashReporter.cs:58	Record("tarea sin observar", e.Exception, null);
+INTERNO	AuraStudio.App\Services\CrashReporter.cs:83	entry.AppendLine(exception.StackTrace ?? "(sin pila)");
+INTERNO	AuraStudio.App\Services\CrashReporter.cs:86	entry.Append("Causado por: ").Append(inner.GetType().Name).Append(" — ").AppendLine(inner.Message);
+INTERNO	AuraStudio.App\Services\DeviceSessionService.cs:94	"Reevaluate() fuera del hilo de interfaz: actualizar algo enlazado desde aquí cierra la app sin aviso.");
+INTERNO	AuraStudio.App\Services\UiThreadWatchdog.cs:153	Log("[UiThreadWatchdog] AURA_WATCHDOG_STACKS=1: se capturarán pilas. " +
+INTERNO	AuraStudio.App\Services\UiThreadWatchdog.cs:154	"Puede colgar la app en ARM64 -- solo para diagnóstico puntual.");
+INTERNO	AuraStudio.App\Services\UiThreadWatchdog.cs:237	Log("    (no se alcanzó a capturar la pila -- el bloqueo terminó antes de que se pudiera suspender el hilo, la captura tardó demasiado, o la arquitectura no está soportada)");
+INTERNO	AuraStudio.App\Services\UiThreadWatchdog.cs:323	if (addresses.Count == 0) Log("    (StackWalk64 no devolvió direcciones)");
+INTERNO	AuraStudio.Core\Installer\Fat32Formatter.cs:116	throw new ArgumentOutOfRangeException(nameof(bytesPerSector), bytesPerSector, "tamaño de sector no soportado por FAT32");
+INTERNO	AuraStudio.Core\Installer\Fat32Formatter.cs:118	throw new ArgumentOutOfRangeException(nameof(totalSectors), totalSectors, "la partición es demasiado chica");
+INTERNO	AuraStudio.Core\Installer\Fat32Formatter.cs:169	if (dataSectors <= 0) throw new InvalidOperationException("la partición no alcanza ni para las tablas FAT");
+INTERNO	AuraStudio.Core\Installer\FirmwareTreeWriter.cs:108	throw new InstallerException(new InstallerError.ProcessFailed(-1, "no se pudo verificar rockbox.ipod tras copiarlo"));
+INTERNO	AuraStudio.Core\Installer\FirmwareTreeWriter.cs:278	throw new InstallerException(new InstallerError.ProcessFailed(-1, last?.Message ?? "no se pudo extraer el árbol"));
+INTERNO	AuraStudio.Core\Installer\MasterBootRecord.cs:129	"una partición no puede empezar en el sector 0: ahí vive la propia tabla");
+INTERNO	AuraStudio.Core\Installer\MasterBootRecord.cs:133	throw new ArgumentOutOfRangeException(nameof(sectorCount), sectorCount, "la partición no puede estar vacía");
+INTERNO	AuraStudio.Core\Installer\MasterBootRecord.cs:138	"la partición se sale del direccionamiento de 32 bits del MBR");
+INTERNO	AuraStudio.Core\Installer\MasterBootRecord.cs:183	throw new ArgumentOutOfRangeException(nameof(index), index, "La tabla MBR tiene 4 entradas.");
+INTERNO	AuraStudio.Core\Library\LibraryFileCopier.cs:18	new(path, false, 0, "el archivo ya está dentro de la biblioteca");
+INTERNO	AuraStudio.Core\Library\LibraryFileCopier.cs:64	if (sourcePath is not { Length: > 0 }) return LibraryCopyResult.Skipped("no hay archivo de origen");
+INTERNO	AuraStudio.Core\Library\LibraryFileCopier.cs:65	if (relativePath is not { Length: > 0 }) return LibraryCopyResult.Skipped("no hay ruta de destino");
+INTERNO	AuraStudio.Core\Library\LibraryFileCopier.cs:66	if (!files.FileExists(sourcePath)) return LibraryCopyResult.Skipped("el archivo no está");
+INTERNO	AuraStudio.Core\Library\LibraryFileCopier.cs:89	if (sourcePath is not { Length: > 0 }) return LibraryCopyResult.Skipped("no hay archivo de origen");
+INTERNO	AuraStudio.Core\Library\LibraryFileCopier.cs:90	if (destinationPath is not { Length: > 0 }) return LibraryCopyResult.Skipped("no hay ruta de destino");
+INTERNO	AuraStudio.Core\Library\LibraryFileCopier.cs:91	if (!files.FileExists(sourcePath)) return LibraryCopyResult.Skipped("el archivo no está");
+INTERNO	AuraStudio.Core\Library\LocalTagWriter.cs:108	if (metadata is null) return TagWriteResult.Skipped("el elemento no tiene metadata");
+INTERNO	AuraStudio.Core\Library\LocalTagWriter.cs:122	"no se etiqueta un archivo temporal: las etiquetas van al archivo final, "
+INTERNO	AuraStudio.Core\Library\LocalTagWriter.cs:123	+ "después del renombrado");
+INTERNO	AuraStudio.Core\Library\LocalTagWriter.cs:127	if (!File.Exists(path)) return TagWriteResult.Skipped("el archivo no está");
+INTERNO	AuraStudio.Core\Library\LocalTagWriter.cs:203	Compare("álbum", metadata.Album, tag.Album);
+INTERNO	AuraStudio.Core\Library\LocalTagWriter.cs:204	Compare("artista del álbum", metadata.AlbumArtist, First(tag.AlbumArtists));
+INTERNO	AuraStudio.Core\Library\LocalTagWriter.cs:212	if (embedCover && !SameCover(tag, coverBytes!)) pending.Add("carátula");
+INTERNO	AuraStudio.Core\Library\LocalTagWriter.cs:25	public static TagWriteResult UpToDate { get; } = Skipped("el archivo ya coincide con el catálogo");
+INTERNO	AuraStudio.Core\Library\MediaRoots.cs:136	_ => throw new ArgumentOutOfRangeException(nameof(kind), kind, "no tiene carpeta en la biblioteca")
+INTERNO	AuraStudio.Core\Media\AiffToWav.cs:119	if (format is not { } common) throw new AiffFormatException("el AIFF no trae su bloque COMM");
+INTERNO	AuraStudio.Core\Media\AiffToWav.cs:120	if (soundDataOffset < 0) throw new AiffFormatException("el AIFF no trae audio (falta el bloque SSND)");
+INTERNO	AuraStudio.Core\Media\AiffToWav.cs:123	throw new AiffFormatException("el AIFF está truncado: dice tener más audio del que hay");
+INTERNO	AuraStudio.Core\Media\AiffToWav.cs:270	throw new AiffFormatException("el AIFF está truncado");
+INTERNO	AuraStudio.Core\Media\AiffToWav.cs:79	if (ReadTag(aiff) != "FORM") throw new AiffFormatException("no es un AIFF: falta la marca FORM");
+INTERNO	AuraStudio.Core\Networking\GitHubReleaseChecker.cs:155	new("la familia instalada no tiene repositorio al que preguntar (ST-046)");
+INTERNO	AuraStudio.Core\ThemePackager.cs:20	: ThemePackagerException("La carpeta de origen no tiene icons/masks/") { }
+PANTALLA	AuraStudio.App\Platform\AppUpdateInstaller.cs:106	"El instalador está abriéndose. Aura Studio se cerrará para poder actualizarse.");
+PANTALLA	AuraStudio.App\Platform\AppUpdateInstaller.cs:127	: "Lo descargado no coincide con el resumen que publica GitHub para ese archivo. "
+PANTALLA	AuraStudio.App\Platform\AppUpdateInstaller.cs:128	+ "Se borró y no se abrió nada; vuelve a intentarlo más tarde.";
+PANTALLA	AuraStudio.App\Platform\AppUpdateInstaller.cs:138	+ "incompleta. Se borró y no se abrió nada.";
+PANTALLA	AuraStudio.App\Platform\AppUpdateInstaller.cs:74	return new AppUpdateDownloadResult(AppUpdateDownloadOutcome.Cancelled, "Se detuvo la descarga.");
+PANTALLA	AuraStudio.App\Platform\AudioTranscoder.cs:219	+ "ALAC necesita Windows 10 versión 1803 o más nuevo.");
+PANTALLA	AuraStudio.App\Platform\AudioTranscoder.cs:304	+ "del formato que dice su extensión.");
+PANTALLA	AuraStudio.App\Platform\CredentialStore.cs:142	"Carátulas y arte de disco en alta resolución (~1000 px), fotos de artista, y pósters curados de películas y series (estos últimos necesitan además la clave de TMDB para encontrar el título).",
+PANTALLA	AuraStudio.App\Platform\CredentialStore.cs:143	"Crea una cuenta gratuita en fanart.tv, entra a tu perfil y copia la \"Personal API Key\" (no la de proyecto).",
+PANTALLA	AuraStudio.App\Platform\CredentialStore.cs:149	"Pósters de películas y series. Encuentra el título y su identificador; con fanart.tv configurado se prefiere el póster curado de allá, y si no, el de TMDB.",
+PANTALLA	AuraStudio.App\Platform\CredentialStore.cs:150	"Crea una cuenta gratuita en themoviedb.org, entra a Ajustes › API y copia la \"API Key (v3 auth)\".",
+PANTALLA	AuraStudio.App\Platform\CredentialStore.cs:164	"Los repositorios de los firmwares son públicos: Aura Studio ya avisa de versiones nuevas sin necesitar nada de esto. Un token de solo lectura solo eleva el límite de consultas a la API de GitHub; instalar el firmware nunca depende de esto, porque viene incluido en la app.",
+PANTALLA	AuraStudio.App\Platform\CredentialStore.cs:165	"Si de todas formas quieres uno: crea un token de acceso personal \"fine-grained\" en github.com › Settings › Developer settings, con acceso solo a Aura-Firmware, Metro-Aura y moonlit-aura, y permiso Contents: Read-only.",
+PANTALLA	AuraStudio.App\Platform\DfuFlashRunner.cs:104	"El iPod todavía está en modo DFU…", progress, ct);
+PANTALLA	AuraStudio.App\Platform\DfuFlashRunner.cs:109	"Esperando a que el iPod entre en modo DFU…", progress, ct);
+PANTALLA	AuraStudio.App\Platform\DfuFlashRunner.cs:171	return new ProcessResult(-1, "No se pudo iniciar mks5lboot.exe.");
+PANTALLA	AuraStudio.App\Platform\DfuFlashRunner.cs:37	"No se encontró mks5lboot.exe junto a Aura Studio.", -1);
+PANTALLA	AuraStudio.App\Platform\PrivilegedHost.cs:203	"Ensayo completo: el disco se volvió a verificar y el plan de formateo es válido. " +
+PANTALLA	AuraStudio.App\Platform\PrivilegedHost.cs:204	"No se escribió nada.", log);
+PANTALLA	AuraStudio.App\Platform\PrivilegedHost.cs:253	? "Windows releyó la tabla de particiones"
+PANTALLA	AuraStudio.App\Platform\PrivilegedHost.cs:254	: "Windows no releyó la tabla (se verá al reconectar el iPod)");
+PANTALLA	AuraStudio.App\Platform\PrivilegedHost.cs:264	return PrivilegedOperationResult.Ok("El iPod quedó formateado en FAT32.", log);
+PANTALLA	AuraStudio.App\Platform\PrivilegedHost.cs:407	return PrivilegedOperationResult.Ok("El servicio de Apple ya estaba en marcha.", log);
+PANTALLA	AuraStudio.App\Platform\PrivilegedHost.cs:412	return PrivilegedOperationResult.Ok("Se volvió a arrancar el servicio de Apple.", log);
+PANTALLA	AuraStudio.App\Platform\PrivilegedHost.cs:417	return PrivilegedOperationResult.Ok("El servicio de Apple ya estaba detenido.", log);
+PANTALLA	AuraStudio.App\Platform\PrivilegedHost.cs:421	return PrivilegedOperationResult.Failure("El servicio de Apple no se puede detener.", log);
+PANTALLA	AuraStudio.App\Platform\PrivilegedHost.cs:432	"No se pudo preparar la reactivación automática, así que no se detuvo ningún servicio.",
+PANTALLA	AuraStudio.App\Platform\PrivilegedHost.cs:438	return PrivilegedOperationResult.Ok("Se detuvo el servicio de Apple durante el grabado.", log);
+PANTALLA	AuraStudio.App\Platform\PrivilegedHost.cs:445	return PrivilegedOperationResult.Ok("No hay servicio de Apple que pausar en este equipo.", log);
+PANTALLA	AuraStudio.App\Platform\PrivilegedHost.cs:450	"El servicio de Apple no respondió a tiempo.", log);
+PANTALLA	AuraStudio.App\Platform\PrivilegedHost.cs:55	result = PrivilegedOperationResult.Failure("La petición no se pudo leer.");
+PANTALLA	AuraStudio.App\Platform\PrivilegedRunner.cs:104	"Cancelaste la autorización. Este paso no puede continuar sin ese permiso.");
+PANTALLA	AuraStudio.App\Platform\PrivilegedRunner.cs:79	"Cancelaste la autorización. Este paso no puede continuar sin ese permiso.");
+PANTALLA	AuraStudio.App\Platform\PrivilegedRunner.cs:86	"La operación con permisos de administrador terminó sin dejar resultado. " +
+PANTALLA	AuraStudio.App\Platform\PrivilegedRunner.cs:87	"No se puede saber si alcanzó a hacer algo, así que no se continúa.");
+PANTALLA	AuraStudio.App\Platform\PrivilegedRunner.cs:92	?? PrivilegedOperationResult.Failure("No se pudo leer el resultado de la operación.");
+PANTALLA	AuraStudio.App\Platform\VolumeLock.cs:126	"Cierra las ventanas del Explorador y las aplicaciones que estén usando el iPod.");
+PANTALLA	AuraStudio.App\Services\AppUpdateService.cs:136	StatusMessage = "No se pudo consultar GitHub para saber si hay una versión más nueva. " +
+PANTALLA	AuraStudio.App\Services\AppUpdateService.cs:137	"Revisa tu conexión y vuelve a intentar.";
+PANTALLA	AuraStudio.App\Services\AppUpdateService.cs:161	"ábrelo en GitHub para descargarlo a mano.";
+PANTALLA	AuraStudio.App\Services\EnrichmentService.cs:59	"\"Completar en línea\" está apagado en Ajustes › Servicios.");
+PANTALLA	AuraStudio.App\Services\FirmwareTreeInstaller.cs:28	return new FirmwareTreeInstallResult(false, 0, "El volumen del iPod ya no está disponible.");
+PANTALLA	AuraStudio.App\Services\LibraryProcessor.cs:74	item.Status = LibraryItemStatus.Failed("Este tipo de archivo no es compatible.");
+PANTALLA	AuraStudio.App\Services\SyncService.cs:32	if (!Directory.Exists(volumeRoot)) return Failure("El volumen del iPod ya no está disponible.", started);
+PANTALLA	AuraStudio.App\Services\SyncService.cs:52	if (!Directory.Exists(volumeRoot)) return Failure("El volumen del iPod ya no está disponible.", started);
+PANTALLA	AuraStudio.App\ViewModels\ArtistsViewModel.cs:226	public string FavoriteButtonText => SelectionAllFavorite ? "Quitar favorito" : "Marcar como favorito";
+PANTALLA	AuraStudio.App\ViewModels\ArtistsViewModel.cs:74	(IsFavorite ? "Quitar de favoritos: " : "Marcar como favorito: ") + Title;
+PANTALLA	AuraStudio.App\ViewModels\DeviceListViewModel.cs:268	? "El firmware quedó actualizado. Expulsa el iPod y enciéndelo."
+PANTALLA	AuraStudio.App\ViewModels\DeviceListViewModel.cs:97	"Busca actualizaciones para saber si hay una más nueva publicada."
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:105	return "Lenguaje visual Waning Crescent: calma nocturna, Material Design 3 adaptado al iPod, " +
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:106	"sin sistema de temas.";
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:115	"Elige cuál de los firmwares instalables usa Aura Studio la próxima vez que abras el Instalador. " +
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:116	"Todos son software libre (GPL v2), derivados de Rockbox, y comparten la misma biblioteca: " +
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:117	"tu música, fotos y videos se sincronizan igual con cualquiera.";
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:213	? "Las versiones son las más recientes publicadas en GitHub: instalar desde cero descarga esa."
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:214	: "No se pudo consultar GitHub (revisa el token en Ajustes › Servicios): se muestran las versiones " +
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:215	"incluidas en Aura Studio, que son las que se instalarían.";
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:274	return "Conecta tu iPod con Aura instalado para instalar, activar o construir temas.";
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:278	string name = device.DeclaredFamily?.DisplayName ?? "Este firmware";
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:282	return "Tema integrado (Claro/Oscuro) más los que instales — Ajustes › Estilo, en el iPod.";
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:286	public const string AnimationsDetail = "Tres niveles cada uno. Se eligen en Ajustes, en el iPod.";
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:291	"Estos extras del iPod original no están implementados en Aura. " +
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:292	"Cuando existan, se van a poder gestionar desde aquí.";
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:294	public const string NotImplemented = "No implementados.";
+PANTALLA	AuraStudio.App\ViewModels\ExtrasViewModel.cs:299	"Todos los firmwares son GPL v2. Aquí están sus fuentes, versiones exactas y cambios.";
+PANTALLA	AuraStudio.App\ViewModels\InstallerViewModel.cs:1261	"No se pudo determinar qué firmware instalar. Vuelve a elegirlo y reintenta.");
+PANTALLA	AuraStudio.App\ViewModels\InstallerViewModel.cs:812	DfuDriverStatus.DeviceReady => AppStrings.DfuDriverReady(report.DeviceName ?? "el dispositivo"),
+PANTALLA	AuraStudio.App\ViewModels\LibraryViewModel.cs:1035	"Normalizando carátulas…", BackgroundTaskProgress.Of(0, files.Count), cancellation.Cancel);
+PANTALLA	AuraStudio.App\ViewModels\LibraryViewModel.cs:1677	"Migrando la biblioteca…", BackgroundTaskProgress.Of(0, items.Count));
+PANTALLA	AuraStudio.App\ViewModels\LibraryViewModel.cs:2007	StatusMessage = removed == 0 ? "No había ningún póster que quitar." : "Se quitó el póster.";
+PANTALLA	AuraStudio.App\ViewModels\LibraryViewModel.cs:2007	StatusMessage = removed == 0 ? "No había ningún póster que quitar." : "Se quitó el póster.";
+PANTALLA	AuraStudio.App\ViewModels\LibraryViewModel.cs:2073	? "No se encontró letra para lo seleccionado."
+PANTALLA	AuraStudio.App\ViewModels\LibraryViewModel.cs:48	(0, 0) => "No había ningún álbum con título al que aplicarle una tapa.",
+PANTALLA	AuraStudio.App\ViewModels\LibraryViewModel.cs:49	(0, 1) => "No se encontró una tapa segura para ese álbum.",
+PANTALLA	AuraStudio.App\ViewModels\LibraryViewModel.cs:51	(1, 0) => "Se aplicó la tapa recomendada a 1 álbum.",
+PANTALLA	AuraStudio.App\ViewModels\LibraryViewModel.cs:554	? "No se consiguió ningún póster nuevo."
+PANTALLA	AuraStudio.App\ViewModels\LibraryViewModel.cs:750	"Cargando biblioteca…", BackgroundTaskProgress.Indeterminate, cancellation.Cancel);
+PANTALLA	AuraStudio.App\ViewModels\LibraryViewModel.cs:893	"Midiendo archivos…", BackgroundTaskProgress.Of(0, pending.Count), cancellation.Cancel);
+PANTALLA	AuraStudio.App\ViewModels\MediaGridViewModel.cs:343	MediaGridKind.Albums => "Los álbumes de tu biblioteca, armados con la metadata de cada canción.",
+PANTALLA	AuraStudio.App\ViewModels\MediaGridViewModel.cs:344	MediaGridKind.Movies => "Tus películas.",
+PANTALLA	AuraStudio.App\ViewModels\MediaGridViewModel.cs:345	MediaGridKind.Series => "Tus series, con sus temporadas.",
+PANTALLA	AuraStudio.App\ViewModels\MediaGridViewModel.cs:346	MediaGridKind.PhotoCollection => "Álbumes de esta colección. Los álbumes son locales: al iPod las fotos viajan sin carpetas.",
+PANTALLA	AuraStudio.App\ViewModels\MediaGridViewModel.cs:347	MediaGridKind.AllPhotos => "Todas tus imágenes.",
+PANTALLA	AuraStudio.App\ViewModels\MediaGridViewModel.cs:348	MediaGridKind.Clips => "Videos que no son película ni serie.",
+PANTALLA	AuraStudio.App\ViewModels\MediaGridViewModel.cs:349	_ => "Todos tus videos."
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:231	: "Esta carpeta todavía no tiene una biblioteca de Aura Studio: empieza vacía.";
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:253	? "Cada canción, foto o video que sueltas en Aura Studio se copia dentro de la carpeta de arriba; el original queda intacto donde estaba. Usa más espacio en disco, pero la biblioteca queda completa en un solo lugar."
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:254	: "No se copia nada: la biblioteca referencia tus archivos donde ya están, y aquí solo se guarda lo que los liga a Aura (metadata, letras, portadas). Al sincronizar, Aura Studio arma el archivo para el iPod leyendo el original en ese momento — un poco más lento la primera vez, pero tu disco nunca termina con una copia duplicada de toda tu biblioteca.";
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:267	"Un WAV o un AIFF ocupa diez veces lo que la misma canción comprimida, y el disco del iPod no "
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:268	+ "da abasto: al copiarlos a la biblioteca se convierten, con el codificador que ya trae "
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:269	+ "Windows, a " + (AudioOriginal ? "ALAC, que es sin pérdida" : "MP3 de 256 kbps")
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:270	+ " — lo que hayas elegido en \"Cómo guardar tu música\". Tu archivo original queda intacto "
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:271	+ "donde estaba.";
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:365	: "Si esta biblioteca la armó una versión anterior de Aura Studio, migrarla deja las "
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:366	+ "etiquetas del catálogo escritas en las copias de Música, ordena lo preparado y borra "
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:367	+ "lo que ya no usa nadie. Tus archivos originales no se tocan, y correrla de nuevo "
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:368	+ "cuando ya está al día no cambia nada.";
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:404	"«Gorillaz feat. De La Soul» se muestra dentro de «Gorillaz»: una sola fila en Artistas y una sola foto de artista. " +
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:405	"Los separadores son «feat.», «feat», «ft.», «ft», «featuring», «+», «with» y «con», siempre como palabra suelta. " +
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:406	"«vs.» y «versus» NO agrupan: «Spacemonkeyz vs. Gorillaz» es un proyecto con nombre propio. " +
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:407	"Esto solo cambia cómo se AGRUPA lo que ves; nunca reescribe el artista de la canción ni mueve carpetas en el iPod.";
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:462	? "Una sola imagen por álbum, compartida por todas sus canciones. Es lo que el firmware busca primero y ocupa mucho menos espacio en el iPod."
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:463	: "Cada canción lleva su propia carátula. Sirve para sencillos y recopilaciones, donde una sola portada por álbum sería incorrecta.";
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:516	MusicOrganization.Album => "Music/Álbum/ — todas las canciones agrupadas solo por álbum, sin carpeta de artista.",
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:517	MusicOrganization.Artist => "Music/Artista/ — todas las canciones del artista juntas, sin carpeta de álbum.",
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:518	_ => "Music/Artista/Álbum/ — una carpeta por álbum dentro de cada artista."
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:603	? "FLAC, ALAC, M4A y MP3 se copian tal cual: el iPod con Aura los reproduce sin perder calidad. "
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:604	+ "WAV y AIFF sí se convierten, a ALAC, que también es sin pérdida y ocupa la mitad. Tu "
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:605	+ "archivo original nunca se modifica."
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:606	: "Cada canción se convierte a MP3 de 256 kbps antes de copiarla: buena calidad, mucho menos "
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:607	+ "espacio. Si sueltas un FLAC, tu biblioteca de Aura guarda el MP3 y no el FLAC; el archivo "
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:608	+ "original se queda intacto en su carpeta.";
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:726	: "sin clave configurada abajo";
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:751	return "Se quitó la clave del Administrador de credenciales.";
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:758	? "Clave guardada en el Administrador de credenciales de Windows."
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:759	: "No se pudo guardar la clave. Revisa que tu cuenta de Windows permita guardar credenciales.";
+PANTALLA	AuraStudio.App\ViewModels\SettingsViewModel.cs:766	return "Se quitó la clave del Administrador de credenciales.";
+PANTALLA	AuraStudio.App\ViewModels\SimilarItemsViewModel.cs:175	LastMessage = "Listo, no se vuelve a mostrar. Puedes restablecerlo abajo.";
+PANTALLA	AuraStudio.App\ViewModels\SimilarItemsViewModel.cs:58	? "No se encontró nada nuevo. Hay grupos que ya marcaste como \"no son lo mismo\": puedes volver a mostrarlos abajo."
+PANTALLA	AuraStudio.App\ViewModels\SimilarItemsViewModel.cs:59	: "No se encontraron elementos parecidos en tu biblioteca.";
+PANTALLA	AuraStudio.App\ViewModels\SongsViewModel.cs:18	public string FavoriteLabel => IsFavorite ? "Favorito" : "No es favorito";
+PANTALLA	AuraStudio.App\ViewModels\SongsViewModel.cs:250	? "Ninguna canción está marcada como favorita. Quita el filtro para verlas todas."
+PANTALLA	AuraStudio.App\ViewModels\SyncViewModel.cs:125	: "El iPod ya está al día con tu biblioteca.";
+PANTALLA	AuraStudio.App\ViewModels\SyncViewModel.cs:177	? "Ya puedes desconectar el iPod."
+PANTALLA	AuraStudio.App\ViewModels\SyncViewModel.cs:178	: "No se pudo expulsar el iPod. Ciérralo desde el Explorador antes de desconectarlo.";
+PANTALLA	AuraStudio.App\ViewModels\SyncViewModel.cs:252	0 => "No hay nada listo para sincronizar.",
+PANTALLA	AuraStudio.App\ViewModels\SyncViewModel.cs:253	1 => "1 archivo listo para sincronizar.",
+PANTALLA	AuraStudio.App\ViewModels\SyncViewModel.cs:346	if (!result.Success) return result.ErrorMessage ?? "La sincronización no se completó.";
+PANTALLA	AuraStudio.App\ViewModels\SyncViewModel.cs:399	SyncPhase.Scanning => "Analizando la biblioteca…",
+PANTALLA	AuraStudio.App\ViewModels\SyncViewModel.cs:402	SyncPhase.WritingManifest => "Guardando letras, carátulas e índices…",
+PANTALLA	AuraStudio.App\ViewModels\SyncViewModel.cs:403	SyncPhase.WritingSyncMarker => "Preparando la actualización del iPod…",
+PANTALLA	AuraStudio.App\ViewModels\SyncViewModel.cs:78	: "Conecta un iPod para sincronizar.";
+PANTALLA	AuraStudio.App\ViewModels\ThemesViewModel.cs:101	if (NewThemeSourceFolder.Length == 0) return "Elige la carpeta con los assets ya generados.";
+PANTALLA	AuraStudio.App\ViewModels\ThemesViewModel.cs:102	if (NewThemeName.Trim().Length == 0) return "Ponle un nombre al tema.";
+PANTALLA	AuraStudio.App\ViewModels\ThemesViewModel.cs:106	: $"\"{NewThemeName.Trim()}\" no produce un id válido: usa letras, números y espacios.";
+PANTALLA	AuraStudio.App\ViewModels\ThemesViewModel.cs:132	Name = "Aura (integrado en el firmware)",
+PANTALLA	AuraStudio.App\ViewModels\ThemesViewModel.cs:151	? "Todavía no hay temas instalados en este iPod."
+PANTALLA	AuraStudio.App\ViewModels\ThemesViewModel.cs:170	ErrorMessage = $"\"{row.Name}\" no se puede activar: {row.Reason}";
+PANTALLA	AuraStudio.App\ViewModels\ThemesViewModel.cs:200	ErrorMessage = $"No se pudo quitar \"{row.Name}\" del iPod.";
+PANTALLA	AuraStudio.App\ViewModels\ThemesViewModel.cs:226	ErrorMessage = $"\"{name}\" no produce un id válido: usa letras, números y espacios.";
+PANTALLA	AuraStudio.App\ViewModels\ThemesViewModel.cs:36	: "Este tema usa material de licencia restringida: es para tu uso personal y no se puede compartir.";
+PANTALLA	AuraStudio.App\ViewModels\ThemesViewModel.cs:38	public string StateText => IsActive ? "Activo" : Loadable ? "" : "No carga";
+PANTALLA	AuraStudio.App\ViewModels\ThemesViewModel.cs:74	: "El iPod detectado no tiene Aura activo: los temas son de Aura."
+PANTALLA	AuraStudio.App\ViewModels\ThemesViewModel.cs:75	: "Conecta tu iPod con Aura para ver y cambiar sus temas.";
+PANTALLA	AuraStudio.App\Views\ArtistsPage.xaml.cs:350	Text = album.IsFavorite ? "Quitar favorito del álbum" : "Marcar álbum como favorito"
+PANTALLA	AuraStudio.App\Views\ArtistsPage.xaml.cs:350	Text = album.IsFavorite ? "Quitar favorito del álbum" : "Marcar álbum como favorito"
+PANTALLA	AuraStudio.App\Views\DeviceListPage.xaml.cs:150	Text = "Se quedan en el iPod. Marca los que quieras quitar y vuelve a sincronizar; " +
+PANTALLA	AuraStudio.App\Views\DeviceListPage.xaml.cs:151	"los demás no se tocan.",
+PANTALLA	AuraStudio.App\Views\MediaGridPage.xaml.cs:314	return chain.Count == 0 ? "(sin árbol)" : string.Join(" > ", chain);
+PANTALLA	AuraStudio.App\Views\MediaInfoDialog.cs:106	Caption("Se sincroniza con el iPod: la misma calificación que eliges aquí o en el aparato.");
+PANTALLA	AuraStudio.App\Views\MediaInfoDialog.cs:113	Field("Álbum", draft.Album);
+PANTALLA	AuraStudio.App\Views\MediaInfoDialog.cs:114	Field("Artista del álbum (opcional)", draft.AlbumArtist);
+PANTALLA	AuraStudio.App\Views\MediaInfoDialog.cs:126	Caption("Se guarda junto a la canción y se muestra en el iPod mientras suena.");
+PANTALLA	AuraStudio.App\Views\MediaInfoDialog.cs:151	Field("Nombre de la serie", draft.SeriesName);
+PANTALLA	AuraStudio.App\Views\MediaInfoDialog.cs:154	Caption("El nombre con el que el episodio llega al iPod se arma con estos tres campos: cambiarlos y volver a sincronizar lo reagrupa.");
+PANTALLA	AuraStudio.App\Views\MediaInfoDialog.cs:158	Caption("Los datos de serie aparecen al elegir la categoría Series aquí abajo y volver a abrir esta hoja.");
+PANTALLA	AuraStudio.App\Views\MediaInfoDialog.cs:180	Section("Archivo");
+PANTALLA	AuraStudio.App\Views\MediaInfoDialog.cs:217	Album = Text("Álbum"),
+PANTALLA	AuraStudio.App\Views\MediaInfoDialog.cs:218	AlbumArtist = Text("Artista del álbum (opcional)"),
+PANTALLA	AuraStudio.App\Views\MediaInfoDialog.cs:226	SeriesName = Text("Nombre de la serie"),
+PANTALLA	AuraStudio.App\Views\PlaylistsPage.xaml.cs:41	string? name = await AskForName("Renombrar la lista", row.Name);
+PANTALLA	AuraStudio.App\Views\PlaylistsPage.xaml.cs:84	var box = new TextBox { Text = current, PlaceholderText = "Nombre de la lista" };
+PANTALLA	AuraStudio.App\Views\SettingsPage.xaml.cs:218	? "Guardada en el Administrador de credenciales."
+PANTALLA	AuraStudio.App\Views\SettingsPage.xaml.cs:219	: "Sin configurar."
+PANTALLA	AuraStudio.App\Views\SettingsPage.xaml.cs:224	PlaceholderText = ViewModel.HasKey(service) ? "Ya hay una guardada" : "Pega la clave aquí",
+PANTALLA	AuraStudio.App\Views\SettingsPage.xaml.cs:224	PlaceholderText = ViewModel.HasKey(service) ? "Ya hay una guardada" : "Pega la clave aquí",
+PANTALLA	AuraStudio.App\Views\SettingsPage.xaml.cs:233	input.PlaceholderText = ViewModel.HasKey(service) ? "Ya hay una guardada" : "Pega la clave aquí";
+PANTALLA	AuraStudio.App\Views\SettingsPage.xaml.cs:233	input.PlaceholderText = ViewModel.HasKey(service) ? "Ya hay una guardada" : "Pega la clave aquí";
+PANTALLA	AuraStudio.App\Views\SettingsPage.xaml.cs:241	input.PlaceholderText = "Pega la clave aquí";
+PANTALLA	AuraStudio.App\Views\SettingsPage.xaml.cs:244	var open = new HyperlinkButton { Content = "Conseguir la clave", NavigateUri = new Uri(service.Url) };
+PANTALLA	AuraStudio.App\Views\SongsPage.xaml.cs:551	Text = "Cambia cómo se ve en tu biblioteca y en el iPod. El archivo en disco no se toca.",
+PANTALLA	AuraStudio.App\Views\SongsPage.xaml.cs:75	ViewModel.SetScope(new MusicScope.All(), AppStrings.NavSongs, "Toda tu música.");
+PANTALLA	AuraStudio.App\Views\ThemesPage.xaml.cs:57	? "Es el tema activo: el iPod vuelve al tema integrado de Aura."
+PANTALLA	AuraStudio.App\Views\ThemesPage.xaml.cs:58	: "Se borra del iPod. Puedes volver a instalarlo si conservas la carpeta de assets.",
+PANTALLA	AuraStudio.Core\DeviceConfig.cs:125	"El nombre de este iPod se puso desde otra computadora; solo desde ahí se puede cambiar.";
+PANTALLA	AuraStudio.Core\DeviceFirmwareLabel.cs:24	string dual = device.IsDualBoot ? " (dual boot con Apple)" : "";
+PANTALLA	AuraStudio.Core\DeviceFirmwareLabel.cs:32	? "Firmware original de Apple en el disco — pero el USB lo atiende el bootloader de Aura/Rockbox (modo USB del bootloader)"
+PANTALLA	AuraStudio.Core\DeviceFirmwareLabel.cs:36	? "Disco vacío — el USB lo atiende el bootloader de Aura/Rockbox (modo USB del bootloader)"
+PANTALLA	AuraStudio.Core\DeviceFirmwareLabel.cs:37	: "Disco vacío, sin firmware"
+PANTALLA	AuraStudio.Core\DeviceFirmwareLabel.cs:57	: "Firmware de la familia Aura instalado — conectado desde el firmware, todavía sin escribir su configuración" + dual;
+PANTALLA	AuraStudio.Core\DeviceFirmwareLabel.cs:64	: "Archivos de la familia Aura en el disco, pero el iPod está corriendo el firmware de Apple y ese firmware nunca ha arrancado aquí — no hay evidencia de que esté instalado";
+PANTALLA	AuraStudio.Core\DeviceFirmwareLabel.cs:69	: "Archivos de la familia Aura en el disco — todavía sin arrancar (sin evidencia de que el bootloader esté instalado)";
+PANTALLA	AuraStudio.Core\DeviceFirmwareLabel.cs:75	return "Rockbox instalado (no es Aura) — conectado desde Rockbox" + dual;
+PANTALLA	AuraStudio.Core\DeviceFirmwareLabel.cs:78	return "Rockbox instalado (no es Aura)" + dual;
+PANTALLA	AuraStudio.Core\DeviceFirmwareLabel.cs:81	? "Archivos de Rockbox en el disco (no es Aura), pero el iPod está corriendo el firmware de Apple y Rockbox nunca ha arrancado aquí"
+PANTALLA	AuraStudio.Core\DeviceFirmwareLabel.cs:82	: "Archivos de Rockbox en el disco (no es Aura) — sin evidencia de arranque";
+PANTALLA	AuraStudio.Core\FirmwareArtifacts.cs:290	"no hay con qué verificar los archivos del firmware.");
+PANTALLA	AuraStudio.Core\FirmwareArtifacts.cs:315	"no se puede grabar el bootloader.");
+PANTALLA	AuraStudio.Core\FirmwareArtifacts.cs:345	"sin esa herramienta no se puede grabar el bootloader.");
+PANTALLA	AuraStudio.Core\FirmwareArtifacts.cs:359	"el archivo está dañado o no es el que publicó el Release.");
+PANTALLA	AuraStudio.Core\FirmwareArtifacts.cs:376	"el archivo cambió y no se puede confiar en él.");
+PANTALLA	AuraStudio.Core\FirmwareArtifacts.cs:412	"el archivo está dañado o no es el que publicó el Release.");
+PANTALLA	AuraStudio.Core\FirmwareArtifacts.cs:440	errors.Add("checksums.txt contiene una línea inválida.");
+PANTALLA	AuraStudio.Core\FirmwareArtifacts.cs:446	errors.Add("checksums.txt contiene una ruta insegura.");
+PANTALLA	AuraStudio.Core\FirmwareArtifacts.cs:478	if (unsafePath) errors.Add("rockbox.zip contiene una ruta insegura.");
+PANTALLA	AuraStudio.Core\FirmwareArtifacts.cs:483	errors.Add("rockbox.zip está incompleto (le faltan codecs o plugins): " +
+PANTALLA	AuraStudio.Core\FirmwareArtifacts.cs:489	errors.Add("rockbox.zip no es un archivo válido.");
+PANTALLA	AuraStudio.Core\FirmwareUpdateDecision.cs:136	"la versión más nueva publicada.",
+PANTALLA	AuraStudio.Core\FirmwareUpdateDecision.cs:157	$"{bundledTag ?? "una versión más vieja"}. Actualiza Aura Studio para poder instalarla.",
+PANTALLA	AuraStudio.Core\FirmwareUpdateDecision.cs:181	"que es lo que trae esta copia de Aura Studio."
+PANTALLA	AuraStudio.Core\FirmwareUpdateDecision.cs:201	"la versión más nueva publicada.",
+PANTALLA	AuraStudio.Core\FirmwareUpdateDecision.cs:78	"No se pudo consultar GitHub para saber si hay una versión más nueva. " +
+PANTALLA	AuraStudio.Core\FirmwareUpdateDecision.cs:79	"Revisa tu conexión y vuelve a intentar.";
+PANTALLA	AuraStudio.Core\IPodDiskInfo.cs:55	? (HasAuraConfig ? "Archivos Aura detectados (familia no declarada)" : "No se detectó una instalación Aura")
+PANTALLA	AuraStudio.Core\IPodDiskInfo.cs:55	? (HasAuraConfig ? "Archivos Aura detectados (familia no declarada)" : "No se detectó una instalación Aura")
+PANTALLA	AuraStudio.Core\InstallManifest.cs:89	throw new InvalidDataException("El archivo de firmware no contiene ninguna entrada.");
+PANTALLA	AuraStudio.Core\Installer\FirmwareSwitcher.cs:83	_ => "No se pudo cambiar de firmware."
+PANTALLA	AuraStudio.Core\Installer\FirmwareTreeWriter.cs:103	progress?.Report(new("Copiando el firmware al iPod…", null));
+PANTALLA	AuraStudio.Core\Installer\FirmwareTreeWriter.cs:140	progress?.Report(new("La actualización selectiva no pudo; instalando completo…", null));
+PANTALLA	AuraStudio.Core\Installer\FirmwareTreeWriter.cs:270	progress?.Report(new("La copia se interrumpió — reintentando…", null));
+PANTALLA	AuraStudio.Core\Installer\FirmwareTreeWriter.cs:81	progress?.Report(new("Verificando integridad de los archivos…", null));
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:100	"Para dual boot, el iPod debe conservar el firmware original de Apple en formato \"winpod\": tabla de " +
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:101	"particiones MBR con la partición de firmware de Apple intacta más una partición FAT32 — el formato que " +
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:102	"crea iTunes al restaurar en una PC con Windows. Este iPod está en formato de Mac (particiones " +
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:103	"Apple/HFS, que Rockbox no puede leer) o su disco no es legible, y prepararlo desde aquí borraría el " +
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:104	"disco completo, incluido el firmware original. Opciones: restaura el iPod con iTunes/Apple Devices y " +
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:105	"vuelve a intentar dual boot, o instala solo el firmware si no necesitas conservar el de Apple.";
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:111	"Tu iPod se desconectó durante la copia de archivos. Copiar el firmware completo son miles de archivos " +
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:112	"chicos y puede tardar varios minutos por USB — revisa el cable (evita concentradores USB si usas uno) " +
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:113	"y vuelve a intentar: lo que ya se copió no se pierde, la copia sigue desde donde quedó.";
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:123	"El iPod recibió el envío del firmware, pero nunca confirmó haberlo aplicado — sigue en modo DFU. Si " +
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:124	"Windows abrió iTunes o Apple Devices mostrando el iPod en modo de recuperación, ciérralo SIN tocar " +
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:125	"\"Restaurar\" (eso reinstalaría el firmware original de Apple). Después vuelve a intentar: el iPod ya " +
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:126	"está en modo DFU, así que el reintento debería llegar rápido a este mismo paso.";
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:137	"El iPod volvió a aparecer con el firmware original de Apple atendiendo el USB: el bootloader no quedó " +
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:138	"grabado. Vuelve a intentar el paso de DFU (el disco ya está preparado, no hace falta formatearlo otra vez).";
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:169	"Windows no tiene un controlador para tu iPod en modo DFU, así que Aura Studio no puede hablarle. " +
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:170	"Instala Apple Devices (o iTunes) desde la Microsoft Store, o asigna el controlador WinUSB al " +
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:171	"dispositivo con Zadig; el paso de permisos explica ambas opciones.";
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:22	public override string Message => "No se detectó ningún iPod conectado.";
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:28	"El iPod no está formateado en FAT32. Conviértelo antes de continuar.";
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:34	"No se detectó el iPod en modo DFU a tiempo. Vuelve a intentar la combinación de botones.";
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:53	"— el iPod quedaría sin video o sin audio. No es un problema de tu conexión; vuelve a intentar más " +
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:54	"tarde o avisa que este Release salió mal.";
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:77	"solo — desconecta los demás discos externos y vuelve a intentar.";
+PANTALLA	AuraStudio.Core\Installer\InstallerError.cs:84	"Cancelaste el permiso de administrador. Este paso no puede continuar sin ese permiso.";
+PANTALLA	AuraStudio.Core\Installer\PrivilegedOperation.cs:80	return "La petición no trae el tamaño esperado del disco, así que no se puede re-verificar.";
+PANTALLA	AuraStudio.Core\Installer\PrivilegedOperation.cs:82	return "La tolerancia de tamaño no puede ser negativa.";
+PANTALLA	AuraStudio.Core\Installer\PrivilegedOperation.cs:84	return "La etiqueta del volumen quedó vacía.";
+PANTALLA	AuraStudio.Core\Library\CatalogPersister.cs:148	Failed?.Invoke(this, "La biblioteca no está disponible: no se pudo guardar.");
+PANTALLA	AuraStudio.Core\Library\LibraryPersistence.cs:392	? new CatalogLoad(new PersistedLibrary(), "El catálogo de la biblioteca está vacío o dañado.")
+PANTALLA	AuraStudio.Core\Library\MediaInfoEdit.cs:73	public static string IncompleteReason => "Título, artista y álbum son obligatorios para sincronizar.";
+PANTALLA	AuraStudio.Core\Library\MediaTableRow.cs:171	SyncItemState.Synced => "En el iPod",
+PANTALLA	AuraStudio.Core\Library\MediaTableRow.cs:175	SyncItemState.ModifiedOnDevice => "Cambió en el iPod",
+PANTALLA	AuraStudio.Core\Library\MediaTableRow.cs:176	_ => "Se borró en el iPod"
+PANTALLA	AuraStudio.Core\Library\MusicTableColumn.cs:104	MusicTableColumn.Album => "Álbum",
+PANTALLA	AuraStudio.Core\Library\MusicTableColumn.cs:105	MusicTableColumn.AlbumArtist => "Artista del álbum",
+PANTALLA	AuraStudio.Core\Library\MusicTableColumn.cs:108	MusicTableColumn.DiscNumber => "Número de disco",
+PANTALLA	AuraStudio.Core\Library\MusicTableColumn.cs:115	MusicTableColumn.DateAdded => "Fecha en que se agregó",
+PANTALLA	AuraStudio.Core\Library\MusicTableColumn.cs:124	MusicTableColumn.DiscNumber => "Disco",
+PANTALLA	AuraStudio.Core\Library\MusicTableColumn.cs:95	MusicColumnGroup.File => "Archivo",
+PANTALLA	AuraStudio.Core\Library\PreparedMusic.cs:100	return new PreparedMusicDecision(PreparedMusicAction.Keep, "el preparado sigue sirviendo");
+PANTALLA	AuraStudio.Core\Library\PreparedMusic.cs:71	"el archivo de origen ya sirve tal como está");
+PANTALLA	AuraStudio.Core\Library\PreparedMusic.cs:76	return new PreparedMusicDecision(PreparedMusicAction.Build, "todavía no hay preparado");
+PANTALLA	AuraStudio.Core\Library\PreparedMusic.cs:82	"el archivo de origen cambió de tamaño");
+PANTALLA	AuraStudio.Core\Library\PreparedMusic.cs:91	"no se pudo leer la fecha de los archivos");
+PANTALLA	AuraStudio.Core\Library\PreparedMusic.cs:97	"el archivo de origen es más nuevo que el preparado");
+PANTALLA	AuraStudio.Core\Library\PreparedMusicBuilder.cs:131	return PreparedMusicResult.None("hay que convertirlo y no hay convertidor");
+PANTALLA	AuraStudio.Core\Library\PreparedMusicBuilder.cs:152	if (!copied.Copied) return PreparedMusicResult.None(copied.Reason ?? "no se pudo copiar");
+PANTALLA	AuraStudio.Core\Library\PreparedMusicBuilder.cs:64	if (item.Kind != LibraryItemKind.Music) return PreparedMusicResult.None("no es música");
+PANTALLA	AuraStudio.Core\Library\PreparedMusicBuilder.cs:67	return PreparedMusicResult.None("la música copiada es su propio preparado");
+PANTALLA	AuraStudio.Core\Library\PreparedMusicBuilder.cs:73	if (!disk.Exists(source)) return PreparedMusicResult.None("el archivo de origen no está");
+PANTALLA	AuraStudio.Core\Library\PreparedMusicBuilder.cs:83	return PreparedMusicResult.None("este formato viaja tal cual");
+PANTALLA	AuraStudio.Core\Library\SimilarItemsDetector.cs:29	SimilarityConfidence.Duplicate => "Casi seguro es el mismo archivo dos veces.",
+PANTALLA	AuraStudio.Core\Library\SimilarItemsDetector.cs:30	SimilarityConfidence.Probable => "Probablemente es la misma canción con la metadata escrita distinto.",
+PANTALLA	AuraStudio.Core\Library\SimilarItemsDetector.cs:31	_ => "Se parecen, pero podrían ser versiones distintas. Conviene revisar."
+PANTALLA	AuraStudio.Core\Library\SimilarItemsDetector.cs:372	reasons.Add("A uno le falta el artista");
+PANTALLA	AuraStudio.Core\Library\SimilarItemsDetector.cs:426	if (sameFileSize) reasons.Add("Mismo tamaño exacto de archivo");
+PANTALLA	AuraStudio.Core\Library\SimilarItemsDetector.cs:448	if (sameFileSize) reasons.Add("Mismo tamaño exacto de archivo");
+PANTALLA	AuraStudio.Core\Library\SimilarItemsDetector.cs:454	reasons.Add($"Categorías distintas: {a.Item.Category ?? "sin categoría"} / {b.Item.Category ?? "sin categoría"}");
+PANTALLA	AuraStudio.Core\Library\SimilarItemsDetector.cs:454	reasons.Add($"Categorías distintas: {a.Item.Category ?? "sin categoría"} / {b.Item.Category ?? "sin categoría"}");
+PANTALLA	AuraStudio.Core\Library\SimilarItemsDetector.cs:52	_ => "Álbum"
+PANTALLA	AuraStudio.Core\Library\SimilarItemsDetector.cs:606	bits[0] += " sin pérdida";
+PANTALLA	AuraStudio.Core\Library\SimilarItemsDetector.cs:608	bits.Add(kind == LibraryItemKind.Music ? "con carátula" : "con póster");
+PANTALLA	AuraStudio.Core\Library\SimilarItemsDetector.cs:608	bits.Add(kind == LibraryItemKind.Music ? "con carátula" : "con póster");
+PANTALLA	AuraStudio.Core\Library\SimilarItemsDetector.cs:609	if (keep.Item.Metadata?.SyncedLyrics is not null) bits.Add("con letra");
+PANTALLA	AuraStudio.Core\Library\SimilarItemsDetector.cs:612	bits.Add("el más grande");
+PANTALLA	AuraStudio.Core\Library\SyncScope.cs:50	public const string NothingSelected = "No hay ningún elemento seleccionado para sincronizar.";
+PANTALLA	AuraStudio.Core\Library\SyncScope.cs:52	public const string SelectionNotReady = "Los elementos seleccionados todavía no están listos para sincronizar.";
+PANTALLA	AuraStudio.Core\Library\SyncScope.cs:54	public const string NothingReady = "No hay nada listo para sincronizar.";
+PANTALLA	AuraStudio.Core\Media\FfmpegLocator.cs:125	"No se encontró ffmpeg en esta computadora. Instálalo con "
+PANTALLA	AuraStudio.Core\Media\FfmpegLocator.cs:126	+ "\"winget install Gyan.FFmpeg\", o elige dónde está en Ajustes › Video.";
+PANTALLA	AuraStudio.Core\Networking\AlbumCoverSearch.cs:69	"No se encontraron tapas para este álbum. Revisa que el título y el artista estén bien escritos.";
+PANTALLA	AuraStudio.Core\Networking\AlbumCoverSearch.cs:72	"También puedes activar Deezer en Ajustes › Servicios para buscar en más lugares.";
+PANTALLA	AuraStudio.Core\Networking\ArtistImageResolver.cs:163	"No se pudo: MusicBrainz está saturado. Vuelve a intentarlo en un rato.",
+PANTALLA	AuraStudio.Core\Networking\ArtistImageResolver.cs:166	{ Found: 0, Failed: 0 } => "No se consiguió ninguna foto de artista nueva.",
+PANTALLA	AuraStudio.Core\Networking\ArtistImageResolver.cs:31	"Para las fotos de artista hace falta una clave de fanart.tv (Ajustes › Servicios).";
+PANTALLA	AuraStudio.Core\Networking\ArtistImageResolver.cs:33	public const string NoMatchReason = "No se encontró a este artista en MusicBrainz.";
+PANTALLA	AuraStudio.Core\Networking\ArtistImageResolver.cs:35	public const string NoImageReason = "fanart.tv no tiene foto de este artista.";
+PANTALLA	AuraStudio.Core\Networking\ArtistImageResolver.cs:78	"MusicBrainz está saturado en este momento. Vuelve a intentarlo en un rato.";
+PANTALLA	AuraStudio.Core\Networking\NetworkingContracts.cs:27	new("No se encontró ningún resultado") { IsNoMatch = true };
+PANTALLA	AuraStudio.Core\Networking\VideoArtworkResolver.cs:138	"Para los pósters de video hace falta una clave de TMDB (Ajustes › Servicios).";
+PANTALLA	AuraStudio.Core\Networking\VideoArtworkResolver.cs:140	public const string NoMatchReason = "No se encontró un póster para este video.";
+PANTALLA	AuraStudio.Core\ThemeInstaller.cs:154	throw new ThemeInstallException("Ese tema ya no está en el iPod.");
+PANTALLA	AuraStudio.Core\ThemeInstaller.cs:157	throw new ThemeInstallException("Ese tema no se puede leer para exportarlo.");
+PANTALLA	AuraStudio.Core\ThemeInstaller.cs:165	$"\"{success.Manifest.Name}\" está marcado como de uso personal: no se puede compartir.");
+PANTALLA	AuraStudio.Core\ThemeInstaller.cs:192	ThemeValidationError.ManifestMissing => "le falta el archivo theme.cfg.",
+PANTALLA	AuraStudio.Core\ThemeInstaller.cs:193	ThemeValidationError.ManifestUnreadable => "su theme.cfg no se puede leer.",
+PANTALLA	AuraStudio.Core\ThemeInstaller.cs:202	_ => "no pasó la revisión."
+PANTALLA	AuraStudio.Core\ThemeInstaller.cs:209	+ "Genérala con el design-system del firmware antes de construir el tema.",
+PANTALLA	AuraStudio.Core\ThemeInstaller.cs:211	"En la carpeta de assets falta icons/masks/, que es donde viven las máscaras de los íconos.",
+PANTALLA	AuraStudio.Core\ThemeInstaller.cs:45	_ => new InstalledTheme(id, id, false, "No se pudo revisar el tema.")
+PANTALLA	AuraStudio.Core\ThemeInstaller.cs:61	: "No se pudo revisar el tema.";
+TRAMPA	AuraStudio.App\ViewModels\LibraryViewModel.cs:1851	if (result.Action != PreparedMusicAction.None || result.Reason.Contains("no se pudo"))
+TRAMPA	AuraStudio.App\Views\MediaInfoDialog.cs:136	foreach (string key in (string[])["Título", "Artista", "Álbum"])
+TRAMPA	AuraStudio.Core\Library\LibraryGrouping.cs:156	public const string UnknownAlbumTitle = "Sin álbum";
+TRAMPA	AuraStudio.Core\Library\LibraryGrouping.cs:158	public const string UnknownPhotoAlbumTitle = "Sin álbum";
+TRAMPA	AuraStudio.Core\Networking\TMDBClient.cs:69	string language = "es-MX")

@@ -1,0 +1,1788 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="album-cover-picker.cancelar" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="album-cover-picker.cancelar-resto" xml:space="preserve">
+    <value>残りをキャンセル</value>
+  </data>
+  <data name="album-cover-picker.omitir-este-album" xml:space="preserve">
+    <value>このアルバムをスキップ</value>
+  </data>
+  <data name="album-cover-picker.title-in-set" xml:space="preserve">
+    <value>アルバム {0}/{1} ·「{2}」のアートワーク</value>
+  </data>
+  <data name="album-cover-picker.title-single" xml:space="preserve">
+    <value>「{0}」のアートワーク</value>
+  </data>
+  <data name="album-cover-picker.usar-esta" xml:space="preserve">
+    <value>これを使う</value>
+  </data>
+  <data name="album-cover-picker.usar-esta-2" xml:space="preserve">
+    <value>これを使う</value>
+  </data>
+  <data name="album-cover-picker.usar-recomendada" xml:space="preserve">
+    <value>推奨のものを使う</value>
+  </data>
+  <data name="app-strings.action-eject" xml:space="preserve">
+    <value>取り出し</value>
+  </data>
+  <data name="app-strings.action-open-in-explorer" xml:space="preserve">
+    <value>エクスプローラーで開く</value>
+  </data>
+  <data name="app-strings.action-refresh" xml:space="preserve">
+    <value>更新</value>
+  </data>
+  <data name="app-strings.action-refresh-help" xml:space="preserve">
+    <value>iPod とライブラリの状態を読み直します。コピーも削除もしません。</value>
+  </data>
+  <data name="app-strings.app-name" xml:space="preserve">
+    <value>Aura Studio</value>
+  </data>
+  <data name="app-strings.bootloader-update-awaiting-reboot" xml:space="preserve">
+    <value>ブートローダーを送信しました。iPod の確認と再起動を待っています…</value>
+  </data>
+  <data name="app-strings.bootloader-update-continue" xml:space="preserve">
+    <value>続ける</value>
+  </data>
+  <data name="app-strings.bootloader-update-done-detail" xml:space="preserve">
+    <value>音楽と設定はそのままです。次に iPod の電源を入れると、新しい起動画面が表示されます。</value>
+  </data>
+  <data name="app-strings.bootloader-update-done-title" xml:space="preserve">
+    <value>完了：ブートローダーは最新です</value>
+  </data>
+  <data name="app-strings.bootloader-update-enter-dfu-when" xml:space="preserve">
+    <value>その間、iPod は USB につないだままにしてください。ディスクには触れません。書き換えるのはブートローダーだけです。</value>
+  </data>
+  <data name="app-strings.bootloader-update-flash-confirm" xml:space="preserve">
+    <value>これが iPod のブートローダーを書き換えることを理解しています。ディスクは消去されず、Apple のブートローダーも削除されません。</value>
+  </data>
+  <data name="app-strings.bootloader-update-flashing-1" xml:space="preserve">
+    <value>iPod のブートローダーを更新しています…</value>
+  </data>
+  <data name="app-strings.bootloader-update-flashing-2" xml:space="preserve">
+    <value>{0} のブートローダーを更新しています…</value>
+  </data>
+  <data name="app-strings.bootloader-update-no-password" xml:space="preserve">
+    <value>管理者パスワードを一度も要求しません。</value>
+  </data>
+  <data name="app-strings.bootloader-update-not-required" xml:space="preserve">
+    <value>必須ではありません。新しいファームウェアは今のブートローダーでも同じように動きます。変わるのは起動画面だけです。</value>
+  </data>
+  <data name="app-strings.bootloader-update-nothing-touched" xml:space="preserve">
+    <value>ディスクには何も手を加えません。音楽、写真、プレイリスト、設定はそのまま残ります。</value>
+  </data>
+  <data name="app-strings.bootloader-update-offer" xml:space="preserve">
+    <value>この iPod のブートローダーを更新</value>
+  </data>
+  <data name="app-strings.bootloader-update-offer-different" xml:space="preserve">
+    <value>このバージョンには、お使いの iPod より新しいブートローダーが含まれています。</value>
+  </data>
+  <data name="app-strings.bootloader-update-offer-unknown" xml:space="preserve">
+    <value>お使いの iPod のブートローダーが何かはわかりません。別のコンピューター、または以前のバージョンのアプリがインストールしたためです。</value>
+  </data>
+  <data name="app-strings.bootloader-update-title" xml:space="preserve">
+    <value>ブートローダーを更新</value>
+  </data>
+  <data name="app-strings.bootloader-update-what-it-is" xml:space="preserve">
+    <value>ブートローダーは、ファームウェアより前に動くプログラムで、ディスクとは別のチップにあります。このバージョンには新しいものが含まれ、起動画面が変わります。</value>
+  </data>
+  <data name="app-strings.bootloader-update-why-dfu" xml:space="preserve">
+    <value>そのチップは他の方法では書き込めないため、DFU モードが必要です。</value>
+  </data>
+  <data name="app-strings.declared-family-label" xml:space="preserve">
+    <value>申告されたファミリー</value>
+  </data>
+  <data name="app-strings.delete-confirm-copy.other" xml:space="preserve">
+    <value>{0}件のファイル（{1}）がごみ箱に移動します。</value>
+  </data>
+  <data name="app-strings.delete-confirm-reference.other" xml:space="preserve">
+    <value>{0}件の項目がライブラリから外れます。元のファイルには触れません。</value>
+  </data>
+  <data name="app-strings.delete-confirm-title.other" xml:space="preserve">
+    <value>{0}件の項目を削除しますか？</value>
+  </data>
+  <data name="app-strings.device-ambiguous" xml:space="preserve">
+    <value>お使いの iPod かもしれないディスクが{0}台見つかりました。安全のため、Aura Studio はどれも選びません。他の外付けディスクを取り外してからやり直してください。</value>
+  </data>
+  <data name="app-strings.device-connected" xml:space="preserve">
+    <value>接続済み：{0}</value>
+  </data>
+  <data name="app-strings.device-detecting" xml:space="preserve">
+    <value>iPod を探しています…</value>
+  </data>
+  <data name="app-strings.device-not-connected" xml:space="preserve">
+    <value>iPod が接続されていません。iPod Classic を USB でつないでください。</value>
+  </data>
+  <data name="app-strings.dfu-driver-heading" xml:space="preserve">
+    <value>DFU モード用のドライバー</value>
+  </data>
+  <data name="app-strings.dfu-driver-installed-no-device" xml:space="preserve">
+    <value>Apple のドライバーはインストール済みです。DFU モードの iPod はまだ見えません。</value>
+  </data>
+  <data name="app-strings.dfu-driver-missing" xml:space="preserve">
+    <value>Windows は iPod を認識していますが、対応するドライバーがありません。Microsoft Store から「Appleデバイス」（または Apple の iTunes）をインストールしてつなぎ直してください。DFU モードの iPod と通信するには、Aura Studio にそのドライバーが必要です。</value>
+  </data>
+  <data name="app-strings.dfu-driver-package-missing" xml:space="preserve">
+    <value>Apple のデバイスドライバーが見つかりません。続ける前に、Microsoft Store から「Appleデバイス」（または iTunes）をインストールしてください。これがないと、Windows は DFU モードの iPod と通信できません。</value>
+  </data>
+  <data name="app-strings.dfu-driver-ready" xml:space="preserve">
+    <value>Windows は「{0}」を認識していて、ドライバーも動作しています。</value>
+  </data>
+  <data name="app-strings.dfu-driver-unknown" xml:space="preserve">
+    <value>ドライバーの状態を確認できませんでした。</value>
+  </data>
+  <data name="app-strings.eject-failed" xml:space="preserve">
+    <value>iPod を取り出せませんでした。このドライブを使っているアプリを閉じてからやり直してください。</value>
+  </data>
+  <data name="app-strings.eject-requested" xml:space="preserve">
+    <value>取り出しを要求しました。Windows の表示を確認してから iPod を取り外してください。</value>
+  </data>
+  <data name="app-strings.general-subtitle" xml:space="preserve">
+    <value>iPod を管理し、状態を確認します</value>
+  </data>
+  <data name="app-strings.general-title" xml:space="preserve">
+    <value>一般</value>
+  </data>
+  <data name="app-strings.installer-already-writing" xml:space="preserve">
+    <value>すでに iPod への書き込みが進行中です。別の操作を始める前に、終わるまでお待ちください。</value>
+  </data>
+  <data name="app-strings.installer-artifacts-invalid" xml:space="preserve">
+    <value>ファームウェアのファイルを検証できなかったため、何もインストールしません。</value>
+  </data>
+  <data name="app-strings.installer-awaiting-reboot" xml:space="preserve">
+    <value>書き込みました。iPod の再起動と再認識を待っています…</value>
+  </data>
+  <data name="app-strings.installer-begin" xml:space="preserve">
+    <value>開始</value>
+  </data>
+  <data name="app-strings.installer-cancelled" xml:space="preserve">
+    <value>操作をキャンセルしました。</value>
+  </data>
+  <data name="app-strings.installer-copied-files.other" xml:space="preserve">
+    <value>{0}件のファイルを iPod に書き込みました。</value>
+  </data>
+  <data name="app-strings.installer-copy-failed" xml:space="preserve">
+    <value>ファームウェアを iPod にコピーできませんでした。</value>
+  </data>
+  <data name="app-strings.installer-copy-files" xml:space="preserve">
+    <value>ファームウェアをコピー</value>
+  </data>
+  <data name="app-strings.installer-copying-title" xml:space="preserve">
+    <value>ファームウェアを iPod にコピーしています…</value>
+  </data>
+  <data name="app-strings.installer-detect-detail" xml:space="preserve">
+    <value>この内容をよく確認してください。次の手順で、ここに表示されているディスクの中身を消去します。</value>
+  </data>
+  <data name="app-strings.installer-detect-title" xml:space="preserve">
+    <value>これがお使いの iPod であることを確認してください</value>
+  </data>
+  <data name="app-strings.installer-dfu-detected-detail" xml:space="preserve">
+    <value>接続時に Aura Studio が認識しました。ファームウェアをインストールしますか？ 選ぶまで何も起こりません。</value>
+  </data>
+  <data name="app-strings.installer-dfu-detected-dismiss" xml:space="preserve">
+    <value>今はしない</value>
+  </data>
+  <data name="app-strings.installer-dfu-detected-install" xml:space="preserve">
+    <value>はい、インストールする</value>
+  </data>
+  <data name="app-strings.installer-dfu-detected-title" xml:space="preserve">
+    <value>iPod が DFU モードです</value>
+  </data>
+  <data name="app-strings.installer-dfu-found-1" xml:space="preserve">
+    <value>DFU モードの iPod を検出しました。</value>
+  </data>
+  <data name="app-strings.installer-dfu-found-2" xml:space="preserve">
+    <value>DFU モードの iPod を検出しました（状態 {0}）。</value>
+  </data>
+  <data name="app-strings.installer-dfu-guide-link" xml:space="preserve">
+    <value>書き込みと復元のガイド（ファームウェアのリポジトリ）</value>
+  </data>
+  <data name="app-strings.installer-dfu-guide-url" xml:space="preserve">
+    <value>https://github.com/Ricolinos/Aura-Firmware/blob/main/docs/guia-flasheo-restauracion.md</value>
+  </data>
+  <data name="app-strings.installer-dfu-no-families" xml:space="preserve">
+    <value>インストールできるファームウェアがありません。成果物フォルダーが空です。</value>
+  </data>
+  <data name="app-strings.installer-dfu-not-found" xml:space="preserve">
+    <value>DFU モードの iPod はまだ見えません。ボタン操作をやり直して、もう一度探してください。画面が暗くなった後も押し続けることを忘れないでください。</value>
+  </data>
+  <data name="app-strings.installer-dfu-not-seen-by-windows" xml:space="preserve">
+    <value>Apple のドライバーはインストール済みですが、Windows は Apple のデバイスを認識していません。すでにボタン操作を行い、iPod の画面が暗いままなら、おそらく DFU モードで、USB 接続がここまで届いていません。仮想マシンでは、DFU モードの iPod が Windows に転送されているか確認してください。DFU に入ると USB の識別子が変わるため、もう一度許可が必要になることがあります。</value>
+  </data>
+  <data name="app-strings.installer-dfu-step1" xml:space="preserve">
+    <value>iPod で音楽を再生している場合は、再生を止めてください。</value>
+  </data>
+  <data name="app-strings.installer-dfu-step2" xml:space="preserve">
+    <value>SELECT と MENU を同時に押し続けます。</value>
+  </data>
+  <data name="app-strings.installer-dfu-step3" xml:space="preserve">
+    <value>画面が暗くなった後まで、両方のボタンを約12秒間押し続けます。</value>
+  </data>
+  <data name="app-strings.installer-dfu-step4" xml:space="preserve">
+    <value>離してください。Aura Studio が DFU モードを自動で検出します。</value>
+  </data>
+  <data name="app-strings.installer-dfu-timing-warning" xml:space="preserve">
+    <value>約12秒より早く離すと、iPod は通常どおり再起動し、「DFU モードには入りません」。画面が暗くなるのは離す合図ではありません。その後も押し続けてください。</value>
+  </data>
+  <data name="app-strings.installer-dfu-unreadable" xml:space="preserve">
+    <value>iPod の状態を読み取れませんでした。Apple のドライバーが不足していないか、下で確認してください。</value>
+  </data>
+  <data name="app-strings.installer-dfu-waiting" xml:space="preserve">
+    <value>DFU モードを待っています…</value>
+  </data>
+  <data name="app-strings.installer-done-detail" xml:space="preserve">
+    <value>ファームウェアをインストールしました。取り外す前に、一般から iPod を取り出してください。</value>
+  </data>
+  <data name="app-strings.installer-done-title" xml:space="preserve">
+    <value>完了</value>
+  </data>
+  <data name="app-strings.installer-dry-run" xml:space="preserve">
+    <value>書き込まずに確認</value>
+  </data>
+  <data name="app-strings.installer-dry-run-heading" xml:space="preserve">
+    <value>確認が完了しました — ディスクには触れていません</value>
+  </data>
+  <data name="app-strings.installer-dry-run-ok" xml:space="preserve">
+    <value>確認は問題なく終わりました。ディスクを管理者権限で再検証し、フォーマットの計画も有効です。まだ何も書き込んでいません。</value>
+  </data>
+  <data name="app-strings.installer-dry-run-running" xml:space="preserve">
+    <value>ディスクの準備を確認しています…</value>
+  </data>
+  <data name="app-strings.installer-enter-dfu-title" xml:space="preserve">
+    <value>iPod を DFU モードにしてください</value>
+  </data>
+  <data name="app-strings.installer-enter-dfu-when" xml:space="preserve">
+    <value>いよいよです。ディスクの準備は整い、次はブートローダーの書き込みです。その間、iPod は USB につないだままにしてください。</value>
+  </data>
+  <data name="app-strings.installer-failed-title" xml:space="preserve">
+    <value>続行できませんでした</value>
+  </data>
+  <data name="app-strings.installer-family-change" xml:space="preserve">
+    <value>この iPod には {0} が入っていて、これから {1} をインストールします。{0} は設定ごとそのまま保存され、いつでも「その他」から戻せます。</value>
+  </data>
+  <data name="app-strings.installer-family-label" xml:space="preserve">
+    <value>インストールするファームウェア</value>
+  </data>
+  <data name="app-strings.installer-flash" xml:space="preserve">
+    <value>ブートローダーを書き込む</value>
+  </data>
+  <data name="app-strings.installer-flash-confirm" xml:space="preserve">
+    <value>これが Apple の元のブートローダーを置き換えること、復元しない限り元に戻せないことを理解しています。</value>
+  </data>
+  <data name="app-strings.installer-flash-failed" xml:space="preserve">
+    <value>ブートローダーを書き込めませんでした。</value>
+  </data>
+  <data name="app-strings.installer-flash-needs-confirmation" xml:space="preserve">
+    <value>ブートローダーを書き込む前の確認がまだです。Aura Studio は、あなたが先に確認しない限り何も書き込みません。</value>
+  </data>
+  <data name="app-strings.installer-flashing" xml:space="preserve">
+    <value>iPod にブートローダーを書き込んでいます…</value>
+  </data>
+  <data name="app-strings.installer-format-confirm" xml:space="preserve">
+    <value>{0} の中身がすべて消去されることを理解しています。</value>
+  </data>
+  <data name="app-strings.installer-format-danger-detail" xml:space="preserve">
+    <value>上の確認では何も変更していません。次の手順はディスクの中身をすべて消去し、元に戻せません。続ける前に、正しい iPod かどうか確認してください。</value>
+  </data>
+  <data name="app-strings.installer-format-danger-heading" xml:space="preserve">
+    <value>この手順は実際に iPod を消去します</value>
+  </data>
+  <data name="app-strings.installer-format-needs-confirmation" xml:space="preserve">
+    <value>iPod を消去する前の確認がまだです。Aura Studio は、どのディスクを対象にするかをあなたが先に確認しない限り、何もフォーマットしません。</value>
+  </data>
+  <data name="app-strings.installer-format-needs-dry-run" xml:space="preserve">
+    <value>先にディスクの準備を確認する必要があります。何も書き込まずにすべてを点検します。</value>
+  </data>
+  <data name="app-strings.installer-format-now-on" xml:space="preserve">
+    <value>{0} を消去してフォーマット</value>
+  </data>
+  <data name="app-strings.installer-format-running" xml:space="preserve">
+    <value>iPod のディスクをフォーマットしています…</value>
+  </data>
+  <data name="app-strings.installer-needs-mounted-volume" xml:space="preserve">
+    <value>iPod に Windows が読めるボリュームがありません。ファイルをコピーする前にディスクを準備してください。</value>
+  </data>
+  <data name="app-strings.installer-no-device" xml:space="preserve">
+    <value>iPod が接続されていません。USB でつないで、Windows が認識するまでお待ちください。</value>
+  </data>
+  <data name="app-strings.installer-permissions-continue" xml:space="preserve">
+    <value>了解、続ける</value>
+  </data>
+  <data name="app-strings.installer-permissions-detail" xml:space="preserve">
+    <value>iPod のディスクを準備するため、Windows が独自の画面で管理者権限を求めます。Aura Studio はすべてここから行います。コンソールを開いたりコマンドを入力したりする必要は一切ありません。権限を求めるのは次の2つだけです。iPod のディスクをフォーマットすること、そしてブートローダーの書き込み中に、USB ポートを占有する可能性のある Apple のサービスを一時停止することです。使用のたびにアプリのログに記録されます。</value>
+  </data>
+  <data name="app-strings.installer-permissions-title" xml:space="preserve">
+    <value>必要な権限</value>
+  </data>
+  <data name="app-strings.installer-prepare-disk" xml:space="preserve">
+    <value>ディスクを準備</value>
+  </data>
+  <data name="app-strings.installer-privileged-log-heading" xml:space="preserve">
+    <value>管理者権限の操作が行ったこと</value>
+  </data>
+  <data name="app-strings.installer-rebooted" xml:space="preserve">
+    <value>iPod が DFU モードを抜けました。ファームウェアをコピーできます。</value>
+  </data>
+  <data name="app-strings.installer-restart" xml:space="preserve">
+    <value>最初からやり直す</value>
+  </data>
+  <data name="app-strings.installer-safety-abort" xml:space="preserve">
+    <value>Aura Studio はディスクに触れる前に安全のため停止しました：{0}。</value>
+  </data>
+  <data name="app-strings.installer-scan-dfu" xml:space="preserve">
+    <value>DFU モードの iPod を探す</value>
+  </data>
+  <data name="app-strings.installer-scanning-dfu" xml:space="preserve">
+    <value>DFU モードの iPod を探しています…</value>
+  </data>
+  <data name="app-strings.installer-stuck-in-dfu" xml:space="preserve">
+    <value>iPod はまだ DFU モードで、インストールは確認されていません。取り外さずに、もう一度探してください。</value>
+  </data>
+  <data name="app-strings.installer-subtitle" xml:space="preserve">
+    <value>iPod にファームウェアを順を追ってインストールします</value>
+  </data>
+  <data name="app-strings.installer-title" xml:space="preserve">
+    <value>インストーラー</value>
+  </data>
+  <data name="app-strings.installer-unknown-disk" xml:space="preserve">
+    <value>「{0}」のディスク番号を特定できなかったため、何も変更しません。</value>
+  </data>
+  <data name="app-strings.installer-welcome-detail" xml:space="preserve">
+    <value>Aura Studio が iPod のディスクを準備し、ブートローダーを書き込み、ファームウェアをコピーします。各手順は実行前に説明し、確認するまで何にも触れません。</value>
+  </data>
+  <data name="app-strings.installer-welcome-title" xml:space="preserve">
+    <value>iPod にファームウェアをインストールしましょう</value>
+  </data>
+  <data name="app-strings.installer-welcome-warning" xml:space="preserve">
+    <value>インストールすると iPod の中身がすべて消え、Apple の元のブートローダーが置き換わります。そこにしかない音楽があるなら、先に別の場所へコピーしてください。</value>
+  </data>
+  <data name="app-strings.label-bus" xml:space="preserve">
+    <value>接続</value>
+  </data>
+  <data name="app-strings.label-capacity" xml:space="preserve">
+    <value>容量</value>
+  </data>
+  <data name="app-strings.label-device" xml:space="preserve">
+    <value>デバイス</value>
+  </data>
+  <data name="app-strings.label-file-system" xml:space="preserve">
+    <value>ファイルシステム</value>
+  </data>
+  <data name="app-strings.label-firmware" xml:space="preserve">
+    <value>検出されたファームウェア</value>
+  </data>
+  <data name="app-strings.label-free" xml:space="preserve">
+    <value>空き</value>
+  </data>
+  <data name="app-strings.label-music" xml:space="preserve">
+    <value>音楽</value>
+  </data>
+  <data name="app-strings.label-photos" xml:space="preserve">
+    <value>写真</value>
+  </data>
+  <data name="app-strings.label-playlists" xml:space="preserve">
+    <value>プレイリスト</value>
+  </data>
+  <data name="app-strings.label-unit" xml:space="preserve">
+    <value>ドライブ</value>
+  </data>
+  <data name="app-strings.label-used" xml:space="preserve">
+    <value>使用済み</value>
+  </data>
+  <data name="app-strings.label-video" xml:space="preserve">
+    <value>ビデオ</value>
+  </data>
+  <data name="app-strings.language-beta-detail" xml:space="preserve">
+    <value>機械翻訳です。母語話者による確認はまだ行われていません。</value>
+  </data>
+  <data name="app-strings.language-beta-mark" xml:space="preserve">
+    <value>（ベータ）</value>
+  </data>
+  <data name="app-strings.language-follow-system" xml:space="preserve">
+    <value>システムと同じ</value>
+  </data>
+  <data name="app-strings.language-restart-busy" xml:space="preserve">
+    <value>言語は保存済みで、次に Aura Studio を開いたときに適用されます。今は閉じないでください。実行中の処理があり、閉じると中途半端に終わります。</value>
+  </data>
+  <data name="app-strings.language-restart-detail" xml:space="preserve">
+    <value>言語はアプリを開き直したときに変わります。ライブラリと iPod には何も手を加えません。</value>
+  </data>
+  <data name="app-strings.language-restart-now" xml:space="preserve">
+    <value>今すぐ閉じる</value>
+  </data>
+  <data name="app-strings.language-restart-title" xml:space="preserve">
+    <value>Aura Studio を開き直す必要があります</value>
+  </data>
+  <data name="app-strings.last-sync-summary" xml:space="preserve">
+    <value>前回の同期の概要</value>
+  </data>
+  <data name="app-strings.library-add-files" xml:space="preserve">
+    <value>ファイルを追加</value>
+  </data>
+  <data name="app-strings.library-add-folder" xml:space="preserve">
+    <value>フォルダーを追加</value>
+  </data>
+  <data name="app-strings.library-available-without-device" xml:space="preserve">
+    <value>iPod をつながなくてもライブラリは作れます。つないだときに同期されます。</value>
+  </data>
+  <data name="app-strings.library-columns" xml:space="preserve">
+    <value>列</value>
+  </data>
+  <data name="app-strings.library-columns-detail" xml:space="preserve">
+    <value>表示する列を選びます。タイトルは常に表示され、先頭に来ます。</value>
+  </data>
+  <data name="app-strings.library-drop-hint-libraryitemkind-music" xml:space="preserve">
+    <value>音楽やアルバムのフォルダーをここにドラッグしてください。</value>
+  </data>
+  <data name="app-strings.library-drop-hint-libraryitemkind-photo" xml:space="preserve">
+    <value>写真や画像のフォルダーをここにドラッグしてください。</value>
+  </data>
+  <data name="app-strings.library-drop-hint-libraryitemkind-video" xml:space="preserve">
+    <value>映画、シリーズ、ビデオをここにドラッグしてください。</value>
+  </data>
+  <data name="app-strings.library-drop-hint-texto" xml:space="preserve">
+    <value>ファイルをここにドラッグしてください。</value>
+  </data>
+  <data name="app-strings.library-empty" xml:space="preserve">
+    <value>ライブラリは空です。</value>
+  </data>
+  <data name="app-strings.library-favorites-only" xml:space="preserve">
+    <value>お気に入りのみ</value>
+  </data>
+  <data name="app-strings.library-kind-libraryitemkind-music" xml:space="preserve">
+    <value>音楽</value>
+  </data>
+  <data name="app-strings.library-kind-libraryitemkind-photo" xml:space="preserve">
+    <value>画像</value>
+  </data>
+  <data name="app-strings.library-kind-libraryitemkind-video" xml:space="preserve">
+    <value>ビデオ</value>
+  </data>
+  <data name="app-strings.library-kind-texto" xml:space="preserve">
+    <value>非対応</value>
+  </data>
+  <data name="app-strings.library-locked-reason" xml:space="preserve">
+    <value>接続中の iPod で Aura ファミリーのファームウェアが動いていません。ライブラリを管理・同期するには、インストーラーからインストールしてください。</value>
+  </data>
+  <data name="app-strings.library-nothing-here-yet" xml:space="preserve">
+    <value>このセクションにはまだ何もありません。</value>
+  </data>
+  <data name="app-strings.library-open-folder" xml:space="preserve">
+    <value>ライブラリのフォルダーを開く</value>
+  </data>
+  <data name="app-strings.library-remove" xml:space="preserve">
+    <value>ライブラリから外す</value>
+  </data>
+  <data name="app-strings.library-root-missing-1" xml:space="preserve">
+    <value>ライブラリのフォルダーが設定されていません。</value>
+  </data>
+  <data name="app-strings.library-root-missing-2" xml:space="preserve">
+    <value>ライブラリは接続されていないディスクにあります：{0}</value>
+  </data>
+  <data name="app-strings.library-season-1" xml:space="preserve">
+    <value>シーズンなし</value>
+  </data>
+  <data name="app-strings.library-season-2" xml:space="preserve">
+    <value>シーズン {0}</value>
+  </data>
+  <data name="app-strings.library-section-only-its-type-libraryitemkind-music" xml:space="preserve">
+    <value>このセクションは音楽のみを受け付けます。アルバムに付いてきたアートワークは、写真ではなくアートワークとして保存されます。</value>
+  </data>
+  <data name="app-strings.library-section-only-its-type-libraryitemkind-photo" xml:space="preserve">
+    <value>このセクションは画像のみを受け付けます。</value>
+  </data>
+  <data name="app-strings.library-section-only-its-type-libraryitemkind-video" xml:space="preserve">
+    <value>このセクションはビデオのみを受け付けます。ビデオと同じ名前の画像は、そのポスターとして保存されます。</value>
+  </data>
+  <data name="app-strings.library-similar-found-on-drop" xml:space="preserve">
+    <value>{0} 追加したものの中に似た項目が見つかりました。「似ている項目」で確認してください。</value>
+  </data>
+  <data name="app-strings.library-sort-ascending" xml:space="preserve">
+    <value>昇順</value>
+  </data>
+  <data name="app-strings.library-sort-by" xml:space="preserve">
+    <value>並べ替え</value>
+  </data>
+  <data name="app-strings.library-status-6" xml:space="preserve">
+    <value>エラー：{0}</value>
+  </data>
+  <data name="app-strings.library-status-7" xml:space="preserve">
+    <value>エラー</value>
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-enrichi" xml:space="preserve">
+    <value>情報を検索中</value>
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-needsre" xml:space="preserve">
+    <value>確認が必要</value>
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-queued" xml:space="preserve">
+    <value>待機中</value>
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-ready" xml:space="preserve">
+    <value>完了</value>
+  </data>
+  <data name="app-strings.library-status-libraryitemstate-transco" xml:space="preserve">
+    <value>変換中… {0}%</value>
+  </data>
+  <data name="app-strings.licenses-document-missing" xml:space="preserve">
+    <value>{0}：このファイルには含まれていません</value>
+  </data>
+  <data name="app-strings.licenses-document-present" xml:space="preserve">
+    <value>{0}：含まれています</value>
+  </data>
+  <data name="app-strings.licenses-families-heading" xml:space="preserve">
+    <value>含まれるファームウェア</value>
+  </data>
+  <data name="app-strings.licenses-intro" xml:space="preserve">
+    <value>mks5lboot、bootloader-ipod6g.ipod、rockbox.ipod、rockbox.zip は Rockbox の派生物であり、GNU 一般公衆利用許諾書バージョン2のもとで配布されています。Aura Studio はこれらを集合物として同梱しており、いかなる変更も加えていません。含まれる各ファームウェアの完全なソースコードは、下に示すリポジトリと正確なバージョンから入手できます。</value>
+  </data>
+  <data name="app-strings.licenses-libraries-heading" xml:space="preserve">
+    <value>含まれるライブラリ</value>
+  </data>
+  <data name="app-strings.licenses-libraries-intro" xml:space="preserve">
+    <value>Aura Studio には自由ソフトウェアのライブラリが含まれます。プログラムと並ぶ別ファイルとして、変更を加えずに配布されており、互換性のある別バージョンに置き換えられます。</value>
+  </data>
+  <data name="app-strings.licenses-open" xml:space="preserve">
+    <value>ライセンスを見る</value>
+  </data>
+  <data name="app-strings.licenses-repository-label" xml:space="preserve">
+    <value>ソースコード</value>
+  </data>
+  <data name="app-strings.licenses-subtitle" xml:space="preserve">
+    <value>Aura Studio に含まれる自由ソフトウェア</value>
+  </data>
+  <data name="app-strings.licenses-tag-label" xml:space="preserve">
+    <value>含まれるバージョン</value>
+  </data>
+  <data name="app-strings.licenses-tag-lib-detail" xml:space="preserve">
+    <value>音楽ファイル（MP3、FLAC、M4A）のタグとアートワークを読み取ります。Aura Studio for Mac ではこの処理を AVFoundation が行いますが、Windows には存在しません。</value>
+  </data>
+  <data name="app-strings.licenses-tag-lib-name" xml:space="preserve">
+    <value>TagLib# 2.3.0 — LGPL v2.1</value>
+  </data>
+  <data name="app-strings.licenses-tag-lib-source" xml:space="preserve">
+    <value>https://github.com/mono/taglib-sharp</value>
+  </data>
+  <data name="app-strings.licenses-title" xml:space="preserve">
+    <value>ライセンス</value>
+  </data>
+  <data name="app-strings.licenses-tool-from-release" xml:space="preserve">
+    <value>リリース {0} で公開され、その checksums.txt で検証済みです。</value>
+  </data>
+  <data name="app-strings.licenses-tool-heading" xml:space="preserve">
+    <value>書き込みツール（mks5lboot.exe）</value>
+  </data>
+  <data name="app-strings.licenses-tool-local-pin" xml:space="preserve">
+    <value>Windows 用に別途ビルドしたものです。リリースで公開されているのは Unix 版です。Aura Studio 自体に固定されたハッシュと一致します（申告された出所：{0}）。ソースコードは上に示したファームウェアのリポジトリのものです。</value>
+  </data>
+  <data name="app-strings.licenses-tool-missing" xml:space="preserve">
+    <value>このコピーには含まれていません。</value>
+  </data>
+  <data name="app-strings.licenses-tool-unverified" xml:space="preserve">
+    <value>どのハッシュとも照合できませんでした。検証できるようになるまで、Aura Studio はこれを実行しません。</value>
+  </data>
+  <data name="app-strings.licenses-unknown-tag" xml:space="preserve">
+    <value>不明</value>
+  </data>
+  <data name="app-strings.licenses-unknown-tag-detail" xml:space="preserve">
+    <value>これらのファイルは、どのリリース由来かを記録せずにコピーされました。バージョンが記録されるよう、scripts/FirmwareFetch.ps1 で入れ直してください。</value>
+  </data>
+  <data name="app-strings.nav-albums" xml:space="preserve">
+    <value>アルバム</value>
+  </data>
+  <data name="app-strings.nav-all-photos" xml:space="preserve">
+    <value>すべての写真</value>
+  </data>
+  <data name="app-strings.nav-all-videos" xml:space="preserve">
+    <value>すべてのビデオ</value>
+  </data>
+  <data name="app-strings.nav-artists" xml:space="preserve">
+    <value>アーティスト</value>
+  </data>
+  <data name="app-strings.nav-clips" xml:space="preserve">
+    <value>ビデオクリップ</value>
+  </data>
+  <data name="app-strings.nav-extras" xml:space="preserve">
+    <value>その他</value>
+  </data>
+  <data name="app-strings.nav-general" xml:space="preserve">
+    <value>一般</value>
+  </data>
+  <data name="app-strings.nav-installer" xml:space="preserve">
+    <value>インストーラー</value>
+  </data>
+  <data name="app-strings.nav-movies" xml:space="preserve">
+    <value>映画</value>
+  </data>
+  <data name="app-strings.nav-music" xml:space="preserve">
+    <value>音楽</value>
+  </data>
+  <data name="app-strings.nav-photos" xml:space="preserve">
+    <value>写真</value>
+  </data>
+  <data name="app-strings.nav-photos-ai" xml:space="preserve">
+    <value>AI</value>
+  </data>
+  <data name="app-strings.nav-photos-images" xml:space="preserve">
+    <value>画像</value>
+  </data>
+  <data name="app-strings.nav-photos-photos" xml:space="preserve">
+    <value>写真</value>
+  </data>
+  <data name="app-strings.nav-playlists" xml:space="preserve">
+    <value>プレイリスト</value>
+  </data>
+  <data name="app-strings.nav-series" xml:space="preserve">
+    <value>シリーズ</value>
+  </data>
+  <data name="app-strings.nav-settings" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="app-strings.nav-songs" xml:space="preserve">
+    <value>曲</value>
+  </data>
+  <data name="app-strings.nav-themes" xml:space="preserve">
+    <value>テーマ</value>
+  </data>
+  <data name="app-strings.nav-video" xml:space="preserve">
+    <value>ビデオ</value>
+  </data>
+  <data name="app-strings.never-synced" xml:space="preserve">
+    <value>この iPod はまだ Aura Studio と同期したことがありません。</value>
+  </data>
+  <data name="app-strings.no-device" xml:space="preserve">
+    <value>デバイスなし</value>
+  </data>
+  <data name="app-strings.not-available" xml:space="preserve">
+    <value>利用できません</value>
+  </data>
+  <data name="app-strings.orphans-cleaned.other" xml:space="preserve">
+    <value>孤立ファイルを{0}件削除しました。</value>
+  </data>
+  <data name="app-strings.orphans-confirm-title.other" xml:space="preserve">
+    <value>孤立ファイルを{0}件削除しますか？</value>
+  </data>
+  <data name="app-strings.orphans-found.other" xml:space="preserve">
+    <value>孤立ファイル{0}件（{1}）。</value>
+  </data>
+  <data name="app-strings.section-content" xml:space="preserve">
+    <value>iPod の中身</value>
+  </data>
+  <data name="app-strings.section-pending-detail" xml:space="preserve">
+    <value>このセクションは Windows 移植の{0}に登場します。内容が現れたときに何もずれないよう、ナビゲーションはすでに用意してあります。</value>
+  </data>
+  <data name="app-strings.section-pending-title" xml:space="preserve">
+    <value>まだ準備中です</value>
+  </data>
+  <data name="app-strings.section-storage" xml:space="preserve">
+    <value>ストレージ</value>
+  </data>
+  <data name="app-strings.service-pause-asks-for-permission" xml:space="preserve">
+    <value>これは管理者権限を求めます。</value>
+  </data>
+  <data name="app-strings.service-pause-button" xml:space="preserve">
+    <value>Apple のサービスを一時停止</value>
+  </data>
+  <data name="app-strings.service-pause-detail" xml:space="preserve">
+    <value>Windows の Apple サービスが iPod を占有している可能性があります。この処理の間だけ止めて、終わったら元に戻せます。</value>
+  </data>
+  <data name="app-strings.service-pause-not-running" xml:space="preserve">
+    <value>Apple のサービスは動いていないので、原因はそれではありません。</value>
+  </data>
+  <data name="app-strings.service-pause-title" xml:space="preserve">
+    <value>表示されませんか？</value>
+  </data>
+  <data name="app-strings.settings-about" xml:space="preserve">
+    <value>このアプリについて</value>
+  </data>
+  <data name="app-strings.settings-appearance" xml:space="preserve">
+    <value>外観</value>
+  </data>
+  <data name="app-strings.settings-language-detail" xml:space="preserve">
+    <value>Aura Studio はここで選んだ言語で表示されます。スペイン語と英語は人が確認しています。ほかの言語は後から届きます。</value>
+  </data>
+  <data name="app-strings.settings-subtitle" xml:space="preserve">
+    <value>Aura Studio の設定</value>
+  </data>
+  <data name="app-strings.settings-theme" xml:space="preserve">
+    <value>テーマ</value>
+  </data>
+  <data name="app-strings.settings-theme-detail" xml:space="preserve">
+    <value>Aura Studio は Windows のテーマに従います。このアプリだけライトまたはダークに固定できます。</value>
+  </data>
+  <data name="app-strings.settings-title" xml:space="preserve">
+    <value>設定</value>
+  </data>
+  <data name="app-strings.theme-dark" xml:space="preserve">
+    <value>ダーク</value>
+  </data>
+  <data name="app-strings.theme-light" xml:space="preserve">
+    <value>ライト</value>
+  </data>
+  <data name="app-strings.theme-system" xml:space="preserve">
+    <value>システムと同じ</value>
+  </data>
+  <data name="app-update-service.aura-studio-installedversion-es-version" xml:space="preserve">
+    <value>Aura Studio {0} が公開されている最新バージョンです。</value>
+  </data>
+  <data name="app-update-service.buscando-actualizaciones-aura-studio" xml:space="preserve">
+    <value>Aura Studio の更新を確認しています…</value>
+  </data>
+  <data name="app-update-service.descargando-aura-studio-available-value" xml:space="preserve">
+    <value>Aura Studio {0} をダウンロードしています…</value>
+  </data>
+  <data name="app-update-service.se-detuvo-busqueda-actualizaciones" xml:space="preserve">
+    <value>更新の確認を停止しました。</value>
+  </data>
+  <data name="artists-page.buscar-artistas" xml:space="preserve">
+    <value>アーティストを検索</value>
+  </data>
+  <data name="artists-page.buscar-artistas-2" xml:space="preserve">
+    <value>アーティストを検索</value>
+  </data>
+  <data name="artists-page.buscar-fotos" xml:space="preserve">
+    <value>写真を探す</value>
+  </data>
+  <data name="artists-page.buscar-fotos-artistas-linea-fanart-tv" xml:space="preserve">
+    <value>アーティストの写真をオンラインで探す（fanart.tv / Deezer）</value>
+  </data>
+  <data name="artists-page.buscar-informacion-linea" xml:space="preserve">
+    <value>情報をオンラインで探す</value>
+  </data>
+  <data name="artists-page.buscar-informacion-linea-2" xml:space="preserve">
+    <value>情報をオンラインで探す</value>
+  </data>
+  <data name="artists-page.elige-artista-lista" xml:space="preserve">
+    <value>一覧からアーティストを選んでください。</value>
+  </data>
+  <data name="artists-page.eliminar" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="artists-page.mas-acciones" xml:space="preserve">
+    <value>その他の操作</value>
+  </data>
+  <data name="artists-page.mas-acciones-2" xml:space="preserve">
+    <value>その他の操作</value>
+  </data>
+  <data name="artists-page.mostrar-explorador" xml:space="preserve">
+    <value>エクスプローラーで表示</value>
+  </data>
+  <data name="artists-page.todavia-hay-musica-biblioteca" xml:space="preserve">
+    <value>ライブラリにはまだ音楽がありません。</value>
+  </data>
+  <data name="artists-view.eliminar" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="background-task-center-indicator.cancelar" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="conteo.albumes.other" xml:space="preserve">
+    <value>{0}枚のアルバム</value>
+  </data>
+  <data name="conteo.artistas.other" xml:space="preserve">
+    <value>{0}人のアーティスト</value>
+  </data>
+  <data name="conteo.canciones.other" xml:space="preserve">
+    <value>{0}曲</value>
+  </data>
+  <data name="conteo.dias.other" xml:space="preserve">
+    <value>{0}日</value>
+  </data>
+  <data name="conteo.episodios.other" xml:space="preserve">
+    <value>{0}話</value>
+  </data>
+  <data name="conteo.fotos.other" xml:space="preserve">
+    <value>{0}枚の写真</value>
+  </data>
+  <data name="conteo.peliculas.other" xml:space="preserve">
+    <value>{0}本の映画</value>
+  </data>
+  <data name="conteo.seleccionados.other" xml:space="preserve">
+    <value>{0}件を選択中</value>
+  </data>
+  <data name="conteo.series.other" xml:space="preserve">
+    <value>{0}本のシリーズ</value>
+  </data>
+  <data name="conteo.temporadas.other" xml:space="preserve">
+    <value>{0}シーズン</value>
+  </data>
+  <data name="conteo.videoclips.other" xml:space="preserve">
+    <value>{0}本のビデオクリップ</value>
+  </data>
+  <data name="conteo.videos.other" xml:space="preserve">
+    <value>{0}本のビデオ</value>
+  </data>
+  <data name="context-menu.abrir" xml:space="preserve">
+    <value>開く</value>
+  </data>
+  <data name="context-menu.abrir-2" xml:space="preserve">
+    <value>開く</value>
+  </data>
+  <data name="context-menu.abrir-3" xml:space="preserve">
+    <value>開く</value>
+  </data>
+  <data name="context-menu.aplicar-caratula-recomendada" xml:space="preserve">
+    <value>推奨アートワークを適用</value>
+  </data>
+  <data name="context-menu.aplicar-caratula-recomendada-scope-count" xml:space="preserve">
+    <value>{0}枚のアルバムに推奨アートワークを適用</value>
+  </data>
+  <data name="context-menu.ascendente" xml:space="preserve">
+    <value>昇順</value>
+  </data>
+  <data name="context-menu.buscar-caratulas-scope-albumcount-albume" xml:space="preserve">
+    <value>{0}枚のアルバムのアートワークを探す…</value>
+  </data>
+  <data name="context-menu.buscar-elementos-similares" xml:space="preserve">
+    <value>似ている項目を探す…</value>
+  </data>
+  <data name="context-menu.buscar-foto-artista" xml:space="preserve">
+    <value>アーティストの写真を探す</value>
+  </data>
+  <data name="context-menu.buscar-fotos-artistas" xml:space="preserve">
+    <value>アーティストの写真を探す</value>
+  </data>
+  <data name="context-menu.buscar-informacion-linea" xml:space="preserve">
+    <value>情報をオンラインで探す</value>
+  </data>
+  <data name="context-menu.buscar-letra" xml:space="preserve">
+    <value>歌詞を探す</value>
+  </data>
+  <data name="context-menu.buscar-poster-linea" xml:space="preserve">
+    <value>ポスターをオンラインで探す</value>
+  </data>
+  <data name="context-menu.cambiar-categoria" xml:space="preserve">
+    <value>カテゴリを変更</value>
+  </data>
+  <data name="context-menu.cambiar-nombre" xml:space="preserve">
+    <value>名前を変更…</value>
+  </data>
+  <data name="context-menu.change-category" xml:space="preserve">
+    <value>カテゴリを変更</value>
+  </data>
+  <data name="context-menu.descendente" xml:space="preserve">
+    <value>降順</value>
+  </data>
+  <data name="context-menu.disolver-album" xml:space="preserve">
+    <value>アルバムを解除</value>
+  </data>
+  <data name="context-menu.disolver-albumes" xml:space="preserve">
+    <value>アルバムを解除</value>
+  </data>
+  <data name="context-menu.eliminar" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="context-menu.eliminar-2" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="context-menu.eliminar-3" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="context-menu.eliminar-album" xml:space="preserve">
+    <value>アルバムを削除</value>
+  </data>
+  <data name="context-menu.eliminar-albumes" xml:space="preserve">
+    <value>アルバムを削除</value>
+  </data>
+  <data name="context-menu.eliminar-artista" xml:space="preserve">
+    <value>アーティストを削除</value>
+  </data>
+  <data name="context-menu.eliminar-artistas" xml:space="preserve">
+    <value>アーティストを削除</value>
+  </data>
+  <data name="context-menu.eliminar-biblioteca" xml:space="preserve">
+    <value>ライブラリから削除</value>
+  </data>
+  <data name="context-menu.eliminar-caratula" xml:space="preserve">
+    <value>アートワークを削除</value>
+  </data>
+  <data name="context-menu.eliminar-episodio" xml:space="preserve">
+    <value>エピソードを削除</value>
+  </data>
+  <data name="context-menu.eliminar-episodios" xml:space="preserve">
+    <value>エピソードを削除</value>
+  </data>
+  <data name="context-menu.eliminar-fotos-biblioteca" xml:space="preserve">
+    <value>写真をライブラリから削除</value>
+  </data>
+  <data name="context-menu.eliminar-pelicula" xml:space="preserve">
+    <value>映画を削除</value>
+  </data>
+  <data name="context-menu.eliminar-peliculas" xml:space="preserve">
+    <value>映画を削除</value>
+  </data>
+  <data name="context-menu.eliminar-serie" xml:space="preserve">
+    <value>シリーズを削除</value>
+  </data>
+  <data name="context-menu.eliminar-series" xml:space="preserve">
+    <value>シリーズを削除</value>
+  </data>
+  <data name="context-menu.marcar-como-favorito" xml:space="preserve">
+    <value>お気に入りに追加</value>
+  </data>
+  <data name="context-menu.marcar-como-favorito-2" xml:space="preserve">
+    <value>お気に入りに追加</value>
+  </data>
+  <data name="context-menu.mas-informacion" xml:space="preserve">
+    <value>詳細…</value>
+  </data>
+  <data name="context-menu.mas-informacion-2" xml:space="preserve">
+    <value>詳細…</value>
+  </data>
+  <data name="context-menu.mas-informacion-3" xml:space="preserve">
+    <value>詳細…</value>
+  </data>
+  <data name="context-menu.mostrar-opciones-visualizacion" xml:space="preserve">
+    <value>表示オプションを表示</value>
+  </data>
+  <data name="context-menu.obtener-informacion" xml:space="preserve">
+    <value>情報を見る…</value>
+  </data>
+  <data name="context-menu.opciones-para-ordenar" xml:space="preserve">
+    <value>並べ替えオプション</value>
+  </data>
+  <data name="context-menu.quitar-album" xml:space="preserve">
+    <value>アルバムから外す</value>
+  </data>
+  <data name="context-menu.quitar-favorito" xml:space="preserve">
+    <value>お気に入りから外す</value>
+  </data>
+  <data name="context-menu.quitar-favoritos" xml:space="preserve">
+    <value>お気に入りから外す</value>
+  </data>
+  <data name="context-menu.quitar-favoritos-2" xml:space="preserve">
+    <value>お気に入りから外す</value>
+  </data>
+  <data name="context-menu.quitar-foto-artista.other" xml:space="preserve">
+    <value>アーティストの写真を外す</value>
+  </data>
+  <data name="context-menu.quitar-poster" xml:space="preserve">
+    <value>ポスターを外す</value>
+  </data>
+  <data name="context-menu.renombrar-album" xml:space="preserve">
+    <value>アルバム名を変更…</value>
+  </data>
+  <data name="context-menu.reveal" xml:space="preserve">
+    <value>エクスプローラーで表示</value>
+  </data>
+  <data name="context-menu.search-album-covers" xml:space="preserve">
+    <value>アルバムのアートワークを探す…</value>
+  </data>
+  <data name="context-menu.search-online" xml:space="preserve">
+    <value>情報をオンラインで探す</value>
+  </data>
+  <data name="context-menu.search-poster" xml:space="preserve">
+    <value>ポスターをオンラインで探す</value>
+  </data>
+  <data name="context-menu.seleccionar-canciones-mismo-album" xml:space="preserve">
+    <value>同じアルバムの曲を選択</value>
+  </data>
+  <data name="context-menu.seleccionar-canciones-mismo-artista" xml:space="preserve">
+    <value>同じアーティストの曲を選択</value>
+  </data>
+  <data name="context-menu.sincronizar-seleccion" xml:space="preserve">
+    <value>選択項目を同期</value>
+  </data>
+  <data name="context-menu.solo-favoritos" xml:space="preserve">
+    <value>お気に入りのみ</value>
+  </data>
+  <data name="context-menu.todas-canciones" xml:space="preserve">
+    <value>すべての曲</value>
+  </data>
+  <data name="context-menu.vista-previa" xml:space="preserve">
+    <value>プレビュー</value>
+  </data>
+  <data name="context-menu.volver-leer-etiquetas-archivo" xml:space="preserve">
+    <value>ファイルのタグを読み直す</value>
+  </data>
+  <data name="crash-reporter.algo-salio-mal" xml:space="preserve">
+    <value>問題が発生しました</value>
+  </data>
+  <data name="crash-reporter.entendido" xml:space="preserve">
+    <value>了解</value>
+  </data>
+  <data name="device-general-view.instalar-actualizacion" xml:space="preserve">
+    <value>更新をインストール</value>
+  </data>
+  <data name="device-list-page.buscar-actualizaciones" xml:space="preserve">
+    <value>更新を確認</value>
+  </data>
+  <data name="device-list-page.calcula-se-copiaria-escribe-nada-ipod" xml:space="preserve">
+    <value>何がコピーされるかを計算します。iPod には何も書き込みません。</value>
+  </data>
+  <data name="device-list-page.cancelar" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="device-list-page.cancelar-2" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="device-list-page.guardar" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="device-list-page.nombre-ipod" xml:space="preserve">
+    <value>iPod の名前</value>
+  </data>
+  <data name="device-list-page.por-copiar" xml:space="preserve">
+    <value>コピー予定</value>
+  </data>
+  <data name="device-list-page.reubicados" xml:space="preserve">
+    <value>移動済み</value>
+  </data>
+  <data name="device-list-page.revisar-cambios" xml:space="preserve">
+    <value>変更を確認</value>
+  </data>
+  <data name="device-list-page.sincronizacion" xml:space="preserve">
+    <value>同期</value>
+  </data>
+  <data name="device-list-page.sincronizar" xml:space="preserve">
+    <value>同期</value>
+  </data>
+  <data name="device-list-page.toda-biblioteca" xml:space="preserve">
+    <value>ライブラリ全体</value>
+  </data>
+  <data name="device-list-page.xaml.listo" xml:space="preserve">
+    <value>完了</value>
+  </data>
+  <data name="device-list-page.ya-al-dia" xml:space="preserve">
+    <value>すでに最新です</value>
+  </data>
+  <data name="device-list-view-model.buscando-actualizaciones-family-displayn" xml:space="preserve">
+    <value>{0} の更新を確認しています…</value>
+  </data>
+  <data name="device-list-view-model.ipod-se-llama-devicename" xml:space="preserve">
+    <value>iPod の名前は「{0}」です。</value>
+  </data>
+  <data name="device-list-view-model.se-detuvo-busqueda-actualizaciones" xml:space="preserve">
+    <value>更新の確認を停止しました。</value>
+  </data>
+  <data name="device-safety-validator.dispositivo-cambio-desde-confirmacion-po" xml:space="preserve">
+    <value>確認したときからデバイスが変わりました。安全のため、何も書き込んでいません。</value>
+  </data>
+  <data name="device-safety-validator.dispositivo-verificado-actual-displaynam" xml:space="preserve">
+    <value>デバイスを確認しました：{0}、{1}、{2}</value>
+  </data>
+  <data name="device-safety-validator.hay-mas-ipod-candidato-por-seguridad" xml:space="preserve">
+    <value>候補となる iPod が複数あります。安全のため、どれも選びませんでした。</value>
+  </data>
+  <data name="device-safety-validator.ipod-desaparecio-se-realizo-ninguna-escr" xml:space="preserve">
+    <value>iPod が見えなくなりました。何も書き込んでいません。</value>
+  </data>
+  <data name="device-safety-validator.volumen-ipod-esta-montado" xml:space="preserve">
+    <value>iPod のボリュームがマウントされていません。</value>
+  </data>
+  <data name="done-view.reintentar" xml:space="preserve">
+    <value>ディスクをつないでやり直す</value>
+  </data>
+  <data name="extras-page.animaciones-graficos" xml:space="preserve">
+    <value>アニメーションとグラフィック</value>
+  </data>
+  <data name="extras-page.cronometro-bloqueo-pantalla" xml:space="preserve">
+    <value>ストップウォッチと画面ロック</value>
+  </data>
+  <data name="extras-page.disponible-dispositivo" xml:space="preserve">
+    <value>デバイスで利用可能</value>
+  </data>
+  <data name="extras-page.extras" xml:space="preserve">
+    <value>その他</value>
+  </data>
+  <data name="extras-page.firmware" xml:space="preserve">
+    <value>ファームウェア</value>
+  </data>
+  <data name="extras-page.juegos" xml:space="preserve">
+    <value>ゲーム</value>
+  </data>
+  <data name="extras-page.licencias" xml:space="preserve">
+    <value>ライセンス</value>
+  </data>
+  <data name="extras-page.lo-firmware-ofrece-mas-alla-biblioteca" xml:space="preserve">
+    <value>ライブラリ以外にファームウェアが備えるもの</value>
+  </data>
+  <data name="extras-page.revisar-nuevo" xml:space="preserve">
+    <value>もう一度確認</value>
+  </data>
+  <data name="extras-page.software-libre-incluido" xml:space="preserve">
+    <value>含まれる自由ソフトウェア</value>
+  </data>
+  <data name="extras-page.temas" xml:space="preserve">
+    <value>テーマ</value>
+  </data>
+  <data name="extras-page.todavia" xml:space="preserve">
+    <value>まだです</value>
+  </data>
+  <data name="installer-page.cancelar" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="library-grouping.albums-and-songs" xml:space="preserve">
+    <value>{0}、{1}</value>
+  </data>
+  <data name="library-ingest.added.other" xml:space="preserve">
+    <value>{0}件の項目を追加しました。</value>
+  </data>
+  <data name="library-ingest.already-in-library.other" xml:space="preserve">
+    <value>{0}件はすでにライブラリにありました。</value>
+  </data>
+  <data name="library-ingest.cover-assets.other" xml:space="preserve">
+    <value>{0}枚の画像を写真ではなくアートワークとして取り込みました。</value>
+  </data>
+  <data name="library-ingest.nothing-to-add" xml:space="preserve">
+    <value>追加するものはありませんでした。</value>
+  </data>
+  <data name="library-ingest.section-noun-music" xml:space="preserve">
+    <value>音楽</value>
+  </data>
+  <data name="library-ingest.section-noun-other" xml:space="preserve">
+    <value>対応形式</value>
+  </data>
+  <data name="library-ingest.section-noun-photo" xml:space="preserve">
+    <value>画像</value>
+  </data>
+  <data name="library-ingest.section-noun-video" xml:space="preserve">
+    <value>ビデオ</value>
+  </data>
+  <data name="library-ingest.unsupported.other" xml:space="preserve">
+    <value>{0}件のファイルは対応していません。</value>
+  </data>
+  <data name="library-ingest.wrong-section.other" xml:space="preserve">
+    <value>{0}件のファイルは{1}ではないため、ここには追加しませんでした。</value>
+  </data>
+  <data name="library-migration.already-up-to-date" xml:space="preserve">
+    <value>ライブラリはすでに最新でした。移行するものはありませんでした。</value>
+  </data>
+  <data name="library-migration.cancelled-nothing-done" xml:space="preserve">
+    <value>移行をキャンセルしました。何も変更できませんでした。</value>
+  </data>
+  <data name="library-migration.failed.other" xml:space="preserve">
+    <value>{0}件は移行できず、ライブラリに残っています。</value>
+  </data>
+  <data name="library-migration.head-cancelled" xml:space="preserve">
+    <value>移行をキャンセルしました</value>
+  </data>
+  <data name="library-migration.head-done" xml:space="preserve">
+    <value>ライブラリを移行しました</value>
+  </data>
+  <data name="library-migration.needed-detail" xml:space="preserve">
+    <value>移行すると、カタログのタグがコピーに書き込まれ、準備済みファイルが整理されます。元のファイルには触れません。</value>
+  </data>
+  <data name="library-migration.needed-intro" xml:space="preserve">
+    <value>このライブラリは以前のバージョンのものです：{0}。</value>
+  </data>
+  <data name="library-migration.needed-joiner" xml:space="preserve">
+    <value>、</value>
+  </data>
+  <data name="library-migration.no-changes" xml:space="preserve">
+    <value>変更はありませんでした</value>
+  </data>
+  <data name="library-migration.orphans-deleted.other" xml:space="preserve">
+    <value>{0}件の孤立ファイルを削除しました</value>
+  </data>
+  <data name="library-migration.prepared-built.other" xml:space="preserve">
+    <value>{0}件の準備済みファイルを作成しました</value>
+  </data>
+  <data name="library-migration.prepared-renamed.other" xml:space="preserve">
+    <value>{0}件の準備済みファイルを整理しました</value>
+  </data>
+  <data name="library-migration.summary" xml:space="preserve">
+    <value>{0}：{1}。</value>
+  </data>
+  <data name="library-migration.summary-with-failures" xml:space="preserve">
+    <value>{0}：{1}。{2}</value>
+  </data>
+  <data name="library-status-strip.detener" xml:space="preserve">
+    <value>停止</value>
+  </data>
+  <data name="library-status-strip.detener-tarea-curso" xml:space="preserve">
+    <value>実行中のタスクを停止</value>
+  </data>
+  <data name="library-status-summary.days-and-hours" xml:space="preserve">
+    <value>{0}{1}時間</value>
+  </data>
+  <data name="library-unavailable-view.crear-nueva" xml:space="preserve">
+    <value>新しく作る</value>
+  </data>
+  <data name="library-unavailable-view.elegir-otra-biblioteca" xml:space="preserve">
+    <value>別のライブラリを選ぶ</value>
+  </data>
+  <data name="library-unavailable-view.no-se-perdio-nada-tu-catalogo" xml:space="preserve">
+    <value>何も失われていません。カタログもファイルもそのディスクに残っています。つなげば、ライブラリはひとりでに戻ります。</value>
+  </data>
+  <data name="library-view-model.album-cover-applied.other" xml:space="preserve">
+    <value>{0}曲のアートワークを変更しました。</value>
+  </data>
+  <data name="library-view-model.buscando-fotos-artista" xml:space="preserve">
+    <value>アーティストの写真を探しています…</value>
+  </data>
+  <data name="library-view-model.buscando-letra" xml:space="preserve">
+    <value>歌詞を探しています…</value>
+  </data>
+  <data name="library-view-model.buscando-posters-video" xml:space="preserve">
+    <value>ビデオのポスターを探しています…</value>
+  </data>
+  <data name="library-view-model.completando-targets-count-elemento-s" xml:space="preserve">
+    <value>{0}件の情報を補完しています…</value>
+  </data>
+  <data name="library-view-model.completando-title" xml:space="preserve">
+    <value>{0} の情報を補完しています…</value>
+  </data>
+  <data name="library-view-model.copied-files.other" xml:space="preserve">
+    <value>{0}件のファイルをライブラリにコピーしました。</value>
+  </data>
+  <data name="library-view-model.copy-failed.other" xml:space="preserve">
+    <value>{0}件をコピーできませんでした。</value>
+  </data>
+  <data name="library-view-model.copy-skipped.other" xml:space="preserve">
+    <value>{0}件はファイルが見つからないためスキップしました。カタログには残ります。</value>
+  </data>
+  <data name="library-view-model.copying-files.other" xml:space="preserve">
+    <value>{0}件のファイルをライブラリにコピーしています…</value>
+  </data>
+  <data name="library-view-model.covers-normalized.other" xml:space="preserve">
+    <value>{0}枚のアートワークを正方形にそろえました。</value>
+  </data>
+  <data name="library-view-model.covers-removed.other" xml:space="preserve">
+    <value>{0}枚のアートワークを外しました。</value>
+  </data>
+  <data name="library-view-model.hay-nada-completar-todo-tiene-titulo" xml:space="preserve">
+    <value>補完するものはありません。すべてにタイトル、アーティスト、アルバムが入っています。</value>
+  </data>
+  <data name="library-view-model.migration-legacy-prepared.other" xml:space="preserve">
+    <value>{0}件の準備済みファイルが古い名前を使っています</value>
+  </data>
+  <data name="library-view-model.migration-tagged.other" xml:space="preserve">
+    <value>{0}曲のタグを書き込みました</value>
+  </data>
+  <data name="library-view-model.migration-without-storage.other" xml:space="preserve">
+    <value>{0}件の項目は、ファイルが Aura のコピーかあなたのものかをまだ示していません</value>
+  </data>
+  <data name="library-view-model.not-started.other" xml:space="preserve">
+    <value>{1} {0}件が未確認のまま残りました（キャンセルしたため）。</value>
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-fotos" xml:space="preserve">
+    <value>写真の検索を停止しました。</value>
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-letra" xml:space="preserve">
+    <value>歌詞の検索を停止しました。</value>
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-linea" xml:space="preserve">
+    <value>オンライン検索を停止しました。</value>
+  </data>
+  <data name="library-view-model.se-detuvo-busqueda-posters" xml:space="preserve">
+    <value>ポスターの検索を停止しました。</value>
+  </data>
+  <data name="library-view-model.se-detuvo-normalizacion-caratulas-lo-fal" xml:space="preserve">
+    <value>アートワークの正方形化を停止しました。残りは次回に続きます。</value>
+  </data>
+  <data name="library-view-model.se-pudo-leer-ninguna-etiqueta-archivos" xml:space="preserve">
+    <value>タグを1つも読み取れませんでした。ファイルが利用できません。</value>
+  </data>
+  <data name="library-view-model.searching-covers.other" xml:space="preserve">
+    <value>{0}枚のアルバムのアートワークを探しています…</value>
+  </data>
+  <data name="library-view-model.tags-reread.other" xml:space="preserve">
+    <value>{0}曲のタグを読み直しました。</value>
+  </data>
+  <data name="main-window.aura-studio" xml:space="preserve">
+    <value>Aura Studio</value>
+  </data>
+  <data name="media-category.movies" xml:space="preserve">
+    <value>映画</value>
+  </data>
+  <data name="media-category.series" xml:space="preserve">
+    <value>シリーズ</value>
+  </data>
+  <data name="media-category.videos" xml:space="preserve">
+    <value>ビデオ</value>
+  </data>
+  <data name="media-grid-page.buscar-posters" xml:space="preserve">
+    <value>ポスターを探す</value>
+  </data>
+  <data name="media-grid-page.descarga-posters-falten-viajan-pegados-v" xml:space="preserve">
+    <value>足りないポスターをダウンロードします。次回の同期でビデオと一緒に転送されます。</value>
+  </data>
+  <data name="media-grid-page.xaml.cancelar" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="media-grid-page.xaml.guardar" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="media-grid-page.xaml.renombrar-album" xml:space="preserve">
+    <value>アルバム名を変更</value>
+  </data>
+  <data name="media-grid-view-model.photos-removed-from-album.other" xml:space="preserve">
+    <value>{0}枚の写真をアルバムから外しました。</value>
+  </data>
+  <data name="media-info-dialog.cancelar" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="media-info-dialog.guardar" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="media-info-dialog.mas-informacion" xml:space="preserve">
+    <value>詳細</value>
+  </data>
+  <data name="music-settings-view.calidad-audio" xml:space="preserve">
+    <value>音質</value>
+  </data>
+  <data name="music-settings-view.comprimir-mp3-buena-calidad" xml:space="preserve">
+    <value>高音質の MP3 に圧縮</value>
+  </data>
+  <data name="orphans-button" xml:space="preserve">
+    <value>孤立ファイルを探す</value>
+  </data>
+  <data name="orphans-clean-button" xml:space="preserve">
+    <value>孤立ファイルを整理</value>
+  </data>
+  <data name="orphans-confirm-message" xml:space="preserve">
+    <value>これらはライブラリのどの項目にも結び付いていません。削除しても、お持ちの曲・写真・ビデオには影響しません。</value>
+  </data>
+  <data name="orphans-detail" xml:space="preserve">
+    <value>ライブラリのどの項目にも属さなくなった準備済みファイルとアートワークです。このバージョンより前に削除した項目や、再処理によって生じたものです。あなたの元のファイルではありません。Aura が自分で作る技術的なコピーで、必要ならまた作り直せます。</value>
+  </data>
+  <data name="orphans-none-found" xml:space="preserve">
+    <value>孤立ファイルはありません。整理するものはありません。</value>
+  </data>
+  <data name="orphans-title" xml:space="preserve">
+    <value>孤立ファイル</value>
+  </data>
+  <data name="playlists-page.crea-nueva-o-importa-archivo-m3u" xml:space="preserve">
+    <value>新しく作るか、別のプログラムの .m3u/.m3u8 ファイルを読み込んでください。ライブラリにない曲は別に数えられ、黙って失われることはありません。</value>
+  </data>
+  <data name="playlists-page.eliminar" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="playlists-page.exportar" xml:space="preserve">
+    <value>書き出す</value>
+  </data>
+  <data name="playlists-page.importar-m3u" xml:space="preserve">
+    <value>M3U を読み込む…</value>
+  </data>
+  <data name="playlists-page.listas-armadas-con-canciones-biblioteca" xml:space="preserve">
+    <value>ライブラリの曲で作ったプレイリストです。同期のときに iPod へコピーされます。</value>
+  </data>
+  <data name="playlists-page.nueva-lista" xml:space="preserve">
+    <value>新しいプレイリスト</value>
+  </data>
+  <data name="playlists-page.renombrar" xml:space="preserve">
+    <value>名前を変更</value>
+  </data>
+  <data name="playlists-page.todavia-tienes-listas" xml:space="preserve">
+    <value>プレイリストはまだありません。</value>
+  </data>
+  <data name="playlists-page.xaml.aceptar" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="playlists-page.xaml.cancelar" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="settings-page.abrir-explorador" xml:space="preserve">
+    <value>エクスプローラーで開く</value>
+  </data>
+  <data name="settings-page.activos-sin-configurar-nada" xml:space="preserve">
+    <value>有効です。設定は不要です</value>
+  </data>
+  <data name="settings-page.agregar" xml:space="preserve">
+    <value>追加</value>
+  </data>
+  <data name="settings-page.agregar-2" xml:space="preserve">
+    <value>追加</value>
+  </data>
+  <data name="settings-page.agrupar-colaboraciones-bajo-artista-prin" xml:space="preserve">
+    <value>共演をメインのアーティストにまとめる</value>
+  </data>
+  <data name="settings-page.al-importar" xml:space="preserve">
+    <value>取り込むとき</value>
+  </data>
+  <data name="settings-page.apagado-aura-studio-toca-red-al" xml:space="preserve">
+    <value>オフ：取り込みのときに Aura Studio はネットワークに接続しません。ファイルのタグと、名前から推測できることだけを使います。</value>
+  </data>
+  <data name="settings-page.archivos-huerfanos" xml:space="preserve">
+    <value>孤立ファイル</value>
+  </data>
+  <data name="settings-page.artista-album-recomendado" xml:space="preserve">
+    <value>アーティスト / アルバム（推奨）</value>
+  </data>
+  <data name="settings-page.bajar" xml:space="preserve">
+    <value>下へ</value>
+  </data>
+  <data name="settings-page.biblioteca" xml:space="preserve">
+    <value>ライブラリ</value>
+  </data>
+  <data name="settings-page.buscar-letras-sincronizadas" xml:space="preserve">
+    <value>同期歌詞を探す</value>
+  </data>
+  <data name="settings-page.buscarlo-nuevo" xml:space="preserve">
+    <value>もう一度探す</value>
+  </data>
+  <data name="settings-page.calidad-imagen" xml:space="preserve">
+    <value>画質</value>
+  </data>
+  <data name="settings-page.cambiar" xml:space="preserve">
+    <value>変更…</value>
+  </data>
+  <data name="settings-page.cambiar-carpeta-mueve-nada" xml:space="preserve">
+    <value>フォルダーを変えても何も移動しません</value>
+  </data>
+  <data name="settings-page.caratula-alternativa-1000-1000-sin-clave" xml:space="preserve">
+    <value>1000×1000 の代替アートワーク。キーは不要です。この非商用の利用を明確に認めている唯一の提供元です。</value>
+  </data>
+  <data name="settings-page.caratula-por-album-recomendado" xml:space="preserve">
+    <value>アルバムごとに1枚（推奨）</value>
+  </data>
+  <data name="settings-page.caratula-por-cancion" xml:space="preserve">
+    <value>曲ごとに1枚</value>
+  </data>
+  <data name="settings-page.caratulas" xml:space="preserve">
+    <value>アートワーク</value>
+  </data>
+  <data name="settings-page.carpeta-biblioteca" xml:space="preserve">
+    <value>ライブラリのフォルダー</value>
+  </data>
+  <data name="settings-page.carpeta-nueva-biblioteca-anterior-intacta" xml:space="preserve">
+    <value>Aura Studio は新しいフォルダーを使い始め、そこにあるライブラリを読み込みます（なければ空から始めます）。これまでのライブラリは元の場所にそのまま残り、そのフォルダーを選び直せば戻ってきます。</value>
+  </data>
+  <data name="settings-page.carpetas-externas-arrastraste-con-copia" xml:space="preserve">
+    <value>コピーをオフにしたままドラッグした外部フォルダーです。Aura はそこから何もコピーせず、覚えているだけです。この一覧から外しても、すでに取り込んだものが削除されたり切り離されたりはしません。表示されなくなるだけです。</value>
+  </data>
+  <data name="settings-page.carpetas-ipod" xml:space="preserve">
+    <value>iPod のフォルダー</value>
+  </data>
+  <data name="settings-page.carpetas-vinculadas" xml:space="preserve">
+    <value>リンクしたフォルダー</value>
+  </data>
+  <data name="settings-page.claves-tokens" xml:space="preserve">
+    <value>キーとトークン</value>
+  </data>
+  <data name="settings-page.colaboraciones" xml:space="preserve">
+    <value>共演</value>
+  </data>
+  <data name="settings-page.colecciones" xml:space="preserve">
+    <value>コレクション</value>
+  </data>
+  <data name="settings-page.completar-informacion-faltante-con-servi" xml:space="preserve">
+    <value>足りない情報をオンラインサービスで補う</value>
+  </data>
+  <data name="settings-page.conversion-hace-ffmpeg-se-instala-aparte" xml:space="preserve">
+    <value>変換は ffmpeg が行います。独自のライセンスと更新の周期があるため、別途インストールします。自動で見つかります。自分のフォルダーに置いている場合だけ選ぶ必要があります。</value>
+  </data>
+  <data name="settings-page.copiar-medios-carpeta-biblioteca" xml:space="preserve">
+    <value>メディアをライブラリのフォルダーにコピー</value>
+  </data>
+  <data name="settings-page.cuando-cancion-le-falta-caratula-se" xml:space="preserve">
+    <value>曲にアートワークがないとき、これらのサービスを順に試し、最初に見つかった画像を使います。</value>
+  </data>
+  <data name="settings-page.deezer" xml:space="preserve">
+    <value>Deezer</value>
+  </data>
+  <data name="settings-page.elegir-ffmpeg-exe" xml:space="preserve">
+    <value>ffmpeg.exe を選ぶ…</value>
+  </data>
+  <data name="settings-page.excepciones" xml:space="preserve">
+    <value>例外</value>
+  </data>
+  <data name="settings-page.ffmpeg" xml:space="preserve">
+    <value>ffmpeg</value>
+  </data>
+  <data name="settings-page.formato-video" xml:space="preserve">
+    <value>ビデオの形式</value>
+  </data>
+  <data name="settings-page.fotos" xml:space="preserve">
+    <value>写真</value>
+  </data>
+  <data name="settings-page.general" xml:space="preserve">
+    <value>一般</value>
+  </data>
+  <data name="settings-page.idioma" xml:space="preserve">
+    <value>言語</value>
+  </data>
+  <data name="settings-page.letras-vienen-lrclib-sin-clave-ni" xml:space="preserve">
+    <value>歌詞は LRCLIB から取得します。キーも登録も不要です。上の設定をオンにしてください。</value>
+  </data>
+  <data name="settings-page.listo" xml:space="preserve">
+    <value>完了</value>
+  </data>
+  <data name="settings-page.los-nombres-que-escribes-no-se-traducen" xml:space="preserve">
+    <value>あなたが入力した名前はあなたのもので、翻訳されません。アプリの言語が変わっても、コレクションは付けた名前のままです。Aura に用意された3つのビデオカテゴリはアプリの言語で表示されますが、内部では常に同じ形で保存されるので、どのコンピューターでもライブラリは同じに見えます。</value>
+  </data>
+  <data name="settings-page.mantener-formato-original-recomendado" xml:space="preserve">
+    <value>元の形式のまま（推奨）</value>
+  </data>
+  <data name="settings-page.migrar-biblioteca" xml:space="preserve">
+    <value>ライブラリを移行</value>
+  </data>
+  <data name="settings-page.migrar-version-anterior" xml:space="preserve">
+    <value>以前のバージョンから移行</value>
+  </data>
+  <data name="settings-page.musica" xml:space="preserve">
+    <value>音楽</value>
+  </data>
+  <data name="settings-page.musicbrainz-artista-album-ano-numero-pis" xml:space="preserve">
+    <value>MusicBrainz（アーティスト、アルバム、年、トラック番号）、Cover Art Archive（アートワーク）、LRCLIB（同期歌詞）。3つともキーも登録も不要で、Aura Studio はインストールした時点から使えます。</value>
+  </data>
+  <data name="settings-page.nombre-archivo" xml:space="preserve">
+    <value>ファイル名</value>
+  </data>
+  <data name="settings-page.nombre-completo-grupo" xml:space="preserve">
+    <value>グループの正式名称</value>
+  </data>
+  <data name="settings-page.nombres-grupo-llevan-uno-esos-separadore" xml:space="preserve">
+    <value>「Simon + Garfunkel」や「Café con Leche」のように、区切り文字を名前に含んでいて切り詰めてはいけないグループ名です。大文字小文字とアクセントを区別せず、クレジット全体と照合します。</value>
+  </data>
+  <data name="settings-page.nueva-coleccion" xml:space="preserve">
+    <value>新しいコレクション</value>
+  </data>
+  <data name="settings-page.numero-pista-titulo" xml:space="preserve">
+    <value>トラック番号とタイトル</value>
+  </data>
+  <data name="settings-page.optimizar-espacio-320-px-recomendado" xml:space="preserve">
+    <value>容量を節約（320 px、推奨）</value>
+  </data>
+  <data name="settings-page.orden-busqueda-caratula" xml:space="preserve">
+    <value>アートワークを探す順番</value>
+  </data>
+  <data name="settings-page.organizar-por-categoria-dentro-bibliotec" xml:space="preserve">
+    <value>ライブラリ内でカテゴリごとに整理する</value>
+  </data>
+  <data name="settings-page.organizar-por-coleccion-dentro-bibliotec" xml:space="preserve">
+    <value>ライブラリ内でコレクションごとに整理する</value>
+  </data>
+  <data name="settings-page.pantalla-ipod-es-320-240-foto" xml:space="preserve">
+    <value>iPod の画面は 320×240 です。今のカメラやスマートフォンの写真は、この画面が表示できる量の何十倍もあります。どちらの場合も JPEG として保存され、元の写真そのものが入ることはありません。</value>
+  </data>
+  <data name="settings-page.quitar" xml:space="preserve">
+    <value>外す</value>
+  </data>
+  <data name="settings-page.quitar-2" xml:space="preserve">
+    <value>外す</value>
+  </data>
+  <data name="settings-page.quitar-3" xml:space="preserve">
+    <value>外す</value>
+  </data>
+  <data name="settings-page.quitar-coleccion-cambia-coleccion-fotos" xml:space="preserve">
+    <value>コレクションを外しても、すでに割り当てられていた写真のコレクションは変わりません。</value>
+  </data>
+  <data name="settings-page.se-guardan-administrador-credenciales-wi" xml:space="preserve">
+    <value>Windows の資格情報マネージャーに、あなたのアカウントで暗号化して保存されます。アプリのファイルにもリポジトリにも入りません。ここを通らなくても、Windows から確認・削除できます。</value>
+  </data>
+  <data name="settings-page.separa-tus-fotos-colecciones-para-encont" xml:space="preserve">
+    <value>Aura Studio の中で見つけやすいように、写真をコレクションに分けます。iPod 上のどこに入るかは変わりません。そこでは常にまとめて Photos にコピーされます。iPod のビューアーがまだサブフォルダーをたどれないためです。</value>
+  </data>
+  <data name="settings-page.separa-tus-videos-videos-series-pelicula" xml:space="preserve">
+    <value>Aura Studio の中で見つけやすいように、ビデオをビデオ・シリーズ・映画に分けます。iPod 上のどこに入るかは変わりません。そこでは常にまとめて Videos にコピーされます。プレーヤーがまだサブフォルダーをたどれないためです。</value>
+  </data>
+  <data name="settings-page.servicios" xml:space="preserve">
+    <value>サービス</value>
+  </data>
+  <data name="settings-page.solo-album" xml:space="preserve">
+    <value>アルバムのみ</value>
+  </data>
+  <data name="settings-page.solo-artista" xml:space="preserve">
+    <value>アーティストのみ</value>
+  </data>
+  <data name="settings-page.solo-titulo-recomendado" xml:space="preserve">
+    <value>タイトルのみ（推奨）</value>
+  </data>
+  <data name="settings-page.subir" xml:space="preserve">
+    <value>上へ</value>
+  </data>
+  <data name="settings-page.texto" xml:space="preserve">
+    <value>↑</value>
+  </data>
+  <data name="settings-page.texto-2" xml:space="preserve">
+    <value>↓</value>
+  </data>
+  <data name="settings-page.titulo-album" xml:space="preserve">
+    <value>タイトル - アルバム</value>
+  </data>
+  <data name="settings-page.titulo-artista" xml:space="preserve">
+    <value>タイトル - アーティスト</value>
+  </data>
+  <data name="settings-page.todavia-agregaste-ninguna-excepcion" xml:space="preserve">
+    <value>例外はまだ追加していません。</value>
+  </data>
+  <data name="settings-page.todavia-vinculaste-ninguna-carpeta" xml:space="preserve">
+    <value>フォルダーはまだリンクしていません。</value>
+  </data>
+  <data name="settings-page.todo-video-se-convierte-mpeg-1" xml:space="preserve">
+    <value>どのビデオも同期のときに 320×240 の MPEG-1/2 に変換されます。Aura を入れた iPod がフルスピードで再生できる唯一の形式だからです（2007年のチップは H.264 も現代の形式もデコードできません）。好みの問題ではなくハードウェアの制約なので、ここで選ぶものはありません。</value>
+  </data>
+  <data name="settings-page.version-hd-640-px" xml:space="preserve">
+    <value>HD 版（640 px）</value>
+  </data>
+  <data name="settings-page.video" xml:space="preserve">
+    <value>ビデオ</value>
+  </data>
+  <data name="settings-page.wav-aiff-siempre-se-convierten" xml:space="preserve">
+    <value>WAV と AIFF は常に変換されます</value>
+  </data>
+  <data name="settings-section-view.actualizaciones-aura-studio" xml:space="preserve">
+    <value>Aura Studio の更新</value>
+  </data>
+  <data name="settings-section-view.aqui-vive-catalogo-tu-biblioteca-funcion" xml:space="preserve">
+    <value>ここにライブラリのカタログがあります。iPod がつながっていなくても動き、つないだときに同期されます。ファイルもここにコピーするかどうかは、下の設定で決まります。</value>
+  </data>
+  <data name="settings-section-view.buscar-actualizaciones" xml:space="preserve">
+    <value>更新を確認</value>
+  </data>
+  <data name="shell-page.descargar" xml:space="preserve">
+    <value>ダウンロード</value>
+  </data>
+  <data name="shell-page.esta-biblioteca-viene-version-anterior" xml:space="preserve">
+    <value>このライブラリは以前のバージョンのものです</value>
+  </data>
+  <data name="shell-page.migrar-biblioteca" xml:space="preserve">
+    <value>ライブラリを移行</value>
+  </data>
+  <data name="shell-page.ver-hay-nuevo" xml:space="preserve">
+    <value>新着を見る</value>
+  </data>
+  <data name="similar-items-page.aura-studio-busca-canciones-fotos-videos" xml:space="preserve">
+    <value>Aura Studio は、重複していそうな曲・写真・ビデオを探します。自分では何も削除も変更もしません。ここで、なぜまとめたのかを見て、あなたが決めます。</value>
+  </data>
+  <data name="similar-items-page.buscar" xml:space="preserve">
+    <value>探す</value>
+  </data>
+  <data name="similar-items-page.conservar-solo-este" xml:space="preserve">
+    <value>これだけ残す</value>
+  </data>
+  <data name="similar-items-page.elementos-parecidos" xml:space="preserve">
+    <value>似ている項目</value>
+  </data>
+  <data name="similar-items-page.son-lo-mismo" xml:space="preserve">
+    <value>同じものではありません</value>
+  </data>
+  <data name="similar-items-page.unificar-metadata" xml:space="preserve">
+    <value>メタデータをそろえる</value>
+  </data>
+  <data name="similar-items-page.volver-mostrar-descartados" xml:space="preserve">
+    <value>除外したものをもう一度表示</value>
+  </data>
+  <data name="similar-items-view-model.groups-found.other" xml:space="preserve">
+    <value>似ているグループが{0}件見つかりました。</value>
+  </data>
+  <data name="similar-items-view-model.items-removed.other" xml:space="preserve">
+    <value>{0}件の項目をライブラリから外しました。</value>
+  </data>
+  <data name="songs-page.busca-album-ano-caratula-letra-lo" xml:space="preserve">
+    <value>そろっていないものについて、アルバム・年・アートワーク・歌詞を探します</value>
+  </data>
+  <data name="songs-page.busca-canciones-fotos-videos-parezcan-re" xml:space="preserve">
+    <value>重複していそうな曲・写真・ビデオを探します</value>
+  </data>
+  <data name="songs-page.completar-linea" xml:space="preserve">
+    <value>オンラインで補完</value>
+  </data>
+  <data name="songs-page.elementos-parecidos" xml:space="preserve">
+    <value>似ている項目</value>
+  </data>
+  <data name="songs-page.xaml.cambiar-nombre" xml:space="preserve">
+    <value>名前を変更</value>
+  </data>
+  <data name="songs-page.xaml.cancelar" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="songs-page.xaml.guardar" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="storage-change-only-affects-future" xml:space="preserve">
+    <value>この設定を変えても、影響するのはこれから取り込むものだけです。すでにライブラリにあるものはそのまま残ります。</value>
+  </data>
+  <data name="storage-copy-explainer" xml:space="preserve">
+    <value>Aura のライブラリにコピー：Aura がファイルを管理し、タグを編集し、そのまま同期します。ディスク容量を使います（コピー1つ分）。元のファイルは後で削除できます。</value>
+  </data>
+  <data name="storage-reference-explainer" xml:space="preserve">
+    <value>その場を参照：追加の容量を使わず、ファイルにも触れません。Aura は準備済みのバージョンを別に持ちます（.preparados/）。編集内容は Aura と iPod の中だけに存在し、元のディスクがないとその曲は同期できません。</value>
+  </data>
+  <data name="storage-section-title" xml:space="preserve">
+    <value>音楽の保存方法</value>
+  </data>
+  <data name="sync-view-model.conecta-selecciona-ipod-antes-continuar" xml:space="preserve">
+    <value>続ける前に iPod をつないで選んでください。</value>
+  </data>
+  <data name="sync-view-model.este-ipod-esta-ejecutando-aura-instala" xml:space="preserve">
+    <value>この iPod では Aura が動いていません。同期の前に Aura をインストールしてください。</value>
+  </data>
+  <data name="sync-view-model.orphan-header.other" xml:space="preserve">
+    <value>iPod にある{0}件のファイルは、もうライブラリにありません</value>
+  </data>
+  <data name="sync-view-model.revisa-cambios-antes-sincronizar" xml:space="preserve">
+    <value>同期する前に変更を確認してください。</value>
+  </data>
+  <data name="sync-view-model.revision-cancelada" xml:space="preserve">
+    <value>確認をキャンセルしました。</value>
+  </data>
+  <data name="sync-view-model.sincronizacion-cancelada" xml:space="preserve">
+    <value>同期をキャンセルしました。</value>
+  </data>
+  <data name="themes-page.activar" xml:space="preserve">
+    <value>有効にする</value>
+  </data>
+  <data name="themes-page.aura-studio-arma-paquete-desde-carpeta" xml:space="preserve">
+    <value>Aura Studio は、ファームウェアの design-system ですでに生成されたアセット（.fnt フォントとアイコンのマスク）が入ったフォルダーからパッケージを作ります。お使いのコンピューターのフォントやアイコンを変換することはありません。</value>
+  </data>
+  <data name="themes-page.autor" xml:space="preserve">
+    <value>作者</value>
+  </data>
+  <data name="themes-page.cambia-como-se-ve-aura-ipod" xml:space="preserve">
+    <value>iPod での Aura の見た目を変えます</value>
+  </data>
+  <data name="themes-page.compartir" xml:space="preserve">
+    <value>共有…</value>
+  </data>
+  <data name="themes-page.construir-e-instalar" xml:space="preserve">
+    <value>作成してインストール</value>
+  </data>
+  <data name="themes-page.construir-tema" xml:space="preserve">
+    <value>テーマを作成</value>
+  </data>
+  <data name="themes-page.elegir-carpeta" xml:space="preserve">
+    <value>フォルダーを選ぶ…</value>
+  </data>
+  <data name="themes-page.eliminar" xml:space="preserve">
+    <value>削除</value>
+  </data>
+  <data name="themes-page.marcalo-si-tema-usa-fuentes-o" xml:space="preserve">
+    <value>SF Pro や SF Symbols のように再配布できないフォントやアイコンをテーマが使っている場合はチェックしてください。テーマは iPod にインストールできますが、Aura Studio は共有を許可しません。</value>
+  </data>
+  <data name="themes-page.nombre" xml:space="preserve">
+    <value>名前</value>
+  </data>
+  <data name="themes-page.temas" xml:space="preserve">
+    <value>テーマ</value>
+  </data>
+  <data name="themes-page.usa-material-licencia-restringida-solo-p" xml:space="preserve">
+    <value>制限付きライセンスの素材を使用（自分専用）</value>
+  </data>
+  <data name="themes-page.xaml.cancelar" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="themes-page.xaml.quitar" xml:space="preserve">
+    <value>外す</value>
+  </data>
+  <data name="themes-page.xaml.quitar-row-name-ipod" xml:space="preserve">
+    <value>「{0}」を iPod から外しますか？</value>
+  </data>
+  <data name="themes-view-model.row-name-se-va-aplicar-proxima" xml:space="preserve">
+    <value>「{0}」は次に iPod の電源を入れたときに適用されます。</value>
+  </data>
+  <data name="themes-view-model.se-guardo-copia-path" xml:space="preserve">
+    <value>コピーを {0} に保存しました</value>
+  </data>
+  <data name="themes-view-model.se-instalo-installed-name-activalo-para" xml:space="preserve">
+    <value>「{0}」をインストールしました。iPod で見るには有効にしてください。</value>
+  </data>
+  <data name="themes-view-model.se-quito-row-name-ipod" xml:space="preserve">
+    <value>「{0}」を iPod から外しました。</value>
+  </data>
+</root>

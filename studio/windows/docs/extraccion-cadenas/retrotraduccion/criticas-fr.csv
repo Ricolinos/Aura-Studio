@@ -1,0 +1,179 @@
+id,fr
+c001,Bootloader envoyé. En attente de la confirmation et du redémarrage de l'iPod…
+c002,Continuer
+c003,"Votre musique et vos réglages n'ont pas été touchés. À la prochaine mise en marche de l'iPod, vous verrez le nouvel écran de démarrage."
+c004,Terminé : le bootloader est à jour
+c005,L'iPod doit rester branché en USB pendant l'opération. Son disque n'est pas touché : seul le bootloader est réécrit.
+c006,Je comprends que cela réécrit le bootloader de l'iPod. Cela n'efface pas son disque et ne retire pas le bootloader d'Apple.
+c007,Mise à jour du bootloader de l'iPod…
+c008,Mise à jour du bootloader de {0}…
+c009,Votre mot de passe administrateur n'est demandé à aucun moment.
+c010,Ce n'est pas obligatoire. Le nouveau microprogramme fonctionne aussi bien avec le bootloader que vous avez déjà ; seul l'écran de démarrage change.
+c011,"Rien n'est touché sur le disque. Votre musique, vos photos, vos listes de lecture et vos réglages restent exactement tels quels."
+c012,Mettre à jour le bootloader de cet iPod
+c013,Cette version apporte un bootloader plus récent que celui de votre iPod.
+c014,"Nous ne savons pas quel bootloader se trouve sur votre iPod : un autre ordinateur l'a installé, ou une version antérieure de l'application."
+c015,Mettre à jour le bootloader
+c016,"Le bootloader est le programme qui s'exécute avant le microprogramme, sur une puce distincte du disque. Cette version en apporte un nouveau, avec un autre écran de démarrage."
+c017,Le mode DFU est nécessaire parce que cette puce ne peut être écrite d'aucune autre façon.
+c018,{0} fichier ({1}) part à la Corbeille.
+c019,{0} fichiers ({1}) partent à la Corbeille.
+c020,{0} élément est retiré de votre bibliothèque ; son fichier d'origine n'est pas touché.
+c021,{0} éléments sont retirés de votre bibliothèque ; leurs fichiers d'origine ne sont pas touchés.
+c022,Supprimer {0} élément ?
+c023,Supprimer {0} éléments ?
+c024,Pilote pour le mode DFU
+c025,Le pilote d'Apple est installé. Aucun iPod en mode DFU n'est encore visible.
+c026,Windows voit l'iPod mais n'a pas de pilote pour lui. Installez « Appareils Apple » depuis le Microsoft Store (ou iTunes d'Apple) puis rebranchez-le : Aura Studio a besoin de ce pilote pour parler à l'iPod en mode DFU.
+c027,"Le pilote d'appareils d'Apple est introuvable. Installez « Appareils Apple » depuis le Microsoft Store (ou iTunes) avant de continuer : sans lui, Windows ne peut pas parler à l'iPod en mode DFU."
+c028,Windows reconnaît « {0} » et son pilote fonctionne.
+c029,L'état du pilote n'a pas pu être vérifié.
+c030,Une opération est déjà en train d'écrire sur l'iPod. Attendez qu'elle se termine avant d'en lancer une autre.
+c031,"Les fichiers du microprogramme n'ont pas pu être vérifiés, donc rien n'est installé."
+c032,Écrit. En attente du redémarrage de l'iPod et de sa réapparition…
+c033,Commencer
+c034,Opération annulée.
+c035,{0} fichier écrit sur l'iPod.
+c036,{0} fichiers écrits sur l'iPod.
+c037,Le microprogramme n'a pas pu être copié sur l'iPod.
+c038,Copier le microprogramme
+c039,Copie du microprogramme sur l'iPod…
+c040,Vérifiez ces informations avec attention. Ce qui suit efface le contenu du disque affiché ici.
+c041,Confirmez qu'il s'agit bien de votre iPod
+c042,Aura Studio l'a reconnu au branchement. Voulez-vous y installer un microprogramme ? Rien ne se passe tant que vous n'avez pas choisi.
+c043,Pas maintenant
+c044,"Oui, installer"
+c045,Votre iPod est en mode DFU
+c046,iPod détecté en mode DFU.
+c047,iPod détecté en mode DFU (état {0}).
+c048,Guide de flashage et de restauration (dépôt du microprogramme)
+c049,https://github.com/Ricolinos/Aura-Firmware/blob/main/docs/guia-flasheo-restauracion.md
+c050,Aucun microprogramme n'est disponible à installer : le dossier des artefacts n'a pas été rempli.
+c051,Aucun iPod en mode DFU n'est encore visible. Refaites la combinaison de boutons et relancez la recherche. N'oubliez pas de continuer à appuyer après que l'écran devient noir.
+c052,"Le pilote d'Apple est installé, mais Windows ne voit aucun appareil Apple. Si vous avez déjà fait la combinaison de boutons et que l'écran de l'iPod est noir, il est probablement en mode DFU et sa connexion USB n'arrive pas jusqu'ici. Sur une machine virtuelle, vérifiez que l'iPod en mode DFU est bien redirigé vers Windows : en passant en DFU il change d'identifiant USB et il faut parfois l'autoriser à nouveau."
+c053,"Si votre iPod lit de la musique, arrêtez la lecture."
+c054,Maintenez SELECT + MENU enfoncés en même temps.
+c055,"Continuez à appuyer sur les deux boutons pendant environ 12 secondes, jusqu'après que l'écran devient noir."
+c056,Relâchez. Aura Studio détectera le mode DFU automatiquement.
+c057,"Si vous relâchez avant environ 12 secondes, l'iPod redémarre normalement et n'entre PAS en mode DFU. L'écran qui devient noir n'est pas le signal pour relâcher : continuez à appuyer après cela."
+c058,L'état de l'iPod n'a pas pu être lu. Vérifiez ci-dessous si le pilote d'Apple manque.
+c059,En attente du mode DFU…
+c060,Le microprogramme est installé. Éjectez l'iPod depuis Général avant de le débrancher.
+c061,Terminé
+c062,Simuler sans écrire
+c063,Simulation terminée — le disque n'a pas été touché
+c064,La simulation s'est bien passée : le disque a été vérifié à nouveau avec les droits d'administrateur et le plan de formatage est valide. Rien n'a encore été écrit.
+c065,Simulation de la préparation du disque…
+c066,Mettez maintenant l'iPod en mode DFU
+c067,C'est le moment : le disque est prêt et l'étape suivante écrit le bootloader. L'iPod doit rester branché en USB pendant l'opération.
+c068,Impossible de continuer
+c069,"Cet iPod a {0} d'installé et vous allez installer {1}. {0} est conservé en entier, avec ses réglages, et vous pouvez y revenir depuis Extras quand vous voulez."
+c070,Microprogramme à installer
+c071,Écrire le bootloader
+c072,Je comprends que cela remplace le bootloader d'origine d'Apple et que cela ne peut pas être annulé sans le restaurer.
+c073,Le bootloader n'a pas pu être écrit.
+c074,Votre confirmation manque avant d'écrire le bootloader. Aura Studio n'écrit rien sans que vous confirmiez d'abord.
+c075,Écriture du bootloader sur l'iPod…
+c076,Je comprends que tout le contenu de {0} sera effacé.
+c077,La simulation ci-dessus n'a rien touché. Ce qui suit efface tout le contenu du disque et ne peut pas être annulé. Vérifiez qu'il s'agit du bon iPod avant de continuer.
+c078,Cette étape efface réellement l'iPod
+c079,Votre confirmation manque avant d'effacer l'iPod. Aura Studio ne formate rien sans que vous confirmiez d'abord sur quel disque il va agir.
+c080,La préparation du disque doit d'abord être simulée. Cela vérifie tout sans rien écrire.
+c081,Effacer et formater {0}
+c082,Formatage du disque de l'iPod…
+c083,L'iPod n'a aucun volume que Windows puisse lire. Préparez le disque avant de copier les fichiers.
+c084,Aucun iPod n'est branché. Branchez-le en USB et attendez que Windows le reconnaisse.
+c085,"Compris, continuer"
+c086,"Pour préparer le disque de l'iPod, Windows vous demandera les droits d'administrateur avec sa propre invite. Aura Studio fait tout depuis ici : vous n'aurez jamais à ouvrir une console ni à taper une commande. Les droits ne sont demandés que pour deux choses précises — formater le disque de l'iPod et, pendant l'écriture du bootloader, suspendre le service Apple qui pourrait garder le port USB. Chaque utilisation est consignée dans le journal de l'application."
+c087,Autorisations nécessaires
+c088,Préparer le disque
+c089,Ce qu'a fait l'opération avec droits élevés
+c090,L'iPod est sorti du mode DFU. Vous pouvez copier le microprogramme.
+c091,Recommencer
+c092,Aura Studio s'est arrêté par sécurité avant de toucher au disque : {0}.
+c093,Rechercher l'iPod en DFU
+c094,Recherche de l'iPod en mode DFU…
+c095,L'iPod est toujours en mode DFU et l'installation n'a pas été confirmée. Ne le débranchez pas : relancez la recherche.
+c096,"Installez le microprogramme sur votre iPod, étape par étape"
+c097,Programme d'installation
+c098,"Le numéro de disque de « {0} » n'a pas pu être identifié, donc rien n'est touché."
+c099,"Aura Studio va préparer le disque de votre iPod, écrire le bootloader et copier le microprogramme. Chaque étape est expliquée avant d'être exécutée, et rien n'est touché tant que vous n'avez pas confirmé."
+c100,Installons le microprogramme sur votre iPod
+c101,"L'installation efface tout ce qui se trouve sur l'iPod et remplace son bootloader d'origine d'Apple. Si de la musique n'existe que là, copiez-la ailleurs avant."
+c102,{0} fichier orphelin supprimé.
+c103,{0} fichiers orphelins supprimés.
+c104,Supprimer {0} fichier orphelin ?
+c105,Supprimer {0} fichiers orphelins ?
+c106,{0} fichier orphelin ({1}).
+c107,{0} fichiers orphelins ({1}).
+c108,Supprimer
+c109,Supprimer
+c110,Supprimer
+c111,Supprimer l'album
+c112,Supprimer les albums
+c113,Supprimer l'artiste
+c114,Supprimer les artistes
+c115,Supprimer de la bibliothèque
+c116,Supprimer la pochette
+c117,Supprimer l'épisode
+c118,Supprimer les épisodes
+c119,Supprimer les photos de la bibliothèque
+c120,Supprimer le film
+c121,Supprimer les films
+c122,Supprimer la série
+c123,Supprimer les séries
+c124,Retirer de l'album
+c125,Retirer des favoris
+c126,Retirer des favoris
+c127,Retirer des favoris
+c128,Retirer la photo de l'artiste
+c129,Retirer les photos des artistes
+c130,Retirer l'affiche
+c131,"L'appareil a changé depuis votre confirmation. Par sécurité, rien n'a été écrit."
+c132,"Appareil vérifié : {0}, {1}, {2}"
+c133,"Plus d'un iPod est candidat. Par sécurité, aucun n'a été choisi."
+c134,L'iPod a disparu. Rien n'a été écrit.
+c135,Le volume de l'iPod n'est pas monté.
+c136,Annuler
+c137,{0} fichier copié dans la bibliothèque.
+c138,{0} fichiers copiés dans la bibliothèque.
+c139,{0} n'a pas pu être copié.
+c140,{0} n'ont pas pu être copiés.
+c141,{0} a été ignoré parce que son fichier est absent ; il reste dans le catalogue.
+c142,{0} ont été ignorés parce que leurs fichiers sont absents ; ils restent dans le catalogue.
+c143,Copie de {0} fichier dans la bibliothèque…
+c144,Copie de {0} fichiers dans la bibliothèque…
+c145,{0} fichier préparé porte l'ancien nom
+c146,{0} fichiers préparés portent l'ancien nom
+c147,les étiquettes de {0} morceau ont été écrites
+c148,les étiquettes de {0} morceaux ont été écrites
+c149,{0} élément ne dit pas encore si son fichier est une copie d'Aura ou le vôtre
+c150,{0} éléments ne disent pas encore si leurs fichiers sont des copies d'Aura ou les vôtres
+c151,Qualité audio
+c152,Compresser en MP3 de bonne qualité
+c153,Rechercher les orphelins
+c154,Nettoyer les fichiers orphelins
+c155,"Ils ne sont liés à aucun élément de votre bibliothèque ; les supprimer n'affecte aucun morceau, aucune photo et aucune vidéo que vous ayez."
+c156,"Fichiers préparés et pochettes qui n'appartiennent plus à aucun élément de votre bibliothèque — issus d'éléments supprimés avant cette version, ou d'un retraitement. Ce ne sont pas vos fichiers d'origine : ce sont des copies techniques qu'Aura crée toute seule et peut recréer si besoin."
+c157,Il n'y a aucun fichier orphelin : rien à nettoyer.
+c158,Fichiers orphelins
+c159,Qualité d'image
+c160,Changer de dossier ne déplace rien
+c161,Dossier de la bibliothèque
+c162,"Aura Studio se met à utiliser le nouveau dossier et lit la bibliothèque qui s'y trouve (ou démarre à vide s'il n'y en a aucune). Votre bibliothèque précédente reste intacte là où elle était, et revient si vous choisissez de nouveau ce dossier."
+c163,"Dossiers externes que vous avez déposés avec la copie désactivée. Aura n'en copie rien, il se contente de les retenir. En retirer un de cette liste ne supprime ni ne délie ce que vous en avez déjà importé : cela cesse simplement de l'afficher."
+c164,Copier les médias dans le dossier de la bibliothèque
+c165,Conserver le format d'origine (recommandé)
+c166,Migrer la bibliothèque
+c167,Migrer depuis une version antérieure
+c168,"Économiser de l'espace (320 px, recommandé)"
+c169,Version HD (640 px)
+c170,Les WAV et les AIFF sont toujours convertis
+c171,Cette bibliothèque vient d'une version antérieure
+c172,Migrer la bibliothèque
+c173,{0} élément retiré de la bibliothèque.
+c174,{0} éléments retirés de la bibliothèque.
+c175,Modifier ce réglage n'affecte que ce que vous importerez à partir de maintenant : ce qui est déjà dans votre bibliothèque reste tel quel.
+c176,"Copier dans la bibliothèque Aura : Aura gère les fichiers, modifie leurs étiquettes et les synchronise directement ; cela occupe de l'espace disque (une copie) ; vous pouvez supprimer vos originaux ensuite."
+c177,"Les référencer sur place : aucun espace supplémentaire et vos fichiers ne sont jamais touchés ; Aura garde une version préparée à côté (.preparados/), les modifications ne vivent que dans Aura et sur l'iPod, et si le disque d'origine est absent, ces morceaux ne peuvent pas être synchronisés."
+c178,Comment stocker votre musique

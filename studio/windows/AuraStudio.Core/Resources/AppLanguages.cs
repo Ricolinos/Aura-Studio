@@ -18,9 +18,25 @@ namespace AuraStudio.Core.Resources;
 /// que abrió la app en un idioma que no lee y busca el suyo en la lista. Si
 /// dijera "Spanisch" en alemán, quien busca "Español" no lo encuentra.</para>
 /// </param>
-/// <param name="Ships">
-/// Si hoy existe el archivo de ese idioma. El español es la cultura neutra
-/// —va dentro del ensamblado— y los demás son satélites.
+/// <param name="Built">
+/// Si su archivo de textos existe y se compila. El español es la cultura neutra
+/// —va dentro del ensamblado— y los demás salen como satélites.
+///
+/// <para><b>Que se genere no es que se ofrezca.</b> Son dos hechos distintos y
+/// se separaron a propósito (ST-247, B7c): un idioma puede estar traducido,
+/// compilado y viajando dentro del instalador sin que el selector lo muestre
+/// todavía. Es el estado de los cuatro de B7c: la extracción de B7a está en los
+/// seis idiomas, pero unas trescientas frases —instalador, errores de disco,
+/// permisos— siguen en español porque quedaron fuera de esa extracción. Ofrecer
+/// el idioma así sería prometer una app en alemán que a mitad del formateo
+/// habla en español.</para>
+///
+/// <para>Y se generan igualmente porque el instalador tiene que llevarlos y
+/// medirlos: cuando B7d termine, encenderlos es cambiar <c>Offered</c>, no
+/// rehacer el paquete.</para>
+/// </param>
+/// <param name="Offered">
+/// Si el selector lo muestra y la app puede arrancar en él.
 /// </param>
 /// <param name="ReviewedByHumans">
 /// Si una persona que habla el idioma revisó el texto.
@@ -31,16 +47,17 @@ namespace AuraStudio.Core.Resources;
 /// promete algo distinto de lo que hace, en un idioma que nadie del equipo
 /// verifica, es peor que no ofrecer ese idioma.</para>
 /// </param>
-public sealed record AppLanguage(string Culture, string Endonym, bool Ships, bool ReviewedByHumans);
+public sealed record AppLanguage(string Culture, string Endonym, bool Built, bool Offered, bool ReviewedByHumans);
 
 /// <summary>
 /// Los idiomas de Aura Studio para Windows (ST-247, B7b).
 ///
-/// <para>La lista está completa desde ya —los seis— y cada uno dice si su
-/// archivo existe. Así el selector muestra lo que hay, la comprobación del
-/// instalador sabe qué carpetas exigir, y agregar un idioma en B7c es cambiar
-/// un <c>false</c> por un <c>true</c> junto con su <c>.resx</c>, no salir a
-/// buscar en cuántos lados estaba escrita la lista.</para>
+/// <para>La lista está completa —los seis— y cada uno dice dos cosas por
+/// separado: si su archivo se compila (<c>Built</c>) y si el selector lo
+/// muestra (<c>Offered</c>). Así el instalador sabe qué carpetas exigir, el
+/// selector sabe qué ofrecer, y encender un idioma cuando termine su
+/// traducción es cambiar un <c>false</c>, no salir a buscar en cuántos lados
+/// estaba escrita la lista.</para>
 /// </summary>
 public static class AppLanguages
 {
@@ -52,30 +69,52 @@ public static class AppLanguages
 
     public static readonly IReadOnlyList<AppLanguage> All =
     [
-        new("es", "Español", Ships: true, ReviewedByHumans: true),
-        new("en", "English", Ships: true, ReviewedByHumans: true),
+        new("es", "Español", Built: true, Offered: true, ReviewedByHumans: true),
+        new("en", "English", Built: true, Offered: true, ReviewedByHumans: true),
 
-        // B7c. Se declaran ya para que la lista sea una sola y no aparezca a
-        // pedazos por el código el día que lleguen.
-        new("de", "Deutsch", Ships: false, ReviewedByHumans: false),
-        new("fr", "Français", Ships: false, ReviewedByHumans: false),
-        new("ja", "日本語", Ships: false, ReviewedByHumans: false),
-        new("ru", "Русский", Ships: false, ReviewedByHumans: false),
+        // B7c los dejó traducidos, compilados y viajando en el instalador, y sin
+        // ofrecer. Lo que falta no es la traducción de B7a —esa está en los seis
+        // idiomas— sino las ~300 frases que quedaron fuera de esa extracción:
+        // instalador, errores de disco, permisos. Encenderlos ahora sería
+        // prometer una app en alemán que a mitad del formateo habla en español.
+        // Las enciende B7d, cambiando este Offered.
+        new("de", "Deutsch", Built: true, Offered: false, ReviewedByHumans: false),
+        new("fr", "Français", Built: true, Offered: false, ReviewedByHumans: false),
+        new("ja", "日本語", Built: true, Offered: false, ReviewedByHumans: false),
+        new("ru", "Русский", Built: true, Offered: false, ReviewedByHumans: false),
     ];
 
     /// <summary>Lo que el selector puede ofrecer hoy.</summary>
-    public static IReadOnlyList<AppLanguage> Available => [.. All.Where(language => language.Ships)];
+    public static IReadOnlyList<AppLanguage> Available => [.. All.Where(language => language.Offered)];
+
+    /// <summary>
+    /// Los idiomas cuyos textos existen y hay que revisar.
+    ///
+    /// <para>Es lo que enumeran las pruebas que leen los <c>.resx</c>, y no
+    /// <see cref="Available"/> a propósito: si apagar <c>Offered</c> apagara
+    /// también su verificación, esos cuatro archivos se quedarían meses sin
+    /// que nadie los mire y el día que se enciendan se publica lo que haya
+    /// quedado. Una prueba que deja de comprobar algo se ve igual que una que
+    /// lo comprueba y pasa.</para>
+    /// </summary>
+    public static IReadOnlyList<AppLanguage> Translated => [.. All.Where(language => language.Built)];
 
     /// <summary>
     /// Las culturas que tienen que existir como carpeta de satélite junto al
     /// ejecutable. El español no está: va dentro del ensamblado.
+    ///
+    /// <para>Son las que se <b>generan</b>, no las que se ofrecen. Un idioma
+    /// traducido pero todavía sin ofrecer viaja igual dentro del instalador —así
+    /// se mide su tamaño y así encenderlo después no obliga a rehacer el
+    /// paquete—, y si faltara, el instalador tiene que detenerse igual: el
+    /// archivo no está porque algo salió mal, no porque alguien lo decidiera.</para>
     ///
     /// <para>Esta es la lista contra la que se comprueba el publish y el
     /// instalador, y por eso vive acá y no escrita a mano en un script: una
     /// lista que se copia es una lista que se desincroniza.</para>
     /// </summary>
     public static IReadOnlyList<string> RequiredSatelliteCultures =>
-        [.. All.Where(language => language.Ships && language.Culture != NeutralCulture)
+        [.. All.Where(language => language.Built && language.Culture != NeutralCulture)
                .Select(language => language.Culture)];
 
     /// <summary>
@@ -92,7 +131,7 @@ public static class AppLanguages
              candidate = candidate.Parent)
         {
             AppLanguage? found = All.FirstOrDefault(
-                language => language.Ships
+                language => language.Offered
                             && string.Equals(language.Culture, candidate.Name, StringComparison.OrdinalIgnoreCase));
 
             if (found is not null) return found;
