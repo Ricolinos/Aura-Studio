@@ -6,7 +6,84 @@
 > nada — todo compila desde la sesión del 2026-08-31 en la VM — por eso se
 > renombró en la Fase 0. Entradas nuevas van **arriba** de las viejas.
 
-## Ronda "ajustes 3", B8 (parcial) — Cierre: tabla final, guion del dueño (2026-09-07)
+## Ronda "ajustes 3", B8 — Capturas por idioma, 0.4.1 (2026-09-08)
+
+Decisión ST-248 (tabla y método completos en `DECISIONS.md`). Capturas
+reales, con la app corriendo, de las cuatro traducciones nuevas
+(de/fr/ja/ru) sobre `origin/main = 58fa5b5` (el commit con el arreglo
+de `InvertBool`, ver más abajo) -- método: `AURA_STUDIO_PREFERENCES`
+apuntando a un `preferences.json` propio por idioma (nunca el del
+dueño), sobre una biblioteca sintética de 6 álbumes/30 canciones
+generada con `tools/CapturasIdiomas` (persistente a propósito, a
+diferencia de `LibraryPerfCheck`/`StorageFixtureCheck`, que se borran
+al terminar). Cada captura verificada a mano (leída con la herramienta
+de lectura de imágenes) antes de comprometer: solo Aura Studio, nada
+de otra ventana.
+
+### Índice de capturas (`docs/capturas/idiomas/`)
+
+| Archivo | Qué muestra |
+|---|---|
+| `es-ajustes.png` | Ajustes, pestaña General — selector "Igual que el sistema", sin marca beta |
+| `en-ajustes.png` | Ajustes, pestaña General — selector "English", sin marca beta |
+| `de-ajustes.png` | Ajustes, pestaña General — selector "Deutsch (Beta)" y su línea de traducción automática |
+| `fr-ajustes.png` | Ajustes, pestaña General — selector "Français (bêta)" y su línea |
+| `ru-ajustes.png` | Ajustes, pestaña General — selector "Русский (бета)" y su línea |
+| `ja-ajustes.png` | Ajustes, pestaña General — selector "日本語（ベータ）" y su línea |
+| `ja-ajustes-biblioteca.png` | Ajustes, pestaña Biblioteca (ja) — carpeta de biblioteca, "Cómo guardar tu música", conversión WAV/AIFF→ALAC, archivos huérfanos, inicio de "Migrar de una versión anterior" |
+| `ja-ajustes-musica.png` | Ajustes, pestaña Música (ja) — carpeta/nombre de archivo en el iPod, calidad de audio, agrupar colaboraciones |
+| `ja-albumes.png` | Álbumes (ja) — cuadrícula con carátulas reales y barra de estado "6枚のアルバム・6人のアーティスト・30曲" |
+| `ja-canciones.png` | Canciones (ja) — tabla con filas reales |
+| `ja-menu-albumes.png` | Menú contextual de un álbum (ja) |
+| `ja-menu-canciones.png` | Menú contextual de una canción (ja) |
+| `ja-instalador.png` | Instalador, primer paso (ja) |
+| `ru-albumes.png` | Álbumes (ru) — cuadrícula con carátulas y "6 альбомов · 6 исполнителей · 30 треков" |
+| `ru-canciones.png` | Canciones (ru) — ver hallazgo 3 más abajo |
+| `ru-menu-albumes.png` | Menú contextual de un álbum (ru) |
+
+### Comprobación de los seis ofrecidos
+
+`AppLanguages.Available` (`Offered: true`) trae exactamente es/en/de/fr/ja/ru
+-- confirmado leyendo `AppLanguages.cs` y, en pantalla, en las seis
+capturas `*-ajustes.png`: el selector muestra las seis entradas, con
+"(beta)" y su línea explicativa presentes SOLO en de/fr/ja/ru, ausentes
+en es/en.
+
+### Hallazgos (anotados, no corregidos desde esta sesión)
+
+1. **`InvertBool` -- Ajustes se rompía en LOS SEIS idiomas, incluido
+   español** (bloqueador real, ya arreglado por el Experto en `58fa5b5`
+   antes de que esta ronda terminara; ver la entrada de `DECISIONS.md`
+   para la cronología completa). No era un defecto de B7c/B7d ni de
+   idiomas: `SettingsPage.xaml` usaba `{StaticResource InvertBool}`
+   desde ST-211 sin definirlo nunca, y rompía igual en el 0.4.0
+   instalado del dueño (f6dd461) en español e inglés. Confirmado
+   arreglado en los seis sobre `58fa5b5`.
+2. **"Título" sin traducir, encabezado de columna en la tabla de
+   Canciones** -- visible en `ja-canciones.png`: toda la fila de
+   encabezados está en japonés menos esa columna, que queda en
+   español literal. No se tocó el código; es la clave que arma esa
+   tabla, probablemente fuera de la extracción de B7a/B7d por ser un
+   encabezado de columna y no un literal de texto corrido.
+3. **"Activado" sin traducir, texto de estado de los interruptores
+   (`ToggleSwitch`)** -- visible dos veces en `ja-ajustes-biblioteca.png`
+   y `ja-ajustes-musica.png` ("メディアをライブラリのフォルダーにコピー"
+   y "共演をメインのアーティストにまとめる"): el resto de cada tarjeta
+   está en japonés, pero la palabra que dice si el interruptor está
+   prendido queda en español. Mismo patrón que el hallazgo 2 -- un
+   texto que WinUI genera aparte del literal del layout, no capturado
+   por la extracción.
+4. **Canciones (ru) no siempre pinta las filas** -- en varios intentos
+   (relanzando la app de cero, con y sin cambiar el tamaño de ventana
+   antes de navegar) la tabla de Canciones en ruso se quedó con el
+   encabezado y el conteo "30 треков" pero sin ninguna fila visible ni
+   el menú contextual disponible (los elementos de UI Automation
+   correspondientes existían con rectángulo `Infinity`, es decir sin
+   diseño calculado). En japonés, con los mismos pasos, sí pintó.
+   **No concluyente**: no se pudo aislar si es específico del ruso o
+   una carrera de tiempos del propio guion de captura; queda para que
+   alguien lo mire con la app en pantalla de verdad, no solo por
+   automatización.
 
 Decisión ST-248 (parcial; tabla completa y método en `DECISIONS.md`).
 Cierra lo que no depende de B7c: la tabla antes/después de almacenamiento
