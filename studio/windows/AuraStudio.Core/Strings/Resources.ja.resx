@@ -2271,6 +2271,96 @@
   <data name="themes-view-model.se-guardo-copia-path" xml:space="preserve">
     <value>コピーを {0} に保存しました</value>
   </data>
+  <data name="theme-validation.missing-fonts.other" xml:space="preserve">
+    <value>フォントが {0} 個足りません: {1}。</value>
+  </data>
+  <data name="theme-validation.missing-masks.other" xml:space="preserve">
+    <value>アイコンのマスクが {0} 個ありますが、{1} 個必要です。</value>
+  </data>
+  <data name="theme-validation.manifest-missing" xml:space="preserve">
+    <value>theme.cfg ファイルがありません。</value>
+  </data>
+  <data name="theme-validation.manifest-unreadable" xml:space="preserve">
+    <value>theme.cfg を読み取れません。</value>
+  </data>
+  <data name="theme-validation.invalid-id" xml:space="preserve">
+    <value>id が正しくありません: "{0}"。</value>
+  </data>
+  <data name="theme-validation.format-unsupported" xml:space="preserve">
+    <value>フォーマットのバージョン {0} 向けに作られていますが、このファームウェアが対応しているのは {1} までです。iPod のファームウェアを更新してください。</value>
+  </data>
+  <data name="theme-validation.unknown" xml:space="preserve">
+    <value>確認に通りませんでした。</value>
+  </data>
+  <data name="theme-installer.cannot-review" xml:space="preserve">
+    <value>テーマを確認できませんでした。</value>
+  </data>
+  <data name="theme-installer.cannot-install" xml:space="preserve">
+    <value>このテーマはインストールできません: {0}</value>
+  </data>
+  <data name="theme-installer.invalid-theme-id" xml:space="preserve">
+    <value>テーマの id が不正です: {0}</value>
+  </data>
+  <data name="theme-installer.not-on-ipod" xml:space="preserve">
+    <value>そのテーマは iPod にもうありません。</value>
+  </data>
+  <data name="theme-installer.cannot-read-to-export" xml:space="preserve">
+    <value>そのテーマは、書き出すために読み取ることができません。</value>
+  </data>
+  <data name="theme-installer.personal-use" xml:space="preserve">
+    <value>「{0}」は個人利用として指定されています。共有できません。</value>
+  </data>
+  <data name="theme-packager.source-font-missing" xml:space="preserve">
+    <value>アセットのフォルダーにフォント {0} がありません。テーマを作る前に、ファームウェアの design-system で生成してください。</value>
+  </data>
+  <data name="theme-packager.source-masks-missing" xml:space="preserve">
+    <value>アセットのフォルダーに icons/masks/ がありません。アイコンのマスクはそこに置きます。</value>
+  </data>
+  <data name="theme-packager.write-failed" xml:space="preserve">
+    <value>テーマを書き込めませんでした: {0}</value>
+  </data>
+  <data name="themes-view-model.share-blocked-reason" xml:space="preserve">
+    <value>このテーマには利用が制限された素材が含まれています。個人利用のためのもので、共有はできません。</value>
+  </data>
+  <data name="themes-view-model.state-active" xml:space="preserve">
+    <value>使用中</value>
+  </data>
+  <data name="themes-view-model.state-not-loading" xml:space="preserve">
+    <value>読み込めません</value>
+  </data>
+  <data name="themes-view-model.device-themes-of" xml:space="preserve">
+    <value>{0} のテーマ</value>
+  </data>
+  <data name="themes-view-model.device-no-aura" xml:space="preserve">
+    <value>見つかった iPod で Aura が動いていません。テーマは Aura の機能です。</value>
+  </data>
+  <data name="themes-view-model.connect-ipod" xml:space="preserve">
+    <value>テーマを見たり切り替えたりするには、Aura の入った iPod を接続してください。</value>
+  </data>
+  <data name="themes-view-model.pick-assets-folder" xml:space="preserve">
+    <value>生成済みのアセットが入ったフォルダーを選んでください。</value>
+  </data>
+  <data name="themes-view-model.name-the-theme" xml:space="preserve">
+    <value>テーマに名前を付けてください。</value>
+  </data>
+  <data name="themes-view-model.will-install-with-id" xml:space="preserve">
+    <value>id "{0}" でインストールします。</value>
+  </data>
+  <data name="themes-view-model.invalid-id" xml:space="preserve">
+    <value>「{0}」からは正しい id を作れません。英数字と空白を使ってください。</value>
+  </data>
+  <data name="themes-view-model.built-in-name" xml:space="preserve">
+    <value>Aura（ファームウェア内蔵）</value>
+  </data>
+  <data name="themes-view-model.no-themes-installed" xml:space="preserve">
+    <value>この iPod には、まだテーマがインストールされていません。</value>
+  </data>
+  <data name="themes-view-model.cannot-activate" xml:space="preserve">
+    <value>「{0}」を有効にできません: {1}</value>
+  </data>
+  <data name="themes-view-model.cannot-remove" xml:space="preserve">
+    <value>iPod から「{0}」を外せませんでした。</value>
+  </data>
   <data name="themes-view-model.se-instalo-installed-name-activalo-para" xml:space="preserve">
     <value>「{0}」をインストールしました。iPod で見るには有効にしてください。</value>
   </data>

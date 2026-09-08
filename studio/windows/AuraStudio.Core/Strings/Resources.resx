@@ -2436,6 +2436,102 @@
   <data name="themes-view-model.se-guardo-copia-path" xml:space="preserve">
     <value>Se guardó la copia en {0}</value>
   </data>
+  <data name="theme-validation.missing-fonts.one" xml:space="preserve">
+    <value>le falta {0} fuente: {1}.</value>
+  </data>
+  <data name="theme-validation.missing-fonts.other" xml:space="preserve">
+    <value>le faltan {0} fuentes: {1}.</value>
+  </data>
+  <data name="theme-validation.missing-masks.one" xml:space="preserve">
+    <value>tiene {0} máscara de ícono y hacen falta {1}.</value>
+  </data>
+  <data name="theme-validation.missing-masks.other" xml:space="preserve">
+    <value>tiene {0} máscaras de ícono y hacen falta {1}.</value>
+  </data>
+  <data name="theme-validation.manifest-missing" xml:space="preserve">
+    <value>le falta el archivo theme.cfg.</value>
+  </data>
+  <data name="theme-validation.manifest-unreadable" xml:space="preserve">
+    <value>su theme.cfg no se puede leer.</value>
+  </data>
+  <data name="theme-validation.invalid-id" xml:space="preserve">
+    <value>su id no es válido: "{0}".</value>
+  </data>
+  <data name="theme-validation.format-unsupported" xml:space="preserve">
+    <value>está hecho para la versión {0} del formato y este firmware entiende hasta la {1}. Actualiza el firmware del iPod.</value>
+  </data>
+  <data name="theme-validation.unknown" xml:space="preserve">
+    <value>no pasó la revisión.</value>
+  </data>
+  <data name="theme-installer.cannot-review" xml:space="preserve">
+    <value>No se pudo revisar el tema.</value>
+  </data>
+  <data name="theme-installer.cannot-install" xml:space="preserve">
+    <value>Ese tema no se puede instalar: {0}</value>
+  </data>
+  <data name="theme-installer.invalid-theme-id" xml:space="preserve">
+    <value>Id de tema inválido: {0}</value>
+  </data>
+  <data name="theme-installer.not-on-ipod" xml:space="preserve">
+    <value>Ese tema ya no está en el iPod.</value>
+  </data>
+  <data name="theme-installer.cannot-read-to-export" xml:space="preserve">
+    <value>Ese tema no se puede leer para exportarlo.</value>
+  </data>
+  <data name="theme-installer.personal-use" xml:space="preserve">
+    <value>"{0}" está marcado como de uso personal: no se puede compartir.</value>
+  </data>
+  <data name="theme-packager.source-font-missing" xml:space="preserve">
+    <value>En la carpeta de assets falta la fuente {0}. Genérala con el design-system del firmware antes de construir el tema.</value>
+  </data>
+  <data name="theme-packager.source-masks-missing" xml:space="preserve">
+    <value>En la carpeta de assets falta icons/masks/, que es donde viven las máscaras de los íconos.</value>
+  </data>
+  <data name="theme-packager.write-failed" xml:space="preserve">
+    <value>No se pudo escribir el tema: {0}</value>
+  </data>
+  <data name="themes-view-model.share-blocked-reason" xml:space="preserve">
+    <value>Este tema usa material de licencia restringida: es para tu uso personal y no se puede compartir.</value>
+  </data>
+  <data name="themes-view-model.state-active" xml:space="preserve">
+    <value>Activo</value>
+  </data>
+  <data name="themes-view-model.state-not-loading" xml:space="preserve">
+    <value>No carga</value>
+  </data>
+  <data name="themes-view-model.device-themes-of" xml:space="preserve">
+    <value>Temas de {0}</value>
+  </data>
+  <data name="themes-view-model.device-no-aura" xml:space="preserve">
+    <value>El iPod detectado no tiene Aura activo: los temas son de Aura.</value>
+  </data>
+  <data name="themes-view-model.connect-ipod" xml:space="preserve">
+    <value>Conecta tu iPod con Aura para ver y cambiar sus temas.</value>
+  </data>
+  <data name="themes-view-model.pick-assets-folder" xml:space="preserve">
+    <value>Elige la carpeta con los assets ya generados.</value>
+  </data>
+  <data name="themes-view-model.name-the-theme" xml:space="preserve">
+    <value>Ponle un nombre al tema.</value>
+  </data>
+  <data name="themes-view-model.will-install-with-id" xml:space="preserve">
+    <value>Se va a instalar con el id "{0}".</value>
+  </data>
+  <data name="themes-view-model.invalid-id" xml:space="preserve">
+    <value>"{0}" no produce un id válido: usa letras, números y espacios.</value>
+  </data>
+  <data name="themes-view-model.built-in-name" xml:space="preserve">
+    <value>Aura (integrado en el firmware)</value>
+  </data>
+  <data name="themes-view-model.no-themes-installed" xml:space="preserve">
+    <value>Todavía no hay temas instalados en este iPod.</value>
+  </data>
+  <data name="themes-view-model.cannot-activate" xml:space="preserve">
+    <value>"{0}" no se puede activar: {1}</value>
+  </data>
+  <data name="themes-view-model.cannot-remove" xml:space="preserve">
+    <value>No se pudo quitar "{0}" del iPod.</value>
+  </data>
   <data name="themes-view-model.se-instalo-installed-name-activalo-para" xml:space="preserve">
     <value>Se instaló "{0}". Actívalo para verlo en el iPod.</value>
   </data>

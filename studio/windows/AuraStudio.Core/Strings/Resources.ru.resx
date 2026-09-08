@@ -2601,6 +2601,108 @@
   <data name="themes-view-model.se-guardo-copia-path" xml:space="preserve">
     <value>Копия сохранена в {0}</value>
   </data>
+  <data name="theme-validation.missing-fonts.one" xml:space="preserve">
+    <value>в нём не хватает {0} шрифта: {1}.</value>
+  </data>
+  <data name="theme-validation.missing-fonts.few" xml:space="preserve">
+    <value>в нём не хватает {0} шрифтов: {1}.</value>
+  </data>
+  <data name="theme-validation.missing-fonts.many" xml:space="preserve">
+    <value>в нём не хватает {0} шрифтов: {1}.</value>
+  </data>
+  <data name="theme-validation.missing-masks.one" xml:space="preserve">
+    <value>в нём {0} маска значка, а нужно {1}.</value>
+  </data>
+  <data name="theme-validation.missing-masks.few" xml:space="preserve">
+    <value>в нём {0} маски значков, а нужно {1}.</value>
+  </data>
+  <data name="theme-validation.missing-masks.many" xml:space="preserve">
+    <value>в нём {0} масок значков, а нужно {1}.</value>
+  </data>
+  <data name="theme-validation.manifest-missing" xml:space="preserve">
+    <value>в нём нет файла theme.cfg.</value>
+  </data>
+  <data name="theme-validation.manifest-unreadable" xml:space="preserve">
+    <value>его theme.cfg не читается.</value>
+  </data>
+  <data name="theme-validation.invalid-id" xml:space="preserve">
+    <value>его id недопустим: "{0}".</value>
+  </data>
+  <data name="theme-validation.format-unsupported" xml:space="preserve">
+    <value>он сделан для версии {0} формата, а эта прошивка понимает до {1}. Обновите прошивку iPod.</value>
+  </data>
+  <data name="theme-validation.unknown" xml:space="preserve">
+    <value>он не прошёл проверку.</value>
+  </data>
+  <data name="theme-installer.cannot-review" xml:space="preserve">
+    <value>Не удалось проверить тему.</value>
+  </data>
+  <data name="theme-installer.cannot-install" xml:space="preserve">
+    <value>Эту тему установить нельзя: {0}</value>
+  </data>
+  <data name="theme-installer.invalid-theme-id" xml:space="preserve">
+    <value>Недопустимый id темы: {0}</value>
+  </data>
+  <data name="theme-installer.not-on-ipod" xml:space="preserve">
+    <value>Этой темы на iPod больше нет.</value>
+  </data>
+  <data name="theme-installer.cannot-read-to-export" xml:space="preserve">
+    <value>Эту тему не удаётся прочитать для экспорта.</value>
+  </data>
+  <data name="theme-installer.personal-use" xml:space="preserve">
+    <value>"{0}" помечена как для личного использования: поделиться ею нельзя.</value>
+  </data>
+  <data name="theme-packager.source-font-missing" xml:space="preserve">
+    <value>В папке ресурсов нет шрифта {0}. Создайте его в design-system прошивки, прежде чем собирать тему.</value>
+  </data>
+  <data name="theme-packager.source-masks-missing" xml:space="preserve">
+    <value>В папке ресурсов нет icons/masks/, а именно там лежат маски значков.</value>
+  </data>
+  <data name="theme-packager.write-failed" xml:space="preserve">
+    <value>Не удалось записать тему: {0}</value>
+  </data>
+  <data name="themes-view-model.share-blocked-reason" xml:space="preserve">
+    <value>Эта тема использует материалы с ограниченной лицензией: она для личного использования, поделиться ею нельзя.</value>
+  </data>
+  <data name="themes-view-model.state-active" xml:space="preserve">
+    <value>Активна</value>
+  </data>
+  <data name="themes-view-model.state-not-loading" xml:space="preserve">
+    <value>Не загружается</value>
+  </data>
+  <data name="themes-view-model.device-themes-of" xml:space="preserve">
+    <value>Темы на {0}</value>
+  </data>
+  <data name="themes-view-model.device-no-aura" xml:space="preserve">
+    <value>На найденном iPod не запущена Aura: темы — это часть Aura.</value>
+  </data>
+  <data name="themes-view-model.connect-ipod" xml:space="preserve">
+    <value>Подключите iPod с Aura, чтобы смотреть и менять его темы.</value>
+  </data>
+  <data name="themes-view-model.pick-assets-folder" xml:space="preserve">
+    <value>Выберите папку с готовыми ресурсами.</value>
+  </data>
+  <data name="themes-view-model.name-the-theme" xml:space="preserve">
+    <value>Дайте теме имя.</value>
+  </data>
+  <data name="themes-view-model.will-install-with-id" xml:space="preserve">
+    <value>Будет установлена с id "{0}".</value>
+  </data>
+  <data name="themes-view-model.invalid-id" xml:space="preserve">
+    <value>Из "{0}" не получается допустимый id: используйте буквы, цифры и пробелы.</value>
+  </data>
+  <data name="themes-view-model.built-in-name" xml:space="preserve">
+    <value>Aura (встроена в прошивку)</value>
+  </data>
+  <data name="themes-view-model.no-themes-installed" xml:space="preserve">
+    <value>На этом iPod пока нет установленных тем.</value>
+  </data>
+  <data name="themes-view-model.cannot-activate" xml:space="preserve">
+    <value>"{0}" не удаётся включить: {1}</value>
+  </data>
+  <data name="themes-view-model.cannot-remove" xml:space="preserve">
+    <value>Не удалось убрать "{0}" с iPod.</value>
+  </data>
   <data name="themes-view-model.se-instalo-installed-name-activalo-para" xml:space="preserve">
     <value>«{0}» установлена. Активируйте её, чтобы увидеть на iPod.</value>
   </data>

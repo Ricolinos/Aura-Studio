@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using AuraStudio.Core.Resources;
 
 
 namespace AuraStudio.Core;
@@ -42,7 +43,7 @@ public static class ThemeInstaller
                         new InstalledTheme(id, success.Manifest.Name.Length == 0 ? id : success.Manifest.Name, true),
                     ThemeValidationResult.Failure failure =>
                         new InstalledTheme(id, id, false, Describe(failure.Error)),
-                    _ => new InstalledTheme(id, id, false, "No se pudo revisar el tema.")
+                    _ => new InstalledTheme(id, id, false, Strings.Get("theme-installer.cannot-review"))
                 });
             }
 
@@ -58,9 +59,10 @@ public static class ThemeInstaller
         {
             string reason = result is ThemeValidationResult.Failure failure
                 ? Describe(failure.Error)
-                : "No se pudo revisar el tema.";
+                : Strings.Get("theme-installer.cannot-review");
 
-            throw new ThemeInstallException($"Ese tema no se puede instalar: {reason}");
+            throw new ThemeInstallException(
+                Strings.Format("theme-installer.cannot-install", reason));
         }
 
         string destination = ThemeDirectory(volumeRoot, success.Manifest.Id);
@@ -128,7 +130,8 @@ public static class ThemeInstaller
         Task.Run(() =>
         {
             if (themeId != ThemeActivation.DefaultThemeId && !AuraThemeID.IsValid(themeId))
-                throw new ThemeInstallException($"Id de tema inválido: {themeId}");
+                throw new ThemeInstallException(
+                    Strings.Format("theme-installer.invalid-theme-id", themeId));
 
             string path = Path.Combine(volumeRoot, ToNative(ThemeActivation.AuraConfigRelativePath));
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -151,10 +154,10 @@ public static class ThemeInstaller
 
             string source = ThemeDirectory(volumeRoot, themeId);
             if (!Directory.Exists(source))
-                throw new ThemeInstallException("Ese tema ya no está en el iPod.");
+                throw new ThemeInstallException(Strings.Get("theme-installer.not-on-ipod"));
 
             if (ThemeValidator.Validate(source, null) is not ThemeValidationResult.Success success)
-                throw new ThemeInstallException("Ese tema no se puede leer para exportarlo.");
+                throw new ThemeInstallException(Strings.Get("theme-installer.cannot-read-to-export"));
 
             // ST-003: Studio construye temas, no los distribuye. Un tema hecho
             // con material de licencia restringida no sale de la computadora
@@ -162,7 +165,7 @@ public static class ThemeInstaller
             // de deshabilitar el botón.
             if (!success.Manifest.Redistributable)
                 throw new ThemeInstallException(
-                    $"\"{success.Manifest.Name}\" está marcado como de uso personal: no se puede compartir.");
+                    Strings.Format("theme-installer.personal-use", success.Manifest.Name));
 
             Directory.CreateDirectory(destinationFolder);
 
@@ -189,27 +192,28 @@ public static class ThemeInstaller
     /// </summary>
     private static string Describe(ThemeValidationError error) => error switch
     {
-        ThemeValidationError.ManifestMissing => "le falta el archivo theme.cfg.",
-        ThemeValidationError.ManifestUnreadable => "su theme.cfg no se puede leer.",
-        ThemeValidationError.InvalidId invalid => $"su id no es válido: \"{invalid.Id}\".",
+        ThemeValidationError.ManifestMissing => Strings.Get("theme-validation.manifest-missing"),
+        ThemeValidationError.ManifestUnreadable => Strings.Get("theme-validation.manifest-unreadable"),
+        ThemeValidationError.InvalidId invalid =>
+            Strings.Format("theme-validation.invalid-id", invalid.Id),
         ThemeValidationError.FormatUnsupported format =>
-            $"está hecho para la versión {format.Found} del formato y este firmware entiende hasta la "
-            + $"{format.Supported}. Actualiza el firmware del iPod.",
+            Strings.Format("theme-validation.format-unsupported", format.Found, format.Supported),
         ThemeValidationError.MissingFonts fonts =>
-            $"le faltan {fonts.Roles.Count} fuente(s): {string.Join(", ", fonts.Roles)}.",
+            Strings.Plural("theme-validation.missing-fonts", fonts.Roles.Count,
+                string.Join(", ", fonts.Roles)),
         ThemeValidationError.MissingMasks masks =>
-            $"tiene {masks.Found} máscaras de ícono y hacen falta {masks.Required}.",
-        _ => "no pasó la revisión."
+            Strings.Plural("theme-validation.missing-masks", masks.Found, masks.Required),
+        _ => Strings.Get("theme-validation.unknown")
     };
 
     private static string Describe(ThemePackagerException exception) => exception switch
     {
         ThemePackagerException.SourceFontMissing font =>
-            $"En la carpeta de assets falta la fuente {font.FileName}. "
-            + "Genérala con el design-system del firmware antes de construir el tema.",
+            Strings.Format("theme-packager.source-font-missing", font.FileName),
         ThemePackagerException.SourceMasksMissing =>
-            "En la carpeta de assets falta icons/masks/, que es donde viven las máscaras de los íconos.",
-        ThemePackagerException.WriteFailed failed => $"No se pudo escribir el tema: {failed.Reason}",
+            Strings.Get("theme-packager.source-masks-missing"),
+        ThemePackagerException.WriteFailed failed =>
+            Strings.Format("theme-packager.write-failed", failed.Reason),
         _ => exception.Message
     };
 

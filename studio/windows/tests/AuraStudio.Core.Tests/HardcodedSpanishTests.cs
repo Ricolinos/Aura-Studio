@@ -20,7 +20,7 @@ namespace AuraStudio.Core.Tests;
 ///
 /// <para>Fuera de eso queda una parte del programa que B7a no alcanzó: los
 /// mensajes de excepción, los de registro y los errores que se arman en
-/// servicios y en la capa de plataforma. Son doscientos cuarenta, el extractor no
+/// servicios y en la capa de plataforma. Son doscientos dieciocho, el extractor no
 /// los tomó y meterlos en B7a sería duplicar el bloque sin nada contra qué
 /// comparar el texto. Para que eso no se convierta en una puerta abierta, lo
 /// que se comprueba ahí es que <b>no crezca</b>: hay un número, y subirlo es
@@ -68,7 +68,7 @@ public class HardcodedSpanishTests
     /// una meta: baja cuando alguien mueva alguno, y subirlo hay que escribirlo
     /// a mano y explicar por qué.
     /// </summary>
-    private const int OutsideB7aCeiling = 240;
+    private const int OutsideB7aCeiling = 218;
 
     private static string WindowsRoot()
     {

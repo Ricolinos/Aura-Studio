@@ -33,9 +33,11 @@ public sealed partial class ThemeRow : ObservableObject
 
     public string ShareBlockedReason => CanShare
         ? ""
-        : "Este tema usa material de licencia restringida: es para tu uso personal y no se puede compartir.";
+        : Strings.Get("themes-view-model.share-blocked-reason");
 
-    public string StateText => IsActive ? "Activo" : Loadable ? "" : "No carga";
+    public string StateText => IsActive
+        ? Strings.Get("themes-view-model.state-active")
+        : Loadable ? "" : Strings.Get("themes-view-model.state-not-loading");
 }
 
 public sealed partial class ThemesViewModel : ViewModelBase
@@ -70,9 +72,9 @@ public sealed partial class ThemesViewModel : ViewModelBase
 
     public string DeviceMessage => _session.Device is { } device
         ? device.SupportsAuraContract
-            ? $"Temas de {device.DisplayName}"
-            : "El iPod detectado no tiene Aura activo: los temas son de Aura."
-        : "Conecta tu iPod con Aura para ver y cambiar sus temas.";
+            ? Strings.Format("themes-view-model.device-themes-of", device.DisplayName)
+            : Strings.Get("themes-view-model.device-no-aura")
+        : Strings.Get("themes-view-model.connect-ipod");
 
     /// <summary>El id que va a tener el tema que se está construyendo.</summary>
     public string SuggestedId => ThemeActivation.SuggestId(NewThemeName.Trim());
@@ -98,12 +100,14 @@ public sealed partial class ThemesViewModel : ViewModelBase
     {
         get
         {
-            if (NewThemeSourceFolder.Length == 0) return "Elige la carpeta con los assets ya generados.";
-            if (NewThemeName.Trim().Length == 0) return "Ponle un nombre al tema.";
+            if (NewThemeSourceFolder.Length == 0)
+                return Strings.Get("themes-view-model.pick-assets-folder");
+            if (NewThemeName.Trim().Length == 0)
+                return Strings.Get("themes-view-model.name-the-theme");
 
             return AuraThemeID.IsValid(SuggestedId)
-                ? $"Se va a instalar con el id \"{SuggestedId}\"."
-                : $"\"{NewThemeName.Trim()}\" no produce un id válido: usa letras, números y espacios.";
+                ? Strings.Format("themes-view-model.will-install-with-id", SuggestedId)
+                : Strings.Format("themes-view-model.invalid-id", NewThemeName.Trim());
         }
     }
 
@@ -129,7 +133,7 @@ public sealed partial class ThemesViewModel : ViewModelBase
             Themes.Add(new ThemeRow
             {
                 Id = ThemeActivation.DefaultThemeId,
-                Name = "Aura (integrado en el firmware)",
+                Name = Strings.Get("themes-view-model.built-in-name"),
                 CanShare = false,
                 IsActive = active == ThemeActivation.DefaultThemeId
             });
@@ -148,7 +152,7 @@ public sealed partial class ThemesViewModel : ViewModelBase
             }
 
             StatusMessage = installed.Count == 0
-                ? "Todavía no hay temas instalados en este iPod."
+                ? Strings.Get("themes-view-model.no-themes-installed")
                 : "";
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ThemeInstallException)
@@ -167,7 +171,7 @@ public sealed partial class ThemesViewModel : ViewModelBase
         // fallback y al usuario sin entender por qué no cambió nada.
         if (!row.Loadable)
         {
-            ErrorMessage = $"\"{row.Name}\" no se puede activar: {row.Reason}";
+            ErrorMessage = Strings.Format("themes-view-model.cannot-activate", row.Name, row.Reason);
             return;
         }
 
@@ -197,7 +201,7 @@ public sealed partial class ThemesViewModel : ViewModelBase
             }
             else
             {
-                ErrorMessage = $"No se pudo quitar \"{row.Name}\" del iPod.";
+                ErrorMessage = Strings.Format("themes-view-model.cannot-remove", row.Name);
             }
         });
     }
@@ -223,7 +227,7 @@ public sealed partial class ThemesViewModel : ViewModelBase
 
         if (!AuraThemeID.IsValid(id))
         {
-            ErrorMessage = $"\"{name}\" no produce un id válido: usa letras, números y espacios.";
+            ErrorMessage = Strings.Format("themes-view-model.invalid-id", name);
             return;
         }
 

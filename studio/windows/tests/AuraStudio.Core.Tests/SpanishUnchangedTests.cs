@@ -432,6 +432,33 @@ public class SpanishUnchangedTests
         "sync-view-model.phase-scanning", "sync-view-model.phase-comparing",
         "sync-view-model.phase-copying", "sync-view-model.phase-writing-manifest",
         "sync-view-model.phase-writing-marker",
+
+        // B7d, paso 2: los temas. Los motivos de `theme-validation` son medias
+        // oraciones —«le falta el archivo theme.cfg.»— hechas para ir detrás de
+        // dos puntos, y van a DOS frases distintas: la de instalar y la de
+        // activar. Por eso siguen siendo motivos y no frases enteras; lo que
+        // cambia es que la parte que los envuelve también sale del recurso.
+        "theme-validation.manifest-missing", "theme-validation.manifest-unreadable",
+        "theme-validation.invalid-id", "theme-validation.format-unsupported",
+        "theme-validation.unknown",
+        "theme-installer.cannot-review", "theme-installer.cannot-install",
+        "theme-installer.invalid-theme-id", "theme-installer.not-on-ipod",
+        "theme-installer.cannot-read-to-export", "theme-installer.personal-use",
+        "theme-packager.source-font-missing", "theme-packager.source-masks-missing",
+        "theme-packager.write-failed",
+        "themes-view-model.share-blocked-reason", "themes-view-model.state-active",
+        "themes-view-model.state-not-loading", "themes-view-model.device-themes-of",
+        "themes-view-model.device-no-aura", "themes-view-model.connect-ipod",
+        "themes-view-model.pick-assets-folder", "themes-view-model.name-the-theme",
+        "themes-view-model.will-install-with-id", "themes-view-model.invalid-id",
+        "themes-view-model.built-in-name", "themes-view-model.no-themes-installed",
+        "themes-view-model.cannot-activate", "themes-view-model.cannot-remove",
+
+        // Otro «(s)» que no era plural de nadie: «le faltan {0} fuente(s)».
+        // Y el conteo de máscaras, que además lleva dos números en la misma
+        // frase — el que tiene y el que hacen falta.
+        "theme-validation.missing-fonts.one", "theme-validation.missing-fonts.other",
+        "theme-validation.missing-masks.one", "theme-validation.missing-masks.other",
     ];
 
     /// <summary>

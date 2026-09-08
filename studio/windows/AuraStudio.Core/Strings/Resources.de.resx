@@ -2436,6 +2436,102 @@
   <data name="themes-view-model.se-guardo-copia-path" xml:space="preserve">
     <value>Die Kopie wurde unter {0} gespeichert</value>
   </data>
+  <data name="theme-validation.missing-fonts.one" xml:space="preserve">
+    <value>ihm fehlt {0} Schrift: {1}.</value>
+  </data>
+  <data name="theme-validation.missing-fonts.other" xml:space="preserve">
+    <value>ihm fehlen {0} Schriften: {1}.</value>
+  </data>
+  <data name="theme-validation.missing-masks.one" xml:space="preserve">
+    <value>es hat {0} Symbolmaske und es werden {1} gebraucht.</value>
+  </data>
+  <data name="theme-validation.missing-masks.other" xml:space="preserve">
+    <value>es hat {0} Symbolmasken und es werden {1} gebraucht.</value>
+  </data>
+  <data name="theme-validation.manifest-missing" xml:space="preserve">
+    <value>ihm fehlt die Datei theme.cfg.</value>
+  </data>
+  <data name="theme-validation.manifest-unreadable" xml:space="preserve">
+    <value>seine theme.cfg lässt sich nicht lesen.</value>
+  </data>
+  <data name="theme-validation.invalid-id" xml:space="preserve">
+    <value>seine id ist nicht gültig: "{0}".</value>
+  </data>
+  <data name="theme-validation.format-unsupported" xml:space="preserve">
+    <value>es ist für Version {0} des Formats gemacht und diese Firmware versteht bis {1}. Aktualisiere die Firmware des iPod.</value>
+  </data>
+  <data name="theme-validation.unknown" xml:space="preserve">
+    <value>es hat die Prüfung nicht bestanden.</value>
+  </data>
+  <data name="theme-installer.cannot-review" xml:space="preserve">
+    <value>Das Design konnte nicht geprüft werden.</value>
+  </data>
+  <data name="theme-installer.cannot-install" xml:space="preserve">
+    <value>Dieses Design lässt sich nicht installieren: {0}</value>
+  </data>
+  <data name="theme-installer.invalid-theme-id" xml:space="preserve">
+    <value>Ungültige Design-ID: {0}</value>
+  </data>
+  <data name="theme-installer.not-on-ipod" xml:space="preserve">
+    <value>Dieses Design ist nicht mehr auf dem iPod.</value>
+  </data>
+  <data name="theme-installer.cannot-read-to-export" xml:space="preserve">
+    <value>Dieses Design lässt sich nicht zum Exportieren lesen.</value>
+  </data>
+  <data name="theme-installer.personal-use" xml:space="preserve">
+    <value>"{0}" ist als privater Gebrauch gekennzeichnet: Es kann nicht geteilt werden.</value>
+  </data>
+  <data name="theme-packager.source-font-missing" xml:space="preserve">
+    <value>Im Assets-Ordner fehlt die Schrift {0}. Erzeuge sie mit dem Design-System der Firmware, bevor du das Design baust.</value>
+  </data>
+  <data name="theme-packager.source-masks-missing" xml:space="preserve">
+    <value>Im Assets-Ordner fehlt icons/masks/, und dort liegen die Symbolmasken.</value>
+  </data>
+  <data name="theme-packager.write-failed" xml:space="preserve">
+    <value>Das Design konnte nicht geschrieben werden: {0}</value>
+  </data>
+  <data name="themes-view-model.share-blocked-reason" xml:space="preserve">
+    <value>Dieses Design verwendet Material mit eingeschränkter Lizenz: Es ist für deinen privaten Gebrauch und kann nicht geteilt werden.</value>
+  </data>
+  <data name="themes-view-model.state-active" xml:space="preserve">
+    <value>Aktiv</value>
+  </data>
+  <data name="themes-view-model.state-not-loading" xml:space="preserve">
+    <value>Lädt nicht</value>
+  </data>
+  <data name="themes-view-model.device-themes-of" xml:space="preserve">
+    <value>Designs von {0}</value>
+  </data>
+  <data name="themes-view-model.device-no-aura" xml:space="preserve">
+    <value>Auf dem erkannten iPod läuft Aura nicht: Designs gehören zu Aura.</value>
+  </data>
+  <data name="themes-view-model.connect-ipod" xml:space="preserve">
+    <value>Schließe deinen iPod mit Aura an, um seine Designs zu sehen und zu wechseln.</value>
+  </data>
+  <data name="themes-view-model.pick-assets-folder" xml:space="preserve">
+    <value>Wähle den Ordner mit den erzeugten Assets.</value>
+  </data>
+  <data name="themes-view-model.name-the-theme" xml:space="preserve">
+    <value>Gib dem Design einen Namen.</value>
+  </data>
+  <data name="themes-view-model.will-install-with-id" xml:space="preserve">
+    <value>Es wird mit der id "{0}" installiert.</value>
+  </data>
+  <data name="themes-view-model.invalid-id" xml:space="preserve">
+    <value>"{0}" ergibt keine gültige id: Verwende Buchstaben, Zahlen und Leerzeichen.</value>
+  </data>
+  <data name="themes-view-model.built-in-name" xml:space="preserve">
+    <value>Aura (in der Firmware eingebaut)</value>
+  </data>
+  <data name="themes-view-model.no-themes-installed" xml:space="preserve">
+    <value>Auf diesem iPod sind noch keine Designs installiert.</value>
+  </data>
+  <data name="themes-view-model.cannot-activate" xml:space="preserve">
+    <value>"{0}" lässt sich nicht aktivieren: {1}</value>
+  </data>
+  <data name="themes-view-model.cannot-remove" xml:space="preserve">
+    <value>"{0}" konnte nicht vom iPod entfernt werden.</value>
+  </data>
   <data name="themes-view-model.se-instalo-installed-name-activalo-para" xml:space="preserve">
     <value>„{0}“ ist installiert. Aktiviere es, um es auf dem iPod zu sehen.</value>
   </data>
