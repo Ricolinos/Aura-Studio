@@ -111,7 +111,7 @@ public static class CrashReporter
             {
                 XamlRoot = root.XamlRoot,
                 Title = Strings.Get("crash-reporter.algo-salio-mal"),
-                Content = $"Aura Studio encontró un error inesperado y lo anotó en:\n{LogPath}\n\n{message}",
+                Content = Strings.Format("crash-reporter.unexpected-error-body", LogPath, message),
                 CloseButtonText = Strings.Get("crash-reporter.entendido")
             };
 

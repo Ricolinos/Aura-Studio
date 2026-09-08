@@ -80,7 +80,8 @@ public static class ThemeInstaller
         string volumeRoot, string sourceFolder, AuraThemeManifest manifest)
     {
         if (!AuraThemeID.IsValid(manifest.Id))
-            throw new ThemeInstallException($"Ese nombre no produce un id de tema válido: \"{manifest.Id}\".");
+            throw new ThemeInstallException(
+                Strings.Format("theme-installer.name-yields-invalid-id", manifest.Id));
 
         string temporary = Path.Combine(Path.GetTempPath(), "AuraThemeBuild-" + Guid.NewGuid().ToString("N"));
 

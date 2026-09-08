@@ -2022,6 +2022,15 @@
   <data name="crash-reporter.entendido" xml:space="preserve">
     <value>Compris</value>
   </data>
+  <data name="crash-reporter.unexpected-error-body" xml:space="preserve">
+    <value>Aura Studio a rencontré une erreur inattendue et l'a notée dans :
+{0}
+
+{1}</value>
+  </data>
+  <data name="theme-installer.name-yields-invalid-id" xml:space="preserve">
+    <value>Ce nom ne produit pas d'identifiant de thème valide : « {0} ».</value>
+  </data>
   <data name="device-list-page.buscar-actualizaciones" xml:space="preserve">
     <value>Rechercher des mises à jour</value>
   </data>

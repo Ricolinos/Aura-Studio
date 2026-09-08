@@ -1800,6 +1800,15 @@
   <data name="crash-reporter.entendido" xml:space="preserve">
     <value>了解</value>
   </data>
+  <data name="crash-reporter.unexpected-error-body" xml:space="preserve">
+    <value>Aura Studio で予期しないエラーが発生し、次の場所に記録しました:
+{0}
+
+{1}</value>
+  </data>
+  <data name="theme-installer.name-yields-invalid-id" xml:space="preserve">
+    <value>その名前では有効なテーマ ID になりません: 「{0}」。</value>
+  </data>
   <data name="device-general-view.instalar-actualizacion" xml:space="preserve">
     <value>更新をインストール</value>
   </data>

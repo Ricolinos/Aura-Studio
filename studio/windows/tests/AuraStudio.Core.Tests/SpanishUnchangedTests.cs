@@ -680,6 +680,14 @@ public class SpanishUnchangedTests
         "library-persistence.catalog-unreadable",
         "library-persistence.catalog-unopenable",
 
+        // Las dos que la barrida no veía por tener una barra invertida adentro
+        // (un salto de línea cuenta como barra invertida y el filtro de rutas
+        // las descartaba). El cuerpo del diálogo de "algo salió mal" —cuyo
+        // título y botón YA estaban en recursos— y el id de tema inválido, que
+        // viaja como ThemeInstallException.Message hasta ErrorMessage.
+        "crash-reporter.unexpected-error-body",
+        "theme-installer.name-yields-invalid-id",
+
         // Y los últimos que la barrida señaló como frases enteras: la franja de
         // actualización de la app, el resumen de "Completar en línea" (con dos
         // «(s)» en dos ramas) y tres fallos que el usuario lee tal cual.

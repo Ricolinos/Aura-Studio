@@ -2010,6 +2010,15 @@
   <data name="crash-reporter.entendido" xml:space="preserve">
     <value>Понятно</value>
   </data>
+  <data name="crash-reporter.unexpected-error-body" xml:space="preserve">
+    <value>Aura Studio столкнулась с непредвиденной ошибкой и записала её в:
+{0}
+
+{1}</value>
+  </data>
+  <data name="theme-installer.name-yields-invalid-id" xml:space="preserve">
+    <value>Это имя не даёт допустимый идентификатор темы: «{0}».</value>
+  </data>
   <data name="device-general-view.instalar-actualizacion" xml:space="preserve">
     <value>Установить обновление</value>
   </data>

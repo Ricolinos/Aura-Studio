@@ -36,12 +36,26 @@ for my $path (@files) {
 
         while ($line =~ /"((?:[^"\\]|\\.)*)"/g) {
             my $value = $1;
-            next unless $value =~ /\s/;                      # una sola palabra: no es una frase
-            next if $value =~ m{^[a-z0-9.\-]+$};             # clave de recurso
-            next if $value =~ m{[\\/]};                      # ruta
-            next if $value =~ /^\s*$/;
-            next if $value =~ /^[A-Z][A-Za-z]+ [A-Z][A-Za-z]+$/ && $value !~ /[áéíóúñ]/;  # "Aura Studio"
-            next unless $value =~ /[a-záéíóúñ]{3,}\s+[a-záéíóúñ]{2,}/i;  # dos palabras de verdad
+
+            # Las secuencias de escape se quitan ANTES de decidir si esto parece
+            # una ruta. Un "\n" ES una barra invertida, así que la versión
+            # anterior de este bloque descartaba por «ruta» toda frase con un
+            # salto de línea adentro — o sea todos los textos de varios
+            # renglones, que son justamente los de los diálogos.
+            #
+            # Así se le escapó el aviso de «algo salió mal» del reportador de
+            # caídas: un ContentDialog, en pantalla, en español, con el título y
+            # el botón de al lado ya sacados a recurso. Lo encontró una lectura
+            # a mano, no esta herramienta, y por eso el agujero se tapa acá
+            # antes de que la barrida sirva de trinquete.
+            (my $bare = $value) =~ s/\\[nrt0"'\\]//g;
+
+            next unless $bare =~ /\s/;                       # una sola palabra: no es una frase
+            next if $bare =~ m{^[a-z0-9.\-]+$};              # clave de recurso
+            next if $bare =~ m{[\\/]};                       # ruta
+            next if $bare =~ /^\s*$/;
+            next if $bare =~ /^[A-Z][A-Za-z]+ [A-Z][A-Za-z]+$/ && $bare !~ /[áéíóúñ]/;  # "Aura Studio"
+            next unless $bare =~ /[a-záéíóúñ]{3,}\s+[a-záéíóúñ]{2,}/i;  # dos palabras de verdad
             push @hits, sprintf("%4d  %s", $., $value);
         }
     }
