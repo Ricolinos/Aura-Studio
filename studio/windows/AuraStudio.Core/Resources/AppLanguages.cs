@@ -97,8 +97,40 @@ public static class AppLanguages
         new("ru", "Русский", Built: true, Offered: true, ReviewedByHumans: false),
     ];
 
-    /// <summary>Lo que el selector puede ofrecer hoy.</summary>
-    public static IReadOnlyList<AppLanguage> Available => [.. All.Where(language => language.Offered)];
+    /// <summary>
+    /// Si <b>esta compilación</b> ofrece los idiomas que nadie revisó. Se
+    /// decide con <c>-p:OfferMachineTranslations=false</c> y queda grabado en el
+    /// ensamblado; ver <see cref="OfferMachineTranslationsAttribute"/>.
+    ///
+    /// <para>Si el atributo faltara —un ensamblado viejo, una compilación a
+    /// mano— vale <c>true</c>, que es el estado de <c>main</c>. La otra opción
+    /// sería apagarlos ante la duda, y eso haría que un error de compilación se
+    /// vea igual que una decisión: la app saldría con dos idiomas y nadie
+    /// sabría si alguien lo pidió.</para>
+    /// </summary>
+    public static bool OffersMachineTranslations { get; } =
+        typeof(AppLanguages).Assembly
+            .GetCustomAttributes(typeof(OfferMachineTranslationsAttribute), inherit: false)
+            .OfType<OfferMachineTranslationsAttribute>()
+            .FirstOrDefault()?.Offered ?? true;
+
+    /// <summary>
+    /// La regla, aparte de la tabla y aparte de la compilación: de unos idiomas
+    /// dados, cuáles ofrece un paquete que ofrece —o no— traducción automática.
+    ///
+    /// <para>Está separada a propósito. La decisión entra en tiempo de
+    /// compilación, así que un binario solo puede ejercitar el camino con el que
+    /// se compiló; y el camino que no se prueba es justamente el que se va a
+    /// usar una sola vez, el día del release, sin red. Siendo una función pura
+    /// se prueba con los dos valores en la misma corrida.</para>
+    /// </summary>
+    public static IReadOnlyList<AppLanguage> Offering(
+        IEnumerable<AppLanguage> languages, bool offerMachineTranslations) =>
+        [.. languages.Where(language =>
+            language.Offered && (offerMachineTranslations || language.ReviewedByHumans))];
+
+    /// <summary>Lo que el selector puede ofrecer hoy, en esta compilación.</summary>
+    public static IReadOnlyList<AppLanguage> Available => Offering(All, OffersMachineTranslations);
 
     /// <summary>
     /// Los idiomas cuyos textos existen y hay que revisar.
@@ -136,16 +168,23 @@ public static class AppLanguages
     /// <para>Compara por el idioma y no por el país: quien tiene Windows en
     /// <c>en-GB</c> quiere el inglés, no el español porque no exista una
     /// entrada <c>en-GB</c>.</para>
+    ///
+    /// <para>Busca sobre <see cref="Available"/> y no sobre <see cref="All"/>:
+    /// si esta compilación no ofrece traducción automática, arrancar en alemán
+    /// porque el sistema está en alemán sería peor que no ofrecerlo — el usuario
+    /// tendría la app en un idioma que el selector ni siquiera lista, y ninguna
+    /// forma de entender qué pasó.</para>
     /// </summary>
     public static AppLanguage? For(CultureInfo culture)
     {
+        IReadOnlyList<AppLanguage> available = Available;
+
         for (CultureInfo? candidate = culture;
              candidate is not null && candidate != CultureInfo.InvariantCulture;
              candidate = candidate.Parent)
         {
-            AppLanguage? found = All.FirstOrDefault(
-                language => language.Offered
-                            && string.Equals(language.Culture, candidate.Name, StringComparison.OrdinalIgnoreCase));
+            AppLanguage? found = available.FirstOrDefault(
+                language => string.Equals(language.Culture, candidate.Name, StringComparison.OrdinalIgnoreCase));
 
             if (found is not null) return found;
         }

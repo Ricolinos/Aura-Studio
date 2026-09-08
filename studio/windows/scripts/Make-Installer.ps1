@@ -35,7 +35,22 @@ param(
     [ValidateSet('arm64', 'x64', 'both')]
     [string] $Architecture = 'arm64',
 
-    [switch] $SkipPublish
+    [switch] $SkipPublish,
+
+    # ST-247: si el paquete OFRECE los idiomas que nadie revisó (alemán,
+    # francés, japonés, ruso). Por omisión sí, que es el estado de main.
+    #
+    # Con $false el selector queda en español e inglés, y los cinco satélites se
+    # generan y viajan igual: apagar el ofrecimiento no saca archivos del
+    # paquete, o volver a encenderlo dejaría de ser una decisión de una línea.
+    # Existe para que el release 0.4.0 —un solo commit para las dos
+    # plataformas— pueda salir con dos idiomas sin revertir nada.
+    #
+    # Es [bool] y no [switch] a propósito: se invoca con
+    # -OfferMachineTranslations $false, o sea escribiendo el valor, y no
+    # omitiendo un modificador. Lo que se decide acá se ve en la pantalla de un
+    # usuario; que cueste una palabra más es el punto.
+    [bool] $OfferMachineTranslations = $true
 )
 
 $ErrorActionPreference = 'Stop'
@@ -109,12 +124,24 @@ function Build-Installer([string] $arch) {
     # --- Publicación --------------------------------------------------------
 
     if ($SkipPublish) {
+        # -OfferMachineTranslations entra por el publish y por ningún otro lado.
+        # Combinarlo con -SkipPublish empaquetaría el árbol tal como quedó de la
+        # compilación anterior mientras el guion informa otra cosa: el
+        # instalador saldría ofreciendo seis idiomas y el log diría dos, o al
+        # revés. Se detiene antes de mentir.
+        if (-not $OfferMachineTranslations) {
+            throw ("[$arch] -OfferMachineTranslations `$false no se puede combinar con -SkipPublish: " +
+                   "la decisión se graba al publicar, así que se empaquetaría lo que ya estaba compilado " +
+                   "y el paquete no coincidiría con lo que este guion informa.")
+        }
+
         Write-Host "[$arch] Se omite el publish (-SkipPublish): se empaqueta lo que ya está en el árbol."
     } else {
         Write-Host "[$arch] Publicando autocontenido..."
         if (Test-Path $publishDir) { Remove-Item $publishDir -Recurse -Force }
         & dotnet publish $project -c Release -r $perfil.Rid --self-contained true `
-            -p:Platform=$($perfil.Platform) -p:WindowsAppSDKSelfContained=true | Out-Host
+            -p:Platform=$($perfil.Platform) -p:WindowsAppSDKSelfContained=true `
+            -p:OfferMachineTranslations=$($OfferMachineTranslations.ToString().ToLowerInvariant()) | Out-Host
         if ($LASTEXITCODE -ne 0) { throw "[$arch] El publish falló (código $LASTEXITCODE)." }
     }
 
@@ -180,6 +207,30 @@ function Build-Installer([string] $arch) {
     }
 
     Write-Host ("[$arch] Idiomas incluidos: es (dentro del ensamblado) + " + ($culturasSatelite -join ', '))
+
+    # Y cuáles de esos SE OFRECEN, que desde ST-247 ya no es la misma lista.
+    # Se imprimen las dos justamente porque difieren: quien lea este log tiene
+    # que poder ver de un vistazo que faltan cuatro en una y no en la otra, y
+    # que eso fue una decisión y no un satélite perdido.
+    #
+    # Como arriba: la partición está escrita a mano porque PowerShell no lee la
+    # tabla de C#, y una prueba (LanguageSelectorTests) la ata a
+    # AppLanguages.All por ReviewedByHumans.
+    $culturasRevisadas = @('es', 'en')
+    $culturasSinRevisar = @('de', 'fr', 'ja', 'ru')
+
+    $culturasOfrecidas = if ($OfferMachineTranslations) {
+        $culturasRevisadas + $culturasSinRevisar
+    } else {
+        $culturasRevisadas
+    }
+
+    Write-Host ("[$arch] Idiomas ofrecidos: " + ($culturasOfrecidas -join ', '))
+
+    if (-not $OfferMachineTranslations) {
+        Write-Host ("[$arch] Traducción automática NO ofrecida (-OfferMachineTranslations `$false): " +
+                    ($culturasSinRevisar -join ', ') + " viajan en el paquete y el selector no los muestra.")
+    }
 
     # Los avisos de licencia de las tres familias viajan con sus binarios: es
     # como se cumple el §3 de la GPL v2 (ver installer\AVISO-LICENCIAS.txt).

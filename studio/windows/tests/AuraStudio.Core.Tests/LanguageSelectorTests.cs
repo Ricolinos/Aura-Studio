@@ -23,13 +23,24 @@ namespace AuraStudio.Core.Tests;
 /// </summary>
 public class LanguageSelectorTests
 {
-    /// <summary>Los seis se ofrecen, y ninguno se ofrece sin estar compilado.</summary>
+    /// <summary>
+    /// Los seis se ofrecen, y ninguno se ofrece sin estar compilado.
+    ///
+    /// <para>La lista esperada depende de <c>OfferMachineTranslations</c>, la
+    /// propiedad con la que se compiló esto (ST-247). Sigue siendo exacta en las
+    /// dos posiciones: no se afloja a "los que haya", porque entonces dejaría de
+    /// avisar el día que se caiga uno. Se escribe así para que la compilación
+    /// del release —la que apaga los cuatro— tenga su suite en verde: nueve
+    /// pruebas rojas ahí obligarían a adivinar cuáles son esperadas.</para>
+    /// </summary>
     [Fact]
-    public void ElSelectorMuestraLosSeisIdiomas()
+    public void ElSelectorMuestraLosIdiomasQueEstaCompilacionOfrece()
     {
-        Assert.Equal(
-            ["es", "en", "de", "fr", "ja", "ru"],
-            AppLanguages.Available.Select(language => language.Culture));
+        string[] expected = AppLanguages.OffersMachineTranslations
+            ? ["es", "en", "de", "fr", "ja", "ru"]
+            : ["es", "en"];
+
+        Assert.Equal(expected, AppLanguages.Available.Select(language => language.Culture));
 
         // Ofrecer un idioma que no se compiló es la falla silenciosa que
         // `Built`/`Offered` existen para evitar: el usuario lo elige, no hay
@@ -46,8 +57,13 @@ public class LanguageSelectorTests
     [Fact]
     public void LosCuatroSinRevisarSeOfrecenMarcados()
     {
+        // Si esta compilación no los ofrece, no hay ninguno marcado — y eso
+        // también hay que comprobarlo: un paquete que dice ofrecer dos idiomas
+        // y muestra un "(beta)" en alguna parte tiene un problema peor.
+        string[] expected = AppLanguages.OffersMachineTranslations ? ["de", "fr", "ja", "ru"] : [];
+
         Assert.Equal(
-            ["de", "fr", "ja", "ru"],
+            expected,
             AppLanguages.Available
                 .Where(LanguageBadge.ShowsMark)
                 .Select(language => language.Culture));
