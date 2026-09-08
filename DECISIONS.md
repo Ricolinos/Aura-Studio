@@ -18301,3 +18301,88 @@ y por eso el criterio no cambia.
   no es un faltante: son **74 familias de plural** por la matemática CLDR —el
   japonés tiene una sola forma (74 claves menos), el ruso tres (74 más).
 - `Offered` sigue en `false` para de, fr, ja y ru. **Nada cambia en 0.4.0.**
+
+## ST-247 — Windows: cotejo contra las traducciones de la Mac (A7c) en japonés, alemán, ruso y francés
+
+Encargo del coordinador, autorizado por la Maestra, en `windows/b8`
+sobre `origin/main = 662fbb7` (A7c de la Mac, fast-forward limpio). Solo
+lectura: no se tocó ningún `.resx` ni `claves-compartidas.csv` -- esas
+columnas son de la Mac.
+
+**Método**: `claves-compartidas.csv` trae 51 filas, cada una con
+columnas `texto ja`/`texto de`/`texto ru`/`texto fr` (las traducciones
+de la Mac, agregadas en A7c). Para las 38 filas que sí tienen texto Mac
+en algún idioma (las otras 13 son `solo Windows`, sin texto Mac en
+ningún idioma), se ubicó la clave real de Windows con el MISMO método
+de dos caminos que ya usa `TodaClaveCompartidaExisteEnResourcesResx`:
+(1) la clave del CSV coincide tal cual con una clave de
+`Resources.<idioma>.resx`, o (2) alguna clave entre paréntesis de
+"sitio Windows" coincide. Salida:
+`docs/extraccion-cadenas/cotejo-mac-ja-de-ru-fr.csv` (clave, idioma,
+texto_mac, texto_windows, clave_windows_usada, veredicto, motivo) --
+152 comparaciones (38 filas × 4 idiomas).
+
+### Resultado
+
+| | igual | distinto-manda-Mac | no-aplica |
+|---|---:|---:|---:|
+| Total | 41 | 55 | 56 |
+| ja | 11 | 13 | 14 |
+| de | 12 | 12 | 14 |
+| ru | 9 | 15 | 14 |
+| fr | 9 | 15 | 14 |
+
+Los 56 `no-aplica` son de dos tipos, ninguno un hallazgo nuevo: 36
+(9 claves × 4 idiomas) son filas `solo Mac` -- Mac tiene texto pero
+`sitio Windows` es `—`, no hay nada que cotejar (menú de macOS, avisos
+del flujo de instalación de macOS, etc.); 20 (5 claves × 4 idiomas) son
+filas del diálogo de cambio de idioma (`settings.language-*`) donde
+`claves-compartidas.csv` marca `estado: clave distinta` pero deja
+`sitio Windows` VACÍO -- un hueco real en el propio CSV, no en el
+código: la clave de Windows existe (`app-strings.language-restart-now`
+para "Cerrar ahora", etc., ver filas 40-45 del CSV) pero el CSV no
+enlaza esas dos filas entre sí aunque compartan el mismo texto. Se
+reporta como hallazgo del CSV, no se corrige acá (no se toca el CSV).
+
+**Ningún error evidente de la Mac** en las 55 `distinto-manda-Mac`: en
+todos los casos revisados, ambos textos dicen lo mismo, solo con
+redacción distinta por plataforma (elección de sinónimos, orden de
+cláusulas, con/sin puntos suspensivos ya documentado en el CSV
+original). Dos casos anotados en la columna `motivo` para que la
+Maestra los mire con más cuidado antes de aplicar "manda Mac" mecánicamente:
+
+1. **`done-view.reintentar`, los cuatro idiomas**: Mac es un botón corto
+   ("Reintentar"/"Erneut versuchen"/"Повторить"/"Réessayer"); Windows es
+   una oración que instruye conectar el disco (p. ej. de:
+   "Datenträger anschließen und erneut versuchen"). No es un error de
+   la Mac -- en su propio flujo probablemente la instrucción de conectar
+   el disco vive en otro lado de la pantalla -- pero aplicar el texto
+   corto de la Mac tal cual borraría una instrucción que Windows sí
+   necesita ahí. Vale una revisión puntual, no un cambio automático.
+2. **`background-task-center-indicator.cancelar`, ruso**: Windows usa
+   "Отмена" (sustantivo, el término ya verificado como estándar de
+   Windows en `glosario-veredicto.csv`, B7c); Mac usa "Отменить"
+   (verbo). Ninguno es incorrecto en ruso; se anota por si la Maestra
+   prefiere conservar la convención de botón de Windows en este caso.
+
+### Prueba nueva, en Skip
+
+`TodaClaveIgualTieneElMismoTextoEnLosCuatroIdiomasDeLaMac` en
+`LocalizationDraftTests.cs`: para las 12 filas `estado: igual` de
+`claves-compartidas.csv` (las que ya exigían texto idéntico en español,
+`TodaClaveCompartidaExisteEnResourcesResx`), exige el mismo texto de la
+Mac en ja/de/ru/fr contra `Resources.<idioma>.resx`. De las 48
+comparaciones (12 filas × 4 idiomas), **24 no coinciden hoy**: ja 4, de
+5, ru 8, fr 7. `[Fact(Skip = "...")]` con el conteo exacto en el motivo,
+mismo patrón que el `Skip` de `orphans-confirm-message` en el cierre de
+B7a -- se reactiva cuando el Experto aplique los textos de la Mac a los
+`.resx`.
+
+### Verificación
+
+Solo lectura: 0 archivos `.resx` ni `claves-compartidas.csv`
+modificados (verificado con `git status` antes de comprometer -- ambos
+quedan intocados). `cotejo-mac-ja-de-ru-fr.csv`: 152 filas de datos
+(38 × 4), contador de campos por línea limpio (7 campos en las 153
+líneas), 0 CR bytes (el export de PowerShell escribe CRLF por defecto;
+se convirtió a LF antes de comprometer). Sin builds ni `dotnet test`.

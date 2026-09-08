@@ -369,6 +369,95 @@ public class LocalizationDraftTests
             string.Join("; ", problemas.Take(10)));
     }
 
+    /// <summary>
+    /// Cotejo con las traducciones de la Mac (A7c): toda fila
+    /// <c>"igual"</c> de <c>claves-compartidas.csv</c> -- el texto es
+    /// idéntico entre plataformas en español -- tiene que seguir siendo
+    /// idéntico en japonés, alemán, ruso y francés contra
+    /// <c>Resources.&lt;idioma&gt;.resx</c> de Windows. Mismo mapeo de
+    /// clave que <see cref="TodaClaveCompartidaExisteEnResourcesResx"/>
+    /// (directa, o por el paréntesis de "sitio Windows").
+    ///
+    /// <para><b>Hoy falla a propósito</b> (ST-247, cotejo
+    /// <c>docs/extraccion-cadenas/cotejo-mac-ja-de-ru-fr.csv</c>, 2026-09):
+    /// de las 12 filas "igual" con texto en los cuatro idiomas (48
+    /// comparaciones), 24 no coinciden -- las tradujo cada plataforma por su
+    /// lado a partir del mismo español, y no siempre llegaron a la misma
+    /// frase. Regla de la Maestra: donde difieran manda la Mac, salvo un
+    /// error evidente (ninguno encontrado en este cotejo). <c>Skip</c>
+    /// hasta que el Experto aplique los textos de la Mac a
+    /// <c>Resources.*.resx</c>, como se hizo con
+    /// <c>orphans-confirm-message</c> en el cierre de B7a.</para>
+    /// </summary>
+    [Fact(Skip = "ST-247: 24 de 48 comparaciones difieren de la Mac (ja 4, de 5, ru 8, fr 7) -- " +
+                 "ver docs/extraccion-cadenas/cotejo-mac-ja-de-ru-fr.csv; se reactiva cuando el Experto " +
+                 "aplique los textos de la Mac a Resources.*.resx")]
+    public void TodaClaveIgualTieneElMismoTextoEnLosCuatroIdiomasDeLaMac()
+    {
+        string sharedPath = RequireFile("claves-compartidas.csv");
+        var windowsKeyInParens = new Regex(@"\((?<key>[a-z0-9][\w.-]*)(?:,[^)]*)?\)");
+
+        string[] sharedLines = File.ReadAllLines(sharedPath);
+        int sitioWindowsIndex = SharedCsvColumnIndex(sharedLines[0], "sitio Windows");
+        int estadoIndex = SharedCsvColumnIndex(sharedLines[0], "estado");
+
+        string[] languages = ["ja", "de", "ru", "fr"];
+        Dictionary<string, int> textoLangIndex = languages.ToDictionary(
+            lang => lang,
+            lang => SharedCsvColumnIndex(sharedLines[0], $"texto {lang}"));
+
+        List<(string CsvKey, string SitioWindows, Dictionary<string, string> TextoPorIdioma)> rows = [.. sharedLines
+            .Skip(1)
+            .Where(line => line.Length > 0)
+            .Select(ParseCsvLine)
+            .Where(fields => fields[estadoIndex] == "igual")
+            .Select(fields => (
+                fields[0],
+                fields[sitioWindowsIndex],
+                languages.ToDictionary(lang => lang, lang => fields[textoLangIndex[lang]])))];
+
+        Assert.True(rows.Count > 0);
+
+        List<string> problemas = [];
+        foreach ((string csvKey, string sitioWindows, Dictionary<string, string> textoPorIdioma) in rows)
+        {
+            foreach (string lang in languages)
+            {
+                string textoMac = textoPorIdioma[lang];
+                if (string.IsNullOrEmpty(textoMac)) continue;
+
+                Dictionary<string, string> resx = ReadResw(
+                    Path.Combine(RepoRoot(), "studio", "windows", "AuraStudio.Core", "Strings", $"Resources.{lang}.resx"));
+
+                string? textoWindows = null;
+                if (resx.TryGetValue(csvKey, out string? direct))
+                {
+                    textoWindows = direct;
+                }
+                else
+                {
+                    foreach (Match m in windowsKeyInParens.Matches(sitioWindows))
+                    {
+                        if (resx.TryGetValue(m.Groups["key"].Value, out string? value)) { textoWindows = value; break; }
+                    }
+                }
+
+                if (textoWindows is null)
+                {
+                    problemas.Add($"{csvKey} ({lang}): sin correspondencia en Resources.{lang}.resx");
+                }
+                else if (textoWindows != textoMac)
+                {
+                    problemas.Add($"{csvKey} ({lang}): \"{textoWindows}\" (Windows) vs \"{textoMac}\" (Mac)");
+                }
+            }
+        }
+
+        Assert.True(problemas.Count == 0,
+            "una fila \"igual\" no coincide con el texto de la Mac en algún idioma: " +
+            string.Join("; ", problemas.Take(10)));
+    }
+
     // MARK: - Huecos de interpolación: sin duplicados para la misma expresión
 
     /// <summary>
