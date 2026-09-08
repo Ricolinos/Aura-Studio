@@ -1,3 +1,8 @@
+# Instrucciones locales para asistentes de codigo (Claude Code u otros).
+# Viven solo en la maquina de cada quien; el repositorio es solo el
+# codigo del proyecto.
+CLAUDE.md
+
 # macOS
 .DS_Store
 .AppleDouble
