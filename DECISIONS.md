@@ -16801,3 +16801,403 @@ Los instalables de prueba construidos antes de ese tag llevan el hash del
 commit en el nombre del archivo o en "Acerca de" para distinguirlos.
 
 Nada más cambia en este commit. Sesión maestra.
+
+## ST-248 (parcial) — Windows: retrotraducción ciega de las críticas en alemán (B7c)
+
+Encargo del coordinador. `docs/extraccion-cadenas/retrotraduccion/` es
+nueva en esta rama. **Método, para que quede en la ST**: de `windows/b2`
+se leyó, con `git show windows/b2:<ruta>`, ÚNICAMENTE
+`docs/extraccion-cadenas/retrotraduccion/criticas-de.csv` (178 filas,
+columnas `id,de` con id opaco) y `docs/extraccion-cadenas/glosario-plataforma.csv`
+(33 términos) — **nada más de esa rama**: ni `mapa-criticas.csv` (el mapa
+id → clave), ni `Resources.resx`, ni `Resources.en.resx`, ni ningún resx
+en alemán. La retrotraducción es ciega a propósito: se tradujo el alemán
+al español tal cual, sin buscar ni adivinar el texto original en español.
+
+`criticas-de-retro.csv` (`id,de,retro_es,nota`): las 178 filas
+retrotraducidas. Notas dejadas donde el sentido es ambiguo sin contexto
+(`c002` "Weiter" podría ser "Siguiente", no solo "Continuar"; `c033`
+"Starten" igual), donde el énfasis alemán es más fuerte que su
+equivalente español natural (`c009`), donde cuatro filas (`c147`/`c148`/
+`c149`/`c150`) empiezan en minúscula -- el mismo patrón de fragmento de
+oración concatenada que ya se vio en el borrador de Windows (ST-247) --,
+donde el alemán usa "Volume" en vez de "Datenträger" para lo mismo
+(`c135`), y donde hay texto idéntico repetido bajo ids distintos (`c108`/
+`c109`/`c110`, `c126`/`c127`, `c166`/`c172`) que podría ser el mismo caso
+que Windows resolvió con una sola clave reusada, o tres sitios de verdad
+distintos -- no hay forma de saberlo sin el mapa, que a propósito no se
+abrió.
+
+`glosario-veredicto.csv` (`termino,de,veredicto,fuente`): las 33
+propuestas alemanas de `glosario-plataforma.csv` contra la terminología
+pública de Microsoft en alemán (Configuración/Explorador/Papelera de
+Windows en alemán, y la convención de iTunes/Windows Media Player para
+los términos de reproductor de medios) -- las 33 correctas, dos con
+matiz: "actualización" → "Update" es lo más frecuente en la UI pero
+"Aktualisierung" también es válido y más formal; "tema" → "Design" se
+confirma explícitamente correcto (no "Thema", como ya anotaba la nota del
+propio glosario).
+
+Verificado con `Import-Csv` de PowerShell contra el CSV original antes de
+comprometerlo: las 178 filas de "de" coinciden carácter por carácter con
+`criticas-de.csv` (encontró y corrigió 7 filas donde una coma sin comillas
+partía el campo en dos -- error de comillas al escribir el archivo, no de
+traducción), 0 columnas mal formadas, 0 ids duplicados. Sin builds:
+trabajo de solo texto.
+
+## ST-248 (parcial) — Windows: comillas faltantes encontradas por revisión manual, y método de verificación reforzado
+
+El coordinador comparó `criticas-de-retro.csv` contra el original y
+encontró 3 filas más (`c092`, `c131`, `c133`) con una coma sin
+entrecomillar que partía el campo `retro_es` en dos, además de 2 que mi
+propia revisión posterior encontró (`c140`, `c147`, en la columna
+`nota`) -- el mismo defecto que las 7 ya corregidas antes de comprometer,
+mi verificación de esa vez (contar columnas por nombre con `Import-Csv`)
+no lo atrapaba: un CSV con un campo mal cortado en dos sigue teniendo
+"4 columnas" con nombres correctos, solo que con contenido corrido.
+Corregido, commit aparte.
+
+**Verificación reforzada, usada desde acá en adelante**: un contador de
+campos consciente de comillas que compara el número de campos POR LÍNEA
+contra el esperado (4, o 7 para el glosario) -- esto sí atrapa un campo
+sin entrecomillar, porque una coma de más produce una línea con más
+campos de los que debería tener, sin importar que los nombres de columna
+salgan bien. Corrido contra los dos archivos alemanes ya comprometidos:
+0 filas malas.
+
+## ST-248 (parcial) — Windows: retrotraducción ciega del francés (B7c), y "micrologiciel" vs. terminología oficial de Microsoft
+
+Mismo método que el alemán: de `windows/b2` (`c792de3`) se leyó SOLO
+`docs/extraccion-cadenas/retrotraduccion/criticas-fr.csv` (178 filas,
+mismos ids que el alemán, comprobado) -- nunca `mapa-criticas.csv` ni
+ningún `Resources*.resx`. El francés usa registro formal (`vous`) en
+las 178 filas, a diferencia del alemán (`du`, informal); la
+retrotraducción lo refleja con "usted" en vez de "tú", fiel al origen,
+sin adivinar qué registro usa el español real de la app.
+
+`criticas-fr-retro.csv` (`id,fr,retro_es,nota`): notas donde `c125`/
+`c126`/`c127` son las TRES idénticas en francés (a diferencia del
+alemán, donde `c125` traía un texto distinto) y donde `c149`/`c150`
+NO empiezan en minúscula en francés (a diferencia del mismo par en
+alemán, que sí) -- posible indicio de que el francés recompuso un
+fragmento que el alemán dejó a medias, o de que son construcciones
+distintas en cada idioma; no hay forma de saberlo sin el mapa, que a
+propósito no se abrió.
+
+**Hallazgo de terminología pedido explícitamente por el coordinador**:
+el Experto usó "micrologiciel" para "firmware" en las 16 filas donde
+aparece. Contrastado contra `support.microsoft.com/fr-fr` (páginas
+oficiales de controladores/firmware de Surface, consultadas hoy): el
+término DOMINANTE es **"microprogramme"** -- título de la página
+("Téléchargez les pilotes et le microprogramme pour Surface") y
+repetido varias veces en el cuerpo ("Mettre à jour automatiquement
+Windows, les pilotes et le microprogramme Surface"); "micrologiciel"
+aparece UNA sola vez, en una nota secundaria sobre el ciclo de vida de
+pilotes. Veredicto: la propuesta del Experto no coincide con lo que
+Microsoft usa hoy en este contexto -- recomendado cambiar a
+"microprogramme". Documentado en `glosario-veredicto.csv`
+(`veredicto_fr` = "INCORRECTO / desactualizado -- corregir", con la
+URL y las citas textuales como fuente).
+
+Los otros 32 términos: correctos. Uno con matiz encontrado también por
+búsqueda real (no solo memoria): "Administrador de credenciales" →
+"Gestionnaire d'identification" es una forma corta en uso, pero la
+documentación oficial de `learn.microsoft.com/fr-fr` titula la página
+"Gestionnaire d'**informations** d'identification" (completo) -- no es
+un error, pero no es el título oficial tal cual.
+
+`glosario-veredicto.csv` se AMPLÍA (no se reemplaza): ahora
+`termino,de,veredicto_de,fuente_de,fr,veredicto_fr,fuente_fr`, listo
+para que ruso y japonés agreguen sus propias columnas del mismo modo.
+
+### Verificación
+
+Contador de campos por línea (ver addendum de arriba): 0 filas malas en
+`criticas-fr-retro.csv` (3 encontradas y corregidas ANTES de comprometer
+esta vez: `c131`, `c133`, `c176`) y en `glosario-veredicto.csv` con 7
+columnas. Las 178 filas de "fr" coinciden carácter por carácter contra
+`criticas-fr.csv`; los 33 términos alemanes conservados sin cambio;
+0 ids duplicados. Sin builds: trabajo de solo texto y una búsqueda web
+real para el hallazgo de terminología.
+
+## ST-248 (parcial) — Windows: retrotraducción ciega del ruso (B7c) — tres formas de plural, y dos discrepancias glosario/uso real
+
+Mismo método: de `windows/b2` (`558ebb2`) se leyó SOLO
+`docs/extraccion-cadenas/retrotraduccion/criticas-ru.csv` (194 filas --
+178 bases + 16 de más por la tercera forma de plural rusa) y
+`docs/extraccion-cadenas/glosario-plataforma.csv` (35 términos, ya
+ampliado por el Experto con "volumen" y "ensayar" a partir de los
+hallazgos de las retrotraducciones de alemán/francés) -- nunca
+`mapa-criticas.csv` ni ningún `Resources*.resx`. Registro formal
+("вы"), reflejado como "usted".
+
+**Estructura de plural**: donde alemán/francés traían `<id>` (uno) +
+`<id+1>` (otro), el ruso expande la forma "otro" en `<id+1>.few` (2-4) y
+`<id+1>.many` (5+), y la forma "uno" (`<id>`) queda igual, sin sufijo --
+confirmado en las 16 bases, sin excepciones. Tres cosas que el
+coordinador avisó que NO son error, confirmadas en el texto real:
+"фото"/"видео" son indeclinables (misma forma en cualquier contexto,
+visto en `c011`/`c119`/`c155`); el registro es "вы" en las 194 filas;
+no apareció ningún caso literal de "número después del sustantivo"
+como el ejemplo que se mencionó (`c132` sigue el mismo orden que en los
+demás idiomas).
+
+**Concordancia numeral-sustantivo, verificada fila por fila** (lo que
+pidió el coordinador): correcta en las 16 bases. Dos patrones reales,
+ninguno un error: (1) en contexto NOMINATIVO (sujeto de una oración,
+p. ej. `c018`/`c019`), las tres formas SÍ difieren --
+"файл"/"файла"/"файлов"--, siguiendo la regla estándar (1 = nominativo,
+2-4 = genitivo singular, 5+ = genitivo plural); (2) en contexto
+genitivo-regido por otra palabra (p. ej. `c143`/`c144`, "Копирование N
+файлов…"), la distinción 2-4 vs. 5+ **colapsa** en la misma forma
+genitiva plural -- es una propiedad real del ruso (los casos oblicuos no
+conservan la forma paucal especial de 2-4, que solo existe en
+nominativo/acusativo), no un descuido de quien tradujo. También se ve
+variación real entre concordancia neutra-impersonal ("записано"/
+"скопировано", invariable) y plural ("убраны") para sujetos numerados
+2+ según el verbo -- las dos son gramaticalmente válidas en ruso
+moderno, es variación de estilo entre frases, no un error.
+
+**Dos discrepancias entre `glosario-plataforma.csv` y lo que de verdad
+usó `criticas-ru.csv`**, encontradas al cotejar (nadie las había
+señalado todavía):
+
+1. **canción**: el glosario propone "песня"; el texto real usa
+   "композиция" en las cuatro filas donde aparece (`c147`/`c148`/`c155`/
+   `c177`). Contrastado con Yandex.Music (búsqueda real, no solo
+   memoria): el término dominante en la UI real de un servicio de
+   música ruso es **"трек"** (préstamo del inglés -- "Треки с
+   устройства", "Добавить трек"); "композиция" aparece en textos de
+   ayuda más descriptivos, no en botones cortos; "песня" es más
+   restringido (canción CON voz, no aplica bien a un instrumental).
+   Ninguno es "incorrecto", pero "песня" (lo que propone el glosario)
+   es la peor opción de las tres para este contexto -- recomendado
+   reconciliar el glosario con lo ya usado, no al revés.
+
+2. **ensayar**: el glosario propone "репетиция" (SUSTANTIVO,
+   "un ensayo/una repetición"), que ni siquiera calza gramaticalmente
+   con el patrón de los demás botones de la sección (verbos/imperativos:
+   "Форматировать…", "Убрать"). El texto real usa "Проверить" (verbo,
+   comprobar/verificar) en `c062` ("Проверить без записи") -- coherente
+   con el resto del texto ruso, que prefiere el marco de "verificación"
+   en vez de "simulacro" para este concepto (a diferencia del alemán
+   "proben" y el francés "simuler"). Recomendado que el glosario adopte
+   "Проверить"/"проверка", no "репетиция".
+
+**Nota aparte, no un error**: "unidad" y "disco" comparten la misma
+palabra rusa ("диск") en el glosario -- confirmado que es real (el ruso
+no tiene dos palabras distintas para "drive" y "disk" como el español),
+no una fila mal copiada.
+
+`glosario-veredicto.csv` se amplía con `ru,veredicto_ru,fuente_ru`
+(y de paso incorpora "volumen"/"ensayar", los dos términos que el
+Experto agregó al glosario compartido a partir de los hallazgos de
+alemán/francés).
+
+### Verificación
+
+Contador de campos por línea: encontró y corrigió 2 filas en
+`criticas-ru-retro.csv` (`c003`, `c028`) y 1 en `glosario-veredicto.csv`
+(fila de "Explorador de archivos", 11 campos en vez de 10) ANTES de
+comprometer. Las 194 filas de "ru" coinciden carácter por carácter
+contra `criticas-ru.csv`; los 35 términos de "de"/"fr" conservados sin
+cambio (dos de ellos -- Administrador de credenciales, firmware --
+ya no coinciden con lo que el Experto puso en `glosario-plataforma.csv`
+DESPUÉS de mi verificación de alemán/francés, porque ese archivo se
+actualizó con mis propios hallazgos; no es un error de esta corrida, es
+que mi veredicto es anterior a esa actualización). 0 ids duplicados,
+0 filas perdidas ni de más contra el original. Sin builds: trabajo de
+solo texto y dos búsquedas web reales.
+
+## ST-248 (parcial) — Windows: retrotraducción ciega del japonés (B7c) — sin fila ".one", y dos discrepancias glosario/uso real
+
+Mismo método: de `windows/b2` (`262abab`) se leyó SOLO
+`docs/extraccion-cadenas/retrotraduccion/criticas-ja.csv` (162 filas) y
+`docs/extraccion-cadenas/glosario-plataforma.csv` (35 términos, sin
+cambios desde la corrida del ruso -- diff vacío contra la copia usada
+entonces) -- nunca `mapa-criticas.csv` ni ningún `Resources*.resx`.
+Registro です/ます confirmado en las 162 filas, sin mezcla con formas
+llanas.
+
+**Estructura de plural**: confirmado, no es un descuadre. El japonés no
+flexiona número gramatical, así que cada base de plural pierde
+exactamente la fila que en los demás idiomas llevaba la forma "uno" --
+comprobado exhaustivamente contra el rango completo `c001`-`c178`: faltan
+16 ids (`c018`, `c020`, `c022`, `c035`, `c102`, `c104`, `c106`, `c128`,
+`c137`, `c139`, `c141`, `c143`, `c145`, `c147`, `c149`, `c173`), ni uno
+más ni uno menos que las 16 bases de plural que el ruso expandió con
+`.few`/`.many`. La fila que sobrevive (la que era "otro"/"few"/"many" en
+los demás idiomas) cubre sola cualquier cantidad, con el contador
+pegado al `{0}` (sin espacio: `{0}件`, `{0}曲`) -- confirmado en las 15
+filas donde aparece un contador con número. En al menos dos pares
+(`c111`/`c112` "アルバムを削除", `c117`/`c118` "エピソードを削除",
+`c120`/`c121`, `c122`/`c123`) el japonés usa el MISMO texto para lo que
+en español son formas distintas ("eliminar el álbum" vs. "eliminar los
+álbumes") -- no es duplicado por error, es que ninguna de las dos formas
+necesita contador ni flexión en japonés.
+
+**Contadores, verificados uno por uno contra los que de verdad aparecen
+en el texto** (lo que pidió el coordinador): en las 162 filas solo
+aparecen dos contadores junto a un `{0}`: 件 (genérico, archivos/
+elementos -- 11 filas) y 曲 (canciones -- 1 fila, `c148`). Ninguna fila
+de esta tanda usa 枚 (fotos/carátulas/álbumes), 本 (videos), 人
+(artistas) ni 話 (episodios) con un número real -- no hay ninguna
+cadena en `criticas-ja.csv` que cuente álbumes, fotos, videos, artistas
+ni episodios; el hallazgo es de cobertura, no de error (esas cinco
+categorías simplemente no tienen ninguna cadena crítica en esta tanda).
+Sobre las dos decisiones que sí pidió contrastar con fuente:
+
+1. **件 como contador de archivos/elementos** (frente a 個): confirmado
+   con búsqueda real (2026-09) que 件 es terminología vigente de
+   Microsoft en japonés para este uso -- un hilo de soporte de OneDrive
+   en learn.microsoft.com/ja-jp muestra la interfaz real diciendo
+   "523件のアイテムを保持する". 個 también existe como contador genérico
+   de objetos físicos, pero 件 es lo confirmado en un producto de
+   Microsoft para "elementos/archivos" en una lista, coincide con lo
+   que usa `criticas-ja.csv` en sus 11 filas con contador de archivos.
+
+2. **枚 como contador de álbumes** (frente a 本/つ): no verificable contra
+   `criticas-ja.csv` (no hay ninguna fila que cuente álbumes), pero sí es
+   la convención real del idioma para discos/álbumes físicos (visto en
+   uso real de "2枚組アルバム" = álbum de 2 discos, y en general 枚 es el
+   contador japonés para objetos planos y delgados -- un CD/disco encaja
+   ahí). 本 es el contador correcto para objetos cilíndricos alargados y,
+   coherente con la lista que dio el coordinador, es el que corresponde
+   a VIDEOS, no a álbumes -- usar 枚 para álbumes y 本 para videos es
+   la distinción correcta, no un error si en algún momento aparecen
+   ambos contadores en el mismo archivo.
+
+**「」 y ：/、 de ancho completo**: confirmado correcto en las filas donde
+aparecen (`c026`/`c027`/`c028`/`c069`/`c098` con 「」; `c004`/`c092`/
+`c132`/`c176` con ：; `c132` también con 、de ancho completo entre los
+tres marcadores) -- convención japonesa real, no se marcó como error,
+tal como avisó el coordinador.
+
+**Dos discrepancias entre `glosario-plataforma.csv` y lo que de verdad
+usó `criticas-ja.csv`**, encontradas al cotejar:
+
+1. **Quitar → 取り除く**: el glosario propone 取り除く, pero el texto real
+   no lo usa ni una vez para la distinción "quitar de una lista sin
+   borrar" (frente a 削除, "eliminar" de verdad). Las seis filas de esa
+   distinción (`c124` "アルバムから外す", `c125`-`c127` "お気に入りから
+   外す" ×3, `c129` "…の写真を外す", `c130` "ポスターを外す") usan todas
+   外す (desprender/desenganchar) -- término idiomático real para
+   "quitar/desvincular" en interfaces japonesas, frente a 取り除く, que
+   suena más físico ("quitar una mancha/un obstáculo") y no aparece en
+   el texto. Mismo patrón que el caso ruso (Убрать/Удалить, que sí
+   coincidió) pero en sentido inverso: aquí el glosario no coincide con
+   lo usado. Recomendado que el glosario adopte 外す.
+
+2. **ensayar → リハーサル**: el glosario propone リハーサル (préstamo de
+   "rehearsal", asociado a ensayos musicales/teatrales). Búsqueda real
+   confirma que el término técnico japonés corriente para el concepto de
+   "dry run" es ドライラン (préstamo directo del inglés, ver e-words.jp,
+   diccionario de términos de TI) -- リハーサル no aparece como uso
+   corriente en ese dominio. Ninguno de los dos aparece en
+   `criticas-ja.csv`: el texto real usa 確認 (comprobar/confirmar,
+   `c062` "書き込まずに確認") -- mismo patrón que alemán→francés→ruso: el
+   glosario propone un marco de "ensayo/simulacro" y el texto real
+   prefiere uno de "verificación". Recomendado que el glosario
+   reconsidere リハーサル para este término.
+
+`glosario-veredicto.csv` se amplía con `ja,veredicto_ja,fuente_ja`.
+
+### Verificación
+
+Contador de campos por línea: encontró y corrigió 1 fila en
+`criticas-ja-retro.csv` (`c060`, coma sin entrecomillar en `retro_es`) y
+1 error de transcripción propio en la columna `ja` (`c001`: escribí
+"再認識" donde el original dice "再起動") detectado por la comparación
+carácter por carácter contra `criticas-ja.csv`, ambos corregidos ANTES
+de comprometer. También detecté y corregí una regresión mía en
+`glosario-veredicto.csv` (fila "disco": había simplificado
+`""unidad""` a `"unidad"` al transcribir la columna `fuente_ru` ya
+existente) -- confirmada con una comparación columna por columna contra
+la versión en `HEAD` antes de esta corrida: 0 diferencias en las 10
+columnas de/fr/ru tras la corrección. Las 162 filas de "ja" coinciden
+carácter por carácter contra `criticas-ja.csv` tras corregir `c001`.
+0 ids duplicados, 0 filas perdidas ni de más contra el original (162
+presentes, 16 ausentes según lo esperado, verificado contra el rango
+completo `c001`-`c178`). Sin builds: trabajo de solo texto y cuatro
+búsquedas web reales.
+
+## ST-248 (cierre) — Windows: tabla final de idiomas (B7c), guion del dueño ampliado, y lo que queda para la PARADA del Experto
+
+Encargo de cierre del coordinador, autorizado por la Maestra, en
+`windows/b8` sobre `origin/main = f6dd461` (la rama ya estaba a esa
+altura, sin commits nuevos en `origin/main` que rebasar). Sin build de
+`AuraStudio.App`, sin `dotnet test` de la App -- el Experto publica.
+
+### 1. Tabla final de idiomas -- conteos DEFINITIVOS
+
+Las cifras de esta tabla las da la Maestra/el coordinador desde una
+vista que junta ambos repos y las dos sesiones (Mac/Windows); donde
+pude verificarlas de forma independiente en esta rama, se dice cómo.
+
+| Idioma | Claves totales en `Resources.<idioma>.resx` | Filas en `criticas-<idioma>(-retro).csv` | Veredicto de terminología/glosario |
+|---|---|---|---|
+| es (original) | 634 | -- (no lleva retrotraducción: es el texto de origen) | -- |
+| en | 634 | -- (traducción directa del Experto en B7b, sin retrotraducción ciega) | -- |
+| de | 634 | 178 -- **verificado**: coincide con `criticas-de-retro.csv`, `windows/b8` | limpio -- 3 decisiones de terminología confirmadas contra Microsoft real |
+| fr | 634 | 178 -- **verificado**: coincide con `criticas-fr-retro.csv`, `windows/b8` | limpio, con un cambio real de terminología: "Répéter" → "Simuler" (riesgo de lectura junto a "Repetir", no un error de traducción en sí) + "microprogramme" (no "micrologiciel", desactualizado) + "Gestionnaire d'informations d'identification" completo |
+| ru | 680 (634 + 46: la tercera forma de plural `.few`/`.many` existe en TODAS las bases de plural del recurso completo, no solo en las 16 de la muestra de críticas) | 194 -- **verificado**: coincide con `criticas-ru-retro.csv`, `windows/b8` (178 bases + 16 de más, solo dentro de la muestra) | 1 error de sentido real corregido (потерянный → неиспользуемый: "perdido" sugería pérdida de datos, lo contrario de lo que explica el texto); además "трек" y "Проверить" reconciliados con lo que el texto ya usaba de verdad, no con lo que proponía el glosario |
+| ja | 588 (634 − 46: el japonés no tiene fila ".one" en ninguna base de plural del recurso completo, no solo en las 16 de la muestra) | 162 -- **verificado**: coincide con `criticas-ja-retro.csv`, `windows/b8` (178 bases − 16, solo dentro de la muestra) | limpio -- nombres de menú/Store quedan por confirmar en pantalla (capturas pendientes, ver §3) |
+
+**Glosario compartido**: reportado como 33 términos × 4 idiomas
+(de/fr/ru/ja) con fuente por término. **Sin reconciliar**:
+`glosario-plataforma.csv` en `windows/b2` (`c2bd27c`, la punta al
+cerrar esta corrida) y `glosario-veredicto.csv` en esta rama
+(`windows/b8`) traen **35** términos, no 33 -- verificado contando
+líneas de datos en ambos archivos. No se corrigió unilateralmente
+aquí; queda para que el Experto/la Maestra digan cuáles 2 términos
+salen o si el conteo de 33 viene de otro corte.
+
+**Frases compuestas a medias**: 2 encontradas y arregladas durante
+B7c (un resumen y un aviso de migración) -- ya resueltas del lado del
+Experto, sin acción pendiente en esta rama.
+
+**Triaje de las 392 [candidatas a crítica]**: conteo final pendiente a
+propósito -- lo completa el Experto en su propia PARADA de B7c. Celda
+dejada como "pendiente B7c", no rellenada aquí con un número inventado.
+
+### 2. Guion del dueño, ampliado
+
+Paso 11 de "Guion de verificación interactiva para el dueño"
+(`ESTADO-PORT.md`) reescrito para cubrir, además de lo que ya
+verificaba: (a) "Igual que el sistema" → English Y por separado a uno
+de los otros cuatro, no solo a inglés; (b) la marca "(beta)" junto al
+nombre y su línea explicativa debajo del selector, presente en los
+cuatro no-español/no-inglés y ausente en los otros dos; (c) que con una
+sincronización (o búsqueda de carátulas) en curso, el diálogo de cambio
+de idioma NO ofrece "Cerrar ahora" -- solo "Más tarde"; (d) que las
+categorías de video del catálogo (Película/Serie/Episodio) siguen en
+español pase lo que pase con el idioma de la UI, por ser datos del
+catálogo y no cadenas de interfaz, a propósito.
+
+### 3. Explícito: lo que queda para después de la PARADA de B7c
+
+- Comprobación de los cinco satélites (en/ja/de/ru/fr) en el guion de
+  cierre, con el publish real (`Make-Installer.ps1` corriendo de
+  verdad, no solo leído como texto -- lo que se hizo en esta corrida).
+- Capturas por idioma (barra de estado, Ajustes, menús contextuales) --
+  en **japonés y ruso** específicamente: son los dos idiomas con
+  estructura de plural distinta al resto (`.one` ausente / tercera
+  forma `.few`/`.many`) y los dos con hallazgos de terminología en
+  esta ronda, así que son los que más vale confirmar en pantalla real,
+  no solo en el archivo de texto.
+- Reverificar el tamaño del Setup con los cinco satélites contra el
+  "sin idiomas" de `dist\prueba-5e05ccd\` (pendiente ya anotado en la
+  entrada anterior de B8, sigue sin remedirse).
+
+### Verificación
+
+Sin builds. Lo que pude verificar de forma independiente en esta
+corrida: las cuatro cifras de filas de `criticas-*-retro.csv` (178 de,
+178 fr, 194 ru, 162 ja) contra los archivos ya commiteados en
+`windows/b8`, y el conteo de 35 (no 33) términos en
+`glosario-plataforma.csv`/`glosario-veredicto.csv`. El resto de las
+cifras de la tabla (claves totales por idioma, el error de sentido
+final del ruso, el triaje de las 392) las reporta el coordinador/la
+Maestra desde información que no está en este worktree; no se
+remidieron desde cero. 0 CR bytes, 0 marcadores de conflicto en
+`DECISIONS.md` y `ESTADO-PORT.md` antes de comprometer.

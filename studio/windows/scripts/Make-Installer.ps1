@@ -144,7 +144,7 @@ function Build-Installer([string] $arch) {
 
         $mensaje = "[$arch] El publish está incompleto; falta:`n  " + ($faltan -join "`n  ")
         if ($faltanFirmware) {
-            $mensaje += "`n`nFalta artefacto(s) de firmware -- corré .\scripts\FirmwareFetch.ps1"
+            $mensaje += "`n`nFalta artefacto(s) de firmware -- corre .\scripts\FirmwareFetch.ps1"
             $mensaje += "`n(o .\scripts\FirmwareFetch.ps1 -FromDir <carpeta con artifacts>, sin Release público todavía)"
             $mensaje += "`nantes de volver a empaquetar. Le falta:`n  " + ($faltanFirmware -join "`n  ")
         }
