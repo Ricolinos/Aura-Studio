@@ -272,8 +272,14 @@ public static class AppStrings
     // MARK: - Selector de idioma (ST-247, B7b)
 
     public static string LanguageFollowSystem => Strings.Get("app-strings.language-follow-system");
-    public static string LanguageBetaMark => Strings.Get("app-strings.language-beta-mark");
-    public static string LanguageBetaDetail => Strings.Get("app-strings.language-beta-detail");
+    // La marca "(beta)" no se pide por acá: cada fila del selector la pregunta
+    // a `LanguageBadge`, que es quien decide si le toca. Un `LanguageBetaMark`
+    // suelto acá sería una segunda forma de pedir lo mismo, sin la decisión.
+    //
+    // La línea que la explica sí se pide, porque va fuera de la lista y no
+    // pertenece a ninguna fila — pero la clave se la pregunta a `LanguageBadge`
+    // en vez de repetirla, para que renombrarla sea un solo cambio.
+    public static string LanguageBetaDetail => Strings.Get(LanguageBadge.DetailKey);
     public static string LanguageRestartTitle => Strings.Get("app-strings.language-restart-title");
     public static string LanguageRestartDetail => Strings.Get("app-strings.language-restart-detail");
     public static string LanguageRestartNow => Strings.Get("app-strings.language-restart-now");
