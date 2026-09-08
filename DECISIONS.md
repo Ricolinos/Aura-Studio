@@ -17828,3 +17828,53 @@ estaba. Los argumentos de la línea de comandos llegan como **bytes** aunque el
 archivo se decodifique, así que `"Künstler"` del shell nunca iba a coincidir con
 `"Künstler"` del texto. Es el mismo error que `perl -CSD` sin `-Mutf8`, en otro
 disfraz.
+
+## ST-227 (A7c, cierre 4) — El texto que nace fuera de la app, y el idioma inválido
+
+### El idioma guardado que no existe
+
+En .NET construir una cultura con un nombre inválido no falla: devuelve
+una cultura inventada, y Windows tuvo que blindarlo. Acá
+`AppLanguage(rawValue:)` es una búsqueda de verdad y devuelve `nil`, así
+que el `?? .system` de `AppPreferences` ya alcanzaba. **Pero no tenía
+prueba**, y una línea sin prueba es una línea que alguien "simplifica".
+Ahora se afirma que `"xx"`, `""` y `"es-MX"` no producen ningún caso, que
+la preferencia cae a "seguir al sistema", y que ese camino **borra** la
+clave `AppleLanguages` en vez de escribir un idioma.
+
+### El texto que viene de fuera del proceso: el reparto de la Mac
+
+El hallazgo de Windows --su proceso elevado hablaba el idioma del sistema
+dentro de una pantalla en otro idioma-- no se reproduce igual acá, y vale
+dejar escrito **por qué**, que es más útil que decir "no aplica":
+
+- **No hay un proceso aparte que hable.** `PrivilegedExecutor` corre
+  `do shell script … with administrator privileges` **desde este mismo
+  proceso**; el diálogo de autorización lo dibuja macOS en su idioma, que
+  es lo correcto porque es una pantalla del sistema, no nuestra.
+- **No hay ventana antes de aplicar el idioma.** `AuraStudioApp.init()`
+  escribe `AppleLanguages` antes de que exista `body`, y el sistema lo lee
+  una sola vez al arrancar. Por eso cambiar de idioma pide volver a abrir
+  la app, y por eso no hay hueco donde se dibuje algo sin idioma.
+- **No hay cultura por hilo.** A diferencia de .NET, acá el idioma es del
+  proceso: un `LocalizedError` construido en cualquier actor o cola
+  resuelve contra la misma tabla. La plomería de "pasar el idioma
+  explícitamente" que Windows necesitó no hace falta.
+
+**Lo que sí viene de fuera es la salida de las herramientas** --
+`diskutil`, `dd`, `ipodpatcher`, `ditto` (`InstallerStep.processFailed`) y
+`ffmpeg` (`AudioTranscoder`) --, que habla el idioma del sistema. Los dos
+sitios ya la envuelven en una frase nuestra, y ahora hay prueba de que
+ninguna llega desnuda: la frase nuestra va primero y la salida cruda va
+dentro. La salida cruda **no se tira**: suele ser el único diagnóstico que
+el usuario puede reenviar.
+
+No son de esta clase, aunque lo parezcan, los dos de
+`AppleLosslessEncoder`: ahí lo que se interpola es el
+`error.localizedDescription` de AVFoundation, un framework del sistema
+dentro del proceso, que ya responde en el idioma de la app.
+
+Los dos sitios de herramientas externas están entre los 593 de PANTALLA
+del triaje, así que su frase envolvente se traduce en A7d; lo que este
+cierre fija es la **forma**, para que al traducirla nadie la sustituya por
+la salida cruda a secas.

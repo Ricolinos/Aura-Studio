@@ -112,6 +112,38 @@ final class TextAsControlFlowTests: XCTestCase {
         }
     }
 
+    // MARK: - El texto que viene de fuera del proceso
+
+    /// ST-227 (A7c, cierre 4). Windows encontró que su proceso elevado
+    /// hablaba en el idioma del sistema dentro de una pantalla en otro
+    /// idioma. En la Mac el reparto es distinto y conviene dejarlo
+    /// escrito:
+    ///
+    /// - **No hay proceso aparte que hable.** `PrivilegedExecutor` corre
+    ///   `do shell script … with administrator privileges` **desde este
+    ///   mismo proceso**, y el diálogo de autorización lo dibuja macOS.
+    /// - **No hay ventana antes del idioma.** `AuraStudioApp.init()`
+    ///   aplica `AppleLanguages` antes de que exista `body`, y el sistema
+    ///   lo lee una sola vez al arrancar -- por eso cambiar de idioma
+    ///   pide volver a abrir la app.
+    /// - **No hay cultura por hilo.** A diferencia de .NET, el idioma es
+    ///   del proceso: un `LocalizedError` construido en cualquier actor o
+    ///   cola resuelve contra la misma tabla.
+    ///
+    /// Lo que sí viene de fuera es la SALIDA de las herramientas
+    /// (`diskutil`, `dd`, `ipodpatcher`, `ditto`, `ffmpeg`), que habla el
+    /// idioma del sistema. La regla es envolverla en una frase nuestra;
+    /// esta prueba afirma que ninguna llega desnuda.
+    func testExternalToolOutputIsAlwaysWrappedInOurOwnSentence() {
+        let crudo = "Unable to find disk for disk4s2"
+
+        let instalador = InstallerError.processFailed(exitCode: 1, output: crudo).errorDescription ?? ""
+        XCTAssertTrue(instalador.contains(crudo), "la salida cruda no se pierde: es el único diagnóstico que el usuario puede reenviar")
+        XCTAssertGreaterThan(instalador.count, crudo.count + 10,
+                             "no puede llegar desnuda: va dentro de una frase nuestra -- «\(instalador)»")
+        XCTAssertFalse(instalador.hasPrefix(crudo), "la frase nuestra va primero")
+    }
+
     // MARK: - Fixture
 
     private func item(album: String, artist: String, title: String) -> AuraStudio.LibraryItem {

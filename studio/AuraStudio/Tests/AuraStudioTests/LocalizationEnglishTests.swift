@@ -146,6 +146,35 @@ final class LocalizationEnglishTests: XCTestCase {
                           "la advertencia no está en el catálogo")
     }
 
+    /// ST-227 (A7c, cierre 4): un idioma guardado que no existe cae a
+    /// "seguir al sistema", **nunca a un idioma fantasma**.
+    ///
+    /// En .NET construir una cultura con un nombre inválido no falla:
+    /// devuelve una cultura inventada, y Windows tuvo que blindarlo. En
+    /// Swift `AppLanguage(rawValue:)` es una búsqueda de verdad y
+    /// devuelve `nil`, así que el `?? .system` alcanza -- pero eso es una
+    /// propiedad del código, no una casualidad, y sin prueba el próximo
+    /// que "simplifique" esa línea se la lleva por delante.
+    func testAnUnknownStoredLanguageFallsBackToTheSystemAndNotToAPhantom() throws {
+        XCTAssertNil(AppLanguage(rawValue: "xx"))
+        XCTAssertNil(AppLanguage(rawValue: ""))
+        XCTAssertNil(AppLanguage(rawValue: "es-MX"), "el código guardado es «es», no una etiqueta con región")
+
+        let suite = "AuraLanguageTests-\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { UserDefaults.standard.removePersistentDomain(forName: suite) }
+
+        defaults.set("xx", forKey: "aura.language")
+        let leido = (defaults.string(forKey: "aura.language")
+            .flatMap(AppLanguage.init(rawValue:))) ?? .system
+        XCTAssertEqual(leido, .system)
+        // Y "seguir al sistema" no escribe ningún idioma: borra la clave.
+        AppLanguageApplier.apply(leido, to: defaults)
+        let dominio = UserDefaults.standard.persistentDomain(forName: suite) ?? [:]
+        XCTAssertNil(dominio[AppLanguageApplier.appleLanguagesKey],
+                     "un valor inválido no puede terminar escribiendo un idioma")
+    }
+
     /// ST-227 (A7c, cierre): **el selector ofrece solo español e
     /// inglés.**
     ///
