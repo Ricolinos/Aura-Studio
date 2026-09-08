@@ -17346,3 +17346,24 @@ columnas de idioma coinciden carácter por carácter contra los cuatro
 conteos exactos 28/28/30/26 contra los 28/28/30/26 esperados.
 `glosario-veredicto.csv` no se tocó (sin términos nuevos que agregar).
 0 CR bytes en los cuatro archivos. Sin builds: trabajo de solo texto.
+## ST-247 (addendum) — El defecto de `PreparedMusic` salió en 0.4.0
+
+Para las notas de 0.4.1, y para que no haya que reconstruirlo después.
+
+El fallo silencioso que B7d encontró —una canción que había que convertir se
+sincronizaba con las etiquetas viejas **sin decir nada**— **existía en 0.4.0
+tal como salió**. Está comprobado en el árbol, no deducido: en `f6dd461` están
+las dos mitades que lo forman.
+
+- `LibraryViewModel` decidía si avisar con
+  `result.Reason.Contains("no se pudo")`.
+- `PreparedMusicBuilder` devolvía `"hay que convertirlo y no hay convertidor"`,
+  que no contiene esa frase.
+
+Así que el aviso no salía. Queda **corregido tras `f6dd461`**.
+
+Los instalables de 0.4.0 **no se rehacen por esto**, salvo que el dueño lo
+pida. El alcance real es acotado: hace falta una biblioteca en modo referencia,
+una canción que necesite conversión, y que el convertidor no esté disponible;
+lo que se pierde no son los archivos sino las etiquetas corregidas, que vuelven
+a escribirse en la siguiente sincronización con el arreglo puesto.
