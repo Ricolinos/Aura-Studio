@@ -133,10 +133,10 @@
     <value>Apple のドライバーはインストール済みです。DFU モードの iPod はまだ見えません。</value>
   </data>
   <data name="app-strings.dfu-driver-missing" xml:space="preserve">
-    <value>Windows は iPod を認識していますが、対応するドライバーがありません。Microsoft Store から「Apple デバイス」（または Apple の iTunes）をインストールしてつなぎ直してください。DFU モードの iPod と通信するには、Aura Studio にそのドライバーが必要です。</value>
+    <value>Windows は iPod を認識していますが、対応するドライバーがありません。Microsoft Store から「Appleデバイス」（または Apple の iTunes）をインストールしてつなぎ直してください。DFU モードの iPod と通信するには、Aura Studio にそのドライバーが必要です。</value>
   </data>
   <data name="app-strings.dfu-driver-package-missing" xml:space="preserve">
-    <value>Apple のデバイスドライバーが見つかりません。続ける前に、Microsoft Store から「Apple デバイス」（または iTunes）をインストールしてください。これがないと、Windows は DFU モードの iPod と通信できません。</value>
+    <value>Apple のデバイスドライバーが見つかりません。続ける前に、Microsoft Store から「Appleデバイス」（または iTunes）をインストールしてください。これがないと、Windows は DFU モードの iPod と通信できません。</value>
   </data>
   <data name="app-strings.dfu-driver-ready" xml:space="preserve">
     <value>Windows は「{0}」を認識していて、ドライバーも動作しています。</value>

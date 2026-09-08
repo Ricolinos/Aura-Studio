@@ -21,8 +21,8 @@ c021,{0}件の項目がライブラリから外れます。元のファイルに
 c023,{0}件の項目を削除しますか？
 c024,DFU モード用のドライバー
 c025,Apple のドライバーはインストール済みです。DFU モードの iPod はまだ見えません。
-c026,Windows は iPod を認識していますが、対応するドライバーがありません。Microsoft Store から「Apple デバイス」（または Apple の iTunes）をインストールしてつなぎ直してください。DFU モードの iPod と通信するには、Aura Studio にそのドライバーが必要です。
-c027,Apple のデバイスドライバーが見つかりません。続ける前に、Microsoft Store から「Apple デバイス」（または iTunes）をインストールしてください。これがないと、Windows は DFU モードの iPod と通信できません。
+c026,Windows は iPod を認識していますが、対応するドライバーがありません。Microsoft Store から「Appleデバイス」（または Apple の iTunes）をインストールしてつなぎ直してください。DFU モードの iPod と通信するには、Aura Studio にそのドライバーが必要です。
+c027,Apple のデバイスドライバーが見つかりません。続ける前に、Microsoft Store から「Appleデバイス」（または iTunes）をインストールしてください。これがないと、Windows は DFU モードの iPod と通信できません。
 c028,Windows は「{0}」を認識していて、ドライバーも動作しています。
 c029,ドライバーの状態を確認できませんでした。
 c030,すでに iPod への書き込みが進行中です。別の操作を始める前に、終わるまでお待ちください。
