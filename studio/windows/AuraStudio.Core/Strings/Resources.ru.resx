@@ -411,6 +411,54 @@
   <data name="privileged.request-unreadable" xml:space="preserve">
     <value>Не удалось прочитать запрос.</value>
   </data>
+  <data name="firmware-artifacts.missing-checksums" xml:space="preserve">
+    <value>Нет {0}: файлы прошивки не с чем сверить.</value>
+  </data>
+  <data name="firmware-artifacts.missing-bootloader" xml:space="preserve">
+    <value>Нет {0}: загрузчик записать нельзя.</value>
+  </data>
+  <data name="firmware-artifacts.missing-tool" xml:space="preserve">
+    <value>Нет {0} (и в {1} тоже): без этого инструмента загрузчик записать нельзя.</value>
+  </data>
+  <data name="firmware-artifacts.checksum-mismatch-release" xml:space="preserve">
+    <value>Контрольная сумма {0} не совпадает с указанной в Release (ожидалась {1}, получена {2}): файл повреждён или это не тот файл, который опубликован в Release.</value>
+  </data>
+  <data name="firmware-artifacts.pin-mismatch" xml:space="preserve">
+    <value>{0} не совпадает с хешем, закреплённым в {1} (ожидался {2}, получен {3}): файл изменился, доверять ему нельзя.</value>
+  </data>
+  <data name="firmware-artifacts.not-described" xml:space="preserve">
+    <value>{0} не описывает {1}, поэтому сверить его не с чем.</value>
+  </data>
+  <data name="firmware-artifacts.checksum-mismatch" xml:space="preserve">
+    <value>Контрольная сумма {0} не совпадает (ожидалась {1}, получена {2}): файл повреждён или это не тот файл, который опубликован в Release.</value>
+  </data>
+  <data name="firmware-artifacts.checksums-invalid-line" xml:space="preserve">
+    <value>В checksums.txt есть неверная строка.</value>
+  </data>
+  <data name="firmware-artifacts.checksums-unsafe-path" xml:space="preserve">
+    <value>В checksums.txt есть небезопасный путь.</value>
+  </data>
+  <data name="firmware-artifacts.zip-unsafe-path" xml:space="preserve">
+    <value>В rockbox.zip есть небезопасный путь.</value>
+  </data>
+  <data name="firmware-artifacts.zip-incomplete" xml:space="preserve">
+    <value>rockbox.zip неполный (не хватает кодеков или плагинов): {0}.</value>
+  </data>
+  <data name="firmware-artifacts.zip-invalid" xml:space="preserve">
+    <value>rockbox.zip не является допустимым файлом.</value>
+  </data>
+  <data name="dfu-flash.still-in-dfu" xml:space="preserve">
+    <value>iPod всё ещё в режиме DFU…</value>
+  </data>
+  <data name="dfu-flash.waiting-for-dfu" xml:space="preserve">
+    <value>Ожидание перехода iPod в режим DFU…</value>
+  </data>
+  <data name="dfu-flash.tool-not-started" xml:space="preserve">
+    <value>Не удалось запустить mks5lboot.exe.</value>
+  </data>
+  <data name="dfu-flash.tool-not-found" xml:space="preserve">
+    <value>mks5lboot.exe не найден рядом с Aura Studio.</value>
+  </data>
   <data name="privileged.dry-run-complete" xml:space="preserve">
     <value>Проверка завершена: диск проверен ещё раз, план форматирования верный. Ничего не записано.</value>
   </data>

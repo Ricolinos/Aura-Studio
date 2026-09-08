@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 using AuraStudio.Core;
+using AuraStudio.Core.Resources;
 using AuraStudio.App.Services;
 
 namespace AuraStudio.App.Platform;
@@ -34,7 +35,7 @@ public sealed class DfuFlashRunner : IDfuFlashRunner
         if (!File.Exists(artifacts.Mks5lboot))
         {
             return new DfuScanResult(false, null, false,
-                "No se encontró mks5lboot.exe junto a Aura Studio.", -1);
+                Strings.Get("dfu-flash.tool-not-found"), -1);
         }
 
         ProcessResult result = await RunAsync(artifacts.Mks5lboot, ["--dfuscan"], null, ct);
@@ -101,12 +102,12 @@ public sealed class DfuFlashRunner : IDfuFlashRunner
     public Task<bool> WaitForExitAsync(TimeSpan timeout, IProgress<string>? progress = null,
                                        CancellationToken ct = default)
         => WaitUntilAsync(present: false, timeout,
-                          "El iPod todavía está en modo DFU…", progress, ct);
+                          Strings.Get("dfu-flash.still-in-dfu"), progress, ct);
 
     public Task<bool> WaitForDfuAsync(TimeSpan timeout, IProgress<string>? progress = null,
                                       CancellationToken ct = default)
         => WaitUntilAsync(present: true, timeout,
-                          "Esperando a que el iPod entre en modo DFU…", progress, ct);
+                          Strings.Get("dfu-flash.waiting-for-dfu"), progress, ct);
 
     private async Task<bool> WaitUntilAsync(bool present, TimeSpan timeout, string waitingMessage,
                                             IProgress<string>? progress, CancellationToken ct)
@@ -168,7 +169,7 @@ public sealed class DfuFlashRunner : IDfuFlashRunner
             {
                 if (!process.Start())
                 {
-                    return new ProcessResult(-1, "No se pudo iniciar mks5lboot.exe.");
+                    return new ProcessResult(-1, Strings.Get("dfu-flash.tool-not-started"));
                 }
             }
             catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)

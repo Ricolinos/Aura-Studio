@@ -381,6 +381,54 @@
   <data name="privileged.request-unreadable" xml:space="preserve">
     <value>要求を読み取れませんでした。</value>
   </data>
+  <data name="firmware-artifacts.missing-checksums" xml:space="preserve">
+    <value>{0} がありません。ファームウェアのファイルを検証する手がかりがありません。</value>
+  </data>
+  <data name="firmware-artifacts.missing-bootloader" xml:space="preserve">
+    <value>{0} がありません。ブートローダーを書き込めません。</value>
+  </data>
+  <data name="firmware-artifacts.missing-tool" xml:space="preserve">
+    <value>{0} がありません（{1} にもありません）。このツールがないと、ブートローダーを書き込めません。</value>
+  </data>
+  <data name="firmware-artifacts.checksum-mismatch-release" xml:space="preserve">
+    <value>{0} のチェックサムが Release のものと一致しません（期待値 {1}、計算値 {2}）。ファイルが壊れているか、Release が公開したものではありません。</value>
+  </data>
+  <data name="firmware-artifacts.pin-mismatch" xml:space="preserve">
+    <value>{0} は {1} に固定されたハッシュと一致しません（期待値 {2}、計算値 {3}）。ファイルが変わっているため、信頼できません。</value>
+  </data>
+  <data name="firmware-artifacts.not-described" xml:space="preserve">
+    <value>{0} に {1} の記載がないため、検証する手がかりがありません。</value>
+  </data>
+  <data name="firmware-artifacts.checksum-mismatch" xml:space="preserve">
+    <value>{0} のチェックサムが一致しません（期待値 {1}、計算値 {2}）。ファイルが壊れているか、Release が公開したものではありません。</value>
+  </data>
+  <data name="firmware-artifacts.checksums-invalid-line" xml:space="preserve">
+    <value>checksums.txt に不正な行があります。</value>
+  </data>
+  <data name="firmware-artifacts.checksums-unsafe-path" xml:space="preserve">
+    <value>checksums.txt に安全でないパスがあります。</value>
+  </data>
+  <data name="firmware-artifacts.zip-unsafe-path" xml:space="preserve">
+    <value>rockbox.zip に安全でないパスがあります。</value>
+  </data>
+  <data name="firmware-artifacts.zip-incomplete" xml:space="preserve">
+    <value>rockbox.zip が不完全です（コーデックかプラグインが足りません）: {0}。</value>
+  </data>
+  <data name="firmware-artifacts.zip-invalid" xml:space="preserve">
+    <value>rockbox.zip は正しいファイルではありません。</value>
+  </data>
+  <data name="dfu-flash.still-in-dfu" xml:space="preserve">
+    <value>iPod はまだ DFUモードです…</value>
+  </data>
+  <data name="dfu-flash.waiting-for-dfu" xml:space="preserve">
+    <value>iPod が DFUモードに入るのを待っています…</value>
+  </data>
+  <data name="dfu-flash.tool-not-started" xml:space="preserve">
+    <value>mks5lboot.exe を起動できませんでした。</value>
+  </data>
+  <data name="dfu-flash.tool-not-found" xml:space="preserve">
+    <value>Aura Studio と同じ場所に mks5lboot.exe が見つかりませんでした。</value>
+  </data>
   <data name="privileged.dry-run-complete" xml:space="preserve">
     <value>確認が完了しました。ディスクを再確認し、フォーマットの計画も問題ありません。何も書き込んでいません。</value>
   </data>

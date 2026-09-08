@@ -27,6 +27,7 @@ trinquete de `HardcodedSpanishTests`, y acá queda dicho por qué.
 | trampa 4, `LibraryGrouping` | 369 | los rótulos de los cajones a recursos, `IsUnknownArtist` como campo, y fuera las dos comparaciones contra el rótulo en `AlbumCoverSearch` |
 | paso 2, `InstallerError` | 344 | los 16 errores del asistente a recursos en los seis idiomas |
 | paso 2, familia privilegiada | 324 | los 20 mensajes de `PrivilegedOperation`, `PrivilegedHost` y `PrivilegedRunner`, y el idioma viajando al proceso elevado |
+| paso 2, `FirmwareArtifacts` y `DfuFlashRunner` | 309 | las dos últimas familias críticas: verificación de artefactos y grabado por DFU |
 
 El trinquete baja poco en el segundo paso y eso es correcto: **doce literales
 cambiaron de clase, no de sitio.** Las razones de `PreparedMusic` estaban como

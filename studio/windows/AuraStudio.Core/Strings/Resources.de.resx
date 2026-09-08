@@ -426,6 +426,54 @@
   <data name="privileged.request-unreadable" xml:space="preserve">
     <value>Die Anfrage konnte nicht gelesen werden.</value>
   </data>
+  <data name="firmware-artifacts.missing-checksums" xml:space="preserve">
+    <value>{0} fehlt: Es gibt nichts, womit sich die Firmware-Dateien prüfen ließen.</value>
+  </data>
+  <data name="firmware-artifacts.missing-bootloader" xml:space="preserve">
+    <value>{0} fehlt: Der Bootloader kann nicht geschrieben werden.</value>
+  </data>
+  <data name="firmware-artifacts.missing-tool" xml:space="preserve">
+    <value>{0} fehlt (auch nicht in {1}): Ohne dieses Werkzeug kann der Bootloader nicht geschrieben werden.</value>
+  </data>
+  <data name="firmware-artifacts.checksum-mismatch-release" xml:space="preserve">
+    <value>Die Prüfsumme von {0} stimmt nicht mit der des Releases überein (erwartet {1}, berechnet {2}): Die Datei ist beschädigt oder nicht die, die das Release veröffentlicht hat.</value>
+  </data>
+  <data name="firmware-artifacts.pin-mismatch" xml:space="preserve">
+    <value>{0} stimmt nicht mit dem in {1} festgelegten Hash überein (erwartet {2}, berechnet {3}): Die Datei hat sich geändert und ist nicht vertrauenswürdig.</value>
+  </data>
+  <data name="firmware-artifacts.not-described" xml:space="preserve">
+    <value>{0} beschreibt {1} nicht, also gibt es nichts, womit es sich prüfen ließe.</value>
+  </data>
+  <data name="firmware-artifacts.checksum-mismatch" xml:space="preserve">
+    <value>Die Prüfsumme von {0} stimmt nicht (erwartet {1}, berechnet {2}): Die Datei ist beschädigt oder nicht die, die das Release veröffentlicht hat.</value>
+  </data>
+  <data name="firmware-artifacts.checksums-invalid-line" xml:space="preserve">
+    <value>checksums.txt enthält eine ungültige Zeile.</value>
+  </data>
+  <data name="firmware-artifacts.checksums-unsafe-path" xml:space="preserve">
+    <value>checksums.txt enthält einen unsicheren Pfad.</value>
+  </data>
+  <data name="firmware-artifacts.zip-unsafe-path" xml:space="preserve">
+    <value>rockbox.zip enthält einen unsicheren Pfad.</value>
+  </data>
+  <data name="firmware-artifacts.zip-incomplete" xml:space="preserve">
+    <value>rockbox.zip ist unvollständig (es fehlen Codecs oder Plugins): {0}.</value>
+  </data>
+  <data name="firmware-artifacts.zip-invalid" xml:space="preserve">
+    <value>rockbox.zip ist keine gültige Datei.</value>
+  </data>
+  <data name="dfu-flash.still-in-dfu" xml:space="preserve">
+    <value>Der iPod ist noch im DFU-Modus…</value>
+  </data>
+  <data name="dfu-flash.waiting-for-dfu" xml:space="preserve">
+    <value>Warten, bis der iPod in den DFU-Modus wechselt…</value>
+  </data>
+  <data name="dfu-flash.tool-not-started" xml:space="preserve">
+    <value>mks5lboot.exe konnte nicht gestartet werden.</value>
+  </data>
+  <data name="dfu-flash.tool-not-found" xml:space="preserve">
+    <value>mks5lboot.exe wurde nicht neben Aura Studio gefunden.</value>
+  </data>
   <data name="privileged.dry-run-complete" xml:space="preserve">
     <value>Probelauf abgeschlossen: Der Datenträger wurde erneut geprüft und der Formatierungsplan ist gültig. Es wurde nichts geschrieben.</value>
   </data>

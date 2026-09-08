@@ -317,6 +317,17 @@ public class SpanishUnchangedTests
         "privileged.service-not-installed", "privileged.service-timeout",
         "privileged.authorization-cancelled", "privileged.no-result",
         "privileged.result-unreadable", "privileged.request-failed",
+
+        // B7d, paso 2: la verificación de los artefactos del firmware y el
+        // grabado por DFU. Son las dos últimas familias críticas.
+        "firmware-artifacts.missing-checksums", "firmware-artifacts.missing-bootloader",
+        "firmware-artifacts.missing-tool", "firmware-artifacts.checksum-mismatch-release",
+        "firmware-artifacts.pin-mismatch", "firmware-artifacts.not-described",
+        "firmware-artifacts.checksum-mismatch", "firmware-artifacts.checksums-invalid-line",
+        "firmware-artifacts.checksums-unsafe-path", "firmware-artifacts.zip-unsafe-path",
+        "firmware-artifacts.zip-incomplete", "firmware-artifacts.zip-invalid",
+        "dfu-flash.still-in-dfu", "dfu-flash.waiting-for-dfu",
+        "dfu-flash.tool-not-started", "dfu-flash.tool-not-found",
     ];
 
     /// <summary>

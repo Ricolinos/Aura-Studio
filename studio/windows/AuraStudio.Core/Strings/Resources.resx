@@ -426,6 +426,54 @@
   <data name="privileged.request-unreadable" xml:space="preserve">
     <value>La petición no se pudo leer.</value>
   </data>
+  <data name="firmware-artifacts.missing-checksums" xml:space="preserve">
+    <value>Falta {0}: no hay con qué verificar los archivos del firmware.</value>
+  </data>
+  <data name="firmware-artifacts.missing-bootloader" xml:space="preserve">
+    <value>Falta {0}: no se puede grabar el bootloader.</value>
+  </data>
+  <data name="firmware-artifacts.missing-tool" xml:space="preserve">
+    <value>Falta {0} (tampoco está en {1}): sin esa herramienta no se puede grabar el bootloader.</value>
+  </data>
+  <data name="firmware-artifacts.checksum-mismatch-release" xml:space="preserve">
+    <value>El checksum de {0} no coincide con el del Release (esperado {1}, calculado {2}): el archivo está dañado o no es el que publicó el Release.</value>
+  </data>
+  <data name="firmware-artifacts.pin-mismatch" xml:space="preserve">
+    <value>{0} no coincide con el hash fijado en {1} (esperado {2}, calculado {3}): el archivo cambió y no se puede confiar en él.</value>
+  </data>
+  <data name="firmware-artifacts.not-described" xml:space="preserve">
+    <value>{0} no describe {1}, así que no hay con qué verificarlo.</value>
+  </data>
+  <data name="firmware-artifacts.checksum-mismatch" xml:space="preserve">
+    <value>El checksum de {0} no coincide (esperado {1}, calculado {2}): el archivo está dañado o no es el que publicó el Release.</value>
+  </data>
+  <data name="firmware-artifacts.checksums-invalid-line" xml:space="preserve">
+    <value>checksums.txt contiene una línea inválida.</value>
+  </data>
+  <data name="firmware-artifacts.checksums-unsafe-path" xml:space="preserve">
+    <value>checksums.txt contiene una ruta insegura.</value>
+  </data>
+  <data name="firmware-artifacts.zip-unsafe-path" xml:space="preserve">
+    <value>rockbox.zip contiene una ruta insegura.</value>
+  </data>
+  <data name="firmware-artifacts.zip-incomplete" xml:space="preserve">
+    <value>rockbox.zip está incompleto (le faltan codecs o plugins): {0}.</value>
+  </data>
+  <data name="firmware-artifacts.zip-invalid" xml:space="preserve">
+    <value>rockbox.zip no es un archivo válido.</value>
+  </data>
+  <data name="dfu-flash.still-in-dfu" xml:space="preserve">
+    <value>El iPod todavía está en modo DFU…</value>
+  </data>
+  <data name="dfu-flash.waiting-for-dfu" xml:space="preserve">
+    <value>Esperando a que el iPod entre en modo DFU…</value>
+  </data>
+  <data name="dfu-flash.tool-not-started" xml:space="preserve">
+    <value>No se pudo iniciar mks5lboot.exe.</value>
+  </data>
+  <data name="dfu-flash.tool-not-found" xml:space="preserve">
+    <value>No se encontró mks5lboot.exe junto a Aura Studio.</value>
+  </data>
   <data name="privileged.dry-run-complete" xml:space="preserve">
     <value>Ensayo completo: el disco se volvió a verificar y el plan de formateo es válido. No se escribió nada.</value>
   </data>

@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Security.Cryptography;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.Core;
 
@@ -286,8 +287,8 @@ public static class FirmwareArtifactVerifier
 
         if (checksumsPath is null)
         {
-            errors.Add($"Falta {FirmwareArtifacts.DisplayPath(Path.Combine(artifacts.Directory, "checksums.txt"))}: " +
-                       "no hay con qué verificar los archivos del firmware.");
+            errors.Add(Strings.Format("firmware-artifacts.missing-checksums",
+                FirmwareArtifacts.DisplayPath(Path.Combine(artifacts.Directory, "checksums.txt"))));
         }
 
         bool wantsTree = scope is ArtifactScope.FirmwareTree or ArtifactScope.All;
@@ -310,9 +311,9 @@ public static class FirmwareArtifactVerifier
             // El bootloader sí viaja en el Release y sí está en checksums.txt.
             if (artifacts.BootloaderImage is null)
             {
-                errors.Add($"Falta {FirmwareArtifacts.DisplayPath(
-                    Path.Combine(artifacts.Directory, "bootloader-ipod6g.ipod"))}: " +
-                    "no se puede grabar el bootloader.");
+                errors.Add(Strings.Format("firmware-artifacts.missing-bootloader",
+                    FirmwareArtifacts.DisplayPath(
+                        Path.Combine(artifacts.Directory, "bootloader-ipod6g.ipod"))));
             }
             else
             {
@@ -339,10 +340,10 @@ public static class FirmwareArtifactVerifier
         {
             // Se nombran las DOS carpetas donde se buscó: con una sola, quien
             // lea el error no sabe si el respaldo de la raíz llegó a mirarse.
-            errors.Add($"Falta {FirmwareArtifacts.DisplayPath(tool.OwnPath)} " +
-                       $"(tampoco está en {FirmwareArtifacts.DisplayPath(
-                           Path.Combine(artifacts.ArtifactsRoot, FirmwareArtifacts.Mks5lbootFileName))}): " +
-                       "sin esa herramienta no se puede grabar el bootloader.");
+            errors.Add(Strings.Format("firmware-artifacts.missing-tool",
+                FirmwareArtifacts.DisplayPath(tool.OwnPath),
+                FirmwareArtifacts.DisplayPath(
+                    Path.Combine(artifacts.ArtifactsRoot, FirmwareArtifacts.Mks5lbootFileName))));
             return (ToolProvenance.Missing, null);
         }
 
@@ -354,9 +355,8 @@ public static class FirmwareArtifactVerifier
         {
             if (!string.Equals(actual, released, StringComparison.OrdinalIgnoreCase))
             {
-                errors.Add($"El checksum de {shown} no coincide con el del Release " +
-                           $"(esperado {Short(released)}, calculado {Short(actual)}): " +
-                           "el archivo está dañado o no es el que publicó el Release.");
+                errors.Add(Strings.Format("firmware-artifacts.checksum-mismatch-release",
+                    shown, Short(released), Short(actual)));
                 return (ToolProvenance.Unverified, null);
             }
             return (ToolProvenance.ReleaseChecksums, artifacts.ReleaseTag);
@@ -371,9 +371,8 @@ public static class FirmwareArtifactVerifier
         {
             if (!string.Equals(actual, pinned, StringComparison.OrdinalIgnoreCase))
             {
-                errors.Add($"{shown} no coincide con el hash fijado en {ToolOrigin.FileName} " +
-                           $"(esperado {Short(pinned)}, calculado {Short(actual)}): " +
-                           "el archivo cambió y no se puede confiar en él.");
+                errors.Add(Strings.Format("firmware-artifacts.pin-mismatch",
+                    shown, ToolOrigin.FileName, Short(pinned), Short(actual)));
                 return (ToolProvenance.Unverified, origin.Tag);
             }
             return (ToolProvenance.LocalPin, origin.Tag);
@@ -400,16 +399,15 @@ public static class FirmwareArtifactVerifier
         }
         if (!expected.TryGetValue(name, out string? hash))
         {
-            errors.Add($"{FirmwareArtifacts.DisplayPath(artifacts.Checksums ?? "checksums.txt")} " +
-                       $"no describe {name}, así que no hay con qué verificarlo.");
+            errors.Add(Strings.Format("firmware-artifacts.not-described",
+                FirmwareArtifacts.DisplayPath(artifacts.Checksums ?? "checksums.txt"), name));
             return;
         }
         string actual = Sha256Hex(path);
         if (!string.Equals(actual, hash, StringComparison.OrdinalIgnoreCase))
         {
-            errors.Add($"El checksum de {shown} no coincide " +
-                       $"(esperado {Short(hash)}, calculado {Short(actual)}): " +
-                       "el archivo está dañado o no es el que publicó el Release.");
+            errors.Add(Strings.Format("firmware-artifacts.checksum-mismatch",
+                shown, Short(hash), Short(actual)));
         }
     }
 
@@ -437,13 +435,13 @@ public static class FirmwareArtifactVerifier
             string[] parts = line.Trim().Split((char[]?)null, 2, StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length != 2 || parts[0].Length != 64 || !parts[0].All(Uri.IsHexDigit))
             {
-                errors.Add("checksums.txt contiene una línea inválida.");
+                errors.Add(Strings.Get("firmware-artifacts.checksums-invalid-line"));
                 continue;
             }
             string name = parts[1].TrimStart('*').Trim();
             if (Path.IsPathRooted(name) || name.Contains("..", StringComparison.Ordinal))
             {
-                errors.Add("checksums.txt contiene una ruta insegura.");
+                errors.Add(Strings.Get("firmware-artifacts.checksums-unsafe-path"));
                 continue;
             }
             result[name] = parts[0].ToLowerInvariant();
@@ -475,18 +473,17 @@ public static class FirmwareArtifactVerifier
                 }
             }
 
-            if (unsafePath) errors.Add("rockbox.zip contiene una ruta insegura.");
+            if (unsafePath) errors.Add(Strings.Get("firmware-artifacts.zip-unsafe-path"));
 
             string[] missing = RequiredArchiveEntries.Where(e => !names.Contains(e)).ToArray();
             if (missing.Length > 0)
             {
-                errors.Add("rockbox.zip está incompleto (le faltan codecs o plugins): " +
-                           string.Join(", ", missing) + ".");
+                errors.Add(Strings.Format("firmware-artifacts.zip-incomplete", string.Join(", ", missing)));
             }
         }
         catch (Exception ex) when (ex is InvalidDataException or IOException)
         {
-            errors.Add("rockbox.zip no es un archivo válido.");
+            errors.Add(Strings.Get("firmware-artifacts.zip-invalid"));
         }
     }
 }
