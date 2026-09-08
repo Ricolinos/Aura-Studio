@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Library;
 
 /// <summary>
@@ -70,7 +72,13 @@ public static class MediaInfoEdit
             && draft.Album.Trim().Length > 0;
     }
 
-    public static string IncompleteReason => "Título, artista y álbum son obligatorios para sincronizar.";
+    /// <summary>
+    /// Y lo dice nombrando los tres campos igual que sus etiquetas. Una prueba
+    /// lo comprueba en cada idioma: un aviso que dice "hace falta el intérprete"
+    /// al lado de una caja rotulada "Artista" manda a buscar un campo que no
+    /// está.
+    /// </summary>
+    public static string IncompleteReason => Strings.Get("media-info-edit.incomplete-reason");
 
     /// <summary>
     /// Deja solo dígitos y corta a <paramref name="maxDigits"/>. Se aplica

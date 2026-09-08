@@ -1,16 +1,67 @@
 namespace AuraStudio.Core.Library;
 
+/// <summary>
+/// Cómo terminó el intento de preparar una canción (ST-247, B7d).
+///
+/// <para><b>Por qué existe.</b> Esto se leía del texto del motivo:
+/// <c>result.Reason.Contains("no se pudo")</c>. No hacía falta traducir nada
+/// para romperlo — bastaba con reescribir una de esas frases en español y decir
+/// "no fue posible" para que el aviso de fallo dejara de salir, sin que nada
+/// avisara. Un motivo es prosa: sirve para leerlo, no para decidir con él.</para>
+/// </summary>
+public enum PreparedMusicOutcome
+{
+    /// <summary>No hacía falta preparar nada: al iPod viaja el archivo de origen.</summary>
+    NotNeeded,
+
+    /// <summary>Hay preparado, recién hecho o el que ya estaba.</summary>
+    Ready,
+
+    /// <summary>
+    /// El archivo de origen no está.
+    ///
+    /// <para>No cuenta como fallo del preparado y por eso no se avisa: el
+    /// elemento ya aparece como no disponible en la biblioteca (ST-241), y
+    /// decirlo dos veces por el mismo archivo es ruido.</para>
+    /// </summary>
+    SourceMissing,
+
+    /// <summary>Hay que convertirlo y no hay convertidor.</summary>
+    NoTranscoder,
+
+    /// <summary>El convertidor falló.</summary>
+    TranscodeFailed,
+
+    /// <summary>No se pudo copiar el origen al preparado.</summary>
+    CopyFailed,
+}
+
 /// <summary>Qué quedó después de asegurar el preparado de una canción (ST-244).</summary>
 /// <param name="Path">
 /// El preparado, o <c>null</c> si no hace falta ninguno — y entonces al iPod
 /// viaja el archivo de origen.
 /// </param>
+/// <param name="Reason">
+/// Por qué, en español y para leerlo: es lo que se registra y lo que se prueba.
+///
+/// <para><b>No es texto de pantalla</b> y no se le pega a ninguna frase. Lo era:
+/// la biblioteca mostraba <c>"No se pudo preparar «X» para el iPod: {Reason}"</c>,
+/// media oración del recurso y media escrita acá — con la app en alemán, media
+/// oración en cada idioma. Lo que el usuario lee sale ahora de
+/// <see cref="PreparedMusicResult.Outcome"/>.</para>
+/// </param>
 /// <param name="BytesWritten">Cuánto se escribió. 0 si no se tocó el disco.</param>
 public readonly record struct PreparedMusicResult(
-    string? Path, PreparedMusicAction Action, string Reason, long BytesWritten)
+    string? Path, PreparedMusicAction Action, PreparedMusicOutcome Outcome, string Reason, long BytesWritten)
 {
-    public static PreparedMusicResult None(string reason) =>
-        new(null, PreparedMusicAction.None, reason, 0);
+    /// <summary>Si hacía falta un preparado y no se pudo. Es lo único que se le dice al usuario.</summary>
+    public bool Failed => Outcome
+        is PreparedMusicOutcome.NoTranscoder
+        or PreparedMusicOutcome.TranscodeFailed
+        or PreparedMusicOutcome.CopyFailed;
+
+    public static PreparedMusicResult None(PreparedMusicOutcome outcome, string reason) =>
+        new(null, PreparedMusicAction.None, outcome, reason, 0);
 }
 
 /// <summary>
@@ -61,16 +112,20 @@ public static class PreparedMusicBuilder
     {
         IPreparedMusicFiles disk = files ?? PreparedMusicFiles.Shared;
 
-        if (item.Kind != LibraryItemKind.Music) return PreparedMusicResult.None("no es música");
+        if (item.Kind != LibraryItemKind.Music)
+            return PreparedMusicResult.None(PreparedMusicOutcome.NotNeeded, "no es música");
 
         if (item.StorageKind == ItemStorage.Copy)
-            return PreparedMusicResult.None("la música copiada es su propio preparado");
+            return PreparedMusicResult.None(
+                PreparedMusicOutcome.NotNeeded, "la música copiada es su propio preparado");
 
         string source = item.SourcePath;
 
         // Un original que no está NO se borra ni se marca como error: se dice
         // que no está, y el elemento sigue en el catálogo como no disponible.
-        if (!disk.Exists(source)) return PreparedMusicResult.None("el archivo de origen no está");
+        if (!disk.Exists(source))
+            return PreparedMusicResult.None(
+                PreparedMusicOutcome.SourceMissing, "el archivo de origen no está");
 
         // La tabla sale de UN solo lugar, el mismo que usa la importación en modo
         // copia (ST-244).
@@ -80,7 +135,7 @@ public static class PreparedMusicBuilder
         // Ni se convierte ni se le pueden escribir etiquetas: preparar una copia
         // idéntica no le serviría a nadie y ocuparía el doble.
         if (!convert && !LocalTagWriter.CanWrite(source))
-            return PreparedMusicResult.None("este formato viaja tal cual");
+            return PreparedMusicResult.None(PreparedMusicOutcome.NotNeeded, "este formato viaja tal cual");
 
         bool needed = convert || !LocalTagWriter.Matches(source, item.Metadata, coverArt, coverBytes);
 
@@ -102,7 +157,7 @@ public static class PreparedMusicBuilder
         switch (decision.Action)
         {
             case PreparedMusicAction.None:
-                return PreparedMusicResult.None(decision.Reason);
+                return PreparedMusicResult.None(PreparedMusicOutcome.NotNeeded, decision.Reason);
 
             case PreparedMusicAction.Keep:
                 // Solo las etiquetas, que es lo barato. El escritor no hace nada
@@ -110,7 +165,8 @@ public static class PreparedMusicBuilder
                 TagWriteResult refreshed = LocalTagWriter.Write(prepared, item.Metadata, coverArt, coverBytes);
 
                 return new PreparedMusicResult(
-                    prepared, PreparedMusicAction.Keep, decision.Reason, refreshed.BytesWritten);
+                    prepared, PreparedMusicAction.Keep, PreparedMusicOutcome.Ready,
+                    decision.Reason, refreshed.BytesWritten);
 
             default:
                 return await BuildAsync(
@@ -128,15 +184,16 @@ public static class PreparedMusicBuilder
         if (codec != AudioCodec.None)
         {
             if (transcode is null)
-                return PreparedMusicResult.None("hay que convertirlo y no hay convertidor");
+                return PreparedMusicResult.None(
+                    PreparedMusicOutcome.NoTranscoder, "hay que convertirlo y no hay convertidor");
 
             try
             {
                 long converted = await transcode(source, prepared, codec, ct).ConfigureAwait(false);
                 LocalTagWriter.Write(prepared, item.Metadata, coverArt, coverBytes);
 
-                return new PreparedMusicResult(prepared, PreparedMusicAction.Build, reason,
-                    disk.Exists(prepared) ? disk.Length(prepared) : converted);
+                return new PreparedMusicResult(prepared, PreparedMusicAction.Build, PreparedMusicOutcome.Ready,
+                    reason, disk.Exists(prepared) ? disk.Length(prepared) : converted);
             }
             catch (OperationCanceledException)
             {
@@ -144,16 +201,20 @@ public static class PreparedMusicBuilder
             }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
-                return PreparedMusicResult.None($"no se pudo convertir: {ex.Message}");
+                return PreparedMusicResult.None(
+                    PreparedMusicOutcome.TranscodeFailed, $"no se pudo convertir: {ex.Message}");
             }
         }
 
         LibraryCopyResult copied = LibraryFileCopier.CopyTo(source, prepared, disk.Copier);
-        if (!copied.Copied) return PreparedMusicResult.None(copied.Reason ?? "no se pudo copiar");
+        if (!copied.Copied)
+            return PreparedMusicResult.None(
+                PreparedMusicOutcome.CopyFailed, copied.Reason ?? "no se pudo copiar");
 
         LocalTagWriter.Write(prepared, item.Metadata, coverArt, coverBytes);
 
-        return new PreparedMusicResult(prepared, PreparedMusicAction.Build, reason, disk.Length(prepared));
+        return new PreparedMusicResult(
+            prepared, PreparedMusicAction.Build, PreparedMusicOutcome.Ready, reason, disk.Length(prepared));
     }
 }
 

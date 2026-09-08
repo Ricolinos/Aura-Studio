@@ -233,6 +233,8 @@ public class PreparedMusicTests : IDisposable
         PreparedMusicResult result = await PreparedMusicBuilder.EnsureAsync(item, _staging);
 
         Assert.Equal(PreparedMusicAction.None, result.Action);
+        Assert.Equal(PreparedMusicOutcome.SourceMissing, result.Outcome);
+        Assert.False(result.Failed, "el elemento ya se ve como no disponible; decirlo dos veces es ruido");
         Assert.Contains("no está", result.Reason);
         Assert.Null(item.PreparedPath);
     }
@@ -300,8 +302,70 @@ public class PreparedMusicTests : IDisposable
         PreparedMusicResult result = await PreparedMusicBuilder.EnsureAsync(item, _staging);
 
         Assert.Equal(PreparedMusicAction.None, result.Action);
+        Assert.Equal(PreparedMusicOutcome.NoTranscoder, result.Outcome);
         Assert.Contains("convertidor", result.Reason);
         Assert.Empty(Directory.GetFiles(_staging));
+
+        // Y se le dice al usuario. Antes no: la biblioteca decidía si avisar
+        // buscando "no se pudo" DENTRO de esta razón, y esta razón no lo dice.
+        // Una canción que había que convertir se sincronizaba con las etiquetas
+        // viejas, en silencio.
+        Assert.True(result.Failed);
+        Assert.DoesNotContain("no se pudo", result.Reason, StringComparison.Ordinal);
+    }
+
+    // MARK: - El desenlace es un valor, no una frase (ST-247, B7d)
+
+    /// <summary>Un convertidor que revienta es un fallo, y se dice.</summary>
+    [Fact]
+    public async Task SiElConvertidorFallaSeAvisa()
+    {
+        LibraryItem item = Referenced("cancion.wav", "Ingrata", "Café Tacvba", "Ré");
+
+        PreparedMusicResult result = await PreparedMusicBuilder.EnsureAsync(
+            item, _staging,
+            transcode: (_, _, _, _) => throw new IOException("el códec se cayó"));
+
+        Assert.Equal(PreparedMusicOutcome.TranscodeFailed, result.Outcome);
+        Assert.True(result.Failed);
+        Assert.Null(result.Path);
+    }
+
+    /// <summary>
+    /// Qué cuenta como fallo, escrito una vez y comprobado sobre todos los
+    /// desenlaces.
+    ///
+    /// <para>Esto reemplaza a <c>Reason.Contains("no se pudo")</c>: una decisión
+    /// que se tomaba leyendo prosa y que se rompía sin tocar ningún idioma —
+    /// bastaba con reescribir una razón en español y decir "no fue posible". Si
+    /// mañana se agrega un desenlace hay que decidir acá de qué lado cae, y la
+    /// prueba de abajo obliga a hacerlo.</para>
+    /// </summary>
+    [Theory]
+    [InlineData(PreparedMusicOutcome.NotNeeded, false)]
+    [InlineData(PreparedMusicOutcome.Ready, false)]
+    [InlineData(PreparedMusicOutcome.SourceMissing, false)]
+    [InlineData(PreparedMusicOutcome.NoTranscoder, true)]
+    [InlineData(PreparedMusicOutcome.TranscodeFailed, true)]
+    [InlineData(PreparedMusicOutcome.CopyFailed, true)]
+    public void QueCuentaComoFallo(PreparedMusicOutcome outcome, bool failed) =>
+        Assert.Equal(failed, PreparedMusicResult.None(outcome, "da igual").Failed);
+
+    /// <summary>
+    /// Y la tabla de arriba los cubre a todos: uno nuevo sin fila pasaría sin
+    /// que nadie decidiera si se le avisa al usuario o no.
+    /// </summary>
+    [Fact]
+    public void LaTablaDeFallosCubreTodosLosDesenlaces()
+    {
+        PreparedMusicOutcome[] inTheTable =
+        [
+            PreparedMusicOutcome.NotNeeded, PreparedMusicOutcome.Ready,
+            PreparedMusicOutcome.SourceMissing, PreparedMusicOutcome.NoTranscoder,
+            PreparedMusicOutcome.TranscodeFailed, PreparedMusicOutcome.CopyFailed,
+        ];
+
+        Assert.Equal(Enum.GetValues<PreparedMusicOutcome>(), inTheTable);
     }
 
     // MARK: - Fixture

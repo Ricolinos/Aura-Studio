@@ -1287,6 +1287,15 @@
   <data name="library-grouping.albums-and-songs" xml:space="preserve">
     <value>{0}, {1}</value>
   </data>
+  <data name="library-grouping.unknown-album" xml:space="preserve">
+    <value>No album</value>
+  </data>
+  <data name="library-grouping.unknown-artist" xml:space="preserve">
+    <value>Unknown artist</value>
+  </data>
+  <data name="library-grouping.unknown-photo-album" xml:space="preserve">
+    <value>No album</value>
+  </data>
   <data name="library-ingest.added.one" xml:space="preserve">
     <value>{0} item added.</value>
   </data>
@@ -1361,6 +1370,15 @@
   </data>
   <data name="library-view-model.completando-title" xml:space="preserve">
     <value>Filling in {0}…</value>
+  </data>
+  <data name="library-view-model.prepared-no-transcoder" xml:space="preserve">
+    <value>Couldn't prepare "{0}" for the iPod: it needs converting and there is no converter available. It syncs as is, without the corrected tags.</value>
+  </data>
+  <data name="library-view-model.prepared-transcode-failed" xml:space="preserve">
+    <value>Couldn't prepare "{0}" for the iPod: the conversion failed. It syncs as is, without the corrected tags.</value>
+  </data>
+  <data name="library-view-model.prepared-copy-failed" xml:space="preserve">
+    <value>Couldn't prepare "{0}" for the iPod: the file couldn't be copied. It syncs as is, without the corrected tags.</value>
   </data>
   <data name="library-view-model.copied-files.one" xml:space="preserve">
     <value>{0} file copied into the library.</value>
@@ -1496,6 +1514,87 @@
   </data>
   <data name="media-info-dialog.mas-informacion" xml:space="preserve">
     <value>More info</value>
+  </data>
+  <data name="media-info-dialog.field-title" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="media-info-dialog.field-artist" xml:space="preserve">
+    <value>Artist</value>
+  </data>
+  <data name="media-info-dialog.field-album" xml:space="preserve">
+    <value>Album</value>
+  </data>
+  <data name="media-info-dialog.field-album-artist" xml:space="preserve">
+    <value>Album artist (optional)</value>
+  </data>
+  <data name="media-info-dialog.field-track-number" xml:space="preserve">
+    <value>Track number (optional)</value>
+  </data>
+  <data name="media-info-dialog.field-year" xml:space="preserve">
+    <value>Year (optional)</value>
+  </data>
+  <data name="media-info-dialog.field-genre" xml:space="preserve">
+    <value>Genre (optional)</value>
+  </data>
+  <data name="media-info-dialog.field-composer" xml:space="preserve">
+    <value>Composer (optional)</value>
+  </data>
+  <data name="media-info-dialog.field-series-name" xml:space="preserve">
+    <value>Series name</value>
+  </data>
+  <data name="media-info-dialog.field-season" xml:space="preserve">
+    <value>Season</value>
+  </data>
+  <data name="media-info-dialog.field-episode" xml:space="preserve">
+    <value>Episode</value>
+  </data>
+  <data name="media-info-dialog.section-rating" xml:space="preserve">
+    <value>Rating</value>
+  </data>
+  <data name="media-info-dialog.section-information" xml:space="preserve">
+    <value>Information</value>
+  </data>
+  <data name="media-info-dialog.section-lyrics" xml:space="preserve">
+    <value>Lyrics (optional)</value>
+  </data>
+  <data name="media-info-dialog.section-category" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="media-info-dialog.section-file" xml:space="preserve">
+    <value>File</value>
+  </data>
+  <data name="media-info-dialog.rating-caption" xml:space="preserve">
+    <value>Syncs with the iPod: the same rating you set here or on the device itself.</value>
+  </data>
+  <data name="media-info-dialog.lyrics-caption" xml:space="preserve">
+    <value>Saved next to the song and shown on the iPod while it plays.</value>
+  </data>
+  <data name="media-info-dialog.series-caption" xml:space="preserve">
+    <value>The name the episode arrives with on the iPod is built from these three fields: change them and sync again to regroup it.</value>
+  </data>
+  <data name="media-info-dialog.series-hint" xml:space="preserve">
+    <value>The series fields appear when you pick the {0} category below and reopen this sheet.</value>
+  </data>
+  <data name="media-info-dialog.info-location" xml:space="preserve">
+    <value>Location</value>
+  </data>
+  <data name="media-info-dialog.info-format" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="media-info-dialog.info-size" xml:space="preserve">
+    <value>Size</value>
+  </data>
+  <data name="media-info-dialog.info-duration" xml:space="preserve">
+    <value>Duration</value>
+  </data>
+  <data name="media-info-dialog.info-status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="media-info-dialog.star-of-five" xml:space="preserve">
+    <value>{0} of 5</value>
+  </data>
+  <data name="media-info-edit.incomplete-reason" xml:space="preserve">
+    <value>Title, artist and album are required to sync.</value>
   </data>
   <data name="playlists-page.crea-nueva-o-importa-archivo-m3u" xml:space="preserve">
     <value>Create a new one, or import an .m3u/.m3u8 file from another program. Songs that aren't in your library are counted separately, not lost in silence.</value>

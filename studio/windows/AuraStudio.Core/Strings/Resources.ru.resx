@@ -1248,6 +1248,15 @@
   <data name="library-grouping.albums-and-songs" xml:space="preserve">
     <value>{0}, {1}</value>
   </data>
+  <data name="library-grouping.unknown-album" xml:space="preserve">
+    <value>Без альбома</value>
+  </data>
+  <data name="library-grouping.unknown-artist" xml:space="preserve">
+    <value>Неизвестный исполнитель</value>
+  </data>
+  <data name="library-grouping.unknown-photo-album" xml:space="preserve">
+    <value>Без альбома</value>
+  </data>
   <data name="library-ingest.added.few" xml:space="preserve">
     <value>Добавлено {0} элемента.</value>
   </data>
@@ -1415,6 +1424,15 @@
   </data>
   <data name="library-view-model.completando-title" xml:space="preserve">
     <value>Дополнение сведений: {0}…</value>
+  </data>
+  <data name="library-view-model.prepared-no-transcoder" xml:space="preserve">
+    <value>Не удалось подготовить «{0}» для iPod: трек нужно преобразовать, а преобразователь недоступен. Он синхронизируется как есть, без исправленных тегов.</value>
+  </data>
+  <data name="library-view-model.prepared-transcode-failed" xml:space="preserve">
+    <value>Не удалось подготовить «{0}» для iPod: преобразование не удалось. Трек синхронизируется как есть, без исправленных тегов.</value>
+  </data>
+  <data name="library-view-model.prepared-copy-failed" xml:space="preserve">
+    <value>Не удалось подготовить «{0}» для iPod: не удалось скопировать файл. Трек синхронизируется как есть, без исправленных тегов.</value>
   </data>
   <data name="library-view-model.copied-files.few" xml:space="preserve">
     <value>{0} файла скопировано в медиатеку.</value>
@@ -1589,6 +1607,87 @@
   </data>
   <data name="media-info-dialog.mas-informacion" xml:space="preserve">
     <value>Подробнее</value>
+  </data>
+  <data name="media-info-dialog.field-title" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="media-info-dialog.field-artist" xml:space="preserve">
+    <value>Исполнитель</value>
+  </data>
+  <data name="media-info-dialog.field-album" xml:space="preserve">
+    <value>Альбом</value>
+  </data>
+  <data name="media-info-dialog.field-album-artist" xml:space="preserve">
+    <value>Исполнитель альбома (необязательно)</value>
+  </data>
+  <data name="media-info-dialog.field-track-number" xml:space="preserve">
+    <value>Номер трека (необязательно)</value>
+  </data>
+  <data name="media-info-dialog.field-year" xml:space="preserve">
+    <value>Год (необязательно)</value>
+  </data>
+  <data name="media-info-dialog.field-genre" xml:space="preserve">
+    <value>Жанр (необязательно)</value>
+  </data>
+  <data name="media-info-dialog.field-composer" xml:space="preserve">
+    <value>Композитор (необязательно)</value>
+  </data>
+  <data name="media-info-dialog.field-series-name" xml:space="preserve">
+    <value>Название сериала</value>
+  </data>
+  <data name="media-info-dialog.field-season" xml:space="preserve">
+    <value>Сезон</value>
+  </data>
+  <data name="media-info-dialog.field-episode" xml:space="preserve">
+    <value>Серия</value>
+  </data>
+  <data name="media-info-dialog.section-rating" xml:space="preserve">
+    <value>Оценка</value>
+  </data>
+  <data name="media-info-dialog.section-information" xml:space="preserve">
+    <value>Сведения</value>
+  </data>
+  <data name="media-info-dialog.section-lyrics" xml:space="preserve">
+    <value>Текст песни (необязательно)</value>
+  </data>
+  <data name="media-info-dialog.section-category" xml:space="preserve">
+    <value>Категория</value>
+  </data>
+  <data name="media-info-dialog.section-file" xml:space="preserve">
+    <value>Файл</value>
+  </data>
+  <data name="media-info-dialog.rating-caption" xml:space="preserve">
+    <value>Синхронизируется с iPod: та же оценка, которую вы ставите здесь или на самом устройстве.</value>
+  </data>
+  <data name="media-info-dialog.lyrics-caption" xml:space="preserve">
+    <value>Сохраняется рядом с треком и показывается на iPod во время воспроизведения.</value>
+  </data>
+  <data name="media-info-dialog.series-caption" xml:space="preserve">
+    <value>Имя, под которым серия попадёт на iPod, складывается из этих трёх полей: измените их и синхронизируйте снова, чтобы перегруппировать.</value>
+  </data>
+  <data name="media-info-dialog.series-hint" xml:space="preserve">
+    <value>Поля сериала появятся, если выбрать ниже категорию «{0}» и открыть этот лист заново.</value>
+  </data>
+  <data name="media-info-dialog.info-location" xml:space="preserve">
+    <value>Расположение</value>
+  </data>
+  <data name="media-info-dialog.info-format" xml:space="preserve">
+    <value>Формат</value>
+  </data>
+  <data name="media-info-dialog.info-size" xml:space="preserve">
+    <value>Размер</value>
+  </data>
+  <data name="media-info-dialog.info-duration" xml:space="preserve">
+    <value>Длительность</value>
+  </data>
+  <data name="media-info-dialog.info-status" xml:space="preserve">
+    <value>Состояние</value>
+  </data>
+  <data name="media-info-dialog.star-of-five" xml:space="preserve">
+    <value>{0} из 5</value>
+  </data>
+  <data name="media-info-edit.incomplete-reason" xml:space="preserve">
+    <value>Для синхронизации нужны название, исполнитель и альбом.</value>
   </data>
   <data name="music-settings-view.calidad-audio" xml:space="preserve">
     <value>Качество звука</value>

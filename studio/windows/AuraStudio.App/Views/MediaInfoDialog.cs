@@ -60,11 +60,18 @@ public static class MediaInfoDialog
             IsOpen = false
         };
 
-        var fields = new Dictionary<string, TextBox>(StringComparer.Ordinal);
+        // La llave es el campo, no su etiqueta.
+        //
+        // Estaba al revés —`fields["Álbum"]`— y mientras la app habló un solo
+        // idioma funcionó. Traducir las etiquetas lo rompía sin avisar: una
+        // punta que no coincidiera dejaba `Text` devolviendo cadena vacía y el
+        // álbum se borraba al guardar, y dos campos que cayeran en la misma
+        // etiqueta se pisaban. Ver MediaInfoFields (ST-247, B7d).
+        var fields = new Dictionary<MediaInfoField, TextBox>();
 
-        TextBox Field(string label, string value, bool digitsOnly = false)
+        TextBox Field(MediaInfoField field, string value, bool digitsOnly = false)
         {
-            var box = new TextBox { Header = label, Text = value };
+            var box = new TextBox { Header = MediaInfoFields.Label(field), Text = value };
 
             if (digitsOnly)
                 box.TextChanged += (_, _) =>
@@ -76,7 +83,7 @@ public static class MediaInfoDialog
                     box.SelectionStart = caret;
                 };
 
-            fields[label] = box;
+            fields[field] = box;
             content.Children.Add(box);
             return box;
         }
@@ -101,29 +108,29 @@ public static class MediaInfoDialog
 
         if (item.Kind == LibraryItemKind.Music)
         {
-            Section("Calificación");
+            Section(Strings.Get("media-info-dialog.section-rating"));
             content.Children.Add(stars);
-            Caption("Se sincroniza con el iPod: la misma calificación que eliges aquí o en el aparato.");
+            Caption(Strings.Get("media-info-dialog.rating-caption"));
 
-            Section("Información");
+            Section(Strings.Get("media-info-dialog.section-information"));
             content.Children.Add(incomplete);
 
-            Field("Título", draft.Title);
-            Field("Artista", draft.Artist);
-            Field("Álbum", draft.Album);
-            Field("Artista del álbum (opcional)", draft.AlbumArtist);
-            Field("Número de pista (opcional)", draft.TrackNumber, digitsOnly: true);
-            Field("Año (opcional)", draft.Year);
-            Field("Género (opcional)", draft.Genre);
-            Field("Autor (opcional)", draft.Composer);
+            Field(MediaInfoField.Title, draft.Title);
+            Field(MediaInfoField.Artist, draft.Artist);
+            Field(MediaInfoField.Album, draft.Album);
+            Field(MediaInfoField.AlbumArtist, draft.AlbumArtist);
+            Field(MediaInfoField.TrackNumber, draft.TrackNumber, digitsOnly: true);
+            Field(MediaInfoField.Year, draft.Year);
+            Field(MediaInfoField.Genre, draft.Genre);
+            Field(MediaInfoField.Composer, draft.Composer);
 
-            Section("Letra (opcional)");
-            TextBox lyrics = Field("", draft.Lyrics);
+            Section(Strings.Get("media-info-dialog.section-lyrics"));
+            TextBox lyrics = Field(MediaInfoField.Lyrics, draft.Lyrics);
             lyrics.AcceptsReturn = true;
             lyrics.Height = 120;
             lyrics.TextWrapping = TextWrapping.Wrap;
             lyrics.FontFamily = new Microsoft.UI.Xaml.Media.FontFamily("Consolas");
-            Caption("Se guarda junto a la canción y se muestra en el iPod mientras suena.");
+            Caption(Strings.Get("media-info-dialog.lyrics-caption"));
 
             void Validate()
             {
@@ -133,8 +140,14 @@ public static class MediaInfoDialog
                 incomplete.IsOpen = !complete;
             }
 
-            foreach (string key in (string[])["Título", "Artista", "Álbum"])
-                fields[key].TextChanged += (_, _) => Validate();
+            // Los obligatorios salen de Core, no de un arreglo escrito acá: si
+            // mañana se agrega uno y nadie toca esta vista, el aviso de "falta
+            // algo" no aparecería hasta cerrar la hoja. Y con TryGetValue: la
+            // línea anterior usaba el indizador, así que una llave que no
+            // estuviera reventaba al abrir.
+            foreach (MediaInfoField required in MediaInfoFields.RequiredForMusic)
+                if (fields.TryGetValue(required, out TextBox? box))
+                    box.TextChanged += (_, _) => Validate();
 
             Validate();
         }
@@ -143,19 +156,24 @@ public static class MediaInfoDialog
 
         if (item.Kind == LibraryItemKind.Video)
         {
-            Section("Información");
-            Field("Título", draft.VideoTitle);
+            Section(Strings.Get("media-info-dialog.section-information"));
+            Field(MediaInfoField.Title, draft.VideoTitle);
 
             if (isSeries)
             {
-                Field("Nombre de la serie", draft.SeriesName);
-                Field("Temporada", draft.Season, digitsOnly: true);
-                Field("Episodio", draft.Episode, digitsOnly: true);
-                Caption("El nombre con el que el episodio llega al iPod se arma con estos tres campos: cambiarlos y volver a sincronizar lo reagrupa.");
+                Field(MediaInfoField.SeriesName, draft.SeriesName);
+                Field(MediaInfoField.Season, draft.Season, digitsOnly: true);
+                Field(MediaInfoField.Episode, draft.Episode, digitsOnly: true);
+                Caption(Strings.Get("media-info-dialog.series-caption"));
             }
             else
             {
-                Caption("Los datos de serie aparecen al elegir la categoría Series aquí abajo y volver a abrir esta hoja.");
+                // El nombre de la categoría no se escribe en la frase: se pide.
+                // Escrito, en japonés diría "Series" y el selector de abajo
+                // 「シリーズ」, y la frase mandaría a elegir algo que con ese
+                // nombre no está en la lista.
+                Caption(Strings.Format(
+                    "media-info-dialog.series-hint", MediaCategory.Series.LocalizedName()));
             }
         }
 
@@ -165,7 +183,7 @@ public static class MediaInfoDialog
 
         if (availableCategories is { Count: > 0 })
         {
-            Section("Categoría");
+            Section(Strings.Get("media-info-dialog.section-category"));
             categoryBox = new ComboBox
             {
                 ItemsSource = availableCategories,
@@ -177,13 +195,14 @@ public static class MediaInfoDialog
 
         // MARK: - Archivo
 
-        Section("Archivo");
+        Section(Strings.Get("media-info-dialog.section-file"));
         var row = new MediaTableRow(item, fileSize);
-        Info("Ubicación", item.SourcePath);
-        Info("Formato", row.FileFormat);
-        Info("Tamaño", row.FileSizeText);
-        if (item.Metadata?.DurationSeconds is > 0) Info("Duración", row.DurationText);
-        Info("Estado", row.StatusText);
+        Info(Strings.Get("media-info-dialog.info-location"), item.SourcePath);
+        Info(Strings.Get("media-info-dialog.info-format"), row.FileFormat);
+        Info(Strings.Get("media-info-dialog.info-size"), row.FileSizeText);
+        if (item.Metadata?.DurationSeconds is > 0)
+            Info(Strings.Get("media-info-dialog.info-duration"), row.DurationText);
+        Info(Strings.Get("media-info-dialog.info-status"), row.StatusText);
 
         void Info(string label, string value)
         {
@@ -212,23 +231,28 @@ public static class MediaInfoDialog
 
         MediaInfoDraft Read() => draft with
         {
-            Title = Text("Título"),
-            Artist = Text("Artista"),
-            Album = Text("Álbum"),
-            AlbumArtist = Text("Artista del álbum (opcional)"),
-            TrackNumber = Text("Número de pista (opcional)"),
-            Year = Text("Año (opcional)"),
-            Genre = Text("Género (opcional)"),
-            Composer = Text("Autor (opcional)"),
-            Lyrics = Text(""),
+            Title = Text(MediaInfoField.Title),
+            Artist = Text(MediaInfoField.Artist),
+            Album = Text(MediaInfoField.Album),
+            AlbumArtist = Text(MediaInfoField.AlbumArtist),
+            TrackNumber = Text(MediaInfoField.TrackNumber),
+            Year = Text(MediaInfoField.Year),
+            Genre = Text(MediaInfoField.Genre),
+            Composer = Text(MediaInfoField.Composer),
+            Lyrics = Text(MediaInfoField.Lyrics),
             Rating = stars.Value,
-            VideoTitle = item.Kind == LibraryItemKind.Video ? Text("Título") : draft.VideoTitle,
-            SeriesName = Text("Nombre de la serie"),
-            Season = Text("Temporada"),
-            Episode = Text("Episodio")
+            VideoTitle = item.Kind == LibraryItemKind.Video
+                ? Text(MediaInfoField.Title)
+                : draft.VideoTitle,
+            SeriesName = Text(MediaInfoField.SeriesName),
+            Season = Text(MediaInfoField.Season),
+            Episode = Text(MediaInfoField.Episode)
         };
 
-        string Text(string label) => fields.TryGetValue(label, out TextBox? box) ? box.Text : "";
+        // Un campo que esta hoja no mostró —los de serie en una película— no
+        // está en el diccionario, y ahí "" es lo correcto: el `draft with` lo
+        // sobreescribe con vacío y MediaInfoEdit ya trata vacío como ausente.
+        string Text(MediaInfoField field) => fields.TryGetValue(field, out TextBox? box) ? box.Text : "";
 
         dialog.Content = new ScrollViewer { Content = content, MaxHeight = 560 };
 
@@ -271,7 +295,8 @@ public sealed partial class StarRating : StackPanel
                 Padding = new Thickness(4),
                 Content = new FontIcon { Glyph = Glyphs.StarOutline }
             };
-            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, $"{index} de 5");
+            Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(
+                button, Strings.Format("media-info-dialog.star-of-five", index));
             button.Click += (_, _) => Value = MediaInfoEdit.RatingAfterTapping(Value, index);
 
             _stars.Add(button);

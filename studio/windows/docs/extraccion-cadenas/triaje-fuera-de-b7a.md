@@ -13,6 +13,27 @@ La lista línea por línea está en `triaje-fuera-de-b7a.tsv`, con la línea de
 código de cada una — el texto solo no alcanza para decidir, porque «No se pudo
 leer el disco» puede ser un diálogo o una entrada de bitácora.
 
+## Avance de B7d
+
+El `.tsv` es la foto del triaje al cerrar B7c y **no se regenera**: es contra lo
+que se comprueba que la clasificación fue la que fue. Lo que va bajando es el
+trinquete de `HardcodedSpanishTests`, y acá queda dicho por qué.
+
+| paso | trinquete | qué se hizo |
+|---|---:|---|
+| cierre de B7c | 386 | — |
+| trampa 1, `MediaInfoDialog` | 372 | los 27 textos de la hoja "Más información" a recursos en los seis idiomas, después de cambiar la llave del diccionario |
+| trampas 2 y 3, `PreparedMusic` | 371 | desenlace tipado en vez de `Contains("no se pudo")`, y tres frases enteras en lugar de una a medias |
+| trampa 4, `LibraryGrouping` | 369 | los rótulos de los cajones a recursos, `IsUnknownArtist` como campo, y fuera las dos comparaciones contra el rótulo en `AlbumCoverSearch` |
+
+El trinquete baja poco en el segundo paso y eso es correcto: **doce literales
+cambiaron de clase, no de sitio.** Las razones de `PreparedMusic` estaban como
+PANTALLA porque salían a la barra de estado pegadas a otra frase; ahora que el
+mensaje se elige por el desenlace, esas razones son lo que siempre debieron ser
+—diagnóstico— y se quedan en español a propósito. Cuentan igual en el
+trinquete, que mide literales en español y no si están bien puestos; lo que
+bajó de la deuda de traducción son doce, aunque el número de arriba diga uno.
+
 ## Conteo
 
 | clase | cuántas | qué se hace |

@@ -20,9 +20,19 @@ namespace AuraStudio.Core.Library;
 /// la miniatura por el hash.
 /// </param>
 /// <param name="IsUnknown"><c>true</c> para el grupo especial "Sin álbum".</param>
+/// <param name="IsUnknownArtist">
+/// <c>true</c> cuando ninguna canción del grupo dice de quién es.
+///
+/// <para>Se pregunta al armar el grupo y se guarda. Se deducía comparando
+/// <c>Artist</c> con el rótulo "Artista desconocido" (ST-247, B7d), o sea
+/// leyendo texto de pantalla para decidir: al traducir el rótulo la comparación
+/// habría dejado de dar, y un artista que de verdad se llamara "Artista
+/// desconocido" contaba como desconocido.</para>
+/// </param>
 public sealed record AlbumGroup(
     string Id, string Title, string Artist, IReadOnlyList<LibraryItem> Items,
-    LibraryItem? CoverItem, string? Year, string? Genre, bool IsUnknown)
+    LibraryItem? CoverItem, string? Year, string? Genre, bool IsUnknown,
+    bool IsUnknownArtist = false)
 {
     public bool HasCover => CoverItem is not null;
 
@@ -31,8 +41,6 @@ public sealed record AlbumGroup(
     public bool IsFavorite => Items.Any(item => item.Metadata?.IsFavorite == true);
 
     public double TotalDurationSeconds => Items.Sum(item => item.Metadata?.DurationSeconds ?? 0);
-
-    public bool IsUnknownArtist => Artist == LibraryGrouping.UnknownArtistName;
 
     /// <summary>"3 canciones · 2019" para la tarjeta.</summary>
     public string SubtitleDetail
@@ -153,9 +161,26 @@ public abstract record MusicScope
 /// </summary>
 public static class LibraryGrouping
 {
-    public const string UnknownAlbumTitle = "Sin álbum";
-    public const string UnknownArtistName = "Artista desconocido";
-    public const string UnknownPhotoAlbumTitle = "Sin álbum";
+    /// <summary>
+    /// Cómo se llama en pantalla el cajón de lo que no tiene álbum, o artista.
+    ///
+    /// <para><b>Son rótulos, no banderas</b> (ST-247, B7d). Eran constantes y se
+    /// usaban para las dos cosas a la vez: el grupo mostraba el texto <b>y</b>
+    /// alguien preguntaba <c>Title == UnknownAlbumTitle</c> para saber si era el
+    /// cajón. Mientras el rótulo fue una constante en español eso funcionaba, y
+    /// es exactamente el patrón que <c>MediaCategory</c> ya tuvo que separar:
+    /// un texto de interfaz haciendo de dato.</para>
+    ///
+    /// <para>Quien necesita saber si un grupo es el cajón tiene
+    /// <c>IsUnknown</c> —los tres grupos lo traen desde siempre—, y quien
+    /// necesita mostrarlo tiene esto.</para>
+    /// </summary>
+    public static string UnknownAlbumTitle => Strings.Get("library-grouping.unknown-album");
+
+    public static string UnknownArtistName => Strings.Get("library-grouping.unknown-artist");
+
+    public static string UnknownPhotoAlbumTitle => Strings.Get("library-grouping.unknown-photo-album");
+
     /// <summary>
     /// Separador de las claves compuestas. Se escribe con su código y no como el
     /// carácter suelto: un byte de control invisible dentro del fuente es lo que
@@ -265,16 +290,18 @@ public static class LibraryGrouping
             IReadOnlyList<LibraryItem> tracks = SortedTracks(bucket);
             string albumTitle = (first.Metadata?.Album ?? "").Trim();
             bool isUnknown = albumTitle.Length == 0;
+            string? groupingArtist = GroupingArtistOf(first, options);
 
             groups.Add(new AlbumGroup(
                 Id: key,
                 Title: isUnknown ? UnknownAlbumTitle : albumTitle,
-                Artist: GroupingArtistOf(first, options) ?? UnknownArtistName,
+                Artist: groupingArtist ?? UnknownArtistName,
                 Items: tracks,
                 CoverItem: tracks.FirstOrDefault(track => track.HasCover),
                 Year: tracks.Select(t => t.Metadata?.Year).FirstOrDefault(y => !string.IsNullOrEmpty(y)),
                 Genre: tracks.Select(t => t.Metadata?.Genre).FirstOrDefault(g => !string.IsNullOrEmpty(g)),
-                IsUnknown: isUnknown));
+                IsUnknown: isUnknown,
+                IsUnknownArtist: groupingArtist is null));
         }
 
         return [.. groups

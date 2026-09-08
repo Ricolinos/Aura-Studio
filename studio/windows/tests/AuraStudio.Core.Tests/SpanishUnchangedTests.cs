@@ -219,6 +219,60 @@ public class SpanishUnchangedTests
         // de esta lista y se comparan contra el borrador como cualquier otra.
         // Queda solo la que su extractor todavía no ve.
         "settings-page.carpeta-nueva-biblioteca-anterior-intacta",
+
+        // B7d: la hoja "Más información" entera. Se armaba en código, así que
+        // el borrador no la vio nunca; el texto en español de cada clave es el
+        // literal que estaba en MediaInfoDialog, palabra por palabra.
+        //
+        // Sale a recursos ahora y no en B7a por una razón que no es de idioma:
+        // las cajas de texto vivían en un diccionario CON LA ETIQUETA COMO
+        // LLAVE, así que traducir estas once habría borrado el álbum de una
+        // canción al guardar. Primero se arregló eso (MediaInfoFields), y por
+        // eso van juntas.
+        "media-info-dialog.field-title", "media-info-dialog.field-artist",
+        "media-info-dialog.field-album", "media-info-dialog.field-album-artist",
+        "media-info-dialog.field-track-number", "media-info-dialog.field-year",
+        "media-info-dialog.field-genre", "media-info-dialog.field-composer",
+        "media-info-dialog.field-series-name", "media-info-dialog.field-season",
+        "media-info-dialog.field-episode",
+        "media-info-dialog.section-rating", "media-info-dialog.section-information",
+        "media-info-dialog.section-lyrics", "media-info-dialog.section-category",
+        "media-info-dialog.section-file",
+        "media-info-dialog.rating-caption", "media-info-dialog.lyrics-caption",
+        "media-info-dialog.series-caption",
+        "media-info-dialog.info-location", "media-info-dialog.info-format",
+        "media-info-dialog.info-size", "media-info-dialog.info-duration",
+        "media-info-dialog.info-status",
+        "media-info-edit.incomplete-reason",
+
+        // Dos que sí cambian de forma, y por qué. La pista de la categoría
+        // decía "la categoría Series" con el nombre escrito adentro: en japonés
+        // habría mandado a elegir "Series" mientras el selector de abajo dice
+        // 「シリーズ」. Ahora el nombre es un hueco. Y el nombre de cada estrella
+        // para el lector de pantalla era una interpolación, "{índice} de 5".
+        "media-info-dialog.series-hint", "media-info-dialog.star-of-five",
+
+        // B7d, trampa 2: acá el español SÍ cambia, y es lo que se quería.
+        //
+        // El aviso era una frase armada a la mitad: "No se pudo preparar «X»
+        // para el iPod: " del código, y detrás la razón interna que devolvía
+        // Core —"hay que convertirlo y no hay convertidor"—. Traducida la
+        // primera mitad, la oración salía en dos idiomas. Y peor: para decidir
+        // si mostrarla se buscaba "no se pudo" DENTRO de esa razón.
+        //
+        // Ahora el desenlace es un valor y hay una frase entera por cada uno,
+        // que además dice lo que la anterior no decía: que la canción se
+        // sincroniza igual, sin las etiquetas corregidas.
+        "library-view-model.prepared-no-transcoder",
+        "library-view-model.prepared-transcode-failed",
+        "library-view-model.prepared-copy-failed",
+
+        // B7d, trampa 4: los rótulos de los cajones "Sin álbum" y "Artista
+        // desconocido". Eran constantes y hacían de rótulo Y de bandera —
+        // alguien preguntaba `Title == UnknownAlbumTitle` para saber si un
+        // grupo era el cajón. El texto en español es el mismo que decían.
+        "library-grouping.unknown-album", "library-grouping.unknown-artist",
+        "library-grouping.unknown-photo-album",
     ];
 
     /// <summary>

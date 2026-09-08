@@ -17690,3 +17690,141 @@ ni en la puntuación; el único `==` contra un literal es
 de MusicBrainz, no texto de pantalla. Queda una prueba que lee esos dos
 fuentes y falla si aparece una comparación con acentos: es donde volvería
 a colarse.
+## ST-247 (B7d, paso 1) — Windows: las cinco trampas, que eran bugs sin traducir nada
+
+B7d empieza por donde el triaje de B7c dijo que había que empezar: los cinco
+sitios donde el comportamiento dependía del **texto** en español. Traducir el
+resto encima de esto habría convertido cada uno en un fallo real.
+
+Lo que hay que subrayar es que **cuatro de los cinco ya estaban rotos**, con la
+app en español y sin haber tocado un idioma. La traducción no los iba a causar:
+los iba a hacer visibles.
+
+### 1. `MediaInfoDialog`: la hoja dejaba de guardar
+
+Las cajas de texto vivían en un diccionario **con la etiqueta de pantalla como
+llave**: `Field("Álbum", …)` guardaba y `Text("Álbum")` leía. Tres formas de
+romperse, ninguna con aviso:
+
+- Las dos puntas dejan de coincidir → `Text` usa `TryGetValue`, devuelve cadena
+  vacía, y el usuario edita el álbum, guarda, y **el álbum se borra**.
+- Dos campos caen en la misma etiqueta —el español distingue con un paréntesis
+  donde otro idioma no— y el segundo pisa al primero: uno de los dos deja de
+  existir.
+- La línea que enganchaba la validación usaba el **indizador**, no
+  `TryGetValue`: ahí no hay cadena vacía sino una excepción al abrir la hoja.
+
+La llave es ahora `MediaInfoField`, un valor del programa. `MediaInfoFields`
+vive en Core para poder comprobarlo en los seis idiomas sin abrir una ventana, y
+la prueba que importa mira lo que ninguna otra puede ver: que **dos campos de la
+misma hoja no compartan etiqueta**. Cada etiqueta por separado está
+perfectamente bien; el fallo solo existe al mirarlas juntas.
+
+De paso salieron a Core dos cosas más que estaban copiadas a mano:
+
+- **Los obligatorios.** La vista llevaba `["Título", "Artista", "Álbum"]`
+  escrito aparte de `IsCompleteForSync`. La prueba no compara dos listas: vacía
+  cada campo y mira cuáles impiden guardar. Si se agrega un obligatorio y nadie
+  toca la vista, el aviso de "falta algo" no aparecería hasta intentar guardar.
+- **El nombre de la categoría** en la pista de series, que estaba escrito dentro
+  de la frase. En japonés habría mandado a elegir "Series" mientras el selector
+  de abajo dice 「シリーズ」. Ahora es un hueco que llena `LocalizedName()`.
+
+Los 27 textos de la hoja salen a recursos en los seis idiomas. Se armaba en
+código, así que el borrador de B7a no la vio nunca; el español es el literal que
+estaba, palabra por palabra. Van **con** el arreglo y no antes a propósito:
+traducirlas sin cambiar la llave era exactamente el bug.
+
+### 2 y 3. `PreparedMusic`: una decisión tomada leyendo prosa
+
+La biblioteca decidía si avisar de un preparado fallido así:
+
+```csharp
+result.Reason.Contains("no se pudo")
+```
+
+No hacía falta traducir nada para romperlo: bastaba con que alguien reescribiera
+una de esas razones en español y dijera "no fue posible". Y **ya estaba roto**:
+`"hay que convertirlo y no hay convertidor"` no contiene "no se pudo", así que
+una canción que había que convertir se sincronizaba con las etiquetas viejas sin
+que nadie lo dijera.
+
+El desenlace es ahora un valor —`PreparedMusicOutcome`, con `NotNeeded`,
+`Ready`, `SourceMissing`, `NoTranscoder`, `TranscodeFailed` y `CopyFailed`— y
+`Failed` son los tres últimos. `SourceMissing` no cuenta como fallo a propósito:
+el elemento ya se ve como no disponible en la biblioteca, y decirlo dos veces
+por el mismo archivo es ruido.
+
+Con eso cae la tercera trampa, que era la misma de otra forma. El mensaje era
+
+> `"No se pudo preparar «X» para el iPod: "` + la razón interna de Core
+
+media oración del recurso y media escrita en Core: con la app en alemán, media
+oración en cada idioma. Hay ahora una frase entera por desenlace, en los seis
+idiomas, y dicen además lo que la anterior no decía — que la canción se
+sincroniza igual, **sin las etiquetas corregidas**. Acá el español sí cambia, y
+es lo que se quería; queda declarado con su motivo.
+
+Y las doce razones dejan de ser texto de pantalla: son diagnóstico, se quedan en
+español, y ahora eso está escrito en el tipo en vez de ser un accidente.
+
+### 4. `LibraryGrouping`: un rótulo haciendo de bandera
+
+`"Sin álbum"` y `"Artista desconocido"` eran constantes que servían para las dos
+cosas: el grupo mostraba ese texto **y** alguien preguntaba
+`Title == UnknownAlbumTitle` para saber si era el cajón. Es el mismo patrón que
+`MediaCategory` ya tuvo que separar (D-283).
+
+Sin traducir nada, eso ya hacía dos cosas mal: un disco que **de verdad** se
+llame "Sin álbum" contaba como el cajón —se ordenaba al final y se quedaba sin
+búsqueda de tapa— y una banda llamada "Artista desconocido" perdía a su artista
+en la búsqueda.
+
+Los rótulos salen ahora del recurso, `IsUnknownArtist` es un campo que se
+pregunta al armar el grupo (junto a `IsUnknown`, que ya existía), y en
+`AlbumCoverSearch` se van las dos comparaciones contra el rótulo.
+
+Esas dos, además, eran **defensa muerta**: los dos únicos caminos que llegan a
+`CandidatesAsync` arman un `AlbumCoverJob`, y los dos saltean el álbum sin
+título. Lo que llega es el título de la metadata, nunca el rótulo. Queda lo que
+sí es cierto siempre: un título vacío no se busca.
+
+### 5. `TMDBClient`
+
+Se arregló en B7c, al encontrarla: pedía todo con `language="es-MX"` fijo.
+
+### El trinquete, y por qué baja tan poco en un paso
+
+| paso | trinquete |
+|---|---:|
+| cierre de B7c | 386 |
+| `MediaInfoDialog` | 372 |
+| `PreparedMusic` | 371 |
+| `LibraryGrouping` | 369 |
+
+El segundo paso baja uno solo y es correcto: **doce literales cambiaron de
+clase, no de sitio.** Las razones de `PreparedMusic` estaban clasificadas como
+texto de pantalla porque salían a la barra de estado pegadas a otra frase; ahora
+son diagnóstico y se quedan en español a propósito. Cuentan igual en el
+trinquete, que mide literales en español y no si están bien puestos.
+
+Claves por idioma: 670 en es/en/de/fr, 716 en ru, 624 en ja.
+
+### Método
+
+Cada prueba nueva se puso en **rojo** antes de aceptarla en verde:
+
+- con `Album-Künstler` renombrado a "Album", falla el alemán y pasan los otros
+  cinco;
+- con `Year` agregado a los obligatorios, falla la lista;
+- con "Interpret" en el aviso mientras la caja dice "Künstler", falla el alemán;
+- sacando `NoTranscoder` de `Failed`, caen la tabla y el caso del WAV sin
+  convertidor;
+- con la deducción vieja de `IsUnknownArtist` de vuelta, caen las dos del cajón.
+
+Y una más para la colección de comprobaciones que no comprueban nada: el script
+que rompe una cadena a propósito decía "no se encontró" sobre un texto que sí
+estaba. Los argumentos de la línea de comandos llegan como **bytes** aunque el
+archivo se decodifique, así que `"Künstler"` del shell nunca iba a coincidir con
+`"Künstler"` del texto. Es el mismo error que `perl -CSD` sin `-Mutf8`, en otro
+disfraz.

@@ -87,11 +87,20 @@ public sealed class AlbumCoverSearch(
 
         // "Sin álbum" no es un disco sino el cajón de lo que no tiene uno: no
         // hay tapa que buscarle.
-        if (title.Length == 0 || title == LibraryGrouping.UnknownAlbumTitle) return [];
+        //
+        // Eso se preguntaba comparando el título con el RÓTULO de ese cajón
+        // (ST-247, B7d): texto de pantalla haciendo de bandera. Además de dejar
+        // de dar en cuanto el rótulo se traduce, tenía un efecto propio — un
+        // disco que de verdad se llamara "Sin álbum" no recibía búsqueda, y una
+        // banda llamada "Artista desconocido" perdía a su artista.
+        //
+        // Y no hace falta: los dos únicos caminos que llegan acá arman un
+        // AlbumCoverJob, y los dos saltean el álbum sin título. Lo que llega es
+        // el título de la metadata, nunca el rótulo. Queda lo que sí es cierto
+        // siempre: un título vacío no se busca.
+        if (title.Length == 0) return [];
 
-        string? artistName = artist?.Trim() is { Length: > 0 } name && name != LibraryGrouping.UnknownArtistName
-            ? name
-            : null;
+        string? artistName = artist?.Trim() is { Length: > 0 } name ? name : null;
 
         var result = new List<AlbumCoverCandidate>();
         var seen = new List<byte[]>();

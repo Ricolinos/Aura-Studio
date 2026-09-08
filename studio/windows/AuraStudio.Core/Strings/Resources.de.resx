@@ -1287,6 +1287,15 @@
   <data name="library-grouping.albums-and-songs" xml:space="preserve">
     <value>{0}, {1}</value>
   </data>
+  <data name="library-grouping.unknown-album" xml:space="preserve">
+    <value>Ohne Album</value>
+  </data>
+  <data name="library-grouping.unknown-artist" xml:space="preserve">
+    <value>Unbekannter Künstler</value>
+  </data>
+  <data name="library-grouping.unknown-photo-album" xml:space="preserve">
+    <value>Ohne Album</value>
+  </data>
   <data name="library-ingest.added.one" xml:space="preserve">
     <value>{0} Eintrag hinzugefügt.</value>
   </data>
@@ -1361,6 +1370,15 @@
   </data>
   <data name="library-view-model.completando-title" xml:space="preserve">
     <value>{0} wird ergänzt…</value>
+  </data>
+  <data name="library-view-model.prepared-no-transcoder" xml:space="preserve">
+    <value>„{0}“ konnte nicht für den iPod vorbereitet werden: Der Titel muss umgewandelt werden und es ist kein Umwandler verfügbar. Er wird unverändert synchronisiert, ohne die korrigierten Tags.</value>
+  </data>
+  <data name="library-view-model.prepared-transcode-failed" xml:space="preserve">
+    <value>„{0}“ konnte nicht für den iPod vorbereitet werden: Die Umwandlung ist fehlgeschlagen. Der Titel wird unverändert synchronisiert, ohne die korrigierten Tags.</value>
+  </data>
+  <data name="library-view-model.prepared-copy-failed" xml:space="preserve">
+    <value>„{0}“ konnte nicht für den iPod vorbereitet werden: Die Datei konnte nicht kopiert werden. Der Titel wird unverändert synchronisiert, ohne die korrigierten Tags.</value>
   </data>
   <data name="library-view-model.copied-files.one" xml:space="preserve">
     <value>{0} Datei in die Mediathek kopiert.</value>
@@ -1496,6 +1514,87 @@
   </data>
   <data name="media-info-dialog.mas-informacion" xml:space="preserve">
     <value>Weitere Infos</value>
+  </data>
+  <data name="media-info-dialog.field-title" xml:space="preserve">
+    <value>Titel</value>
+  </data>
+  <data name="media-info-dialog.field-artist" xml:space="preserve">
+    <value>Künstler</value>
+  </data>
+  <data name="media-info-dialog.field-album" xml:space="preserve">
+    <value>Album</value>
+  </data>
+  <data name="media-info-dialog.field-album-artist" xml:space="preserve">
+    <value>Album-Künstler (optional)</value>
+  </data>
+  <data name="media-info-dialog.field-track-number" xml:space="preserve">
+    <value>Titelnummer (optional)</value>
+  </data>
+  <data name="media-info-dialog.field-year" xml:space="preserve">
+    <value>Jahr (optional)</value>
+  </data>
+  <data name="media-info-dialog.field-genre" xml:space="preserve">
+    <value>Genre (optional)</value>
+  </data>
+  <data name="media-info-dialog.field-composer" xml:space="preserve">
+    <value>Komponist (optional)</value>
+  </data>
+  <data name="media-info-dialog.field-series-name" xml:space="preserve">
+    <value>Serienname</value>
+  </data>
+  <data name="media-info-dialog.field-season" xml:space="preserve">
+    <value>Staffel</value>
+  </data>
+  <data name="media-info-dialog.field-episode" xml:space="preserve">
+    <value>Folge</value>
+  </data>
+  <data name="media-info-dialog.section-rating" xml:space="preserve">
+    <value>Bewertung</value>
+  </data>
+  <data name="media-info-dialog.section-information" xml:space="preserve">
+    <value>Informationen</value>
+  </data>
+  <data name="media-info-dialog.section-lyrics" xml:space="preserve">
+    <value>Liedtext (optional)</value>
+  </data>
+  <data name="media-info-dialog.section-category" xml:space="preserve">
+    <value>Kategorie</value>
+  </data>
+  <data name="media-info-dialog.section-file" xml:space="preserve">
+    <value>Datei</value>
+  </data>
+  <data name="media-info-dialog.rating-caption" xml:space="preserve">
+    <value>Wird mit dem iPod synchronisiert: dieselbe Bewertung, die du hier oder am Gerät vergibst.</value>
+  </data>
+  <data name="media-info-dialog.lyrics-caption" xml:space="preserve">
+    <value>Wird neben dem Titel gespeichert und auf dem iPod angezeigt, während er läuft.</value>
+  </data>
+  <data name="media-info-dialog.series-caption" xml:space="preserve">
+    <value>Der Name, unter dem die Folge auf dem iPod ankommt, entsteht aus diesen drei Feldern: ändere sie und synchronisiere erneut, um sie neu zu gruppieren.</value>
+  </data>
+  <data name="media-info-dialog.series-hint" xml:space="preserve">
+    <value>Die Serienfelder erscheinen, wenn du unten die Kategorie {0} wählst und dieses Blatt erneut öffnest.</value>
+  </data>
+  <data name="media-info-dialog.info-location" xml:space="preserve">
+    <value>Speicherort</value>
+  </data>
+  <data name="media-info-dialog.info-format" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="media-info-dialog.info-size" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="media-info-dialog.info-duration" xml:space="preserve">
+    <value>Dauer</value>
+  </data>
+  <data name="media-info-dialog.info-status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="media-info-dialog.star-of-five" xml:space="preserve">
+    <value>{0} von 5</value>
+  </data>
+  <data name="media-info-edit.incomplete-reason" xml:space="preserve">
+    <value>Titel, Künstler und Album sind zum Synchronisieren erforderlich.</value>
   </data>
   <data name="playlists-page.crea-nueva-o-importa-archivo-m3u" xml:space="preserve">
     <value>Leg eine neue an oder importiere eine .m3u-/.m3u8-Datei aus einem anderen Programm. Titel, die nicht in deiner Mediathek sind, werden separat gezählt und nicht stillschweigend verworfen.</value>

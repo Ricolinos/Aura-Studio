@@ -1,3 +1,4 @@
+using System.Globalization;
 using AuraStudio.Core;
 using AuraStudio.Core.Library;
 using Xunit;
@@ -113,6 +114,87 @@ public class LibraryGroupingTests
         Assert.Equal("Signos", albums[0].Title);
         Assert.Equal(LibraryGrouping.UnknownAlbumTitle, albums[^1].Title);
         Assert.True(albums[^1].IsUnknown);
+    }
+
+    // MARK: - El rótulo del cajón no es una bandera (ST-247, B7d)
+
+    /// <summary>
+    /// Un disco que <b>de verdad</b> se llama "Sin álbum" es un disco, no el
+    /// cajón.
+    ///
+    /// <para>Antes no se podían distinguir: quien necesitaba saber si un grupo
+    /// era el cajón comparaba el título con su rótulo. Y en cuanto el rótulo se
+    /// traduce, la comparación deja de dar y el cajón de verdad pasa a ser un
+    /// álbum más.</para>
+    /// </summary>
+    [Fact]
+    public void UnAlbumQueSeLlamaComoElCajonNoEsElCajon()
+    {
+        IReadOnlyList<AlbumGroup> albums = LibraryGrouping.Albums(
+        [
+            Song(@"C:\m\1.mp3", album: LibraryGrouping.UnknownAlbumTitle, artist: "Soda Stereo")
+        ]);
+
+        AlbumGroup album = Assert.Single(albums);
+
+        Assert.Equal(LibraryGrouping.UnknownAlbumTitle, album.Title);
+        Assert.False(album.IsUnknown, "tiene título propio; que coincida con el rótulo no lo hace el cajón");
+    }
+
+    /// <summary>Y una banda que se llama "Artista desconocido" tampoco es desconocida.</summary>
+    [Fact]
+    public void UnaBandaQueSeLlamaComoElCajonTieneArtista()
+    {
+        IReadOnlyList<AlbumGroup> albums = LibraryGrouping.Albums(
+        [
+            Song(@"C:\m\1.mp3", album: "Signos", artist: LibraryGrouping.UnknownArtistName)
+        ]);
+
+        AlbumGroup album = Assert.Single(albums);
+
+        Assert.Equal(LibraryGrouping.UnknownArtistName, album.Artist);
+        Assert.False(album.IsUnknownArtist);
+    }
+
+    /// <summary>
+    /// Y donde no hay artista la bandera se levanta igual: lo que se dejó de
+    /// hacer es deducirla del texto, no dejar de tenerla.
+    /// </summary>
+    [Fact]
+    public void SinArtistaLaBanderaSeLevanta()
+    {
+        IReadOnlyList<AlbumGroup> albums = LibraryGrouping.Albums(
+        [
+            Song(@"C:\m\1.mp3", album: "Signos")
+        ]);
+
+        Assert.True(Assert.Single(albums).IsUnknownArtist);
+    }
+
+    /// <summary>
+    /// Los rótulos salen del recurso y cambian con el idioma. Si esto dejara de
+    /// pasar, el cajón se estaría rotulando en español dentro de una app en otro
+    /// idioma — sin fallar nada, como siempre.
+    /// </summary>
+    [Fact]
+    public void LosRotulosDeLosCajonesCambianConElIdioma()
+    {
+        CultureInfo before = CultureInfo.CurrentUICulture;
+        try
+        {
+            CultureInfo.CurrentUICulture = new CultureInfo("es");
+            string spanishAlbum = LibraryGrouping.UnknownAlbumTitle;
+            string spanishArtist = LibraryGrouping.UnknownArtistName;
+
+            CultureInfo.CurrentUICulture = new CultureInfo("ja");
+
+            Assert.NotEqual(spanishAlbum, LibraryGrouping.UnknownAlbumTitle);
+            Assert.NotEqual(spanishArtist, LibraryGrouping.UnknownArtistName);
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = before;
+        }
     }
 
     [Fact]
