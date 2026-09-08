@@ -1,5 +1,7 @@
 using System.Globalization;
 
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Library;
 
 /// <summary>
@@ -166,18 +168,19 @@ public sealed class MediaTableRow(LibraryItem item, long fileSizeBytes = 0, Sync
     /// </summary>
     public string StatusText => Item.Status.State switch
     {
-        LibraryItemState.Ready => SyncState switch
+        LibraryItemState.Ready => Strings.Get(SyncState switch
         {
-            SyncItemState.Synced => "En el iPod",
-            null => "Listo",
-            SyncItemState.Pending => "Falta copiar",
-            SyncItemState.ChangedLocally => "Cambió aquí",
-            SyncItemState.ModifiedOnDevice => "Cambió en el iPod",
-            _ => "Se borró en el iPod"
-        },
-        LibraryItemState.Queued => "En cola",
-        LibraryItemState.Enriching => "Buscando información",
-        LibraryItemState.Transcoding => $"Convirtiendo… {Item.Status.Progress * 100:0}%",
+            SyncItemState.Synced => "media-table-row.status-synced",
+            null => "media-table-row.status-ready",
+            SyncItemState.Pending => "media-table-row.status-pending",
+            SyncItemState.ChangedLocally => "media-table-row.status-changed-locally",
+            SyncItemState.ModifiedOnDevice => "media-table-row.status-modified-on-device",
+            _ => "media-table-row.status-deleted-on-device"
+        }),
+        LibraryItemState.Queued => Strings.Get("media-table-row.status-queued"),
+        LibraryItemState.Enriching => Strings.Get("media-table-row.status-enriching"),
+        LibraryItemState.Transcoding => Strings.Format(
+            "media-table-row.status-transcoding", (Item.Status.Progress * 100).ToString("0")),
         LibraryItemState.NeedsReview => "Necesita revisión",
         _ => Item.Status.Error is { Length: > 0 } error ? $"Error: {error}" : "Error"
     };

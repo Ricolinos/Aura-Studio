@@ -2469,6 +2469,108 @@
   <data name="similarity.detail-duplicate" xml:space="preserve">
     <value>Mit ziemlicher Sicherheit dieselbe Datei zweimal.</value>
   </data>
+  <data name="music-column-group.music" xml:space="preserve">
+    <value>Musik</value>
+  </data>
+  <data name="music-column-group.personal" xml:space="preserve">
+    <value>Persönlich</value>
+  </data>
+  <data name="music-column-group.statistics" xml:space="preserve">
+    <value>Statistiken</value>
+  </data>
+  <data name="music-column-group.file" xml:space="preserve">
+    <value>Datei</value>
+  </data>
+  <data name="music-column-group.other-columns" xml:space="preserve">
+    <value>Sonstiges</value>
+  </data>
+  <data name="music-column.album" xml:space="preserve">
+    <value>Album</value>
+  </data>
+  <data name="music-column.album-artist" xml:space="preserve">
+    <value>Album-Künstler</value>
+  </data>
+  <data name="music-column.artist" xml:space="preserve">
+    <value>Künstler</value>
+  </data>
+  <data name="music-column.composer" xml:space="preserve">
+    <value>Komponist</value>
+  </data>
+  <data name="music-column.disc-number" xml:space="preserve">
+    <value>Nummer des Datenträgers</value>
+  </data>
+  <data name="music-column.duration" xml:space="preserve">
+    <value>Dauer</value>
+  </data>
+  <data name="music-column.genre" xml:space="preserve">
+    <value>Genre</value>
+  </data>
+  <data name="music-column.track-number" xml:space="preserve">
+    <value>Titelnummer</value>
+  </data>
+  <data name="music-column.year" xml:space="preserve">
+    <value>Jahr</value>
+  </data>
+  <data name="music-column.favorite" xml:space="preserve">
+    <value>Favorit</value>
+  </data>
+  <data name="music-column.rating" xml:space="preserve">
+    <value>Bewertung</value>
+  </data>
+  <data name="music-column.date-added" xml:space="preserve">
+    <value>Hinzugefügt am</value>
+  </data>
+  <data name="music-column.file-format" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="music-column.file-size" xml:space="preserve">
+    <value>Größe</value>
+  </data>
+  <data name="music-column.status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="music-column.header-disc-number" xml:space="preserve">
+    <value>Datenträger</value>
+  </data>
+  <data name="music-column.header-track-number" xml:space="preserve">
+    <value>Nr.</value>
+  </data>
+  <data name="music-column.header-date-added" xml:space="preserve">
+    <value>Hinzugefügt</value>
+  </data>
+  <data name="media-table-row.status-synced" xml:space="preserve">
+    <value>Auf dem iPod</value>
+  </data>
+  <data name="media-table-row.status-ready" xml:space="preserve">
+    <value>Bereit</value>
+  </data>
+  <data name="media-table-row.status-pending" xml:space="preserve">
+    <value>Noch nicht kopiert</value>
+  </data>
+  <data name="media-table-row.status-changed-locally" xml:space="preserve">
+    <value>Hier geändert</value>
+  </data>
+  <data name="media-table-row.status-modified-on-device" xml:space="preserve">
+    <value>Auf dem iPod geändert</value>
+  </data>
+  <data name="media-table-row.status-deleted-on-device" xml:space="preserve">
+    <value>Auf dem iPod gelöscht</value>
+  </data>
+  <data name="media-table-row.status-queued" xml:space="preserve">
+    <value>In der Warteschlange</value>
+  </data>
+  <data name="media-table-row.status-enriching" xml:space="preserve">
+    <value>Informationen werden gesucht</value>
+  </data>
+  <data name="media-table-row.status-transcoding" xml:space="preserve">
+    <value>Wird umgewandelt… {0} %</value>
+  </data>
+  <data name="sync-scope.nothing-selected" xml:space="preserve">
+    <value>Es ist nichts zum Synchronisieren ausgewählt.</value>
+  </data>
+  <data name="sync-scope.selection-not-ready" xml:space="preserve">
+    <value>Die ausgewählten Elemente sind noch nicht zum Synchronisieren bereit.</value>
+  </data>
   <data name="similarity.detail-probable" xml:space="preserve">
     <value>Wahrscheinlich derselbe Titel mit anders geschriebenen Metadaten.</value>
   </data>

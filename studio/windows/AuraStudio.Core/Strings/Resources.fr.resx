@@ -2469,6 +2469,108 @@
   <data name="similarity.detail-duplicate" xml:space="preserve">
     <value>Presque certainement le même fichier deux fois.</value>
   </data>
+  <data name="music-column-group.music" xml:space="preserve">
+    <value>Musique</value>
+  </data>
+  <data name="music-column-group.personal" xml:space="preserve">
+    <value>Personnel</value>
+  </data>
+  <data name="music-column-group.statistics" xml:space="preserve">
+    <value>Statistiques</value>
+  </data>
+  <data name="music-column-group.file" xml:space="preserve">
+    <value>Fichier</value>
+  </data>
+  <data name="music-column-group.other-columns" xml:space="preserve">
+    <value>Autres</value>
+  </data>
+  <data name="music-column.album" xml:space="preserve">
+    <value>Album</value>
+  </data>
+  <data name="music-column.album-artist" xml:space="preserve">
+    <value>Artiste de l'album</value>
+  </data>
+  <data name="music-column.artist" xml:space="preserve">
+    <value>Artiste</value>
+  </data>
+  <data name="music-column.composer" xml:space="preserve">
+    <value>Compositeur</value>
+  </data>
+  <data name="music-column.disc-number" xml:space="preserve">
+    <value>Numéro de disque</value>
+  </data>
+  <data name="music-column.duration" xml:space="preserve">
+    <value>Durée</value>
+  </data>
+  <data name="music-column.genre" xml:space="preserve">
+    <value>Genre</value>
+  </data>
+  <data name="music-column.track-number" xml:space="preserve">
+    <value>Numéro de piste</value>
+  </data>
+  <data name="music-column.year" xml:space="preserve">
+    <value>Année</value>
+  </data>
+  <data name="music-column.favorite" xml:space="preserve">
+    <value>Favori</value>
+  </data>
+  <data name="music-column.rating" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="music-column.date-added" xml:space="preserve">
+    <value>Date d'ajout</value>
+  </data>
+  <data name="music-column.file-format" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="music-column.file-size" xml:space="preserve">
+    <value>Taille</value>
+  </data>
+  <data name="music-column.status" xml:space="preserve">
+    <value>État</value>
+  </data>
+  <data name="music-column.header-disc-number" xml:space="preserve">
+    <value>Disque</value>
+  </data>
+  <data name="music-column.header-track-number" xml:space="preserve">
+    <value>N°</value>
+  </data>
+  <data name="music-column.header-date-added" xml:space="preserve">
+    <value>Ajouté</value>
+  </data>
+  <data name="media-table-row.status-synced" xml:space="preserve">
+    <value>Sur l'iPod</value>
+  </data>
+  <data name="media-table-row.status-ready" xml:space="preserve">
+    <value>Prêt</value>
+  </data>
+  <data name="media-table-row.status-pending" xml:space="preserve">
+    <value>Reste à copier</value>
+  </data>
+  <data name="media-table-row.status-changed-locally" xml:space="preserve">
+    <value>Modifié ici</value>
+  </data>
+  <data name="media-table-row.status-modified-on-device" xml:space="preserve">
+    <value>Modifié sur l'iPod</value>
+  </data>
+  <data name="media-table-row.status-deleted-on-device" xml:space="preserve">
+    <value>Supprimé sur l'iPod</value>
+  </data>
+  <data name="media-table-row.status-queued" xml:space="preserve">
+    <value>En file d'attente</value>
+  </data>
+  <data name="media-table-row.status-enriching" xml:space="preserve">
+    <value>Recherche d'informations</value>
+  </data>
+  <data name="media-table-row.status-transcoding" xml:space="preserve">
+    <value>Conversion… {0} %</value>
+  </data>
+  <data name="sync-scope.nothing-selected" xml:space="preserve">
+    <value>Aucun élément n'est sélectionné pour la synchronisation.</value>
+  </data>
+  <data name="sync-scope.selection-not-ready" xml:space="preserve">
+    <value>Les éléments sélectionnés ne sont pas encore prêts à synchroniser.</value>
+  </data>
   <data name="similarity.detail-probable" xml:space="preserve">
     <value>Probablement le même morceau avec les métadonnées écrites différemment.</value>
   </data>

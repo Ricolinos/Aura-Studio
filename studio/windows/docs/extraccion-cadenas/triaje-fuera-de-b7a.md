@@ -33,6 +33,7 @@ trinquete de `HardcodedSpanishTests`, y acá queda dicho por qué.
 | paso 2, `SyncViewModel` | 240 | la ficha de sincronización; los conteos con «archivo(s)» pasan a formas de plural de verdad |
 | paso 2, temas | 218 | `ThemeInstaller`, `ThemePackager` y `ThemesViewModel`; otro «fuente(s)» a formas de plural |
 | paso 2, `SimilarItemsDetector` | 206 | los motivos y la sugerencia; los nombres de campo se piden a la hoja de metadata |
+| paso 2, rótulos de tabla | 194 | columnas de Canciones, estados de la biblioteca y los avisos de alcance |
 
 El trinquete baja poco en el segundo paso y eso es correcto: **doce literales
 cambiaron de clase, no de sitio.** Las razones de `PreparedMusic` estaban como

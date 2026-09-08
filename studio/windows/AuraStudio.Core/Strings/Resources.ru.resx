@@ -2640,6 +2640,108 @@
   <data name="similarity.detail-duplicate" xml:space="preserve">
     <value>Почти наверняка это один и тот же файл дважды.</value>
   </data>
+  <data name="music-column-group.music" xml:space="preserve">
+    <value>Музыка</value>
+  </data>
+  <data name="music-column-group.personal" xml:space="preserve">
+    <value>Личное</value>
+  </data>
+  <data name="music-column-group.statistics" xml:space="preserve">
+    <value>Статистика</value>
+  </data>
+  <data name="music-column-group.file" xml:space="preserve">
+    <value>Файл</value>
+  </data>
+  <data name="music-column-group.other-columns" xml:space="preserve">
+    <value>Прочее</value>
+  </data>
+  <data name="music-column.album" xml:space="preserve">
+    <value>Альбом</value>
+  </data>
+  <data name="music-column.album-artist" xml:space="preserve">
+    <value>Исполнитель альбома</value>
+  </data>
+  <data name="music-column.artist" xml:space="preserve">
+    <value>Исполнитель</value>
+  </data>
+  <data name="music-column.composer" xml:space="preserve">
+    <value>Композитор</value>
+  </data>
+  <data name="music-column.disc-number" xml:space="preserve">
+    <value>Номер диска</value>
+  </data>
+  <data name="music-column.duration" xml:space="preserve">
+    <value>Длительность</value>
+  </data>
+  <data name="music-column.genre" xml:space="preserve">
+    <value>Жанр</value>
+  </data>
+  <data name="music-column.track-number" xml:space="preserve">
+    <value>Номер трека</value>
+  </data>
+  <data name="music-column.year" xml:space="preserve">
+    <value>Год</value>
+  </data>
+  <data name="music-column.favorite" xml:space="preserve">
+    <value>Избранное</value>
+  </data>
+  <data name="music-column.rating" xml:space="preserve">
+    <value>Оценка</value>
+  </data>
+  <data name="music-column.date-added" xml:space="preserve">
+    <value>Дата добавления</value>
+  </data>
+  <data name="music-column.file-format" xml:space="preserve">
+    <value>Формат</value>
+  </data>
+  <data name="music-column.file-size" xml:space="preserve">
+    <value>Размер</value>
+  </data>
+  <data name="music-column.status" xml:space="preserve">
+    <value>Состояние</value>
+  </data>
+  <data name="music-column.header-disc-number" xml:space="preserve">
+    <value>Диск</value>
+  </data>
+  <data name="music-column.header-track-number" xml:space="preserve">
+    <value>№</value>
+  </data>
+  <data name="music-column.header-date-added" xml:space="preserve">
+    <value>Добавлено</value>
+  </data>
+  <data name="media-table-row.status-synced" xml:space="preserve">
+    <value>На iPod</value>
+  </data>
+  <data name="media-table-row.status-ready" xml:space="preserve">
+    <value>Готово</value>
+  </data>
+  <data name="media-table-row.status-pending" xml:space="preserve">
+    <value>Ещё не скопировано</value>
+  </data>
+  <data name="media-table-row.status-changed-locally" xml:space="preserve">
+    <value>Изменено здесь</value>
+  </data>
+  <data name="media-table-row.status-modified-on-device" xml:space="preserve">
+    <value>Изменено на iPod</value>
+  </data>
+  <data name="media-table-row.status-deleted-on-device" xml:space="preserve">
+    <value>Удалено на iPod</value>
+  </data>
+  <data name="media-table-row.status-queued" xml:space="preserve">
+    <value>В очереди</value>
+  </data>
+  <data name="media-table-row.status-enriching" xml:space="preserve">
+    <value>Поиск сведений</value>
+  </data>
+  <data name="media-table-row.status-transcoding" xml:space="preserve">
+    <value>Преобразование… {0} %</value>
+  </data>
+  <data name="sync-scope.nothing-selected" xml:space="preserve">
+    <value>Для синхронизации ничего не выбрано.</value>
+  </data>
+  <data name="sync-scope.selection-not-ready" xml:space="preserve">
+    <value>Выбранные элементы ещё не готовы к синхронизации.</value>
+  </data>
   <data name="similarity.detail-probable" xml:space="preserve">
     <value>Скорее всего, это один и тот же трек с по-разному записанными метаданными.</value>
   </data>

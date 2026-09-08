@@ -2298,6 +2298,108 @@
   <data name="similarity.detail-duplicate" xml:space="preserve">
     <value>ほぼ確実に、同じファイルが二つあります。</value>
   </data>
+  <data name="music-column-group.music" xml:space="preserve">
+    <value>音楽</value>
+  </data>
+  <data name="music-column-group.personal" xml:space="preserve">
+    <value>個人用</value>
+  </data>
+  <data name="music-column-group.statistics" xml:space="preserve">
+    <value>統計</value>
+  </data>
+  <data name="music-column-group.file" xml:space="preserve">
+    <value>ファイル</value>
+  </data>
+  <data name="music-column-group.other-columns" xml:space="preserve">
+    <value>その他</value>
+  </data>
+  <data name="music-column.album" xml:space="preserve">
+    <value>アルバム</value>
+  </data>
+  <data name="music-column.album-artist" xml:space="preserve">
+    <value>アルバムアーティスト</value>
+  </data>
+  <data name="music-column.artist" xml:space="preserve">
+    <value>アーティスト</value>
+  </data>
+  <data name="music-column.composer" xml:space="preserve">
+    <value>作曲者</value>
+  </data>
+  <data name="music-column.disc-number" xml:space="preserve">
+    <value>ディスク番号</value>
+  </data>
+  <data name="music-column.duration" xml:space="preserve">
+    <value>長さ</value>
+  </data>
+  <data name="music-column.genre" xml:space="preserve">
+    <value>ジャンル</value>
+  </data>
+  <data name="music-column.track-number" xml:space="preserve">
+    <value>トラック番号</value>
+  </data>
+  <data name="music-column.year" xml:space="preserve">
+    <value>年</value>
+  </data>
+  <data name="music-column.favorite" xml:space="preserve">
+    <value>お気に入り</value>
+  </data>
+  <data name="music-column.rating" xml:space="preserve">
+    <value>評価</value>
+  </data>
+  <data name="music-column.date-added" xml:space="preserve">
+    <value>追加した日</value>
+  </data>
+  <data name="music-column.file-format" xml:space="preserve">
+    <value>フォーマット</value>
+  </data>
+  <data name="music-column.file-size" xml:space="preserve">
+    <value>サイズ</value>
+  </data>
+  <data name="music-column.status" xml:space="preserve">
+    <value>状態</value>
+  </data>
+  <data name="music-column.header-disc-number" xml:space="preserve">
+    <value>ディスク</value>
+  </data>
+  <data name="music-column.header-track-number" xml:space="preserve">
+    <value>番号</value>
+  </data>
+  <data name="music-column.header-date-added" xml:space="preserve">
+    <value>追加日</value>
+  </data>
+  <data name="media-table-row.status-synced" xml:space="preserve">
+    <value>iPod にあります</value>
+  </data>
+  <data name="media-table-row.status-ready" xml:space="preserve">
+    <value>準備完了</value>
+  </data>
+  <data name="media-table-row.status-pending" xml:space="preserve">
+    <value>コピー待ち</value>
+  </data>
+  <data name="media-table-row.status-changed-locally" xml:space="preserve">
+    <value>こちらで変更あり</value>
+  </data>
+  <data name="media-table-row.status-modified-on-device" xml:space="preserve">
+    <value>iPod で変更あり</value>
+  </data>
+  <data name="media-table-row.status-deleted-on-device" xml:space="preserve">
+    <value>iPod で削除されました</value>
+  </data>
+  <data name="media-table-row.status-queued" xml:space="preserve">
+    <value>待機中</value>
+  </data>
+  <data name="media-table-row.status-enriching" xml:space="preserve">
+    <value>情報を検索しています</value>
+  </data>
+  <data name="media-table-row.status-transcoding" xml:space="preserve">
+    <value>変換しています… {0}%</value>
+  </data>
+  <data name="sync-scope.nothing-selected" xml:space="preserve">
+    <value>同期する項目が選ばれていません。</value>
+  </data>
+  <data name="sync-scope.selection-not-ready" xml:space="preserve">
+    <value>選ばれている項目は、まだ同期できる状態ではありません。</value>
+  </data>
   <data name="similarity.detail-probable" xml:space="preserve">
     <value>おそらく同じ曲で、メタデータの書き方が違うだけです。</value>
   </data>

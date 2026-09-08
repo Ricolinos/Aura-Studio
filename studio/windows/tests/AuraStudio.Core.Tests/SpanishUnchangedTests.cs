@@ -480,6 +480,35 @@ public class SpanishUnchangedTests
         "similarity.edited-by-hand", "similarity.largest", "similarity.bits-joiner",
         "similarity.suggest-duplicate", "similarity.suggest-probable",
         "similarity.suggest-possible", "similarity.canonical-artist",
+
+        // B7d, paso 2: los rótulos de la tabla de Canciones, los estados de la
+        // biblioteca y los tres avisos de alcance de la sincronización.
+        //
+        // `SyncScopeResolver.NothingReady` NO estrena clave: dice exactamente
+        // lo mismo que la ficha de sincronización, así que usa la de ella. Dos
+        // claves con el mismo texto son dos textos esperando a que uno cambie.
+        "music-column-group.music", "music-column-group.personal",
+        "music-column-group.statistics", "music-column-group.file",
+        "music-column-group.other-columns",
+
+        // La clave del grupo "Otros" se llama `other-columns` y no `other` por
+        // una razón que costó un minuto encontrar: una clave que TERMINA en
+        // `.other` es, por convención, la forma plural de otra. Llamándola
+        // `music-column-group.other` fallaron cinco pruebas a la vez — pedían
+        // su `.one`, su `.few` y su `{0}` — y ninguna hablaba de columnas.
+        "music-column.album", "music-column.album-artist", "music-column.artist",
+        "music-column.composer", "music-column.disc-number", "music-column.duration",
+        "music-column.genre", "music-column.track-number", "music-column.year",
+        "music-column.favorite", "music-column.rating", "music-column.date-added",
+        "music-column.file-format", "music-column.file-size", "music-column.status",
+        "music-column.header-disc-number", "music-column.header-track-number",
+        "music-column.header-date-added",
+        "media-table-row.status-synced", "media-table-row.status-ready",
+        "media-table-row.status-pending", "media-table-row.status-changed-locally",
+        "media-table-row.status-modified-on-device",
+        "media-table-row.status-deleted-on-device", "media-table-row.status-queued",
+        "media-table-row.status-enriching", "media-table-row.status-transcoding",
+        "sync-scope.nothing-selected", "sync-scope.selection-not-ready",
     ];
 
     /// <summary>

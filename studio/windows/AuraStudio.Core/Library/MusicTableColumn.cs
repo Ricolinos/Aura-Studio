@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core.Library;
 
 /// <summary>
@@ -87,43 +89,43 @@ public static class MusicTableColumns
         _ => MusicColumnGroup.Other
     };
 
-    public static string Title(this MusicColumnGroup group) => group switch
+    public static string Title(this MusicColumnGroup group) => Strings.Get(group switch
     {
-        MusicColumnGroup.Music => "Música",
-        MusicColumnGroup.Personal => "Personal",
-        MusicColumnGroup.Statistics => "Estadísticas",
-        MusicColumnGroup.File => "Archivo",
-        _ => "Otros"
-    };
+        MusicColumnGroup.Music => "music-column-group.music",
+        MusicColumnGroup.Personal => "music-column-group.personal",
+        MusicColumnGroup.Statistics => "music-column-group.statistics",
+        MusicColumnGroup.File => "music-column-group.file",
+        _ => "music-column-group.other-columns"
+    });
 
     public static IReadOnlyList<MusicTableColumn> Columns(this MusicColumnGroup group) =>
         [.. All.Where(column => column.Group() == group)];
 
-    public static string Title(this MusicTableColumn column) => column switch
+    public static string Title(this MusicTableColumn column) => Strings.Get(column switch
     {
-        MusicTableColumn.Album => "Álbum",
-        MusicTableColumn.AlbumArtist => "Artista del álbum",
-        MusicTableColumn.Artist => "Artista",
-        MusicTableColumn.Composer => "Compositor",
-        MusicTableColumn.DiscNumber => "Número de disco",
-        MusicTableColumn.Duration => "Duración",
-        MusicTableColumn.Genre => "Género",
-        MusicTableColumn.TrackNumber => "Número de pista",
-        MusicTableColumn.Year => "Año",
-        MusicTableColumn.Favorite => "Favorito",
-        MusicTableColumn.Rating => "Calificación",
-        MusicTableColumn.DateAdded => "Fecha en que se agregó",
-        MusicTableColumn.FileFormat => "Formato",
-        MusicTableColumn.FileSize => "Tamaño",
-        _ => "Estado"
-    };
+        MusicTableColumn.Album => "music-column.album",
+        MusicTableColumn.AlbumArtist => "music-column.album-artist",
+        MusicTableColumn.Artist => "music-column.artist",
+        MusicTableColumn.Composer => "music-column.composer",
+        MusicTableColumn.DiscNumber => "music-column.disc-number",
+        MusicTableColumn.Duration => "music-column.duration",
+        MusicTableColumn.Genre => "music-column.genre",
+        MusicTableColumn.TrackNumber => "music-column.track-number",
+        MusicTableColumn.Year => "music-column.year",
+        MusicTableColumn.Favorite => "music-column.favorite",
+        MusicTableColumn.Rating => "music-column.rating",
+        MusicTableColumn.DateAdded => "music-column.date-added",
+        MusicTableColumn.FileFormat => "music-column.file-format",
+        MusicTableColumn.FileSize => "music-column.file-size",
+        _ => "music-column.status"
+    });
 
     /// <summary>Encabezado corto para la tabla; la ventana de opciones usa el título largo.</summary>
     public static string HeaderTitle(this MusicTableColumn column) => column switch
     {
-        MusicTableColumn.DiscNumber => "Disco",
-        MusicTableColumn.TrackNumber => "N.º",
-        MusicTableColumn.DateAdded => "Agregado",
+        MusicTableColumn.DiscNumber => Strings.Get("music-column.header-disc-number"),
+        MusicTableColumn.TrackNumber => Strings.Get("music-column.header-track-number"),
+        MusicTableColumn.DateAdded => Strings.Get("music-column.header-date-added"),
         _ => column.Title()
     };
 
