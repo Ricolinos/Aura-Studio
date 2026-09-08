@@ -930,5 +930,53 @@
 			<string>%2$@ Videos</string>
 		</dict>
 	</dict>
+	<key>storage.plural.convertir-ausentes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld liegt auf einem nicht angeschlossenen Datenträger und wird nicht angerührt.</string>
+			<key>other</key>
+			<string>%lld liegen auf einem nicht angeschlossenen Datenträger und werden nicht angerührt.</string>
+		</dict>
+	</dict>
+	<key>storage.plural.convertir-titulo</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld Titel in eine Kopie umwandeln?</string>
+			<key>other</key>
+			<string>%lld Titel in Kopien umwandeln?</string>
+		</dict>
+	</dict>
+	<key>storage.plural.convirtiendo</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld Titel wird in eine Kopie umgewandelt…</string>
+			<key>other</key>
+			<string>%lld Titel werden in Kopien umgewandelt…</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

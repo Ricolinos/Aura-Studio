@@ -454,6 +454,11 @@
 "storage-copy-explainer" = "Copiar a la Biblioteca de Aura: Aura controla los archivos, edita sus etiquetas y los sincroniza directo; ocupa espacio en disco (una copia); puedes borrar tus originales después.";
 "storage-reference-explainer" = "Referenciar en su lugar: no ocupa espacio extra ni toca tus archivos; Aura mantiene una versión preparada aparte (.preparados/), las ediciones viven solo en Aura y en el iPod, y si el disco original no está, esas canciones no se pueden sincronizar.";
 "storage-section-title" = "Cómo guardar tu música";
+"storage.convert-referenced-button" = "Convertir referenciados en copias…";
+"storage.convert-referenced-confirm" = "Convertir";
+"storage.convert-referenced-explainer" = "Copia dentro de la Biblioteca de Aura las canciones que hoy solo se referencian. No mueve ni borra tus originales: se quedan donde están. Las que vivan en un disco desconectado se cuentan aparte y no se tocan.";
+"storage.convert-referenced-message" = "Se copiarán dentro de tu biblioteca y ocuparán unos %@. Tus originales se quedan donde están.";
+"storage.convert-referenced-none" = "No hay canciones referenciadas que convertir.";
 "sync-sheets.antes-sincronizar" = "Antes de sincronizar";
 "sync-sheets.archivo-s-importado-s-revisalos-musica" = "%lld archivo(s) importado(s) -- revísalos en Música/Video/Fotos.";
 "sync-sheets.archivo-s-se-modificaron-ipod-fuera" = "%lld archivo(s) se modificaron en el iPod fuera de Aura Studio.";

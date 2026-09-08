@@ -197,6 +197,56 @@ struct SettingsSectionView: View {
         }
     }
 
+    /// ST-224 (addendum): **convertir referenciados en copias**, que
+    /// hasta ahora no tenía forma de invocarse.
+    ///
+    /// `LibraryViewModel.convertReferencedToCopies` existía desde A4 y
+    /// **ninguna vista lo llamaba**: el 0.4.0 salió con una función que
+    /// el usuario no podía usar. Va acá, debajo de "Cómo guardar tu
+    /// música", porque es la acción que cambia de un modo al otro lo que
+    /// ya está importado -- justo lo que el texto de arriba dice que el
+    /// interruptor NO hace.
+    private var convertReferencedRow: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Button(LS("storage.convert-referenced-button")) {
+                    library.requestReferenceConversion()
+                }
+                .accessibilityIdentifier("ajustes.almacenamiento.convertirReferenciados")
+                if let progress = library.referenceConversion {
+                    ProgressView(value: progress.fraction).progressViewStyle(.linear).frame(width: 120)
+                    Text(progress.label).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                }
+                Spacer()
+            }
+            Text(LS("storage.convert-referenced-explainer"))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if let resumen = library.lastReferenceConversionSummary {
+                Text(resumen)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .accessibilityIdentifier("ajustes.almacenamiento.convertirReferenciados.resumen")
+            }
+        }
+        .padding(.top, 4)
+        .alert(library.pendingReferenceConversion?.title ?? "",
+               isPresented: Binding(get: { library.pendingReferenceConversion != nil },
+                                    set: { if !$0 { library.cancelPendingReferenceConversion() } })) {
+            Button(LS("storage.convert-referenced-confirm")) {
+                Task { await library.confirmReferenceConversion() }
+            }
+            .accessibilityIdentifier("ajustes.almacenamiento.convertirReferenciados.confirmar")
+            Button(LS("background-task-center-indicator.cancelar"), role: .cancel) {
+                library.cancelPendingReferenceConversion()
+            }
+            .accessibilityIdentifier("ajustes.almacenamiento.convertirReferenciados.cancelar")
+        } message: {
+            Text(library.pendingReferenceConversion?.message ?? "")
+        }
+    }
+
     /// ST-226: "Migrar biblioteca", siempre disponible.
     ///
     /// Está acá **además** de en la franja porque hay un caso que la
@@ -301,6 +351,8 @@ struct SettingsSectionView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
+
+                convertReferencedRow
             }
 
             Divider()

@@ -1162,5 +1162,65 @@
 			<string>%2$@ видео</string>
 		</dict>
 	</dict>
+	<key>storage.plural.convertir-ausentes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld находятся на неподключённом диске и не будут затронуты.</string>
+			<key>many</key>
+			<string>%lld находятся на неподключённом диске и не будут затронуты.</string>
+			<key>one</key>
+			<string>%lld находится на неподключённом диске и не будет затронут.</string>
+			<key>other</key>
+			<string>%lld находятся на неподключённом диске и не будут затронуты.</string>
+		</dict>
+	</dict>
+	<key>storage.plural.convertir-titulo</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Превратить %lld трека в копии?</string>
+			<key>many</key>
+			<string>Превратить %lld треков в копии?</string>
+			<key>one</key>
+			<string>Превратить %lld трек в копию?</string>
+			<key>other</key>
+			<string>Превратить %lld трека в копии?</string>
+		</dict>
+	</dict>
+	<key>storage.plural.convirtiendo</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Преобразуем %lld трека в копии…</string>
+			<key>many</key>
+			<string>Преобразуем %lld треков в копии…</string>
+			<key>one</key>
+			<string>Преобразуем %lld трек в копию…</string>
+			<key>other</key>
+			<string>Преобразуем %lld трека в копии…</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

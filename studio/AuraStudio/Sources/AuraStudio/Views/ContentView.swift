@@ -457,14 +457,24 @@ struct ContentView: View {
         guard panel.runModal() == .OK, !panel.urls.isEmpty else { return }
         let section = selection ?? .general
         let target = section.libraryKind
+        // ST-224 (addendum): lo que viaja acá es la categoría que se
+        // GUARDA, no la que se muestra. Decía `localizedName`, que es el
+        // texto de pantalla: con la app en alemán habría guardado
+        // "Filme" en vez de "Películas", y nada compara contra eso --
+        // `LibraryStatusSummary`, `LibraryGrouping` y `LibrarySync`
+        // comparan contra `displayName`/`displayNameSpanish`. El video
+        // habría desaparecido de Películas al soltarlo ahí. Hoy no muerde
+        // porque solo se ofrecen español e inglés (y el inglés sí está
+        // contemplado), pero mordería en cuanto A7d encienda los cuatro.
+        // Ver D-283 y `MediaCategory.displayName`.
         let category: String? = {
             switch section {
-            case .videoMovies: return MediaCategory.movies.localizedName
-            case .videoSeries: return MediaCategory.series.localizedName
-            case .videoClips: return MediaCategory.videos.localizedName
-            case .photosPhotos: return "Fotos"
-            case .photosImages: return "Imágenes"
-            case .photosAI: return "IA"
+            case .videoMovies: return MediaCategory.movies.displayName
+            case .videoSeries: return MediaCategory.series.displayName
+            case .videoClips: return MediaCategory.videos.displayName
+            case .photosPhotos: return PhotoCollection.photos
+            case .photosImages: return PhotoCollection.images
+            case .photosAI: return PhotoCollection.ai
             default: return nil
             }
         }()
@@ -798,9 +808,9 @@ private struct SidebarView: View {
         case .videoMovies: return MediaCategory.movies.displayName
         case .videoSeries: return MediaCategory.series.displayName
         case .videoClips: return MediaCategory.videos.displayName
-        case .photosPhotos: return "Fotos"
-        case .photosImages: return "Imágenes"
-        case .photosAI: return "IA"
+        case .photosPhotos: return PhotoCollection.photos
+        case .photosImages: return PhotoCollection.images
+        case .photosAI: return PhotoCollection.ai
         default: return nil
         }
     }

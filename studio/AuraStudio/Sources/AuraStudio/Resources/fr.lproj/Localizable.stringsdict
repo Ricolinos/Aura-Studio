@@ -930,5 +930,53 @@
 			<string>%2$@ vidéos</string>
 		</dict>
 	</dict>
+	<key>storage.plural.convertir-ausentes</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>%lld se trouve sur un disque non connecté et ne sera pas touché.</string>
+			<key>other</key>
+			<string>%lld se trouvent sur un disque non connecté et ne seront pas touchés.</string>
+		</dict>
+	</dict>
+	<key>storage.plural.convertir-titulo</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Convertir %lld morceau en copie ?</string>
+			<key>other</key>
+			<string>Convertir %lld morceaux en copies ?</string>
+		</dict>
+	</dict>
+	<key>storage.plural.convirtiendo</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Conversion de %lld morceau en copie…</string>
+			<key>other</key>
+			<string>Conversion de %lld morceaux en copies…</string>
+		</dict>
+	</dict>
 </dict>
 </plist>

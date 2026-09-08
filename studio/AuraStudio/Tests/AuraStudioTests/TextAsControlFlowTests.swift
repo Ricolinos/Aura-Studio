@@ -112,6 +112,79 @@ final class TextAsControlFlowTests: XCTestCase {
         }
     }
 
+    // MARK: - Lo que se guarda nunca es lo que se muestra
+
+    /// ST-224 (addendum): **`localizedName` no se guarda nunca.**
+    ///
+    /// `MediaCategory` tiene dos nombres a propósito (D-283):
+    /// `displayName` es el valor que va a `item.category` --español
+    /// siempre-- y `localizedName` es lo que se dibuja. Añadir archivos
+    /// desde el panel guardaba `localizedName`: con la app en alemán
+    /// habría escrito "Filme" donde `LibraryStatusSummary`,
+    /// `LibraryGrouping` y `LibrarySync` comparan contra "Películas", y
+    /// el video habría desaparecido de Películas justo al soltarlo ahí.
+    ///
+    /// Hoy no mordía porque solo se ofrecen español e inglés --y el
+    /// inglés está contemplado en las comparaciones-- pero habría
+    /// mordido en cuanto A7d encienda los cuatro idiomas. El patrón
+    /// correcto está en `SeriesView`/`MoviesView`:
+    /// `Button(category.localizedName)` para mostrar,
+    /// `setCategory(category.displayName)` para guardar.
+    func testTheStoredCategoryNeverComesFromTheDisplayedName() throws {
+        let sources = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().appendingPathComponent("Sources/AuraStudio")
+        // Dos formas de guardarlo, y hay que distinguirlas de MOSTRARLO:
+        // el mismo `localizedName` en el título de la barra lateral es
+        // correcto. Por eso no vale con buscar la palabra.
+        //
+        //  1. pasarlo directo a algo que guarda (`setCategory(…)`,
+        //     `category:` como argumento);
+        //  2. asignarlo a algo que se LLAMA `category` -- que es la forma
+        //     exacta que tenía el bug: un `let category: String? = { …
+        //     return MediaCategory.movies.localizedName … }()`.
+        var offenders: [String] = []
+        let walker = FileManager.default.enumerator(at: sources, includingPropertiesForKeys: nil)
+        while let url = walker?.nextObject() as? URL {
+            guard url.pathExtension == "swift" else { continue }
+            let texto = try String(contentsOf: url, encoding: .utf8)
+            let lineas = texto.split(separator: "\n", omittingEmptySubsequences: false).map(String.init)
+            var dentroDeCategory = 0
+            for (numero, linea) in lineas.enumerated() {
+                let t = linea.trimmingCharacters(in: .whitespaces)
+                if t.hasPrefix("//") || t.hasPrefix("*") { continue }
+                if t.contains("let category") || t.contains("var category") { dentroDeCategory = 14 }
+                else if dentroDeCategory > 0 { dentroDeCategory -= 1 }
+                guard t.contains("localizedName") else { continue }
+                let guardaDirecto = t.contains("setCategory(") || t.contains("category:")
+                if guardaDirecto || dentroDeCategory > 0 {
+                    offenders.append("\(url.lastPathComponent):\(numero + 1)  \(t.prefix(90))")
+                }
+            }
+        }
+        XCTAssertTrue(offenders.isEmpty,
+                      "se guarda el nombre MOSTRADO como categoría; tiene que ser displayName (D-283):\n"
+                        + offenders.joined(separator: "\n"))
+    }
+
+    /// Y que los dos nombres sean de verdad distintos conceptos: si
+    /// alguien los unificara, la prueba de arriba dejaría de proteger
+    /// nada sin decirlo.
+    func testTheStoredNameIsSpanishWhateverTheAppLanguageIs() throws {
+        for categoria in MediaCategory.videoCategories {
+            XCTAssertEqual(categoria.displayName, categoria.displayNameSpanish,
+                           "lo que se guarda es el español, siempre")
+        }
+        let english = try XCTUnwrap(
+            AuraBundle.strings.path(forResource: "en", ofType: "lproj").flatMap(Bundle.init(path:)))
+        AuraBundle.overrideForTests = english
+        defer { AuraBundle.overrideForTests = nil }
+        XCTAssertEqual(MediaCategory.movies.displayName, "Películas",
+                       "con la app en inglés, lo GUARDADO sigue siendo español")
+        XCTAssertEqual(MediaCategory.movies.localizedName, "Movies",
+                       "y lo MOSTRADO sigue el idioma")
+    }
+
     // MARK: - El texto que viene de fuera del proceso
 
     /// ST-227 (A7c, cierre 4). Windows encontró que su proceso elevado

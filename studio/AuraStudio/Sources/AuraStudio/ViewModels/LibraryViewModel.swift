@@ -596,6 +596,81 @@ final class LibraryViewModel: ObservableObject {
         }
     }
 
+    /// ST-224 (addendum): lo que se le enseña al usuario **antes** de
+    /// convertir.
+    ///
+    /// Los ausentes se cuentan aparte del total a propósito: un disco
+    /// desconectado no es un fallo, y meterlo en el mismo número haría
+    /// que el usuario esperara que se copien y luego no entendiera el
+    /// resumen. El tamaño es **estimado**: se suma lo que pesan los
+    /// originales que sí están, que es exactamente lo que se va a copiar.
+    struct PendingReferenceConversion: Equatable {
+        var ids: Set<UUID>
+        var missing: Int
+        var estimatedBytes: Int
+
+        var isEmpty: Bool { ids.isEmpty }
+
+        var title: String { LSf("storage.plural.convertir-titulo", ids.count) }
+
+        var message: String {
+            let size = ByteCountFormatter.string(fromByteCount: Int64(estimatedBytes), countStyle: .file)
+            var texto = LSf("storage.convert-referenced-message", size)
+            if missing > 0 {
+                texto += " " + LSf("storage.plural.convertir-ausentes", missing)
+            }
+            return texto
+        }
+    }
+
+    @Published private(set) var pendingReferenceConversion: PendingReferenceConversion?
+    /// El resumen de la última conversión, para enseñarlo en Ajustes.
+    @Published private(set) var lastReferenceConversionSummary: String?
+
+    /// Arma el plan y **pide confirmación**; no copia nada todavía.
+    ///
+    /// ST-224 (addendum): el comando existía desde A4 y **ninguna vista
+    /// lo llamaba** -- el 0.4.0 salió con una función que el usuario no
+    /// podía invocar. Acá entra por Ajustes › Almacenamiento.
+    func requestReferenceConversion() {
+        let referenciadas = items.filter { $0.kind == .music && $0.storage == .reference }
+        var presentes: Set<UUID> = []
+        var ausentes = 0
+        var bytes = 0
+        for item in referenciadas {
+            if FileManager.default.fileExists(atPath: item.sourceURL.path) {
+                presentes.insert(item.id)
+                bytes += LibraryFileWorker.byteSize(of: item.sourceURL) ?? 0
+            } else {
+                ausentes += 1
+            }
+        }
+        guard !presentes.isEmpty || ausentes > 0 else {
+            lastReferenceConversionSummary = LS("storage.convert-referenced-none")
+            return
+        }
+        pendingReferenceConversion = PendingReferenceConversion(ids: presentes,
+                                                               missing: ausentes,
+                                                               estimatedBytes: bytes)
+    }
+
+    func cancelPendingReferenceConversion() {
+        pendingReferenceConversion = nil
+    }
+
+    /// Ejecuta la conversión que se confirmó, con avance y cancelación en
+    /// el centro de tareas.
+    func confirmReferenceConversion() async {
+        guard let pending = pendingReferenceConversion else { return }
+        pendingReferenceConversion = nil
+        guard !pending.ids.isEmpty else {
+            lastReferenceConversionSummary = LSf("storage.plural.convertir-ausentes", pending.missing)
+            return
+        }
+        let summary = await convertReferencedToCopies(ids: pending.ids)
+        lastReferenceConversionSummary = summary.message
+    }
+
     /// ST-224: pasa canciones de modo referencia a modo copia.
     ///
     /// **Copia; nunca mueve ni borra el original.** El archivo del
@@ -617,11 +692,24 @@ final class LibraryViewModel: ObservableObject {
         referenceConversion = ReferenceConversionProgress(completed: 0, total: targets.count)
         defer { referenceConversion = nil }
 
+        // ST-224 (addendum): avance y cancelación por el centro de
+        // tareas, como el resto de las operaciones largas. `Task
+        // .isCancelled` solo servía si quien llamaba cancelaba su propia
+        // tarea, y desde Ajustes no hay quien lo haga.
+        var cancelled = false
+        let handle = taskCenter.begin(
+            title: LSf("storage.plural.convirtiendo", targets.count),
+            kind: .files,
+            progress: .determinate(completed: 0, total: targets.count),
+            onCancelRequested: { cancelled = true })
+        defer { taskCenter.finish(handle) }
+
         for (offset, target) in targets.enumerated() {
-            if Task.isCancelled {
+            if cancelled || Task.isCancelled {
                 summary.cancelled = true
                 break
             }
+            handle.update(.determinate(completed: offset, total: targets.count))
             defer { referenceConversion = ReferenceConversionProgress(completed: offset + 1, total: targets.count) }
 
             guard let index = items.firstIndex(where: { $0.id == target.id }) else { continue }

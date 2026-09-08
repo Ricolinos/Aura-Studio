@@ -123,6 +123,7 @@
 		68E8BCDA1B3BC0F91F2A063A /* LibraryPersistenceSeriesAlbumFieldsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14888E0A766F5AAF8BCC8B5B /* LibraryPersistenceSeriesAlbumFieldsTests.swift */; };
 		68EB5BA59E5BBCD6D98EC6E2 /* PhotoAlbumsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E764E8CF210120775478A5EC /* PhotoAlbumsView.swift */; };
 		6CEA99B326B7A9C0BC06BFBD /* DroppedURLExpander.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE112760998756CFF24E4267 /* DroppedURLExpander.swift */; };
+		6E1F299657F4E69A416FD2A6 /* ReachableCommandsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68E03C91F23C5552C8BEEC38 /* ReachableCommandsTests.swift */; };
 		6E79A34A5975AD2603729544 /* StatusSummaryModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520AF45B2D0C9151B8D3C2BA /* StatusSummaryModel.swift */; };
 		6EB23316E8337CEA9599A124 /* TMDBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 055B3DA536778DFDE7011A60 /* TMDBClient.swift */; };
 		6F89B1D713BBFE9B9E1B369E /* rockbox.ipod in Resources */ = {isa = PBXBuildFile; fileRef = 2E8C3583DE937B8FBBECABFA /* rockbox.ipod */; };
@@ -434,6 +435,7 @@
 		672B82A09A8641D47F326E8D /* ThemeValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeValidatorTests.swift; sourceTree = "<group>"; };
 		6799D48484C7BF9CBF98C612 /* mks5lboot */ = {isa = PBXFileReference; path = mks5lboot; sourceTree = "<group>"; };
 		67F503AD10A4EC24D7DF63AC /* SeriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeriesView.swift; sourceTree = "<group>"; };
+		68E03C91F23C5552C8BEEC38 /* ReachableCommandsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReachableCommandsTests.swift; sourceTree = "<group>"; };
 		691E35B7F599BF052DF0CB88 /* InstallManifestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InstallManifestTests.swift; sourceTree = "<group>"; };
 		6973A46003D114CD07FC2DB0 /* SyncMarkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncMarkerTests.swift; sourceTree = "<group>"; };
 		6C13F9E244B9751271DC8255 /* AudioTranscoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTranscoder.swift; sourceTree = "<group>"; };
@@ -890,6 +892,7 @@
 				7F307EFCD3106FEFB532DF8E /* PlaylistExporterTests.swift */,
 				528818777E4EF0B5EF8F9306 /* PlaylistImporterTests.swift */,
 				8F0A3F90A397101E33636987 /* PrivilegedExecutorTests.swift */,
+				68E03C91F23C5552C8BEEC38 /* ReachableCommandsTests.swift */,
 				C796C99A64A050D14D648501 /* RemainingCallSitesWorkerTests.swift */,
 				213B91CE3D5C180243602C02 /* SetRatingWorkerTests.swift */,
 				C61C5B4FA6D06A4B3BF823A0 /* SettingsCfgProtectionTests.swift */,
@@ -1279,6 +1282,7 @@
 				7F80040C49B6F9BAEC7C4EB4 /* PlaylistExporterTests.swift in Sources */,
 				C29E1A48C58E8CBCAFC485EA /* PlaylistImporterTests.swift in Sources */,
 				3CA0A3911ADDD2EED7918743 /* PrivilegedExecutorTests.swift in Sources */,
+				6E1F299657F4E69A416FD2A6 /* ReachableCommandsTests.swift in Sources */,
 				2E41BE935724F22D637208A8 /* RemainingCallSitesWorkerTests.swift in Sources */,
 				2C0889FD8E5A12BC1EECF3D1 /* SetRatingWorkerTests.swift in Sources */,
 				AE442C1E61833E91EB81BF95 /* SettingsCfgProtectionTests.swift in Sources */,

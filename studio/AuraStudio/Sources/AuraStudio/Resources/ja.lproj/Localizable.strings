@@ -454,6 +454,11 @@
 "storage-copy-explainer" = "Aura ライブラリにコピー: Aura がファイルを管理し、タグを編集し、そのまま同期します。ディスク容量を使います（コピーが 1 つ）。元のファイルはあとで削除できます。";
 "storage-reference-explainer" = "その場所のまま参照: 追加の容量を使わず、あなたのファイルにも触れません。Aura は準備済みのバージョンを別に保持し（.preparados/）、編集内容は Aura と iPod の中だけに存在します。元のディスクがない場合、それらの曲は同期できません。";
 "storage-section-title" = "音楽の保存方法";
+"storage.convert-referenced-button" = "参照中の曲をコピーに変換…";
+"storage.convert-referenced-confirm" = "変換";
+"storage.convert-referenced-explainer" = "現在は参照しているだけの曲を Aura ライブラリの中にコピーします。元のファイルは移動も削除もされず、そのまま残ります。接続されていないディスクにあるものは別に数え、手を加えません。";
+"storage.convert-referenced-message" = "ライブラリの中にコピーされ、約 %@ を使用します。元のファイルはそのまま残ります。";
+"storage.convert-referenced-none" = "変換できる参照中の曲はありません。";
 "sync-sheets.antes-sincronizar" = "同期の前に";
 "sync-sheets.archivo-s-importado-s-revisalos-musica" = "%lld 件のファイルを読み込みました。ミュージック / ビデオ / 写真で確認してください。";
 "sync-sheets.archivo-s-se-modificaron-ipod-fuera" = "%lld 件のファイルが Aura Studio 以外で iPod 上で変更されました。";

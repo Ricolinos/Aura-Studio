@@ -454,6 +454,11 @@
 "storage-copy-explainer" = "In die Aura-Mediathek kopieren: Aura verwaltet die Dateien, bearbeitet ihre Tags und synchronisiert sie direkt; das braucht Speicherplatz (eine Kopie); deine Originale kannst du danach löschen.";
 "storage-reference-explainer" = "An Ort und Stelle referenzieren: kein zusätzlicher Speicherplatz, und deine Dateien werden nie angerührt; Aura hält eine vorbereitete Fassung separat (.preparados/), Änderungen leben nur in Aura und auf dem iPod, und wenn die ursprüngliche Festplatte fehlt, lassen sich diese Titel nicht synchronisieren.";
 "storage-section-title" = "Wie deine Musik gespeichert wird";
+"storage.convert-referenced-button" = "Referenzierte Titel in Kopien umwandeln …";
+"storage.convert-referenced-confirm" = "Umwandeln";
+"storage.convert-referenced-explainer" = "Kopiert die Titel, die heute nur referenziert sind, in die Aura-Mediathek. Deine Originale werden weder verschoben noch gelöscht -- sie bleiben, wo sie sind. Titel auf einem nicht angeschlossenen Datenträger werden getrennt gezählt und nicht angerührt.";
+"storage.convert-referenced-message" = "Sie werden in deine Mediathek kopiert und belegen etwa %@. Deine Originale bleiben, wo sie sind.";
+"storage.convert-referenced-none" = "Es gibt keine referenzierten Titel zum Umwandeln.";
 "sync-sheets.antes-sincronizar" = "Vor dem Synchronisieren";
 "sync-sheets.archivo-s-importado-s-revisalos-musica" = "%lld Datei(en) importiert – sieh unter Musik/Video/Fotos nach.";
 "sync-sheets.archivo-s-se-modificaron-ipod-fuera" = "%lld Datei(en) haben sich auf dem iPod außerhalb von Aura Studio geändert.";

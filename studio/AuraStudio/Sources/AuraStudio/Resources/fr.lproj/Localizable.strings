@@ -454,6 +454,11 @@
 "storage-copy-explainer" = "Copier dans la bibliothèque Aura : Aura gère les fichiers, modifie leurs tags et les synchronise directement ; cela occupe de l’espace disque (une copie) ; vous pouvez supprimer vos originaux ensuite.";
 "storage-reference-explainer" = "Les référencer sur place : aucun espace supplémentaire et vos fichiers ne sont jamais touchés ; Aura conserve une version préparée à part (.preparados/), les modifications ne vivent que dans Aura et sur l’iPod, et si le disque d’origine est absent, ces morceaux ne peuvent pas être synchronisés.";
 "storage-section-title" = "Comment stocker votre musique";
+"storage.convert-referenced-button" = "Convertir les morceaux référencés en copies…";
+"storage.convert-referenced-confirm" = "Convertir";
+"storage.convert-referenced-explainer" = "Copie dans la bibliothèque Aura les morceaux qui ne sont aujourd’hui que référencés. Vos originaux ne sont ni déplacés ni supprimés : ils restent où ils sont. Ceux qui se trouvent sur un disque non connecté sont comptés à part et ne sont pas touchés.";
+"storage.convert-referenced-message" = "Ils seront copiés dans votre bibliothèque et occuperont environ %@. Vos originaux restent où ils sont.";
+"storage.convert-referenced-none" = "Il n’y a aucun morceau référencé à convertir.";
 "sync-sheets.antes-sincronizar" = "Avant de synchroniser";
 "sync-sheets.archivo-s-importado-s-revisalos-musica" = "%lld fichier(s) importé(s) — regardez dans Musique/Vidéo/Photos.";
 "sync-sheets.archivo-s-se-modificaron-ipod-fuera" = "%lld fichier(s) ont été modifiés sur l’iPod en dehors d’Aura Studio.";

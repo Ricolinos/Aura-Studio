@@ -454,6 +454,11 @@
 "storage-copy-explainer" = "Copy into the Aura Library: Aura owns the files, edits their tags and syncs them directly; it uses disk space (one copy); you can delete your originals afterwards.";
 "storage-reference-explainer" = "Reference them in place: no extra space and your files are never touched; Aura keeps a prepared version aside (.preparados/), edits live only in Aura and on the iPod, and if the original disk is missing those songs can’t be synced.";
 "storage-section-title" = "How to store your music";
+"storage.convert-referenced-button" = "Turn referenced songs into copies…";
+"storage.convert-referenced-confirm" = "Convert";
+"storage.convert-referenced-explainer" = "Copies into the Aura Library the songs that are only referenced today. It doesn’t move or delete your originals: they stay where they are. Any that live on a disconnected disk are counted separately and left alone.";
+"storage.convert-referenced-message" = "They will be copied into your library and will use about %@. Your originals stay where they are.";
+"storage.convert-referenced-none" = "There are no referenced songs to convert.";
 "sync-sheets.antes-sincronizar" = "Before syncing";
 "sync-sheets.archivo-s-importado-s-revisalos-musica" = "%lld file(s) imported -- take a look in Music/Video/Photos.";
 "sync-sheets.archivo-s-se-modificaron-ipod-fuera" = "%lld file(s) changed on the iPod outside Aura Studio.";

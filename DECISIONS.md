@@ -18516,3 +18516,89 @@ quedan intocados). `cotejo-mac-ja-de-ru-fr.csv`: 152 filas de datos
 (38 × 4), contador de campos por línea limpio (7 campos en las 153
 líneas), 0 CR bytes (el export de PowerShell escribe CRLF por defecto;
 se convirtió a LF antes de comprometer). Sin builds ni `dotnet test`.
+
+## ST-224 (addendum) — "Convertir referenciados en copias" existía y nadie podía usarlo
+
+El mecánico encontró que `convertReferencedToCopies` se escribió en A4,
+con sus pruebas en verde, y **ninguna vista lo llamaba**. El DMG 0.4.0
+salió con una función completa, probada y **muerta**.
+
+Ninguna prueba lo notó porque todas llamaban al modelo directamente --que
+es exactamente lo que hace que este defecto sobreviva a una suite entera
+en verde-- y ninguna miraba si la interfaz llega hasta ahí.
+
+### Lo que ahora hay
+
+Un botón en **Ajustes › Almacenamiento**, debajo de "Cómo guardar tu
+música", que es donde corresponde: es la acción que cambia de un modo al
+otro **lo que ya está importado**, justo lo que el texto de arriba dice
+que el interruptor NO hace.
+
+Antes de copiar nada se arma un plan y se pide confirmación con el
+**conteo y el tamaño estimado**; los que están en un disco desconectado se
+cuentan **aparte** y se dicen aparte, porque un disco que no está no es un
+fallo del usuario ni de la app, y meterlo en el mismo número haría esperar
+que se copien. El avance y la cancelación pasan por `BackgroundTaskCenter`
+como el resto de las operaciones largas: `Task.isCancelled` solo servía si
+quien llamaba cancelaba su propia tarea, y desde Ajustes no hay quien lo
+haga. Al terminar queda el resumen con convertidas / ausentes / fallos.
+
+Identificadores: `ajustes.almacenamiento.convertirReferenciados` y los del
+diálogo (`.confirmar`, `.cancelar`, `.resumen`). Las cinco claves nuevas
+van al cotejo como "solo Mac" con sus seis textos: Windows no tiene
+ninguna clave de "convert" en el cotejo.
+
+### La prueba, y por qué la primera no servía
+
+`ReachableCommandsTests` afirma que **cada comando público del
+`LibraryViewModel` tiene quien lo llame desde la interfaz**, con una lista
+corta de excepciones que llevan su motivo escrito (persistencia, costuras
+de pruebas, y `performDeletion`, que entra por `confirmPendingDeletion`).
+Una entrada de esa lista que ya no corresponda a ningún comando también
+falla: una excepción podrida tapa la siguiente.
+
+La primera versión **no servía**, y se supo al comprobarla al revés:
+quitando la fila del cuerpo de Ajustes, siguió en verde. El `private var
+convertReferencedRow` seguía declarado, así que el nombre del comando
+aparecía en `Views/` igual. Comprobaba "el nombre está escrito en algún
+sitio", no "una vista lo usa" -- un grado más débil de lo que decía su
+propio nombre. Se añadió `testNoViewHelperIsDeclaredAndNeverUsed`
+(ningún ayudante de vista declarado y nunca usado, que es el mismo defecto
+una capa más adentro) y ahora la mutación falla **dos** pruebas.
+
+### Y un segundo bug vivo, de los cuatro idiomas
+
+Añadir archivos desde el panel guardaba **`MediaCategory.localizedName`**
+--el texto **mostrado**-- como categoría del elemento. Lo que se guarda
+tiene que ser `displayName`, el español, siempre (D-283). Con la app en
+alemán habría escrito "Filme" donde `LibraryStatusSummary`,
+`LibraryGrouping` y `LibrarySync` comparan contra "Películas": el video
+habría desaparecido de Películas **justo al soltarlo ahí**.
+
+Hoy no mordía porque solo se ofrecen español e inglés, y el inglés sí está
+contemplado en esas comparaciones. Habría mordido en cuanto A7d encienda
+los cuatro idiomas, que es dentro de esta misma ronda.
+
+Era **un solo sitio**: los demás usos son correctos y son el patrón a
+seguir -- `Button(category.localizedName)` para mostrar,
+`setCategory(category.displayName)` para guardar. La prueba tuvo que
+aprender esa diferencia: la primera versión marcaba también el título de
+la barra lateral, donde `localizedName` es lo correcto. Ahora solo mira lo
+que se **asigna a algo llamado `category`** o se pasa a algo que guarda,
+que es la forma exacta que tenía el bug. Comprobado en los dos sentidos.
+
+De paso, las seis categorías de foto que viajaban como literales
+("Fotos", "Imágenes", "IA") pasan a las constantes `PhotoCollection` de
+A7c, en los dos sitios.
+
+### Sobre los dos textos de las capturas
+
+- **El buscador**: real. `"Buscar en %@"` recibe el ámbito como literal en
+  español desde cuatro vistas ("Artistas", "Películas", "Álbumes",
+  "Series"). Va al inventario de A7d. (Desde `PhotoAlbumsView` recibe la
+  **colección**, que es dato del usuario y no se traduce: ahí está bien.)
+- **"Fotos"/"Imágenes" en la barra lateral**: hay que separarlo. La
+  sección "Fotos" sí sale del catálogo (`settings.photos`). Lo que se ve
+  sin traducir son los **nombres de las colecciones**, que son **datos del
+  usuario** y no se traducen por decisión explícita (D-283) -- la propia
+  app se lo dice en Ajustes › Idioma. No es un defecto: es lo prometido.
