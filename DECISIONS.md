@@ -18385,13 +18385,30 @@ macOS y **`Отмена`** en Windows.
 Mi ruso ya decía `Отменить`, así que no hubo texto que corregir -- solo la
 columna `estado`, que es de la Mac.
 
-**Tres filas marcadas**, y solo tres:
+**Dos filas marcadas**, y solo dos:
 
 | clave | texto | por qué |
 |---|---|---|
 | `background-task-center-indicator.cancelar` | Cancelar | la que motivó la regla |
 | `artists-view.eliminar` | Eliminar | Delete: etiqueta estándar de alerta en los dos sistemas |
-| `done-view.reintentar` | Reintentar | Retry, ídem |
+
+Empecé marcando también `done-view.reintentar` --"Reintentar" parece una
+etiqueta estándar de alerta-- y el cotejo que hizo Windows lo desmintió
+con datos: su texto no es un botón de reintentar, es una **instrucción**
+("Conectar el disco y reintentar", "Подключить диск и попробовать
+снова"). Eso no es una divergencia de convención sino de **contenido**,
+así que vuelve a `clave distinta`, que es lo que era. Marcarla habría
+enterrado una diferencia real bajo una etiqueta que dice "no te
+preocupes, es la plataforma".
+
+Y la diferencia apunta a algo mío: `done-view.reintentar` sirve **dos
+pantallas**. En `DoneView` es reintentar una instalación que falló, y ahí
+"Reintentar" a secas está bien. En `LibraryUnavailableView` es reintentar
+cuando el disco de la biblioteca **no está conectado**, y ahí el botón no
+dice lo único que hay que hacer antes de pulsarlo. Windows lo dice; la
+Mac no, porque una sola clave cubre los dos casos. No se cambia acá --es
+una decisión de copy, y la pantalla no está en las familias críticas de
+A7d-- pero queda anotado con la recomendación: partir la clave en dos.
 
 **Lo que NO se marcó, y es la mitad del trabajo.** "Más tarde", "Cerrar
 ahora", "Crear una nueva", "Elegir otra biblioteca…" son cortas y suenan a
