@@ -19165,3 +19165,71 @@ lectura de imágenes antes de comprometer. Seis capturas de diagnóstico
 del error `InvertBool` (es/en/de/fr/ru/ja, contra `edaf9bf` y contra el
 0.4.0 instalado) quedaron en la carpeta temporal de la sesión, sin
 comprometer -- eran para diagnóstico, no parte del entregable.
+
+## ST-247 (addendum 0.4.1) — La explicación del selector, «Треки», y una guarda que se apagaba sola
+
+### La explicación del selector envejeció, por segunda vez
+
+Decía que «el español y el inglés los revisó una persona; **los demás llegan
+después**». Era cierto mientras se ofrecían dos idiomas y dejó de serlo el día
+que se encendieron los cuatro: ya estaban ahí, y la app seguía diciendo que
+estaban por venir. En japonés era todavía más literal
+—「ほかの言語は後から届きます」, «los demás idiomas llegarán más tarde»— y así
+salió en las capturas.
+
+Ahora dice que los demás son traducción automática y salen marcados, y **cada
+idioma cita su propia marca** tal como la escribe
+`app-strings.language-beta-mark`. Una prueba lo comprueba, así que las dos
+cadenas quedan atadas: renombrar la marca en un idioma pone en rojo la
+explicación de ese idioma, en vez de dejar dos textos sueltos que hoy coinciden.
+
+**No enumera los cuatro idiomas a propósito.** Nombrarlos habría creado una lista
+escrita a mano al lado de la lista de verdad — exactamente cómo se separaron los
+separadores de colaboraciones. Dice «los demás»: mientras los revisados sean
+español e inglés, y eso ya lo fija `AppLanguagesTests`, la frase no puede quedar
+vieja por mucho que cambie el resto de la tabla.
+
+Es la **segunda** vez que esta clave envejece; en B7b decía que Windows no tenía
+selector de idioma. Una frase que describe a la app envejece cuando la app
+cambia, y no hay compilador que avise.
+
+### En ruso una canción es un «трек»
+
+La barra lateral decía «Композиции» mientras el glosario fija «трек»
+(`glosario-plataforma.csv`, el término dominante en los reproductores).
+Cambiadas las dos que había.
+
+Lo que **no** se toca, comprobado uno por uno: «Композитор» (×2) es *compositor*,
+otra palabra; y «текст песни» (×6) es la colocación fija de *letra* en ruso, no
+otra forma de decir canción. Una prueba que solo prohibiera la raíz habría
+barrido las dos cosas y nadie habría entendido por qué.
+
+**Un falso negativo que vale anotar:** la primera búsqueda fue
+`grep -i "композиц"` y dijo que no había ninguna; la misma búsqueda sin `-i`
+encontró las dos. Sin repetirla se habría cerrado este punto diciendo que no
+había nada que cambiar. Un cero de una herramienta es un resultado, no un hecho.
+
+### Una redacción declarada dejaba la clave sin vigilancia para siempre
+
+Se encontró por sospecha, no por una prueba roja: al cambiar el texto español de
+la explicación, **la suite dio verde**. No tenía que darlo.
+
+`SpanishUnchangedTests` compara cada texto contra el borrador de B7a, y las
+redacciones deliberadas se declaran en `Redacted` con lo que decía antes. Pero el
+bucle principal hacía `continue` sobre cualquier clave declarada ahí, así que
+**declarar una redacción una vez sacaba esa clave de la vigilancia para
+siempre**: desde entonces podía cambiar cuantas veces quisiera, en silencio. Es
+justo lo contrario de para qué existe la lista, cuyo propio comentario promete
+que un cambio de texto cuesta «un renglón de trabajo y una decisión visible en el
+diff».
+
+Tres claves estaban así desde B7b y B7d. `Redacted` lleva ahora también el texto
+de **ahora**, en paralelo a sus claves, y la prueba lo compara: un segundo cambio
+vuelve a costar un renglón y vuelve a verse en el diff.
+
+Es el mismo patrón que ya apareció con la prueba que se saltaba sin `perl`, con
+el cotejo que no distinguía mayúsculas y con la prueba de satélites que comparaba
+dos listas que habían dejado de diferir: **una guarda que deja de guardar se ve
+idéntica a una que guarda y pasa.** La diferencia es que ésta no se descubrió
+poniéndola en rojo a propósito, sino notando que un cambio que debía costar algo
+no costó nada.
