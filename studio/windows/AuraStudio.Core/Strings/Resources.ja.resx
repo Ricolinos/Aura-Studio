@@ -1498,7 +1498,7 @@
     <value>外観</value>
   </data>
   <data name="app-strings.settings-language-detail" xml:space="preserve">
-    <value>Aura Studio はここで選んだ言語で表示されます。スペイン語と英語は人が確認しています。ほかの言語は後から届きます。</value>
+    <value>Aura Studio はここで選んだ言語で表示されます。スペイン語と英語は人が確認しています。ほかの言語は機械翻訳で、「（ベータ）」と表示されます。</value>
   </data>
   <data name="app-strings.settings-subtitle" xml:space="preserve">
     <value>Aura Studio の設定</value>

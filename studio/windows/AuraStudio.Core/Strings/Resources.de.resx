@@ -1672,7 +1672,7 @@
     <value>Darstellung</value>
   </data>
   <data name="app-strings.settings-language-detail" xml:space="preserve">
-    <value>Aura Studio spricht die Sprache, die du hier wählst. Spanisch und Englisch hat ein Mensch geprüft; die übrigen kommen später.</value>
+    <value>Aura Studio spricht die Sprache, die du hier wählst. Spanisch und Englisch hat ein Mensch geprüft; die übrigen sind maschinell übersetzt und mit „(Beta)“ gekennzeichnet.</value>
   </data>
   <data name="app-strings.settings-subtitle" xml:space="preserve">
     <value>Einstellungen von Aura Studio</value>
