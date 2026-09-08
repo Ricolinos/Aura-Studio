@@ -39,6 +39,7 @@ trinquete de `HardcodedSpanishTests`, y acá queda dicho por qué.
 | paso 2, razones de Abort | 91 | las nueve razones por las que NO se escribe en el disco, más lo que la segunda barrida sacó con ellas |
 | paso 2, cierre de la barrida | 91 | ~45 frases que el trinquete **no cuenta**: el trinquete no baja, y por eso hizo falta la barrida |
 | paso 3, las 11 DATO | 91 | comprobadas: su valor no cambia con el idioma, y por eso el trinquete tampoco baja |
+| cierre, las seis que solo vio la barrida | 90 | cuatro sueltas más las dos ramas del aviso de catálogo; el trinquete baja uno y el tope se aprieta a 90 |
 
 El trinquete baja poco en el segundo paso y eso es correcto: **doce literales
 cambiaron de clase, no de sitio.** Las razones de `PreparedMusic` estaban como
@@ -195,3 +196,32 @@ la etiqueta de revisado y sin la revisión.
 
 Las trampas sí conviene arreglarlas antes, y no por la traducción: cuatro de
 las cinco son bugs latentes con el texto en español intacto.
+
+## Cómo quedó al cerrar B7d
+
+La barrida señala **179 literales**. Ninguno es de pantalla, y cada uno se
+comprobó siguiendo a quien lo consume, no leyéndolo en su sitio:
+
+| qué son | cuántos |
+|---|---:|
+| la tabla de familias de `CriticalStrings` — su propia documentación | 38 |
+| razones internas tipadas: quien las atrapa mira el **tipo**, no el mensaje | 37 |
+| excepciones internas de conversión, formateo y disco | 34 |
+| bitácora del proceso con permisos (`log.Add`) | 28 |
+| trazas de diagnóstico (perro guardián, marquesina, reportador de caídas) | 23 |
+| nombres propios y datos (Cover Art Archive, TMDB, salida de `mks5lboot`) | 13 |
+| consultas WMI/SQL y el nombre del servicio de Windows | 6 |
+| **total** | **179** |
+
+El trinquete queda en **90**: **11 DATO** (con su prueba) y **79 INTERNO**. Los
+dos números no se comparan entre sí y no tienen por qué coincidir — miden cosas
+distintas con detectores distintos, y esa es toda la razón de que existan los
+dos.
+
+**Las seis del final valen como lección.** Al armar la PARADA se corrió la
+barrida una vez más y aparecieron seis frases de pantalla que ni el trinquete
+ni las lecturas por archivo habían visto. Dos de ellas —las ramas del aviso de
+catálogo— estaban en un bloque de tres donde la primera rama **ya usaba
+`Strings.Get`**: al leer el archivo, ese `Strings.Get` de arriba hizo que el
+bloque entero pasara por convertido. Un archivo medio convertido se lee como un
+archivo convertido.
