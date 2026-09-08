@@ -19022,3 +19022,146 @@ compilador de XAML (`WMC0020`), no las pruebas — y es exactamente lo contrario
 del defecto de `InvertBool`, donde el compilador no dijo una palabra y hubo que
 inventar el guardián. Las dos redes atrapan cosas distintas y ninguna sustituye a
 la otra: la del compilador ve la forma, la de las pruebas ve el sentido.
+
+## ST-248 — Windows: capturas por idioma (0.4.1), el bloqueador de Ajustes encontrado y confirmado arreglado en los seis, y el Skip del cotejo con la Mac
+
+Encargo de la Maestra, en `windows/b8`, rebasada varias veces durante la
+corrida hasta `origin/main = 51c283a` (fast-forward limpio en cada
+paso; ver la lista de hashes intermedios en la conversación con el
+coordinador -- edaf9bf → 58fa5b5 → 51c283a). Con build de la App
+(`dotnet build AuraStudio.App -c Release -p:Platform=ARM64`, avisado al
+coordinador antes y después para no compilar a la vez que el Experto).
+
+### El hallazgo que interrumpió las capturas: `InvertBool`
+
+Al abrir Ajustes en japonés para la primera captura, la app tiró un
+diálogo de error real -- "Cannot find a resource with the given key:
+InvertBool." -- en vez de mostrar la página. Antes de asumir que era un
+problema de idioma, se probó sistemáticamente:
+
+| Idioma | Resultado sobre `edaf9bf` |
+|---|---|
+| ja | rompe |
+| ru | rompe |
+| de | rompe |
+| fr | rompe |
+| en | rompe |
+| es (sin ninguna preferencia de idioma tocada) | rompe |
+
+Rompía en los SEIS, incluido español -- no era un defecto de B7c/B7d ni
+de las traducciones nuevas, era una regresión general de Ajustes.
+Reportado de inmediato al coordinador en vez de seguir capturando algo
+roto. Confirmado además contra el **0.4.0 instalado del dueño**
+(`C:\Users\ricolinos\AppData\Local\Programs\Aura Studio`, ProductVersion
+`0.4.0+f6dd461c1279753ae88d2e610cbe344b81ea48e2`) con las mismas
+preferencias sintéticas (nunca las reales del dueño, nunca su
+biblioteca): rompe igual en español e inglés, los dos idiomas que ese
+build ofrece -- así que el defecto viene de antes de 0.4.0, no de esta
+ronda.
+
+El Experto lo rastreó a `SettingsPage.xaml` usando
+`{StaticResource InvertBool}` sin definirlo desde ST-211 (ver la
+entrada de arriba, "Ajustes reventaba por un recurso que nadie
+definió") y lo arregló en `58fa5b5`. Verificado por esta sesión, con
+worktree desacoplado y bloqueado en `X:\codigo\github\Aura-Studio-fix`
+(`git worktree add --detach` + `lock`, build ahí, retirado con
+`unlock`+`remove` al terminar): **Ajustes abre limpio en los seis
+idiomas sobre `58fa5b5`** -- es, en, de, fr, ru, ja, sin excepción, con
+el contenido completo (Apariencia/Tema, Idioma con el selector y su
+explicación, pestañas General/Biblioteca/Música/Fotos/Video/Servicios).
+Capturas en `docs/capturas/idiomas/<idioma>-ajustes.png`.
+
+### Las capturas que sí se completaron
+
+Método y biblioteca sintética documentados en `ESTADO-PORT.md` (nueva
+sección arriba de todo, con el índice completo archivo por archivo).
+`tools/CapturasIdiomas` es una herramienta nueva, mínima, que genera esa
+biblioteca UNA VEZ y la deja persistente (a diferencia de
+`LibraryPerfCheck`/`StorageFixtureCheck`, que la borran al terminar) --
+seis álbumes con carátula JPEG real (mismo mecanismo que
+`CoverFixtureGenerator` de `LibraryPerfCheck`, copiado y reducido para
+no cruzar una referencia entre dos proyectos de herramientas) y un
+archivo mínimo de verdad en cada `SourcePath` (sin esto, `Álbumes`
+mostraba "0 álbumes" con el catálogo lleno: la vista filtra a
+`AvailableItems`, que exige que el archivo exista).
+
+**Tres trampas de la propia captura, para quien la repita:**
+
+1. **`GetWindowRect` incluye el margen invisible de la sombra** que
+   Windows agrega a una ventana moderna. Con eso, un filo de un par de
+   píxeles en el borde de cada captura mostraba lo que hubiera detrás
+   -- en una corrida de prueba, la propia terminal del coordinador,
+   con contenido real de la conversación (capturas borradas de
+   inmediato, nunca comprometidas). Se corrigió leyendo
+   `DwmGetWindowAttribute(DWMWA_EXTENDED_FRAME_BOUNDS)` en vez de
+   `GetWindowRect` para el rectángulo de la captura (`GetWindowRect`
+   crudo se sigue usando solo para confirmar que `MoveWindow` surtió
+   efecto, comparando tamaño).
+2. **`SetForegroundWindow` sola no alcanza** cuando otra ventana está
+   activa de verdad (la terminal del coordinador, mientras escribía) --
+   trampa ya conocida (ronda de ajustes 1, ESTADO-PORT) por la
+   heurística antirrobo de foco de Windows. Se resolvió con
+   `AttachThreadInput` al hilo de la ventana en primer plano antes de
+   pedir el cambio.
+3. **Redimensionar una tabla ya renderizada** (Canciones, con
+   `MoveWindow` en caliente) dejaba texto superpuesto/fantasma en el
+   encabezado. Redimensionar ANTES de navegar a esa pantalla (mientras
+   la app todavía muestra General) lo evita.
+
+Cada captura final se verificó dos veces: por estabilidad de píxeles
+(dos capturas separadas 350 ms, solo se acepta si son idénticas) y a
+ojo, leída con la herramienta de lectura de imágenes antes de
+comprometer, confirmando que se ve solo Aura Studio.
+
+### Hallazgos de traducción (anotados en ESTADO-PORT, no corregidos)
+
+Detalle completo con capturas en `ESTADO-PORT.md`. Resumen: la columna
+"Título" de la tabla de Canciones queda sin traducir (probablemente un
+encabezado que no pasó por la extracción de B7a/B7d, a diferencia de
+los literales de texto corrido); el texto de estado "Activado" de los
+interruptores (`ToggleSwitch`) queda igual, en las dos tarjetas donde
+aparece en Ajustes; y Canciones en ruso no siempre pintó filas en esta
+sesión de captura (no concluyente -- puede ser la automatización, no la
+app; queda para verlo en pantalla real).
+
+### El Skip del cotejo con la Mac, retirado
+
+`TodaClaveIgualTieneElMismoTextoEnLosCuatroIdiomasDeLaMac`
+(`LocalizationDraftTests.cs`, agregada en la entrada anterior de
+ST-247): el Experto aplicó los 24 textos de la Mac que diferían a
+`Resources.*.resx`. Antes de quitar el `Skip`, se volvió a comparar
+las 48 combinaciones (12 filas "igual" × 4 idiomas) con comparación
+**sensible a mayúsculas y espacios** -- la corrida anterior (el
+cotejo informativo de la entrada de `cb5ecc4`) se había hecho con un
+script de PowerShell aparte que usaba `-eq`, que en PowerShell compara
+cadenas SIN distinguir mayúsculas por omisión, y dejó pasar como
+"igual" una fila de alemán (`orphans-none-found`) que en realidad
+difería solo en la mayúscula inicial tras dos puntos ("Es"/"es"). El
+`!=` de C# en esta prueba SÍ es sensible desde el principio -- nunca
+tuvo ese defecto, era el cotejo informativo el que lo tenía --, así
+que no hizo falta cambiar la lógica de comparación, solo repetir la
+verificación con la herramienta correcta antes de confiar en el
+resultado (misma disciplina que "antes de confiar en una comprobación
+en verde, comprobar que puede ponerse en rojo" de B7d).
+
+Resultado: **0 de 48 difieren**. `background-task-center-indicator.cancelar`
+pasó a `estado: "convención de plataforma"` en `claves-compartidas.csv`
+(decisión de la Maestra: las etiquetas que fija el sistema operativo
+por idioma -- Cancelar y semejantes -- siguen la convención de su
+plataforma aunque la fila fuera "igual") y queda fuera del alcance de
+esta prueba sin necesitar código nuevo: el filtro ya exige
+`estado == "igual"` a secas, y esa fila ya no lo es.
+
+### Verificación
+
+`dotnet test tests/AuraStudio.Core.Tests` (Debug, sin filtro):
+**2 068 en verde, 0 omitidas, 0 con error** -- incluida
+`TodaClaveIgualTieneElMismoTextoEnLosCuatroIdiomasDeLaMac` ya sin
+`Skip`. `dotnet build AuraStudio.App -c Release -p:Platform=ARM64`: 0
+advertencias, 0 errores, tanto en `windows/b8` como en el worktree
+desacoplado de `58fa5b5` (ya retirado). 16 capturas en
+`docs/capturas/idiomas/`, cada una releída con la herramienta de
+lectura de imágenes antes de comprometer. Seis capturas de diagnóstico
+del error `InvertBool` (es/en/de/fr/ru/ja, contra `edaf9bf` y contra el
+0.4.0 instalado) quedaron en la carpeta temporal de la sesión, sin
+comprometer -- eran para diagnóstico, no parte del entregable.
