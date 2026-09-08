@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using AuraStudio.App.Services;
 using AuraStudio.Core;
 using AuraStudio.Core.Installer;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.App.ViewModels;
 
@@ -96,25 +97,20 @@ public sealed partial class ExtrasViewModel : ViewModelBase
     {
         if (Equals(family, FirmwareFamily.Metro))
         {
-            return "Lenguaje visual Metro (Windows Phone 7 / Zune): tipografía Selawik, hub de tiles, " +
-                   "acentos de color, transiciones de pivote.";
+            return Strings.Get("extras-view-model.visual-metro");
         }
 
         if (Equals(family, FirmwareFamily.Moonlit))
         {
-            return "Lenguaje visual Waning Crescent: calma nocturna, Material Design 3 adaptado al iPod, " +
-                   "sin sistema de temas.";
+            return Strings.Get("extras-view-model.visual-moonlit");
         }
 
-        return "Lenguaje visual \"Apple 2026\": tipografías SF, temas claro/oscuro y temas instalables, Cover Flow.";
+        return Strings.Get("extras-view-model.visual-aura");
     }
 
     public IReadOnlyList<FirmwareChoiceCard> Cards { get; }
 
-    public const string FirmwareIntro =
-        "Elige cuál de los firmwares instalables usa Aura Studio la próxima vez que abras el Instalador. " +
-        "Todos son software libre (GPL v2), derivados de Rockbox, y comparten la misma biblioteca: " +
-        "tu música, fotos y videos se sincronizan igual con cualquiera.";
+    public static string FirmwareIntro => Strings.Get("extras-view-model.firmware-intro");
 
     /// <summary>
     /// Elegir acá <b>no toca el iPod</b>: es una preferencia. El Instalador —con
@@ -207,12 +203,11 @@ public sealed partial class ExtrasViewModel : ViewModelBase
     /// traigo adentro" — y esa diferencia es justo la que el dueño necesitaba
     /// ver.
     /// </summary>
-    public string VersionSourceNote => IsRefreshing
-        ? "Consultando GitHub…"
+    public string VersionSourceNote => Strings.Get(IsRefreshing
+        ? "extras-view-model.checking-github"
         : AnyFromGitHub
-            ? "Las versiones son las más recientes publicadas en GitHub: instalar desde cero descarga esa."
-            : "No se pudo consultar GitHub (revisa el token en Ajustes › Servicios): se muestran las versiones " +
-              "incluidas en Aura Studio, que son las que se instalarían.";
+            ? "extras-view-model.versions-from-github"
+            : "extras-view-model.versions-bundled");
 
     /// <summary>Se carga una vez por aparición de la pantalla.</summary>
     public Task LoadAsync() => _loaded ? Task.CompletedTask : RefreshAsync(force: false);
@@ -271,32 +266,30 @@ public sealed partial class ExtrasViewModel : ViewModelBase
         get
         {
             if (Device is not { SupportsAuraContract: true } device)
-                return "Conecta tu iPod con Aura instalado para instalar, activar o construir temas.";
+                return Strings.Get("extras-view-model.themes-need-aura");
 
             if (device.SupportedThemeFormat is null)
             {
-                string name = device.DeclaredFamily?.DisplayName ?? "Este firmware";
-                return $"Este firmware no admite temas ({name} no tiene sistema de temas).";
+                string name = device.DeclaredFamily?.DisplayName
+                    ?? Strings.Get("extras-view-model.this-firmware");
+                return Strings.Format("extras-view-model.themes-unsupported", name);
             }
 
-            return "Tema integrado (Claro/Oscuro) más los que instales — Ajustes › Estilo, en el iPod.";
+            return Strings.Get("extras-view-model.themes-detail");
         }
     }
 
-    public const string AnimationsDetail = "Tres niveles cada uno. Se eligen en Ajustes, en el iPod.";
+    public static string AnimationsDetail => Strings.Get("extras-view-model.animations-detail");
 
     // MARK: - Todavía no
 
-    public const string PlannedIntro =
-        "Estos extras del iPod original no están implementados en Aura. " +
-        "Cuando existan, se van a poder gestionar desde aquí.";
+    public static string PlannedIntro => Strings.Get("extras-view-model.planned-intro");
 
-    public const string NotImplemented = "No implementados.";
+    public static string NotImplemented => Strings.Get("extras-view-model.not-implemented");
 
     // MARK: - Licencias
 
-    public const string LicensesDetail =
-        "Todos los firmwares son GPL v2. Aquí están sus fuentes, versiones exactas y cambios.";
+    public static string LicensesDetail => Strings.Get("extras-view-model.licenses-detail");
 
     private void NotifyDeviceChanged()
     {

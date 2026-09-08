@@ -1,3 +1,5 @@
+using AuraStudio.Core.Resources;
+
 namespace AuraStudio.Core;
 
 /// <summary>
@@ -21,20 +23,22 @@ public static class DeviceFirmwareLabel
     /// <summary>Lo que se lee bajo el nombre del iPod en General.</summary>
     public static string For(IPodDiskInfo device)
     {
-        string dual = device.IsDualBoot ? " (dual boot con Apple)" : "";
+        string dual = device.IsDualBoot ? Strings.Get("device-firmware.dual-suffix") : "";
 
         return device.Firmware.Kind switch
         {
             InstalledFirmwareKind.Aura => AuraLabel(device, dual),
             InstalledFirmwareKind.Rockbox => RockboxLabel(device, dual),
 
-            InstalledFirmwareKind.Stock => device.RunningFirmware == RunningFirmware.RockboxFamily
-                ? "Firmware original de Apple en el disco — pero el USB lo atiende el bootloader de Aura/Rockbox (modo USB del bootloader)"
-                : "Firmware original de Apple",
+            InstalledFirmwareKind.Stock => Strings.Get(
+                device.RunningFirmware == RunningFirmware.RockboxFamily
+                    ? "device-firmware.stock-usb-rockbox"
+                    : "device-firmware.stock"),
 
-            _ => device.RunningFirmware == RunningFirmware.RockboxFamily
-                ? "Disco vacío — el USB lo atiende el bootloader de Aura/Rockbox (modo USB del bootloader)"
-                : "Disco vacío, sin firmware"
+            _ => Strings.Get(
+                device.RunningFirmware == RunningFirmware.RockboxFamily
+                    ? "device-firmware.empty-usb-rockbox"
+                    : "device-firmware.empty")
         };
     }
 
@@ -53,32 +57,32 @@ public static class DeviceFirmwareLabel
         if (device.RunningFirmware == RunningFirmware.RockboxFamily)
         {
             return booted
-                ? $"Firmware {name} instalado — conectado desde {name}{dual}"
-                : "Firmware de la familia Aura instalado — conectado desde el firmware, todavía sin escribir su configuración" + dual;
+                ? Strings.Format("device-firmware.aura-booted-from-firmware", name, dual)
+                : Strings.Format("device-firmware.aura-not-configured", dual);
         }
 
         if (device.RunningFirmware == RunningFirmware.Apple)
         {
             return booted
-                ? $"Firmware {name} instalado — conectado desde el modo disco de Apple{dual}"
-                : "Archivos de la familia Aura en el disco, pero el iPod está corriendo el firmware de Apple y ese firmware nunca ha arrancado aquí — no hay evidencia de que esté instalado";
+                ? Strings.Format("device-firmware.aura-booted-from-apple-disk", name, dual)
+                : Strings.Get("device-firmware.aura-files-apple-running");
         }
 
         return booted
-            ? $"Firmware {name} instalado{dual}"
-            : "Archivos de la familia Aura en el disco — todavía sin arrancar (sin evidencia de que el bootloader esté instalado)";
+            ? Strings.Format("device-firmware.aura-installed", name, dual)
+            : Strings.Get("device-firmware.aura-files-not-booted");
     }
 
     private static string RockboxLabel(IPodDiskInfo device, string dual)
     {
         if (device.RunningFirmware == RunningFirmware.RockboxFamily)
-            return "Rockbox instalado (no es Aura) — conectado desde Rockbox" + dual;
+            return Strings.Format("device-firmware.rockbox-from-rockbox", dual);
 
         if (device.Firmware.HasBooted)
-            return "Rockbox instalado (no es Aura)" + dual;
+            return Strings.Format("device-firmware.rockbox-installed", dual);
 
-        return device.RunningFirmware == RunningFirmware.Apple
-            ? "Archivos de Rockbox en el disco (no es Aura), pero el iPod está corriendo el firmware de Apple y Rockbox nunca ha arrancado aquí"
-            : "Archivos de Rockbox en el disco (no es Aura) — sin evidencia de arranque";
+        return Strings.Get(device.RunningFirmware == RunningFirmware.Apple
+            ? "device-firmware.rockbox-files-apple-running"
+            : "device-firmware.rockbox-files-not-booted");
     }
 }

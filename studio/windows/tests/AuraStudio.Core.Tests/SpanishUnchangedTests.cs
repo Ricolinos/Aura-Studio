@@ -278,6 +278,22 @@ public class SpanishUnchangedTests
         // junto a cada caso —eso no cambia, lo que cambia es de dónde sale— y
         // el borrador de B7a no lo vio porque no está en ningún XAML. El
         // español es el que decía, palabra por palabra, salvo lo anotado abajo.
+        // Dos de ellas llevan el español que decidió la Maestra en B7d, no el
+        // que estaba, y por eso quedan dichas aquí:
+        //
+        // `installer-error.authorization-cancelled` y su hermana de la familia
+        // privilegiada contaban el MISMO clic del usuario —cerrar el diálogo de
+        // UAC— con dos frases distintas: «Cancelaste la autorización» y
+        // «Cancelaste el permiso de administrador». Queda la segunda en las dos
+        // y «autorización» sale de la familia. Que no vuelvan a separarse lo
+        // comprueba SameEventSameWordsTests.
+        //
+        // `privileged.resume-guard-failed` decía "la reactivación automática"
+        // sin decir de qué, y las cuatro traducciones —cada una a su manera—
+        // dijeron cosas distintas: reinicio, reactivación, reanudación,
+        // mecanismo para revertir. Se fue a ver qué hace el código
+        // (ScheduleResumeGuard vuelve a arrancar el servicio de Apple) y ahora
+        // lo dicen los seis idiomas.
         "installer-error.device-not-found", "installer-error.wrong-disk-format",
         "installer-error.dfu-timeout", "installer-error.checksum-mismatch",
         "installer-error.incomplete-rockbox-tree", "installer-error.process-failed",
@@ -368,6 +384,28 @@ public class SpanishUnchangedTests
         "settings-view-model.library-empty-missing.other",
         "settings-view-model.library-summary-missing.one",
         "settings-view-model.library-summary-missing.other",
+
+        // B7d, paso 2: la etiqueta de firmware que se lee bajo el nombre del
+        // iPod, y la pantalla de Extras. El sufijo " (dual boot con Apple)" era
+        // una cadena que se PEGABA al final de siete frases distintas; ahora
+        // cada una tiene su hueco, porque pegar texto al final de una oración
+        // funciona en español y no tiene por qué funcionar en otro idioma.
+        "device-firmware.dual-suffix",
+        "device-firmware.stock-usb-rockbox", "device-firmware.stock",
+        "device-firmware.empty-usb-rockbox", "device-firmware.empty",
+        "device-firmware.aura-booted-from-firmware", "device-firmware.aura-not-configured",
+        "device-firmware.aura-booted-from-apple-disk", "device-firmware.aura-files-apple-running",
+        "device-firmware.aura-installed", "device-firmware.aura-files-not-booted",
+        "device-firmware.rockbox-from-rockbox", "device-firmware.rockbox-installed",
+        "device-firmware.rockbox-files-apple-running", "device-firmware.rockbox-files-not-booted",
+        "extras-view-model.visual-metro", "extras-view-model.visual-moonlit",
+        "extras-view-model.visual-aura", "extras-view-model.firmware-intro",
+        "extras-view-model.checking-github", "extras-view-model.versions-from-github",
+        "extras-view-model.versions-bundled", "extras-view-model.themes-need-aura",
+        "extras-view-model.themes-unsupported", "extras-view-model.this-firmware",
+        "extras-view-model.themes-detail", "extras-view-model.animations-detail",
+        "extras-view-model.planned-intro", "extras-view-model.not-implemented",
+        "extras-view-model.licenses-detail",
     ];
 
     /// <summary>
