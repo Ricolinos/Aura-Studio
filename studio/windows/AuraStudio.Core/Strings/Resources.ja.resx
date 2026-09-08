@@ -744,6 +744,12 @@
   <data name="library-persistence.catalog-empty-or-damaged" xml:space="preserve">
     <value>ライブラリのカタログが空か、壊れています。</value>
   </data>
+  <data name="library-persistence.catalog-unreadable" xml:space="preserve">
+    <value>ライブラリのカタログを読み取れませんでした: {0}</value>
+  </data>
+  <data name="library-persistence.catalog-unopenable" xml:space="preserve">
+    <value>ライブラリのカタログを開けませんでした: {0}</value>
+  </data>
   <data name="library-migrator.orphans-delete-failed" xml:space="preserve">
     <value>使われていないファイルを削除できませんでした: {0}</value>
   </data>

@@ -673,6 +673,13 @@ public class SpanishUnchangedTests
         "library-migrator.orphans-delete-failed", "library-root.unavailable",
         "library-persistence.invalid-path", "status-summary.without-album",
 
+        // Las dos ramas del aviso de catálogo que sí se leen en pantalla:
+        // `CatalogLoad.Error` sale tal cual como `LibraryChangedNotice` en
+        // Ajustes. La tercera rama de ese mismo bloque ya estaba en recursos —
+        // eran dos de tres, y por eso ninguna prueba lo notó.
+        "library-persistence.catalog-unreadable",
+        "library-persistence.catalog-unopenable",
+
         // Y los últimos que la barrida señaló como frases enteras: la franja de
         // actualización de la app, el resumen de "Completar en línea" (con dos
         // «(s)» en dos ramas) y tres fallos que el usuario lee tal cual.

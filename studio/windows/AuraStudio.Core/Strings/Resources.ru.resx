@@ -846,6 +846,12 @@
   <data name="library-persistence.catalog-empty-or-damaged" xml:space="preserve">
     <value>Каталог медиатеки пуст или повреждён.</value>
   </data>
+  <data name="library-persistence.catalog-unreadable" xml:space="preserve">
+    <value>Не удалось прочитать каталог медиатеки: {0}</value>
+  </data>
+  <data name="library-persistence.catalog-unopenable" xml:space="preserve">
+    <value>Не удалось открыть каталог медиатеки: {0}</value>
+  </data>
   <data name="library-migrator.orphans-delete-failed" xml:space="preserve">
     <value>Не удалось удалить неиспользуемые файлы: {0}</value>
   </data>

@@ -825,6 +825,12 @@
   <data name="library-persistence.catalog-empty-or-damaged" xml:space="preserve">
     <value>Le catalogue de la bibliothèque est vide ou endommagé.</value>
   </data>
+  <data name="library-persistence.catalog-unreadable" xml:space="preserve">
+    <value>Le catalogue de la bibliothèque n'a pas pu être lu : {0}</value>
+  </data>
+  <data name="library-persistence.catalog-unopenable" xml:space="preserve">
+    <value>Le catalogue de la bibliothèque n'a pas pu être ouvert : {0}</value>
+  </data>
   <data name="library-migrator.orphans-delete-failed" xml:space="preserve">
     <value>Les fichiers inutilisés n'ont pas pu être supprimés : {0}</value>
   </data>

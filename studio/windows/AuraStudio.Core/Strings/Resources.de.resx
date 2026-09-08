@@ -825,6 +825,12 @@
   <data name="library-persistence.catalog-empty-or-damaged" xml:space="preserve">
     <value>Der Katalog der Mediathek ist leer oder beschädigt.</value>
   </data>
+  <data name="library-persistence.catalog-unreadable" xml:space="preserve">
+    <value>Der Katalog der Mediathek konnte nicht gelesen werden: {0}</value>
+  </data>
+  <data name="library-persistence.catalog-unopenable" xml:space="preserve">
+    <value>Der Katalog der Mediathek konnte nicht geöffnet werden: {0}</value>
+  </data>
   <data name="library-migrator.orphans-delete-failed" xml:space="preserve">
     <value>Die nicht mehr benötigten Dateien konnten nicht gelöscht werden: {0}</value>
   </data>

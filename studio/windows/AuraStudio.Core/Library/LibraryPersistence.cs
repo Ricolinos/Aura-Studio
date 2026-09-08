@@ -401,12 +401,12 @@ public static class LibraryCatalogStore
         catch (JsonException ex)
         {
             return new CatalogLoad(new PersistedLibrary(),
-                $"No se pudo leer el catálogo de la biblioteca: {ex.Message}");
+                Strings.Format("library-persistence.catalog-unreadable", ex.Message));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             return new CatalogLoad(new PersistedLibrary(),
-                $"No se pudo abrir el catálogo de la biblioteca: {ex.Message}");
+                Strings.Format("library-persistence.catalog-unopenable", ex.Message));
         }
     }
 

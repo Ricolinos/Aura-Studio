@@ -825,6 +825,12 @@
   <data name="library-persistence.catalog-empty-or-damaged" xml:space="preserve">
     <value>El catálogo de la biblioteca está vacío o dañado.</value>
   </data>
+  <data name="library-persistence.catalog-unreadable" xml:space="preserve">
+    <value>No se pudo leer el catálogo de la biblioteca: {0}</value>
+  </data>
+  <data name="library-persistence.catalog-unopenable" xml:space="preserve">
+    <value>No se pudo abrir el catálogo de la biblioteca: {0}</value>
+  </data>
   <data name="library-migrator.orphans-delete-failed" xml:space="preserve">
     <value>No se pudieron borrar los archivos huérfanos: {0}</value>
   </data>
