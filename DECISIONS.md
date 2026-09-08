@@ -17289,3 +17289,60 @@ existentes quedaron sin cambio (comparación columna por columna contra
 la versión anterior a esta corrida), 3 filas nuevas agregadas, 0 campos
 vacíos. 0 CR bytes en los cinco archivos. Sin builds: trabajo de solo
 texto y un `WebFetch` real.
+
+## ST-247 (B7d) — Windows: retrotraducción ciega ronda 3 — las 28 últimas críticas: árbol del firmware, DFU, y por qué NO se escribió en el disco
+
+Tercera y última ronda de retrotraducción ciega de B7d, sobre 28 claves
+nuevas (`e001…`) de las familias: árbol del firmware en el iPod (11),
+razones por las que el proceso elevado se niega a escribir en el disco
+(9, `e002`-`e010`), cambio de firmware (4), artefactos (2), DFU (1) y
+una línea de uso de disco. En `windows/b8`, ya a la altura de
+`origin/main = bc426c7` (sin rebase necesario).
+
+**Método, igual que en las dos rondas anteriores**: de `windows/b2`
+(`18cea14`) se leyó SOLO `criticas3-de.csv`, `criticas3-fr.csv`,
+`criticas3-ru.csv`, `criticas3-ja.csv` y `glosario-plataforma.csv`
+(sin cambios desde la ronda 2, diff vacío) -- nunca `mapa3-criticas.csv`
+ni ningún `Resources*.resx`. Sin términos nuevos en el glosario, así
+que `glosario-veredicto.csv` no se tocó esta vez. Filas: 28 en alemán y
+francés, 30 en ruso (`e021`/`e023` se abren en `.few`/`.many`, `e020`/
+`e022` conservan el id a secas), 26 en japonés (faltan `e020` y `e022`,
+las dos filas ".one", esperado).
+
+**Las 9 de "no se escribió en el disco" (`e002`-`e010`), lo que pidió
+el coordinador verificar**: `e010` es la envoltura ("No se pudo
+escribir en el disco: {0}") y `e002`-`e009` son las 8 razones que se
+insertan en su `{0}` -- confirmado que las 8 empiezan en minúscula en
+alemán, francés y ruso (pensadas para encadenar tras el "`:`" de e010,
+no para ser leídas solas; el japonés no distingue mayúscula/minúscula,
+así que esa parte de la comprobación no aplica ahí, pero la
+construcción con "`:`" funciona igual). La frase COMPUESTA
+(envoltura + razón) sí deja claro, en los cuatro idiomas, que no se
+escribió nada y por qué -- verificado armando las 8 combinaciones
+completas en cada idioma, no solo leyendo los fragmentos sueltos.
+
+**Dos concordancias reales, no errores, encontradas al armar las
+frases en ruso**: `e004`/`e006` usan el genitivo tras una negación
+(""диска… больше нет"", ""больше нет носителя"") en vez del nominativo,
+regla rusa estándar cuando se niega la existencia de algo. `e025`
+("Сохранение {0}, чтобы к ней можно было вернуться…") usa el pronombre
+femenino "к ней" -- concuerda en género con la palabra que probablemente
+ocupe `{0}` (firmware, "прошивка", femenino en ruso), no es un
+descuido.
+
+**Un orden distinto, no un error, en japonés**: `e028` (uso de disco)
+pone el total antes que el usado (`"{1} 中 {0} を使用"`, literalmente
+"de {1}, {0} en uso"), al revés que en de/fr/ru (usado, luego total).
+El resultado formateado dice lo mismo; es el orden natural japonés para
+esta construcción con 中 ("dentro de/de entre").
+
+### Verificación
+
+Contador de campos por línea: encontró y corrigió 2 filas con una coma
+sin entrecomillar (`criticas3-ja-retro.csv` `e012` en el campo
+`retro_es`, `e024` en el campo `nota`) ANTES de comprometer. Las
+columnas de idioma coinciden carácter por carácter contra los cuatro
+`criticas3-<idioma>.csv` originales: 0 mismatches, 0 ids duplicados,
+conteos exactos 28/28/30/26 contra los 28/28/30/26 esperados.
+`glosario-veredicto.csv` no se tocó (sin términos nuevos que agregar).
+0 CR bytes en los cuatro archivos. Sin builds: trabajo de solo texto.

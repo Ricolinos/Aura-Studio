@@ -1,0 +1,29 @@
+id,fr,retro_es,nota
+e001,mks5lboot.exe n'a pas pu être démarré : {0},No se pudo iniciar mks5lboot.exe: {0},
+e002,le disque ne tient pas dans l'adressage 32 bits du MBR,el disco no cabe en el direccionamiento de 32 bits del MBR,fragmento en minúscula (ver nota de e010)
+e003,impossible de construire un FAT32 sur ce disque : {0},no se puede construir un FAT32 en este disco: {0},fragmento en minúscula (ver nota de e010)
+e004,le disque {0} n'existe plus,el disco {0} ya no existe,fragmento en minúscula (ver nota de e010)
+e005,le modèle du disque a changé (il indique maintenant « {0} »),el modelo del disco cambió (ahora indica «{0}»),fragmento en minúscula (ver nota de e010)
+e006,le disque n'a plus de support monté,el disco ya no tiene ningún soporte montado,fragmento en minúscula (ver nota de e010)
+e007,le disque n'apparaît plus connecté en USB (bus {0}),el disco ya no aparece conectado por USB (bus {0}),fragmento en minúscula (ver nota de e010)
+e008,le disque n'a pas pu être interrogé à nouveau ({0}),no se pudo volver a consultar el disco ({0}),fragmento en minúscula (ver nota de e010)
+e009,la taille du disque ne correspond plus ({0} octets),el tamaño del disco ya no coincide ({0} bytes),fragmento en minúscula (ver nota de e010)
+e010,Impossible d'écrire sur le disque : {0},No se pudo escribir en el disco: {0},"Envoltura de la familia de 9 (e002-e010): {0} recibe una de las 8 razones (e002-e009), en minúscula para encadenar tras "":"". La frase compuesta deja claro que no se escribió nada y por qué -- verificado que las 9 encajan gramaticalmente en francés"
+e011,"Le dossier {0} n'existe pas, et c'est là que devraient se trouver les fichiers de {1}.","La carpeta {0} no existe, y ahí es donde deberían estar los archivos de {1}.",
+e012,{0} ne peut pas être vérifié : la Release ne publie pas {1} et il n'y a pas de {2} à côté du binaire.,"{0} no se puede verificar: el Release no publica {1}, y no hay ningún {2} junto al binario.",
+e013,{0} est déjà le microprogramme actif.,{0} ya es el firmware activo.,
+e014,Il n'y a pas d'arborescence {0} en veille sur cet iPod.,En este iPod no hay ningún árbol de {0} en espera.,
+e015,Le microprogramme n'a pas pu être changé.,No se pudo cambiar el firmware.,
+e016,Aura Studio ne sait pas comment mettre en veille ni réveiller {0}.,Aura Studio no sabe cómo poner en espera ni despertar a {0}.,
+e017,La copie a été interrompue — nouvelle tentative…,La copia se interrumpió — nuevo intento…,
+e018,Copie du microprogramme sur l'iPod…,Copiando el firmware al iPod…,
+e019,La mise à jour sélective n'a pas fonctionné ; installation complète en cours…,La actualización selectiva no funcionó; instalación completa en curso…,
+e020,{0} à retirer,{0} por quitar,
+e021,{0} à retirer,{0} por quitar,"idéntica a e020 en francés -- una sola forma para singular/plural"
+e022,{0} fichier à écrire,{0} archivo por escribir,
+e023,{0} fichiers à écrire,{0} archivos por escribir,
+e024,"Installation de {0} sur l'iPod (polices, icônes, codecs)… Cela peut prendre plusieurs minutes en USB — ne débranchez pas l'iPod.","Instalación de {0} en el iPod (tipografías, íconos, códecs)… Esto puede tardar varios minutos por USB — no desconecte el iPod.",
+e025,Sauvegarde de {0} pour pouvoir y revenir…,Respaldo de {0} para poder volver a él…,
+e026,"Mise à jour de {0} : {1}, {2}…","Actualización de {0}: {1}, {2}…",
+e027,Vérification de l'intégrité des fichiers…,Verificación de la integridad de los archivos…,
+e028,{0} utilisés sur {1} — {2} libres,{0} usados de {1} — {2} libres,
