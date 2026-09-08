@@ -690,6 +690,22 @@
 			<string>%lld groups</string>
 		</dict>
 	</dict>
+	<key>similar-items-view.plural.metadata-unificada</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>one</key>
+			<string>Metadata unified on %lld item.</string>
+			<key>other</key>
+			<string>Metadata unified on %lld items.</string>
+		</dict>
+	</dict>
 	<key>similar-items.plural.duplicados</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

@@ -7599,6 +7599,47 @@
         }
       }
     },
+    "extras-view.listo-ipod-quedo-con": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fertig: Auf dem iPod ist jetzt %@, und er wurde ausgeworfen. Trenne ihn und starte ihn neu (SELECT + MENU einige Sekunden halten)."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done: the iPod now has %@ and was ejected. Disconnect it and restart it (hold SELECT + MENU for a few seconds)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo: el iPod quedó con %@ y se expulsó. Desconéctalo y reinícialo (mantén SELECT + MENU unos segundos)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminé : l’iPod a maintenant %@ et a été éjecté. Débranchez-le et redémarrez-le (maintenez SELECT + MENU quelques secondes)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完了しました。iPod は %@ になり、取り外し可能な状態です。ケーブルを抜いて、SELECT と MENU を数秒間押したまま再起動してください。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово: на iPod теперь %@, и он извлечён. Отключите его и перезапустите (удерживайте SELECT + MENU несколько секунд)."
+          }
+        }
+      }
+    },
     "extras-view.revisar-nuevo": {
       "extractionState": "manual",
       "localizations": {
@@ -7636,6 +7677,47 @@
           "stringUnit": {
             "state": "translated",
             "value": "Проверить снова"
+          }
+        }
+      }
+    },
+    "extras-view.tambien-instalado-dormido": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ist ebenfalls installiert, aber schlafend: Wähle seine Karte, um zu wechseln."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is also installed, dormant: pick its card to switch."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ también está instalado, dormido: elige su tarjeta para cambiar."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ est aussi installé, en veille : choisissez sa carte pour basculer."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ もインストールされていますが休止中です。切り替えるにはそのカードを選んでください。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ также установлена, но спит: выберите её карточку, чтобы переключиться."
           }
         }
       }
@@ -9513,25 +9595,25 @@
               "few": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld потерянных файла удалено"
+                  "value": "%lld неиспользуемых файла удалено"
                 }
               },
               "many": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld потерянных файлов удалено"
+                  "value": "%lld неиспользуемых файлов удалено"
                 }
               },
               "one": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld потерянный файл удалён"
+                  "value": "%lld неиспользуемый файл удалён"
                 }
               },
               "other": {
                 "stringUnit": {
                   "state": "translated",
-                  "value": "%lld потерянных файла удалено"
+                  "value": "%lld неиспользуемых файла удалено"
                 }
               }
             }
@@ -16847,7 +16929,7 @@
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Chercher les orphelins"
+            "value": "Chercher les fichiers orphelins"
           }
         },
         "ja": {
@@ -16859,7 +16941,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Найти потерянные файлы"
+            "value": "Найти неиспользуемые файлы"
           }
         }
       }
@@ -16900,7 +16982,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Очистить потерянные файлы"
+            "value": "Очистить неиспользуемые файлы"
           }
         }
       }
@@ -17023,7 +17105,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Потерянных файлов нет: чистить нечего."
+            "value": "Неиспользуемых файлов нет: чистить нечего."
           }
         }
       }
@@ -17064,7 +17146,7 @@
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Потерянные файлы"
+            "value": "Неиспользуемые файлы"
           }
         }
       }
@@ -22182,6 +22264,47 @@
         }
       }
     },
+    "similar-items-view.grupo-ignorado": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gruppe ignoriert. Du kannst sie unten in diesem Fenster wieder einblenden."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Group ignored. You can show it again from the bottom of this window."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grupo ignorado. Puedes volver a mostrarlo desde el pie de esta ventana."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Groupe ignoré. Vous pouvez le réafficher depuis le bas de cette fenêtre."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "グループを無視しました。このウインドウの下部から再表示できます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Группа скрыта. Показать её снова можно внизу этого окна."
+          }
+        }
+      }
+    },
     "similar-items-view.hay-grupo-s-ignorado-s": {
       "extractionState": "manual",
       "localizations": {
@@ -22659,6 +22782,125 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld группы"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "similar-items-view.plural.metadata-unificada": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Metadaten bei %lld Objekt vereinheitlicht."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Metadaten bei %lld Objekten vereinheitlicht."
+                }
+              }
+            }
+          }
+        },
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Metadata unified on %lld item."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Metadata unified on %lld items."
+                }
+              }
+            }
+          }
+        },
+        "es": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Metadata unificada en %lld elemento."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Metadata unificada en %lld elementos."
+                }
+              }
+            }
+          }
+        },
+        "fr": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Métadonnées unifiées sur %lld élément."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Métadonnées unifiées sur %lld éléments."
+                }
+              }
+            }
+          }
+        },
+        "ja": {
+          "variations": {
+            "plural": {
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld 件の項目のメタデータを統一しました。"
+                }
+              }
+            }
+          }
+        },
+        "ru": {
+          "variations": {
+            "plural": {
+              "few": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Метаданные объединены у %lld объектов."
+                }
+              },
+              "many": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Метаданные объединены у %lld объектов."
+                }
+              },
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Метаданные объединены у %lld объекта."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Метаданные объединены у %lld объектов."
                 }
               }
             }

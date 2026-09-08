@@ -166,7 +166,9 @@
 "extras-view.incluida" = "incluse";
 "extras-view.instalar" = "Installer %@";
 "extras-view.licencias" = "Licences";
+"extras-view.listo-ipod-quedo-con" = "Terminé : l’iPod a maintenant %@ et a été éjecté. Débranchez-le et redémarrez-le (maintenez SELECT + MENU quelques secondes).";
 "extras-view.revisar-nuevo" = "Vérifier à nouveau";
+"extras-view.tambien-instalado-dormido" = "%@ est aussi installé, en veille : choisissez sa carte pour basculer.";
 "extras-view.todavia-no" = "Pas encore";
 "extras-view.tu-ipod-tiene-instalar-lo-agrega" = "Votre iPod a %@. Installer %@ l’ajoute : %@ reste en veille avec ses réglages et vous pourrez y revenir d’ici sans rien réinstaller.";
 "extras-view.ya-esta-instalado-tu-ipod-dormido" = "%@ est déjà installé sur votre iPod, en veille, avec ses réglages enregistrés. Basculer prend une seconde (rien n’est téléchargé ni effacé) ; ensuite il faut redémarrer l’iPod, et la première fois il reconstruit sa base musicale.";
@@ -301,7 +303,7 @@
 "music-view-options-view.orden-columnas" = "Ordre des colonnes";
 "music-view-options-view.ordenar-por" = "Trier par :";
 "music-view-options-view.restablecer" = "Réinitialiser";
-"orphans-button" = "Chercher les orphelins";
+"orphans-button" = "Chercher les fichiers orphelins";
 "orphans-clean-button" = "Nettoyer les fichiers orphelins";
 "orphans-confirm-message" = "Ils ne sont liés à aucun élément de votre bibliothèque ; les supprimer n’affecte aucun morceau, photo ou vidéo que vous possédez.";
 "orphans-detail" = "Fichiers préparés et pochettes qui n’appartiennent plus à aucun élément de votre bibliothèque — issus d’éléments supprimés avant cette version, ou d’un retraitement. Ce ne sont pas vos fichiers d’origine : ce sont des copies techniques qu’Aura crée seul et peut recréer si besoin.";
@@ -423,6 +425,7 @@
 "similar-items-view.elige-grupo-lista" = "Choisissez un groupe dans la liste.";
 "similar-items-view.eliminar-solo-este" = "Supprimer seulement celui-ci";
 "similar-items-view.fotos" = "Photos";
+"similar-items-view.grupo-ignorado" = "Groupe ignoré. Vous pouvez le réafficher depuis le bas de cette fenêtre.";
 "similar-items-view.hay-grupo-s-ignorado-s" = "Il y a %lld groupe(s) ignoré(s).";
 "similar-items-view.ignorar-este-grupo" = "Ignorer ce groupe";
 "similar-items-view.metadata-sugerida" = "Métadonnées suggérées";

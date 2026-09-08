@@ -273,13 +273,13 @@
 			<key>NSStringFormatValueTypeKey</key>
 			<string>lld</string>
 			<key>few</key>
-			<string>%lld потерянных файла удалено</string>
+			<string>%lld неиспользуемых файла удалено</string>
 			<key>many</key>
-			<string>%lld потерянных файлов удалено</string>
+			<string>%lld неиспользуемых файлов удалено</string>
 			<key>one</key>
-			<string>%lld потерянный файл удалён</string>
+			<string>%lld неиспользуемый файл удалён</string>
 			<key>other</key>
-			<string>%lld потерянных файла удалено</string>
+			<string>%lld неиспользуемых файла удалено</string>
 		</dict>
 	</dict>
 	<key>library-migration.plural.nombre-viejo</key>
@@ -860,6 +860,26 @@
 			<string>%lld группа</string>
 			<key>other</key>
 			<string>%lld группы</string>
+		</dict>
+	</dict>
+	<key>similar-items-view.plural.metadata-unificada</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Метаданные объединены у %lld объектов.</string>
+			<key>many</key>
+			<string>Метаданные объединены у %lld объектов.</string>
+			<key>one</key>
+			<string>Метаданные объединены у %lld объекта.</string>
+			<key>other</key>
+			<string>Метаданные объединены у %lld объектов.</string>
 		</dict>
 	</dict>
 	<key>similar-items.plural.duplicados</key>

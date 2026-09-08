@@ -368,7 +368,8 @@ struct SimilarItemsView: View {
                             // camino síncrono.
                             Task {
                                 await library.applySimilarityEdits(group.proposedEdits)
-                                lastActionSummary = "Metadata unificada en \(Set(group.proposedEdits.map(\.itemID)).count) elemento(s)."
+                                lastActionSummary = LSf("similar-items-view.plural.metadata-unificada",
+                                                        Set(group.proposedEdits.map(\.itemID)).count)
                                 rescan()
                             }
                         }
@@ -385,7 +386,7 @@ struct SimilarItemsView: View {
                     Button(LS("similar-items-view.ignorar-este-grupo")) {
                         preferences.ignoredSimilarGroups.append(group.id)
                         groups.removeAll { $0.id == group.id }
-                        lastActionSummary = "Grupo ignorado. Puedes volver a mostrarlo desde el pie de esta ventana."
+                        lastActionSummary = LS("similar-items-view.grupo-ignorado")
                     }
                     .help(LS("similar-items-view.no-son-lo-mismo-no-volver"))
                     Spacer()

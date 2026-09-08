@@ -166,7 +166,9 @@
 "extras-view.incluida" = "included";
 "extras-view.instalar" = "Install %@";
 "extras-view.licencias" = "Licenses";
+"extras-view.listo-ipod-quedo-con" = "Done: the iPod now has %@ and was ejected. Disconnect it and restart it (hold SELECT + MENU for a few seconds).";
 "extras-view.revisar-nuevo" = "Check again";
+"extras-view.tambien-instalado-dormido" = "%@ is also installed, dormant: pick its card to switch.";
 "extras-view.todavia-no" = "Not yet";
 "extras-view.tu-ipod-tiene-instalar-lo-agrega" = "Your iPod has %@. Installing %@ adds it: %@ is kept asleep with its settings and you’ll be able to come back to it from here without installing anything again.";
 "extras-view.ya-esta-instalado-tu-ipod-dormido" = "%@ is already installed on your iPod, asleep, with its settings saved. Switching takes a second (it doesn’t download or erase anything); afterwards you have to restart the iPod, and the first time it rebuilds its music database.";
@@ -423,6 +425,7 @@
 "similar-items-view.elige-grupo-lista" = "Pick a group from the list.";
 "similar-items-view.eliminar-solo-este" = "Delete only this one";
 "similar-items-view.fotos" = "Photos";
+"similar-items-view.grupo-ignorado" = "Group ignored. You can show it again from the bottom of this window.";
 "similar-items-view.hay-grupo-s-ignorado-s" = "There are %lld ignored group(s).";
 "similar-items-view.ignorar-este-grupo" = "Ignore this group";
 "similar-items-view.metadata-sugerida" = "Suggested metadata";

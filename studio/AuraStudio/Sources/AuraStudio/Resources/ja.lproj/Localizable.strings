@@ -166,7 +166,9 @@
 "extras-view.incluida" = "同梱";
 "extras-view.instalar" = "%@ をインストール";
 "extras-view.licencias" = "ライセンス";
+"extras-view.listo-ipod-quedo-con" = "完了しました。iPod は %@ になり、取り外し可能な状態です。ケーブルを抜いて、SELECT と MENU を数秒間押したまま再起動してください。";
 "extras-view.revisar-nuevo" = "もう一度確認";
+"extras-view.tambien-instalado-dormido" = "%@ もインストールされていますが休止中です。切り替えるにはそのカードを選んでください。";
 "extras-view.todavia-no" = "まだです";
 "extras-view.tu-ipod-tiene-instalar-lo-agrega" = "iPod には %@ が入っています。%@ をインストールすると追加され、%@ は設定を保ったままスリープ状態で残ります。何も入れ直さずに、ここから戻せます。";
 "extras-view.ya-esta-instalado-tu-ipod-dormido" = "%@ はすでに iPod にインストールされ、設定を保ったままスリープ状態です。切り替えは一瞬で終わり（ダウンロードも削除もしません）、そのあと iPod を再起動する必要があります。初回は音楽データベースを作り直します。";
@@ -423,6 +425,7 @@
 "similar-items-view.elige-grupo-lista" = "リストからグループを選んでください。";
 "similar-items-view.eliminar-solo-este" = "これだけ削除";
 "similar-items-view.fotos" = "写真";
+"similar-items-view.grupo-ignorado" = "グループを無視しました。このウインドウの下部から再表示できます。";
 "similar-items-view.hay-grupo-s-ignorado-s" = "無視したグループが %lld 件あります。";
 "similar-items-view.ignorar-este-grupo" = "このグループを無視";
 "similar-items-view.metadata-sugerida" = "提案されたメタデータ";

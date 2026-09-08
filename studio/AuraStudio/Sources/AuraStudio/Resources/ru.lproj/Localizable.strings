@@ -166,7 +166,9 @@
 "extras-view.incluida" = "включена";
 "extras-view.instalar" = "Установить %@";
 "extras-view.licencias" = "Лицензии";
+"extras-view.listo-ipod-quedo-con" = "Готово: на iPod теперь %@, и он извлечён. Отключите его и перезапустите (удерживайте SELECT + MENU несколько секунд).";
 "extras-view.revisar-nuevo" = "Проверить снова";
+"extras-view.tambien-instalado-dormido" = "%@ также установлена, но спит: выберите её карточку, чтобы переключиться.";
 "extras-view.todavia-no" = "Пока нет";
 "extras-view.tu-ipod-tiene-instalar-lo-agrega" = "На вашем iPod установлена %@. Установка %@ добавит её: %@ останется в спящем виде со своими настройками, и вы сможете вернуться к ней отсюда, ничего не устанавливая заново.";
 "extras-view.ya-esta-instalado-tu-ipod-dormido" = "%@ уже установлена на вашем iPod, в спящем виде и с сохранёнными настройками. Переключение занимает секунду (ничего не загружается и не удаляется); после этого нужно перезапустить iPod, и в первый раз он заново соберёт свою музыкальную базу.";
@@ -301,12 +303,12 @@
 "music-view-options-view.orden-columnas" = "Порядок столбцов";
 "music-view-options-view.ordenar-por" = "Сортировать по:";
 "music-view-options-view.restablecer" = "Сбросить";
-"orphans-button" = "Найти потерянные файлы";
-"orphans-clean-button" = "Очистить потерянные файлы";
+"orphans-button" = "Найти неиспользуемые файлы";
+"orphans-clean-button" = "Очистить неиспользуемые файлы";
 "orphans-confirm-message" = "Они не связаны ни с одним объектом вашей медиатеки; их удаление не затронет ни один трек, фото или видео.";
 "orphans-detail" = "Подготовленные файлы и обложки, которые больше не принадлежат ни одному объекту вашей медиатеки — от объектов, удалённых до этой версии, или после повторной обработки. Это не ваши исходные файлы: это технические копии, которые Aura создаёт сама и при необходимости создаст заново.";
-"orphans-none-found" = "Потерянных файлов нет: чистить нечего.";
-"orphans-title" = "Потерянные файлы";
+"orphans-none-found" = "Неиспользуемых файлов нет: чистить нечего.";
+"orphans-title" = "Неиспользуемые файлы";
 "permissions-view.abrir-ajustes-sistema-privacidad-segurid" = "Открыть Системные настройки («Конфиденциальность и безопасность»)";
 "permissions-view.permisos-necesarios" = "Необходимые разрешения";
 "photo-albums-view.dejarlo-vacio-disuelve-album-fotos-vuelv" = "Если оставить пустым, альбом распадётся — фото вернутся в «Без альбома».";
@@ -423,6 +425,7 @@
 "similar-items-view.elige-grupo-lista" = "Выберите группу из списка.";
 "similar-items-view.eliminar-solo-este" = "Удалить только этот";
 "similar-items-view.fotos" = "Фото";
+"similar-items-view.grupo-ignorado" = "Группа скрыта. Показать её снова можно внизу этого окна.";
 "similar-items-view.hay-grupo-s-ignorado-s" = "Пропущенных групп: %lld.";
 "similar-items-view.ignorar-este-grupo" = "Пропустить эту группу";
 "similar-items-view.metadata-sugerida" = "Предложенные метаданные";

@@ -170,8 +170,15 @@ struct ExtrasView: View {
 
         VStack(alignment: .leading, spacing: 8) {
             if chosen == active {
-                Text(LSf("extras-view.es-firmware-activo-tu-ipod", active.displayName) +
-                     (dormant.isEmpty ? "" : " \(dormant.map(\.displayName).joined(separator: ", ")) también está instalado, dormido: elige su tarjeta para cambiar."))
+                // ST-227 (A7c addendum 3): las dos oraciones son dos
+                // claves y se unen con un espacio, no con un literal en
+                // español pegado a una frase ya traducida -- que era el
+                // patrón exacto que Windows encontró en B7c.
+                Text(dormant.isEmpty
+                     ? LSf("extras-view.es-firmware-activo-tu-ipod", active.displayName)
+                     : LSf("extras-view.es-firmware-activo-tu-ipod", active.displayName) + " "
+                        + LSf("extras-view.tambien-instalado-dormido",
+                              Sentence.commaList(dormant.map(\.displayName))))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else if dormant.contains(chosen) {
@@ -185,7 +192,7 @@ struct ExtrasView: View {
                         switchResult = nil
                         Task {
                             let error = await onSwitchFirmware(chosen)
-                            switchResult = error ?? "Listo: el iPod quedó con \(chosen.displayName) y se expulsó. Desconéctalo y reinícialo (mantén SELECT + MENU unos segundos)."
+                            switchResult = error ?? LSf("extras-view.listo-ipod-quedo-con", chosen.displayName)
                             switching = false
                         }
                     } label: {

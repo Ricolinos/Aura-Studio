@@ -166,7 +166,9 @@
 "extras-view.incluida" = "incluida";
 "extras-view.instalar" = "Instalar %@";
 "extras-view.licencias" = "Licencias";
+"extras-view.listo-ipod-quedo-con" = "Listo: el iPod quedó con %@ y se expulsó. Desconéctalo y reinícialo (mantén SELECT + MENU unos segundos).";
 "extras-view.revisar-nuevo" = "Revisar de nuevo";
+"extras-view.tambien-instalado-dormido" = "%@ también está instalado, dormido: elige su tarjeta para cambiar.";
 "extras-view.todavia-no" = "Todavia no";
 "extras-view.tu-ipod-tiene-instalar-lo-agrega" = "Tu iPod tiene %@. Instalar %@ lo agrega: %@ se guarda dormido con sus ajustes y podrás volver a él desde aquí sin volver a instalar nada.";
 "extras-view.ya-esta-instalado-tu-ipod-dormido" = "%@ ya está instalado en tu iPod, dormido, con sus ajustes guardados. Cambiar toma un segundo (no descarga ni borra nada); después hay que reiniciar el iPod y la primera vez reconstruye su base de música.";
@@ -423,6 +425,7 @@
 "similar-items-view.elige-grupo-lista" = "Elige un grupo de la lista.";
 "similar-items-view.eliminar-solo-este" = "Eliminar solo este";
 "similar-items-view.fotos" = "Fotos";
+"similar-items-view.grupo-ignorado" = "Grupo ignorado. Puedes volver a mostrarlo desde el pie de esta ventana.";
 "similar-items-view.hay-grupo-s-ignorado-s" = "Hay %lld grupo(s) ignorado(s).";
 "similar-items-view.ignorar-este-grupo" = "Ignorar este grupo";
 "similar-items-view.metadata-sugerida" = "Metadata sugerida";

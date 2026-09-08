@@ -604,6 +604,20 @@
 			<string>%lld グループ</string>
 		</dict>
 	</dict>
+	<key>similar-items-view.plural.metadata-unificada</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@n@</string>
+		<key>n</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>other</key>
+			<string>%lld 件の項目のメタデータを統一しました。</string>
+		</dict>
+	</dict>
 	<key>similar-items.plural.duplicados</key>
 	<dict>
 		<key>NSStringLocalizedFormatKey</key>

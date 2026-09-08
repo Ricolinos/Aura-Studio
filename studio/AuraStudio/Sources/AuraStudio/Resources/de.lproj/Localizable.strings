@@ -166,7 +166,9 @@
 "extras-view.incluida" = "enthalten";
 "extras-view.instalar" = "%@ installieren";
 "extras-view.licencias" = "Lizenzen";
+"extras-view.listo-ipod-quedo-con" = "Fertig: Auf dem iPod ist jetzt %@, und er wurde ausgeworfen. Trenne ihn und starte ihn neu (SELECT + MENU einige Sekunden halten).";
 "extras-view.revisar-nuevo" = "Erneut prüfen";
+"extras-view.tambien-instalado-dormido" = "%@ ist ebenfalls installiert, aber schlafend: Wähle seine Karte, um zu wechseln.";
 "extras-view.todavia-no" = "Noch nicht";
 "extras-view.tu-ipod-tiene-instalar-lo-agrega" = "Auf deinem iPod ist %@. Wenn du %@ installierst, kommt es dazu: %@ bleibt mit seinen Einstellungen im Ruhezustand, und du kannst von hier aus dorthin zurückwechseln, ohne noch einmal etwas zu installieren.";
 "extras-view.ya-esta-instalado-tu-ipod-dormido" = "%@ ist bereits auf deinem iPod installiert, im Ruhezustand und mit gespeicherten Einstellungen. Das Wechseln dauert eine Sekunde (es wird nichts geladen oder gelöscht); danach musst du den iPod neu starten, und beim ersten Mal baut er seine Musikdatenbank neu auf.";
@@ -423,6 +425,7 @@
 "similar-items-view.elige-grupo-lista" = "Wähl eine Gruppe aus der Liste.";
 "similar-items-view.eliminar-solo-este" = "Nur dieses löschen";
 "similar-items-view.fotos" = "Fotos";
+"similar-items-view.grupo-ignorado" = "Gruppe ignoriert. Du kannst sie unten in diesem Fenster wieder einblenden.";
 "similar-items-view.hay-grupo-s-ignorado-s" = "Es gibt %lld ignorierte Gruppe(n).";
 "similar-items-view.ignorar-este-grupo" = "Diese Gruppe ignorieren";
 "similar-items-view.metadata-sugerida" = "Vorgeschlagene Metadaten";

@@ -16620,6 +16620,71 @@ además **rechaza una forma de más** -- un `one` japonés que el sistema no
 elegiría nunca haría creer a quien lo edite que cambió algo. El ruso no
 puede caer al español en silencio por faltarle `many`.
 
+### El barrido con el método de Windows, y su conteo
+
+La maestra pasó el método que Windows usó en B7c y se repitió en Swift:
+(1) funciones que unen partes (`joined`/`append`/`+`) **y** llaman al
+catálogo **y** contienen un literal en español; (2) interpolaciones que
+mezclan una clave con letras fuera de las llaves; (3) lo mismo en las
+vistas. Su predicción era que saldrían las mismas dos frases que en
+Windows, las de la migración de B6/A6.
+
+Salieron, y estaban entre las diez de arriba. El conteo completo:
+
+- **Criterio (2): 0.** Ninguna interpolación mezcla una clave del
+  catálogo con letras sueltas, ni antes ni después.
+- **Criterio (1): 7 antes, 5 después.** Las dos que bajaron eran frases
+  compuestas de verdad y se arreglaron acá: `ExtrasView.switchControls`
+  --que pegaba `" %@ también está instalado, dormido: elige su tarjeta
+  para cambiar."` a una frase ya traducida, el patrón exacto de
+  Windows-- y `SimilarItemsView`, con `"Metadata unificada en \(n)
+  elemento(s)."`, otro plural falso de los de `"(s)"`. De paso entraron
+  al catálogo dos mensajes sueltos de esas mismas vistas ("Listo: el
+  iPod quedó con…" y "Grupo ignorado…").
+- **Las 5 que quedan no son frases compuestas**, y por eso el criterio
+  las marca: son mensajes o etiquetas **sueltos** que viven en una
+  función que además une algo y además usa el catálogo
+  (`lastError` de `fetchVideoPosters`, dos de `fetchArtistImages`, los
+  ternarios de "Marcar como favorito" en `AlbumsView` y `ArtistsView`, y
+  el marcador de posición de `MusicSettingsView`). Ninguna se arma
+  pegando español a una pieza traducida: son parte del residuo de 340
+  cadenas, no de este defecto.
+
+Después de este addendum **no queda ninguna oración que mezcle catálogo
+y español** en `Sources/`.
+
+### Las retrotraducciones de Windows, aplicadas acá
+
+Tres avisos llegaron del cotejo que hizo Windows. Dos no aplicaban y uno
+sí, y era serio.
+
+**"Huérfano" en ruso decía "perdido", y eso es lo contrario de lo que la
+pantalla explica.** Cinco cadenas (`orphans-title`, `orphans-button`,
+`orphans-clean-button`, `orphans-none-found` y el fragmento del resumen
+de migración) usaban **`потерянные`**: el usuario ruso leía "Archivos
+perdidos" / "Buscar archivos perdidos" con un botón de **borrarlos**
+debajo. Un archivo perdido es algo que uno quiere recuperar, no borrar;
+la pantalla dice justo lo contrario --que son copias técnicas que Aura
+rehace cuando las necesita--, así que el título peleaba con su propia
+explicación. Corregido a **`неиспользуемые`** ("sin uso"). El alemán ya
+decía `verwaiste Dateien` y el francés `fichiers orphelins`, los dos
+bien; el japonés dice `孤立ファイル`, que es "aislado", no "perdido", y
+se queda. De paso, el francés de `orphans-button` decía solo
+"orphelins", sin sustantivo --que se lee como personas-- y pasó a
+"fichiers orphelins", igual que las otras tres.
+
+**"Ensayar/simulación": no aplica.** Esa familia de textos no existe en
+el catálogo de la Mac; el barrido por `ensay|simulac|simular|en seco`
+devuelve cero claves. No se inventa un glosario para algo que no está.
+
+**Terminología de plataforma: ya estaba bien.** "Bootloader" va sin
+traducir en alemán en las 12 claves que lo mencionan, y "Papelera" usa
+el término de macOS de cada idioma -- `Papierkorb`, `Corbeille`,
+`Корзина`, `ゴミ箱`.
+
+Las cinco celdas afectadas del cotejo compartido se pusieron al día con
+el catálogo.
+
 ### Lo que queda, dicho con su motivo
 
 `LibraryStatusSummary.count(_:singular:plural:)` -- **33 sitios** con el
