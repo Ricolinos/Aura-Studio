@@ -1,7 +1,9 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.Core.Networking;
 
@@ -59,20 +61,50 @@ public sealed class TMDBClient
     private readonly string _baseURL;
     private readonly string _imageBaseURL;
     private readonly IApiKeyStore _apiKeyStore;
-    private readonly string _language;
+    private readonly string? _language;
 
+    /// <param name="language">
+    /// Idioma en el que se le piden los datos a TMDB. Por omisión, el de la
+    /// interfaz.
+    ///
+    /// <para>Estaba fijo en <c>"es-MX"</c>, y con la app en un solo idioma eso
+    /// era correcto. Con seis deja de serlo: de acá salen los títulos y las
+    /// sinopsis de películas y series, así que la app en japonés le mostraba al
+    /// usuario texto en español recién traído de la red. No es una cadena de
+    /// interfaz —es un parámetro de una consulta—, y por eso ninguna prueba de
+    /// extracción lo iba a ver nunca (ST-247, B7c).</para>
+    /// </param>
     public TMDBClient(
         HttpClient? http = null,
         IApiKeyStore? apiKeyStore = null,
         string baseURL = "https://api.themoviedb.org/3",
         string imageBaseURL = "https://image.tmdb.org/t/p/w780",
-        string language = "es-MX")
+        string? language = null)
     {
         _http = http ?? new HttpClient();
         _baseURL = baseURL;
         _imageBaseURL = imageBaseURL;
         _apiKeyStore = apiKeyStore ?? new SimpleApiKeyStore();
         _language = language;
+    }
+
+    /// <summary>
+    /// El idioma que viaja en la consulta. Se resuelve al consultar y no al
+    /// construir el cliente, para que valga la cultura del momento.
+    ///
+    /// <para>La cultura invariante no tiene nombre y dejaría
+    /// <c>&amp;language=</c> vacío: ahí la interfaz se ve en español, que es la
+    /// cultura neutra, y eso es lo que se pide.</para>
+    /// </summary>
+    private string Language
+    {
+        get
+        {
+            if (_language is { Length: > 0 }) return _language;
+
+            string name = CultureInfo.CurrentUICulture.Name;
+            return name.Length > 0 ? name : AppLanguages.NeutralCulture;
+        }
     }
 
     /// <summary>True si hay clave de API configurada.</summary>
@@ -141,7 +173,7 @@ public sealed class TMDBClient
         var qs = string.Join("&", query
             .Where(x => !string.IsNullOrEmpty(x.Value))
             .Select(x => $"{Uri.EscapeDataString(x.Key)}={Uri.EscapeDataString(x.Value)}"));
-        qs += $"&language={Uri.EscapeDataString(_language)}&api_key={Uri.EscapeDataString(apiKey)}";
+        qs += $"&language={Uri.EscapeDataString(Language)}&api_key={Uri.EscapeDataString(apiKey)}";
 
         var url = $"{_baseURL}/{path}?{qs}";
         using var request = new HttpRequestMessage(HttpMethod.Get, url);
