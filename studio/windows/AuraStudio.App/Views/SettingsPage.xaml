@@ -195,6 +195,8 @@
 
                     <ToggleSwitch Header="{x:Bind str:Strings.Get('settings-page.copiar-medios-carpeta-biblioteca')}"
                                   IsOn="{x:Bind ViewModel.CopyMediaIntoLibrary, Mode=TwoWay}"
+                                  OnContent="{x:Bind str:Strings.Get('toggle.on')}"
+                                  OffContent="{x:Bind str:Strings.Get('toggle.off')}"
                                   Margin="0,8,0,0" />
                     <TextBlock Text="{x:Bind ViewModel.CopyMediaDetail, Mode=OneWay}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
@@ -324,7 +326,9 @@
                          docs/normalizacion-artistas.md. -->
                     <TextBlock Text="{x:Bind str:Strings.Get('settings-page.colaboraciones')}" Style="{StaticResource AuraSectionTitleTextStyle}" Margin="0,12,0,0" />
                     <ToggleSwitch Header="{x:Bind str:Strings.Get('settings-page.agrupar-colaboraciones-bajo-artista-prin')}"
-                                  IsOn="{x:Bind ViewModel.GroupCollaborations, Mode=TwoWay}" />
+                                  IsOn="{x:Bind ViewModel.GroupCollaborations, Mode=TwoWay}"
+                                  OnContent="{x:Bind str:Strings.Get('toggle.on')}"
+                                  OffContent="{x:Bind str:Strings.Get('toggle.off')}" />
                     <TextBlock Text="{x:Bind ViewModel.GroupCollaborationsDetail}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
@@ -372,6 +376,8 @@
 
                     <ToggleSwitch Header="{x:Bind str:Strings.Get('settings-page.organizar-por-coleccion-dentro-bibliotec')}"
                                   IsOn="{x:Bind ViewModel.OrganizePhotosByCategory, Mode=TwoWay}"
+                                  OnContent="{x:Bind str:Strings.Get('toggle.on')}"
+                                  OffContent="{x:Bind str:Strings.Get('toggle.off')}"
                                   Margin="0,12,0,0" />
                     <TextBlock Text="{x:Bind str:Strings.Get('settings-page.separa-tus-fotos-colecciones-para-encont')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
@@ -401,7 +407,9 @@
                 <!-- ===================== Video ===================== -->
                 <StackPanel x:Name="VideoPanel" Spacing="10" Visibility="Collapsed">
                     <ToggleSwitch Header="{x:Bind str:Strings.Get('settings-page.organizar-por-categoria-dentro-bibliotec')}"
-                                  IsOn="{x:Bind ViewModel.OrganizeVideosByCategory, Mode=TwoWay}" />
+                                  IsOn="{x:Bind ViewModel.OrganizeVideosByCategory, Mode=TwoWay}"
+                                  OnContent="{x:Bind str:Strings.Get('toggle.on')}"
+                                  OffContent="{x:Bind str:Strings.Get('toggle.off')}" />
                     <TextBlock Text="{x:Bind str:Strings.Get('settings-page.separa-tus-videos-videos-series-pelicula')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />
 
@@ -463,6 +471,8 @@
                     </ItemsControl>
 
                     <ToggleSwitch Header="{x:Bind str:Strings.Get('settings-page.deezer')}" IsOn="{x:Bind ViewModel.DeezerEnabled, Mode=TwoWay}"
+                                  OnContent="{x:Bind str:Strings.Get('toggle.on')}"
+                                  OffContent="{x:Bind str:Strings.Get('toggle.off')}"
                                   Margin="0,8,0,0" />
                     <TextBlock Text="{x:Bind str:Strings.Get('settings-page.caratula-alternativa-1000-1000-sin-clave')}"
                                Style="{StaticResource AuraCaptionTextStyle}" TextWrapping="Wrap" />

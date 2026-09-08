@@ -3318,6 +3318,15 @@
   <data name="music-column-group.other-columns" xml:space="preserve">
     <value>Прочее</value>
   </data>
+  <data name="music-column.title" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="toggle.off" xml:space="preserve">
+    <value>Выкл.</value>
+  </data>
+  <data name="toggle.on" xml:space="preserve">
+    <value>Вкл.</value>
+  </data>
   <data name="music-column.album" xml:space="preserve">
     <value>Альбом</value>
   </data>

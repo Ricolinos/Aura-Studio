@@ -3096,6 +3096,15 @@
   <data name="music-column-group.other-columns" xml:space="preserve">
     <value>Otros</value>
   </data>
+  <data name="music-column.title" xml:space="preserve">
+    <value>Título</value>
+  </data>
+  <data name="toggle.off" xml:space="preserve">
+    <value>Desactivado</value>
+  </data>
+  <data name="toggle.on" xml:space="preserve">
+    <value>Activado</value>
+  </data>
   <data name="music-column.album" xml:space="preserve">
     <value>Álbum</value>
   </data>

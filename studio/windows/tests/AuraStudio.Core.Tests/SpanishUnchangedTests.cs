@@ -688,6 +688,23 @@ public class SpanishUnchangedTests
         "crash-reporter.unexpected-error-body",
         "theme-installer.name-yields-invalid-id",
 
+        // Las tres del hallazgo de las capturas del mecánico. Ninguna la vieron
+        // el trinquete ni la barrida, y por motivos distintos que conviene
+        // dejar anotados:
+        //
+        //   music-column.title — "Título" es UNA palabra, y la barrida solo
+        //     mira literales de dos o más. El encabezado fijo de la tabla de
+        //     Canciones estaba escrito a mano y salía igual con la app en
+        //     inglés.
+        //
+        //   toggle.on / toggle.off — no había ninguna cadena que encontrar. Un
+        //     ToggleSwitch sin OnContent/OffContent dice "Activado" por su
+        //     cuenta, y lo toma del idioma de WINDOWS: con Windows en español y
+        //     la app en inglés se leía "Activado". Lo que faltaba no era una
+        //     traducción, era pedirla.
+        "music-column.title",
+        "toggle.on", "toggle.off",
+
         // Y los últimos que la barrida señaló como frases enteras: la franja de
         // actualización de la app, el resumen de "Completar en línea" (con dos
         // «(s)» en dos ramas) y tres fallos que el usuario lee tal cual.
