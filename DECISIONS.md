@@ -17932,3 +17932,67 @@ No se tocó `PermissionsView`: ahí el texto describe en general por qué
 macOS va a pedir la contraseña y no habla de reactivación; nombrar tres
 demonios del sistema en una pantalla de bienvenida sería ruido, no
 precisión.
+## ST-247 (B7d) — Windows: retrotraducción ciega ronda 2 — las 53/53/54/52 críticas del instalador, DFU y proceso elevado
+
+Segunda ronda de retrotraducción ciega, sobre las 53 claves nuevas
+(`d001…`, distintas de las `c001…` de B7c) de las cuatro familias que
+el triaje de B7c marcó como críticas y B7d empezó a traducir:
+`InstallerError`, `PrivilegedHost`/`PrivilegedRunner`/
+`PrivilegedOperation`, `FirmwareArtifacts`/`FirmwareTreeWriter`, y
+`DfuFlashRunner`. En `windows/b8`, rebasada (fast-forward, sin
+conflictos) sobre `origin/main = 3893b55`.
+
+**Método, igual que en B7c**: de `windows/b2` (`b2f9a7a`) se leyó SOLO
+`docs/extraccion-cadenas/retrotraduccion/criticas2-de.csv`,
+`criticas2-fr.csv`, `criticas2-ru.csv`, `criticas2-ja.csv` y
+`docs/extraccion-cadenas/glosario-plataforma.csv` (ahora 38 términos,
+3 más que la última vez que lo leí en B7c: el Experto agregó "ensayar"
+y "huérfano" tras mis propios hallazgos de esa ronda, y "Dispositivos
+Apple" con la ficha real de cada tienda) -- nunca `mapa2-criticas.csv`
+ni ningún `Resources*.resx`. Filas: 53 en alemán y francés, 54 en ruso
+(el par `d025`/`d026` se abre en `d026.few`/`d026.many`, con `d025`
+conservando el id a secas -- mismo patrón que B7c), 52 en japonés
+(falta `d025`, la fila ".one", esperado).
+
+**Salida**: `criticas2-<idioma>-retro.csv` (id, idioma, retro_es, nota),
+mismo formato que B7c. `glosario-veredicto.csv` se amplía SOLO con los
+3 términos nuevos que aparecieron en el glosario del Experto desde la
+última vez que lo contrasté (comparado línea por línea contra la copia
+de esa corrida): "huérfano", "Dispositivos Apple" y "sección de la
+app" (esta última es una entrada meta que respalda `SectionNamesTests`,
+no una cadena de interfaz). No se re-verdictaron los términos ya
+existentes -- "canción"→"трек", "Quitar"→"外す" y "ensayar"→"確認"/
+"проверка" en el glosario del Experto ya reflejan mis propios
+hallazgos de B7c, adoptados; no hace falta volver a comprobarlos.
+
+**Verificación independiente de esta ronda**: "Appleデバイス" (sin
+espacio) para "Dispositivos Apple" en japonés, confirmado de nuevo con
+un `WebFetch` real a la ficha 9NP83LWLPZ9K de la Microsoft Store
+japonesa (`hl=ja-jp&gl=JP`) -- coincide con la corrección de B7d.
+
+**Un matiz entre idiomas, no un error, señalado para que el Experto lo
+mire contra el código**: en `d045` ("no se pudo preparar X, por eso no
+se detuvo ningún servicio"), alemán dice "Neustart" (reinicio/reboot
+del servicio), mientras que francés ("réactivation"), ruso
+("возобновление", reanudación) y japonés ("戻す仕組み", mecanismo para
+revertir) describen algo más cercano a "reanudar/revertir" que a
+"reiniciar". Puede que el mecanismo real sí sea un reinicio de servicio
+(net stop/start) y el alemán sea el más literal, o puede que sea una
+reanudación de un servicio pausado y el alemán se haya ido de más --
+no lo puedo decidir desde la retrotraducción ciega sola, así que queda
+anotado en las cuatro filas correspondientes para que el Experto lo
+confirme contra `PrivilegedOperation`/`PrivilegedHost`.
+
+### Verificación
+
+Contador de campos por línea: encontró y corrigió 3 filas con una coma
+sin entrecomillar en el campo `retro_es` (`criticas2-fr-retro.csv`
+`d011`; `criticas2-ja-retro.csv` `d018` y `d036`) ANTES de comprometer.
+Las columnas de idioma (de/fr/ru/ja) coinciden carácter por carácter
+contra los cuatro `criticas2-<idioma>.csv` originales: 0 mismatches,
+0 ids duplicados, 0 filas perdidas ni de más contra los conteos
+53/53/54/52 esperados. `glosario-veredicto.csv`: las 35 filas
+existentes quedaron sin cambio (comparación columna por columna contra
+la versión anterior a esta corrida), 3 filas nuevas agregadas, 0 campos
+vacíos. 0 CR bytes en los cinco archivos. Sin builds: trabajo de solo
+texto y un `WebFetch` real.
