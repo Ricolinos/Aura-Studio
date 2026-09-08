@@ -36,6 +36,8 @@ trinquete de `HardcodedSpanishTests`, y acá queda dicho por qué.
 | paso 2, rótulos de tabla | 194 | columnas de Canciones, estados de la biblioteca y los avisos de alcance |
 | paso 2, biblioteca y cuadrículas | 168 | `LibraryViewModel`, `MediaGridViewModel` y la sección de claves de Ajustes |
 | paso 2, cola de Core y de la app | 93 | aviso de versión del firmware, servicios de red, credenciales, actualizaciones, hojas y vistas sueltas |
+| paso 2, razones de Abort | 91 | las nueve razones por las que NO se escribe en el disco, más lo que la segunda barrida sacó con ellas |
+| paso 2, cierre de la barrida | 91 | ~45 frases que el trinquete **no cuenta**: el trinquete no baja, y por eso hizo falta la barrida |
 
 El trinquete baja poco en el segundo paso y eso es correcto: **doce literales
 cambiaron de clase, no de sitio.** Las razones de `PreparedMusic` estaban como
@@ -44,6 +46,35 @@ mensaje se elige por el desenlace, esas razones son lo que siempre debieron ser
 —diagnóstico— y se quedan en español a propósito. Cuentan igual en el
 trinquete, que mide literales en español y no si están bien puestos; lo que
 bajó de la deuda de traducción son doce, aunque el número de arriba diga uno.
+
+## El trinquete es un piso, no un censo
+
+**Este triaje salió de `HardcodedSpanishTests`, y por eso heredó su ceguera.**
+
+El trinquete decide qué es español con una **lista de palabras** —«archivo»,
+«canción», «álbum», «biblioteca»…—. Una frase que no contenga ninguna de ellas
+no la ve, y hay muchas: «Formatos distintos», «Misma duración», «El árbol de X
+en el iPod está incompleto», «Se importó «X» con N canciones».
+
+Así que **las 303 de la tabla de abajo eran un subconteo**. No era la lista de
+todo lo que el usuario lee; era la lista de lo que ese léxico alcanzaba.
+
+Se descubrió por un error de método: las sustituciones se venían haciendo con
+`s///` **sin `/g`**, y el detector de parecidos repite los mismos motivos en
+tres bloques —música, video, foto—. La primera pasada convirtió solo la primera
+aparición de cada frase. **El trinquete no vio ninguna de las diez que quedaron
+sin convertir.**
+
+Lo que sí las vio fue una segunda barrida con otra señal:
+`barrida-frases.pl`, que busca literales de **dos o más palabras** que no
+parezcan ruta, identificador ni clave. Da más ruido a propósito — es para leer,
+no para contar, y ningún número suyo entra en un trinquete. Encontró, entre
+otras, **las nueve razones por las que Aura Studio se niega a escribir en el
+disco**, que este triaje había clasificado como bitácora y que el usuario lee
+justo cuando el formateo se detiene.
+
+La regla que queda: **el trinquete sirve para que no crezca; no sirve para dar
+por terminado un archivo.** Eso hay que hacerlo leyendo el archivo.
 
 ## Conteo
 

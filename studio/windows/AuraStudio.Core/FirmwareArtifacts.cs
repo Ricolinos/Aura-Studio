@@ -276,8 +276,9 @@ public static class FirmwareArtifactVerifier
         if (!Directory.Exists(artifacts.Directory))
         {
             return new ArtifactVerificationResult(false,
-                [$"No existe la carpeta {FirmwareArtifacts.DisplayPath(artifacts.Directory)}, " +
-                 $"donde deberían estar los archivos de {artifacts.Family.DisplayName}."]);
+                [Strings.Format("firmware-artifacts.missing-directory",
+                    FirmwareArtifacts.DisplayPath(artifacts.Directory),
+                    artifacts.Family.DisplayName)]);
         }
 
         string? checksumsPath = artifacts.Checksums;
@@ -379,8 +380,8 @@ public static class FirmwareArtifactVerifier
         }
 
         // 3) Nada con qué comparar.
-        errors.Add($"{shown} no se puede verificar: ni el Release publica " +
-                   $"{FirmwareArtifacts.Mks5lbootFileName} ni existe {ToolOrigin.FileName} junto al binario.");
+        errors.Add(Strings.Format("firmware-artifacts.tool-unverifiable",
+            shown, FirmwareArtifacts.Mks5lbootFileName, ToolOrigin.FileName));
         return (ToolProvenance.Unverified, null);
     }
 

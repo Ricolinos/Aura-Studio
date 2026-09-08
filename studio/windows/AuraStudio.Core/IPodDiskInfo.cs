@@ -43,7 +43,9 @@ public sealed record IPodDiskInfo
     /// destino de la sincronización. Qué firmware corre se dice con palabras, y
     /// eso es trabajo de <see cref="FirmwareSummary"/> (R3-3).</para>
     /// </summary>
-    public string DisplayName => $"iPod Classic ({(string.IsNullOrWhiteSpace(VolumeName) ? VolumePath : VolumeName)})";
+    public string DisplayName => Strings.Format(
+        "ipod-disk.display-name",
+        string.IsNullOrWhiteSpace(VolumeName) ? VolumePath : VolumeName);
 
     /// <summary>La frase que explica qué firmware tiene, en español y sin jerga.</summary>
     public string FirmwareSummary => DeviceFirmwareLabel.For(this);

@@ -11,9 +11,17 @@ namespace AuraStudio.App.Services;
 /// <param name="NetworkError">El primer problema de red, si lo hubo. Se dice; no se traga.</param>
 public sealed record EnrichmentReport(int Improved, int Lyrics, int ArtistImages, string? NetworkError)
 {
+    // Dos «(s)» en dos ramas. Cada conteo elige su forma y la oración que
+    // junta las dos se arma de las dos (ST-247, B7d).
     public string Summary => NetworkError is { Length: > 0 } error
-        ? $"Se completaron {Improved} elemento(s), pero hubo un problema de conexión: {error}"
-        : $"Se completaron {Improved} elemento(s) y {Lyrics} letra(s).";
+        ? Strings.Format(
+            "enrichment.summary-with-error",
+            Strings.Plural("enrichment.completed", Improved),
+            error)
+        : Strings.Format(
+            "enrichment.summary-joiner",
+            Strings.Plural("enrichment.completed", Improved),
+            Strings.Plural("enrichment.lyrics", Lyrics));
 }
 
 /// <summary>
@@ -170,7 +178,8 @@ public sealed class EnrichmentService(IAppPreferences preferences, CredentialSto
             }
             catch (Exception ex) when (ex is Platform.ImageResizeException or IOException)
             {
-                progress?.Report($"{title}: no se pudo guardar el póster ({ex.Message})");
+                progress?.Report(
+                    Strings.Format("enrichment.poster-save-failed", title, ex.Message));
             }
         }
 

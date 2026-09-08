@@ -27,7 +27,7 @@ public sealed partial class PlaylistsPage : Page
 
     private async void New_Click(object sender, RoutedEventArgs e)
     {
-        string? name = await AskForName("Nueva lista", "");
+        string? name = await AskForName(Strings.Get("playlists-page.new-playlist"), "");
         if (name is not null) ViewModel.Create(name);
     }
 
@@ -53,7 +53,7 @@ public sealed partial class PlaylistsPage : Page
         if (ViewModel.Export(id) is not { } export) return;
 
         var picker = new FileSavePicker { SuggestedFileName = Path.GetFileNameWithoutExtension(export.FileName) };
-        picker.FileTypeChoices.Add("Lista de reproducción", [".m3u8"]);
+        picker.FileTypeChoices.Add(Strings.Get("playlists-page.file-type"), [".m3u8"]);
         FilePickers.Attach(picker);
 
         Windows.Storage.StorageFile? file = await picker.PickSaveFileAsync();
@@ -68,7 +68,7 @@ public sealed partial class PlaylistsPage : Page
         }
         catch (Exception ex)
         {
-            ViewModel.LastMessage = $"No se pudo exportar: {ex.Message}";
+            ViewModel.LastMessage = Strings.Format("playlists-page.export-failed", ex.Message);
         }
     }
 

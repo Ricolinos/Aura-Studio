@@ -408,6 +408,192 @@
   <data name="installer-error.device-not-found" xml:space="preserve">
     <value>No connected iPod was detected.</value>
   </data>
+  <data name="enrichment.completed.one" xml:space="preserve">
+    <value>{0} item was completed</value>
+  </data>
+  <data name="enrichment.completed.other" xml:space="preserve">
+    <value>{0} items were completed</value>
+  </data>
+  <data name="enrichment.lyrics.one" xml:space="preserve">
+    <value>{0} set of lyrics</value>
+  </data>
+  <data name="enrichment.lyrics.other" xml:space="preserve">
+    <value>{0} sets of lyrics</value>
+  </data>
+  <data name="app-update-service.announcement" xml:space="preserve">
+    <value>There is a new version of Aura Studio: {0}. You have {1}.</value>
+  </data>
+  <data name="enrichment.poster-save-failed" xml:space="preserve">
+    <value>{0}: the poster could not be saved ({1})</value>
+  </data>
+  <data name="library-processor.copy-failed" xml:space="preserve">
+    <value>It could not be copied into the library: {0}</value>
+  </data>
+  <data name="library-processor.mp3-failed" xml:space="preserve">
+    <value>It could not be converted to MP3: {0}</value>
+  </data>
+  <data name="sync-summary.sync-failed" xml:space="preserve">
+    <value>The sync could not be completed: {0}</value>
+  </data>
+  <data name="enrichment.summary-with-error" xml:space="preserve">
+    <value>{0}, but there was a connection problem: {1}</value>
+  </data>
+  <data name="enrichment.summary-joiner" xml:space="preserve">
+    <value>{0} and {1}</value>
+  </data>
+  <data name="playlists-view-model.subtitle-missing.one" xml:space="preserve">
+    <value>{1} · {0} missing that is not in your library</value>
+  </data>
+  <data name="playlists-view-model.subtitle-missing.other" xml:space="preserve">
+    <value>{1} · {0} missing that are not in your library</value>
+  </data>
+  <data name="playlists-view-model.imported.one" xml:space="preserve">
+    <value>"{1}" was imported with {0} song.</value>
+  </data>
+  <data name="playlists-view-model.imported.other" xml:space="preserve">
+    <value>"{1}" was imported with {0} songs.</value>
+  </data>
+  <data name="playlists-view-model.still-missing.one" xml:space="preserve">
+    <value>Another {0} is not in your library yet.</value>
+  </data>
+  <data name="playlists-view-model.still-missing.other" xml:space="preserve">
+    <value>Another {0} are not in your library yet.</value>
+  </data>
+  <data name="artists-view-model.selection-summary.one" xml:space="preserve">
+    <value>{0} artist selected</value>
+  </data>
+  <data name="artists-view-model.selection-summary.other" xml:space="preserve">
+    <value>{0} artists selected</value>
+  </data>
+  <data name="firmware-tree.files-to-write.one" xml:space="preserve">
+    <value>{0} file to write</value>
+  </data>
+  <data name="firmware-tree.files-to-write.other" xml:space="preserve">
+    <value>{0} files to write</value>
+  </data>
+  <data name="firmware-tree.files-to-delete.one" xml:space="preserve">
+    <value>{0} to remove</value>
+  </data>
+  <data name="firmware-tree.files-to-delete.other" xml:space="preserve">
+    <value>{0} to remove</value>
+  </data>
+  <data name="device-list-view-model.matches-bundled" xml:space="preserve">
+    <value>{0} matches the version this copy of Aura Studio brings. {1}</value>
+  </data>
+  <data name="device-list-view-model.unknown-newer" xml:space="preserve">
+    <value>It is not known whether there is a newer version of {0}.</value>
+  </data>
+  <data name="device-list-view-model.my-ipod" xml:space="preserve">
+    <value>My iPod</value>
+  </data>
+  <data name="device-list-view-model.ipod-of" xml:space="preserve">
+    <value>{0}'s iPod</value>
+  </data>
+  <data name="firmware-update.tree-incomplete" xml:space="preserve">
+    <value>The {0} tree on the iPod is incomplete. Reinstall it from the Installer.</value>
+  </data>
+  <data name="firmware-update.unknown-source" xml:space="preserve">
+    <value>It is not known where updates for {0} come from.</value>
+  </data>
+  <data name="extras-view-model.choice-already-active" xml:space="preserve">
+    <value>{0} is your iPod's active firmware.</value>
+  </data>
+  <data name="extras-view-model.choice-adds" xml:space="preserve">
+    <value>Your iPod has {0}. Installing {1} adds it: {0} is kept asleep with its settings and nothing is deleted.</value>
+  </data>
+  <data name="extras-view-model.choice-will-install" xml:space="preserve">
+    <value>{0} will be installed the next time you use the Installer.</value>
+  </data>
+  <data name="library-view-model.checking-files" xml:space="preserve">
+    <value>Checking files… {0} of {1}</value>
+  </data>
+  <data name="library-view-model.read-failed" xml:space="preserve">
+    <value>The library could not be read: {0}</value>
+  </data>
+  <data name="library-view-model.tags-write-failed" xml:space="preserve">
+    <value>The tags could not be written to "{0}": {1}</value>
+  </data>
+  <data name="library-view-model.searching-lyrics-for" xml:space="preserve">
+    <value>Looking for lyrics for {0}…</value>
+  </data>
+  <data name="playlists-view-model.deleted" xml:space="preserve">
+    <value>"{0}" was deleted. The songs are still in your library.</value>
+  </data>
+  <data name="playlists-view-model.read-failed" xml:space="preserve">
+    <value>The playlist could not be read: {0}</value>
+  </data>
+  <data name="playlists-view-model.imported-and-missing" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="playlists-page.new-playlist" xml:space="preserve">
+    <value>New playlist</value>
+  </data>
+  <data name="playlists-page.file-type" xml:space="preserve">
+    <value>Playlist</value>
+  </data>
+  <data name="playlists-page.export-failed" xml:space="preserve">
+    <value>It could not be exported: {0}</value>
+  </data>
+  <data name="settings-view-model.ffmpeg-found" xml:space="preserve">
+    <value>Found at {0}</value>
+  </data>
+  <data name="settings-view-model.filename-example-track-title" xml:space="preserve">
+    <value>Example: 03 Persiana americana.mp3</value>
+  </data>
+  <data name="settings-view-model.filename-example-title-artist" xml:space="preserve">
+    <value>Example: Persiana americana - Soda Stereo.mp3</value>
+  </data>
+  <data name="settings-view-model.filename-example-title-album" xml:space="preserve">
+    <value>Example: Persiana americana - Signos.mp3</value>
+  </data>
+  <data name="settings-view-model.filename-example-title" xml:space="preserve">
+    <value>Example: Persiana americana.mp3</value>
+  </data>
+  <data name="sync-view-model.selection-only" xml:space="preserve">
+    <value>Selection only</value>
+  </data>
+  <data name="sync-view-model.selection-only-count" xml:space="preserve">
+    <value>Selection only ({0})</value>
+  </data>
+  <data name="artists-page.enrich-online" xml:space="preserve">
+    <value>Look up information online</value>
+  </data>
+  <data name="theme-manifest.license-open" xml:space="preserve">
+    <value>Free</value>
+  </data>
+  <data name="theme-manifest.license-personal" xml:space="preserve">
+    <value>Personal use</value>
+  </data>
+  <data name="firmware-artifacts.missing-directory" xml:space="preserve">
+    <value>The folder {0} does not exist, and that is where {1}'s files should be.</value>
+  </data>
+  <data name="firmware-artifacts.tool-unverifiable" xml:space="preserve">
+    <value>{0} cannot be verified: the Release does not publish {1} and there is no {2} next to the binary.</value>
+  </data>
+  <data name="ipod-disk.display-name" xml:space="preserve">
+    <value>iPod Classic ({0})</value>
+  </data>
+  <data name="firmware-switcher.dormant-missing" xml:space="preserve">
+    <value>There is no sleeping {0} tree on this iPod.</value>
+  </data>
+  <data name="firmware-switcher.already-active" xml:space="preserve">
+    <value>{0} is already the active firmware.</value>
+  </data>
+  <data name="firmware-switcher.not-switchable" xml:space="preserve">
+    <value>Aura Studio does not know how to park or wake {0}.</value>
+  </data>
+  <data name="firmware-tree.parking" xml:space="preserve">
+    <value>Saving {0} so you can go back to it…</value>
+  </data>
+  <data name="firmware-tree.updating" xml:space="preserve">
+    <value>Updating {0}: {1}, {2}…</value>
+  </data>
+  <data name="firmware-tree.installing" xml:space="preserve">
+    <value>Installing {0} on the iPod (typefaces, icons, codecs)… It can take several minutes over USB — do not disconnect the iPod.</value>
+  </data>
+  <data name="catalog-persister.save-failed" xml:space="preserve">
+    <value>The library could not be saved: {0}</value>
+  </data>
   <data name="credential-store.fanart-summary" xml:space="preserve">
     <value>High-resolution cover art (~1000 px), artist photos, and curated posters for movies and series (those also need the TMDB key to find the title).</value>
   </data>

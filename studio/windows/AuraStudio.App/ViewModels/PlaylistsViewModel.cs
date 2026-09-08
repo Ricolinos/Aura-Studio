@@ -21,7 +21,7 @@ public sealed record PlaylistRow(Playlist Playlist, int TrackCount, int MissingC
             // importación falló.
             return MissingCount == 0
                 ? tracks
-                : $"{tracks} · faltan {MissingCount} que no están en tu biblioteca";
+                : Strings.Plural("playlists-view-model.subtitle-missing", MissingCount, tracks);
         }
     }
 }
@@ -125,7 +125,7 @@ public sealed partial class PlaylistsViewModel : ViewModelBase
         _playlists.Remove(playlist);
 
         // Se borra la lista, no las canciones: siguen en la biblioteca.
-        Save($"Se eliminó «{playlist.Name}». Las canciones siguen en tu biblioteca.");
+        Save(Strings.Format("playlists-view-model.deleted", playlist.Name));
     }
 
     /// <summary>
@@ -143,7 +143,7 @@ public sealed partial class PlaylistsViewModel : ViewModelBase
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            LastMessage = $"No se pudo leer la lista: {ex.Message}";
+            LastMessage = Strings.Format("playlists-view-model.read-failed", ex.Message);
             return;
         }
 
@@ -163,9 +163,15 @@ public sealed partial class PlaylistsViewModel : ViewModelBase
             TrackItemIds = found
         });
 
+        string imported = Strings.Plural(
+            "playlists-view-model.imported", found.Count, PlaylistImporter.SuggestedName(filePath));
+
         Save(missing == 0
-            ? $"Se importó «{PlaylistImporter.SuggestedName(filePath)}» con {found.Count} canciones."
-            : $"Se importó «{PlaylistImporter.SuggestedName(filePath)}» con {found.Count} canciones. Otras {missing} no están en tu biblioteca todavía.");
+            ? imported
+            : Strings.Format(
+                "playlists-view-model.imported-and-missing",
+                imported,
+                Strings.Plural("playlists-view-model.still-missing", missing)));
     }
 
     /// <summary>

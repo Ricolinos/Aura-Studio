@@ -772,7 +772,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
                 FileAvailability.Sweep(
                     read.Items, availability,
                     onProgress: (done, total) => Dispatch(() =>
-                        task.Update(BackgroundTaskProgress.Of(done, total), $"Comprobando archivos… {done} de {total}")),
+                        task.Update(BackgroundTaskProgress.Of(done, total), Strings.Format("library-view-model.checking-files", done, total))),
                     ct: cancellation.Token);
 
                 return read;
@@ -788,7 +788,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
             // Lo que falle acá ya no tiene a nadie esperándolo: la carga corre
             // sola, así que una excepción se perdería en silencio y la
             // biblioteca se vería vacía sin ninguna explicación. **Se dice.**
-            LoadError = $"No se pudo leer la biblioteca: {ex.Message}";
+            LoadError = Strings.Format("library-view-model.read-failed", ex.Message);
             return;
         }
         finally
@@ -1637,7 +1637,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
             if (result.Written || result.Reason == TagWriteResult.UpToDate.Reason) return;
 
             Dispatch(() => StatusMessage =
-                $"No se pudieron escribir las etiquetas en «{name}»: {result.Reason}");
+                Strings.Format("library-view-model.tags-write-failed", name, result.Reason));
         });
     }
 
@@ -2090,7 +2090,7 @@ public sealed partial class LibraryViewModel : ViewModelBase
         try
         {
             EnrichmentReport report = await _enrichment.EnrichAsync(
-                targets, new Progress<string>(title => StatusMessage = $"Buscando letra de {title}…"), ct);
+                targets, new Progress<string>(title => StatusMessage = Strings.Format("library-view-model.searching-lyrics-for", title)), ct);
 
             Save();
             OnPropertyChanged(nameof(Items));

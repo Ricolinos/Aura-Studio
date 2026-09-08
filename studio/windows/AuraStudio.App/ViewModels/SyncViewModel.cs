@@ -238,7 +238,9 @@ public sealed partial class SyncViewModel : ViewModelBase
     public bool HasSelection => SelectionCount > 0;
 
     public string SelectionScopeLabel =>
-        HasSelection ? $"Solo la selección ({SelectionCount})" : "Solo la selección";
+        HasSelection
+            ? Strings.Format("sync-view-model.selection-only-count", SelectionCount)
+            : Strings.Get("sync-view-model.selection-only");
 
     /// <summary>
     /// Lo que está listo para viajar, dicho antes de comparar contra el iPod.

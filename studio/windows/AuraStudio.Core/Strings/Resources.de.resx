@@ -408,6 +408,192 @@
   <data name="installer-error.device-not-found" xml:space="preserve">
     <value>Es wurde kein angeschlossener iPod erkannt.</value>
   </data>
+  <data name="enrichment.completed.one" xml:space="preserve">
+    <value>{0} Element wurde ergänzt</value>
+  </data>
+  <data name="enrichment.completed.other" xml:space="preserve">
+    <value>{0} Elemente wurden ergänzt</value>
+  </data>
+  <data name="enrichment.lyrics.one" xml:space="preserve">
+    <value>{0} Liedtext</value>
+  </data>
+  <data name="enrichment.lyrics.other" xml:space="preserve">
+    <value>{0} Liedtexte</value>
+  </data>
+  <data name="app-update-service.announcement" xml:space="preserve">
+    <value>Es gibt eine neue Version von Aura Studio: {0}. Du hast {1}.</value>
+  </data>
+  <data name="enrichment.poster-save-failed" xml:space="preserve">
+    <value>{0}: Das Poster konnte nicht gespeichert werden ({1})</value>
+  </data>
+  <data name="library-processor.copy-failed" xml:space="preserve">
+    <value>Es konnte nicht in die Mediathek kopiert werden: {0}</value>
+  </data>
+  <data name="library-processor.mp3-failed" xml:space="preserve">
+    <value>Es konnte nicht in MP3 umgewandelt werden: {0}</value>
+  </data>
+  <data name="sync-summary.sync-failed" xml:space="preserve">
+    <value>Die Synchronisierung konnte nicht abgeschlossen werden: {0}</value>
+  </data>
+  <data name="enrichment.summary-with-error" xml:space="preserve">
+    <value>{0}, aber es gab ein Verbindungsproblem: {1}</value>
+  </data>
+  <data name="enrichment.summary-joiner" xml:space="preserve">
+    <value>{0} und {1}</value>
+  </data>
+  <data name="playlists-view-model.subtitle-missing.one" xml:space="preserve">
+    <value>{1} · {0} fehlt, der nicht in deiner Mediathek ist</value>
+  </data>
+  <data name="playlists-view-model.subtitle-missing.other" xml:space="preserve">
+    <value>{1} · {0} fehlen, die nicht in deiner Mediathek sind</value>
+  </data>
+  <data name="playlists-view-model.imported.one" xml:space="preserve">
+    <value>„{1}“ wurde mit {0} Titel importiert.</value>
+  </data>
+  <data name="playlists-view-model.imported.other" xml:space="preserve">
+    <value>„{1}“ wurde mit {0} Titeln importiert.</value>
+  </data>
+  <data name="playlists-view-model.still-missing.one" xml:space="preserve">
+    <value>{0} weiterer ist noch nicht in deiner Mediathek.</value>
+  </data>
+  <data name="playlists-view-model.still-missing.other" xml:space="preserve">
+    <value>{0} weitere sind noch nicht in deiner Mediathek.</value>
+  </data>
+  <data name="artists-view-model.selection-summary.one" xml:space="preserve">
+    <value>{0} Künstler ausgewählt</value>
+  </data>
+  <data name="artists-view-model.selection-summary.other" xml:space="preserve">
+    <value>{0} Künstler ausgewählt</value>
+  </data>
+  <data name="firmware-tree.files-to-write.one" xml:space="preserve">
+    <value>{0} Datei zu schreiben</value>
+  </data>
+  <data name="firmware-tree.files-to-write.other" xml:space="preserve">
+    <value>{0} Dateien zu schreiben</value>
+  </data>
+  <data name="firmware-tree.files-to-delete.one" xml:space="preserve">
+    <value>{0} zu entfernen</value>
+  </data>
+  <data name="firmware-tree.files-to-delete.other" xml:space="preserve">
+    <value>{0} zu entfernen</value>
+  </data>
+  <data name="device-list-view-model.matches-bundled" xml:space="preserve">
+    <value>{0} entspricht der Version, die diese Kopie von Aura Studio mitbringt. {1}</value>
+  </data>
+  <data name="device-list-view-model.unknown-newer" xml:space="preserve">
+    <value>Es ist nicht bekannt, ob es eine neuere Version von {0} gibt.</value>
+  </data>
+  <data name="device-list-view-model.my-ipod" xml:space="preserve">
+    <value>Mein iPod</value>
+  </data>
+  <data name="device-list-view-model.ipod-of" xml:space="preserve">
+    <value>iPod von {0}</value>
+  </data>
+  <data name="firmware-update.tree-incomplete" xml:space="preserve">
+    <value>Der {0}-Baum auf dem iPod ist unvollständig. Installiere ihn über den Installer neu.</value>
+  </data>
+  <data name="firmware-update.unknown-source" xml:space="preserve">
+    <value>Es ist nicht bekannt, woher die Updates für {0} kommen.</value>
+  </data>
+  <data name="extras-view-model.choice-already-active" xml:space="preserve">
+    <value>{0} ist die aktive Firmware deines iPod.</value>
+  </data>
+  <data name="extras-view-model.choice-adds" xml:space="preserve">
+    <value>Dein iPod hat {0}. {1} zu installieren fügt es hinzu: {0} wird schlafend mit seinen Einstellungen aufbewahrt und nichts wird gelöscht.</value>
+  </data>
+  <data name="extras-view-model.choice-will-install" xml:space="preserve">
+    <value>{0} wird beim nächsten Mal installiert, wenn du den Installer benutzt.</value>
+  </data>
+  <data name="library-view-model.checking-files" xml:space="preserve">
+    <value>Dateien werden geprüft… {0} von {1}</value>
+  </data>
+  <data name="library-view-model.read-failed" xml:space="preserve">
+    <value>Die Mediathek konnte nicht gelesen werden: {0}</value>
+  </data>
+  <data name="library-view-model.tags-write-failed" xml:space="preserve">
+    <value>Die Tags konnten nicht in „{0}“ geschrieben werden: {1}</value>
+  </data>
+  <data name="library-view-model.searching-lyrics-for" xml:space="preserve">
+    <value>Liedtext für {0} wird gesucht…</value>
+  </data>
+  <data name="playlists-view-model.deleted" xml:space="preserve">
+    <value>„{0}“ wurde gelöscht. Die Titel sind weiterhin in deiner Mediathek.</value>
+  </data>
+  <data name="playlists-view-model.read-failed" xml:space="preserve">
+    <value>Die Wiedergabeliste konnte nicht gelesen werden: {0}</value>
+  </data>
+  <data name="playlists-view-model.imported-and-missing" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="playlists-page.new-playlist" xml:space="preserve">
+    <value>Neue Wiedergabeliste</value>
+  </data>
+  <data name="playlists-page.file-type" xml:space="preserve">
+    <value>Wiedergabeliste</value>
+  </data>
+  <data name="playlists-page.export-failed" xml:space="preserve">
+    <value>Der Export ist fehlgeschlagen: {0}</value>
+  </data>
+  <data name="settings-view-model.ffmpeg-found" xml:space="preserve">
+    <value>Gefunden unter {0}</value>
+  </data>
+  <data name="settings-view-model.filename-example-track-title" xml:space="preserve">
+    <value>Beispiel: 03 Persiana americana.mp3</value>
+  </data>
+  <data name="settings-view-model.filename-example-title-artist" xml:space="preserve">
+    <value>Beispiel: Persiana americana - Soda Stereo.mp3</value>
+  </data>
+  <data name="settings-view-model.filename-example-title-album" xml:space="preserve">
+    <value>Beispiel: Persiana americana - Signos.mp3</value>
+  </data>
+  <data name="settings-view-model.filename-example-title" xml:space="preserve">
+    <value>Beispiel: Persiana americana.mp3</value>
+  </data>
+  <data name="sync-view-model.selection-only" xml:space="preserve">
+    <value>Nur die Auswahl</value>
+  </data>
+  <data name="sync-view-model.selection-only-count" xml:space="preserve">
+    <value>Nur die Auswahl ({0})</value>
+  </data>
+  <data name="artists-page.enrich-online" xml:space="preserve">
+    <value>Informationen online suchen</value>
+  </data>
+  <data name="theme-manifest.license-open" xml:space="preserve">
+    <value>Frei</value>
+  </data>
+  <data name="theme-manifest.license-personal" xml:space="preserve">
+    <value>Privater Gebrauch</value>
+  </data>
+  <data name="firmware-artifacts.missing-directory" xml:space="preserve">
+    <value>Der Ordner {0} existiert nicht, und dort sollten die Dateien von {1} liegen.</value>
+  </data>
+  <data name="firmware-artifacts.tool-unverifiable" xml:space="preserve">
+    <value>{0} lässt sich nicht prüfen: Das Release veröffentlicht {1} nicht und neben der Binärdatei gibt es kein {2}.</value>
+  </data>
+  <data name="ipod-disk.display-name" xml:space="preserve">
+    <value>iPod Classic ({0})</value>
+  </data>
+  <data name="firmware-switcher.dormant-missing" xml:space="preserve">
+    <value>Auf diesem iPod gibt es keinen schlafenden {0}-Baum.</value>
+  </data>
+  <data name="firmware-switcher.already-active" xml:space="preserve">
+    <value>{0} ist bereits die aktive Firmware.</value>
+  </data>
+  <data name="firmware-switcher.not-switchable" xml:space="preserve">
+    <value>Aura Studio weiß nicht, wie sich {0} parken oder aufwecken lässt.</value>
+  </data>
+  <data name="firmware-tree.parking" xml:space="preserve">
+    <value>{0} wird gesichert, damit du dorthin zurück kannst…</value>
+  </data>
+  <data name="firmware-tree.updating" xml:space="preserve">
+    <value>{0} wird aktualisiert: {1}, {2}…</value>
+  </data>
+  <data name="firmware-tree.installing" xml:space="preserve">
+    <value>{0} wird auf dem iPod installiert (Schriften, Symbole, Codecs)… Über USB kann das mehrere Minuten dauern — trenne den iPod nicht.</value>
+  </data>
+  <data name="catalog-persister.save-failed" xml:space="preserve">
+    <value>Die Mediathek konnte nicht gespeichert werden: {0}</value>
+  </data>
   <data name="credential-store.fanart-summary" xml:space="preserve">
     <value>Albumcover in hoher Auflösung (~1000 px), Interpretenfotos und kuratierte Poster für Filme und Serien (letztere brauchen zusätzlich den TMDB-Schlüssel, um den Titel zu finden).</value>
   </data>

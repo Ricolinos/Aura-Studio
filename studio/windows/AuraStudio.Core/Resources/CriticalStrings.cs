@@ -54,6 +54,15 @@ public static class CriticalStrings
         ("firmware-artifacts.", "decide si los archivos del firmware son de fiar"),
         ("dfu-flash.", "el grabado del arranque por DFU"),
 
+        // Encontradas por la segunda barrida, que no usa el léxico del
+        // trinquete. Las nueve de `disk-abort.` estaban clasificadas como
+        // bitácora y son justamente lo contrario: son el motivo que el usuario
+        // lee cuando el formateo SE DETIENE, o sea la familia que esta misma
+        // tabla ya nombra dos renglones más arriba.
+        ("disk-abort.", "las razones por las que NO se escribe en el disco"),
+        ("firmware-tree.", "escribe el árbol del firmware en el iPod"),
+        ("firmware-switcher.", "estaciona y despierta el firmware del iPod"),
+
         // Mueve, migra o convierte archivos del usuario.
         ("library-view-model.copy", "copia archivos a la biblioteca"),
         ("library-view-model.copying-files", "copia archivos a la biblioteca"),

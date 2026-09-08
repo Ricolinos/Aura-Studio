@@ -363,6 +363,168 @@
   <data name="installer-error.device-not-found" xml:space="preserve">
     <value>接続された iPod が見つかりませんでした。</value>
   </data>
+  <data name="enrichment.completed.other" xml:space="preserve">
+    <value>{0} 件を補完しました</value>
+  </data>
+  <data name="enrichment.lyrics.other" xml:space="preserve">
+    <value>歌詞 {0} 件</value>
+  </data>
+  <data name="app-update-service.announcement" xml:space="preserve">
+    <value>Aura Studio の新しいバージョンがあります: {0}。お使いのバージョンは {1} です。</value>
+  </data>
+  <data name="enrichment.poster-save-failed" xml:space="preserve">
+    <value>{0}: ポスターを保存できませんでした（{1}）</value>
+  </data>
+  <data name="library-processor.copy-failed" xml:space="preserve">
+    <value>ライブラリにコピーできませんでした: {0}</value>
+  </data>
+  <data name="library-processor.mp3-failed" xml:space="preserve">
+    <value>MP3 に変換できませんでした: {0}</value>
+  </data>
+  <data name="sync-summary.sync-failed" xml:space="preserve">
+    <value>同期を完了できませんでした: {0}</value>
+  </data>
+  <data name="enrichment.summary-with-error" xml:space="preserve">
+    <value>{0}。ただし接続に問題がありました: {1}</value>
+  </data>
+  <data name="enrichment.summary-joiner" xml:space="preserve">
+    <value>{0}、{1}</value>
+  </data>
+  <data name="playlists-view-model.subtitle-missing.other" xml:space="preserve">
+    <value>{1} · ライブラリにない {0} 件があります</value>
+  </data>
+  <data name="playlists-view-model.imported.other" xml:space="preserve">
+    <value>「{1}」を {0} 曲で読み込みました。</value>
+  </data>
+  <data name="playlists-view-model.still-missing.other" xml:space="preserve">
+    <value>ほかの {0} 件は、まだライブラリにありません。</value>
+  </data>
+  <data name="artists-view-model.selection-summary.other" xml:space="preserve">
+    <value>アーティストを {0} 人選択</value>
+  </data>
+  <data name="firmware-tree.files-to-write.other" xml:space="preserve">
+    <value>書き込むファイル {0} 件</value>
+  </data>
+  <data name="firmware-tree.files-to-delete.other" xml:space="preserve">
+    <value>取り除くもの {0} 件</value>
+  </data>
+  <data name="device-list-view-model.matches-bundled" xml:space="preserve">
+    <value>{0} は、この Aura Studio に含まれているバージョンと同じです。{1}</value>
+  </data>
+  <data name="device-list-view-model.unknown-newer" xml:space="preserve">
+    <value>{0} に新しいバージョンがあるかどうかは分かりません。</value>
+  </data>
+  <data name="device-list-view-model.my-ipod" xml:space="preserve">
+    <value>自分の iPod</value>
+  </data>
+  <data name="device-list-view-model.ipod-of" xml:space="preserve">
+    <value>{0} の iPod</value>
+  </data>
+  <data name="firmware-update.tree-incomplete" xml:space="preserve">
+    <value>iPod の {0} のツリーが不完全です。インストーラーから入れ直してください。</value>
+  </data>
+  <data name="firmware-update.unknown-source" xml:space="preserve">
+    <value>{0} の更新がどこから来るのか分かりません。</value>
+  </data>
+  <data name="extras-view-model.choice-already-active" xml:space="preserve">
+    <value>{0} は、あなたの iPod で使用中のファームウェアです。</value>
+  </data>
+  <data name="extras-view-model.choice-adds" xml:space="preserve">
+    <value>あなたの iPod には {0} が入っています。{1} をインストールすると追加されます。{0} は設定ごと休止状態で保存され、何も消えません。</value>
+  </data>
+  <data name="extras-view-model.choice-will-install" xml:space="preserve">
+    <value>次に「インストーラー」を使うときに {0} をインストールします。</value>
+  </data>
+  <data name="library-view-model.checking-files" xml:space="preserve">
+    <value>ファイルを確認しています… {1} 件中 {0} 件</value>
+  </data>
+  <data name="library-view-model.read-failed" xml:space="preserve">
+    <value>ライブラリを読み取れませんでした: {0}</value>
+  </data>
+  <data name="library-view-model.tags-write-failed" xml:space="preserve">
+    <value>「{0}」にタグを書き込めませんでした: {1}</value>
+  </data>
+  <data name="library-view-model.searching-lyrics-for" xml:space="preserve">
+    <value>{0} の歌詞を探しています…</value>
+  </data>
+  <data name="playlists-view-model.deleted" xml:space="preserve">
+    <value>「{0}」を削除しました。曲はライブラリに残っています。</value>
+  </data>
+  <data name="playlists-view-model.read-failed" xml:space="preserve">
+    <value>プレイリストを読み取れませんでした: {0}</value>
+  </data>
+  <data name="playlists-view-model.imported-and-missing" xml:space="preserve">
+    <value>{0}{1}</value>
+  </data>
+  <data name="playlists-page.new-playlist" xml:space="preserve">
+    <value>新しいプレイリスト</value>
+  </data>
+  <data name="playlists-page.file-type" xml:space="preserve">
+    <value>プレイリスト</value>
+  </data>
+  <data name="playlists-page.export-failed" xml:space="preserve">
+    <value>書き出せませんでした: {0}</value>
+  </data>
+  <data name="settings-view-model.ffmpeg-found" xml:space="preserve">
+    <value>{0} で見つかりました</value>
+  </data>
+  <data name="settings-view-model.filename-example-track-title" xml:space="preserve">
+    <value>例: 03 Persiana americana.mp3</value>
+  </data>
+  <data name="settings-view-model.filename-example-title-artist" xml:space="preserve">
+    <value>例: Persiana americana - Soda Stereo.mp3</value>
+  </data>
+  <data name="settings-view-model.filename-example-title-album" xml:space="preserve">
+    <value>例: Persiana americana - Signos.mp3</value>
+  </data>
+  <data name="settings-view-model.filename-example-title" xml:space="preserve">
+    <value>例: Persiana americana.mp3</value>
+  </data>
+  <data name="sync-view-model.selection-only" xml:space="preserve">
+    <value>選択したものだけ</value>
+  </data>
+  <data name="sync-view-model.selection-only-count" xml:space="preserve">
+    <value>選択したものだけ（{0}）</value>
+  </data>
+  <data name="artists-page.enrich-online" xml:space="preserve">
+    <value>オンラインで情報を探す</value>
+  </data>
+  <data name="theme-manifest.license-open" xml:space="preserve">
+    <value>自由</value>
+  </data>
+  <data name="theme-manifest.license-personal" xml:space="preserve">
+    <value>個人利用</value>
+  </data>
+  <data name="firmware-artifacts.missing-directory" xml:space="preserve">
+    <value>フォルダー {0} がありません。{1} のファイルはそこにあるはずです。</value>
+  </data>
+  <data name="firmware-artifacts.tool-unverifiable" xml:space="preserve">
+    <value>{0} は検証できません。Release は {1} を公開しておらず、バイナリの隣に {2} もありません。</value>
+  </data>
+  <data name="ipod-disk.display-name" xml:space="preserve">
+    <value>iPod Classic（{0}）</value>
+  </data>
+  <data name="firmware-switcher.dormant-missing" xml:space="preserve">
+    <value>この iPod に、休止状態の {0} のツリーはありません。</value>
+  </data>
+  <data name="firmware-switcher.already-active" xml:space="preserve">
+    <value>{0} はすでに使用中のファームウェアです。</value>
+  </data>
+  <data name="firmware-switcher.not-switchable" xml:space="preserve">
+    <value>Aura Studio は、{0} を休止させたり復帰させたりする方法を知りません。</value>
+  </data>
+  <data name="firmware-tree.parking" xml:space="preserve">
+    <value>{0} に戻れるように保存しています…</value>
+  </data>
+  <data name="firmware-tree.updating" xml:space="preserve">
+    <value>{0} を更新しています: {1}、{2}…</value>
+  </data>
+  <data name="firmware-tree.installing" xml:space="preserve">
+    <value>{0} を iPod にインストールしています（書体・アイコン・コーデック）。USB では数分かかることがあります。iPod を外さないでください。</value>
+  </data>
+  <data name="catalog-persister.save-failed" xml:space="preserve">
+    <value>ライブラリを保存できませんでした: {0}</value>
+  </data>
   <data name="credential-store.fanart-summary" xml:space="preserve">
     <value>高解像度（約1000 px）のアルバムアート、アーティスト写真、映画やシリーズの厳選ポスター（ポスターには、タイトルを探すために TMDB の鍵も必要です）。</value>
   </data>

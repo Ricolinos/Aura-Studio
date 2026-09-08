@@ -103,7 +103,8 @@ public sealed class SyncService : ISyncService
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)
         {
-            return Failure($"No se pudo completar la sincronización: {ex.Message}", started);
+            return Failure(
+                Strings.Format("sync-summary.sync-failed", ex.Message), started);
         }
     }
 

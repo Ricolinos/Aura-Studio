@@ -393,6 +393,216 @@
   <data name="installer-error.device-not-found" xml:space="preserve">
     <value>Подключённый iPod не обнаружен.</value>
   </data>
+  <data name="enrichment.completed.one" xml:space="preserve">
+    <value>Дополнен {0} элемент</value>
+  </data>
+  <data name="enrichment.completed.few" xml:space="preserve">
+    <value>Дополнено {0} элемента</value>
+  </data>
+  <data name="enrichment.completed.many" xml:space="preserve">
+    <value>Дополнено {0} элементов</value>
+  </data>
+  <data name="enrichment.lyrics.one" xml:space="preserve">
+    <value>{0} текст</value>
+  </data>
+  <data name="enrichment.lyrics.few" xml:space="preserve">
+    <value>{0} текста</value>
+  </data>
+  <data name="enrichment.lyrics.many" xml:space="preserve">
+    <value>{0} текстов</value>
+  </data>
+  <data name="app-update-service.announcement" xml:space="preserve">
+    <value>Есть новая версия Aura Studio: {0}. У вас {1}.</value>
+  </data>
+  <data name="enrichment.poster-save-failed" xml:space="preserve">
+    <value>{0}: не удалось сохранить постер ({1})</value>
+  </data>
+  <data name="library-processor.copy-failed" xml:space="preserve">
+    <value>Не удалось скопировать в медиатеку: {0}</value>
+  </data>
+  <data name="library-processor.mp3-failed" xml:space="preserve">
+    <value>Не удалось преобразовать в MP3: {0}</value>
+  </data>
+  <data name="sync-summary.sync-failed" xml:space="preserve">
+    <value>Не удалось завершить синхронизацию: {0}</value>
+  </data>
+  <data name="enrichment.summary-with-error" xml:space="preserve">
+    <value>{0}, но возникла проблема с подключением: {1}</value>
+  </data>
+  <data name="enrichment.summary-joiner" xml:space="preserve">
+    <value>{0} и {1}</value>
+  </data>
+  <data name="playlists-view-model.subtitle-missing.one" xml:space="preserve">
+    <value>{1} · не хватает {0}, которого нет в вашей медиатеке</value>
+  </data>
+  <data name="playlists-view-model.subtitle-missing.few" xml:space="preserve">
+    <value>{1} · не хватает {0}, которых нет в вашей медиатеке</value>
+  </data>
+  <data name="playlists-view-model.subtitle-missing.many" xml:space="preserve">
+    <value>{1} · не хватает {0}, которых нет в вашей медиатеке</value>
+  </data>
+  <data name="playlists-view-model.imported.one" xml:space="preserve">
+    <value>«{1}» импортирован с {0} треком.</value>
+  </data>
+  <data name="playlists-view-model.imported.few" xml:space="preserve">
+    <value>«{1}» импортирован с {0} треками.</value>
+  </data>
+  <data name="playlists-view-model.imported.many" xml:space="preserve">
+    <value>«{1}» импортирован с {0} треками.</value>
+  </data>
+  <data name="playlists-view-model.still-missing.one" xml:space="preserve">
+    <value>Ещё {0} пока нет в вашей медиатеке.</value>
+  </data>
+  <data name="playlists-view-model.still-missing.few" xml:space="preserve">
+    <value>Ещё {0} пока нет в вашей медиатеке.</value>
+  </data>
+  <data name="playlists-view-model.still-missing.many" xml:space="preserve">
+    <value>Ещё {0} пока нет в вашей медиатеке.</value>
+  </data>
+  <data name="artists-view-model.selection-summary.one" xml:space="preserve">
+    <value>Выбран {0} исполнитель</value>
+  </data>
+  <data name="artists-view-model.selection-summary.few" xml:space="preserve">
+    <value>Выбрано {0} исполнителя</value>
+  </data>
+  <data name="artists-view-model.selection-summary.many" xml:space="preserve">
+    <value>Выбрано {0} исполнителей</value>
+  </data>
+  <data name="firmware-tree.files-to-write.one" xml:space="preserve">
+    <value>{0} файл для записи</value>
+  </data>
+  <data name="firmware-tree.files-to-write.few" xml:space="preserve">
+    <value>{0} файла для записи</value>
+  </data>
+  <data name="firmware-tree.files-to-write.many" xml:space="preserve">
+    <value>{0} файлов для записи</value>
+  </data>
+  <data name="firmware-tree.files-to-delete.one" xml:space="preserve">
+    <value>{0} на удаление</value>
+  </data>
+  <data name="firmware-tree.files-to-delete.few" xml:space="preserve">
+    <value>{0} на удаление</value>
+  </data>
+  <data name="firmware-tree.files-to-delete.many" xml:space="preserve">
+    <value>{0} на удаление</value>
+  </data>
+  <data name="device-list-view-model.matches-bundled" xml:space="preserve">
+    <value>{0} совпадает с версией, входящей в эту копию Aura Studio. {1}</value>
+  </data>
+  <data name="device-list-view-model.unknown-newer" xml:space="preserve">
+    <value>Неизвестно, есть ли версия {0} новее.</value>
+  </data>
+  <data name="device-list-view-model.my-ipod" xml:space="preserve">
+    <value>Мой iPod</value>
+  </data>
+  <data name="device-list-view-model.ipod-of" xml:space="preserve">
+    <value>iPod пользователя {0}</value>
+  </data>
+  <data name="firmware-update.tree-incomplete" xml:space="preserve">
+    <value>Дерево {0} на iPod неполное. Переустановите его из Установщика.</value>
+  </data>
+  <data name="firmware-update.unknown-source" xml:space="preserve">
+    <value>Неизвестно, откуда берутся обновления для {0}.</value>
+  </data>
+  <data name="extras-view-model.choice-already-active" xml:space="preserve">
+    <value>{0} — активная прошивка вашего iPod.</value>
+  </data>
+  <data name="extras-view-model.choice-adds" xml:space="preserve">
+    <value>На вашем iPod стоит {0}. Установка {1} добавит её: {0} останется в спящем виде со своими настройками, ничего не удалится.</value>
+  </data>
+  <data name="extras-view-model.choice-will-install" xml:space="preserve">
+    <value>{0} будет установлена при следующем запуске Установщика.</value>
+  </data>
+  <data name="library-view-model.checking-files" xml:space="preserve">
+    <value>Проверка файлов… {0} из {1}</value>
+  </data>
+  <data name="library-view-model.read-failed" xml:space="preserve">
+    <value>Не удалось прочитать медиатеку: {0}</value>
+  </data>
+  <data name="library-view-model.tags-write-failed" xml:space="preserve">
+    <value>Не удалось записать теги в «{0}»: {1}</value>
+  </data>
+  <data name="library-view-model.searching-lyrics-for" xml:space="preserve">
+    <value>Поиск текста для {0}…</value>
+  </data>
+  <data name="playlists-view-model.deleted" xml:space="preserve">
+    <value>«{0}» удалён. Треки остаются в вашей медиатеке.</value>
+  </data>
+  <data name="playlists-view-model.read-failed" xml:space="preserve">
+    <value>Не удалось прочитать плейлист: {0}</value>
+  </data>
+  <data name="playlists-view-model.imported-and-missing" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+  <data name="playlists-page.new-playlist" xml:space="preserve">
+    <value>Новый плейлист</value>
+  </data>
+  <data name="playlists-page.file-type" xml:space="preserve">
+    <value>Плейлист</value>
+  </data>
+  <data name="playlists-page.export-failed" xml:space="preserve">
+    <value>Не удалось экспортировать: {0}</value>
+  </data>
+  <data name="settings-view-model.ffmpeg-found" xml:space="preserve">
+    <value>Найден в {0}</value>
+  </data>
+  <data name="settings-view-model.filename-example-track-title" xml:space="preserve">
+    <value>Пример: 03 Persiana americana.mp3</value>
+  </data>
+  <data name="settings-view-model.filename-example-title-artist" xml:space="preserve">
+    <value>Пример: Persiana americana - Soda Stereo.mp3</value>
+  </data>
+  <data name="settings-view-model.filename-example-title-album" xml:space="preserve">
+    <value>Пример: Persiana americana - Signos.mp3</value>
+  </data>
+  <data name="settings-view-model.filename-example-title" xml:space="preserve">
+    <value>Пример: Persiana americana.mp3</value>
+  </data>
+  <data name="sync-view-model.selection-only" xml:space="preserve">
+    <value>Только выбранное</value>
+  </data>
+  <data name="sync-view-model.selection-only-count" xml:space="preserve">
+    <value>Только выбранное ({0})</value>
+  </data>
+  <data name="artists-page.enrich-online" xml:space="preserve">
+    <value>Найти сведения в сети</value>
+  </data>
+  <data name="theme-manifest.license-open" xml:space="preserve">
+    <value>Свободная</value>
+  </data>
+  <data name="theme-manifest.license-personal" xml:space="preserve">
+    <value>Личное использование</value>
+  </data>
+  <data name="firmware-artifacts.missing-directory" xml:space="preserve">
+    <value>Папки {0} нет, а именно там должны лежать файлы {1}.</value>
+  </data>
+  <data name="firmware-artifacts.tool-unverifiable" xml:space="preserve">
+    <value>{0} нельзя проверить: Release не публикует {1}, и рядом с двоичным файлом нет {2}.</value>
+  </data>
+  <data name="ipod-disk.display-name" xml:space="preserve">
+    <value>iPod Classic ({0})</value>
+  </data>
+  <data name="firmware-switcher.dormant-missing" xml:space="preserve">
+    <value>На этом iPod нет спящего дерева {0}.</value>
+  </data>
+  <data name="firmware-switcher.already-active" xml:space="preserve">
+    <value>{0} уже является активной прошивкой.</value>
+  </data>
+  <data name="firmware-switcher.not-switchable" xml:space="preserve">
+    <value>Aura Studio не умеет усыплять и будить {0}.</value>
+  </data>
+  <data name="firmware-tree.parking" xml:space="preserve">
+    <value>Сохранение {0}, чтобы к ней можно было вернуться…</value>
+  </data>
+  <data name="firmware-tree.updating" xml:space="preserve">
+    <value>Обновление {0}: {1}, {2}…</value>
+  </data>
+  <data name="firmware-tree.installing" xml:space="preserve">
+    <value>Установка {0} на iPod (шрифты, значки, кодеки)… По USB это может занять несколько минут — не отключайте iPod.</value>
+  </data>
+  <data name="catalog-persister.save-failed" xml:space="preserve">
+    <value>Не удалось сохранить медиатеку: {0}</value>
+  </data>
   <data name="credential-store.fanart-summary" xml:space="preserve">
     <value>Обложки в высоком разрешении (~1000 px), фотографии исполнителей и отобранные постеры фильмов и сериалов (для последних нужен ещё ключ TMDB, чтобы найти название).</value>
   </data>

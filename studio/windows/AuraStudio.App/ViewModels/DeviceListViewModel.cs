@@ -93,9 +93,11 @@ public sealed partial class DeviceListViewModel : ViewModelBase
             FirmwareFamily family = device.DeclaredFamily ?? FirmwareFamily.Aura;
 
             return family.IsInstallable
-                ? $"{family.DisplayName} coincide con la versión que trae esta copia de Aura Studio. " +
-                  Strings.Get("device-list-view-model.check-updates-hint")
-                : $"No se sabe si hay una versión más nueva de {family.DisplayName}.";
+                ? Strings.Format(
+                    "device-list-view-model.matches-bundled",
+                    family.DisplayName,
+                    Strings.Get("device-list-view-model.check-updates-hint"))
+                : Strings.Format("device-list-view-model.unknown-newer", family.DisplayName);
         }
     }
 
@@ -239,11 +241,11 @@ public sealed partial class DeviceListViewModel : ViewModelBase
         FirmwareUpdateMessage = verdict switch
         {
             { UpdateAvailable: true, Reason: UpdateVerdictReason.InstalledBinaryMissing } =>
-                $"El árbol de {family.DisplayName} en el iPod está incompleto. Reinstálalo desde el Instalador.",
+                Strings.Format("firmware-update.tree-incomplete", family.DisplayName),
             { UpdateAvailable: true, LatestTag: { Length: > 0 } tag } =>
-                $"Hay una versión más nueva de {family.DisplayName} ({tag}).",
+                Strings.Format("firmware-update.update-available", family.DisplayName, tag),
             { UpdateAvailable: true } =>
-                $"Hay una versión más nueva de {family.DisplayName}.",
+                Strings.Format("device-list-view-model.unknown-newer", family.DisplayName),
             _ => ""
         };
     }
@@ -355,7 +357,9 @@ public sealed partial class DeviceListViewModel : ViewModelBase
         get
         {
             string user = Environment.UserName.Trim();
-            return user.Length == 0 ? "Mi iPod" : $"iPod de {user}";
+            return user.Length == 0
+                ? Strings.Get("device-list-view-model.my-ipod")
+                : Strings.Format("device-list-view-model.ipod-of", user);
         }
     }
 

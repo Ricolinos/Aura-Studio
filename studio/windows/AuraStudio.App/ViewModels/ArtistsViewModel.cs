@@ -216,7 +216,8 @@ public sealed partial class ArtistsViewModel : ViewModelBase
 
     public bool ShowsEmptyDetail => Selection.Count == 0;
 
-    public string SelectionSummary => $"{Selection.Count} artistas seleccionados";
+    public string SelectionSummary =>
+        Strings.Plural("artists-view-model.selection-summary", Selection.Count);
 
     public bool SelectionAllFavorite
     {

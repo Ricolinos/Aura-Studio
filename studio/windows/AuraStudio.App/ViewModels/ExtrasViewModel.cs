@@ -158,16 +158,18 @@ public sealed partial class ExtrasViewModel : ViewModelBase
         {
             if (ChoiceIsAlreadyActive)
             {
-                return $"{ChosenFamily.DisplayName} es el firmware activo de tu iPod.";
+                return Strings.Format(
+                    "extras-view-model.choice-already-active", ChosenFamily.DisplayName);
             }
 
             if (ActiveFamily is { } active)
             {
-                return $"Tu iPod tiene {active.DisplayName}. Instalar {ChosenFamily.DisplayName} lo agrega: " +
-                       $"{active.DisplayName} se guarda dormido con sus ajustes y no se borra nada.";
+                return Strings.Format(
+                    "extras-view-model.choice-adds", active.DisplayName, ChosenFamily.DisplayName);
             }
 
-            return $"Se instalará {ChosenFamily.DisplayName} la próxima vez que uses el Instalador.";
+            return Strings.Format(
+                "extras-view-model.choice-will-install", ChosenFamily.DisplayName);
         }
     }
 

@@ -359,7 +359,7 @@ public sealed partial class ArtistsPage : Page
             ViewModel.Refresh();
         };
 
-        var enrich = new MenuFlyoutItem { Text = "Buscar información en línea" };
+        var enrich = new MenuFlyoutItem { Text = Strings.Get("artists-page.enrich-online") };
         enrich.Click += async (_, _) => await ViewModel.Library.EnrichAsync(songIds);
 
         var reveal = new MenuFlyoutItem { Text = LibraryContextMenus.Reveal };

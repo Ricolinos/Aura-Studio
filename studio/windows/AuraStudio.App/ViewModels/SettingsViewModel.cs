@@ -181,7 +181,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
     /// se está usando.
     /// </summary>
     public string FfmpegStatus => Core.Media.FfmpegLocator.Locate(_preferences.FfmpegPath) is { } path
-        ? $"Encontrado en {path}"
+        ? Strings.Format("settings-view-model.ffmpeg-found", path)
         : Core.Media.FfmpegLocator.NotFoundMessage;
 
     public void SetFfmpegPath(string path)
@@ -552,10 +552,13 @@ public sealed partial class SettingsViewModel : ViewModelBase
     /// <summary>Un ejemplo concreto vale más que la descripción del formato.</summary>
     public string FilenamePreview => _preferences.MusicFilenameFormat switch
     {
-        MusicFilenameFormat.TrackNumberTitle => "Ejemplo: 03 Persiana americana.mp3",
-        MusicFilenameFormat.TitleArtist => "Ejemplo: Persiana americana - Soda Stereo.mp3",
-        MusicFilenameFormat.TitleAlbum => "Ejemplo: Persiana americana - Signos.mp3",
-        _ => "Ejemplo: Persiana americana.mp3"
+        MusicFilenameFormat.TrackNumberTitle =>
+            Strings.Get("settings-view-model.filename-example-track-title"),
+        MusicFilenameFormat.TitleArtist =>
+            Strings.Get("settings-view-model.filename-example-title-artist"),
+        MusicFilenameFormat.TitleAlbum =>
+            Strings.Get("settings-view-model.filename-example-title-album"),
+        _ => Strings.Get("settings-view-model.filename-example-title")
     };
 
     public bool AudioOriginal

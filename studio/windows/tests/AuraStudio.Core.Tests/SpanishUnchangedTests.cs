@@ -635,6 +635,51 @@ public class SpanishUnchangedTests
         "dfu-flash.tool-start-failed", "audio-transcoder.convert-failed",
         "theme-packager.source-file-missing", "networking.http-error",
         "storage-breakdown.usage-line",
+
+        // B7d, paso 2 (cierre de la barrida): lo último que el trinquete no
+        // contaba. Dos frases se decían dos veces y ahora se dicen una:
+        // "El árbol de X en el iPod está incompleto" (la lista de aparatos y el
+        // aviso de versión) y "Hay una versión más nueva de X (tag)".
+        "device-list-view-model.matches-bundled", "device-list-view-model.unknown-newer",
+        "device-list-view-model.my-ipod", "device-list-view-model.ipod-of",
+        "firmware-update.tree-incomplete", "firmware-update.unknown-source",
+        "extras-view-model.choice-already-active", "extras-view-model.choice-adds",
+        "extras-view-model.choice-will-install",
+        "library-view-model.checking-files", "library-view-model.read-failed",
+        "library-view-model.tags-write-failed", "library-view-model.searching-lyrics-for",
+        "playlists-view-model.deleted", "playlists-view-model.read-failed",
+        "playlists-view-model.imported-and-missing",
+        "playlists-view-model.subtitle-missing.one", "playlists-view-model.subtitle-missing.other",
+        "playlists-view-model.imported.one", "playlists-view-model.imported.other",
+        "playlists-view-model.still-missing.one", "playlists-view-model.still-missing.other",
+        "playlists-page.new-playlist", "playlists-page.file-type", "playlists-page.export-failed",
+        "settings-view-model.ffmpeg-found",
+        "settings-view-model.filename-example-track-title",
+        "settings-view-model.filename-example-title-artist",
+        "settings-view-model.filename-example-title-album",
+        "settings-view-model.filename-example-title",
+        "sync-view-model.selection-only", "sync-view-model.selection-only-count",
+        "artists-view-model.selection-summary.one", "artists-view-model.selection-summary.other",
+        "artists-page.enrich-online",
+        "theme-manifest.license-open", "theme-manifest.license-personal",
+        "firmware-artifacts.missing-directory", "firmware-artifacts.tool-unverifiable",
+        "ipod-disk.display-name",
+        "firmware-switcher.dormant-missing", "firmware-switcher.already-active",
+        "firmware-switcher.not-switchable",
+        "firmware-tree.parking", "firmware-tree.updating", "firmware-tree.installing",
+        "firmware-tree.files-to-write.one", "firmware-tree.files-to-write.other",
+        "firmware-tree.files-to-delete.one", "firmware-tree.files-to-delete.other",
+        "catalog-persister.save-failed",
+
+        // Y los últimos que la barrida señaló como frases enteras: la franja de
+        // actualización de la app, el resumen de "Completar en línea" (con dos
+        // «(s)» en dos ramas) y tres fallos que el usuario lee tal cual.
+        "app-update-service.announcement", "enrichment.poster-save-failed",
+        "enrichment.summary-with-error", "enrichment.summary-joiner",
+        "enrichment.completed.one", "enrichment.completed.other",
+        "enrichment.lyrics.one", "enrichment.lyrics.other",
+        "library-processor.copy-failed", "library-processor.mp3-failed",
+        "sync-summary.sync-failed",
     ];
 
     /// <summary>

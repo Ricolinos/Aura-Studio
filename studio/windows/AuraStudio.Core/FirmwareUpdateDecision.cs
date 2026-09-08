@@ -105,7 +105,7 @@ public static class FirmwareUpdateDecision
         {
             return new FirmwareUpdateReport(
                 FirmwareUpdateOutcome.Unknown,
-                $"No se sabe de dónde salen las actualizaciones de {family.DisplayName}.");
+                Strings.Format("firmware-update.unknown-source", family.DisplayName));
         }
 
         // Un árbol incompleto se arregla reinstalando, y eso no depende de lo
@@ -114,7 +114,7 @@ public static class FirmwareUpdateDecision
         {
             return new FirmwareUpdateReport(
                 FirmwareUpdateOutcome.UpdateAvailable,
-                $"El árbol de {family.DisplayName} en el iPod está incompleto. Reinstálalo desde el Instalador.",
+                Strings.Format("firmware-update.tree-incomplete", family.DisplayName),
                 installedTag, published, bundledTag, hashVerdict.Reason);
         }
 

@@ -325,7 +325,7 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
                 // referencia: el usuario pidió una copia y podría borrar el
                 // original creyendo que ya está adentro.
                 item.Status = LibraryItemStatus.Failed(
-                    $"No se pudo copiar a la biblioteca: {copied.Reason}");
+                    Strings.Format("library-processor.copy-failed", copied.Reason));
                 return false;
             }
 
@@ -336,7 +336,8 @@ public sealed class LibraryProcessor(IAppPreferences preferences) : ILibraryProc
         }
         catch (AudioTranscodeException ex)
         {
-            item.Status = LibraryItemStatus.Failed($"No se pudo convertir a MP3: {ex.Message}");
+            item.Status = LibraryItemStatus.Failed(
+                Strings.Format("library-processor.mp3-failed", ex.Message));
             return false;
         }
     }

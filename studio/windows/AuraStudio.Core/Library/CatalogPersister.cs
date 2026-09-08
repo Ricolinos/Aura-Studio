@@ -151,7 +151,7 @@ public sealed class CatalogPersister
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                Failed?.Invoke(this, $"No se pudo guardar la biblioteca: {ex.Message}");
+                Failed?.Invoke(this, Strings.Format("catalog-persister.save-failed", ex.Message));
             }
         }
     }

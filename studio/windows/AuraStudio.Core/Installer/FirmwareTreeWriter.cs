@@ -97,7 +97,8 @@ public static class FirmwareTreeWriter
         bool sameFamilyUpdate = installedFamily is not null && Equals(installedFamily, targetFamily);
         if (installedFamily is { } detected && !Equals(detected, targetFamily) && detected.IsInstallable)
         {
-            progress?.Report(new($"Guardando {detected.DisplayName} para poder volver a él…", null));
+            progress?.Report(new(
+                Strings.Format("firmware-tree.parking", detected.DisplayName), null));
             FirmwareSwitcher.ParkActiveTree(detected, volumeRoot);
             parked = detected;
         }
@@ -124,7 +125,11 @@ public static class FirmwareTreeWriter
             if (DeltaIsWorthIt(delta, newEntries.Count))
             {
                 progress?.Report(new(
-                    $"Actualizando {targetFamily.DisplayName}: {delta.ToExtract.Count} archivo(s) por escribir, {delta.ToDelete.Count} por quitar…",
+                    Strings.Format(
+                        "firmware-tree.updating",
+                        targetFamily.DisplayName,
+                        Strings.Plural("firmware-tree.files-to-write", delta.ToExtract.Count),
+                        Strings.Plural("firmware-tree.files-to-delete", delta.ToDelete.Count)),
                     0));
                 try
                 {
@@ -148,8 +153,7 @@ public static class FirmwareTreeWriter
         if (!usedDelta)
         {
             progress?.Report(new(
-                $"Instalando {targetFamily.DisplayName} en el iPod (tipografías, iconos, códecs)… Puede tardar varios minutos por USB — no desconectes el iPod.",
-                0));
+                Strings.Format("firmware-tree.installing", targetFamily.DisplayName), 0));
             written = await ExtractFullAsync(zipPath, volumeRoot, newEntries.Count, progress, ct).ConfigureAwait(false);
         }
 

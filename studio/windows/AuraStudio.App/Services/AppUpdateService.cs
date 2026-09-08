@@ -72,8 +72,8 @@ public sealed partial class AppUpdateService : ObservableObject
 
     /// <summary>El texto de la franja, el mismo que la de macOS.</summary>
     public string AnnouncementMessage => Available is { } update
-        ? $"Hay una versión nueva de Aura Studio: {update.Version.ReleaseString}. "
-          + $"Tienes la {InstalledVersion}."
+        ? Strings.Format(
+            "app-update-service.announcement", update.Version.ReleaseString, InstalledVersion)
         : "";
 
     /// <summary>
