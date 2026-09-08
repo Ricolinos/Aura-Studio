@@ -154,7 +154,7 @@
 "enter-d-f-u-view.esperando-modo-dfu" = "En attente du mode DFU…";
 "enter-d-f-u-view.modo-dfu-detectado" = "Mode DFU détecté";
 "enter-d-f-u-view.no-aparece-pausar-servicios-macos-que" = "Il n’apparaît pas ? Mettre en pause les services macOS qui peuvent interférer";
-"enter-d-f-u-view.pedira-tu-contrasena-se-reactivan-solos" = "Votre mot de passe vous sera demandé. Ils se réactivent tout seuls à la fin.";
+"enter-d-f-u-view.pedira-tu-contrasena-se-reactivan-solos" = "Votre mot de passe sera demandé. Les services macOS redémarrent tout seuls à la fin.";
 "extras-view.cambiar" = "Basculer vers %@";
 "extras-view.consultando-github" = "Interrogation de GitHub…";
 "extras-view.disponible-dispositivo" = "Disponible sur l’appareil";

@@ -98,7 +98,16 @@ final class LocalizationCatalogTests: XCTestCase {
         // separadores), así que su texto quedó sin `%@`. Dejarlo así
         // habría hecho desaparecer la lista de la pantalla -- que es
         // justo el cambio de español que esta prueba existe para evitar.
-        let corrected = ["music-settings-view.separadores-que-agrupan-vs-versus-nunca"]
+        //
+        // `enter-d-f-u-view.pedira-...`: decía "Se reactivan solos al
+        // terminar" sin decir QUÉ se reactiva. En una pantalla que acaba
+        // de pedir permisos de administrador para pausar servicios del
+        // sistema, "se reactivan solos" sin sujeto deja al usuario
+        // adivinando qué quedó tocado en su Mac. Ahora nombra los
+        // servicios de macOS. Decisión común con Windows (todo mensaje
+        // de reactivación dice de qué servicio habla).
+        let corrected = ["music-settings-view.separadores-que-agrupan-vs-versus-nunca",
+                         "enter-d-f-u-view.pedira-tu-contrasena-se-reactivan-solos"]
 
         var differences: [String] = []
         for row in rows {

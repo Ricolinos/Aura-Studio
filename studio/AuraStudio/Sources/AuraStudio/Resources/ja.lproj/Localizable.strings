@@ -154,7 +154,7 @@
 "enter-d-f-u-view.esperando-modo-dfu" = "DFU モードを待っています…";
 "enter-d-f-u-view.modo-dfu-detectado" = "DFU モードを検出しました";
 "enter-d-f-u-view.no-aparece-pausar-servicios-macos-que" = "表示されませんか？ 干渉する可能性のある macOS のサービスを一時停止する";
-"enter-d-f-u-view.pedira-tu-contrasena-se-reactivan-solos" = "パスワードの入力を求められます。終了すると自動的に再開します。";
+"enter-d-f-u-view.pedira-tu-contrasena-se-reactivan-solos" = "パスワードの入力を求められます。macOS のサービスは終了時に自動で再開します。";
 "extras-view.cambiar" = "%@ に切り替え";
 "extras-view.consultando-github" = "GitHub に問い合わせています…";
 "extras-view.disponible-dispositivo" = "デバイスで利用できます";

@@ -17878,3 +17878,57 @@ Los dos sitios de herramientas externas están entre los 593 de PANTALLA
 del triaje, así que su frase envolvente se traduce en A7d; lo que este
 cierre fija es la **forma**, para que al traducirla nadie la sustituya por
 la salida cruda a secas.
+
+## ST-227 (A7c, cierre 5) — Dos decisiones de copy, y una promesa que no se cumplía
+
+### (1) Una sola raíz para el permiso de administrador
+
+La Mac tenía la misma incoherencia que Windows corrigió: `InstallerStep`
+decía "Cancelaste **la autorización de administrador**… sin ese permiso" y
+`PrivilegedExecutor` decía "Cancelaste **la autorización**… sin ese
+permiso". Dos redacciones para la misma situación se leen como dos cosas
+distintas. Ahora las dos dicen "Cancelaste **el permiso de
+administrador**. Este paso no puede continuar sin él", con prueba de que
+la familia no vuelve a mezclar "autorización" con "permiso".
+
+Las dos son literales en el código, no claves del catálogo, así que su
+traducción llega en A7d con la raíz ya unificada.
+
+### (2) Decir de qué servicio se habla — y ahí apareció algo peor
+
+La regla ("todo mensaje de reactivación dice de qué servicio habla")
+destapó un **error de hecho en una pantalla de privilegios**.
+
+`PendingAuthorization.pauseAMPAgents()` --la pantalla que se muestra
+**antes** de que macOS pida la contraseña-- decía: *"pausar temporalmente
+**dos** servicios de macOS … (AMPDevicesAgent y AMPDeviceDiscoveryAgent)"*.
+`PrivilegedExecutor.ampAgentNames` pausa **tres**: falta
+`deviceinterfaced`.
+
+Eso no es una errata de estilo. `PermissionsView` le promete al usuario,
+con todas las letras, que Aura Studio siempre le explica qué va a hacer y
+por qué **antes** del diálogo nativo; y el `CLAUDE.md` del repo lo pone
+como regla que no se rompe. Una pantalla que pide permiso de
+administrador para tocar servicios del sistema y nombra dos de los tres
+que va a tocar rompe justamente esa promesa.
+
+Ahora la lista sale de `ampAgentNames`, que es quien de verdad los pausa,
+y desapareció el número escrito a mano ("dos"), que es lo que quedó viejo.
+La prueba **no compara contra una lista escrita a mano**: recorre la que
+se pausa de verdad, así que agregar un servicio y olvidarse de la pantalla
+vuelve a fallar.
+
+`enter-d-f-u-view.pedira-tu-contrasena-se-reactivan-solos` decía "Se
+reactivan solos al terminar" sin sujeto. En una pantalla que acaba de
+pedir permisos para pausar servicios del sistema, un "se reactivan solos"
+sin decir qué deja al usuario adivinando qué quedó tocado en su Mac. Ahora
+dice "Los servicios de macOS se reactivan solos al terminar", en los seis
+idiomas. Es un **cambio de español**, así que va declarado con su motivo
+en la lista `corrected` de
+`testTheSpanishInTheCatalogIsWhatTheSourcesSaidBefore`, que es el
+mecanismo que existe para eso.
+
+No se tocó `PermissionsView`: ahí el texto describe en general por qué
+macOS va a pedir la contraseña y no habla de reactivación; nombrar tres
+demonios del sistema en una pantalla de bienvenida sería ruido, no
+precisión.

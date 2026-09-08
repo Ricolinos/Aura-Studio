@@ -144,6 +144,45 @@ final class TextAsControlFlowTests: XCTestCase {
         XCTAssertFalse(instalador.hasPrefix(crudo), "la frase nuestra va primero")
     }
 
+    // MARK: - Lo que se le promete al usuario antes de pedirle la contraseña
+
+    /// ST-227 (A7c, cierre 5): **la pantalla nombra TODOS los servicios
+    /// que se van a pausar.**
+    ///
+    /// Decía "dos servicios de macOS (AMPDevicesAgent y
+    /// AMPDeviceDiscoveryAgent)" y se pausan tres: falta
+    /// `deviceinterfaced`. Esa pantalla existe para decir exactamente qué
+    /// se va a hacer con permisos de administrador **antes** de que macOS
+    /// pida la contraseña (`PermissionsView` se lo promete al usuario con
+    /// todas las letras), así que nombrar dos de tres es justo lo que no
+    /// puede pasar ahí.
+    ///
+    /// La prueba no compara contra una lista escrita a mano: recorre la
+    /// que de verdad se pausa. Agregar un servicio al código y olvidarse
+    /// de la pantalla vuelve a fallar acá.
+    func testTheExplanationNamesEveryServiceThatWillBePaused() throws {
+        let explicacion = PendingAuthorization.pauseAMPAgents().explanationBody
+
+        XCTAssertFalse(PrivilegedExecutor.ampAgentNames.isEmpty)
+        for servicio in PrivilegedExecutor.ampAgentNames {
+            XCTAssertTrue(explicacion.contains(servicio),
+                          "la pantalla no nombra «\(servicio)», que sí se pausa: \(explicacion)")
+        }
+        XCTAssertFalse(explicacion.contains("dos servicios"),
+                       "un número escrito a mano vuelve a quedar viejo en cuanto cambie la lista")
+    }
+
+    /// Toda la familia del permiso de administrador dice lo mismo: dos
+    /// redacciones para la misma situación se leen como dos cosas
+    /// distintas. Decisión común con Windows.
+    func testTheAdminPermissionFamilySpeaksWithOneVoice() {
+        let delInstalador = InstallerError.authorizationCancelled.errorDescription ?? ""
+        XCTAssertTrue(delInstalador.contains("permiso de administrador"),
+                      "la familia usa «permiso de administrador» como raíz: \(delInstalador)")
+        XCTAssertFalse(delInstalador.contains("autorización"),
+                       "no se mezcla «autorización» con «permiso» en la misma familia")
+    }
+
     // MARK: - Fixture
 
     private func item(album: String, artist: String, title: String) -> AuraStudio.LibraryItem {

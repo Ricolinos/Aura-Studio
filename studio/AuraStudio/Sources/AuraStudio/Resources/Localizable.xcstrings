@@ -7113,37 +7113,37 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Du wirst nach deinem Passwort gefragt. Danach starten sie von selbst wieder."
+            "value": "Du wirst nach deinem Passwort gefragt. Die macOS-Dienste laufen zum Schluss von selbst wieder an."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "It will ask for your password. They turn themselves back on when it finishes."
+            "value": "It will ask for your password. The macOS services start again on their own when it finishes."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pedirá tu contraseña. Se reactivan solos al terminar."
+            "value": "Pedirá tu contraseña. Los servicios de macOS se reactivan solos al terminar."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Votre mot de passe vous sera demandé. Ils se réactivent tout seuls à la fin."
+            "value": "Votre mot de passe sera demandé. Les services macOS redémarrent tout seuls à la fin."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "パスワードの入力を求められます。終了すると自動的に再開します。"
+            "value": "パスワードの入力を求められます。macOS のサービスは終了時に自動で再開します。"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Потребуется ваш пароль. По завершении они включатся сами."
+            "value": "Потребуется ваш пароль. Службы macOS сами возобновятся по завершении."
           }
         }
       }

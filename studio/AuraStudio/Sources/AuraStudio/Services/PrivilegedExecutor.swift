@@ -31,7 +31,10 @@ struct PrivilegedExecutor: Sendable {
         var errorDescription: String? {
             switch self {
             case .userCancelled:
-                return "Cancelaste la autorización. Este paso no puede continuar sin ese permiso."
+                // Misma frase que `InstallerStep`: es la misma situación
+                // para el usuario, y dos redacciones para lo mismo se
+                // leen como dos cosas distintas.
+                return "Cancelaste el permiso de administrador. Este paso no puede continuar sin él."
             case .scriptFailed(let message):
                 return message
             case .safetyAbort(let reason):

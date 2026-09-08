@@ -89,7 +89,15 @@ struct PendingAuthorization: Identifiable {
         PendingAuthorization(
             kind: .pauseAMPAgents,
             explanationTitle: "Pausar servicios de macOS",
-            explanationBody: "Aura Studio necesita pausar temporalmente dos servicios de macOS que a veces interfieren con la conexión del iPod (AMPDevicesAgent y AMPDeviceDiscoveryAgent). Se reactivan automáticamente al terminar, o solos después de unos minutos si algo falla.",
+            // ST-227 (A7c, cierre 5): la lista sale de `ampAgentNames`,
+            // que es quien de verdad los pausa. Acá decía "dos servicios
+            // ... (AMPDevicesAgent y AMPDeviceDiscoveryAgent)" y se
+            // pausan TRES -- falta `deviceinterfaced`. Esta pantalla
+            // existe para decirle al usuario exactamente qué se va a
+            // hacer con permisos de administrador antes de que macOS le
+            // pida la contraseña; nombrar dos de tres es justo lo que no
+            // puede pasar acá.
+            explanationBody: "Aura Studio necesita pausar temporalmente los servicios de macOS que a veces interfieren con la conexión del iPod (\(Sentence.list(PrivilegedExecutor.ampAgentNames))). Se reactivan automáticamente al terminar, o solos después de unos minutos si algo falla.",
             cancelConsequence: "Si cancelas, Aura Studio va a seguir intentando detectar el iPod igual -- en la mayoría de las Mac esto no hace falta, pero si la detección falla repetidamente, puede ser la causa."
         )
     }
@@ -196,7 +204,7 @@ enum InstallerError: Error, LocalizedError, Equatable {
         case .diskAmbiguous(let count):
             return "Se encontraron \(count) discos que podrian ser tu iPod. Por seguridad, Aura Studio no elige uno solo -- desconecta los demas discos externos y vuelve a intentar."
         case .authorizationCancelled:
-            return "Cancelaste la autorización de administrador. Este paso no puede continuar sin ese permiso."
+            return "Cancelaste el permiso de administrador. Este paso no puede continuar sin él."
         case .privilegedOperationFailed(let message):
             return message
         case .fullDiskAccessDenied:

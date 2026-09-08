@@ -154,7 +154,7 @@
 "enter-d-f-u-view.esperando-modo-dfu" = "Ожидание режима DFU…";
 "enter-d-f-u-view.modo-dfu-detectado" = "Режим DFU обнаружен";
 "enter-d-f-u-view.no-aparece-pausar-servicios-macos-que" = "Не появляется? Приостановить службы macOS, которые могут мешать";
-"enter-d-f-u-view.pedira-tu-contrasena-se-reactivan-solos" = "Потребуется ваш пароль. По завершении они включатся сами.";
+"enter-d-f-u-view.pedira-tu-contrasena-se-reactivan-solos" = "Потребуется ваш пароль. Службы macOS сами возобновятся по завершении.";
 "extras-view.cambiar" = "Переключиться на %@";
 "extras-view.consultando-github" = "Запрос к GitHub…";
 "extras-view.disponible-dispositivo" = "Доступно на устройстве";
