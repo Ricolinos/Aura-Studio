@@ -1,0 +1,184 @@
+DATO	AuraStudio.App/Platform/AppleDeviceSupport.cs	Apple Mobile Device Service
+DATO	AuraStudio.App/Platform/AppleDeviceSupport.cs	SELECT Name, DeviceID, ConfigManagerErrorCode FROM Win32_PnPEntity 
+DATO	AuraStudio.App/Platform/AppleDeviceSupport.cs	WHERE DeviceID LIKE 'USB\\\\VID_{vendor}%'
+DATO	AuraStudio.App/Platform/CredentialStore.cs	TMDB (The Movie Database)
+DATO	AuraStudio.App/Platform/VolumeManager.cs	-NoProfile -NonInteractive -Command \"(New-Object -ComObject Shell.Application).NameSpace(17).ParseName('{letter}:').InvokeVerb('Eject')\"
+DATO	AuraStudio.App/Platform/WmiDiskEnumerator.cs	SELECT Antecedent, Dependent FROM Win32_LogicalDiskToPartition
+DATO	AuraStudio.App/Platform/WmiDiskEnumerator.cs	SELECT DeviceID FROM Win32_DiskPartition WHERE DiskIndex = {diskIndex}
+DATO	AuraStudio.App/Platform/WmiDiskEnumerator.cs	SELECT DeviceID FROM Win32_PnPEntity WHERE DeviceID LIKE 'USB\\\\VID_05AC&PID_1261%'
+DATO	AuraStudio.App/Platform/WmiDiskEnumerator.cs	SELECT DeviceID, Index, PNPDeviceID, Model, Size FROM Win32_DiskDrive WHERE InterfaceType='USB'
+DATO	AuraStudio.App/Platform/WmiDiskEnumerator.cs	SELECT VolumeName FROM Win32_LogicalDisk WHERE DeviceID = '{letter}'
+DATO	AuraStudio.Core/Library/LibraryEnricher.cs	Cover Art Archive
+DATO	AuraStudio.Core/Library/LibraryFileLayout.cs	Sin categoría
+DATO	AuraStudio.Core/MediaCategory.cs	leonardo ai
+DATO	AuraStudio.Core/MediaCategory.cs	stable diffusion
+DATO	AuraStudio.Core/Mks5lbootOutput.cs	DFU device not found
+DATO	AuraStudio.Core/Mks5lbootOutput.cs	DFU device state: 
+DATO	AuraStudio.Core/Mks5lbootOutput.cs	no DFU devices found
+DATO	AuraStudio.Core/Networking/AlbumCoverSearch.cs	Cover Art Archive
+DATO	AuraStudio.Core/Networking/MusicBrainzClient.cs	 AND artist:\"{EscapeLuceneQuoted(name.Trim())}\"
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	acciones de borrado del menú
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	acciones de quitar del menú
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	avisa de que hay que migrar
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	borra archivos del disco del usuario
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	borra archivos del disco del usuario
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	condiciona entrar en modo DFU
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	copia archivos a la biblioteca
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	copia archivos a la biblioteca
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	copia archivos a la biblioteca
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	decide en qué calidad quedan las fotos
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	decide en qué calidad quedan las fotos
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	decide en qué calidad quedan las fotos
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	decide en qué formato queda la música
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	decide en qué formato queda la música
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	decide en qué formato queda la música
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	decide en qué formato queda la música
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	decide si Aura copia los archivos del usuario
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	decide si Aura copia los archivos del usuario o los referencia
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	decide si los archivos del firmware son de fiar
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	dice qué pasó con lo que se quitó
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	dónde vive la biblioteca
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	el diálogo que decide si un archivo se borra
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	el grabado del arranque por DFU
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	escribe el árbol del firmware en el iPod
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	estaciona y despierta el firmware del iPod
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	formatea el iPod y graba su arranque
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	las razones por las que NO se escribe en el disco
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	las razones por las que NO se escribe en el disco
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	lo que hace y responde el proceso con permisos de administrador
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	los errores del asistente que formatea y graba el arranque
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	migra una biblioteca anterior
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	migra una biblioteca anterior
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	migra una biblioteca anterior
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	pantalla del instalador
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	qué pasa al cambiar de carpeta
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	qué pasa al cambiar de carpeta
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	qué pasa al quitar una carpeta vinculada
+DOC	AuraStudio.Core/Resources/CriticalStrings.cs	reescribe el arranque del iPod
+INTERNO	AuraStudio.App/Converters/BoolToVisibilityConverter.cs	Conversión de un solo sentido.
+INTERNO	AuraStudio.App/Converters/NotNullToBoolConverter.cs	Conversión de un solo sentido.
+INTERNO	AuraStudio.App/Platform/AudioTranscoder.cs	la conversión no produjo audio
+INTERNO	AuraStudio.App/Platform/AudioTranscoder.cs	no se pidió ninguna conversión
+INTERNO	AuraStudio.App/Platform/FfmpegRunner.cs	No se pudo iniciar ffmpeg.
+INTERNO	AuraStudio.App/Platform/FfmpegRunner.cs	ffmpeg falló: {errorBuffer.ToString().Trim()}
+INTERNO	AuraStudio.App/Platform/ImageResizer.cs	El JPEG generado no es baseline y el iPod no podría mostrarlo.
+INTERNO	AuraStudio.App/Platform/ImageResizer.cs	La imagen de origen no tiene un tamaño válido.
+INTERNO	AuraStudio.App/Platform/ImageResizer.cs	La imagen de origen no tiene un tamaño válido.
+INTERNO	AuraStudio.App/Platform/ImageResizer.cs	No se pudo leer la imagen de origen.
+INTERNO	AuraStudio.App/Platform/ImageResizer.cs	No se pudo leer la imagen de origen.
+INTERNO	AuraStudio.App/Platform/ImageResizer.cs	No se pudo leer la imagen de origen.{detail}
+INTERNO	AuraStudio.App/Platform/ImageResizer.cs	No se pudo leer la imagen de origen.{detail}
+INTERNO	AuraStudio.App/Platform/PlaylistArtGenerator.cs	La imagen de la lista no salió como JPEG baseline y el iPod no podría mostrarla.
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	ENSAYO: no se escribió nada.
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	SELECT Index, Size, Model, BytesPerSector, InterfaceType, MediaLoaded FROM Win32_DiskDrive 
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	WHERE Index = {operation.DiskNumber}
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	Windows no releyó la tabla (se verá al reconectar el iPod)
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	Windows releyó la tabla de particiones
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	borrar la reactivación programada: código {exitCode}
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	diseño de particiones anterior borrado (primer y último MiB)
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	el sector de arranque del FAT32 no quedó escrito
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	el servicio de Apple no está instalado
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	estructuras FAT32 escritas
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	la tabla de particiones no quedó escrita (falta su firma)
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	la tabla de particiones que quedó en el disco no es la que se escribió
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	no se pudo borrar la reactivación programada: {ex.Message}
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	no se pudo ejecutar schtasks.exe
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	no se pudo pedir la relectura del diseño: {ex.Message}
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	no se pudo programar la reactivación: {ex.Message}
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	plan: partición en LBA {firstLba}, {partitionSectors} sectores, 
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	programar la reactivación: código {exitCode}
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	quedó más de una partición en la tabla
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	relectura: tabla de particiones y sector de arranque FAT32 verificados en el disco
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	tabla MBR escrita (1 partición, tipo 0x{MasterBootRecord.Fat32LbaType:X2})
+INTERNO	AuraStudio.App/Platform/PrivilegedHost.cs	{layout.SectorsPerFat} sectores por FAT
+INTERNO	AuraStudio.App/Platform/PrivilegedRunner.cs	No se pudo determinar el ejecutable de Aura Studio.
+INTERNO	AuraStudio.App/Platform/PrivilegedRunner.cs	No se pudo iniciar el proceso con permisos de administrador.
+INTERNO	AuraStudio.App/Platform/PrivilegedRunner.cs	abortada por seguridad: {result.Message}
+INTERNO	AuraStudio.App/Platform/PrivilegedRunner.cs	cancelada por el usuario
+INTERNO	AuraStudio.App/Platform/PrivilegedRunner.cs	cancelada por el usuario
+INTERNO	AuraStudio.App/Platform/PrivilegedRunner.cs	sin resultado (código {exitCode})
+INTERNO	AuraStudio.App/Platform/VolumeLock.cs	No se pudo abrir el disco {diskNumber} para escritura (error {error}).
+INTERNO	AuraStudio.App/Platform/VolumeLock.cs	No se pudo abrir el volumen {path} (error {Marshal.GetLastWin32Error()}).
+INTERNO	AuraStudio.App/Platform/VolumeLock.cs	No se pudo bloquear el volumen {path} tras {attempts} intentos (error {error}). 
+INTERNO	AuraStudio.App/Platform/VolumeLock.cs	no había volúmenes montados que bloquear
+INTERNO	AuraStudio.App/Services/CrashReporter.cs	(sin pila)
+INTERNO	AuraStudio.App/Services/CrashReporter.cs	Causado por: 
+INTERNO	AuraStudio.App/Services/CrashReporter.cs	tarea sin observar
+INTERNO	AuraStudio.App/Services/DeviceSessionService.cs	Reevaluate() fuera del hilo de interfaz: actualizar algo enlazado desde aquí cierra la app sin aviso.
+INTERNO	AuraStudio.App/Services/UiThreadWatchdog.cs	    (GetThreadContext falló, error {Marshal.GetLastWin32Error()})
+INTERNO	AuraStudio.App/Services/UiThreadWatchdog.cs	    (OpenThread falló, error {Marshal.GetLastWin32Error()})
+INTERNO	AuraStudio.App/Services/UiThreadWatchdog.cs	    (StackWalk64 no devolvió direcciones)
+INTERNO	AuraStudio.App/Services/UiThreadWatchdog.cs	    (SuspendThread falló, error {Marshal.GetLastWin32Error()})
+INTERNO	AuraStudio.App/Services/UiThreadWatchdog.cs	    (captura de pila no soportada en {arch})
+INTERNO	AuraStudio.App/Services/UiThreadWatchdog.cs	    (no se alcanzó a capturar la pila -- el bloqueo terminó antes de que se pudiera suspender el hilo, la captura tardó demasiado, o la arquitectura no está soportada)
+INTERNO	AuraStudio.App/Services/UiThreadWatchdog.cs	    (pila no capturada: la captura tardó más de {CaptureGuardMs} ms -- se reanudó el hilo de UI a la fuerza para no colgar la app)
+INTERNO	AuraStudio.App/Services/UiThreadWatchdog.cs	Puede colgar la app en ARM64 -- solo para diagnóstico puntual.
+INTERNO	AuraStudio.App/Services/UiThreadWatchdog.cs	[UiThreadWatchdog] AURA_WATCHDOG_STACKS=1: se capturarán pilas. 
+INTERNO	AuraStudio.App/Services/UiThreadWatchdog.cs	[UiThreadWatchdog] activo -- avisa de bloqueos del hilo de UI > {ThresholdMs} ms
+INTERNO	AuraStudio.App/Services/UiThreadWatchdog.cs	[UiThreadWatchdog] bloqueo de ~{durationMs} ms en el hilo de UI
+INTERNO	AuraStudio.App/Services/UiThreadWatchdog.cs	[UiThreadWatchdog] bloqueo en curso desde hace {now - hangStartedTicks.Value} ms
+INTERNO	AuraStudio.App/Services/UiThreadWatchdogNative.cs	0x{address:X} (sin símbolo)
+INTERNO	AuraStudio.App/Views/MediaGridPage.xaml.cs	Attach   grid=sí capa=sí
+INTERNO	AuraStudio.App/Views/MediaGridPage.xaml.cs	Attach   scroll=sí
+INTERNO	AuraStudio.App/Views/MediaGridPage.xaml.cs	CaptureLost  tras {_marqueeMoves} movimientos
+INTERNO	AuraStudio.App/Views/MediaGridPage.xaml.cs	Pressed  ruta={route} handled={e.Handled} yaArrastrando={_marquee is not null} 
+INTERNO	AuraStudio.App/Views/MediaGridPage.xaml.cs	Released  tras {_marqueeMoves} movimientos
+INTERNO	AuraStudio.App/Views/MediaGridPage.xaml.cs	Start    captura={captured} origen=({origin.X:0},{origin.Y:0}) 
+INTERNO	AuraStudio.Core/Installer/Fat32Formatter.cs	con estos parámetros salen {layout.CountOfClusters} clústeres: menos de {MinimumFat32Clusters} no es FAT32
+INTERNO	AuraStudio.Core/Installer/Fat32Formatter.cs	la partición es demasiado chica
+INTERNO	AuraStudio.Core/Installer/Fat32Formatter.cs	la partición no alcanza ni para las tablas FAT
+INTERNO	AuraStudio.Core/Installer/Fat32Formatter.cs	tamaño de sector no soportado por FAT32
+INTERNO	AuraStudio.Core/Installer/FirmwareTreeWriter.cs	el zip no trae {path}
+INTERNO	AuraStudio.Core/Installer/FirmwareTreeWriter.cs	el árbol .rockbox no quedó completo tras extraerlo (falta {Path.GetFileName(sentinel)})
+INTERNO	AuraStudio.Core/Installer/FirmwareTreeWriter.cs	no se pudo extraer el árbol
+INTERNO	AuraStudio.Core/Installer/FirmwareTreeWriter.cs	no se pudo verificar rockbox.ipod tras copiarlo
+INTERNO	AuraStudio.Core/Installer/FirmwareTreeWriter.cs	rockbox.zip contiene una ruta insegura ({relative})
+INTERNO	AuraStudio.Core/Installer/InstallerFlow.cs	El modo {mode} no empieza en la Bienvenida.
+INTERNO	AuraStudio.Core/Installer/InstallerFlow.cs	El modo {mode} no está implementado en el instalador de Windows.
+INTERNO	AuraStudio.Core/Installer/MasterBootRecord.cs	El sector de arranque necesita al menos {Size} bytes.
+INTERNO	AuraStudio.Core/Installer/MasterBootRecord.cs	El sector de arranque necesita al menos {Size} bytes.
+INTERNO	AuraStudio.Core/Installer/MasterBootRecord.cs	La tabla MBR tiene 4 entradas.
+INTERNO	AuraStudio.Core/Installer/MasterBootRecord.cs	la partición no puede estar vacía
+INTERNO	AuraStudio.Core/Installer/MasterBootRecord.cs	la partición se sale del direccionamiento de 32 bits del MBR
+INTERNO	AuraStudio.Core/Installer/MasterBootRecord.cs	una partición no puede empezar en el sector 0: ahí vive la propia tabla
+INTERNO	AuraStudio.Core/Library/LibraryFileCopier.cs	el archivo no está
+INTERNO	AuraStudio.Core/Library/LibraryFileCopier.cs	el archivo no está
+INTERNO	AuraStudio.Core/Library/LibraryFileCopier.cs	el archivo ya está dentro de la biblioteca
+INTERNO	AuraStudio.Core/Library/LibraryFileCopier.cs	no hay archivo de origen
+INTERNO	AuraStudio.Core/Library/LibraryFileCopier.cs	no hay archivo de origen
+INTERNO	AuraStudio.Core/Library/LibraryFileCopier.cs	no hay ruta de destino
+INTERNO	AuraStudio.Core/Library/LibraryFileCopier.cs	no hay ruta de destino
+INTERNO	AuraStudio.Core/Library/LibraryFileCopier.cs	no se pudo copiar: {ex.Message}
+INTERNO	AuraStudio.Core/Library/LocalTagWriter.cs	artista del álbum
+INTERNO	AuraStudio.Core/Library/LocalTagWriter.cs	después del renombrado
+INTERNO	AuraStudio.Core/Library/LocalTagWriter.cs	el archivo no está
+INTERNO	AuraStudio.Core/Library/LocalTagWriter.cs	el archivo ya coincide con el catálogo
+INTERNO	AuraStudio.Core/Library/LocalTagWriter.cs	el elemento no tiene metadata
+INTERNO	AuraStudio.Core/Library/LocalTagWriter.cs	no se etiqueta un archivo temporal: las etiquetas van al archivo final, 
+INTERNO	AuraStudio.Core/Library/LocalTagWriter.cs	no se pudo escribir: {ex.Message}
+INTERNO	AuraStudio.Core/Library/MediaRoots.cs	no tiene carpeta en la biblioteca
+INTERNO	AuraStudio.Core/Library/PreparedMusic.cs	el archivo de origen cambió de tamaño
+INTERNO	AuraStudio.Core/Library/PreparedMusic.cs	el archivo de origen es más nuevo que el preparado
+INTERNO	AuraStudio.Core/Library/PreparedMusic.cs	el archivo de origen ya sirve tal como está
+INTERNO	AuraStudio.Core/Library/PreparedMusic.cs	el preparado sigue sirviendo
+INTERNO	AuraStudio.Core/Library/PreparedMusic.cs	no se pudo leer la fecha de los archivos
+INTERNO	AuraStudio.Core/Library/PreparedMusic.cs	todavía no hay preparado
+INTERNO	AuraStudio.Core/Library/PreparedMusicBuilder.cs	el archivo de origen no está
+INTERNO	AuraStudio.Core/Library/PreparedMusicBuilder.cs	este formato viaja tal cual
+INTERNO	AuraStudio.Core/Library/PreparedMusicBuilder.cs	hay que convertirlo y no hay convertidor
+INTERNO	AuraStudio.Core/Library/PreparedMusicBuilder.cs	la música copiada es su propio preparado
+INTERNO	AuraStudio.Core/Library/PreparedMusicBuilder.cs	no se pudo convertir: {ex.Message}
+INTERNO	AuraStudio.Core/Library/PreparedMusicBuilder.cs	no se pudo copiar
+INTERNO	AuraStudio.Core/Media/AiffToWav.cs	AIFF-C comprimido ({compression}): no se puede convertir
+INTERNO	AuraStudio.Core/Media/AiffToWav.cs	bits por muestra no admitidos: {bits}
+INTERNO	AuraStudio.Core/Media/AiffToWav.cs	canales fuera de rango: {channels}
+INTERNO	AuraStudio.Core/Media/AiffToWav.cs	el AIFF está truncado
+INTERNO	AuraStudio.Core/Media/AiffToWav.cs	el AIFF está truncado: dice tener más audio del que hay
+INTERNO	AuraStudio.Core/Media/AiffToWav.cs	el AIFF no trae audio (falta el bloque SSND)
+INTERNO	AuraStudio.Core/Media/AiffToWav.cs	el AIFF no trae su bloque COMM
+INTERNO	AuraStudio.Core/Media/AiffToWav.cs	frecuencia fuera de rango: {sampleRate}
+INTERNO	AuraStudio.Core/Media/AiffToWav.cs	no es un AIFF: el contenido dice \"{kind}\"
+INTERNO	AuraStudio.Core/Media/AiffToWav.cs	no es un AIFF: falta la marca FORM
+INTERNO	AuraStudio.Core/Networking/GitHubReleaseChecker.cs	GitHub respondió algo inesperado (status distinto de 200)
+INTERNO	AuraStudio.Core/Networking/GitHubReleaseChecker.cs	la familia instalada no tiene repositorio al que preguntar (ST-046)
+INTERNO	AuraStudio.Core/ThemePackager.cs	No se pudo escribir el paquete: {reason}.
