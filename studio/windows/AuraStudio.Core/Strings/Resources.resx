@@ -1287,6 +1287,15 @@
   <data name="library-grouping.albums-and-songs" xml:space="preserve">
     <value>{0}, {1}</value>
   </data>
+  <data name="library-grouping.unknown-album" xml:space="preserve">
+    <value>Sin álbum</value>
+  </data>
+  <data name="library-grouping.unknown-artist" xml:space="preserve">
+    <value>Artista desconocido</value>
+  </data>
+  <data name="library-grouping.unknown-photo-album" xml:space="preserve">
+    <value>Sin álbum</value>
+  </data>
   <data name="library-ingest.added.one" xml:space="preserve">
     <value>Se agregó {0} elemento.</value>
   </data>
