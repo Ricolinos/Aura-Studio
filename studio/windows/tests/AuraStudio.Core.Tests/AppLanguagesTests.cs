@@ -30,30 +30,71 @@ public class AppLanguagesTests
     }
 
     /// <summary>
-    /// Cada idioma que se ofrece tiene su archivo, y cada archivo que existe se
-    /// ofrece. La lista y el disco dicen lo mismo.
+    /// Nada se ofrece sin tener archivo. Es la única de las dos direcciones que
+    /// vale siempre: ofrecer un idioma cuyo texto no existe es la falla
+    /// silenciosa de siempre —el usuario lo elige, la app cae al español y nada
+    /// avisa—. Al revés sí se puede, y hoy pasa.
     /// </summary>
     [Fact]
-    public void LoQueSeOfreceEsExactamenteLoQueTieneArchivo()
+    public void NadaSeOfreceSinTenerArchivo() =>
+        Assert.All(AppLanguages.Available, language => Assert.True(language.Built,
+            $"«{language.Culture}» se ofrece y no tiene archivo: al elegirlo la app cae al español sin decir nada."));
+
+    /// <summary>
+    /// El instalador exige lo que se <b>genera</b>, no lo que se ofrece.
+    ///
+    /// <para>Y hoy no son lo mismo, que es justo lo que hace que valga la pena
+    /// la prueba: los cuatro de B7c viajan dentro del instalador sin que el
+    /// selector los muestre. Si a alguien le pareciera "más limpio" exigir solo
+    /// los ofrecidos, los cuatro satélites dejarían de comprobarse, y el día que
+    /// B7d los encienda podrían no estar.</para>
+    /// </summary>
+    [Fact]
+    public void ElInstaladorExigeLoQueSeGeneraYNoLoQueSeOfrece()
     {
         Assert.Equal(
-            AppLanguages.All.Where(language => language.Ships).Select(language => language.Culture),
-            AppLanguages.Available.Select(language => language.Culture));
-
-        Assert.Equal(
-            AppLanguages.Available.Where(language => language.Culture != AppLanguages.NeutralCulture)
+            AppLanguages.Translated.Where(language => language.Culture != AppLanguages.NeutralCulture)
                 .Select(language => language.Culture),
             AppLanguages.RequiredSatelliteCultures);
+
+        // La diferencia existe de verdad; si un día no existiera, esta prueba
+        // estaría comparando dos veces la misma lista sin que nadie lo note.
+        Assert.Contains(AppLanguages.RequiredSatelliteCultures,
+            culture => AppLanguages.Available.All(language => language.Culture != culture));
+    }
+
+    /// <summary>
+    /// Hoy se ofrecen español e inglés, y nada más.
+    ///
+    /// <para>Los cuatro de B7c están traducidos, compilados y viajando, y aun
+    /// así apagados: la extracción de B7a está en los seis idiomas, pero unas
+    /// trescientas frases quedaron fuera de esa extracción —instalador, errores
+    /// de disco, permisos— y siguen en español. Ofrecer alemán así es prometer
+    /// una app en alemán que a mitad del formateo cambia de idioma.</para>
+    ///
+    /// <para>Encenderlos es cambiar <c>Offered</c> y esta prueba: dos ediciones
+    /// deliberadas, que es lo que se quiere para una decisión de este tamaño.
+    /// Lo hace B7d cuando termine con esas trescientas.</para>
+    /// </summary>
+    [Fact]
+    public void HoySeOfrecenElEspanolYElIngles()
+    {
+        Assert.Equal(["es", "en"], AppLanguages.Available.Select(language => language.Culture));
+
+        Assert.Equal(
+            ["de", "fr", "ja", "ru"],
+            AppLanguages.Translated.Where(language => !language.Offered)
+                .Select(language => language.Culture).Order(StringComparer.Ordinal));
     }
 
     /// <summary>
     /// Solo el español y el inglés están revisados por una persona.
     ///
-    /// <para>Los otros cuatro se ofrecen <b>sin</b> revisar, y eso es una
-    /// decisión, no un descuido: la app los marca "(beta)" y dice que son
-    /// traducción automática. Lo que esta prueba fija es que nadie los declare
-    /// revisados sin que un revisor humano haya pasado — un <c>true</c> de más
-    /// acá apaga el aviso en pantalla y nadie lo notaría.</para>
+    /// <para>Lo que fija esta prueba es que nadie declare revisado un idioma sin
+    /// que un revisor humano haya pasado. Cuando B7d encienda los cuatro, lo
+    /// harán con este <c>false</c> intacto y el selector los marcará "(beta)"
+    /// diciendo que son traducción automática; un <c>true</c> de más acá apaga
+    /// ese aviso y nadie lo notaría.</para>
     /// </summary>
     [Fact]
     public void SoloElEspanolYElInglesEstanRevisadosPorUnaPersona() =>
@@ -89,10 +130,23 @@ public class AppLanguagesTests
     public void ElPaisNoDecideElIdioma(string culture, string expected) =>
         Assert.Equal(expected, AppLanguages.For(new CultureInfo(culture))?.Culture);
 
-    /// <summary>Y un idioma que no se ofrece todavía no resuelve a nada.</summary>
+    /// <summary>
+    /// Y un idioma que no se ofrece no resuelve a nada, aunque su archivo
+    /// exista.
+    ///
+    /// <para>Los cuatro últimos casos son los de B7c: están traducidos y
+    /// compilados, así que arrancar en ellos "funcionaría". No tiene que
+    /// hacerlo. Alguien con Windows en alemán abriría la app en alemán sin
+    /// haberlo pedido y sin que el selector siquiera ofrezca ese idioma — y con
+    /// las pantallas del instalador todavía en español.</para>
+    /// </summary>
     [Theory]
     [InlineData("pt-BR")]
     [InlineData("it-IT")]
+    [InlineData("de-DE")]
+    [InlineData("fr-FR")]
+    [InlineData("ja-JP")]
+    [InlineData("ru-RU")]
     public void UnIdiomaQueNoSeOfreceNoResuelveANada(string culture) =>
         Assert.Null(AppLanguages.For(new CultureInfo(culture)));
 

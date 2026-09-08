@@ -145,7 +145,7 @@ public class PlatformNamesTests
     public static TheoryData<string> Cultures()
     {
         TheoryData<string> data = [];
-        foreach (AppLanguage language in AppLanguages.Available) data.Add(language.Culture);
+        foreach (AppLanguage language in AppLanguages.Translated) data.Add(language.Culture);
         return data;
     }
 
