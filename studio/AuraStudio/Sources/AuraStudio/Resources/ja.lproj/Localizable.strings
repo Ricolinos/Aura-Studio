@@ -49,6 +49,8 @@
 "artists-view.eliminar" = "削除";
 "artists-view.mas-informacion" = "詳細情報…";
 "artists-view.todavia-no-hay-musica-biblioteca" = "ライブラリにはまだ音楽がありません。";
+"audio-conversion.aviso-comprimido" = "コピーモードで読み込むと、ライブラリには可逆圧縮のファイルではなく %lld kbps の MP3 が保存されます。お手元の元のファイルには手を加えません。この設定はこれから読み込むものにだけ影響し、すでにライブラリにあるものはそのままです。Mac では「圧縮」に ffmpeg のインストールが必要です。";
+"audio-conversion.aviso-original-sin-perdida" = "FLAC、ALAC、M4A、MP3 はそのままコピーされます。Aura を入れた iPod は音質を落とさずに再生します。WAV と AIFF は ALAC に変換します。ALAC も可逆圧縮です。非圧縮のままだと容量が大きすぎて持ち歩くのが現実的ではありません。";
 "aura-studio-app.biblioteca" = "ライブラリ";
 "automatic-update-view.listo" = "完了";
 "await-bootloader-u-s-b-view.arranque-grabado" = "ブートローダーを書き込みました";

@@ -2207,6 +2207,88 @@
         }
       }
     },
+    "audio-conversion.aviso-comprimido": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beim Import im Kopiermodus behält die Mediathek das MP3 mit %lld kbit/s und nicht die verlustfreie Datei. Deine Originaldatei, wo immer du sie hast, bleibt unangetastet. Diese Änderung betrifft nur, was du ab jetzt importierst: Was schon in der Mediathek ist, bleibt, wie es ist. Auf dem Mac braucht „Komprimiert“ ein installiertes ffmpeg."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When importing in copy mode, the library keeps the %lld kbps MP3 and not the lossless file. Your original file, wherever you keep it, is untouched. Changing this affects what you import from now on: what is already in the library stays as it is. On Mac, “Compressed” needs ffmpeg installed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Al importar en modo copia, la biblioteca guarda el MP3 de %lld kbps y no el archivo sin pérdida. Tu archivo original, donde lo tengas, no se toca. Cambiar esto afecta a lo que importes de ahora en adelante: lo que ya está en la biblioteca se queda como está. En Mac, «Comprimido» necesita ffmpeg instalado."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "À l’import en mode copie, la bibliothèque conserve le MP3 à %lld kb/s et non le fichier sans perte. Votre fichier d’origine, où qu’il soit, n’est pas touché. Ce changement n’affecte que ce que vous importerez désormais : ce qui est déjà dans la bibliothèque reste tel quel. Sur Mac, « Compressé » nécessite ffmpeg installé."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "コピーモードで読み込むと、ライブラリには可逆圧縮のファイルではなく %lld kbps の MP3 が保存されます。お手元の元のファイルには手を加えません。この設定はこれから読み込むものにだけ影響し、すでにライブラリにあるものはそのままです。Mac では「圧縮」に ffmpeg のインストールが必要です。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "При импорте в режиме копирования медиатека сохраняет MP3 %lld кбит/с, а не файл без потерь. Ваш оригинал, где бы он ни лежал, не затрагивается. Это влияет только на то, что вы импортируете дальше: то, что уже в медиатеке, остаётся как есть. На Mac для «Сжатого» нужен установленный ffmpeg."
+          }
+        }
+      }
+    },
+    "audio-conversion.aviso-original-sin-perdida": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FLAC, ALAC, M4A und MP3 werden unverändert kopiert -- ein iPod mit Aura spielt sie ohne Qualitätsverlust ab. WAV und AIFF werden in ALAC umgewandelt, das ebenfalls verlustfrei ist: unkomprimiert brauchen sie so viel Platz, dass es nicht praktikabel ist, sie mitzunehmen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FLAC, ALAC, M4A and MP3 are copied as they are -- an iPod with Aura plays them without losing quality. WAV and AIFF are converted to ALAC, which is also lossless: uncompressed they take up so much space that carrying them isn’t practical."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FLAC, ALAC, M4A y MP3 se copian tal cual -- el iPod con Aura los reproduce sin perder calidad. WAV y AIFF se convierten a ALAC, que también es sin pérdida: sin comprimir ocupan tanto que no es práctico llevarlos."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FLAC, ALAC, M4A et MP3 sont copiés tels quels -- un iPod avec Aura les lit sans perte de qualité. WAV et AIFF sont convertis en ALAC, qui est aussi sans perte : non compressés, ils prennent tellement de place que les emporter n’est pas pratique."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FLAC、ALAC、M4A、MP3 はそのままコピーされます。Aura を入れた iPod は音質を落とさずに再生します。WAV と AIFF は ALAC に変換します。ALAC も可逆圧縮です。非圧縮のままだと容量が大きすぎて持ち歩くのが現実的ではありません。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "FLAC, ALAC, M4A и MP3 копируются как есть — iPod с Aura воспроизводит их без потери качества. WAV и AIFF преобразуются в ALAC, который тоже без потерь: несжатыми они занимают столько места, что носить их с собой непрактично."
+          }
+        }
+      }
+    },
     "aura-studio-app.biblioteca": {
       "extractionState": "manual",
       "localizations": {

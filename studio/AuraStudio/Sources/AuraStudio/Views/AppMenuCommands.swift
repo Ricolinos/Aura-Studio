@@ -138,7 +138,12 @@ struct ViewMenuCommands: View {
         Divider()
 
         ForEach(Self.navigationTargets, id: \.section) { target in
-            Button(target.title) {
+            // ST-227 (addendum): el rótulo sale de `SidebarSection.title`,
+            // que ya lo resuelve del catálogo. Estaban escritos acá como
+            // literales en español, duplicando los de la barra lateral:
+            // diez cadenas de más en el residuo, y dos sitios que podían
+            // desincronizarse al renombrar una sección.
+            Button(target.section.title) {
                 context?.navigate(target.section)
             }
             .keyboardShortcut(target.key, modifiers: .command)
@@ -146,17 +151,30 @@ struct ViewMenuCommands: View {
         }
     }
 
-    static let navigationTargets: [(section: SidebarSection, title: String, key: KeyEquivalent)] = [
-        (.general, "General", "0"),
-        (.music, "Canciones", "1"),
-        (.musicAlbums, "Álbumes", "2"),
-        (.musicArtists, "Artistas", "3"),
-        (.musicPlaylists, "Listas", "4"),
-        (.video, "Todos los videos", "5"),
-        (.videoMovies, "Películas", "6"),
-        (.videoSeries, "Series", "7"),
-        (.photos, "Todas las fotos", "8"),
-        (.extras, "Extras", "9"),
+    /// Las secciones que el menú puede abrir, con su atajo.
+    ///
+    /// ST-227 (addendum): **Ajustes e Instalador faltaban**. Diez
+    /// secciones tenían ⌘0-⌘9 y esas dos ninguna, así que quien navegue
+    /// solo con teclado --o con VoiceOver-- no tenía forma de abrir
+    /// Ajustes desde el menú. `⌘,` es el atajo estándar de macOS para
+    /// Ajustes y acá estaba libre: esta app no usa una escena `Settings`,
+    /// pone Ajustes como una sección más de la barra lateral.
+    ///
+    /// El rótulo ya no viaja acá: sale de `section.title`, que lo lee del
+    /// catálogo.
+    static let navigationTargets: [(section: SidebarSection, key: KeyEquivalent)] = [
+        (.general, "0"),
+        (.music, "1"),
+        (.musicAlbums, "2"),
+        (.musicArtists, "3"),
+        (.musicPlaylists, "4"),
+        (.video, "5"),
+        (.videoMovies, "6"),
+        (.videoSeries, "7"),
+        (.photos, "8"),
+        (.extras, "9"),
+        (.installer, "i"),
+        (.settings, ","),
     ]
 }
 

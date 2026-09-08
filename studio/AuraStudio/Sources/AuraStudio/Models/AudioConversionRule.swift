@@ -74,19 +74,15 @@ enum AudioConversionRule {
     /// que la promesa y el código salgan del mismo sitio.
     static func settingsNotice(audioQuality: AppPreferences.AudioQuality) -> String {
         switch audioQuality {
+        // ST-227 (addendum): estos dos párrafos vivían acá como literales
+        // multilínea, y **los tres barridos de A7c eran ciegos a ellos**:
+        // sus expresiones regulares solo capturaban literales de una
+        // línea. Con la app en inglés salían en español, en la pantalla
+        // que explica qué le pasa a los archivos del usuario.
         case .originalLossless:
-            return """
-                FLAC, ALAC, M4A y MP3 se copian tal cual -- el iPod con Aura los reproduce sin \
-                perder calidad. WAV y AIFF se convierten a ALAC, que también es sin pérdida: \
-                sin comprimir ocupan tanto que no es práctico llevarlos.
-                """
+            return LS("audio-conversion.aviso-original-sin-perdida")
         case .compressed:
-            return """
-                Al importar en modo copia, la biblioteca guarda el MP3 de \(mp3BitrateKbps) kbps \
-                y no el archivo sin pérdida. Tu archivo original, donde lo tengas, no se toca. \
-                Cambiar esto afecta a lo que importes de ahora en adelante: lo que ya está en la \
-                biblioteca se queda como está. En Mac, "Comprimido" necesita ffmpeg instalado.
-                """
+            return LSf("audio-conversion.aviso-comprimido", mp3BitrateKbps)
         }
     }
 }

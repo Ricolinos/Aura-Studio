@@ -49,6 +49,8 @@
 "artists-view.eliminar" = "Delete";
 "artists-view.mas-informacion" = "More information…";
 "artists-view.todavia-no-hay-musica-biblioteca" = "There is no music in your library yet.";
+"audio-conversion.aviso-comprimido" = "When importing in copy mode, the library keeps the %lld kbps MP3 and not the lossless file. Your original file, wherever you keep it, is untouched. Changing this affects what you import from now on: what is already in the library stays as it is. On Mac, “Compressed” needs ffmpeg installed.";
+"audio-conversion.aviso-original-sin-perdida" = "FLAC, ALAC, M4A and MP3 are copied as they are -- an iPod with Aura plays them without losing quality. WAV and AIFF are converted to ALAC, which is also lossless: uncompressed they take up so much space that carrying them isn’t practical.";
 "aura-studio-app.biblioteca" = "Library";
 "automatic-update-view.listo" = "Done";
 "await-bootloader-u-s-b-view.arranque-grabado" = "Boot loader written";

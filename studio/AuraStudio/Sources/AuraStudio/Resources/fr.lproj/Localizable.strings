@@ -49,6 +49,8 @@
 "artists-view.eliminar" = "Supprimer";
 "artists-view.mas-informacion" = "Plus d’informations…";
 "artists-view.todavia-no-hay-musica-biblioteca" = "Il n’y a pas encore de musique dans votre bibliothèque.";
+"audio-conversion.aviso-comprimido" = "À l’import en mode copie, la bibliothèque conserve le MP3 à %lld kb/s et non le fichier sans perte. Votre fichier d’origine, où qu’il soit, n’est pas touché. Ce changement n’affecte que ce que vous importerez désormais : ce qui est déjà dans la bibliothèque reste tel quel. Sur Mac, « Compressé » nécessite ffmpeg installé.";
+"audio-conversion.aviso-original-sin-perdida" = "FLAC, ALAC, M4A et MP3 sont copiés tels quels -- un iPod avec Aura les lit sans perte de qualité. WAV et AIFF sont convertis en ALAC, qui est aussi sans perte : non compressés, ils prennent tellement de place que les emporter n’est pas pratique.";
 "aura-studio-app.biblioteca" = "Bibliothèque";
 "automatic-update-view.listo" = "Terminé";
 "await-bootloader-u-s-b-view.arranque-grabado" = "Bootloader écrit";

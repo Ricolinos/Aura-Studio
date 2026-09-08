@@ -32,7 +32,16 @@ import sys
 RAIZ = pathlib.Path(__file__).resolve().parent.parent
 FUENTES = RAIZ / "studio/AuraStudio/Sources/AuraStudio"
 
-LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
+# Un literal de UNA línea. Los `"""` van aparte: ver `MULTILINEA`.
+LITERAL = re.compile(r'(?<!")"((?:[^"\\]|\\.)*)"(?!")')
+# ST-227 (addendum): los literales MULTILÍNEA de Swift. Los tres barridos
+# anteriores eran ciegos a ellos porque sus expresiones regulares solo
+# miraban una línea, y ahí viven los cuerpos de diálogo -- en la Mac
+# escondían los dos párrafos que Ajustes muestra bajo el interruptor de
+# calidad de audio. Windows encontró lo mismo por otro camino (su filtro
+# de rutas descartaba todo lo que llevara barra invertida, y "\n" lleva
+# una).
+MULTILINEA = re.compile(r'"""(.*?)"""', re.S)
 PALABRA = re.compile(r"[A-Za-zÀ-ÿ]{2,}")
 
 # Extensiones que aparecen en nombres de archivo del proyecto.
@@ -63,8 +72,15 @@ def es_ruido(s: str) -> bool:
         return True
     return False
 
-def sugerencia(linea: str) -> str:
+SHELL = re.compile(r"set -e|do shell script|pkill |diskutil |/bin/sh|nohup |\bdd \b|>/dev/null")
+
+def sugerencia(linea: str, cuerpo: str = "") -> str:
     """Pista para quien haga el triaje. NO es la clasificación."""
+    # Un guion de shell no es texto de pantalla por muchas palabras que
+    # tenga: los de `PrivilegedExecutor` pasan de 300 y marcarlos
+    # "¿PANTALLA?" llena el triaje de ruido.
+    if SHELL.search(cuerpo) or SHELL.search(linea):
+        return "¿INTERNO?"
     if re.search(r"\bprint\(|\blog\(|fatalError\(|assertionFailure|NSLog|debugPrint|\[[A-Z]\w+\]", linea):
         return "¿INTERNO?"
     if re.search(r"defaults\.set\(|forKey:|lines\.append\(|\.write\(to:", linea):
@@ -79,7 +95,22 @@ def barrer():
     filas = []
     for ruta in sorted(FUENTES.rglob("*.swift")):
         relativa = ruta.relative_to(RAIZ)
-        for numero, linea in enumerate(sin_comentarios(ruta.read_text(encoding="utf-8")), 1):
+        crudo = ruta.read_text(encoding="utf-8")
+
+        # Multilínea primero, y se tapan en el texto para que el barrido
+        # de una línea no vuelva a trocear su contenido.
+        limpio_completo = "\n".join(sin_comentarios(crudo))
+        for m in MULTILINEA.finditer(limpio_completo):
+            cuerpo = " ".join(m.group(1).split())
+            numero = limpio_completo[: m.start()].count("\n") + 1
+            if es_ruido(cuerpo):
+                continue
+            linea_ctx = limpio_completo.split("\n")[numero - 1]
+            filas.append((str(relativa), numero, len(PALABRA.findall(cuerpo)),
+                          sugerencia(linea_ctx, cuerpo), cuerpo))
+        sin_multi = MULTILINEA.sub(lambda m: "\n" * m.group(0).count("\n"), limpio_completo)
+
+        for numero, linea in enumerate(sin_multi.split("\n"), 1):
             for m in LITERAL.finditer(linea):
                 antes = linea[: m.start()].rstrip()
                 if antes.endswith(("LS(", "LSf(")):
@@ -87,7 +118,7 @@ def barrer():
                 s = m.group(1)
                 if es_ruido(s):
                     continue
-                filas.append((str(relativa), numero, len(PALABRA.findall(s)), sugerencia(linea), s))
+                filas.append((str(relativa), numero, len(PALABRA.findall(s)), sugerencia(linea, s), s))
     return filas
 
 def main() -> int:

@@ -18898,3 +18898,67 @@ definir. `InvertBool` en Ajustes era el único.
 
 El release 0.4.0 lleva este arreglo; los Setup de `f6dd461` se regeneran desde el
 commit de release.
+
+## ST-227 (addendum, previo a 0.4.0) — Cuatro cosas que sí son de release
+
+### ⌘, para Ajustes, y ⌘I para Instalador
+
+El menú tenía atajos ⌘0-⌘9 para diez secciones y **ninguno para Ajustes
+ni para Instalador**. Quien navegue solo con teclado --o con VoiceOver--
+no tenía forma de abrir Ajustes desde el menú, con arnés de capturas o
+sin él. `⌘,` es el atajo estándar de macOS para Ajustes y acá estaba
+libre: esta app no usa una escena `Settings`, pone Ajustes como una
+sección más de la barra lateral. `⌘I` también estaba libre.
+
+Esto **no** resuelve el defecto de la fila "Ajustes" de la barra lateral
+--tres mecanismos probados por el mecánico, los tres fallan-- pero
+desbloquea las capturas y arregla un hueco de accesibilidad que existía
+igual.
+
+### Los diez títulos del menú, del catálogo
+
+Estaban escritos como literales en español dentro de `navigationTargets`,
+**duplicando** lo que `SidebarSection.title` ya resuelve del catálogo. Dos
+sitios que podían desincronizarse al renombrar una sección, y diez
+cadenas de más en el residuo. Ahora el rótulo sale de `section.title` y la
+tupla solo lleva sección y tecla.
+
+### `AudioConversionRule.settingsNotice`, al catálogo
+
+Los dos párrafos que Ajustes muestra bajo el interruptor de calidad de
+audio --los que explican **qué le pasa a los archivos del usuario** al
+importar-- vivían como literales multilínea. Con la app en inglés salían
+en español. Es de release, no de A7d.
+
+**Y los tres barridos de A7c eran ciegos a ellos**: el detector por
+acentos, el triaje con léxico y la barrida sin léxico, los tres, porque
+sus expresiones regulares solo miraban **una línea**. Windows llegó al
+mismo agujero por otro camino: su filtro de rutas descartaba todo literal
+con barra invertida, y `\n` lleva una. Dos textos de pantalla escondidos
+de cada lado.
+
+### La barrida, con literales multilínea
+
+`tools/barrido-literales.py` captura ahora los `"""` de Swift. Se procesan
+**primero** y se tapan en el texto para que el barrido de una línea no
+vuelva a trocear su contenido -- antes los guiones de shell de
+`PrivilegedExecutor` aparecían partidos en fragmentos sueltos. El
+inventario queda en **853 literales** (eran 865 mal troceados).
+
+De paso, un guion de shell deja de sugerirse como "¿PANTALLA?": los de
+`PrivilegedExecutor` pasan de 300 palabras y llenaban el triaje de ruido.
+La sugerencia sigue siendo solo una pista; la columna `clase` la llena una
+persona.
+
+### Las dos decisiones del trinquete, adoptadas para cuando se convierta
+
+- **Multiconjunto por archivo + TEXTO, no por archivo:línea.** Las
+  repeticiones cuentan; la línea actual va en el mensaje de error, no en
+  la comparación. Mover código no puede hacer gritar al trinquete, o
+  acaba desactivado. Esto ya me mordió en A7c: comparé dos barridos por
+  `(archivo, línea)` y salió un delta de 412 que era falso --había editado
+  `InstallerStep.swift` y todas las líneas se habían corrido--; al
+  recalcular por texto quedó en 333.
+- **La prueba ejecuta la detección de verdad.** Que no es retórica: en el
+  addendum de ST-224 escribí una prueba que pasaba en verde **con el
+  defecto puesto**, y solo me enteré al comprobarla al revés.

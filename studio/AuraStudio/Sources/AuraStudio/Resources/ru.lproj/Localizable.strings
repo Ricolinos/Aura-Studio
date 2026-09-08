@@ -49,6 +49,8 @@
 "artists-view.eliminar" = "Удалить";
 "artists-view.mas-informacion" = "Подробнее…";
 "artists-view.todavia-no-hay-musica-biblioteca" = "В вашей медиатеке пока нет музыки.";
+"audio-conversion.aviso-comprimido" = "При импорте в режиме копирования медиатека сохраняет MP3 %lld кбит/с, а не файл без потерь. Ваш оригинал, где бы он ни лежал, не затрагивается. Это влияет только на то, что вы импортируете дальше: то, что уже в медиатеке, остаётся как есть. На Mac для «Сжатого» нужен установленный ffmpeg.";
+"audio-conversion.aviso-original-sin-perdida" = "FLAC, ALAC, M4A и MP3 копируются как есть — iPod с Aura воспроизводит их без потери качества. WAV и AIFF преобразуются в ALAC, который тоже без потерь: несжатыми они занимают столько места, что носить их с собой непрактично.";
 "aura-studio-app.biblioteca" = "Медиатека";
 "automatic-update-view.listo" = "Готово";
 "await-bootloader-u-s-b-view.arranque-grabado" = "Загрузчик записан";
