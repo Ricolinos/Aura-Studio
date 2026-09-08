@@ -65,27 +65,60 @@ que el resto de los pasos partía de un estado equivocado (`Álbumes`/
 Por qué `select` sí funciona en `albumes`/`canciones` (mismo mecanismo,
 misma estructura de `AXRow` -- comprobado con un volcado del árbol de
 accesibilidad, ambas filas son estructuralmente idénticas) y no en
-`ajustes` queda sin explicar -- no alcanzó el tiempo con la Mac libre
-para probar una alternativa (p. ej. `AXPress` en vez de `select`, como
-ya se sospechaba para el Picker de Almacenamiento) antes de que el
-candado de compilación pasara a "experto barridoA7d t6-aa" (swift test
-en curso, CPU al 100%) y la Mac dejara de estar libre otra vez.
+`ajustes` sigue sin explicarse -- **y ya no es solo `select`**.
+
+**Segunda sesión en vivo (2026-09-07, más tarde, Mac libre de nuevo tras
+el barrido A7d)**: se probaron TRES mecanismos distintos contra la fila
+`biblioteca.barraLateral.ajustes`, cada uno confirmado con una
+captura/lectura real, no solo "sin error":
+
+1. `select` sobre el `AXRow` (el original) -- pantalla se queda igual.
+2. `perform action "AXPress"` sobre el mismo `AXRow` -- **también**
+   deja la pantalla igual (probado desde el estado inicial `General`,
+   la app queda en `General`).
+3. Un clic sintético REAL (`click at {x, y}`, System Events) en el
+   centro exacto de la fila (posición/tamaño leídos en el momento con
+   `position of`/`size of` sobre el mismo `AXRow`) -- **también** deja
+   la pantalla igual.
+
+Los tres confirmados con una captura visual del resultado (no solo el
+retorno del comando), en una Mac verificablemente libre (tiempo de
+inactividad subiendo de forma continua, sin saltos, durante toda la
+prueba). Los tres fallan de la MISMA manera -- la fila nunca cambia la
+selección de SwiftUI -- lo que descarta que sea un problema de "el
+mecanismo de clic equivocado" (hipótesis original) y apunta a algo más
+estructural en cómo esta fila en particular (bajo el rótulo "Aura
+Studio", fuera de `SidebarSection.deviceSections`) está conectada al
+`selection` del `NavigationSplitView` -- una pregunta de `Sources/`
+(`ContentView.swift`) que no me corresponde perseguir más a fondo.
+
+**Efecto secundario encontrado, anotado para quien siga**: la
+verificación por AppleScript (`containsIdentifier`, recorrido
+recursivo del árbol de accesibilidad) que hasta ahora había sido
+rápida y confiable **se colgó dos veces seguidas por más de 2 minutos**
+justo después de probar `AXPress` y el clic real contra esta fila --
+hubo que matar el proceso `osascript` a mano (no terminaba solo). No
+se pudo determinar si el árbol de accesibilidad quedó en un estado más
+grande/inestable tras esos intentos, o si es una lentitud de
+AppleScript bajo cierta carga -- quien retome esto debe tener cuidado
+con confiar ciegamente en que esa verificación siempre responde rápido,
+y matar el proceso a mano si se cuelga en vez de esperarlo indefinidamente.
 
 ## Qué falta (para la próxima vez que la Mac esté libre)
 
-- **Arreglar `select_sidebar_row` para la fila `ajustes`** (y
-  reconfirmar `general`/dispositivos, que depende del mismo mecanismo
-  y todavía no se probó en aislamiento): probar `perform action
-  "AXPress"` sobre el `AXRow` en vez de `select`, o sobre el
-  `AXStaticText`/`AXCell` interior, antes de asumir que hace falta un
-  clic de mouse real (`click at {x, y}`). Una vez confirmado en vivo
-  con una captura correcta (título de ventana "Ajustes", Picker de
-  pestañas visible), recorrer los seis idiomas de nuevo para
-  `ajustes.png`, `dispositivos.png`, `acerca-de.png`.
+- **La fila `ajustes` (y probablemente `general`/dispositivos, mismo
+  grupo "Aura Studio" fuera de `deviceSections`) no responde a NINGÚN
+  mecanismo de accesibilidad ni a un clic sintético real** -- los tres
+  se probaron y fallaron igual. El siguiente paso ya no es "probar otro
+  mecanismo de clic", es entender en `Sources/ContentView.swift` cómo
+  esta fila conecta con `selection` (o si necesita Accessibility
+  Inspector de Xcode en vivo, mirando el AX real mientras se hace clic
+  a mano, para ver qué evento SÍ dispara el cambio) -- candidato claro
+  para pasarle a "experto en código opus" como pregunta puntual, no
+  para seguir adivinando mecanismos de AppleScript.
 - **`ajustes-almacenamiento`**: la pestaña existe
   (`ajustes.pestana.almacenamiento`, ST-225/A5) pero el paso previo
-  (llegar a Ajustes) es el que está roto -- no se pudo ni intentar el
-  `AXPress` del Picker todavía. Confirmar ambos mecanismos juntos.
+  (llegar a Ajustes) es el que está roto -- sigue sin poderse probar.
 - **`barra-estado-mensaje-largo`**: necesita disparar una operación
   real (importar/sincronizar en curso) para que `LibraryStatusBar`
   muestre un mensaje largo, y confirmar que no se corta -- no

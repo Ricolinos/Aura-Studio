@@ -27,14 +27,19 @@
 #     Sources/AuraStudio/Models/UITestEnvironment.swift). VERIFICADAS
 #     en vivo contra la app real para los SEIS idiomas (2026-09-07) --
 #     ver docs/capturas/idiomas/README.md.
-#   - ajustes, dispositivos: NO -- select_sidebar_row's `select`
-#     AppleScript no dispara el cambio de selección de SwiftUI para
-#     estas dos filas (misma estructura de AXRow que albumes/
-#     canciones, comprobado con un volcado del árbol -- la diferencia
-#     no está identificada todavía). La llamada "tiene éxito" sin
-#     error, pero la pantalla se queda en la que estaba antes --
-#     confirmado en vivo dos veces (2026-09-07), ver "Qué falta" en
-#     docs/capturas/idiomas/README.md antes de confiar en esto.
+#   - ajustes, dispositivos: NO -- TRES mecanismos probados en vivo
+#     contra la fila `ajustes` (`select` de AXRow, `perform action
+#     "AXPress"` sobre el mismo AXRow, y un clic sintético real `click
+#     at {x, y}` en su posición exacta) y los tres fallan igual: la
+#     llamada "tiene éxito" sin error, pero la pantalla se queda en la
+#     que estaba antes. Misma estructura de AXRow que albumes/
+#     canciones (que sí funcionan con `select`) -- la diferencia real
+#     no está identificada, y ya no parece ser "el mecanismo de clic
+#     equivocado" sino algo estructural en cómo esta fila conecta con
+#     `selection` en ContentView.swift. Ver "Qué falta" en
+#     docs/capturas/idiomas/README.md antes de intentar un cuarto
+#     mecanismo -- probablemente haga falta Accessibility Inspector en
+#     vivo o una pregunta directa a quien mantiene Sources/.
 #   - ajustes-almacenamiento: por `ajustes.pestana.almacenamiento`
 #     (ST-225/A5, ya en Sources/) -- el mecanismo de clic es
 #     GENÉRICO (`press_element_by_identifier`, AXPress directo), NO el
