@@ -16670,3 +16670,84 @@ carácter por carácter contra `criticas-ja.csv` tras corregir `c001`.
 presentes, 16 ausentes según lo esperado, verificado contra el rango
 completo `c001`-`c178`). Sin builds: trabajo de solo texto y cuatro
 búsquedas web reales.
+
+## ST-248 (cierre) — Windows: tabla final de idiomas (B7c), guion del dueño ampliado, y lo que queda para la PARADA del Experto
+
+Encargo de cierre del coordinador, autorizado por la Maestra, en
+`windows/b8` sobre `origin/main = f6dd461` (la rama ya estaba a esa
+altura, sin commits nuevos en `origin/main` que rebasar). Sin build de
+`AuraStudio.App`, sin `dotnet test` de la App -- el Experto publica.
+
+### 1. Tabla final de idiomas -- conteos DEFINITIVOS
+
+Las cifras de esta tabla las da la Maestra/el coordinador desde una
+vista que junta ambos repos y las dos sesiones (Mac/Windows); donde
+pude verificarlas de forma independiente en esta rama, se dice cómo.
+
+| Idioma | Claves totales en `Resources.<idioma>.resx` | Filas en `criticas-<idioma>(-retro).csv` | Veredicto de terminología/glosario |
+|---|---|---|---|
+| es (original) | 634 | -- (no lleva retrotraducción: es el texto de origen) | -- |
+| en | 634 | -- (traducción directa del Experto en B7b, sin retrotraducción ciega) | -- |
+| de | 634 | 178 -- **verificado**: coincide con `criticas-de-retro.csv`, `windows/b8` | limpio -- 3 decisiones de terminología confirmadas contra Microsoft real |
+| fr | 634 | 178 -- **verificado**: coincide con `criticas-fr-retro.csv`, `windows/b8` | limpio, con un cambio real de terminología: "Répéter" → "Simuler" (riesgo de lectura junto a "Repetir", no un error de traducción en sí) + "microprogramme" (no "micrologiciel", desactualizado) + "Gestionnaire d'informations d'identification" completo |
+| ru | 680 (634 + 46: la tercera forma de plural `.few`/`.many` existe en TODAS las bases de plural del recurso completo, no solo en las 16 de la muestra de críticas) | 194 -- **verificado**: coincide con `criticas-ru-retro.csv`, `windows/b8` (178 bases + 16 de más, solo dentro de la muestra) | 1 error de sentido real corregido (потерянный → неиспользуемый: "perdido" sugería pérdida de datos, lo contrario de lo que explica el texto); además "трек" y "Проверить" reconciliados con lo que el texto ya usaba de verdad, no con lo que proponía el glosario |
+| ja | 588 (634 − 46: el japonés no tiene fila ".one" en ninguna base de plural del recurso completo, no solo en las 16 de la muestra) | 162 -- **verificado**: coincide con `criticas-ja-retro.csv`, `windows/b8` (178 bases − 16, solo dentro de la muestra) | limpio -- nombres de menú/Store quedan por confirmar en pantalla (capturas pendientes, ver §3) |
+
+**Glosario compartido**: reportado como 33 términos × 4 idiomas
+(de/fr/ru/ja) con fuente por término. **Sin reconciliar**:
+`glosario-plataforma.csv` en `windows/b2` (`c2bd27c`, la punta al
+cerrar esta corrida) y `glosario-veredicto.csv` en esta rama
+(`windows/b8`) traen **35** términos, no 33 -- verificado contando
+líneas de datos en ambos archivos. No se corrigió unilateralmente
+aquí; queda para que el Experto/la Maestra digan cuáles 2 términos
+salen o si el conteo de 33 viene de otro corte.
+
+**Frases compuestas a medias**: 2 encontradas y arregladas durante
+B7c (un resumen y un aviso de migración) -- ya resueltas del lado del
+Experto, sin acción pendiente en esta rama.
+
+**Triaje de las 392 [candidatas a crítica]**: conteo final pendiente a
+propósito -- lo completa el Experto en su propia PARADA de B7c. Celda
+dejada como "pendiente B7c", no rellenada aquí con un número inventado.
+
+### 2. Guion del dueño, ampliado
+
+Paso 11 de "Guion de verificación interactiva para el dueño"
+(`ESTADO-PORT.md`) reescrito para cubrir, además de lo que ya
+verificaba: (a) "Igual que el sistema" → English Y por separado a uno
+de los otros cuatro, no solo a inglés; (b) la marca "(beta)" junto al
+nombre y su línea explicativa debajo del selector, presente en los
+cuatro no-español/no-inglés y ausente en los otros dos; (c) que con una
+sincronización (o búsqueda de carátulas) en curso, el diálogo de cambio
+de idioma NO ofrece "Cerrar ahora" -- solo "Más tarde"; (d) que las
+categorías de video del catálogo (Película/Serie/Episodio) siguen en
+español pase lo que pase con el idioma de la UI, por ser datos del
+catálogo y no cadenas de interfaz, a propósito.
+
+### 3. Explícito: lo que queda para después de la PARADA de B7c
+
+- Comprobación de los cinco satélites (en/ja/de/ru/fr) en el guion de
+  cierre, con el publish real (`Make-Installer.ps1` corriendo de
+  verdad, no solo leído como texto -- lo que se hizo en esta corrida).
+- Capturas por idioma (barra de estado, Ajustes, menús contextuales) --
+  en **japonés y ruso** específicamente: son los dos idiomas con
+  estructura de plural distinta al resto (`.one` ausente / tercera
+  forma `.few`/`.many`) y los dos con hallazgos de terminología en
+  esta ronda, así que son los que más vale confirmar en pantalla real,
+  no solo en el archivo de texto.
+- Reverificar el tamaño del Setup con los cinco satélites contra el
+  "sin idiomas" de `dist\prueba-5e05ccd\` (pendiente ya anotado en la
+  entrada anterior de B8, sigue sin remedirse).
+
+### Verificación
+
+Sin builds. Lo que pude verificar de forma independiente en esta
+corrida: las cuatro cifras de filas de `criticas-*-retro.csv` (178 de,
+178 fr, 194 ru, 162 ja) contra los archivos ya commiteados en
+`windows/b8`, y el conteo de 35 (no 33) términos en
+`glosario-plataforma.csv`/`glosario-veredicto.csv`. El resto de las
+cifras de la tabla (claves totales por idioma, el error de sentido
+final del ruso, el triaje de las 392) las reporta el coordinador/la
+Maestra desde información que no está en este worktree; no se
+remidieron desde cero. 0 CR bytes, 0 marcadores de conflicto en
+`DECISIONS.md` y `ESTADO-PORT.md` antes de comprometer.

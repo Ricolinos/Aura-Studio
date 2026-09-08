@@ -106,13 +106,25 @@ antes. Cada paso dice qué mirar; si algo no coincide, es hallazgo.
     lo que va a hacer, deja un resumen (etiquetados/renombrados/huérfanos
     borrados), y correrla una segunda vez no vuelve a tocar nada (mismo
     árbol, comprobable con el explorador o `Get-FileHash`).
-11. **Cambiar idioma a inglés.** Ajustes › selector de idioma › English.
-    **Sin tareas en curso**: cambia al instante o pide reiniciar según lo
-    que diga la pantalla — no debe quedar texto a medias en dos idiomas.
+11. **Cambiar idioma en Ajustes.** Ajustes › selector de idioma: probar
+    "Igual que el sistema" → English, y por separado a uno de los otros
+    cuatro (de/fr/ru/ja). Los cuatro que no son español ni inglés llevan
+    una marca "(beta)" junto al nombre en el selector y una línea
+    explicativa debajo (traducción en revisión) — confirmar que aparece
+    para los cuatro y NO para español/inglés.
+    **Sin tareas en curso**: cambiar de idioma muestra el diálogo
+    "Cerrar ahora" / "Más tarde" — no debe quedar texto a medias en dos
+    idiomas tras reiniciar.
     **Con una tarea en curso** (p. ej. sincronizando o buscando
-    carátulas): cambiar de idioma NO debe ofrecer "Cerrar ahora" mientras
-    la tarea sigue corriendo (ST-247, B7b, addendum) — verificar que el
-    diálogo de idioma se comporta distinto con y sin trabajo pendiente.
+    carátulas): el mismo diálogo NO debe mostrar el botón "Cerrar ahora"
+    mientras la tarea sigue corriendo (ST-247, B7b, addendum) — solo
+    "Más tarde" debe estar disponible; verificar que el diálogo se
+    comporta distinto con y sin trabajo pendiente.
+    **Categorías de video.** Con la UI en cualquiera de los otros cuatro
+    idiomas, las categorías de video del catálogo (Película, Serie,
+    Episodio, etc.) siguen apareciendo en español — son datos del
+    catálogo, no cadenas de interfaz, y no se traducen; confirmar que es
+    así a propósito y no un hueco de traducción.
 
 ## Ronda "ajustes 3", B7a (ensayo en seco) — Extracción de cadenas (2026-09-07)
 
