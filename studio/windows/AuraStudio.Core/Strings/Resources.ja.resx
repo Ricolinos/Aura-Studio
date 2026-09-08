@@ -2139,6 +2139,81 @@
   <data name="sync-view-model.revision-cancelada" xml:space="preserve">
     <value>確認をキャンセルしました。</value>
   </data>
+  <data name="sync-summary.copied.other" xml:space="preserve">
+    <value>{0} 件をコピーしました</value>
+  </data>
+  <data name="sync-summary.removed.other" xml:space="preserve">
+    <value>{0} 件を iPod から削除しました</value>
+  </data>
+  <data name="sync-summary.failed-count.other" xml:space="preserve">
+    <value>{0} 件をコピーできませんでした。</value>
+  </data>
+  <data name="sync-view-model.will-copy.other" xml:space="preserve">
+    <value>{0} 件のファイルをコピーします</value>
+  </data>
+  <data name="sync-view-model.already-current.other" xml:space="preserve">
+    <value>{0} 件はすでに最新です</value>
+  </data>
+  <data name="sync-view-model.ready.other" xml:space="preserve">
+    <value>{0} 件のファイルを同期できます。</value>
+  </data>
+  <data name="sync-summary.not-completed" xml:space="preserve">
+    <value>同期は完了しませんでした。</value>
+  </data>
+  <data name="sync-summary.joiner" xml:space="preserve">
+    <value>、</value>
+  </data>
+  <data name="sync-summary.done" xml:space="preserve">
+    <value>完了しました: {0}。</value>
+  </data>
+  <data name="sync-summary.done-with-failures" xml:space="preserve">
+    <value>完了しました: {0}。{1}</value>
+  </data>
+  <data name="sync-summary.cancelled" xml:space="preserve">
+    <value>同期をキャンセルしました。停止するまでに {0}。</value>
+  </data>
+  <data name="sync-summary.cancelled-with-failures" xml:space="preserve">
+    <value>同期をキャンセルしました。停止するまでに {0}。{1}</value>
+  </data>
+  <data name="sync-view-model.destination" xml:space="preserve">
+    <value>送り先: {0}</value>
+  </data>
+  <data name="sync-view-model.device-no-aura" xml:space="preserve">
+    <value>見つかった iPod で Aura が動いていません。</value>
+  </data>
+  <data name="sync-view-model.connect-ipod" xml:space="preserve">
+    <value>同期するには iPod を接続してください。</value>
+  </data>
+  <data name="sync-view-model.preview" xml:space="preserve">
+    <value>{0}。{1}。</value>
+  </data>
+  <data name="sync-view-model.up-to-date" xml:space="preserve">
+    <value>iPod はすでにライブラリと同じ状態です。</value>
+  </data>
+  <data name="sync-view-model.ejected" xml:space="preserve">
+    <value>iPod を取り外せます。</value>
+  </data>
+  <data name="sync-view-model.eject-failed" xml:space="preserve">
+    <value>iPod を取り出せませんでした。取り外す前に、エクスプローラーで閉じてください。</value>
+  </data>
+  <data name="sync-view-model.nothing-ready" xml:space="preserve">
+    <value>同期できるものはありません。</value>
+  </data>
+  <data name="sync-view-model.phase-scanning" xml:space="preserve">
+    <value>ライブラリを調べています…</value>
+  </data>
+  <data name="sync-view-model.phase-comparing" xml:space="preserve">
+    <value>変更点を比べています…</value>
+  </data>
+  <data name="sync-view-model.phase-copying" xml:space="preserve">
+    <value>{1} 件中 {0} 件をコピーしています…</value>
+  </data>
+  <data name="sync-view-model.phase-writing-manifest" xml:space="preserve">
+    <value>歌詞・アルバムアート・索引を保存しています…</value>
+  </data>
+  <data name="sync-view-model.phase-writing-marker" xml:space="preserve">
+    <value>iPod の更新を準備しています…</value>
+  </data>
   <data name="sync-view-model.sincronizacion-cancelada" xml:space="preserve">
     <value>同期をキャンセルしました。</value>
   </data>

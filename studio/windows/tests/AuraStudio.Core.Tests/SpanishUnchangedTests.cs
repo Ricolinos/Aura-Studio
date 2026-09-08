@@ -406,6 +406,32 @@ public class SpanishUnchangedTests
         "extras-view-model.themes-detail", "extras-view-model.animations-detail",
         "extras-view-model.planned-intro", "extras-view-model.not-implemented",
         "extras-view-model.licenses-detail",
+
+        // B7d, paso 2: la ficha de sincronización. El español de los conteos SÍ
+        // cambia, y era el objetivo: estaban pluralizados con paréntesis —«{0}
+        // archivo(s) copiado(s)», «no se pudo(ieron) copiar»—, un truco que ya
+        // en español se lee mal y que en los otros cinco idiomas no existe.
+        // Ahora son formas de plural de verdad.
+        //
+        // Y el «1 =>» escrito a mano de "1 archivo listo para sincronizar"
+        // habría dicho "21 archivo" en ruso. El cero se queda como mensaje
+        // aparte, que es lo que es: no hay nada, no "0 archivos".
+        "sync-summary.copied.one", "sync-summary.copied.other",
+        "sync-summary.removed.one", "sync-summary.removed.other",
+        "sync-summary.failed-count.one", "sync-summary.failed-count.other",
+        "sync-view-model.will-copy.one", "sync-view-model.will-copy.other",
+        "sync-view-model.already-current.one", "sync-view-model.already-current.other",
+        "sync-view-model.ready.one", "sync-view-model.ready.other",
+        "sync-summary.not-completed", "sync-summary.joiner",
+        "sync-summary.done", "sync-summary.done-with-failures",
+        "sync-summary.cancelled", "sync-summary.cancelled-with-failures",
+        "sync-view-model.destination", "sync-view-model.device-no-aura",
+        "sync-view-model.connect-ipod", "sync-view-model.preview",
+        "sync-view-model.up-to-date", "sync-view-model.ejected",
+        "sync-view-model.eject-failed", "sync-view-model.nothing-ready",
+        "sync-view-model.phase-scanning", "sync-view-model.phase-comparing",
+        "sync-view-model.phase-copying", "sync-view-model.phase-writing-manifest",
+        "sync-view-model.phase-writing-marker",
     ];
 
     /// <summary>

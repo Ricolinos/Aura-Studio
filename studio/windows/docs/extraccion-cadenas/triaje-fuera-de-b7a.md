@@ -30,6 +30,7 @@ trinquete de `HardcodedSpanishTests`, y acá queda dicho por qué.
 | paso 2, `FirmwareArtifacts` y `DfuFlashRunner` | 309 | las dos últimas familias críticas: verificación de artefactos y grabado por DFU |
 | paso 2, `SettingsViewModel` | 277 | las explicaciones de Ajustes; la de colaboraciones pasa a enumerar los separadores desde el código |
 | paso 2, `DeviceFirmwareLabel` y `ExtrasViewModel` | 250 | la etiqueta de firmware con su sufijo de dual boot como hueco, y la pantalla de Extras |
+| paso 2, `SyncViewModel` | 240 | la ficha de sincronización; los conteos con «archivo(s)» pasan a formas de plural de verdad |
 
 El trinquete baja poco en el segundo paso y eso es correcto: **doce literales
 cambiaron de clase, no de sitio.** Las razones de `PreparedMusic` estaban como

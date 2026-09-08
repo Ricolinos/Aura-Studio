@@ -2286,6 +2286,99 @@
   <data name="sync-view-model.revision-cancelada" xml:space="preserve">
     <value>Review cancelled.</value>
   </data>
+  <data name="sync-summary.copied.one" xml:space="preserve">
+    <value>{0} file copied</value>
+  </data>
+  <data name="sync-summary.copied.other" xml:space="preserve">
+    <value>{0} files copied</value>
+  </data>
+  <data name="sync-summary.removed.one" xml:space="preserve">
+    <value>{0} removed from the iPod</value>
+  </data>
+  <data name="sync-summary.removed.other" xml:space="preserve">
+    <value>{0} removed from the iPod</value>
+  </data>
+  <data name="sync-summary.failed-count.one" xml:space="preserve">
+    <value>{0} could not be copied.</value>
+  </data>
+  <data name="sync-summary.failed-count.other" xml:space="preserve">
+    <value>{0} could not be copied.</value>
+  </data>
+  <data name="sync-view-model.will-copy.one" xml:space="preserve">
+    <value>{0} file will be copied</value>
+  </data>
+  <data name="sync-view-model.will-copy.other" xml:space="preserve">
+    <value>{0} files will be copied</value>
+  </data>
+  <data name="sync-view-model.already-current.one" xml:space="preserve">
+    <value>{0} is already up to date</value>
+  </data>
+  <data name="sync-view-model.already-current.other" xml:space="preserve">
+    <value>{0} are already up to date</value>
+  </data>
+  <data name="sync-view-model.ready.one" xml:space="preserve">
+    <value>{0} file ready to sync.</value>
+  </data>
+  <data name="sync-view-model.ready.other" xml:space="preserve">
+    <value>{0} files ready to sync.</value>
+  </data>
+  <data name="sync-summary.not-completed" xml:space="preserve">
+    <value>The sync did not complete.</value>
+  </data>
+  <data name="sync-summary.joiner" xml:space="preserve">
+    <value> and </value>
+  </data>
+  <data name="sync-summary.done" xml:space="preserve">
+    <value>Done: {0}.</value>
+  </data>
+  <data name="sync-summary.done-with-failures" xml:space="preserve">
+    <value>Done: {0}. {1}</value>
+  </data>
+  <data name="sync-summary.cancelled" xml:space="preserve">
+    <value>You cancelled the sync. {0} before stopping it.</value>
+  </data>
+  <data name="sync-summary.cancelled-with-failures" xml:space="preserve">
+    <value>You cancelled the sync. {0} before stopping it. {1}</value>
+  </data>
+  <data name="sync-view-model.destination" xml:space="preserve">
+    <value>Destination: {0}</value>
+  </data>
+  <data name="sync-view-model.device-no-aura" xml:space="preserve">
+    <value>The detected iPod does not have Aura running.</value>
+  </data>
+  <data name="sync-view-model.connect-ipod" xml:space="preserve">
+    <value>Connect an iPod to sync.</value>
+  </data>
+  <data name="sync-view-model.preview" xml:space="preserve">
+    <value>{0}; {1}.</value>
+  </data>
+  <data name="sync-view-model.up-to-date" xml:space="preserve">
+    <value>The iPod is already up to date with your library.</value>
+  </data>
+  <data name="sync-view-model.ejected" xml:space="preserve">
+    <value>You can disconnect the iPod now.</value>
+  </data>
+  <data name="sync-view-model.eject-failed" xml:space="preserve">
+    <value>The iPod could not be ejected. Close it from File Explorer before disconnecting it.</value>
+  </data>
+  <data name="sync-view-model.nothing-ready" xml:space="preserve">
+    <value>There is nothing ready to sync.</value>
+  </data>
+  <data name="sync-view-model.phase-scanning" xml:space="preserve">
+    <value>Scanning the library…</value>
+  </data>
+  <data name="sync-view-model.phase-comparing" xml:space="preserve">
+    <value>Comparing changes…</value>
+  </data>
+  <data name="sync-view-model.phase-copying" xml:space="preserve">
+    <value>Copying {0} of {1}…</value>
+  </data>
+  <data name="sync-view-model.phase-writing-manifest" xml:space="preserve">
+    <value>Saving lyrics, cover art and indexes…</value>
+  </data>
+  <data name="sync-view-model.phase-writing-marker" xml:space="preserve">
+    <value>Preparing the iPod's update…</value>
+  </data>
   <data name="sync-view-model.sincronizacion-cancelada" xml:space="preserve">
     <value>Sync cancelled.</value>
   </data>

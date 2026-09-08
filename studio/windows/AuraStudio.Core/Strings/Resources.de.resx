@@ -2286,6 +2286,99 @@
   <data name="sync-view-model.revision-cancelada" xml:space="preserve">
     <value>Prüfung abgebrochen.</value>
   </data>
+  <data name="sync-summary.copied.one" xml:space="preserve">
+    <value>{0} Datei kopiert</value>
+  </data>
+  <data name="sync-summary.copied.other" xml:space="preserve">
+    <value>{0} Dateien kopiert</value>
+  </data>
+  <data name="sync-summary.removed.one" xml:space="preserve">
+    <value>{0} vom iPod entfernt</value>
+  </data>
+  <data name="sync-summary.removed.other" xml:space="preserve">
+    <value>{0} vom iPod entfernt</value>
+  </data>
+  <data name="sync-summary.failed-count.one" xml:space="preserve">
+    <value>{0} konnte nicht kopiert werden.</value>
+  </data>
+  <data name="sync-summary.failed-count.other" xml:space="preserve">
+    <value>{0} konnten nicht kopiert werden.</value>
+  </data>
+  <data name="sync-view-model.will-copy.one" xml:space="preserve">
+    <value>Es wird {0} Datei kopiert</value>
+  </data>
+  <data name="sync-view-model.will-copy.other" xml:space="preserve">
+    <value>Es werden {0} Dateien kopiert</value>
+  </data>
+  <data name="sync-view-model.already-current.one" xml:space="preserve">
+    <value>{0} ist schon aktuell</value>
+  </data>
+  <data name="sync-view-model.already-current.other" xml:space="preserve">
+    <value>{0} sind schon aktuell</value>
+  </data>
+  <data name="sync-view-model.ready.one" xml:space="preserve">
+    <value>{0} Datei bereit zum Synchronisieren.</value>
+  </data>
+  <data name="sync-view-model.ready.other" xml:space="preserve">
+    <value>{0} Dateien bereit zum Synchronisieren.</value>
+  </data>
+  <data name="sync-summary.not-completed" xml:space="preserve">
+    <value>Die Synchronisierung wurde nicht abgeschlossen.</value>
+  </data>
+  <data name="sync-summary.joiner" xml:space="preserve">
+    <value> und </value>
+  </data>
+  <data name="sync-summary.done" xml:space="preserve">
+    <value>Fertig: {0}.</value>
+  </data>
+  <data name="sync-summary.done-with-failures" xml:space="preserve">
+    <value>Fertig: {0}. {1}</value>
+  </data>
+  <data name="sync-summary.cancelled" xml:space="preserve">
+    <value>Du hast die Synchronisierung abgebrochen. {0}, bevor sie gestoppt wurde.</value>
+  </data>
+  <data name="sync-summary.cancelled-with-failures" xml:space="preserve">
+    <value>Du hast die Synchronisierung abgebrochen. {0}, bevor sie gestoppt wurde. {1}</value>
+  </data>
+  <data name="sync-view-model.destination" xml:space="preserve">
+    <value>Ziel: {0}</value>
+  </data>
+  <data name="sync-view-model.device-no-aura" xml:space="preserve">
+    <value>Auf dem erkannten iPod läuft Aura nicht.</value>
+  </data>
+  <data name="sync-view-model.connect-ipod" xml:space="preserve">
+    <value>Schließe einen iPod an, um zu synchronisieren.</value>
+  </data>
+  <data name="sync-view-model.preview" xml:space="preserve">
+    <value>{0}; {1}.</value>
+  </data>
+  <data name="sync-view-model.up-to-date" xml:space="preserve">
+    <value>Der iPod ist schon auf dem Stand deiner Mediathek.</value>
+  </data>
+  <data name="sync-view-model.ejected" xml:space="preserve">
+    <value>Du kannst den iPod jetzt abziehen.</value>
+  </data>
+  <data name="sync-view-model.eject-failed" xml:space="preserve">
+    <value>Der iPod konnte nicht ausgeworfen werden. Schließe ihn im Explorer, bevor du ihn abziehst.</value>
+  </data>
+  <data name="sync-view-model.nothing-ready" xml:space="preserve">
+    <value>Es ist nichts zum Synchronisieren bereit.</value>
+  </data>
+  <data name="sync-view-model.phase-scanning" xml:space="preserve">
+    <value>Die Mediathek wird durchgesehen…</value>
+  </data>
+  <data name="sync-view-model.phase-comparing" xml:space="preserve">
+    <value>Änderungen werden verglichen…</value>
+  </data>
+  <data name="sync-view-model.phase-copying" xml:space="preserve">
+    <value>{0} von {1} wird kopiert…</value>
+  </data>
+  <data name="sync-view-model.phase-writing-manifest" xml:space="preserve">
+    <value>Liedtexte, Albumcover und Indizes werden gespeichert…</value>
+  </data>
+  <data name="sync-view-model.phase-writing-marker" xml:space="preserve">
+    <value>Das Update des iPod wird vorbereitet…</value>
+  </data>
   <data name="sync-view-model.sincronizacion-cancelada" xml:space="preserve">
     <value>Synchronisierung abgebrochen.</value>
   </data>
