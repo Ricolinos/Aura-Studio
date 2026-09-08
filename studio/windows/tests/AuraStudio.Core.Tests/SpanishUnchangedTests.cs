@@ -459,6 +459,27 @@ public class SpanishUnchangedTests
         // frase — el que tiene y el que hacen falta.
         "theme-validation.missing-fonts.one", "theme-validation.missing-fonts.other",
         "theme-validation.missing-masks.one", "theme-validation.missing-masks.other",
+
+        // B7d, paso 2: el detector de elementos parecidos. Los motivos son
+        // renglones sueltos —la hoja los lista uno por uno—, así que cada uno
+        // es su clave. La sugerencia, en cambio, se armaba de pedazos: el
+        // formato con «sin pérdida» pegado detrás, los adjetivos unidos con
+        // coma, y una frase sobre el artista pegada al final.
+        //
+        // Los tres nombres de campo (Título, Artista, Álbum) ya no se escriben
+        // acá: se piden a la hoja de metadata, que los rotula igual. Tener la
+        // misma palabra dos veces en seis idiomas es esperar a que una cambie.
+        "similarity.detail-duplicate", "similarity.detail-probable",
+        "similarity.detail-possible", "similarity.missing-artist",
+        "similarity.same-duration", "similarity.similar-duration",
+        "similarity.same-file-size", "similarity.same-episode",
+        "similarity.same-title", "similarity.almost-same-title",
+        "similarity.different-formats", "similarity.different-categories",
+        "similarity.no-category", "similarity.lossless",
+        "similarity.with-cover", "similarity.with-poster", "similarity.with-lyrics",
+        "similarity.edited-by-hand", "similarity.largest", "similarity.bits-joiner",
+        "similarity.suggest-duplicate", "similarity.suggest-probable",
+        "similarity.suggest-possible", "similarity.canonical-artist",
     ];
 
     /// <summary>

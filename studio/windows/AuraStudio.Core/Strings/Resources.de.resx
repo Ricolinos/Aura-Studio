@@ -2466,6 +2466,78 @@
   <data name="theme-installer.cannot-review" xml:space="preserve">
     <value>Das Design konnte nicht geprüft werden.</value>
   </data>
+  <data name="similarity.detail-duplicate" xml:space="preserve">
+    <value>Mit ziemlicher Sicherheit dieselbe Datei zweimal.</value>
+  </data>
+  <data name="similarity.detail-probable" xml:space="preserve">
+    <value>Wahrscheinlich derselbe Titel mit anders geschriebenen Metadaten.</value>
+  </data>
+  <data name="similarity.detail-possible" xml:space="preserve">
+    <value>Sie ähneln sich, könnten aber verschiedene Versionen sein. Besser nachsehen.</value>
+  </data>
+  <data name="similarity.missing-artist" xml:space="preserve">
+    <value>Bei einem fehlt der Künstler</value>
+  </data>
+  <data name="similarity.same-duration" xml:space="preserve">
+    <value>Gleiche Dauer ({0})</value>
+  </data>
+  <data name="similarity.similar-duration" xml:space="preserve">
+    <value>Ähnliche Dauer ({0} / {1})</value>
+  </data>
+  <data name="similarity.same-file-size" xml:space="preserve">
+    <value>Exakt gleiche Dateigröße</value>
+  </data>
+  <data name="similarity.same-episode" xml:space="preserve">
+    <value>Gleiche Folge: {0} S{1}E{2}</value>
+  </data>
+  <data name="similarity.same-title" xml:space="preserve">
+    <value>Gleicher Titel: „{0}“</value>
+  </data>
+  <data name="similarity.almost-same-title" xml:space="preserve">
+    <value>Fast gleicher Titel: „{0}“ / „{1}“</value>
+  </data>
+  <data name="similarity.different-formats" xml:space="preserve">
+    <value>Unterschiedliche Formate: {0} / {1}</value>
+  </data>
+  <data name="similarity.different-categories" xml:space="preserve">
+    <value>Unterschiedliche Kategorien: {0} / {1}</value>
+  </data>
+  <data name="similarity.no-category" xml:space="preserve">
+    <value>ohne Kategorie</value>
+  </data>
+  <data name="similarity.lossless" xml:space="preserve">
+    <value>{0} verlustfrei</value>
+  </data>
+  <data name="similarity.with-cover" xml:space="preserve">
+    <value>mit Albumcover</value>
+  </data>
+  <data name="similarity.with-poster" xml:space="preserve">
+    <value>mit Poster</value>
+  </data>
+  <data name="similarity.with-lyrics" xml:space="preserve">
+    <value>mit Liedtext</value>
+  </data>
+  <data name="similarity.edited-by-hand" xml:space="preserve">
+    <value>von Hand korrigiert</value>
+  </data>
+  <data name="similarity.largest" xml:space="preserve">
+    <value>die größte</value>
+  </data>
+  <data name="similarity.bits-joiner" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="similarity.suggest-duplicate" xml:space="preserve">
+    <value>Sie sehen aus wie dieselbe Datei doppelt. Vorschlag: „{0}“ ({1}) behalten und den Rest löschen.</value>
+  </data>
+  <data name="similarity.suggest-probable" xml:space="preserve">
+    <value>Wahrscheinlich dasselbe Element mit anders geschriebenen Metadaten. Vorschlag: „{0}“ ({1}) behalten und den Rest löschen, oder die Metadaten vereinheitlichen, wenn du beide behalten möchtest.</value>
+  </data>
+  <data name="similarity.suggest-possible" xml:space="preserve">
+    <value>Es könnten verschiedene Versionen sein. Vorschlag: vor dem Löschen nachsehen. Wenn es dieselbe ist, „{0}“ ({1}) behalten.</value>
+  </data>
+  <data name="similarity.canonical-artist" xml:space="preserve">
+    <value> Der in deiner Mediathek am häufigsten verwendete Künstler ist „{0}“.</value>
+  </data>
   <data name="theme-installer.cannot-install" xml:space="preserve">
     <value>Dieses Design lässt sich nicht installieren: {0}</value>
   </data>

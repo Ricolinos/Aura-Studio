@@ -2295,6 +2295,78 @@
   <data name="theme-installer.cannot-review" xml:space="preserve">
     <value>テーマを確認できませんでした。</value>
   </data>
+  <data name="similarity.detail-duplicate" xml:space="preserve">
+    <value>ほぼ確実に、同じファイルが二つあります。</value>
+  </data>
+  <data name="similarity.detail-probable" xml:space="preserve">
+    <value>おそらく同じ曲で、メタデータの書き方が違うだけです。</value>
+  </data>
+  <data name="similarity.detail-possible" xml:space="preserve">
+    <value>似ていますが、別のバージョンかもしれません。確認をおすすめします。</value>
+  </data>
+  <data name="similarity.missing-artist" xml:space="preserve">
+    <value>片方にアーティストがありません</value>
+  </data>
+  <data name="similarity.same-duration" xml:space="preserve">
+    <value>同じ長さ（{0}）</value>
+  </data>
+  <data name="similarity.similar-duration" xml:space="preserve">
+    <value>近い長さ（{0} / {1}）</value>
+  </data>
+  <data name="similarity.same-file-size" xml:space="preserve">
+    <value>ファイルサイズが完全に同じ</value>
+  </data>
+  <data name="similarity.same-episode" xml:space="preserve">
+    <value>同じエピソード: {0} S{1}E{2}</value>
+  </data>
+  <data name="similarity.same-title" xml:space="preserve">
+    <value>同じタイトル: 「{0}」</value>
+  </data>
+  <data name="similarity.almost-same-title" xml:space="preserve">
+    <value>ほぼ同じタイトル: 「{0}」 / 「{1}」</value>
+  </data>
+  <data name="similarity.different-formats" xml:space="preserve">
+    <value>フォーマットが違います: {0} / {1}</value>
+  </data>
+  <data name="similarity.different-categories" xml:space="preserve">
+    <value>カテゴリが違います: {0} / {1}</value>
+  </data>
+  <data name="similarity.no-category" xml:space="preserve">
+    <value>カテゴリなし</value>
+  </data>
+  <data name="similarity.lossless" xml:space="preserve">
+    <value>ロスレスの {0}</value>
+  </data>
+  <data name="similarity.with-cover" xml:space="preserve">
+    <value>アルバムアートあり</value>
+  </data>
+  <data name="similarity.with-poster" xml:space="preserve">
+    <value>ポスターあり</value>
+  </data>
+  <data name="similarity.with-lyrics" xml:space="preserve">
+    <value>歌詞あり</value>
+  </data>
+  <data name="similarity.edited-by-hand" xml:space="preserve">
+    <value>手で修正済み</value>
+  </data>
+  <data name="similarity.largest" xml:space="preserve">
+    <value>いちばん大きい</value>
+  </data>
+  <data name="similarity.bits-joiner" xml:space="preserve">
+    <value>、</value>
+  </data>
+  <data name="similarity.suggest-duplicate" xml:space="preserve">
+    <value>同じファイルが重複しているようです。提案: 「{0}」（{1}）を残して、ほかを削除します。</value>
+  </data>
+  <data name="similarity.suggest-probable" xml:space="preserve">
+    <value>おそらく同じ項目で、メタデータの書き方が違うだけです。提案: 「{0}」（{1}）を残してほかを削除するか、両方を残したい場合はメタデータをそろえます。</value>
+  </data>
+  <data name="similarity.suggest-possible" xml:space="preserve">
+    <value>別のバージョンの可能性があります。提案: 削除する前に確認してください。同じものであれば、「{0}」（{1}）を残します。</value>
+  </data>
+  <data name="similarity.canonical-artist" xml:space="preserve">
+    <value> ライブラリでいちばん使われているアーティストは「{0}」です。</value>
+  </data>
   <data name="theme-installer.cannot-install" xml:space="preserve">
     <value>このテーマはインストールできません: {0}</value>
   </data>

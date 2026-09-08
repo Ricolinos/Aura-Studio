@@ -2637,6 +2637,78 @@
   <data name="theme-installer.cannot-review" xml:space="preserve">
     <value>Не удалось проверить тему.</value>
   </data>
+  <data name="similarity.detail-duplicate" xml:space="preserve">
+    <value>Почти наверняка это один и тот же файл дважды.</value>
+  </data>
+  <data name="similarity.detail-probable" xml:space="preserve">
+    <value>Скорее всего, это один и тот же трек с по-разному записанными метаданными.</value>
+  </data>
+  <data name="similarity.detail-possible" xml:space="preserve">
+    <value>Они похожи, но это могут быть разные версии. Стоит проверить.</value>
+  </data>
+  <data name="similarity.missing-artist" xml:space="preserve">
+    <value>У одного не указан исполнитель</value>
+  </data>
+  <data name="similarity.same-duration" xml:space="preserve">
+    <value>Одинаковая длительность ({0})</value>
+  </data>
+  <data name="similarity.similar-duration" xml:space="preserve">
+    <value>Похожая длительность ({0} / {1})</value>
+  </data>
+  <data name="similarity.same-file-size" xml:space="preserve">
+    <value>Ровно одинаковый размер файла</value>
+  </data>
+  <data name="similarity.same-episode" xml:space="preserve">
+    <value>Та же серия: {0} S{1}E{2}</value>
+  </data>
+  <data name="similarity.same-title" xml:space="preserve">
+    <value>Одинаковое название: «{0}»</value>
+  </data>
+  <data name="similarity.almost-same-title" xml:space="preserve">
+    <value>Почти одинаковое название: «{0}» / «{1}»</value>
+  </data>
+  <data name="similarity.different-formats" xml:space="preserve">
+    <value>Разные форматы: {0} / {1}</value>
+  </data>
+  <data name="similarity.different-categories" xml:space="preserve">
+    <value>Разные категории: {0} / {1}</value>
+  </data>
+  <data name="similarity.no-category" xml:space="preserve">
+    <value>без категории</value>
+  </data>
+  <data name="similarity.lossless" xml:space="preserve">
+    <value>{0} без потерь</value>
+  </data>
+  <data name="similarity.with-cover" xml:space="preserve">
+    <value>с обложкой</value>
+  </data>
+  <data name="similarity.with-poster" xml:space="preserve">
+    <value>с постером</value>
+  </data>
+  <data name="similarity.with-lyrics" xml:space="preserve">
+    <value>с текстом</value>
+  </data>
+  <data name="similarity.edited-by-hand" xml:space="preserve">
+    <value>исправлено вручную</value>
+  </data>
+  <data name="similarity.largest" xml:space="preserve">
+    <value>самый большой</value>
+  </data>
+  <data name="similarity.bits-joiner" xml:space="preserve">
+    <value>, </value>
+  </data>
+  <data name="similarity.suggest-duplicate" xml:space="preserve">
+    <value>Похоже, это один и тот же файл повторно. Предложение: оставить «{0}» ({1}), а остальное удалить.</value>
+  </data>
+  <data name="similarity.suggest-probable" xml:space="preserve">
+    <value>Скорее всего, это один и тот же элемент с по-разному записанными метаданными. Предложение: оставить «{0}» ({1}), а остальное удалить — или свести метаданные, если хотите сохранить оба.</value>
+  </data>
+  <data name="similarity.suggest-possible" xml:space="preserve">
+    <value>Это могут быть разные версии. Предложение: проверить перед удалением. Если окажется, что это одно и то же, оставить «{0}» ({1}).</value>
+  </data>
+  <data name="similarity.canonical-artist" xml:space="preserve">
+    <value> Чаще всего в вашей медиатеке встречается исполнитель «{0}».</value>
+  </data>
   <data name="theme-installer.cannot-install" xml:space="preserve">
     <value>Эту тему установить нельзя: {0}</value>
   </data>

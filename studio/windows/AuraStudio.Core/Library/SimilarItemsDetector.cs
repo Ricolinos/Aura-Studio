@@ -1,4 +1,5 @@
 using System.Globalization;
+using AuraStudio.Core.Resources;
 
 namespace AuraStudio.Core.Library;
 
@@ -26,9 +27,9 @@ public static class SimilarityConfidenceText
 
     public static string Detail(this SimilarityConfidence confidence) => confidence switch
     {
-        SimilarityConfidence.Duplicate => "Casi seguro es el mismo archivo dos veces.",
-        SimilarityConfidence.Probable => "Probablemente es la misma canción con la metadata escrita distinto.",
-        _ => "Se parecen, pero podrían ser versiones distintas. Conviene revisar."
+        SimilarityConfidence.Duplicate => Strings.Get("similarity.detail-duplicate"),
+        SimilarityConfidence.Probable => Strings.Get("similarity.detail-probable"),
+        _ => Strings.Get("similarity.detail-possible")
     };
 }
 
@@ -45,12 +46,15 @@ public sealed record SimilarityProposedEdit(
 {
     public string Id => $"{ItemId:D}/{Field}".ToLowerInvariant();
 
-    public string FieldTitle => Field switch
+    // Los mismos rótulos que la hoja de metadata. Escribirlos otra vez acá
+    // sería tener dos veces la misma palabra en seis idiomas, esperando a que
+    // una de las dos cambie (ST-247, B7d).
+    public string FieldTitle => MediaInfoFields.Label(Field switch
     {
-        SimilarityField.Title => "Título",
-        SimilarityField.Artist => "Artista",
-        _ => "Álbum"
-    };
+        SimilarityField.Title => MediaInfoField.Title,
+        SimilarityField.Artist => MediaInfoField.Artist,
+        _ => MediaInfoField.Album
+    });
 }
 
 /// <summary>
@@ -369,7 +373,7 @@ public static class SimilarItemsDetector
         }
         else
         {
-            reasons.Add("A uno le falta el artista");
+            reasons.Add(Strings.Get("similarity.missing-artist"));
         }
 
         if (duration == 1) reasons.Add($"Misma duración ({SimilarityText.Clock(a.Duration)})");
@@ -380,7 +384,8 @@ public static class SimilarItemsDetector
             reasons.Add($"Mismo tamaño exacto de archivo ({SimilarityText.FormatBytes(a.FileSize)})");
 
         if (a.Extension != b.Extension)
-            reasons.Add($"Formatos distintos: {a.Extension.ToUpperInvariant()} / {b.Extension.ToUpperInvariant()}");
+            reasons.Add(Strings.Format("similarity.different-formats",
+                a.Extension.ToUpperInvariant(), b.Extension.ToUpperInvariant()));
 
         List<string> qualifierDiff = [.. a.Qualifiers.Except(b.Qualifiers).Concat(b.Qualifiers.Except(a.Qualifiers)).Order(StringComparer.Ordinal)];
         if (qualifierDiff.Count > 0)
@@ -421,7 +426,8 @@ public static class SimilarItemsDetector
         // se sabe qué es.
         if (a.EpisodeKey is not null && a.EpisodeKey == b.EpisodeKey)
         {
-            reasons.Add($"Mismo episodio: {a.Item.SeriesName ?? ""} T{a.Item.Season ?? 0}E{a.Item.Episode ?? 0}");
+            reasons.Add(Strings.Format("similarity.same-episode",
+                a.Item.SeriesName ?? "", a.Item.Season ?? 0, a.Item.Episode ?? 0));
             if (duration == 1) reasons.Add($"Misma duración ({SimilarityText.Clock(a.Duration)})");
             if (sameFileSize) reasons.Add("Mismo tamaño exacto de archivo");
 
@@ -438,8 +444,8 @@ public static class SimilarItemsDetector
         if (duration == 0 && !sameFileSize) return null;
 
         reasons.Add(titleSim >= 0.999
-            ? $"Mismo título: «{a.RawTitle}»"
-            : $"Título casi igual: «{a.RawTitle}» / «{b.RawTitle}»");
+            ? Strings.Format("similarity.same-title", a.RawTitle)
+            : Strings.Format("similarity.almost-same-title", a.RawTitle, b.RawTitle));
 
         if (duration == 1) reasons.Add($"Misma duración ({SimilarityText.Clock(a.Duration)})");
         else if (duration >= 0.3)
@@ -451,7 +457,9 @@ public static class SimilarItemsDetector
             reasons.Add($"Formatos distintos: {a.Extension.ToUpperInvariant()} / {b.Extension.ToUpperInvariant()}");
 
         if ((a.Item.Category ?? "") != (b.Item.Category ?? ""))
-            reasons.Add($"Categorías distintas: {a.Item.Category ?? "sin categoría"} / {b.Item.Category ?? "sin categoría"}");
+            reasons.Add(Strings.Format("similarity.different-categories",
+                a.Item.Category ?? Strings.Get("similarity.no-category"),
+                b.Item.Category ?? Strings.Get("similarity.no-category")));
 
         SimilarityConfidence confidence;
         if (sameFileSize || (titleSim >= 0.95 && duration == 1)) confidence = SimilarityConfidence.Duplicate;
@@ -601,26 +609,39 @@ public static class SimilarItemsDetector
         SimilarityConfidence confidence, Fingerprint keep, LibraryItemKind kind,
         List<Fingerprint> prints, long largest)
     {
-        var bits = new List<string> { keep.Extension.ToUpperInvariant() };
-        if (kind == LibraryItemKind.Music && LosslessExtensions.Contains(keep.Extension))
-            bits[0] += " sin pérdida";
-        if (keep.Item.HasCover)
-            bits.Add(kind == LibraryItemKind.Music ? "con carátula" : "con póster");
-        if (keep.Item.Metadata?.SyncedLyrics is not null) bits.Add("con letra");
-        if (keep.Item.MetadataEditedByUser) bits.Add("corregido a mano");
-        if (keep.FileSize > 0 && keep.FileSize == largest && prints.Any(print => print.FileSize != largest))
-            bits.Add("el más grande");
+        string extension = keep.Extension.ToUpperInvariant();
 
-        string description = string.Join(", ", bits);
+        // "FLAC sin pérdida" era `bits[0] += " sin pérdida"`: texto pegado
+        // detrás del formato. En otro idioma el calificativo puede ir delante
+        // —en japonés va—, así que la frase entera es una clave con su hueco.
+        var bits = new List<string>
+        {
+            kind == LibraryItemKind.Music && LosslessExtensions.Contains(keep.Extension)
+                ? Strings.Format("similarity.lossless", extension)
+                : extension
+        };
+
+        if (keep.Item.HasCover)
+            bits.Add(Strings.Get(kind == LibraryItemKind.Music
+                ? "similarity.with-cover"
+                : "similarity.with-poster"));
+        if (keep.Item.Metadata?.SyncedLyrics is not null)
+            bits.Add(Strings.Get("similarity.with-lyrics"));
+        if (keep.Item.MetadataEditedByUser)
+            bits.Add(Strings.Get("similarity.edited-by-hand"));
+        if (keep.FileSize > 0 && keep.FileSize == largest && prints.Any(print => print.FileSize != largest))
+            bits.Add(Strings.Get("similarity.largest"));
+
+        string description = string.Join(Strings.Get("similarity.bits-joiner"), bits);
 
         return confidence switch
         {
             SimilarityConfidence.Duplicate =>
-                $"Parecen el mismo archivo repetido. Sugerencia: conservar «{keep.RawTitle}» ({description}) y eliminar el resto.",
+                Strings.Format("similarity.suggest-duplicate", keep.RawTitle, description),
             SimilarityConfidence.Probable =>
-                $"Probablemente es el mismo elemento con la metadata escrita distinto. Sugerencia: conservar «{keep.RawTitle}» ({description}) y eliminar el resto, o unificar la metadata si prefieres quedarte con ambos.",
+                Strings.Format("similarity.suggest-probable", keep.RawTitle, description),
             _ =>
-                $"Podrían ser versiones distintas. Sugerencia: revisar antes de eliminar. Si resultan ser la misma, conservar «{keep.RawTitle}» ({description})."
+                Strings.Format("similarity.suggest-possible", keep.RawTitle, description)
         };
     }
 
@@ -646,7 +667,9 @@ public static class SimilarItemsDetector
                     print.Item.Id, SimilarityField.Artist, current, canonical));
         }
 
-        return $" El artista que más se usa en tu biblioteca es «{canonical}».";
+        // Se pega detrás de la sugerencia, así que el separador viaja DENTRO
+        // de la clave: en español es un espacio y en japonés no hay ninguno.
+        return Strings.Format("similarity.canonical-artist", canonical);
     }
 
     private static void ProposeAlbumEdits(

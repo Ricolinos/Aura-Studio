@@ -32,6 +32,7 @@ trinquete de `HardcodedSpanishTests`, y acá queda dicho por qué.
 | paso 2, `DeviceFirmwareLabel` y `ExtrasViewModel` | 250 | la etiqueta de firmware con su sufijo de dual boot como hueco, y la pantalla de Extras |
 | paso 2, `SyncViewModel` | 240 | la ficha de sincronización; los conteos con «archivo(s)» pasan a formas de plural de verdad |
 | paso 2, temas | 218 | `ThemeInstaller`, `ThemePackager` y `ThemesViewModel`; otro «fuente(s)» a formas de plural |
+| paso 2, `SimilarItemsDetector` | 206 | los motivos y la sugerencia; los nombres de campo se piden a la hoja de metadata |
 
 El trinquete baja poco en el segundo paso y eso es correcto: **doce literales
 cambiaron de clase, no de sitio.** Las razones de `PreparedMusic` estaban como
