@@ -170,6 +170,44 @@ enum DeviceSyncIndexBuilder {
         return owned
     }
 
+    /// Ronda rendimiento-3, camino C (ST-253): construye el indice SIN
+    /// enumerar el dispositivo, confiando en el manifiesto -- valido
+    /// justo despues de un sync que cerro limpio, porque cada registro
+    /// se escribio con la huella del archivo TAL COMO QUEDO en el iPod
+    /// en ESTA pasada (nadie mas pudo tocar el disco mientras estaba
+    /// conectado a esta Mac). Lo que el escaneo completo descubre y esto
+    /// no (archivos borrados o tocados a mano, contenido ajeno nuevo)
+    /// solo puede pasar con el dispositivo desconectado -- y al
+    /// reconectar, `verifyDevice` SI hace el escaneo completo. Los
+    /// `foreignFiles` no cambian durante un sync (Studio nunca crea ni
+    /// borra archivos ajenos), asi que se heredan del indice previo.
+    static func buildTrustingManifest(
+        currentFiles: [CurrentFile],
+        manifest: SyncManifest,
+        foreignFiles: [ForeignDeviceFile]
+    ) -> DeviceSyncIndex {
+        var states: [String: SyncItemState] = [:]
+        for file in currentFiles {
+            guard let record = manifest.records[file.sourcePath] else {
+                states[file.sourcePath] = .pending
+                continue
+            }
+            // Si la huella local ya no coincide con la registrada, el
+            // item quedo pendiente de recopia (p. ej. fallo su copia en
+            // este sync, o quedo fuera de "solo la seleccion").
+            states[file.sourcePath] = (record.sourceSize == file.size && record.sourceModifiedAt == file.modifiedAt)
+                ? .synced
+                : .changedLocally
+        }
+
+        let currentSourcePaths = Set(currentFiles.map(\.sourcePath))
+        let orphanedRecords = manifest.records.values
+            .filter { !currentSourcePaths.contains($0.sourcePath) }
+            .sorted { $0.destinationRelativePath < $1.destinationRelativePath }
+
+        return DeviceSyncIndex(states: states, orphanedRecords: orphanedRecords, foreignFiles: foreignFiles)
+    }
+
     /// Escaneo real: una enumeración de `Music/`/`Videos/`/`Photos/`/
     /// `Playlists/` (solo tamaño/fecha, sin leer contenido) -- se llama
     /// fuera del hilo principal (PLAN-general-sync.md §4.2: "corre

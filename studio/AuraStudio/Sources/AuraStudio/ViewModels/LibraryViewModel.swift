@@ -2564,13 +2564,25 @@ final class LibraryViewModel: ObservableObject {
             // tiene registrado cada archivo que si se alcanzo a copiar,
             // guardado uno por uno).
             lastError = "No se pudo sincronizar en \(volumeRoot.path): \(error.localizedDescription)"
+            syncProgress = nil
+            // Con error el estado real del dispositivo es incierto (la
+            // excepcion pudo salir de cualquier punto): aca SI hace
+            // falta el escaneo completo. Si el dispositivo ya no
+            // responde (desconexion real), `verifyDevice` simplemente
+            // no encuentra nada que escanear y no falla.
+            await verifyDevice(at: volumeRoot)
+            return
         }
         syncProgress = nil
-        // §4.2: "fin de sync/cancelación" es uno de los momentos que
-        // invalida el índice viejo -- si el dispositivo ya no responde
-        // (desconexión real), `verifyDevice` simplemente no encuentra
-        // nada que escanear y no falla.
-        await verifyDevice(at: volumeRoot)
+        // §4.2: "fin de sync/cancelación" invalida el índice viejo.
+        // Ronda rendimiento-3, camino C (ST-253): un sync que cerro
+        // limpio (incluida la cancelacion deliberada, que corre
+        // `finalize`) dejo el manifiesto igualado al disco en esta
+        // misma pasada, asi que el indice se reconstruye desde el
+        // manifiesto SIN re-enumerar el volumen por USB. El escaneo
+        // completo queda para conectar el dispositivo y para el camino
+        // de error de arriba.
+        await refreshDeviceIndexAfterSuccessfulSync(at: volumeRoot)
     }
 
     /// Encargo del dueño (General → "Eliminar todos los archivos, o por
@@ -2626,6 +2638,36 @@ final class LibraryViewModel: ObservableObject {
             let sync = LibrarySync(volumeRoot: volumeRoot)
             let manifest = sync.loadManifest()
             return DeviceSyncIndexBuilder.scan(volumeRoot: volumeRoot, currentFiles: currentFiles, manifest: manifest)
+        }.value
+
+        deviceSyncIndex = index
+    }
+
+    /// Ronda rendimiento-3, camino C (ST-253): variante post-sync de
+    /// `verifyDevice` que NO enumera el dispositivo -- confia en el
+    /// manifiesto que el propio sync acaba de dejar igualado al disco
+    /// (ver `DeviceSyncIndexBuilder.buildTrustingManifest`). Los
+    /// archivos ajenos se heredan del indice previo: un sync nunca los
+    /// crea ni los borra.
+    private func refreshDeviceIndexAfterSuccessfulSync(at volumeRoot: URL) async {
+        guard !isVerifyingDevice else { return }
+        isVerifyingDevice = true
+        defer { isVerifyingDevice = false }
+
+        let currentFiles: [DeviceSyncIndexBuilder.CurrentFile] = items.compactMap { item in
+            guard let prepared = item.preparedURL,
+                  let attrs = try? FileManager.default.attributesOfItem(atPath: prepared.path) else { return nil }
+            let size = (attrs[.size] as? Int64) ?? 0
+            let modified = (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
+            return DeviceSyncIndexBuilder.CurrentFile(sourcePath: item.sourceURL.path, size: size, modifiedAt: modified)
+        }
+        let foreignFiles = deviceSyncIndex?.foreignFiles ?? []
+
+        let index = await Task.detached(priority: .utility) {
+            let sync = LibrarySync(volumeRoot: volumeRoot)
+            let manifest = sync.loadManifest()
+            return DeviceSyncIndexBuilder.buildTrustingManifest(currentFiles: currentFiles, manifest: manifest,
+                                                                foreignFiles: foreignFiles)
         }.value
 
         deviceSyncIndex = index

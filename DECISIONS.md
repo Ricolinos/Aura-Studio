@@ -19461,3 +19461,49 @@ parcial por imagen faltante, clave distinta por metadata corregida y
 store vacio. La prueba viva contra la API real de Deezer
 (`LiveEnrichmentIntegrationTests.testDeezerFindsRealAlbumCover`) falla
 en este entorno desde antes de esta ronda; queda como estaba.
+
+## ST-253 — Ronda rendimiento-3, camino C: el sync deja de releer el iPod entero
+
+El diferencial del sync cubria los ARCHIVOS PRINCIPALES (audio/video/
+foto, via manifiesto) pero todo lo derivado seguia pagando I/O de USB en
+cada pasada, cambiara o no. Cuatro frentes:
+
+1. **Caratulas de album**: se llamaba `loadCoverData()` por CADA pista
+   (miles de lecturas locales por sync) para descartar el resultado en
+   todas menos la primera de cada album. El chequeo de "album ya visto
+   en esta pasada" ahora va ANTES de cargar la caratula: una lectura
+   por album, no por pista.
+2. **Letras (.lrc)**: se leia del iPod el sidecar de cada pista para
+   compararlo. Ahora `SyncRecord.lyricsHash` (campo opcional, los
+   manifiestos v2 viejos decodifican igual) guarda el SHA-256 de la
+   letra escrita; si no cambio, esa pista no toca el USB. `nil` =
+   desconocido: la primera pasada tras esta version hace la revision
+   completa una vez y queda relleno. Consecuencia aceptada: un `.lrc`
+   borrado a mano en el iPod no se restaura hasta que la letra cambie
+   en Studio (antes se restauraba solo, al costo de leer todo siempre).
+3. **Fotos de artista**: la comparacion de "cambio?" leia los bytes de
+   cada foto desde el iPod. Ahora `.rockbox/aura/artist_images_state.json`
+   guarda el SHA-256 de la imagen ORIGINAL local ya escrita, con el
+   tamaño de exportacion (`deviceArtistSide`) dentro: si el contrato
+   vuelve a cambiar el tamaño (como en v20), el estado entero se
+   invalida y todo se reescribe una vez, igual que antes lo hacia la
+   comparacion por bytes. Se conserva un `fileExists` por artista
+   (stat barato) para que una foto borrada a mano se restaure sola.
+4. **Posters de temporada**: la comparacion anterior era
+   `bytesDeliPod == caratulaCruda` -- pero lo que hay en el iPod ya
+   paso por `resizeToLCDOptimal`, asi que NUNCA era igual: los posters
+   se reescribian en CADA sync. Ahora el diferencial es por hash de la
+   caratula cruda (`.rockbox/aura/season_posters_state.json`) y la fase
+   entera se salta cuando el sync no toco video y el estado existe.
+
+Y el mas grande: **`verifyDevice` post-sync ya no re-escanea el iPod**.
+Un sync que cerro limpio deja el manifiesto igualado al disco en esa
+misma pasada (cada registro se escribe con la huella del archivo tal
+como quedo), asi que el indice se reconstruye con el nuevo
+`DeviceSyncIndexBuilder.buildTrustingManifest` -- sin enumerar
+`Music//Videos//Photos//Playlists/` por USB. Los archivos ajenos se
+heredan del indice previo (un sync nunca los crea ni los borra). El
+escaneo completo se reserva para CONECTAR el dispositivo -- el unico
+momento en que pudo cambiar por fuera -- y para un sync que termino con
+error. `deleteAllDeviceContent` ahora tambien borra los dos archivos de
+estado nuevos.

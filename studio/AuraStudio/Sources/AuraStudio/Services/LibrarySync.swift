@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 
 /// Bandera de cancelacion thread-safe: `LibrarySync.sync()` corre
 /// sincrono dentro de un `Task.detached` (D-217) y consulta
@@ -55,11 +56,20 @@ struct SyncRecord: Codable, Equatable {
     /// id (P7).
     var writtenBy: String?
     var syncedAt: TimeInterval?
+    /// Ronda rendimiento-3, camino C (ST-253): huella SHA-256 de la letra
+    /// (`syncedLyrics`, ya recortada) cuyo sidecar `.lrc` quedo escrito
+    /// junto al audio. `nil` = desconocido (manifiesto de antes de este
+    /// campo) -- la proxima pasada hace la revision completa una vez y
+    /// lo rellena; a partir de ahi, si la letra no cambio, el sync no
+    /// vuelve ni a leer el `.lrc` del iPod. La letra vacia guarda el
+    /// hash de "" (no nil) para distinguir "verificado, sin letra" de
+    /// "nunca verificado".
+    var lyricsHash: String?
 
     init(sourcePath: String, sourceSize: Int64, sourceModifiedAt: TimeInterval,
          destinationRelativePath: String, destinationSize: Int64? = nil,
          destinationModifiedAt: TimeInterval? = nil, writtenBy: String? = nil,
-         syncedAt: TimeInterval? = nil) {
+         syncedAt: TimeInterval? = nil, lyricsHash: String? = nil) {
         self.sourcePath = sourcePath
         self.sourceSize = sourceSize
         self.sourceModifiedAt = sourceModifiedAt
@@ -68,6 +78,7 @@ struct SyncRecord: Codable, Equatable {
         self.destinationModifiedAt = destinationModifiedAt
         self.writtenBy = writtenBy
         self.syncedAt = syncedAt
+        self.lyricsHash = lyricsHash
     }
 }
 
@@ -249,6 +260,19 @@ struct LibrarySync {
     /// lo que las pone en el disco por primera vez (Tanda 5).
     static let artistImagesDirRelativePath = ".rockbox/aura/artists"
     static let artistImagesIndexRelativePath = ".rockbox/aura/artist_images.cfg"
+    /// Ronda rendimiento-3, camino C (ST-253): estado diferencial de las
+    /// fotos de artista ya escritas (archivo -> SHA-256 de la imagen
+    /// ORIGINAL local). Vive en el propio iPod a proposito: si el usuario
+    /// borra `.rockbox` entero, el estado se va con el y la proxima pasada
+    /// reescribe todo, que es exactamente lo correcto.
+    static let artistImagesStateRelativePath = ".rockbox/aura/artist_images_state.json"
+    /// Igual para los posters de temporada (`Videos/<serie> S%02d.jpg`):
+    /// clave "<serie>\u{1}<temporada>" -> SHA-256 de la caratula original
+    /// elegida. Antes de este archivo la comparacion era contra los bytes
+    /// YA REDIMENSIONADOS del iPod, que nunca son iguales a los de la
+    /// caratula cruda -- es decir, los posters se reescribian en CADA
+    /// sync aunque nada hubiera cambiado.
+    static let seasonPostersStateRelativePath = ".rockbox/aura/season_posters_state.json"
 
     /// Contrato v18 §A.1: los tamaños con los que las imágenes llegan al
     /// iPod. 320 no es caprichoso -- es el consumidor más exigente que
@@ -753,8 +777,14 @@ struct LibrarySync {
         // una letra borrada en Studio se va del iPod. Solo se escribe
         // si el contenido cambio (no rehace el archivo en cada sync).
         phaseTimer.begin("letras")
-        writeLyricsSidecars(items: items, destinationByItemID: destinationByItemID,
-                            onlyForSourcePaths: restrictCopyToSourcePaths)
+        if writeLyricsSidecars(items: items, destinationByItemID: destinationByItemID,
+                               onlyForSourcePaths: restrictCopyToSourcePaths, manifest: &manifest) {
+            // ST-253: los hashes de letra viajan EN el manifiesto --
+            // hay que persistirlo para que el diferencial del proximo
+            // sync los vea (un guardado extra por sync, solo cuando
+            // alguna letra cambio).
+            try saveManifest(manifest)
+        }
 
         phaseTimer.begin("caratulas-album")
         if coverArtPolicy == .albumOnly,
@@ -771,7 +801,7 @@ struct LibrarySync {
         try writeRatings(items: items, destinationByItemID: destinationByItemID)
         try writeCategoryIndexes(items: items, destinationByItemID: destinationByItemID)
         phaseTimer.begin("posters-temporada")
-        writeSeasonPosters(items: items)
+        writeSeasonPosters(items: items, videoTouched: touched.video)
         phaseTimer.begin("fotos-artistas")
         if writeArtistImages(items: items, libraryRoot: libraryRoot, artistGrouping: artistGrouping) {
             touched.music = true
@@ -860,12 +890,16 @@ struct LibrarySync {
                 // índice no tienen registro propio en el manifiesto
                 // (igual que los .cfg de categoría de video/foto) --
                 // "Eliminar toda la música" los deja huérfanos si no se
-                // borran acá.
+                // borran acá. ST-253: su estado diferencial tambien.
                 try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(Self.artistImagesIndexRelativePath))
                 try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(Self.artistImagesDirRelativePath))
+                try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(Self.artistImagesStateRelativePath))
             case .video:
                 touched.video = true
                 try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(Self.videoCategoriesRelativePath))
+                // ST-253: los posters de temporada viven en Videos/ (ya
+                // borrados arriba); su estado diferencial va aparte.
+                try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(Self.seasonPostersStateRelativePath))
             case .photo:
                 touched.images = true
                 try? fileManager.removeItem(at: volumeRoot.appendingPathComponent(Self.photoCategoriesRelativePath))
@@ -938,29 +972,51 @@ struct LibrarySync {
     /// Studio: sin archivo -- y si habia uno de una pasada anterior, se
     /// borra (nunca huerfanos). Best-effort, como las caratulas: es
     /// contenido derivado, no el dato del usuario.
+    ///
+    /// Ronda rendimiento-3, camino C (ST-253): diferencial por hash. Lo
+    /// caro aca no era escribir el `.lrc` sino LEER del iPod el sidecar
+    /// de cada una de las miles de pistas en cada sync para compararlo.
+    /// El registro del manifiesto ya viaja con cada pista, asi que ahora
+    /// guarda el SHA-256 de la letra que dejo escrita: si no cambio, no
+    /// se toca el USB para esa pista. `nil` (manifiesto viejo) hace la
+    /// revision completa UNA vez y queda relleno. Consecuencia aceptada
+    /// y documentada: si alguien borra el `.lrc` a mano en el iPod, no
+    /// se restaura hasta que la letra cambie en Studio (antes se
+    /// restauraba solo, al costo de leer todo en cada sync).
+    /// Devuelve `true` si actualizo hashes en el manifiesto (el llamado
+    /// lo persiste).
+    @discardableResult
     private func writeLyricsSidecars(items: [LibraryItem],
                                      destinationByItemID: [UUID: String],
-                                     onlyForSourcePaths: Set<String>?) {
+                                     onlyForSourcePaths: Set<String>?,
+                                     manifest: inout SyncManifest) -> Bool {
+        var manifestChanged = false
         for item in items where item.kind == .music {
             guard let relative = destinationByItemID[item.id] else { continue }
             if let onlyForSourcePaths, !onlyForSourcePaths.contains(item.sourceURL.path) { continue }
+
+            let lyrics = item.metadata?.syncedLyrics?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let hash = Self.sha256Hex(of: lyrics)
+            if manifest.records[item.sourceURL.path]?.lyricsHash == hash {
+                continue
+            }
+
             let audioURL = volumeRoot.appendingPathComponent(relative)
             // Sin la cancion en el iPod (todavia no copiada, o pendiente
-            // por "solo la seleccion") no se deja un .lrc suelto.
+            // por "solo la seleccion") no se deja un .lrc suelto -- y el
+            // hash NO se actualiza: la proxima pasada lo reintenta.
             guard fileManager.fileExists(atPath: audioURL.path) else { continue }
 
             let lrcURL = volumeRoot.appendingPathComponent(Self.lyricsSidecarRelativePath(forDeviceRelativePath: relative))
-            let lyrics = item.metadata?.syncedLyrics?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             if lyrics.isEmpty {
                 try? fileManager.removeItem(at: lrcURL)
-                continue
+            } else {
+                try? (lyrics + "\n").write(to: lrcURL, atomically: true, encoding: .utf8)
             }
-            let content = lyrics + "\n"
-            if let existing = try? String(contentsOf: lrcURL, encoding: .utf8), existing == content {
-                continue
-            }
-            try? content.write(to: lrcURL, atomically: true, encoding: .utf8)
+            manifest.records[item.sourceURL.path]?.lyricsHash = hash
+            manifestChanged = manifestChanged || manifest.records[item.sourceURL.path] != nil
         }
+        return manifestChanged
     }
 
     /// La carátula del álbum en el iPod: `cover.jpg` de **320×320**
@@ -985,8 +1041,7 @@ struct LibrarySync {
         var written = Set<String>()
 
         for item in items where item.kind == .music {
-            guard let cover = item.metadata?.loadCoverData(),
-                  let relative = destinationByItemID[item.id] else { continue }
+            guard let relative = destinationByItemID[item.id] else { continue }
 
             // Bug real (encontrado 2026-08-14 comparando simulador vs.
             // hardware): `relative` es una ruta RELATIVA ("Music/Artista/
@@ -1003,7 +1058,14 @@ struct LibrarySync {
             // da la carpeta de álbum real.
             let albumDestination = volumeRoot.appendingPathComponent(relative).deletingLastPathComponent()
             let albumFolder = albumDestination.path
+            // Ronda rendimiento-3, camino C (ST-253): el chequeo de
+            // "este album ya tiene su portada en ESTA pasada" va ANTES
+            // de `loadCoverData()` -- antes se leia la caratula del
+            // disco local por CADA pista (miles de lecturas por sync)
+            // para descartarla inmediatamente en todos los items del
+            // album menos el primero. Ahora se lee una vez por album.
             guard !written.contains(albumFolder) else { continue }
+            guard let cover = item.metadata?.loadCoverData() else { continue }
             written.insert(albumFolder)
 
             guard let square = try? ImageResizer.squareCrop(data: cover, side: Self.deviceCoverSide,
@@ -1016,6 +1078,16 @@ struct LibrarySync {
         }
 
         return changed
+    }
+
+    /// SHA-256 en hex minusculas, para las huellas diferenciales del
+    /// camino C (letras, fotos de artista, posters de temporada).
+    static func sha256Hex(of string: String) -> String {
+        sha256Hex(Data(string.utf8))
+    }
+
+    static func sha256Hex(_ data: Data) -> String {
+        SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined()
     }
 
     /// Escribe siempre las playlists (son archivos de texto de unos
@@ -1186,6 +1258,20 @@ struct LibrarySync {
     /// `writeCategoryIndexes`); sin ninguna foto -> se borra, nunca deja
     /// uno viejo apuntando a nada. Devuelve `true` si escribió o borró
     /// algo (para el marcador `sync-pending.json`, `changes.music`).
+    ///
+    /// Ronda rendimiento-3, camino C (ST-253): lo que SÍ es diferencial
+    /// es la IMAGEN de cada artista. Antes se leian del iPod los bytes
+    /// de cada foto ya escrita para compararlos con la version nueva
+    /// (cientos de lecturas USB de ~100 KB por sync). Ahora un estado en
+    /// `.rockbox/aura/artist_images_state.json` guarda el SHA-256 de la
+    /// imagen ORIGINAL local que ya quedo escrita: si no cambio, se
+    /// salta el recorte, la lectura y la escritura. Se verifica ademas
+    /// que el archivo exista (stat barato) para que borrar la foto a
+    /// mano en el iPod la restaure en el proximo sync, como antes. El
+    /// estado incluye el tamaño de exportacion: si `deviceArtistSide`
+    /// vuelve a cambiar (como en v20), el estado entero queda invalido
+    /// y todo se reescribe una vez, exactamente lo que la comparacion
+    /// por bytes hacia sola antes.
     @discardableResult
     private func writeArtistImages(items: [LibraryItem], libraryRoot: URL?,
                                    artistGrouping: ArtistGroupingOptions) -> Bool {
@@ -1193,6 +1279,13 @@ struct LibrarySync {
         let store = ArtistImageStore(libraryRoot: libraryRoot)
         let artistsDir = volumeRoot.appendingPathComponent(Self.artistImagesDirRelativePath)
         let indexURL = volumeRoot.appendingPathComponent(Self.artistImagesIndexRelativePath)
+        let stateURL = volumeRoot.appendingPathComponent(Self.artistImagesStateRelativePath)
+
+        let previousHashes = loadArtistImagesState().hashes
+        /// Se reconstruye desde cero en cada pasada (no se muta el
+        /// estado cargado): las entradas de artistas que ya no estan en
+        /// la biblioteca desaparecen solas del estado.
+        var newHashes: [String: String] = [:]
 
         var lines: [String] = []
         var writtenFiles = Set<String>()
@@ -1209,15 +1302,23 @@ struct LibrarySync {
                 // §D.3 las exige CUADRADAS y hasta v18 esto mandaba el
                 // lado mayor a 128 con la proporción original -- lo que
                 // el contrato prohibía desde v6. Mismo criterio que
-                // `cover.jpg`: solo se escribe si cambió.
+                // `cover.jpg`: solo se escribe si cambió -- pero desde
+                // ST-253 "cambio" se decide contra el estado (hash de la
+                // imagen local), no leyendo los bytes del iPod.
                 let destination = artistsDir.appendingPathComponent(fileName)
-                if let square = try? ImageResizer.squareCrop(data: data, side: Self.deviceArtistSide,
-                                                             quality: Self.deviceCoverQuality) {
+                let hash = Self.sha256Hex(data)
+                if previousHashes[fileName] == hash,
+                   fileManager.fileExists(atPath: destination.path) {
+                    // Sin cambios y presente: ni recorte ni USB.
+                    newHashes[fileName] = hash
+                } else if let square = try? ImageResizer.squareCrop(data: data, side: Self.deviceArtistSide,
+                                                                    quality: Self.deviceCoverQuality) {
                     let existing = try? Data(contentsOf: destination)
                     if existing != square {
                         try? fileManager.createDirectory(at: artistsDir, withIntermediateDirectories: true)
                         try? square.write(to: destination, options: .atomic)
                     }
+                    newHashes[fileName] = hash
                 }
                 writtenFiles.insert(fileName)
             }
@@ -1237,11 +1338,39 @@ struct LibrarySync {
         let existedBefore = fileManager.fileExists(atPath: indexURL.path)
         guard !lines.isEmpty else {
             if existedBefore { try? fileManager.removeItem(at: indexURL) }
+            try? fileManager.removeItem(at: stateURL)
             return existedBefore
         }
         try? fileManager.createDirectory(at: indexURL.deletingLastPathComponent(), withIntermediateDirectories: true)
         try? ("# aura-artist-images v1\n" + lines.joined(separator: "\n") + "\n").write(to: indexURL, atomically: true, encoding: .utf8)
+        if newHashes != previousHashes {
+            try? saveArtistImagesState(ArtistImagesState(side: Self.deviceArtistSide, hashes: newHashes))
+        }
         return true
+    }
+
+    /// Estado diferencial de las fotos de artista (ST-253) -- ver
+    /// `writeArtistImages`. `side` invalida el estado entero cuando
+    /// cambia el tamaño de exportación del contrato.
+    private struct ArtistImagesState: Codable {
+        var side: Int
+        var hashes: [String: String]
+    }
+
+    private func loadArtistImagesState() -> ArtistImagesState {
+        let url = volumeRoot.appendingPathComponent(Self.artistImagesStateRelativePath)
+        guard let data = try? Data(contentsOf: url),
+              let state = try? JSONDecoder().decode(ArtistImagesState.self, from: data),
+              state.side == Self.deviceArtistSide else {
+            return ArtistImagesState(side: Self.deviceArtistSide, hashes: [:])
+        }
+        return state
+    }
+
+    private func saveArtistImagesState(_ state: ArtistImagesState) throws {
+        let url = volumeRoot.appendingPathComponent(Self.artistImagesStateRelativePath)
+        try fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+        try JSONEncoder().encode(state).write(to: url, options: .atomic)
     }
 
     /// PLAN-biblioteca-medios-v2.md §3.5: por cada (seriesName, season)
@@ -1250,10 +1379,26 @@ struct LibrarySync {
     /// sus episodios, para que `aura_movieflow.c` (que solo concatena
     /// el nombre de programa que ya extrajo con " S%02d.jpg") encuentre
     /// el archivo exacto. Toma el póster del primer episodio (por
-    /// número) de cada temporada que tenga `coverArtData`; solo
-    /// reescribe si el contenido cambió (compara bytes, no vale la pena
-    /// un manifiesto aparte para unos pocos KB por temporada).
-    private func writeSeasonPosters(items: [LibraryItem]) {
+    /// número) de cada temporada que tenga `coverArtData`.
+    ///
+    /// Ronda rendimiento-3, camino C (ST-253): dos arreglos. Primero,
+    /// la comparacion anterior era `bytesDeliPod == caratulaCruda` --
+    /// pero lo que hay en el iPod ya paso por `resizeToLCDOptimal`, asi
+    /// que NUNCA era igual: los posters se redimensionaban y
+    /// reescribian en CADA sync aunque nada hubiera cambiado. Ahora el
+    /// diferencial es por SHA-256 de la caratula cruda elegida, guardado
+    /// en `.rockbox/aura/season_posters_state.json`. Segundo, la fase
+    /// entera se salta cuando este sync no toco video y el estado ya
+    /// existe (los posters no pueden haber quedado atras: la caratula
+    /// de un episodio solo llega o cambia junto con su video). El stat
+    /// de existencia por poster se conserva: borrar uno a mano en el
+    /// iPod lo restaura en el proximo sync, como antes.
+    private func writeSeasonPosters(items: [LibraryItem], videoTouched: Bool) {
+        let stateURL = volumeRoot.appendingPathComponent(Self.seasonPostersStateRelativePath)
+        let previousHashes = loadSeasonPostersState()
+        let stateExisted = fileManager.fileExists(atPath: stateURL.path)
+        guard videoTouched || !stateExisted else { return }
+
         var bestByseason: [String: (episode: Int, cover: Data)] = [:]
         for item in items {
             guard item.kind == .video, Self.isSeriesCategory(item.category),
@@ -1263,16 +1408,32 @@ struct LibrarySync {
             if let existing = bestByseason[key], existing.episode <= episode { continue }
             bestByseason[key] = (episode, cover)
         }
+        var newHashes: [String: String] = [:]
         for (key, best) in bestByseason {
             let parts = key.split(separator: "\u{1}", maxSplits: 1)
             guard parts.count == 2, let season = Int(parts[1]) else { continue }
             let seriesName = String(parts[0])
+            let hash = Self.sha256Hex(best.cover)
+            newHashes[key] = hash
             let relative = Self.seasonPosterRelativePath(seriesName: seriesName, season: season)
             let url = volumeRoot.appendingPathComponent(relative)
-            if let existing = try? Data(contentsOf: url), existing == best.cover { continue }
+            if previousHashes[key] == hash, fileManager.fileExists(atPath: url.path) { continue }
             try? fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
             try? ImageResizer.resizeToLCDOptimal(data: best.cover, destinationURL: url, maxDimension: 640)
         }
+        if newHashes != previousHashes {
+            try? fileManager.createDirectory(at: stateURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try? JSONEncoder().encode(newHashes).write(to: stateURL, options: .atomic)
+        }
+    }
+
+    private func loadSeasonPostersState() -> [String: String] {
+        let url = volumeRoot.appendingPathComponent(Self.seasonPostersStateRelativePath)
+        guard let data = try? Data(contentsOf: url),
+              let hashes = try? JSONDecoder().decode([String: String].self, from: data) else {
+            return [:]
+        }
+        return hashes
     }
 
     /// Fase 24: la musica pasa a vivir en `Music/<Artista>/<Album>/NN
