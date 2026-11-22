@@ -9198,6 +9198,1195 @@
         }
       }
     },
+    "installer-home.action.install": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ installieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installer %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ をインストール"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установить %@"
+          }
+        }
+      }
+    },
+    "installer-home.action.reinstall": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ neu installieren"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reinstall %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reinstalar %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réinstaller %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ を再インストール"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переустановить %@"
+          }
+        }
+      }
+    },
+    "installer-home.bootloader-reason.newer": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Diese Version bringt einen neueren Bootloader mit als den, der auf deinem iPod geschrieben ist. Es wird nichts gelöscht: Deine Musik und deine Einstellungen bleiben, wie sie sind."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This version ships a newer boot loader than the one written on your iPod. It erases nothing: your music and your settings stay as they are."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esta versión trae un arranque más nuevo que el que tiene grabado tu iPod. No borra nada: tu música y tus ajustes se quedan igual."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cette version contient un bootloader plus récent que celui écrit sur votre iPod. Rien n’est effacé : votre musique et vos réglages restent tels quels."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "このバージョンには、お使いの iPod に書き込まれているものより新しいブートローダーが含まれています。何も消去されません。音楽も設定もそのままです。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "В этой версии загрузчик новее того, что записан на вашем iPod. Ничего не удаляется: музыка и настройки остаются как есть."
+          }
+        }
+      }
+    },
+    "installer-home.bootloader-reason.unknown": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio weiß nicht, welche Bootloader-Version dein iPod hat (ein anderer Computer hat ihn installiert, oder eine frühere Version der App). Das Update löscht nichts."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio doesn’t know which boot loader version your iPod has (another computer installed it, or an earlier version of the app). Updating it erases nothing."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio no sabe qué versión del arranque tiene tu iPod (lo instaló otra computadora, o una versión anterior de la app). Actualizarlo no borra nada."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio ne sait pas quelle version du bootloader se trouve sur votre iPod (un autre ordinateur l’a installée, ou une version antérieure de l’app). La mettre à jour n’efface rien."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio は、お使いの iPod のブートローダーのバージョンを把握していません（別のコンピュータ、または以前のバージョンのアプリでインストールされたためです）。更新しても何も消去されません。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio не знает, какая версия загрузчика на вашем iPod (его установил другой компьютер или более ранняя версия приложения). Обновление ничего не удаляет."
+          }
+        }
+      }
+    },
+    "installer-home.detection.aura-files-apple-running": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf deinem iPod liegen Aura-Dateien, aber es läuft Apples Firmware und Aura ist hier noch nie gestartet – es gibt keinen Hinweis darauf, dass es installiert ist."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod has Aura files on the disk, but Apple’s firmware is running and Aura has never booted here — there’s no evidence that it’s installed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod tiene archivos de Aura en el disco, pero está corriendo el firmware de Apple y Aura nunca ha arrancado aquí -- no hay evidencia de que esté instalado."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre iPod a des fichiers Aura sur le disque, mais c’est le firmware d’Apple qui tourne et Aura n’a jamais démarré ici — rien n’indique qu’il soit installé."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod のディスクに Aura のファイルはありますが、動作しているのは Apple のファームウェアで、Aura はここで一度も起動していません。インストールされている形跡はありません。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На диске вашего iPod есть файлы Aura, но работает прошивка Apple, и Aura здесь ни разу не запускалась — нет признаков того, что она установлена."
+          }
+        }
+      }
+    },
+    "installer-home.detection.aura-files-never-booted": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf deinem iPod liegen Aura-Dateien, aber Aura ist hier noch nie gestartet – es gibt keinen Hinweis darauf, dass es installiert ist."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod has Aura files on the disk, but Aura has never booted here — there’s no evidence that it’s installed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod tiene archivos de Aura en el disco, pero Aura nunca ha arrancado aquí -- no hay evidencia de que esté instalado."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre iPod a des fichiers Aura sur le disque, mais Aura n’a jamais démarré ici — rien n’indique qu’il soit installé."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod のディスクに Aura のファイルはありますが、Aura はここで一度も起動していません。インストールされている形跡はありません。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На диске вашего iPod есть файлы Aura, но Aura здесь ни разу не запускалась — нет признаков того, что она установлена."
+          }
+        }
+      }
+    },
+    "installer-home.detection.dfu": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein iPod ist im DFU-Modus angeschlossen und bereit zum Flashen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod is connected in DFU mode, ready to flash."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod esta conectado en modo DFU, listo para flashear."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre iPod est connecté en mode DFU, prêt à être flashé."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod は DFU モードで接続されており、書き込みの準備ができています。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваш iPod подключён в режиме DFU и готов к прошивке."
+          }
+        }
+      }
+    },
+    "installer-home.detection.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Festplatte deines iPod ist leer, ohne jede Firmware."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod’s disk is empty, with no firmware at all."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El disco de tu iPod esta vacio, sin ningun firmware."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le disque de votre iPod est vide, sans aucun firmware."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod のディスクは空で、ファームウェアはありません。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Диск вашего iPod пуст, без какой-либо прошивки."
+          }
+        }
+      }
+    },
+    "installer-home.detection.empty-usb-rockbox": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Festplatte deines iPod ist leer, aber am USB antwortet der Bootloader von Aura/Rockbox."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod’s disk is empty, but the Aura/Rockbox boot loader is handling USB."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El disco de tu iPod esta vacio, pero el USB lo atiende el bootloader de Aura/Rockbox."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le disque de votre iPod est vide, mais c’est le bootloader d’Aura/Rockbox qui gère l’USB."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod のディスクは空ですが、USB を処理しているのは Aura/Rockbox のブートローダーです。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Диск вашего iPod пуст, но USB обслуживает загрузчик Aura/Rockbox."
+          }
+        }
+      }
+    },
+    "installer-home.detection.installed": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf deinem iPod ist %@ bereits installiert."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod already has %@ installed."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod ya tiene %@ instalado."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre iPod a déjà %@ installé."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "お使いの iPod にはすでに %@ がインストールされています。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На вашем iPod уже установлена %@."
+          }
+        }
+      }
+    },
+    "installer-home.detection.installed-dual": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf deinem iPod ist %@ bereits installiert, im Dual Boot mit Apples Original-Firmware."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod already has %@ installed, in dual boot with Apple’s original firmware."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod ya tiene %@ instalado, en dual boot con el firmware original de Apple."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre iPod a déjà %@ installé, en dual boot avec le firmware d’origine d’Apple."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "お使いの iPod にはすでに %@ がインストールされており、Apple 純正ファームウェアとのデュアルブートになっています。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На вашем iPod уже установлена %@ в режиме двойной загрузки с оригинальной прошивкой Apple."
+          }
+        }
+      }
+    },
+    "installer-home.detection.installed-dual-replace": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf deinem iPod ist %1$@ installiert, im Dual Boot mit Apples Original-Firmware. %2$@ zu installieren ersetzt es."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod has %1$@ installed, in dual boot with Apple’s original firmware. Installing %2$@ replaces it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod tiene %1$@ instalado, en dual boot con el firmware original de Apple. Instalar %2$@ lo reemplaza."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre iPod a %1$@ installé, en dual boot avec le firmware d’origine d’Apple. Installer %2$@ le remplace."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "お使いの iPod には %1$@ がインストールされており、Apple 純正ファームウェアとのデュアルブートになっています。%2$@ をインストールすると置き換えられます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На вашем iPod установлена %1$@ в режиме двойной загрузки с оригинальной прошивкой Apple. Установка %2$@ заменит её."
+          }
+        }
+      }
+    },
+    "installer-home.detection.installed-replace": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf deinem iPod ist %1$@ installiert. %2$@ zu installieren ersetzt es."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod has %1$@ installed. Installing %2$@ replaces it."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod tiene %1$@ instalado. Instalar %2$@ lo reemplaza."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre iPod a %1$@ installé. Installer %2$@ le remplace."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "お使いの iPod には %1$@ がインストールされています。%2$@ をインストールすると置き換えられます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На вашем iPod установлена %1$@. Установка %2$@ заменит её."
+          }
+        }
+      }
+    },
+    "installer-home.detection.no-device": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installiere die Firmware %@ auf deinem iPod Classic 6G, oder stelle die Original-Firmware wieder her, wenn du zurück willst."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Install the %@ firmware on your iPod Classic 6G, or restore the original firmware if you want to go back."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instala el firmware %@ en tu iPod Classic 6G, o restaura el firmware original si quieres volver atras."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installez le firmware %@ sur votre iPod Classic 6G, ou restaurez le firmware d’origine si vous voulez revenir en arrière."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "お使いの iPod Classic 6G に %@ ファームウェアをインストールするか、元に戻したい場合は純正ファームウェアを復元してください。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установите прошивку %@ на ваш iPod Classic 6G или восстановите оригинальную прошивку, если хотите вернуться назад."
+          }
+        }
+      }
+    },
+    "installer-home.detection.no-filesystem": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dein iPod ist angeschlossen, aber seine Festplatte hat kein lesbares Dateisystem – %@ zu installieren bereitet sie von Grund auf vor."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod is connected, but its disk has no readable file system — installing %@ prepares it from scratch."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod esta conectado, pero su disco no tiene un sistema de archivos legible -- instalar %@ lo prepara desde cero."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre iPod est connecté, mais son disque n’a pas de système de fichiers lisible — installer %@ le prépare de zéro."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod は接続されていますが、ディスクに読み取れるファイルシステムがありません。%@ をインストールすると、ディスクを一から準備します。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ваш iPod подключён, но на его диске нет читаемой файловой системы — установка %@ подготовит его с нуля."
+          }
+        }
+      }
+    },
+    "installer-home.detection.rockbox": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf deinem iPod ist Rockbox installiert (nicht Aura)."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod has Rockbox installed (not Aura)."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod tiene Rockbox instalado (no es Aura)."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre iPod a Rockbox installé (pas Aura)."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "お使いの iPod には Rockbox がインストールされています（Aura ではありません）。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На вашем iPod установлен Rockbox (не Aura)."
+          }
+        }
+      }
+    },
+    "installer-home.detection.rockbox-dual": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf deinem iPod ist Rockbox installiert (nicht Aura), im Dual Boot mit der Original-Firmware."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod has Rockbox installed (not Aura), in dual boot with the original firmware."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod tiene Rockbox instalado (no es Aura), en dual boot con el firmware original."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre iPod a Rockbox installé (pas Aura), en dual boot avec le firmware d’origine."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "お使いの iPod には Rockbox がインストールされており（Aura ではありません）、純正ファームウェアとのデュアルブートになっています。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На вашем iPod установлен Rockbox (не Aura) в режиме двойной загрузки с оригинальной прошивкой."
+          }
+        }
+      }
+    },
+    "installer-home.detection.rockbox-files": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf deinem iPod liegen Rockbox-Dateien (nicht Aura), ohne Hinweis darauf, dass sie starten."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod has Rockbox files on the disk (not Aura), with no evidence that they boot."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod tiene archivos de Rockbox en el disco (no es Aura), sin evidencia de que arranquen."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre iPod a des fichiers Rockbox sur le disque (pas Aura), sans preuve qu’ils démarrent."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod のディスクには Rockbox のファイルがあります（Aura ではありません）が、起動した形跡はありません。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На диске вашего iPod есть файлы Rockbox (не Aura), но нет признаков того, что они запускаются."
+          }
+        }
+      }
+    },
+    "installer-home.detection.stock": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf deinem iPod ist Apples Original-Firmware."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod has Apple’s original firmware."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod tiene el firmware original de Apple."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre iPod a le firmware d’origine d’Apple."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod には Apple 純正のファームウェアが入っています。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На вашем iPod оригинальная прошивка Apple."
+          }
+        }
+      }
+    },
+    "installer-home.detection.stock-usb-rockbox": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf deinem iPod liegt Apples Original-Firmware auf der Festplatte, aber am USB antwortet der Bootloader von Aura/Rockbox."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your iPod has Apple’s original firmware on the disk, but the Aura/Rockbox boot loader is handling USB."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tu iPod tiene el firmware original de Apple en el disco, pero el USB lo atiende el bootloader de Aura/Rockbox."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Votre iPod a le firmware d’origine d’Apple sur le disque, mais c’est le bootloader d’Aura/Rockbox qui gère l’USB."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod のディスクには Apple 純正のファームウェアがありますが、USB を処理しているのは Aura/Rockbox のブートローダーです。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На диске вашего iPod оригинальная прошивка Apple, но USB обслуживает загрузчик Aura/Rockbox."
+          }
+        }
+      }
+    },
+    "installer-home.note.aura-files-needs-dfu": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Auf der Festplatte liegen Aura-Dateien, aber es gibt keinen Hinweis darauf, dass sie starten: Die Installation flasht den Bootloader per DFU-Modus und kopiert die Dateien erneut – der Assistent führt dich Schritt für Schritt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There are Aura files on the disk but no evidence that they boot: installing flashes the boot loader over DFU mode and copies the files again — the assistant guides you step by step."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hay archivos de Aura en el disco pero ninguna evidencia de que arranquen: instalar flashea el arranque por modo DFU y vuelve a copiar los archivos -- el asistente te guia paso a paso."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Il y a des fichiers Aura sur le disque mais rien n’indique qu’ils démarrent : l’installation flashe le bootloader en mode DFU et recopie les fichiers — l’assistant vous guide pas à pas."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ディスクに Aura のファイルはありますが、起動した形跡はありません。インストールでは DFU モードでブートローダーを書き込み、ファイルをコピーし直します。アシスタントが手順を案内します。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "На диске есть файлы Aura, но нет признаков того, что они запускаются: установка прошьёт загрузчик через режим DFU и заново скопирует файлы — помощник проведёт вас шаг за шагом."
+          }
+        }
+      }
+    },
+    "installer-home.note.reinstall-dfu": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neu installieren ersetzt die Firmware-Dateien und flasht, da Aura Studio von hier aus nicht bestätigen kann, dass der Bootloader noch geschrieben ist, den Bootloader erneut per DFU (erneutes Flashen ist harmlos). Deine %1$@-Einstellungen bleiben erhalten. Um DFU zu überspringen, schließe den iPod an, während er mit %1$@ eingeschaltet ist."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reinstalling replaces the firmware files and, since Aura Studio can’t confirm from here that the boot loader is still written, it flashes the boot loader over DFU again (reflashing is harmless). Your %1$@ settings are kept. To skip DFU, connect the iPod while it’s turned on with %1$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reinstalar reemplaza los archivos del firmware y, como Aura Studio no puede confirmar desde aquí que el bootloader siga grabado, vuelve a flashear el arranque por DFU (reflashear es inofensivo). Tus ajustes de %1$@ se conservan. Para saltarte el DFU, conecta el iPod mientras está encendido con %1$@."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réinstaller remplace les fichiers du firmware et, comme Aura Studio ne peut pas confirmer d’ici que le bootloader est toujours écrit, il reflashe le bootloader en DFU (reflasher est sans danger). Vos réglages %1$@ sont conservés. Pour éviter le DFU, branchez l’iPod pendant qu’il est allumé sous %1$@."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再インストールはファームウェアのファイルを置き換えます。ブートローダーがまだ書き込まれたままかどうかを Aura Studio がここから確認できないため、DFU でブートローダーを書き直します（書き直しても害はありません）。%1$@ の設定はそのまま残ります。DFU を省くには、%1$@ で電源が入った状態の iPod を接続してください。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переустановка заменяет файлы прошивки и, поскольку Aura Studio не может отсюда подтвердить, что загрузчик всё ещё записан, заново прошивает загрузчик через DFU (повторная прошивка безвредна). Ваши настройки %1$@ сохраняются. Чтобы пропустить DFU, подключите iPod включённым, с запущенной %1$@."
+          }
+        }
+      }
+    },
+    "installer-home.note.reinstall-no-dfu": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Neu installieren ersetzt nur die Firmware-Dateien auf der Festplatte – ein Flashen per DFU ist nicht nötig. Deine %1$@-Einstellungen bleiben erhalten. Startet dein iPod danach nicht mit %1$@, bietet der letzte Bildschirm an, das Flashen nachzuholen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reinstalling only replaces the firmware files on the disk — there’s no need to flash over DFU. Your %1$@ settings are kept. If your iPod doesn’t start with %1$@ when it finishes, the last screen offers to complete the flashing."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reinstalar solo reemplaza los archivos del firmware en el disco -- no hace falta flashear por DFU. Tus ajustes de %1$@ se conservan. Si al terminar tu iPod no arranca con %1$@, la pantalla final ofrece completar el flasheo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Réinstaller ne remplace que les fichiers du firmware sur le disque — pas besoin de flasher en DFU. Vos réglages %1$@ sont conservés. Si votre iPod ne démarre pas avec %1$@ à la fin, le dernier écran propose de terminer le flashage."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "再インストールはディスク上のファームウェアのファイルを置き換えるだけで、DFU での書き込みは不要です。%1$@ の設定はそのまま残ります。終了後に iPod が %1$@ で起動しない場合は、最後の画面で書き込みを完了させることができます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переустановка заменяет только файлы прошивки на диске — прошивать через DFU не нужно. Ваши настройки %1$@ сохраняются. Если по завершении iPod не запустится с %1$@, на последнем экране можно будет дозаписать загрузчик."
+          }
+        }
+      }
+    },
+    "installer-home.note.replace-family-dfu": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ zu installieren ersetzt %2$@ auf der Festplatte und flasht den Bootloader erneut per DFU, weil Aura Studio von hier aus nicht bestätigen kann, dass der Bootloader noch geschrieben ist (erneutes Flashen ist harmlos). Deine Musik und deine Fotos bleiben unberührt; die Einstellungen von %2$@ gehen verloren."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installing %1$@ replaces %2$@ on the disk and flashes the boot loader over DFU again, because Aura Studio can’t confirm from here that the boot loader is still written (reflashing is harmless). Your music and photos aren’t touched; the %2$@ settings are lost."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar %1$@ reemplaza %2$@ en el disco y vuelve a flashear el arranque por DFU, porque Aura Studio no puede confirmar desde aquí que el bootloader siga grabado (reflashear es inofensivo). Tu música y tus fotos no se tocan; los ajustes de %2$@ se pierden."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installer %1$@ remplace %2$@ sur le disque et reflashe le bootloader en DFU, car Aura Studio ne peut pas confirmer d’ici que le bootloader est toujours écrit (reflasher est sans danger). Votre musique et vos photos ne sont pas touchées ; les réglages de %2$@ sont perdus."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ をインストールすると、ディスク上の %2$@ が置き換えられ、DFU でブートローダーを書き直します。ブートローダーがまだ書き込まれたままかどうかを Aura Studio がここから確認できないためです（書き直しても害はありません）。音楽と写真はそのままですが、%2$@ の設定は失われます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установка %1$@ заменит %2$@ на диске и заново прошьёт загрузчик через DFU, потому что Aura Studio не может отсюда подтвердить, что загрузчик всё ещё записан (повторная прошивка безвредна). Музыка и фотографии не затрагиваются; настройки %2$@ будут потеряны."
+          }
+        }
+      }
+    },
+    "installer-home.note.replace-family-no-dfu": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ zu installieren ersetzt %2$@ auf der Festplatte – ein Flashen per DFU ist nicht nötig, es ist derselbe Bootloader. Deine Musik und deine Fotos bleiben unberührt; die Einstellungen von %2$@ gehen verloren."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installing %1$@ replaces %2$@ on the disk — there’s no need to flash over DFU, it’s the same boot loader. Your music and photos aren’t touched; the %2$@ settings are lost."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar %1$@ reemplaza %2$@ en el disco -- no hace falta flashear por DFU, es el mismo arranque. Tu música y tus fotos no se tocan; los ajustes de %2$@ se pierden."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installer %1$@ remplace %2$@ sur le disque — pas besoin de flasher en DFU, c’est le même bootloader. Votre musique et vos photos ne sont pas touchées ; les réglages de %2$@ sont perdus."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ をインストールすると、ディスク上の %2$@ が置き換えられます。ブートローダーは同じなので、DFU での書き込みは不要です。音楽と写真はそのままですが、%2$@ の設定は失われます。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установка %1$@ заменит %2$@ на диске — прошивать через DFU не нужно, загрузчик тот же. Музыка и фотографии не затрагиваются; настройки %2$@ будут потеряны."
+          }
+        }
+      }
+    },
+    "installer-home.note.rockbox-dfu": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ zu installieren ersetzt den Ordner .rockbox auf der Festplatte durch den von %1$@ und flasht den Bootloader per DFU-Modus, weil es nicht genug Hinweise darauf gibt, dass der Bootloader schon geschrieben ist. Um DFU zu überspringen, schließe den iPod an, während er mit Rockbox eingeschaltet ist."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installing %1$@ replaces the .rockbox folder on the disk with the one from %1$@ and flashes the boot loader over DFU mode, because there isn’t enough evidence that the boot loader is already written. To skip DFU, connect the iPod while it’s turned on with Rockbox."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar %1$@ reemplaza la carpeta .rockbox del disco por la de %1$@ y flashea el arranque por modo DFU, porque no hay evidencia suficiente de que el bootloader ya esté grabado. Para saltarte el DFU, conecta el iPod mientras está encendido con Rockbox."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installer %1$@ remplace le dossier .rockbox du disque par celui de %1$@ et flashe le bootloader en mode DFU, car rien ne prouve suffisamment que le bootloader est déjà écrit. Pour éviter le DFU, branchez l’iPod pendant qu’il est allumé sous Rockbox."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ をインストールすると、ディスクの .rockbox フォルダが %1$@ のものに置き換えられ、DFU モードでブートローダーを書き込みます。ブートローダーがすでに書き込まれているという十分な形跡がないためです。DFU を省くには、Rockbox で電源が入った状態の iPod を接続してください。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установка %1$@ заменит папку .rockbox на диске папкой из %1$@ и прошьёт загрузчик через режим DFU, потому что нет достаточных признаков того, что загрузчик уже записан. Чтобы пропустить DFU, подключите iPod включённым, с запущенным Rockbox."
+          }
+        }
+      }
+    },
+    "installer-home.note.rockbox-no-dfu": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ zu installieren erfordert weder Flashen noch den DFU-Modus: Es wird nur der Ordner .rockbox auf der Festplatte durch den von %1$@ ersetzt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installing %1$@ requires no flashing and no DFU mode: only the .rockbox folder on the disk is replaced with the one from %1$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar %1$@ no requiere flashear ni entrar a modo DFU: solo se reemplaza la carpeta .rockbox del disco por la de %1$@."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installer %1$@ ne nécessite ni flashage ni mode DFU : seul le dossier .rockbox du disque est remplacé par celui de %1$@."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ のインストールには、書き込みも DFU モードも必要ありません。ディスクの .rockbox フォルダを %1$@ のものに置き換えるだけです。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Установка %1$@ не требует ни прошивки, ни режима DFU: на диске просто заменяется папка .rockbox на папку из %1$@."
+          }
+        }
+      }
+    },
+    "installer-home.note.stock-needs-dfu": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ zu installieren erfordert das Flashen des Bootloaders per DFU-Modus – der Assistent führt dich Schritt für Schritt."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installing %@ requires flashing the boot loader over DFU mode — the assistant guides you step by step."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar %@ requiere flashear el arranque por modo DFU -- el asistente te guia paso a paso."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Installer %@ nécessite de flasher le bootloader en mode DFU — l’assistant vous guide pas à pas."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ をインストールするには、DFU モードでブートローダーを書き込む必要があります。アシスタントが手順を案内します。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Для установки %@ нужно прошить загрузчик через режим DFU — помощник проведёт вас шаг за шагом."
+          }
+        }
+      }
+    },
+    "installer-home.note.usb-already-bootloader": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Bootloader von Aura/Rockbox antwortet bereits am USB: Die Installation kopiert nur die Dateien, ohne zu flashen."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Aura/Rockbox boot loader is already handling USB: installing only copies the files, with no flashing."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El bootloader de Aura/Rockbox ya está atendiendo el USB: instalar solo copia los archivos, sin flashear."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le bootloader d’Aura/Rockbox gère déjà l’USB : l’installation ne fait que copier les fichiers, sans flashage."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "すでに Aura/Rockbox のブートローダーが USB を処理しています。インストールではファイルをコピーするだけで、書き込みは行いません。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Загрузчик Aura/Rockbox уже обслуживает USB: установка только скопирует файлы, без прошивки."
+          }
+        }
+      }
+    },
     "installer-wizard-view.cancelar-instalacion": {
       "extractionState": "manual",
       "localizations": {
@@ -10789,6 +11978,47 @@
         }
       }
     },
+    "installer.progress.disk-ready-copying": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Die Festplatte ist bereit. Dateien werden kopiert …"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The disk is ready. Copying files…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Disco listo. Copiando archivos..."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le disque est prêt. Copie des fichiers…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ディスクの準備ができました。ファイルをコピーしています…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Диск готов. Копирование файлов…"
+          }
+        }
+      }
+    },
     "installer.progress.disk-ready-needs-dfu": {
       "extractionState": "manual",
       "localizations": {
@@ -10826,6 +12056,47 @@
           "stringUnit": {
             "state": "translated",
             "value": "Диск готов. Теперь нужно записать загрузчик через DFU."
+          }
+        }
+      }
+    },
+    "installer.progress.done": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fertig."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Listo."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Terminé."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "完了しました。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Готово."
           }
         }
       }
@@ -11400,6 +12671,47 @@
           "stringUnit": {
             "state": "translated",
             "value": "Проверка целостности файлов…"
+          }
+        }
+      }
+    },
+    "installer.reason.ditto-output": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ditto: %@"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ditto: %@"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ditto: %@"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ditto: %@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ditto: %@"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ditto: %@"
           }
         }
       }

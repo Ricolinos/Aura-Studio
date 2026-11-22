@@ -19293,3 +19293,104 @@ de lectura de imágenes, solo Aura Studio visible, nada ajeno): la
 franja de estado en General (sin instalado) y la tarjeta de "Buscar
 actualizaciones" con el texto exacto de arriba (con instalado). Sin
 tocar `%LOCALAPPDATA%\Programs\Aura Studio` ni sus preferencias reales.
+---
+
+## ST-227 (A7d, lote 1) — El instalador entero al catálogo, y tres cosas que no eran traducción
+
+A7c dejó el catálogo con 553 claves y los cuatro idiomas nuevos escritos,
+pero **el instalador seguía con el español incrustado en el código**: 131 de
+las 593 cadenas del triaje de PANTALLA vivían ahí, y son justo las que se
+leen cuando algo se va a formatear, a reemplazar o a autorizar con
+contraseña. Tres commits, un lote coherente cada uno:
+
+- **El flujo de punta a punta** (71 claves, 553 → 624): `InstallerStep`
+  (las tres `PendingAuthorization` y todos los `errorDescription` de
+  `InstallerError`), `EnterDFUView`, `AwaitBootloaderUSBView`,
+  `RestoreHandoffView`, `PermissionsView`, `UpdateBootloaderView`,
+  `WelcomeView`, `DoneView`, `InstallingView`, `InstallerWizardView`.
+- **Los mensajes de progreso** (28 claves, 624 → 652): los veintiséis de
+  `InstallerViewModel` **más los cuatro motivos técnicos** que viajan
+  dentro de un `InstallerError` — el `output:` de `processFailed` y el
+  `reason:` de `releaseDownloadFailed` se le muestran al usuario dentro del
+  mensaje de error, así que estaban tan de cara al usuario como el resto.
+- **`InstallerHomeView`** (32 claves, 652 → 684): los textos de detección
+  ("qué tiene tu iPod ahora") y las notas que anticipan si hará falta DFU.
+
+### Los tres defectos que salieron al mover el texto
+
+Ninguno era de traducción; los tres estaban ahí desde antes y se vieron
+porque mover una cadena obliga a mirar de dónde salen sus pedazos.
+
+1. **La pantalla que pide la contraseña nombraba dos de los tres servicios
+   que pausa.** `installer.pause-services.body` decía "dos servicios" con
+   una lista escrita a mano que se había desfasado de
+   `PrivilegedExecutor.ampAgentNames`. La lista sale ahora del código
+   (`Sentence.list(_:)`), así que la pantalla que pide autorización no
+   puede volver a prometer algo distinto de lo que el comando hace. Es la
+   promesa de `PermissionsView` (CLAUDE.md: *siempre te explica antes qué
+   va a hacer y por qué*), y estaba rota.
+2. **`InstallingView` decía "Instalando Aura..." siempre.** Con Metro
+   elegido en Extras (ST-047/ST-050), la pantalla de progreso nombraba un
+   firmware que no era el que se estaba copiando. Ahora recibe
+   `firmwareName` desde `viewModel.targetName`, igual que hacía a su lado
+   `SimpleProgressView`.
+3. **El francés del catálogo tenía dos glosarios.** Las claves
+   `installer.error.*` decían "micrologiciel", "chargeur d'amorçage" y
+   "double amorçage" mientras el resto del catálogo dice firmware,
+   bootloader y dual boot (9 cadenas); el inglés alternaba "bootloader" con
+   "boot loader" (2). Normalizados al término mayoritario. `"Bootloader USB
+   mode"` queda intacto en los seis idiomas porque **es lo que el aparato
+   muestra en su pantalla**: traducirlo sería mandar a buscar un texto que
+   no existe.
+
+### `Sentence.sentences(_:)`: el espacio entre dos oraciones también es del idioma
+
+El aviso de respaldo del instalador unía dos oraciones con `"\(why) ..."`.
+En español, inglés, alemán, francés y ruso ese espacio está bien; **en
+japonés el `。` ya cerró la primera y el espacio detrás es un error de
+tipografía**. El separador pasa a ser la clave `sentence.separator-sentence`
+— `" "` en cinco idiomas y `""` en japonés.
+
+Es el **único valor vacío legítimo del catálogo**, y por eso queda
+declarado con su motivo dentro de `testNoTranslationIsEmpty` en vez de
+aflojar la prueba para todas: una excepción visible es revisable, una
+silenciosa no. Las dos pruebas nuevas de `Sentence.sentences` se
+comprobaron por mutación (poniéndole un espacio al japonés, fallan).
+
+El mismo aviso pegaba además `" (tag)"` como sufijo opcional al final de la
+frase ya armada; ahora son dos claves completas —con versión y sin ella—,
+porque un paréntesis cosido al final no lo puede mover el traductor.
+
+### El primero de los dieciocho `(s)`
+
+`"N archivo(s) por escribir, N por quitar"` pasó a dos plurales de verdad
+(`installer.plural.files-to-write` y `-delete`) con las formas que exige
+cada idioma —cuatro en ruso, una en japonés— unidos por
+`Sentence.commaList`. Los diecisiete restantes son el paso (3) de A7d.
+
+Y el fragmento `", en dual boot con el firmware original de Apple"`, que se
+concatenaba al final de la frase de detección, son ahora cuatro claves
+completas: en alemán la subordinada no cae donde el español la deja, y un
+trozo cosido no se puede mover.
+
+### `criticas-a7d.csv`: la retrotraducción ciega es ciega por construcción
+
+Ronda 1: 84 de las 131 claves nuevas, elegidas por un criterio escrito en
+el generador — todo `installer.error.*`, `installer.pause-services.*`,
+`installer.restore-format.*`, `installer.format-disk.*` y `permissions.*`,
+más cualquier clave cuyo español hable de borrar, formatear, reemplazar,
+perder, DFU, bootloader, arranque, dual boot, contraseña o restaurar. Es
+decir: **lo que, mal traducido, hace que alguien pierda datos o autorice
+algo que no entendió.**
+
+El archivo lleva `id`, `ronda`, `clave`, `motivo` y las cuatro traducciones
+— **y no lleva el español**. La ceguera no es una instrucción que haya que
+recordar: el archivo no trae el original que habría que no mirar. El cotejo
+contra el español lo hace esta sesión, desde el catálogo.
+
+### Dos defectos míos que encontraron las pruebas, no yo
+
+Partir `LSf(` y su clave en dos líneas dejó la clave fuera del inventario
+(`testEveryLocalizationCallUsesALiteralKey`), y por eso la misma clave salió
+además como "no usada por nadie". Las dos pruebas de A7c se escribieron para
+esto exactamente, y funcionaron.

@@ -865,7 +865,7 @@ final class InstallerViewModel: ObservableObject {
                     // evento ya paso -- reaccionar ahora.
                     reactToDeviceState(monitor.state)
                 } else {
-                    progressMessage = "Listo."
+                    progressMessage = LS("installer.progress.done")
                     step = .done
                 }
 
@@ -889,7 +889,7 @@ final class InstallerViewModel: ObservableObject {
                 AppPreferences.shared.recordBootloaderVerified(diskKey: lastSeenDiskKey,
                                                                hash: embeddedBootloaderHash)
                 bootloaderFlashedThisFlow = true
-                progressMessage = "Listo."
+                progressMessage = LS("installer.progress.done")
                 step = .done
 
             case .restore:
@@ -963,7 +963,7 @@ final class InstallerViewModel: ObservableObject {
                 proceedToDFU()
                 return
             }
-            progressMessage = "Disco listo. Copiando archivos..."
+            progressMessage = LS("installer.progress.disk-ready-copying")
 
             // Tras formatear, el volumen se vuelve a montar con el
             // mismo nombre. Dos caminos cubren la carrera (D-182): si
@@ -1234,7 +1234,7 @@ final class InstallerViewModel: ObservableObject {
                 // el disco para que el bootloader (que sigue esperando
                 // en su modo USB) suelte el volumen y pueda reiniciar a
                 // Aura.
-                progressMessage = "Listo."
+                progressMessage = LS("installer.progress.done")
                 _ = await monitor.unmountCurrentDisk()
                 flashFirst = false
                 step = .done
@@ -1333,7 +1333,7 @@ final class InstallerViewModel: ObservableObject {
                 } else {
                     continuation.resume(throwing: InstallerError.processFailed(
                         exitCode: finished.terminationStatus,
-                        output: "ditto: \(counter.recentOutput())"))
+                        output: LSf("installer.reason.ditto-output", counter.recentOutput())))
                 }
             }
             do {

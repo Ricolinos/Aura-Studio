@@ -111,8 +111,8 @@ struct ModePickerView: View {
                     .controlSize(.large)
 
                     Text(reason == .differentBootloader
-                         ? "Esta versión trae un arranque más nuevo que el que tiene grabado tu iPod. No borra nada: tu música y tus ajustes se quedan igual."
-                         : "Aura Studio no sabe qué versión del arranque tiene tu iPod (lo instaló otra computadora, o una versión anterior de la app). Actualizarlo no borra nada.")
+                         ? LS("installer-home.bootloader-reason.newer")
+                         : LS("installer-home.bootloader-reason.unknown"))
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -158,49 +158,57 @@ struct ModePickerView: View {
         // ST-047: "Reinstalar" solo si lo que hay es LA MISMA familia que
         // se va a instalar; sobre otra familia es instalar (y reemplazar).
         let same = device?.supportsAuraContract == true && device?.declaredFamily == family
-        return same ? "Reinstalar \(name)" : "Instalar \(name)"
+        return same ? LSf("installer-home.action.reinstall", name)
+                    : LSf("installer-home.action.install", name)
     }
 
     private var detectionText: String {
         if case .diskModeNoFilesystem = state {
-            return "Tu iPod esta conectado, pero su disco no tiene un sistema de archivos legible -- instalar \(name) lo prepara desde cero."
+            return LSf("installer-home.detection.no-filesystem", name)
         }
         if case .dfuMode = state {
-            return "Tu iPod esta conectado en modo DFU, listo para flashear."
+            return LS("installer-home.detection.dfu")
         }
         guard let device else {
-            return "Instala el firmware \(name) en tu iPod Classic 6G, o restaura el firmware original si quieres volver atras."
+            return LSf("installer-home.detection.no-device", name)
         }
         // ST-016: solo se afirma "instalado"/"dual boot" con evidencia
         // de arranque (USB atendido por Aura/Rockbox, o rastro en disco).
         switch device.firmware {
         case .stock:
             return device.runningFirmware == .rockboxFamily
-                ? "Tu iPod tiene el firmware original de Apple en el disco, pero el USB lo atiende el bootloader de Aura/Rockbox."
-                : "Tu iPod tiene el firmware original de Apple."
+                ? LS("installer-home.detection.stock-usb-rockbox")
+                : LS("installer-home.detection.stock")
         // ST-046/ST-047: se nombra lo que HAY por lo que declara, y se
         // dice sin rodeos si instalar lo elegido lo reemplaza.
         case .aura where device.supportsAuraContract:
+            // ST-227 (A7d): el "en dual boot..." era un trozo que se
+            // pegaba al final de la frase ya armada. Una frase entera
+            // por caso -- en alemán la subordinada no va donde el
+            // español la deja, y un fragmento cosido no se puede mover.
             let installed = device.declaredFamily.displayName
-            let dual = device.isDualBoot ? ", en dual boot con el firmware original de Apple" : ""
             if device.declaredFamily == family {
-                return "Tu iPod ya tiene \(installed) instalado\(dual)."
+                return device.isDualBoot
+                    ? LSf("installer-home.detection.installed-dual", installed)
+                    : LSf("installer-home.detection.installed", installed)
             }
-            return "Tu iPod tiene \(installed) instalado\(dual). Instalar \(name) lo reemplaza."
+            return device.isDualBoot
+                ? LSf("installer-home.detection.installed-dual-replace", installed, name)
+                : LSf("installer-home.detection.installed-replace", installed, name)
         case .aura:
             return device.runningFirmware == .apple
-                ? "Tu iPod tiene archivos de Aura en el disco, pero está corriendo el firmware de Apple y Aura nunca ha arrancado aquí -- no hay evidencia de que esté instalado."
-                : "Tu iPod tiene archivos de Aura en el disco, pero Aura nunca ha arrancado aquí -- no hay evidencia de que esté instalado."
+                ? LS("installer-home.detection.aura-files-apple-running")
+                : LS("installer-home.detection.aura-files-never-booted")
         case .rockbox where device.rockboxFamilyVerified:
             return device.isDualBoot
-                ? "Tu iPod tiene Rockbox instalado (no es Aura), en dual boot con el firmware original."
-                : "Tu iPod tiene Rockbox instalado (no es Aura)."
+                ? LS("installer-home.detection.rockbox-dual")
+                : LS("installer-home.detection.rockbox")
         case .rockbox:
-            return "Tu iPod tiene archivos de Rockbox en el disco (no es Aura), sin evidencia de que arranquen."
+            return LS("installer-home.detection.rockbox-files")
         case .empty:
             return device.runningFirmware == .rockboxFamily
-                ? "El disco de tu iPod esta vacio, pero el USB lo atiende el bootloader de Aura/Rockbox."
-                : "El disco de tu iPod esta vacio, sin ningun firmware."
+                ? LS("installer-home.detection.empty-usb-rockbox")
+                : LS("installer-home.detection.empty")
         }
     }
 
@@ -217,8 +225,8 @@ struct ModePickerView: View {
         switch device.firmware {
         case .aura where device.supportsAuraContract && device.declaredFamily == family:
             return skipsDFU
-                ? "Reinstalar solo reemplaza los archivos del firmware en el disco -- no hace falta flashear por DFU. Tus ajustes de \(name) se conservan. Si al terminar tu iPod no arranca con \(name), la pantalla final ofrece completar el flasheo."
-                : "Reinstalar reemplaza los archivos del firmware y, como Aura Studio no puede confirmar desde aquí que el bootloader siga grabado, vuelve a flashear el arranque por DFU (reflashear es inofensivo). Tus ajustes de \(name) se conservan. Para saltarte el DFU, conecta el iPod mientras está encendido con \(name)."
+                ? LSf("installer-home.note.reinstall-no-dfu", name)
+                : LSf("installer-home.note.reinstall-dfu", name)
         // ST-046/ST-047: otra familia de la misma casa. El bootloader es el
         // mismo de Rockbox, asi que el DFU se salta igual; lo que NO se
         // conserva son los ajustes, porque el firmware que los escribio se
@@ -226,21 +234,21 @@ struct ModePickerView: View {
         case .aura where device.supportsAuraContract:
             let installed = device.declaredFamily.displayName
             return skipsDFU
-                ? "Instalar \(name) reemplaza \(installed) en el disco -- no hace falta flashear por DFU, es el mismo arranque. Tu música y tus fotos no se tocan; los ajustes de \(installed) se pierden."
-                : "Instalar \(name) reemplaza \(installed) en el disco y vuelve a flashear el arranque por DFU, porque Aura Studio no puede confirmar desde aquí que el bootloader siga grabado (reflashear es inofensivo). Tu música y tus fotos no se tocan; los ajustes de \(installed) se pierden."
+                ? LSf("installer-home.note.replace-family-no-dfu", name, installed)
+                : LSf("installer-home.note.replace-family-dfu", name, installed)
         case .aura:
-            return "Hay archivos de Aura en el disco pero ninguna evidencia de que arranquen: instalar flashea el arranque por modo DFU y vuelve a copiar los archivos -- el asistente te guia paso a paso."
+            return LS("installer-home.note.aura-files-needs-dfu")
         case .rockbox:
             return skipsDFU
-                ? "Instalar \(name) no requiere flashear ni entrar a modo DFU: solo se reemplaza la carpeta .rockbox del disco por la de \(name)."
-                : "Instalar \(name) reemplaza la carpeta .rockbox del disco por la de \(name) y flashea el arranque por modo DFU, porque no hay evidencia suficiente de que el bootloader ya esté grabado. Para saltarte el DFU, conecta el iPod mientras está encendido con Rockbox."
+                ? LSf("installer-home.note.rockbox-no-dfu", name)
+                : LSf("installer-home.note.rockbox-dfu", name)
         case .stock:
             return skipsDFU
-                ? "El bootloader de Aura/Rockbox ya está atendiendo el USB: instalar solo copia los archivos, sin flashear."
-                : "Instalar \(name) requiere flashear el arranque por modo DFU -- el asistente te guia paso a paso."
+                ? LS("installer-home.note.usb-already-bootloader")
+                : LSf("installer-home.note.stock-needs-dfu", name)
         case .empty:
             return skipsDFU
-                ? "El bootloader de Aura/Rockbox ya está atendiendo el USB: instalar solo copia los archivos, sin flashear."
+                ? LS("installer-home.note.usb-already-bootloader")
                 : nil
         }
     }
