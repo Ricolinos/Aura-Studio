@@ -19534,3 +19534,17 @@ Tres cambios chicos, todos en el camino caliente del sync:
    biblioteca. El `compactMap` entero (tambien el de
    `refreshDeviceIndexAfterSuccessfulSync`) ahora corre dentro de la
    tarea separada.
+
+## ST-255 — El .xcodeproj vuelve a compilar (Sendable + archivos del camino B)
+
+El build Release con `xcodebuild` (el entregable real) fallaba por dos
+cosas que `swift build` no ve: el target del Xcode lista sus archivos a
+mano (no tiene carpetas sincronizadas), asi que `AlbumCoverSearchCache`
+y sus tests se agregaron al `project.pbxproj`; y el proyecto compila
+con chequeo de concurrencia estricto, que marco el paralelismo nuevo
+del camino B como carrera de datos potencial. `AlbumCoverSearch`,
+`AlbumCoverSearchCache` y los tres clientes (`MusicBrainzClient`,
+`CoverArtArchiveClient`, `DeezerClient`) ahora declaran `Sendable` --
+todos son structs de URLSession/URL con un actor de rate limit, y el
+`FileManager` guardado del cache paso a usarse en linea
+(`FileManager.default` no es Sendable en este SDK).

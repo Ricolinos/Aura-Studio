@@ -5,7 +5,7 @@ import Foundation
 /// terminos permiten explicitamente el uso no comercial de este tipo de
 /// app (ver `ServicesSettingsView`). Una sola portada por album, la del
 /// primer resultado de busqueda.
-struct DeezerClient {
+struct DeezerClient: Sendable {
     private struct SearchResponse: Decodable {
         let data: [Track]
     }

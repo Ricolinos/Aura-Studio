@@ -3,7 +3,7 @@ import Foundation
 /// Cliente de Cover Art Archive (coverartarchive.org), sin API key.
 /// Complementa a MusicBrainzClient: una vez que se sabe el
 /// release id de MusicBrainz, esto trae la imagen de tapa real.
-struct CoverArtArchiveClient {
+struct CoverArtArchiveClient: Sendable {
     private struct ImageEntry: Decodable {
         let image: String
         let front: Bool

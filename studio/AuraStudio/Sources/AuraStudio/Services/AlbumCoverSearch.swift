@@ -32,7 +32,11 @@ import Foundation
 /// cuál descarga llegó primero: cada candidata conserva el índice de su
 /// edición/resultado y el orden final lo manda `isBetter`, que es total
 /// y determinista -- dos corridas dan exactamente la misma lista.
-struct AlbumCoverSearch {
+///
+/// `Sendable` (todos los miembros lo son: los clientes son structs de
+/// URLSession+URL y el rate limiter es un actor): el picker la crea en
+/// el MainActor y la manda a un contexto concurrente en cada búsqueda.
+struct AlbumCoverSearch: Sendable {
     var musicBrainz = MusicBrainzClient()
     var coverArtArchive = CoverArtArchiveClient()
     var deezer = DeezerClient()

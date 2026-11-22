@@ -6,7 +6,7 @@ import Foundation
 /// aca. Se usa para resolver titulo/artista/album/año/genero a partir de
 /// lo poco que ya tenga el archivo (tags existentes o el nombre del
 /// archivo), buscando la grabacion mas parecida.
-struct MusicBrainzClient {
+struct MusicBrainzClient: Sendable {
     struct Recording: Decodable, Equatable {
         let id: String
         let title: String

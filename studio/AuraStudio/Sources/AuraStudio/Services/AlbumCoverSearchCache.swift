@@ -23,7 +23,7 @@ import Foundation
 /// de esa vigencia al leer — son unos pocos cientos de KB por álbum y el
 /// usuario siempre puede purgar `.portadas/busqueda/` sin romper nada
 /// (es derivado 100% regenerable, igual que `.preparados/`).
-struct AlbumCoverSearchCache {
+struct AlbumCoverSearchCache: Sendable {
     /// Vigencia de una búsqueda cacheada. Las tapas de un álbum ya
     /// publicado son estables; el tope existe para no servir por siempre
     /// una candidata bajada de una fuente que pudo corregirse.
@@ -41,7 +41,6 @@ struct AlbumCoverSearchCache {
     }
 
     let directory: URL
-    private let fileManager = FileManager.default
     /// Inyectable para pruebas (el reloj real no se toca en la suite).
     var now: @Sendable () -> Date = { Date() }
 
@@ -107,8 +106,8 @@ struct AlbumCoverSearchCache {
     func store(_ candidates: [AlbumCoverSearch.Candidate], for key: Key) {
         guard !candidates.isEmpty else { return }
         let folder = folderURL(for: key)
-        try? fileManager.removeItem(at: folder)
-        guard let _ = try? fileManager.createDirectory(at: folder, withIntermediateDirectories: true) else { return }
+        try? FileManager.default.removeItem(at: folder)
+        guard let _ = try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true) else { return }
 
         var stored: [StoredCandidate] = []
         for (index, candidate) in candidates.enumerated() {
