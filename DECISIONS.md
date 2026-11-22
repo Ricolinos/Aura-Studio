@@ -19507,3 +19507,30 @@ escaneo completo se reserva para CONECTAR el dispositivo -- el unico
 momento en que pudo cambiar por fuera -- y para un sync que termino con
 error. `deleteAllDeviceContent` ahora tambien borra los dos archivos de
 estado nuevos.
+
+## ST-254 — Ronda rendimiento-3, camino A: el loop de copia deja de pagar costos fijos por archivo
+
+Tres cambios chicos, todos en el camino caliente del sync:
+
+1. **Manifiesto en tandas.** Se guardaba ENTERO tras cada archivo
+   copiado (§8.1): un JSON que crece con la biblioteca, reescrito miles
+   de veces por sync sobre USB 2.0. Ahora se guarda cada 25 archivos o
+   10 segundos (lo primero que ocurra) y SIEMPRE al salir del loop --
+   cancelacion incluida, asi que la garantia de §8.1 ("lo copiado
+   sobrevive") se conserva: las pruebas de cancelacion que la fijan
+   pasan sin tocarlas. Ventana de perdida aceptada: una desconexion DE
+   GOLPE entre tandas deja hasta 24 archivos copiados sin registro --
+   el proximo sync los recopia, nunca quedan rotos (la copia
+   transaccional lo garantiza por archivo).
+2. **O(n^2) -> O(n).** El item de cada archivo del plan se buscaba con
+   `items.first(where:)` dentro del loop: n busquedas lineales = n^2
+   comparaciones de ruta por sync. Ahora se arma UN diccionario por
+   `sourcePath` antes del loop (duplicados: gana el primero, igual que
+   `first(where:)`).
+3. **`stat` fuera del MainActor.** `verifyDevice` hacia un
+   `attributesOfItem` por item de la biblioteca EN EL HILO PRINCIPAL
+   antes de entrar a su `Task.detached` -- congelamiento de UI al
+   conectar el iPod y tras cada sync, proporcional al tamano de la
+   biblioteca. El `compactMap` entero (tambien el de
+   `refreshDeviceIndexAfterSuccessfulSync`) ahora corre dentro de la
+   tarea separada.

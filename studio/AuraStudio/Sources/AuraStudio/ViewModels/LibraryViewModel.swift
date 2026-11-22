@@ -2619,22 +2619,25 @@ final class LibraryViewModel: ObservableObject {
     /// Compara la biblioteca contra lo que de verdad hay en el iPod
     /// conectado -- PLAN-general-sync.md §4. Hace I/O real (una
     /// enumeración de `Music/`/`Videos/`/`Photos/`/`Playlists/`), por
-    /// eso corre en un `Task.detached` fuera del hilo principal, igual
-    /// que `sync()`.
+    /// eso corre ENTERO en un `Task.detached` fuera del hilo principal,
+    /// igual que `sync()` -- ST-254: antes el `compactMap` de
+    /// `currentFiles` (un `attributesOfItem` por item) corria en el
+    /// MainActor y congelaba la UI al conectar un iPod con biblioteca
+    /// grande.
     func verifyDevice(at volumeRoot: URL) async {
         guard !isVerifyingDevice else { return }
         isVerifyingDevice = true
         defer { isVerifyingDevice = false }
 
-        let currentFiles: [DeviceSyncIndexBuilder.CurrentFile] = items.compactMap { item in
-            guard let prepared = item.preparedURL,
-                  let attrs = try? FileManager.default.attributesOfItem(atPath: prepared.path) else { return nil }
-            let size = (attrs[.size] as? Int64) ?? 0
-            let modified = (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
-            return DeviceSyncIndexBuilder.CurrentFile(sourcePath: item.sourceURL.path, size: size, modifiedAt: modified)
-        }
-
+        let itemsSnapshot = items
         let index = await Task.detached(priority: .utility) {
+            let currentFiles: [DeviceSyncIndexBuilder.CurrentFile] = itemsSnapshot.compactMap { item in
+                guard let prepared = item.preparedURL,
+                      let attrs = try? FileManager.default.attributesOfItem(atPath: prepared.path) else { return nil }
+                let size = (attrs[.size] as? Int64) ?? 0
+                let modified = (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
+                return DeviceSyncIndexBuilder.CurrentFile(sourcePath: item.sourceURL.path, size: size, modifiedAt: modified)
+            }
             let sync = LibrarySync(volumeRoot: volumeRoot)
             let manifest = sync.loadManifest()
             return DeviceSyncIndexBuilder.scan(volumeRoot: volumeRoot, currentFiles: currentFiles, manifest: manifest)
@@ -2654,16 +2657,19 @@ final class LibraryViewModel: ObservableObject {
         isVerifyingDevice = true
         defer { isVerifyingDevice = false }
 
-        let currentFiles: [DeviceSyncIndexBuilder.CurrentFile] = items.compactMap { item in
-            guard let prepared = item.preparedURL,
-                  let attrs = try? FileManager.default.attributesOfItem(atPath: prepared.path) else { return nil }
-            let size = (attrs[.size] as? Int64) ?? 0
-            let modified = (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
-            return DeviceSyncIndexBuilder.CurrentFile(sourcePath: item.sourceURL.path, size: size, modifiedAt: modified)
-        }
+        let itemsSnapshot = items
         let foreignFiles = deviceSyncIndex?.foreignFiles ?? []
 
         let index = await Task.detached(priority: .utility) {
+            // ST-254: el `stat` de cada preparado tambien corre aca, no
+            // en el MainActor (mismo criterio que `verifyDevice`).
+            let currentFiles: [DeviceSyncIndexBuilder.CurrentFile] = itemsSnapshot.compactMap { item in
+                guard let prepared = item.preparedURL,
+                      let attrs = try? FileManager.default.attributesOfItem(atPath: prepared.path) else { return nil }
+                let size = (attrs[.size] as? Int64) ?? 0
+                let modified = (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
+                return DeviceSyncIndexBuilder.CurrentFile(sourcePath: item.sourceURL.path, size: size, modifiedAt: modified)
+            }
             let sync = LibrarySync(volumeRoot: volumeRoot)
             let manifest = sync.loadManifest()
             return DeviceSyncIndexBuilder.buildTrustingManifest(currentFiles: currentFiles, manifest: manifest,

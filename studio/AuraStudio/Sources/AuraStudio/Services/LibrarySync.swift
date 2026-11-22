@@ -663,9 +663,26 @@ struct LibrarySync {
         let toCopy = plan.filter { $0.action == .copy }.count
 
         phaseTimer.begin("copia")
+        // Ronda rendimiento-3, camino A (ST-254): el lookup del item por
+        // `sourcePath` era `items.first(where:)` DENTRO del loop -- O(n)
+        // por archivo copiado, O(n^2) por sync. El diccionario se arma
+        // una sola vez (duplicados: gana el primero, igual que `first`).
+        let itemsBySourcePath = Dictionary(items.map { ($0.sourceURL.path, $0) },
+                                           uniquingKeysWith: { first, _ in first })
+        // ST-254: el manifiesto se guarda en TANDAS (cada 25 archivos o
+        // 10 segundos, lo primero que ocurra) y SIEMPRE al salir del
+        // loop -- antes iba al disco entero tras CADA archivo, y con
+        // bibliotecas grandes el JSON pesa MB: era una fraccion grande
+        // del tiempo total sobre USB 2.0. Ventana de perdida aceptada:
+        // una desconexion DE GOLPE entre tandas pierde el registro de
+        // hasta 24 archivos ya copiados -- el proximo sync los recopia
+        // (estan en el iPod pero sin registro); nunca quedan rotos ni a
+        // medias (la copia transaccional lo garantiza por archivo).
+        var copiedSinceManifestSave = 0
+        var lastManifestSave = DispatchTime.now()
         planLoop: for planItem in plan {
             guard planItem.action == .copy else { continue }
-            guard let item = items.first(where: { $0.sourceURL.path == planItem.sourcePath }),
+            guard let item = itemsBySourcePath[planItem.sourcePath],
                   let prepared = Self.fileThatTravels(item) else { continue }
 
             // §8.3: la cancelacion se revisa en la frontera de archivo
@@ -738,16 +755,31 @@ struct LibrarySync {
                     writtenBy: installationID,
                     syncedAt: Date().timeIntervalSince1970
                 )
-                // §8.1: el manifiesto se guarda tras CADA archivo (antes
-                // solo al final) -- es lo que hace que pausar, cancelar, o
-                // una desconexion fisica conserven el progreso ya copiado
-                // en vez de perderlo si el resto del sync no llega a correr.
-                try phaseTimer.measure("manifiesto") { try saveManifest(manifest) }
+                // §8.1/ST-254: guardado en tandas (ver arriba) -- la
+                // cancelacion y el fin del plan caen en el flush de
+                // despues del loop, que tambien persiste lo pendiente.
+                copiedSinceManifestSave += 1
+                if copiedSinceManifestSave >= 25
+                    || DispatchTime.now().uptimeNanoseconds - lastManifestSave.uptimeNanoseconds >= 10_000_000_000 {
+                    try phaseTimer.measure("manifiesto") { try saveManifest(manifest) }
+                    copiedSinceManifestSave = 0
+                    lastManifestSave = DispatchTime.now()
+                }
             } catch {
                 failures.append(SyncFailure(sourcePath: planItem.sourcePath,
                                              destinationRelativePath: planItem.destinationRelativePath,
                                              message: error.localizedDescription))
             }
+        }
+
+        // ST-254: flush de la ultima tanda -- cancelacion deliberada,
+        // cancelacion a mitad de archivo y fin normal del plan caen
+        // todos aca, asi que lo copiado SIEMPRE queda registrado al
+        // cerrar el loop (la garantia de §8.1 se conserva; lo que cambio
+        // es solo la frecuencia DENTRO del loop).
+        if copiedSinceManifestSave > 0 {
+            try phaseTimer.measure("manifiesto") { try saveManifest(manifest) }
+            copiedSinceManifestSave = 0
         }
 
         // Hoja de conflictos, "Quitar del iPod los N elementos que ya
