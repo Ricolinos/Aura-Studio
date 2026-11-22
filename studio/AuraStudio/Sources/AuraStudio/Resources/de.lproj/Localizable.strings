@@ -40,7 +40,6 @@
 "app-update-bar.instalador-todavia-no-esta-publicado-ese" = "Das Installationsprogramm ist in diesem Release noch nicht veröffentlicht.";
 "app-update-bar.oculta-este-aviso-no-vuelve-aparecer" = "Blendet diesen Hinweis aus. Für diese Version erscheint er nicht wieder.";
 "app-update-bar.ver-novedades" = "Neuerungen ansehen";
-"artist-image-store.02x" = "_%02x";
 "artists-view.artistas" = "Interpreten";
 "artists-view.artistas-seleccionados" = "%lld Interpreten ausgewählt";
 "artists-view.buscar-fotos" = "Fotos suchen";
@@ -80,7 +79,6 @@
 "batch-media-info-view.se-aplica-canciones-seleccionadas" = "Gilt für die %lld ausgewählten Titel.";
 "batch-media-info-view.se-editan-cancion-usa-cambiar-nombre" = "Diese werden einzeln bearbeitet – nimm „Umbenennen …“ oder „Weitere Informationen …“ bei einem einzelnen Objekt.";
 "batch-media-info-view.vas-editar-canciones-vez-campos-que" = "Du bearbeitest gleich %lld Titel auf einmal. Felder, die nicht bei allen übereinstimmen, stehen als „Gemischt“ – was du eingibst, gilt für alle %lld. Titel und Titelnummer lassen sich nicht als Stapel bearbeiten.";
-"bundled-artifacts.02x" = "%02x";
 "content-view.actualizar" = "Aktualisieren";
 "content-view.aura-studio" = "Aura Studio";
 "content-view.sincronizar-con-ipod" = "Mit dem iPod synchronisieren";
@@ -94,7 +92,6 @@
 "cover-normalization-bar.accesibilidad-progreso" = "Cover werden normalisiert: %1$lld von %2$lld";
 "cover-normalization-bar.caratulas-tu-biblioteca-pasan-ser-cuadra" = "Die Cover deiner Mediathek werden quadratisch, so wie der iPod sie zeigt. Deine Originaldateien bleiben unangetastet.";
 "cover-normalization-bar.detiene-normalizacion-lo-que-ya-se" = "Stoppt das Normalisieren. Was schon erledigt ist, bleibt erledigt; der Rest läuft weiter, wenn du die Mediathek das nächste Mal öffnest.";
-"cover-store.02x" = "%02X";
 "detect-device-view.buscando-tu-ipod" = "Dein iPod wird gesucht …";
 "detect-device-view.conecta-tu-ipod-classic-6g-este" = "Schließ deinen iPod Classic 6G per USB an diesen Mac an. Wenn iTunes/Musik von selbst aufgeht, kannst du es schließen – es stört Aura Studio nicht.";
 "detect-device-view.encontramos-con-firmware-original-apple" = "Wir haben „%@“ gefunden, mit Apples Original-Firmware (noch nicht auf FAT32). Du musst nichts umwandeln: Klick auf „Ist angeschlossen, trotzdem fortfahren“ und Aura Studio formatiert ihn später automatisch, beim Vorbereiten der Festplatte.";
@@ -201,7 +198,6 @@
 "git-hub-token-settings-view.repositorios-firmwares-son-publicos-aura" = "Die Firmware-Repositorys sind öffentlich: Aura Studio informiert dich auch ohne all das über neue Versionen. Ein Token mit Lesezugriff erhöht nur das Anfragelimit der GitHub-API (nützlich, wenn du deine Verbindung mit vielen anderen Anfragen teilst); das Installieren der Firmware hängt nie davon ab, weil sie in der App enthalten ist.";
 "git-hub-token-settings-view.si-todas-formas-quieres-uno-crea" = "Wenn du trotzdem eins willst: Erstell auf github.com › Settings › Developer settings ein Fine-grained Token mit Zugriff nur auf Aura-Firmware, Metro-Aura und moonlit-aura und der Berechtigung Contents: Read-only.";
 "git-hub-token-settings-view.token-llavero" = "Token im Schlüsselbund";
-"install-manifest.08x-llu" = "%08x %llu %@";
 "installer-home-view.actualizar-arranque" = "Bootloader aktualisieren";
 "installer-home-view.firmware-instalar-se-elige-extras-firmwa" = "Zu installierende Firmware: %@ – auswählbar unter Extras › Firmware";
 "installer-home-view.restaurar-ipod-original" = "Original-iPod wiederherstellen";

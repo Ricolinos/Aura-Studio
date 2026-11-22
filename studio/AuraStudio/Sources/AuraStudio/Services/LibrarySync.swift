@@ -172,6 +172,49 @@ struct SyncResult: Equatable {
     /// que Studio seguia mostrando "Todavia no sincronizaste" y "Otro"
     /// en vez de "Musica", y el firmware seguia sin ver la sincronizacion.
     var failures: [SyncFailure] = []
+    /// Ronda rendimiento-3, camino D: cuanto tardo cada fase del sync,
+    /// en segundos ("copia", "caratulas-album", "letras", ...). Solo
+    /// diagnostico -- se publica via OSLog (categoria "Rendimiento") y
+    /// no cambia nada de lo que el sync hace. "manifiesto" es subtotal
+    /// de "copia": se acumula dentro del loop.
+    var phaseTimings: [String: TimeInterval] = [:]
+}
+
+/// Ronda rendimiento-3, camino D: cronometro por fases para `sync()`.
+/// Acumular por nombre permite medir algo que corre en varias tandas
+/// (p. ej. `saveManifest` dentro del loop de copia) sin cambiar la
+/// estructura del codigo medido. No es Sendable ni hace falta: vive y
+/// muere dentro de una sola llamada a `sync()`.
+final class SyncPhaseTimer {
+    private(set) var timings: [String: TimeInterval] = [:]
+    private var openPhase: String?
+    private var openStart = DispatchTime.now()
+
+    /// Abre una fase larga (el loop de copia); `end()` la cierra.
+    /// Abrir otra sin cerrar la anterior la cierra implicitamente.
+    func begin(_ phase: String) {
+        end()
+        openPhase = phase
+        openStart = DispatchTime.now()
+    }
+
+    func end() {
+        guard let phase = openPhase else { return }
+        accumulate(phase, since: openStart)
+        openPhase = nil
+    }
+
+    /// Mide un bloque acotado y devuelve su resultado tal cual.
+    func measure<T>(_ phase: String, _ body: () throws -> T) rethrows -> T {
+        let start = DispatchTime.now()
+        defer { accumulate(phase, since: start) }
+        return try body()
+    }
+
+    private func accumulate(_ phase: String, since start: DispatchTime) {
+        let elapsed = Double(DispatchTime.now().uptimeNanoseconds - start.uptimeNanoseconds) / 1_000_000_000
+        timings[phase, default: 0] += elapsed
+    }
 }
 
 /// Un item que `SyncPlanner` marco `.copy` pero que no se pudo escribir
@@ -478,6 +521,8 @@ struct LibrarySync {
               installationID: String? = nil,
               isCancelled: () -> Bool = { false },
               onProgress: (_ copied: Int, _ toCopy: Int) -> Void = { _, _ in }) throws -> SyncResult {
+        let phaseTimer = SyncPhaseTimer()
+        phaseTimer.begin("barrido")
         sweepOrphanedTempFiles()
         try writeInProgressMarker(startedAt: Date())
 
@@ -509,6 +554,7 @@ struct LibrarySync {
             else if deviceRelativePath.hasPrefix("Photos/") { touched.images = true }
         }
 
+        phaseTimer.begin("levantar-estado")
         let currentFiles = try items.compactMap { item -> (sourcePath: String, size: Int64, modifiedAt: TimeInterval, destinationRelativePath: String)? in
             // ST-224: **lo que viaja es `preparedURL ?? sourceURL`**. En
             // modo referencia, un elemento sin derivado no es un elemento
@@ -565,6 +611,7 @@ struct LibrarySync {
             return (item.sourceURL.path, size, modified, destRelative)
         }
 
+        phaseTimer.begin("plan")
         var fullPlan = SyncPlanner.plan(current: currentFiles, previousManifest: manifest)
         // Hoja de conflictos, "Reemplazar con la biblioteca": fuerza a
         // `.copy` lo que SyncPlanner habia decidido `.skip` (el
@@ -591,6 +638,7 @@ struct LibrarySync {
         // pasar, no contra el total de la biblioteca completa.
         let toCopy = plan.filter { $0.action == .copy }.count
 
+        phaseTimer.begin("copia")
         planLoop: for planItem in plan {
             guard planItem.action == .copy else { continue }
             guard let item = items.first(where: { $0.sourceURL.path == planItem.sourcePath }),
@@ -670,7 +718,7 @@ struct LibrarySync {
                 // solo al final) -- es lo que hace que pausar, cancelar, o
                 // una desconexion fisica conserven el progreso ya copiado
                 // en vez de perderlo si el resto del sync no llega a correr.
-                try saveManifest(manifest)
+                try phaseTimer.measure("manifiesto") { try saveManifest(manifest) }
             } catch {
                 failures.append(SyncFailure(sourcePath: planItem.sourcePath,
                                              destinationRelativePath: planItem.destinationRelativePath,
@@ -684,6 +732,7 @@ struct LibrarySync {
         // automatico: un registro huerfano que nadie marco para borrar
         // se queda en el iPod y en el manifiesto para siempre, como
         // hoy.
+        phaseTimer.begin("huerfanos")
         if !removeOrphanedSourcePaths.isEmpty {
             for orphanSourcePath in removeOrphanedSourcePaths {
                 guard let record = manifest.records[orphanSourcePath] else { continue }
@@ -703,21 +752,27 @@ struct LibrarySync {
         // que la cancion ya estaba en el iPod tiene que llegar igual, y
         // una letra borrada en Studio se va del iPod. Solo se escribe
         // si el contenido cambio (no rehace el archivo en cada sync).
+        phaseTimer.begin("letras")
         writeLyricsSidecars(items: items, destinationByItemID: destinationByItemID,
                             onlyForSourcePaths: restrictCopyToSourcePaths)
 
+        phaseTimer.begin("caratulas-album")
         if coverArtPolicy == .albumOnly,
            writeAlbumCovers(items: items, destinationByItemID: destinationByItemID) {
             touched.music = true
         }
 
+        phaseTimer.begin("playlists")
         let playlistsWritten = try writePlaylists(playlists, destinationByItemID: destinationByItemID,
                                                    items: items, libraryRoot: libraryRoot)
         summary.playlistCount = playlistsWritten
+        phaseTimer.begin("indices-cfg")
         try writeSummary(summary)
         try writeRatings(items: items, destinationByItemID: destinationByItemID)
         try writeCategoryIndexes(items: items, destinationByItemID: destinationByItemID)
+        phaseTimer.begin("posters-temporada")
         writeSeasonPosters(items: items)
+        phaseTimer.begin("fotos-artistas")
         if writeArtistImages(items: items, libraryRoot: libraryRoot, artistGrouping: artistGrouping) {
             touched.music = true
         }
@@ -727,6 +782,7 @@ struct LibrarySync {
         // arbol DORMIDO presente, para que el firmware que despierte no
         // despierte desactualizado. No es fatal si falla: el dormido se
         // pondra al dia en el primer sync despues de despertar.
+        phaseTimer.begin("espejo-dormidos")
         try? FirmwareSwitcher.mirrorContractFilesToDormantTrees(volumeRoot: volumeRoot, fileManager: fileManager)
 
         // ST-146 / maestro §B: la hora del Mac se sincroniza al TERMINAR
@@ -734,6 +790,7 @@ struct LibrarySync {
         // el sync cambios de medios que copiar. Antes del marcador de
         // abajo a proposito: si algo de lo de aca abajo fallara, la hora
         // ya quedo puesta.
+        phaseTimer.begin("hora")
         try? ClockSyncWriter.writeToDisk(mountPath: volumeRoot.path, fileManager: fileManager)
 
         // ST-012 / contrato SS4: si este sync toco algo (tambien si se
@@ -746,6 +803,7 @@ struct LibrarySync {
         // (SS4.4: ninguna combinacion de versiones rompe). El marcador
         // se escribe igual: un firmware viejo lo ignora, y uno nuevo
         // instalado despues lo aplica en su primer arranque.
+        phaseTimer.begin("marcador-final")
         let markerWritten = writeSyncMarkerIfNeeded(touched)
         if copied > 0 && FirmwareCapabilities.supportedSyncMarkerVersion(volumeRoot: volumeRoot) == nil {
             triggerFirmwareDBRebuild()
@@ -756,11 +814,13 @@ struct LibrarySync {
         // interrumpe DE GOLPE (una excepcion real, p. ej. desconexion,
         // que no pasa por aca) y nunca llega a este punto.
         removeInProgressMarker()
+        phaseTimer.end()
 
         let remaining = wasCancelled ? max(toCopy - copied, 0) : 0
         return SyncResult(filesCopied: copied, playlistsWritten: playlistsWritten,
                            wasCancelled: wasCancelled, filesRemaining: remaining,
-                           syncMarkerWritten: markerWritten, failures: failures)
+                           syncMarkerWritten: markerWritten, failures: failures,
+                           phaseTimings: phaseTimer.timings)
     }
 
     /// Encargo del dueño (General → "Eliminar todos los archivos, o por

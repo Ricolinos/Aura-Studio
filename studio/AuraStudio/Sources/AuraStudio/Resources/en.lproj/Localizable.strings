@@ -40,7 +40,6 @@
 "app-update-bar.instalador-todavia-no-esta-publicado-ese" = "The installer has not been published in that release yet.";
 "app-update-bar.oculta-este-aviso-no-vuelve-aparecer" = "Hides this notice. It will not come back for this version.";
 "app-update-bar.ver-novedades" = "See what’s new";
-"artist-image-store.02x" = "_%02x";
 "artists-view.artistas" = "Artists";
 "artists-view.artistas-seleccionados" = "%lld artists selected";
 "artists-view.buscar-fotos" = "Find photos";
@@ -80,7 +79,6 @@
 "batch-media-info-view.se-aplica-canciones-seleccionadas" = "Applies to the %lld selected songs.";
 "batch-media-info-view.se-editan-cancion-usa-cambiar-nombre" = "These are edited one song at a time -- use “Rename…” or “More information…” on a single item.";
 "batch-media-info-view.vas-editar-canciones-vez-campos-que" = "You are about to edit %lld songs at once. Fields that don’t match across all of them show as “Mixed” -- whatever you type applies to all %lld. Title and track number can’t be edited in bulk.";
-"bundled-artifacts.02x" = "%02x";
 "content-view.actualizar" = "Refresh";
 "content-view.aura-studio" = "Aura Studio";
 "content-view.sincronizar-con-ipod" = "Sync with iPod";
@@ -94,7 +92,6 @@
 "cover-normalization-bar.accesibilidad-progreso" = "Normalizing cover art: %1$lld of %2$lld";
 "cover-normalization-bar.caratulas-tu-biblioteca-pasan-ser-cuadra" = "The cover art in your library becomes square, the way the iPod shows it. Your original files are not touched.";
 "cover-normalization-bar.detiene-normalizacion-lo-que-ya-se" = "Stops normalizing. What is already done stays done, and the rest continues the next time you open the library.";
-"cover-store.02x" = "%02X";
 "detect-device-view.buscando-tu-ipod" = "Looking for your iPod…";
 "detect-device-view.conecta-tu-ipod-classic-6g-este" = "Connect your iPod Classic 6G to this Mac over USB. If iTunes/Music opens on its own, you can close it -- it doesn’t interfere with Aura Studio.";
 "detect-device-view.encontramos-con-firmware-original-apple" = "We found “%@”, with Apple’s original firmware (not on FAT32 yet). You don’t need to convert it: click “I connected it, continue anyway” and Aura Studio will format it automatically later, in the disk preparation step.";
@@ -201,7 +198,6 @@
 "git-hub-token-settings-view.repositorios-firmwares-son-publicos-aura" = "The firmware repositories are public: Aura Studio already tells you about new versions without needing any of this. A read-only token only raises the GitHub API rate limit (useful if you share your connection with many other requests); installing the firmware never depends on this, because it comes bundled with the app.";
 "git-hub-token-settings-view.si-todas-formas-quieres-uno-crea" = "If you want one anyway: create a fine-grained token in github.com › Settings › Developer settings with access only to Aura-Firmware, Metro-Aura and moonlit-aura, and Contents: Read-only permission.";
 "git-hub-token-settings-view.token-llavero" = "Token in the Keychain";
-"install-manifest.08x-llu" = "%08x %llu %@";
 "installer-home-view.actualizar-arranque" = "Update the boot loader";
 "installer-home-view.firmware-instalar-se-elige-extras-firmwa" = "Firmware to install: %@ -- pick it in Extras › Firmware";
 "installer-home-view.restaurar-ipod-original" = "Restore the original iPod";

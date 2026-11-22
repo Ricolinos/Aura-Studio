@@ -15,7 +15,7 @@ final class LocalizationLanguagesTests: XCTestCase {
     private static let languages = ["es", "en", "ja", "de", "ru", "fr"]
 
     private func catalogStrings() throws -> [String: Any] {
-        let url = try XCTUnwrap(AuraBundle.strings.url(forResource: "Localizable", withExtension: "xcstrings"))
+        let url = try XCTUnwrap(TestCatalogURL.localizable())
         let object = try JSONSerialization.jsonObject(with: try Data(contentsOf: url))
         return try XCTUnwrap((object as? [String: Any])?["strings"] as? [String: Any])
     }

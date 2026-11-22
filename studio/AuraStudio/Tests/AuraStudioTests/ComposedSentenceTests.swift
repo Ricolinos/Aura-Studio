@@ -45,7 +45,7 @@ final class ComposedSentenceTests: XCTestCase {
     /// una frase compuesta en inglés, es un fragmento que se quedó
     /// escrito en el código.
     private lazy var spanishOnlyWords: Set<String> = {
-        let url = AuraBundle.strings.url(forResource: "Localizable", withExtension: "xcstrings")!
+        let url = TestCatalogURL.localizable()!
         let object = try! JSONSerialization.jsonObject(with: try! Data(contentsOf: url))
         let strings = (object as! [String: Any])["strings"] as! [String: Any]
 

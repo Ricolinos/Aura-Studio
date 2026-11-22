@@ -19394,3 +19394,39 @@ Partir `LSf(` y su clave en dos líneas dejó la clave fuera del inventario
 (`testEveryLocalizationCallUsesALiteralKey`), y por eso la misma clave salió
 además como "no usada por nadie". Las dos pruebas de A7c se escribieron para
 esto exactamente, y funcionaron.
+
+---
+
+## ST-250 — Ronda rendimiento-3 (0/4): el camino de verificación vuelve a estar verde
+
+La ronda de rendimiento D>B>C>A empezó con un hallazgo: `swift build` ya
+no compilaba en esta máquina. Dos causas, ambas del toolchain actual
+(Xcode 26.x), ninguna del código:
+
+1. `.process("Resources")` copiaba los `*.lproj/Localizable.strings` Y
+   compilaba el `Localizable.xcstrings` a esos mismos archivos —
+   "Multiple commands produce". Los `.strings` quedaron excluidos del
+   paquete SwiftPM (siguen en disco para el `.xcodeproj`, que es el
+   entregable real); el paquete se queda solo con el catálogo.
+2. El toolchain ya no copia el `.xcstrings` fuente al bundle (lo
+   compila), así que las cinco pruebas que lo auditan crudo reventaban
+   con nil. Nuevo helper `TestCatalogURL.localizable()`: bundle primero,
+   respaldo en el árbol de fuentes localizado desde `#filePath`.
+
+Y tres claves que no eran traducción sino formato (`cover-store.02x`,
+`bundled-artifacts.02x`, `install-manifest.08x-llu`,
+`artist-image-store.02x`) rompían el codegen del catálogo ("%02X no es un
+especificador que Swift pueda tipar"). Volvieron a ser literales en el
+código — nunca debieron estar en el catálogo.
+
+## ST-251 — Ronda rendimiento-3, camino D: el sync mide sus propias fases
+
+Antes de optimizar a ciegas: `SyncPhaseTimer` registra cuánto tarda cada
+fase de `sync()` (levantar-estado, plan, copia —con subtotal de
+manifiesto—, letras, carátulas, playlists, índices, pósters, fotos de
+artista, espejo a dormidos, hora, marcador) y el resultado viaja en
+`SyncResult.phaseTimings` hasta `LibraryViewModel`, que lo publica por
+OSLog (subsistema com.ricolinos.aurastudio, categoría Rendimiento, el
+mismo canal que MainThreadWatchdog). Cero cambio de comportamiento: es
+instrumentación, no lógica. Las decisiones de los caminos A/B/C se toman
+con estos números, no con suposiciones.

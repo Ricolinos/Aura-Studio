@@ -1,6 +1,7 @@
 import AppKit
 import Foundation
 import Combine
+import os
 
 /// Orquesta el flujo completo de la biblioteca: recibe archivos
 /// arrastrados, los clasifica, los procesa (enriquecer musica,
@@ -11,6 +12,10 @@ import Combine
 /// antes de sincronizar.
 @MainActor
 final class LibraryViewModel: ObservableObject {
+    /// Ronda rendimiento-3, camino D: canal de diagnostico de tiempos
+    /// (mismo subsistema/categoria que MainThreadWatchdog).
+    private static let perfLog = OSLog(subsystem: "com.ricolinos.aurastudio", category: "Rendimiento")
+
     /// PLAN-studio-rendimiento.md Fase 4 punto 1: fuente única de verdad
     /// de qué corre en segundo plano ahora mismo. Primera integración
     /// real, en esta ronda: `reenrichOnline` (abajo). El resto de las
@@ -2511,6 +2516,18 @@ final class LibraryViewModel: ObservableObject {
                     }
                 }
             }.value
+            // Ronda rendimiento-3, camino D: tiempos por fase al log de
+            // rendimiento (mismo canal que MainThreadWatchdog) -- visibles
+            // con `log stream --predicate 'subsystem == "com.ricolinos.aurastudio"'`
+            // o en Console.app. Solo diagnostico; el resumen de cara al
+            // usuario no cambia.
+            if !result.phaseTimings.isEmpty {
+                let line = result.phaseTimings
+                    .sorted { $0.value > $1.value }
+                    .map { "\($0.key)=\(String(format: "%.2f", $0.value))s" }
+                    .joined(separator: " ")
+                os_log(.info, log: Self.perfLog, "sync fases: %{public}@", line)
+            }
             let playlistsNote = result.playlistsWritten > 0 ? " \(result.playlistsWritten) playlist(s) actualizada(s)." : ""
             if result.wasCancelled {
                 lastSyncSummary = "Sincronización cancelada. Se copiaron \(result.filesCopied) archivo(s); \(result.filesRemaining) quedaron pendientes.\(playlistsNote)"

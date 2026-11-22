@@ -26,11 +26,34 @@ let package = Package(
         .executableTarget(
             name: "AuraStudio",
             path: "Sources/AuraStudio",
+            // Las .lproj/Localizable.strings(.stringsdict) quedan
+            // FUERA de SwiftPM: `.process("Resources")` ya compila el
+            // String Catalog (`Localizable.xcstrings`) a esos mismos
+            // archivos, y tener los dos produce "Multiple commands
+            // produce ..." con los toolchains actuales. Los .strings
+            // siguen existiendo en disco para el proyecto de Xcode
+            // (el entregable real); este paquete es solo el camino de
+            // verificación.
+            exclude: [
+                "Resources/de.lproj/Localizable.strings",
+                "Resources/de.lproj/Localizable.stringsdict",
+                "Resources/en.lproj/Localizable.strings",
+                "Resources/en.lproj/Localizable.stringsdict",
+                "Resources/es.lproj/Localizable.strings",
+                "Resources/es.lproj/Localizable.stringsdict",
+                "Resources/fr.lproj/Localizable.strings",
+                "Resources/fr.lproj/Localizable.stringsdict",
+                "Resources/ja.lproj/Localizable.strings",
+                "Resources/ja.lproj/Localizable.stringsdict",
+                "Resources/ru.lproj/Localizable.strings",
+                "Resources/ru.lproj/Localizable.stringsdict",
+            ],
             // ST-227: el String Catalog. En SwiftPM se resuelve por
             // `Bundle.module`; en el proyecto de Xcode --que es el
             // entregable real-- va como recurso del bundle de la app y
             // se resuelve por `Bundle.main`. `AuraBundle.strings` elige
             // cuál, y es el único sitio donde esa diferencia existe.
+            //
             resources: [.process("Resources")]
         ),
         .testTarget(

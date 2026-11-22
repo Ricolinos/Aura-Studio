@@ -40,7 +40,6 @@
 "app-update-bar.instalador-todavia-no-esta-publicado-ese" = "Установщик в этой версии ещё не опубликован.";
 "app-update-bar.oculta-este-aviso-no-vuelve-aparecer" = "Скрывает это уведомление. Для этой версии оно больше не появится.";
 "app-update-bar.ver-novedades" = "Что нового";
-"artist-image-store.02x" = "_%02x";
 "artists-view.artistas" = "Исполнители";
 "artists-view.artistas-seleccionados" = "Выбрано исполнителей: %lld";
 "artists-view.buscar-fotos" = "Найти фото";
@@ -80,7 +79,6 @@
 "batch-media-info-view.se-aplica-canciones-seleccionadas" = "Применяется к выбранным трекам: %lld.";
 "batch-media-info-view.se-editan-cancion-usa-cambiar-nombre" = "Они меняются по одному треку — используйте «Переименовать…» или «Подробнее…» для одного объекта.";
 "batch-media-info-view.vas-editar-canciones-vez-campos-que" = "Вы измените сразу %lld треков. Поля, которые различаются, показаны как «Разное» — то, что вы введёте, применится ко всем %lld. Название и номер трека нельзя менять пакетно.";
-"bundled-artifacts.02x" = "%02x";
 "content-view.actualizar" = "Обновить";
 "content-view.aura-studio" = "Aura Studio";
 "content-view.sincronizar-con-ipod" = "Синхронизировать с iPod";
@@ -94,7 +92,6 @@
 "cover-normalization-bar.accesibilidad-progreso" = "Приведение обложек: %1$lld из %2$lld";
 "cover-normalization-bar.caratulas-tu-biblioteca-pasan-ser-cuadra" = "Обложки вашей медиатеки станут квадратными, как их показывает iPod. Ваши исходные файлы не трогаются.";
 "cover-normalization-bar.detiene-normalizacion-lo-que-ya-se" = "Останавливает приведение. Сделанное остаётся сделанным, остальное продолжится при следующем открытии медиатеки.";
-"cover-store.02x" = "%02X";
 "detect-device-view.buscando-tu-ipod" = "Поиск вашего iPod…";
 "detect-device-view.conecta-tu-ipod-classic-6g-este" = "Подключите iPod Classic 6G к этому Mac по USB. Если iTunes/Музыка откроется сама, её можно закрыть — она не мешает Aura Studio.";
 "detect-device-view.encontramos-con-firmware-original-apple" = "Мы нашли «%@» с оригинальной прошивкой Apple (пока не в FAT32). Преобразовывать ничего не нужно: нажмите «Подключил, всё равно продолжить», и Aura Studio отформатирует его автоматически позже, на шаге подготовки диска.";
@@ -201,7 +198,6 @@
 "git-hub-token-settings-view.repositorios-firmwares-son-publicos-aura" = "Репозитории прошивок открыты: Aura Studio и так сообщает о новых версиях без всего этого. Токен только для чтения лишь повышает лимит запросов к API GitHub (полезно, если вы делите соединение со множеством других запросов); установка прошивки от него никогда не зависит, потому что она входит в приложение.";
 "git-hub-token-settings-view.si-todas-formas-quieres-uno-crea" = "Если он вам всё-таки нужен: создайте fine-grained токен в github.com › Settings › Developer settings с доступом только к Aura-Firmware, Metro-Aura и moonlit-aura и правом Contents: Read-only.";
 "git-hub-token-settings-view.token-llavero" = "Токен в связке ключей";
-"install-manifest.08x-llu" = "%08x %llu %@";
 "installer-home-view.actualizar-arranque" = "Обновить загрузчик";
 "installer-home-view.firmware-instalar-se-elige-extras-firmwa" = "Прошивка для установки: %@ — выбирается в разделе Дополнения › Прошивка";
 "installer-home-view.restaurar-ipod-original" = "Восстановить оригинальный iPod";

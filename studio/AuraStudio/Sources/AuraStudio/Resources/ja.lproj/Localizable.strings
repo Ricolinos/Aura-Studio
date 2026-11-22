@@ -40,7 +40,6 @@
 "app-update-bar.instalador-todavia-no-esta-publicado-ese" = "そのリリースにはインストーラーがまだ公開されていません。";
 "app-update-bar.oculta-este-aviso-no-vuelve-aparecer" = "この通知を非表示にします。このバージョンでは再表示されません。";
 "app-update-bar.ver-novedades" = "新機能を見る";
-"artist-image-store.02x" = "_%02x";
 "artists-view.artistas" = "アーティスト";
 "artists-view.artistas-seleccionados" = "%lld 人のアーティストを選択中";
 "artists-view.buscar-fotos" = "写真を検索";
@@ -80,7 +79,6 @@
 "batch-media-info-view.se-aplica-canciones-seleccionadas" = "選択中の %lld 曲に適用されます。";
 "batch-media-info-view.se-editan-cancion-usa-cambiar-nombre" = "これらは 1 曲ずつ編集します。項目をひとつ選んで「名称変更…」または「詳細情報…」をお使いください。";
 "batch-media-info-view.vas-editar-canciones-vez-campos-que" = "%lld 曲をまとめて編集します。すべてで一致しない項目は「混在」と表示され、入力した内容は %lld 曲すべてに適用されます。タイトルとトラック番号は一括編集できません。";
-"bundled-artifacts.02x" = "%02x";
 "content-view.actualizar" = "再読み込み";
 "content-view.aura-studio" = "Aura Studio";
 "content-view.sincronizar-con-ipod" = "iPod と同期";
@@ -94,7 +92,6 @@
 "cover-normalization-bar.accesibilidad-progreso" = "アートワークを整えています: %1$lld / %2$lld";
 "cover-normalization-bar.caratulas-tu-biblioteca-pasan-ser-cuadra" = "ライブラリのアートワークが、iPod での表示に合わせて正方形になります。元のファイルはそのままです。";
 "cover-normalization-bar.detiene-normalizacion-lo-que-ya-se" = "処理を停止します。済んだぶんはそのまま残り、残りは次にライブラリを開いたときに続きます。";
-"cover-store.02x" = "%02X";
 "detect-device-view.buscando-tu-ipod" = "iPod を探しています…";
 "detect-device-view.conecta-tu-ipod-classic-6g-este" = "iPod Classic 6G を USB でこの Mac に接続してください。iTunes／ミュージックが自動で開いた場合は閉じてかまいません。Aura Studio の邪魔にはなりません。";
 "detect-device-view.encontramos-con-firmware-original-apple" = "Apple 純正ファームウェアの「%@」が見つかりました（まだ FAT32 ではありません）。変換の必要はありません。「接続しました。このまま続ける」をクリックすれば、あとのディスク準備の段階で Aura Studio が自動的にフォーマットします。";
@@ -201,7 +198,6 @@
 "git-hub-token-settings-view.repositorios-firmwares-son-publicos-aura" = "ファームウェアのリポジトリは公開されています。これがなくても Aura Studio は新しいバージョンをお知らせします。読み取り専用のトークンは GitHub API のリクエスト上限を引き上げるだけです（多くのリクエストと回線を共有している場合に役立ちます）。ファームウェアのインストールがこれに依存することはありません。アプリに同梱されているからです。";
 "git-hub-token-settings-view.si-todas-formas-quieres-uno-crea" = "それでも必要な場合は、github.com › Settings › Developer settings で fine-grained トークンを作成し、Aura-Firmware、Metro-Aura、moonlit-aura のみへのアクセスと Contents: Read-only の権限を付与してください。";
 "git-hub-token-settings-view.token-llavero" = "キーチェーン内のトークン";
-"install-manifest.08x-llu" = "%08x %llu %@";
 "installer-home-view.actualizar-arranque" = "ブートローダーを更新";
 "installer-home-view.firmware-instalar-se-elige-extras-firmwa" = "インストールするファームウェア: %@ — その他 › ファームウェアで選べます";
 "installer-home-view.restaurar-ipod-original" = "純正の iPod に復元";

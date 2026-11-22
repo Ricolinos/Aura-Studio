@@ -1719,47 +1719,6 @@
         }
       }
     },
-    "artist-image-store.02x": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "_%02x"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "_%02x"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "_%02x"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "_%02x"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "_%02x"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "_%02x"
-          }
-        }
-      }
-    },
     "artists-view.artistas": {
       "extractionState": "manual",
       "localizations": {
@@ -3597,47 +3556,6 @@
         }
       }
     },
-    "bundled-artifacts.02x": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02x"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02x"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02x"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02x"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02x"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02x"
-          }
-        }
-      }
-    },
     "content-view.actualizar": {
       "extractionState": "manual",
       "localizations": {
@@ -4167,47 +4085,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Останавливает приведение. Сделанное остаётся сделанным, остальное продолжится при следующем открытии медиатеки."
-          }
-        }
-      }
-    },
-    "cover-store.02x": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02X"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02X"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02X"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02X"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02X"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%02X"
           }
         }
       }
@@ -9030,47 +8907,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Токен в связке ключей"
-          }
-        }
-      }
-    },
-    "install-manifest.08x-llu": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%08x %llu %@"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%08x %llu %@"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%08x %llu %@"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%08x %llu %@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%08x %llu %@"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%08x %llu %@"
           }
         }
       }

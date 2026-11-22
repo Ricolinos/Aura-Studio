@@ -6,7 +6,7 @@ import XCTest
 @MainActor
 final class LocalizationEnglishTests: XCTestCase {
     private func catalogStrings() throws -> [String: Any] {
-        let url = try XCTUnwrap(AuraBundle.strings.url(forResource: "Localizable", withExtension: "xcstrings"))
+        let url = try XCTUnwrap(TestCatalogURL.localizable())
         let object = try JSONSerialization.jsonObject(with: try Data(contentsOf: url))
         return try XCTUnwrap((object as? [String: Any])?["strings"] as? [String: Any])
     }

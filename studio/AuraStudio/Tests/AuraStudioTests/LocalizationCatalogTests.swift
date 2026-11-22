@@ -10,7 +10,7 @@ import XCTest
 @MainActor
 final class LocalizationCatalogTests: XCTestCase {
     private func catalog() throws -> [String: Any] {
-        let url = try XCTUnwrap(AuraBundle.strings.url(forResource: "Localizable", withExtension: "xcstrings"),
+        let url = try XCTUnwrap(TestCatalogURL.localizable(),
                                 "el catálogo tiene que estar en el bundle -- si esto falla, el recurso no se está empaquetando")
         let data = try Data(contentsOf: url)
         return try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
