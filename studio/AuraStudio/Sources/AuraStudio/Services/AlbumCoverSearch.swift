@@ -22,6 +22,16 @@ import Foundation
 /// Mejor esfuerzo de punta a punta: cada fuente va con `try?` y una que
 /// falle no cancela a la otra. Sin resultados devuelve una lista vacía,
 /// que la vista dice en pantalla -- nunca falla en silencio.
+///
+/// Ronda rendimiento-3, camino B: las descargas van EN PARALELO. El
+/// límite de 1 pedido/segundo es de MusicBrainz (la búsqueda de
+/// ediciones, que sigue siendo una sola llamada serializada); Cover Art
+/// Archive y Deezer son otra infraestructura y no lo comparten, así que
+/// esperarlas en fila era regalar segundos por álbum. La rama Deezer
+/// corre a la vez que la de MusicBrainz→CAA. El ORDEN nunca depende de
+/// cuál descarga llegó primero: cada candidata conserva el índice de su
+/// edición/resultado y el orden final lo manda `isBetter`, que es total
+/// y determinista -- dos corridas dan exactamente la misma lista.
 struct AlbumCoverSearch {
     var musicBrainz = MusicBrainzClient()
     var coverArtArchive = CoverArtArchiveClient()
@@ -32,6 +42,11 @@ struct AlbumCoverSearch {
     /// Archive por cada una).
     var releasesToTry = 5
     var maximumCandidates = 10
+    /// Ronda rendimiento-3, camino B: caché en disco de las candidatas
+    /// ya descargadas -- reabrir el picker del mismo álbum no vuelve a
+    /// tocar la red. `nil` (pruebas) = sin caché, comportamiento de
+    /// siempre.
+    var cache: AlbumCoverSearchCache? = nil
 
     enum Source: Equatable {
         case coverArtArchive
@@ -108,60 +123,110 @@ struct AlbumCoverSearch {
             return trimmed.isEmpty || trimmed == LibraryGrouping.unknownArtistName ? nil : trimmed
         }
 
+        // Ronda rendimiento-3, camino B: la caché se consulta ANTES de
+        // tocar la red. La clave incluye año y número de pistas porque
+        // el puntaje se calculó contra ellos -- una corrección de
+        // metadata produce otra clave y una búsqueda fresca.
+        let cacheKey = AlbumCoverSearchCache.Key(album: albumTitle, artist: artistName,
+                                                 year: facts.year, trackCount: facts.trackCount)
+        if let cached = cache?.load(cacheKey) {
+            return cached.sorted(by: Self.isBetter)
+        }
+
+        // Las dos ramas en paralelo: Deezer no depende de MusicBrainz.
+        async let deezerBranch = deezerCandidates(albumTitle: albumTitle, artistName: artistName, facts: facts)
+        let archiveBranch = await coverArtArchiveCandidates(albumTitle: albumTitle, artistName: artistName, facts: facts)
+        let deezerResult = await deezerBranch
+        let merged = archiveBranch + deezerResult
+
+        // Dedup por contenido + tope + orden de descubrimiento, igual
+        // que siempre: la primera aparición de unos mismos bytes gana.
         var result: [Candidate] = []
         var seen: Set<Data> = []
-
-        func append(_ candidate: Candidate) {
+        for candidate in merged {
             guard !candidate.data.isEmpty, result.count < maximumCandidates,
-                  seen.insert(candidate.data).inserted else { return }
+                  seen.insert(candidate.data).inserted else { continue }
             var scored = candidate
             scored.discoveryOrder = result.count
             result.append(scored)
         }
 
-        let releases = (try? await musicBrainz.searchReleases(album: albumTitle,
-                                                             artist: artistName,
-                                                             limit: releasesToTry)) ?? []
-        for release in releases {
-            guard result.count < maximumCandidates else { break }
-            guard let cover = try? await coverArtArchive.fetchCover(releaseID: release.id) else { continue }
-            let releaseYear = Self.year(from: release.date)
-            let isOfficial = release.status?.caseInsensitiveCompare("Official") == .orderedSame
-            let score = AlbumCoverScoring.score(
-                album: facts,
-                release: AlbumCoverScoring.ReleaseFacts(
-                    title: release.title, year: releaseYear, trackCount: release.trackCount,
-                    status: release.status, country: release.country,
-                    isFrontCover: cover.isFront))
-            append(Candidate(data: cover.data, source: .coverArtArchive,
-                             detail: Self.detail(title: release.title, year: releaseYear),
-                             score: score, isFrontCover: cover.isFront,
-                             isOfficial: isOfficial, releaseYear: releaseYear))
-        }
-
-        if deezerEnabled, result.count < maximumCandidates,
-           let matches = try? await deezer.searchAlbumCovers(title: albumTitle, artist: artistName) {
-            for match in matches {
-                guard result.count < maximumCandidates else { break }
-                guard let data = try? await deezer.fetchImage(at: match.coverURL) else { continue }
-                // Deezer no es una EDICIÓN: no trae año, ni número de
-                // pistas, ni estatus. Solo puede puntuar el título, así
-                // que por construcción nunca llega sola al umbral
-                // automático -- aplicar sin preguntar exige que
-                // MusicBrainz lo respalde.
-                let score = AlbumCoverScoring.score(
-                    album: facts,
-                    release: AlbumCoverScoring.ReleaseFacts(
-                        title: match.title, year: nil, trackCount: nil,
-                        status: nil, country: nil, isFrontCover: false))
-                append(Candidate(data: data, source: .deezer,
-                                 detail: Self.detail(title: match.title,
-                                                     year: match.artist.isEmpty ? nil : match.artist),
-                                 score: score))
-            }
-        }
-
+        cache?.store(result, for: cacheKey)
         return result.sorted(by: Self.isBetter)
+    }
+
+    /// Rama MusicBrainz → Cover Art Archive: una búsqueda de ediciones
+    /// (serializada por el rate limiter) y las tapas de todas ellas en
+    /// paralelo. El índice de la edición viaja con cada candidata para
+    /// que el orden de descubrimiento no dependa del orden de llegada.
+    private func coverArtArchiveCandidates(albumTitle: String, artistName: String?,
+                                           facts: AlbumCoverScoring.AlbumFacts) async -> [Candidate] {
+        let releases = (try? await musicBrainz.searchReleases(album: albumTitle,
+                                                              artist: artistName,
+                                                              limit: releasesToTry)) ?? []
+        guard !releases.isEmpty else { return [] }
+        return await withTaskGroup(of: (Int, Candidate?).self) { group in
+            for (index, release) in releases.enumerated() {
+                group.addTask { [coverArtArchive] in
+                    guard let cover = try? await coverArtArchive.fetchCover(releaseID: release.id) else {
+                        return (index, nil)
+                    }
+                    let releaseYear = Self.year(from: release.date)
+                    let isOfficial = release.status?.caseInsensitiveCompare("Official") == .orderedSame
+                    let score = AlbumCoverScoring.score(
+                        album: facts,
+                        release: AlbumCoverScoring.ReleaseFacts(
+                            title: release.title, year: releaseYear, trackCount: release.trackCount,
+                            status: release.status, country: release.country,
+                            isFrontCover: cover.isFront))
+                    return (index, Candidate(data: cover.data, source: .coverArtArchive,
+                                             detail: Self.detail(title: release.title, year: releaseYear),
+                                             score: score, isFrontCover: cover.isFront,
+                                             isOfficial: isOfficial, releaseYear: releaseYear))
+                }
+            }
+            var byIndex: [(Int, Candidate)] = []
+            for await (index, candidate) in group {
+                if let candidate { byIndex.append((index, candidate)) }
+            }
+            return byIndex.sorted { $0.0 < $1.0 }.map(\.1)
+        }
+    }
+
+    /// Rama Deezer: búsqueda + descarga de cada tapa en paralelo.
+    /// Deezer no es una EDICIÓN: no trae año, ni número de pistas, ni
+    /// estatus. Solo puede puntuar el título, así que por construcción
+    /// nunca llega sola al umbral automático -- aplicar sin preguntar
+    /// exige que MusicBrainz lo respalde.
+    private func deezerCandidates(albumTitle: String, artistName: String?,
+                                  facts: AlbumCoverScoring.AlbumFacts) async -> [Candidate] {
+        guard deezerEnabled,
+              let matches = try? await deezer.searchAlbumCovers(title: albumTitle, artist: artistName) else {
+            return []
+        }
+        return await withTaskGroup(of: (Int, Candidate?).self) { group in
+            for (index, match) in matches.enumerated() {
+                group.addTask { [deezer] in
+                    guard let data = try? await deezer.fetchImage(at: match.coverURL) else {
+                        return (index, nil)
+                    }
+                    let score = AlbumCoverScoring.score(
+                        album: facts,
+                        release: AlbumCoverScoring.ReleaseFacts(
+                            title: match.title, year: nil, trackCount: nil,
+                            status: nil, country: nil, isFrontCover: false))
+                    return (index, Candidate(data: data, source: .deezer,
+                                             detail: Self.detail(title: match.title,
+                                                                 year: match.artist.isEmpty ? nil : match.artist),
+                                             score: score))
+                }
+            }
+            var byIndex: [(Int, Candidate)] = []
+            for await (index, candidate) in group {
+                if let candidate { byIndex.append((index, candidate)) }
+            }
+            return byIndex.sorted { $0.0 < $1.0 }.map(\.1)
+        }
     }
 
     /// Compatibilidad con quien solo tiene título y artista (no puede

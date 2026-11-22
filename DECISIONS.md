@@ -19430,3 +19430,34 @@ OSLog (subsistema com.ricolinos.aurastudio, categoría Rendimiento, el
 mismo canal que MainThreadWatchdog). Cero cambio de comportamiento: es
 instrumentación, no lógica. Las decisiones de los caminos A/B/C se toman
 con estos números, no con suposiciones.
+
+## ST-252 — Ronda rendimiento-3, camino B: caratulas en paralelo y con cache en disco
+
+`AlbumCoverSearch.candidates(for:artist:)` era serial de punta a punta:
+esperar MusicBrainz, despues CAA portada por portada, y encima Deezer
+cuando el primer carril volvia vacio. Peor: cada apertura del panel de
+caratulas repetia todo el viaje de red, aunque la misma busqueda se
+hubiera hecho un minuto antes.
+
+Tres cambios, mismo contrato hacia afuera (dedup por bytes, tope 10,
+`discoveryOrder` y `sorted(by: isBetter)` intactos):
+
+1. Las dos fuentes corren en paralelo con `async let` (CAA y Deezer), y
+   dentro de cada una las descargas van en `withTaskGroup`. El orden de
+   las candidatas sigue siendo determinista: se conserva por indice de
+   edicion de MusicBrainz / posicion en Deezer, no por orden de llegada.
+2. Nuevo `AlbumCoverSearchCache` (`.portadas/busqueda/`): cada busqueda
+   se guarda con clave SHA-256 de album+artista+año+trackCount
+   normalizados, TTL de 7 dias. La metadata corregida (año o numero de
+   pistas distinto) es otra clave, asi que no devuelve resultados
+   ajenos. Una imagen faltante invalida solo su candidata, no la
+   busqueda entera. El directorio es regenerable: borrarlo solo cuesta
+   volver a buscar.
+3. Los cuatro call sites (AlbumsView x2, MediaSectionView x2) inyectan
+   el cache apuntando a la biblioteca del usuario.
+
+Seis pruebas nuevas cubren round-trip, TTL vencido/vigente, invalidacion
+parcial por imagen faltante, clave distinta por metadata corregida y
+store vacio. La prueba viva contra la API real de Deezer
+(`LiveEnrichmentIntegrationTests.testDeezerFindsRealAlbumCover`) falla
+en este entorno desde antes de esta ronda; queda como estaba.

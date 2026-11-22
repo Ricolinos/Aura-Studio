@@ -927,7 +927,8 @@ struct MediaSectionView: View {
             let request = coverQueue[coverQueueIndex]
             AlbumCoverPickerView(
                 request: request,
-                search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled),
+                search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled,
+                                           cache: AlbumCoverSearchCache(libraryRoot: viewModel.libraryRoot)),
                 queuePosition: coverQueue.count > 1 ? (coverQueueIndex + 1, coverQueue.count) : nil,
                 onApply: { data in
                     Task { await viewModel.applyAlbumCover(data, toItems: request.trackIDs) }
@@ -968,7 +969,8 @@ struct MediaSectionView: View {
         Task {
             let pending = await viewModel.applyRecommendedCovers(
                 for: requests,
-                search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled))
+                search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled,
+                                           cache: AlbumCoverSearchCache(libraryRoot: viewModel.libraryRoot)))
             startCoverQueue(pending)
         }
     }
