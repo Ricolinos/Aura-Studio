@@ -17,41 +17,50 @@
 # (`screencapture -l <windowID>`, no pantalla completa) para no
 # necesitar XCUITest ni estorbar a quien esté usando la Mac.
 #
-# QUÉ FUNCIONA HOY (2026-09-07, tras A7c/662fbb7): los seis idiomas
+# QUÉ FUNCIONA HOY (2026-09-08, tras 2eb7152): los seis idiomas
 # (es/en/ja/de/ru/fr) producen contenido real -- CFBundleLocalizations
 # ya los declara todos.
 #
-# QUÉ PANTALLAS CAPTURA HOY, y cuáles no:
-#   - albumes, canciones: sí, por accessibilityIdentifier de la barra
+# LECCIÓN (2026-09-08, corrige el diagnóstico anterior de este mismo
+# archivo): esta Mac tiene inestabilidad de accesibilidad real bajo
+# carga (Parallels/otras apps), independiente de cualquier fila o
+# mecanismo -- ventanas que System Events no puede ver por ~8-10s y se
+# recuperan solas, procesos de prueba que a veces mueren sin razón
+# aparente. Un reporte anterior concluyó "la fila ajustes tiene un
+# defecto real de accesibilidad" tras probar tres mecanismos (`select`,
+# `AXPress`, clic real) UNA vez cada uno -- los tres "fallaron" igual.
+# Reintentando el MISMO `select` con la Mac libre, `ajustes` funcionó a
+# la tercera. Ninguna fila (general/extras/instalador/ajustes) está
+# realmente rota -- todas responden a `select`, algunas necesitan
+# reintentos. Regla desde ahora: **toda acción de accesibilidad se
+# reintenta** (`retry_verify`, hasta 5 veces con espera creciente) y se
+# verifica con una lectura independiente antes de darla por hecha
+# -- "defecto confirmado" solo después de agotar los reintentos, nunca
+# tras un solo intento.
+#
+# QUÉ PANTALLAS CAPTURA HOY:
+#   - albumes, canciones: por accessibilityIdentifier de la barra
 #     lateral (estables, ver UITestEnvironment.ID.sidebarRow --
-#     Sources/AuraStudio/Models/UITestEnvironment.swift). VERIFICADAS
-#     en vivo contra la app real para los SEIS idiomas (2026-09-07) --
-#     ver docs/capturas/idiomas/README.md.
-#   - ajustes, dispositivos: NO -- TRES mecanismos probados en vivo
-#     contra la fila `ajustes` (`select` de AXRow, `perform action
-#     "AXPress"` sobre el mismo AXRow, y un clic sintético real `click
-#     at {x, y}` en su posición exacta) y los tres fallan igual: la
-#     llamada "tiene éxito" sin error, pero la pantalla se queda en la
-#     que estaba antes. Misma estructura de AXRow que albumes/
-#     canciones (que sí funcionan con `select`) -- la diferencia real
-#     no está identificada, y ya no parece ser "el mecanismo de clic
-#     equivocado" sino algo estructural en cómo esta fila conecta con
-#     `selection` en ContentView.swift. Ver "Qué falta" en
-#     docs/capturas/idiomas/README.md antes de intentar un cuarto
-#     mecanismo -- probablemente haga falta Accessibility Inspector en
-#     vivo o una pregunta directa a quien mantiene Sources/.
+#     Sources/AuraStudio/Models/UITestEnvironment.swift), con
+#     reintentos. VERIFICADAS en vivo contra la app real para los SEIS
+#     idiomas -- ver docs/capturas/idiomas/README.md.
+#   - ajustes: por el atajo de menú ⌘, (`keystroke "," using command
+#     down`, agregado en 2eb7152) en vez de seleccionar la fila --
+#     mismo resultado, mecanismo más simple y determinista, sin
+#     depender del `AXOutline`. Verificado con
+#     `window_contains_identifier "ajustes.pestanas"`.
 #   - ajustes-almacenamiento: por `ajustes.pestana.almacenamiento`
-#     (ST-225/A5, ya en Sources/) -- el mecanismo de clic es
-#     GENÉRICO (`press_element_by_identifier`, AXPress directo), NO el
-#     mismo `select` de fila que usan albumes/canciones -- de todos
-#     modos no alcanzable hoy porque depende de llegar a Ajustes
-#     primero (ver punto anterior).
-#   - acerca-de: por POSICIÓN de menú (primer ítem del menú de la app,
-#     "Acerca de <app>" -- convención estándar de macOS, nunca cambia
-#     de posición aunque cambie el idioma), no por identificador ni por
-#     texto -- tampoco confirmado en vivo todavía (falló en la corrida
-#     de hoy, pero partiendo ya de un estado equivocado por el punto
-#     anterior; no se pudo aislar la causa).
+#     (ST-225/A5) dentro de Ajustes -- `AXPress` directo (Picker
+#     segmentado, no fila de `AXOutline`), con reintentos.
+#   - dispositivos: por accessibilityIdentifier de la fila
+#     `biblioteca.barraLateral.general`, con reintentos: verificado con
+#     una lectura de `AXSelected` sobre esa misma fila (no depende del
+#     idioma, a diferencia de leer el título de la ventana).
+#   - acerca-de: por POSICIÓN de menú (primer ítem del segundo menú de
+#     la barra, "Acerca de <app>" -- convención estándar de macOS,
+#     nunca cambia de posición aunque cambie el idioma), con
+#     reintentos: verificado contando ventanas (el panel "Acerca de"
+#     abre una ventana nueva aparte de la principal).
 #   - barra-estado-mensaje-largo: NO -- necesita disparar una operación
 #     real (importar/sincronizar en curso) para que la barra de estado
 #     muestre un mensaje largo, y eso es frágil de reproducir sin mirar
@@ -330,16 +339,29 @@ end tell
 EOF
 }
 
-# ST-227 (addendum, 2026-09-07): `select_sidebar_row "ajustes"` "tiene
-# éxito" (el AppleScript `select` no tira error) SIN cambiar la
-# selección real de SwiftUI -- confirmado en vivo dos veces, ver
-# docs/capturas/idiomas/README.md ("Estado"). Este chequeo es
-# INDEPENDIENTE del `select` (busca un identificador que solo existe
-# cuando la pantalla de verdad cambió, sin volver a hacer clic en
-# nada) -- por eso sirve para detectar el falso positivo, aunque no
-# explique su causa. Reusa el mismo patrón de `containsIdentifier` que
-# ya se sabe que funciona como chequeo de existencia (independiente del
-# `select`, que es lo que falla).
+# ST-227 (addendum, 2026-09-08): esta Mac tiene inestabilidad de
+# accesibilidad real bajo carga -- una sola llamada a `select`/
+# `AXPress`/un clic real puede "tener éxito" sin que la pantalla haya
+# cambiado de verdad, y no por un defecto de la fila o el mecanismo
+# (confirmado reintentando: las mismas filas que "fallaban" una vez
+# funcionaron a la 2.ª o 3.ª). Por eso TODA navegación pasa por
+# `retry_with_backoff`, nunca se confía en un solo intento.
+retry_with_backoff() {
+  local desc="$1" max="$2"
+  shift 2
+  local attempt=1
+  while [[ $attempt -le $max ]]; do
+    if "$@"; then
+      return 0
+    fi
+    log "  $desc: intento $attempt/$max sin confirmar -- reintentando"
+    sleep "$attempt"
+    attempt=$((attempt + 1))
+  done
+  log "  $desc: agotados $max intentos sin confirmar -- posible defecto real, o Mac inestable ahora mismo"
+  return 1
+}
+
 window_contains_identifier() {
   local process_name="$1" identifier="$2"
   osascript <<EOF 2>/dev/null
@@ -368,17 +390,76 @@ end tell
 EOF
 }
 
+# Verificación independiente para filas de la barra lateral que no
+# tienen un identificador propio en su contenido (p. ej. Dispositivos/
+# `DeviceGeneralView`, sin `accessibilityIdentifier`) -- lee
+# `AXSelected` de la MISMA fila, no del contenido. No depende del
+# idioma (a diferencia de leer el título de la ventana).
+row_is_selected() {
+  local process_name="$1" identifier="$2"
+  osascript <<EOF 2>/dev/null
+on containsIdentifier(elem, targetID)
+  tell application "System Events"
+    try
+      if (value of attribute "AXIdentifier" of elem) as string is targetID then return true
+    end try
+    try
+      set kids to UI elements of elem
+      repeat with k in kids
+        if my containsIdentifier(k, targetID) then return true
+      end repeat
+    end try
+    return false
+  end tell
+end containsIdentifier
+
+on findSelectedState(elem, targetID)
+  tell application "System Events"
+    try
+      set kids to UI elements of elem
+      repeat with k in kids
+        if (role of k as string) is "AXRow" then
+          if my containsIdentifier(k, targetID) then
+            return (value of attribute "AXSelected" of k) as boolean
+          end if
+        else
+          set found to my findSelectedState(k, targetID)
+          if found is not missing value then return found
+        end if
+      end repeat
+    end try
+    return missing value
+  end tell
+end findSelectedState
+
+tell application "System Events"
+  tell process "$process_name"
+    set sel to my findSelectedState(window 1, "$identifier")
+    if sel is missing value then error "fila '$identifier' no encontrada"
+    if sel is false then error "fila '$identifier' encontrada pero no seleccionada"
+    return sel
+  end tell
+end tell
+EOF
+}
+
+# ⌘, para Ajustes -- agregado en Sources/ (2eb7152). Más simple y
+# determinista que seleccionar la fila del `AXOutline` (no depende de
+# `select`/`AXPress` sobre ningún elemento en particular).
+open_ajustes_via_menu() {
+  local process_name="$1"
+  osascript -e "tell application \"System Events\" to tell process \"$process_name\" to keystroke \",\" using command down"
+}
+
 press_element_by_identifier() {
   # Genérico -- a diferencia de `select_sidebar_row` (filas de un
   # `AXOutline`, que se activan con `select` sobre el `AXRow`, nunca
   # con `AXPress`), esto es para lo demás: un `Picker` segmentado
   # (`ajustes.pestana.*`, ST-225/A5) u otro control donde el elemento
   # CON el identificador es el que hay que presionar directo, sin
-  # subir a ningún contenedor. NO verificado en vivo todavía contra la
-  # pestaña de Ajustes -- si falla, puede que un `Picker` segmentado
-  # necesite `select` en vez de `AXPress` sobre el segmento, como pasó
-  # con las filas de la barra lateral; confirmar la próxima vez que la
-  # Mac esté libre y ajustar acá, no adivinar dos veces.
+  # subir a ningún contenedor. Llamar siempre con retry_with_backoff
+  # igual que el resto -- esta Mac puede tardar en responder sin que
+  # sea un defecto del mecanismo, ver la nota de arriba del archivo.
   local process_name="$1" identifier="$2"
   osascript <<EOF
 on findElement(elem, targetID)
@@ -470,61 +551,96 @@ capture_language() {
   fi
   sleep 1 # deja terminar el primer layout
 
-  # Álbumes y Canciones: confirmadas a mano contra la app real
-  # (2026-09-07) -- fila seleccionada, título de ventana cambia,
-  # captura correcta, biblioteca de prueba visible.
-  if select_sidebar_row "AuraStudio" "biblioteca.barraLateral.albumes" 2>/dev/null; then
-    sleep 0.8
+  # Álbumes y Canciones: confirmadas a mano contra la app real --
+  # fila seleccionada, título de ventana cambia, captura correcta,
+  # biblioteca de prueba visible. Con reintentos: esta Mac puede
+  # perder la ventana de vista de System Events por unos segundos bajo
+  # carga, sin que tenga nada que ver con la fila.
+  _try_albumes() {
+    select_sidebar_row "AuraStudio" "biblioteca.barraLateral.albumes" 2>/dev/null \
+      && sleep 0.8 \
+      && row_is_selected "AuraStudio" "biblioteca.barraLateral.albumes" 2>/dev/null
+  }
+  if retry_with_backoff "Álbumes" 5 _try_albumes; then
     capture_window "AuraStudio" "$pid" "$lang_out/albumes.png"
   else
     log "  aviso: no se pudo navegar a Álbumes"
   fi
 
-  if select_sidebar_row "AuraStudio" "biblioteca.barraLateral.canciones" 2>/dev/null; then
-    sleep 0.8
+  _try_canciones() {
+    select_sidebar_row "AuraStudio" "biblioteca.barraLateral.canciones" 2>/dev/null \
+      && sleep 0.8 \
+      && row_is_selected "AuraStudio" "biblioteca.barraLateral.canciones" 2>/dev/null
+  }
+  if retry_with_backoff "Canciones" 5 _try_canciones; then
     capture_window "AuraStudio" "$pid" "$lang_out/canciones.png"
   else
     log "  aviso: no se pudo navegar a Canciones"
   fi
 
-  # Ajustes: `select_sidebar_row` puede devolver éxito sin haber
-  # cambiado la pantalla de verdad (ST-227 addendum, 2026-09-07 --
-  # falso positivo confirmado en vivo, ver docs/capturas/idiomas/
-  # README.md). `window_contains_identifier` sobre "ajustes.pestanas"
-  # (el Picker de pestañas, siempre presente en la pantalla real de
-  # Ajustes -- ver SettingsSectionView.swift) es la verificación
-  # independiente: si no está, NO se escribe ajustes.png con el
-  # contenido de la pantalla anterior mal etiquetado.
-  if select_sidebar_row "AuraStudio" "biblioteca.barraLateral.ajustes" 2>/dev/null \
-     && window_contains_identifier "AuraStudio" "ajustes.pestanas" 2>/dev/null; then
-    sleep 0.8
+  # Ajustes: por el atajo de menú ⌘, (agregado en Sources/, 2eb7152)
+  # en vez de seleccionar la fila -- más simple y determinista.
+  # `window_contains_identifier` sobre "ajustes.pestanas" (el Picker
+  # de pestañas, siempre presente en la pantalla real de Ajustes) es
+  # la verificación independiente.
+  _try_ajustes() {
+    open_ajustes_via_menu "AuraStudio" 2>/dev/null \
+      && sleep 0.8 \
+      && window_contains_identifier "AuraStudio" "ajustes.pestanas" 2>/dev/null
+  }
+  if retry_with_backoff "Ajustes (⌘,)" 5 _try_ajustes; then
     capture_window "AuraStudio" "$pid" "$lang_out/ajustes.png"
 
     # ST-225 (A5) agregó identificadores reales por pestaña
-    # (`ajustes.pestana.*`) -- ya no hace falta texto localizado para
-    # llegar a Almacenamiento. `press_element_by_identifier` es
+    # (`ajustes.pestana.*`). `press_element_by_identifier` es
     # GENÉRICO (AXPress directo, no `select` de fila) porque un
-    # `Picker` segmentado es un control distinto a la barra lateral --
-    # sin confirmar en vivo todavía, ver el comentario de la función.
-    if press_element_by_identifier "AuraStudio" "ajustes.pestana.almacenamiento" 2>/dev/null; then
-      sleep 0.8
+    # `Picker` segmentado es un control distinto a la barra lateral.
+    # Verificación: "ajustes.almacenamiento.seccion" ("Cómo guardar tu
+    # música", ST-225) está siempre presente en la pestaña real de
+    # Almacenamiento, junto con el botón "Convertir referenciados en
+    # copias" (ST-224 addendum, ajustes.almacenamiento.
+    # convertirReferenciados) -- los dos caben sin desplazar en esta
+    # ventana, no hace falta scroll.
+    _try_almacenamiento() {
+      press_element_by_identifier "AuraStudio" "ajustes.pestana.almacenamiento" 2>/dev/null \
+        && sleep 0.8 \
+        && window_contains_identifier "AuraStudio" "ajustes.almacenamiento.seccion" 2>/dev/null
+    }
+    if retry_with_backoff "Ajustes > Almacenamiento" 5 _try_almacenamiento; then
       capture_window "AuraStudio" "$pid" "$lang_out/ajustes-almacenamiento.png"
     else
       log "  aviso: no se pudo navegar a Ajustes > Almacenamiento"
     fi
   else
-    log "  aviso: no se pudo navegar a Ajustes (select_sidebar_row tuvo éxito sin cambiar de pantalla -- ver README)"
+    log "  aviso: no se pudo navegar a Ajustes"
   fi
 
-  if select_sidebar_row "AuraStudio" "biblioteca.barraLateral.general" 2>/dev/null; then
-    sleep 0.8
+  # Dispositivos: DeviceGeneralView no tiene un accessibilityIdentifier
+  # propio en su contenido -- se verifica con AXSelected de la MISMA
+  # fila (row_is_selected), no con el contenido ni con el título
+  # (que cambiaría de texto por idioma).
+  _try_dispositivos() {
+    select_sidebar_row "AuraStudio" "biblioteca.barraLateral.general" 2>/dev/null \
+      && sleep 0.8 \
+      && row_is_selected "AuraStudio" "biblioteca.barraLateral.general" 2>/dev/null
+  }
+  if retry_with_backoff "Dispositivos" 5 _try_dispositivos; then
     capture_window "AuraStudio" "$pid" "$lang_out/dispositivos.png"
   else
     log "  aviso: no se pudo navegar a Dispositivos"
   fi
 
-  if click_about_menu_item "AuraStudio" 2>/dev/null; then
+  # Acerca de: sin accessibilityIdentifier (panel estándar de macOS).
+  # Verificación: el panel "Acerca de" abre una ventana NUEVA, aparte
+  # de la principal -- contar ventanas es independiente del idioma.
+  _try_acerca_de() {
+    click_about_menu_item "AuraStudio" 2>/dev/null || return 1
     sleep 0.8
+    local count
+    count="$(osascript -e 'tell application "System Events" to tell process "AuraStudio" to count windows' 2>/dev/null)"
+    [[ "${count:-0}" -ge 2 ]]
+  }
+  if retry_with_backoff "Acerca de" 5 _try_acerca_de; then
     capture_window "AuraStudio" "$pid" "$lang_out/acerca-de.png"
   else
     log "  aviso: no se pudo abrir Acerca de"
