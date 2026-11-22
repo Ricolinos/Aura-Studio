@@ -7,37 +7,37 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Album %@ von %@"
+            "value": "Album %lld von %lld"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Album %@ of %@"
+            "value": "Album %lld of %lld"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Álbum %@ de %@"
+            "value": "Álbum %lld de %lld"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Album %@ sur %@"
+            "value": "Album %lld sur %lld"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "アルバム %@ / %@"
+            "value": "アルバム %lld / %lld"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Альбом %@ из %@"
+            "value": "Альбом %lld из %lld"
           }
         }
       }
@@ -5104,37 +5104,37 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ von %@ Datei(en) werden synchronisiert …"
+            "value": "%lld von %lld Datei(en) werden synchronisiert …"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Syncing %@ of %@ file(s)…"
+            "value": "Syncing %lld of %lld file(s)…"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sincronizando %@ de %@ archivo(s)..."
+            "value": "Sincronizando %lld de %lld archivo(s)..."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Synchronisation de %@ sur %@ fichier(s)…"
+            "value": "Synchronisation de %lld sur %lld fichier(s)…"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@ / %@ 件のファイルを同期しています…"
+            "value": "%lld / %lld 件のファイルを同期しています…"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "Синхронизация %@ из %@ файлов…"
+            "value": "Синхронизация %lld из %lld файлов…"
           }
         }
       }
@@ -23697,37 +23697,37 @@
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld, %@"
+            "value": "%@, %@"
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld, %@"
+            "value": "%@, %@"
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld, %@"
+            "value": "%@, %@"
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld, %@"
+            "value": "%@, %@"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld, %@"
+            "value": "%@, %@"
           }
         },
         "ru": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld, %@"
+            "value": "%@, %@"
           }
         }
       }
@@ -24179,47 +24179,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Их изучили и НЕ будут подключать. Записано, чтобы не оценивать их снова."
-          }
-        }
-      }
-    },
-    "services-settings-view.texto": {
-      "extractionState": "manual",
-      "localizations": {
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@"
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@"
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@"
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@"
-          }
-        },
-        "ru": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@"
           }
         }
       }

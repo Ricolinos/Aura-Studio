@@ -1,7 +1,7 @@
 /* GENERADO por tools/compilar-catalogo.py desde
    Localizable.xcstrings. No editar a mano: los cambios se pierden. */
 
-"album-cover-picker-view.album" = "Album %@ of %@";
+"album-cover-picker-view.album" = "Album %lld of %lld";
 "album-cover-picker-view.buscando-caratulas-cover-art-archive-dee" = "Searching Cover Art Archive and Deezer for cover art…";
 "album-cover-picker-view.caratulas-para" = "Cover art for “%@”";
 "album-cover-picker-view.deja-este-album-como-esta-pasa" = "Leave this album as it is and move on to the next one";
@@ -105,7 +105,7 @@
 "device-activity-bar.cancelando" = "Canceling…";
 "device-activity-bar.conecta-tu-ipod-para-sincronizar" = "Connect your iPod to sync.";
 "device-activity-bar.instala-aura-este-ipod-para-poder" = "Install Aura on this iPod to be able to sync.";
-"device-activity-bar.sincronizando-archivo-s" = "Syncing %@ of %@ file(s)…";
+"device-activity-bar.sincronizando-archivo-s" = "Syncing %lld of %lld file(s)…";
 "device-activity-bar.sincronizar" = "Sync";
 "device-activity-bar.toda-biblioteca" = "Whole library";
 "device-activity-bar.todo-sincronizado" = "Everything is in sync.";
@@ -454,7 +454,7 @@
 "sentence.separator-semicolon" = "; ";
 "sentence.separator-sentence" = " ";
 "series-view.series" = "Series";
-"series-view.temporadas" = "%lld, %@";
+"series-view.temporadas" = "%@, %@";
 "services-settings-view.activo" = "On";
 "services-settings-view.activos-sin-configurar-nada" = "On, with nothing to set up";
 "services-settings-view.caratula-alternativa-1000x1000-sin-key-e" = "Alternative cover art, 1000x1000. No key -- it is the only source whose terms explicitly allow non-commercial use.";
@@ -466,7 +466,6 @@
 "services-settings-view.orden-busqueda-caratula" = "Cover art search order";
 "services-settings-view.se-agregan-solo-si-te-faltan" = "Add these only if you are missing cover art: the ones above already cover the normal case.";
 "services-settings-view.se-investigaron-no-se-van-integrar" = "These were looked into and will NOT be integrated. Written down so they don’t get evaluated again.";
-"services-settings-view.texto" = "%@";
 "settings-page.migrar-biblioteca" = "Migrate library";
 "settings-page.migrar-version-anterior" = "Migrate from an earlier version";
 "settings-section-view.actualizaciones-aura-studio" = "Aura Studio updates";

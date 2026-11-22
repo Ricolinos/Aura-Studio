@@ -135,8 +135,22 @@ final class LocalizationCatalogTests: XCTestCase {
         // adivinando qué quedó tocado en su Mac. Ahora nombra los
         // servicios de macOS. Decisión común con Windows (todo mensaje
         // de reactivación dice de qué servicio habla).
+        // ST-256: estas dos se corrigieron a proposito -- sus
+        // marcadores no coincidian con los tipos que el codigo les pasa
+        // y crasheaban en `String.localizedStringWithFormat` (visto en
+        // produccion con `services-settings-view.texto`, %@ recibiendo
+        // un Int):
+        // - `album-cover-picker-view.album`: recibe dos Int (posicion y
+        //   total de la cola) -> `%lld`.
+        // - `series-view.temporadas`: recibe dos String (los fragmentos
+        //   ya compuestos) -> `%@, %@`.
+        // - `device-activity-bar.sincronizando-archivo-s`: recibe dos
+        //   Int (copiados y total del progreso) -> `%lld`.
         let corrected = ["music-settings-view.separadores-que-agrupan-vs-versus-nunca",
-                         "enter-d-f-u-view.pedira-tu-contrasena-se-reactivan-solos"]
+                         "enter-d-f-u-view.pedira-tu-contrasena-se-reactivan-solos",
+                         "album-cover-picker-view.album",
+                         "series-view.temporadas",
+                         "device-activity-bar.sincronizando-archivo-s"]
 
         var differences: [String] = []
         for row in rows {

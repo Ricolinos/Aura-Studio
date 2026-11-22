@@ -1,7 +1,7 @@
 /* GENERADO por tools/compilar-catalogo.py desde
    Localizable.xcstrings. No editar a mano: los cambios se pierden. */
 
-"album-cover-picker-view.album" = "Альбом %@ из %@";
+"album-cover-picker-view.album" = "Альбом %lld из %lld";
 "album-cover-picker-view.buscando-caratulas-cover-art-archive-dee" = "Поиск обложек в Cover Art Archive и Deezer…";
 "album-cover-picker-view.caratulas-para" = "Обложки для «%@»";
 "album-cover-picker-view.deja-este-album-como-esta-pasa" = "Оставляет этот альбом как есть и переходит к следующему";
@@ -105,7 +105,7 @@
 "device-activity-bar.cancelando" = "Отмена…";
 "device-activity-bar.conecta-tu-ipod-para-sincronizar" = "Подключите iPod, чтобы синхронизировать.";
 "device-activity-bar.instala-aura-este-ipod-para-poder" = "Установите Aura на этот iPod, чтобы синхронизировать.";
-"device-activity-bar.sincronizando-archivo-s" = "Синхронизация %@ из %@ файлов…";
+"device-activity-bar.sincronizando-archivo-s" = "Синхронизация %lld из %lld файлов…";
 "device-activity-bar.sincronizar" = "Синхронизировать";
 "device-activity-bar.toda-biblioteca" = "Вся медиатека";
 "device-activity-bar.todo-sincronizado" = "Всё синхронизировано.";
@@ -454,7 +454,7 @@
 "sentence.separator-semicolon" = "; ";
 "sentence.separator-sentence" = " ";
 "series-view.series" = "Сериалы";
-"series-view.temporadas" = "%lld, %@";
+"series-view.temporadas" = "%@, %@";
 "services-settings-view.activo" = "Включено";
 "services-settings-view.activos-sin-configurar-nada" = "Включены, настраивать нечего";
 "services-settings-view.caratula-alternativa-1000x1000-sin-key-e" = "Альтернативные обложки, 1000 × 1000. Без ключа — это единственный источник, условия которого прямо разрешают некоммерческое использование.";
@@ -466,7 +466,6 @@
 "services-settings-view.orden-busqueda-caratula" = "Порядок поиска обложек";
 "services-settings-view.se-agregan-solo-si-te-faltan" = "Добавляйте их только если вам не хватает обложек: перечисленные выше уже покрывают обычный случай.";
 "services-settings-view.se-investigaron-no-se-van-integrar" = "Их изучили и НЕ будут подключать. Записано, чтобы не оценивать их снова.";
-"services-settings-view.texto" = "%@";
 "settings-page.migrar-biblioteca" = "Мигрировать медиатеку";
 "settings-page.migrar-version-anterior" = "Миграция с предыдущей версии";
 "settings-section-view.actualizaciones-aura-studio" = "Обновления Aura Studio";

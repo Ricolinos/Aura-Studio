@@ -74,7 +74,12 @@ struct ServicesSettingsView: View {
             VStack(spacing: 0) {
                 ForEach(Array(preferences.coverArtProviderOrder.enumerated()), id: \.element) { index, provider in
                     HStack(spacing: 10) {
-                        Text(LSf("services-settings-view.texto", index + 1)).font(.callout.monospacedDigit()).foregroundStyle(.secondary)
+                        // El numero de fila es puro formato (no hay nada
+                        // que traducir): un literal, no una clave del
+                        // catalogo -- la clave vieja era "%@" y recibia un
+                        // Int, lo que crasheaba al abrir esta pestana
+                        // (ST-256, mismo criterio que ST-250).
+                        Text("\(index + 1)").font(.callout.monospacedDigit()).foregroundStyle(.secondary)
                             .frame(width: 16, alignment: .trailing)
                         Image(systemName: isUsable(provider) ? "checkmark.circle.fill" : "circle.dashed")
                             .foregroundStyle(isUsable(provider) ? .green : .secondary)

@@ -19548,3 +19548,27 @@ del camino B como carrera de datos potencial. `AlbumCoverSearch`,
 todos son structs de URLSession/URL con un actor de rate limit, y el
 `FileManager` guardado del cache paso a usarse en linea
 (`FileManager.default` no es Sendable en este SDK).
+
+## ST-256 — Cuatro claves del catalogo crasheaban por tipo de marcador
+
+Crash en produccion (Ajustes > Servicios): `String.localizedStringWithFormat`
+con `%@` recibiendo un Int es un EXC_BAD_ACCESS seguro. La auditoria de
+TODAS las llamadas `LSf` contra el catalogo encontro cuatro claves con
+el marcador equivocado:
+
+- `services-settings-view.texto` era `%@` puro y recibia el numero de
+  fila (el crash visto). Como no hay nada que traducir, paso a ser un
+  literal en el codigo (criterio ST-250) y la clave salio del catalogo.
+- `album-cover-picker-view.album` y `device-activity-bar.sincronizando-archivo-s`
+  reciben dos Int (posicion/total de cola, copiados/total del sync) --
+  `%@` -> `%lld` en los seis idiomas. La segunda crasheaba en CUALQUIER
+  sync al mostrar la barra de progreso.
+- `series-view.temporadas` recibe dos fragmentos String ya compuestos --
+  `%lld, %@` -> `%@, %@`.
+
+La prueba que congela el español contra el CSV de extraccion
+(`testTheSpanishInTheCatalogIsWhatTheSourcesSaidBefore`) las lista como
+correcciones deliberadas, con el motivo. La auditoria quedo como script
+desechable; lo durable es la regla: el marcador del catalogo tiene que
+calcular con el tipo del argumento, y un `%@` puro sin texto alrededor
+casi seguro no es una clave de traduccion sino un formato (ST-250).
