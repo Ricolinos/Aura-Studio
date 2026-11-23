@@ -26,6 +26,8 @@
 "albums-view.texto" = "%@ — %@";
 "app-menu-commands.agregar-biblioteca" = "Добавить в медиатеку…";
 "app-menu-commands.buscar-actualizaciones-aura-studio" = "Проверить обновления Aura Studio…";
+"app-menu-commands.buscar-caratulas-faltantes" = "Найти недостающие обложки альбомов";
+"app-menu-commands.buscar-caratulas-toda-biblioteca" = "Найти обложки для всей библиотеки…";
 "app-menu-commands.buscar-elementos-similares" = "Найти похожие объекты…";
 "app-menu-commands.deseleccionar-todo" = "Снять выделение";
 "app-menu-commands.mostrar-barra-estado" = "Показать строку состояния";
@@ -81,6 +83,9 @@
 "batch-media-info-view.vas-editar-canciones-vez-campos-que" = "Вы измените сразу %lld треков. Поля, которые различаются, показаны как «Разное» — то, что вы введёте, применится ко всем %lld. Название и номер трека нельзя менять пакетно.";
 "content-view.actualizar" = "Обновить";
 "content-view.aura-studio" = "Aura Studio";
+"content-view.caratulas-buscar" = "Найти";
+"content-view.caratulas-toda-mensaje" = "Будет выполнен поиск обложек в интернете для всех %lld альбомов библиотеки, включая те, у которых обложка уже есть. Это может занять много времени. Продолжить?";
+"content-view.caratulas-toda-titulo" = "Найти обложки для всей библиотеки";
 "content-view.sincronizar-con-ipod" = "Синхронизировать с iPod";
 "content-view.vuelve-leer-estado-ipod-tu-biblioteca" = "Заново считывает состояние вашего iPod и медиатеки. Ничего не копирует и не удаляет.";
 "cover-contamination-sheet.caratulas-imagenes" = "Обложки в «Изображениях»";

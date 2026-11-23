@@ -26,6 +26,8 @@
 "albums-view.texto" = "%@ — %@";
 "app-menu-commands.agregar-biblioteca" = "Add to Library…";
 "app-menu-commands.buscar-actualizaciones-aura-studio" = "Check for Aura Studio Updates…";
+"app-menu-commands.buscar-caratulas-faltantes" = "Find Missing Album Covers";
+"app-menu-commands.buscar-caratulas-toda-biblioteca" = "Find Covers for Entire Library…";
 "app-menu-commands.buscar-elementos-similares" = "Find Similar Items…";
 "app-menu-commands.deseleccionar-todo" = "Deselect All";
 "app-menu-commands.mostrar-barra-estado" = "Show Status Bar";
@@ -81,6 +83,9 @@
 "batch-media-info-view.vas-editar-canciones-vez-campos-que" = "You are about to edit %lld songs at once. Fields that don’t match across all of them show as “Mixed” -- whatever you type applies to all %lld. Title and track number can’t be edited in bulk.";
 "content-view.actualizar" = "Refresh";
 "content-view.aura-studio" = "Aura Studio";
+"content-view.caratulas-buscar" = "Search";
+"content-view.caratulas-toda-mensaje" = "Aura Studio will search online for covers for all %lld albums in the library, including ones that already have one. This can take a while. Continue?";
+"content-view.caratulas-toda-titulo" = "Find Covers for Entire Library";
 "content-view.sincronizar-con-ipod" = "Sync with iPod";
 "content-view.vuelve-leer-estado-ipod-tu-biblioteca" = "Reads the state of your iPod and your library again. It doesn’t copy or delete anything.";
 "cover-contamination-sheet.caratulas-imagenes" = "Cover art in Images";

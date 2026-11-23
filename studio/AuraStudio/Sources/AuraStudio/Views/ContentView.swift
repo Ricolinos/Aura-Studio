@@ -70,6 +70,17 @@ struct ContentView: View {
     @State private var updateAvailable = false
     /// ST-063: la hoja de "Elementos similares".
     @State private var showingSimilarItems = false
+    /// ST-261: cola de albumes dudosos que la accion del menu Biblioteca
+    /// deja para que el usuario elija tapa a mano (la recomendada
+    /// automatica ya se aplico a los que superaban el umbral). Mismo
+    /// patron que la cola de AlbumsView, pero a nivel ventana porque el
+    /// comando no vive en ninguna seccion.
+    @State private var menuCoverQueue: [AlbumCoverRequest] = []
+    @State private var menuCoverQueueIndex = 0
+    /// ST-261: confirmacion de "Buscar caratulas de toda la biblioteca"
+    /// -- con el conteo ya calculado para que el aviso diga en cuantos
+    /// albumes se va a buscar.
+    @State private var fullCoverSearchAlbumCount: Int?
     /// ST-046: tag del Release mas nuevo conocido para la familia del
     /// firmware instalado, para poder nombrarlo en General.
     @State private var updateLatestTag: String?
@@ -194,13 +205,36 @@ struct ContentView: View {
             navigate: { selection = $0 },
             addFiles: { addFilesFromOpenPanel() },
             showSimilarItems: { showingSimilarItems = true },
-            revealLibraryFolder: { NSWorkspace.shared.activateFileViewerSelecting([library.libraryRoot]) }
+            revealLibraryFolder: { NSWorkspace.shared.activateFileViewerSelecting([library.libraryRoot]) },
+            findMissingAlbumCovers: { Task { await runMenuCoverSearch(onlyMissing: true) } },
+            findAllAlbumCovers: { confirmFullCoverSearch() }
         ))
         .sheet(isPresented: $showingSimilarItems) {
             SimilarItemsView(library: library, preferences: preferences,
                              initialKind: (selection ?? .general).libraryKind) {
                 showingSimilarItems = false
             }
+        }
+        // ST-261: confirmacion de "toda la biblioteca" (lenta) y cola
+        // del selector con lo que la recomendacion automatica no se
+        // animo a aplicar sola.
+        .alert(LS("content-view.caratulas-toda-titulo"),
+               isPresented: Binding(get: { fullCoverSearchAlbumCount != nil },
+                                    set: { if !$0 { fullCoverSearchAlbumCount = nil } }),
+               presenting: fullCoverSearchAlbumCount) { _ in
+            Button(LS("background-task-center-indicator.cancelar"), role: .cancel) {
+                fullCoverSearchAlbumCount = nil
+            }
+            Button(LS("content-view.caratulas-buscar")) {
+                fullCoverSearchAlbumCount = nil
+                Task { await runMenuCoverSearch(onlyMissing: false) }
+            }
+        } message: { count in
+            Text(LSf("content-view.caratulas-toda-mensaje", count))
+        }
+        .sheet(isPresented: Binding(get: { menuCoverQueue.indices.contains(menuCoverQueueIndex) },
+                                    set: { if !$0 { closeMenuCoverQueue() } })) {
+            menuCoverPicker
         }
         .onAppear { deviceMonitor.start() }
         .onDisappear { deviceMonitor.stop() }
@@ -493,6 +527,72 @@ struct ContentView: View {
         }()
         library.addDroppedFiles(panel.urls, into: target, category: category)
         Task { await library.processAll() }
+    }
+
+    // MARK: - ST-261: buscar caratulas desde el menu Biblioteca
+
+    /// "Buscar caratulas de toda la biblioteca...": calcula el conteo
+    /// ANTES de mostrar el aviso, para que la confirmacion diga en
+    /// cuantos albumes se va a buscar. Con la biblioteca vacia no hay
+    /// nada que confirmar -- no se muestra nada.
+    private func confirmFullCoverSearch() {
+        let count = AlbumCoverRequest.forAllAlbums(in: library.catalogIndex,
+                                                   onlyMissingCovers: false).count
+        guard count > 0 else { return }
+        fullCoverSearchAlbumCount = count
+    }
+
+    /// El camino compartido de los dos comandos: junta los pedidos
+    /// (saltando los albumes completos en modo `onlyMissing`, sin tocar
+    /// la red por ellos), aplica la recomendada donde supera el umbral
+    /// y deja lo dudoso en la cola del selector.
+    private func runMenuCoverSearch(onlyMissing: Bool) async {
+        let requests = AlbumCoverRequest.forAllAlbums(in: library.catalogIndex,
+                                                      onlyMissingCovers: onlyMissing)
+        guard !requests.isEmpty else { return }
+        let pending = await library.applyRecommendedCovers(
+            for: requests,
+            search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled,
+                                     cache: AlbumCoverSearchCache(libraryRoot: library.libraryRoot)))
+        menuCoverQueueIndex = 0
+        menuCoverQueue = pending
+    }
+
+    @ViewBuilder
+    private var menuCoverPicker: some View {
+        if menuCoverQueue.indices.contains(menuCoverQueueIndex) {
+            let request = menuCoverQueue[menuCoverQueueIndex]
+            AlbumCoverPickerView(
+                request: request,
+                search: AlbumCoverSearch(deezerEnabled: preferences.deezerEnabled,
+                                         cache: AlbumCoverSearchCache(libraryRoot: library.libraryRoot)),
+                queuePosition: menuCoverQueue.count > 1
+                    ? (menuCoverQueueIndex + 1, menuCoverQueue.count) : nil,
+                onApply: { data in
+                    Task { await library.applyAlbumCover(data, toItems: request.trackIDs) }
+                    advanceMenuCoverQueue()
+                },
+                onSkip: menuCoverQueue.count > 1 ? { advanceMenuCoverQueue() } : nil,
+                onCancel: { closeMenuCoverQueue() })
+                // La hoja no se cierra entre albumes: cambia de
+                // contenido. El `.id` es lo que hace que el siguiente
+                // arranque su busqueda en vez de mostrar las candidatas
+                // del anterior.
+                .id(request.id)
+        }
+    }
+
+    private func advanceMenuCoverQueue() {
+        if menuCoverQueueIndex + 1 < menuCoverQueue.count {
+            menuCoverQueueIndex += 1
+        } else {
+            closeMenuCoverQueue()
+        }
+    }
+
+    private func closeMenuCoverQueue() {
+        menuCoverQueue = []
+        menuCoverQueueIndex = 0
     }
 
     /// El disparador REAL de sincronizacion (PLAN-general-sync.md §1.1)

@@ -92,9 +92,43 @@ final class AlbumCoverSearchCacheTests: XCTestCase {
         XCTAssertNil(cache.load(corrected))
     }
 
-    func testStoringNothingWritesNothing() {
+    func testStoringNothingWritesANegativeEntryThatThePickerNeverReads() {
+        // ST-261: "sin resultados" TAMBIEN se guarda. La lectura normal
+        // (el picker) sigue viendo `nil` y busca fresco; solo
+        // `loadNegative` -- la accion en lote del menu Biblioteca --
+        // honra la entrada.
         let cache = AlbumCoverSearchCache(directory: tempDir)
         cache.store([], for: key)
         XCTAssertNil(cache.load(key))
+        XCTAssertTrue(cache.loadNegative(key))
+    }
+
+    func testAPositiveEntryIsNotNegative() {
+        let cache = AlbumCoverSearchCache(directory: tempDir)
+        cache.store([makeCandidate(1, score: 100)], for: key)
+        XCTAssertFalse(cache.loadNegative(key))
+    }
+
+    func testANegativeEntryExpires() {
+        let t0 = Date()
+        AlbumCoverSearchCache(directory: tempDir, now: { t0 })
+            .store([], for: key)
+
+        // Ocho dias despues ya no se salta la busqueda: la fuente pudo
+        // agregar el disco en ese tiempo.
+        let later = t0.addingTimeInterval(8 * 24 * 60 * 60)
+        let cache = AlbumCoverSearchCache(directory: tempDir, now: { later })
+        XCTAssertFalse(cache.loadNegative(key))
+    }
+
+    func testCorrectedMetadataInvalidatesTheNegativeEntry() {
+        // Corregir año o numero de pistas produce otra clave: la
+        // busqueda se hace fresca con los datos nuevos, nunca se queda
+        // con el "no habia nada" de la metadata vieja.
+        let cache = AlbumCoverSearchCache(directory: tempDir)
+        cache.store([], for: key)
+
+        let corrected = AlbumCoverSearchCache.Key(album: "Signos", artist: "Soda Stereo", year: "1986", trackCount: 10)
+        XCTAssertFalse(cache.loadNegative(corrected))
     }
 }

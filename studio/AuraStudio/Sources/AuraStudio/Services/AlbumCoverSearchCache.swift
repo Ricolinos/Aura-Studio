@@ -77,6 +77,11 @@ struct AlbumCoverSearchCache: Sendable {
     /// Las candidatas cacheadas, o `nil` si no hay entrada o está vencida.
     /// Una imagen que falte en disco (borrada a mano) invalida solo ESA
     /// candidata; las demás sobreviven.
+    ///
+    /// Una entrada SIN candidatas (busqueda que no encontro nada, ST-261)
+    /// devuelve `nil` aca a proposito: el picker siempre busca fresco --
+    /// la cache negativa solo la honra quien la pide expresamente con
+    /// `loadNegative` (la accion en lote del menu Biblioteca).
     func load(_ key: Key) -> [AlbumCoverSearch.Candidate]? {
         let folder = folderURL(for: key)
         let manifestURL = folder.appendingPathComponent("candidates.json")
@@ -98,13 +103,39 @@ struct AlbumCoverSearchCache: Sendable {
         return result.isEmpty ? nil : result
     }
 
+    /// ST-261: `true` si hay una entrada vigente que dice "para ESTE
+    /// album ya se busco y no habia nada" -- la cache negativa.
+    ///
+    /// Por que existe: "Buscar caratulas de albumes faltantes" del menu
+    /// Biblioteca recorre TODA la biblioteca, y los albumes que ninguna
+    /// fuente tiene (ediciones raras, discos caseros) volvian a pedirse
+    /// a la red en cada corrida -- varios segundos por album, siempre
+    /// para el mismo "sin resultados". Recordarlo durante la misma
+    /// vigencia que las candidatas los salta de inmediato.
+    ///
+    /// Una correccion de metadata (titulo, artista, año o numero de
+    /// pistas) cambia la clave y la entrada deja de aplicar: la busqueda
+    /// se hace fresca con los datos nuevos, que es exactamente lo que se
+    /// quiere. Y el picker manual NUNCA la consulta: quien abre un album
+    /// a mano quiere buscar de verdad, aunque ayer no hubiera nada.
+    func loadNegative(_ key: Key) -> Bool {
+        let folder = folderURL(for: key)
+        let manifestURL = folder.appendingPathComponent("candidates.json")
+        guard let data = try? Data(contentsOf: manifestURL),
+              let stored = try? JSONDecoder().decode(StoredSearch.self, from: data),
+              now().timeIntervalSince1970 - stored.fetchedAt < Self.timeToLive else { return false }
+        return stored.candidates.isEmpty
+    }
+
     // MARK: - Escritura
 
     /// Guarda las candidatas de una búsqueda recién hecha. Mejor
     /// esfuerzo de punta a punta: un fallo de disco acá no puede tirar
     /// la búsqueda que ya salió bien.
+    ///
+    /// ST-261: una busqueda SIN resultados tambien se guarda (entrada
+    /// con lista vacia) -- es la cache negativa de `loadNegative`.
     func store(_ candidates: [AlbumCoverSearch.Candidate], for key: Key) {
-        guard !candidates.isEmpty else { return }
         let folder = folderURL(for: key)
         try? FileManager.default.removeItem(at: folder)
         guard let _ = try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true) else { return }

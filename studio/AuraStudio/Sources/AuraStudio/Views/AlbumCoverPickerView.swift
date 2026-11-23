@@ -287,6 +287,28 @@ struct AlbumCoverRequest: Identifiable, Equatable {
         keys.compactMap { forAlbumKey($0, in: index) }
     }
 
+    /// ST-261: un pedido por cada album de la biblioteca, en el orden
+    /// del catalogo -- la accion del menu Biblioteca, que no depende de
+    /// ninguna seleccion.
+    ///
+    /// `onlyMissingCovers` es el "truco" de omitir lo que ya esta
+    /// completo: un album donde ALGUNA pista ya tiene caratula se salta
+    /// sin tocar la red (la cuadricula lo muestra con tapa, y aplicarle
+    /// otra a ciegas pisaria una que ya sirve). "Faltante" significa
+    /// entonces "ninguna pista del album tiene caratula" -- no "alguna
+    /// pista la tiene a medias".
+    static func forAllAlbums(in index: LibraryCatalogIndex,
+                             onlyMissingCovers: Bool) -> [AlbumCoverRequest] {
+        index.orderedAlbumKeys.compactMap { key in
+            guard let request = forAlbumKey(key, in: index) else { return nil }
+            if onlyMissingCovers,
+               index.items(forAlbumKey: key).contains(where: { $0.metadata?.hasCover == true }) {
+                return nil
+            }
+            return request
+        }
+    }
+
     /// El pedido de un álbum por su clave. La grafía que se muestra sale
     /// de la primera pista del grupo, igual que en
     /// `LibraryGrouping.albums` -- así el nombre del álbum es el mismo

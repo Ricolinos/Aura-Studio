@@ -26,6 +26,8 @@
 "albums-view.texto" = "%@ — %@";
 "app-menu-commands.agregar-biblioteca" = "ライブラリに追加…";
 "app-menu-commands.buscar-actualizaciones-aura-studio" = "Aura Studio のアップデートを確認…";
+"app-menu-commands.buscar-caratulas-faltantes" = "ないアルバムカバーを検索";
+"app-menu-commands.buscar-caratulas-toda-biblioteca" = "ライブラリ全体のカバーを検索…";
 "app-menu-commands.buscar-elementos-similares" = "似ている項目を検索…";
 "app-menu-commands.deseleccionar-todo" = "すべて選択解除";
 "app-menu-commands.mostrar-barra-estado" = "ステータスバーを表示";
@@ -81,6 +83,9 @@
 "batch-media-info-view.vas-editar-canciones-vez-campos-que" = "%lld 曲をまとめて編集します。すべてで一致しない項目は「混在」と表示され、入力した内容は %lld 曲すべてに適用されます。タイトルとトラック番号は一括編集できません。";
 "content-view.actualizar" = "再読み込み";
 "content-view.aura-studio" = "Aura Studio";
+"content-view.caratulas-buscar" = "検索";
+"content-view.caratulas-toda-mensaje" = "ライブラリの%lld件のアルバム（すでにカバーがあるものを含む）のカバーをオンラインで検索します。時間がかかる場合があります。続行しますか？";
+"content-view.caratulas-toda-titulo" = "ライブラリ全体のカバーを検索";
 "content-view.sincronizar-con-ipod" = "iPod と同期";
 "content-view.vuelve-leer-estado-ipod-tu-biblioteca" = "iPod とライブラリの状態を読み直します。コピーも削除もしません。";
 "cover-contamination-sheet.caratulas-imagenes" = "「画像」にあるアートワーク";

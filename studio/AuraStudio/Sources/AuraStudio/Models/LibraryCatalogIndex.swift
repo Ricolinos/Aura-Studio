@@ -37,20 +37,30 @@ struct LibraryCatalogIndex {
 
     private let itemsByAlbumKey: [String: [LibraryItem]]
     private let keyByItemID: [UUID: String]
+    /// ST-261: todas las claves de album, **sin repetir y en el orden
+    /// del catalogo** (el de `items`). El orden importa: es el que va a
+    /// ver el usuario en el progreso y en la cola del selector cuando la
+    /// accion del menu Biblioteca recorre la biblioteca entera -- el
+    /// orden de un diccionario, que cambia en cada corrida, haria que la
+    /// misma accion mostrara los albumes "al azar".
+    let orderedAlbumKeys: [String]
 
     init(items: [LibraryItem], options: ArtistGroupingOptions) {
         self.options = options
         var buckets: [String: [LibraryItem]] = [:]
         var keys: [UUID: String] = [:]
+        var ordered: [String] = []
         buckets.reserveCapacity(items.count / 8 + 1)
         keys.reserveCapacity(items.count)
         for item in items where item.kind == .music {
             let key = LibraryGrouping.albumKey(of: item, options: options)
+            if buckets[key] == nil { ordered.append(key) }
             buckets[key, default: []].append(item)
             keys[item.id] = key
         }
         self.itemsByAlbumKey = buckets
         self.keyByItemID = keys
+        self.orderedAlbumKeys = ordered
     }
 
     /// Cuántos álbumes distintos hay en el catálogo (incluido "Sin

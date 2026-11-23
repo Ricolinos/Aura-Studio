@@ -26,6 +26,8 @@
 "albums-view.texto" = "%@ — %@";
 "app-menu-commands.agregar-biblioteca" = "Zur Mediathek hinzufügen …";
 "app-menu-commands.buscar-actualizaciones-aura-studio" = "Nach Aura-Studio-Updates suchen …";
+"app-menu-commands.buscar-caratulas-faltantes" = "Fehlende Albumcover suchen";
+"app-menu-commands.buscar-caratulas-toda-biblioteca" = "Cover für die gesamte Bibliothek suchen…";
 "app-menu-commands.buscar-elementos-similares" = "Ähnliche Objekte suchen …";
 "app-menu-commands.deseleccionar-todo" = "Auswahl aufheben";
 "app-menu-commands.mostrar-barra-estado" = "Statusleiste einblenden";
@@ -81,6 +83,9 @@
 "batch-media-info-view.vas-editar-canciones-vez-campos-que" = "Du bearbeitest gleich %lld Titel auf einmal. Felder, die nicht bei allen übereinstimmen, stehen als „Gemischt“ – was du eingibst, gilt für alle %lld. Titel und Titelnummer lassen sich nicht als Stapel bearbeiten.";
 "content-view.actualizar" = "Aktualisieren";
 "content-view.aura-studio" = "Aura Studio";
+"content-view.caratulas-buscar" = "Suchen";
+"content-view.caratulas-toda-mensaje" = "Für alle %lld Alben der Bibliothek wird online ein Cover gesucht, auch für Alben, die bereits eines haben. Das kann eine Weile dauern. Fortfahren?";
+"content-view.caratulas-toda-titulo" = "Cover für die gesamte Bibliothek suchen";
 "content-view.sincronizar-con-ipod" = "Mit dem iPod synchronisieren";
 "content-view.vuelve-leer-estado-ipod-tu-biblioteca" = "Liest den Zustand deines iPods und deiner Mediathek neu ein. Es wird nichts kopiert oder gelöscht.";
 "cover-contamination-sheet.caratulas-imagenes" = "Cover unter „Bilder“";

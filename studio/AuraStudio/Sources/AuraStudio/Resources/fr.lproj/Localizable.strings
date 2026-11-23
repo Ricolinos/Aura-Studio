@@ -26,6 +26,8 @@
 "albums-view.texto" = "%@ — %@";
 "app-menu-commands.agregar-biblioteca" = "Ajouter à la bibliothèque…";
 "app-menu-commands.buscar-actualizaciones-aura-studio" = "Rechercher les mises à jour d’Aura Studio…";
+"app-menu-commands.buscar-caratulas-faltantes" = "Rechercher les pochettes d’album manquantes";
+"app-menu-commands.buscar-caratulas-toda-biblioteca" = "Rechercher les pochettes de toute la bibliothèque…";
 "app-menu-commands.buscar-elementos-similares" = "Chercher les éléments similaires…";
 "app-menu-commands.deseleccionar-todo" = "Tout désélectionner";
 "app-menu-commands.mostrar-barra-estado" = "Afficher la barre d’état";
@@ -81,6 +83,9 @@
 "batch-media-info-view.vas-editar-canciones-vez-campos-que" = "Vous allez modifier %lld morceaux d’un coup. Les champs qui diffèrent d’un morceau à l’autre s’affichent comme « Mixte » — ce que vous saisissez s’applique aux %lld. Le titre et le numéro de piste ne se modifient pas par lot.";
 "content-view.actualizar" = "Actualiser";
 "content-view.aura-studio" = "Aura Studio";
+"content-view.caratulas-buscar" = "Rechercher";
+"content-view.caratulas-toda-mensaje" = "Une pochette sera recherchée en ligne pour les %lld albums de la bibliothèque, y compris ceux qui en ont déjà une. Cela peut prendre un certain temps. Continuer ?";
+"content-view.caratulas-toda-titulo" = "Rechercher les pochettes de toute la bibliothèque";
 "content-view.sincronizar-con-ipod" = "Synchroniser avec l’iPod";
 "content-view.vuelve-leer-estado-ipod-tu-biblioteca" = "Relit l’état de votre iPod et de votre bibliothèque. Ne copie ni ne supprime rien.";
 "cover-contamination-sheet.caratulas-imagenes" = "Pochettes dans Images";

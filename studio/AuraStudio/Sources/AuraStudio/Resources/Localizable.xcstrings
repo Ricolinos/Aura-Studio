@@ -1145,6 +1145,88 @@
         }
       }
     },
+    "app-menu-commands.buscar-caratulas-faltantes": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fehlende Albumcover suchen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find Missing Album Covers"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar carátulas de álbumes faltantes"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher les pochettes d’album manquantes"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ないアルバムカバーを検索"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найти недостающие обложки альбомов"
+          }
+        }
+      }
+    },
+    "app-menu-commands.buscar-caratulas-toda-biblioteca": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cover für die gesamte Bibliothek suchen…"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find Covers for Entire Library…"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar carátulas de toda la biblioteca…"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher les pochettes de toute la bibliothèque…"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ライブラリ全体のカバーを検索…"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найти обложки для всей библиотеки…"
+          }
+        }
+      }
+    },
     "app-menu-commands.buscar-elementos-similares": {
       "extractionState": "manual",
       "localizations": {
@@ -3634,6 +3716,129 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aura Studio"
+          }
+        }
+      }
+    },
+    "content-view.caratulas-buscar": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suchen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "検索"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найти"
+          }
+        }
+      }
+    },
+    "content-view.caratulas-toda-mensaje": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Für alle %lld Alben der Bibliothek wird online ein Cover gesucht, auch für Alben, die bereits eines haben. Das kann eine Weile dauern. Fortfahren?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aura Studio will search online for covers for all %lld albums in the library, including ones that already have one. This can take a while. Continue?"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se buscará carátula en línea para los %lld álbumes de la biblioteca, incluidos los que ya tienen una. Puede tardar bastante. ¿Continuar?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Une pochette sera recherchée en ligne pour les %lld albums de la bibliothèque, y compris ceux qui en ont déjà une. Cela peut prendre un certain temps. Continuer ?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ライブラリの%lld件のアルバム（すでにカバーがあるものを含む）のカバーをオンラインで検索します。時間がかかる場合があります。続行しますか？"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Будет выполнен поиск обложек в интернете для всех %lld альбомов библиотеки, включая те, у которых обложка уже есть. Это может занять много времени. Продолжить?"
+          }
+        }
+      }
+    },
+    "content-view.caratulas-toda-titulo": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cover für die gesamte Bibliothek suchen"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Find Covers for Entire Library"
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar carátulas de toda la biblioteca"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rechercher les pochettes de toute la bibliothèque"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ライブラリ全体のカバーを検索"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Найти обложки для всей библиотеки"
           }
         }
       }

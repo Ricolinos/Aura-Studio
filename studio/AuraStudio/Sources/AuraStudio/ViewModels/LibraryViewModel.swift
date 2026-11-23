@@ -2013,11 +2013,18 @@ final class LibraryViewModel: ObservableObject {
             handle.update(.determinate(completed: completed, total: requests.count),
                           statusText: "«\(request.albumTitle)» — \(completed + 1) de \(requests.count)")
 
+            // ST-261: la accion en lote honra la cache negativa -- un
+            // album que ayer no tuvo resultados en ninguna fuente no
+            // vuelve a pegarle a la red en cada corrida. Corregir la
+            // metadata del album cambia la clave de la cache y la
+            // busqueda se hace fresca, asi que no hay forma de que una
+            // correccion quede ignorada.
             let candidates = await search.candidates(
                 for: AlbumCoverScoring.AlbumFacts(title: request.albumTitle,
                                                   year: request.albumYear,
                                                   trackCount: request.trackCount),
-                artist: request.albumArtist)
+                artist: request.albumArtist,
+                allowsNegativeCache: true)
             guard let best = candidates.first else {
                 withoutResults += 1
                 continue

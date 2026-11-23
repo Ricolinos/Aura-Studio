@@ -26,6 +26,8 @@
 "albums-view.texto" = "%@ — %@";
 "app-menu-commands.agregar-biblioteca" = "Agregar a la biblioteca...";
 "app-menu-commands.buscar-actualizaciones-aura-studio" = "Buscar actualizaciones de Aura Studio...";
+"app-menu-commands.buscar-caratulas-faltantes" = "Buscar carátulas de álbumes faltantes";
+"app-menu-commands.buscar-caratulas-toda-biblioteca" = "Buscar carátulas de toda la biblioteca…";
 "app-menu-commands.buscar-elementos-similares" = "Buscar elementos similares...";
 "app-menu-commands.deseleccionar-todo" = "Deseleccionar todo";
 "app-menu-commands.mostrar-barra-estado" = "Mostrar barra de estado";
@@ -81,6 +83,9 @@
 "batch-media-info-view.vas-editar-canciones-vez-campos-que" = "Vas a editar %lld canciones a la vez. Los campos que no coincidan entre todas se muestran como \"Mixto\" -- lo que escribas se aplica a las %lld. El título y el número de pista no se pueden editar en lote.";
 "content-view.actualizar" = "Actualizar";
 "content-view.aura-studio" = "Aura Studio";
+"content-view.caratulas-buscar" = "Buscar";
+"content-view.caratulas-toda-mensaje" = "Se buscará carátula en línea para los %lld álbumes de la biblioteca, incluidos los que ya tienen una. Puede tardar bastante. ¿Continuar?";
+"content-view.caratulas-toda-titulo" = "Buscar carátulas de toda la biblioteca";
 "content-view.sincronizar-con-ipod" = "Sincronizar con el iPod";
 "content-view.vuelve-leer-estado-ipod-tu-biblioteca" = "Vuelve a leer el estado del iPod y de tu biblioteca. No copia ni borra nada.";
 "cover-contamination-sheet.caratulas-imagenes" = "Carátulas en Imágenes";

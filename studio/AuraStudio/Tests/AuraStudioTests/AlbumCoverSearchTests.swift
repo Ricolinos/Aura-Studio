@@ -23,7 +23,8 @@ final class AlbumCoverSearchTests: XCTestCase {
     /// El buscador con las tres fuentes apuntando al mock y sin espera
     /// de rate limit (el limite real de MusicBrainz es 1 req/s: sin esto
     /// la suite tardaria segundos por prueba).
-    private func search(session: URLSession, deezerEnabled: Bool = true) -> AlbumCoverSearch {
+    private func search(session: URLSession, deezerEnabled: Bool = true,
+                        cache: AlbumCoverSearchCache? = nil) -> AlbumCoverSearch {
         AlbumCoverSearch(
             musicBrainz: MusicBrainzClient(session: session,
                                            baseURL: URL(string: "https://mb.test/ws/2")!,
@@ -31,7 +32,8 @@ final class AlbumCoverSearchTests: XCTestCase {
             coverArtArchive: CoverArtArchiveClient(session: session,
                                                    baseURL: URL(string: "https://caa.test")!),
             deezer: DeezerClient(session: session, baseURL: URL(string: "https://deezer.test/search")!),
-            deezerEnabled: deezerEnabled)
+            deezerEnabled: deezerEnabled,
+            cache: cache)
     }
 
     private static let releasesJSON = """
@@ -164,6 +166,59 @@ final class AlbumCoverSearchTests: XCTestCase {
         XCTAssertFalse(touchedNetwork)
     }
 
+    // MARK: - ST-261: cache negativa
+
+    func testANegativeCacheEntrySkipsTheNetworkOnlyWhenAsked() async throws {
+        // La accion EN LOTE (menu Biblioteca) salta lo que ayer no tuvo
+        // resultados; el picker manual siempre busca fresco.
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("cover-search-negative-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        let cache = AlbumCoverSearchCache(directory: tempDir)
+        // "Signos" sin año y 0 pistas: la clave exacta que usa
+        // `candidates(album:artist:)`.
+        cache.store([], for: AlbumCoverSearchCache.Key(album: "Signos", artist: "Soda Stereo",
+                                                       year: nil, trackCount: 0))
+
+        nonisolated(unsafe) var touchedNetwork = false
+        MockURLProtocol.handler = { request in
+            touchedNetwork = true
+            return (self.http(request.url!), Data())
+        }
+
+        // Sin el permiso expreso, la entrada negativa no aplica.
+        let fresh = await search(session: mockSession(), cache: cache)
+            .candidates(album: "Signos", artist: "Soda Stereo")
+        XCTAssertTrue(fresh.isEmpty)
+        XCTAssertTrue(touchedNetwork)
+
+        touchedNetwork = false
+        let batched = await search(session: mockSession(), cache: cache)
+            .candidates(for: AlbumCoverScoring.AlbumFacts(title: "Signos", year: nil, trackCount: 0),
+                        artist: "Soda Stereo", allowsNegativeCache: true)
+        XCTAssertTrue(batched.isEmpty)
+        XCTAssertFalse(touchedNetwork)
+    }
+
+    func testAnEmptySearchIsRememberedAsNegative() async throws {
+        // La corrida que no encontro nada deja la entrada: la siguiente
+        // accion en lote no vuelve a pegarle a la red por ese album.
+        let tempDir = FileManager.default.temporaryDirectory
+            .appendingPathComponent("cover-search-negative-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+        let cache = AlbumCoverSearchCache(directory: tempDir)
+        MockURLProtocol.handler = { request in
+            (self.http(request.url!), Data(#"{"releases": []}"#.utf8))
+        }
+
+        let result = await search(session: mockSession(), deezerEnabled: false, cache: cache)
+            .candidates(album: "Signos", artist: "Soda Stereo")
+
+        XCTAssertTrue(result.isEmpty)
+        XCTAssertTrue(cache.loadNegative(AlbumCoverSearchCache.Key(
+            album: "Signos", artist: "Soda Stereo", year: nil, trackCount: 0)))
+    }
+
     // MARK: - Detalle que se le muestra al usuario
 
     func testTheYearComesFromTheReleaseDate() {
@@ -279,5 +334,52 @@ final class AlbumCoverRequestTests: XCTestCase {
         let request = try XCTUnwrap(AlbumCoverRequest.forAlbum(of: [item]))
 
         XCTAssertEqual(request.albumArtist, "Soda Stereo")
+    }
+
+    // MARK: - ST-261: toda la biblioteca, sin seleccion
+
+    private func songWithCover(album: String?, artist: String?) -> AuraStudio.LibraryItem {
+        var item = song(album: album, artist: artist)
+        item.metadata?.coverURL = URL(fileURLWithPath: "/tmp/tapa.jpg")
+        return item
+    }
+
+    func testForAllAlbumsCoversEveryAlbumInCatalogOrder() {
+        // El orden del catalogo, no el del diccionario: es el orden que
+        // ve el usuario en el progreso y en la cola del selector.
+        let items = [song(album: "Nada Personal", artist: "Soda Stereo"),
+                     song(album: "Signos", artist: "Soda Stereo"),
+                     song(album: "Signos", artist: "Soda Stereo")]
+        let index = LibraryCatalogIndex(items: items, options: .default)
+
+        let requests = AlbumCoverRequest.forAllAlbums(in: index, onlyMissingCovers: false)
+
+        XCTAssertEqual(requests.map(\.albumTitle), ["Nada Personal", "Signos"])
+        XCTAssertEqual(requests.last?.trackCount, 2)
+    }
+
+    func testForAllAlbumsOnlyMissingSkipsAlbumsThatAlreadyHaveACover() {
+        // El "truco" de omitir lo completo: un album con ALGUNA pista
+        // con caratula no vuelve a buscar -- no toca la red por él.
+        let items = [song(album: "Signos", artist: "Soda Stereo"),
+                     songWithCover(album: "Nada Personal", artist: "Soda Stereo"),
+                     song(album: "Nada Personal", artist: "Soda Stereo")]
+        let index = LibraryCatalogIndex(items: items, options: .default)
+
+        let requests = AlbumCoverRequest.forAllAlbums(in: index, onlyMissingCovers: true)
+
+        XCTAssertEqual(requests.map(\.albumTitle), ["Signos"])
+    }
+
+    func testForAllAlbumsNeverIncludesTheUnknownAlbum() {
+        // "Sin album" no es un disco: no se le busca tapa ni en el modo
+        // de biblioteca completa.
+        let items = [song(album: nil, artist: "Soda Stereo"),
+                     song(album: "Signos", artist: "Soda Stereo")]
+        let index = LibraryCatalogIndex(items: items, options: .default)
+
+        let requests = AlbumCoverRequest.forAllAlbums(in: index, onlyMissingCovers: false)
+
+        XCTAssertEqual(requests.map(\.albumTitle), ["Signos"])
     }
 }

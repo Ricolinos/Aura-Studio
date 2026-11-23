@@ -19680,3 +19680,34 @@ Arreglo: `InfoPlist.strings` se movio al es.lproj completo
 `tools/compilar-catalogo.py`) y el fileRef del proyecto ahora apunta ahi
 con `sourceTree = SOURCE_ROOT`. Copia y compilacion escriben el mismo
 contenido, asi que el orden ya no importa.
+
+## ST-261 — Buscar caratulas de toda la biblioteca sin seleccionar nada
+
+El dolor del dueño: para completar caratulas habia que seleccionar a
+mano los albumes (o toda la biblioteca, que se alentaba), y cada corrida
+re-busca incluso lo que ninguna fuente tiene.
+
+Arreglo en tres piezas:
+
+1. **Menu Biblioteca**: "Buscar caratulas de albumes faltantes" recorre
+   toda la biblioteca y salta los albumes donde ALGUNA pista ya tiene
+   caratula (cero red por ellos); "Buscar caratulas de toda la
+   biblioteca..." pide confirmacion con el conteo de albumes porque es
+   lenta. Ambas reusan `applyRecommendedCovers`: la recomendada se
+   aplica sola si supera el umbral y lo dudoso queda en una cola del
+   selector a nivel ventana (`ContentView`), mismo patron que la cola
+   de AlbumsView.
+2. **Cache negativa** en `AlbumCoverSearchCache`: una busqueda sin
+   resultados guarda una entrada con lista vacia y la accion en lote la
+   honra (`allowsNegativeCache`) -- el album raro ya no cuesta segundos
+   de red en cada corrida. El picker manual NUNCA la consulta: quien
+   abre un album a mano quiere buscar de verdad. Corregir metadata
+   cambia la clave y la busqueda se hace fresca.
+3. **`LibraryCatalogIndex.orderedAlbumKeys`**: las claves en el orden
+   del catalogo (no el del diccionario), para que el progreso y la cola
+   muestren los albumes en un orden estable entre corridas.
+
+"Faltante" quedo definido como "ninguna pista del album tiene
+caratula", no "alguna la tiene a medias": la cuadricula muestra el
+album con tapa si alguna pista la tiene, y re-buscarle pisaria una tapa
+que ya sirve.

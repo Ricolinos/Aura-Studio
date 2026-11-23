@@ -14,6 +14,14 @@ struct LibraryCommandContext {
     let addFiles: () -> Void
     let showSimilarItems: () -> Void
     let revealLibraryFolder: () -> Void
+    /// ST-261: "Buscar carátulas de álbumes faltantes" -- recorre toda
+    /// la biblioteca sin pedir seleccion, saltando los albumes que ya
+    /// tienen caratula.
+    let findMissingAlbumCovers: () -> Void
+    /// ST-261: "Buscar carátulas de toda la biblioteca..." -- la
+    /// confirmacion (es lenta, incluye los albumes que ya tienen tapa)
+    /// la pone quien implementa el comando.
+    let findAllAlbumCovers: () -> Void
 }
 
 private struct LibraryCommandKey: FocusedValueKey {
@@ -188,6 +196,22 @@ struct LibraryMenuCommands: View {
             context?.showSimilarItems()
         }
         .keyboardShortcut("d", modifiers: [.command, .option])
+        .disabled(context == nil)
+
+        Divider()
+
+        // ST-261: buscar caratulas SIN seleccionar nada antes. La de
+        // "faltantes" salta los albumes que ya tienen tapa (no toca la
+        // red por ellos); la de "toda la biblioteca" pide confirmacion
+        // porque puede tardar bastante.
+        Button(LS("app-menu-commands.buscar-caratulas-faltantes")) {
+            context?.findMissingAlbumCovers()
+        }
+        .disabled(context == nil)
+
+        Button(LS("app-menu-commands.buscar-caratulas-toda-biblioteca")) {
+            context?.findAllAlbumCovers()
+        }
         .disabled(context == nil)
 
         Divider()

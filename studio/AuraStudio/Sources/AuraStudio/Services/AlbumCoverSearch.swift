@@ -119,7 +119,15 @@ struct AlbumCoverSearch: Sendable {
     ///
     /// `facts` es lo que la biblioteca sabe del álbum (título, año,
     /// número de pistas) y es contra eso que se puntúa cada edición.
-    func candidates(for facts: AlbumCoverScoring.AlbumFacts, artist: String?) async -> [Candidate] {
+    ///
+    /// ST-261: con `allowsNegativeCache`, una entrada de "ya se busco y
+    /// no habia nada" se honra y devuelve `[]` sin tocar la red. Solo lo
+    /// pasan las acciones EN LOTE (menu Biblioteca), que recorren toda
+    /// la biblioteca: el picker manual nunca lo hace -- quien abre un
+    /// album a mano quiere una busqueda fresca aunque ayer no hubiera
+    /// nada.
+    func candidates(for facts: AlbumCoverScoring.AlbumFacts, artist: String?,
+                    allowsNegativeCache: Bool = false) async -> [Candidate] {
         let albumTitle = facts.title.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !albumTitle.isEmpty, albumTitle != LibraryGrouping.unknownAlbumTitle else { return [] }
         let artistName = artist.flatMap { name -> String? in
@@ -135,6 +143,9 @@ struct AlbumCoverSearch: Sendable {
                                                  year: facts.year, trackCount: facts.trackCount)
         if let cached = cache?.load(cacheKey) {
             return cached.sorted(by: Self.isBetter)
+        }
+        if allowsNegativeCache, cache?.loadNegative(cacheKey) == true {
+            return []
         }
 
         // Las dos ramas en paralelo: Deezer no depende de MusicBrainz.
