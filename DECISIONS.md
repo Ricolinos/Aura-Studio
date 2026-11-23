@@ -19711,3 +19711,29 @@ Arreglo en tres piezas:
 caratula", no "alguna la tiene a medias": la cuadricula muestra el
 album con tapa si alguna pista la tiene, y re-buscarle pisaria una tapa
 que ya sirve.
+
+## ST-262 — Filtros de pendientes en Albumes y Canciones
+
+El dolor del dueno: "quiero ver solo lo que le falta algo" obligaba a
+recorrer la biblioteca a ojo. No habia forma de acotar la vista a los
+albumes sin caratula o a las canciones sin letra.
+
+Arreglo en dos piezas:
+
+1. **Modelo puro `LibraryPendingFilter`**: `AlbumPendingFilter` (todos /
+   sin caratula / sin ano / sin genero) y `SongPendingFilter` (todos /
+   sin caratula / sin artista / sin album / sin ano / sin letra), con
+   `matches(...)` probado sin levantar vistas. El grupo "Sin album" se
+   excluye de los pendientes de album a proposito: no es un album y
+   ninguna herramienta de albumes puede arreglarlo.
+2. **Las dos vistas**: Albumes gana un menu de filtro junto al de orden
+   (persistido en `aura.albumsPendingFilter`, icono relleno cuando hay
+   filtro activo); Canciones gana un submenu "Pendientes" en el menu de
+   encabezado (persistido en `aura.songsPendingFilter`), solo en la
+   tabla completa -- dentro de un album o artista la seleccion ya es el
+   acotamiento. Ambos menus muestran el conteo por opcion ("Sin
+   caratula (37)") para saber si vale la pena antes de elegir, y cuando
+   el filtro no deja nada el estado vacio lo celebra ("Ningun album
+   tiene este pendiente") en vez de parecer un error.
+
+12 claves nuevas de catalogo x 6 idiomas. 10 pruebas nuevas.

@@ -67,6 +67,9 @@ struct AlbumsView: View {
     @State private var coverQueue: [AlbumCoverRequest] = []
     @State private var coverQueueIndex = 0
     @AppStorage("aura.albumsSort") private var sortRaw = AlbumSort.title.rawValue
+    /// ST-262: filtro de pendientes (que les falta a los albumes),
+    /// persistido como el orden.
+    @AppStorage("aura.albumsPendingFilter") private var pendingFilterRaw = AlbumPendingFilter.all.rawValue
 
     enum AlbumSort: String, CaseIterable, Identifiable {
         case title, artist, year, recentlyAdded
@@ -82,6 +85,7 @@ struct AlbumsView: View {
     }
 
     private var sort: AlbumSort { AlbumSort(rawValue: sortRaw) ?? .title }
+    private var pendingFilter: AlbumPendingFilter { AlbumPendingFilter(rawValue: pendingFilterRaw) ?? .all }
 
     /// ST-184: el espacio de coordenadas compartido entre los marcos que
     /// reportan las tarjetas y el rectángulo del arrastre.
@@ -94,7 +98,9 @@ struct AlbumsView: View {
     /// con el valor recién calculado, antes de que el `@State` lo
     /// refleje.
     private func computeVisible(_ groups: [AlbumGroup]) -> [AlbumGroup] {
-        var result = groups.filter { LibrarySearch.album($0, matches: searchText) }
+        // ST-262: primero el filtro de pendientes, despues la busqueda.
+        var result = pendingFilter == .all ? groups : groups.filter { pendingFilter.matches($0) }
+        result = result.filter { LibrarySearch.album($0, matches: searchText) }
         switch sort {
         case .title:
             break // orden natural de LibraryGrouping (título, año; "Sin álbum" al final)
@@ -126,6 +132,14 @@ struct AlbumsView: View {
         return albums.first { $0.id == selectedAlbumID }
     }
 
+    /// ST-262: "Sin caratula (37)" -- el conteo sale de los albumes ya
+    /// agrupados; con la biblioteca entera son ~1 100 chequeos simples,
+    /// solo al abrir el menu.
+    private func pendingFilterTitle(_ option: AlbumPendingFilter) -> String {
+        let count = option == .all ? albums.count : albums.filter { option.matches($0) }.count
+        return LSf("pending-filter.conteo", option.title, count)
+    }
+
     var body: some View {
         #if DEBUG
         let _ = BodyEvaluationCounter.record("AlbumsView")
@@ -146,6 +160,7 @@ struct AlbumsView: View {
         // entrada que de verdad cambió.
         .onChange(of: searchText) { refreshGrid() }
         .onChange(of: sortRaw) { refreshGrid() }
+        .onChange(of: pendingFilterRaw) { refreshGrid() }
         .onChange(of: preferences.artistGrouping) { rebuild() }
         .onChange(of: selectedAlbumID) { _, id in
             refreshStatusTotal()
@@ -345,6 +360,22 @@ struct AlbumsView: View {
             // en la misma fila que el titulo de la ventana.
             HStack(spacing: 10) {
                 Spacer()
+                // ST-262: filtro de pendientes, con el conteo de albumes
+                // que tiene cada opcion para saber si vale la pena.
+                Menu {
+                    Picker(LS("albums-view.filtrar"), selection: $pendingFilterRaw) {
+                        ForEach(AlbumPendingFilter.allCases) { option in
+                            Text(pendingFilterTitle(option)).tag(option.rawValue)
+                        }
+                    }
+                } label: {
+                    Image(systemName: pendingFilter == .all
+                          ? "line.3.horizontal.decrease.circle"
+                          : "line.3.horizontal.decrease.circle.fill")
+                }
+                .menuStyle(.borderlessButton)
+                .fixedSize()
+                .help(LS("albums-view.filtrar"))
                 Menu {
                     Picker(LS("albums-view.ordenar-por"), selection: $sortRaw) {
                         ForEach(AlbumSort.allCases) { option in
@@ -367,7 +398,14 @@ struct AlbumsView: View {
                 emptyState("Todavía no hay música en la biblioteca.",
                            detail: "Suelta canciones en \"Canciones\" y aquí aparecerán agrupadas por álbum.")
             } else if visibleAlbums.isEmpty {
-                emptyState("Sin resultados para \"\(searchText)\".", detail: nil)
+                // ST-262: con un filtro de pendientes activo y sin
+                // busqueda, el vacio significa "nada tiene este hueco"
+                // -- una buena noticia, no un error.
+                if searchText.isEmpty && pendingFilter != .all {
+                    emptyState(LS("albums-view.sin-pendientes"), detail: nil)
+                } else {
+                    emptyState("Sin resultados para \"\(searchText)\".", detail: nil)
+                }
             } else {
                 ScrollView {
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 160, maximum: 200), spacing: 24, alignment: .top)],

@@ -20,9 +20,11 @@
 "albums-view.buscar-caratulas-album" = "Buscar carátulas del álbum...";
 "albums-view.buscar-caratulas-albumes" = "Buscar carátulas de %lld álbumes...";
 "albums-view.buscar-informacion-linea" = "Buscar información en línea";
+"albums-view.filtrar" = "Filtrar álbumes";
 "albums-view.mostrar-finder" = "Mostrar en Finder";
 "albums-view.ordenar-albumes" = "Ordenar los álbumes";
 "albums-view.ordenar-por" = "Ordenar por";
+"albums-view.sin-pendientes" = "Ningún álbum tiene este pendiente.";
 "albums-view.texto" = "%@ — %@";
 "app-menu-commands.agregar-biblioteca" = "Agregar a la biblioteca...";
 "app-menu-commands.buscar-actualizaciones-aura-studio" = "Buscar actualizaciones de Aura Studio...";
@@ -366,6 +368,7 @@
 "media-section-view.obtener-informacion" = "Obtener información...";
 "media-section-view.para-convertir-videos-al-formato-ipod" = "Para convertir videos al formato del iPod hace falta ffmpeg. Instálalo con Homebrew (\"brew install ffmpeg\") y vuelve a intentar.";
 "media-section-view.pendiente" = "Pendiente";
+"media-section-view.pendientes" = "Pendientes";
 "media-section-view.quitado-ipod" = "Quitado del iPod";
 "media-section-view.quitar-favoritos" = "Quitar de favoritos";
 "media-section-view.quitar-poster" = "Quitar póster";
@@ -374,6 +377,7 @@
 "media-section-view.seleccionar-canciones-mismo-album" = "Seleccionar canciones del mismo álbum";
 "media-section-view.seleccionar-canciones-mismo-artista" = "Seleccionar canciones del mismo artista";
 "media-section-view.sin-album" = "Sin álbum";
+"media-section-view.sin-pendientes" = "Ninguna canción tiene este pendiente.";
 "media-section-view.sincronizado" = "Sincronizado";
 "media-section-view.sincronizar-seleccion" = "Sincronizar la selección";
 "media-section-view.solo-favoritos" = "Solo favoritos";
@@ -419,6 +423,14 @@
 "orphans-detail" = "Preparados y carátulas que ya no le pertenecen a ningún elemento de tu biblioteca — de elementos eliminados antes de esta versión, o de un reprocesamiento. No son tus archivos originales: son copias técnicas que Aura arma sola y puede volver a armar si hicieran falta.";
 "orphans-none-found" = "No hay archivos huérfanos: no hace falta limpiar nada.";
 "orphans-title" = "Archivos huérfanos";
+"pending-filter.conteo" = "%1$@ (%2$lld)";
+"pending-filter.sin-album" = "Sin álbum";
+"pending-filter.sin-ano" = "Sin año";
+"pending-filter.sin-artista" = "Sin artista";
+"pending-filter.sin-caratula" = "Sin carátula";
+"pending-filter.sin-genero" = "Sin género";
+"pending-filter.sin-letra" = "Sin letra";
+"pending-filter.todos" = "Mostrar todo";
 "permissions-view.abrir-ajustes-sistema-privacidad-segurid" = "Abrir Ajustes del Sistema (Privacidad y Seguridad)";
 "permissions-view.permisos-necesarios" = "Permisos necesarios";
 "permissions.admin.body" = "En algunos pasos -- pausar servicios que interfieren con la deteccion del iPod, o preparar el disco antes de instalar -- macOS te va a pedir tu contraseña con su propio dialogo nativo. Aura Studio siempre te explica antes que va a hacer y por que, en una pantalla propia, antes de que aparezca ese dialogo. Nunca vas a necesitar abrir Terminal ni escribir ningun comando.";

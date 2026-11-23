@@ -20,9 +20,11 @@
 "albums-view.buscar-caratulas-album" = "Найти обложки альбома…";
 "albums-view.buscar-caratulas-albumes" = "Найти обложки для %lld альбомов…";
 "albums-view.buscar-informacion-linea" = "Найти информацию в сети";
+"albums-view.filtrar" = "Фильтр альбомов";
 "albums-view.mostrar-finder" = "Показать в Finder";
 "albums-view.ordenar-albumes" = "Сортировать альбомы";
 "albums-view.ordenar-por" = "Сортировать по";
+"albums-view.sin-pendientes" = "Ни одному альбому этого не хватает.";
 "albums-view.texto" = "%@ — %@";
 "app-menu-commands.agregar-biblioteca" = "Добавить в медиатеку…";
 "app-menu-commands.buscar-actualizaciones-aura-studio" = "Проверить обновления Aura Studio…";
@@ -366,6 +368,7 @@
 "media-section-view.obtener-informacion" = "Получить информацию…";
 "media-section-view.para-convertir-videos-al-formato-ipod" = "Для преобразования видео в формат iPod нужен ffmpeg. Установите его через Homebrew («brew install ffmpeg») и повторите.";
 "media-section-view.pendiente" = "Ожидает";
+"media-section-view.pendientes" = "Недостающее";
 "media-section-view.quitado-ipod" = "Убран с iPod";
 "media-section-view.quitar-favoritos" = "Убрать из избранного";
 "media-section-view.quitar-poster" = "Убрать постер";
@@ -374,6 +377,7 @@
 "media-section-view.seleccionar-canciones-mismo-album" = "Выбрать треки того же альбома";
 "media-section-view.seleccionar-canciones-mismo-artista" = "Выбрать треки того же исполнителя";
 "media-section-view.sin-album" = "Без альбома";
+"media-section-view.sin-pendientes" = "Ни одной песне этого не хватает.";
 "media-section-view.sincronizado" = "Синхронизирован";
 "media-section-view.sincronizar-seleccion" = "Синхронизировать выбранное";
 "media-section-view.solo-favoritos" = "Только избранное";
@@ -419,6 +423,14 @@
 "orphans-detail" = "Подготовленные файлы и обложки, которые больше не принадлежат ни одному объекту вашей медиатеки — от объектов, удалённых до этой версии, или после повторной обработки. Это не ваши исходные файлы: это технические копии, которые Aura создаёт сама и при необходимости создаст заново.";
 "orphans-none-found" = "Неиспользуемых файлов нет: чистить нечего.";
 "orphans-title" = "Неиспользуемые файлы";
+"pending-filter.conteo" = "%1$@ (%2$lld)";
+"pending-filter.sin-album" = "Без альбома";
+"pending-filter.sin-ano" = "Без года";
+"pending-filter.sin-artista" = "Без исполнителя";
+"pending-filter.sin-caratula" = "Без обложки";
+"pending-filter.sin-genero" = "Без жанра";
+"pending-filter.sin-letra" = "Без текста песни";
+"pending-filter.todos" = "Показать все";
 "permissions-view.abrir-ajustes-sistema-privacidad-segurid" = "Открыть Системные настройки («Конфиденциальность и безопасность»)";
 "permissions-view.permisos-necesarios" = "Необходимые разрешения";
 "permissions.admin.body" = "На некоторых шагах — приостановка служб, мешающих обнаружению iPod, или подготовка диска перед установкой — macOS запросит ваш пароль в собственном системном окне. Aura Studio всегда заранее объясняет на отдельном экране, что именно она собирается сделать и зачем, ещё до появления этого окна. Вам никогда не понадобится открывать Терминал или вводить команды.";

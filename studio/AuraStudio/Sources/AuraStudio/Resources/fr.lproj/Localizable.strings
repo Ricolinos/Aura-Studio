@@ -20,9 +20,11 @@
 "albums-view.buscar-caratulas-album" = "Chercher les pochettes de l’album…";
 "albums-view.buscar-caratulas-albumes" = "Chercher les pochettes de %lld albums…";
 "albums-view.buscar-informacion-linea" = "Chercher des informations en ligne";
+"albums-view.filtrar" = "Filtrer les albums";
 "albums-view.mostrar-finder" = "Afficher dans le Finder";
 "albums-view.ordenar-albumes" = "Trier les albums";
 "albums-view.ordenar-por" = "Trier par";
+"albums-view.sin-pendientes" = "Aucun album n’a ce manque.";
 "albums-view.texto" = "%@ — %@";
 "app-menu-commands.agregar-biblioteca" = "Ajouter à la bibliothèque…";
 "app-menu-commands.buscar-actualizaciones-aura-studio" = "Rechercher les mises à jour d’Aura Studio…";
@@ -366,6 +368,7 @@
 "media-section-view.obtener-informacion" = "Obtenir des informations…";
 "media-section-view.para-convertir-videos-al-formato-ipod" = "Convertir des vidéos au format de l’iPod nécessite ffmpeg. Installez-le avec Homebrew (« brew install ffmpeg ») et réessayez.";
 "media-section-view.pendiente" = "En attente";
+"media-section-view.pendientes" = "À compléter";
 "media-section-view.quitado-ipod" = "Retiré de l’iPod";
 "media-section-view.quitar-favoritos" = "Retirer des favoris";
 "media-section-view.quitar-poster" = "Retirer l’affiche";
@@ -374,6 +377,7 @@
 "media-section-view.seleccionar-canciones-mismo-album" = "Sélectionner les morceaux du même album";
 "media-section-view.seleccionar-canciones-mismo-artista" = "Sélectionner les morceaux du même artiste";
 "media-section-view.sin-album" = "Sans album";
+"media-section-view.sin-pendientes" = "Aucun morceau n’a ce manque.";
 "media-section-view.sincronizado" = "Synchronisé";
 "media-section-view.sincronizar-seleccion" = "Synchroniser la sélection";
 "media-section-view.solo-favoritos" = "Favoris uniquement";
@@ -419,6 +423,14 @@
 "orphans-detail" = "Fichiers préparés et pochettes qui n’appartiennent plus à aucun élément de votre bibliothèque — issus d’éléments supprimés avant cette version, ou d’un retraitement. Ce ne sont pas vos fichiers d’origine : ce sont des copies techniques qu’Aura crée seul et peut recréer si besoin.";
 "orphans-none-found" = "Il n’y a pas de fichiers orphelins : rien à nettoyer.";
 "orphans-title" = "Fichiers orphelins";
+"pending-filter.conteo" = "%1$@ (%2$lld)";
+"pending-filter.sin-album" = "Sans album";
+"pending-filter.sin-ano" = "Sans année";
+"pending-filter.sin-artista" = "Sans artiste";
+"pending-filter.sin-caratula" = "Sans pochette";
+"pending-filter.sin-genero" = "Sans genre";
+"pending-filter.sin-letra" = "Sans paroles";
+"pending-filter.todos" = "Tout afficher";
 "permissions-view.abrir-ajustes-sistema-privacidad-segurid" = "Ouvrir Réglages Système (Confidentialité et sécurité)";
 "permissions-view.permisos-necesarios" = "Autorisations nécessaires";
 "permissions.admin.body" = "À certaines étapes — mettre en pause les services qui gênent la détection de l’iPod, ou préparer le disque avant l’installation — macOS demande votre mot de passe dans sa propre fenêtre native. Aura Studio vous explique toujours ce qu’il va faire et pourquoi, sur un écran dédié, avant l’apparition de cette fenêtre. Vous n’aurez jamais besoin d’ouvrir le Terminal ni de taper la moindre commande.";

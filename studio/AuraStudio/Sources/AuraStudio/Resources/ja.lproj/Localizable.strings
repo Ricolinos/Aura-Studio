@@ -20,9 +20,11 @@
 "albums-view.buscar-caratulas-album" = "アルバムのアートワークを検索…";
 "albums-view.buscar-caratulas-albumes" = "%lld 枚のアルバムのアートワークを検索…";
 "albums-view.buscar-informacion-linea" = "オンラインで情報を検索";
+"albums-view.filtrar" = "アルバムを絞り込む";
 "albums-view.mostrar-finder" = "Finder で表示";
 "albums-view.ordenar-albumes" = "アルバムを並べ替え";
 "albums-view.ordenar-por" = "並べ替え";
+"albums-view.sin-pendientes" = "この項目が不足しているアルバムはありません。";
 "albums-view.texto" = "%@ — %@";
 "app-menu-commands.agregar-biblioteca" = "ライブラリに追加…";
 "app-menu-commands.buscar-actualizaciones-aura-studio" = "Aura Studio のアップデートを確認…";
@@ -366,6 +368,7 @@
 "media-section-view.obtener-informacion" = "情報を取得…";
 "media-section-view.para-convertir-videos-al-formato-ipod" = "ビデオを iPod の形式に変換するには ffmpeg が必要です。Homebrew でインストールして（「brew install ffmpeg」）、もう一度お試しください。";
 "media-section-view.pendiente" = "保留中";
+"media-section-view.pendientes" = "不足項目";
 "media-section-view.quitado-ipod" = "iPod から削除済み";
 "media-section-view.quitar-favoritos" = "お気に入りから外す";
 "media-section-view.quitar-poster" = "ポスターを外す";
@@ -374,6 +377,7 @@
 "media-section-view.seleccionar-canciones-mismo-album" = "同じアルバムの曲を選択";
 "media-section-view.seleccionar-canciones-mismo-artista" = "同じアーティストの曲を選択";
 "media-section-view.sin-album" = "アルバムなし";
+"media-section-view.sin-pendientes" = "この項目が不足している曲はありません。";
 "media-section-view.sincronizado" = "同期済み";
 "media-section-view.sincronizar-seleccion" = "選択項目を同期";
 "media-section-view.solo-favoritos" = "お気に入りのみ";
@@ -419,6 +423,14 @@
 "orphans-detail" = "ライブラリのどの項目にも属さなくなった準備済みファイルとアートワークです。このバージョンより前に削除された項目や、再処理の結果として残ったものです。元のファイルではありません。Aura が自分で作る技術的なコピーで、必要になればまた作れます。";
 "orphans-none-found" = "孤立ファイルはありません。整理するものはありません。";
 "orphans-title" = "孤立ファイル";
+"pending-filter.conteo" = "%1$@ (%2$lld)";
+"pending-filter.sin-album" = "アルバムなし";
+"pending-filter.sin-ano" = "年なし";
+"pending-filter.sin-artista" = "アーティストなし";
+"pending-filter.sin-caratula" = "カバーなし";
+"pending-filter.sin-genero" = "ジャンルなし";
+"pending-filter.sin-letra" = "歌詞なし";
+"pending-filter.todos" = "すべて表示";
 "permissions-view.abrir-ajustes-sistema-privacidad-segurid" = "システム設定（プライバシーとセキュリティ）を開く";
 "permissions-view.permisos-necesarios" = "必要な許可";
 "permissions.admin.body" = "一部の手順（iPod の検出を妨げるサービスの一時停止や、インストール前のディスクの準備）では、macOS が独自のダイアログでパスワードを求めます。Aura Studio は、そのダイアログが表示される前に、何をなぜ行うのかを専用の画面で必ず説明します。ターミナルを開いたり、コマンドを入力したりする必要はありません。";

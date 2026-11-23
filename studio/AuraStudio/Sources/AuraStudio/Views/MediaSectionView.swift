@@ -145,6 +145,12 @@ struct MediaSectionView: View {
         if kind == .music && preferences.musicShowOnlyFavorites {
             result = result.filter { $0.metadata?.isFavorite == true }
         }
+        // ST-262: filtro de pendientes, solo en la tabla completa de
+        // canciones -- dentro de un album o artista la seleccion ya es
+        // el acotamiento.
+        if kind == .music && !isEmbedded && songPendingFilter != .all {
+            result = result.filter { songPendingFilter.matches($0) }
+        }
         let query = searchText.trimmingCharacters(in: .whitespaces)
         if !query.isEmpty {
             result = result.filter { LibrarySearch.item($0, matches: query) }
@@ -153,6 +159,12 @@ struct MediaSectionView: View {
     }
 
     private var isEmbedded: Bool { scope != .all }
+
+    /// ST-262: filtro de pendientes de canciones (caratula, artista,
+    /// letra...), persistido. Como `items` lo consulta, el
+    /// `.onChange(of: items)` de mas abajo dispara el recalculo solo.
+    @AppStorage("aura.songsPendingFilter") private var songPendingFilterRaw = SongPendingFilter.all.rawValue
+    private var songPendingFilter: SongPendingFilter { SongPendingFilter(rawValue: songPendingFilterRaw) ?? .all }
 
     /// Nombre del ámbito para el campo de búsqueda.
     private var searchScopeTitle: String {
@@ -719,34 +731,63 @@ struct MediaSectionView: View {
         sortEntries.append(.item(title: "Descendente", checked: !preferences.musicSortAscending) {
             preferences.musicSortAscending = false
         })
-        return [
+        var entries: [TableHeaderMenuEntry] = [
             .item(title: "Todas las canciones", checked: !onlyFavorites) {
                 preferences.musicShowOnlyFavorites = false
             },
             .item(title: "Solo favoritos", checked: onlyFavorites) {
                 preferences.musicShowOnlyFavorites = true
             },
-            .separator,
-            .submenu(title: "Opciones para ordenar", symbol: "arrow.up.arrow.down", entries: sortEntries),
-            .separator,
-            .item(title: "Mostrar opciones de visualización", symbol: "gearshape") {
-                showingViewOptions = true
-            },
         ]
+        // ST-262: submenu de pendientes con el conteo por opcion. Solo
+        // en la tabla completa de canciones (no embebida en un album o
+        // artista, donde la seleccion ya es el acotamiento).
+        if !isEmbedded {
+            let pendingEntries: [TableHeaderMenuEntry] = SongPendingFilter.allCases.map { option in
+                .item(title: songPendingTitle(option), checked: songPendingFilter == option) {
+                    songPendingFilterRaw = option.rawValue
+                }
+            }
+            entries.append(.submenu(title: LS("media-section-view.pendientes"), symbol: "checklist", entries: pendingEntries))
+        }
+        entries.append(.separator)
+        entries.append(.submenu(title: "Opciones para ordenar", symbol: "arrow.up.arrow.down", entries: sortEntries))
+        entries.append(.separator)
+        entries.append(.item(title: "Mostrar opciones de visualización", symbol: "gearshape") {
+            showingViewOptions = true
+        })
+        return entries
     }
 
-    /// Cuando un filtro (búsqueda, "Solo favoritos") no deja nada, se
-    /// dice -- una tabla vacía sin explicación parece un bug.
+    /// ST-262: "Sin caratula (312)" -- los conteos salen de las
+    /// canciones del tipo actual; solo se calculan al abrir el menu.
+    private func songPendingTitle(_ option: SongPendingFilter) -> String {
+        let songs = allItemsOfKind
+        let count = option == .all ? songs.count : songs.filter { option.matches($0) }.count
+        return LSf("pending-filter.conteo", option.title, count)
+    }
+
+    /// Cuando un filtro (búsqueda, "Solo favoritos", pendientes) no
+    /// deja nada, se dice -- una tabla vacía sin explicación parece un
+    /// bug.
     private var emptyFilteredState: some View {
         VStack(spacing: 6) {
             Image(systemName: "magnifyingglass")
                 .font(.title2)
                 .foregroundStyle(.secondary)
-            Text(searchText.isEmpty ? "No hay favoritos todavía." : "Sin resultados para \"\(searchText)\".")
+            Text(emptyFilteredTitle)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
+    }
+
+    /// ST-262: con un filtro de pendientes activo y sin busqueda, el
+    /// vacio significa "ninguna cancion tiene este hueco".
+    private var emptyFilteredTitle: String {
+        if !searchText.isEmpty { return "Sin resultados para \"\(searchText)\"." }
+        if songPendingFilter != .all { return LS("media-section-view.sin-pendientes") }
+        return "No hay favoritos todavía."
     }
 
     private var musicHeaderMenuBar: some View {

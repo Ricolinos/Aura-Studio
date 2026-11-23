@@ -20,9 +20,11 @@
 "albums-view.buscar-caratulas-album" = "Find album cover art…";
 "albums-view.buscar-caratulas-albumes" = "Find cover art for %lld albums…";
 "albums-view.buscar-informacion-linea" = "Look up information online";
+"albums-view.filtrar" = "Filter Albums";
 "albums-view.mostrar-finder" = "Show in Finder";
 "albums-view.ordenar-albumes" = "Sort albums";
 "albums-view.ordenar-por" = "Sort by";
+"albums-view.sin-pendientes" = "No albums are missing this.";
 "albums-view.texto" = "%@ — %@";
 "app-menu-commands.agregar-biblioteca" = "Add to Library…";
 "app-menu-commands.buscar-actualizaciones-aura-studio" = "Check for Aura Studio Updates…";
@@ -366,6 +368,7 @@
 "media-section-view.obtener-informacion" = "Get information…";
 "media-section-view.para-convertir-videos-al-formato-ipod" = "Converting videos to the iPod’s format needs ffmpeg. Install it with Homebrew (“brew install ffmpeg”) and try again.";
 "media-section-view.pendiente" = "Pending";
+"media-section-view.pendientes" = "Pending";
 "media-section-view.quitado-ipod" = "Removed from the iPod";
 "media-section-view.quitar-favoritos" = "Remove from favorites";
 "media-section-view.quitar-poster" = "Remove poster";
@@ -374,6 +377,7 @@
 "media-section-view.seleccionar-canciones-mismo-album" = "Select songs from the same album";
 "media-section-view.seleccionar-canciones-mismo-artista" = "Select songs by the same artist";
 "media-section-view.sin-album" = "No album";
+"media-section-view.sin-pendientes" = "No songs are missing this.";
 "media-section-view.sincronizado" = "Synced";
 "media-section-view.sincronizar-seleccion" = "Sync selection";
 "media-section-view.solo-favoritos" = "Favorites only";
@@ -419,6 +423,14 @@
 "orphans-detail" = "Prepared files and cover art that no longer belong to any item in your library — from items deleted before this version, or from reprocessing. They are not your original files: they are technical copies Aura makes on its own and can make again if needed.";
 "orphans-none-found" = "There are no orphaned files: nothing to clean up.";
 "orphans-title" = "Orphaned files";
+"pending-filter.conteo" = "%1$@ (%2$lld)";
+"pending-filter.sin-album" = "Missing Album";
+"pending-filter.sin-ano" = "Missing Year";
+"pending-filter.sin-artista" = "Missing Artist";
+"pending-filter.sin-caratula" = "Missing Cover";
+"pending-filter.sin-genero" = "Missing Genre";
+"pending-filter.sin-letra" = "Missing Lyrics";
+"pending-filter.todos" = "Show All";
 "permissions-view.abrir-ajustes-sistema-privacidad-segurid" = "Open System Settings (Privacy & Security)";
 "permissions-view.permisos-necesarios" = "Permissions needed";
 "permissions.admin.body" = "At some steps — pausing services that interfere with detecting the iPod, or preparing the disk before installing — macOS will ask for your password in its own native dialog. Aura Studio always explains what it is going to do and why, on a screen of its own, before that dialog appears. You will never need to open Terminal or type any command.";
