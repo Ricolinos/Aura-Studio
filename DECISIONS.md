@@ -19853,3 +19853,19 @@ Sobre `albumOnly`: el modo ya existe (Ajustes > Caratulas) y escribe un
 verificacion en el iPod real del dueño de que los temas lo lean
 (Rockbox `find_albumart` lo busca ahi). 3 pruebas nuevas
 (`AppleDoubleJunkSweepTests`).
+
+## ST-266 — project.yml apunta al es.lproj correcto (repara ST-260)
+
+ST-260 movio el fileRef de `es.lproj` en el pbxproj a
+`Sources/AuraStudio/Resources/es.lproj` (el completo, donde
+`compilar-catalogo.py` genera `Localizable.strings`) pero olvido
+hacer el mismo cambio en `project.yml`, que siguio apuntando al
+`Resources/es.lproj` ya borrado. Como `build-app.sh` regenera el
+proyecto con xcodegen antes de compilar, TODA compilacion fallaba
+con "missing source directory" -- el pbxproj commiteado estaba bien
+pero nunca se usaba.
+
+Leccion: en este repo el pbxproj es un artefacto derivado; la fuente
+de verdad es `project.yml`. Cualquier cambio de recursos/fileRefs
+tiene que hacerse en `project.yml` (o en ambos), nunca solo en el
+pbxproj.
