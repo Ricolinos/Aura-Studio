@@ -40,6 +40,10 @@ final class LibraryPipelineIntegrationTests: XCTestCase {
         return nil
     }
 
+    // @MainActor: `freshPreferences()` y `LibraryViewModel` viven en el
+    // MainActor; declarar el test ahi evita mandar `self` de contrabando
+    // en los argumentos (error de concurrencia estricta del .xcodeproj).
+    @MainActor
     func testPhotoAndVideoPipelineEndToEnd() async throws {
         guard let testMedia = repoTestMediaURL() else {
             throw XCTSkip("test-media/ no esta generado (correr tools/gen_test_media.sh)")
@@ -53,7 +57,7 @@ final class LibraryPipelineIntegrationTests: XCTestCase {
         // la transcodificacion de verdad hace falta una fuente en OTRO
         // formato (mp4 generado al vuelo).
         let videoSource = FileManager.default.temporaryDirectory.appendingPathComponent("smoke_input.mp4")
-        try await generateTestVideo(at: videoSource)
+        try await Self.generateTestVideo(at: videoSource)
         defer { try? FileManager.default.removeItem(at: videoSource) }
 
         let libraryRoot = FileManager.default.temporaryDirectory
@@ -119,6 +123,7 @@ final class LibraryPipelineIntegrationTests: XCTestCase {
         XCTAssertTrue(secondSummary?.lowercased().contains("ya estaba todo sincronizado") ?? false, "segundo sync deberia no copiar nada: \(secondSummary ?? "nil")")
     }
 
+    @MainActor
     func testTagcacheIndexIsRemovedAfterSyncForcingRebuild() async throws {
         guard let testMedia = repoTestMediaURL() else {
             throw XCTSkip("test-media/ no esta generado")
@@ -144,7 +149,9 @@ final class LibraryPipelineIntegrationTests: XCTestCase {
         XCTAssertFalse(FileManager.default.fileExists(atPath: fakeIndex.path), "database_idx.tcd deberia borrarse para forzar reconstruccion")
     }
 
-    private func generateTestVideo(at url: URL) async throws {
+    // static: no toca nada de la instancia -- asi llamarlo desde un
+    // test @MainActor no manda `self` a codigo concurrente.
+    private static func generateTestVideo(at url: URL) async throws {
         let ffmpeg = FFmpegLocator.locate() ?? URL(fileURLWithPath: "/opt/homebrew/bin/ffmpeg")
         let process = Process()
         process.executableURL = ffmpeg

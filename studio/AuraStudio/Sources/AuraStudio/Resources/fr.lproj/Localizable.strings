@@ -114,6 +114,7 @@
 "device-general-view.actualizacion-disponible" = "Mise à jour %@%@ disponible";
 "device-general-view.administrar-contenido" = "Gérer le contenu";
 "device-general-view.buscar-actualizaciones" = "Rechercher les mises à jour de %@";
+"device-general-view.cambiar-nombre-ipod-a" = "Renommer l'iPod en « %@ » ?";
 "device-general-view.conecta-tu-ipod" = "Branchez votre iPod";
 "device-general-view.contenido" = "Contenu";
 "device-general-view.contenido-solo-ipod" = "Contenu uniquement sur l’iPod (%lld)…";
@@ -134,6 +135,7 @@
 "device-general-view.mientras-tanto-puedes-ir-armando-bibliot" = "En attendant, vous pouvez constituer votre bibliothèque dans Musique, Vidéo et Photos : elle se synchronise dès que vous branchez l’appareil.";
 "device-general-view.musica-este-ipod-administra-firmware-ori" = "La musique de cet iPod est gérée par le firmware d’origine d’Apple — elle se synchronise avec le Finder (ou l’app Musique), pas avec Aura Studio. Si vous installez Aura depuis la section Installation, la bibliothèque d’Aura Studio s’active.";
 "device-general-view.nombre-este-ipod-se-puso-desde" = "Cet iPod a été nommé depuis un autre Mac ; il ne peut être renommé que de là.";
+"device-general-view.nombre-se-guarda-ipod-espera-sync" = "Le nom est enregistré sur l'iPod. Si une synchronisation est en cours, vous devrez attendre qu'elle se termine.";
 "device-general-view.playlists" = "Playlists";
 "device-general-view.texto" = "%@";
 "device-general-view.texto-2" = "%lld";

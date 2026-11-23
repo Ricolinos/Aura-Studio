@@ -19572,3 +19572,34 @@ correcciones deliberadas, con el motivo. La auditoria quedo como script
 desechable; lo durable es la regla: el marcador del catalogo tiene que
 calcular con el tipo del argumento, y un `%@` puro sin texto alrededor
 casi seguro no es una clave de traduccion sino un formato (ST-250).
+
+## ST-257 — Renombrar el iPod: confirmacion de dos pasos y candado de escritura
+
+Incidente real (2026-11-22): un sync fallo con "No se ha podido guardar
+sync_in_progress" y la sospecha del dueño fue el renombrado en pleno
+sync. La causa raiz resulto ser EXTERNA: Parallels Desktop tenia una
+asociacion USB permanente ("Apple iPod" 05ac:1261 -> VM Windows 11) que
+arranco el dispositivo de macOS sin preguntar, dejando un montaje
+fantasma en /Volumes/IPOD (cualquier lectura daba EIO). El renombrado
+fue inocente -- pero la auditoria mostro que era la UNICA operacion que
+escribia en el disco sin pasar por `InstallerFlowRegistry`:
+
+- `ContentView.renameDevice` ahora toma el candado unico de escritura
+  (`beginWriting`/`endWriting`), igual que sync, instalacion y borrado.
+  Si hay una operacion en curso, se rechaza con un mensaje que pide
+  esperar -- no se encola nada (el nombre nuevo sigue en la alerta de
+  confirmacion si el usuario quiere reintentar).
+- `DeviceGeneralView` ya no aplica el nombre al confirmar el campo
+  in-place (Enter o perdida de foco -- un clic afuera disparaba la
+  escritura). Ahora abre una alerta de confirmacion ("Cambiar nombre" /
+  "Cancelar"), mismo criterio de dos pasos que `pendingDelete`: el campo
+  solo ARMA la solicitud, la alerta es la que escribe. Sus textos van
+  por el catalogo (2 claves nuevas, 6 idiomas, `.lproj` regenerados con
+  `tools/compilar-catalogo.py`) -- la primera version con el literal
+  fijo la cazo `testNoAccentedInterfaceLiteralsRemainOutsideTheCatalog`,
+  que existe justo para eso.
+
+Las asociaciones USB de Parallels que secuestran el iPod (modo normal,
+DFU y Recovery apuntaban a la VM) quedaron documentadas para el dueño:
+borrarlas en Parallels > Configuracion > Dispositivos > USB, o cualquier
+sync/instalacion en la Mac puede morir a mitad de camino igual que este.

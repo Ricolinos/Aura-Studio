@@ -44,21 +44,27 @@ final class AlbumCoverSearchCacheTests: XCTestCase {
     }
 
     func testExpiredEntryIsNotServed() {
-        var now = Date()
-        let cache = AlbumCoverSearchCache(directory: tempDir, now: { now })
-        cache.store([makeCandidate(1, score: 100)], for: key)
+        let t0 = Date()
+        AlbumCoverSearchCache(directory: tempDir, now: { t0 })
+            .store([makeCandidate(1, score: 100)], for: key)
 
-        // Ocho días después, la entrada venció (la vigencia es 7).
-        now = now.addingTimeInterval(8 * 24 * 60 * 60)
+        // Ocho días después, la entrada venció (la vigencia es 7). Se
+        // relee con OTRA instancia cuyo reloj ya avanzo: capturar un
+        // `var` mutable en el closure del reloj es una captura no
+        // Sendable y el target del .xcodeproj compila con concurrencia
+        // estricta (SwiftPM no lo detectaba).
+        let later = t0.addingTimeInterval(8 * 24 * 60 * 60)
+        let cache = AlbumCoverSearchCache(directory: tempDir, now: { later })
         XCTAssertNil(cache.load(key))
     }
 
     func testEntryWithinTTLIsServed() {
-        var now = Date()
-        let cache = AlbumCoverSearchCache(directory: tempDir, now: { now })
-        cache.store([makeCandidate(1, score: 100)], for: key)
+        let t0 = Date()
+        AlbumCoverSearchCache(directory: tempDir, now: { t0 })
+            .store([makeCandidate(1, score: 100)], for: key)
 
-        now = now.addingTimeInterval(6 * 24 * 60 * 60)
+        let later = t0.addingTimeInterval(6 * 24 * 60 * 60)
+        let cache = AlbumCoverSearchCache(directory: tempDir, now: { later })
         XCTAssertEqual(cache.load(key)?.count, 1)
     }
 

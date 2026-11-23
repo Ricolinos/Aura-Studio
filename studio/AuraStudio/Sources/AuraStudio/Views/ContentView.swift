@@ -281,7 +281,20 @@ struct ContentView: View {
     /// `newName` ya viene saneado (`DeviceNameStore.sanitize`, corrido
     /// en la propia vista para poder avisar de inmediato si se recortó
     /// algún emoji, sin esperar a este método asíncrono).
+    @MainActor
     private func renameDevice(_ device: AuraDevice, to newName: String) async {
+        // ST-257: el renombrado tambien pasa por el candado unico de
+        // escritura (sync, instalacion y borrado ya lo toman). Escribir
+        // device.cfg mientras otra operacion escribe en el mismo volumen
+        // FAT es una carrera real -- y si el disco se cae a mitad de
+        // camino, el error sale atribuido a la operacion equivocada.
+        // Si el candado esta tomado, el usuario ESPERA a que termine la
+        // operacion en curso; no se encola nada.
+        guard InstallerFlowRegistry.shared.beginWriting() else {
+            library.lastError = "Hay una operación en curso con el iPod (sincronización o instalación). Espera a que termine para cambiar el nombre."
+            return
+        }
+        defer { InstallerFlowRegistry.shared.endWriting() }
         // ST-013: la UI ya no ofrece el campo si otra instalacion es la
         // propietaria; esta guarda es la red de seguridad. Un archivo v1
         // (sin propietario) se reclama en este guardado.

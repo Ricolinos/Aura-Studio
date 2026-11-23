@@ -5467,6 +5467,47 @@
         }
       }
     },
+    "device-general-view.cambiar-nombre-ipod-a": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¿Cambiar el nombre del iPod a \"%@\"?"
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename the iPod to \"%@\"?"
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Den iPod in \"%@\" umbenennen?"
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renommer l'iPod en « %@ » ?"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "iPod の名前を「%@」に変更しますか？"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Переименовать iPod в «%@»?"
+          }
+        }
+      }
+    },
     "device-general-view.conecta-tu-ipod": {
       "extractionState": "manual",
       "localizations": {
@@ -6283,6 +6324,47 @@
           "stringUnit": {
             "state": "translated",
             "value": "Имя этого iPod было задано с другого Mac; изменить его можно только оттуда."
+          }
+        }
+      }
+    },
+    "device-general-view.nombre-se-guarda-ipod-espera-sync": {
+      "extractionState": "manual",
+      "localizations": {
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "El nombre se guarda en el iPod. Si hay una sincronización en curso, tendrás que esperar a que termine."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The name is saved on the iPod. If a sync is in progress, you'll need to wait for it to finish."
+          }
+        },
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Der Name wird auf dem iPod gespeichert. Läuft gerade eine Synchronisierung, musst du warten, bis sie abgeschlossen ist."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Le nom est enregistré sur l'iPod. Si une synchronisation est en cours, vous devrez attendre qu'elle se termine."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "名前は iPod に保存されます。同期中の場合は、完了までお待ちください。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Имя сохраняется на iPod. Если идёт синхронизация, дождитесь её завершения."
           }
         }
       }

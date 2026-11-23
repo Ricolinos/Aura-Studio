@@ -134,18 +134,16 @@ final class FLACAndM4ATagRoundTripTests: XCTestCase {
         try written.write(to: url)
 
         let metadata = try await AVURLAsset(url: url).load(.metadata)
-        let values = try await withThrowingTaskGroup(of: (String, String?).self) { group -> [String: String] in
-            for item in metadata {
-                group.addTask {
-                    let key = (item.key as? String) ?? item.identifier?.rawValue ?? ""
-                    return (key.uppercased(), try await item.load(.stringValue))
-                }
+        // Secuencial a proposito: AVMetadataItem no es Sendable y un
+        // task group lo mandaria a codigo concurrente (error de
+        // concurrencia estricta del .xcodeproj). Son ~10 items; la
+        // paralelizacion no compra nada en un test.
+        var values: [String: String] = [:]
+        for item in metadata {
+            let key = ((item.key as? String) ?? item.identifier?.rawValue ?? "").uppercased()
+            if let value = try await item.load(.stringValue) {
+                values[key] = value
             }
-            var result: [String: String] = [:]
-            for try await (key, value) in group {
-                if let value { result[key] = value }
-            }
-            return result
         }
 
         XCTAssertTrue(values.values.contains("Título Nuevo"), "AVFoundation debe ver el título nuevo: \(values)")

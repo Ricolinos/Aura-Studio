@@ -49,6 +49,12 @@ struct DeviceGeneralView: View {
 
     @State private var ejectResult: String?
     @State private var deviceNameNotice: String?
+    /// ST-257: confirmacion de dos pasos para el renombrado. El campo
+    /// in-place confirma con Enter o AL PERDER EL FOCO (un clic afuera
+    /// basta), y aplicar el nombre escribe en el disco del iPod -- un
+    /// disparo accidental no debe tocar el disco sin que el usuario lo
+    /// confirme, mismo criterio que `pendingDelete`.
+    @State private var pendingRename: String?
     /// No-nil cuando el usuario pulsó Sincronizar y `deviceSyncIndex`
     /// tiene conflictos (§0.1/§1.2) -- dispara la hoja "Antes de
     /// sincronizar" en vez de sincronizar directo.
@@ -162,6 +168,18 @@ struct DeviceGeneralView: View {
         } message: {
             Text(LS("device-general-view.esta-accion-no-se-puede-deshacer"))
         }
+        .alert(
+            pendingRename.map { LSf("device-general-view.cambiar-nombre-ipod-a", $0) } ?? "",
+            isPresented: Binding(get: { pendingRename != nil }, set: { if !$0 { pendingRename = nil } })
+        ) {
+            Button(LS("background-task-center-indicator.cancelar"), role: .cancel) { pendingRename = nil }
+            Button(LS("media-section-view.cambiar-nombre-2")) { confirmRename() }
+        } message: {
+            // Si hay un sync/instalacion en curso, `renameDevice` lo
+            // rechaza con el candado de escritura (ST-257) y pide
+            // esperar -- el aviso sale en la barra de actividad.
+            Text(LS("device-general-view.nombre-se-guarda-ipod-espera-sync"))
+        }
         .toolbar {
             // El boton "Sincronizar" vive ahora en ContentView (barra de
             // herramientas de toda la app, no solo de esta seccion) para
@@ -225,7 +243,15 @@ struct DeviceGeneralView: View {
         let (sanitized, strippedEmoji) = DeviceNameStore.sanitize(raw)
         guard !sanitized.isEmpty else { return }
         deviceNameNotice = strippedEmoji ? "El iPod no puede mostrar emoji; se guardó sin ellos." : nil
-        onRenameDevice(sanitized)
+        // ST-257: no se aplica directo -- pasa por la alerta de
+        // confirmacion de `body` (`pendingRename`).
+        pendingRename = sanitized
+    }
+
+    private func confirmRename() {
+        guard let newName = pendingRename else { return }
+        pendingRename = nil
+        onRenameDevice(newName)
     }
 
     /// Solo visible con Aura instalado. "Actualizar" dispara

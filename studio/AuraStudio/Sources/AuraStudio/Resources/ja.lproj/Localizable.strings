@@ -114,6 +114,7 @@
 "device-general-view.actualizacion-disponible" = "%@%@ のアップデートがあります";
 "device-general-view.administrar-contenido" = "コンテンツを管理";
 "device-general-view.buscar-actualizaciones" = "%@ のアップデートを確認";
+"device-general-view.cambiar-nombre-ipod-a" = "iPod の名前を「%@」に変更しますか？";
 "device-general-view.conecta-tu-ipod" = "iPod を接続してください";
 "device-general-view.contenido" = "コンテンツ";
 "device-general-view.contenido-solo-ipod" = "iPod にのみあるコンテンツ（%lld）…";
@@ -134,6 +135,7 @@
 "device-general-view.mientras-tanto-puedes-ir-armando-bibliot" = "その間に「音楽」「ビデオ」「写真」でライブラリを作れます。デバイスを接続すると同期されます。";
 "device-general-view.musica-este-ipod-administra-firmware-ori" = "この iPod の音楽は Apple 純正ファームウェアが管理しています。同期は Aura Studio ではなく Finder（またはミュージックアプリ）で行います。「インストーラ」セクションから Aura をインストールすると、Aura Studio のライブラリが有効になります。";
 "device-general-view.nombre-este-ipod-se-puso-desde" = "この iPod の名前は別の Mac で設定されました。変更もそちらからのみ行えます。";
+"device-general-view.nombre-se-guarda-ipod-espera-sync" = "名前は iPod に保存されます。同期中の場合は、完了までお待ちください。";
 "device-general-view.playlists" = "プレイリスト";
 "device-general-view.texto" = "%@";
 "device-general-view.texto-2" = "%lld";

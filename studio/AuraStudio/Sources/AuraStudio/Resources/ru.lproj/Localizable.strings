@@ -114,6 +114,7 @@
 "device-general-view.actualizacion-disponible" = "Доступно обновление %@%@";
 "device-general-view.administrar-contenido" = "Управление содержимым";
 "device-general-view.buscar-actualizaciones" = "Проверить обновления %@";
+"device-general-view.cambiar-nombre-ipod-a" = "Переименовать iPod в «%@»?";
 "device-general-view.conecta-tu-ipod" = "Подключите ваш iPod";
 "device-general-view.contenido" = "Содержимое";
 "device-general-view.contenido-solo-ipod" = "Содержимое только на iPod (%lld)…";
@@ -134,6 +135,7 @@
 "device-general-view.mientras-tanto-puedes-ir-armando-bibliot" = "Тем временем вы можете собирать медиатеку в разделах «Музыка», «Видео» и «Фото»: она синхронизируется, как только вы подключите устройство.";
 "device-general-view.musica-este-ipod-administra-firmware-ori" = "Музыкой на этом iPod управляет оригинальная прошивка Apple — она синхронизируется через Finder (или приложение «Музыка»), а не через Aura Studio. Если установить Aura в разделе «Установка», медиатека Aura Studio включится.";
 "device-general-view.nombre-este-ipod-se-puso-desde" = "Имя этого iPod было задано с другого Mac; изменить его можно только оттуда.";
+"device-general-view.nombre-se-guarda-ipod-espera-sync" = "Имя сохраняется на iPod. Если идёт синхронизация, дождитесь её завершения.";
 "device-general-view.playlists" = "Плейлисты";
 "device-general-view.texto" = "%@";
 "device-general-view.texto-2" = "%lld";
