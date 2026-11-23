@@ -19772,3 +19772,50 @@ ediciones lo trae; las anidadas en grabaciones no).
 `enrich()` (arrastrar y soltar) sigue por cancion a proposito: ahi los
 archivos entran de a uno y no hay grupo que resolver. 8 pruebas nuevas
 (`AlbumResolutionTests`).
+
+## ST-264 — Dedupe de .portadas/ por contenido
+
+Causa raiz: cada caratula se guardaba como `.portadas/<uuid del
+elemento>.jpg`, una copia POR CANCION. Un album de 12 pistas con la
+misma tapa embebida guardaba 12 JPEG identicos. En la biblioteca real
+del dueño: 1 130 archivos, solo 388 distintos (~90 MB regalados).
+
+Esquema: los elementos con la MISMA imagen (mismo `coverHash`) apuntan
+al MISMO archivo, y el archivo sigue llamandose `<uuid>.jpg` -- el del
+sobreviviente del grupo. Nada de renombrar a esquemas nuevos
+(`<hash>.jpg`): el nombre por id es lo que hace el cambio invisible
+para versiones viejas de la app.
+
+**El invariante que lo hace seguro**: un archivo de caratula
+compartido lleva siempre el nombre canonico de un elemento EXISTENTE
+que lo referencia. El OrphanFinder de Windows (y el OrphanScan de
+aca) protegen los nombres canonicos de los elementos vivos, asi que
+ninguna limpieza de huerfanos --ni siquiera la de una version vieja--
+borra un archivo compartido. Por eso NO hizo falta tocar Windows.
+
+Piezas:
+
+1. **Escritura** (`CatalogPersister`): dos elementos con la misma
+   imagen pendiente en el mismo guardado escriben UNA copia (el
+   donante del catalogo todavia tiene coverURL nil -- tambien esta
+   pendiente -- asi que se lleva un registro de lo escrito en la
+   pasada); y si otro elemento YA tiene esa imagen en disco, no se
+   escribe nada: se apunta al archivo que ya esta. La rama de "ya en
+   disco" ahora anota la ruta REAL del archivo, no la canonica
+   derivada del id (derivarla reapuntaba el catalogo a un archivo
+   inexistente).
+2. **Arranque** (`dedupeCoversIfNeeded`, al cargar el catalogo): deja
+   un archivo por imagen distinta; con los hashes ya en memoria es una
+   pasada barata y se auto-cura de lo que escriban versiones viejas.
+3. **Re-alojado**: cuando el dueño del nombre se va (eliminado, o
+   "Quitar caratula") y quedan elementos usando el archivo, este se
+   renombra al canonico de un sobreviviente y todos reapuntan
+   (`CoverDedupe.actionForRemovedCover` + `rehomeSharedCover` en
+   `performDeletion`, `clearCoverArt` y `clearVideoPoster`).
+   `LibraryDeletionPlan` ya no borra una canonica que un sobreviviente
+   referencia.
+
+El contrato con Windows (ST-208: formato del hash) no cambia; Windows
+lee primero la ruta anotada (ST-203), asi que sigue las caratulas
+compartidas sin cambios de su lado. 10 pruebas nuevas
+(`CoverDedupeTests`).

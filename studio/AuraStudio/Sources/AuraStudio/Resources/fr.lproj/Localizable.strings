@@ -319,6 +319,7 @@
 "library-unavailable-view.instalador-extras-siguen-funcionando-sin" = "L’Installation et les Extras fonctionnent toujours sans la bibliothèque.";
 "library-unavailable-view.no-se-perdio-nada-tu-catalogo" = "Rien n’est perdu : votre catalogue et vos fichiers sont toujours sur ce disque. Aura Studio n’y touchera pas tant qu’il ne sera pas de nouveau disponible.";
 "library-view-model.cancelado" = "annulé";
+"library-view-model.caratulas-repetidas-agrupadas" = "Pochettes en double regroupées : %1$lld. Espace récupéré : %2$@.";
 "library-view-model.eliminar-copia-papelera" = "%1$@ seront déplacés vers la Corbeille (%2$@). Vous pourrez les récupérer depuis là.";
 "library-view-model.eliminar-referencia-uno" = "Il sera retiré de votre bibliothèque Aura. Le fichier d’origine reste où il est.";
 "library-view-model.eliminar-referencia-varios" = "Ils seront retirés de votre bibliothèque Aura. Les fichiers d’origine restent où ils sont.";

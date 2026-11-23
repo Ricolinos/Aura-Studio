@@ -319,6 +319,7 @@
 "library-unavailable-view.instalador-extras-siguen-funcionando-sin" = "「インストーラ」と「その他」はライブラリがなくても使えます。";
 "library-unavailable-view.no-se-perdio-nada-tu-catalogo" = "何も失われていません。カタログもファイルもそのディスクに残っています。再び利用できるようになるまで、Aura Studio は何も触りません。";
 "library-view-model.cancelado" = "キャンセル済み";
+"library-view-model.caratulas-repetidas-agrupadas" = "重複カバーをまとめました: %1$lld件。解放した容量: %2$@。";
 "library-view-model.eliminar-copia-papelera" = "%1$@ をゴミ箱に移動します（%2$@）。そこから元に戻せます。";
 "library-view-model.eliminar-referencia-uno" = "Aura のライブラリから取り除かれます。元のファイルはそのままです。";
 "library-view-model.eliminar-referencia-varios" = "Aura のライブラリから取り除かれます。元のファイルはそのままです。";

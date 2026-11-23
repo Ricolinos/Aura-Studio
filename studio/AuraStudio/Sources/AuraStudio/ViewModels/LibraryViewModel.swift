@@ -1292,6 +1292,19 @@ final class LibraryViewModel: ObservableObject {
         guard !ids.isEmpty else { return DeletionOutcome() }
         let fm = FileManager.default
         let doomed = items.filter { ids.contains($0.id) }
+        // ST-264: una caratula compartida no puede quedar con el nombre
+        // de un elemento que se va (ver `CoverDedupe`) -- se re-aloja
+        // ANTES de planear el borrado, para que el plan ya la vea con
+        // su nombre nuevo.
+        for doomedItem in doomed {
+            guard let coverURL = doomedItem.metadata?.coverURL else { continue }
+            let survivors = items.filter { !ids.contains($0.id) }
+            if case .rehome(let targetID, let sharerIDs) = CoverDedupe.actionForRemovedCover(
+                itemID: doomedItem.id, coverURL: coverURL,
+                remaining: survivors, libraryRoot: libraryRoot) {
+                rehomeSharedCover(from: coverURL, toItem: targetID, sharerIDs: sharerIDs)
+            }
+        }
         let plan = LibraryDeletionPlan.plan(deleting: doomed,
                                             survivors: items.filter { !ids.contains($0.id) },
                                             libraryRoot: libraryRoot,
@@ -1733,9 +1746,11 @@ final class LibraryViewModel: ObservableObject {
     func clearVideoPoster(id: UUID) {
         guard let index = items.firstIndex(where: { $0.id == id }), items[index].kind == .video else { return }
         var metadata = items[index].metadata ?? TrackMetadata()
+        let oldCoverURL = metadata.coverURL
         metadata.setCover(nil)
         items[index].metadata = metadata
-        CoverStore.remove(forItem: items[index].id, in: libraryRoot)
+        removeOrRehomeCover(oldCoverURL: oldCoverURL, forItem: items[index].id,
+                            excluding: [items[index].id])
         if let prepared = items[index].preparedURL {
             let poster = prepared.deletingPathExtension().appendingPathExtension("jpg")
             try? FileManager.default.removeItem(at: poster)
@@ -1845,12 +1860,14 @@ final class LibraryViewModel: ObservableObject {
         var pendingResults: [UUID: (metadata: TrackMetadata, preparedURL: URL?)] = [:]
         var lastFlush = Date()
 
+        let targetIDs = Set(targets.map(\.id))
         for (completed, item) in targets.enumerated() {
             var metadata = item.metadata ?? TrackMetadata()
+            let oldCoverURL = metadata.coverURL
             metadata.setCover(nil)
             let prepared = await refreshMusicFile(for: item, metadata: metadata)
             pendingResults[item.id] = (metadata, prepared)
-            CoverStore.remove(forItem: item.id, in: libraryRoot)
+            removeOrRehomeCover(oldCoverURL: oldCoverURL, forItem: item.id, excluding: targetIDs)
 
             let shouldFlush = pendingResults.count >= Self.batchApplySize
                 || Date().timeIntervalSince(lastFlush) >= Self.batchApplyInterval
@@ -2342,6 +2359,47 @@ final class LibraryViewModel: ObservableObject {
             items[index].metadata = result.metadata
             items[index].preparedURL = result.preparedURL
             items[index].status = result.status
+        }
+    }
+
+    /// ST-264: al quitarle la caratula a un elemento (o eliminarlo), el
+    /// archivo que usaba se borra solo si nadie mas lo comparte; si lo
+    /// comparten, se re-aloja al canonico de un sobreviviente para que
+    /// siga llevando el nombre de alguien que existe (ver `CoverDedupe`).
+    private func removeOrRehomeCover(oldCoverURL: URL?, forItem itemID: UUID, excluding: Set<UUID>) {
+        guard let oldCoverURL else { return }
+        let remaining = items.filter { !excluding.contains($0.id) }
+        switch CoverDedupe.actionForRemovedCover(itemID: itemID, coverURL: oldCoverURL,
+                                                 remaining: remaining, libraryRoot: libraryRoot) {
+        case .deleteFile:
+            try? FileManager.default.removeItem(at: oldCoverURL)
+        case .keep:
+            break
+        case .rehome(let targetID, let sharerIDs):
+            rehomeSharedCover(from: oldCoverURL, toItem: targetID, sharerIDs: sharerIDs)
+        }
+    }
+
+    /// Re-aloja una caratula compartida: la renombra al canonico de
+    /// `targetID` y reapunta a todos los que la comparten. Si el
+    /// canonico del nuevo dueño ya existia (una copia vieja suya),
+    /// sobra: los que comparten ya eligieron la imagen de `oldURL`.
+    private func rehomeSharedCover(from oldURL: URL, toItem targetID: UUID, sharerIDs: [UUID]) {
+        let target = CoverStore.url(forItem: targetID, in: libraryRoot)
+        let fm = FileManager.default
+        if CoverDedupe.key(oldURL) != CoverDedupe.key(target) {
+            try? fm.removeItem(at: target)
+            do {
+                try fm.moveItem(at: oldURL, to: target)
+            } catch {
+                return // sin archivo en destino no se reapunta nada
+            }
+        }
+        for id in sharerIDs {
+            guard let index = items.firstIndex(where: { $0.id == id }),
+                  var metadata = items[index].metadata else { continue }
+            metadata.coverURL = target
+            items[index].metadata = metadata
         }
     }
 
@@ -2969,6 +3027,35 @@ final class LibraryViewModel: ObservableObject {
         return files
     }
 
+    /// ST-264: deja UN archivo por imagen distinta en `.portadas/` (ver
+    /// `CoverDedupe`). Corre al cargar el catalogo: con los hashes ya
+    /// en memoria es una pasada barata, y se auto-cura -- las copias
+    /// por id que escriba una version vieja (Windows nombra
+    /// `.portadas/<uuid>.jpg` por elemento) se agrupan en la proxima
+    /// apertura. Interna (no privada) para que las pruebas la llamen
+    /// sin cargar un catalogo de disco.
+    func dedupeCoversIfNeeded() {
+        guard libraryAvailability == .available else { return }
+        let plan = CoverDedupe.plan(items: items, libraryRoot: libraryRoot)
+        guard !plan.isEmpty else { return }
+        var reassigned = 0
+        for index in items.indices {
+            guard let newURL = plan.reassignments[items[index].id],
+              var metadata = items[index].metadata else { continue }
+            metadata.coverURL = newURL
+            items[index].metadata = metadata
+            reassigned += 1
+        }
+        var reclaimed = 0
+        for url in plan.filesToDelete {
+            reclaimed += (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+            try? FileManager.default.removeItem(at: url)
+        }
+        persistCatalog()
+        let size = ByteCountFormatter.string(fromByteCount: Int64(reclaimed), countStyle: .file)
+        lastEnrichmentSummary = LSf("library-view-model.caratulas-repetidas-agrupadas", reassigned, size)
+    }
+
     /// Arranca la pasada única si esta biblioteca todavía no la tuvo.
     /// Corre en segundo plano y a prioridad baja: la app se usa
     /// normalmente mientras tanto.
@@ -3470,6 +3557,7 @@ final class LibraryViewModel: ObservableObject {
         evaluateLegacyMetadataRereadOffer()
         evaluateCoverContaminationOffer()
         startCoverNormalizationIfNeeded()
+        dedupeCoversIfNeeded()
         measureMissingFileSizes()
     }
 

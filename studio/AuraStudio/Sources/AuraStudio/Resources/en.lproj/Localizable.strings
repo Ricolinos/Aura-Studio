@@ -319,6 +319,7 @@
 "library-unavailable-view.instalador-extras-siguen-funcionando-sin" = "The Installer and Extras keep working without the library.";
 "library-unavailable-view.no-se-perdio-nada-tu-catalogo" = "Nothing was lost: your catalog and your files are still on that disk. Aura Studio won’t touch anything until it’s available again.";
 "library-view-model.cancelado" = "canceled";
+"library-view-model.caratulas-repetidas-agrupadas" = "Duplicate covers grouped: %1$lld. Space reclaimed: %2$@.";
 "library-view-model.eliminar-copia-papelera" = "%1$@ will be moved to the Trash (%2$@). You can get them back from there.";
 "library-view-model.eliminar-referencia-uno" = "It will be removed from your Aura library. The original file stays where it is.";
 "library-view-model.eliminar-referencia-varios" = "They will be removed from your Aura library. The original files stay where they are.";

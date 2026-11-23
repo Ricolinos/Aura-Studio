@@ -140,6 +140,11 @@ final class CatalogPersister {
         var newHash = snapshot.lastWrittenCoverHash
         var coverIDsOnDisk: Set<UUID> = []
         var storedCovers: [UUID: StoredCover] = [:]
+        /// ST-264: lo que ESTA pasada escribio, por hash de contenido --
+        /// dos elementos con la misma imagen pendiente en el mismo
+        /// guardado no escriben dos copias (el donante del catalogo
+        /// todavia tiene `coverURL == nil`: tambien esta pendiente).
+        var writtenByHash: [String: URL] = [:]
         try? FileManager.default.createDirectory(at: coversDirectory, withIntermediateDirectories: true)
         for item in snapshot.items {
             var coverRelative: String?
@@ -152,18 +157,59 @@ final class CatalogPersister {
                 // escribe acá -- fuera del hilo principal, que es donde
                 // ya corría este guardado -- y se avisa de vuelta para
                 // que el ViewModel suelte los bytes.
-                if let stored = try? CoverStore.write(pending, forItem: item.id, in: snapshot.libraryRoot) {
+                //
+                // ST-264: si otro elemento YA tiene esa misma imagen en
+                // disco (mismo hash de contenido), no se escribe una
+                // copia -- este elemento apunta al archivo que ya esta.
+                // Se prefiere un donante cuyo archivo sea su propia
+                // canonica, para sostener el invariante de `CoverDedupe`.
+                let pendingHash = CoverStore.hash(pending)
+                let donors = snapshot.items.filter {
+                    $0.id != item.id
+                        && $0.metadata?.coverHash == pendingHash
+                        && $0.metadata?.coverURL != nil
+                }
+                let donor = donors.first(where: {
+                    CoverDedupe.key($0.metadata!.coverURL!)
+                        == CoverDedupe.key(CoverDedupe.canonicalURL(forItem: $0.id, in: snapshot.libraryRoot))
+                }) ?? donors.first
+                if let existingURL = writtenByHash[pendingHash] {
+                    // Misma imagen que otra pendiente de ESTA pasada.
+                    coverRelative = relativePath(of: existingURL, in: snapshot.libraryRoot)
+                    coverHash = pendingHash
+                    storedCovers[item.id] = StoredCover(url: existingURL, hash: pendingHash)
+                    newHash[item.id] = pending.hashValue
+                    coverIDsOnDisk.insert(item.id)
+                } else if let donor, let donorURL = donor.metadata?.coverURL,
+                   FileManager.default.fileExists(atPath: donorURL.path) {
+                    coverRelative = relativePath(of: donorURL, in: snapshot.libraryRoot)
+                    coverHash = pendingHash
+                    storedCovers[item.id] = StoredCover(url: donorURL, hash: pendingHash)
+                    newHash[item.id] = pending.hashValue
+                    coverIDsOnDisk.insert(item.id)
+                    writtenByHash[pendingHash] = donorURL
+                } else if let stored = try? CoverStore.write(pending, forItem: item.id, in: snapshot.libraryRoot) {
                     coverRelative = CoverStore.relativePath(forItem: item.id)
                     coverHash = stored.hash
                     storedCovers[item.id] = StoredCover(url: stored.url, hash: stored.hash)
                     newHash[item.id] = pending.hashValue
                     coverIDsOnDisk.insert(item.id)
+                    writtenByHash[stored.hash] = stored.url
                 }
-            } else if item.metadata?.coverURL != nil {
+            } else if let coverURL = item.metadata?.coverURL {
                 // Ya estaba en disco: no se reescribe nada. Antes, cada
                 // guardado del catálogo reescribía las 1 000 carátulas
                 // aunque no hubiera cambiado ninguna.
-                coverRelative = CoverStore.relativePath(forItem: item.id)
+                //
+                // ST-264: se anota la ruta REAL del archivo, no la
+                // canonica derivada del id -- con las caratulas
+                // compartidas por dedupe, derivarla reapuntaba el
+                // catalogo a `<uuid>.jpg` de este elemento, que no
+                // existe (su imagen vive en la canonica del
+                // sobreviviente del grupo).
+                coverRelative = SharedCatalogPath.isInside(coverURL, root: snapshot.libraryRoot)
+                    ? relativePath(of: coverURL, in: snapshot.libraryRoot)
+                    : CoverStore.relativePath(forItem: item.id)
                 coverHash = item.metadata?.coverHash
                 coverIDsOnDisk.insert(item.id)
             }

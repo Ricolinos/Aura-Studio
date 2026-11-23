@@ -32,6 +32,7 @@ final class ReachableCommandsTests: XCTestCase {
         "performDeletion": "el borrado sin diálogo; entra por confirmPendingDeletion o por la migración, y está documentado así en ST-225",
         "makePersistenceSynchronousForTesting": "costura de pruebas",
         "replaceItemsForPerformanceTesting": "costura de pruebas",
+        "dedupeCoversIfNeeded": "lo llama la carga del catálogo (ST-264); interna para que las pruebas la llamen sin leer un catálogo de disco",
     ]
 
     func testEveryPublicCommandOfTheLibraryViewModelIsReachableFromAView() throws {

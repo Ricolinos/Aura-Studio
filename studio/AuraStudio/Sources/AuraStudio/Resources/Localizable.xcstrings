@@ -15538,6 +15538,47 @@
         }
       }
     },
+    "library-view-model.caratulas-repetidas-agrupadas": {
+      "extractionState": "manual",
+      "localizations": {
+        "de": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doppelte Cover zusammengefasst: %1$lld. Freigegebener Speicher: %2$@."
+          }
+        },
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duplicate covers grouped: %1$lld. Space reclaimed: %2$@."
+          }
+        },
+        "es": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carátulas repetidas agrupadas: %1$lld. Espacio recuperado: %2$@."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pochettes en double regroupées : %1$lld. Espace récupéré : %2$@."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "重複カバーをまとめました: %1$lld件。解放した容量: %2$@。"
+          }
+        },
+        "ru": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Дубликаты обложек объединены: %1$lld. Освобождено: %2$@."
+          }
+        }
+      }
+    },
     "library-view-model.eliminar-copia-papelera": {
       "extractionState": "manual",
       "localizations": {

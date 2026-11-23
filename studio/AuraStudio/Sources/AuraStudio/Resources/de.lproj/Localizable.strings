@@ -319,6 +319,7 @@
 "library-unavailable-view.instalador-extras-siguen-funcionando-sin" = "Installation und Extras funktionieren auch ohne Mediathek.";
 "library-unavailable-view.no-se-perdio-nada-tu-catalogo" = "Es ist nichts verloren: Dein Katalog und deine Dateien liegen weiterhin auf dieser Festplatte. Aura Studio rührt nichts an, bis sie wieder verfügbar ist.";
 "library-view-model.cancelado" = "abgebrochen";
+"library-view-model.caratulas-repetidas-agrupadas" = "Doppelte Cover zusammengefasst: %1$lld. Freigegebener Speicher: %2$@.";
 "library-view-model.eliminar-copia-papelera" = "%1$@ werden in den Papierkorb verschoben (%2$@). Von dort kannst du sie zurückholen.";
 "library-view-model.eliminar-referencia-uno" = "Es wird aus deiner Aura-Mediathek entfernt. Die Originaldatei bleibt, wo sie ist.";
 "library-view-model.eliminar-referencia-varios" = "Sie werden aus deiner Aura-Mediathek entfernt. Die Originaldateien bleiben, wo sie sind.";

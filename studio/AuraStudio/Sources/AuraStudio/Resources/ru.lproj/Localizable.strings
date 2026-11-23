@@ -319,6 +319,7 @@
 "library-unavailable-view.instalador-extras-siguen-funcionando-sin" = "«Установка» и «Дополнения» работают и без медиатеки.";
 "library-unavailable-view.no-se-perdio-nada-tu-catalogo" = "Ничего не потеряно: ваш каталог и файлы остаются на этом диске. Aura Studio ничего не тронет, пока он снова не станет доступен.";
 "library-view-model.cancelado" = "отменено";
+"library-view-model.caratulas-repetidas-agrupadas" = "Дубликаты обложек объединены: %1$lld. Освобождено: %2$@.";
 "library-view-model.eliminar-copia-papelera" = "%1$@ будут перемещены в Корзину (%2$@). Оттуда их можно восстановить.";
 "library-view-model.eliminar-referencia-uno" = "Он будет убран из вашей медиатеки Aura. Исходный файл останется на месте.";
 "library-view-model.eliminar-referencia-varios" = "Они будут убраны из вашей медиатеки Aura. Исходные файлы останутся на месте.";

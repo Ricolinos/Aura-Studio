@@ -49,6 +49,14 @@ enum LibraryDeletionPlan {
         let survivingSources = Set(survivors.map {
             SharedCatalogPath.catalogNormalized($0.sourceURL.standardizedFileURL.path)
         })
+        // ST-264: caratulas que un sobreviviente todavia referencia
+        // (compartidas por dedupe). La canonica de un elemento eliminado
+        // no se borra si un sobreviviente apunta a ella -- el re-alojado
+        // (renombrarla al canonico de un sobreviviente) corre por cuenta
+        // de quien elimina, antes de este plan.
+        let survivingCovers = Set(survivors.compactMap {
+            $0.metadata?.coverURL.map { SharedCatalogPath.catalogNormalized($0.standardizedFileURL.path) }
+        })
 
         for item in doomed {
             let sourceKey = SharedCatalogPath.catalogNormalized(item.sourceURL.standardizedFileURL.path)
@@ -82,8 +90,12 @@ enum LibraryDeletionPlan {
                 }
             }
 
-            // La carátula por id es siempre nuestra.
-            plan.toDelete.append(coversDirectory.appendingPathComponent("\(item.id.uuidString).jpg"))
+            // La carátula por id es siempre nuestra -- salvo que un
+            // sobreviviente la esté usando (ST-264).
+            let canonicalCover = coversDirectory.appendingPathComponent("\(item.id.uuidString).jpg")
+            if !survivingCovers.contains(SharedCatalogPath.catalogNormalized(canonicalCover.standardizedFileURL.path)) {
+                plan.toDelete.append(canonicalCover)
+            }
         }
         return plan
     }
