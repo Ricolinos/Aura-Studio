@@ -90,8 +90,12 @@ targets:
       # ASSETCATALOG_COMPILER_APPICON_NAME de abajo.
       - path: Resources/AppIcon.icon
         buildPhase: resources
-      # ST-063: recursos de Info.plist localizados (nombre de la app).
-      - path: Resources/es.lproj
+      # ST-063/ST-260: recursos de Info.plist localizados (nombre de la
+      # app). Viven en el es.lproj COMPLETO de Sources/.../Resources
+      # (junto al Localizable.strings que genera compilar-catalogo.py):
+      # si se copiara un es.lproj esqueleto aparte, CpResource podria
+      # pisar el Localizable.strings ya compilado por CopyStringsFile.
+      - path: Sources/AuraStudio/Resources/es.lproj
         buildPhase: resources
       # ST-227: el String Catalog, la fuente única de todo el texto de
       # interfaz. Xcode lo COMPILA a `<idioma>.lproj/Localizable.strings`
