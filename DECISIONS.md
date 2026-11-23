@@ -19656,3 +19656,27 @@ mismas razones de siempre (son de cada arbol).
 relativas sin depender de que el prefijo textual del URL coincida con el
 del directorio -- la variante por URL rompio 4 tests al cruzarse
 `/var` vs `/private/var` en el tmpdir de macOS.
+
+## ST-260 — El es.lproj esqueleto pisaba el catalogo compilado en Release
+
+Sintoma: la app instalada mostraba las CLAVES de localizacion en vez del
+texto ("device-general-view.general" como titulo de ventana). La causa
+fue una colision de dos mecanismos de recursos en el .xcodeproj:
+
+1. `CopyStringsFile` compila `Localizable.xcstrings` a
+   `es.lproj/Localizable.strings` dentro del bundle.
+2. `CpResource` copiaba un esqueleto `Resources/es.lproj` (solo
+   `InfoPlist.strings`, ST-063) ENCIMA del es.lproj del bundle.
+
+El orden de esos dos pasos no esta garantizado: en builds limpios de
+Release el esqueleto ganaba y el catalogo desaparecia (por eso la build
+Debug de /tmp a veces SI lo tenia: era incremental y el CpResource no se
+repetia). La app con claves crudas que el dueño vio dos veces en la
+misma sesion era esto, no "una build vieja".
+
+Arreglo: `InfoPlist.strings` se movio al es.lproj completo
+(`Sources/AuraStudio/Resources/es.lproj/`, donde ya viven
+`Localizable.strings` y `.stringsdict` generados por
+`tools/compilar-catalogo.py`) y el fileRef del proyecto ahora apunta ahi
+con `sourceTree = SOURCE_ROOT`. Copia y compilacion escriben el mismo
+contenido, asi que el orden ya no importa.

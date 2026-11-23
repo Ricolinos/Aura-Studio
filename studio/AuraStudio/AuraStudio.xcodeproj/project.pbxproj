@@ -557,7 +557,7 @@
 		C796C99A64A050D14D648501 /* RemainingCallSitesWorkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemainingCallSitesWorkerTests.swift; sourceTree = "<group>"; };
 		C7A75E4AA4334B6A18D04537 /* CoverArtAssetsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverArtAssetsTests.swift; sourceTree = "<group>"; };
 		CA13795782D45FD63CB5A1FA /* LibraryViewModelSharedPreparedTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViewModelSharedPreparedTests.swift; sourceTree = "<group>"; };
-		CAEEFCC3F50155575E896CA6 /* es.lproj */ = {isa = PBXFileReference; path = es.lproj; sourceTree = "<group>"; };
+		CAEEFCC3F50155575E896CA6 /* es.lproj */ = {isa = PBXFileReference; path = "Sources/AuraStudio/Resources/es.lproj"; sourceTree = SOURCE_ROOT; };
 		CB93A2C8B722FEC1F407E017 /* BackgroundTaskCenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundTaskCenterTests.swift; sourceTree = "<group>"; };
 		CBA54FA0E3385DC4D97B068F /* ArtistImageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtistImageTests.swift; sourceTree = "<group>"; };
 		CC743DAAE9262846DE0224ED /* LocalizationLanguagesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizationLanguagesTests.swift; sourceTree = "<group>"; };
