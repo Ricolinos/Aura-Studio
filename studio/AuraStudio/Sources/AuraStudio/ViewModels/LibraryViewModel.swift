@@ -2652,12 +2652,18 @@ final class LibraryViewModel: ObservableObject {
                 os_log(.info, log: Self.perfLog, "sync fases: %{public}@", line)
             }
             let playlistsNote = result.playlistsWritten > 0 ? " \(result.playlistsWritten) playlist(s) actualizada(s)." : ""
+            // ST-265: la basura AppleDouble que el barrido limpio del
+            // iPod, en el mismo resumen (mismo estilo de literal que el
+            // resto de este bloque, pendiente de catalogo como el).
+            let junkNote = result.junkFilesRemoved > 0
+                ? " Se limpiaron \(result.junkFilesRemoved) archivo(s) basura del iPod (\(ByteCountFormatter.string(fromByteCount: result.junkBytesRemoved, countStyle: .file)))."
+                : ""
             if result.wasCancelled {
-                lastSyncSummary = "Sincronización cancelada. Se copiaron \(result.filesCopied) archivo(s); \(result.filesRemaining) quedaron pendientes.\(playlistsNote)"
+                lastSyncSummary = "Sincronización cancelada. Se copiaron \(result.filesCopied) archivo(s); \(result.filesRemaining) quedaron pendientes.\(playlistsNote)\(junkNote)"
             } else {
                 lastSyncSummary = result.filesCopied == 0
-                    ? "Ya estaba todo sincronizado, no habia nada nuevo.\(playlistsNote)"
-                    : "Se copiaron \(result.filesCopied) de \(allReady.count) archivo(s). El indice de la biblioteca se va a reconstruir la proxima vez que arranque Aura.\(playlistsNote)"
+                    ? "Ya estaba todo sincronizado, no habia nada nuevo.\(playlistsNote)\(junkNote)"
+                    : "Se copiaron \(result.filesCopied) de \(allReady.count) archivo(s). El indice de la biblioteca se va a reconstruir la proxima vez que arranque Aura.\(playlistsNote)\(junkNote)"
             }
             // PARTE 1A (PLAN-sync-media-hardening.md): antes, un solo
             // archivo con nombre invalido para FAT32 abortaba sync()

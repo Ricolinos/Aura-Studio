@@ -19819,3 +19819,37 @@ El contrato con Windows (ST-208: formato del hash) no cambia; Windows
 lee primero la ruta anotada (ST-203), asi que sigue las caratulas
 compartidas sin cambios de su lado. 10 pruebas nuevas
 (`CoverDedupeTests`).
+
+## ST-265 — El sync barre la basura AppleDouble del iPod
+
+Causa raiz: el iPod del dueño acumulaba 5 471 archivos `._*` (~15 MB)
+en `Music/`. Son AppleDouble: los atributos extendidos de archivos que
+entraron al volumen FAT32 por Finder o por herramientas que copian con
+metadatos. El firmware los ignora y solo estorban. El sync no los
+genera (copia por bloques con `FileHandle`, sin xattrs) pero tampoco
+los quitaba.
+
+El detalle que manda: **Cocoa filtra los `._*` de TODO listado de
+directorio** (`enumerator(at:)`, `contentsOfDirectory`, ...) -- los
+trata como tenedores de recursos sinteticos. Por eso eran invisibles
+para la app entera, no solo para el sync. El barrido pide la
+estructura de carpetas con el enumerador normal y dentro de cada una
+lee con `readdir` (POSIX), que si los ve; `removeItem(at:)` los borra
+sin problema (ambos verificados contra un volumen real).
+
+Piezas:
+
+1. `LibrarySync.sweepAppleDoubleJunk()`: corre en la fase "barrido" de
+   `sync()`, antes de copiar nada (el espacio que libera cuenta para
+   ESTE sync). Solo mira `Music/`, `Videos/`, `Photos/` y `Playlists/`
+   -- nunca `.rockbox` ni la raiz. Borra `._*` y `.DS_Store` y
+   devuelve cuantos y cuanto ocupaban.
+2. `SyncResult` gana `junkFilesRemoved`/`junkBytesRemoved` y el resumen
+   del sync lo reporta ("Se limpiaron N archivo(s) basura del iPod
+   (X MB)"), mismo estilo de literal que el resto del bloque.
+
+Sobre `albumOnly`: el modo ya existe (Ajustes > Caratulas) y escribe un
+`cover.jpg` de 320x320 por album en vez de embeber por pista; falta la
+verificacion en el iPod real del dueño de que los temas lo lean
+(Rockbox `find_albumart` lo busca ahi). 3 pruebas nuevas
+(`AppleDoubleJunkSweepTests`).

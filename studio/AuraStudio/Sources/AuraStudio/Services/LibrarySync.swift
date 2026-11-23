@@ -189,6 +189,10 @@ struct SyncResult: Equatable {
     /// no cambia nada de lo que el sync hace. "manifiesto" es subtotal
     /// de "copia": se acumula dentro del loop.
     var phaseTimings: [String: TimeInterval] = [:]
+    /// ST-265: basura AppleDouble (`._*`) y `.DS_Store` limpiada del
+    /// iPod en la fase de barrido -- ver `sweepAppleDoubleJunk`.
+    var junkFilesRemoved: Int = 0
+    var junkBytesRemoved: Int64 = 0
 }
 
 /// Ronda rendimiento-3, camino D: cronometro por fases para `sync()`.
@@ -425,6 +429,68 @@ struct LibrarySync {
         }
     }
 
+    /// ST-265: barre la basura que macOS siembra en un volumen FAT32
+    /// como el iPod: los AppleDouble `._*` (atributos extendidos de
+    /// archivos que entraron por Finder o por herramientas que copian
+    /// con metadatos) y los `.DS_Store`. El firmware los ignora, y con
+    /// una biblioteca grande son MILES de archivos (5 471 y ~15 MB
+    /// medidos en el iPod del dueño, 2026-11). El sync actual no los
+    /// genera (copia por bloques con `FileHandle`, sin xattrs), pero
+    /// tampoco los quitaba: por eso se acumularon.
+    ///
+    /// **Por que POSIX y no el enumerador de `FileManager`**: Cocoa
+    /// FILTRA los `._*` de TODO listado de directorio (los trata como
+    /// tenedores de recursos sinteticos, no como archivos) -- con
+    /// `enumerator(at:)`, `contentsOfDirectory` y compañia son
+    /// invisibles, que es exactamente como se acumularon 5 471 sin que
+    /// nadie los viera. `readdir` si los ve, y `removeItem(at:)` si
+    /// los borra (verificado contra un volumen real). Solo mira las
+    /// carpetas de contenido del dispositivo -- nunca `.rockbox` ni la
+    /// raiz. Devuelve cuantos se borraron y cuanto ocupaban.
+    @discardableResult
+    func sweepAppleDoubleJunk() -> (count: Int, bytes: Int64) {
+        var count = 0
+        var bytes: Int64 = 0
+        for directoryName in Self.deviceContentDirectories {
+            let root = volumeRoot.appendingPathComponent(directoryName, isDirectory: true)
+            // La estructura de carpetas si es visible para Cocoa; los
+            // `._*` dentro de cada una se piden por POSIX.
+            var directories = [root]
+            if let enumerator = fileManager.enumerator(
+                at: root, includingPropertiesForKeys: [.isDirectoryKey]) {
+                for case let url as URL in enumerator
+                where (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true {
+                    directories.append(url)
+                }
+            }
+            for directory in directories {
+                for name in Self.appleDoubleFileNames(in: directory) {
+                    let url = directory.appendingPathComponent(name)
+                    bytes += Int64((try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0)
+                    if (try? fileManager.removeItem(at: url)) != nil { count += 1 }
+                }
+            }
+        }
+        return (count, bytes)
+    }
+
+    /// Los nombres `._*` y `.DS_Store` de UN directorio, leidos con
+    /// `readdir` porque Cocoa los esconde (ver arriba).
+    private static func appleDoubleFileNames(in directory: URL) -> [String] {
+        guard let handle = directory.path.withCString({ opendir($0) }) else { return [] }
+        defer { closedir(handle) }
+        var names: [String] = []
+        while let entry = readdir(handle) {
+            var raw = entry.pointee.d_name
+            let name = withUnsafeBytes(of: &raw) {
+                String(cString: $0.baseAddress!.assumingMemoryBound(to: CChar.self))
+            }
+            guard name.hasPrefix("._") || name == ".DS_Store" else { continue }
+            names.append(name)
+        }
+        return names
+    }
+
     // MARK: - Copia transaccional (§8.1)
 
     enum CopyOutcome {
@@ -548,6 +614,10 @@ struct LibrarySync {
         let phaseTimer = SyncPhaseTimer()
         phaseTimer.begin("barrido")
         sweepOrphanedTempFiles()
+        // ST-265: misma fase -- la basura `._*`/`.DS_Store` sale antes
+        // de copiar nada, para que el espacio que libera cuente para
+        // ESTE sync.
+        let junk = sweepAppleDoubleJunk()
         try writeInProgressMarker(startedAt: Date())
 
         var manifest = loadManifest()
@@ -882,7 +952,8 @@ struct LibrarySync {
         return SyncResult(filesCopied: copied, playlistsWritten: playlistsWritten,
                            wasCancelled: wasCancelled, filesRemaining: remaining,
                            syncMarkerWritten: markerWritten, failures: failures,
-                           phaseTimings: phaseTimer.timings)
+                           phaseTimings: phaseTimer.timings,
+                           junkFilesRemoved: junk.count, junkBytesRemoved: junk.bytes)
     }
 
     /// Encargo del dueño (General → "Eliminar todos los archivos, o por
