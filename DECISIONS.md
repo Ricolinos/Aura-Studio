@@ -19632,3 +19632,27 @@ Sendable nuevas: `MKS5LBootRunner`, `DFUModeInfo`,
 `DiskIdentificationResult`, y `BundledArtifacts` como `@unchecked`
 (los tres campos son `let`; de `Bundle` solo se leen recursos, que es
 seguro entre hilos).
+
+## ST-259 — El espejo de arboles dormidos es incremental
+
+Medido en el iPod real del dueño (2026-11-22, primeras corridas con
+`SyncPhaseTimer` en produccion): con el sync diferencial ya copiando 0
+archivos (`copia=0.01s`), la fase `espejo-dormidos` seguia tardando
+43-48 SEGUNDOS por sync. La causa:
+`FirmwareSwitcher.mirrorContractFilesToDormantTrees` borraba y copiaba
+TODAS las entradas del contrato en CADA arbol dormido (el iPod del dueño
+tiene dos: Metro y moonlit) en CADA sync -- incluido el directorio
+`aura/artists/` con cientos de fotos -- cambiara algo o no.
+
+Cambio: el espejo ahora es incremental. Cada archivo se copia solo si
+falta en el dormido o difiere (tamano, o fecha de modificacion con el
+margen de 2 s de resolucion del FAT32 -- `copyItem` preserva la fecha,
+asi que un archivo ya espejado no se vuelve a tocar), y del dormido solo
+se borran los archivos que ya no existen en el activo. `aura.cfg`,
+`themes/` y `install_manifest.cfg` siguen fuera del espejo por las
+mismas razones de siempre (son de cada arbol).
+
+`relativeFiles` usa `enumerator(atPath:)` a proposito: devuelve rutas ya
+relativas sin depender de que el prefijo textual del URL coincida con el
+del directorio -- la variante por URL rompio 4 tests al cruzarse
+`/var` vs `/private/var` en el tmpdir de macOS.

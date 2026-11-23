@@ -286,13 +286,84 @@ enum FirmwareSwitcher {
             for entry in mirroredContractEntries {
                 let src = active.appendingPathComponent(entry)
                 let dst = dormant.appendingPathComponent(entry)
-                if fileManager.fileExists(atPath: dst.path) {
-                    try fileManager.removeItem(at: dst)
-                }
-                if fileManager.fileExists(atPath: src.path) {
-                    try fileManager.copyItem(at: src, to: dst)
-                }
+                try mirrorEntryIncrementally(src: src, dst: dst, fileManager: fileManager)
             }
         }
+    }
+
+    /// ST-259: el espejo dejo de ser "borrar todo y copiar todo" en cada
+    /// sync. Con dos arboles dormidos y un `artists/` de cientos de
+    /// fotos, eso eran 40-50 segundos de escritura FAT por sync aunque
+    /// nada hubiera cambiado (medido en hardware real: fase
+    /// `espejo-dormidos` = 43-48 s en el iPod del dueño, con el sync
+    /// diferencial ya copiando 0 archivos). Ahora cada archivo se copia
+    /// solo si falta o difiere (tamano o fecha), y solo se borran los
+    /// que ya no existen en el activo.
+    private static func mirrorEntryIncrementally(src: URL, dst: URL, fileManager: FileManager) throws {
+        var isDirectory: ObjCBool = false
+        guard fileManager.fileExists(atPath: src.path, isDirectory: &isDirectory) else {
+            // No existe en el activo: tampoco debe existir en el dormido.
+            if fileManager.fileExists(atPath: dst.path) {
+                try fileManager.removeItem(at: dst)
+            }
+            return
+        }
+        if isDirectory.boolValue {
+            try fileManager.createDirectory(at: dst, withIntermediateDirectories: true)
+            let srcFiles = relativeFiles(under: src, fileManager: fileManager)
+            let dstFiles = relativeFiles(under: dst, fileManager: fileManager)
+            for orphan in dstFiles.subtracting(srcFiles) {
+                try fileManager.removeItem(at: dst.appendingPathComponent(orphan))
+            }
+            for relative in srcFiles {
+                try mirrorFileIncrementally(src: src.appendingPathComponent(relative),
+                                            dst: dst.appendingPathComponent(relative),
+                                            fileManager: fileManager)
+            }
+        } else {
+            try mirrorFileIncrementally(src: src, dst: dst, fileManager: fileManager)
+        }
+    }
+
+    private static func mirrorFileIncrementally(src: URL, dst: URL, fileManager: FileManager) throws {
+        guard !sameFileContent(src, dst) else { return }
+        try fileManager.createDirectory(at: dst.deletingLastPathComponent(), withIntermediateDirectories: true)
+        if fileManager.fileExists(atPath: dst.path) {
+            try fileManager.removeItem(at: dst)
+        }
+        try fileManager.copyItem(at: src, to: dst)
+    }
+
+    /// Mismo tamano y misma fecha de modificacion = misma copia.
+    /// `copyItem` preserva la fecha, asi que un archivo ya espejado no se
+    /// vuelve a tocar. El margen de 2 s cubre la resolucion de fecha del
+    /// FAT32 del iPod (su reloj de directorio guarda segundos pares).
+    private static func sameFileContent(_ a: URL, _ b: URL) -> Bool {
+        let keys: Set<URLResourceKey> = [.fileSizeKey, .contentModificationDateKey]
+        guard let va = try? a.resourceValues(forKeys: keys),
+              let vb = try? b.resourceValues(forKeys: keys),
+              let sizeA = va.fileSize, let sizeB = vb.fileSize,
+              let dateA = va.contentModificationDate, let dateB = vb.contentModificationDate
+        else { return false }
+        return sizeA == sizeB && abs(dateA.timeIntervalSince(dateB)) < 2
+    }
+
+    /// Rutas relativas de todos los archivos (no directorios) bajo un
+    /// directorio. Si no existe, conjunto vacio. Se usa
+    /// `enumerator(atPath:)`: devuelve las rutas YA relativas, sin
+    /// depender de que el prefijo textual del URL coincida con el del
+    /// directorio (en macOS `/var` y `/private/var` son el mismo lugar
+    /// y la variante por URL rompia el calculo).
+    private static func relativeFiles(under directory: URL, fileManager: FileManager) -> Set<String> {
+        guard let enumerator = fileManager.enumerator(atPath: directory.path) else { return [] }
+        var result: Set<String> = []
+        for case let relative as String in enumerator {
+            var isDirectory: ObjCBool = false
+            let fullPath = directory.appendingPathComponent(relative).path
+            if fileManager.fileExists(atPath: fullPath, isDirectory: &isDirectory), !isDirectory.boolValue {
+                result.insert(relative)
+            }
+        }
+        return result
     }
 }

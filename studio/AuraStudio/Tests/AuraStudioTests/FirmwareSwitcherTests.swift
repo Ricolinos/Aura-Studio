@@ -320,6 +320,55 @@ final class FirmwareSwitcherTests: XCTestCase {
         XCTAssertEqual(read(".firmware-metro/aura/aura.cfg"), "firmware_family: metro\naccent: 9\n")
     }
 
+    // MARK: - ST-259: espejo incremental (no borrar+copiar todo)
+
+    /// Numero de inodo como testigo de reescritura: un archivo borrado y
+    /// copiado de nuevo tiene inodo distinto; uno intacto conserva el suyo.
+    private func inode(_ relative: String) throws -> NSNumber {
+        let attrs = try fm.attributesOfItem(atPath: root.appendingPathComponent(relative).path)
+        return try XCTUnwrap(attrs[FileAttributeKey.systemFileNumber] as? NSNumber)
+    }
+
+    /// Segunda pasada sin cambios: no se reescribe NADA. Antes de ST-259
+    /// cada sync borraba y copiaba todo el contrato en cada dormido
+    /// (43-48 s en el iPod real, fase `espejo-dormidos`).
+    func testMirrorSecondRunRewritesNothing() throws {
+        try makeMetroActiveAuraDormant()
+        try write(".rockbox/aura/sync_summary.cfg", "music_count: 389\n")
+        try write(".rockbox/aura/artists/x.jpg", "JPG")
+
+        try FirmwareSwitcher.mirrorContractFilesToDormantTrees(volumeRoot: root)
+        let artistsInode = try inode(".firmware-aura/aura/artists/x.jpg")
+        let summaryInode = try inode(".firmware-aura/aura/sync_summary.cfg")
+
+        try FirmwareSwitcher.mirrorContractFilesToDormantTrees(volumeRoot: root)
+
+        XCTAssertEqual(try inode(".firmware-aura/aura/artists/x.jpg"), artistsInode,
+                       "un archivo identico no se vuelve a copiar")
+        XCTAssertEqual(try inode(".firmware-aura/aura/sync_summary.cfg"), summaryInode)
+    }
+
+    /// Lo que cambia en el activo si se espeja (tamano distinto), y lo
+    /// que ya no existe se borra del dormido -- un espejo, no un
+    /// acumulador.
+    func testMirrorUpdatesChangedFilesAndDeletesOrphans() throws {
+        try makeMetroActiveAuraDormant()
+        try write(".rockbox/aura/artists/x.jpg", "JPG")
+
+        try FirmwareSwitcher.mirrorContractFilesToDormantTrees(volumeRoot: root)
+        let inodeBefore = try inode(".firmware-aura/aura/artists/x.jpg")
+
+        try write(".rockbox/aura/artists/x.jpg", "JPEG NUEVO, MAS LARGO")
+        try write(".firmware-aura/aura/artists/vieja.jpg", "VIEJA")
+
+        try FirmwareSwitcher.mirrorContractFilesToDormantTrees(volumeRoot: root)
+
+        XCTAssertEqual(read(".firmware-aura/aura/artists/x.jpg"), "JPEG NUEVO, MAS LARGO")
+        XCTAssertNotEqual(try inode(".firmware-aura/aura/artists/x.jpg"), inodeBefore)
+        XCTAssertFalse(exists(".firmware-aura/aura/artists/vieja.jpg"),
+                       "la foto que ya no esta en el activo se borra del dormido")
+    }
+
     /// Sin activo y con DOS dormidos (moonlit se perdio a medio cambio) no
     /// se adivina: nil y nada nuevo en el disco.
     func testThreeTreesRepairRefusesToGuessBetweenTwoDormant() throws {
