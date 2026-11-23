@@ -37,6 +37,10 @@ struct MusicBrainzClient: Sendable {
         let status: String?
         let country: String?
         let trackCount: Int?
+        /// ST-263: la busqueda de ediciones puntua cada resultado
+        /// (0-100) igual que la de grabaciones; las ediciones anidadas
+        /// en una grabacion no traen puntaje (nil).
+        let score: Int?
         /// D-203: el "album" para fanart.tv (y para casi cualquier otra
         /// fuente que indexe por album, no por edicion especifica) es el
         /// RELEASE GROUP, no el release -- confirmado contra la API real
@@ -45,7 +49,7 @@ struct MusicBrainzClient: Sendable {
         let releaseGroup: ReleaseGroup?
 
         enum CodingKeys: String, CodingKey {
-            case id, title, date, status, country
+            case id, title, date, status, country, score
             case trackCount = "track-count"
             case releaseGroup = "release-group"
         }

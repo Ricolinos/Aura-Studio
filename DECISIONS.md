@@ -19737,3 +19737,38 @@ Arreglo en dos piezas:
    tiene este pendiente") en vez de parecer un error.
 
 12 claves nuevas de catalogo x 6 idiomas. 10 pruebas nuevas.
+
+## ST-263 — "Buscar informacion en linea" resuelve por ALBUM, no por cancion
+
+Causa raiz: `reenrichOnline` buscaba la grabacion de cada cancion por
+separado (`searchRecording`). Dos canciones del mismo album real podian
+terminar con ediciones distintas (titulo de album, año y caratula
+inconsistentes dentro del mismo album), y un album de 12 pistas costaba
+12 llamadas a razon de 1 por segundo de MusicBrainz.
+
+Arreglo:
+
+1. **Pre-pase por album**: antes del ciclo por cancion, las canciones
+   con tag de album se agrupan por clave de album (misma normalizacion
+   que la vista Albumes); cada grupo de 2+ se resuelve UNA vez con
+   `searchReleases` y la edicion elegida (`pickBestRelease`: mayor
+   score sobre el umbral 70, desempate por numero de pistas) se aplica
+   a todo el grupo llenando solo huecos -- nunca se pisa un valor
+   existente, en particular una correccion manual. La caratula se
+   descarga una sola vez por album y solo si alguna cancion del grupo
+   no tiene.
+2. **El camino por cancion queda para lo que el pre-pase no cubre**:
+   canciones sin tag de album, albumes de una sola cancion, albumes
+   cuya busqueda no supero el umbral, y canciones que siguen sin
+   titulo o artista. Si la resolucion de un album falla por red, sus
+   canciones caen al camino viejo y el error se reporta igual que
+   antes. La letra sigue saliendo de LRCLIB por cancion, como siempre.
+
+Resultado: un album tipico de 12 pistas con tags pasa de 12 llamadas
+de MusicBrainz a 1, y todo el grupo comparte titulo/año/caratula de la
+MISMA edicion. `Release` gano el campo `score` (la busqueda de
+ediciones lo trae; las anidadas en grabaciones no).
+
+`enrich()` (arrastrar y soltar) sigue por cancion a proposito: ahi los
+archivos entran de a uno y no hay grupo que resolver. 8 pruebas nuevas
+(`AlbumResolutionTests`).

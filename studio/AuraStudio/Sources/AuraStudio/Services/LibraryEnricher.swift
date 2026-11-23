@@ -98,6 +98,84 @@ struct LibraryEnricher {
     /// como 0 -- por debajo del umbral, se rechaza.
     static let minimumMusicBrainzScore = 70
 
+    // MARK: - ST-263: resolucion a nivel de ALBUM
+
+    /// Lo que una resolucion de album deja para aplicar a TODAS sus
+    /// canciones: una sola edicion (release) de MusicBrainz, asi el
+    /// grupo entero comparte titulo de album, año, releaseID y la misma
+    /// caratula (descargada una sola vez). Antes cada cancion buscaba su
+    /// grabacion por separado y un mismo album real podia terminar con
+    /// tres ediciones distintas -- titulos, años y caratulas
+    /// inconsistentes dentro del mismo album, a 1 pedido/segundo por
+    /// cancion.
+    struct AlbumResolution: Equatable {
+        let albumTitle: String
+        let year: String?
+        let releaseID: String
+        let releaseGroupID: String?
+        let coverData: Data?
+    }
+
+    /// Elige la mejor edicion de una busqueda de releases: el mayor
+    /// `score` por encima del umbral; a igual puntaje, la que tenga el
+    /// numero de pistas del grupo (una edicion de 12 pistas para 12
+    /// canciones es mas probable que sea la nuestra que el sencillo de
+    /// 2). Sin puntaje (`nil`) se trata como 0, igual que con las
+    /// grabaciones.
+    static func pickBestRelease(_ releases: [MusicBrainzClient.Release],
+                                trackCount: Int,
+                                minimumScore: Int = minimumMusicBrainzScore) -> MusicBrainzClient.Release? {
+        releases.filter { ($0.score ?? 0) >= minimumScore }
+            .max { lhs, rhs in
+                let lhsScore = lhs.score ?? 0, rhsScore = rhs.score ?? 0
+                if lhsScore != rhsScore { return lhsScore < rhsScore }
+                let lhsMatches = lhs.trackCount == trackCount
+                let rhsMatches = rhs.trackCount == trackCount
+                if lhsMatches != rhsMatches { return !lhsMatches }
+                return false
+            }
+    }
+
+    /// Resuelve UN album completo con UNA busqueda de ediciones.
+    /// `fetchCover` conviene ponerlo en false cuando todas las canciones
+    /// del grupo ya tienen caratula: la descarga es lo mas pesado de la
+    /// resolucion. Devuelve nil cuando ninguna edicion supera el umbral
+    /// (mejor "sin album" que inventado); los errores de red NO se
+    /// tragan -- quien llama decide si cae al camino por cancion.
+    func resolveAlbum(album: String, artist: String?, trackCount: Int,
+                      fetchCover: Bool,
+                      coverArtOrder: [CoverArtProvider] = CoverArtProvider.defaultOrder,
+                      deezerEnabled: Bool = true) async throws -> AlbumResolution? {
+        let releases = try await musicBrainz.searchReleases(album: album, artist: artist)
+        guard let best = Self.pickBestRelease(releases, trackCount: trackCount) else { return nil }
+        let cover = fetchCover
+            ? await resolveCoverArt(releaseID: best.id, releaseGroupID: best.releaseGroup?.id,
+                                    title: album, artist: artist,
+                                    order: coverArtOrder, deezerEnabled: deezerEnabled)
+            : nil
+        return AlbumResolution(albumTitle: best.title,
+                               year: best.date.map { String($0.prefix(4)) },
+                               releaseID: best.id,
+                               releaseGroupID: best.releaseGroup?.id,
+                               coverData: cover)
+    }
+
+    /// Aplica una resolucion de album a la metadata de UNA cancion,
+    /// llenando solo huecos (mismo criterio que `reenrich`: nunca pisa
+    /// un valor que ya existe, en particular nunca una correccion
+    /// manual). La caratula pasa por `setCover`, que deja el hash
+    /// calculado una sola vez para todo el grupo.
+    static func applyingAlbum(_ resolution: AlbumResolution, to metadata: TrackMetadata) -> TrackMetadata {
+        var result = metadata
+        result.album = result.album ?? resolution.albumTitle
+        result.year = result.year ?? resolution.year
+        result.musicBrainzReleaseID = result.musicBrainzReleaseID ?? resolution.releaseID
+        if !result.hasCover, let cover = resolution.coverData {
+            result.setCover(cover)
+        }
+        return result
+    }
+
     /// `online` y `lyrics` salen de las preferencias del usuario
     /// (AppPreferences): con `online` en false no se toca la red y solo
     /// se usa lo que ya trae el archivo mas lo que se adivine del nombre.

@@ -2237,13 +2237,71 @@ final class LibraryViewModel: ObservableObject {
         var pendingResults: [UUID: (metadata: TrackMetadata, preparedURL: URL?, status: LibraryItemStatus)] = [:]
         var lastFlush = Date()
 
+        // ST-263: pre-pase por ALBUM. Antes cada cancion buscaba su
+        // grabacion por separado y un mismo album real podia terminar
+        // con varias ediciones distintas (titulo/año/caratula
+        // inconsistentes), a 1 pedido/segundo por cancion. Ahora cada
+        // grupo de album (2+ canciones con tag de album) se resuelve
+        // UNA vez y la edicion elegida se aplica a todo el grupo; la
+        // busqueda por cancion solo queda para lo que el pre-pase no
+        // pudo cubrir. Si la resolucion de un album falla por red, sus
+        // canciones caen al camino por cancion de siempre.
+        var albumGroups: [String: [LibraryItem]] = [:]
+        if fetchAlbumInfo {
+            for item in targets where !AlbumPendingFilter.isBlank(item.metadata?.album) {
+                albumGroups[LibraryGrouping.albumKey(of: item, options: preferences.artistGrouping), default: []].append(item)
+            }
+            albumGroups = albumGroups.filter { $0.value.count >= 2 }
+        }
+        var albumResolutions: [String: LibraryEnricher.AlbumResolution?] = [:]
+        var albumErrors: [String: String] = [:]
+
         for (completed, item) in targets.enumerated() {
-            let current = item.metadata ?? TrackMetadata()
-            let (updated, outcome) = await enricher.reenrich(
+            var current = item.metadata ?? TrackMetadata()
+            var outcome = EnrichmentOutcome()
+            var albumCovered = false
+
+            if fetchAlbumInfo {
+                let key = LibraryGrouping.albumKey(of: item, options: preferences.artistGrouping)
+                if let group = albumGroups[key] {
+                    if albumResolutions[key] == nil && albumErrors[key] == nil {
+                        let seedAlbum = group.compactMap { $0.metadata?.album }.first ?? ""
+                        let seedArtist = group.compactMap { $0.metadata?.albumArtist ?? $0.metadata?.artist }.first
+                        let needsCover = group.contains { $0.metadata?.hasCover != true }
+                        do {
+                            albumResolutions[key] = try await enricher.resolveAlbum(
+                                album: seedAlbum, artist: seedArtist, trackCount: group.count,
+                                fetchCover: needsCover,
+                                coverArtOrder: preferences.coverArtProviderOrder,
+                                deezerEnabled: preferences.deezerEnabled)
+                        } catch {
+                            albumErrors[key] = error.localizedDescription
+                        }
+                    }
+                    if let resolution = albumResolutions[key] ?? nil {
+                        current = LibraryEnricher.applyingAlbum(resolution, to: current)
+                        outcome.albumInfoFound = true
+                        albumCovered = true
+                    } else if let message = albumErrors[key] {
+                        outcome.networkErrorMessage = message
+                    }
+                }
+            }
+
+            // Con el album resuelto, la busqueda por cancion solo sigue
+            // haciendo falta si faltan titulo o artista (el releaseID ya
+            // lo puso el pre-pase y la caratula tambien).
+            let needsRecordingSearch = fetchAlbumInfo && !albumCovered
+                || (fetchAlbumInfo && (current.title == nil || current.artist == nil))
+            let (updated, perTrackOutcome) = await enricher.reenrich(
                 item: item, currentMetadata: current,
-                fetchAlbumInfo: fetchAlbumInfo, fetchLyrics: fetchLyrics,
+                fetchAlbumInfo: needsRecordingSearch, fetchLyrics: fetchLyrics,
                 coverArtOrder: preferences.coverArtProviderOrder,
                 deezerEnabled: preferences.deezerEnabled)
+            outcome.albumInfoFound = outcome.albumInfoFound || perTrackOutcome.albumInfoFound
+            outcome.lyricsFound = perTrackOutcome.lyricsFound
+            outcome.networkErrorMessage = outcome.networkErrorMessage ?? perTrackOutcome.networkErrorMessage
+
             let prepared = await refreshMusicFile(for: item, metadata: updated)
             pendingResults[item.id] = (updated, prepared, updated.isComplete ? .ready : .needsReview)
 
