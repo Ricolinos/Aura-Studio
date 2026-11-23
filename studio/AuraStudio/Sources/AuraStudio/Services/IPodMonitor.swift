@@ -246,65 +246,103 @@ final class IPodMonitor: ObservableObject {
                     try? await Task.sleep(nanoseconds: 1_000_000_000)
                     continue
                 }
-                if let dfu = self.scanDFUReportingProblems() {
-                    self.state = .dfuMode(dfu)
-                } else if case .found(let candidate) = IPodDiskIdentifier.identify(from: IPodDiskIdentifier.currentCandidates()) {
-                    if self.ejectRequested {
-                        // Expulsado a proposito: dejarlo en paz hasta
-                        // que se desconecte fisicamente.
-                    } else if !self.mountAttempted.contains(candidate.bsdName) {
-                        // Primero intentar montar: si el disco tiene un
-                        // sistema de archivos valido pero quedo
-                        // desmontado, el montaje dispara el evento de
-                        // DiskArbitration y el estado pasa a .diskMode
-                        // solo -- sin formatear nada (D-182).
-                        self.mountAttempted.insert(candidate.bsdName)
-                        self.noFilesystemStreak = 0
-                        Self.attemptMount(bsdName: candidate.bsdName)
-                    } else {
-                        // Evidencia sostenida antes de declarar el disco
-                        // ilegible (D-188): el fsck + montaje de un
-                        // FAT32 grande tarda varios segundos al
-                        // conectar, y un solo tick sin volumen NO
-                        // significa que no haya sistema de archivos.
-                        self.noFilesystemStreak += 1
-                        if self.noFilesystemStreak >= Self.noFilesystemStreakRequired {
-                            self.state = .diskModeNoFilesystem(candidate)
-                        }
-                    }
-                } else {
-                    // Ni DFU ni disco: si habia una expulsion pedida,
-                    // el aparato ya se desconecto de verdad -- limpiar
-                    // para que una reconexion futura se procese normal.
-                    self.ejectRequested = false
-                    self.noFilesystemStreak = 0
-                    switch self.state {
-                    case .dfuMode, .diskModeNoFilesystem, .detecting:
-                        self.state = .notConnected
-                    default:
-                        break
-                    }
-                }
+                // ST-258: lanzar `mks5lboot --dfuscan` y enumerar discos
+                // por IOKit corre FUERA del MainActor. Antes ambos se
+                // ejecutaban aqui mismo, sincronicos, una vez por
+                // segundo: un escaneo que tarda (USB con un dispositivo
+                // a medio desconectar, p. ej. cuando Parallels se lo
+                // lleva) congelaba la ventana entera -- la app "trabada
+                // sin reconocer el iPod" del 2026-11-22 era esto. La UI
+                // solo aplica el resultado; la cadencia (escaneo + 1 s)
+                // no cambia.
+                let runner = self.runner
+                let scan = await Task.detached(priority: .utility) {
+                    Self.scanOnceOffMain(runner: runner)
+                }.value
+                self.applyDFUScan(scan)
                 try? await Task.sleep(nanoseconds: 1_000_000_000)
             }
         }
     }
 
-    /// Un escaneo que termina (con o sin iPod) es un escaneo sano.
-    /// Un escaneo que ni siquiera puede correr -- `Process.run()`
-    /// tira, p. ej. "permission denied" por un binario sin bit de
-    /// ejecucion (ST-029) -- se reporta en `dfuScannerProblem` en vez
-    /// de confundirse con "no hay iPod en DFU".
-    private func scanDFUReportingProblems() -> DFUModeInfo? {
-        guard let runner else { return nil }
-        do {
-            let dfu = try runner.scanDFU()
-            if dfuScannerProblem != nil { dfuScannerProblem = nil }
-            return dfu
-        } catch {
-            let message = "No se pudo ejecutar la herramienta de detección DFU (mks5lboot): \(error.localizedDescription)"
-            if dfuScannerProblem != message { dfuScannerProblem = message }
-            return nil
+    /// Lo que un escaneo vio, empaquetado para cruzar del hilo de
+    /// trabajo al MainActor. Todo el contenido es Sendable.
+    private struct DFUScanSnapshot: Sendable {
+        var dfu: DFUModeInfo?
+        /// nil si el escaneo corrio bien (encuentre o no un iPod) --
+        /// ver la nota de `dfuScannerProblem` sobre ST-029.
+        var scanProblem: String?
+        var identification: DiskIdentificationResult
+    }
+
+    /// La parte cara del sondeo, sincronica por naturaleza (Process +
+    /// waitUntilExit, IOKit): vive fuera del MainActor por ST-258.
+    nonisolated private static func scanOnceOffMain(runner: MKS5LBootRunner?) -> DFUScanSnapshot {
+        var dfu: DFUModeInfo? = nil
+        var problem: String? = nil
+        if let runner {
+            do {
+                dfu = try runner.scanDFU()
+            } catch {
+                problem = "No se pudo ejecutar la herramienta de detección DFU (mks5lboot): \(error.localizedDescription)"
+            }
+        }
+        return DFUScanSnapshot(dfu: dfu, scanProblem: problem,
+                               identification: IPodDiskIdentifier.identify(from: IPodDiskIdentifier.currentCandidates()))
+    }
+
+    /// Aplica un escaneo en el MainActor: misma logica de siempre
+    /// (montar antes de declarar ilegible, evidencia sostenida D-188,
+    /// no molestar a un disco expulsado a proposito), solo que ya sin
+    /// esperar I/O.
+    private func applyDFUScan(_ scan: DFUScanSnapshot) {
+        // Un escaneo que termina (con o sin iPod) es un escaneo sano;
+        // uno que ni siquiera puede correr se reporta en
+        // `dfuScannerProblem` en vez de confundirse con "no hay DFU".
+        if let problem = scan.scanProblem {
+            if dfuScannerProblem != problem { dfuScannerProblem = problem }
+        } else if runner != nil, dfuScannerProblem != nil {
+            dfuScannerProblem = nil
+        }
+
+        if let dfu = scan.dfu {
+            state = .dfuMode(dfu)
+        } else if case .found(let candidate) = scan.identification {
+            if ejectRequested {
+                // Expulsado a proposito: dejarlo en paz hasta
+                // que se desconecte fisicamente.
+            } else if !mountAttempted.contains(candidate.bsdName) {
+                // Primero intentar montar: si el disco tiene un
+                // sistema de archivos valido pero quedo
+                // desmontado, el montaje dispara el evento de
+                // DiskArbitration y el estado pasa a .diskMode
+                // solo -- sin formatear nada (D-182).
+                mountAttempted.insert(candidate.bsdName)
+                noFilesystemStreak = 0
+                Self.attemptMount(bsdName: candidate.bsdName)
+            } else {
+                // Evidencia sostenida antes de declarar el disco
+                // ilegible (D-188): el fsck + montaje de un
+                // FAT32 grande tarda varios segundos al
+                // conectar, y un solo tick sin volumen NO
+                // significa que no haya sistema de archivos.
+                noFilesystemStreak += 1
+                if noFilesystemStreak >= Self.noFilesystemStreakRequired {
+                    state = .diskModeNoFilesystem(candidate)
+                }
+            }
+        } else {
+            // Ni DFU ni disco: si habia una expulsion pedida,
+            // el aparato ya se desconecto de verdad -- limpiar
+            // para que una reconexion futura se procese normal.
+            ejectRequested = false
+            noFilesystemStreak = 0
+            switch state {
+            case .dfuMode, .diskModeNoFilesystem, .detecting:
+                state = .notConnected
+            default:
+                break
+            }
         }
     }
 

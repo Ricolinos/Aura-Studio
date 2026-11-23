@@ -46,7 +46,7 @@ struct DiskModeInfo: Equatable {
     var diskRecordKey: String? { volumeUUID ?? usb?.serialNumber }
 }
 
-struct DFUModeInfo: Equatable {
+struct DFUModeInfo: Equatable, Sendable {
     let productID: Int
 }
 

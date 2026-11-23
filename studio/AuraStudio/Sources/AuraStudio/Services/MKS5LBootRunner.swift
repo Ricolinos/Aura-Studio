@@ -5,7 +5,7 @@ import Foundation
 /// reimplementa el protocolo DFU/USB de S5L8702 -- ya existe, probado,
 /// en C dentro del propio fork -- solo lo invoca como subproceso y
 /// parsea su salida de texto.
-struct MKS5LBootRunner {
+struct MKS5LBootRunner: Sendable {
     struct Result {
         let exitCode: Int32
         let stdout: String

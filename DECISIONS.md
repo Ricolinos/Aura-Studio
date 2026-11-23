@@ -19603,3 +19603,32 @@ Las asociaciones USB de Parallels que secuestran el iPod (modo normal,
 DFU y Recovery apuntaban a la VM) quedaron documentadas para el dueño:
 borrarlas en Parallels > Configuracion > Dispositivos > USB, o cualquier
 sync/instalacion en la Mac puede morir a mitad de camino igual que este.
+
+## ST-258 — El sondeo DFU sale del hilo principal (la app dejaba de responder)
+
+Sintoma real (2026-11-22, dos veces en la misma sesion): la app abierta
+al 99% de CPU, ventana congelada, sin reconocer el iPod conectado. El
+`sample` del proceso mostraba el hilo principal dentro de
+`IPodMonitor.startDFUPolling`.
+
+Causa: el loop de sondeo es un `Task` del MainActor (la clase entera lo
+es) y su cuerpo llamaba `scanDFU()` -- lanzar `mks5lboot` como
+subproceso y ESPERARLO con `waitUntilExit` -- mas la enumeracion de
+discos por IOKit, todo sincronico, una vez por segundo mientras no hay
+volumen montado. En condiciones normales cada escaneo tarda poco y solo
+se notaba CPU alta; con el USB inestable (dispositivo a medio
+desconectar, Parallels llevandose el iPod) un escaneo se quedaba
+esperando I/O y congelaba la ventana entera, incluida la instancia que
+xcodebuild lanza como TEST_HOST (los tests por xcodebuild quedaban
+estrangulados: 60 tests en 45 minutos).
+
+Cambio: el cuerpo caro del sondeo se movio a `scanOnceOffMain`
+(nonisolated, via `Task.detached`), que devuelve un `DFUScanSnapshot`
+Sendable; el MainActor solo aplica el resultado (`applyDFUScan`), con la
+misma logica de siempre (montar antes de declarar ilegible, evidencia
+sostenida D-188, no molestar un disco expulsado a proposito). La
+cadencia del sondeo no cambia: escaneo + 1 s de espera. Conformidades
+Sendable nuevas: `MKS5LBootRunner`, `DFUModeInfo`,
+`DiskIdentificationResult`, y `BundledArtifacts` como `@unchecked`
+(los tres campos son `let`; de `Bundle` solo se leen recursos, que es
+seguro entre hilos).

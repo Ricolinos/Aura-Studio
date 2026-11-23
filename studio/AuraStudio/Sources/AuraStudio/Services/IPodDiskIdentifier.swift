@@ -72,7 +72,7 @@ struct DiskCandidateInfo: Equatable, Sendable {
     }
 }
 
-enum DiskIdentificationResult: Equatable {
+enum DiskIdentificationResult: Equatable, Sendable {
     case notFound
     case found(DiskCandidateInfo)
     /// Dos o mas discos cumplen los criterios simultaneamente -- la

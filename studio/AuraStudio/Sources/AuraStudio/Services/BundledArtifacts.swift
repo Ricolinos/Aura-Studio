@@ -6,7 +6,11 @@ import CryptoKit
 /// ver project.yml -- poblado por scripts/fetch-firmware.sh desde un
 /// Release del repositorio Aura-Firmware, nunca desde un checkout de
 /// sus fuentes. Ver CONTRATO-firmware-studio.md).
-struct BundledArtifacts {
+/// `@unchecked` por `Bundle`: la lectura de recursos de un bundle es
+/// segura entre hilos (es lo unico que se le pide) y los tres campos
+/// son `let` -- nada muta despues del init. ST-258 lo necesita: el
+/// sondeo DFU cruza al hilo de trabajo cargando un `MKS5LBootRunner`.
+struct BundledArtifacts: @unchecked Sendable {
     let bundle: Bundle
     /// ST-047: de que familia son estos artefactos. Decide el
     /// subdirectorio de Resources (`FirmwareFamily.bundleSubdirectory`).
